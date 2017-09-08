@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.teiid.translator;
+package org.teiid.translator.logger;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -24,7 +24,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.List;
-
 import org.teiid.language.Argument;
 import org.teiid.language.Call;
 import org.teiid.language.Command;
@@ -33,6 +32,14 @@ import org.teiid.logging.LogConstants;
 import org.teiid.logging.LogManager;
 import org.teiid.logging.MessageLevel;
 import org.teiid.metadata.RuntimeMetadata;
+import org.teiid.translator.BaseDelegatingExecutionFactory;
+import org.teiid.translator.Execution;
+import org.teiid.translator.ExecutionContext;
+import org.teiid.translator.ProcedureExecution;
+import org.teiid.translator.ResultSetExecution;
+import org.teiid.translator.Translator;
+import org.teiid.translator.TranslatorException;
+import org.teiid.translator.UpdateExecution;
 
 /**
  * Demonstrates the delegating translator pattern to add low level logging.
