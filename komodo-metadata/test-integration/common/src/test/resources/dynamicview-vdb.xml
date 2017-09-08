@@ -1,0 +1,20 @@
+<vdb name="dynamic" version= "1">
+    <model name="MarketData">
+        <source name="text-connector" translator-name="file1" connection-jndi-name="java:/marketdata-file"/>
+    </model>
+    <model visible = "true" type = "VIRTUAL" name = "portfolio">
+         <metadata type = "DDL"><![CDATA[
+              CREATE VIEW stock (
+                symbol varchar,
+                price decimal
+                ) AS 
+                  select stock.* from (call MarketData.getTextFiles('*.txt')) f, 
+                  TEXTTABLE(f.file COLUMNS symbol string, price bigdecimal HEADER) stock;
+         ]]>
+         </metadata>
+    </model>
+    
+    <translator name="file1" type="file">
+         <property name="exceptionIfFileNotFound" value="false"/>
+     </translator>
+</vdb>

@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<connector version="1.5">
+
+   <vendor-name>Red Hat Middleware LLC</vendor-name>
+   <eis-type>Teiid Ftp Connector</eis-type>
+   <resourceadapter-version>1.0</resourceadapter-version>
+   <license>
+      <description>
+ Copyright Red Hat, Inc. and/or its affiliates
+ and other contributors as indicated by the @author tags and
+ the COPYRIGHT.txt file distributed with this work.
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+      </description>
+      <license-required>true</license-required>
+   </license>
+   <resourceadapter>
+      <resourceadapter-class>org.teiid.resource.adapter.ftp.FtpResourceAdapter</resourceadapter-class>
+
+      <outbound-resourceadapter>
+         <connection-definition>
+            <managedconnectionfactory-class>org.teiid.resource.adapter.ftp.FtpManagedConnectionFactory</managedconnectionfactory-class>
+
+            <config-property>
+               <description>{$display:"Ftp Server Directory",$required:"true"}</description>
+               <config-property-name>ParentDirectory</config-property-name>
+               <config-property-type>java.lang.String</config-property-type>
+            </config-property>
+
+            <config-property>
+               <description>{$display:"File Mapping"}</description>
+               <config-property-name>FileMapping</config-property-name>
+               <config-property-type>java.lang.String</config-property-type>
+            </config-property>
+            
+            <config-property>
+               <description>{$display:"Ftp Server User,$required:"true"}</description>
+               <config-property-name>Username</config-property-name>
+               <config-property-type>java.lang.String</config-property-type>
+            </config-property>
+            
+            <config-property>
+               <description>{$display:"Ftp Server Password,$required:"true"}</description>
+               <config-property-name>Password</config-property-name>
+               <config-property-type>java.lang.String</config-property-type>
+            </config-property>
+            
+            <config-property>
+               <description>{$display:"Ftp Server Host,$required:"true"}</description>
+               <config-property-name>Host</config-property-name>
+               <config-property-type>java.lang.String</config-property-type>
+            </config-property>
+            
+            <config-property>
+               <description>{$display:"Ftp Server ControlEncoding"}</description>
+               <config-property-name>ControlEncoding</config-property-name>
+               <config-property-type>java.lang.String</config-property-type>
+               <config-property-value>ISO-8859-1</config-property-value>
+            </config-property>
+            
+             <config-property>
+               <description>{$display:"Ftp Server Port"}</description>
+               <config-property-name>Port</config-property-name>
+               <config-property-type>java.lang.Integer</config-property-type>
+               <config-property-value>21</config-property-value>
+            </config-property>
+            
+            <config-property>
+               <description>{$display:"Ftp Server BufferSize"}</description>
+               <config-property-name>BufferSize</config-property-name>
+               <config-property-type>java.lang.Integer</config-property-type>
+               <config-property-value>2048</config-property-value>
+            </config-property>
+            
+            <config-property>
+               <description>{$display:"Ftp Server ClientMode"}</description>
+               <config-property-name>ClientMode</config-property-name>
+               <config-property-type>java.lang.Integer</config-property-type>
+               <config-property-value>0</config-property-value>
+            </config-property>
+            
+            <config-property>
+               <description>{$display:"Ftp Server FileType"}</description>
+               <config-property-name>FileType</config-property-name>
+               <config-property-type>java.lang.Integer</config-property-type>
+               <config-property-value>2</config-property-value>
+            </config-property>
+            
+            <config-property>
+               <description>{$display:"Ftp Server ConnectTimeout"}</description>
+               <config-property-name>ConnectTimeout</config-property-name>
+               <config-property-type>java.lang.Integer</config-property-type>
+            </config-property>
+            
+            <config-property>
+               <description>{$display:"Ftp Server DefaultTimeout"}</description>
+               <config-property-name>DefaultTimeout</config-property-name>
+               <config-property-type>java.lang.Integer</config-property-type>
+            </config-property>
+            
+            <config-property>
+               <description>{$display:"Ftp Server DataTimeout"}</description>
+               <config-property-name>DataTimeout</config-property-name>
+               <config-property-type>java.lang.Integer</config-property-type>
+            </config-property>
+            
+            <config-property>
+               <description>{$display:"Is Secured Ftps Server"}</description>
+               <config-property-name>IsFtps</config-property-name>
+               <config-property-type>java.lang.Boolean</config-property-type>
+               <config-property-value>false</config-property-value>
+            </config-property>
+            
+            <config-property>
+               <description>{$display:"Ftps Server Use ClientMode"}</description>
+               <config-property-name>UseClientMode</config-property-name>
+               <config-property-type>java.lang.Boolean</config-property-type>
+            </config-property>
+            
+            <config-property>
+               <description>{$display:"Ftps Server Session Creation"}</description>
+               <config-property-name>SessionCreation</config-property-name>
+               <config-property-type>java.lang.Boolean</config-property-type>
+            </config-property>
+            
+            <config-property>
+               <description>{$display:"Ftps Server AuthValue"}</description>
+               <config-property-name>AuthValue</config-property-name>
+               <config-property-type>java.lang.String</config-property-type>
+            </config-property>
+            
+            <config-property>
+               <description>{$display:"Ftps Server Certificate Path"}</description>
+               <config-property-name>Certificate</config-property-name>
+               <config-property-type>java.lang.String</config-property-type>
+            </config-property>
+            
+            <config-property>
+               <description>{$display:"Ftps Server CipherSuites(comma separate string list)"}</description>
+               <config-property-name>CipherSuites</config-property-name>
+               <config-property-type>java.lang.String</config-property-type>
+            </config-property>
+            
+            <config-property>
+               <description>{$display:"Ftps Server Protocols(comma separate string list)"}</description>
+               <config-property-name>Protocols</config-property-name>
+               <config-property-type>java.lang.String</config-property-type>
+            </config-property>
+            
+            <config-property>
+               <description>{$display:"Ftps Server KeyStore Path"}</description>
+               <config-property-name>KeyPath</config-property-name>
+               <config-property-type>java.lang.String</config-property-type>
+            </config-property>
+
+            <config-property>
+               <description>{$display:"Ftps Server KeyStore Password"}</description>
+               <config-property-name>KeyPassword</config-property-name>
+               <config-property-type>java.lang.String</config-property-type>
+            </config-property>
+            
+            <config-property>
+               <description>{$display:"Ftps Server Need ClientAuth"}</description>
+               <config-property-name>NeedClientAuth</config-property-name>
+               <config-property-type>java.lang.Boolean</config-property-type>
+            </config-property>
+            
+            <config-property>
+               <description>{$display:"Ftps Server Wants ClientAuth"}</description>
+               <config-property-name>WantsClientAuth</config-property-name>
+               <config-property-type>java.lang.Boolean</config-property-type>
+            </config-property>
+            
+            <config-property>
+               <description>{$display:"Ftps Server Implicit"}</description>
+               <config-property-name>Implicit</config-property-name>
+               <config-property-type>java.lang.Boolean</config-property-type>
+               <config-property-value>false</config-property-value>
+            </config-property>
+            
+            <config-property>
+               <description>{$display:"Ftps Server ExecProt"}</description>
+               <config-property-name>ExecProt</config-property-name>
+               <config-property-type>java.lang.String</config-property-type>
+               <config-property-value>P</config-property-value>
+            </config-property>
+            
+            <config-property>
+               <description>{$display:"Ftps Server Protocol"}</description>
+               <config-property-name>Protocol</config-property-name>
+               <config-property-type>java.lang.String</config-property-type>
+            </config-property>
+            
+            <connectionfactory-interface>javax.resource.cci.ConnectionFactory</connectionfactory-interface>
+            <connectionfactory-impl-class>org.teiid.resource.spi.WrappedConnectionFactory</connectionfactory-impl-class>
+            <connection-interface>javax.resource.cci.Connection</connection-interface>
+            <connection-impl-class>org.teiid.resource.spi.WrappedConnection</connection-impl-class>
+
+         </connection-definition>
+         
+         <transaction-support>NoTransaction</transaction-support>
+        
+        <authentication-mechanism>
+            <authentication-mechanism-type>BasicPassword</authentication-mechanism-type>
+            <credential-interface>javax.resource.spi.security.PasswordCredential</credential-interface>
+        </authentication-mechanism>
+        <reauthentication-support>false</reauthentication-support>
+      </outbound-resourceadapter>
+   </resourceadapter>
+</connector>

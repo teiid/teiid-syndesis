@@ -1,0 +1,97 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.komodo</groupId>
+		<artifactId>komodo</artifactId>
+		<version>0.0.4-SNAPSHOT</version>
+	</parent>
+	<artifactId>komodo-shell</artifactId>
+	<name>Komodo Shell</name>
+	<description>The komodo shell</description>
+
+	<properties>
+		<version.aesh>0.33.16</version.aesh>
+	</properties>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>${maven.compiler.source}</source>
+					<target>${maven.compiler.target}</target>
+				</configuration>
+			</plugin>
+		</plugins>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+	</build>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.jboss.aesh</groupId>
+				<artifactId>aesh</artifactId>
+				<version>${version.aesh}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<!--
+			Needs to be specified before org.komodo.teiid-client since
+			its dependency on wildfly-cli brings in a transitive dependency
+			on aesh-0.66.4 which causes compilation errors
+		-->
+		<dependency>
+			<groupId>org.jboss.aesh</groupId>
+			<artifactId>aesh</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.komodo</groupId>
+			<artifactId>komodo-spi</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.komodo</groupId>
+			<artifactId>komodo-utils</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.komodo</groupId>
+			<artifactId>komodo-core</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.komodo</groupId>
+			<artifactId>komodo-shell-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.komodo</groupId>
+			<artifactId>komodo-ui</artifactId>
+		</dependency>
+
+        <dependency>
+            <groupId>org.komodo</groupId>
+            <artifactId>komodo-utils</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.komodo</groupId>
+            <artifactId>komodo-test-utils</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+
+	</dependencies>
+</project>
