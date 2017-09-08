@@ -440,7 +440,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
-			<artifactId>mockito-all</artifactId>
+			<artifactId>mockito-core</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -810,13 +810,7 @@
                     <exclusion>
                         <groupId>org.eclipse.persistence</groupId>
                         <artifactId>eclipselink</artifactId>
-                    </exclusion>
-                    <!-- 
-                    <exclusion>
-                        <groupId>joda-time</groupId>
-                        <artifactId>joda-time</artifactId>
-                    </exclusion>    
-                     -->                  
+                    </exclusion>                
                 </exclusions>              
             </dependency>
             <dependency>
@@ -1074,14 +1068,6 @@
                 <artifactId>mysql-connector-java</artifactId>
                 <version>${mysql.connector.version}</version>
             </dependency>
-            <!-- 
-            <dependency>
-                <groupId>org.jboss.spec</groupId>
-                <artifactId>jboss-javaee-6.0</artifactId>
-                <version>${version.org.jboss.spec.jboss-javaee-6.0}</version>
-                <type>pom</type>
-            </dependency>
-             -->
             <dependency>
                 <groupId>de.flapdoodle.embed</groupId>
                 <artifactId>de.flapdoodle.embed.mongo</artifactId>
@@ -1206,11 +1192,6 @@
         		<artifactId>eclipselink</artifactId>
         		<version>${version.org.eclipse.persistence}</version>
     	    </dependency>
-<!--             <dependency>
-                <groupId>javax.ws.rs</groupId>
-                <artifactId>javax.ws.rs-api</artifactId>
-                <version>${version.javax.ws.rs}</version>
-            </dependency> -->
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-beans</artifactId>
