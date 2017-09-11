@@ -11,6 +11,23 @@
     <name>Teiid WildFly Integration Feature Pack</name>
     <packaging>pom</packaging>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.teiid</groupId>
+				<artifactId>teiid-client-feature-pack</artifactId>
+				<version>${project.version}</version>
+				<type>zip</type>
+			</dependency>
+			<dependency>
+				<groupId>org.teiid.connectors</groupId>
+				<artifactId>feature-pack-ws</artifactId>
+				<version>${project.version}</version>
+				<type>zip</type>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.wildfly</groupId>
@@ -26,7 +43,6 @@
 		<dependency>
             <groupId>org.teiid</groupId>
             <artifactId>teiid-client-feature-pack</artifactId>
-            <version>${project.version}</version>
             <type>zip</type>
             <exclusions>
                 <exclusion>
@@ -38,7 +54,6 @@
         <dependency>
             <groupId>org.teiid.connectors</groupId>
             <artifactId>feature-pack-ws</artifactId>
-            <version>${project.version}</version>
             <type>zip</type>
             <exclusions>
                 <exclusion>
@@ -67,7 +82,6 @@
             <plugin>
                 <groupId>org.wildfly.build</groupId>
                 <artifactId>wildfly-feature-pack-build-maven-plugin</artifactId>
-                <version>1.1.6.Final</version>
                 <executions>
                     <execution>
                         <id>feature-pack-build</id>

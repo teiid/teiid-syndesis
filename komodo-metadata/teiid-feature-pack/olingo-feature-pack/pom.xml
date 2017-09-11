@@ -11,6 +11,35 @@
     <name>Olingo Feature Pack</name>
     <packaging>pom</packaging>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.teiid</groupId>
+				<artifactId>teiid-client-feature-pack</artifactId>
+				<version>${project.version}</version>
+				<type>zip</type>
+			</dependency>
+			<dependency>
+				<groupId>org.teiid</groupId>
+				<artifactId>teiid-wildfly-integration-feature-pack</artifactId>
+				<version>${project.version}</version>
+				<type>zip</type>
+			</dependency>
+			<dependency>
+				<groupId>org.teiid</groupId>
+				<artifactId>teiid-olingo</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.teiid</groupId>
+				<artifactId>teiid-olingo</artifactId>
+				<classifier>odata4</classifier>
+				<version>${project.version}</version>
+				<type>war</type>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.wildfly</groupId>
@@ -26,13 +55,11 @@
         <dependency>
             <groupId>org.teiid</groupId>
             <artifactId>teiid-client-feature-pack</artifactId>
-            <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
             <groupId>org.teiid</groupId>
             <artifactId>teiid-wildfly-integration-feature-pack</artifactId>
-            <version>${project.version}</version>
             <type>zip</type>
         </dependency>        
         <dependency>
@@ -50,13 +77,11 @@
         <dependency>
             <groupId>org.teiid</groupId>
             <artifactId>teiid-olingo</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.teiid</groupId>
             <artifactId>teiid-olingo</artifactId>
             <classifier>odata4</classifier>
-            <version>${project.version}</version>
             <type>war</type>
         </dependency>
     </dependencies>

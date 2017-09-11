@@ -10,6 +10,28 @@
     <name>Teiid Connector Swagger Feature Pack</name>
     <packaging>pom</packaging>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.teiid</groupId>
+				<artifactId>teiid-client-feature-pack</artifactId>
+				<version>${project.version}</version>
+				<type>zip</type>
+			</dependency>
+			<dependency>
+				<groupId>org.teiid.connectors</groupId>
+				<artifactId>feature-pack-ws</artifactId>
+				<version>${project.version}</version>
+				<type>zip</type>
+			</dependency>
+			<dependency>
+				<groupId>org.teiid.connectors</groupId>
+				<artifactId>translator-swagger</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.wildfly</groupId>
@@ -25,19 +47,16 @@
         <dependency>
             <groupId>org.teiid</groupId>
             <artifactId>teiid-client-feature-pack</artifactId>
-            <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
             <groupId>org.teiid.connectors</groupId>
             <artifactId>feature-pack-ws</artifactId>
-            <version>${project.version}</version>
             <type>zip</type>
         </dependency>        
         <dependency>
             <groupId>org.teiid.connectors</groupId>
             <artifactId>translator-swagger</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

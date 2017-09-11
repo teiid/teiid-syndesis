@@ -10,6 +10,28 @@
     <name>Teiid Accumulo Feature Pack</name>
     <packaging>pom</packaging>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.teiid</groupId>
+				<artifactId>teiid-client-feature-pack</artifactId>
+				<version>${project.version}</version>
+				<type>zip</type>
+			</dependency>
+			<dependency>
+				<groupId>org.teiid</groupId>
+				<artifactId>teiid-wildfly-integration-feature-pack</artifactId>
+				<version>${project.version}</version>
+				<type>zip</type>
+			</dependency>
+			<dependency>
+				<groupId>org.teiid.connectors</groupId>
+				<artifactId>connector-accumulo</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.wildfly</groupId>
@@ -25,24 +47,20 @@
         <dependency>
             <groupId>org.teiid</groupId>
             <artifactId>teiid-client-feature-pack</artifactId>
-            <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
             <groupId>org.teiid</groupId>
             <artifactId>teiid-wildfly-integration-feature-pack</artifactId>
-            <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
             <groupId>org.teiid.connectors</groupId>
             <artifactId>translator-accumulo</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.teiid.connectors</groupId>
             <artifactId>connector-accumulo</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

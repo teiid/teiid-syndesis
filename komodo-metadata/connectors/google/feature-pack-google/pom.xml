@@ -10,6 +10,32 @@
     <name>Google Feature Pack</name>
     <packaging>pom</packaging>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.teiid</groupId>
+				<artifactId>teiid-client-feature-pack</artifactId>
+				<version>${project.version}</version>
+				<type>zip</type>
+			</dependency>
+			<dependency>
+				<groupId>org.teiid.connectors</groupId>
+				<artifactId>google-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.teiid.connectors</groupId>
+				<artifactId>translator-google</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.teiid.connectors</groupId>
+				<artifactId>connector-google</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.wildfly</groupId>
@@ -25,7 +51,6 @@
         <dependency>
             <groupId>org.teiid</groupId>
             <artifactId>teiid-client-feature-pack</artifactId>
-            <version>${project.version}</version>
             <type>zip</type>
             <exclusions>
                 <exclusion>
@@ -37,17 +62,14 @@
         <dependency>
             <groupId>org.teiid.connectors</groupId>
             <artifactId>google-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.teiid.connectors</groupId>
             <artifactId>translator-google</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.teiid.connectors</groupId>
             <artifactId>connector-google</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 
