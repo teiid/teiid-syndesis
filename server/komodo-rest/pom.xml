@@ -209,34 +209,24 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.jboss.teiid</groupId>
+			<groupId>org.teiid</groupId>
 			<artifactId>teiid-common-core</artifactId>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.jboss.teiid</groupId>
+			<groupId>org.teiid</groupId>
 			<artifactId>teiid-api</artifactId>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.jboss.teiid</groupId>
+			<groupId>org.teiid</groupId>
 			<artifactId>teiid-engine</artifactId>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.jboss.teiid</groupId>
-			<artifactId>teiid-jboss-admin</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.jboss.teiid</groupId>
+			<groupId>org.teiid</groupId>
 			<artifactId>teiid-admin</artifactId>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.jboss.teiid</groupId>
+			<groupId>org.teiid</groupId>
 			<artifactId>teiid-client</artifactId>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.xsom</groupId>

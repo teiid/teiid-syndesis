@@ -56,7 +56,6 @@ import org.teiid.adminapi.PropertyDefinition;
 import org.teiid.adminapi.Translator;
 import org.teiid.adminapi.VDB;
 import org.teiid.adminapi.impl.VDBMetaData;
-import org.teiid.adminapi.jboss.AdminFactory;
 import org.teiid.jdbc.TeiidDriver;
 
 public class TeiidInstanceImpl extends AbstractTeiidInstance {
@@ -64,8 +63,6 @@ public class TeiidInstanceImpl extends AbstractTeiidInstance {
     private Admin admin;
 
     private final TeiidArtifactFactory factory = new TeiidArtifactFactory();
-
-    private final JbossExtensions ext = new JbossExtensions();
 
     public TeiidInstanceImpl(TeiidParent parent, final TeiidVersion teiidVersion, TeiidJdbcInfo jdbcInfo) {
         super(parent, teiidVersion, jdbcInfo);
@@ -78,7 +75,8 @@ public class TeiidInstanceImpl extends AbstractTeiidInstance {
 
     @Override
     public TeiidVersion getRuntimeVersion() throws Exception {
-        return ext.getTeiidRuntimeVersion(admin);
+        // TODO
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -123,10 +121,13 @@ public class TeiidInstanceImpl extends AbstractTeiidInstance {
                      */
                     getEventManager().permitListeners(false);
 
-                    this.admin = AdminFactory.getInstance().createAdmin(getHost(),
-                                                                        getTeiidAdminInfo().getPort(),
-                                                                        getTeiidAdminInfo().getUsername(),
-                                                                        passwordArray);
+                    //
+                    // TODO
+                    //
+//                    this.admin = AdminFactory.getInstance().createAdmin(getHost(),
+//                                                                        getTeiidAdminInfo().getPort(),
+//                                                                        getTeiidAdminInfo().getUsername(),
+//                                                                        passwordArray);
 
                     if (admin == null)
                         throw new Exception("Failed to create a teiid admin connection. Maybe incorrect password?");
@@ -231,7 +232,8 @@ public class TeiidInstanceImpl extends AbstractTeiidInstance {
 
     @Override
     public Collection<ConnectionDriver> getDataSourceDrivers() throws Exception {
-        return ext.getDataSourceDrivers(admin);
+        // TODO
+        throw new UnsupportedOperationException();
     }
 
     @Override

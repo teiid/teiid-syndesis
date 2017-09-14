@@ -326,7 +326,6 @@
 		<plugin>
 			<groupId>org.apache.maven.plugins</groupId>
 			<artifactId>maven-compiler-plugin</artifactId>
-			<version>${version.compiler.plugin}</version>
 			<configuration>
 				<source>${maven.compiler.source}</source>
 				<target>${maven.compiler.target}</target>
@@ -337,7 +336,6 @@
 		<plugin>
 			<groupId>org.apache.maven.plugins</groupId>
 			<artifactId>maven-checkstyle-plugin</artifactId>
-			<version>2.13</version>
 			<executions>
 				<execution>
 					<id>verify-style</id>
@@ -359,7 +357,6 @@
 		</plugin>
 		<plugin>
 			<artifactId>maven-surefire-plugin</artifactId>
-			<version>${version.surefire.plugin}</version>
 			<configuration>
 				<enableAssertions>true</enableAssertions>
 				<includes>
@@ -587,19 +584,9 @@
 			<dependency>
 				<groupId>org.teiid</groupId>
 				<artifactId>teiid-common-core</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.teiid</groupId>
-				<artifactId>teiid-common-core</artifactId>
 				<type>test-jar</type>
 				<version>${project.version}</version>
 				<scope>test</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.teiid</groupId>
-				<artifactId>teiid-api</artifactId>
-				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid</groupId>
@@ -608,26 +595,11 @@
 				<version>${project.version}</version>
 				<scope>test</scope>
 			</dependency>
-			<dependency>
-				<groupId>org.teiid</groupId>
-				<artifactId>teiid-client</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-            <dependency>
-                <groupId>org.teiid</groupId>
-                <artifactId>teiid-admin</artifactId>
-                <version>${project.version}</version>
-            </dependency>
             <dependency>
                 <groupId>org.teiid</groupId>
                 <artifactId>teiid-admin</artifactId>
                 <version>${project.version}</version>
                 <type>test-jar</type>
-            </dependency>                                                      
-            <dependency>
-                <groupId>org.teiid</groupId>
-                <artifactId>teiid-jboss-admin</artifactId>
-                <version>${project.version}</version>
             </dependency>
 	        <dependency>
 	            <groupId>org.teiid</groupId>
@@ -645,11 +617,6 @@
 				<type>test-jar</type>
 				<version>${project.version}</version>
 				<scope>test</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.teiid</groupId>
-				<artifactId>teiid-engine</artifactId>
-				<version>${project.version}</version>
 			</dependency>
 			<dependency>
                 <groupId>org.teiid</groupId>
@@ -689,11 +656,6 @@
                 <artifactId>teiid-jboss-integration</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.teiid</groupId>
-                <artifactId>teiid-runtime</artifactId>
-                <version>${project.version}</version>
-            </dependency>    
               <dependency>
                 <groupId>org.teiid</groupId>
                 <artifactId>teiid-runtime</artifactId>
@@ -1338,7 +1300,6 @@
 		<module>teiid-feature-pack</module>
 		-->
 	  <module>connectors</module>
-		<module>test-integration</module>
 		<module>saxon-xom</module>
 	</modules>
 </project>
