@@ -77,12 +77,13 @@ import org.komodo.rest.swagger.RestVdbModelConverter;
 import org.komodo.rest.swagger.RestVdbModelSourceConverter;
 import org.komodo.rest.swagger.RestVdbPermissionConverter;
 import org.komodo.rest.swagger.RestVdbTranslatorConverter;
+import org.komodo.spi.KEvent;
+import org.komodo.spi.KObserver;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.RepositoryClientEvent;
-import org.komodo.spi.repository.RepositoryObserver;
 import org.komodo.spi.runtime.version.TeiidVersion;
 import org.komodo.spi.runtime.version.TeiidVersionProvider;
 import org.komodo.utils.KLog;
@@ -94,7 +95,7 @@ import io.swagger.jaxrs.config.BeanConfig;
  * The JAX-RS {@link Application} that provides the Komodo REST API.
  */
 @ApplicationPath( V1Constants.APP_PATH )
-public class KomodoRestV1Application extends Application implements RepositoryObserver, StringConstants {
+public class KomodoRestV1Application extends Application implements KObserver, StringConstants {
 
     /**
      * Constants associated with version 1 of the Komodo REST application.
@@ -731,7 +732,7 @@ public class KomodoRestV1Application extends Application implements RepositoryOb
      * @see org.komodo.spi.repository.RepositoryObserver#eventOccurred()
      */
     @Override
-    public void eventOccurred() {
+    public void eventOccurred(KEvent<?> event) {
         this.latch.countDown();
     }
 
@@ -764,8 +765,7 @@ public class KomodoRestV1Application extends Application implements RepositoryOb
 
     private KEngine start() throws WebApplicationException {
         final KEngine kengine = KEngine.getInstance();
-        final Repository repo = kengine.getDefaultRepository();
-        repo.addObserver( this );
+        kengine.addObserver(this);
 
         // wait for repository to start
         boolean started = false;

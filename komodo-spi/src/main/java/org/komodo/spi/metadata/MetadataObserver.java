@@ -19,14 +19,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.spi.repository;
+package org.komodo.spi.metadata;
 
 import org.komodo.spi.KObserver;
 
 /**
- * An observer for listening to events from an implementation of {@link Repository}
+ * An observer for listening to events from an implementation of {@link MetadataServer}
  */
-public interface RepositoryObserver extends KObserver {
+public interface MetadataObserver extends KObserver {
 
     //
     // Tagging interface

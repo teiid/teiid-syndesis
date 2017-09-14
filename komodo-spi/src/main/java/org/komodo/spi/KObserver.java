@@ -19,16 +19,24 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.spi.repository;
+package org.komodo.spi;
 
-import org.komodo.spi.KObserver;
+import org.komodo.spi.repository.Repository;
 
 /**
  * An observer for listening to events from an implementation of {@link Repository}
  */
-public interface RepositoryObserver extends KObserver {
+public interface KObserver {
 
-    //
-    // Tagging interface
-    //
+    /**
+     *  Event has occurred
+     */
+    void eventOccurred(final KEvent<?> event);
+
+    /**
+     * Error has occurred
+     *
+     * @param e the error
+     */
+    void errorOccurred(Throwable e);
 }

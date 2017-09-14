@@ -37,6 +37,7 @@ import org.komodo.repository.validation.ValidationManagerImplTest;
 @Suite.SuiteClasses( {
     ObjectImplTest.class,
     TestLocalRepository.class,
+    TestKEngine.class,
     TestObjectSearcher.class,
     TestLocalRepositoryPersistence.class,
     ValidationManagerImplTest.class,

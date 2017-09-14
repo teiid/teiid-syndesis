@@ -49,6 +49,7 @@ import org.komodo.shell.commands.ExitCommand;
 import org.komodo.shell.commands.HelpCommand;
 import org.komodo.shell.commands.SetRecordCommand;
 import org.komodo.shell.util.PrintUtils;
+import org.komodo.spi.KEvent;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.constants.SystemConstants;
@@ -384,7 +385,7 @@ public class DefaultKomodoShell implements KomodoShell {
         RepositoryObserver stateObserver = new RepositoryObserver() {
 
             @Override
-            public void eventOccurred() {
+            public void eventOccurred(KEvent<?> event) {
                 updateLatch.countDown();
             }
 

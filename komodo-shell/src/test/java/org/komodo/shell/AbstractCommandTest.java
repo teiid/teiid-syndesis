@@ -31,11 +31,11 @@ import org.komodo.shell.api.InvalidCommandArgumentException;
 import org.komodo.shell.api.KomodoShell;
 import org.komodo.shell.api.ShellCommand;
 import org.komodo.shell.commands.PlayCommand;
+import org.komodo.spi.KClient;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.constants.SystemConstants;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.RepositoryClient;
 import org.komodo.test.utils.AbstractLocalRepositoryTest;
 import org.komodo.test.utils.TestUtilities;
 import org.komodo.utils.FileUtils;
@@ -74,7 +74,7 @@ public abstract class AbstractCommandTest extends AbstractLocalRepositoryTest {
         kEngine.setDefaultRepository(_repo);
         kEngine.start();
 
-        assertEquals(RepositoryClient.State.STARTED, kEngine.getState());
+        assertEquals(KClient.State.STARTED, kEngine.getState());
         assertEquals(Repository.State.REACHABLE, kEngine.getDefaultRepository().getState());
         LOGGER.debug( "AbstractCommandTest:startKEngine time to start engine: {0}",
                       ( System.currentTimeMillis() - startTime ) );
@@ -101,7 +101,7 @@ public abstract class AbstractCommandTest extends AbstractLocalRepositoryTest {
         }
 
         kEngine.setDefaultRepository(null);
-        assertEquals(RepositoryClient.State.SHUTDOWN, kEngine.getState());
+        assertEquals(KClient.State.SHUTDOWN, kEngine.getState());
         assertEquals(Repository.State.NOT_REACHABLE, _repo.getState());
         LOGGER.debug( "AbstractCommandTest:stopKEngine time to stop engine: {0}",
                       ( System.currentTimeMillis() - startTime ) );
@@ -109,7 +109,7 @@ public abstract class AbstractCommandTest extends AbstractLocalRepositoryTest {
 
     @Before
     public void beforeEach() throws Exception {
-        assertEquals( RepositoryClient.State.STARTED, kEngine.getState() );
+        assertEquals( KClient.State.STARTED, kEngine.getState() );
         assertEquals( Repository.State.REACHABLE, kEngine.getDefaultRepository().getState() );
 
         KomodoShell komodoShell = Mockito.mock( KomodoShell.class );

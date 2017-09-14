@@ -19,9 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.core.event;
+package org.komodo.spi;
 
-import org.komodo.core.KEngine;
 import org.komodo.spi.repository.Repository;
 
 /**
@@ -44,6 +43,31 @@ public class KEvent<T> {
          * repository removed
          */
         REPOSITORY_REMOVED,
+
+        /**
+         * repository started
+         */
+        REPOSITORY_STARTED,
+
+        /**
+         * repository stopped
+         */
+        REPOSITORY_STOPPED,
+
+        /**
+         * repository cleared
+         */
+        REPOSITORY_CLEARED,
+
+        /**
+         * Metadata server started
+         */
+        METADATA_SERVER_STARTED,
+
+        /**
+         * Metadata server stopped
+         */
+        METADATA_SERVER_STOPPED,
 
         /**
          * engine started
@@ -83,6 +107,11 @@ public class KEvent<T> {
         return type;
     }
 
+    @Override
+    public String toString() {
+        return "KEvent [source=" + source + ", type=" + type + "]";
+    }
+
     /**
      * @param repository added
      * @return repository added event
@@ -97,19 +126,5 @@ public class KEvent<T> {
      */
     public static KEvent<Repository> repositoryRemovedEvent(Repository repository) {
         return new KEvent<Repository>(repository, Type.REPOSITORY_REMOVED);
-    }
-
-    /**
-     * @return engine started event
-     */
-    public static KEvent<KEngine> engineStartedEvent() {
-        return new KEvent<KEngine>(KEngine.getInstance(), Type.ENGINE_STARTED);
-    }
-
-    /**
-     * @return engine shutdown event
-     */
-    public static KEvent<KEngine> engineShutdownEvent() {
-        return new KEvent<KEngine>(KEngine.getInstance(), Type.REPOSITORY_ADDED);
     }
 }

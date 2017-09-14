@@ -25,6 +25,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.komodo.spi.KErrorHandler;
+import org.komodo.spi.KEvent;
+import org.komodo.spi.KObserver;
 import org.komodo.utils.KLog;
 
 /**
@@ -32,7 +34,7 @@ import org.komodo.utils.KLog;
  * to multiple {@link KErrorHandler} implementations as well as logging
  * the message to {@link KLog}.
  */
-public class KomodoErrorHandler implements KErrorHandler {
+public class KomodoErrorHandler implements KErrorHandler, KObserver {
 
     private Set<KErrorHandler> errorHandlers = Collections.emptySet();
 
@@ -90,5 +92,18 @@ public class KomodoErrorHandler implements KErrorHandler {
         for (KErrorHandler handler : errorHandlers) {
             handler.error(message, ex);
         }
+    }
+
+    @Override
+    public void eventOccurred(KEvent<?> event) {
+        if (! KLog.getLogger().isDebugEnabled())
+            return;
+
+        KLog.getLogger().debug(event.toString());
+    }
+
+    @Override
+    public void errorOccurred(Throwable e) {
+        error(e);
     }
 }

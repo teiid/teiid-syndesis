@@ -47,11 +47,12 @@ import org.komodo.repository.LocalRepository.LocalRepositoryId;
 import org.komodo.repository.RepositoryImpl;
 import org.komodo.repository.SynchronousCallback;
 import org.komodo.spi.KException;
+import org.komodo.spi.KClient;
+import org.komodo.spi.KEvent;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.Repository.State;
 import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.RepositoryClient;
 import org.komodo.spi.repository.RepositoryClientEvent;
 import org.komodo.test.utils.AbstractLoggingTest;
 import org.komodo.test.utils.LocalRepositoryObserver;
@@ -117,12 +118,12 @@ public class TestLocalRepositoryPersistence extends AbstractLoggingTest implemen
         assertThat(_repo.getState(), is(State.NOT_REACHABLE));
         assertThat(_repo.ping(), is(false));
 
-        _repoObserver = new LocalRepositoryObserver();
+        _repoObserver = new LocalRepositoryObserver(KEvent.Type.REPOSITORY_STARTED);
         assertNotNull(_repoObserver);
         _repo.addObserver(_repoObserver);
 
         // Start the repository
-        final RepositoryClient client = mock(RepositoryClient.class);
+        final KClient client = mock(KClient.class);
         final RepositoryClientEvent event = RepositoryClientEvent.createStartedEvent(client);
         _repo.notify(event);
 
@@ -150,7 +151,7 @@ public class TestLocalRepositoryPersistence extends AbstractLoggingTest implemen
 
         _repoObserver.resetLatch();
 
-        RepositoryClient client = mock(RepositoryClient.class);
+        KClient client = mock(KClient.class);
         RepositoryClientEvent event = RepositoryClientEvent.createShuttingDownEvent(client);
         _repo.notify(event);
 

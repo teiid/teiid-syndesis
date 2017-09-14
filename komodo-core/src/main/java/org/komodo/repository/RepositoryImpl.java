@@ -51,13 +51,14 @@ import org.komodo.core.KomodoLexicon.WorkspaceItem;
 import org.komodo.repository.search.ObjectSearcher;
 import org.komodo.repository.validation.ValidationManagerImpl;
 import org.komodo.spi.KException;
+import org.komodo.spi.KClient;
+import org.komodo.spi.KEvent;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.Artifact;
 import org.komodo.spi.repository.ArtifactDescriptor;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.RepositoryClient;
 import org.komodo.spi.repository.RepositoryClientEvent;
 import org.komodo.spi.repository.RepositoryObserver;
 import org.komodo.spi.repository.ValidationManager;
@@ -563,7 +564,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
         return paths.toArray(new String[0]);
     }
 
-    private final Set< RepositoryClient > clients = new HashSet< >();
+    private final Set< KClient > clients = new HashSet< >();
     private final Id id;
     private final Set< RepositoryObserver > observers = new HashSet< >();
     private final Type type;
@@ -766,12 +767,13 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Repository#addClient(org.komodo.spi.repository.RepositoryClient)
+     * @see org.komodo.spi.repository.Repository#addClient(org.komodo.spi.KClient)
      */
     @Override
-    public void addClient( final RepositoryClient client ) {
+    public void addClient( final KClient client ) {
         ArgCheck.isNotNull(client, "client"); //$NON-NLS-1$
         this.clients.add(client);
+        addObserver(client);
     }
 
     /**
@@ -1250,15 +1252,15 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
         // nothing to do
     }
 
-    protected void notifyObservers() {
+    protected void notifyObservers(KEvent<?> event) {
         final Set<RepositoryObserver> copy = new HashSet<>(this.observers);
 
         for (final RepositoryObserver observer : copy) {
             try {
                 // Ensure all observers are informed even if one throws an exception
-                observer.eventOccurred();
+                observer.eventOccurred(event);
             } catch (final Exception ex) {
-                KEngine.getInstance().getErrorHandler().error(Messages.getString(Messages.LocalRepository.General_Exception), ex);
+                observer.errorOccurred(ex);
             }
         }
     }
@@ -1412,10 +1414,10 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Repository#removeClient(org.komodo.spi.repository.RepositoryClient)
+     * @see org.komodo.spi.repository.Repository#removeClient(org.komodo.spi.KClient)
      */
     @Override
-    public void removeClient( final RepositoryClient client ) {
+    public void removeClient( final KClient client ) {
         ArgCheck.isNotNull(client, "client"); //$NON-NLS-1$
         this.clients.remove(client);
     }

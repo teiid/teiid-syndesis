@@ -19,33 +19,28 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.spi.repository;
+package org.komodo.spi.metadata;
 
 import org.komodo.spi.KClient;
 
 /**
  * Event sent by a repository client
  */
-public final class RepositoryClientEvent {
+public final class MetadataClientEvent {
 
     /**
      * Event types describing the repository client
      */
     public enum EventType {
         /**
-         * Sent when an {@link RepositoryClient} has just started
+         * Sent when an {@link KomodoClient} has just started
          */
         STARTED,
 
         /**
-         * Sent just prior to an {@link RepositoryClient} shutting down
+         * Sent just prior to an {@link KomodoClient} shutting down
          */
         SHUTTING_DOWN,
-
-        /**
-         * Sent in order to clear the repository of all user-created objects
-         */
-        CLEAR;
     }
 
     private final EventType eventType;
@@ -57,7 +52,7 @@ public final class RepositoryClientEvent {
      * @param source the source of this event
      *
      */
-    public RepositoryClientEvent(EventType eventType, KClient source) {
+    public MetadataClientEvent(EventType eventType, KClient source) {
         this.eventType = eventType;
         this.source = source;
     }
@@ -81,8 +76,8 @@ public final class RepositoryClientEvent {
      *
      * @return event representing the given client has started
      */
-    public static RepositoryClientEvent createStartedEvent(KClient source) {
-        return new RepositoryClientEvent(EventType.STARTED, source);
+    public static MetadataClientEvent createStartedEvent(KClient source) {
+        return new MetadataClientEvent(EventType.STARTED, source);
     }
 
     /**
@@ -90,17 +85,8 @@ public final class RepositoryClientEvent {
      *
      * @return event representing the given client has shut down (never <code>null</code>)
      */
-    public static RepositoryClientEvent createShuttingDownEvent(KClient source) {
-        return new RepositoryClientEvent(EventType.SHUTTING_DOWN, source);
-    }
-
-    /**
-     * @param source the source of the new event
-     *
-     * @return event representing the given client should be cleared (never <code>null</code>)
-     */
-    public static RepositoryClientEvent createClearEvent(KClient source) {
-        return new RepositoryClientEvent(EventType.CLEAR, source);
+    public static MetadataClientEvent createShuttingDownEvent(KClient source) {
+        return new MetadataClientEvent(EventType.SHUTTING_DOWN, source);
     }
 
 }

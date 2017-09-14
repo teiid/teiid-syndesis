@@ -21,30 +21,33 @@
  */
 package org.komodo.test.utils;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import org.komodo.repository.LocalRepository;
+import org.komodo.core.KEngine;
 import org.komodo.spi.KEvent;
 import org.komodo.spi.KEvent.Type;
-import org.komodo.spi.repository.RepositoryObserver;
+import org.komodo.spi.KObserver;
 
 /**
- * A {@link RepositoryObserver} containing a latch that can be used to hold
- * a thread until a state change in the {@link LocalRepository} has occurred
+ * A {@link KObserver} containing a latch that can be used to hold
+ * a thread until a state change in the {@link KEngine} has occurred
  */
-public class LocalRepositoryObserver implements RepositoryObserver {
+public class KEngineObserver implements KObserver {
 
     private CountDownLatch latch;
 
     private Throwable error;
 
-    private Type targetEvent;
+    private List<Type> targetEvents;
 
     /**
      * Constructor
-     * @param targetEvent 
+     * @param targetEvents the countdown of the latch is dependent on
+     *                  the number of events to wait for
      */
-    public LocalRepositoryObserver(Type targetEvent) {
-        this.targetEvent = targetEvent;
+    public KEngineObserver(Type... targetEvents) {
+        this.targetEvents = Arrays.asList(targetEvents);
         resetLatch();
     }
 
@@ -52,7 +55,7 @@ public class LocalRepositoryObserver implements RepositoryObserver {
      * Reset the latch
      */
     public void resetLatch() {
-        latch = new CountDownLatch(1);
+        latch = new CountDownLatch(targetEvents.size());
     }
 
     /**
@@ -68,8 +71,9 @@ public class LocalRepositoryObserver implements RepositoryObserver {
 
     @Override
     public void eventOccurred(KEvent<?> event) {
-        if (event.getType() != targetEvent)
+        if (! targetEvents.contains(event.getType()))
             return;
+
         latch.countDown();
     }
 

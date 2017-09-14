@@ -3,53 +3,69 @@
  * See the COPYRIGHT.txt file distributed with this work for information
  * regarding copyright ownership.  Some portions may be licensed
  * to Red Hat, Inc. under one or more contributor license agreements.
- *
+ * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- *
+ * 
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.spi.repository;
+package org.komodo.spi.metadata;
 
-/**
- *
- */
-public interface RepositoryClient {
+public interface MetadataServer {
 
     /**
-     * The client state.
+     * The server state.
      */
-    public enum State {
+    public enum Condition {
 
         /**
-         * Client has been successfully started.
+         * Server has been successfully reached.
          */
-        STARTED,
+        REACHABLE,
 
         /**
-         * Client is shutdown.
+         * Server is not reachable.
          */
-        SHUTDOWN,
+        NOT_REACHABLE,
 
         /**
-         * There was an error starting or shutting down the client.
+         * There was an error trying to establish server.
          */
         ERROR
 
     }
 
     /**
-     * @return the engine state (never <code>null</code>)
+     * @return the condition of the server
      */
-    public State getState();
+    Condition getCondition();
+
+    /**
+     * Notify this metadata server of a client event
+     *
+     * @param event
+     */
+    void notify(MetadataClientEvent event);
+
+    /**
+     * @param observer
+     *        the observer to be added
+     */
+    void addObserver(MetadataObserver observer);
+
+    /**
+     * @param observer
+     *        the observer to be removed
+     */
+    void removeObserver(MetadataObserver observer);
 }

@@ -30,6 +30,7 @@ import org.komodo.relational.teiid.CachedTeiid;
 import org.komodo.relational.teiid.Teiid;
 import org.komodo.repository.ObjectImpl;
 import org.komodo.repository.RepositoryImpl;
+import org.komodo.spi.KEvent;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
@@ -132,7 +133,7 @@ public class ServerManager extends ObjectImpl implements RelationalObject {
         repository.addObserver(new RepositoryObserver() {
 
             @Override
-            public void eventOccurred() {
+            public void eventOccurred(KEvent<?> event) {
                 // Disposal observer
                 if (getRepository() == null || State.NOT_REACHABLE == getRepository().getState() || !(getRepository().ping())) {
                     instances.remove(ServerManager.this);

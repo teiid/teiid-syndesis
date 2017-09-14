@@ -19,23 +19,40 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.core.event;
+package org.komodo.spi;
 
+import org.komodo.spi.metadata.MetadataObserver;
+import org.komodo.spi.repository.RepositoryObserver;
 
 /**
- * A listener for Komodo-related events.
+ *
  */
-public interface KListener {
+public interface KClient extends RepositoryObserver, MetadataObserver {
 
     /**
-     * @return the unique listener identifier (cannot be empty)
+     * The client state.
      */
-    String getId();
+    public static enum State {
+
+        /**
+         * Client has been successfully started.
+         */
+        STARTED,
+
+        /**
+         * Client is shutdown.
+         */
+        SHUTDOWN,
+
+        /**
+         * There was an error starting or shutting down the client.
+         */
+        ERROR
+
+    }
 
     /**
-     * Exceptions should not be thrown by the listener.
-     * @param event the event being processed (never <code>null</code>)
+     * @return the engine state (never <code>null</code>)
      */
-    void process(final KEvent<?> event);
-
+    public State getState();
 }

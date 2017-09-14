@@ -61,6 +61,7 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.repository.ObjectImpl;
 import org.komodo.repository.RepositoryImpl;
+import org.komodo.spi.KEvent;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.DocumentType;
@@ -263,7 +264,7 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
         repository.addObserver(new RepositoryObserver() {
 
             @Override
-            public void eventOccurred() {
+            public void eventOccurred(KEvent<?> event) {
                 // Disposal observer
                 if (getRepository() == null || State.NOT_REACHABLE == getRepository().getState() || !(getRepository().ping())) {
                     instances.remove(WorkspaceManager.this);
