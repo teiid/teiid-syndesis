@@ -16,7 +16,7 @@
     <module>translator-loopback</module>
     <module>translator-jpa</module>
     <module>translator-olap</module>
-    <module>feature-pack-misc</module>
+    <!--<module>feature-pack-misc</module>-->
   </modules>
 
 </project>

@@ -18,8 +18,8 @@
 		<module>translator-salesforce-34</module>
 		<module>connector-salesforce</module>
 		<module>connector-salesforce-34</module>
-		<module>feature-pack-salesforce</module>
-                <module>feature-pack-salesforce-34</module>
+		<!--<module>feature-pack-salesforce</module>-->
+                <!--<module>feature-pack-salesforce-34</module>-->
 	</modules>
 
 </project>
