@@ -47,11 +47,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.komodo</groupId>
-			<artifactId>komodo-teiid-client</artifactId>
-		</dependency>
-
-		<dependency>
 			<groupId>org.wildfly.core</groupId>
 			<artifactId>wildfly-cli</artifactId>
 			</dependency>
@@ -152,7 +147,7 @@
 				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>unpack-for-teiid-testing</id>
+						<id>unpack-for-testing</id>
 						<phase>process-sources</phase>
 						<goals>
 							<goal>unpack</goal>
@@ -168,28 +163,6 @@
 									<type>zip</type>
 									<overWrite>false</overWrite>
 									<outputDirectory>${project.basedir}/lib/test-server/</outputDirectory>
-								</artifactItem>
-							</artifactItems>
-						</configuration>
-					</execution>
-					<execution>
-						<id>unpack-teiid</id>
-						<phase>process-sources</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<!-- Skip tests -->
-							<skip>${skipTests}</skip>
-							<artifactItems>
-								<artifactItem>
-									<groupId>org.jboss.teiid</groupId>
-									<artifactId>teiid</artifactId>
-									<version>${teiid.version.default}</version>
-									<classifier>${teiid.classifier.default}</classifier>
-									<type>zip</type>
-									<overWrite>true</overWrite>
-									<outputDirectory>${project.basedir}/lib/test-server/${test.server.name}</outputDirectory>
 								</artifactItem>
 							</artifactItems>
 						</configuration>

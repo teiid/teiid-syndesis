@@ -25,6 +25,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.List;
 import org.komodo.spi.KException;
+import org.komodo.spi.KClient;
 
 /**
  * A repository is a data store containing artifacts generated while modeling VDBs
@@ -303,11 +304,11 @@ public interface Repository {
                       final String primaryType ) throws KException;
 
     /**
-     * Add an {@link RepositoryClient} to receive notifications from
+     * Add an {@link KClient} to send/receive notifications to/from
      *
      * @param client
      */
-    void addClient( RepositoryClient client );
+    void addClient( KClient client );
 
     /**
      * @param observer
@@ -528,11 +529,11 @@ public interface Repository {
                  final String... paths ) throws KException;
 
     /**
-     * Remove an {@link RepositoryClient} that we no longer wish to receive notifications from
+     * Remove an {@link KClient} that we no longer wish to receive notifications from
      *
      * @param client
      */
-    void removeClient( RepositoryClient client );
+    void removeClient( KClient client );
 
     /**
      * @param observer

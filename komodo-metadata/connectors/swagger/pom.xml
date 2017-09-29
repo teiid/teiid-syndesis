@@ -14,7 +14,7 @@
   
   <modules>
     <module>translator-swagger</module>
-    <module>feature-pack-swagger</module>
+    <!--<module>feature-pack-swagger</module>-->
   </modules>
 
 </project>

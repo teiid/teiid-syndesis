@@ -36,10 +36,12 @@ import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
 import javax.jcr.nodetype.NodeType;
+import org.komodo.core.KEngine;
 import org.komodo.repository.KomodoTypeRegistry.TypeIdentifier;
 import org.komodo.repository.RepositoryImpl.UnitOfWorkImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoObjectVisitor;
@@ -51,6 +53,8 @@ import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.OperationType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.runtime.version.MetadataVersion;
+import org.komodo.spi.type.DataTypeService;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
@@ -68,6 +72,8 @@ import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
 public class ObjectImpl implements KomodoObject, StringConstants {
 
     private static final KLog LOGGER = KLog.getLogger();
+
+    private final MetadataInstance metadataInstance;
 
     protected static Descriptor[] getAllDescriptors( final UnitOfWork transaction,
                                                      final KomodoObject kobject ) throws KException {
@@ -198,6 +204,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
         this.repository = komodoRepository;
         this.path = path;
         this.index = index;
+        this.metadataInstance = KEngine.getInstance().getMetadataInstance();
     }
 
     protected void provision(UnitOfWork transaction, OperationType operationType) throws KException {
@@ -376,6 +383,21 @@ public class ObjectImpl implements KomodoObject, StringConstants {
         } catch (final Exception e) {
             throw handleError( e );
         }
+    }
+
+    /**
+     * @return the metadata instance instance
+     */
+    protected MetadataInstance getMetadataInstance() {
+        return this.metadataInstance;
+    }
+
+    protected MetadataVersion getVersion() {
+        return metadataInstance.getVersion();
+    }
+
+    protected DataTypeService getDataTypeService() {
+        return metadataInstance.getDataTypeService();
     }
 
     /**

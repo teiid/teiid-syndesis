@@ -29,29 +29,48 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import org.komodo.core.event.KEvent;
-import org.komodo.core.event.KListener;
+import org.komodo.metadata.DefaultMetadataInstance;
 import org.komodo.modeshape.lib.LogConfigurator;
 import org.komodo.repository.LocalRepository;
+import org.komodo.spi.KClient;
 import org.komodo.spi.KErrorHandler;
+import org.komodo.spi.KEvent;
+import org.komodo.spi.KEvent.Type;
 import org.komodo.spi.KException;
+import org.komodo.spi.KObserver;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.metadata.MetadataClientEvent;
+import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.RepositoryClient;
 import org.komodo.spi.repository.RepositoryClientEvent;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KEnvironment;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
+import org.komodo.utils.observer.KLatchObserver;
 
 /**
  * The Komodo engine. It is responsible for persisting and retriever user session data and Teiid artifacts.
  */
-public final class KEngine implements RepositoryClient, StringConstants {
+public final class KEngine implements KClient, StringConstants {
 
     private static KEngine _instance;
 
     private static final String PREFIX = KEngine.class.getSimpleName() + DOT;
+
+    /**
+     * @return engine started event
+     */
+    private static KEvent<KEngine> engineStartedEvent() {
+        return new KEvent<KEngine>(KEngine.getInstance(), Type.ENGINE_STARTED);
+    }
+
+    /**
+     * @return engine shutdown event
+     */
+    private static KEvent<KEngine> engineShutdownEvent() {
+        return new KEvent<KEngine>(KEngine.getInstance(), Type.ENGINE_SHUTDOWN);
+    }
 
     /**
      * @return the shared engine (never <code>null</code>)
@@ -63,8 +82,6 @@ public final class KEngine implements RepositoryClient, StringConstants {
         return _instance;
     }
 
-    private final Set<KListener> listeners = new HashSet<KListener>();
-
     private final Set<Repository> repositories = new HashSet<Repository>();
 
     private State state = State.SHUTDOWN;
@@ -72,6 +89,10 @@ public final class KEngine implements RepositoryClient, StringConstants {
     private Repository defaultRepository;
 
     private KomodoErrorHandler errorHandler = new KomodoErrorHandler();
+
+    private MetadataInstance metadataInstance;
+
+    private final Set<KObserver> observers = new HashSet<>();
 
     private KEngine() {
         KEnvironment.checkDataDirProperty();
@@ -82,6 +103,12 @@ public final class KEngine implements RepositoryClient, StringConstants {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+
+        //
+        // Logs error thrown by sub-components without
+        // having to call the error handler directly
+        //
+        addObserver(errorHandler);
     }
 
     /**
@@ -93,7 +120,7 @@ public final class KEngine implements RepositoryClient, StringConstants {
             try {
                 add(defaultRepository);
             } catch (Exception ex) {
-                getErrorHandler().error(ex);
+                errorOccurred(ex);
             }
         }
 
@@ -130,18 +157,13 @@ public final class KEngine implements RepositoryClient, StringConstants {
             add(defaultRepository);
     }
 
-    /**
-     * @param listener the listener being registered (cannot be <code>null</code>)
-     * @throws KException if the listener was not added
-     */
-    public void add(final KListener listener) throws KException {
-        ArgCheck.isNotNull(listener, "listener"); //$NON-NLS-1$
-
-        if (this.listeners.add(listener)) {
-            KLog.getLogger().debug(Messages.getString(Messages.KEngine.Added_Listener, PREFIX, listener.getId()));
-        } else {
-            throw new KException(Messages.getString(Messages.KEngine.Added_Listener_Failure, listener.getId()));
+    public MetadataInstance getMetadataInstance() {
+        if (this.metadataInstance == null) {
+            metadataInstance = DefaultMetadataInstance.getInstance();
+            metadataInstance.addObserver(this);
         }
+
+        return this.metadataInstance;
     }
 
     /**
@@ -156,7 +178,7 @@ public final class KEngine implements RepositoryClient, StringConstants {
         if (this.repositories.add(repository)) {
             repository.addClient(this);
             KLog.getLogger().debug(Messages.getString(Messages.KEngine.Added_Repository, PREFIX, repository.getId().getUrl()));
-            notifyListeners(KEvent.repositoryAddedEvent(repository));
+            notifyObservers(KEvent.repositoryAddedEvent(repository));
 
             // Notify this repository if it has started
             if (State.STARTED == state)
@@ -184,18 +206,6 @@ public final class KEngine implements RepositoryClient, StringConstants {
         return Collections.unmodifiableSet(allRepositories);
     }
 
-    private <T> void notifyListeners(final KEvent<T> event) {
-        ArgCheck.isNotNull(event);
-
-        for (final KListener listener : this.listeners) {
-            try {
-                listener.process(event);
-            } catch (final Exception e) {
-               getErrorHandler().error(Messages.getString(Messages.KEngine.Notify_Listeners, PREFIX, listener.getId()));
-            }
-        }
-    }
-
     private void notifyRepositories(final RepositoryClientEvent event) {
         ArgCheck.isNotNull(event);
 
@@ -204,18 +214,10 @@ public final class KEngine implements RepositoryClient, StringConstants {
         }
     }
 
-    /**
-     * @param listener the listener being unregistered (cannot be <code>null</code>)
-     * @throws KException if the listener was not removed
-     */
-    public void remove(final KListener listener) throws KException {
-        ArgCheck.isNotNull(listener, "listener"); //$NON-NLS-1$
+    private void notifyMetadataServer(final MetadataClientEvent event) {
+        ArgCheck.isNotNull(event);
 
-        if (this.listeners.remove(listener)) {
-            KLog.getLogger().debug(Messages.getString(Messages.KEngine.Removed_Listener, PREFIX, listener.getId()));
-        } else {
-            throw new KException(Messages.getString(Messages.KEngine.Removed_Listener_Failure, listener.getId()));
-        }
+        getMetadataInstance().notify(event);
     }
 
     /**
@@ -229,7 +231,7 @@ public final class KEngine implements RepositoryClient, StringConstants {
         if (this.repositories.remove(repository)) {
             repository.removeClient(this);
             KLog.getLogger().debug(Messages.getString(Messages.KEngine.Removed_Repository, PREFIX, repository.getId().getUrl()));
-            notifyListeners(KEvent.repositoryRemovedEvent(repository));
+            notifyObservers(KEvent.repositoryRemovedEvent(repository));
         } else {
             throw new KException(Messages.getString(Messages.KEngine.Removed_Repository_Failure, repository.getId().getUrl()));
         }
@@ -246,8 +248,11 @@ public final class KEngine implements RepositoryClient, StringConstants {
             // Notify any registered repositories that this engine has shutdown
             notifyRepositories(RepositoryClientEvent.createShuttingDownEvent(this));
 
+            // Notify the metadata instance that this engine has shutdown
+            notifyMetadataServer(MetadataClientEvent.createShuttingDownEvent(this));
+
             // Notify any 3rd-party listeners that this engine has shutdown
-            notifyListeners(KEvent.engineShutdownEvent());
+            notifyObservers(engineShutdownEvent());
 
         } catch (final Exception e) {
             this.state = State.ERROR;
@@ -271,7 +276,12 @@ public final class KEngine implements RepositoryClient, StringConstants {
 
                 boolean shutdown = false;
                 while(!shutdown) {
-                    if (! RepositoryClient.State.SHUTDOWN.equals(KEngine.this.getState())) {
+                    if (! KClient.State.SHUTDOWN.equals(KEngine.this.getState())) {
+                        Thread.sleep(5);
+                        continue;
+                    }
+
+                    if (MetadataInstance.Condition.REACHABLE.equals(KEngine.this.getMetadataInstance().getCondition())) {
                         Thread.sleep(5);
                         continue;
                     }
@@ -317,6 +327,9 @@ public final class KEngine implements RepositoryClient, StringConstants {
             // Initialise the local repository
             getDefaultRepository();
 
+            // Initialise the metadata instance
+            getMetadataInstance();
+
             // TODO implement start (read any saved session state, connect to repos if auto-connect, etc.)
             this.state = State.STARTED;
             KLog.getLogger().debug("Komodo engine successfully started"); //$NON-NLS-1$
@@ -324,14 +337,52 @@ public final class KEngine implements RepositoryClient, StringConstants {
             // Notify any registered repositories that this engine has started
             notifyRepositories(RepositoryClientEvent.createStartedEvent(this));
 
+            // Notify the metadata instance that this engine has started
+            notifyMetadataServer(MetadataClientEvent.createStartedEvent(this));
+
             // Notify any 3rd-party listeners that this engine has started
-            notifyListeners(KEvent.engineStartedEvent());
+            notifyObservers(engineStartedEvent());
 
         } catch (final Exception e) {
             this.state = State.ERROR;
             String stackTrace = StringUtils.exceptionToString(e);
             throw new KException(Messages.getString(Messages.KEngine.Startup_Failure) + NEW_LINE + stackTrace, e);
         }
+    }
+
+    /**
+     * Start the engine and wait for the default repository,
+     * metadata server to be started
+     * @return true if engine started successfully, false otherwise
+     *
+     * @throws Exception if start fails
+     */
+    public boolean startAndWait() throws Exception {
+
+        KLatchObserver observer = new KLatchObserver(Type.REPOSITORY_STARTED,
+                                                                                                 Type.METADATA_SERVER_STARTED,
+                                                                                                 Type.ENGINE_STARTED);
+
+        addObserver(observer);
+
+        // wait for engine to start
+        boolean started = false;
+        try {
+            start();
+            started = observer.getLatch().await(3, TimeUnit.MINUTES);
+            if (observer.getError() != null) {
+                //
+                // latch was released due to the engine throwing an error rather than starting
+                //
+                throw observer.getError();
+            }
+        } catch (Throwable t) {
+            throw new KException(t);
+        } finally {
+            removeObserver(observer);
+        }
+
+        return started;
     }
 
     /**
@@ -348,5 +399,60 @@ public final class KEngine implements RepositoryClient, StringConstants {
      */
     public void addErrorHandler(KErrorHandler errorHandler) {
         this.errorHandler.add(errorHandler);
+    }
+
+    /**
+     * Adds the observer to the engine
+     * @param observer
+     */
+    public void addObserver(KObserver observer) {
+        ArgCheck.isNotNull(observer, "observer"); //$NON-NLS-1$
+        this.observers.add(observer);
+    }
+
+    /**
+     * Removes the observer from the engine
+     * @param observer
+     */
+    public void removeObserver( final KObserver observer ) {
+        ArgCheck.isNotNull(observer, "observer"); //$NON-NLS-1$
+        this.observers.remove(observer);
+    }
+
+    private <T> void notifyObservers(final KEvent<T> event) {
+        ArgCheck.isNotNull(event);
+        final Set<KObserver> copy = new HashSet<>(this.observers);
+
+        for (final KObserver observer : copy) {
+            try {
+                observer.eventOccurred(event);
+            } catch (final Exception e) {
+                observer.errorOccurred(e);
+            }
+        }
+    }
+
+    @Override
+    public void eventOccurred(KEvent<?> event) {
+        //
+        // Pass any events received by internal sub-components
+        // to any external observers of the engine
+        //
+        notifyObservers(event);
+    }
+
+    @Override
+    public void errorOccurred(Throwable e) {
+        //
+        // Pass any exceptions received by internal sub-components
+        // to any external observers of the engine
+        //
+        ArgCheck.isNotNull(e);
+
+        final Set<KObserver> copy = new HashSet<>(this.observers);
+
+        for (final KObserver observer : copy) {
+            observer.errorOccurred(e);
+        }
     }
 }

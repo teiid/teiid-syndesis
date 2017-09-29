@@ -730,45 +730,6 @@ public interface KomodoLexicon extends StringConstants {
     }
 
     /**
-     * The JCR names associated with Teiid servers.
-     */
-    public interface Teiid extends TeiidArchetype, WorkspaceItem {
-
-        /**
-         * The name and node type name of the Komodo workspace's Teiid server grouping node. Value is {@value} .
-         */
-        String GROUP_NODE = Namespace.PREFIX + COLON + "teiids"; //$NON-NLS-1$
-
-        /**
-         * The name of the last ping time property. Value is {@value} .
-         */
-        String LAST_PING_TIME = Namespace.PREFIX + COLON + "lastPingTime"; //$NON-NLS-1$
-
-        /**
-         * The name of the Teiid node type. Value is {@value} .
-         */
-        String NODE_TYPE = Namespace.PREFIX + COLON + "teiid"; //$NON-NLS-1$
-
-    }
-
-    /**
-     * The JCR names associated with the teiid cache, ie. those object that
-     * cache the representation of the contents of a live server
-     */
-    public interface CachedTeiid extends TeiidArchetype {
-
-        /**
-         * The name of the Cached Teiid node type. Value is {@value} .
-         */
-        String NODE_TYPE = Namespace.PREFIX + COLON + "cachedTeiid"; //$NON-NLS-1$
-
-        /**
-         * The timestamp of when the cached teiid was created
-         */
-        String TIMESTAMP = Namespace.PREFIX + COLON + "timestamp"; //$NON-NLS-1$
-    }
-
-    /**
      * The JCR names associated with VDBs.
      */
     public interface Vdb extends LibraryComponent, WorkspaceItem {

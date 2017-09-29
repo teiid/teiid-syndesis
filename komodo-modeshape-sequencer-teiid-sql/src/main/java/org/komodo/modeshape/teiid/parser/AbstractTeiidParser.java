@@ -31,11 +31,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 import org.komodo.modeshape.teiid.Messages;
 import org.komodo.modeshape.teiid.TeiidClientException;
-import org.komodo.spi.annotation.Removed;
-import org.komodo.spi.annotation.Since;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.runtime.version.DefaultTeiidVersion.Version;
-import org.komodo.spi.runtime.version.TeiidVersion;
+import org.komodo.spi.runtime.version.MetadataVersion;
 import org.komodo.utils.StringUtils;
 /**
  * Abstract implemention of {@link TeiidSeqParser}.
@@ -115,12 +112,12 @@ public abstract class AbstractTeiidParser {
     
     protected Pattern SOURCE_HINT_ARG = Pattern.compile("\\s*([^: ]+)(\\s+KEEP ALIASES)?\\s*:((?:'[^']*')+)", Pattern.CASE_INSENSITIVE | Pattern.DOTALL); //$NON-NLS-1$
 
-    protected TeiidVersion version;
+    protected MetadataVersion version;
 
     /**
      * @return teiid instance version
      */
-    public TeiidVersion getVersion() {
+    public MetadataVersion getVersion() {
         return version;
     }
 
@@ -138,39 +135,9 @@ public abstract class AbstractTeiidParser {
     /**
      * @param teiidVersion version of teiid
      */
-    public void setVersion(TeiidVersion teiidVersion) {
+    public void setVersion(MetadataVersion teiidVersion) {
         this.version = teiidVersion;
     }
-
-    /**
-     * The version of this parser must be greater than
-     * or equal to the given version.
-     *
-     * @param requiredVersionEnum
-     */
-    protected boolean versionLessThan(Version requiredVersionEnum) {
-        return getVersion().isLessThan(requiredVersionEnum.get());
-    }
-
-    /**
-     * The version of this parser must be  than
-     * or equal to the given version.
-     *
-     * @param requiredVersionEnum
-     */
-    protected boolean versionAtLeast(Version requiredVersionEnum) {
-        return ! versionLessThan(requiredVersionEnum);
-    }
-
-//    public DataTypeManager getDataTypeService() {
-//        TCExecutionAdminFactory factory = new TCExecutionAdminFactory();
-//        return factory.getDataTypeManagerService(getVersion());
-//    }
-//
-//    @Override
-//    public <T extends BaseLanguageObject> T createASTNode(ASTNodes nodeType) {
-//        return TeiidNodeFactory.getInstance().create(this, nodeType);
-//    }
 
 	protected String prependSign(String sign, String literal) {
 		if (sign != null && sign.charAt(0) == '-') {
@@ -178,17 +145,6 @@ public abstract class AbstractTeiidParser {
 		}
 		return literal;
 	}
-
-//	@Since(Version.TEIID_8_0)
-//	protected void convertToParameters(List<BaseExpression> values, StoredProcedureImpl storedProcedure, int paramIndex) {
-//		for (BaseExpression value : values) {
-//			SPParameterImpl parameter = createASTNode(ASTNodes.SP_PARAMETER); 
-//			parameter.setIndex(paramIndex++);
-//			parameter.setExpression(value);
-//			parameter.setParameterType(SPParameterImpl.IN);
-//			storedProcedure.addParameter(parameter);
-//		}
-//	}
 
     private int parseNumericValue(CharSequence string, StringBuilder sb, int i, int value,
                                                                          int possibleDigits, int radixExp) {
@@ -378,46 +334,7 @@ public abstract class AbstractTeiidParser {
         return id;
     }
 
-    @Removed(Version.TEIID_8_0)
-    protected String matchesAny(String arg, String ... expected) {
-        for (String string : expected) {
-            if (string.equalsIgnoreCase(arg)) {
-                return arg;
-            }
-        }
-        return null;
-    }
-
-//    @Override
-//    public CommandImpl procedureBodyCommand(ParseInfo parseInfo) throws Exception {
-//        throw new UnsupportedOperationException("Not supported in Teiid Version " + getVersion()); //$NON-NLS-1$
-//    }
-
-    @Since(Version.TEIID_8_0)
 	protected boolean isTrue(final String text) {
         return Boolean.valueOf(text);
     }    
-
-//    @Since(Version.TEIID_8_5)
-//    protected void setSourceHint(SourceHintImpl sourceHint, CommandImpl command) {
-//        if (sourceHint == null)
-//            return;
-//
-//        if (command instanceof SetQueryImpl) {
-//            ((SetQueryImpl)command).getProjectedQuery().setSourceHint(sourceHint);
-//        } else {
-//            command.setSourceHint(sourceHint);
-//        }
-//    }
-//
-//    @Since(Version.TEIID_8_5)
-//    protected List<BaseExpression> arrayExpressions(List<BaseExpression> expressions, BaseExpression expr) {
-//        if (expressions == null) {
-//            expressions = new ArrayList<BaseExpression>();
-//        }
-//        if (expr != null) {
-//            expressions.add(expr);
-//        }
-//        return expressions;
-//    }
 }

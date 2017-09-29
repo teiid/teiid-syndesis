@@ -15,7 +15,7 @@
   <modules>
     <module>translator-ldap</module>
     <module>connector-ldap</module>
-    <module>feature-pack-ldap</module>
+    <!--<module>feature-pack-ldap</module>-->
   </modules>
 
 </project>

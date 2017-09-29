@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.komodo</groupId>
     <artifactId>komodo-parent</artifactId>
-	<version>0.0.4-SNAPSHOT</version>
+    <version>0.0.4-SNAPSHOT</version>
     <relativePath>komodo-parent/pom.xml</relativePath>
   </parent>
 
@@ -25,7 +25,7 @@
         <module>komodo-utils-logger</module>
         <module>komodo-utils</module>
         <module>komodo-metadata</module>
-        <module>komodo-teiid-client</module>
+        <module>komodo-metadata-instance</module>
         <module>plugins</module>
         <module>komodo-modeshape-sequencer-teiid-sql</module>
         <module>komodo-core</module>
@@ -59,7 +59,6 @@
 	<properties>
 		<rootDir>${project.basedir}</rootDir>
 		<version.teiid.modeshape>0.0.1-SNAPSHOT</version.teiid.modeshape>
-		<version.infinispan>7.2.3.Final</version.infinispan>
 		<version.javax.servlet>3.1.0</version.javax.servlet>
 		<version.javax.jacc>1.0.0.Final</version.javax.jacc>
 		<version.joda.time>2.7</version.joda.time>
@@ -107,18 +106,6 @@
 				<groupId>org.jboss.teiid.modeshape</groupId>
 				<artifactId>teiid-modeshape-sequencer-dataservice</artifactId>
 				<version>${version.teiid.modeshape}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.infinispan</groupId>
-				<artifactId>infinispan-commons</artifactId>
-				<version>${version.infinispan}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.infinispan</groupId>
-				<artifactId>infinispan-core</artifactId>
-				<version>${version.infinispan}</version>
 			</dependency>
 
 			<dependency>

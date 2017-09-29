@@ -345,6 +345,36 @@ public abstract class KomodoService implements V1Constants {
         return false;
     }
 
+    protected Response commit(List<MediaType> acceptableMediaTypes, final KRestEntity entity) throws Exception {
+        ResponseBuilder builder = null;
+
+        if ( entity == RestBasicEntity.NO_CONTENT ) {
+            builder = Response.noContent();
+        } else if ( entity instanceof ResourceNotFound ) {
+            final ResourceNotFound resourceNotFound = ( ResourceNotFound )entity;
+
+            String notFoundMsg = Messages.getString( RESOURCE_NOT_FOUND,
+                                                     resourceNotFound.getResourceName(),
+                                                     resourceNotFound.getOperationName() );
+            Object responseEntity = createErrorResponseEntity(acceptableMediaTypes, notFoundMsg);
+            builder = Response.status( Status.NOT_FOUND ).entity(responseEntity);
+        } else {
+
+            //
+            // Json will always be preferred over XML if both or the wildcard are present in the header
+            //
+            if (isAcceptable(acceptableMediaTypes, MediaType.APPLICATION_JSON_TYPE))
+                builder = Response.ok( KomodoJsonMarshaller.marshall( entity ), MediaType.APPLICATION_JSON );
+            else if (isAcceptable(acceptableMediaTypes, MediaType.APPLICATION_XML_TYPE) && entity.supports(MediaType.APPLICATION_XML_TYPE))
+                builder = Response.ok( entity.getXml(), MediaType.APPLICATION_XML );
+            else {
+                builder = notAcceptableMediaTypesBuilder();
+            }
+        }
+
+        return builder.build();
+    }
+
     protected Response commit( final UnitOfWork transaction, List<MediaType> acceptableMediaTypes,
                                final KRestEntity entity ) throws Exception {
         assert( transaction.getCallback() instanceof SynchronousCallback );
@@ -376,33 +406,8 @@ public abstract class KomodoService implements V1Constants {
         LOGGER.debug( "commit: successfully committed '{0}', rollbackOnly = '{1}'", //$NON-NLS-1$
                       transaction.getName(),
                       transaction.isRollbackOnly() );
-        ResponseBuilder builder = null;
-
-        if ( entity == RestBasicEntity.NO_CONTENT ) {
-            builder = Response.noContent();
-        } else if ( entity instanceof ResourceNotFound ) {
-            final ResourceNotFound resourceNotFound = ( ResourceNotFound )entity;
-
-            String notFoundMsg = Messages.getString( RESOURCE_NOT_FOUND,
-                                                     resourceNotFound.getResourceName(),
-                                                     resourceNotFound.getOperationName() );
-            Object responseEntity = createErrorResponseEntity(acceptableMediaTypes, notFoundMsg);
-            builder = Response.status( Status.NOT_FOUND ).entity(responseEntity);
-        } else {
-
-            //
-            // Json will always be preferred over XML if both or the wildcard are present in the header
-            //
-            if (isAcceptable(acceptableMediaTypes, MediaType.APPLICATION_JSON_TYPE))
-                builder = Response.ok( KomodoJsonMarshaller.marshall( entity ), MediaType.APPLICATION_JSON );
-            else if (isAcceptable(acceptableMediaTypes, MediaType.APPLICATION_XML_TYPE) && entity.supports(MediaType.APPLICATION_XML_TYPE))
-                builder = Response.ok( entity.getXml(), MediaType.APPLICATION_XML );
-            else {
-                builder = notAcceptableMediaTypesBuilder();
-            }
-        }
-
-        return builder.build();
+        
+        return commit(acceptableMediaTypes, entity);
     }
 
     protected Response commit(UnitOfWork transaction, List<MediaType> acceptableMediaTypes) throws Exception {

@@ -69,16 +69,6 @@ public enum KomodoType {
     SCHEMA,
 
     /**
-     * Teiid
-     */
-    TEIID,
-
-    /**
-     * Cached Teiid
-     */
-    CACHED_TEIID,
-
-    /**
      * Vdb
      */
     VDB("vdb"), //$NON-NLS-1$

@@ -18,7 +18,7 @@
 		<module>translator-simpledb</module>
 		<module>simpledb-api</module>
 		<module>translator-amazon-s3</module>
-		<module>feature-pack-amazon</module>
+		<!--<module>feature-pack-amazon</module>-->
 	</modules>
 
 </project>

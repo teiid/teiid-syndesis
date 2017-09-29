@@ -23,6 +23,7 @@ package org.komodo.rest.relational.response;
 
 import java.net.URI;
 import java.util.Properties;
+import javax.ws.rs.core.MediaType;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.KomodoService;
 import org.komodo.rest.RestBasicEntity;
@@ -113,6 +114,14 @@ public final class RestVdb extends RestBasicEntity {
         addLink(new RestLink(LinkType.MODELS, getUriBuilder().vdbUri(LinkType.MODELS, settings)));
         addLink(new RestLink(LinkType.TRANSLATORS, getUriBuilder().vdbUri(LinkType.TRANSLATORS, settings)));
         addLink(new RestLink(LinkType.DATA_ROLES, getUriBuilder().vdbUri(LinkType.DATA_ROLES, settings)));
+    }
+
+    @Override
+    public boolean supports(MediaType mediaType) {
+        if (MediaType.APPLICATION_JSON_TYPE.equals(mediaType))
+            return true;
+
+        return MediaType.APPLICATION_XML_TYPE.equals(mediaType) && getXml() != null;
     }
 
     /**

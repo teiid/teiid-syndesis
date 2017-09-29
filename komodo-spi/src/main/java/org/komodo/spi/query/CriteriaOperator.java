@@ -24,8 +24,7 @@ package org.komodo.spi.query;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import org.komodo.spi.annotation.AnnotationUtils;
-import org.komodo.spi.runtime.version.TeiidVersion;
+import org.komodo.spi.runtime.version.MetadataVersion;
 
 /**
  *
@@ -124,7 +123,7 @@ public interface CriteriaOperator {
          *
          * @return the {@link Operator} for the given string representation
          */
-        public static Operator getOperator(TeiidVersion version, String symbol) {
+        public static Operator getOperator(MetadataVersion version, String symbol) {
             for (Operator operator : Operator.values()) {
 
                 boolean foundSymbol = false;
@@ -136,9 +135,6 @@ public interface CriteriaOperator {
                 }
 
                 if (! foundSymbol)
-                    continue;
-
-                if (! AnnotationUtils.isApplicable(operator, version))
                     continue;
 
                 return operator;

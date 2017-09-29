@@ -27,7 +27,6 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
 import org.komodo.rest.KRestEntity;
-import org.komodo.spi.query.QueryService;
 
 
 /**
@@ -63,10 +62,10 @@ public class KomodoQueryAttribute implements KRestEntity {
     private String target;
 
     @JsonProperty(LIMIT_LABEL)
-    private int limit = QueryService.NO_LIMIT;
+    private int limit = -1;
 
     @JsonProperty(OFFSET_LABEL)
-    private int offset = QueryService.NO_OFFSET;
+    private int offset = 0;
 
     /**
      * Default constructor for deserialization

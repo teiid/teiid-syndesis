@@ -3,15 +3,9 @@ package org.komodo.relational.commands.server;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Properties;
-import org.komodo.core.KomodoLexicon;
 import org.komodo.relational.commands.AbstractCommandTest;
-import org.komodo.relational.teiid.Teiid;
-import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.runtime.TeiidDataSource;
-import org.komodo.spi.runtime.TeiidInstance;
-import org.komodo.spi.runtime.TeiidPropertyDefinition;
 import org.komodo.spi.runtime.TeiidTranslator;
 import org.komodo.spi.runtime.TeiidVdb;
 
@@ -76,51 +70,55 @@ public abstract class AbstractServerCommandTest extends AbstractCommandTest {
                               TeiidVdb[] vdbs, TeiidDataSource[] dataSources,
                               TeiidTranslator[] translators, String[] dataSourceTypes) throws Exception {
 
+        //
+        //TODO
+        // Needs to be reworked
         // Set up the Teiid mock instance
-        Teiid teiid = mock(Teiid.class);
-        when(teiid.getName(getTransaction())).thenReturn(teiidName);
-        when(teiid.getRepository()).thenReturn(_repo);
-        Descriptor descriptor = mock(Descriptor.class);
-        when(descriptor.getName()).thenReturn(KomodoLexicon.Teiid.NODE_TYPE);
-        when(teiid.getPrimaryType(getTransaction())).thenReturn(descriptor);
-        when(teiid.hasDescriptor(getTransaction(), KomodoLexicon.Teiid.NODE_TYPE)).thenReturn(true);
-        _repo.add(getTransaction(), null, teiidName, KomodoLexicon.Teiid.NODE_TYPE);
-
-        // The TeiidInstance
-        TeiidInstance teiidInstance = mock(TeiidInstance.class);
-        when(teiid.getTeiidInstance(getTransaction())).thenReturn(teiidInstance);
-        when(teiidInstance.isConnected()).thenReturn(serverConnected);
-        when(teiidInstance.hasVdb("myVdb")).thenReturn(false);
-        when(teiidInstance.hasVdb("VDB1")).thenReturn(true);
-        when(teiidInstance.hasVdb("VDB2")).thenReturn(true);
-        when(teiidInstance.dataSourceExists("myDs")).thenReturn(false);
-        when(teiidInstance.dataSourceExists("DS1")).thenReturn(true);
-        when(teiidInstance.dataSourceExists("DS2")).thenReturn(true);
-
-        // TeiidPropertyDefinitions
-        TeiidPropertyDefinition propDefn1 = mock(TeiidPropertyDefinition.class);
-        when(propDefn1.getDisplayName()).thenReturn("Prop1");
-        when(propDefn1.getDefaultValue()).thenReturn("Value1");
-        TeiidPropertyDefinition propDefn2 = mock(TeiidPropertyDefinition.class);
-        when(propDefn2.getDisplayName()).thenReturn("Prop2");
-        when(propDefn2.getDefaultValue()).thenReturn("Value2");
-        when(teiidInstance.getTemplatePropertyDefns(DS_TYPE1)).thenReturn(Arrays.asList(new TeiidPropertyDefinition[]{propDefn1,propDefn2}));
-        when(teiidInstance.getTemplatePropertyDefns(DS_TYPE2)).thenReturn(Arrays.asList(new TeiidPropertyDefinition[]{propDefn1,propDefn2}));
-
-        // The returned objects
-        if(vdbs!=null) when(teiidInstance.getVdbs()).thenReturn(Arrays.asList(vdbs));
-        if(vdbs!=null) when(teiidInstance.getVdb(VDB1.getName())).thenReturn(VDB1);
-        if(vdbs!=null) when(teiidInstance.getVdb(VDB2.getName())).thenReturn(VDB2);
-        if(dataSources!=null) when(teiidInstance.getDataSources()).thenReturn(Arrays.asList(dataSources));
-        if(dataSources!=null) when(teiidInstance.getDataSource(DS1.getName())).thenReturn(DS1);
-        if(dataSources!=null) when(teiidInstance.getDataSource(DS2.getName())).thenReturn(DS2);
-        if(dataSourceTypes!=null) when(teiidInstance.getDataSourceTypeNames()).thenReturn(new HashSet< String >(Arrays.asList(dataSourceTypes)));
-        if(translators!=null) when(teiidInstance.getTranslators()).thenReturn(Arrays.asList(translators));
-        if(translators!=null) when(teiidInstance.getTranslator(TRANSLATOR1.getName())).thenReturn(TRANSLATOR1);
-        if(translators!=null) when(teiidInstance.getTranslator(TRANSLATOR2.getName())).thenReturn(TRANSLATOR2);
-
-        // Initing the server may change the commands that are available
-        wsStatus.updateAvailableCommands();
+        //
+//        Teiid teiid = mock(Teiid.class);
+//        when(teiid.getName(getTransaction())).thenReturn(teiidName);
+//        when(teiid.getRepository()).thenReturn(_repo);
+//        Descriptor descriptor = mock(Descriptor.class);
+//        when(descriptor.getName()).thenReturn(KomodoLexicon.Teiid.NODE_TYPE);
+//        when(teiid.getPrimaryType(getTransaction())).thenReturn(descriptor);
+//        when(teiid.hasDescriptor(getTransaction(), KomodoLexicon.Teiid.NODE_TYPE)).thenReturn(true);
+//        _repo.add(getTransaction(), null, teiidName, KomodoLexicon.Teiid.NODE_TYPE);
+//
+//        // The TeiidInstance
+//        TeiidInstance teiidInstance = mock(TeiidInstance.class);
+//        when(teiid.getTeiidInstance(getTransaction())).thenReturn(teiidInstance);
+//        when(teiidInstance.isConnected()).thenReturn(serverConnected);
+//        when(teiidInstance.hasVdb("myVdb")).thenReturn(false);
+//        when(teiidInstance.hasVdb("VDB1")).thenReturn(true);
+//        when(teiidInstance.hasVdb("VDB2")).thenReturn(true);
+//        when(teiidInstance.dataSourceExists("myDs")).thenReturn(false);
+//        when(teiidInstance.dataSourceExists("DS1")).thenReturn(true);
+//        when(teiidInstance.dataSourceExists("DS2")).thenReturn(true);
+//
+//        // TeiidPropertyDefinitions
+//        TeiidPropertyDefinition propDefn1 = mock(TeiidPropertyDefinition.class);
+//        when(propDefn1.getDisplayName()).thenReturn("Prop1");
+//        when(propDefn1.getDefaultValue()).thenReturn("Value1");
+//        TeiidPropertyDefinition propDefn2 = mock(TeiidPropertyDefinition.class);
+//        when(propDefn2.getDisplayName()).thenReturn("Prop2");
+//        when(propDefn2.getDefaultValue()).thenReturn("Value2");
+//        when(teiidInstance.getTemplatePropertyDefns(DS_TYPE1)).thenReturn(Arrays.asList(new TeiidPropertyDefinition[]{propDefn1,propDefn2}));
+//        when(teiidInstance.getTemplatePropertyDefns(DS_TYPE2)).thenReturn(Arrays.asList(new TeiidPropertyDefinition[]{propDefn1,propDefn2}));
+//
+//        // The returned objects
+//        if(vdbs!=null) when(teiidInstance.getVdbs()).thenReturn(Arrays.asList(vdbs));
+//        if(vdbs!=null) when(teiidInstance.getVdb(VDB1.getName())).thenReturn(VDB1);
+//        if(vdbs!=null) when(teiidInstance.getVdb(VDB2.getName())).thenReturn(VDB2);
+//        if(dataSources!=null) when(teiidInstance.getDataSources()).thenReturn(Arrays.asList(dataSources));
+//        if(dataSources!=null) when(teiidInstance.getDataSource(DS1.getName())).thenReturn(DS1);
+//        if(dataSources!=null) when(teiidInstance.getDataSource(DS2.getName())).thenReturn(DS2);
+//        if(dataSourceTypes!=null) when(teiidInstance.getDataSourceTypeNames()).thenReturn(new HashSet< String >(Arrays.asList(dataSourceTypes)));
+//        if(translators!=null) when(teiidInstance.getTranslators()).thenReturn(Arrays.asList(translators));
+//        if(translators!=null) when(teiidInstance.getTranslator(TRANSLATOR1.getName())).thenReturn(TRANSLATOR1);
+//        if(translators!=null) when(teiidInstance.getTranslator(TRANSLATOR2.getName())).thenReturn(TRANSLATOR2);
+//
+//        // Initing the server may change the commands that are available
+//        wsStatus.updateAvailableCommands();
     }
 
 }

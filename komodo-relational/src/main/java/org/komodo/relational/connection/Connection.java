@@ -26,7 +26,6 @@ import org.komodo.relational.DeployStatus;
 import org.komodo.relational.RelationalObject;
 import org.komodo.relational.TypeResolver;
 import org.komodo.relational.connection.internal.ConnectionImpl;
-import org.komodo.relational.teiid.Teiid;
 import org.komodo.repository.ObjectImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.DocumentType;
@@ -35,7 +34,6 @@ import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
-import org.komodo.spi.runtime.TeiidInstance;
 import org.teiid.modeshape.sequencer.dataservice.DataServiceManifest;
 import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 
@@ -245,20 +243,19 @@ public interface Connection extends Exportable, RelationalObject {
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param teiidInstance the teiid instance for deployment
+     *
      * @return the properties for server deployment
      * @throws Exception if error occurs
      */
-    Properties getPropertiesForServerDeployment(UnitOfWork transaction, TeiidInstance teiidInstance) throws Exception;
+    Properties getPropertiesForServerDeployment(UnitOfWork transaction) throws Exception;
 
     /**
      * @param uow
      *        the transaction (cannot be <code>null</code> or have a state that is not
      *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param teiid
-     *        the Teiid instance
-     * @return the deployment status of this data source to the given teiid
+     *
+     * @return the deployment status of this data source
      */
-    DeployStatus deploy(UnitOfWork uow, Teiid teiid);
+    DeployStatus deploy(UnitOfWork uow);
 
 }

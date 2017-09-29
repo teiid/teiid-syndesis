@@ -685,7 +685,7 @@ public final class DataserviceImplTest extends RelationalModelTest {
         ImportOptions importOptions = new ImportOptions();
         importOptions.setOption( OptionKeys.NAME, "MyDataService" );
 
-        DataserviceConveyor conveyor = new DataserviceConveyor( _repo );
+        DataserviceConveyor conveyor = new DataserviceConveyor( _repo, metadataInstance );
         KomodoObject parent = _repo.komodoWorkspace( getTransaction() );
         conveyor.dsImport( getTransaction(), importStream, parent, importOptions, importMessages );
         assertThat( importMessages.hasError(), is( false ) );
@@ -836,7 +836,7 @@ public final class DataserviceImplTest extends RelationalModelTest {
         ImportOptions importOptions = new ImportOptions();
         importOptions.setOption( OptionKeys.NAME, "MyDataService" );
 
-        DataserviceConveyor conveyor = new DataserviceConveyor( _repo );
+        DataserviceConveyor conveyor = new DataserviceConveyor( _repo, metadataInstance);
         KomodoObject parent = _repo.komodoWorkspace( getTransaction() );
         conveyor.dsImport( getTransaction(), importStream, parent, importOptions, importMessages );
         assertThat( importMessages.hasError(), is( false ) );

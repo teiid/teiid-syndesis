@@ -34,10 +34,10 @@ import org.komodo.importer.ImportOptions.OptionKeys;
 import org.komodo.osgi.PluginService;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
-import org.komodo.relational.connection.Connection;
-import org.komodo.relational.connection.internal.ConnectionImpl;
 import org.komodo.relational.RelationalModelFactory;
 import org.komodo.relational.RelationalObject;
+import org.komodo.relational.connection.Connection;
+import org.komodo.relational.connection.internal.ConnectionImpl;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.internal.DataserviceConveyor;
 import org.komodo.relational.dataservice.internal.DataserviceImpl;
@@ -55,12 +55,11 @@ import org.komodo.relational.resource.Driver;
 import org.komodo.relational.resource.ResourceFile;
 import org.komodo.relational.resource.UdfFile;
 import org.komodo.relational.resource.internal.DriverImpl;
-import org.komodo.relational.teiid.Teiid;
-import org.komodo.relational.teiid.internal.TeiidImpl;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.repository.ObjectImpl;
 import org.komodo.repository.RepositoryImpl;
+import org.komodo.spi.KEvent;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.DocumentType;
@@ -90,7 +89,7 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
      * The allowed child types.
      */
     private static final KomodoType[] CHILD_TYPES = new KomodoType[] { Connection.IDENTIFIER, Vdb.IDENTIFIER,
-                                                                       Schema.IDENTIFIER, Teiid.IDENTIFIER,
+                                                                       Schema.IDENTIFIER,
                                                                        Dataservice.IDENTIFIER, Folder.IDENTIFIER };
 
     /**
@@ -263,7 +262,7 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
         repository.addObserver(new RepositoryObserver() {
 
             @Override
-            public void eventOccurred() {
+            public void eventOccurred(KEvent<?> event) {
                 // Disposal observer
                 if (getRepository() == null || State.NOT_REACHABLE == getRepository().getState() || !(getRepository().ping())) {
                     instances.remove(WorkspaceManager.this);
@@ -458,26 +457,6 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
         final String path = ( ( parent == null ) ? getRepository().komodoWorkspace( uow ).getAbsolutePath()
                                                  : parent.getAbsolutePath() );
          return RelationalModelFactory.createSchema( uow, getRepository(), path, schemaName );
-    }
-
-    /**
-     * @param uow
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param parent
-     *        the parent of the teiid object being created (cannot be <code>null</code>)
-     * @param id
-     *        the id of the teiid instance (cannot be empty)
-     * @return the teiid object (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    public Teiid createTeiid( final UnitOfWork uow,
-                              final KomodoObject parent,
-                              final String id ) throws KException {
-        final String path = ( ( parent == null ) ? getRepository().komodoWorkspace( uow ).getAbsolutePath()
-                                                : parent.getAbsolutePath() );
-        return RelationalModelFactory.createTeiid( uow, getRepository(), path, id );
     }
 
     /**
@@ -805,36 +784,6 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
      *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @return all {@link Teiid}s in the workspace
-     * @throws KException
-     *         if an error occurs
-     */
-    public Teiid[] findTeiids( UnitOfWork transaction ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
-                         "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-
-        final String[] paths = findByType(transaction, KomodoLexicon.Teiid.NODE_TYPE);
-        Teiid[] result = null;
-
-        if (paths.length == 0) {
-            result = Teiid.NO_TEIIDS;
-        } else {
-            result = new Teiid[paths.length];
-            int i = 0;
-
-            for (final String path : paths) {
-                result[i++] = new TeiidImpl(transaction, getRepository(), path);
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
      * @return all {@link Vdb}s in the workspace (never <code>null</code> but can be empty)
      * @throws KException
      *         if an error occurs
@@ -1006,7 +955,7 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
                 importer.importDdl(transaction, stream, parent, importOptions, importMessages);
             }
             else if (DocumentType.ZIP.equals(storageRef.getDocumentType())) {
-                DataserviceConveyor conveyor = new DataserviceConveyor(getRepository());
+                DataserviceConveyor conveyor = new DataserviceConveyor(getRepository(), getMetadataInstance());
                 conveyor.dsImport(transaction, stream, parent, importOptions, importMessages);
             }
             else if (DocumentType.JAR.equals(storageRef.getDocumentType())) {

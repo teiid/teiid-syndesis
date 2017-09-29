@@ -29,7 +29,6 @@ import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
-import org.junit.AfterClass;
 import org.komodo.modeshape.teiid.TeiidSqlNodeVisitor;
 import org.komodo.spi.lexicon.TeiidSqlLexicon;
 import org.komodo.spi.lexicon.TeiidSqlLexicon.AliasSymbol;
@@ -42,9 +41,7 @@ import org.komodo.spi.lexicon.TeiidSqlLexicon.JoinType;
 import org.komodo.spi.lexicon.TeiidSqlLexicon.Symbol;
 import org.komodo.spi.lexicon.TeiidSqlLexicon.UnaryFromClause;
 import org.komodo.spi.query.JoinTypeTypes;
-import org.komodo.spi.runtime.version.DefaultTeiidVersion;
-import org.komodo.spi.runtime.version.TeiidVersion;
-import org.komodo.spi.runtime.version.TeiidVersionProvider;
+import org.komodo.spi.runtime.version.DefaultMetadataVersion;
 import org.komodo.test.utils.AbstractSequencerTest;
 /**
  * Class which serves as base for various sequencer unit tests. In addition to this, it uses the sequencing events fired by
@@ -54,32 +51,16 @@ import org.komodo.test.utils.AbstractSequencerTest;
 @SuppressWarnings( {"javadoc", "nls"} )
 public abstract class AbstractTSqlSequencerTest extends AbstractSequencerTest {
 
-    /**
-     * @param teiidVersion
-     */
-    public AbstractTSqlSequencerTest(TeiidVersion teiidVersion) {
-        super();
-        TeiidVersionProvider.getInstance().setTeiidVersion(teiidVersion);
-    }
-
-    @AfterClass
-    public static void resetTeiidVersionProvider() {
-        //
-        // Resets version provider to default
-        //
-        TeiidVersionProvider.getInstance().setTeiidVersion(null);
-    }
-
     @Override
     protected String getTestConfigurationPath() {
         return "test-repository-config.json";
     }
 
     protected void verifyVersionType(Node node) throws RepositoryException {
-        Property property = node.getProperty(TeiidSqlLexicon.LanguageObject.TEIID_VERSION_PROP_NAME);
+        Property property = node.getProperty(TeiidSqlLexicon.LanguageObject.METADATA_VERSION_PROP_NAME);
         Value value = property.getValue();
-        DefaultTeiidVersion version = new DefaultTeiidVersion(value.getString());
-        assertEquals(getTeiidVersion(), version);
+        DefaultMetadataVersion version = new DefaultMetadataVersion(value.getString());
+        assertEquals(getMetadataVersion(), version);
     }
     
     @Override
@@ -92,14 +73,6 @@ public abstract class AbstractTSqlSequencerTest extends AbstractSequencerTest {
     
     protected String deriveProcPrefix(boolean useNewLine) {
         StringBuilder builder = new StringBuilder();
-        
-        if (getTeiidVersion().isLessThan(DefaultTeiidVersion.Version.TEIID_8_4.get())) {
-            builder.append("CREATE VIRTUAL PROCEDURE");
-            if (useNewLine)
-                builder.append(NEW_LINE);
-            else
-                builder.append(SPACE);
-        }
 
         builder.append("BEGIN");
 
@@ -190,7 +163,7 @@ public abstract class AbstractTSqlSequencerTest extends AbstractSequencerTest {
     }
 
     protected void verifySql(String expectedSql, Node topNode) throws Exception {
-        TeiidSqlNodeVisitor visitor = new TeiidSqlNodeVisitor(getTeiidVersion());
+        TeiidSqlNodeVisitor visitor = new TeiidSqlNodeVisitor(getMetadataVersion(), getDataTypeService());
         String actualSql = visitor.getTeiidSql(topNode);
         assertEquals(expectedSql, actualSql);
     }

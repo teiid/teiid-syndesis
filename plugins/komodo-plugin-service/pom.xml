@@ -66,16 +66,6 @@
 			<artifactId>org.apache.felix.fileinstall</artifactId>
 		</dependency>
 
-		<!--
-			Has to be added below apache.felix since the arquillian
-			dependencies from this get added to the Maven-Dependencies
-			container in eclipse and they contain an old version of felix.
-		 -->
-		<dependency>
-			<groupId>org.komodo</groupId>
-			<artifactId>komodo-teiid-client</artifactId>
-		</dependency>
-
 		<dependency>
 			<groupId>org.komodo.plugins.storage</groupId>
 			<artifactId>storage-file</artifactId>

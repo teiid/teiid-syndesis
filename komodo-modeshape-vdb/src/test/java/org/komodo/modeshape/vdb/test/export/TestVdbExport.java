@@ -65,7 +65,7 @@ public class TestVdbExport extends AbstractSequencerTest {
         XMLStreamWriter xtw = null;
         xtw = xof.createXMLStreamWriter(writer);
 
-        return new VdbNodeVisitor(getTeiidVersion(), xtw);
+        return new VdbNodeVisitor(getMetadataVersion(), getDataTypeService(), xtw);
     }
 
     @Test(timeout=3000000)

@@ -80,8 +80,6 @@ import org.komodo.spi.constants.SystemConstants;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.runtime.version.TeiidVersion;
-import org.komodo.spi.runtime.version.TeiidVersionProvider;
 import org.komodo.test.utils.TestUtilities;
 import org.modeshape.jcr.ModeShapeLexicon;
 import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
@@ -218,18 +216,11 @@ public abstract class AbstractKomodoServiceTest implements V1Constants {
         _uriBuilder = new KomodoRestUriBuilder(_appUri);
     }
 
-    private TeiidVersion teiidVersion;
-
     /**
      *
      */
     public AbstractKomodoServiceTest() {
         super();
-        this.teiidVersion = TeiidVersionProvider.getInstance().getTeiidVersion();
-    }
-
-    public TeiidVersion getTeiidVersion() {
-        return teiidVersion;
     }
 
     @After

@@ -59,21 +59,16 @@ public final class ServerVdbCommand extends ServerShellCommand {
         try {
             final String vdbName = requiredArgument( 0, I18n.bind( ServerCommandsI18n.missingVdbName ) );
 
-            // Validates that a server is connected
-            CommandResult validationResult = validateHasConnectedWorkspaceServer();
-            if ( !validationResult.isOk() ) {
-                return validationResult;
-            }
 
             TeiidVdb vdb = null; 
             try {
                 // Check the vdb name to make sure its valid
-                List< String > existingVdbNames = ServerUtils.getVdbNames(getWorkspaceTeiidInstance());
+                List< String > existingVdbNames = ServerUtils.getVdbNames();
                 if(!existingVdbNames.contains(vdbName)) {
                     return new CommandResultImpl(false, I18n.bind( ServerCommandsI18n.serverVdbNotFound, vdbName ), null);
                 }
                 // Get the vdb
-                vdb = getWorkspaceTeiidInstance().getVdb(vdbName);
+                vdb = ServerUtils.getMetadataInstance().getVdb(vdbName);
             } catch (Exception ex) {
                 result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.serverGetVdbError, vdbName, ex.getLocalizedMessage() ), null );
                 return result;
@@ -83,7 +78,7 @@ public final class ServerVdbCommand extends ServerShellCommand {
             }
 
             // Print title
-            final String title = I18n.bind( ServerCommandsI18n.infoMessageVdb, vdbName, getWorkspaceServerName() );
+            final String title = I18n.bind( ServerCommandsI18n.infoMessageVdb, vdbName);
             print( MESSAGE_INDENT, title );
 
             // Print VDB Info
@@ -148,7 +143,7 @@ public final class ServerVdbCommand extends ServerShellCommand {
         final Arguments args = getArguments();
 
         try {
-            List< String > existingVdbNames = ServerUtils.getVdbNames( getWorkspaceTeiidInstance() );
+            List< String > existingVdbNames = ServerUtils.getVdbNames();
             Collections.sort(existingVdbNames);
 
             if ( args.isEmpty() ) {
@@ -164,8 +159,7 @@ public final class ServerVdbCommand extends ServerShellCommand {
             }
         } catch (Exception ex) {
             print( );
-            print( MESSAGE_INDENT, I18n.bind(ServerCommandsI18n.connectionErrorWillDisconnect) );
-            WkspStatusServerManager.getInstance(getWorkspaceStatus()).disconnectDefaultServer();
+            print( MESSAGE_INDENT, I18n.bind(ServerCommandsI18n.accessError) );
         }
         return TabCompletionModifier.AUTO;
     }

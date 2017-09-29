@@ -33,8 +33,6 @@ import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.TeiidSqlConstants;
 import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.runtime.version.TeiidVersion;
-import org.komodo.spi.runtime.version.TeiidVersionProvider;
 import org.komodo.utils.StringUtils;
 
 /**
@@ -89,12 +87,11 @@ public class ViewDdlBuilder {
         boolean includeAllColumns = (includedColumnNames.isEmpty()) ? true : false;
         
         StringBuilder sb = new StringBuilder();
-        TeiidVersion teiidVersion = TeiidVersionProvider.getInstance().getTeiidVersion();
         
         // Determine constraints from table if available
-        String constraintStr = getPkConstraint(uow, teiidVersion, table);
+        String constraintStr = getPkConstraint(uow, table);
         if(StringUtils.isEmpty(constraintStr)) {
-            constraintStr = getUcConstraint(uow, teiidVersion, table);
+            constraintStr = getUcConstraint(uow, table);
         }
         
         // If the table has constraints, make sure the constraint columns for the table will be included
@@ -125,25 +122,25 @@ public class ViewDdlBuilder {
         
         // Use generated table constraints if available
         if(constraintStr.length()>0) {
-            sb.append(getColWithTypeString(teiidVersion, colNames, colTypes));
+            sb.append(getColWithTypeString(colNames, colTypes));
             sb.append(StringConstants.COMMA+StringConstants.SPACE);
             sb.append(constraintStr);
             sb.append(") AS \n"); //$NON-NLS-1$
             sb.append("SELECT "); //$NON-NLS-1$
-            sb.append(getColString(teiidVersion, colNames));
+            sb.append(getColString(colNames));
         // No table constraint found - generate a primary key
         } else {
             sb.append("RowId integer PRIMARY KEY,"); //$NON-NLS-1$
-            sb.append(getColWithTypeString(teiidVersion, colNames, colTypes));
+            sb.append(getColWithTypeString(colNames, colTypes));
             sb.append(") AS \nSELECT ROW_NUMBER() OVER (ORDER BY "); //$NON-NLS-1$
-            sb.append(escapeSQLName(teiidVersion, colNames.get(0)));
+            sb.append(escapeSQLName(colNames.get(0)));
             sb.append(StringConstants.CLOSE_BRACKET + StringConstants.COMMA);
-            sb.append(getColString(teiidVersion, colNames));
+            sb.append(getColString(colNames));
         }
         sb.append(" \n"); //$NON-NLS-1$
         sb.append("FROM "); //$NON-NLS-1$
         String vdbName = table.getParent(uow).getParent(uow).getName(uow);
-        sb.append(escapeSQLName(teiidVersion, vdbName) + StringConstants.DOT + escapeSQLName(teiidVersion, table.getName(uow)));
+        sb.append(escapeSQLName(vdbName) + StringConstants.DOT + escapeSQLName(table.getName(uow)));
         sb.append(StringConstants.SEMI_COLON);
 
         return sb.toString();
@@ -181,7 +178,6 @@ public class ViewDdlBuilder {
                                              String joinType, List<ViewBuilderCriteriaPredicate> criteriaPredicates) throws KException {
 
         StringBuilder sb = new StringBuilder();
-        TeiidVersion teiidVersion = TeiidVersionProvider.getInstance().getTeiidVersion();
 
         // Left and Right table names
         String lhVdbName = lhTable.getParent(uow).getParent(uow).getName(uow);
@@ -236,18 +232,18 @@ public class ViewDdlBuilder {
         sb.append("RowId integer PRIMARY KEY, "); //$NON-NLS-1$
         // Get list of columns that are duplicated in LH and RH and will need to be alias prefixed.
         List<String> duplicateColNames = getDuplicateColumnNames(leftColNames, rightColNames);
-        sb.append(getAliasedColWithTypeString(teiidVersion, leftColNames, leftColTypes, lhTableAlias, duplicateColNames));
+        sb.append(getAliasedColWithTypeString(leftColNames, leftColTypes, lhTableAlias, duplicateColNames));
         sb.append(StringConstants.COMMA+StringConstants.SPACE);
-        sb.append(getAliasedColWithTypeString(teiidVersion, rightColNames, rightColTypes, rhTableAlias, duplicateColNames));
+        sb.append(getAliasedColWithTypeString(rightColNames, rightColTypes, rhTableAlias, duplicateColNames));
         sb.append(") AS \nSELECT "); //$NON-NLS-1$
         sb.append("ROW_NUMBER() OVER (ORDER BY "); //$NON-NLS-1$
-        sb.append(getAliasedFirstColName(teiidVersion, leftColNames, lhTableAlias, rightColNames, rhTableAlias));
+        sb.append(getAliasedFirstColName(leftColNames, lhTableAlias, rightColNames, rhTableAlias));
         sb.append("), "); //$NON-NLS-1$
         if(leftColNames.size()>0) {
-            sb.append(getAliasedColString(teiidVersion, leftColNames, lhTableAlias));
+            sb.append(getAliasedColString(leftColNames, lhTableAlias));
             sb.append(StringConstants.COMMA+StringConstants.SPACE);
         }
-        sb.append(getAliasedColString(teiidVersion, rightColNames, rhTableAlias));
+        sb.append(getAliasedColString(rightColNames, rhTableAlias));
         sb.append(" \nFROM \n"); //$NON-NLS-1$
         sb.append(lhTableNameAliased+StringConstants.SPACE);
         if(JOIN_INNER.equals(joinType)) {
@@ -270,9 +266,9 @@ public class ViewDdlBuilder {
                 String oper = criteriaPredicates.get(i).getOperator();
                 String keyword = criteriaPredicates.get(i).getCombineKeyword();
                 
-                sb.append(lhTableAlias+StringConstants.DOT).append(escapeSQLName(teiidVersion,lhCol))
+                sb.append(lhTableAlias+StringConstants.DOT).append(escapeSQLName(lhCol))
                 .append(StringConstants.SPACE+oper+StringConstants.SPACE)
-                .append(rhTableAlias+StringConstants.DOT).append(escapeSQLName(teiidVersion,rhCol));
+                .append(rhTableAlias+StringConstants.DOT).append(escapeSQLName(rhCol));
                 
                 if( i != nPredicates-1 ) {
                     sb.append(StringConstants.SPACE+keyword+StringConstants.SPACE);
@@ -343,19 +339,19 @@ public class ViewDdlBuilder {
      * Generates Primary Key constraint string if table has a PK
      * Will be of form: "CONSTRAINT pkName PRIMARY KEY (col1)"
      */
-    private static String getPkConstraint(UnitOfWork uow, TeiidVersion teiidVersion, Table table) throws KException {
+    private static String getPkConstraint(UnitOfWork uow, Table table) throws KException {
         StringBuilder sb = new StringBuilder();
 
         // Look for pk column
         PrimaryKey pk = table.getPrimaryKey(uow);
         if(pk!=null) {
             sb.append("CONSTRAINT "); //$NON-NLS-1$
-            sb.append(escapeSQLName(teiidVersion,pk.getName(uow)));
+            sb.append(escapeSQLName(pk.getName(uow)));
             sb.append(" PRIMARY KEY ("); //$NON-NLS-1$
             Column[] pkCols = pk.getColumns(uow);
             for(int i=0; i<pkCols.length; i++) {
                 if(i!=0) sb.append(StringConstants.COMMA+StringConstants.SPACE);
-                sb.append(escapeSQLName(teiidVersion, pkCols[i].getName(uow)));
+                sb.append(escapeSQLName(pkCols[i].getName(uow)));
             }
             sb.append(StringConstants.CLOSE_BRACKET);
         }
@@ -366,7 +362,7 @@ public class ViewDdlBuilder {
      * Generates UniqueConstraint string if table has a PK
      * Will be of form: "CONSTRAINT ucName UNIQUE (col1, col2)"
      */
-    private static String getUcConstraint(UnitOfWork uow, TeiidVersion teiidVersion, Table table) throws KException {
+    private static String getUcConstraint(UnitOfWork uow, Table table) throws KException {
         StringBuilder sb = new StringBuilder();
 
         // Look for uc
@@ -374,12 +370,12 @@ public class ViewDdlBuilder {
         for(int iuc=0; iuc<ucs.length; iuc++) {
             if(iuc!=0) sb.append(StringConstants.COMMA);
             sb.append("CONSTRAINT "); //$NON-NLS-1$
-            sb.append(escapeSQLName(teiidVersion,ucs[iuc].getName(uow)));
+            sb.append(escapeSQLName(ucs[iuc].getName(uow)));
             sb.append(" UNIQUE ("); //$NON-NLS-1$
             Column[] ucCols = ucs[iuc].getColumns(uow);
             for(int icol=0; icol<ucCols.length; icol++) {
                 if(icol!=0) sb.append(StringConstants.COMMA+StringConstants.SPACE);
-                sb.append(escapeSQLName(teiidVersion, ucCols[icol].getName(uow)));
+                sb.append(escapeSQLName(ucCols[icol].getName(uow)));
             }
             sb.append(StringConstants.CLOSE_BRACKET);
         }
@@ -390,13 +386,13 @@ public class ViewDdlBuilder {
      * Generates comma separated string of the supplied column names
      * Will be of form: "column1, column2, column3"
      */
-    private static String getColString(TeiidVersion teiidVersion, List<String> columnNames) {
+    private static String getColString(List<String> columnNames) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < columnNames.size(); i++) {
             if (i != 0) {
                 sb.append(StringConstants.COMMA);
             }
-            sb.append(StringConstants.SPACE + escapeSQLName(teiidVersion, columnNames.get(i)));
+            sb.append(StringConstants.SPACE + escapeSQLName(columnNames.get(i)));
         }
         return sb.toString();
     }
@@ -405,14 +401,14 @@ public class ViewDdlBuilder {
      * Generates comma separated string of the supplied column name with corresponding type
      * Will be of form: "column1 string, column2 string, column3 long"
      */
-    private static String getColWithTypeString(TeiidVersion teiidVersion, List<String> columnNames,
+    private static String getColWithTypeString(List<String> columnNames,
                                                List<String> typeNames) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < columnNames.size(); i++) {
             if (i != 0) {
                 sb.append(StringConstants.COMMA);
             }
-            sb.append(StringConstants.SPACE + escapeSQLName(teiidVersion, columnNames.get(i)));
+            sb.append(StringConstants.SPACE + escapeSQLName(columnNames.get(i)));
             sb.append(StringConstants.SPACE);
             sb.append(typeNames.get(i));
         }
@@ -424,7 +420,7 @@ public class ViewDdlBuilder {
      * If columns are in the duplicateNames list, then prefix them with the supplied alias.
      * Will be of form: "alias_column1 string, alias_column2 string, column3 long"
      */
-    private static String getAliasedColWithTypeString(TeiidVersion teiidVersion, List<String> columnNames,
+    private static String getAliasedColWithTypeString(List<String> columnNames,
                                                       List<String> typeNames, String alias, List<String> duplicateNames) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < columnNames.size(); i++) {
@@ -435,9 +431,9 @@ public class ViewDdlBuilder {
             // If the columnName is a duplicate, prefix it with "alias_"
             String colName = columnNames.get(i);
             if(duplicateNames.contains(colName.toLowerCase())) {
-                sb.append(StringConstants.SPACE + alias + StringConstants.UNDERSCORE + escapeSQLName(teiidVersion, colName));
+                sb.append(StringConstants.SPACE + alias + StringConstants.UNDERSCORE + escapeSQLName(colName));
             } else {
-                sb.append(StringConstants.SPACE + escapeSQLName(teiidVersion, colName));
+                sb.append(StringConstants.SPACE + escapeSQLName(colName));
             }
             sb.append(StringConstants.SPACE);
             sb.append(typeNames.get(i));
@@ -453,13 +449,13 @@ public class ViewDdlBuilder {
      * @param rhsAlias the RHS alias
      * @return the first column with alias
      */
-    private static String getAliasedFirstColName(TeiidVersion teiidVersion, List<String> lhsColNames, String lhsAlias, List<String> rhsColNames, String rhsAlias) {
+    private static String getAliasedFirstColName(List<String> lhsColNames, String lhsAlias, List<String> rhsColNames, String rhsAlias) {
         String result = null;
         if(lhsColNames.size()>0) {
-            List<String> aliasedLhsColNames = getAliasedColNames(teiidVersion, lhsColNames,lhsAlias);
+            List<String> aliasedLhsColNames = getAliasedColNames(lhsColNames,lhsAlias);
             result = aliasedLhsColNames.get(0);
         } else if(rhsColNames.size()>0) {
-            List<String> aliasedRhsColNames = getAliasedColNames(teiidVersion, rhsColNames,rhsAlias);
+            List<String> aliasedRhsColNames = getAliasedColNames(rhsColNames,rhsAlias);
             result = aliasedRhsColNames.get(0);
         }
         return result;
@@ -471,27 +467,27 @@ public class ViewDdlBuilder {
      * @param alias the alias
      * @return the aliased names
      */
-    private static List<String> getAliasedColNames(TeiidVersion teiidVersion, List<String> colNames, String alias) {
+    private static List<String> getAliasedColNames(List<String> colNames, String alias) {
         List<String> aliasedNames = new ArrayList<String>(colNames.size());
         for(String colName : colNames) {
-            aliasedNames.add(alias+StringConstants.DOT+escapeSQLName(teiidVersion,colName));
+            aliasedNames.add(alias+StringConstants.DOT+escapeSQLName(colName));
         }
         return aliasedNames;
     }
 
-    private static String getAliasedColString(TeiidVersion teiidVersion, List<String> columnNames, String alias) {
+    private static String getAliasedColString(List<String> columnNames, String alias) {
         StringBuilder sb = new StringBuilder();
         for(int i=0; i<columnNames.size(); i++) {
             if(i!=0 ) {
                 sb.append(StringConstants.COMMA + StringConstants.SPACE);
             }
-            sb.append(alias).append(StringConstants.DOT).append(escapeSQLName(teiidVersion, columnNames.get(i))); 
+            sb.append(alias).append(StringConstants.DOT).append(escapeSQLName(columnNames.get(i))); 
         }
         return sb.toString();
     }
     
-    private static String escapeSQLName(TeiidVersion teiidVersion, String part) {
-        if (TeiidSqlConstants.isReservedWord(teiidVersion, part)) {
+    private static String escapeSQLName(String part) {
+        if (TeiidSqlConstants.isReservedWord(part)) {
             return SQL_ESCAPE_CHAR + part + SQL_ESCAPE_CHAR;
         }
         boolean escape = true;

@@ -49,18 +49,17 @@ import org.komodo.relational.dataservice.DriverEntry;
 import org.komodo.relational.dataservice.ServiceVdbEntry;
 import org.komodo.relational.dataservice.VdbEntry;
 import org.komodo.relational.resource.Driver;
-import org.komodo.relational.teiid.Teiid;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.spi.runtime.TeiidDataSource;
-import org.komodo.spi.runtime.TeiidInstance;
 import org.komodo.spi.runtime.TeiidVdb;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.FileUtils;
@@ -81,11 +80,14 @@ public class DataserviceConveyor implements StringConstants {
 
     private final Repository repository;
 
+    private final MetadataInstance metadataInstance;
+
     /**
      * @param repository the associated repository (cannot be <code>null</code>)
      */
-    public DataserviceConveyor(Repository repository) {
+    public DataserviceConveyor(Repository repository, MetadataInstance metadataInstance) {
         this.repository = Objects.requireNonNull( repository, "repository" ); //$NON-NLS-1$
+        this.metadataInstance = metadataInstance;
     }
 
     protected WorkspaceManager getWorkspaceManager(UnitOfWork transaction) throws KException {
@@ -340,7 +342,6 @@ public class DataserviceConveyor implements StringConstants {
 
     private void deployConnection( final UnitOfWork uow,
                                    final ConnectionEntry entry,
-                                   final TeiidInstance teiidInstance,
                                    final DeployStatus status ) throws Exception {
         final Connection connection = entry.getReference( uow );
         final String connectionName = connection.getName( uow );
@@ -349,9 +350,9 @@ public class DataserviceConveyor implements StringConstants {
 
         final String jndiName = entry.getJndiName( uow );
         final String sourceType = connection.getDriverName( uow );
-        final Properties properties = connection.getPropertiesForServerDeployment( uow, teiidInstance );
+        final Properties properties = connection.getPropertiesForServerDeployment( uow );
 
-        final TeiidDataSource teiidDataSrc = teiidInstance.getOrCreateDataSource( connectionName,
+        final TeiidDataSource teiidDataSrc = metadataInstance.getOrCreateDataSource( connectionName,
                                                                                   jndiName,
                                                                                   sourceType,
                                                                                   properties );
@@ -367,7 +368,6 @@ public class DataserviceConveyor implements StringConstants {
 
     private void deployDriver( final UnitOfWork uow,
                                final Driver driver,
-                               final TeiidInstance teiidInstance,
                                final DeployStatus status ) throws Exception {
         final String driverName = driver.getName( uow );
         status.addProgressMessage( Messages.getString( Messages.DataserviceConveyor.DATA_SERVICE_DRIVER_START_DEPLOY,
@@ -378,14 +378,13 @@ public class DataserviceConveyor implements StringConstants {
         final File driverFile = File.createTempFile( driverName, driverType.toString() );
         FileUtils.write( content, driverFile );
 
-        teiidInstance.deployDriver( driverName, driverFile );
+        metadataInstance.deployDriver( driverName, driverFile );
         status.addProgressMessage( Messages.getString( Messages.DataserviceConveyor.DATA_SERVICE_DRIVER_SUCCESSFULLY_DEPLOYED,
                                                        driverName ) );
     }
 
     private void deployVdb( final UnitOfWork uow,
                             final VdbEntry entry,
-                            final TeiidInstance teiidInstance,
                             final DeployStatus status ) throws Exception {
         final Vdb vdb = entry.getReference( uow );
         final String vdbName = vdb.getName( uow );
@@ -410,13 +409,13 @@ public class DataserviceConveyor implements StringConstants {
         }
 
         final InputStream stream = new ByteArrayInputStream( vdbXml );
-        teiidInstance.deployDynamicVdb( vdbDeploymentName, stream );
+        metadataInstance.deployDynamicVdb( vdbDeploymentName, stream );
 
         status.addProgressMessage( Messages.getString( Messages.DataserviceConveyor.DATA_SERVICE_VDB_SUCCESSFULLY_DEPLOYED,
                                                        vdbName ) );
 
         
-        TeiidVdb teiidVdb = teiidInstance.getVdb( vdbDeploymentName );
+        TeiidVdb teiidVdb = metadataInstance.getVdb( vdbDeploymentName );
         if ( teiidVdb == null ) {
             status.addProgressMessage( "Warning: Vdb " + vdbName + " not yet completed deployment" );
             return;
@@ -450,14 +449,12 @@ public class DataserviceConveyor implements StringConstants {
      *        the Teiid being deployed to (cannot be <code>null</code>)
      * @return the deployment status (never <code>null</code>)
      */
-    public DeployStatus deploy(UnitOfWork transaction, Dataservice dataservice, Teiid teiid) {
+    public DeployStatus deploy(UnitOfWork transaction, Dataservice dataservice) {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotNull(dataservice, "dataservice"); //$NON-NLS-1$
-        ArgCheck.isNotNull(teiid, "teiid"); //$NON-NLS-1$
 
         DeployStatus status = new DeployStatus();
-        TeiidInstance teiidInstance = teiid.getTeiidInstance(transaction);
 
         try {
             final String dsName = dataservice.getName( transaction );
@@ -492,7 +489,7 @@ public class DataserviceConveyor implements StringConstants {
 
                         if ( deploy ) {
                             final Driver driver = entry.getReference( transaction );
-                            deployDriver( transaction, driver, teiidInstance, status );
+                            deployDriver( transaction, driver, status );
                         }
                     }
                 }
@@ -522,7 +519,7 @@ public class DataserviceConveyor implements StringConstants {
                         }
 
                         if ( deploy ) {
-                            deployConnection( transaction, entry, teiidInstance, status );
+                            deployConnection( transaction, entry, status );
                         }
                     }
                 }
@@ -548,7 +545,7 @@ public class DataserviceConveyor implements StringConstants {
                     }
 
                     if ( deploy ) {
-                        deployVdb( transaction, entry, teiidInstance, status );
+                        deployVdb( transaction, entry, status );
                     }
                 // No Service VDB - log error
                 } else {
@@ -586,7 +583,7 @@ public class DataserviceConveyor implements StringConstants {
                         }
 
                         if ( deploy ) {
-                            deployVdb( transaction, entry, teiidInstance, status );
+                            deployVdb( transaction, entry, status );
                         }
                     }
                 }

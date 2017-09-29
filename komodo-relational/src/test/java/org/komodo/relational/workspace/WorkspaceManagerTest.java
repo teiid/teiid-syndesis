@@ -63,7 +63,6 @@ import org.komodo.relational.model.UniqueConstraint;
 import org.komodo.relational.model.UserDefinedFunction;
 import org.komodo.relational.model.View;
 import org.komodo.relational.model.VirtualProcedure;
-import org.komodo.relational.teiid.Teiid;
 import org.komodo.relational.vdb.Condition;
 import org.komodo.relational.vdb.DataRole;
 import org.komodo.relational.vdb.Entry;
@@ -80,6 +79,7 @@ import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.KomodoObject;
+import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.spi.storage.StorageConnector;
@@ -313,8 +313,9 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
 
     @Test
     public void shouldHaveCorrectChildTypes() {
-        assertThat( Arrays.asList( this.wsMgr.getChildTypes() ), hasItems( Folder.IDENTIFIER, Connection.IDENTIFIER, Dataservice.IDENTIFIER, Vdb.IDENTIFIER, Schema.IDENTIFIER, Teiid.IDENTIFIER ) );
-        assertThat( this.wsMgr.getChildTypes().length, is( 6 ) );
+        KomodoType[] types = { Folder.IDENTIFIER, Connection.IDENTIFIER, Dataservice.IDENTIFIER, Vdb.IDENTIFIER, Schema.IDENTIFIER};
+        assertThat( Arrays.asList( this.wsMgr.getChildTypes() ), hasItems( types ) );
+        assertThat( this.wsMgr.getChildTypes().length, is( types.length ) );
     }
 
     @Test( expected = Exception.class )
@@ -370,11 +371,6 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
     @Test
     public void shouldNotFindSchemasWhenWorkspaceIsEmpty() throws Exception {
         assertThat(this.wsMgr.findSchemas(getTransaction()).length, is(0));
-    }
-
-    @Test
-    public void shouldNotFindTeiidsWhenWorkspaceIsEmpty() throws Exception {
-        assertThat(this.wsMgr.findTeiids(getTransaction()).length, is(0));
     }
 
     @Test
@@ -558,13 +554,6 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
         final Table table = createTable();
         final KomodoObject kobject = new ObjectImpl(_repo, table.getAbsolutePath(), table.getIndex());
         assertThat(this.wsMgr.resolve(getTransaction(), kobject, Table.class), is(instanceOf(Table.class)));
-    }
-
-    @Test
-    public void shouldResolveTeiid() throws Exception {
-        final Teiid teiid = this.wsMgr.createTeiid(getTransaction(), null, "teiid");
-        final KomodoObject kobject = new ObjectImpl(_repo, teiid.getAbsolutePath(), teiid.getIndex());
-        assertThat(this.wsMgr.resolve(getTransaction(), kobject, Teiid.class), is(instanceOf(Teiid.class)));
     }
 
     @Test

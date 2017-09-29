@@ -45,8 +45,9 @@ import org.komodo.spi.lexicon.TeiidSqlConstants;
 import org.komodo.spi.lexicon.TeiidSqlConstants.NonReserved;
 import org.komodo.spi.lexicon.TeiidSqlConstants.Reserved;
 import org.komodo.spi.metadata.MetadataNamespaces;
-import org.komodo.spi.runtime.version.TeiidVersion;
-import org.komodo.spi.type.DataTypeManager.DataTypeName;
+import org.komodo.spi.runtime.version.MetadataVersion;
+import org.komodo.spi.type.DataTypeService;
+import org.komodo.spi.type.DataTypeService.DataTypeName;
 import org.komodo.spi.utils.KeyInValueHashMap;
 import org.komodo.utils.StringUtils;
 import org.modeshape.jcr.JcrLexicon;
@@ -225,7 +226,7 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
          */
         public DataTypeName getDataTypeName() throws RepositoryException {
             try {
-                return getDataTypeManager().getDataTypeName(dataTypeId);
+                return getDataTypeService().getDataTypeName(dataTypeId);
             } catch (Exception ex) {
                 throw new RepositoryException(ex);
             }
@@ -247,12 +248,13 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
     }
 
     /**
-     * @param version teiid version
+     * @param version metadata version
+     * @param dataTypeService the data type service
      * @param startOnNewLine prepend new line to start of ddl string
      * @param exclusions any items that should be excluded from visiting
      */
-    public DdlNodeVisitor(TeiidVersion version, boolean startOnNewLine, VisitorExclusions... exclusions) {
-        super(version);
+    public DdlNodeVisitor(MetadataVersion version, DataTypeService dataTypeService, boolean startOnNewLine, VisitorExclusions... exclusions) {
+        super(version, dataTypeService);
 
         if (exclusions != null) {
             for (VisitorExclusions exclusion : exclusions) {
@@ -351,7 +353,7 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
     }
 
     protected String escapeSinglePart(String token) {
-        if (TeiidSqlConstants.isReservedWord(getVersion(), token)) {
+        if (TeiidSqlConstants.isReservedWord(token)) {
             return TeiidSqlConstants.Tokens.ID_ESCAPE_CHAR + token + TeiidSqlConstants.Tokens.ID_ESCAPE_CHAR;
         }
         boolean escape = true;
@@ -752,7 +754,7 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
 
         if (TableType.GLOBAL_TEMP_TABLE != context.getTableType()) {
             if (context.isVirtual()) {
-                TeiidSqlNodeVisitor visitor = new TeiidSqlNodeVisitor(getVersion());
+                TeiidSqlNodeVisitor visitor = new TeiidSqlNodeVisitor(getVersion(), getDataTypeService());
                 String teiidSql = visitor.getTeiidSql(tabulation);
                 append(NEW_LINE).append(AS).append(NEW_LINE).append(teiidSql);
             }
@@ -896,7 +898,7 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
         //block
         if (context.isVirtual()) {
             append(NEW_LINE).append(AS).append(NEW_LINE);
-            TeiidSqlNodeVisitor visitor = new TeiidSqlNodeVisitor(getVersion());
+            TeiidSqlNodeVisitor visitor = new TeiidSqlNodeVisitor(getVersion(), getDataTypeService());
             String teiidSql = visitor.getTeiidSql(procedure);
             append(teiidSql);
             append(SEMI_COLON);

@@ -37,33 +37,12 @@ public final class ExecutionConfigurationEvent {
         return new ExecutionConfigurationEvent(EventType.ADD, TargetType.DATA_SOURCE, dataSource);
     }
 
-    public static ExecutionConfigurationEvent createAddTeiidEvent( TeiidInstance teiidInstance ) {
-        return new ExecutionConfigurationEvent(EventType.ADD, TargetType.TINSTANCE, teiidInstance);
-    }
-
     public static ExecutionConfigurationEvent createDeployVDBEvent( String vdbName ) {
         return new ExecutionConfigurationEvent(EventType.ADD, TargetType.VDB, vdbName);
     }
 
     public static ExecutionConfigurationEvent createRemoveDataSourceEvent( TeiidDataSource dataSource ) {
         return new ExecutionConfigurationEvent(EventType.REMOVE, TargetType.DATA_SOURCE, dataSource);
-    }
-
-    public static ExecutionConfigurationEvent createRemoveTeiidEvent( TeiidInstance teiidInstance ) {
-        return new ExecutionConfigurationEvent(EventType.REMOVE, TargetType.TINSTANCE, teiidInstance);
-    }
-
-    public static ExecutionConfigurationEvent createTeiidRefreshEvent( TeiidInstance teiidInstance ) {
-        return new ExecutionConfigurationEvent(EventType.REFRESH, TargetType.TINSTANCE, teiidInstance);
-    }
-
-    public static ExecutionConfigurationEvent createTeiidConnectedEvent( TeiidInstance teiidInstance ) {
-        return new ExecutionConfigurationEvent(EventType.CONNECTED, TargetType.TINSTANCE, teiidInstance);
-    }
-
-    public static ExecutionConfigurationEvent createSetDefaultTeiidEvent( TeiidInstance oldDefaultInstance,
-                                                                           TeiidInstance newDefaultInstance ) {
-        return new ExecutionConfigurationEvent(EventType.DEFAULT, TargetType.TINSTANCE, oldDefaultInstance, newDefaultInstance);
     }
 
     public static ExecutionConfigurationEvent createUnDeployVDBEvent( String vdbName ) {
@@ -74,38 +53,24 @@ public final class ExecutionConfigurationEvent {
         return new ExecutionConfigurationEvent(EventType.UPDATE, TargetType.DATA_SOURCE, dataSource);
     }
 
-    public static ExecutionConfigurationEvent createUpdateTeiidEvent( TeiidInstance teiidInstance,
-                                                                       TeiidInstance updatedInstance ) {
-        return new ExecutionConfigurationEvent(EventType.UPDATE, TargetType.TINSTANCE, teiidInstance, updatedInstance);
-    }
-
     private final EventType eventType;
 
     private final TargetType targetType;
 
     private final Object target;
-    private final Object updatedTarget;
 
     private ExecutionConfigurationEvent( EventType eventType,
                                          TargetType targetType,
-                                         Object target ) {
-        this(eventType, targetType, target, null);
+                                         Object target) {
         if (target == null) {
             throw new IllegalArgumentException(Messages.getString(SPI.valueCannotBeNull, "target")); //$NON-NLS-1$
         }
-    }
-
-    private ExecutionConfigurationEvent( EventType eventType,
-                                         TargetType targetType,
-                                         Object target,
-                                         Object updatedTarget ) {
         assert (eventType != null);
         assert (targetType != null);
 
         this.eventType = eventType;
         this.targetType = targetType;
         this.target = target;
-        this.updatedTarget = updatedTarget;
     }
 
     /**
@@ -114,7 +79,7 @@ public final class ExecutionConfigurationEvent {
      * @param targetType the target type that was refreshed
      */
     private ExecutionConfigurationEvent( TargetType targetType ) {
-        this(EventType.REFRESH, targetType, null, null);
+        this(EventType.REFRESH, targetType, null);
     }
 
     /**
@@ -139,22 +104,6 @@ public final class ExecutionConfigurationEvent {
     }
 
     /**
-     * When changing the default teiid instance, this returns the old default teiid instance.
-     * 
-     * @return the teiid instance involved in the event (may be <code>null</code>)
-     * @throws IllegalStateException if method is called for a connector event
-     */
-    public TeiidInstance getTeiidInstance() {
-        if (this.targetType != TargetType.TINSTANCE) {
-            throw new IllegalStateException(Messages.getString(Messages.SPI.invalidTargetTypeForGetTeiidMethod,
-                                                           this.targetType,
-                                                           TargetType.TINSTANCE));
-        }
-
-        return (TeiidInstance)this.target;
-    }
-
-    /**
      * @return the target type (never <code>null</code>)
      */
     public TargetType getTargetType() {
@@ -173,22 +122,6 @@ public final class ExecutionConfigurationEvent {
         }
 
         return (TeiidTranslator)this.target;
-    }
-
-    /**
-     * When changing the default teiid instance, this returns the new default teiid instance.
-     * 
-     * @return the updated teiid instance involved in the event (may be <code>null</code>)
-     * @throws IllegalStateException if method is called for a connector event
-     */
-    public TeiidInstance getUpdatedInstance() {
-        if (this.targetType != TargetType.TINSTANCE) {
-            throw new IllegalStateException(Messages.getString(Messages.SPI.invalidTargetTypeForGetUpdatedTeiidMethod,
-                                                           this.targetType,
-                                                           TargetType.TINSTANCE));
-        }
-
-        return (TeiidInstance)this.updatedTarget;
     }
 
     public enum EventType {

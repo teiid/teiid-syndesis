@@ -51,7 +51,6 @@ import org.komodo.spi.repository.PropertyValueType;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
-import org.komodo.spi.runtime.version.TeiidVersionProvider;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
 import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.CreateProcedure;
@@ -785,7 +784,7 @@ public final class ModelImpl extends RelationalObjectImpl implements Model {
     }
 
     private String exportDdl(UnitOfWork transaction, Properties exportProperties) throws Exception {
-        DdlNodeVisitor visitor = new DdlNodeVisitor(TeiidVersionProvider.getInstance().getTeiidVersion(), false);
+        DdlNodeVisitor visitor = new DdlNodeVisitor(getVersion(), getDataTypeService(), false);
         visitor.visit(node(transaction));
 
         String result = visitor.getDdl();

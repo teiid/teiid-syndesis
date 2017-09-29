@@ -79,8 +79,7 @@ import org.komodo.spi.lexicon.TeiidSqlLexicon.XMLElement;
 import org.komodo.spi.query.CriteriaOperator;
 import org.komodo.spi.query.JoinTypeTypes;
 import org.komodo.spi.query.Operation;
-import org.komodo.spi.runtime.version.TeiidVersion;
-import org.komodo.spi.type.DataTypeManager.DataTypeName;
+import org.komodo.spi.type.DataTypeService.DataTypeName;
 
 /**
  *
@@ -93,13 +92,6 @@ public abstract class AbstractTestTeiidSqlSequencer extends AbstractTSqlSequence
     protected static final String TSQL_PROC_CMD = "\\/tsql[0-9]+\\.tsql\\/tsql:createProcedureCommand";
 
     protected static final String TSQL_INSERT = "\\/tsql[0-9]+\\.tsql\\/tsql:insert";
-
-    /**
-     * @param teiidVersion
-     */
-    public AbstractTestTeiidSqlSequencer(TeiidVersion teiidVersion) {
-        super(teiidVersion);
-    }
 
     protected Node sequenceSql(String text, String seqRegEx) throws Exception {
         Node node = prepareSequence(text, SequencerType.TSQL);

@@ -35,9 +35,6 @@ import java.util.List;
 import javax.ws.rs.core.UriBuilder;
 import org.junit.Before;
 import org.junit.Test;
-import org.komodo.core.KomodoLexicon;
-import org.komodo.relational.folder.Folder;
-import org.komodo.relational.teiid.CachedTeiid;
 import org.komodo.relational.vdb.Translator;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.repository.DescriptorImpl;
@@ -265,63 +262,6 @@ public final class RestVdbTranslatorTest implements V1Constants {
             } else if (LinkType.PARENT.equals(link.getRel())) {
                 linkCounter++;
                 assertEquals(BASE_URI_PREFIX + WKSP_VDB_DATA_PATH, href);
-            } else if (LinkType.CHILDREN.equals(link.getRel())) {
-                linkCounter++;
-            }
-        }
-
-        assertEquals(3, linkCounter);
-    }
-
-    @Test
-    public void shouldHaveCorrectLinks2() throws Exception {
-        String name = "mysql";
-        String dataPath = "/teiidCache/" + TEIID_SERVER + FORWARD_SLASH + name;
-        KomodoType kType = KomodoType.VDB_TRANSLATOR;
-        boolean hasChildren = false;
-
-        Descriptor cachedTeiidType = new DescriptorImpl(repository, KomodoLexicon.CachedTeiid.NODE_TYPE);
-        Descriptor folderType = new DescriptorImpl(repository, KomodoLexicon.Folder.NODE_TYPE);
-        CachedTeiid cachedTeiid = mock(CachedTeiid.class);
-        Folder translatorFolder = mock(Folder.class);
-        when(cachedTeiid.getName(transaction)).thenReturn(TEIID_SERVER);
-        when(cachedTeiid.getPrimaryType(transaction)).thenReturn(cachedTeiidType);
-        when(translatorFolder.getName(transaction)).thenReturn(TEIID_SERVER + FORWARD_SLASH + CachedTeiid.TRANSLATORS_FOLDER);
-        when(translatorFolder.getPrimaryType(transaction)).thenReturn(folderType);
-
-        Translator translator = mock(Translator.class);
-        when(translator.getName(transaction)).thenReturn(name);
-        when(translator.getAbsolutePath()).thenReturn(dataPath);
-        when(translator.getParent(transaction)).thenReturn(translatorFolder);
-        when(translatorFolder.getParent(transaction)).thenReturn(cachedTeiid);
-        when(translator.getTypeIdentifier(transaction)).thenReturn(kType);
-        when(translator.hasChildren(transaction)).thenReturn(hasChildren);
-        when(translator.getRepository()).thenReturn(repository);
-        when(translator.getPropertyNames(transaction)).thenReturn(new String[0]);
-        when(translator.getPropertyDescriptors(transaction)).thenReturn(new PropertyDescriptor[0]);
-
-        RestVdbTranslator restTranslator = new RestVdbTranslator(MY_BASE_URI, translator, transaction);
-
-        Collection<RestLink> links = restTranslator.getLinks();
-        assertEquals(3, links.size());
-
-        int linkCounter = 0;
-        for (RestLink link : links) {
-            String href = link.getHref().toString();
-
-            if (LinkType.SELF.equals(link.getRel())) {
-                linkCounter++;
-                assertEquals(BASE_URI_PREFIX +
-                                         FORWARD_SLASH + TEIID_SEGMENT +
-                                         FORWARD_SLASH + TEIID_SERVER +
-                                         FORWARD_SLASH + CachedTeiid.TRANSLATORS_FOLDER +
-                                         FORWARD_SLASH + name, href);
-            } else if (LinkType.PARENT.equals(link.getRel())) {
-                linkCounter++;
-                assertEquals(BASE_URI_PREFIX +
-                                         FORWARD_SLASH + TEIID_SEGMENT +
-                                         FORWARD_SLASH + TEIID_SERVER +
-                                         FORWARD_SLASH + CachedTeiid.TRANSLATORS_FOLDER, href);
             } else if (LinkType.CHILDREN.equals(link.getRel())) {
                 linkCounter++;
             }

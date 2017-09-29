@@ -21,6 +21,7 @@
  */
 package org.komodo.spi.repository;
 
+import org.komodo.spi.KClient;
 
 /**
  * Event sent by a repository client
@@ -49,14 +50,14 @@ public final class RepositoryClientEvent {
 
     private final EventType eventType;
 
-    private final RepositoryClient source;
+    private final KClient source;
 
     /**
      * @param eventType type of this event
      * @param source the source of this event
      *
      */
-    public RepositoryClientEvent(EventType eventType, RepositoryClient source) {
+    public RepositoryClientEvent(EventType eventType, KClient source) {
         this.eventType = eventType;
         this.source = source;
     }
@@ -71,7 +72,7 @@ public final class RepositoryClientEvent {
     /**
      * @return the source
      */
-    public RepositoryClient getSource() {
+    public KClient getSource() {
         return this.source;
     }
 
@@ -80,7 +81,7 @@ public final class RepositoryClientEvent {
      *
      * @return event representing the given client has started
      */
-    public static RepositoryClientEvent createStartedEvent(RepositoryClient source) {
+    public static RepositoryClientEvent createStartedEvent(KClient source) {
         return new RepositoryClientEvent(EventType.STARTED, source);
     }
 
@@ -89,7 +90,7 @@ public final class RepositoryClientEvent {
      *
      * @return event representing the given client has shut down (never <code>null</code>)
      */
-    public static RepositoryClientEvent createShuttingDownEvent(RepositoryClient source) {
+    public static RepositoryClientEvent createShuttingDownEvent(KClient source) {
         return new RepositoryClientEvent(EventType.SHUTTING_DOWN, source);
     }
 
@@ -98,7 +99,7 @@ public final class RepositoryClientEvent {
      *
      * @return event representing the given client should be cleared (never <code>null</code>)
      */
-    public static RepositoryClientEvent createClearEvent(RepositoryClient source) {
+    public static RepositoryClientEvent createClearEvent(KClient source) {
         return new RepositoryClientEvent(EventType.CLEAR, source);
     }
 

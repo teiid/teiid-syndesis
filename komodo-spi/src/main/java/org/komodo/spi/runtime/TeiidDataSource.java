@@ -27,7 +27,32 @@ import java.util.Properties;
  *
  */
 public interface TeiidDataSource {
-	
+
+    /**
+     * The data source jndi property name.  Value is {@value} .
+     */
+    String DATASOURCE_JNDINAME = "jndi-name";  //$NON-NLS-1$
+    
+    /**
+     * The data source className property name.  Value is {@value} .
+     */
+    String DATASOURCE_CLASSNAME = "class-name";  //$NON-NLS-1$
+
+    /**
+     * The data source driver property name.  Value is {@value} .
+     */
+    String DATASOURCE_DRIVERNAME = "driver-name";  //$NON-NLS-1$
+
+    /**
+     * The connection url property name. Value is {@value}.
+     */
+    String DATASOURCE_CONNECTION_URL = "connection-url"; //$NON-NLS-1$
+
+    /**
+     * The display name property.
+     */
+    String DATASOURCE_DISPLAYNAME = "display-name"; //$NON-NLS-1$
+
 	public interface ERROR_CODES {
 		// Data Source issues
 		int JDBC_DRIVER_SOURCE_NOT_FOUND = 101; // JDBC Source for Driver class {0} was not found on teiid instance {1}

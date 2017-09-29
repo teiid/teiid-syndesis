@@ -31,7 +31,6 @@ import org.komodo.relational.resource.DdlFile;
 import org.komodo.relational.resource.Driver;
 import org.komodo.relational.resource.ResourceFile;
 import org.komodo.relational.resource.UdfFile;
-import org.komodo.relational.teiid.Teiid;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.repository.ObjectImpl;
 import org.komodo.spi.KException;
@@ -250,12 +249,9 @@ public interface Dataservice extends Exportable, RelationalObject, VdbEntryConta
      * @param uow
      *        the transaction (cannot be <code>null</code> or have a state that is not
      *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param teiid
-     *        the Teiid instance
-     * @return the deployment status of this data service to the given teiid
+     * @return the deployment status of this data service
      */
-    DeployStatus deploy( UnitOfWork uow,
-                         Teiid teiid );
+    DeployStatus deploy( UnitOfWork uow);
 
     /**
      * @param transaction

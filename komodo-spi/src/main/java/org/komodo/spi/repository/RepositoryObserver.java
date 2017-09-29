@@ -21,20 +21,14 @@
  */
 package org.komodo.spi.repository;
 
+import org.komodo.spi.KObserver;
+
 /**
  * An observer for listening to events from an implementation of {@link Repository}
  */
-public interface RepositoryObserver {
+public interface RepositoryObserver extends KObserver {
 
-    /**
-     * Repository event has occurred
-     */
-    void eventOccurred();
-
-    /**
-     * Repository error has occurred
-     *
-     * @param e the error
-     */
-    void errorOccurred(Throwable e);
+    //
+    // Tagging interface
+    //
 }

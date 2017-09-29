@@ -36,7 +36,9 @@ import org.komodo.repository.internal.ModeshapeEngineThread;
 import org.komodo.repository.internal.ModeshapeEngineThread.Request;
 import org.komodo.repository.internal.ModeshapeEngineThread.RequestCallback;
 import org.komodo.repository.internal.ModeshapeEngineThread.RequestType;
+import org.komodo.spi.KEvent;
 import org.komodo.spi.KException;
+import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.RepositoryClientEvent;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
@@ -469,7 +471,8 @@ public class LocalRepository extends RepositoryImpl {
             public void respond( final Object results ) {
                 if (engineThread.isRunning()) {
                     LocalRepository.this.state = State.REACHABLE;
-                    notifyObservers();
+                    KEvent<Repository> event = new KEvent<Repository>(LocalRepository.this, KEvent.Type.REPOSITORY_STARTED);
+                    notifyObservers(event);
                 }
             }
         };
@@ -508,7 +511,8 @@ public class LocalRepository extends RepositoryImpl {
                 //
                 engineThread = null;
 
-                notifyObservers();
+                KEvent<Repository> event = new KEvent<Repository>(LocalRepository.this, KEvent.Type.REPOSITORY_STOPPED);
+                notifyObservers(event);
             }
         };
 
@@ -573,7 +577,8 @@ public class LocalRepository extends RepositoryImpl {
              */
             @Override
             public void respond( final Object results ) {
-                notifyObservers();
+                KEvent<Repository> event = new KEvent<Repository>(LocalRepository.this, KEvent.Type.REPOSITORY_CLEARED);
+                notifyObservers(event);
             }
         };
 

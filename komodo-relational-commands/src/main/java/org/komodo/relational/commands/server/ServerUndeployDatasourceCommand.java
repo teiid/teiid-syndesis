@@ -58,24 +58,18 @@ public final class ServerUndeployDatasourceCommand extends ServerShellCommand {
         try {
             String sourceName = requiredArgument( 0, I18n.bind( ServerCommandsI18n.missingDatasourceName ) );
 
-            // Validates that a server is connected
-            CommandResult validationResult = validateHasConnectedWorkspaceServer();
-            if ( !validationResult.isOk() ) {
-                return validationResult;
-            }
 
             // Undeploy the VDB
             try {
                 // Check the data source name to make sure its valid
-                List< String > existingSourceNames = ServerUtils.getDatasourceNames(getWorkspaceTeiidInstance());
+                List< String > existingSourceNames = ServerUtils.getDatasourceNames();
                 if(!existingSourceNames.contains(sourceName)) {
                     return new CommandResultImpl(false, I18n.bind( ServerCommandsI18n.serverDatasourceNotFound, sourceName ), null);
                 }
                 // DataSource found - undeploy it
-                getWorkspaceTeiidInstance().deleteDataSource(sourceName);
+                ServerUtils.getMetadataInstance().deleteDataSource(sourceName);
             } catch (Exception ex) {
-                result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.connectionErrorWillDisconnect ), ex );
-                WkspStatusServerManager.getInstance(getWorkspaceStatus()).disconnectDefaultServer();
+                result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.accessError ), ex );
                 return result;
             }
 
@@ -140,7 +134,7 @@ public final class ServerUndeployDatasourceCommand extends ServerShellCommand {
         final Arguments args = getArguments();
 
         try {
-            List<String> existingDatasourceNames = ServerUtils.getDatasourceNames(getWorkspaceTeiidInstance());
+            List<String> existingDatasourceNames = ServerUtils.getDatasourceNames();
             Collections.sort(existingDatasourceNames);
             
             if ( args.isEmpty() ) {
@@ -156,8 +150,7 @@ public final class ServerUndeployDatasourceCommand extends ServerShellCommand {
             }
         } catch (Exception ex) {
             print( );
-            print( MESSAGE_INDENT, I18n.bind(ServerCommandsI18n.connectionErrorWillDisconnect) );
-            WkspStatusServerManager.getInstance(getWorkspaceStatus()).disconnectDefaultServer();
+            print( MESSAGE_INDENT, I18n.bind(ServerCommandsI18n.accessError) );
         }
 
         return TabCompletionModifier.AUTO;

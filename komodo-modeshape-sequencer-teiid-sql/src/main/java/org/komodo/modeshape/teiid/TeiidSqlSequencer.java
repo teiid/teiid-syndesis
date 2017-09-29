@@ -28,10 +28,8 @@ import javax.jcr.NamespaceRegistry;
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
-import org.komodo.spi.query.TeiidService;
-import org.komodo.spi.runtime.version.TeiidVersion;
-import org.komodo.spi.runtime.version.TeiidVersionProvider;
-import org.komodo.teiid.TeiidServiceProvider;
+import org.komodo.metadata.DefaultMetadataInstance;
+import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.utils.KLog;
 import org.modeshape.common.annotation.NotThreadSafe;
 import org.modeshape.common.text.ParsingException;
@@ -49,13 +47,6 @@ public class TeiidSqlSequencer extends Sequencer {
 
     private static final KLog LOGGER = KLog.getLogger();
 
-    /**
-     * @return the teiidVersion
-     */
-    public TeiidVersion getTeiidVersion() {
-        return TeiidVersionProvider.getInstance().getTeiidVersion();
-    }
-
     @Override
     public void initialize(NamespaceRegistry registry, NodeTypeManager nodeTypeManager) throws RepositoryException, IOException {
         registerNodeTypes("cnd/TeiidSql.cnd", nodeTypeManager, true); //$NON-NLS-1$
@@ -69,8 +60,8 @@ public class TeiidSqlSequencer extends Sequencer {
         InputStream stream = sqlContent.getStream();
         try {
             String sql = IoUtil.read(stream);
-            TeiidService teiidService = TeiidServiceProvider.getInstance().getTeiidService(getTeiidVersion());
-            teiidService.nodeConvert(sql, outputNode);
+            MetadataInstance mInstance = DefaultMetadataInstance.getInstance();
+            mInstance.convertToJcr(sql, outputNode);
         } catch (ParsingException e) {
             LOGGER.error(Messages.getString(Messages.TeiidSqlSequencer.ErrorParsingContent), e, e.getLocalizedMessage());
             throw e;

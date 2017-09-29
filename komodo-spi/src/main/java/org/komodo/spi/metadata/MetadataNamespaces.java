@@ -22,9 +22,7 @@
 package org.komodo.spi.metadata;
 
 import java.util.Map;
-import org.komodo.spi.annotation.Since;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.runtime.version.DefaultTeiidVersion.Version;
 import org.komodo.spi.utils.KeyInValueHashMap;
 import org.komodo.spi.utils.KeyInValueHashMap.KeyFromValueAdapter;
 
@@ -66,19 +64,16 @@ public interface MetadataNamespaces extends StringConstants {
     /**
      * Teiid Accumulo Prefix
      */
-    @Since( Version.TEIID_8_7 )
     String TEIID_ACCUMULO = "teiid_accumulo"; //$NON-NLS-1$
 
     /**
      * Teiid Excel Prefix
      */
-    @Since( Version.TEIID_8_7 )
     String TEIID_EXCEL = "teiid_excel"; //$NON-NLS-1$
 
     /**
      * Teiid JPA Prefix
      */
-    @Since( Version.TEIID_8_7 )
     String TEIID_JPA = "teiid_jpa"; //$NON-NLS-1$
 
     /**
@@ -109,19 +104,16 @@ public interface MetadataNamespaces extends StringConstants {
     /**
      * Accumulo URI
      */
-    @Since( Version.TEIID_8_7 )
     String ACCUMULO_URI = "{http://www.teiid.org/translator/accumulo/2013}"; //$NON-NLS-1$
 
     /**
      * Excel URI
      */
-    @Since( Version.TEIID_8_7 )
     String EXCEL_URI = "{http://www.teiid.org/translator/excel/2014}"; //$NON-NLS-1$
 
     /**
      * JPA URI
      */
-    @Since( Version.TEIID_8_7 )
     String JPA_URI = "{http://www.teiid.org/translator/jpa/2014}"; //$NON-NLS-1$
 
     /**

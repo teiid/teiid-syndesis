@@ -49,9 +49,6 @@ import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.runtime.version.DefaultTeiidVersion.Version;
-import org.komodo.spi.runtime.version.TeiidVersion;
-import org.komodo.spi.runtime.version.TeiidVersionProvider;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.FileUtils;
 import org.teiid.modeshape.sequencer.vdb.lexicon.CoreLexicon;
@@ -143,11 +140,6 @@ public class TestUtilities implements StringConstants {
     public static final String SAMPLE_DATASERVICE_FILE = "sample-ds.zip";
 
     /**
-     * US States Dataservice Example Zip
-     */
-    public static final String US_STATES_DATASERVICE_TEIID_8_FILE = "usstates-dataservice-teiid8.zip";
-
-    /**
      * DSB Single Source Parts Dataservice Zip
      */
     public static final String PARTS_SINGLE_SOURCE_FILE = "PartsSingleSource.zip";
@@ -165,7 +157,7 @@ public class TestUtilities implements StringConstants {
     /**
      * US States Dataservice Example Zip
      */
-    public static final String US_STATES_DATASERVICE_TEIID_9_FILE = "usstates-dataservice-teiid9.zip";
+    public static final String US_STATES_DATASERVICE_TEIID_FILE = "usstates-dataservice-teiid9.zip";
 
     /**
      * US States Dataservice name
@@ -1164,23 +1156,9 @@ public class TestUtilities implements StringConstants {
      * @throws Exception if error occurs
      */
     public static InputStream usStatesDataserviceExample() throws Exception {
-        //
-        // Need to differentiate since the MySql driver name is specified slightly
-        // differently between versions:
-        // * MySql Driver jar deploys as 2 drivers identifiable by concatenating their
-        //    respective classes to the 'mysql-connector' prefix
-        // * Teiid 8.x.x concatenates them directly
-        // * Teiid 9.x.x+  concatenates separating the prefix from the classname with an underscore
-        //
-        TeiidVersion teiidVersion = TeiidVersionProvider.getInstance().getTeiidVersion();
-        if (teiidVersion.isGreaterThanOrEqualTo(Version.TEIID_9_0.get()))
             return getResourceAsStream(TestUtilities.class,
                                        RESOURCES_DIRECTORY,
-                                       US_STATES_DATASERVICE_TEIID_9_FILE);
-
-        return getResourceAsStream(TestUtilities.class,
-                                   RESOURCES_DIRECTORY,
-                                   US_STATES_DATASERVICE_TEIID_8_FILE);
+                                       US_STATES_DATASERVICE_TEIID_FILE);
     }
 
     /**

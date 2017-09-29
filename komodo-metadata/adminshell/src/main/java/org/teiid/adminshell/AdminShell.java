@@ -28,11 +28,19 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.teiid.adminapi.*;
+import org.teiid.adminapi.Admin;
 import org.teiid.adminapi.Admin.TranlatorPropertyType;
+import org.teiid.adminapi.AdminException;
+import org.teiid.adminapi.CacheStatistics;
+import org.teiid.adminapi.EngineStatistics;
+import org.teiid.adminapi.PropertyDefinition;
+import org.teiid.adminapi.Request;
+import org.teiid.adminapi.Session;
+import org.teiid.adminapi.Transaction;
+import org.teiid.adminapi.Translator;
+import org.teiid.adminapi.VDB;
 import org.teiid.adminapi.VDB.ConnectionType;
-import org.teiid.adminapi.jboss.AdminFactory;
+import org.teiid.adminapi.WorkerPoolStatistics;
 import org.teiid.adminshell.Help.Doc;
 
 
@@ -57,10 +65,13 @@ public class AdminShell {
 			@Doc(text = "username") String username,
 			@Doc(text = "password") String password,
 			@Doc(text = "connection name") String connectionName) throws AdminException {
-		Admin admin = AdminFactory.getInstance().createAdmin(host, port, username, password.toCharArray());
+//		Admin admin = AdminFactory.getInstance().createAdmin(host, port, username, password.toCharArray());
+		Admin admin = null;
 		if (admin == null) {
-		    throw new AdminProcessingException("Connection was not successful"); //$NON-NLS-1$
+//		    throw new AdminProcessingException("Connection was not successful"); //$NON-NLS-1$
+		    throw new UnsupportedOperationException("TODO jboss-admin no longer used so needs fixing in AdminShell.java");
 		}
+
 		internalAdmin = admin;
 		currentName = connectionName;
 		Admin old = connections.put(connectionName, internalAdmin);

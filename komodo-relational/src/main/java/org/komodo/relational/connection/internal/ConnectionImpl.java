@@ -23,7 +23,6 @@ package org.komodo.relational.connection.internal;
 
 import java.util.Collection;
 import java.util.Properties;
-
 import org.komodo.core.KomodoLexicon;
 import org.komodo.relational.DeployStatus;
 import org.komodo.relational.ExcludeQNamesFilter;
@@ -31,7 +30,6 @@ import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.internal.RelationalObjectImpl;
-import org.komodo.relational.teiid.Teiid;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.KomodoType;
@@ -44,7 +42,6 @@ import org.komodo.spi.runtime.EventManager;
 import org.komodo.spi.runtime.ExecutionConfigurationEvent;
 import org.komodo.spi.runtime.ExecutionConfigurationListener;
 import org.komodo.spi.runtime.TeiidDataSource;
-import org.komodo.spi.runtime.TeiidInstance;
 import org.komodo.spi.runtime.TeiidPropertyDefinition;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
@@ -272,24 +269,23 @@ public class ConnectionImpl extends RelationalObjectImpl implements Connection, 
      * @see org.komodo.relational.connection.Connection#getPropertiesForServerDeployment(org.komodo.spi.repository.Repository.UnitOfWork, org.komodo.spi.runtime.TeiidInstance)
      */
     @Override
-    public Properties getPropertiesForServerDeployment(UnitOfWork transaction,
-                                                       TeiidInstance teiidInstance) throws Exception {
+    public Properties getPropertiesForServerDeployment(UnitOfWork transaction) throws Exception {
         Properties sourceProps = new Properties();
 
         // Get the Property Defns for this type of source.
-        Collection<TeiidPropertyDefinition> templatePropDefns = teiidInstance.getTemplatePropertyDefns(getDriverName(transaction));
+        Collection<TeiidPropertyDefinition> templatePropDefns = getMetadataInstance().getTemplatePropertyDefns(getDriverName(transaction));
 
         // Connection driverName and jndiName must be defined.
         String driverName = getDriverName(transaction);
         if(StringUtils.isBlank(driverName)) {
             throw new Exception( Messages.getString( Relational.CONNECTION_DRIVERNAME_NOT_DEFINED ) );
         }
-        sourceProps.setProperty(TeiidInstance.DATASOURCE_DRIVERNAME,driverName);
+        sourceProps.setProperty(TeiidDataSource.DATASOURCE_DRIVERNAME,driverName);
         String jndiName = getJndiName(transaction);
         if(StringUtils.isBlank(jndiName)) {
             throw new Exception( Messages.getString( Relational.CONNECTION_JNDINAME_NOT_DEFINED ) );
         }
-        sourceProps.setProperty(TeiidInstance.DATASOURCE_JNDINAME, jndiName);
+        sourceProps.setProperty(TeiidDataSource.DATASOURCE_JNDINAME, jndiName);
 
         // Non-jdbc className is needed.
         if(!isJdbc(transaction)) {
@@ -297,7 +293,7 @@ public class ConnectionImpl extends RelationalObjectImpl implements Connection, 
             if(StringUtils.isBlank(className)) {
                 throw new Exception( Messages.getString( Relational.CONNECTION_CLASSNAME_NOT_DEFINED ) );
             }
-            sourceProps.setProperty(TeiidInstance.DATASOURCE_CLASSNAME, className);
+            sourceProps.setProperty(TeiidDataSource.DATASOURCE_CLASSNAME, className);
         }
 
         // Iterate the datasource properties.  Compare them against the valid properties for the server source type.
@@ -383,25 +379,23 @@ public class ConnectionImpl extends RelationalObjectImpl implements Connection, 
     }
 
     @Override
-    public DeployStatus deploy(UnitOfWork uow, Teiid teiid) {
+    public DeployStatus deploy(UnitOfWork uow) {
         ArgCheck.isNotNull( uow, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( uow.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotNull(teiid, "teiid"); //$NON-NLS-1$
 
         DeployStatus status = new DeployStatus();
-        TeiidInstance teiidInstance = teiid.getTeiidInstance(uow);
-        
+
         try {
             String connName = getName(uow);
             status.addProgressMessage("Starting deployment of connection " + connName); //$NON-NLS-1$
 
             String jndiName = getJndiName(uow);
             String sourceType = getDriverName(uow);
-            Properties properties = getPropertiesForServerDeployment(uow, teiidInstance);
+            Properties properties = getPropertiesForServerDeployment(uow);
 
             status.addProgressMessage("Attempting to deploy connection " + connName + " to teiid"); //$NON-NLS-1$ //$NON-NLS-2$
 
-            TeiidDataSource teiidDataSrc = teiidInstance.getOrCreateDataSource(connName,
+            TeiidDataSource teiidDataSrc = getMetadataInstance().getOrCreateDataSource(connName,
                                                                                jndiName,
                                                                                sourceType,
                                                                                properties);

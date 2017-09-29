@@ -1,0 +1,90 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.komodo</groupId>
+		<artifactId>komodo-parent</artifactId>
+		<version>0.0.4-SNAPSHOT</version>
+		<relativePath>../komodo-parent/pom.xml</relativePath>
+	</parent>
+	<artifactId>komodo-metadata-instance</artifactId>
+	<name>Komodo Metadata Instance</name>
+	<description>Komodo Metadata Instance</description>
+
+	<properties>
+	</properties>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>${maven.compiler.source}</source>
+					<target>${maven.compiler.target}</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.modeshape</groupId>
+			<artifactId>modeshape-jcr-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.komodo</groupId>
+			<artifactId>komodo-spi</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.komodo</groupId>
+			<artifactId>komodo-utils</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.teiid</groupId>
+			<artifactId>teiid-common-core</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.teiid</groupId>
+			<artifactId>teiid-runtime</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.teiid</groupId>
+			<artifactId>teiid-engine</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.teiid</groupId>
+			<artifactId>teiid-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.teiid</groupId>
+			<artifactId>teiid-admin</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.teiid</groupId>
+			<artifactId>teiid-client</artifactId>
+		</dependency>
+
+		<!-- translators -->
+		<dependency>
+			<groupId>org.teiid.connectors</groupId>
+			<artifactId>translator-loopback</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.komodo</groupId>
+			<artifactId>komodo-utils</artifactId>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+</project>

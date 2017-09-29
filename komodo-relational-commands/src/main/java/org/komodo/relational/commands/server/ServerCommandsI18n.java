@@ -29,10 +29,6 @@ import org.komodo.utils.i18n.I18n;
 @SuppressWarnings( "javadoc" )
 public final class ServerCommandsI18n extends I18n {
 
-    public static String serverConnectExamples;
-    public static String serverConnectHelp;
-    public static String serverConnectUsage;
-
     public static String serverDatasourceExamples;
     public static String serverDatasourceHelp;
     public static String serverDatasourceUsage;
@@ -60,10 +56,6 @@ public final class ServerCommandsI18n extends I18n {
     public static String serverDeployVdbExamples;
     public static String serverDeployVdbHelp;
     public static String serverDeployVdbUsage;
-
-    public static String serverDisconnectExamples;
-    public static String serverDisconnectHelp;
-    public static String serverDisconnectUsage;
 
     public static String serverGetDatasourceExamples;
     public static String serverGetDatasourceHelp;
@@ -109,14 +101,9 @@ public final class ServerCommandsI18n extends I18n {
     public static String unsetServerPropertyHelp;
     public static String unsetServerPropertyUsage;
 
-    public static String attemptingToConnect;
-    public static String attemptingToDisconnect;
+    public static String accessError;
     public static String canOnlyCopyDynamicVDBs;
     public static String commandCategory;
-    public static String connected;
-    public static String connectionError;
-    public static String connectionErrorWillDisconnect;
-    public static String currentServer;
     public static String datasourceCopyToRepoFinished;
     public static String datasourceDeployFinished;
     public static String datasourceDeploymentError;
@@ -147,8 +134,6 @@ public final class ServerCommandsI18n extends I18n {
     public static String missingDriverNameForDeployment;
     public static String missingInputDriverFilePath;
     public static String missingTranslatorName;
-    public static String notConnected;
-    public static String noServerToDisconnectMsg;
     public static String noDatasourcesMsg;
     public static String noDatasourceTypesMsg;
     public static String noTranslatorsMsg;
@@ -158,13 +143,10 @@ public final class ServerCommandsI18n extends I18n {
     public static String repoVdbWithNameExists;
     public static String serverDatasourceNotFound;
     public static String serverDatasourceTypeNotFound;
-    public static String serverDisconnectError;
     public static String serverGetVdbError;
-    public static String serverNotConnected;
     public static String serverStatusText;
     public static String serverTranslatorNotFound;
     public static String serverVdbNotFound;
-    public static String teiidStatus;
     public static String vdbDeploymentError;
     public static String vdbExportFailed;
     public static String vdbDeployFailedMissingSourceJndi;

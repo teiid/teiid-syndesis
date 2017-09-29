@@ -28,7 +28,6 @@ import static org.junit.Assert.assertTrue;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import javax.ws.rs.core.MediaType;
@@ -37,9 +36,9 @@ import javax.ws.rs.core.UriBuilder;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.komodo.relational.workspace.ServerManager;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.RestLink;
 import org.komodo.rest.cors.CorsHeaders;
@@ -47,22 +46,14 @@ import org.komodo.rest.relational.connection.RestConnection;
 import org.komodo.rest.relational.connection.RestTemplate;
 import org.komodo.rest.relational.connection.RestTemplateEntry;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
-import org.komodo.rest.relational.request.KomodoTeiidAttributes;
-import org.komodo.rest.relational.response.KomodoStatusObject;
-import org.komodo.rest.relational.response.RestTeiid;
-import org.komodo.rest.relational.response.RestTeiidStatus;
-import org.komodo.rest.relational.response.RestTeiidVdbStatus;
-import org.komodo.rest.relational.response.RestTeiidVdbStatusVdb;
+import org.komodo.rest.relational.response.RestMetadataStatus;
+import org.komodo.rest.relational.response.RestMetadataVdb;
+import org.komodo.rest.relational.response.RestMetadataVdbStatus;
+import org.komodo.rest.relational.response.RestMetadataVdbStatusVdb;
 import org.komodo.rest.relational.response.RestVdb;
 import org.komodo.rest.relational.response.RestVdbTranslator;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.runtime.ExecutionAdmin.ConnectivityType;
-import org.komodo.spi.runtime.TeiidAdminInfo;
-import org.komodo.spi.runtime.TeiidInstance;
-import org.komodo.spi.runtime.TeiidJdbcInfo;
-import org.komodo.spi.runtime.version.DefaultTeiidVersion;
-import org.komodo.spi.runtime.version.DefaultTeiidVersion.Version;
 import org.komodo.test.utils.TestUtilities;
 import net.jcip.annotations.NotThreadSafe;
 
@@ -71,11 +62,8 @@ import net.jcip.annotations.NotThreadSafe;
 @SuppressWarnings( {"javadoc", "nls"} )
 public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServiceTest implements StringConstants {
 
-    private void testTranslators(RestTeiidStatus status) {
-        if (teiidVersion.isGreaterThan(Version.TEIID_9_0))
-            assertEquals(56, status.getTranslatorSize());
-        else
-            assertEquals(54, status.getTranslatorSize());
+    private void testTranslators(RestMetadataStatus status) {
+        assertEquals(56, status.getTranslatorSize());
     }
 
     @Override
@@ -84,50 +72,15 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
     }
 
     @Test
-    public void shouldSetCredentials() throws Exception {
-        // post
-        URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
-                                            .path(V1Constants.TEIID_SEGMENT)
-                                            .path(V1Constants.TEIID_CREDENTIALS)
-                                            .build();
-
-        KomodoTeiidAttributes teiidAttrs = new KomodoTeiidAttributes();
-        teiidAttrs.setAdminUser(TeiidAdminInfo.DEFAULT_ADMIN_USERNAME);
-        teiidAttrs.setAdminPasswd(TeiidAdminInfo.DEFAULT_ADMIN_PASSWORD);
-        teiidAttrs.setJdbcUser(TeiidJdbcInfo.DEFAULT_JDBC_USERNAME);
-        teiidAttrs.setJdbcPasswd(TeiidJdbcInfo.DEFAULT_JDBC_PASSWORD);
-
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        request.body(MediaType.APPLICATION_JSON_TYPE, teiidAttrs);
-
-        ClientResponse<String> response = request.post(String.class);
-        String entity = response.getEntity();
-        System.out.println("Response:\n" + entity);
-        assertEquals(200, response.getStatus());
-
-        RestTeiid rt = KomodoJsonMarshaller.unmarshall(entity, RestTeiid.class);
-        assertNotNull(TeiidInstance.DEFAULT_HOST, rt.getId());
-        assertEquals(_uriBuilder.baseUri() + FORWARD_SLASH, rt.getBaseUri().toString());
-        assertEquals(TEIID_DATA_PATH, rt.getDataPath());
-        assertEquals(KomodoType.TEIID, rt.getkType());
-        assertFalse(rt.hasChildren());
-
-        assertEquals(TeiidInstance.DEFAULT_HOST, rt.getHost());
-        assertEquals(teiidVersion.toString(), rt.getVersion());
-
-        assertEquals(TeiidAdminInfo.DEFAULT_ADMIN_USERNAME, rt.getAdminUser());
-        assertEquals(TeiidAdminInfo.DEFAULT_ADMIN_PASSWORD, rt.getAdminPasswd());
-        assertEquals(TeiidAdminInfo.Util.defaultPort(teiidVersion), rt.getAdminPort());
-
-        assertEquals(TeiidJdbcInfo.DEFAULT_JDBC_USERNAME, rt.getJdbcUser());
-        assertEquals(TeiidJdbcInfo.DEFAULT_JDBC_PASSWORD, rt.getJdbcPasswd());
-        assertEquals(TeiidJdbcInfo.DEFAULT_PORT, rt.getJdbcPort());
+    public void shouldLoadSampleVdb() throws Exception {
+        loadSample();
     }
 
     @Test
+    @Ignore("Need to implement getDataSources in DefaultMetadataInstance")
     public void shouldGetTeiidStatus() throws Exception {
         URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
-                                          .path(V1Constants.TEIID_SEGMENT)
+                                          .path(V1Constants.METADATA_SEGMENT)
                                           .path(V1Constants.STATUS_SEGMENT)
                                           .build();
 
@@ -135,17 +88,12 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
         ClientResponse<String> response = request.get(String.class);
         final String entity = response.getEntity();
 
-        System.out.println("Response:\n" + entity);
-        assertEquals(200, response.getStatus());
+        checkResponse(response);
 
-        RestTeiidStatus status = KomodoJsonMarshaller.unmarshall(entity, RestTeiidStatus.class);
+        RestMetadataStatus status = KomodoJsonMarshaller.unmarshall(entity, RestMetadataStatus.class);
         assertNotNull(status);
 
-        assertEquals("DefaultServer", status.getId());
-        assertEquals("localhost", status.getHost());
-        assertEquals(teiidVersion, new DefaultTeiidVersion(status.getVersion()));
-        assertTrue(status.isTeiidInstanceAvailable());
-        assertTrue(status.isConnected());
+        assertTrue(status.isAvailable());
         assertEquals(1, status.getDataSourceSize());
         assertEquals(3, status.getDataSourceDriverSize());
 
@@ -157,7 +105,7 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
     @Test
     public void shouldGetTeiidVdbStatus() throws Exception {
         URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
-                                          .path(V1Constants.TEIID_SEGMENT)
+                                          .path(V1Constants.METADATA_SEGMENT)
                                           .path(V1Constants.STATUS_SEGMENT)
                                           .path(V1Constants.VDBS_SEGMENT)
                                           .build();
@@ -166,20 +114,18 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
         ClientResponse<String> response = request.get(String.class);
         final String entity = response.getEntity();
 
-        System.out.println("Response:\n" + entity);
-        assertEquals(200, response.getStatus());
+        checkResponse(response);
 
-        RestTeiidVdbStatus status = KomodoJsonMarshaller.unmarshall(entity, RestTeiidVdbStatus.class);
+        RestMetadataVdbStatus status = KomodoJsonMarshaller.unmarshall(entity, RestMetadataVdbStatus.class);
         assertNotNull(status);
 
-        List<RestTeiidVdbStatusVdb> vdbProperties = status.getVdbProperties();
+        List<RestMetadataVdbStatusVdb> vdbProperties = status.getVdbProperties();
         assertEquals(1, vdbProperties.size());
 
-        RestTeiidVdbStatusVdb vdb = vdbProperties.get(0);
+        RestMetadataVdbStatusVdb vdb = vdbProperties.get(0);
         assertNotNull(vdb);
         
         assertEquals("sample", vdb.getName());
-        assertEquals("sample-vdb.xml", vdb.getDeployedName());
         assertEquals("1", vdb.getVersion());
         assertTrue(vdb.isActive());
         assertFalse(vdb.isLoading());
@@ -191,24 +137,22 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
     @Test
     public void shouldGetVdbs() throws Exception {
         URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
-                                          .path(V1Constants.TEIID_SEGMENT)
+                                          .path(V1Constants.METADATA_SEGMENT)
                                           .path(V1Constants.VDBS_SEGMENT)
                                           .build();
 
         ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
         ClientResponse<String> response = request.get(String.class);
         final String entity = response.getEntity();
-        System.out.println("Response:\n" + entity);
-        assertEquals(200, response.getStatus());
+        checkResponse(response);
 
-        RestVdb[] vdbs = KomodoJsonMarshaller.unmarshallArray(entity, RestVdb[].class);
+        RestMetadataVdb[] vdbs = KomodoJsonMarshaller.unmarshallArray(entity, RestMetadataVdb[].class);
         assertFalse(vdbs.length == 0);
 
-        RestVdb vdb = vdbs[0];
+        RestMetadataVdb vdb = vdbs[0];
         String vdbName = TestUtilities.SAMPLE_VDB_NAME;
         assertNotNull(vdbName, vdb.getId());
         assertEquals(_uriBuilder.baseUri() + FORWARD_SLASH, vdb.getBaseUri().toString());
-        assertEquals(CACHED_TEIID_DATA_PATH + FORWARD_SLASH + V1Constants.VDBS_SEGMENT + FORWARD_SLASH + "sample", vdb.getDataPath());
         assertEquals(KomodoType.VDB, vdb.getkType());
         assertTrue(vdb.hasChildren());
         assertEquals(vdbName, vdb.getName());
@@ -217,16 +161,14 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
             switch(link.getRel()) {
                 case SELF:
                     assertEquals(BASE_URI + FORWARD_SLASH +
-                                             V1Constants.TEIID_SEGMENT + FORWARD_SLASH +
-                                             ServerManager.DEFAULT_SERVER_NAME + FORWARD_SLASH +
+                                             V1Constants.METADATA_SEGMENT + FORWARD_SLASH +
                                              V1Constants.VDBS_SEGMENT + FORWARD_SLASH +
                                              vdbName,
                                              link.getHref().toString());
                     break;
                 case PARENT:
                     assertEquals(BASE_URI + FORWARD_SLASH +
-                                             V1Constants.TEIID_SEGMENT + FORWARD_SLASH +
-                                             ServerManager.DEFAULT_SERVER_NAME + FORWARD_SLASH +
+                                             V1Constants.METADATA_SEGMENT + FORWARD_SLASH +
                                              V1Constants.VDBS_SEGMENT,
                                              link.getHref().toString());
             }
@@ -237,7 +179,7 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
     @Test
     public void shouldGetVdb() throws Exception {
         URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
-                                          .path(V1Constants.TEIID_SEGMENT)
+                                          .path(V1Constants.METADATA_SEGMENT)
                                           .path(V1Constants.VDBS_SEGMENT)
                                           .path(TestUtilities.SAMPLE_VDB_NAME)
                                           .build();
@@ -246,16 +188,13 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
         ClientResponse<String> response = request.get(String.class);
         final String entity = response.getEntity();
 
-        System.out.println("Response:\n" + entity);
-        assertEquals(200, response.getStatus());
-
-        RestVdb vdb = KomodoJsonMarshaller.unmarshall(entity, RestVdb.class);
+        checkResponse(response);
+        RestMetadataVdb vdb = KomodoJsonMarshaller.unmarshall(entity, RestMetadataVdb.class);
         assertNotNull(vdb);
 
         String vdbName = TestUtilities.SAMPLE_VDB_NAME;
         assertNotNull(vdbName, vdb.getId());
         assertEquals(_uriBuilder.baseUri() + FORWARD_SLASH, vdb.getBaseUri().toString());
-        assertEquals(CACHED_TEIID_DATA_PATH + FORWARD_SLASH + V1Constants.VDBS_SEGMENT + FORWARD_SLASH + "sample", vdb.getDataPath());
         assertEquals(KomodoType.VDB, vdb.getkType());
         assertTrue(vdb.hasChildren());
         assertEquals(vdbName, vdb.getName());
@@ -264,16 +203,14 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
             switch(link.getRel()) {
                 case SELF:
                     assertEquals(BASE_URI + FORWARD_SLASH +
-                                             V1Constants.TEIID_SEGMENT + FORWARD_SLASH +
-                                             ServerManager.DEFAULT_SERVER_NAME + FORWARD_SLASH +
+                                             V1Constants.METADATA_SEGMENT + FORWARD_SLASH +
                                              V1Constants.VDBS_SEGMENT + FORWARD_SLASH +
                                              vdbName,
                                              link.getHref().toString());
                     break;
                 case PARENT:
                     assertEquals(BASE_URI + FORWARD_SLASH +
-                                             V1Constants.TEIID_SEGMENT + FORWARD_SLASH +
-                                             ServerManager.DEFAULT_SERVER_NAME + FORWARD_SLASH +
+                                             V1Constants.METADATA_SEGMENT + FORWARD_SLASH +
                                              V1Constants.VDBS_SEGMENT,
                                              link.getHref().toString());
             }
@@ -281,9 +218,10 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
     }
 
     @Test
+    @Ignore("Need to implement getDataSources in DefaultMetadataInstance")
     public void shouldGetTeiidStatusMultiQueries() throws Exception {
         URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
-                                          .path(V1Constants.TEIID_SEGMENT)
+                                          .path(V1Constants.METADATA_SEGMENT)
                                           .path(V1Constants.STATUS_SEGMENT)
                                           .build();
 
@@ -303,7 +241,7 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
                         Thread.yield();
 
                         String entity = response.getEntity();
-                        System.out.println("Response:\n" + entity);
+                        checkResponse(response);
                         //
                         // Don't want the thread dying since the latch will never
                         // countdown and the test will be stuck for 3 minutes
@@ -313,15 +251,10 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
                         // errors. Don't really care if there is more than one, just that
                         // there is one, the test should fail
                         //
-                        assertEquals(200, response.getStatus());
-                        RestTeiidStatus status = KomodoJsonMarshaller.unmarshall(entity, RestTeiidStatus.class);
+                        RestMetadataStatus status = KomodoJsonMarshaller.unmarshall(entity, RestMetadataStatus.class);
                         assertNotNull(status);
 
-                        assertEquals("DefaultServer", status.getId());
-                        assertEquals("localhost", status.getHost());
-                        assertEquals(teiidVersion, new DefaultTeiidVersion(status.getVersion()));
-                        assertTrue(status.isTeiidInstanceAvailable());
-                        assertTrue(status.isConnected());
+                        assertTrue(status.isAvailable());
                         assertEquals(1, status.getDataSourceSize());
                         assertEquals(3, status.getDataSourceDriverSize());
                         testTranslators(status);
@@ -347,9 +280,10 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
     }
 
     @Test
+    @Ignore("Not implemented yet")
     public void shouldGetTranslators() throws Exception {
         URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
-                                          .path(V1Constants.TEIID_SEGMENT)
+                                          .path(V1Constants.METADATA_SEGMENT)
                                           .path(V1Constants.TRANSLATORS_SEGMENT)
                                           .build();
 
@@ -357,8 +291,7 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
         ClientResponse<String> response = request.get(String.class);
         final String entity = response.getEntity();
 
-        System.out.println("Response:\n" + entity);
-        assertEquals(200, response.getStatus());
+        checkResponse(response);
 
         RestVdbTranslator[] translators = KomodoJsonMarshaller.unmarshallArray(entity, RestVdbTranslator[].class);
         assertTrue(translators.length > 0);
@@ -370,9 +303,10 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
     }
 
     @Test
+    @Ignore("Connections not implemented yet")
     public void shouldGetConnections() throws Exception {
         URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
-                                          .path(V1Constants.TEIID_SEGMENT)
+                                          .path(V1Constants.METADATA_SEGMENT)
                                           .path(V1Constants.CONNECTIONS_SEGMENT)
                                           .build();
 
@@ -380,8 +314,7 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
         ClientResponse<String> response = request.get(String.class);
         final String entity = response.getEntity();
 
-        System.out.println("Response:\n" + entity);
-        assertEquals(200, response.getStatus());
+        checkResponse(response);
 
         RestConnection[] connections = KomodoJsonMarshaller.unmarshallArray(entity, RestConnection[].class);
         assertTrue(connections.length > 0);
@@ -393,9 +326,10 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
     }
 
     @Test
+    @Ignore("Connections not implemented yet")
     public void shouldGetConnectionTemplates() throws Exception {
         URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
-                                          .path(V1Constants.TEIID_SEGMENT)
+                                          .path(V1Constants.METADATA_SEGMENT)
                                           .path(V1Constants.TEMPLATES_SEGMENT)
                                           .build();
 
@@ -416,9 +350,10 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
     }
 
     @Test
+    @Ignore("Connections not implemented yet")
     public void shouldGetConnectionTemplate() throws Exception {
         URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
-                                          .path(V1Constants.TEIID_SEGMENT)
+                                          .path(V1Constants.METADATA_SEGMENT)
                                           .path(V1Constants.TEMPLATES_SEGMENT)
                                           .path("webservice")
                                           .build();
@@ -438,9 +373,10 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
     }
 
     @Test
+    @Ignore("Connections not implemented yet")
     public void shouldGetConnectionTemplateEntries() throws Exception {
         URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
-                                          .path(V1Constants.TEIID_SEGMENT)
+                                          .path(V1Constants.METADATA_SEGMENT)
                                           .path(V1Constants.TEMPLATES_SEGMENT)
                                           .path("webservice")
                                           .path(V1Constants.TEMPLATE_ENTRIES_SEGMENT)
@@ -458,36 +394,6 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
         for (RestTemplateEntry entry : templateEntries) {
             assertNotNull(entry.getId());
             assertEquals(2, entry.getLinks().size());
-        }
-    }
-
-    @Test
-    public void shouldAdminPing() throws Exception {
-        shouldPing(ConnectivityType.ADMIN);
-    }
-
-    @Test
-    public void shouldJdbcPing() throws Exception {
-        shouldPing(ConnectivityType.JDBC);
-    }
-
-    @Test
-    public void shouldFailJdbcPing() throws Exception {
-        setJdbcName("IamTheWrongJdbcUserName");
-
-        try {
-            ClientResponse<String> response = ping(ConnectivityType.JDBC);
-            String entity = response.getEntity();
-            System.out.println("Entity: " + entity);
-            KomodoStatusObject status = KomodoJsonMarshaller.unmarshall(entity, KomodoStatusObject.class);
-            assertNotNull(status);
-
-            Map<String, String> attributes = status.getAttributes();
-            assertEquals("false", attributes.get("OK"));
-            assertTrue(attributes.get("Message").contains("Unable to establish a jdbc connection to teiid instance"));
-            assertTrue(attributes.get("Exception").contains("The username \"IamTheWrongJdbcUserName\" and/or password and/or payload token could not be authenticated by security domain teiid-security"));
-        } finally {
-            setJdbcName(TeiidJdbcInfo.DEFAULT_JDBC_USERNAME);
         }
     }
 
@@ -513,7 +419,7 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final String entity = response.getEntity();
-        System.out.println("Response from uri " + uri + ":\n" + entity);
+        checkResponse(response);
         for (String expected : EXPECTED) {
             assertTrue(expected + " is not contained in " + entity, entity.contains(expected));
         }

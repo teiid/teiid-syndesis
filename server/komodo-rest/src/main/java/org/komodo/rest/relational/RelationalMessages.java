@@ -956,303 +956,293 @@ public final class RelationalMessages {
         /**
          * An error indicating a teiid status error
          */
-        TEIID_SERVICE_STATUS_ERROR,
+        METADATA_SERVICE_STATUS_ERROR,
 
         /**
          * The teiid service cannot parse the request body
          */
-        TEIID_SERVICE_REQUEST_PARSING_ERROR,
-
-        /**
-         * The teiid service requires all credentials to contain a value
-         */
-        TEIID_SERVICE_EMPTY_CREDENTIAL_ERROR,
-
-        /**
-         * An error indicating a teiid credentials failure
-         */
-        TEIID_SERVICE_SET_CREDENTIALS_ERROR,
+        METADATA_SERVICE_REQUEST_PARSING_ERROR,
 
         /**
          * An error determining data service deployable status
          */
-        TEIID_SERVICE_GET_DATA_SERVICE_DEPLOYABLE_ERROR,
+        METADATA_SERVICE_GET_DATA_SERVICE_DEPLOYABLE_ERROR,
 
         /**
          * An error when getting vdbs
          */
-        TEIID_SERVICE_GET_VDBS_ERROR,
+        METADATA_SERVICE_GET_VDBS_ERROR,
 
         /**
          * An error when getting datasources
          */
-        TEIID_SERVICE_GET_DATA_SOURCES_ERROR,
+        METADATA_SERVICE_GET_DATA_SOURCES_ERROR,
 
         /**
          * An error when getting datasource
          */
-        TEIID_SERVICE_GET_DATA_SOURCE_ERROR,
+        METADATA_SERVICE_GET_DATA_SOURCE_ERROR,
 
         /**
          * An error when getting a Datasource translator.
          */
-        TEIID_SERVICE_GET_DATA_SOURCE_TRANSLATOR_ERROR,
+        METADATA_SERVICE_GET_DATA_SOURCE_TRANSLATOR_ERROR,
 
         /**
          * An error indicating a teiid vdb status error
          */
-        TEIID_SERVICE_VDBS_STATUS_ERROR,
+        METADATA_SERVICE_VDBS_STATUS_ERROR,
 
         /**
          * An error when getting drivers
          */
-        TEIID_SERVICE_GET_DRIVERS_ERROR,
+        METADATA_SERVICE_GET_DRIVERS_ERROR,
 
         /**
          * An error indicating a timeout occurred whilst conducting an import
          */
-        TEIID_SERVICE_IMPORT_TIMEOUT,
+        METADATA_SERVICE_IMPORT_TIMEOUT,
 
         /**
          * An error indicating an error occurred whilst fetching the teiid translators
          */
-        TEIID_SERVICE_GET_TRANSLATORS_ERROR,
+        METADATA_SERVICE_GET_TRANSLATORS_ERROR,
 
         /**
          * An error occurred locating the default translator mappings
          */
-        TEIID_SERVICE_DEFAULT_TRANSLATOR_MAPPINGS_NOT_FOUND_ERROR,
+        METADATA_SERVICE_DEFAULT_TRANSLATOR_MAPPINGS_NOT_FOUND_ERROR,
 
         /**
          * An error occurred attempting to load the default translator mappings
          */
-        TEIID_SERVICE_LOAD_DEFAULT_TRANSLATOR_MAPPINGS_ERROR,
+        METADATA_SERVICE_LOAD_DEFAULT_TRANSLATOR_MAPPINGS_ERROR,
 
         /**
          * An error indicating a teiid file attributes object has no parameters
          */
-        TEIID_SERVICE_FILE_ATTRIB_NO_PARAMETERS,
+        METADATA_SERVICE_FILE_ATTRIB_NO_PARAMETERS,
 
         /**
          * An error indicating a teiid file attributes object has no name
          */
-        TEIID_SERVICE_FILE_ATTRIB_NO_NAME,
+        METADATA_SERVICE_FILE_ATTRIB_NO_NAME,
 
         /**
          * An error indicating a teiid file attributes object has no file
          */
-        TEIID_SERVICE_FILE_ATTRIB_NO_CONTENT,
+        METADATA_SERVICE_FILE_ATTRIB_NO_CONTENT,
 
         /**
          * An error indicating a teiid dataService deployment failure
          */
-        TEIID_SERVICE_DEPLOY_DATA_SERVICE_ERROR,
+        METADATA_SERVICE_DEPLOY_DATA_SERVICE_ERROR,
 
         /**
          * An error indicating a teiid connection deployment failure
          */
-        TEIID_SERVICE_DEPLOY_CONNECTION_ERROR,
+        METADATA_SERVICE_DEPLOY_CONNECTION_ERROR,
 
         /**
          * An error indicating a workspace driver being deployed to teiid cannot be found due to
          * a missing path property
          */
-        TEIID_SERVICE_DRIVER_MISSING_PATH,
+        METADATA_SERVICE_DRIVER_MISSING_PATH,
 
         /**
          * A driver cannot be found at the given path in the workspace
          */
-        TEIID_SERVICE_NO_DRIVER_FOUND_IN_WKSP,
+        METADATA_SERVICE_NO_DRIVER_FOUND_IN_WKSP,
 
         /**
          * Cannot deploy a driver since one of its attributes is missing
          */
-        TEIID_SERVICE_DRIVER_ATTRIBUTES_MISSING,
+        METADATA_SERVICE_DRIVER_ATTRIBUTES_MISSING,
 
         /**
          * An error indicating a teiid DataSource undeploy failure
          */
-        TEIID_SERVICE_UNDEPLOY_DATA_SOURCE_ERROR,
+        METADATA_SERVICE_UNDEPLOY_DATA_SOURCE_ERROR,
 
         /**
          * An error indicating a teiid Vdb deployment failure
          */
-        TEIID_SERVICE_DEPLOY_VDB_ERROR,
+        METADATA_SERVICE_DEPLOY_VDB_ERROR,
 
         /**
          * An error indicating a teiid Vdb undeploy failure
          */
-        TEIID_SERVICE_UNDEPLOY_VDB_ERROR,
+        METADATA_SERVICE_UNDEPLOY_VDB_ERROR,
         
         /**
          * An error indicating a teiid driver deployment failure
          */
-        TEIID_SERVICE_DEPLOY_DRIVER_ERROR,
+        METADATA_SERVICE_DEPLOY_DRIVER_ERROR,
 
         /**
          * An error indicating a teiid driver undeployment failure
          */
-        TEIID_SERVICE_UNDEPLOY_DRIVER_ERROR,
+        METADATA_SERVICE_UNDEPLOY_DRIVER_ERROR,
 
         /**
          * An error indicating a name is missing while deploying a data service
          */
-        TEIID_SERVICE_DATA_SERVICE_MISSING_PATH,
+        METADATA_SERVICE_DATA_SERVICE_MISSING_PATH,
 
         /**
          * No data service could be found while trying to deploy
          */
-        TEIID_SERVICE_NO_DATA_SERVICE_FOUND,
+        METADATA_SERVICE_NO_DATA_SERVICE_FOUND,
 
         /**
          * An error indicating a name is missing while deploying a data source
          */
-        TEIID_SERVICE_CONNECTION_MISSING_PATH,
+        METADATA_SERVICE_CONNECTION_MISSING_PATH,
 
         /**
          * No data source could be found while trying to deploy
          */
-        TEIID_SERVICE_NO_CONNECTION_FOUND,
+        METADATA_SERVICE_NO_CONNECTION_FOUND,
 
         /**
          * No VDB could be found while trying to deploy
          */
-        TEIID_SERVICE_NO_VDB_FOUND,
+        METADATA_SERVICE_NO_VDB_FOUND,
 
         /**
          * An error indicating a name is missing while deploying a VDB
          */
-        TEIID_SERVICE_VDB_MISSING_PATH,
+        METADATA_SERVICE_VDB_MISSING_PATH,
 
         /**
          * No query specified for the query operation
          */
-        TEIID_SERVICE_QUERY_MISSING_QUERY,
+        METADATA_SERVICE_QUERY_MISSING_QUERY,
 
         /**
          * No target specified for the query operation
          */
-        TEIID_SERVICE_QUERY_MISSING_TARGET,
+        METADATA_SERVICE_QUERY_MISSING_TARGET,
 
         /**
          * The query target does not appear to have been deployed
          */
-        TEIID_SERVICE_QUERY_TARGET_NOT_DEPLOYED,
+        METADATA_SERVICE_QUERY_TARGET_NOT_DEPLOYED,
 
         /**
          * An error indicating a query failure
          */
-        TEIID_SERVICE_QUERY_ERROR,
+        METADATA_SERVICE_QUERY_ERROR,
 
         /**
          * Error indicating a ping type is missing
          */
-        TEIID_SERVICE_PING_MISSING_TYPE,
+        METADATA_SERVICE_PING_MISSING_TYPE,
 
         /**
          * The Teiid service update is missing a parameter
          */
-        TEIID_SERVICE_UPDATE_MISSING_PARAMETER_ERROR,
+        METADATA_SERVICE_UPDATE_MISSING_PARAMETER_ERROR,
 
         /**
          * The service lacks at least one parameter
          */
-        TEIID_SERVICE_UPDATE_REQUEST_PARSING_ERROR,
+        METADATA_SERVICE_UPDATE_REQUEST_PARSING_ERROR,
 
         /**
          * An error indicating update attempt failed because the VDB name was missing
          */
-        TEIID_SERVICE_UPDATE_MISSING_VDBNAME,
+        METADATA_SERVICE_UPDATE_MISSING_VDBNAME,
 
         /**
          * An error indicating update attempt failed because the Model name was missing
          */
-        TEIID_SERVICE_UPDATE_MISSING_MODELNAME,
+        METADATA_SERVICE_UPDATE_MISSING_MODELNAME,
 
         /**
          * An error indicating update attempt failed because the Teiid VDB name was missing
          */
-        TEIID_SERVICE_UPDATE_MISSING_TEIID_VDBNAME,
+        METADATA_SERVICE_UPDATE_MISSING_TEIID_VDBNAME,
 
         /**
          * An error indicating update attempt failed because the Teiid Model name was missing
          */
-        TEIID_SERVICE_UPDATE_MISSING_TEIID_MODELNAME,
+        METADATA_SERVICE_UPDATE_MISSING_TEIID_MODELNAME,
 
         /**
          * An error indicating update attempt failed because retrieval of the teiid DDL failed.
          */
-        TEIID_SERVICE_UPDATE_DDL_FETCH_ERROR,
+        METADATA_SERVICE_UPDATE_DDL_FETCH_ERROR,
         
         /**
          * An error indicating update attempt failed because the Teiid Model DDL was empty
          */
-        TEIID_SERVICE_UPDATE_DDL_DNE,
+        METADATA_SERVICE_UPDATE_DDL_DNE,
         
         /**
          * An error indicating data source isn not a JDBC source.
          */
-        TEIID_SERVICE_GET_DATA_SOURCE_NOT_JDBC_ERROR,
+        METADATA_SERVICE_GET_DATA_SOURCE_NOT_JDBC_ERROR,
 
         /**
          * An error indicating data source cannot be instantiated from available data sources
          */
-        TEIID_SERVICE_GET_DATA_SOURCE_INSTANTIATION_FAILURE,
+        METADATA_SERVICE_GET_DATA_SOURCE_INSTANTIATION_FAILURE,
         
         /**
          * An error indicating attempt to get source JDBC connection failed.
          */
-        TEIID_SERVICE_GET_DATA_SOURCE_CONNECTION_ERROR,
+        METADATA_SERVICE_GET_DATA_SOURCE_CONNECTION_ERROR,
         
         /**
          * An error indicating attempt to fetch source JDBC tables failed.
          */
-        TEIID_SERVICE_GET_DATA_SOURCE_TABLE_FETCH_ERROR,
+        METADATA_SERVICE_GET_DATA_SOURCE_TABLE_FETCH_ERROR,
         
         /**
          * An error indicating attempt to get source tables failed.
          */
-        TEIID_SERVICE_GET_DATA_SOURCE_TABLES_ERROR,
+        METADATA_SERVICE_GET_DATA_SOURCE_TABLES_ERROR,
 
         /**
          * An error indicating attempt to get source catalog and schema failed.
          */
-        TEIID_SERVICE_GET_DATA_SOURCE_CATALOG_SCHEMA_ERROR,
+        METADATA_SERVICE_GET_DATA_SOURCE_CATALOG_SCHEMA_ERROR,
 
         /**
          * An error indicating jdbc info failed to be supplied from a data source.
          */
-        TEIID_SERVICE_GET_DATA_SOURCE_JDBC_INFO_FAILURE,
+        METADATA_SERVICE_GET_DATA_SOURCE_JDBC_INFO_FAILURE,
 
         /**
          * An error indicating the jdbc data source is not recognised.
          */
-        TEIID_SERVICE_GET_DATA_SOURCE_UNRECOGNISED_JDBC_SOURCE,
+        METADATA_SERVICE_GET_DATA_SOURCE_UNRECOGNISED_JDBC_SOURCE,
 
         /**
          * An error indicating a connection could not be undeployed
          */
-        TEIID_SERVICE_UNDEPLOY_CONNECTION_ERROR,
+        METADATA_SERVICE_UNDEPLOY_CONNECTION_ERROR,
 
         /**
          * An error indicating update attempt failed
          */
-        TEIID_SERVICE_UPDATE_ERROR,
+        METADATA_SERVICE_UPDATE_ERROR,
 
         /**
          * An error indicating the instance failed to get a data source template.
          */
-        TEIID_SERVICE_GET_TEMPLATE_ERROR,
+        METADATA_SERVICE_GET_TEMPLATE_ERROR,
 
         /**
          * An error indicating the instance failed to get any data source templates.
          */
-        TEIID_SERVICE_GET_TEMPLATES_ERROR,
+        METADATA_SERVICE_GET_TEMPLATES_ERROR,
 
         /**
          * An error indicating the instance failed to get any data source templates.
          */
-        TEIID_SERVICE_GET_TEMPLATE_ENTRIES_ERROR,
+        METADATA_SERVICE_GET_TEMPLATE_ENTRIES_ERROR,
 
         /**
          * The importexport service lacks at least one storage attribute

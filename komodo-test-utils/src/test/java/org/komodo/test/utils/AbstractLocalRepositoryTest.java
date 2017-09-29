@@ -23,38 +23,42 @@ package org.komodo.test.utils;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.nullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
-
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
-
 import javax.jcr.Node;
 import javax.jcr.PropertyIterator;
 import javax.jcr.Session;
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestName;
+import org.komodo.metadata.DefaultMetadataInstance;
 import org.komodo.repository.LocalRepository;
 import org.komodo.repository.LocalRepository.LocalRepositoryId;
 import org.komodo.repository.RepositoryImpl.UnitOfWorkImpl;
 import org.komodo.repository.SynchronousCallback;
+import org.komodo.spi.KClient;
+import org.komodo.spi.KEvent;
+import org.komodo.spi.metadata.MetadataClientEvent;
+import org.komodo.spi.metadata.MetadataInstance;
+import org.komodo.spi.metadata.MetadataInstance.Condition;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.State;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWorkListener;
-import org.komodo.spi.repository.RepositoryClient;
 import org.komodo.spi.repository.RepositoryClientEvent;
 import org.komodo.utils.KLog;
+import org.komodo.utils.observer.KLatchRepositoryObserver;
 
 /**
  * Provides framework for testing an instance of the local repository
@@ -83,7 +87,7 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
 
     protected static LocalRepository _repo = null;
 
-    protected static LocalRepositoryObserver _repoObserver = null;
+    protected static MetadataInstance metadataInstance = null;
 
     @BeforeClass
     public static void initRepository() throws Exception {
@@ -93,21 +97,20 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
         assertThat(_repo.getState(), is(State.NOT_REACHABLE));
         assertThat(_repo.ping(), is(false));
 
-        _repoObserver = new LocalRepositoryObserver();
-        assertNotNull(_repoObserver);
-        _repo.addObserver(_repoObserver);
+        KLatchRepositoryObserver _repoStartedObserver = new KLatchRepositoryObserver(KEvent.Type.REPOSITORY_STARTED);
+        _repo.addObserver(_repoStartedObserver);
 
         // Start the repository
-        final RepositoryClient client = mock(RepositoryClient.class);
+        final KClient client = mock(KClient.class);
         final RepositoryClientEvent event = RepositoryClientEvent.createStartedEvent(client);
         _repo.notify(event);
 
         // Wait for the starting of the repository or timeout of 1 minute
-        if (!_repoObserver.getLatch().await(1, TimeUnit.MINUTES)) {
+        if (!_repoStartedObserver.getLatch().await(1, TimeUnit.MINUTES)) {
             fail("Test timed-out waiting for local repository to start");
         }
 
-        Throwable startupError = _repoObserver.getError();
+        Throwable startupError = _repoStartedObserver.getError();
         if (startupError != null) {
             startupError.printStackTrace();
             fail("Repository error occurred on startup: " + startupError.getMessage());
@@ -129,6 +132,30 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
                 }
             }
         }
+
+        // Initialise the metadata instance
+        metadataInstance = DefaultMetadataInstance.getInstance();
+        KClient kClient = new KClient() {
+            
+            @Override
+            public void eventOccurred(KEvent<?> event) {
+                // Do Nothing
+            }
+            
+            @Override
+            public void errorOccurred(Throwable e) {
+                fail("Exception occurred while starting metadata instance in test class: " + AbstractLocalRepositoryTest.class);
+            }
+            
+            @Override
+            public org.komodo.spi.KClient.State getState() {
+                return State.SHUTDOWN;
+            }
+        };
+
+        MetadataClientEvent metadataClientEvent = MetadataClientEvent.createStartedEvent(kClient);
+        metadataInstance.notify(metadataClientEvent);
+        assertEquals(Condition.REACHABLE, metadataInstance.getCondition());
     }
 
     /**
@@ -139,22 +166,45 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
     @AfterClass
     public static void destroyLocalRepository() throws Exception {
         assertNotNull(_repo);
-        assertNotNull(_repoObserver);
 
-        _repoObserver.resetLatch();
+        KLatchRepositoryObserver _repoShutdownObserver = new KLatchRepositoryObserver(KEvent.Type.REPOSITORY_STOPPED);
+        _repo.addObserver(_repoShutdownObserver);
 
-        RepositoryClient client = mock(RepositoryClient.class);
+        KClient client = mock(KClient.class);
         RepositoryClientEvent event = RepositoryClientEvent.createShuttingDownEvent(client);
         _repo.notify(event);
 
         try {
-            if (! _repoObserver.getLatch().await(TIME_TO_WAIT, TimeUnit.MINUTES))
+            if (! _repoShutdownObserver.getLatch().await(TIME_TO_WAIT, TimeUnit.MINUTES))
                 fail("Local repository was not stopped");
         } finally {
-            _repo.removeObserver(_repoObserver);
-            _repoObserver = null;
+            _repo.removeObserver(_repoShutdownObserver);
             _repo = null;
         }
+
+        // Destroy the metadata instance
+        assertNotNull(metadataInstance);
+        KClient kClient = new KClient() {
+
+            @Override
+            public void eventOccurred(KEvent<?> event) {
+                // Do Nothing
+            }
+            
+            @Override
+            public void errorOccurred(Throwable e) {
+                fail("Exception occurred while stopping metadata instance in test class: " + AbstractLocalRepositoryTest.class);
+            }
+            
+            @Override
+            public org.komodo.spi.KClient.State getState() {
+                return State.STARTED; 
+            }
+        };
+
+        MetadataClientEvent metadataClientEvent = MetadataClientEvent.createShuttingDownEvent(kClient);
+        metadataInstance.notify(metadataClientEvent);
+        assertEquals(Condition.NOT_REACHABLE, metadataInstance.getCondition());
     }
 
     @Rule
@@ -223,13 +273,19 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
 
             if ( !State.REACHABLE.equals( _repo.getState() ) ) return;
 
-            _repoObserver.resetLatch();
+            KLatchRepositoryObserver _repoClearObserver = new KLatchRepositoryObserver(KEvent.Type.REPOSITORY_CLEARED);
+            _repo.addObserver(_repoClearObserver);
 
-            RepositoryClient client = mock( RepositoryClient.class );
+            KClient client = mock( KClient.class );
             RepositoryClientEvent event = RepositoryClientEvent.createClearEvent( client );
             _repo.notify( event );
 
-            if ( !_repoObserver.getLatch().await( TIME_TO_WAIT, TimeUnit.MINUTES ) ) throw new RuntimeException( "Local repository was not cleared" );
+            try {
+                if ( !_repoClearObserver.getLatch().await( TIME_TO_WAIT, TimeUnit.MINUTES ) )
+                    throw new RuntimeException( "Local repository was not cleared" );
+            } finally {
+                _repo.removeObserver(_repoClearObserver);
+            }
 
             KLog.getLogger().debug( "Test {0}: clearLocalRepository() finished\n\n=====\n\n", this.name.getMethodName() );
         }

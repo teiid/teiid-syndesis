@@ -16,7 +16,7 @@
 	<modules>
 		<module>translator-solr</module>
 		<module>connector-solr</module>
-		<module>feature-pack-solr</module>
+		<!--<module>feature-pack-solr</module>-->
 	</modules>
 
 </project>

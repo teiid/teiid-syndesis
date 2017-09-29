@@ -23,25 +23,17 @@ package org.komodo.modeshape.teiid;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
-import org.komodo.modeshape.teiid.sequencer.v8127.Test8127Sequencers;
-import org.komodo.modeshape.teiid.sequencer.v8127.TestTeiid8127SqlSequencer;
-import org.komodo.modeshape.teiid.sequencer.v911.Test911Sequencers;
-import org.komodo.modeshape.teiid.sequencer.v911.TestTeiid911SqlSequencer;
+import org.komodo.modeshape.teiid.sequencer.impl.TestSequencers;
+import org.komodo.modeshape.teiid.sequencer.impl.TestTeiidSqlSequencer;
 
 @SuppressWarnings( "javadoc" )
 @RunWith( Suite.class )
 @Suite.SuiteClasses( {
                                         // sequencer
-                                        TestTeiid8127SqlSequencer.class,
+                                        TestTeiidSqlSequencer.class,
 
                                         // sequencers
-                                        Test8127Sequencers.class,
-
-                                        // sequencer
-                                        TestTeiid911SqlSequencer.class,
-
-                                        // sequencers
-                                        Test911Sequencers.class,
+                                        TestSequencers.class,
                                     } )
 public class AllTests {
     // nothing to do
