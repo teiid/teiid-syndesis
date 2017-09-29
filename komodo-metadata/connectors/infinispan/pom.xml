@@ -70,10 +70,16 @@
 	</build>
 
 	<modules>
+		<!--
+		  Cannot compile with infinispan 7.2.3
+		  Was built with 9.0.0
+		  -->
+		<!--
 		<module>infinispan-api</module>
 		<module>infinispan-tasks</module>
 		<module>translator-infinispan-hotrod</module>
 		<module>connector-infinispan-hotrod</module>
+		-->
 		<!--<module>feature-pack-infinispan</module>-->
 	</modules>
 
