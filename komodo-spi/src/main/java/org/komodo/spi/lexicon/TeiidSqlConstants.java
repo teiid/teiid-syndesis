@@ -25,11 +25,7 @@ import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import org.komodo.spi.annotation.AnnotationUtils;
-import org.komodo.spi.annotation.Since;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.runtime.version.DefaultTeiidVersion.Version;
-import org.komodo.spi.runtime.version.TeiidVersion;
 
 public abstract class TeiidSqlConstants {
 
@@ -45,9 +41,7 @@ public abstract class TeiidSqlConstants {
             String GT = ">"; //$NON-NLS-1$
             String LE = "<="; //$NON-NLS-1$
             String GE = ">="; //$NON-NLS-1$
-            @Since(Version.TEIID_8_0)
             String TICK = "'"; //$NON-NLS-1$
-            @Since(Version.TEIID_8_0)
             String QMARK = "?"; //$NON-NLS-1$
             String LOGICAL_OR = "||";
             String LOGICAL_AND = "&&";
@@ -79,9 +73,7 @@ public abstract class TeiidSqlConstants {
             String HEADER = "HEADER"; //$NON-NLS-1$
             String QUOTE = "QUOTE"; //$NON-NLS-1$
             String COLUMNS = "COLUMNS"; //$NON-NLS-1$
-            @Since(Version.TEIID_8_0)
             String SELECTOR = "SELECTOR"; //$NON-NLS-1$
-            @Since(Version.TEIID_8_0)
             String SKIP = "SKIP"; //$NON-NLS-1$
             //xmltable
             String ORDINALITY = "ORDINALITY"; //$NON-NLS-1$
@@ -125,35 +117,20 @@ public abstract class TeiidSqlConstants {
             String DISABLED = "DISABLED"; //$NON-NLS-1$
             
             String TRIM = "TRIM"; //$NON-NLS-1$
-            @Since(Version.TEIID_8_0)
             String RESULT = "RESULT"; //$NON-NLS-1$
-            @Since(Version.TEIID_8_0)
             String OBJECTTABLE = "OBJECTTABLE"; //$NON-NLS-1$
-            @Since(Version.TEIID_8_0)
             String VERSION = "VERSION"; //$NON-NLS-1$
-            @Since(Version.TEIID_8_0)
             String INCLUDING = "INCLUDING"; //$NON-NLS-1$
-            @Since(Version.TEIID_8_0)
             String EXCLUDING = "EXCLUDING"; //$NON-NLS-1$
-            @Since(Version.TEIID_8_0)
             String XMLDECLARATION = "XMLDECLARATION"; //$NON-NLS-1$
-            @Since(Version.TEIID_8_0)
             String VARIADIC = "VARIADIC"; //$NON-NLS-1$
-            @Since(Version.TEIID_8_0)
             String INDEX = "INDEX"; //$NON-NLS-1$
-            @Since(Version.TEIID_8_0)
             String EXCEPTION = "EXCEPTION"; //$NON-NLS-1$
-            @Since(Version.TEIID_8_0)
             String RAISE = "RAISE"; //$NON-NLS-1$
-            @Since(Version.TEIID_8_0)
             String CHAIN = "CHAIN"; //$NON-NLS-1$
-            @Since(Version.TEIID_8_0)
             String JSONOBJECT = "JSONOBJECT"; //$NON-NLS-1$
-            @Since(Version.TEIID_8_7)
             String AUTO_INCREMENT = "AUTO_INCREMENT"; //$NON-NLS-1$
-            @Since(Version.TEIID_8_10)
             String PRESERVE = "PRESERVE"; //$NON-NLS-1$
-            @Since(Version.TEIID_8_10)
             String GEOMETRY = "GEOMETRY"; //$NON-NLS-1$
         }
         
@@ -333,7 +310,6 @@ public abstract class TeiidSqlConstants {
             String OUTPUT = "OUTPUT"; //$NON-NLS-1$
             String OPTION = "OPTION"; //$NON-NLS-1$
             String OPTIONAL = "OPTIONAL"; //$NON-NLS-1$
-            @Since(Version.TEIID_8_0)
             String OPTIONS = "OPTIONS"; //$NON-NLS-1$
             String OVER = "OVER"; //$NON-NLS-1$
             String OVERLAPS = "OVERLAPS"; //$NON-NLS-1$
@@ -459,8 +435,6 @@ public abstract class TeiidSqlConstants {
             String IMPORT = "IMPORT"; //$NON-NLS-1$
         }
 
-    private static TeiidVersion CACHED_TEIID_VERSION = null;
-
     /**
      * Set of CAPITALIZED reserved words for checking whether a string is a reserved word.
      */
@@ -477,14 +451,6 @@ public abstract class TeiidSqlConstants {
             if (field.getType() != String.class)
                 continue;
 
-            // If teiid version is less than the version listed in the since annotation
-            // then word should not be included in the word sets
-            if (AnnotationUtils.hasAnnotation(field, Since.class)) {
-                Since since = AnnotationUtils.getAnnotation(field, Since.class);
-                if (!AnnotationUtils.isGreaterThanOrEqualTo(since, CACHED_TEIID_VERSION))
-                    continue;
-            }
-
             try {
                 if (!result.add((String)field.get(null))) {
                     throw new AssertionError("Duplicate value for " + field.getName());
@@ -496,11 +462,7 @@ public abstract class TeiidSqlConstants {
         return Collections.unmodifiableSet(result);
     }
 
-    /**
-     * @param teiidVersion
-     */
-    private static void initialiseConstants(TeiidVersion teiidVersion) {
-        CACHED_TEIID_VERSION = teiidVersion;
+    private static void initialiseConstants() {
         RESERVED_WORDS = extractFieldNames(TeiidSqlConstants.Reserved.class);
         NON_RESERVED_WORDS = extractFieldNames(TeiidSqlConstants.NonReserved.class);
     }
@@ -508,9 +470,9 @@ public abstract class TeiidSqlConstants {
     /**
      * @return nonReservedWords
      */
-    public static Set<String> getNonReservedWords(TeiidVersion teiidVersion) {
-        if (CACHED_TEIID_VERSION == null || !CACHED_TEIID_VERSION.equals(teiidVersion) || NON_RESERVED_WORDS == null)
-            initialiseConstants(teiidVersion);
+    public static Set<String> getNonReservedWords() {
+        if (NON_RESERVED_WORDS == null)
+            initialiseConstants();
 
         return NON_RESERVED_WORDS;
     }
@@ -518,9 +480,9 @@ public abstract class TeiidSqlConstants {
     /**
      * @return reservedWords
      */
-    public static Set<String> getReservedWords(TeiidVersion teiidVersion) {
-        if (CACHED_TEIID_VERSION == null || !CACHED_TEIID_VERSION.equals(teiidVersion) || RESERVED_WORDS == null)
-            initialiseConstants(teiidVersion);
+    public static Set<String> getReservedWords() {
+        if (RESERVED_WORDS == null)
+            initialiseConstants();
 
         return RESERVED_WORDS;
     }
@@ -533,14 +495,14 @@ public abstract class TeiidSqlConstants {
      * @param str String to check
      * @return True if reserved word, false if not or null
      */
-    public static final boolean isReservedWord(TeiidVersion teiidVersion, String str) {
+    public static final boolean isReservedWord(String str) {
         if (str == null) {
             return false;
         }
 
         String word = str.toUpperCase();
-        if (CACHED_TEIID_VERSION == null || !CACHED_TEIID_VERSION.equals(teiidVersion) || RESERVED_WORDS == null)
-            initialiseConstants(teiidVersion);
+        if (RESERVED_WORDS == null)
+            initialiseConstants();
 
         return RESERVED_WORDS.contains(word);
     }

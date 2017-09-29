@@ -28,7 +28,6 @@ import org.komodo.shell.CommandResultImpl;
 import org.komodo.shell.api.CommandResult;
 import org.komodo.shell.api.WorkspaceStatus;
 import org.komodo.shell.util.PrintUtils;
-import org.komodo.spi.KException;
 import org.komodo.utils.i18n.I18n;
 
 /**
@@ -56,17 +55,12 @@ public final class ServerTranslatorsCommand extends ServerShellCommand {
         CommandResult result = null;
 
         try {
-            // Validates that a server is connected
-            CommandResult validationResult = validateHasConnectedWorkspaceServer();
-            if ( !validationResult.isOk() ) {
-                return validationResult;
-            }
 
             // Print title
-            final String title = I18n.bind( ServerCommandsI18n.infoMessageTranslators, getWorkspaceServerName() );
+            final String title = I18n.bind( ServerCommandsI18n.infoMessageTranslators);
             print( MESSAGE_INDENT, title );
 
-            List< String > translatorNames = ServerUtils.getTranslatorNames(getWorkspaceTeiidInstance());
+            List< String > translatorNames = ServerUtils.getTranslatorNames();
             if(translatorNames.isEmpty()) {
                 print( MESSAGE_INDENT, I18n.bind( ServerCommandsI18n.noTranslatorsMsg ) );
             } else {
@@ -75,12 +69,7 @@ public final class ServerTranslatorsCommand extends ServerShellCommand {
             }
             result = CommandResult.SUCCESS;
         } catch ( final Exception e ) {
-            result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.connectionErrorWillDisconnect ), e );
-            try {
-                disconnectWorkspaceServer();
-            } catch (KException kex) {
-                // Do nothing
-            }
+            result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.accessError ), e );
         }
 
         return result;

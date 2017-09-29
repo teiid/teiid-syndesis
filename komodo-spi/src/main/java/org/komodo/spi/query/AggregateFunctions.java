@@ -21,9 +21,6 @@
  */
 package org.komodo.spi.query;
 
-import org.komodo.spi.annotation.Since;
-import org.komodo.spi.runtime.version.DefaultTeiidVersion.Version;
-
 public enum AggregateFunctions {
     COUNT,
     SUM,
@@ -44,13 +41,10 @@ public enum AggregateFunctions {
     DENSE_RANK,
     ROW_NUMBER,
 
-    @Since( Version.TEIID_8_0 )
     JSONARRAY_AGG,
 
-    @Since( Version.TEIID_8_0 )
     STRING_AGG,
 
-    @Since( Version.TEIID_8_0 )
     USER_DEFINED;
 
     /**

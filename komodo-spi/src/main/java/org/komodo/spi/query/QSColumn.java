@@ -21,7 +21,7 @@
  */
 package org.komodo.spi.query;
 
-import org.komodo.spi.type.DataTypeManager.DataTypeName;
+import org.komodo.spi.type.DataTypeService.DataTypeName;
 
 public class QSColumn {
 

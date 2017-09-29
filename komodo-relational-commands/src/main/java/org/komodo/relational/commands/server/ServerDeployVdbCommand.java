@@ -43,7 +43,6 @@ import org.komodo.shell.api.TabCompletionModifier;
 import org.komodo.shell.api.WorkspaceStatus;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.runtime.TeiidInstance;
 import org.komodo.spi.runtime.TeiidVdb;
 import org.komodo.utils.StringUtils;
 import org.komodo.utils.i18n.I18n;
@@ -94,19 +93,10 @@ public final class ServerDeployVdbCommand extends ServerShellCommand {
             final KomodoObject vdbObj = getWorkspaceManager(getTransaction()).getChild(getTransaction(), vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE);
             final Vdb vdbToDeploy = Vdb.RESOLVER.resolve(getTransaction(), vdbObj);
 
-            // Validates that a server is connected
-            CommandResult validationResult = validateHasConnectedWorkspaceServer();
-            if ( !validationResult.isOk() ) {
-                return validationResult;
-            }
-
-            // Deploy the selected VDB
-            TeiidInstance teiidInstance = getWorkspaceTeiidInstance();
-
             // Determine if the server already has a deployed VDB with this name and version
             boolean serverHasVdb;
             try {
-                serverHasVdb = serverHasVdb( teiidInstance,
+                serverHasVdb = serverHasVdb(
                                              vdbToDeploy.getName( getTransaction() ),
                                              vdbToDeploy.getVersion( getTransaction() ) );
                 if(serverHasVdb && !overwrite) {
@@ -120,7 +110,7 @@ public final class ServerDeployVdbCommand extends ServerShellCommand {
                 // All VDB source model jndis must exist on the connected server
                 Set<String> sourceJndiNames = getPhysicalModelJndis(vdbToDeploy);
                 if(!sourceJndiNames.isEmpty()) {
-                    List<String> serverJndiNames = ServerUtils.getDatasourceJndiNames(teiidInstance);
+                    List<String> serverJndiNames = ServerUtils.getDatasourceJndiNames();
                     for(String sourceJndiName : sourceJndiNames) {
                         if(!serverJndiNames.contains(sourceJndiName)) {
                             return new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.vdbDeployFailedMissingSourceJndi, sourceJndiName ), null);
@@ -138,14 +128,13 @@ public final class ServerDeployVdbCommand extends ServerShellCommand {
                 String vdbDeploymentName = vdbToDeployName + VDB_DEPLOYMENT_SUFFIX;
                 InputStream stream = new ByteArrayInputStream(vdbXml);
                 try {
-                    teiidInstance.deployDynamicVdb(vdbDeploymentName, stream);
+                    ServerUtils.deployDynamicVdb(vdbDeploymentName, stream);
                 } catch (Exception ex) {
                     result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.vdbDeploymentError, ex.getLocalizedMessage() ), null );
                     return result;
                 }
             } catch (Exception ex) {
-                result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.connectionErrorWillDisconnect ), ex );
-                WkspStatusServerManager.getInstance(getWorkspaceStatus()).disconnectDefaultServer();
+                result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.accessError ), ex );
                 return result;
             }
 
@@ -212,14 +201,14 @@ public final class ServerDeployVdbCommand extends ServerShellCommand {
         print( indent, I18n.bind( ServerCommandsI18n.serverDeployVdbUsage ) );
     }
 
-    private boolean serverHasVdb(TeiidInstance teiidInstance, String vdbName, int vdbVersion) throws Exception {
+    private boolean serverHasVdb(String vdbName, int vdbVersion) throws Exception {
         // If no VDB with this name, return false;
-        if(!teiidInstance.hasVdb(vdbName)) {
+        if(!ServerUtils.hasVdb(vdbName)) {
             return false;
         }
 
         // May be multiple versions deployed - see if there is one matching supplied version
-        Collection<TeiidVdb> serverVdbs = teiidInstance.getVdbs();
+        Collection<TeiidVdb> serverVdbs = ServerUtils.getVdbs();
         for(TeiidVdb serverVdb : serverVdbs) {
             if(serverVdb.getName().equals(vdbName) && serverVdb.getVersion().equals(vdbVersion)) {
                 return true;
@@ -246,7 +235,7 @@ public final class ServerDeployVdbCommand extends ServerShellCommand {
      */
     @Override
     public final boolean isValidForCurrentContext() {
-        return (isWorkspaceContext() && hasConnectedWorkspaceServer());
+        return isWorkspaceContext();
     }
 
     /**

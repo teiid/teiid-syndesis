@@ -29,7 +29,6 @@ import org.komodo.shell.api.Arguments;
 import org.komodo.shell.api.CommandResult;
 import org.komodo.shell.api.TabCompletionModifier;
 import org.komodo.shell.api.WorkspaceStatus;
-import org.komodo.spi.runtime.TeiidInstance;
 import org.komodo.spi.runtime.TeiidVdb;
 import org.komodo.utils.i18n.I18n;
 
@@ -60,30 +59,22 @@ public final class ServerUndeployVdbCommand extends ServerShellCommand {
         try {
             String vdbName = requiredArgument( 0, I18n.bind( ServerCommandsI18n.missingVdbName ) );
 
-            // Validates that a server is connected
-            CommandResult validationResult = validateHasConnectedWorkspaceServer();
-            if ( !validationResult.isOk() ) {
-                return validationResult;
-            }
 
             try {
                 // Check the vdb name to make sure its valid
-                List< String > existingVdbNames = ServerUtils.getVdbNames(getWorkspaceTeiidInstance());
+                List< String > existingVdbNames = ServerUtils.getVdbNames();
                 if(!existingVdbNames.contains(vdbName)) {
                     return new CommandResultImpl(false, I18n.bind( ServerCommandsI18n.serverVdbNotFound, vdbName ), null);
                 }
-                // Undeploy the VDB
-                TeiidInstance teiidInstance = getWorkspaceTeiidInstance();
-                TeiidVdb vdb = teiidInstance.getVdb(vdbName);
+                TeiidVdb vdb = ServerUtils.getVdb(vdbName);
 
                 if(vdb==null) {
                     return new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.serverVdbNotFound, vdbName ), null );
                 } else {
-                    teiidInstance.undeployDynamicVdb(vdb.getName());
+                    ServerUtils.undeployDynamicVdb(vdb.getName());
                 }
             } catch (Exception ex) {
-                result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.connectionErrorWillDisconnect ), ex );
-                WkspStatusServerManager.getInstance(getWorkspaceStatus()).disconnectDefaultServer();
+                result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.accessError ), ex );
                 return result;
             }
 
@@ -148,7 +139,7 @@ public final class ServerUndeployVdbCommand extends ServerShellCommand {
         final Arguments args = getArguments();
 
         try {
-            List<String> existingVdbNames = ServerUtils.getVdbNames(getWorkspaceTeiidInstance());
+            List<String> existingVdbNames = ServerUtils.getVdbNames();
             Collections.sort(existingVdbNames);
 
             if ( args.isEmpty() ) {
@@ -164,8 +155,7 @@ public final class ServerUndeployVdbCommand extends ServerShellCommand {
             }
         } catch (Exception ex) {
             print( );
-            print( MESSAGE_INDENT, I18n.bind(ServerCommandsI18n.connectionErrorWillDisconnect) );
-            WkspStatusServerManager.getInstance(getWorkspaceStatus()).disconnectDefaultServer();
+            print( MESSAGE_INDENT, I18n.bind(ServerCommandsI18n.accessError) );
         }
         return TabCompletionModifier.AUTO;
     }

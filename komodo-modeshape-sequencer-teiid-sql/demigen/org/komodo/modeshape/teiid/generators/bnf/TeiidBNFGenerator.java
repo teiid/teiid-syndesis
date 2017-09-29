@@ -52,8 +52,7 @@ import org.komodo.modeshape.teiid.generators.bnf.clause.OrClause;
 import org.komodo.modeshape.teiid.generators.bnf.clause.TokenClause;
 import org.komodo.modeshape.teiid.parser.bnf.AbstractBNF;
 import org.komodo.modeshape.teiid.parser.bnf.BNFConstants;
-import org.komodo.spi.runtime.version.TeiidVersion;
-import org.komodo.spi.runtime.version.DefaultTeiidVersion;
+import org.komodo.spi.runtime.version.MetadataVersion;
 import org.komodo.utils.ArgCheck;
 
 /**
@@ -261,10 +260,14 @@ public class TeiidBNFGenerator implements GeneratorConstants {
                     String version = reqMatcher.group(1);
                     ArgCheck.isNotNull(version);
 
-                    // requiresVersionAtLeast(Version.TEIID_8_4);
-                    TokenClause clause = clauseStack.expectedLastClause(TokenClause.class);
-                    if (clause != null)
-                        clause.setMinimumVersion(version);
+                    // TODO
+                    //
+                    // Consider whether a version checking implementation is really necessary
+                    // Probably only need to consider if an when this BNF generator is ever used
+                    //
+//                    TokenClause clause = clauseStack.expectedLastClause(TokenClause.class);
+//                    if (clause != null)
+//                        clause.setMinimumVersion(version);
                 }
             }
         }
@@ -453,8 +456,7 @@ public class TeiidBNFGenerator implements GeneratorConstants {
         String imp = "import";
 
         Class<?>[] klazzes = { List.class,
-                                             TeiidVersion.class,
-                                             DefaultTeiidVersion.Version.class
+                                             MetadataVersion.class
                                             };
 
         for (Class<?> klazz : klazzes) {
@@ -477,7 +479,7 @@ public class TeiidBNFGenerator implements GeneratorConstants {
             .append(TAB + " * @param version of teiid" + NEW_LINE)
             .append(TAB + " */" + NEW_LINE)
             .append(TAB + PUBLIC + SPACE + "BNF" + OPEN_BRACKET)
-            .append(TeiidVersion.class.getSimpleName() + SPACE + "version" + CLOSE_BRACKET)
+            .append(MetadataVersion.class.getSimpleName() + SPACE + "version" + CLOSE_BRACKET)
             .append(SPACE + OPEN_BRACE + NEW_LINE)
             .append(TAB + TAB + "super(version)" + SEMI_COLON + NEW_LINE)
             .append(TAB + CLOSE_BRACE + NEW_LINE + NEW_LINE);

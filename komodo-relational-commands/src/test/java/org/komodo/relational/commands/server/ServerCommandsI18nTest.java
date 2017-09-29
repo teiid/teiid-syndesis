@@ -31,7 +31,7 @@ public final class ServerCommandsI18nTest {
 
     @Test
     public void shouldNotHaveErrors() throws Exception {
-        ServerCommandsI18n.attemptingToConnect.length();
+        ServerCommandsI18n.accessError.length();
     }
 
 }

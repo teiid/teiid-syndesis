@@ -15,7 +15,6 @@ import org.komodo.shell.CommandResultImpl;
 import org.komodo.shell.CompletionConstants;
 import org.komodo.shell.api.CommandResult;
 import org.komodo.shell.api.WorkspaceStatus;
-import org.komodo.spi.runtime.TeiidInstance;
 import org.komodo.utils.i18n.I18n;
 
 /**
@@ -54,32 +53,25 @@ public final class ServerDeployDriverCommand extends ServerShellCommand {
                 }
             }
 
-            // Validates that a server is connected
-            CommandResult validationResult = validateHasConnectedWorkspaceServer();
-            if ( !validationResult.isOk() ) {
-                return validationResult;
-            }
 
             // Deploy the driver to the server
             try {
                 // Determine if the server already has a type with the requested name
-                Set< String > serverTypes = getWorkspaceTeiidInstance().getDataSourceTypeNames();
+                Set< String > serverTypes = ServerUtils.getMetadataInstance().getDataSourceTypeNames();
                 if(serverTypes.contains(driverName)) {
                     return new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.driverDeployErrorServerHasMatch, driverName ), null );
                 }
                 
                 File driverFile = new File(fileName);
-                final TeiidInstance teiidInstance = getWorkspaceTeiidInstance();
                 try {
-                    teiidInstance.deployDriver(driverName, driverFile);
+                    ServerUtils.deployDriver(driverName, driverFile);
                 } catch (Exception ex) {
                     result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.driverDeploymentError, ex.getLocalizedMessage() ), null );
                     return result;
                 }
                 
             } catch (Exception ex) {
-                result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.connectionErrorWillDisconnect ), ex );
-                WkspStatusServerManager.getInstance(getWorkspaceStatus()).disconnectDefaultServer();
+                result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.accessError ), ex );
                 return result;
             }
 

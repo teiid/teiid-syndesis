@@ -44,11 +44,6 @@
 	</dependencyManagement>
 
 	<dependencies>
-		<!--
-			Needs to be specified before org.komodo.teiid-client since
-			its dependency on wildfly-cli brings in a transitive dependency
-			on aesh-0.66.4 which causes compilation errors
-		-->
 		<dependency>
 			<groupId>org.jboss.aesh</groupId>
 			<artifactId>aesh</artifactId>

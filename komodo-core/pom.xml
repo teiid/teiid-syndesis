@@ -45,6 +45,11 @@
 
 		<dependency>
 			<groupId>org.komodo</groupId>
+			<artifactId>komodo-metadata-instance</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.komodo</groupId>
 			<artifactId>komodo-modeshape-sequencer-teiid-sql</artifactId>		
 		</dependency>
 
@@ -55,7 +60,7 @@
 
 		<dependency>
 			<groupId>org.teiid</groupId>
-			<artifactId>teiid-client</artifactId>
+			<artifactId>teiid-engine</artifactId>
 		</dependency>
 
 		<dependency>

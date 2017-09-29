@@ -22,6 +22,7 @@
 package org.komodo.rest.service;
 
 import org.jboss.arquillian.junit.Arquillian;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.komodo.spi.constants.StringConstants;
@@ -37,7 +38,12 @@ public final class IT_KomodoTeiidServiceDataServiceTests extends AbstractKomodoT
         return 1;
     }
 
+    //
+    // TODO
+    // FIXME
+    //
     @Test
+    @Ignore("To be properly implemented")
     public void shouldDeployDataService() throws Exception {
         importDataService();
 

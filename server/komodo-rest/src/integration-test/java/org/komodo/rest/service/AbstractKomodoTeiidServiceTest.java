@@ -26,8 +26,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
@@ -38,10 +36,7 @@ import java.security.GeneralSecurityException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -69,36 +64,22 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.komodo.relational.workspace.ServerManager;
+import org.komodo.importer.ImportOptions.ExistingNodeOptions;
 import org.komodo.repository.RepositoryImpl;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.relational.KomodoRestUriBuilder;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.request.KomodoPathAttribute;
 import org.komodo.rest.relational.request.KomodoQueryAttribute;
-import org.komodo.rest.relational.request.KomodoTeiidAttributes;
+import org.komodo.rest.relational.response.ImportExportStatus;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.KomodoStorageAttributes;
 import org.komodo.rest.relational.response.RestQueryResult;
 import org.komodo.rest.relational.response.RestQueryRow;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.constants.SystemConstants;
-import org.komodo.spi.query.TeiidService;
 import org.komodo.spi.repository.DocumentType;
-import org.komodo.spi.runtime.ConnectionDriver;
-import org.komodo.spi.runtime.EventManager;
-import org.komodo.spi.runtime.ExecutionAdmin.ConnectivityType;
-import org.komodo.spi.runtime.HostProvider;
-import org.komodo.spi.runtime.TeiidAdminInfo;
-import org.komodo.spi.runtime.TeiidDataSource;
-import org.komodo.spi.runtime.TeiidInstance;
-import org.komodo.spi.runtime.TeiidJdbcInfo;
-import org.komodo.spi.runtime.TeiidParent;
-import org.komodo.spi.runtime.TeiidVdb;
-import org.komodo.spi.runtime.version.TeiidVersion;
-import org.komodo.spi.runtime.version.TeiidVersionProvider;
-import org.komodo.teiid.TeiidServiceProvider;
-import org.komodo.test.utils.DummyEventManager;
+import org.komodo.spi.storage.StorageConnector;
 import org.komodo.test.utils.TestUtilities;
 import org.komodo.utils.FileUtils;
 
@@ -108,15 +89,11 @@ public abstract class AbstractKomodoTeiidServiceTest implements StringConstants 
     protected static final String USER_NAME = "user";
     private static final String PASSWORD = "user";
     private static final String TEST_PORT = "8443";
-    protected static final String TEIID_DATA_PATH = RepositoryImpl.SERVERS_ROOT + FORWARD_SLASH + ServerManager.DEFAULT_SERVER_NAME;
-    protected static final String CACHED_TEIID_DATA_PATH = RepositoryImpl.TEIID_CACHE_ROOT + FORWARD_SLASH + ServerManager.DEFAULT_SERVER_NAME;
     protected static final String MYSQL_DRIVER = "mysql-connector";
-    protected static TeiidVersion teiidVersion;
     private static Path _kengineDataDir;
     protected static KomodoRestUriBuilder _uriBuilder;
-    private TeiidService service;
     protected static URI BASE_URI;
-    protected TeiidInstance helperInstance;
+
     private int testIndex = 0;
 
     @Deployment( testable = false )
@@ -126,11 +103,9 @@ public abstract class AbstractKomodoTeiidServiceTest implements StringConstants 
 
     @BeforeClass
     public static void beforeAll() throws Exception {
-        teiidVersion = TeiidVersionProvider.getInstance().getTeiidVersion();
-    
         _kengineDataDir = Files.createTempDirectory(null, new FileAttribute[0]);
         System.setProperty(SystemConstants.ENGINE_DATA_DIR, _kengineDataDir.toString());
-    
+
         System.setProperty("org.jboss.resteasy.port", TEST_PORT);
         final URI baseUri = URI.create(TestPortProvider.generateBaseUrl());
         BASE_URI = UriBuilder.fromUri(baseUri).scheme("https").path("/vdb-builder/v1").build();
@@ -196,85 +171,34 @@ public abstract class AbstractKomodoTeiidServiceTest implements StringConstants 
         return request;
     }
 
-    protected void assertNoMysqlDriver() throws Exception {
-        wait(2);
-    
-        Collection<ConnectionDriver> drivers = helperInstance.getDataSourceDrivers();
-        for (ConnectionDriver driver : drivers) {
-            assertFalse(driver.getName().startsWith(MYSQL_DRIVER));
-        }
-    }
+//    protected void assertNoMysqlDriver() throws Exception {
+//        wait(2);
+//    
+//        Collection<ConnectionDriver> drivers = helperInstance.getDrivers();
+//        for (ConnectionDriver driver : drivers) {
+//            assertFalse(driver.getName().startsWith(MYSQL_DRIVER));
+//        }
+//    }
+//
+//    protected void assertMysqlDriver() throws Exception {
+//        boolean found = false;
+//        for (int i = 0; i < 10 && !found; i++) {
+//            wait(3);
+//            Collection<ConnectionDriver> drivers = helperInstance.getDrivers();
+//            for (ConnectionDriver driver : drivers) {
+//                // Use startswith rather than equals since the
+//                // mysql connector gives up 2 drivers rather than just 1
+//                if (driver.getName().startsWith(MYSQL_DRIVER)) {
+//                    found = true;
+//                    break;
+//                }
+//            }
+//        }
+//        assertTrue("Cannot find deployed driver", found);
+//    }
 
-    protected void assertMysqlDriver() throws Exception {
-        boolean found = false;
-        for (int i = 0; i < 10 && !found; i++) {
-            wait(3);
-            Collection<ConnectionDriver> drivers = helperInstance.getDataSourceDrivers();
-            for (ConnectionDriver driver : drivers) {
-                // Use startswith rather than equals since the
-                // mysql connector gives up 2 drivers rather than just 1
-                if (driver.getName().startsWith(MYSQL_DRIVER)) {
-                    found = true;
-                    break;
-                }
-            }
-        }
-        assertTrue("Cannot find deployed driver", found);
-    }
-
-    protected TeiidInstance getTeiidInstance() throws Exception {
-        EventManager eventMgr = new DummyEventManager();
-    
-        TeiidParent parent = mock(TeiidParent.class);
-        when(parent.getHost()).thenReturn(HostProvider.DEFAULT_HOST);
-        when(parent.getUsername()).thenReturn(TeiidAdminInfo.DEFAULT_ADMIN_USERNAME);
-        when(parent.getPassword()).thenReturn(TeiidAdminInfo.DEFAULT_ADMIN_PASSWORD);
-        when(parent.getPort()).thenReturn(TeiidAdminInfo.Util.defaultPort(teiidVersion));
-        when(parent.getEventManager()).thenReturn(eventMgr);
-    
-        TeiidJdbcInfo jdbcInfo = mock(TeiidJdbcInfo.class);
-        when(jdbcInfo.getHostProvider()).thenReturn(parent);
-        when(jdbcInfo.getUsername()).thenReturn(TeiidJdbcInfo.DEFAULT_JDBC_USERNAME);
-        when(jdbcInfo.getPassword()).thenReturn(TeiidJdbcInfo.DEFAULT_JDBC_PASSWORD);
-        when(jdbcInfo.getPort()).thenReturn(TeiidJdbcInfo.DEFAULT_PORT);
-        when(jdbcInfo.isSecure()).thenReturn(true);
-    
-        return service.getTeiidInstance(parent, jdbcInfo);
-    }
-
-    protected void setJdbcName(String jdbcUser) throws Exception {
-        URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
-                                            .path(V1Constants.TEIID_SEGMENT)
-                                            .path(V1Constants.TEIID_CREDENTIALS)
-                                            .build();
-    
-        KomodoTeiidAttributes teiidAttrs = new KomodoTeiidAttributes();
-        teiidAttrs.setJdbcUser(jdbcUser);
-    
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        request.body(MediaType.APPLICATION_JSON_TYPE, teiidAttrs);
-    
-        ClientResponse<String> response = request.post(String.class);
-        assertEquals(200, response.getStatus());
-    }
-
-    protected void waitForVdb(String vdbName) throws Exception {
-        TeiidVdb vdb = null;
-        int TIMEOUT = 40;
-    
-        //
-        // Timeout after 120 seconds
-        //
-        for (int i = 0; vdb == null || i < TIMEOUT; ++i) {
-            vdb = helperInstance.getVdb(vdbName);
-            if (vdb != null && vdb.isActive())
-                return; // Found it and its active
-    
-            wait(3);
-            helperInstance.reconnect();
-        }
-    
-        fail("Timed out waiting for vdb " + vdbName + " to become active");
+    protected void waitForVdb() throws Exception {
+        Thread.sleep(20);
     }
 
     protected void wait(int seconds) {
@@ -285,81 +209,143 @@ public abstract class AbstractKomodoTeiidServiceTest implements StringConstants 
         }
     }
 
-    protected void undeployDrivers() throws Exception {
-        Set<String> undeployDrivers = new HashSet<String>();
-        Collection<ConnectionDriver> drivers = helperInstance.getDataSourceDrivers();
-        for (ConnectionDriver driver : drivers) {
-            if (driver.getName().startsWith(MYSQL_DRIVER)) {
-                String driverName = driver.getName();
-                //
-                // MySQL has 2 drivers so concatenates the class name
-                // to the end of the driver names but means that the driver
-                // cannot be undeployed unless the class name is removed
-                //
-                int endsWithClass = driverName.lastIndexOf(UNDERSCORE + driver.getClassName());
-                if (endsWithClass == -1)
-                    endsWithClass = driverName.lastIndexOf(driver.getClassName());
-    
-                if (endsWithClass > -1)
-                    driverName = driverName.substring(0, endsWithClass);
-    
-                undeployDrivers.add(driverName);
-            }
-        }
-    
-        for (String driver : undeployDrivers) {
-            try {
-                helperInstance.undeployDriver(driver);
-            } catch (Exception ex) {
-                // Flag as a warning that something in the test is going awry
-                ex.printStackTrace();
-            }
+    protected void checkResponse(ClientResponse<String> response) {
+        assertNotNull(response);
+        String entity = response.getEntity();
+        if (Response.Status.OK.getStatusCode() != response.getStatus()) {
+            fail(response.getStatus() + COLON + SPACE + entity.toString());
         }
     }
+
+//    protected void undeployDrivers() throws Exception {
+//        Set<String> undeployDrivers = new HashSet<String>();
+//        Collection<ConnectionDriver> drivers = helperInstance.getDrivers();
+//        for (ConnectionDriver driver : drivers) {
+//            if (driver.getName().startsWith(MYSQL_DRIVER)) {
+//                String driverName = driver.getName();
+//                //
+//                // MySQL has 2 drivers so concatenates the class name
+//                // to the end of the driver names but means that the driver
+//                // cannot be undeployed unless the class name is removed
+//                //
+//                int endsWithClass = driverName.lastIndexOf(UNDERSCORE + driver.getClassName());
+//                if (endsWithClass == -1)
+//                    endsWithClass = driverName.lastIndexOf(driver.getClassName());
+//    
+//                if (endsWithClass > -1)
+//                    driverName = driverName.substring(0, endsWithClass);
+//    
+//                undeployDrivers.add(driverName);
+//            }
+//        }
+//    
+//        for (String driver : undeployDrivers) {
+//            try {
+//                helperInstance.undeployDriver(driver);
+//            } catch (Exception ex) {
+//                // Flag as a warning that something in the test is going awry
+//                ex.printStackTrace();
+//            }
+//        }
+//    }
 
     private void undeployVdbs() throws Exception {
-        for (TeiidVdb vdb : helperInstance.getVdbs()) {
-            helperInstance.undeployDynamicVdb(vdb.getName());
-        }
+        deleteSample();
     }
 
-    private void undeployDataSources() throws Exception {
-        TeiidInstance teiidInstance = getTeiidInstance();
-        teiidInstance.connect();
-    
-        for (TeiidDataSource ds : teiidInstance.getDataSources()) {
-            if (ds.getName().contains("Example"))
-                continue; // Leave the exampleDS in situ
+//    private void undeployDataSources() throws Exception {
+//        TeiidInstance teiidInstance = getTeiidInstance();
+//        teiidInstance.connect();
+//    
+//        for (TeiidDataSource ds : teiidInstance.getDataSources()) {
+//            if (ds.getName().contains("Example"))
+//                continue; // Leave the exampleDS in situ
+//
+//            helperInstance.deleteDataSource(ds.getName());
+//        }
+//    }
 
-            helperInstance.deleteDataSource(ds.getName());
-        }
+    protected void deleteSample() throws Exception {
+        //
+        // REMOVE SAMPLE IF IT EXISTS
+        //
+        URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
+                                            .path(V1Constants.WORKSPACE_SEGMENT)
+                                            .path(V1Constants.VDBS_SEGMENT)
+                                            .path(TestUtilities.SAMPLE_VDB_NAME).build();
+
+        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        request.header("Content-Type", MediaType.APPLICATION_JSON);
+        ClientResponse<String> response = request.delete(String.class);
     }
-    
+
+    protected void loadSample() throws Exception {
+        deleteSample();
+
+        //
+        // IMPORT SAMPLE INTO WORKSPACE
+        //
+        URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
+                                            .path(V1Constants.IMPORT_EXPORT_SEGMENT)
+                                            .path(V1Constants.IMPORT).build();
+
+        KomodoStorageAttributes storageAttr = new KomodoStorageAttributes();
+        storageAttr.setStorageType("file");
+        storageAttr.setDocumentType(DocumentType.VDB_XML);
+        storageAttr.setParameter(StorageConnector.IMPORT_OVERWRITE_PROPERTY, ExistingNodeOptions.OVERWRITE.name());
+
+        String sampleCnt = FileUtils.streamToString(TestUtilities.sampleExample());
+        String content = Base64.getEncoder().encodeToString(sampleCnt.getBytes());
+        storageAttr.setContent(content);
+
+        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        request.header("Content-Type", MediaType.APPLICATION_JSON);
+        request.body(MediaType.APPLICATION_JSON_TYPE, storageAttr);
+        ClientResponse<String> response = request.post(String.class);
+
+        String entity = response.getEntity();
+
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        ImportExportStatus status = KomodoJsonMarshaller.unmarshall(entity, ImportExportStatus.class);
+        assertNotNull(status);
+
+        assertTrue(status.isSuccess());
+        assertFalse(status.hasDownloadable());
+        assertEquals(VDB_DEPLOYMENT_SUFFIX, status.getType());
+
+        //
+        // DEPLOY SAMPLE TO METADATA SERVER
+        //
+        String samplePath = "/tko:komodo/tko:workspace/user/sample";
+        KomodoPathAttribute pathAttribute = new KomodoPathAttribute();
+        pathAttribute.setPath(samplePath);
+
+        uri = UriBuilder.fromUri(_uriBuilder.baseUri())
+                                    .path(V1Constants.METADATA_SEGMENT)
+                                    .path(V1Constants.VDB_SEGMENT).build();
+
+        request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        request.header("Content-Type", MediaType.APPLICATION_JSON);
+        request.body(MediaType.APPLICATION_JSON_TYPE, pathAttribute);
+        response = request.post(String.class);
+
+        checkResponse(response);
+    }
+
     @Before
     public void beforeEach() throws Exception {
         testIndex++;
+    
+        // Deploy sample vdb for services to find
+        loadSample();
 
-        this.service = TeiidServiceProvider.getInstance().getTeiidService();
-    
-        helperInstance = getTeiidInstance();
-        helperInstance.connect();
-    
-        // Deploy sample vdb for service to find
-        helperInstance.deployDynamicVdb(TestUtilities.SAMPLE_VDB_FILE, TestUtilities.sampleExample());
-        waitForVdb(TestUtilities.SAMPLE_VDB_NAME);
+       waitForVdb();
     }
 
     protected abstract int getTestTotalInClass();
 
     @After
     public void afterEach() throws Exception {
-        setJdbcName(TeiidJdbcInfo.DEFAULT_JDBC_USERNAME);
-    
-        //
-        // Refresh the artifacts of this client instance
-        //
-        helperInstance.reconnect();
-
         //
         // Do not undeploy between tests due to TEIID-4592 / 3834.
         // (Question when it will be fixed for Teiid 9.1+)
@@ -370,18 +356,13 @@ public abstract class AbstractKomodoTeiidServiceTest implements StringConstants 
         if (testIndex  == getTestTotalInClass()) {
             try {
                 undeployVdbs();
-                undeployDataSources();
-                undeployDrivers();
+//                undeployDataSources();
+//                undeployDrivers();
                 wait(2);
             } catch (Exception ex) {
                 ex.printStackTrace(); // show in console but avoid failing the test
             }
         }
-    
-        if (helperInstance != null)
-            helperInstance.disconnect();
-    
-        helperInstance = null;
     }
 
     protected void importDataService() throws Exception {
@@ -419,18 +400,16 @@ public abstract class AbstractKomodoTeiidServiceTest implements StringConstants 
         // Deploy the data service
         //
         URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
-                                    .path(V1Constants.TEIID_SEGMENT)
+                                    .path(V1Constants.METADATA_SEGMENT)
                                     .path(V1Constants.DATA_SERVICE_SEGMENT)
                                     .build();
     
         ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
         request.body(MediaType.APPLICATION_JSON_TYPE, pathAttr);
         ClientResponse<String> response = request.post(String.class);
-        final String entity = response.getEntity();
+        checkResponse(response);
     
-        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-    
-        KomodoStatusObject status = KomodoJsonMarshaller.unmarshall(entity, KomodoStatusObject.class);
+        KomodoStatusObject status = KomodoJsonMarshaller.unmarshall(response.getEntity(), KomodoStatusObject.class);
         assertNotNull(status);
     
         Map<String, String> attributes = status.getAttributes();
@@ -447,7 +426,7 @@ public abstract class AbstractKomodoTeiidServiceTest implements StringConstants 
         // Query the deployed vdb
         //
         uri = UriBuilder.fromUri(_uriBuilder.baseUri())
-                                    .path(V1Constants.TEIID_SEGMENT)
+                                    .path(V1Constants.METADATA_SEGMENT)
                                     .path(V1Constants.QUERY_SEGMENT)
                                     .build();
     
@@ -456,8 +435,7 @@ public abstract class AbstractKomodoTeiidServiceTest implements StringConstants 
         ClientResponse<String> response = request.post(String.class);
         entity = response.getEntity();
     
-        System.out.println("Entity: " + entity);
-        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        checkResponse(response);
     
         RestQueryResult result = KomodoJsonMarshaller.unmarshall(entity, RestQueryResult.class);
         assertNotNull(result);
@@ -467,31 +445,4 @@ public abstract class AbstractKomodoTeiidServiceTest implements StringConstants 
         String value = firstRow.getValues()[0];
         assertEquals(new Integer(firstCellValue).toString(), value);
     }
-
-    protected ClientResponse<String> ping(ConnectivityType cType) throws Exception {
-        URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
-                                            .path(V1Constants.TEIID_SEGMENT)
-                                            .path(V1Constants.PING_SEGMENT)
-                                            .queryParam(V1Constants.PING_TYPE_PARAMETER, cType.toString().toLowerCase())
-                                            .build();
-    
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
-        assertEquals(200, response.getStatus());
-        return response;
-    }
-
-    protected void shouldPing(ConnectivityType cType) throws Exception {
-    
-        ClientResponse<String> response = ping(cType);
-        String entity = response.getEntity();
-    
-        KomodoStatusObject status = KomodoJsonMarshaller.unmarshall(entity, KomodoStatusObject.class);
-        assertNotNull(status);
-    
-        Map<String, String> attributes = status.getAttributes();
-        assertEquals("true", attributes.get("OK"));
-        assertEquals("OK", attributes.get("Message"));
-    }
-
 }

@@ -45,10 +45,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import javax.transaction.TransactionManager;
 import javax.xml.stream.XMLStreamException;
-
 import org.jboss.vfs.VirtualFile;
 import org.teiid.PreParser;
 import org.teiid.adminapi.Admin;
@@ -116,6 +114,7 @@ import org.teiid.query.metadata.PureZipFileSystem;
 import org.teiid.query.metadata.SystemMetadata;
 import org.teiid.query.metadata.TransformationMetadata;
 import org.teiid.query.metadata.VDBResources;
+import org.teiid.query.parser.QueryParser;
 import org.teiid.query.sql.lang.Command;
 import org.teiid.query.tempdata.GlobalTableStore;
 import org.teiid.query.validator.ValidatorFailure;
@@ -127,7 +126,16 @@ import org.teiid.services.SessionServiceImpl;
 import org.teiid.translator.ExecutionFactory;
 import org.teiid.translator.Translator;
 import org.teiid.translator.TranslatorException;
-import org.teiid.transport.*;
+import org.teiid.transport.ChannelListener;
+import org.teiid.transport.ClientServiceRegistry;
+import org.teiid.transport.ClientServiceRegistryImpl;
+import org.teiid.transport.LocalServerConnection;
+import org.teiid.transport.LogonImpl;
+import org.teiid.transport.ODBCSocketListener;
+import org.teiid.transport.SocketClientInstance;
+import org.teiid.transport.SocketConfiguration;
+import org.teiid.transport.SocketListener;
+import org.teiid.transport.WireProtocol;
 import org.teiid.vdb.runtime.VDBKey;
 import org.xml.sax.SAXException;
 
@@ -675,6 +683,22 @@ public class EmbeddedServer extends AbstractVDBDeployer implements EventDistribu
         }
     }
 
+    /**
+     * @return the collection of deployed vdbs
+     * @throws Exception
+     */
+    public List<VDBMetaData> getVdbs() throws Exception {
+        checkStarted();
+
+        return repo.getVDBs();
+    }
+
+    public VDBMetaData getVdb(String vdbName, String vdbVersion) throws Exception {
+        checkStarted();
+
+        return repo.getVDB(vdbName, vdbVersion);
+    }
+
 	/**
 	 * Deploy the given set of models as vdb name.1
 	 * @param name
@@ -1073,4 +1097,16 @@ public class EmbeddedServer extends AbstractVDBDeployer implements EventDistribu
             deployment.addAttchment(PreParser.class, preParser);
         }
 	}
+
+	/**
+	 * Parse the given sql
+	 *
+	 * @param sql the sql string
+	 * @return a {@link Command} object of the SQL object hierarchy
+	 * @throws Exception if an error occurs
+	 */
+    public Command parseCommand(String sql) throws Exception {
+        QueryParser parser = new QueryParser();
+        return  parser.parseDesignerCommand(sql);
+    }
 }

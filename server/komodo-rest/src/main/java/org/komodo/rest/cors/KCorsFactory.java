@@ -22,9 +22,6 @@
 package org.komodo.rest.cors;
 
 import org.komodo.rest.cors.rest3.KCorsFilter;
-import org.komodo.spi.runtime.version.DefaultTeiidVersion.Version;
-import org.komodo.spi.runtime.version.TeiidVersion;
-import org.komodo.utils.ArgCheck;
 
 /**
  * Factory for instantiating the Cors interceptor / filter
@@ -43,16 +40,9 @@ public class KCorsFactory {
     private KCorsFactory() { /* nothing to do */ };
 
     /**
-     * 
-     * @param teiidVersion
      * @return new {@link KCorsHandler}
      */
-    public KCorsHandler createHandler(TeiidVersion teiidVersion) throws Exception {
-        ArgCheck.isNotNull(teiidVersion, "teiid version");
-
-        if (teiidVersion.isLessThan(Version.TEIID_9_1))
-            throw new IllegalStateException("Version of Teiid incompatible");
-
+    public KCorsHandler createHandler() throws Exception {
         return new KCorsFilter();
     }
 }

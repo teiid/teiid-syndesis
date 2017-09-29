@@ -22,8 +22,7 @@
 package org.komodo.modeshape.teiid.parser.bnf;
 
 import java.util.List;
-import org.komodo.spi.runtime.version.TeiidVersion;
-import org.komodo.spi.runtime.version.DefaultTeiidVersion.Version;
+import org.komodo.spi.runtime.version.MetadataVersion;
 
 /**
  * Teiid BNF implemented auto completion class based on Teiid Parser template
@@ -34,7 +33,7 @@ public class BNF  extends AbstractBNF {
 	/**
 	 * @param version of teiid
 	 */
-	public BNF(TeiidVersion version) {
+	public BNF(MetadataVersion version) {
 		super(version);
 	}
 
@@ -398,7 +397,7 @@ public class BNF  extends AbstractBNF {
 		append(bnf, delete(0));
 		append(bnf, alter(0));
 		append(bnf, createTrigger(0));
-		if (versionAtLeast(Version.TEIID_8_4)) append(bnf, compoundStatement(0));
+		append(bnf, compoundStatement(0));
 		return array(bnf);
 	}
 
@@ -1587,7 +1586,7 @@ public class BNF  extends AbstractBNF {
 		} else if (index == BNF.expressionList) {
 			append(bnf, ")");
 		} else if (index == concat(BNF.VALUES,BNF.RPAREN)) {
-			if (versionAtLeast(Version.TEIID_8_6)) append(bnf, ",");
+			append(bnf, ",");
 		} else if (index == BNF.COMMA) {
 			append(bnf, "(");
 		}
@@ -2506,7 +2505,7 @@ public class BNF  extends AbstractBNF {
 			append(bnf, "FOR");
 			append(bnf, parseDataType(0));
 		} else if (index == BNF.FOR) {
-			if (versionAtLeast(Version.TEIID_8_7)) append(bnf, "ORDINALITY");
+			append(bnf, "ORDINALITY");
 		} else if (index == BNF.WIDTH) {
 			append(bnf, intVal(0));
 		} else if (index == BNF.SELECTOR) {
@@ -3339,7 +3338,7 @@ public class BNF  extends AbstractBNF {
 				append(bnf, "BY");
 				break;
 			case BNF.BY:
-				if (versionAtLeast(Version.TEIID_8_5)) append(bnf, "ROLLUP");
+				append(bnf, "ROLLUP");
 				break;
 			case BNF.ROLLUP:
 				append(bnf, "(");
@@ -3880,16 +3879,16 @@ public class BNF  extends AbstractBNF {
 			append(bnf, "(");
 		} else if (index == BNF.LPAREN) {
 			append(bnf, expression(0));
-			if (versionAtLeast(Version.TEIID_8_5)) append(bnf, ",");
+			append(bnf, ",");
 			append(bnf, ")");
 		} else if (index == BNF.expression) {
 			append(bnf, ",");
-			if (versionAtLeast(Version.TEIID_8_5)) append(bnf, ",");
+			append(bnf, ",");
 			append(bnf, ")");
 		} else if (index == BNF.COMMA) {
 			append(bnf, ")");
 		} else if (index == concat(BNF.LPAREN,BNF.expression,BNF.COMMA)) {
-			if (versionAtLeast(Version.TEIID_8_5)) append(bnf, expression(0));
+			append(bnf, expression(0));
 		}
 
 		return array(bnf);
@@ -4295,7 +4294,7 @@ public class BNF  extends AbstractBNF {
 		} else if (index == concat(BNF.EXTRACT,BNF.FROM,BNF.expression)) {
 			append(bnf, ")");
 		} else if (index == BNF.stringVal) {
-			if (versionAtLeast(Version.TEIID_8_6)) append(bnf, ",");
+			append(bnf, ",");
 			append(bnf, ")");
 		} else if (index == concat(BNF.intervalType,BNF.expression)) {
 			append(bnf, ",");
@@ -4752,7 +4751,7 @@ public class BNF  extends AbstractBNF {
 				append(bnf, "[");
 				break;
 			case BNF.LSBRACE:
-				if (versionAtLeast(Version.TEIID_8_5)) append(bnf, "]");
+				append(bnf, "]");
 				break;
 			case BNF.RSBRACE:
 				append(bnf, "[");

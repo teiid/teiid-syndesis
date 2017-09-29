@@ -48,7 +48,6 @@ import org.komodo.relational.resource.DdlFile;
 import org.komodo.relational.resource.Driver;
 import org.komodo.relational.resource.ResourceFile;
 import org.komodo.relational.resource.UdfFile;
-import org.komodo.relational.teiid.Teiid;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.repository.RepositoryTools;
@@ -125,7 +124,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
      */
     @Override
     public byte[] export(UnitOfWork transaction, Properties exportProperties) throws KException {
-        DataserviceConveyor conveyor = new DataserviceConveyor(getRepository());
+        DataserviceConveyor conveyor = new DataserviceConveyor(getRepository(), getMetadataInstance());
         return conveyor.export(transaction, this, exportProperties);
     }
 
@@ -477,9 +476,9 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
     }
 
     @Override
-    public DeployStatus deploy(UnitOfWork uow, Teiid teiid) {
-        DataserviceConveyor conveyor = new DataserviceConveyor(getRepository());
-        return conveyor.deploy(uow, this, teiid);
+    public DeployStatus deploy(UnitOfWork uow) {
+        DataserviceConveyor conveyor = new DataserviceConveyor(getRepository(), getMetadataInstance());
+        return conveyor.deploy(uow, this);
     }
 
     /* (non-Javadoc)

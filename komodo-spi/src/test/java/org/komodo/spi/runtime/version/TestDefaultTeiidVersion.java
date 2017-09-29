@@ -23,26 +23,17 @@ package org.komodo.spi.runtime.version;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
-import org.komodo.spi.runtime.version.DefaultTeiidVersion.Version;
 
 public class TestDefaultTeiidVersion {
 
-    @Test
-    public void shouldReturnValidVersion() {
-        TeiidVersion teiidVersion = DefaultTeiidVersion.Version.DEFAULT_TEIID_VERSION.get();
-        System.out.println(teiidVersion);
-        assertNotNull(teiidVersion);
-    }
-
-    private TeiidVersion version(String versionId) {
-        return new DefaultTeiidVersion(versionId);
+    private MetadataVersion version(String versionId) {
+        return new DefaultMetadataVersion(versionId);
     }
 
     /**
-     * Test {@link DefaultTeiidVersion#compareTo(TeiidVersion)}
+     * Test {@link DefaultMetadataVersion#compareTo(MetadataVersion)}
      */
     @Test
     public void testCompareTo() {
@@ -70,7 +61,7 @@ public class TestDefaultTeiidVersion {
     }
 
     /**
-     * Test {@link DefaultTeiidVersion#getMaximumVersion()}
+     * Test {@link DefaultMetadataVersion#getMaximumVersion()}
      */
     @Test
     public void testGetMaximum() {
@@ -81,7 +72,7 @@ public class TestDefaultTeiidVersion {
     }
 
     /**
-     * Test {@link DefaultTeiidVersion#getMinimumVersion()}
+     * Test {@link DefaultMetadataVersion#getMinimumVersion()}
      */
     @Test
     public void testGetMinimum() {
@@ -92,7 +83,7 @@ public class TestDefaultTeiidVersion {
     }
 
     /**
-     * Test {@link DefaultTeiidVersion#isGreaterThan(TeiidVersion)}
+     * Test {@link DefaultMetadataVersion#isGreaterThan(MetadataVersion)}
      */
     @Test
     public void testIsGreaterThan() {
@@ -160,7 +151,7 @@ public class TestDefaultTeiidVersion {
     }
 
     /**
-     * Test {@link DefaultTeiidVersion#isLessThan(TeiidVersion)}
+     * Test {@link DefaultMetadataVersion#isLessThan(MetadataVersion)}
      */
     @Test
     public void testIsLessThan() {
@@ -227,8 +218,9 @@ public class TestDefaultTeiidVersion {
 
     @Test
     public void testIsLessThan2() {
-        assertTrue(Version.TEIID_8_12_4.get().isLessThan(version("9.0.0")));
+        DefaultMetadataVersion version = new DefaultMetadataVersion("8.12.4");
+        assertTrue(version.isLessThan(version("9.0.0")));
 
-        assertFalse(Version.TEIID_8_12_4.get().isLessThan(version("8.6.0")));
+        assertFalse(version.isLessThan(version("8.6.0")));
     }
 }

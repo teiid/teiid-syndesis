@@ -55,9 +55,9 @@ import org.komodo.spi.repository.Repository.State;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.RepositoryClientEvent;
 import org.komodo.test.utils.AbstractLoggingTest;
-import org.komodo.test.utils.LocalRepositoryObserver;
 import org.komodo.test.utils.TestUtilities;
 import org.komodo.utils.FileUtils;
+import org.komodo.utils.observer.KLatchRepositoryObserver;
 import org.modeshape.jcr.JcrLexicon;
 import org.modeshape.jcr.api.JcrConstants;
 import org.modeshape.jcr.api.observation.Event.Sequencing;
@@ -84,8 +84,6 @@ public class TestLocalRepositoryPersistence extends AbstractLoggingTest implemen
 
     protected LocalRepository _repo = null;
 
-    protected LocalRepositoryObserver _repoObserver = null;
-
     private File testDb(String dbPath) {
         return new File(dbPath);
     }
@@ -101,8 +99,8 @@ public class TestLocalRepositoryPersistence extends AbstractLoggingTest implemen
             FileUtils.removeDirectoryAndChildren(testDb);
     }
 
-    private void checkRepoObserverErrors() throws Exception {
-        Throwable startupError = _repoObserver.getError();
+    private void checkRepoObserverErrors(KLatchRepositoryObserver repoObserver) throws Exception {
+        Throwable startupError = repoObserver.getError();
         if (startupError != null) {
             startupError.printStackTrace();
             fail("Repository error occurred on startup: " + startupError.getMessage());
@@ -118,22 +116,25 @@ public class TestLocalRepositoryPersistence extends AbstractLoggingTest implemen
         assertThat(_repo.getState(), is(State.NOT_REACHABLE));
         assertThat(_repo.ping(), is(false));
 
-        _repoObserver = new LocalRepositoryObserver(KEvent.Type.REPOSITORY_STARTED);
-        assertNotNull(_repoObserver);
-        _repo.addObserver(_repoObserver);
+        KLatchRepositoryObserver _repoStartedObserver = new KLatchRepositoryObserver(KEvent.Type.REPOSITORY_STARTED);
+        _repo.addObserver(_repoStartedObserver);
 
         // Start the repository
         final KClient client = mock(KClient.class);
         final RepositoryClientEvent event = RepositoryClientEvent.createStartedEvent(client);
         _repo.notify(event);
 
-        // Wait for the starting of the repository or timeout of 1 minute
-        if (!_repoObserver.getLatch().await(1, TimeUnit.MINUTES)) {
-            checkRepoObserverErrors();
-            fail("Test timed-out waiting for local repository to start");
-        }
+        try {
+            // Wait for the starting of the repository or timeout of 1 minute
+            if (!_repoStartedObserver.getLatch().await(1, TimeUnit.MINUTES)) {
+                checkRepoObserverErrors(_repoStartedObserver);
+                fail("Test timed-out waiting for local repository to start");
+            }
 
-        checkRepoObserverErrors();
+            checkRepoObserverErrors(_repoStartedObserver);
+        } finally {
+            _repo.removeObserver(_repoStartedObserver);
+        }
     }
 
     private void initLocalRepository(String configFile) throws Exception {
@@ -147,20 +148,19 @@ public class TestLocalRepositoryPersistence extends AbstractLoggingTest implemen
      */
     private void destroyLocalRepository() throws Exception {
         assertNotNull(_repo);
-        assertNotNull(_repoObserver);
 
-        _repoObserver.resetLatch();
+        KLatchRepositoryObserver _repoStoppedObserver = new KLatchRepositoryObserver(KEvent.Type.REPOSITORY_STOPPED);
+        _repo.addObserver(_repoStoppedObserver);
 
         KClient client = mock(KClient.class);
         RepositoryClientEvent event = RepositoryClientEvent.createShuttingDownEvent(client);
         _repo.notify(event);
 
         try {
-            if (! _repoObserver.getLatch().await(1, TimeUnit.MINUTES))
+            if (! _repoStoppedObserver.getLatch().await(1, TimeUnit.MINUTES))
                 fail("Local repository was not stopped");
         } finally {
-            _repo.removeObserver(_repoObserver);
-            _repoObserver = null;
+            _repo.removeObserver(_repoStoppedObserver);
             _repo = null;
         }
     }

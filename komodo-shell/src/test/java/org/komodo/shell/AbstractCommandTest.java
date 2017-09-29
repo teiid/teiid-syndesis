@@ -32,6 +32,7 @@ import org.komodo.shell.api.KomodoShell;
 import org.komodo.shell.api.ShellCommand;
 import org.komodo.shell.commands.PlayCommand;
 import org.komodo.spi.KClient;
+import org.komodo.spi.KEvent;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.constants.SystemConstants;
 import org.komodo.spi.repository.Repository;
@@ -40,6 +41,7 @@ import org.komodo.test.utils.AbstractLocalRepositoryTest;
 import org.komodo.test.utils.TestUtilities;
 import org.komodo.utils.FileUtils;
 import org.komodo.utils.KLog;
+import org.komodo.utils.observer.KLatchRepositoryObserver;
 import org.mockito.Mockito;
 
 /**
@@ -93,10 +95,12 @@ public abstract class AbstractCommandTest extends AbstractLocalRepositoryTest {
         FileUtils.removeDirectoryAndChildren( _shellDataDirectory.toFile() );
 
         // Reset the latch to signal when repo has been shutdown
-        _repoObserver.resetLatch();
+        KLatchRepositoryObserver _repoShutdownObserver = new KLatchRepositoryObserver(KEvent.Type.REPOSITORY_STOPPED);
+        _repo.addObserver(_repoShutdownObserver);
+
         kEngine.shutdown();
 
-        if (! _repoObserver.getLatch().await(1, TimeUnit.MINUTES)) {
+        if (! _repoShutdownObserver.getLatch().await(1, TimeUnit.MINUTES)) {
             throw new RuntimeException("Local repository was not stopped");
         }
 

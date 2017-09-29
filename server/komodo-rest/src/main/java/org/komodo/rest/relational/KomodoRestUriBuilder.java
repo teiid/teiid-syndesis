@@ -25,7 +25,6 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Properties;
 import javax.ws.rs.core.UriBuilder;
-import org.komodo.core.KomodoLexicon;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.template.Template;
@@ -164,24 +163,6 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
     public KomodoRestUriBuilder(final URI baseUri) {
         ArgCheck.isNotNull(baseUri, "baseUri"); //$NON-NLS-1$
         this.baseUri = baseUri;
-    }
-
-    private boolean isCachedTeiidFolder(UnitOfWork uow, KomodoObject kObject) throws KException {
-        if (kObject == null)
-            return false;
-
-        Descriptor type = kObject.getPrimaryType(uow);
-        if (type == null) return false;
-
-        // Check this type is a folder, then check parent is CachedTeiid
-        if(KomodoLexicon.Folder.NODE_TYPE.equals(type.getName())) {
-            KomodoObject parentObj = kObject.getParent(uow);
-            if(parentObj != null) {
-                Descriptor parentType = parentObj.getPrimaryType(uow);
-                return parentType!=null && KomodoLexicon.CachedTeiid.NODE_TYPE.equals(parentType.getName());
-            }
-        }
-        return false;
     }
 
     private boolean isVdb(UnitOfWork uow, KomodoObject kObject) throws KException {
@@ -344,44 +325,47 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
      */
     public URI teiidCacheUri() {
         return UriBuilder.fromUri(this.baseUri)
-                                     .path(TEIID_SEGMENT).build();
+                                     .path(METADATA_SEGMENT).build();
     }
 
     /**
-     * @return the URI to use when requesting the teiid cache  (never <code>null</code>)
+     * @return the URI to use when requesting the metadata server  (never <code>null</code>)
      */
-    public URI teiidStatusUri() {
+    public URI mServerUri() {
         return UriBuilder.fromUri(this.baseUri)
-                                     .path(TEIID_SEGMENT)
-                                     .path(STATUS_SEGMENT)
+                                     .path(METADATA_SEGMENT)
                                      .build();
     }
 
     /**
-     * @return the URI to use when requesting the teiid cache  (never <code>null</code>)
+     * @return the URI to use when requesting the metadata server vdbs collection  (never <code>null</code>)
      */
-    public URI teiidVdbStatusUri() {
+    public URI mServerVdbsUri() {
         return UriBuilder.fromUri(this.baseUri)
-                                     .path(TEIID_SEGMENT)
-                                     .path(STATUS_SEGMENT)
+                                     .path(METADATA_SEGMENT)
                                      .path(VDBS_SEGMENT)
                                      .build();
     }
 
     /**
-     * @return the URI to use when requesting a specific cached teiid  (never <code>null</code>)
+     * @return the URI to use when requesting the metadata status  (never <code>null</code>)
      */
-    public URI cachedTeiidUri(String teiidId) {
-        return UriBuilder.fromUri(teiidCacheUri())
-                                     .path(teiidId).build();
+    public URI mServerStatusUri() {
+        return UriBuilder.fromUri(this.baseUri)
+                                     .path(METADATA_SEGMENT)
+                                     .path(STATUS_SEGMENT)
+                                     .build();
     }
 
     /**
-     * @return the URI to use when requesting a collection of VDBs in a teiid cache (never <code>null</code>)
+     * @return the URI to use when requesting the teiid cache  (never <code>null</code>)
      */
-    public URI cacheTeiidVdbsUri(String teiidId) {
-        return UriBuilder.fromUri(cachedTeiidUri(teiidId))
-                                   .path(VDBS_SEGMENT).build();
+    public URI mServerVdbStatusUri() {
+        return UriBuilder.fromUri(this.baseUri)
+                                     .path(METADATA_SEGMENT)
+                                     .path(STATUS_SEGMENT)
+                                     .path(VDBS_SEGMENT)
+                                     .build();
     }
 
     /**
@@ -436,12 +420,6 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
      * @throws KException
      */
     public URI vdbParentUri(Vdb vdb, UnitOfWork uow) throws KException {
-        KomodoObject parent = vdb.getParent(uow);
-        if (isCachedTeiidFolder(uow, parent)) {
-            KomodoObject cachedTeiid = parent.getParent(uow);
-            return cacheTeiidVdbsUri(cachedTeiid.getName(uow));
-        }
-
         return workspaceVdbsUri();
     }
 
@@ -649,10 +627,7 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
      */
     public URI vdbTranslatorParentUri(Translator translator, UnitOfWork uow) throws KException {
         KomodoObject parent = translator.getParent(uow);
-        if (isCachedTeiidFolder(uow, parent)) {
-            return cachedTeiidUri(parent.getName(uow));
-        }
-        else if (isVdb(uow, parent)) {
+        if (isVdb(uow, parent)) {
             String vdbName = parent.getName(uow);
             return vdbUri(workspaceVdbsUri(), vdbName);
         }
@@ -908,11 +883,6 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
      * @throws KException
      */
     public URI connectionParentUri(Connection connection, UnitOfWork uow) throws KException {
-        KomodoObject parent = connection.getParent(uow);
-        if (isCachedTeiidFolder(uow, parent)) {
-            return cachedTeiidUri(parent.getName(uow));
-        }
-
         return workspaceConnectionsUri();
     }
 
@@ -923,11 +893,6 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
      * @throws KException
      */
     public URI templateParentUri(Template template, UnitOfWork uow) throws KException {
-        KomodoObject parent = template.getParent(uow);
-        if (isCachedTeiidFolder(uow, parent)) {
-            return cachedTeiidUri(parent.getName(uow));
-        }
-
         return workspaceConnectionsUri();
     }
 

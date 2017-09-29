@@ -22,12 +22,10 @@
 package org.komodo.relational.commands.server;
 
 import static org.komodo.shell.CompletionConstants.MESSAGE_INDENT;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-
 import org.komodo.relational.commands.workspace.WorkspaceCommandsI18n;
 import org.komodo.relational.connection.Connection;
 import org.komodo.shell.CommandResultImpl;
@@ -37,7 +35,6 @@ import org.komodo.shell.api.TabCompletionModifier;
 import org.komodo.shell.api.WorkspaceStatus;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.runtime.TeiidDataSource;
-import org.komodo.spi.runtime.TeiidInstance;
 import org.komodo.utils.StringUtils;
 import org.komodo.utils.i18n.I18n;
 import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
@@ -84,25 +81,19 @@ public final class ServerGetDatasourceCommand extends ServerShellCommand {
                 return new CommandResultImpl( false, I18n.bind(ServerCommandsI18n.datasourceOverwriteNotEnabled, datasourceName), null );
             }
 
-            // Validates that a server is connected
-            CommandResult validationResult = validateHasConnectedWorkspaceServer();
-            if ( !validationResult.isOk() ) {
-                return validationResult;
-            }
 
             // Get the Data Source from the server
             TeiidDataSource serverDS = null;
             try {
                 // Check the data source name to make sure its valid
-                List< String > existingSourceNames = ServerUtils.getDatasourceNames(getWorkspaceTeiidInstance());
+                List< String > existingSourceNames = ServerUtils.getDatasourceNames();
                 if(!existingSourceNames.contains(datasourceName)) {
                     return new CommandResultImpl(false, I18n.bind( ServerCommandsI18n.serverDatasourceNotFound, datasourceName ), null);
                 }
                 // Get the data source
-                serverDS = getWorkspaceTeiidInstance().getDataSource(datasourceName);
+                serverDS = ServerUtils.getMetadataInstance().getDataSource(datasourceName);
             } catch (Exception ex) {
-                result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.connectionErrorWillDisconnect ), ex );
-                WkspStatusServerManager.getInstance(getWorkspaceStatus()).disconnectDefaultServer();
+                result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.accessError ), ex );
                 return result;
             }
             if(serverDS == null) {
@@ -146,7 +137,7 @@ public final class ServerGetDatasourceCommand extends ServerShellCommand {
      */
     @Override
     public final boolean isValidForCurrentContext() {
-        return (isWorkspaceContext() && hasConnectedWorkspaceServer());
+        return isWorkspaceContext();
     }
 
 
@@ -191,7 +182,7 @@ public final class ServerGetDatasourceCommand extends ServerShellCommand {
         final Arguments args = getArguments();
 
         try {
-            List<String> existingDatasourceNames = ServerUtils.getDatasourceNames(getWorkspaceTeiidInstance());
+            List<String> existingDatasourceNames = ServerUtils.getDatasourceNames();
             Collections.sort(existingDatasourceNames);
 
             if ( args.isEmpty() ) {
@@ -207,8 +198,7 @@ public final class ServerGetDatasourceCommand extends ServerShellCommand {
             }
         } catch (Exception ex) {
             print( );
-            print( MESSAGE_INDENT, I18n.bind(ServerCommandsI18n.connectionErrorWillDisconnect) );
-            WkspStatusServerManager.getInstance(getWorkspaceStatus()).disconnectDefaultServer();
+            print( MESSAGE_INDENT, I18n.bind(ServerCommandsI18n.accessError) );
         }
 
         return TabCompletionModifier.AUTO;
@@ -220,11 +210,11 @@ public final class ServerGetDatasourceCommand extends ServerShellCommand {
     private void setRepoDatasourceProperties(Connection repoSource, Properties serverDsProperties) throws Exception {
         for(String key : serverDsProperties.stringPropertyNames()) {
             String value = serverDsProperties.getProperty(key);
-            if(key.equals(TeiidInstance.DATASOURCE_JNDINAME)) {
+            if(key.equals(TeiidDataSource.DATASOURCE_JNDINAME)) {
                 repoSource.setJndiName(getTransaction(), value);
-            } else if(key.equals(TeiidInstance.DATASOURCE_DRIVERNAME)) {
+            } else if(key.equals(TeiidDataSource.DATASOURCE_DRIVERNAME)) {
                 repoSource.setDriverName(getTransaction(), value);
-            } else if(key.equals(TeiidInstance.DATASOURCE_CLASSNAME)) {
+            } else if(key.equals(TeiidDataSource.DATASOURCE_CLASSNAME)) {
                 repoSource.setClassName(getTransaction(), value);
                 repoSource.setJdbc(getTransaction(), false);
             } else {

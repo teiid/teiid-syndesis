@@ -29,7 +29,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import org.komodo.metadata.DefaultMetadataServer;
+import org.komodo.metadata.DefaultMetadataInstance;
 import org.komodo.modeshape.lib.LogConfigurator;
 import org.komodo.repository.LocalRepository;
 import org.komodo.spi.KClient;
@@ -40,13 +40,14 @@ import org.komodo.spi.KException;
 import org.komodo.spi.KObserver;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.metadata.MetadataClientEvent;
-import org.komodo.spi.metadata.MetadataServer;
+import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.RepositoryClientEvent;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KEnvironment;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
+import org.komodo.utils.observer.KLatchObserver;
 
 /**
  * The Komodo engine. It is responsible for persisting and retriever user session data and Teiid artifacts.
@@ -89,7 +90,7 @@ public final class KEngine implements KClient, StringConstants {
 
     private KomodoErrorHandler errorHandler = new KomodoErrorHandler();
 
-    private MetadataServer metadataServer;
+    private MetadataInstance metadataInstance;
 
     private final Set<KObserver> observers = new HashSet<>();
 
@@ -156,13 +157,13 @@ public final class KEngine implements KClient, StringConstants {
             add(defaultRepository);
     }
 
-    public MetadataServer getMetadataServer() {
-        if (this.metadataServer == null) {
-            metadataServer = new DefaultMetadataServer();
-            metadataServer.addObserver(this);
+    public MetadataInstance getMetadataInstance() {
+        if (this.metadataInstance == null) {
+            metadataInstance = DefaultMetadataInstance.getInstance();
+            metadataInstance.addObserver(this);
         }
 
-        return this.metadataServer;
+        return this.metadataInstance;
     }
 
     /**
@@ -216,7 +217,7 @@ public final class KEngine implements KClient, StringConstants {
     private void notifyMetadataServer(final MetadataClientEvent event) {
         ArgCheck.isNotNull(event);
 
-        getMetadataServer().notify(event);
+        getMetadataInstance().notify(event);
     }
 
     /**
@@ -247,7 +248,7 @@ public final class KEngine implements KClient, StringConstants {
             // Notify any registered repositories that this engine has shutdown
             notifyRepositories(RepositoryClientEvent.createShuttingDownEvent(this));
 
-            // Notify the metadata server that this engine has shutdown
+            // Notify the metadata instance that this engine has shutdown
             notifyMetadataServer(MetadataClientEvent.createShuttingDownEvent(this));
 
             // Notify any 3rd-party listeners that this engine has shutdown
@@ -280,7 +281,7 @@ public final class KEngine implements KClient, StringConstants {
                         continue;
                     }
 
-                    if (MetadataServer.Condition.REACHABLE.equals(KEngine.this.getMetadataServer().getCondition())) {
+                    if (MetadataInstance.Condition.REACHABLE.equals(KEngine.this.getMetadataInstance().getCondition())) {
                         Thread.sleep(5);
                         continue;
                     }
@@ -326,8 +327,8 @@ public final class KEngine implements KClient, StringConstants {
             // Initialise the local repository
             getDefaultRepository();
 
-            // Initialise the metadata server
-            getMetadataServer();
+            // Initialise the metadata instance
+            getMetadataInstance();
 
             // TODO implement start (read any saved session state, connect to repos if auto-connect, etc.)
             this.state = State.STARTED;
@@ -336,7 +337,7 @@ public final class KEngine implements KClient, StringConstants {
             // Notify any registered repositories that this engine has started
             notifyRepositories(RepositoryClientEvent.createStartedEvent(this));
 
-            // Notify the metadata server that this engine has started
+            // Notify the metadata instance that this engine has started
             notifyMetadataServer(MetadataClientEvent.createStartedEvent(this));
 
             // Notify any 3rd-party listeners that this engine has started
@@ -347,6 +348,41 @@ public final class KEngine implements KClient, StringConstants {
             String stackTrace = StringUtils.exceptionToString(e);
             throw new KException(Messages.getString(Messages.KEngine.Startup_Failure) + NEW_LINE + stackTrace, e);
         }
+    }
+
+    /**
+     * Start the engine and wait for the default repository,
+     * metadata server to be started
+     * @return true if engine started successfully, false otherwise
+     *
+     * @throws Exception if start fails
+     */
+    public boolean startAndWait() throws Exception {
+
+        KLatchObserver observer = new KLatchObserver(Type.REPOSITORY_STARTED,
+                                                                                                 Type.METADATA_SERVER_STARTED,
+                                                                                                 Type.ENGINE_STARTED);
+
+        addObserver(observer);
+
+        // wait for engine to start
+        boolean started = false;
+        try {
+            start();
+            started = observer.getLatch().await(3, TimeUnit.MINUTES);
+            if (observer.getError() != null) {
+                //
+                // latch was released due to the engine throwing an error rather than starting
+                //
+                throw observer.getError();
+            }
+        } catch (Throwable t) {
+            throw new KException(t);
+        } finally {
+            removeObserver(observer);
+        }
+
+        return started;
     }
 
     /**
@@ -387,7 +423,6 @@ public final class KEngine implements KClient, StringConstants {
         ArgCheck.isNotNull(event);
         final Set<KObserver> copy = new HashSet<>(this.observers);
 
-        System.out.println("KEngine event being notified: " + event);
         for (final KObserver observer : copy) {
             try {
                 observer.eventOccurred(event);

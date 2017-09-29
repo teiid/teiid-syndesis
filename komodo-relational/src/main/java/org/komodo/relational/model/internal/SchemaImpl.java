@@ -34,7 +34,6 @@ import org.komodo.spi.repository.PropertyValueType;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
-import org.komodo.spi.runtime.version.TeiidVersionProvider;
 import org.komodo.utils.ArgCheck;
 
 /**
@@ -74,7 +73,7 @@ public class SchemaImpl extends RelationalObjectImpl implements Schema {
             final StringBuffer result = new StringBuffer();
             final Node schemaNode = node( transaction );
 
-            final DdlNodeVisitor visitor = new DdlNodeVisitor( TeiidVersionProvider.getInstance().getTeiidVersion(), false );
+            final DdlNodeVisitor visitor = new DdlNodeVisitor(getVersion(), getDataTypeService(), false );
             visitor.visit( schemaNode );
             result.append( visitor.getDdl() );
 

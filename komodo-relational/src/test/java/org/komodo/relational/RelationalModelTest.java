@@ -23,7 +23,6 @@ package org.komodo.relational;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
-
 import org.komodo.core.KomodoLexicon;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
@@ -32,7 +31,6 @@ import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Schema;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.resource.Driver;
-import org.komodo.relational.teiid.Teiid;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.spi.repository.KomodoObject;
@@ -116,25 +114,6 @@ public class RelationalModelTest extends AbstractLocalRepositoryTest {
         assertThat( schema.getPrimaryType( getTransaction() ).getName(), is( KomodoLexicon.Schema.NODE_TYPE ) );
         assertThat( schema.getName( getTransaction() ), is( schemaName ) );
         return schema;
-    }
-
-    protected Teiid createTeiid() throws Exception {
-        return createTeiid( getDefaultTeiidName() );
-    }
-
-    protected Teiid createTeiid( final String teiidName ) throws Exception {
-        return createTeiid( teiidName, null );
-    }
-
-    protected Teiid createTeiid( final String teiidName,
-                                 final KomodoObject parent ) throws Exception {
-        final WorkspaceManager mgr = WorkspaceManager.getInstance(_repo, getTransaction());
-        final Teiid teiid = mgr.createTeiid( getTransaction(), parent, teiidName );
-
-        assertThat( teiid.getPrimaryType( getTransaction() ).getName(), is( KomodoLexicon.Teiid.NODE_TYPE ) );
-        assertThat( teiid.getName( getTransaction() ), is( teiidName ) );
-        commit();
-        return teiid;
     }
 
     protected Dataservice createDataservice() throws Exception {

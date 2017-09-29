@@ -36,7 +36,6 @@ import org.komodo.relational.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.internal.ModelImpl;
-import org.komodo.relational.teiid.Teiid;
 import org.komodo.relational.vdb.DataRole;
 import org.komodo.relational.vdb.Entry;
 import org.komodo.relational.vdb.Translator;
@@ -57,8 +56,6 @@ import org.komodo.spi.repository.PropertyValueType;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
-import org.komodo.spi.runtime.TeiidInstance;
-import org.komodo.spi.runtime.version.TeiidVersionProvider;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.FileUtils;
 import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
@@ -179,7 +176,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
                 final XMLOutputFactory xof = XMLOutputFactory.newInstance();
                 final XMLStreamWriter xsw = xof.createXMLStreamWriter(writer);
 
-                final VdbNodeVisitor visitor = new VdbNodeVisitor(TeiidVersionProvider.getInstance().getTeiidVersion(), xsw);
+                final VdbNodeVisitor visitor = new VdbNodeVisitor(getVersion(), getDataTypeService(), xsw);
                 if( exportProperties != null && !exportProperties.isEmpty() ) {
                 	boolean useTabs = exportProperties.containsKey(ExportConstants.USE_TABS_PROP_KEY);
                 	visitor.setShowTabs(useTabs);
@@ -1243,14 +1240,12 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
     }
     
     @Override
-    public DeployStatus deploy(UnitOfWork uow, Teiid teiid) {
+    public DeployStatus deploy(UnitOfWork uow) {
         ArgCheck.isNotNull( uow, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( uow.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotNull(teiid, "teiid"); //$NON-NLS-1$
 
         DeployStatus status = new DeployStatus();
-        TeiidInstance teiidInstance = teiid.getTeiidInstance(uow);
-        
+
         try {
             String vdbName = getName(uow);
             status.addProgressMessage("Starting deployment of vdb " + vdbName); //$NON-NLS-1$
@@ -1266,7 +1261,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
 
             String vdbToDeployName = getName(uow);
             String vdbDeploymentName = vdbToDeployName + VDB_DEPLOYMENT_SUFFIX;
-            teiidInstance.deployDynamicVdb(vdbDeploymentName, new ByteArrayInputStream(vdbXml));
+            getMetadataInstance().deployDynamicVdb(vdbDeploymentName, new ByteArrayInputStream(vdbXml));
 
             status.addProgressMessage("VDB deployed " + vdbName + " to teiid"); //$NON-NLS-1$ //$NON-NLS-2$
         } catch (Exception ex) {

@@ -36,63 +36,41 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.nodetype.NodeType;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.query.TeiidService;
-import org.komodo.spi.runtime.version.DefaultTeiidVersion;
-import org.komodo.spi.runtime.version.DefaultTeiidVersion.Version;
-import org.komodo.spi.runtime.version.TeiidVersion;
-import org.komodo.spi.type.DataTypeManager;
-import org.komodo.teiid.TeiidServiceProvider;
+import org.komodo.spi.runtime.version.MetadataVersion;
+import org.komodo.spi.type.DataTypeService;
+import org.komodo.utils.ArgCheck;
 
 /**
  *
  */
 public abstract class AbstractNodeVisitor implements ItemVisitor {
 
-    private TeiidVersion version;
+    private MetadataVersion version;
 
-    private DataTypeManager dataTypeManager;
+    private DataTypeService dataTypeService;
 
     /**
      * @param version teiid version
      */
-    public AbstractNodeVisitor(TeiidVersion version) {
-        if (version == null)
-            this.version = DefaultTeiidVersion.Version.DEFAULT_TEIID_VERSION.get();
-        else
-            this.version = version;
-    }
-
-    protected boolean isTeiidVersionOrGreater(Version teiidVersion) {
-        TeiidVersion minVersion = getVersion().getMinimumVersion();
-        return minVersion.equals(teiidVersion.get()) || minVersion.isGreaterThan(teiidVersion.get());
-    }
-
-    protected boolean isLessThanTeiidVersion(Version teiidVersion) {
-        TeiidVersion maxVersion = getVersion().getMaximumVersion();
-        return maxVersion.isLessThan(teiidVersion.get());
-    }
-
-    protected boolean isTeiid87OrGreater() {
-        return isTeiidVersionOrGreater(Version.TEIID_8_7);
+    public AbstractNodeVisitor(MetadataVersion version, DataTypeService dataTypeService) {
+        ArgCheck.isNotNull(version, "version");
+        ArgCheck.isNotNull(dataTypeService, "dataTypeService");
+        this.version = version;
+        this.dataTypeService = dataTypeService;
     }
 
     /**
      * @return teiid version
      */
-    public TeiidVersion getVersion() {
+    public MetadataVersion getVersion() {
         return version;
     }
 
     /**
      * @return data type manager service
      */
-    public DataTypeManager getDataTypeManager() throws Exception {
-        if (dataTypeManager == null) {
-            TeiidService teiidService = TeiidServiceProvider.getInstance().getTeiidService(getVersion());
-            dataTypeManager = teiidService.getDataTypeManager();
-        }
-
-        return dataTypeManager;
+    public DataTypeService getDataTypeService() throws Exception {
+        return dataTypeService;
     }
 
     protected abstract String undefined();

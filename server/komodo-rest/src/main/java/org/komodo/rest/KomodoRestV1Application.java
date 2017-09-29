@@ -31,7 +31,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import javax.annotation.PreDestroy;
@@ -62,8 +61,8 @@ import org.komodo.rest.service.KomodoConnectionService;
 import org.komodo.rest.service.KomodoDataserviceService;
 import org.komodo.rest.service.KomodoDriverService;
 import org.komodo.rest.service.KomodoImportExportService;
+import org.komodo.rest.service.KomodoMetadataService;
 import org.komodo.rest.service.KomodoSearchService;
-import org.komodo.rest.service.KomodoTeiidService;
 import org.komodo.rest.service.KomodoUtilService;
 import org.komodo.rest.service.KomodoVdbService;
 import org.komodo.rest.swagger.RestDataserviceConverter;
@@ -77,16 +76,15 @@ import org.komodo.rest.swagger.RestVdbModelConverter;
 import org.komodo.rest.swagger.RestVdbModelSourceConverter;
 import org.komodo.rest.swagger.RestVdbPermissionConverter;
 import org.komodo.rest.swagger.RestVdbTranslatorConverter;
-import org.komodo.spi.KEvent;
-import org.komodo.spi.KObserver;
+import org.komodo.spi.KEvent.Type;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.RepositoryClientEvent;
-import org.komodo.spi.runtime.version.TeiidVersion;
-import org.komodo.spi.runtime.version.TeiidVersionProvider;
 import org.komodo.utils.KLog;
+import org.komodo.utils.observer.KLatchObserver;
 import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 import io.swagger.converter.ModelConverters;
 import io.swagger.jaxrs.config.BeanConfig;
@@ -95,7 +93,7 @@ import io.swagger.jaxrs.config.BeanConfig;
  * The JAX-RS {@link Application} that provides the Komodo REST API.
  */
 @ApplicationPath( V1Constants.APP_PATH )
-public class KomodoRestV1Application extends Application implements KObserver, StringConstants {
+public class KomodoRestV1Application extends Application implements StringConstants {
 
     /**
      * Constants associated with version 1 of the Komodo REST application.
@@ -185,9 +183,9 @@ public class KomodoRestV1Application extends Application implements KObserver, S
         String SERVICE_SEGMENT = "service"; //$NON-NLS-1$
 
         /**
-         * The name of the URI path segment for the teiid service.
+         * The name of the URI path segment for the metadata service.
          */
-        String TEIID_SEGMENT = "teiid"; //$NON-NLS-1$
+        String METADATA_SEGMENT = "metadata"; //$NON-NLS-1$
 
         /**
          * The name of the URI path segment for the Komodo schema.
@@ -589,8 +587,6 @@ public class KomodoRestV1Application extends Application implements KObserver, S
     private static final TimeUnit UNIT = TimeUnit.MINUTES;
 
     private KEngine kengine;
-    private Throwable engineException;
-    private CountDownLatch latch;
     private final Set< Object > singletons;
 
     /**
@@ -623,7 +619,6 @@ public class KomodoRestV1Application extends Application implements KObserver, S
             throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         }
 
-        this.latch = new CountDownLatch( 1 );
         this.kengine = start();
 
         final Set< Object > objs = new HashSet< >();
@@ -634,7 +629,7 @@ public class KomodoRestV1Application extends Application implements KObserver, S
         objs.add( new KomodoDriverService( this.kengine ) );
         objs.add( new KomodoVdbService( this.kengine ) );
         objs.add( new KomodoSearchService( this.kengine ));
-        objs.add( new KomodoTeiidService( this.kengine ));
+        objs.add( new KomodoMetadataService( this.kengine ));
         objs.add( new KomodoImportExportService( this.kengine ));
 
         objs.add(new OptionsExceptionMapper());
@@ -646,8 +641,7 @@ public class KomodoRestV1Application extends Application implements KObserver, S
     }
 
     private KCorsHandler initCorsHandler() throws Exception {
-        TeiidVersion teiidVersion = TeiidVersionProvider.getInstance().getTeiidVersion();
-        KCorsHandler corsHandler = KCorsFactory.getInstance().createHandler(teiidVersion);
+        KCorsHandler corsHandler = KCorsFactory.getInstance().createHandler();
         corsHandler.getAllowedOrigins().add(STAR);
         corsHandler.setAllowedHeaders(KCorsHandler.ALLOW_HEADERS);
         corsHandler.setAllowCredentials(true);
@@ -706,40 +700,27 @@ public class KomodoRestV1Application extends Application implements KObserver, S
      *         if an error occurs clearing the repository
      */
     public void clearRepository() throws WebApplicationException {
-        this.latch = new CountDownLatch( 1 );
-
         final RepositoryClientEvent event = RepositoryClientEvent.createClearEvent( this.kengine );
         this.kengine.getDefaultRepository().notify( event );
+
+        KLatchObserver observer = new KLatchObserver(Type.REPOSITORY_CLEARED);
+        this.kengine.addObserver(observer);
 
         // wait for repository to clear
         boolean cleared = false;
 
         try {
-            cleared = this.latch.await( TIMEOUT, UNIT );
+            cleared = observer.getLatch().await( TIMEOUT, UNIT );
         } catch ( final Exception e ) {
             throw new WebApplicationException( e, Status.INTERNAL_SERVER_ERROR );
+        } finally {
+            this.kengine.removeObserver(observer);
         }
 
         if ( !cleared ) {
             throw new WebApplicationException( new Exception(Messages.getString( KOMODO_ENGINE_CLEAR_TIMEOUT, TIMEOUT, UNIT )),
                                             Status.INTERNAL_SERVER_ERROR );
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.spi.repository.RepositoryObserver#eventOccurred()
-     */
-    @Override
-    public void eventOccurred(KEvent<?> event) {
-        this.latch.countDown();
-    }
-
-    @Override
-    public void errorOccurred(Throwable e) {
-        this.engineException = e;
-        this.latch.countDown();
     }
 
     /**
@@ -765,22 +746,11 @@ public class KomodoRestV1Application extends Application implements KObserver, S
 
     private KEngine start() throws WebApplicationException {
         final KEngine kengine = KEngine.getInstance();
-        kengine.addObserver(this);
 
-        // wait for repository to start
-        boolean started = false;
-
+        boolean started;
         try {
-            kengine.start();
-            started = this.latch.await( TIMEOUT, UNIT );
-            if (engineException != null) {
-                //
-                // latch was released due to the engine throwing an error rather than starting
-                //
-                throw engineException;
-            }
-
-        } catch ( final Throwable e ) {
+           started = kengine.startAndWait();
+        } catch (Exception e) {
             throw new WebApplicationException( e, Status.INTERNAL_SERVER_ERROR );
         }
 
@@ -800,26 +770,28 @@ public class KomodoRestV1Application extends Application implements KObserver, S
      */
     @PreDestroy
     public void stop() throws WebApplicationException {
-        if ( this.kengine != null ) {
-            this.latch = new CountDownLatch( 1 );
+        if (this.kengine == null)
+            return;
 
-            // wait for repository to shutdown
-            boolean shutdown = false;
+        KLatchObserver observer = new KLatchObserver(Type.ENGINE_SHUTDOWN);
+        this.kengine.addObserver(observer);
 
-            try {
-                this.kengine.shutdown();
-                shutdown = this.latch.await( TIMEOUT, UNIT );
-            } catch ( final Exception e ) {
-                throw new WebApplicationException( new Exception(Messages.getString( KOMODO_ENGINE_SHUTDOWN_ERROR )),
-                                                Status.INTERNAL_SERVER_ERROR );
-            } finally {
-                this.kengine = null;
-            }
+        // wait for repository to shutdown
+        boolean shutdown = false;
 
-            if ( !shutdown ) {
-                throw new WebApplicationException( new Exception(Messages.getString( KOMODO_ENGINE_SHUTDOWN_TIMEOUT, TIMEOUT, UNIT )),
-                                                Status.INTERNAL_SERVER_ERROR );
-            }
+        try {
+            this.kengine.shutdownAndWait();
+            shutdown = observer.getLatch().await(TIMEOUT, UNIT);
+        } catch (final Exception e) {
+            throw new WebApplicationException(new Exception(Messages.getString(KOMODO_ENGINE_SHUTDOWN_ERROR)),
+                                              Status.INTERNAL_SERVER_ERROR);
+        } finally {
+            this.kengine = null;
+        }
+
+        if (!shutdown) {
+            throw new WebApplicationException(new Exception(Messages.getString(KOMODO_ENGINE_SHUTDOWN_TIMEOUT, TIMEOUT, UNIT)),
+                                              Status.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -857,6 +829,7 @@ public class KomodoRestV1Application extends Application implements KObserver, S
      */
     public void importDataservice(InputStream dsStream, String user) throws Exception {
         Repository repository = this.kengine.getDefaultRepository();
+        MetadataInstance metadataInstance = this.kengine.getMetadataInstance();
 
         SynchronousCallback callback = new SynchronousCallback();
         UnitOfWork uow = repository.createTransaction(user, "Import Dataservice", false, callback); //$NON-NLS-1$
@@ -865,7 +838,7 @@ public class KomodoRestV1Application extends Application implements KObserver, S
         ImportMessages importMessages = new ImportMessages();
 
         KomodoObject workspace = repository.komodoWorkspace(uow);
-        DataserviceConveyor dsConveyor = new DataserviceConveyor(repository);
+        DataserviceConveyor dsConveyor = new DataserviceConveyor(repository, metadataInstance);
         dsConveyor.dsImport(uow, dsStream, workspace, importOptions, importMessages);
         uow.commit();
         callback.await(3, TimeUnit.MINUTES);

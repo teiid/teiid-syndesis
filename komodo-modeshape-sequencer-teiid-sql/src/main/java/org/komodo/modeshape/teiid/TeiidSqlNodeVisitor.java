@@ -40,10 +40,10 @@ import org.komodo.modeshape.teiid.language.SortSpecification;
 import org.komodo.modeshape.teiid.language.SortSpecification.NullOrdering;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.TeiidSqlConstants;
-import org.komodo.spi.lexicon.TeiidSqlContext;
 import org.komodo.spi.lexicon.TeiidSqlConstants.NonReserved;
 import org.komodo.spi.lexicon.TeiidSqlConstants.Reserved;
 import org.komodo.spi.lexicon.TeiidSqlConstants.Tokens;
+import org.komodo.spi.lexicon.TeiidSqlContext;
 import org.komodo.spi.lexicon.TeiidSqlLexicon;
 import org.komodo.spi.lexicon.TeiidSqlLexicon.*;
 import org.komodo.spi.query.AggregateFunctions;
@@ -53,13 +53,13 @@ import org.komodo.spi.query.DisplayMode;
 import org.komodo.spi.query.JoinTypeTypes;
 import org.komodo.spi.query.LogicalOperator;
 import org.komodo.spi.query.MatchMode;
-import org.komodo.spi.query.PredicateQuantifier;
-import org.komodo.spi.query.TriggerEvent;
 import org.komodo.spi.query.Operation;
 import org.komodo.spi.query.ParameterInfo;
-import org.komodo.spi.runtime.version.DefaultTeiidVersion.Version;
-import org.komodo.spi.runtime.version.TeiidVersion;
-import org.komodo.spi.type.DataTypeManager.DataTypeName;
+import org.komodo.spi.query.PredicateQuantifier;
+import org.komodo.spi.query.TriggerEvent;
+import org.komodo.spi.runtime.version.MetadataVersion;
+import org.komodo.spi.type.DataTypeService;
+import org.komodo.spi.type.DataTypeService.DataTypeName;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
@@ -118,9 +118,10 @@ public class TeiidSqlNodeVisitor extends AbstractNodeVisitor implements StringCo
      * Create new instance
      *
      * @param teiidVersion teiid version
+     * @param dataTypeService the data type service
      */
-    public TeiidSqlNodeVisitor(TeiidVersion teiidVersion) {
-        super(teiidVersion);
+    public TeiidSqlNodeVisitor(MetadataVersion teiidVersion, DataTypeService dataTypeService) {
+        super(teiidVersion, dataTypeService);
     }
 
 
@@ -500,9 +501,6 @@ public class TeiidSqlNodeVisitor extends AbstractNodeVisitor implements StringCo
     }
 
     protected void addMakeDep(Node node) throws Exception {
-        if (isLessThanTeiidVersion(Version.TEIID_8_5))
-            return;
-
         Node makeDep = reference(node, FromClause.MAKE_DEPENDENCY_REF_NAME);
 
         if (makeDep != null && !isMakeDepSimple(makeDep)) {
@@ -523,7 +521,7 @@ public class TeiidSqlNodeVisitor extends AbstractNodeVisitor implements StringCo
     }
 
     protected String escapeSinglePart(String token) {
-        if (TeiidSqlConstants.isReservedWord(getVersion(), token)) {
+        if (TeiidSqlConstants.isReservedWord(token)) {
             return ID_ESCAPE_CHAR + token + ID_ESCAPE_CHAR;
         }
 
@@ -584,7 +582,7 @@ public class TeiidSqlNodeVisitor extends AbstractNodeVisitor implements StringCo
     }
 
     protected void appendLiteral(Class<?> type, boolean multiValued, Object value) throws Exception {
-        Class<?> booleanClass = getDataTypeManager().getDefaultDataClass(DataTypeName.BOOLEAN);
+        Class<?> booleanClass = getDataTypeService().getDefaultDataClass(DataTypeName.BOOLEAN);
 
         String[] constantParts = null;
         if (multiValued) {
@@ -598,7 +596,7 @@ public class TeiidSqlNodeVisitor extends AbstractNodeVisitor implements StringCo
             }
         } else {
 
-            if (isTeiid87OrGreater() && value instanceof java.sql.Array) {
+            if (value instanceof java.sql.Array) {
                 java.sql.Array av = (java.sql.Array) value; 
                 append(OPEN_BRACKET);
 
@@ -627,18 +625,18 @@ public class TeiidSqlNodeVisitor extends AbstractNodeVisitor implements StringCo
                 constantParts = new String[] {value.toString()};
             } else if (booleanClass.equals(type)) {
                 constantParts = new String[] {value.equals(Boolean.TRUE) ? TRUE : FALSE};
-            } else if (type.equals(getDataTypeManager().getDefaultDataClass(DataTypeName.TIMESTAMP))) {
+            } else if (type.equals(getDataTypeService().getDefaultDataClass(DataTypeName.TIMESTAMP))) {
                 constantParts = new String[] {OPEN_BRACE + "ts'", value.toString(), QUOTE_MARK + CLOSE_BRACE};  //$NON-NLS-1$
-            } else if (type.equals(getDataTypeManager().getDefaultDataClass(DataTypeName.TIME))) {
+            } else if (type.equals(getDataTypeService().getDefaultDataClass(DataTypeName.TIME))) {
                 constantParts = new String[] {OPEN_BRACE + "t'", value.toString(), QUOTE_MARK + CLOSE_BRACE};  //$NON-NLS-1$
-            } else if (type.equals(getDataTypeManager().getDefaultDataClass(DataTypeName.DATE))) {
+            } else if (type.equals(getDataTypeService().getDefaultDataClass(DataTypeName.DATE))) {
                 constantParts = new String[] {OPEN_BRACE + "d'", value.toString(), QUOTE_MARK + CLOSE_BRACE};  //$NON-NLS-1$
-            } else if (type.equals(getDataTypeManager().getDefaultDataClass(DataTypeName.VARBINARY))) {
+            } else if (type.equals(getDataTypeService().getDefaultDataClass(DataTypeName.VARBINARY))) {
                 constantParts = new String[] {"X'", value.toString(), QUOTE_MARK};  //$NON-NLS-1$
             }
 
             if (constantParts == null) {
-                if (getDataTypeManager().isLOB(type)) {
+                if (getDataTypeService().isLOB(type)) {
                     constantParts = new String[] {QUESTION_MARK};
                 } else {
                     String strValue = value.toString();
@@ -1642,8 +1640,8 @@ public class TeiidSqlNodeVisitor extends AbstractNodeVisitor implements StringCo
 
                 String typeName = propertyString(asColumn, Expression.TYPE_CLASS_PROP_NAME);
                 DataTypeName dataTypeName = DataTypeName.findDataTypeName(typeName);
-                Class<?> dataTypeClass = getDataTypeManager().getDefaultDataClass(dataTypeName);
-                append(getDataTypeManager().getDataTypeName(dataTypeClass));
+                Class<?> dataTypeClass = getDataTypeService().getDefaultDataClass(dataTypeName);
+                append(getDataTypeService().getDataTypeName(dataTypeClass));
             }
         }
 
@@ -1832,16 +1830,6 @@ public class TeiidSqlNodeVisitor extends AbstractNodeVisitor implements StringCo
 
     public Object createProcedureCommand(TeiidSqlContext context) throws Exception {
         Node node = (Node) context.get(NODE_KEY);
-
-        if (isLessThanTeiidVersion(Version.TEIID_8_4)) {
-            append(CREATE);
-            append(SPACE);
-            append(VIRTUAL);
-            append(SPACE);
-            append(PROCEDURE);
-            append(NEW_LINE);
-        }
-
         Node block = reference(node, CreateProcedureCommand.BLOCK_REF_NAME);
         visit(block);
 
@@ -2216,14 +2204,14 @@ public class TeiidSqlNodeVisitor extends AbstractNodeVisitor implements StringCo
         append(SPACE);
 
         boolean rollup = propertyBoolean(node, GroupBy.ROLLUP_PROP_NAME);
-        if (isTeiidVersionOrGreater(Version.TEIID_8_5) && rollup) {
+        if (rollup) {
             append(ROLLUP);
             append(OPEN_BRACKET);
         }
 
         iterate(node, GroupBy.SYMBOLS_REF_NAME);
 
-        if (isTeiidVersionOrGreater(Version.TEIID_8_5) && rollup) {
+        if (rollup) {
             append(CLOSE_BRACKET);
         }
 
@@ -2440,9 +2428,6 @@ public class TeiidSqlNodeVisitor extends AbstractNodeVisitor implements StringCo
     }
 
     public Object makeDep(TeiidSqlContext context) throws Exception {
-        if (isLessThanTeiidVersion(Version.TEIID_8_5))
-            return null;
-
         Node node = (Node) context.get(NODE_KEY);
 
         boolean hasMax = node.hasProperty(MakeDep.MAX_PROP_NAME);
@@ -2754,7 +2739,7 @@ public class TeiidSqlNodeVisitor extends AbstractNodeVisitor implements StringCo
         append(OPEN_BRACKET);
 
         Node command = reference(node, SubqueryContainer.COMMAND_REF_NAME);
-        if (isTeiidVersionOrGreater(Version.TEIID_8_5) && command == null) {
+        if (command == null) {
             append("<dependent values>"); //$NON-NLS-1$
         } else {
             visit(command);
@@ -3304,7 +3289,7 @@ public class TeiidSqlNodeVisitor extends AbstractNodeVisitor implements StringCo
         if (dataTypeName == null)
             dataTypeName = DataTypeName.OBJECT;
 
-        Class<?> type = getDataTypeManager().getDefaultDataClass(dataTypeName);
+        Class<?> type = getDataTypeService().getDefaultDataClass(dataTypeName);
         boolean multiValued = propertyBoolean(node, Constant.MULTI_VALUED_PROP_NAME);
         Object value = propertyValue(node, Constant.VALUE_PROP_NAME, dataTypeName);
         appendLiteral(type, multiValued, value);

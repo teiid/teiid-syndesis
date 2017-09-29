@@ -54,7 +54,6 @@ import org.komodo.spi.repository.PropertyValueType;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
-import org.komodo.spi.runtime.version.TeiidVersionProvider;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
 import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
@@ -1050,7 +1049,7 @@ public class TableImpl extends RelationalObjectImpl implements Table {
                 exclusions.add(VisitorExclusions.EXCLUDE_TABLE_CONSTRAINTS);
             }
         }
-        DdlNodeVisitor visitor = new DdlNodeVisitor(TeiidVersionProvider.getInstance().getTeiidVersion(), false, exclusions.toArray(new VisitorExclusions[0]));
+        DdlNodeVisitor visitor = new DdlNodeVisitor(getVersion(), getDataTypeService(), false, exclusions.toArray(new VisitorExclusions[0]));
         visitor.visit(node(transaction));
 
         String result = visitor.getDdl();

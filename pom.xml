@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.komodo</groupId>
     <artifactId>komodo-parent</artifactId>
-	<version>0.0.4-SNAPSHOT</version>
+    <version>0.0.4-SNAPSHOT</version>
     <relativePath>komodo-parent/pom.xml</relativePath>
   </parent>
 
@@ -25,7 +25,7 @@
         <module>komodo-utils-logger</module>
         <module>komodo-utils</module>
         <module>komodo-metadata</module>
-        <module>komodo-teiid-client</module>
+        <module>komodo-metadata-instance</module>
         <module>plugins</module>
         <module>komodo-modeshape-sequencer-teiid-sql</module>
         <module>komodo-core</module>

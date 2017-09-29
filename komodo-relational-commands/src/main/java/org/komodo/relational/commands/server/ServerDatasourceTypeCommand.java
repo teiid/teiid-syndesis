@@ -28,7 +28,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.komodo.relational.RelationalObject;
-import org.komodo.relational.teiid.Teiid;
 import org.komodo.shell.CommandResultImpl;
 import org.komodo.shell.api.Arguments;
 import org.komodo.shell.api.CommandResult;
@@ -64,24 +63,18 @@ public final class ServerDatasourceTypeCommand extends ServerShellCommand {
         try {
             final String sourceTypeName = requiredArgument( 0, I18n.bind( ServerCommandsI18n.missingDatasourceTypeName ) );
 
-            // Validates that a server is connected
-            CommandResult validationResult = validateHasConnectedWorkspaceServer();
-            if ( !validationResult.isOk() ) {
-                return validationResult;
-            }
 
             Collection<TeiidPropertyDefinition> propDefns = null;
             try {
                 // Check the data source type names to make sure its valid
-                Set< String > typeNames = getWorkspaceTeiidInstance().getDataSourceTypeNames();
+                Set< String > typeNames = ServerUtils.getMetadataInstance().getDataSourceTypeNames();
                 if(!typeNames.contains(sourceTypeName)) {
                     return new CommandResultImpl(false, I18n.bind( ServerCommandsI18n.serverDatasourceTypeNotFound, sourceTypeName ), null);
                 }
                 // Get the source type properties
-                propDefns = getWorkspaceTeiidInstance().getTemplatePropertyDefns(sourceTypeName);
+                propDefns = ServerUtils.getMetadataInstance().getTemplatePropertyDefns(sourceTypeName);
             } catch (Exception ex) {
-                result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.connectionErrorWillDisconnect ), ex );
-                WkspStatusServerManager.getInstance(getWorkspaceStatus()).disconnectDefaultServer();
+                result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.accessError ), ex );
                 return result;
             }
             if(propDefns==null) {
@@ -92,8 +85,7 @@ public final class ServerDatasourceTypeCommand extends ServerShellCommand {
 
             // Print title
             final String title = I18n.bind( ServerCommandsI18n.infoMessageDatasourceType,
-                                            sourceTypeName,
-                                            getWorkspaceServerName() );
+                                            sourceTypeName);
             print( MESSAGE_INDENT, title );
             print( MESSAGE_INDENT, I18n.bind( ServerCommandsI18n.datasourceTypePropertiesHeader ));
 
@@ -171,8 +163,7 @@ public final class ServerDatasourceTypeCommand extends ServerShellCommand {
         final Arguments args = getArguments();
 
         try {
-            Teiid teiid = getWorkspaceServer();
-            Set< String > types = teiid.getTeiidInstance( getTransaction() ).getDataSourceTypeNames();
+            Set< String > types = ServerUtils.getDataSourceTypeNames();
             List< String > existingTypes = new ArrayList< String >(types);
             Collections.sort(existingTypes);
 
@@ -189,8 +180,7 @@ public final class ServerDatasourceTypeCommand extends ServerShellCommand {
             }
         } catch (Exception ex) {
             print( );
-            print( MESSAGE_INDENT, I18n.bind(ServerCommandsI18n.connectionErrorWillDisconnect) );
-            WkspStatusServerManager.getInstance(getWorkspaceStatus()).disconnectDefaultServer();
+            print( MESSAGE_INDENT, I18n.bind(ServerCommandsI18n.accessError) );
         }
         return TabCompletionModifier.AUTO;
     }

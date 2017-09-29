@@ -92,14 +92,9 @@ import org.komodo.relational.resource.internal.DdlFileImpl;
 import org.komodo.relational.resource.internal.DriverImpl;
 import org.komodo.relational.resource.internal.ResourceFileImpl;
 import org.komodo.relational.resource.internal.UdfFileImpl;
-import org.komodo.relational.teiid.CachedTeiid;
-import org.komodo.relational.teiid.Teiid;
-import org.komodo.relational.teiid.internal.CachedTeiidImpl;
-import org.komodo.relational.teiid.internal.TeiidImpl;
 import org.komodo.relational.template.Template;
 import org.komodo.relational.template.TemplateEntry;
 import org.komodo.relational.template.internal.TemplateEntryImpl;
-import org.komodo.relational.template.internal.TemplateImpl;
 import org.komodo.relational.vdb.Condition;
 import org.komodo.relational.vdb.DataRole;
 import org.komodo.relational.vdb.Entry;
@@ -118,7 +113,6 @@ import org.komodo.relational.vdb.internal.PermissionImpl;
 import org.komodo.relational.vdb.internal.TranslatorImpl;
 import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.relational.vdb.internal.VdbImportImpl;
-import org.komodo.repository.RepositoryImpl;
 import org.komodo.repository.RepositoryTools;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
@@ -1269,90 +1263,6 @@ public final class RelationalModelFactory {
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param repository
      *        the repository where the model object will be created (cannot be <code>null</code>)
-     * @param parentWorkspacePath
-     *        the parent path (can be empty)
-     * @param id
-     *        the name of the teiid object to create (cannot be empty)
-     * @return the Teiid model object (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    public static Teiid createTeiid( final UnitOfWork transaction,
-                                     final Repository repository,
-                                     final String parentWorkspacePath,
-                                     final String id ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( repository, "repository" ); //$NON-NLS-1$
-        ArgCheck.isNotEmpty( id, "id" ); //$NON-NLS-1$
-
-        // make sure path is in the library
-        String parentPath = parentWorkspacePath;
-        final String workspacePath = repository.komodoWorkspace( transaction ).getAbsolutePath();
-
-        if ( StringUtils.isBlank( parentWorkspacePath ) ) {
-            parentPath = workspacePath;
-        } else if ( !parentPath.startsWith( workspacePath ) ) {
-            parentPath = ( workspacePath + parentPath );
-        }
-
-        final KomodoObject kobject = repository.add( transaction, parentPath, id, KomodoLexicon.Teiid.NODE_TYPE );
-        final Teiid result = new TeiidImpl( transaction, repository, kobject.getAbsolutePath() );
-        return result;
-    }
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     *        AND should be owned by {@link Repository#SYSTEM_USER}
-     * @param repository
-     *        the repository where the model object will be created (cannot be <code>null</code>)
-     * @param srcTeiid
-     *        the source teiid model used for this caching teiid object (cannot be <code>null</code>)
-     * @return the cached Teiid model object (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    public static CachedTeiid createCachedTeiid( final UnitOfWork transaction,
-                                                 final Repository repository,
-                                                 final Teiid srcTeiid ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( repository, "repository" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( srcTeiid, "srcTeiid" ); //$NON-NLS-1$
-        ArgCheck.isTrue(RepositoryImpl.isSystemTx(transaction), "transaction should be owned by " + Repository.SYSTEM_USER);
-
-        KomodoObject teiidCache = repository.komodoTeiidCache( transaction );
-        final String id = srcTeiid.getName( transaction );
-
-        //
-        // Remove the existing version since its most likely out-of-date
-        //
-        if ( teiidCache.hasChild( transaction, id ) ) {
-            KomodoObject[] children = teiidCache.getChildren(transaction, id);
-
-            //
-            // Ensure all children with the name starting with id are removed
-            //
-            for (KomodoObject child : children) {
-                child.remove(transaction);
-            }
-        }
-
-        final KomodoObject kobject = teiidCache.addChild( transaction, id, KomodoLexicon.CachedTeiid.NODE_TYPE );
-
-        //
-        // Populates the node with the source teiid's properties
-        //
-        final CachedTeiid result = new CachedTeiidImpl( transaction, srcTeiid, kobject.getAbsolutePath() );
-        return result;
-    }
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param repository
-     *        the repository where the model object will be created (cannot be <code>null</code>)
      * @param parentVdb
      *        the VDB where the VDB import model object is being created (cannot be <code>null</code>)
      * @param translatorName
@@ -1383,43 +1293,6 @@ public final class RelationalModelFactory {
             final KomodoObject kobject = grouping.addChild( transaction, translatorName, VdbLexicon.Translator.TRANSLATOR );
             final Translator result = new TranslatorImpl( transaction, repository, kobject.getAbsolutePath() );
             result.setType( transaction, translatorType );
-            return result;
-        } catch ( final Exception e ) {
-            throw handleError( e );
-        }
-    }
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param repository
-     *        the repository where the model object will be created (cannot be <code>null</code>)
-     * @param parent
-     *        the CachedTeiid where the template is being created (cannot be <code>null</code>)
-     * @param templateName
-     *        the name of the template to create (cannot be empty)
-     *
-     * @return the Template object (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    public static Template createTemplate( final UnitOfWork transaction,
-                                               final Repository repository,
-                                               final CachedTeiid parent,
-                                               final String templateName) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( repository, "repository" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( parent, "parent" ); //$NON-NLS-1$
-        ArgCheck.isNotEmpty( templateName, "templateName" ); //$NON-NLS-1$
-
-        try {
-            final KomodoObject grouping = RepositoryTools.findOrCreateChild(transaction,
-                                                                             parent,
-                                                                             CachedTeiid.TEMPLATES_FOLDER,
-                                                                             KomodoLexicon.Folder.NODE_TYPE);
-            final KomodoObject kobject = grouping.addChild( transaction, templateName, DataVirtLexicon.Template.NODE_TYPE);
-            final Template result = new TemplateImpl(transaction, repository, kobject.getAbsolutePath());
             return result;
         } catch ( final Exception e ) {
             throw handleError( e );

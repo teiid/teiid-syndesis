@@ -137,29 +137,6 @@
 			<groupId>org.komodo</groupId>
 			<artifactId>komodo-plugin-service</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.komodo</groupId>
-			<artifactId>komodo-teiid-client</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>org.jboss.as</groupId>
-					<artifactId>*</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.wildfly.core</groupId>
-					<artifactId>*</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.jboss.marshalling</groupId>
-					<artifactId>*</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.wildfly.marshalling</groupId>
-					<artifactId>*</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
 		<!-- Have a conflict with tika-parser's dependency javax.ws.rs-api-2.0-m10 so must comes first in the classpath -->
 		<dependency>
 			<groupId>org.jboss.resteasy</groupId>
@@ -350,7 +327,7 @@
 			<artifactId>wildfly-arquillian-container-managed</artifactId>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.komodo</groupId>
 			<artifactId>komodo-utils</artifactId>
@@ -519,28 +496,6 @@
 							</artifactItems>
 						</configuration>
 					</execution>
-					<execution>
-						<id>unpack-teiid</id>
-						<phase>process-sources</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<!-- Not required if skipping integration tests -->
-							<skip>${integration.skipTests}</skip>
-							<artifactItems>
-								<artifactItem>
-									<groupId>org.jboss.teiid</groupId>
-									<artifactId>teiid</artifactId>
-									<version>${teiid.version.default}</version>
-									<classifier>${teiid.classifier.default}</classifier>
-									<type>zip</type>
-									<overWrite>true</overWrite>
-									<outputDirectory>${project.basedir}/lib/test-server/${test.server.name}</outputDirectory>
-								</artifactItem>
-							</artifactItems>
-						</configuration>
-					</execution>
 				</executions>
 			</plugin>
 
@@ -572,7 +527,7 @@
 								</resource>
 								<resource>
 									<!-- Different version for jboss-as and wildfly -->
-									<directory>src/test/resources/standalone-teiid/${teiid.version.default}</directory>
+									<directory>src/test/resources/standalone-teiid</directory>
 									<includes>
 										<include>standalone-teiid.xml</include>
 									</includes>

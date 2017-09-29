@@ -242,11 +242,6 @@
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.komodo</groupId>
-				<artifactId>komodo-teiid-client</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
 				<groupId>org.komodo.plugins</groupId>
 				<artifactId>komodo-plugin-framework</artifactId>
 				<version>${project.version}</version>
@@ -269,6 +264,11 @@
 			<dependency>
 				<groupId>org.komodo</groupId>
 				<artifactId>komodo-utils</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.komodo</groupId>
+				<artifactId>komodo-metadata-instance</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>

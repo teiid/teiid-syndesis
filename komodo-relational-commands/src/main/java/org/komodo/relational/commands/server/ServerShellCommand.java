@@ -24,13 +24,7 @@ package org.komodo.relational.commands.server;
 import java.util.Arrays;
 import java.util.List;
 import org.komodo.relational.commands.RelationalShellCommand;
-import org.komodo.relational.teiid.Teiid;
-import org.komodo.shell.CommandResultImpl;
-import org.komodo.shell.api.CommandResult;
 import org.komodo.shell.api.WorkspaceStatus;
-import org.komodo.spi.KException;
-import org.komodo.spi.runtime.TeiidInstance;
-import org.komodo.utils.KLog;
 import org.komodo.utils.i18n.I18n;
 
 /**
@@ -62,22 +56,11 @@ abstract class ServerShellCommand extends RelationalShellCommand {
      */
     @Override
     public boolean isValidForCurrentContext() {
-        return hasConnectedWorkspaceServer();
+        return true;
     }
 
     protected boolean isWorkspaceContext() {
         return getWorkspaceStatus().getLabelProvider().isWorkspacePath(getContext().getAbsolutePath());
-    }
-
-    /**
-     * Validates the existence of a connected server.
-     * @return the result
-     */
-    protected CommandResult validateHasConnectedWorkspaceServer() {
-        if( !hasConnectedWorkspaceServer() ) {
-            return new CommandResultImpl(false, I18n.bind(ServerCommandsI18n.serverNotConnected), null );
-        }
-        return CommandResult.SUCCESS;
     }
 
     /**
@@ -88,36 +71,6 @@ abstract class ServerShellCommand extends RelationalShellCommand {
     @Override
     public String getCategory() {
         return I18n.bind( ServerCommandsI18n.commandCategory );
-    }
-
-    protected String getWorkspaceServerName() throws KException {
-        return WkspStatusServerManager.getInstance(getWorkspaceStatus()).getDefaultServer( ).getName( getTransaction() );
-    }
-
-    protected Teiid getWorkspaceServer() throws KException {
-        return WkspStatusServerManager.getInstance(getWorkspaceStatus()).getDefaultServer( );
-    }
-
-    protected TeiidInstance getWorkspaceTeiidInstance() throws KException {
-        return WkspStatusServerManager.getInstance(getWorkspaceStatus()).getDefaultTeiidInstance( );
-    }
-
-    protected boolean connectWorkspaceServer() throws KException {
-        return WkspStatusServerManager.getInstance(getWorkspaceStatus()).connectDefaultServer( );
-    }
-
-    protected boolean disconnectWorkspaceServer() throws KException {
-        return WkspStatusServerManager.getInstance(getWorkspaceStatus()).disconnectDefaultServer( );
-    }
-
-    protected boolean hasConnectedWorkspaceServer( ) {
-        boolean isConnected = false;
-        try {
-            isConnected = WkspStatusServerManager.getInstance(getWorkspaceStatus()).isDefaultServerConnected( );
-        } catch ( KException e ) {
-            KLog.getLogger().error( "Error attempting to check default server connection status: " + e.getLocalizedMessage() ); //$NON-NLS-1$
-        }
-        return isConnected;
     }
 
 }

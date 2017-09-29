@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import org.codehaus.jackson.annotate.JsonProperty;
-import org.komodo.relational.teiid.CachedTeiid;
 import org.komodo.relational.template.Template;
 import org.komodo.relational.template.TemplateEntry;
 import org.komodo.rest.RestBasicEntity;
@@ -146,12 +145,7 @@ public final class RestTemplateEntry extends RestBasicEntity {
         ArgCheck.isNotNull(template);
         String templateName = template.getName(uow);
 
-        CachedTeiid cachedTeiid = ancestor(template, CachedTeiid.class, uow);
-        ArgCheck.isNotNull(cachedTeiid);
-        String teiidName = cachedTeiid.getName(uow);
-
         Properties settings = getUriBuilder().createSettings(SettingNames.TEMPLATE_NAME, templateName);
-        getUriBuilder().addSetting(settings, SettingNames.TEIID_NAME, teiidName);
         getUriBuilder().addSetting(settings, SettingNames.TEMPLATE_NAME, templateName);
         getUriBuilder().addSetting(settings, SettingNames.TEMPLATE_ENTRY_NAME, getId());
 

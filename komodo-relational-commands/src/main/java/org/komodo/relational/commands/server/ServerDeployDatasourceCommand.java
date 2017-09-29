@@ -22,13 +22,11 @@
 package org.komodo.relational.commands.server;
 
 import static org.komodo.shell.CompletionConstants.MESSAGE_INDENT;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-
 import org.komodo.relational.connection.Connection;
 import org.komodo.shell.CommandResultImpl;
 import org.komodo.shell.api.Arguments;
@@ -36,7 +34,6 @@ import org.komodo.shell.api.CommandResult;
 import org.komodo.shell.api.TabCompletionModifier;
 import org.komodo.shell.api.WorkspaceStatus;
 import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.runtime.TeiidInstance;
 import org.komodo.utils.StringUtils;
 import org.komodo.utils.i18n.I18n;
 import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
@@ -82,13 +79,6 @@ public final class ServerDeployDatasourceCommand extends ServerShellCommand {
                 return new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.workspaceDatasourceNotFound, sourceName ), null );
             }
 
-            // Validates that a server is connected
-            CommandResult validationResult = validateHasConnectedWorkspaceServer();
-            if ( !validationResult.isOk() ) {
-                return validationResult;
-            }
-
-            final TeiidInstance teiidInstance = getWorkspaceTeiidInstance();
             final KomodoObject datasourceObj = getWorkspaceManager(getTransaction()).getChild( getTransaction(),
                                                                                sourceName,
                                                                                DataVirtLexicon.Connection.NODE_TYPE );
@@ -97,7 +87,7 @@ public final class ServerDeployDatasourceCommand extends ServerShellCommand {
 
             // Make sure that the sourceType is OK for the connected server.
             String sourceType = sourceToDeploy.getDriverName(getTransaction());
-            if(StringUtils.isEmpty(sourceType) || !ServerUtils.hasDatasourceType(teiidInstance, sourceType)) {
+            if(StringUtils.isEmpty(sourceType) || !ServerUtils.hasDatasourceType(sourceType)) {
                 return new CommandResultImpl( false,
                                               I18n.bind( ServerCommandsI18n.datasourceDeploymentTypeNotFound,
                                                          sourceType ),
@@ -106,7 +96,7 @@ public final class ServerDeployDatasourceCommand extends ServerShellCommand {
 
             // Determine if the server already has a deployed Datasource with this name
             try {
-                boolean serverHasDatasource = teiidInstance.dataSourceExists(sourceName);
+                boolean serverHasDatasource = ServerUtils.hasDataSource(sourceName);
                 if(serverHasDatasource && !overwrite) {
                     return new CommandResultImpl( false,
                                                   I18n.bind( ServerCommandsI18n.datasourceDeploymentOverwriteDisabled,
@@ -117,7 +107,7 @@ public final class ServerDeployDatasourceCommand extends ServerShellCommand {
                 // Get the properties necessary for deployment to server
                 Properties sourceProps = null;
                 try {
-                    sourceToDeploy.getPropertiesForServerDeployment(getTransaction(), teiidInstance);
+                    sourceToDeploy.getPropertiesForServerDeployment(getTransaction());
                 } catch (Exception ex) {
                     result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.datasourcePropertiesError, ex.getLocalizedMessage() ), null );
                     return result;
@@ -126,17 +116,16 @@ public final class ServerDeployDatasourceCommand extends ServerShellCommand {
                 try {
                     // If overwriting, delete the existing source first
                     if(serverHasDatasource) {
-                        teiidInstance.deleteDataSource(sourceName);
+                        ServerUtils.deleteDataSource(sourceName);
                     }
                     // Create the source
-                    teiidInstance.getOrCreateDataSource(sourceName, sourceName, sourceType, sourceProps);
+                    ServerUtils.getOrCreateDataSource(sourceName, sourceName, sourceType, sourceProps);
                 } catch (Exception ex) {
                     result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.datasourceDeploymentError, ex.getLocalizedMessage() ), null );
                     return result;
                 }
             } catch (Exception ex) {
-                result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.connectionErrorWillDisconnect ), ex );
-                WkspStatusServerManager.getInstance(getWorkspaceStatus()).disconnectDefaultServer();
+                result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.accessError ), ex );
                 return result;
             }
 
@@ -196,7 +185,7 @@ public final class ServerDeployDatasourceCommand extends ServerShellCommand {
      */
     @Override
     public final boolean isValidForCurrentContext() {
-        return (isWorkspaceContext() && hasConnectedWorkspaceServer());
+        return isWorkspaceContext();
     }
 
     /**

@@ -29,8 +29,8 @@ import org.komodo.rest.RestLink;
 import org.komodo.rest.RestProperty;
 import org.komodo.rest.json.LinkSerializer;
 import org.komodo.rest.json.RestPropertySerializer;
-import org.komodo.rest.relational.connection.ConnectionSchemaPairProperty;
 import org.komodo.rest.relational.connection.ConnectionSchema;
+import org.komodo.rest.relational.connection.ConnectionSchemaPairProperty;
 import org.komodo.rest.relational.connection.ConnectionSchemaProperty;
 import org.komodo.rest.relational.connection.RestConnection;
 import org.komodo.rest.relational.connection.RestTemplate;
@@ -57,15 +57,15 @@ import org.komodo.rest.relational.response.ImportExportStatus;
 import org.komodo.rest.relational.response.KomodoSavedSearcher;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.KomodoStorageAttributes;
+import org.komodo.rest.relational.response.RestMetadataStatus;
+import org.komodo.rest.relational.response.RestMetadataVdb;
+import org.komodo.rest.relational.response.RestMetadataVdbStatus;
+import org.komodo.rest.relational.response.RestMetadataVdbStatusVdb;
 import org.komodo.rest.relational.response.RestQueryColumn;
 import org.komodo.rest.relational.response.RestQueryResult;
 import org.komodo.rest.relational.response.RestQueryRow;
 import org.komodo.rest.relational.response.RestStorageType;
 import org.komodo.rest.relational.response.RestStorageTypeDescriptor;
-import org.komodo.rest.relational.response.RestTeiid;
-import org.komodo.rest.relational.response.RestTeiidStatus;
-import org.komodo.rest.relational.response.RestTeiidVdbStatus;
-import org.komodo.rest.relational.response.RestTeiidVdbStatusVdb;
 import org.komodo.rest.relational.response.RestVdb;
 import org.komodo.rest.relational.response.RestVdbCondition;
 import org.komodo.rest.relational.response.RestVdbDataRole;
@@ -128,10 +128,10 @@ public final class KomodoJsonMarshaller {
                                                   .registerTypeAdapter(RestTemplate.class, new TemplateSerializer())
                                                   .registerTypeAdapter(RestTemplateEntry.class, new TemplateEntrySerializer())
                                                   .registerTypeAdapter(RestBasicEntity.class, new BasicEntitySerializer<RestBasicEntity>())
-                                                  .registerTypeAdapter(RestTeiid.class, new TeiidSerializer())
-                                                  .registerTypeAdapter(RestTeiidStatus.class, new TeiidStatusSerializer())
-                                                  .registerTypeAdapter(RestTeiidVdbStatus.class, new TeiidVdbStatusSerializer())
-                                                  .registerTypeAdapter(RestTeiidVdbStatusVdb.class, new TeiidVdbStatusVdbSerializer())
+                                                  .registerTypeAdapter(RestMetadataStatus.class, new MetadataStatusSerializer())
+                                                  .registerTypeAdapter(RestMetadataVdb.class, new MetadataVdbSerializer())
+                                                  .registerTypeAdapter(RestMetadataVdbStatus.class, new MetadataVdbStatusSerializer())
+                                                  .registerTypeAdapter(RestMetadataVdbStatusVdb.class, new MetadataVdbStatusVdbSerializer())
                                                   .registerTypeAdapter(ConnectionSchema.class, new ConnectionSchemaSerializer())
                                                   .registerTypeAdapter(ConnectionSchemaPropertyListSerializer.class, new ConnectionSchemaPropertyListSerializer())
                                                   .registerTypeAdapter(ConnectionSchemaPairProperty.class, new ConnectionSchemaPropertyPairPropertySerializer())

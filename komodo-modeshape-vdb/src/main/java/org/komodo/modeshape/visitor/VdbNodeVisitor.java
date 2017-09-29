@@ -38,7 +38,8 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import org.komodo.modeshape.AbstractNodeVisitor;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.runtime.version.TeiidVersion;
+import org.komodo.spi.runtime.version.MetadataVersion;
+import org.komodo.spi.type.DataTypeService;
 import org.modeshape.jcr.JcrLexicon;
 import org.modeshape.jcr.api.JcrConstants;
 import org.teiid.modeshape.sequencer.vdb.lexicon.CoreLexicon;
@@ -178,10 +179,11 @@ public class VdbNodeVisitor extends AbstractNodeVisitor implements StringConstan
      * Create new visitor that writes to the given xml stream writer
      *
      * @param version teiid version
+     * @param dataTypeService the data type service
      * @param writer output for the xml
      */
-    public VdbNodeVisitor(TeiidVersion version, XMLStreamWriter writer) {
-        super(version);
+    public VdbNodeVisitor(MetadataVersion version, DataTypeService dataTypeService, XMLStreamWriter writer) {
+        super(version, dataTypeService);
         this.writer = writer;
     }
 
@@ -436,7 +438,7 @@ public class VdbNodeVisitor extends AbstractNodeVisitor implements StringConstan
         writeEndElement();
     }
 
-    private void model(Node node) throws XMLStreamException, RepositoryException {
+    private void model(Node node) throws Exception {
         if (! isPrimaryNodeType(node, NodeTypeName.MODEL))
             return;
 
@@ -469,7 +471,7 @@ public class VdbNodeVisitor extends AbstractNodeVisitor implements StringConstan
         // Sources
         visitChild(node, NodeTypeName.SOURCES.getId());
 
-        DdlNodeVisitor visitor = new DdlNodeVisitor(getVersion(), showTabs);
+        DdlNodeVisitor visitor = new DdlNodeVisitor(getVersion(), getDataTypeService(), showTabs);
         visitor.visit(node);
 
         if (! visitor.getDdl().isEmpty()) {
@@ -700,7 +702,7 @@ public class VdbNodeVisitor extends AbstractNodeVisitor implements StringConstan
                     // Not a node we are interested in but may contain such nodes
                     visitChildren(node);
             }
-        } catch (XMLStreamException ex) {
+        } catch (Exception ex) {
             throw new RepositoryException(ex);
         }
     }

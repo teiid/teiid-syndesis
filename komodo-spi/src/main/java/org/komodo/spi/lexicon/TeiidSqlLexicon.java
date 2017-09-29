@@ -23,7 +23,6 @@
 package org.komodo.spi.lexicon;
 
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.runtime.version.DefaultTeiidVersion.Version;
 
 
 /**
@@ -34,8 +33,9 @@ public class TeiidSqlLexicon implements StringConstants {
 
 	public interface Namespace {
 		public static final String PREFIX = "tsql";
-		public static final String URI = "http://www.teiid.org/sql/1.0";
 	}
+
+	public static final String URI = "http://www.teiid.org/sql/1.0";
 
 	/**
 	 * tsql:expressionStatement
@@ -72,13 +72,13 @@ public class TeiidSqlLexicon implements StringConstants {
 		String ID = Namespace.PREFIX + COLON + "languageObject";
 
 		/**
-		 * TEIID_VERSION Property
+		 * METADATA_VERSION Property
 		 */
-		String TEIID_VERSION_PROP_NAME = Namespace.PREFIX + COLON + "teiidVersion";
+		String METADATA_VERSION_PROP_NAME = Namespace.PREFIX + COLON + "metadataVersion";
 
-		Class<?> TEIID_VERSION_PROP_TYPE =  String.class;
+		Class<?> METADATA_VERSION_PROP_TYPE =  String.class;
 
-		boolean TEIID_VERSION_PROP_MULTIPLE = false;
+		boolean METADATA_VERSION_PROP_MULTIPLE = false;
 
 	}
 
@@ -1673,8 +1673,6 @@ public class TeiidSqlLexicon implements StringConstants {
 
 		boolean ROLLUP_PROP_MULTIPLE = false;
 
-		Version ROLLUP_PROP_SINCE_VERSION = Version.TEIID_8_5;
-
 		/**
 		 * SYMBOLS Reference
 		 */
@@ -1933,8 +1931,6 @@ public class TeiidSqlLexicon implements StringConstants {
 		Class<?> ORDINAL_PROP_TYPE =  Boolean.class;
 
 		boolean ORDINAL_PROP_MULTIPLE = false;
-
-		Version ORDINAL_PROP_SINCE_VERSION = Version.TEIID_8_7;
 
 		/**
 		 * SELECTOR Property

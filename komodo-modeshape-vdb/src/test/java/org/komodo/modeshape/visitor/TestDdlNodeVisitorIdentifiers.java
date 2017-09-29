@@ -23,13 +23,22 @@ package org.komodo.modeshape.visitor;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
-
 import org.junit.Test;
-import org.komodo.spi.runtime.version.TeiidVersionProvider;
+import org.komodo.metadata.DefaultMetadataInstance;
+import org.komodo.spi.runtime.version.MetadataVersion;
+import org.komodo.spi.type.DataTypeService;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public class TestDdlNodeVisitorIdentifiers {
-	private DdlNodeVisitor visitor=new DdlNodeVisitor(TeiidVersionProvider.getInstance().getTeiidVersion(), true);
+	private DdlNodeVisitor visitor=new DdlNodeVisitor(getMetadataVersion(), getDataTypeService(), true);
+
+    protected MetadataVersion getMetadataVersion() {
+        return DefaultMetadataInstance.getInstance().getVersion();
+    }
+
+    protected DataTypeService getDataTypeService() {
+        return DefaultMetadataInstance.getInstance().getDataTypeService();
+    }
 
 	@Test
 	public void testEscapeOptionKeyNonQuoted(){

@@ -54,7 +54,6 @@ import javax.security.auth.x500.X500Principal;
 import javax.security.sasl.Sasl;
 import javax.sql.RowSet;
 import javax.sql.rowset.serial.SerialArray;
-import javax.transaction.Transaction;
 import javax.transaction.xa.Xid;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.namespace.QName;
@@ -76,18 +75,15 @@ import javax.xml.xpath.XPathFactory;
 import org.komodo.osgi.storage.StorageServiceProvider;
 import org.komodo.plugin.framework.AbstractBundleService;
 import org.komodo.spi.KException;
-import org.komodo.spi.annotation.AnnotationUtils;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.constants.SystemConstants;
 import org.komodo.spi.lexicon.TeiidSqlLexicon;
 import org.komodo.spi.outcome.Outcome;
-import org.komodo.spi.query.TeiidService;
 import org.komodo.spi.repository.Exportable;
-import org.komodo.spi.runtime.TeiidInstance;
-import org.komodo.spi.runtime.version.TeiidVersion;
+import org.komodo.spi.runtime.version.MetadataVersion;
 import org.komodo.spi.storage.StorageConnector;
 import org.komodo.spi.storage.StorageService;
-import org.komodo.spi.type.DataTypeManager;
+import org.komodo.spi.type.DataTypeService;
 import org.komodo.spi.uuid.WorkspaceUUIDService;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KEnvironment;
@@ -192,16 +188,10 @@ public class PluginService implements StringConstants {
             KException.class,
             // org.komodo.spi.constants
             StringConstants.class,
-            // org.komodo.spi.query
-            TeiidService.class,
-            // org.komodo.spi.runtime
-            TeiidInstance.class,
             // org.komodo.spi.runtime.version
-            TeiidVersion.class,
+            MetadataVersion.class,
             // org.komodo.spi.type
-            DataTypeManager.class,
-            // org.komodo.spi.annotation
-            AnnotationUtils.class,
+            DataTypeService.class,
             // org.komodo.spi.lexicon
             TeiidSqlLexicon.class,
             // org.komodo.spi.outcome
@@ -324,8 +314,6 @@ public class PluginService implements StringConstants {
         // even though they are being provided by the jre
         //
         Class<?>[] txClasses = new Class<?>[] {
-            // javax.transaction
-            Transaction.class,
             // javax.transaction.xa
             Xid.class
         };

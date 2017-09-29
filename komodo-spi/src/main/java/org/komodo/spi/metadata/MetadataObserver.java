@@ -24,7 +24,7 @@ package org.komodo.spi.metadata;
 import org.komodo.spi.KObserver;
 
 /**
- * An observer for listening to events from an implementation of {@link MetadataServer}
+ * An observer for listening to events from an implementation of {@link MetadataInstance}
  */
 public interface MetadataObserver extends KObserver {
 

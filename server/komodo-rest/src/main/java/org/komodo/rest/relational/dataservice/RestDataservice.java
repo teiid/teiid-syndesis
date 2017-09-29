@@ -38,6 +38,7 @@ import org.komodo.rest.RestLink;
 import org.komodo.rest.RestLink.LinkType;
 import org.komodo.rest.relational.KomodoRestUriBuilder.SettingNames;
 import org.komodo.spi.KException;
+import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 
 /**
@@ -90,6 +91,7 @@ public final class RestDataservice extends RestBasicEntity {
      */
     public RestDataservice() {
         super();
+        setkType(KomodoType.DATASERVICE);
     }
 
     /**

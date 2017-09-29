@@ -21,63 +21,51 @@
  */
 package org.komodo.relational.commands.server;
 
+import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
-import org.komodo.relational.teiid.Teiid;
-import org.komodo.relational.workspace.WorkspaceManager;
-import org.komodo.shell.api.WorkspaceStatus;
-import org.komodo.spi.KException;
+import org.komodo.core.KEngine;
+import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.runtime.TeiidDataSource;
-import org.komodo.spi.runtime.TeiidInstance;
 import org.komodo.spi.runtime.TeiidTranslator;
+import org.komodo.spi.runtime.TeiidVdb;
 import org.komodo.utils.StringUtils;
 
 /**
  * Common methods used by server commands
  */
 public class ServerUtils {
-    
+
     /**
-     * Get the teiid object with the supplied name from the workspace
-     * @param wsMgr the workspace manager
-     * @param wsStatus the workspace status
-     * @param serverName the name of the teiid object
-     * @return the teiid object
-     * @throws KException the exception
+     * @return the metadata instance instance
      */
-    public static Teiid getWorkspaceTeiidObject(WorkspaceManager wsMgr, WorkspaceStatus wsStatus, String serverName) throws KException {
-        Teiid resultTeiid = null;
-        Teiid[] teiids = wsMgr.findTeiids(wsStatus.getTransaction());
-
-        if (teiids == null || teiids.length == 0) {
-            return resultTeiid;
-        }
-
-        for (Teiid theTeiid : teiids) {
-            String teiidName = theTeiid.getName(wsStatus.getTransaction());
-            if (serverName.equals(theTeiid.getId(wsStatus.getTransaction())) || serverName.equals(teiidName)) {
-                resultTeiid = theTeiid;
-                break;
-            }
-        }
-        return resultTeiid;
+    public static MetadataInstance getMetadataInstance() {
+        return KEngine.getInstance().getMetadataInstance();
     }
-    
+
     /**
-     * Determine if the teiid instance has a source type
-     * @param teiidInstance the Teiid instance
+     * @return the data source type names
+     */
+    public static Set<String> getDataSourceTypeNames() {
+        Set<String> serverTypes = getMetadataInstance().getDataSourceTypeNames();
+        return serverTypes;
+    }
+
+    /**
+     * Determine if the metadata instance has a source type
+     *
      * @param sourceType the source type
      * @return 'true' if the type exists on the server, 'false' if not.
      * @throws Exception the exception
      */
-    public static boolean hasDatasourceType(TeiidInstance teiidInstance, String sourceType) throws Exception {
-        assert( teiidInstance != null );
-
+    public static boolean hasDatasourceType(String sourceType) throws Exception {
         // Look for matching name
-        Set<String> serverTypes = teiidInstance.getDataSourceTypeNames();
+        Set<String> serverTypes = getDataSourceTypeNames();
         for(String serverType : serverTypes) {
             if(serverType.equals(sourceType)) {
                 return true;
@@ -86,17 +74,15 @@ public class ServerUtils {
 
         return false;
     }
-    
+
     /**
-     * Return the deployed datasource names from the TeiidInstance
-     * @param teiidInstance the Teiid instance
+     * Return the deployed datasource names from the metadata instance
+     *
      * @return the collection of data source names
      * @throws Exception the exception
      */
-    public static List<String> getDatasourceNames(TeiidInstance teiidInstance) throws Exception {
-        assert( teiidInstance != null );
-
-        Collection< TeiidDataSource > sources = teiidInstance.getDataSources();
+    public static List<String> getDatasourceNames() throws Exception {
+        Collection< TeiidDataSource > sources = getMetadataInstance().getDataSources();
         if(sources.isEmpty()) return Collections.emptyList();
 
         List< String > existingSourceNames = new ArrayList< String >();
@@ -107,15 +93,13 @@ public class ServerUtils {
     }
 
     /**
-     * Return the deployed datasource display names from the TeiidInstance
-     * @param teiidInstance the Teiid instance
+     * Return the deployed datasource display names from the metadata instance
+     *
      * @return the collection of data source display names
      * @throws Exception the exception
      */
-    public static List<String> getDatasourceDisplayNames(TeiidInstance teiidInstance) throws Exception {
-        assert( teiidInstance != null );
-
-        Collection< TeiidDataSource > sources = teiidInstance.getDataSources();
+    public static List<String> getDatasourceDisplayNames() throws Exception {
+        Collection< TeiidDataSource > sources = getMetadataInstance().getDataSources();
         if(sources.isEmpty()) return Collections.emptyList();
         
         List< String > existingSourceNames = new ArrayList< String >();
@@ -126,20 +110,18 @@ public class ServerUtils {
     }
 
     /**
-     * Return the deployed datasource jndi names from the TeiidInstance
-     * @param teiidInstance the Teiid instance
+     * Return the deployed datasource jndi names from the metadata instance
+     *
      * @return the collection of data source jndi names
      * @throws Exception the exception
      */
-    public static List<String> getDatasourceJndiNames(TeiidInstance teiidInstance) throws Exception {
-        assert( teiidInstance != null );
-
-        Collection< TeiidDataSource > sources = teiidInstance.getDataSources();
+    public static List<String> getDatasourceJndiNames() throws Exception {
+        Collection< TeiidDataSource > sources = getMetadataInstance().getDataSources();
         if(sources.isEmpty()) return Collections.emptyList();
         
         List< String > existingJndiNames = new ArrayList< String >();
         for ( TeiidDataSource source : sources ) {
-            String jndiName = source.getPropertyValue(TeiidInstance.DATASOURCE_JNDINAME);
+            String jndiName = source.getPropertyValue(TeiidDataSource.DATASOURCE_JNDINAME);
             if(!StringUtils.isEmpty(jndiName)) {
                 existingJndiNames.add( jndiName );
             }
@@ -148,30 +130,26 @@ public class ServerUtils {
     }
 
     /**
-     * Return the deployed VDB names from the TeiidInstance
-     * @param teiidInstance the Teiid instance
+     * Return the deployed VDB names from the metadata instance
+     *
      * @return the collection of vdb names
      * @throws Exception the exception
      */
-    public static List<String> getVdbNames(TeiidInstance teiidInstance) throws Exception {
-        assert( teiidInstance != null );
-
-        Collection< String > vdbNames = teiidInstance.getVdbNames();
+    public static List<String> getVdbNames() throws Exception {
+        Collection< String > vdbNames = getMetadataInstance().getVdbNames();
         if(vdbNames.isEmpty()) return Collections.emptyList();
         
         return new ArrayList<>(vdbNames);
     }
 
     /**
-     * Return the Translator names from the TeiidInstance
-     * @param teiidInstance the Teiid instance
+     * Return the Translator names from the metadata instance
+     *
      * @return the collection of translator names
      * @throws Exception the exception
      */
-    public static List<String> getTranslatorNames(TeiidInstance teiidInstance) throws Exception {
-        assert( teiidInstance != null );
-
-        Collection< TeiidTranslator > translators = teiidInstance.getTranslators();
+    public static List<String> getTranslatorNames() throws Exception {
+        Collection< TeiidTranslator > translators = getMetadataInstance().getTranslators();
         if(translators.isEmpty()) return Collections.emptyList();
         
         List< String > existingTranslatorNames = new ArrayList< String >();
@@ -179,6 +157,62 @@ public class ServerUtils {
             existingTranslatorNames.add( translator.getName() );
         }
         return existingTranslatorNames;
+    }
+
+    public static TeiidDataSource getDataSource(String sourceName) {
+        return getMetadataInstance().getDataSource(sourceName);
+    }
+
+    public static boolean hasDataSource(String sourceName) {
+        if (sourceName == null)
+            return false;
+
+        Collection<TeiidDataSource> dataSources = getMetadataInstance().getDataSources();
+        if (dataSources.isEmpty())
+            return false;
+
+        for (TeiidDataSource source : dataSources) {
+            if (sourceName.equals(source.getName()))
+                return true;
+        }
+
+        return false;
+    }
+
+    public static void deleteDataSource(String sourceName) {
+        getMetadataInstance().deleteDataSource(sourceName);
+    }
+
+    public static void getOrCreateDataSource(String sourceName, String jndiName, String sourceType, Properties sourceProps) {
+        getMetadataInstance().getOrCreateDataSource(sourceName, jndiName, sourceType, sourceProps);
+    }
+
+    public static void deployDriver(String driverName, File driverFile) {
+        getMetadataInstance().deployDriver(driverName, driverFile);
+    }
+
+    public static void deployDynamicVdb(String vdbDeploymentName, InputStream stream) throws Exception {
+        getMetadataInstance().deployDynamicVdb(vdbDeploymentName, stream);
+    }
+
+    public static Collection<TeiidVdb> getVdbs() throws Exception {
+        return getMetadataInstance().getVdbs();
+    }
+
+    public static boolean hasVdb(String vdbName) throws Exception {
+        return getMetadataInstance().getVdb(vdbName) != null;
+    }
+
+    public static TeiidTranslator getTranslator(String translatorName) {
+        return getMetadataInstance().getTranslator(translatorName);
+    }
+
+    public static TeiidVdb getVdb(String vdbName) throws Exception {
+        return getMetadataInstance().getVdb(vdbName);
+    }
+
+    public static void undeployDynamicVdb(String name) {
+        getMetadataInstance().undeployDynamicVdb(name);
     }
 
 }

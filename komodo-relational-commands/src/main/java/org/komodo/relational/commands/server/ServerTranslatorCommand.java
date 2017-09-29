@@ -59,24 +59,18 @@ public final class ServerTranslatorCommand extends ServerShellCommand {
         try {
             final String translatorName = requiredArgument( 0, I18n.bind( ServerCommandsI18n.missingTranslatorName ) );
 
-            // Validates that a server is connected
-            CommandResult validationResult = validateHasConnectedWorkspaceServer();
-            if ( !validationResult.isOk() ) {
-                return validationResult;
-            }
 
             TeiidTranslator translator = null;
             try {
                 // Check the translator name to make sure its valid
-                List< String > existingTranslatorNames = ServerUtils.getTranslatorNames(getWorkspaceTeiidInstance());
+                List< String > existingTranslatorNames = ServerUtils.getTranslatorNames();
                 if(!existingTranslatorNames.contains(translatorName.toLowerCase())) {
                     return new CommandResultImpl(false, I18n.bind( ServerCommandsI18n.serverTranslatorNotFound, translatorName ), null);
                 }
                 // Get the translator
-                translator = getWorkspaceTeiidInstance().getTranslator(translatorName);
+                translator = ServerUtils.getTranslator(translatorName);
             } catch (Exception ex) {
-                result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.connectionErrorWillDisconnect ), ex );
-                WkspStatusServerManager.getInstance(getWorkspaceStatus()).disconnectDefaultServer();
+                result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.accessError ), ex );
                 return result;
             }
             if(translator==null) {
@@ -84,7 +78,7 @@ public final class ServerTranslatorCommand extends ServerShellCommand {
             }
 
             // Print title
-            final String title = I18n.bind( ServerCommandsI18n.infoMessageTranslator, translatorName, getWorkspaceServerName() );
+            final String title = I18n.bind( ServerCommandsI18n.infoMessageTranslator, translatorName);
             print( MESSAGE_INDENT, title );
 
             // Print Translator Info
@@ -149,7 +143,7 @@ public final class ServerTranslatorCommand extends ServerShellCommand {
         final Arguments args = getArguments();
 
         try {
-            List< String > existingTranslatorNames = ServerUtils.getTranslatorNames(getWorkspaceTeiidInstance());
+            List< String > existingTranslatorNames = ServerUtils.getTranslatorNames();
             Collections.sort(existingTranslatorNames);
 
             if ( args.isEmpty() ) {
@@ -165,8 +159,7 @@ public final class ServerTranslatorCommand extends ServerShellCommand {
             }
         } catch (Exception ex) {
             print( );
-            print( MESSAGE_INDENT, I18n.bind(ServerCommandsI18n.connectionErrorWillDisconnect) );
-            WkspStatusServerManager.getInstance(getWorkspaceStatus()).disconnectDefaultServer();
+            print( MESSAGE_INDENT, I18n.bind(ServerCommandsI18n.accessError) );
         }
         return TabCompletionModifier.AUTO;
     }
