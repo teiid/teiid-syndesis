@@ -629,7 +629,24 @@
 				<version>${version.arquillian-container}</version>
 				<scope>test</scope>
 			</dependency>
-
+			<dependency>
+				<groupId>org.wildfly.arquillian</groupId>
+				<artifactId>wildfly-arquillian-common</artifactId>
+				<version>${version.arquillian-container}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.wildfly.arquillian</groupId>
+				<artifactId>wildfly-arquillian-protocol-jmx</artifactId>
+				<version>${version.arquillian-container}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.wildfly.arquillian</groupId>
+				<artifactId>wildfly-arquillian-testenricher-msc</artifactId>
+				<version>${version.arquillian-container}</version>
+				<scope>test</scope>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
