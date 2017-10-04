@@ -24,13 +24,11 @@ package org.komodo.relational.importer.ddl;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
-
 import org.junit.Ignore;
 import org.junit.Test;
 import org.komodo.core.KomodoLexicon;
@@ -42,14 +40,14 @@ import org.komodo.relational.model.Schema;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.repository.SynchronousCallback;
+import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
+import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
+import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.test.utils.TestUtilities;
-import org.modeshape.jcr.api.JcrConstants;
-import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 /**
  * Test Class to test Teiid DDL import
@@ -206,78 +204,78 @@ public class TestTeiidDdlImporter extends AbstractImporterTest {
         // ----------------------------------
         // Test expected tables exist
         // ----------------------------------
-        KomodoObject accountTableNode = verify(modelNode, "accounts.ACCOUNT", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_STATEMENT);
-        KomodoObject customerTableNode = verify(modelNode, "accounts.CUSTOMER", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_STATEMENT);
-        KomodoObject holdingsTableNode = verify(modelNode, "accounts.HOLDINGS", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_STATEMENT);
-        KomodoObject productTableNode = verify(modelNode, "accounts.PRODUCT", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_STATEMENT);
-        KomodoObject subsTableNode = verify(modelNode, "accounts.SUBSCRIPTIONS", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_STATEMENT);
+        KomodoObject accountTableNode = verify(modelNode, "accounts.ACCOUNT", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_STATEMENT);
+        KomodoObject customerTableNode = verify(modelNode, "accounts.CUSTOMER", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_STATEMENT);
+        KomodoObject holdingsTableNode = verify(modelNode, "accounts.HOLDINGS", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_STATEMENT);
+        KomodoObject productTableNode = verify(modelNode, "accounts.PRODUCT", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_STATEMENT);
+        KomodoObject subsTableNode = verify(modelNode, "accounts.SUBSCRIPTIONS", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_STATEMENT);
 
         // ----------------------------------------
         // Test expected columns for ACCOUNT table
         // ----------------------------------------
-        verify(accountTableNode, "ACCOUNT_ID", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
-        verify(accountTableNode, "SSN", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
-        verify(accountTableNode, "STATUS", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
-        verify(accountTableNode, "TYPE", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
-        verify(accountTableNode, "DATEOPENED", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
-        verify(accountTableNode, "DATECLOSED", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
+        verify(accountTableNode, "ACCOUNT_ID", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
+        verify(accountTableNode, "SSN", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
+        verify(accountTableNode, "STATUS", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
+        verify(accountTableNode, "TYPE", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
+        verify(accountTableNode, "DATEOPENED", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
+        verify(accountTableNode, "DATECLOSED", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
 
         // ------------------------------------------
         // Test expected columns for CUSTOMER table
         // ------------------------------------------
-        verify(customerTableNode, "SSN", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
-        verify(customerTableNode, "FIRSTNAME", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
-        verify(customerTableNode, "LASTNAME", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
-        verify(customerTableNode, "ST_ADDRESS", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
-        verify(customerTableNode, "APT_NUMBER", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
-        verify(customerTableNode, "CITY", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
-        verify(customerTableNode, "STATE", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
-        verify(customerTableNode, "ZIPCODE", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
-        verify(customerTableNode, "PHONE", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
+        verify(customerTableNode, "SSN", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
+        verify(customerTableNode, "FIRSTNAME", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
+        verify(customerTableNode, "LASTNAME", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
+        verify(customerTableNode, "ST_ADDRESS", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
+        verify(customerTableNode, "APT_NUMBER", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
+        verify(customerTableNode, "CITY", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
+        verify(customerTableNode, "STATE", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
+        verify(customerTableNode, "ZIPCODE", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
+        verify(customerTableNode, "PHONE", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
 
         // ------------------------------------------
         // Test expected columns for HOLDINGS table
         // ------------------------------------------
-        verify(holdingsTableNode, "TRANSACTION_ID", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
-        verify(holdingsTableNode, "ACCOUNT_ID", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
-        verify(holdingsTableNode, "PRODUCT_ID", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
-        verify(holdingsTableNode, "PURCHASE_DATE", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
-        verify(holdingsTableNode, "SHARES_COUNT", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
+        verify(holdingsTableNode, "TRANSACTION_ID", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
+        verify(holdingsTableNode, "ACCOUNT_ID", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
+        verify(holdingsTableNode, "PRODUCT_ID", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
+        verify(holdingsTableNode, "PURCHASE_DATE", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
+        verify(holdingsTableNode, "SHARES_COUNT", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
 
         // ------------------------------------------
         // Test expected columns for PRODUCT table
         // ------------------------------------------
-        verify(productTableNode, "ID", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
-        verify(productTableNode, "SYMBOL", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
-        verify(productTableNode, "COMPANY_NAME", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
+        verify(productTableNode, "ID", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
+        verify(productTableNode, "SYMBOL", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
+        verify(productTableNode, "COMPANY_NAME", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
 
         // ------------------------------------------
         // Test expected columns for SUBSCRIPTIONS table
         // ------------------------------------------
-        verify(subsTableNode, "value", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
-        verify(subsTableNode, "type", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
-        verify(subsTableNode, "end_date", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
+        verify(subsTableNode, "value", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
+        verify(subsTableNode, "type", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
+        verify(subsTableNode, "end_date", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
 
         // --------------------------------------------
         // Test expected properties on HOLDINGS table
         // --------------------------------------------
         // Expected properties
-        KomodoObject nameInSource = verify(holdingsTableNode, "NAMEINSOURCE", JcrConstants.NT_UNSTRUCTURED, StandardDdlLexicon.TYPE_STATEMENT_OPTION);
+        KomodoObject nameInSource = verify(holdingsTableNode, "NAMEINSOURCE", NTLexicon.NT_UNSTRUCTURED, StandardDdlLexicon.TYPE_STATEMENT_OPTION);
         verifyProperty(nameInSource, StandardDdlLexicon.VALUE, "`accounts`.`HOLDINGS`");
 
-        KomodoObject updateable = verify(holdingsTableNode, "UPDATABLE", JcrConstants.NT_UNSTRUCTURED, StandardDdlLexicon.TYPE_STATEMENT_OPTION);
+        KomodoObject updateable = verify(holdingsTableNode, "UPDATABLE", NTLexicon.NT_UNSTRUCTURED, StandardDdlLexicon.TYPE_STATEMENT_OPTION);
         verifyProperty(updateable, StandardDdlLexicon.VALUE, "TRUE");
 
         // -------------------------------------------------------------
         // Test expected properties on HOLDINGS.PURCHASE_DATE column
         // -------------------------------------------------------------
-        KomodoObject purcharseDateNode = verify(holdingsTableNode, "PURCHASE_DATE", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
+        KomodoObject purcharseDateNode = verify(holdingsTableNode, "PURCHASE_DATE", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
 
         // Expected properties
-        KomodoObject nativeType = verify(purcharseDateNode, "NATIVE_TYPE", JcrConstants.NT_UNSTRUCTURED, StandardDdlLexicon.TYPE_STATEMENT_OPTION);
+        KomodoObject nativeType = verify(purcharseDateNode, "NATIVE_TYPE", NTLexicon.NT_UNSTRUCTURED, StandardDdlLexicon.TYPE_STATEMENT_OPTION);
         verifyProperty(nativeType, StandardDdlLexicon.VALUE, "TIMESTAMP");
 
-        nameInSource = verify(purcharseDateNode, "NAMEINSOURCE", JcrConstants.NT_UNSTRUCTURED, StandardDdlLexicon.TYPE_STATEMENT_OPTION);
+        nameInSource = verify(purcharseDateNode, "NAMEINSOURCE", NTLexicon.NT_UNSTRUCTURED, StandardDdlLexicon.TYPE_STATEMENT_OPTION);
         verifyProperty(nameInSource, StandardDdlLexicon.VALUE, "`PURCHASE_DATE`");
 
         verifyProperty(purcharseDateNode, StandardDdlLexicon.DEFAULT_VALUE, "CURRENT_TIMESTAMP");
@@ -387,32 +385,32 @@ public class TestTeiidDdlImporter extends AbstractImporterTest {
         // ----------------------------------
         // Test expected procedures exist
         // ----------------------------------
-        KomodoObject getFilesProcNode = verify(schemaNode, "getFiles", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateProcedure.PROCEDURE_STATEMENT);
-        verify(schemaNode, "getTextFiles", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateProcedure.PROCEDURE_STATEMENT);
-        verify(schemaNode, "saveFile", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateProcedure.PROCEDURE_STATEMENT);
+        KomodoObject getFilesProcNode = verify(schemaNode, "getFiles", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateProcedure.PROCEDURE_STATEMENT);
+        verify(schemaNode, "getTextFiles", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateProcedure.PROCEDURE_STATEMENT);
+        verify(schemaNode, "saveFile", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateProcedure.PROCEDURE_STATEMENT);
 
         // --------------------------------------------
         // Test getFiles procedure has expected param
         // --------------------------------------------
-        verify(getFilesProcNode, "pathAndPattern", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateProcedure.PARAMETER);
+        verify(getFilesProcNode, "pathAndPattern", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateProcedure.PARAMETER);
 
         // --------------------------------------------
         // Test getFiles procedure properties
         // --------------------------------------------
         // Expected properties
-        KomodoObject description = verify(getFilesProcNode, "ANNOTATION", JcrConstants.NT_UNSTRUCTURED, StandardDdlLexicon.TYPE_STATEMENT_OPTION);
+        KomodoObject description = verify(getFilesProcNode, "ANNOTATION", NTLexicon.NT_UNSTRUCTURED, StandardDdlLexicon.TYPE_STATEMENT_OPTION);
         verifyProperty(description, StandardDdlLexicon.VALUE, "Returns files that match the given path and pattern as BLOBs");
 
         // ------------------------------------------------
         // Test getFiles procedure has expected resultSet
         // ------------------------------------------------
-        KomodoObject resultSet = verify(getFilesProcNode, "resultSet", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateProcedure.RESULT_COLUMNS);
+        KomodoObject resultSet = verify(getFilesProcNode, "resultSet", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateProcedure.RESULT_COLUMNS);
 
         // -------------------------------------------------------------
         // Test resultSet has expected columns
         // -------------------------------------------------------------
-        verify(resultSet, "file", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateProcedure.RESULT_COLUMN);
-        verify(resultSet, "filePath", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateProcedure.RESULT_COLUMN);
+        verify(resultSet, "file", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateProcedure.RESULT_COLUMN);
+        verify(resultSet, "filePath", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateProcedure.RESULT_COLUMN);
     }
 
 	/**

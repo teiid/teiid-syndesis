@@ -35,8 +35,8 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.test.utils.AbstractLocalRepositoryTest;
-import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
+import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public class RelationalModelTest extends AbstractLocalRepositoryTest {

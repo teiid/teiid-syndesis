@@ -62,13 +62,13 @@ import org.komodo.rest.relational.response.KomodoSavedSearcher;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
 import org.komodo.spi.query.LogicalOperator;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository.KeywordCriteria;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
-import org.modeshape.jcr.api.JcrConstants;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -99,7 +99,7 @@ public final class KomodoSearchService extends KomodoService {
      */
     private String convertType(String type) {
         if (type == null)
-            return JcrConstants.NT_UNSTRUCTURED;
+            return NTLexicon.NT_UNSTRUCTURED;
 
         KomodoType kType = KomodoType.getKomodoType(type);
         if (kType == null || KomodoType.UNKNOWN.equals(kType))
@@ -110,7 +110,7 @@ public final class KomodoSearchService extends KomodoService {
         if (lexiconType != null)
             return lexiconType;
 
-        return JcrConstants.NT_UNSTRUCTURED;
+        return NTLexicon.NT_UNSTRUCTURED;
     }
 
     private ObjectSearcher createObjectSearcher(String type, String parent, String ancestor,

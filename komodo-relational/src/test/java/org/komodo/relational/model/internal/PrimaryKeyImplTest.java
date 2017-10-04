@@ -35,10 +35,9 @@ import org.komodo.relational.model.PrimaryKey;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.TableConstraint;
 import org.komodo.spi.KException;
+import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon;
+import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon.Constraint;
 import org.komodo.spi.repository.KomodoType;
-import org.modeshape.jcr.JcrLexicon;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.Constraint;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public final class PrimaryKeyImplTest extends RelationalModelTest {

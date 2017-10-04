@@ -57,6 +57,8 @@ import org.komodo.rest.relational.RestEntityFactory;
 import org.komodo.rest.relational.connection.RestConnection;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.spi.KException;
+import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
@@ -64,8 +66,6 @@ import org.komodo.spi.repository.Repository.UnitOfWorkListener;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
-import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 import com.google.gson.Gson;
 
 /**

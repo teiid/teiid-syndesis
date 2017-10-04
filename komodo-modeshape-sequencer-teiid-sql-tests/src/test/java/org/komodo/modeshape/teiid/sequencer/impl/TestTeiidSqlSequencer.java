@@ -24,16 +24,16 @@ package org.komodo.modeshape.teiid.sequencer.impl;
 import javax.jcr.Node;
 import org.junit.Test;
 import org.komodo.modeshape.teiid.sequencer.AbstractTestTeiidSqlSequencer;
-import org.komodo.spi.lexicon.TeiidSqlLexicon.Block;
-import org.komodo.spi.lexicon.TeiidSqlLexicon.CommandStatement;
-import org.komodo.spi.lexicon.TeiidSqlLexicon.CreateProcedureCommand;
-import org.komodo.spi.lexicon.TeiidSqlLexicon.From;
-import org.komodo.spi.lexicon.TeiidSqlLexicon.GroupBy;
-import org.komodo.spi.lexicon.TeiidSqlLexicon.Query;
-import org.komodo.spi.lexicon.TeiidSqlLexicon.SPParameter;
-import org.komodo.spi.lexicon.TeiidSqlLexicon.Select;
-import org.komodo.spi.lexicon.TeiidSqlLexicon.StoredProcedure;
-import org.komodo.spi.lexicon.TeiidSqlLexicon.SubqueryContainer;
+import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon.Block;
+import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon.CommandStatement;
+import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon.CreateProcedureCommand;
+import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon.From;
+import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon.GroupBy;
+import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon.Query;
+import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon.SPParameter;
+import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon.Select;
+import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon.StoredProcedure;
+import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon.SubqueryContainer;
 
 /**
  *

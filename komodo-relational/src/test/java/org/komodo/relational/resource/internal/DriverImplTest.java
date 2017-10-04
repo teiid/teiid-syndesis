@@ -37,7 +37,7 @@ import org.komodo.relational.resource.Driver;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.test.utils.TestUtilities;
 import org.komodo.utils.FileUtils;
-import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
+import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 
 @SuppressWarnings( "javadoc" )
 public final class DriverImplTest extends RelationalModelTest {

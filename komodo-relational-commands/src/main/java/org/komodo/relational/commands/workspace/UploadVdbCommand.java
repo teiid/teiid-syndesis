@@ -39,8 +39,8 @@ import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.utils.StringUtils;
 import org.komodo.utils.i18n.I18n;
-import org.modeshape.jcr.JcrLexicon;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
+import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 
 /**
  * Loads a {@link Vdb VDB} from a local file.
@@ -107,8 +107,8 @@ public final class UploadVdbCommand extends WorkspaceShellCommand {
             }
             // create VDB
             final Vdb vdb = getWorkspaceManager(getTransaction()).createVdb( uow, null, vdbName, fileName );
-            final KomodoObject fileNode = vdb.addChild( uow, JcrLexicon.CONTENT.getString(), null );
-            fileNode.setProperty( uow, JcrLexicon.DATA.getString(), content );
+            final KomodoObject fileNode = vdb.addChild( uow, JcrLexicon.JCR_CONTENT, null );
+            fileNode.setProperty( uow, JcrLexicon.JCR_DATA, content );
 
             return new CommandResultImpl( I18n.bind( WorkspaceCommandsI18n.vdbUploaded, vdbName ) );
         } catch ( final Exception e ) {

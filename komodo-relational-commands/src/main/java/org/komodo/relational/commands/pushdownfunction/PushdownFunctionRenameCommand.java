@@ -30,8 +30,8 @@ import org.komodo.shell.api.CommandResult;
 import org.komodo.shell.api.TabCompletionModifier;
 import org.komodo.shell.api.WorkspaceStatus;
 import org.komodo.shell.commands.RenameCommand;
+import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon.CreateProcedure;
 import org.komodo.utils.i18n.I18n;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.CreateProcedure;
 
 /**
  * The {@link ProcedureResultSet result} child cannot be renamed.

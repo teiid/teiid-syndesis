@@ -26,18 +26,18 @@ import javax.jcr.Node;
 import org.junit.Test;
 import org.komodo.modeshape.AbstractTSqlSequencerTest;
 import org.komodo.repository.KSequencerController.SequencerType;
-import org.komodo.spi.lexicon.TeiidSqlLexicon.AbstractCompareCriteria;
-import org.komodo.spi.lexicon.TeiidSqlLexicon.CompareCriteria;
-import org.komodo.spi.lexicon.TeiidSqlLexicon.ElementSymbol;
-import org.komodo.spi.lexicon.TeiidSqlLexicon.From;
-import org.komodo.spi.lexicon.TeiidSqlLexicon.Function;
-import org.komodo.spi.lexicon.TeiidSqlLexicon.JoinPredicate;
-import org.komodo.spi.lexicon.TeiidSqlLexicon.MultipleElementSymbol;
-import org.komodo.spi.lexicon.TeiidSqlLexicon.Query;
-import org.komodo.spi.lexicon.TeiidSqlLexicon.Select;
+import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon.AbstractCompareCriteria;
+import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon.CompareCriteria;
+import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon.ElementSymbol;
+import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon.From;
+import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon.Function;
+import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon.JoinPredicate;
+import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon.MultipleElementSymbol;
+import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon.Query;
+import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon.Select;
 import org.komodo.spi.query.JoinTypeTypes;
-import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
+import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
+import org.komodo.spi.lexicon.ddl.TeiidDdlLexicon;
 
 /**
  *

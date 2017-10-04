@@ -86,7 +86,7 @@ import org.komodo.spi.storage.StorageConnector;
 import org.komodo.spi.storage.StorageReference;
 import org.komodo.test.utils.TestUtilities;
 import org.komodo.utils.FileUtils;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 
 @SuppressWarnings( {"javadoc", "nls"} )
 public final class WorkspaceManagerTest extends RelationalModelTest {

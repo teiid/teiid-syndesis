@@ -55,7 +55,7 @@ import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.spi.repository.Repository.UnitOfWorkListener;
 import org.komodo.test.utils.AbstractLocalRepositoryTest;
 import org.modeshape.jcr.JcrNtLexicon;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 
 @SuppressWarnings( {"javadoc", "nls"} )
 public class TestLocalRepository extends AbstractLocalRepositoryTest {

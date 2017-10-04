@@ -85,7 +85,7 @@ import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.RepositoryClientEvent;
 import org.komodo.utils.KLog;
 import org.komodo.utils.observer.KLatchObserver;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import io.swagger.converter.ModelConverters;
 import io.swagger.jaxrs.config.BeanConfig;
 

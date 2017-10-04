@@ -52,7 +52,7 @@ import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.spi.repository.Repository.UnitOfWorkListener;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public final class RestVdbTranslatorTest implements V1Constants {

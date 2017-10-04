@@ -40,9 +40,9 @@ import org.komodo.relational.model.SchemaElement.SchemaElementType;
 import org.komodo.relational.model.StatementOption;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon;
+import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon.CreateProcedure;
 import org.komodo.spi.repository.PropertyDescriptor;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.CreateProcedure;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public final class AbstractProcedureImplTest extends RelationalModelTest {

@@ -19,7 +19,7 @@ import java.util.Collections;
 import org.junit.Test;
 import org.komodo.relational.commands.AbstractCommandTest;
 import org.komodo.shell.api.CommandResult;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.CreateProcedure;
+import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon.CreateProcedure;
 
 /**
  * Test Class to test {@link StoredProcedureRenameCommand}.

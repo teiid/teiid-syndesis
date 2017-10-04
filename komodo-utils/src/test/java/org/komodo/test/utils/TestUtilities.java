@@ -47,12 +47,12 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.FileUtils;
-import org.teiid.modeshape.sequencer.vdb.lexicon.CoreLexicon;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -950,7 +950,7 @@ public class TestUtilities implements StringConstants {
          *          @model-prop=model-value-override
          */
         KomodoObject modelOne = myVdbExample.addChild(uow, "model-one", VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        modelOne.setProperty(uow, CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
+        modelOne.setProperty(uow, NTLexicon.MODEL_TYPE, NTLexicon.ModelType.PHYSICAL);
         modelOne.setProperty(uow, VdbLexicon.Vdb.DESCRIPTION, "model description");
         modelOne.setProperty(uow, VdbLexicon.Model.VISIBLE, false);
         modelOne.setProperty(uow, "model-prop", "model-value-override");
@@ -980,7 +980,7 @@ public class TestUtilities implements StringConstants {
          *          @model-prop=model-value
          */
         KomodoObject modelTwo = myVdbExample.addChild(uow, "model-two", VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        modelTwo.setProperty(uow, CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
+        modelTwo.setProperty(uow, NTLexicon.MODEL_TYPE, NTLexicon.ModelType.VIRTUAL);
         modelTwo.setProperty(uow, VdbLexicon.Model.VISIBLE, true);
         modelTwo.setProperty(uow, "model-prop", "model-value");
         modelTwo.setProperty(uow, VdbLexicon.Model.METADATA_TYPE, "DDL");

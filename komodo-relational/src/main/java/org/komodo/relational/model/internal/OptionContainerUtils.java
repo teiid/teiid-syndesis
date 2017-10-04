@@ -34,6 +34,7 @@ import org.komodo.repository.DescriptorImpl;
 import org.komodo.repository.ObjectImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
@@ -42,7 +43,6 @@ import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
-import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
 
 /**
  * Utilities for retrieving and updating standard and custom statement options.

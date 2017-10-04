@@ -20,7 +20,7 @@
  * 02110-1301 USA.
  */
 
-package org.komodo.spi.lexicon;
+package org.komodo.spi.lexicon.sql.teiid;
 
 import org.komodo.spi.constants.StringConstants;
 

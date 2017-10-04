@@ -41,7 +41,7 @@ import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.test.utils.TestUtilities;
-import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
+import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 
 @SuppressWarnings( { "javadoc",
                      "nls" } )
@@ -196,8 +196,8 @@ public class TestConnectionImporter  extends AbstractImporterTest {
         verifyProperty(dsNode, "user-name", "komodo");
         verifyProperty(dsNode, "password", "XUMz4vBKuA2v");
         verifyProperty(dsNode, 
-                       DataVirtLexicon.Connection.TYPE, 
-                       org.teiid.modeshape.sequencer.dataservice.Connection.Type.JDBC.name());
+                       DataVirtLexicon.Connection.TYPE,
+                       DataVirtLexicon.Connection.JDBC_TYPE_CONSTANT);
     }
 
     /**

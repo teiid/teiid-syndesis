@@ -77,8 +77,8 @@ import org.komodo.spi.utils.KeyInValueMap;
 import org.komodo.spi.utils.KeyInValueMap.KeyFromValueAdapter;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
-import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
+import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 
 /**
  *

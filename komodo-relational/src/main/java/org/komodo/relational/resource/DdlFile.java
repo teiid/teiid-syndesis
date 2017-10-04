@@ -30,7 +30,7 @@ import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
+import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 
 /**
  * Represents a DDL file of a data service.

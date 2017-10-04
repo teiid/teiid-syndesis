@@ -30,6 +30,7 @@ import org.komodo.relational.Messages;
 import org.komodo.relational.internal.RelationalChildRestrictedObject;
 import org.komodo.relational.model.StatementOption;
 import org.komodo.spi.KException;
+import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyDescriptor;
@@ -39,7 +40,6 @@ import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
-import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
 
 /**
  * An implementation of a relational model DDL statement option.

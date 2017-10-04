@@ -26,24 +26,21 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.modeshape.jcr.api.JcrConstants.JCR_MIXIN_TYPES;
-import static org.modeshape.jcr.api.JcrConstants.JCR_PRIMARY_TYPE;
-
 import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
+import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
+import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.Repository;
 import org.komodo.test.utils.AbstractLocalRepositoryTest;
 import org.komodo.utils.KLog;
 import org.modeshape.jcr.JcrSession;
-import org.modeshape.jcr.api.JcrConstants;
 
 
 /**
@@ -124,11 +121,11 @@ public abstract class AbstractImporterTest extends AbstractLocalRepositoryTest {
     }
 
     protected void verifyPrimaryType(KomodoObject node, String expectedValue) throws Exception {
-        verifyProperty(node, JCR_PRIMARY_TYPE, expectedValue);
+        verifyProperty(node, JcrLexicon.JCR_PRIMARY_TYPE, expectedValue);
     }
 
     protected void verifyMixinType(KomodoObject node, String... expectedValues) throws Exception {
-        Property property = node.getRawProperty(getTransaction(), JCR_MIXIN_TYPES);
+        Property property = node.getRawProperty(getTransaction(), JcrLexicon.JCR_MIXIN_TYPES);
         assertNotNull(property);
 
         List<String> values;
@@ -178,6 +175,6 @@ public abstract class AbstractImporterTest extends AbstractLocalRepositoryTest {
     }
 
     protected KomodoObject verify(KomodoObject parentNode, String relativePath) throws Exception {
-        return verify(parentNode, relativePath, JcrConstants.NT_UNSTRUCTURED, -1, null);
+        return verify(parentNode, relativePath, NTLexicon.NT_UNSTRUCTURED, -1, null);
     }
 }

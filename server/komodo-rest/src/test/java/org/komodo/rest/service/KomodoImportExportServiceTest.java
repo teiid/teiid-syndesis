@@ -66,7 +66,7 @@ import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.test.utils.TestUtilities;
 import org.komodo.utils.FileUtils;
 import org.komodo.utils.StringUtils;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 
 @SuppressWarnings({"deprecation"})
 public class KomodoImportExportServiceTest extends AbstractKomodoServiceTest {

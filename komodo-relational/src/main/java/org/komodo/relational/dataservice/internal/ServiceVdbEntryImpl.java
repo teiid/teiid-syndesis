@@ -23,7 +23,7 @@ import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
-import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
+import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 
 /**
  * An implementation of a Service VDB entry in a data service.

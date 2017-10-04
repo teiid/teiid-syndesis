@@ -33,7 +33,7 @@ import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
-import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
+import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
 
 /**
  * An implementation of a relational model procedure data type result set.

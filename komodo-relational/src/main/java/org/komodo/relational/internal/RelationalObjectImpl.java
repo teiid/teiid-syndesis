@@ -24,7 +24,6 @@ package org.komodo.relational.internal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.RelationalObject;
 import org.komodo.relational.TypeResolver;
@@ -32,6 +31,7 @@ import org.komodo.repository.Messages;
 import org.komodo.repository.Messages.Komodo;
 import org.komodo.repository.ObjectImpl;
 import org.komodo.spi.KException;
+import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
@@ -42,7 +42,6 @@ import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
-import org.modeshape.jcr.JcrLexicon;
 
 /**
  * A base implementation of a relational object.
@@ -595,7 +594,7 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     public final void setPrimaryType( final UnitOfWork uow,
                                       final String typeName ) {
         throw new UnsupportedOperationException( Messages.getString( Relational.PROPERTY_NOT_MODIFIABLE,
-                                                                     JcrLexicon.PRIMARY_TYPE.getString() ) );
+                                                                     JcrLexicon.JCR_PRIMARY_TYPE ) );
     }
 
     /**

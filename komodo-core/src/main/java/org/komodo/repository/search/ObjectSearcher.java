@@ -36,7 +36,7 @@ import org.komodo.core.Messages;
 import org.komodo.repository.RepositoryImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.lexicon.TeiidSqlConstants;
+import org.komodo.spi.lexicon.sql.teiid.TeiidSqlConstants;
 import org.komodo.spi.query.LogicalOperator;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;

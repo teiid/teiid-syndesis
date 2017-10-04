@@ -22,21 +22,21 @@
 package org.komodo.relational.dataservice;
 
 import static org.komodo.spi.constants.StringConstants.COLON;
-
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
-
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-
 import org.komodo.core.KomodoLexicon;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
+import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
+import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.Property;
@@ -46,12 +46,7 @@ import org.komodo.utils.ArgCheck;
 import org.komodo.utils.FileUtils;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
-import org.modeshape.jcr.JcrLexicon;
-import org.modeshape.jcr.JcrMixLexicon;
-import org.modeshape.jcr.JcrNtLexicon;
-import org.modeshape.jcr.ModeShapeLexicon;
 import org.teiid.modeshape.sequencer.dataservice.DataServiceManifest;
-import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 import org.w3c.dom.Document;
 
 /**
@@ -61,11 +56,9 @@ public class DataserviceManifest implements Exportable {
 
     private static final String[] HIDDEN_PROP_PREFIXES = new String[] { JcrLexicon.Namespace.PREFIX
                                                                         + COLON,
-                                                                        JcrMixLexicon.Namespace.PREFIX + COLON,
-                                                                        JcrNtLexicon.Namespace.PREFIX + COLON,
+                                                                        NTLexicon.Namespace.PREFIX + COLON,
                                                                         DataVirtLexicon.Namespace.PREFIX + COLON,
-                                                                        KomodoLexicon.Namespace.PREFIX + COLON,
-                                                                        ModeShapeLexicon.Namespace.PREFIX + COLON };
+                                                                        KomodoLexicon.Namespace.PREFIX + COLON };
 
     private static final SimpleDateFormat FORMATTER = new SimpleDateFormat( DataServiceManifest.DATE_PATTERN );
 

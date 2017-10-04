@@ -41,6 +41,11 @@ import org.komodo.repository.KomodoTypeRegistry.TypeIdentifier;
 import org.komodo.repository.RepositoryImpl.UnitOfWorkImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
+import org.komodo.spi.lexicon.ddl.DdlConstants;
+import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
+import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlConstants;
+import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon;
 import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoObject;
@@ -58,13 +63,8 @@ import org.komodo.spi.type.DataTypeService;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
-import org.modeshape.jcr.JcrNtLexicon;
 import org.modeshape.jcr.JcrSession;
 import org.modeshape.jcr.api.JcrTools;
-import org.teiid.modeshape.sequencer.ddl.DdlConstants;
-import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlConstants;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
 
 /**
  * An implementation of a {@link KomodoObject Komodo object}.
@@ -423,7 +423,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
                          primaryType);
         }
 
-        final String type = (StringUtils.isBlank(primaryType) ? JcrNtLexicon.UNSTRUCTURED.getString() : primaryType);
+        final String type = (StringUtils.isBlank(primaryType) ? NTLexicon.NT_UNSTRUCTURED : primaryType);
 
         try {
             final Node node = node(transaction).addNode(name, type);
@@ -1604,7 +1604,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
         }
 
         try {
-            final String type = (StringUtils.isBlank(typeName) ? JcrNtLexicon.UNSTRUCTURED.getString() : typeName);
+            final String type = (StringUtils.isBlank(typeName) ? NTLexicon.NT_UNSTRUCTURED : typeName);
             getSession(transaction).getNode(this.path).setPrimaryType(type);
         } catch (final Exception e) {
             throw handleError( e );

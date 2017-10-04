@@ -49,19 +49,18 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.repository.SynchronousCallback;
 import org.komodo.repository.search.ObjectSearcher;
-import org.komodo.spi.lexicon.TeiidSqlLexicon;
-import org.komodo.spi.lexicon.TeiidSqlLexicon.Symbol;
+import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
+import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
+import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon;
+import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon;
+import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon.Symbol;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.test.utils.TestUtilities;
 import org.komodo.utils.KLog;
-import org.modeshape.jcr.JcrLexicon;
-import org.modeshape.jcr.api.JcrConstants;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
-import org.teiid.modeshape.sequencer.vdb.lexicon.CoreLexicon;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 /**
  * Test Class to test Teiid VDB import
@@ -340,7 +339,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
          *          @vdb:sourceJndiName=java:/twitterDS
          */
         KomodoObject twitter = verify(tweetNode, model1Name, VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        verifyProperty(twitter, CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
+        verifyProperty(twitter, NTLexicon.MODEL_TYPE, NTLexicon.ModelType.PHYSICAL);
         verifyProperty(twitter, VdbLexicon.Model.VISIBLE, Boolean.TRUE.toString());
         verifyProperty(twitter, VdbLexicon.Model.METADATA_TYPE, "DDL");
 
@@ -370,7 +369,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
          *          @vdb:modelDefinition=CREATE VIRTUAL PROCEDURE getTweets(query varchar) RETURNS (created_on varchar(25), from_user varchar(25), to_user varchar(25), profile_image_url varchar(25), source varchar(25), text varchar(140)) AS select tweet.* from (call twitter.invokeHTTP(action => 'GET', endpoint =>querystring('',query as "q"))) w, XMLTABLE('results' passing JSONTOXML('myxml', w.result) columns created_on string PATH 'created_at', from_user string PATH 'from_user', to_user string PATH 'to_user', profile_image_url string PATH 'profile_image_url', source string PATH 'source', text string PATH 'text') tweet; CREATE VIEW Tweet AS select * FROM twitterview.getTweets;
          */
         KomodoObject twitterView = verify(tweetNode, model2Name, VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        verifyProperty(twitterView, CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
+        verifyProperty(twitterView, NTLexicon.MODEL_TYPE, NTLexicon.ModelType.VIRTUAL);
         verifyProperty(twitterView, VdbLexicon.Model.METADATA_TYPE, "DDL");
         verifyProperty(twitterView, VdbLexicon.Model.VISIBLE, Boolean.TRUE.toString());
         verifyProperty(twitterView, VdbLexicon.Model.MODEL_DEFINITION, modelDefinition);
@@ -380,12 +379,12 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
             // which creates the getTweets node
             KomodoObject getTweets = verify(twitterView, "getTweets");
             KomodoObject getTweetsQuery = verify(getTweets, TeiidSqlLexicon.Query.ID);
-            verify(getTweetsQuery, TeiidSqlLexicon.From.ID, JcrConstants.NT_UNSTRUCTURED, TeiidSqlLexicon.From.ID);
+            verify(getTweetsQuery, TeiidSqlLexicon.From.ID, NTLexicon.NT_UNSTRUCTURED, TeiidSqlLexicon.From.ID);
         }
 
         KomodoObject tweet = verify(twitterView, "Tweet");
         KomodoObject tweetQuery = verify(tweet, TeiidSqlLexicon.Query.ID);
-        verify(tweetQuery, TeiidSqlLexicon.From.ID, JcrConstants.NT_UNSTRUCTURED, TeiidSqlLexicon.From.ID);
+        verify(tweetQuery, TeiidSqlLexicon.From.ID, NTLexicon.NT_UNSTRUCTURED, TeiidSqlLexicon.From.ID);
     }
 
     @Test
@@ -514,14 +513,14 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
          *          @vdb:modelDefinition=CREATE VIRTUAL PROCEDURE getTweets(query varchar) RETURNS (created_on varchar(25), from_user varchar(25), to_user varchar(25), profile_image_url varchar(25), source varchar(25), text varchar(140)) AS select tweet.* from (call twitter.invokeHTTP(action => 'GET', endpoint =>querystring('',query as "q"))) w, XMLTABLE('results' passing JSONTOXML('myxml', w.result) columns created_on string PATH 'created_at', from_user string PATH 'from_user', to_user string PATH 'to_user', profile_image_url string PATH 'profile_image_url', source string PATH 'source', text string PATH 'text') tweet; CREATE VIEW Tweet AS select * FROM twitterview.getTweets;
          */
         verifyPrimaryType(twitterView, VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        verifyProperty(twitterView, CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
+        verifyProperty(twitterView, NTLexicon.MODEL_TYPE, NTLexicon.ModelType.VIRTUAL);
         verifyProperty(twitterView, VdbLexicon.Model.METADATA_TYPE, "DDL");
         verifyProperty(twitterView, VdbLexicon.Model.VISIBLE, Boolean.TRUE.toString());
         verifyProperty(twitterView, VdbLexicon.Model.MODEL_DEFINITION, TWEET_EXAMPLE_REIMPORT_DDL);
 
         KomodoObject tweet = verify(twitterView, "Tweet");
         KomodoObject tweetQuery = verify(tweet, TeiidSqlLexicon.Query.ID);
-        verify(tweetQuery, TeiidSqlLexicon.From.ID, JcrConstants.NT_UNSTRUCTURED, TeiidSqlLexicon.From.ID);
+        verify(tweetQuery, TeiidSqlLexicon.From.ID, NTLexicon.NT_UNSTRUCTURED, TeiidSqlLexicon.From.ID);
     }
 
     @Test
@@ -553,9 +552,9 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
         traverse(getTransaction(), tweet.getAbsolutePath());
 
         KomodoObject tweetQuery = verify(tweet, TeiidSqlLexicon.Query.ID);
-        verify(tweetQuery, TeiidSqlLexicon.From.ID, JcrConstants.NT_UNSTRUCTURED, TeiidSqlLexicon.From.ID);
-        KomodoObject selectStmt = verify(tweetQuery, TeiidSqlLexicon.Select.ID, JcrConstants.NT_UNSTRUCTURED, TeiidSqlLexicon.Select.ID);
-        KomodoObject symbolsStmt = verify(selectStmt, TeiidSqlLexicon.Select.SYMBOLS_REF_NAME, JcrConstants.NT_UNSTRUCTURED, TeiidSqlLexicon.ElementSymbol.ID);
+        verify(tweetQuery, TeiidSqlLexicon.From.ID, NTLexicon.NT_UNSTRUCTURED, TeiidSqlLexicon.From.ID);
+        KomodoObject selectStmt = verify(tweetQuery, TeiidSqlLexicon.Select.ID, NTLexicon.NT_UNSTRUCTURED, TeiidSqlLexicon.Select.ID);
+        KomodoObject symbolsStmt = verify(selectStmt, TeiidSqlLexicon.Select.SYMBOLS_REF_NAME, NTLexicon.NT_UNSTRUCTURED, TeiidSqlLexicon.ElementSymbol.ID);
         verifyProperty(symbolsStmt, Symbol.NAME_PROP_NAME, "title");
     }
 
@@ -650,7 +649,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
          *          @vdb:visible=false
          */
         KomodoObject modelOne = verify(myVdbExample, "model-one", VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        verifyProperty(modelOne, CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
+        verifyProperty(modelOne, NTLexicon.MODEL_TYPE, NTLexicon.ModelType.PHYSICAL);
         verifyProperty(modelOne, VdbLexicon.Vdb.DESCRIPTION, "model description");
         verifyProperty(modelOne, VdbLexicon.Model.VISIBLE, Boolean.FALSE.toString());
 
@@ -678,7 +677,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
          *          @vdb:visible=true
          */
         KomodoObject modelTwo = verify(myVdbExample, "model-two", VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        verifyProperty(modelTwo, CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
+        verifyProperty(modelTwo, NTLexicon.MODEL_TYPE, NTLexicon.ModelType.VIRTUAL);
         verifyProperty(modelTwo, VdbLexicon.Model.VISIBLE, Boolean.TRUE.toString());
         verifyProperty(modelTwo, VdbLexicon.Model.METADATA_TYPE, "DDL");
 
@@ -828,7 +827,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
         KomodoObject test = verify(modelTwo, "Test");
 
         KomodoObject testQuery = verify(test, TeiidSqlLexicon.Query.ID);
-        verify(testQuery, TeiidSqlLexicon.From.ID, JcrConstants.NT_UNSTRUCTURED, TeiidSqlLexicon.From.ID);
+        verify(testQuery, TeiidSqlLexicon.From.ID, NTLexicon.NT_UNSTRUCTURED, TeiidSqlLexicon.From.ID);
 
     }
 
@@ -1287,14 +1286,14 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
                 assertEquals(PARTS_DYNAMIC_PARTSVIEW_DDL, model.getModelDefinition(getTransaction()));
 
                 // Ddl Sequenced
-                verify(model, "PartsSummary", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.VIEW_STATEMENT);
+                verify(model, "PartsSummary", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.VIEW_STATEMENT);
 
             } else if ("PartsSS".equals(model.getName(getTransaction()))) {
                 assertEquals(Type.PHYSICAL, model.getModelType(getTransaction()));
                 assertEquals(PARTS_DYNAMIC_PARTSS_DDL, model.getModelDefinition(getTransaction()));
 
                 // Ddl Sequenced
-                verify(model, "PARTS", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_STATEMENT);
+                verify(model, "PARTS", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_STATEMENT);
             }
         }
     }
@@ -1343,7 +1342,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
         assertEquals(Type.VIRTUAL, model.getModelType(getTransaction()));
 
         // Ddl Sequenced
-        verify(model, "stockPricesMatView", JcrConstants.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.VIEW_STATEMENT);
+        verify(model, "stockPricesMatView", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.VIEW_STATEMENT);
     }
 
     @Test
@@ -1418,13 +1417,13 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
         WorkspaceManager manager = WorkspaceManager.getInstance(_repo, getTransaction());
         Vdb vdb = manager.resolve(getTransaction(), vdbNode, Vdb.class);
 
-        KomodoObject[] jcrContent = vdb.getRawChildren(getTransaction(), JcrLexicon.CONTENT.getString());
+        KomodoObject[] jcrContent = vdb.getRawChildren(getTransaction(), JcrLexicon.JCR_CONTENT);
         assertTrue(jcrContent != null && jcrContent.length == 1);
 
         //
         // Setting data property should remove all the vdb properties
         //
-        jcrContent[0].setProperty(getTransaction(), JcrLexicon.DATA.getString(), EMPTY_STRING);
+        jcrContent[0].setProperty(getTransaction(), JcrLexicon.JCR_DATA, EMPTY_STRING);
 
         commit();
 
@@ -1472,7 +1471,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
 
         ObjectSearcher os = new ObjectSearcher(_repo);
         String ALIAS = "nt";
-        os.setFromType(JcrConstants.NT_UNSTRUCTURED, ALIAS);
+        os.setFromType(NTLexicon.NT_UNSTRUCTURED, ALIAS);
         String whereSql = "(CONTAINS(nt.*, '*view*'))";
         os.setCustomWhereClause(whereSql);
 

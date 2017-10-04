@@ -30,7 +30,7 @@ import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.utils.TextFormat;
 import org.komodo.ui.DefaultLabelProvider;
 import org.komodo.utils.KLog;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 
 /**
  * A label provider for relational objects.

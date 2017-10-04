@@ -32,14 +32,13 @@ import org.komodo.importer.Messages;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Schema;
 import org.komodo.spi.KException;
+import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.ModelType;
-import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlParser;
 
 /**
  * Importer implementation for importing from DDL Schema.
@@ -71,14 +70,12 @@ public class DdlImporter extends AbstractImporter {
                 ModelType.Type modelType = (ModelType.Type) importOptions.getOption(OptionKeys.MODEL_TYPE);
                 model.setModelType(transaction, Model.Type.valueOf(modelType.toString()));
                 model.setModelDefinition(transaction, content);
-                model.setProperty(transaction, StandardDdlLexicon.PARSER_ID, TeiidDdlParser.ID);
                 return;
             }
             case SCHEMA:
             {
             	Schema schema = Schema.RESOLVER.resolve(transaction, parentObject);
                 schema.setRendition(transaction, content);
-                schema.setProperty(transaction, StandardDdlLexicon.PARSER_ID, TeiidDdlParser.ID);
                 return;
             }
             default:

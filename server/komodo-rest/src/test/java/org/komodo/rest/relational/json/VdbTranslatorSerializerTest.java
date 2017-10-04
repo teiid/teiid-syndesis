@@ -40,7 +40,7 @@ import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyDescriptor;
 import org.mockito.Mockito;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public final class VdbTranslatorSerializerTest extends AbstractSerializerTest {

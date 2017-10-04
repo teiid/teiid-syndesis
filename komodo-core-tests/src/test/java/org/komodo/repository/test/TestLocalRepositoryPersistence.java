@@ -58,10 +58,10 @@ import org.komodo.test.utils.AbstractLoggingTest;
 import org.komodo.test.utils.TestUtilities;
 import org.komodo.utils.FileUtils;
 import org.komodo.utils.observer.KLatchRepositoryObserver;
-import org.modeshape.jcr.JcrLexicon;
-import org.modeshape.jcr.api.JcrConstants;
+import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
+import org.modeshape.jcr.api.JcrLexicon;
 import org.modeshape.jcr.api.observation.Event.Sequencing;
-import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
+import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 
 @SuppressWarnings( {"javadoc", "nls"} )
 public class TestLocalRepositoryPersistence extends AbstractLoggingTest implements Sequencing {
@@ -330,7 +330,7 @@ public class TestLocalRepositoryPersistence extends AbstractLoggingTest implemen
         assertNotNull(_repo);
 
         UnitOfWork uow = _repo.createTransaction(RepositoryImpl.SYSTEM_USER, "test-search-type", true, null);
-        List<KomodoObject> results = _repo.searchByType(uow, JcrConstants.NT_UNSTRUCTURED);
+        List<KomodoObject> results = _repo.searchByType(uow, NTLexicon.NT_UNSTRUCTURED);
         assertTrue(results.size() > 0);
 
         boolean foundRoot = false;
@@ -360,13 +360,13 @@ public class TestLocalRepositoryPersistence extends AbstractLoggingTest implemen
         byte[] content = FileUtils.write(contentStream);
 
         KomodoObject fileNode;
-        if (! driver.hasChild(uow, JcrLexicon.CONTENT.getString()))
-            fileNode = driver.addChild(uow, JcrLexicon.CONTENT.getString(), null);
+        if (! driver.hasChild(uow, JcrLexicon.JCR_CONTENT))
+            fileNode = driver.addChild(uow, JcrLexicon.JCR_CONTENT, null);
         else
-            fileNode = driver.getChild(uow, JcrLexicon.CONTENT.getString());
+            fileNode = driver.getChild(uow, JcrLexicon.JCR_CONTENT);
 
         ByteArrayInputStream stream = new ByteArrayInputStream(content);
-        fileNode.setProperty(uow, JcrLexicon.DATA.getString(), stream);
+        fileNode.setProperty(uow, JcrLexicon.JCR_DATA, stream);
 
         return driver;
     }
@@ -438,11 +438,11 @@ public class TestLocalRepositoryPersistence extends AbstractLoggingTest implemen
         for (KomodoObject driver : results) {
             String name = driver.getName(uow);
             assertTrue(name.startsWith("test"));
-            assertTrue(driver.hasChild(uow, JcrLexicon.CONTENT.getString()));
+            assertTrue(driver.hasChild(uow, JcrLexicon.JCR_CONTENT));
 
-            KomodoObject fileNode = driver.getChild(uow, JcrLexicon.CONTENT.getString());
+            KomodoObject fileNode = driver.getChild(uow, JcrLexicon.JCR_CONTENT);
 
-            Property property = fileNode.getProperty(uow, JcrLexicon.DATA.getString());
+            Property property = fileNode.getProperty(uow, JcrLexicon.JCR_DATA);
 
             InputStream binaryStream = property.getBinaryValue(uow);
             byte[] binaryBytes = FileUtils.write(binaryStream);

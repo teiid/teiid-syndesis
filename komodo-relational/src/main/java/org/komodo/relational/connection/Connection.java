@@ -28,14 +28,13 @@ import org.komodo.relational.TypeResolver;
 import org.komodo.relational.connection.internal.ConnectionImpl;
 import org.komodo.repository.ObjectImpl;
 import org.komodo.spi.KException;
+import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
-import org.teiid.modeshape.sequencer.dataservice.DataServiceManifest;
-import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 
 /**
  * A model of a connection instance

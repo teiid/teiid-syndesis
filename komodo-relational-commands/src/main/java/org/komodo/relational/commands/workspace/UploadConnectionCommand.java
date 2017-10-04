@@ -38,9 +38,10 @@ import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
 import org.komodo.utils.StringUtils;
 import org.komodo.utils.i18n.I18n;
-import org.modeshape.jcr.api.JcrConstants;
 import org.teiid.modeshape.sequencer.dataservice.ConnectionReader;
-import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
+import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
+import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
+import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 
 /**
  * Loads a {@link Connection connection} from a local file.
@@ -108,10 +109,10 @@ public final class UploadConnectionCommand extends WorkspaceShellCommand {
 
             // upload data source file so that it will be sequenced
             final Connection ds = getWorkspaceManager(uow).createConnection( uow, null, connection.getName() );
-            final KomodoObject fileNode = ds.addChild( uow, JcrConstants.JCR_CONTENT, JcrConstants.NT_RESOURCE );
+            final KomodoObject fileNode = ds.addChild( uow, JcrLexicon.JCR_CONTENT, NTLexicon.NT_RESOURCE );
             final byte[] content = Files.readAllBytes( Paths.get( fileName ) );
             final ByteArrayInputStream stream = new ByteArrayInputStream( content );
-            fileNode.setProperty( uow, JcrConstants.JCR_DATA, stream );
+            fileNode.setProperty( uow, JcrLexicon.JCR_DATA, stream );
 
             return new CommandResultImpl( I18n.bind( WorkspaceCommandsI18n.connectionUploaded, connection.getName() ) );
         } catch ( final Exception e ) {

@@ -33,7 +33,7 @@ import org.komodo.relational.RelationalObject.Filter;
 import org.komodo.relational.connection.Connection;
 import org.komodo.spi.constants.ExportConstants;
 import org.komodo.spi.repository.KomodoType;
-import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
+import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public final class ConnectionImplTest extends RelationalModelTest {

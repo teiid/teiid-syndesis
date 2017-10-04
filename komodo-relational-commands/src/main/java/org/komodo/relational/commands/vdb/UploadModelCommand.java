@@ -37,8 +37,6 @@ import org.komodo.shell.api.WorkspaceStatus;
 import org.komodo.spi.repository.Repository;
 import org.komodo.utils.StringUtils;
 import org.komodo.utils.i18n.I18n;
-import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlParser;
 
 /**
  * Loads a {@link Model MODEL} from a local file.
@@ -119,7 +117,6 @@ public final class UploadModelCommand extends VdbShellCommand {
 
             model.setModelType(uow, Model.Type.valueOf(modelType));
             model.setModelDefinition(uow, content);
-            model.setProperty(uow, StandardDdlLexicon.PARSER_ID, TeiidDdlParser.ID);
 
             return new CommandResultImpl( I18n.bind( VdbCommandsI18n.modelUploaded, modelName ) );
         } catch ( final Exception e ) {

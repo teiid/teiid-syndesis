@@ -39,7 +39,7 @@ import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.runtime.TeiidVdb;
 import org.komodo.utils.StringUtils;
 import org.komodo.utils.i18n.I18n;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 
 /**
  * A shell command to get a server VDB and copy into the workspace

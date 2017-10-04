@@ -36,7 +36,7 @@ import org.komodo.shell.api.WorkspaceStatus;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.utils.StringUtils;
 import org.komodo.utils.i18n.I18n;
-import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
+import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 
 /**
  * A shell command to deploy a workspace Datasource to the connected server.

@@ -61,13 +61,13 @@ import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.runtime.version.MetadataVersion;
 import org.komodo.spi.type.DataTypeService;
 import org.komodo.utils.KLog;
-import org.modeshape.jcr.JcrLexicon;
+import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
 import org.modeshape.jcr.api.JcrConstants;
 import org.modeshape.jcr.api.observation.Event;
 import org.modeshape.jcr.api.observation.Event.Sequencing;
-import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
+import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
+import org.komodo.spi.lexicon.ddl.TeiidDdlLexicon;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 /**
  * Class which serves as base for various sequencer unit tests. In addition to this, it uses the sequencing events fired by
  * ModeShape's {@link javax.jcr.observation.ObservationManager} to perform various assertions and therefore, acts as a test for
@@ -159,7 +159,7 @@ public abstract class AbstractSequencerTest extends MultiUseAbstractTest impleme
 
         switch (sequencer) {
             case TSQL:
-                node.setPrimaryType(JcrConstants.NT_UNSTRUCTURED);
+                node.setPrimaryType(NTLexicon.NT_UNSTRUCTURED);
                 node.addMixin(TeiidDdlLexicon.CreateTable.TABLE_STATEMENT);
                 node.setProperty(TeiidDdlLexicon.CreateTable.QUERY_EXPRESSION, text);
                 //
@@ -370,7 +370,7 @@ public abstract class AbstractSequencerTest extends MultiUseAbstractTest impleme
             childNode = parentNode.getNode(enc(relativePath ) + indexExp);
         assertNotNull(childNode);
 
-        verifyBaseProperties(childNode, JcrConstants.NT_UNSTRUCTURED, mixinType);
+        verifyBaseProperties(childNode, NTLexicon.NT_UNSTRUCTURED, mixinType);
         return childNode;
     }
 

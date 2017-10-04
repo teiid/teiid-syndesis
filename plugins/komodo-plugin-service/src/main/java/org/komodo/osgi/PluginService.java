@@ -77,7 +77,7 @@ import org.komodo.plugin.framework.AbstractBundleService;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.constants.SystemConstants;
-import org.komodo.spi.lexicon.TeiidSqlLexicon;
+import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon;
 import org.komodo.spi.outcome.Outcome;
 import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.runtime.version.MetadataVersion;

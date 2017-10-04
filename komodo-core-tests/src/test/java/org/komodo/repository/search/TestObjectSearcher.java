@@ -41,7 +41,7 @@ import org.komodo.spi.repository.Repository.KeywordCriteria;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.test.utils.AbstractLocalRepositoryTest;
 import org.modeshape.jcr.JcrNtLexicon;
-import org.modeshape.jcr.api.JcrConstants;
+import org.modeshape.jcr.api.JcrLexicon;
 
 @SuppressWarnings( {"nls", "javadoc"} )
 public class TestObjectSearcher extends AbstractLocalRepositoryTest {
@@ -160,7 +160,7 @@ public class TestObjectSearcher extends AbstractLocalRepositoryTest {
                                         " )";
 
         ObjectSearcher os = new ObjectSearcher(_repo);
-        os.setFromType(JcrConstants.NT_UNSTRUCTURED, "p1");
+        os.setFromType(NTLexicon.NT_UNSTRUCTURED, "p1");
         os.addWhereSetClause(null, null, "property1", "value1");
 
         assertEquals(expected, os.toString(getTransaction()));
@@ -196,7 +196,7 @@ public class TestObjectSearcher extends AbstractLocalRepositoryTest {
                                         "p1.[property1] IN ('value1', 'value2')" +
                                         " )";
         ObjectSearcher os = new ObjectSearcher(_repo);
-        os.setFromType(JcrConstants.NT_UNSTRUCTURED, "p1");
+        os.setFromType(NTLexicon.NT_UNSTRUCTURED, "p1");
         os.addWhereSetClause(null, "p1", "property1", "value1", "value2");
 
         assertEquals(expected, os.toString(getTransaction()));
@@ -209,7 +209,7 @@ public class TestObjectSearcher extends AbstractLocalRepositoryTest {
                                          "p1.* IN ('value1', 'value2')" +
                                          " )";
         ObjectSearcher os = new ObjectSearcher(_repo);
-        os.setFromType(JcrConstants.NT_UNSTRUCTURED, "p1");
+        os.setFromType(NTLexicon.NT_UNSTRUCTURED, "p1");
         os.addWhereSetClause(null, "p1", STAR, "value1", "value2");
 
         assertEquals(expected, os.toString(getTransaction()));
@@ -223,7 +223,7 @@ public class TestObjectSearcher extends AbstractLocalRepositoryTest {
                                          "OR p1.[name] IN ('bob', 'bryan')" +
                                          " )";
         ObjectSearcher os = new ObjectSearcher(_repo);
-        os.setFromType(JcrConstants.NT_UNSTRUCTURED, "p1");
+        os.setFromType(NTLexicon.NT_UNSTRUCTURED, "p1");
         os.addWhereSetClause(null, "p1", "property1", "value1", "value2");
         os.addWhereSetClause(LogicalOperator.OR, "p1", "name", "bob", "bryan");
 
@@ -238,7 +238,7 @@ public class TestObjectSearcher extends AbstractLocalRepositoryTest {
                                          "OR CONTAINS(p1.[name], 'bob')" +
                                          " )";
         ObjectSearcher os = new ObjectSearcher(_repo);
-        os.setFromType(JcrConstants.NT_UNSTRUCTURED, "p1");
+        os.setFromType(NTLexicon.NT_UNSTRUCTURED, "p1");
         os.addWhereSetClause(null, "p1", "property1", "value1", "value2");
         os.addWhereContainsClause(LogicalOperator.OR, "p1", "name", "bob");
 
@@ -252,7 +252,7 @@ public class TestObjectSearcher extends AbstractLocalRepositoryTest {
                                          "p1.* IN ('value1', 'value2')" +
                                          " )";
         ObjectSearcher os = new ObjectSearcher(_repo);
-        os.setFromType(JcrConstants.NT_UNSTRUCTURED, "p1");
+        os.setFromType(NTLexicon.NT_UNSTRUCTURED, "p1");
         os.addWhereSetClause(null, "p1", STAR, "value1", "value2");
 
         assertEquals(expected, os.toString(getTransaction()));
@@ -266,7 +266,7 @@ public class TestObjectSearcher extends AbstractLocalRepositoryTest {
                                      "OR CONTAINS(p1.[name], 'bob OR chris')" +
                                      " )";
         ObjectSearcher os = new ObjectSearcher(_repo);
-        os.setFromType(JcrConstants.NT_UNSTRUCTURED, "p1");
+        os.setFromType(NTLexicon.NT_UNSTRUCTURED, "p1");
         os.addWhereSetClause(null, "p1", "property1", "value1", "value2");
         os.addWhereContainsClause(LogicalOperator.OR, "p1", "name", KeywordCriteria.ANY, "bob", "chris");
 
@@ -280,7 +280,7 @@ public class TestObjectSearcher extends AbstractLocalRepositoryTest {
                                         "p1.[property1] = 'value1'" +
                                         " )";
         ObjectSearcher os = new ObjectSearcher(_repo);
-        os.setFromType(JcrConstants.NT_UNSTRUCTURED, "p1");
+        os.setFromType(NTLexicon.NT_UNSTRUCTURED, "p1");
         os.addWhereCompareClause(null, "p1", "property1", ComparisonOperator.EQUALS, "value1");
 
         assertEquals(expected, os.toString(getTransaction()));
@@ -293,7 +293,7 @@ public class TestObjectSearcher extends AbstractLocalRepositoryTest {
                                         "p1.[property1] LIKE 'value%1'" +
                                         " )";
         ObjectSearcher os = new ObjectSearcher(_repo);
-        os.setFromType(JcrConstants.NT_UNSTRUCTURED, "p1");
+        os.setFromType(NTLexicon.NT_UNSTRUCTURED, "p1");
         os.addWhereCompareClause(null, "p1", "property1", ComparisonOperator.LIKE, "value%1");
 
         assertEquals(expected, os.toString(getTransaction()));
@@ -306,7 +306,7 @@ public class TestObjectSearcher extends AbstractLocalRepositoryTest {
                                         "LOWER(NAME(p1)) LIKE 'value%1'" +
                                         " )";
         ObjectSearcher os = new ObjectSearcher(_repo);
-        os.setFromType(JcrConstants.NT_UNSTRUCTURED, "p1");
+        os.setFromType(NTLexicon.NT_UNSTRUCTURED, "p1");
         os.addWhereCompareClause(null, null, "NAME(p1)", ComparisonOperator.LIKE, "value%1", true);
 
         assertEquals(expected, os.toString(getTransaction()));
@@ -319,7 +319,7 @@ public class TestObjectSearcher extends AbstractLocalRepositoryTest {
                                         "(p1.[property1] LIKE 'value%1' OR p1.[property1] LIKE 'value%2')" +
                                         " )";
         ObjectSearcher os = new ObjectSearcher(_repo);
-        os.setFromType(JcrConstants.NT_UNSTRUCTURED, "p1");
+        os.setFromType(NTLexicon.NT_UNSTRUCTURED, "p1");
 
         CompareClause clause1 = new CompareClause(null, "p1", "property1", ComparisonOperator.LIKE, "value%1");
         CompareClause clause2 = new CompareClause(null, "p1", "property1", ComparisonOperator.LIKE, "value%2");
@@ -365,7 +365,7 @@ public class TestObjectSearcher extends AbstractLocalRepositoryTest {
         KomodoObject[] testNodes = createTestData();
 
         ObjectSearcher os = new ObjectSearcher(_repo);
-        os.setFromType(JcrConstants.NT_UNSTRUCTURED, "nt");
+        os.setFromType(NTLexicon.NT_UNSTRUCTURED, "nt");
         os.addWhereContainsClause(null, "nt", KomodoLexicon.VdbModel.MODEL_DEFINITION, DDL);
 
         String expected = "SELECT [jcr:path], [mode:localName] FROM [nt:unstructured] AS nt " +
@@ -425,7 +425,7 @@ public class TestObjectSearcher extends AbstractLocalRepositoryTest {
                                      KomodoLexicon.VdbModelSource.NODE_TYPE +
                                      CLOSE_SQUARE_BRACKET +
                                      " WHERE ISDESCENDANTNODE('" + userWksp + "') AND ( " +
-                                     "[" + JcrConstants.JCR_PATH + "] LIKE '" +
+                                     "[" + JcrLexicon.JCR_PATH + "] LIKE '" +
                                      testModel1.getAbsolutePath() + "/%'" +
                                      " )";
         assertEquals(expected, os.toString(getTransaction()));
@@ -490,7 +490,7 @@ public class TestObjectSearcher extends AbstractLocalRepositoryTest {
                                      KomodoLexicon.VdbModelSource.NODE_TYPE +
                                      CLOSE_SQUARE_BRACKET +
                                      " WHERE ISDESCENDANTNODE('" + userWksp + "') AND ( " +
-                                     "[" + JcrConstants.JCR_PATH + "] LIKE '" +
+                                     "[" + JcrLexicon.JCR_PATH + "] LIKE '" +
                                      testModel1.getAbsolutePath() + "/%'" +
                                      " AND ISCHILDNODE('" + testModel1.getAbsolutePath() + "')" +
                                      " )";
@@ -519,7 +519,7 @@ public class TestObjectSearcher extends AbstractLocalRepositoryTest {
                                      KomodoLexicon.VdbModelSource.NODE_TYPE +
                                      CLOSE_SQUARE_BRACKET +
                                      " WHERE ISDESCENDANTNODE('" + userWksp + "') AND ( " +
-                                     "[" + JcrConstants.JCR_PATH + "] LIKE '" +
+                                     "[" + JcrLexicon.JCR_PATH + "] LIKE '" +
                                      testModel1.getAbsolutePath() + "/%'" +
                                      " )";
         assertEquals(expected, os.toString(getTransaction()));
@@ -563,7 +563,7 @@ public class TestObjectSearcher extends AbstractLocalRepositoryTest {
         }
 
         ObjectSearcher os = new ObjectSearcher(_repo);
-        os.setFromType(JcrConstants.NT_UNSTRUCTURED, "nt");
+        os.setFromType(NTLexicon.NT_UNSTRUCTURED, "nt");
         os.addWhereContainsClause(null, "nt",
                                                      KomodoLexicon.VdbModel.MODEL_DEFINITION,
                                                      KeywordCriteria.ANY,
@@ -621,7 +621,7 @@ public class TestObjectSearcher extends AbstractLocalRepositoryTest {
         }
 
         ObjectSearcher os = new ObjectSearcher(_repo);
-        os.setFromType(JcrConstants.NT_UNSTRUCTURED, "nt");
+        os.setFromType(NTLexicon.NT_UNSTRUCTURED, "nt");
 
         //
         // Clause 1 is set to be case sensitive
@@ -674,7 +674,7 @@ public class TestObjectSearcher extends AbstractLocalRepositoryTest {
         commit(); // must commit for search queries to work
 
         ObjectSearcher os = new ObjectSearcher(_repo);
-        os.setFromType(JcrConstants.NT_UNSTRUCTURED, "nt");
+        os.setFromType(NTLexicon.NT_UNSTRUCTURED, "nt");
         os.addWherePathClause(null, "nt", RepositoryImpl.komodoWorkspacePath(getTransaction()));
 
         String expected = "SELECT [jcr:path], [mode:localName] FROM [nt:unstructured] AS nt " +
@@ -697,7 +697,7 @@ public class TestObjectSearcher extends AbstractLocalRepositoryTest {
         // Test with a wildcard path
         //
         os = new ObjectSearcher(_repo);
-        os.setFromType(JcrConstants.NT_UNSTRUCTURED, "nt");
+        os.setFromType(NTLexicon.NT_UNSTRUCTURED, "nt");
         os.addWherePathClause(null, "nt", "/tko:komodo/%");
         searchObjects = os.searchObjects(sysTx);
 
@@ -722,7 +722,7 @@ public class TestObjectSearcher extends AbstractLocalRepositoryTest {
         commit(); // must commit for search queries to work
 
         String alias = JcrNtLexicon.Namespace.PREFIX;
-        String fromTypeType = JcrConstants.NT_UNSTRUCTURED;
+        String fromTypeType = NTLexicon.NT_UNSTRUCTURED;
         String wherePath = RepositoryImpl.komodoWorkspacePath(getTransaction());
 
         ObjectSearcher os = new ObjectSearcher(_repo);
@@ -773,7 +773,7 @@ public class TestObjectSearcher extends AbstractLocalRepositoryTest {
         commit(); // must commit for search queries to work
 
         String alias = JcrNtLexicon.Namespace.PREFIX;
-        String fromTypeType = JcrConstants.NT_UNSTRUCTURED;
+        String fromTypeType = NTLexicon.NT_UNSTRUCTURED;
         String wherePath = RepositoryImpl.komodoWorkspacePath(getTransaction());
 
         ObjectSearcher os = new ObjectSearcher(_repo);
@@ -843,7 +843,7 @@ public class TestObjectSearcher extends AbstractLocalRepositoryTest {
         commit(); // must commit for search queries to work
 
         String alias = JcrNtLexicon.Namespace.PREFIX;
-        String fromTypeType = JcrConstants.NT_UNSTRUCTURED;
+        String fromTypeType = NTLexicon.NT_UNSTRUCTURED;
         String wherePath = RepositoryImpl.komodoWorkspacePath(getTransaction());
         String whereProperty = KomodoLexicon.VdbModelSource.JNDI_NAME;
         ComparisonOperator compareOperator = ComparisonOperator.EQUALS;
@@ -914,7 +914,7 @@ public class TestObjectSearcher extends AbstractLocalRepositoryTest {
         commit(); // must commit for search queries to work
 
         String alias = JcrNtLexicon.Namespace.PREFIX;
-        String fromTypeType = JcrConstants.NT_UNSTRUCTURED;
+        String fromTypeType = NTLexicon.NT_UNSTRUCTURED;
         String wherePath = RepositoryImpl.komodoWorkspacePath(getTransaction());
         String whereProperty = KomodoLexicon.VdbModelSource.JNDI_NAME;
         ComparisonOperator compareOperator = ComparisonOperator.EQUALS;
@@ -991,7 +991,7 @@ public class TestObjectSearcher extends AbstractLocalRepositoryTest {
         commit(); // must commit for search queries to work
 
         String alias = JcrNtLexicon.Namespace.PREFIX;
-        String fromTypeType = JcrConstants.NT_UNSTRUCTURED;
+        String fromTypeType = NTLexicon.NT_UNSTRUCTURED;
         String whereProperty = KomodoLexicon.VdbModelSource.JNDI_NAME;
         String[] keywords = {"jndi1", "jndi2", "jndi3"};
         KeywordCriteria criteria = KeywordCriteria.ANY;
@@ -1038,7 +1038,7 @@ public class TestObjectSearcher extends AbstractLocalRepositoryTest {
         commit(); // must commit for search queries to work
 
         String alias = JcrNtLexicon.Namespace.PREFIX;
-        String fromTypeType = JcrConstants.NT_UNSTRUCTURED;
+        String fromTypeType = NTLexicon.NT_UNSTRUCTURED;
         String whereProperty = KomodoLexicon.VdbModelSource.JNDI_NAME;
         String[] values = {"jndi1", "jndi2", "jndi3"};
 
@@ -1103,7 +1103,7 @@ public class TestObjectSearcher extends AbstractLocalRepositoryTest {
         os.setFromType(fromTypeType, alias);
         os.addWhereSetClause(null, alias, whereProperty, values[0], values[1], values[2]);
 
-        os.setParameterValue("fromTypeParam", JcrConstants.NT_UNSTRUCTURED);
+        os.setParameterValue("fromTypeParam", NTLexicon.NT_UNSTRUCTURED);
 
         try {
             os.searchObjects(getTransaction());
@@ -1125,7 +1125,7 @@ public class TestObjectSearcher extends AbstractLocalRepositoryTest {
         os.setFromType(fromTypeType, alias);
         os.addWhereContainsClause(null, alias, KomodoLexicon.VdbModel.MODEL_DEFINITION, containsValue);
 
-        os.setParameterValue("fromTypeParam", JcrConstants.NT_UNSTRUCTURED);
+        os.setParameterValue("fromTypeParam", NTLexicon.NT_UNSTRUCTURED);
         os.setParameterValue(containsValue, DDL);
 
         try {

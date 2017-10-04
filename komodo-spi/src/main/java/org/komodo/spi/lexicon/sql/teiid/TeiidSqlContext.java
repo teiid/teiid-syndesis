@@ -19,9 +19,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.spi.lexicon;
+package org.komodo.spi.lexicon.sql.teiid;
 
-import org.komodo.spi.lexicon.TeiidSqlLexicon;
+import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon;
 
 /**
  * Wrapping interface for passing parameters into {@link TeiidSqlLexicon#redirect}

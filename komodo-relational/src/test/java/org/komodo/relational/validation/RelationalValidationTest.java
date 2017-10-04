@@ -56,7 +56,7 @@ import org.komodo.relational.vdb.VdbImport;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.spi.repository.validation.Rule;
 import org.komodo.test.utils.AbstractLocalRepositoryTest;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public class RelationalValidationTest extends AbstractLocalRepositoryTest {
