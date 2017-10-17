@@ -109,8 +109,6 @@
 		<!-- Override to stop infinispan-core upgrading to non-compatible version -->
 		<version.org.jgroups>3.6.13.Final</version.org.jgroups>
 
-		<version.modeshape>4.5.0.Final</version.modeshape>
-		<version.javax.jcr>2.0</version.javax.jcr>
 		<version.commons.io>2.5</version.commons.io>
 		<version.infinispan>8.2.8.Final</version.infinispan>
 		
@@ -147,6 +145,7 @@
 		<test.server.name>${server.platform}-${test.server.version}</test.server.name>
 
 		<version.wildfly>3.0.1.Final</version.wildfly>
+
 		<version.aesh>0.33.12.redhat-1</version.aesh>
 		<version.org.jboss.dmr>1.3.0.Final</version.org.jboss.dmr>
 
@@ -185,49 +184,22 @@
 			</dependency>
 
 			<dependency>
-				<groupId>javax.jcr</groupId>
-				<artifactId>jcr</artifactId>
-				<version>${version.javax.jcr}</version>
-			</dependency>
-
-			<dependency>
 				<groupId>org.jgroups</groupId>
 				<artifactId>jgroups</artifactId>
 				<version>${version.org.jgroups}</version>
 			</dependency>
 
+			<!-- Required for teiid embedded and teiid translator -->
 			<dependency>
-				<groupId>org.modeshape</groupId>
-				<artifactId>modeshape-jcr-api</artifactId>
-				<version>${version.modeshape}</version>
+				<groupId>org.infinispan</groupId>
+				<artifactId>infinispan-core</artifactId>
+				<version>${version.infinispan}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.infinispan</groupId>
 				<artifactId>infinispan-commons</artifactId>
 				<version>${version.infinispan}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>org.jboss.logging</groupId>
-						<artifactId>jboss-logging</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-
-			<dependency>
-				<groupId>org.infinispan</groupId>
-				<artifactId>infinispan-core</artifactId>
-				<version>${version.infinispan}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>org.jboss.logging</groupId>
-						<artifactId>jboss-logging</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>org.jboss.spec.javax.transaction</groupId>
-						<artifactId>jboss-transaction-api_1.1_spec</artifactId>
-					</exclusion>
-				</exclusions>
 			</dependency>
 			
 			<dependency>
@@ -239,12 +211,12 @@
 			<!-- Komodo subprojects -->
 			<dependency>
 				<groupId>org.komodo</groupId>
-				<artifactId>komodo-modeshape</artifactId>
+				<artifactId>komodo-spi</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.komodo</groupId>
-				<artifactId>komodo-spi</artifactId>
+				<artifactId>komodo-utils</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -264,12 +236,7 @@
 			</dependency>
 			<dependency>
 				<groupId>org.komodo</groupId>
-				<artifactId>komodo-utils-modeshape-logger</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.komodo</groupId>
-				<artifactId>komodo-utils</artifactId>
+				<artifactId>komodo-utils-logger</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -337,15 +304,9 @@
 			</dependency>
 			<dependency>
 				<groupId>org.komodo</groupId>
-				<artifactId>komodo-test-utils</artifactId>
+				<artifactId>komodo-core</artifactId>
 				<version>${project.version}</version>
 				<type>test-jar</type>
-				<scope>test</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.komodo</groupId>
-				<artifactId>komodo-core-tests</artifactId>
-				<version>${project.version}</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>

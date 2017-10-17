@@ -26,6 +26,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
+import org.komodo.core.repository.RepositoryTools;
 import org.komodo.relational.DeployStatus;
 import org.komodo.relational.Messages;
 import org.komodo.relational.RelationalModelFactory;
@@ -50,7 +51,6 @@ import org.komodo.relational.resource.ResourceFile;
 import org.komodo.relational.resource.UdfFile;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.internal.VdbImpl;
-import org.komodo.repository.RepositoryTools;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.DocumentType;
@@ -136,7 +136,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getChildTypes()
+     * @see org.komodo.core.repository.ObjectImpl#getChildTypes()
      */
     @Override
     public KomodoType[] getChildTypes() {
@@ -202,7 +202,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
         }
 
         // child does not exist
-        throw new KException( Messages.getString( org.komodo.repository.Messages.Komodo.CHILD_NOT_FOUND,
+        throw new KException( Messages.getString( org.komodo.core.repository.Messages.Komodo.CHILD_NOT_FOUND,
                                                   name,
                                                   getAbsolutePath() ) );
     }
@@ -263,7 +263,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
         }
 
         // child does not exist
-        throw new KException( Messages.getString( org.komodo.repository.Messages.Komodo.CHILD_NOT_FOUND,
+        throw new KException( Messages.getString( org.komodo.core.repository.Messages.Komodo.CHILD_NOT_FOUND,
                                                   name,
                                                   getAbsolutePath() ) );
     }
@@ -946,7 +946,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
     @Override
     public Calendar getLastModified( final UnitOfWork transaction ) throws KException {
         return getObjectProperty( transaction,
-                                  PropertyValueType.CALENDAR,
+                                  PropertyValueType.DATE,
                                   "getLastModified", //$NON-NLS-1$
                                   DataVirtLexicon.DataService.LAST_MODIFIED );
     }

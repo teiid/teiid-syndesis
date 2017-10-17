@@ -18,7 +18,7 @@ package org.komodo.shell.commands;
 import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
 import org.junit.Test;
-import org.komodo.repository.RepositoryImpl;
+import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.shell.AbstractCommandTest;
 import org.komodo.shell.api.CommandResult;
 

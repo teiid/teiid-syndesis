@@ -22,6 +22,7 @@
 package org.komodo.relational;
 
 import org.komodo.core.KomodoLexicon;
+import org.komodo.core.repository.RepositoryTools;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.connection.internal.ConnectionImpl;
 import org.komodo.relational.dataservice.ConnectionEntry;
@@ -113,7 +114,6 @@ import org.komodo.relational.vdb.internal.PermissionImpl;
 import org.komodo.relational.vdb.internal.TranslatorImpl;
 import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.relational.vdb.internal.VdbImportImpl;
-import org.komodo.repository.RepositoryTools;
 import org.komodo.spi.KException;
 import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;

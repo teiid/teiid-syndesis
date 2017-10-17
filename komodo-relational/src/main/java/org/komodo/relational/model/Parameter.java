@@ -22,10 +22,10 @@
 package org.komodo.relational.model;
 
 import org.komodo.relational.RelationalConstants.Nullable;
+import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.RelationalObject;
 import org.komodo.relational.TypeResolver;
 import org.komodo.relational.model.internal.ParameterImpl;
-import org.komodo.repository.ObjectImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlConstants.TeiidNonReservedWord;
 import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlConstants.TeiidReservedWord;

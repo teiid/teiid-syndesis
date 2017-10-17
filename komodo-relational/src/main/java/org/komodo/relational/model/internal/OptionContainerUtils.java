@@ -25,13 +25,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import org.komodo.core.repository.DescriptorImpl;
+import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.RelationalModelFactory;
 import org.komodo.relational.model.OptionContainer;
 import org.komodo.relational.model.StatementOption;
-import org.komodo.repository.DescriptorImpl;
-import org.komodo.repository.ObjectImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
@@ -39,6 +39,7 @@ import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.PropertyDescriptor;
+import org.komodo.spi.repository.PropertyValueType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
@@ -97,8 +98,8 @@ public final class OptionContainerUtils {
          * @see org.komodo.spi.repository.PropertyDescriptor#getType()
          */
         @Override
-        public Type getType() {
-            return Type.STRING;
+        public PropertyValueType getType() {
+            return PropertyValueType.STRING;
         }
 
         /**
@@ -171,7 +172,7 @@ public final class OptionContainerUtils {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.repository.DescriptorImpl#getPropertyDescriptors(org.komodo.spi.repository.Repository.UnitOfWork)
+         * @see org.komodo.core.repository.DescriptorImpl#getPropertyDescriptors(org.komodo.spi.repository.Repository.UnitOfWork)
          */
         @Override
         public PropertyDescriptor[] getPropertyDescriptors( final UnitOfWork transaction ) throws KException {
@@ -695,7 +696,7 @@ public final class OptionContainerUtils {
                 if ( ( values.length == 1 ) && ( values[0] != null ) ) {
                     newValue = values[0].toString();
                 } else if ( values.length > 1 ) {
-                    Messages.getString( org.komodo.repository.Messages.Komodo.UNABLE_TO_SET_SINGLE_VALUE_PROPERTY_WITH_MULTIPLE_VALUES,
+                    Messages.getString( org.komodo.core.repository.Messages.Komodo.UNABLE_TO_SET_SINGLE_VALUE_PROPERTY_WITH_MULTIPLE_VALUES,
                                         propertyName,
                                         container.getAbsolutePath() );
                 }

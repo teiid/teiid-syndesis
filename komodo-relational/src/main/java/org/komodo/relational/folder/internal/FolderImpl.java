@@ -329,7 +329,7 @@ public class FolderImpl extends RelationalObjectImpl implements Folder, EventMan
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getChildTypes()
+     * @see org.komodo.core.repository.ObjectImpl#getChildTypes()
      */
     @Override
     public KomodoType[] getChildTypes() {

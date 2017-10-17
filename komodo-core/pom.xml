@@ -11,6 +11,8 @@
 	<description>Komodo Core</description>
 
 	<properties>
+		<version.modeshape>5.4.1.Final</version.modeshape>
+		<version.teiid.modeshape>0.0.1-SNAPSHOT</version.teiid.modeshape>
 		<version.xerces>2.9.1</version.xerces>
 	</properties>
 
@@ -27,11 +29,42 @@
 		</plugins>
 	</build>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.modeshape</groupId>
+				<artifactId>modeshape-jcr</artifactId>
+				<version>${version.modeshape}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jboss.teiid.modeshape</groupId>
+				<artifactId>teiid-modeshape-sequencer-vdb</artifactId>
+				<version>${version.teiid.modeshape}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jboss.teiid.modeshape</groupId>
+				<artifactId>teiid-modeshape-sequencer-ddl</artifactId>
+				<version>${version.teiid.modeshape}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jboss.teiid.modeshape</groupId>
+				<artifactId>teiid-modeshape-sequencer-dataservice</artifactId>
+				<version>${version.teiid.modeshape}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jboss.teiid.modeshape</groupId>
+				<artifactId>teiid-modeshape-sequencer-</artifactId>
+				<version>${version.teiid.modeshape}</version>
+			</dependency>
+			<dependency>
+				<groupId>xerces</groupId>
+				<artifactId>xercesImpl</artifactId>
+				<version>${version.xerces}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<dependencies>
-		<dependency>
-			<groupId>org.komodo</groupId>
-			<artifactId>komodo-modeshape</artifactId>
-		</dependency>
 
 		<dependency>
 			<groupId>org.komodo</groupId>
@@ -49,11 +82,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.komodo</groupId>
-			<artifactId>komodo-modeshape-sequencer-teiid-sql</artifactId>		
-		</dependency>
-
-		<dependency>
 			<groupId>org.teiid</groupId>
 			<artifactId>teiid-runtime</artifactId>
 		</dependency>
@@ -65,33 +93,46 @@
 
 		<dependency>
 			<groupId>org.modeshape</groupId>
-			<artifactId>modeshape-schematic</artifactId>
+			<artifactId>modeshape-jcr</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.infinispan</groupId>
-			<artifactId>infinispan-commons</artifactId>
+			<groupId>org.jboss.teiid.modeshape</groupId>
+			<artifactId>teiid-modeshape-sequencer-vdb</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.teiid.modeshape</groupId>
+			<artifactId>teiid-modeshape-sequencer-ddl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.teiid.modeshape</groupId>
+			<artifactId>teiid-modeshape-sequencer-dataservice</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.infinispan</groupId>
-			<artifactId>infinispan-core</artifactId>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
 		</dependency>
 
 		<!-- For rule validation -->
 		<dependency>
-  			<groupId>xerces</groupId>
-  			<artifactId>xercesImpl</artifactId>
+			<groupId>xerces</groupId>
+			<artifactId>xercesImpl</artifactId>
 		</dependency>
-	</dependencies>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>xerces</groupId>
-				<artifactId>xercesImpl</artifactId>
-				<version>${version.xerces}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+		<!-- Needed to get at modeshape's underlying logging system - see JcrLogConfigurator for details -->
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.komodo</groupId>
+			<artifactId>komodo-utils</artifactId>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
 </project>

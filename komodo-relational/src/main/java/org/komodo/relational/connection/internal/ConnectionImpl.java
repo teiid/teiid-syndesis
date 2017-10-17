@@ -45,7 +45,6 @@ import org.komodo.spi.runtime.TeiidDataSource;
 import org.komodo.spi.runtime.TeiidPropertyDefinition;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
-import org.modeshape.jcr.JcrLexicon;
 import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 
 /**
@@ -94,7 +93,7 @@ public class ConnectionImpl extends RelationalObjectImpl implements Connection, 
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
-        final Property prop = getRawProperty( transaction, JcrLexicon.UUID.getString() );
+        final Property prop = this.getObjectFactory().getId(transaction, this); 
         final String result = prop.getStringValue( transaction );
         return result;
     }
@@ -357,7 +356,7 @@ public class ConnectionImpl extends RelationalObjectImpl implements Connection, 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#setProperty(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
+     * @see org.komodo.core.repository.ObjectImpl#setProperty(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
      *      java.lang.Object[])
      */
     @Override

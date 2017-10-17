@@ -64,7 +64,8 @@ public final class PrimaryKeyImplTest extends RelationalModelTest {
         assertThat( this.primaryKey.getColumns( getTransaction() )[0], is( column ) );
         assertThat( this.primaryKey.getProperty( getTransaction(), Constraint.REFERENCES ).getValues( getTransaction() ).length, is( 1 ) );
         assertThat( this.primaryKey.getProperty( getTransaction(), Constraint.REFERENCES ).getValues( getTransaction() )[0].toString(),
-                    is( column.getRawProperty( getTransaction(), JcrLexicon.UUID.getString() ).getStringValue( getTransaction() ) ) );
+                    // TODO Is this worth creating a getId() API method??
+                    is( column.getObjectFactory().getId(getTransaction(), column).getStringValue( getTransaction() ) ) );
     }
 
     @Test

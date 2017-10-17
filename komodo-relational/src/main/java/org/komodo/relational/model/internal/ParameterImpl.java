@@ -171,7 +171,7 @@ public final class ParameterImpl extends RelationalChildRestrictedObject impleme
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getPrimaryType(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.ObjectImpl#getPrimaryType(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public Descriptor getPrimaryType( final UnitOfWork transaction ) throws KException {
@@ -265,7 +265,7 @@ public final class ParameterImpl extends RelationalChildRestrictedObject impleme
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getTypeIdentifier(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.ObjectImpl#getTypeIdentifier(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public KomodoType getTypeIdentifier( final UnitOfWork uow ) {
@@ -285,7 +285,7 @@ public final class ParameterImpl extends RelationalChildRestrictedObject impleme
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#hasProperties(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.ObjectImpl#hasProperties(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public boolean hasProperties( final UnitOfWork transaction ) throws KException {
@@ -433,7 +433,7 @@ public final class ParameterImpl extends RelationalChildRestrictedObject impleme
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#setProperty(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
+     * @see org.komodo.core.repository.ObjectImpl#setProperty(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
      *      java.lang.Object[])
      */
     @Override

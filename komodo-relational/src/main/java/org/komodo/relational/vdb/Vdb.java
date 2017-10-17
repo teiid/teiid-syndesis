@@ -22,12 +22,12 @@
 package org.komodo.relational.vdb;
 
 import java.util.Properties;
+import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.DeployStatus;
 import org.komodo.relational.RelationalObject;
 import org.komodo.relational.TypeResolver;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.vdb.internal.VdbImpl;
-import org.komodo.repository.ObjectImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.KomodoObject;
@@ -80,6 +80,16 @@ public interface Vdb extends Exportable, RelationalObject {
      * An empty array of VDBs.
      */
     Vdb[] NO_VDBS = new Vdb[0];
+
+    /**
+     * Teiid Names for special properties
+     */
+    String SECURITY_DOMAIN_TEIIDNAME = "security-domain";
+    String QUERY_TIMEOUT_TEIIDNAME = "query-timeout";
+    String PASSWORD_PATTERN_TEIIDNAME = "password-pattern";
+    String GSS_PATTERN_TEIIDNAME = "gss-pattern";
+    String AUTHENTICATION_TYPE_TEIIDNAME = "authentication-type";
+    String ALLOWED_LANGUAGES_TEIIDNAME = "allowed-languages";
 
     /**
      * The resolver of a {@link Vdb}.

@@ -27,8 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.komodo.modeshape.visitor.DdlNodeVisitor;
-import org.komodo.modeshape.visitor.DdlNodeVisitor.VisitorExclusions;
+import org.komodo.core.visitor.DdlNodeVisitor;
+import org.komodo.core.visitor.DdlNodeVisitor.VisitorExclusions;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.RelationalModelFactory;
@@ -278,7 +278,7 @@ public class TableImpl extends RelationalObjectImpl implements Table {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getChildTypes()
+     * @see org.komodo.core.repository.ObjectImpl#getChildTypes()
      */
     @Override
     public KomodoType[] getChildTypes() {
@@ -441,7 +441,7 @@ public class TableImpl extends RelationalObjectImpl implements Table {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getPrimaryType(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.ObjectImpl#getPrimaryType(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public Descriptor getPrimaryType( final UnitOfWork transaction ) throws KException {
@@ -572,7 +572,7 @@ public class TableImpl extends RelationalObjectImpl implements Table {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getTypeIdentifier(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.ObjectImpl#getTypeIdentifier(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public KomodoType getTypeIdentifier( final UnitOfWork uow ) {
@@ -639,7 +639,7 @@ public class TableImpl extends RelationalObjectImpl implements Table {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#hasProperties(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.ObjectImpl#hasProperties(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public boolean hasProperties( final UnitOfWork transaction ) throws KException {
@@ -956,7 +956,7 @@ public class TableImpl extends RelationalObjectImpl implements Table {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#setProperty(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
+     * @see org.komodo.core.repository.ObjectImpl#setProperty(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
      *      java.lang.Object[])
      */
     @Override
@@ -1050,7 +1050,7 @@ public class TableImpl extends RelationalObjectImpl implements Table {
             }
         }
         DdlNodeVisitor visitor = new DdlNodeVisitor(getVersion(), getDataTypeService(), false, exclusions.toArray(new VisitorExclusions[0]));
-        visitor.visit(node(transaction));
+        visitor.visit(transaction, this);
 
         String result = visitor.getDdl();
         return result;

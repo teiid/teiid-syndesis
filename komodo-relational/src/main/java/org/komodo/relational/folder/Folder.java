@@ -22,6 +22,7 @@
 package org.komodo.relational.folder;
 
 import org.komodo.core.KomodoLexicon;
+import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.RelationalObject;
 import org.komodo.relational.TypeResolver;
 import org.komodo.relational.connection.Connection;
@@ -32,7 +33,6 @@ import org.komodo.relational.resource.Driver;
 import org.komodo.relational.template.Template;
 import org.komodo.relational.vdb.Translator;
 import org.komodo.relational.vdb.Vdb;
-import org.komodo.repository.ObjectImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;

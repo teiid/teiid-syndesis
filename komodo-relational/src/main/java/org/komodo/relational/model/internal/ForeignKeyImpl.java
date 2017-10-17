@@ -77,7 +77,7 @@ public final class ForeignKeyImpl extends TableConstraintImpl implements Foreign
 
         String[] newValue = null;
         final Property property = getProperty( transaction, Constraint.TABLE_REFERENCE_REFERENCES );
-        final String columnId = newReferencesColumn.getRawProperty( transaction, JcrLexicon.UUID.getString() ).getStringValue( transaction );
+        final String columnId = getObjectFactory().getId(transaction, newReferencesColumn).getStringValue( transaction );
 
         if ( property == null ) {
             newValue = new String[ 1 ];
@@ -204,7 +204,7 @@ public final class ForeignKeyImpl extends TableConstraintImpl implements Foreign
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotNull( removeReferencesColumn, "removeReferencesColumn" ); //$NON-NLS-1$
 
-        final String columnId = removeReferencesColumn.getRawProperty( transaction, JcrLexicon.UUID.getString() ).getStringValue( transaction );
+        final String columnId = getObjectFactory().getId(transaction, removeReferencesColumn).getStringValue( transaction );
         final Column[] current = getReferencesColumns( transaction );
 
         if ( current.length == 0 ) {
@@ -251,8 +251,7 @@ public final class ForeignKeyImpl extends TableConstraintImpl implements Foreign
         final Table current = getReferencesTable( transaction );
 
         if ( !newReferencesTable.equals( current ) ) {
-            final String tableId = newReferencesTable.getRawProperty( transaction,
-                                                                      JcrLexicon.UUID.getString() ).getStringValue( transaction );
+            final String tableId = getObjectFactory().getId(transaction, newReferencesTable).getStringValue( transaction );
             setProperty( transaction, Constraint.TABLE_REFERENCE, tableId );
 
             if ( ( current != null ) && hasProperty( transaction, Constraint.TABLE_REFERENCE_REFERENCES ) ) {

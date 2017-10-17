@@ -257,12 +257,12 @@ public interface DataVirtLexicon {
         /**
          * The type-specifier of a jdbc connection
          */
-        String JDBC_TYPE_CONSTANT = "jdbc";
+        String JDBC_TYPE_CONSTANT = "JDBC";
 
         /**
          * The type-specifier of non-jdbc connections
          */
-        String RESOURCE_TYPE_CONSTANT = "resource";
+        String RESOURCE_TYPE_CONSTANT = "RESOURCE";
     }
 
     /**

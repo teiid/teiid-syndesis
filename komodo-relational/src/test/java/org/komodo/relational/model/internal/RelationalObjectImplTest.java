@@ -29,7 +29,6 @@ import org.komodo.relational.RelationalObject;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
-import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.PropertyDescriptor;
 import org.komodo.spi.repository.Repository;

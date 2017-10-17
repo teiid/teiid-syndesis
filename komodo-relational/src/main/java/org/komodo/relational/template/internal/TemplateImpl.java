@@ -79,7 +79,7 @@ public class TemplateImpl extends RelationalObjectImpl implements Template, Even
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
-        final Property prop = getRawProperty( transaction, JcrLexicon.UUID.getString() );
+        final Property prop = getObjectFactory().getId( transaction, this );
         final String result = prop.getStringValue( transaction );
         return result;
     }

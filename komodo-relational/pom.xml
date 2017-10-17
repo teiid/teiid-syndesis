@@ -38,11 +38,6 @@
 
 		<dependency>
 			<groupId>org.komodo</groupId>
-			<artifactId>komodo-modeshape-vdb</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.komodo</groupId>
 			<artifactId>komodo-ui</artifactId>
 		</dependency>
 
@@ -78,10 +73,9 @@
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>org.komodo</groupId>
-			<artifactId>komodo-test-utils</artifactId>
+			<artifactId>komodo-core</artifactId>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>

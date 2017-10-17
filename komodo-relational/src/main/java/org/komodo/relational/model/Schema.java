@@ -22,10 +22,10 @@
 package org.komodo.relational.model;
 
 import org.komodo.core.KomodoLexicon;
+import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.RelationalObject;
 import org.komodo.relational.TypeResolver;
 import org.komodo.relational.model.internal.SchemaImpl;
-import org.komodo.repository.ObjectImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.KomodoObject;

@@ -29,9 +29,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import org.komodo.core.repository.LocalRepository;
 import org.komodo.metadata.DefaultMetadataInstance;
-import org.komodo.modeshape.lib.LogConfigurator;
-import org.komodo.repository.LocalRepository;
 import org.komodo.spi.KClient;
 import org.komodo.spi.KErrorHandler;
 import org.komodo.spi.KEvent;
@@ -48,6 +47,7 @@ import org.komodo.utils.KEnvironment;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
 import org.komodo.utils.observer.KLatchObserver;
+import org.teiid.query.sql.LanguageObject;
 
 /**
  * The Komodo engine. It is responsible for persisting and retriever user session data and Teiid artifacts.
@@ -99,7 +99,7 @@ public final class KEngine implements KClient, StringConstants {
 
         // Initialise the logging system
         try {
-            LogConfigurator.getInstance();
+            KLog.getLogger();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -455,4 +455,16 @@ public final class KEngine implements KClient, StringConstants {
             observer.errorOccurred(e);
         }
     }
+
+    /**
+     * Not included on {@link MetadataInstance} interface due to dependency on {@link LanguageObject}
+     *
+     * @param sql
+     * @return a language object tree representing the given sql string
+     * @throws Exception
+     */
+    public LanguageObject parse(String sql) throws Exception {
+        return DefaultMetadataInstance.getInstance().parse(sql);
+    }
+    
 }

@@ -27,11 +27,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
+import org.komodo.core.repository.KomodoTypeRegistry;
+import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.RelationalObject;
 import org.komodo.relational.workspace.WorkspaceManager;
-import org.komodo.repository.KomodoTypeRegistry;
-import org.komodo.repository.ObjectImpl;
 import org.komodo.shell.CommandResultImpl;
 import org.komodo.shell.api.CommandResult;
 import org.komodo.shell.api.TabCompletionModifier;

@@ -339,7 +339,13 @@ public final class VdbImplTest extends RelationalModelTest {
     @Test
     public void shouldIncludeSpecialPropertiesInPrimaryTypePropertyDescriptors() throws Exception {
         final PropertyDescriptor[] descriptors = this.vdb.getPrimaryType( getTransaction() ).getPropertyDescriptors( getTransaction() );
-        final List< String > specialProps = new ArrayList<>( Arrays.asList( VdbImpl.SpecialProperty.valuesAsTeiidNames() ) );
+        final List< String > specialProps = new ArrayList<>();
+        specialProps.add(Vdb.SECURITY_DOMAIN_TEIIDNAME);
+        specialProps.add(Vdb.QUERY_TIMEOUT_TEIIDNAME);
+        specialProps.add(Vdb.PASSWORD_PATTERN_TEIIDNAME);
+        specialProps.add(Vdb.GSS_PATTERN_TEIIDNAME);
+        specialProps.add(Vdb.AUTHENTICATION_TYPE_TEIIDNAME);
+        specialProps.add(Vdb.ALLOWED_LANGUAGES_TEIIDNAME);
 
         // make sure we are returning more than just the special props
         assertThat( descriptors.length > specialProps.size(), is( true ) );

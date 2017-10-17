@@ -24,6 +24,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.komodo.core.AbstractLocalRepositoryTest;
 import org.komodo.core.KEngine;
 import org.komodo.shell.api.Arguments;
 import org.komodo.shell.api.CommandResult;
@@ -37,7 +38,6 @@ import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.constants.SystemConstants;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.test.utils.AbstractLocalRepositoryTest;
 import org.komodo.test.utils.TestUtilities;
 import org.komodo.utils.FileUtils;
 import org.komodo.utils.KLog;
@@ -236,7 +236,7 @@ public abstract class AbstractCommandTest extends AbstractLocalRepositoryTest {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.test.utils.AbstractLocalRepositoryTest#commit()
+     * @see org.komodo.core.AbstractLocalRepositoryTest#commit()
      */
     @Override
     protected void commit() throws Exception {
@@ -246,7 +246,7 @@ public abstract class AbstractCommandTest extends AbstractLocalRepositoryTest {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.test.utils.AbstractLocalRepositoryTest#rollback()
+     * @see org.komodo.core.AbstractLocalRepositoryTest#rollback()
      */
     @Override
     protected final void rollback() throws Exception {
@@ -335,7 +335,7 @@ public abstract class AbstractCommandTest extends AbstractLocalRepositoryTest {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.test.utils.AbstractLocalRepositoryTest#getTransaction()
+     * @see org.komodo.core.AbstractLocalRepositoryTest#getTransaction()
      */
     @Override
     protected UnitOfWork getTransaction() {

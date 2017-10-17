@@ -30,13 +30,13 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
 import org.junit.Test;
+import org.komodo.core.repository.SynchronousCallback;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.relational.AbstractImporterTest;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.importer.connection.ConnectionImporter;
 import org.komodo.relational.workspace.WorkspaceManager;
-import org.komodo.repository.SynchronousCallback;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
@@ -190,12 +190,12 @@ public class TestConnectionImporter  extends AbstractImporterTest {
 
     // Verifies a MySQL connection node
     private void verifyMySQLUSStatesTDS(KomodoObject dsNode) throws Exception {
-        verifyProperty(dsNode, DataVirtLexicon.Connection.DRIVER_NAME, MYSQL_DRIVER_NAME);
-        verifyProperty(dsNode, DataVirtLexicon.Connection.JNDI_NAME, "java:/MySqlDS");
-        verifyProperty(dsNode, "connection-url", "jdbc:mysql://db4free.net:3306/usstates");
-        verifyProperty(dsNode, "user-name", "komodo");
-        verifyProperty(dsNode, "password", "XUMz4vBKuA2v");
-        verifyProperty(dsNode, 
+        verifyProperty(getTransaction(), dsNode, DataVirtLexicon.Connection.DRIVER_NAME, MYSQL_DRIVER_NAME);
+        verifyProperty(getTransaction(), dsNode, DataVirtLexicon.Connection.JNDI_NAME, "java:/MySqlDS");
+        verifyProperty(getTransaction(), dsNode, "connection-url", "jdbc:mysql://db4free.net:3306/usstates");
+        verifyProperty(getTransaction(), dsNode, "user-name", "komodo");
+        verifyProperty(getTransaction(), dsNode, "password", "XUMz4vBKuA2v");
+        verifyProperty(getTransaction(), dsNode, 
                        DataVirtLexicon.Connection.TYPE,
                        DataVirtLexicon.Connection.JDBC_TYPE_CONSTANT);
     }

@@ -34,6 +34,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
+import org.komodo.core.internal.repository.search.ObjectSearcher;
+import org.komodo.core.repository.SynchronousCallback;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.ExistingNodeOptions;
@@ -47,8 +49,7 @@ import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Translator;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
-import org.komodo.repository.SynchronousCallback;
-import org.komodo.repository.search.ObjectSearcher;
+import org.komodo.spi.lexicon.LexiconConstants.CoreLexicon;
 import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
 import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
 import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon;
@@ -298,20 +299,20 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
          *      @vdb:description=Shows how to call Web Services
          *      @UseConnectorMetadata=cached
          */
-        verify(tweetNode.getParent(getTransaction()), TestUtilities.TWEET_EXAMPLE_VDB_NAME, VdbLexicon.Vdb.VIRTUAL_DATABASE);
-        verifyProperty(tweetNode, VdbLexicon.Vdb.NAME, "twitter");
-        verifyProperty(tweetNode, VdbLexicon.Vdb.DESCRIPTION, "Shows how to call Web Services");
+        verify(getTransaction(), tweetNode.getParent(getTransaction()), TestUtilities.TWEET_EXAMPLE_VDB_NAME, VdbLexicon.Vdb.VIRTUAL_DATABASE, null);
+        verifyProperty(getTransaction(), tweetNode, VdbLexicon.Vdb.NAME, "twitter");
+        verifyProperty(getTransaction(), tweetNode, VdbLexicon.Vdb.DESCRIPTION, "Shows how to call Web Services");
 
         // Miscellaneous property
-        verifyProperty(tweetNode, "UseConnectorMetadata", "cached");
-        verifyProperty(tweetNode, VdbLexicon.Vdb.PREVIEW, Boolean.FALSE.toString());
-        verifyProperty(tweetNode, VdbLexicon.Vdb.VERSION, Integer.toString(1));
+        verifyProperty(getTransaction(), tweetNode, "UseConnectorMetadata", "cached");
+        verifyProperty(getTransaction(), tweetNode, VdbLexicon.Vdb.PREVIEW, Boolean.FALSE.toString());
+        verifyProperty(getTransaction(), tweetNode, VdbLexicon.Vdb.VERSION, Integer.toString(1));
 
         /*
          *      vdb:translators
          *          @jcr:primaryType=vdb:translators
          */
-        KomodoObject translators = verify(tweetNode, VdbLexicon.Vdb.TRANSLATORS, VdbLexicon.Vdb.TRANSLATORS);
+        KomodoObject translators = verify(getTransaction(), tweetNode, VdbLexicon.Vdb.TRANSLATORS, VdbLexicon.Vdb.TRANSLATORS, null);
 
         /*
          *          rest
@@ -321,11 +322,11 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
          *              @vdb:type=ws
          *              @vdb:description=Rest Web Service translator
          */
-        KomodoObject rest = verify(translators, REST_TRANSLATOR, VdbLexicon.Translator.TRANSLATOR);
-        verifyProperty(rest, VdbLexicon.Translator.DESCRIPTION, "Rest Web Service translator");
-        verifyProperty(rest, "DefaultServiceMode", "MESSAGE");
-        verifyProperty(rest, "DefaultBinding", "HTTP");
-        verifyProperty(rest, VdbLexicon.Translator.TYPE, "ws");
+        KomodoObject rest = verify(getTransaction(), translators, REST_TRANSLATOR, VdbLexicon.Translator.TRANSLATOR, null);
+        verifyProperty(getTransaction(), rest, VdbLexicon.Translator.DESCRIPTION, "Rest Web Service translator");
+        verifyProperty(getTransaction(), rest, "DefaultServiceMode", "MESSAGE");
+        verifyProperty(getTransaction(), rest, "DefaultBinding", "HTTP");
+        verifyProperty(getTransaction(), rest, VdbLexicon.Translator.TYPE, "ws");
 
         /*
          *      twitter
@@ -338,16 +339,16 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
          *          @vdb:visible=true
          *          @vdb:sourceJndiName=java:/twitterDS
          */
-        KomodoObject twitter = verify(tweetNode, model1Name, VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        verifyProperty(twitter, NTLexicon.MODEL_TYPE, NTLexicon.ModelType.PHYSICAL);
-        verifyProperty(twitter, VdbLexicon.Model.VISIBLE, Boolean.TRUE.toString());
-        verifyProperty(twitter, VdbLexicon.Model.METADATA_TYPE, "DDL");
+        KomodoObject twitter = verify(getTransaction(), tweetNode, model1Name, VdbLexicon.Vdb.DECLARATIVE_MODEL, null);
+        verifyProperty(getTransaction(), twitter, CoreLexicon.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
+        verifyProperty(getTransaction(), twitter, VdbLexicon.Model.VISIBLE, Boolean.TRUE.toString());
+        verifyProperty(getTransaction(), twitter, VdbLexicon.Model.METADATA_TYPE, "DDL");
 
         /*
          *          vdb:sources
          *              @jcr:primaryType=vdb:sources
          */
-        KomodoObject twitterSources = verify(twitter, VdbLexicon.Vdb.SOURCES, VdbLexicon.Vdb.SOURCES);
+        KomodoObject twitterSources = verify(getTransaction(), twitter, VdbLexicon.Vdb.SOURCES, VdbLexicon.Vdb.SOURCES, null);
 
         /*
          *              twitter
@@ -355,9 +356,9 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
          *                  @vdb:sourceTranslator=rest
          *                  @vdb:sourceJndiName=java:/twitterDS
          */
-        KomodoObject twitterSource = verify(twitterSources, model1Name, VdbLexicon.Source.SOURCE);
-        verifyProperty(twitterSource, VdbLexicon.Source.TRANSLATOR, REST_TRANSLATOR);
-        verifyProperty(twitterSource, VdbLexicon.Source.JNDI_NAME, "java:/twitterDS");
+        KomodoObject twitterSource = verify(getTransaction(), twitterSources, model1Name, VdbLexicon.Source.SOURCE, null);
+        verifyProperty(getTransaction(), twitterSource, VdbLexicon.Source.TRANSLATOR, REST_TRANSLATOR);
+        verifyProperty(getTransaction(), twitterSource, VdbLexicon.Source.JNDI_NAME, "java:/twitterDS");
 
         /*
          *      twitterview
@@ -368,23 +369,23 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
          *          @vdb:metadataType=DDL
          *          @vdb:modelDefinition=CREATE VIRTUAL PROCEDURE getTweets(query varchar) RETURNS (created_on varchar(25), from_user varchar(25), to_user varchar(25), profile_image_url varchar(25), source varchar(25), text varchar(140)) AS select tweet.* from (call twitter.invokeHTTP(action => 'GET', endpoint =>querystring('',query as "q"))) w, XMLTABLE('results' passing JSONTOXML('myxml', w.result) columns created_on string PATH 'created_at', from_user string PATH 'from_user', to_user string PATH 'to_user', profile_image_url string PATH 'profile_image_url', source string PATH 'source', text string PATH 'text') tweet; CREATE VIEW Tweet AS select * FROM twitterview.getTweets;
          */
-        KomodoObject twitterView = verify(tweetNode, model2Name, VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        verifyProperty(twitterView, NTLexicon.MODEL_TYPE, NTLexicon.ModelType.VIRTUAL);
-        verifyProperty(twitterView, VdbLexicon.Model.METADATA_TYPE, "DDL");
-        verifyProperty(twitterView, VdbLexicon.Model.VISIBLE, Boolean.TRUE.toString());
-        verifyProperty(twitterView, VdbLexicon.Model.MODEL_DEFINITION, modelDefinition);
+        KomodoObject twitterView = verify(getTransaction(), tweetNode, model2Name, VdbLexicon.Vdb.DECLARATIVE_MODEL, null);
+        verifyProperty(getTransaction(), twitterView, CoreLexicon.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
+        verifyProperty(getTransaction(), twitterView, VdbLexicon.Model.METADATA_TYPE, "DDL");
+        verifyProperty(getTransaction(), twitterView, VdbLexicon.Model.VISIBLE, Boolean.TRUE.toString());
+        verifyProperty(getTransaction(), twitterView, VdbLexicon.Model.MODEL_DEFINITION, modelDefinition);
 
         if (TWITTER_VIEW_MODEL.equals(model2Name)) {
             // Only the twitterview version of the import data has the VIRTUAL PROCEDURE
             // which creates the getTweets node
-            KomodoObject getTweets = verify(twitterView, "getTweets");
-            KomodoObject getTweetsQuery = verify(getTweets, TeiidSqlLexicon.Query.ID);
-            verify(getTweetsQuery, TeiidSqlLexicon.From.ID, NTLexicon.NT_UNSTRUCTURED, TeiidSqlLexicon.From.ID);
+            KomodoObject getTweets = verify(getTransaction(), twitterView, "getTweets");
+            KomodoObject getTweetsQuery = verify(getTransaction(), getTweets, TeiidSqlLexicon.Query.ID);
+            verify(getTransaction(), getTweetsQuery, TeiidSqlLexicon.From.ID, TeiidSqlLexicon.From.ID);
         }
 
-        KomodoObject tweet = verify(twitterView, "Tweet");
-        KomodoObject tweetQuery = verify(tweet, TeiidSqlLexicon.Query.ID);
-        verify(tweetQuery, TeiidSqlLexicon.From.ID, NTLexicon.NT_UNSTRUCTURED, TeiidSqlLexicon.From.ID);
+        KomodoObject tweet = verify(getTransaction(), twitterView, "Tweet");
+        KomodoObject tweetQuery = verify(getTransaction(), tweet, TeiidSqlLexicon.Query.ID);
+        verify(getTransaction(), tweetQuery, TeiidSqlLexicon.From.ID, TeiidSqlLexicon.From.ID);
     }
 
     @Test
@@ -512,15 +513,15 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
          *          @vdb:metadataType=DDL
          *          @vdb:modelDefinition=CREATE VIRTUAL PROCEDURE getTweets(query varchar) RETURNS (created_on varchar(25), from_user varchar(25), to_user varchar(25), profile_image_url varchar(25), source varchar(25), text varchar(140)) AS select tweet.* from (call twitter.invokeHTTP(action => 'GET', endpoint =>querystring('',query as "q"))) w, XMLTABLE('results' passing JSONTOXML('myxml', w.result) columns created_on string PATH 'created_at', from_user string PATH 'from_user', to_user string PATH 'to_user', profile_image_url string PATH 'profile_image_url', source string PATH 'source', text string PATH 'text') tweet; CREATE VIEW Tweet AS select * FROM twitterview.getTweets;
          */
-        verifyPrimaryType(twitterView, VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        verifyProperty(twitterView, NTLexicon.MODEL_TYPE, NTLexicon.ModelType.VIRTUAL);
-        verifyProperty(twitterView, VdbLexicon.Model.METADATA_TYPE, "DDL");
-        verifyProperty(twitterView, VdbLexicon.Model.VISIBLE, Boolean.TRUE.toString());
-        verifyProperty(twitterView, VdbLexicon.Model.MODEL_DEFINITION, TWEET_EXAMPLE_REIMPORT_DDL);
+        verifyPrimaryType(getTransaction(), twitterView, VdbLexicon.Vdb.DECLARATIVE_MODEL);
+        verifyProperty(getTransaction(), twitterView, CoreLexicon.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
+        verifyProperty(getTransaction(), twitterView, VdbLexicon.Model.METADATA_TYPE, "DDL");
+        verifyProperty(getTransaction(), twitterView, VdbLexicon.Model.VISIBLE, Boolean.TRUE.toString());
+        verifyProperty(getTransaction(), twitterView, VdbLexicon.Model.MODEL_DEFINITION, TWEET_EXAMPLE_REIMPORT_DDL);
 
-        KomodoObject tweet = verify(twitterView, "Tweet");
-        KomodoObject tweetQuery = verify(tweet, TeiidSqlLexicon.Query.ID);
-        verify(tweetQuery, TeiidSqlLexicon.From.ID, NTLexicon.NT_UNSTRUCTURED, TeiidSqlLexicon.From.ID);
+        KomodoObject tweet = verify(getTransaction(), twitterView, "Tweet");
+        KomodoObject tweetQuery = verify(getTransaction(), tweet, TeiidSqlLexicon.Query.ID);
+        verify(getTransaction(), tweetQuery, TeiidSqlLexicon.From.ID, TeiidSqlLexicon.From.ID);
     }
 
     @Test
@@ -538,7 +539,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
         KomodoObject[] tweets = twitterView.getChildren(getTransaction(), "Tweet");
         assertEquals(1, tweets.length);
 
-        KomodoObject tweet = verify(twitterView, "Tweet");
+        KomodoObject tweet = verify(getTransaction(), twitterView, "Tweet");
         commit();
 
         // Change the value of the query expression for the tweet node
@@ -551,11 +552,11 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
         assertFalse(importMessages.hasError());
         traverse(getTransaction(), tweet.getAbsolutePath());
 
-        KomodoObject tweetQuery = verify(tweet, TeiidSqlLexicon.Query.ID);
-        verify(tweetQuery, TeiidSqlLexicon.From.ID, NTLexicon.NT_UNSTRUCTURED, TeiidSqlLexicon.From.ID);
-        KomodoObject selectStmt = verify(tweetQuery, TeiidSqlLexicon.Select.ID, NTLexicon.NT_UNSTRUCTURED, TeiidSqlLexicon.Select.ID);
-        KomodoObject symbolsStmt = verify(selectStmt, TeiidSqlLexicon.Select.SYMBOLS_REF_NAME, NTLexicon.NT_UNSTRUCTURED, TeiidSqlLexicon.ElementSymbol.ID);
-        verifyProperty(symbolsStmt, Symbol.NAME_PROP_NAME, "title");
+        KomodoObject tweetQuery = verify(getTransaction(), tweet, TeiidSqlLexicon.Query.ID);
+        verify(getTransaction(), tweetQuery, TeiidSqlLexicon.From.ID, TeiidSqlLexicon.From.ID);
+        KomodoObject selectStmt = verify(getTransaction(), tweetQuery, TeiidSqlLexicon.Select.ID, TeiidSqlLexicon.Select.ID);
+        KomodoObject symbolsStmt = verify(getTransaction(), selectStmt, TeiidSqlLexicon.Select.SYMBOLS_REF_NAME, TeiidSqlLexicon.ElementSymbol.ID);
+        verifyProperty(getTransaction(), symbolsStmt, Symbol.NAME_PROP_NAME, "title");
     }
 
     @Test
@@ -611,24 +612,23 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
          *      @vdb-property2=vdb-value2
          *      @vdb-property=vdb-value
          */
-        KomodoObject myVdbExample = verify(allElementsNode.getParent(getTransaction()),
-                                                                    TestUtilities.ALL_ELEMENTS_EXAMPLE_VDB_NAME,
-                                                                    VdbLexicon.Vdb.VIRTUAL_DATABASE,
-                                                                    null);
+        KomodoObject myVdbExample = verify(getTransaction(), allElementsNode.getParent(getTransaction()),
+                                                                    TestUtilities.ALL_ELEMENTS_EXAMPLE_VDB_NAME, VdbLexicon.Vdb.VIRTUAL_DATABASE, null);
         assertEquals(allElementsNode, myVdbExample);
-        verifyProperty(myVdbExample, VdbLexicon.Vdb.NAME, "myVDB");
-        verifyProperty(myVdbExample, VdbLexicon.Vdb.DESCRIPTION, "vdb description");
-        verifyProperty(myVdbExample, VdbLexicon.Vdb.CONNECTION_TYPE, "NONE");
-        verifyProperty(myVdbExample, VdbLexicon.Vdb.PREVIEW, Boolean.FALSE.toString());
-        verifyProperty(myVdbExample, VdbLexicon.Vdb.VERSION, Integer.toString(1));
-        verifyProperty(myVdbExample, "vdb-property2", "vdb-value2");
-        verifyProperty(myVdbExample, "vdb-property", "vdb-value");
+        verifyProperty(getTransaction(), myVdbExample, VdbLexicon.Vdb.NAME, "myVDB");
+        verifyProperty(getTransaction(), myVdbExample, VdbLexicon.Vdb.DESCRIPTION, "vdb description");
+        verifyProperty(getTransaction(), myVdbExample, VdbLexicon.Vdb.CONNECTION_TYPE, "NONE");
+        verifyProperty(getTransaction(), myVdbExample, VdbLexicon.Vdb.PREVIEW, Boolean.FALSE.toString());
+        verifyProperty(getTransaction(), myVdbExample, VdbLexicon.Vdb.VERSION, Integer.toString(1));
+        verifyProperty(getTransaction(), myVdbExample, "vdb-property2", "vdb-value2");
+        verifyProperty(getTransaction(), myVdbExample, "vdb-property", "vdb-value");
 
         /*
          *      vdb:importVdbs
          *          @jcr:primaryType=vdb:importVdb
          */
-        KomodoObject importVdbs = verify(myVdbExample, VdbLexicon.Vdb.IMPORT_VDBS, VdbLexicon.Vdb.IMPORT_VDBS);
+        KomodoObject importVdbs = verify(getTransaction(), myVdbExample,
+                                                                     VdbLexicon.Vdb.IMPORT_VDBS, VdbLexicon.Vdb.IMPORT_VDBS, null);
 
         /*
          *          x
@@ -636,9 +636,9 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
          *              @vdb:version=2
          *              @vdb:import-data-policies=false
          */
-        KomodoObject importVdb = verify(importVdbs, "x", VdbLexicon.ImportVdb.IMPORT_VDB);
-        verifyProperty(importVdb, VdbLexicon.ImportVdb.VERSION, Integer.toString(2));
-        verifyProperty(importVdb, VdbLexicon.ImportVdb.IMPORT_DATA_POLICIES, Boolean.FALSE.toString());
+        KomodoObject importVdb = verify(getTransaction(), importVdbs, "x", VdbLexicon.ImportVdb.IMPORT_VDB, null);
+        verifyProperty(getTransaction(), importVdb, VdbLexicon.ImportVdb.VERSION, Integer.toString(2));
+        verifyProperty(getTransaction(), importVdb, VdbLexicon.ImportVdb.IMPORT_DATA_POLICIES, Boolean.FALSE.toString());
 
         /*
          *      model-one
@@ -648,16 +648,16 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
          *          @description=model description
          *          @vdb:visible=false
          */
-        KomodoObject modelOne = verify(myVdbExample, "model-one", VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        verifyProperty(modelOne, NTLexicon.MODEL_TYPE, NTLexicon.ModelType.PHYSICAL);
-        verifyProperty(modelOne, VdbLexicon.Vdb.DESCRIPTION, "model description");
-        verifyProperty(modelOne, VdbLexicon.Model.VISIBLE, Boolean.FALSE.toString());
+        KomodoObject modelOne = verify(getTransaction(), myVdbExample, "model-one", VdbLexicon.Vdb.DECLARATIVE_MODEL, null);
+        verifyProperty(getTransaction(), modelOne, CoreLexicon.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
+        verifyProperty(getTransaction(), modelOne, VdbLexicon.Vdb.DESCRIPTION, "model description");
+        verifyProperty(getTransaction(), modelOne, VdbLexicon.Model.VISIBLE, Boolean.FALSE.toString());
 
         /*
          *          vdb:sources
          *              @jcr:primaryType=vdb:sources
          */
-        KomodoObject model1Sources = verify(modelOne, VdbLexicon.Vdb.SOURCES, VdbLexicon.Vdb.SOURCES);
+        KomodoObject model1Sources = verify(getTransaction(), modelOne, VdbLexicon.Vdb.SOURCES, VdbLexicon.Vdb.SOURCES, null);
 
         /*
          *              s1
@@ -665,9 +665,9 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
          *                  @vdb:sourceTranslator=translator
          *                  @vdb:sourceJndiName=java:mybinding
          */
-        KomodoObject model1Src1 = verify(model1Sources, "s1", VdbLexicon.Source.SOURCE);
-        verifyProperty(model1Src1, VdbLexicon.Source.TRANSLATOR, "translator");
-        verifyProperty(model1Src1, VdbLexicon.Source.JNDI_NAME, "java:mybinding");
+        KomodoObject model1Src1 = verify(getTransaction(), model1Sources, "s1", VdbLexicon.Source.SOURCE, null);
+        verifyProperty(getTransaction(), model1Src1, VdbLexicon.Source.TRANSLATOR, "translator");
+        verifyProperty(getTransaction(), model1Src1, VdbLexicon.Source.JNDI_NAME, "java:mybinding");
 
         /*
          *      model-two
@@ -676,19 +676,19 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
          *          @mmcore:modelType=VIRTUAL
          *          @vdb:visible=true
          */
-        KomodoObject modelTwo = verify(myVdbExample, "model-two", VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        verifyProperty(modelTwo, NTLexicon.MODEL_TYPE, NTLexicon.ModelType.VIRTUAL);
-        verifyProperty(modelTwo, VdbLexicon.Model.VISIBLE, Boolean.TRUE.toString());
-        verifyProperty(modelTwo, VdbLexicon.Model.METADATA_TYPE, "DDL");
+        KomodoObject modelTwo = verify(getTransaction(), myVdbExample, "model-two", VdbLexicon.Vdb.DECLARATIVE_MODEL, null);
+        verifyProperty(getTransaction(), modelTwo, CoreLexicon.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
+        verifyProperty(getTransaction(), modelTwo, VdbLexicon.Model.VISIBLE, Boolean.TRUE.toString());
+        verifyProperty(getTransaction(), modelTwo, VdbLexicon.Model.METADATA_TYPE, "DDL");
 
         String modelDefinition = "CREATE VIEW Test AS SELECT * FROM Test.getTest;";
-        verifyProperty(modelTwo, VdbLexicon.Model.MODEL_DEFINITION, modelDefinition);
+        verifyProperty(getTransaction(), modelTwo, VdbLexicon.Model.MODEL_DEFINITION, modelDefinition);
 
         /*
          *          vdb:sources
          *              @jcr:primaryType=vdb:sources
          */
-        KomodoObject model2Sources = verify(modelTwo, VdbLexicon.Vdb.SOURCES, VdbLexicon.Vdb.SOURCES);
+        KomodoObject model2Sources = verify(getTransaction(), modelTwo, VdbLexicon.Vdb.SOURCES, VdbLexicon.Vdb.SOURCES, null);
 
         /*
          *              s1
@@ -696,9 +696,9 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
          *                  @vdb:sourceTranslator=translator
          *                  @vdb:sourceJndiName=java:binding-one
          */
-        KomodoObject model2Src1 = verify(model2Sources, "s1", VdbLexicon.Source.SOURCE);
-        verifyProperty(model2Src1, VdbLexicon.Source.TRANSLATOR, "translator");
-        verifyProperty(model2Src1, VdbLexicon.Source.JNDI_NAME, "java:binding-one");
+        KomodoObject model2Src1 = verify(getTransaction(), model2Sources, "s1", VdbLexicon.Source.SOURCE, null);
+        verifyProperty(getTransaction(), model2Src1, VdbLexicon.Source.TRANSLATOR, "translator");
+        verifyProperty(getTransaction(), model2Src1, VdbLexicon.Source.JNDI_NAME, "java:binding-one");
 
         /*
          *              s2
@@ -706,15 +706,16 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
          *                  @vdb:sourceTranslator=translator
          *                  @vdb:sourceJndiName=java:binding-two
          */
-        KomodoObject model2Src2 = verify(model2Sources, "s2", VdbLexicon.Source.SOURCE);
-        verifyProperty(model2Src2, VdbLexicon.Source.TRANSLATOR, "translator");
-        verifyProperty(model2Src2, VdbLexicon.Source.JNDI_NAME, "java:binding-two");
+        KomodoObject model2Src2 = verify(getTransaction(), model2Sources, "s2", VdbLexicon.Source.SOURCE, null);
+        verifyProperty(getTransaction(), model2Src2, VdbLexicon.Source.TRANSLATOR, "translator");
+        verifyProperty(getTransaction(), model2Src2, VdbLexicon.Source.JNDI_NAME, "java:binding-two");
 
         /*
          *      vdb:translators
          *          @jcr:primaryType=vdb:translators
          */
-        KomodoObject translators = verify(myVdbExample, VdbLexicon.Vdb.TRANSLATORS, VdbLexicon.Vdb.TRANSLATORS);
+        KomodoObject translators = verify(getTransaction(), myVdbExample, VdbLexicon.Vdb.TRANSLATORS,
+                                                                          VdbLexicon.Vdb.TRANSLATORS, null);
 
         /*
          *          oracleOverride
@@ -723,16 +724,17 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
          *              @vdb:type=oracle
          *              my-property=my-value
          */
-        KomodoObject oraTranslator = verify(translators, "oracleOverride", VdbLexicon.Translator.TRANSLATOR);
-        verifyProperty(oraTranslator, VdbLexicon.Translator.DESCRIPTION, "hello world");
-        verifyProperty(oraTranslator, VdbLexicon.Translator.TYPE, "oracle");
-        verifyProperty(oraTranslator, "my-property", "my-value");
+        KomodoObject oraTranslator = verify(getTransaction(), translators, "oracleOverride", VdbLexicon.Translator.TRANSLATOR, null);
+        verifyProperty(getTransaction(), oraTranslator, VdbLexicon.Translator.DESCRIPTION, "hello world");
+        verifyProperty(getTransaction(), oraTranslator, VdbLexicon.Translator.TYPE, "oracle");
+        verifyProperty(getTransaction(), oraTranslator, "my-property", "my-value");
 
         /*
          *      vdb:dataRoles
          *          @jcr:primaryType=vdb:dataRoles
          */
-        KomodoObject dataRoles = verify(myVdbExample, VdbLexicon.Vdb.DATA_ROLES, VdbLexicon.Vdb.DATA_ROLES);
+        KomodoObject dataRoles = verify(getTransaction(), myVdbExample, VdbLexicon.Vdb.DATA_ROLES,
+                                                                        VdbLexicon.Vdb.DATA_ROLES, null);
 
         /*
          *          roleOne
@@ -743,26 +745,28 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
          *              @vdb:description=roleOne described
          *              @vdb:mappedRoleNames=ROLE1, ROLE2
          */
-        KomodoObject dataRole1 = verify(dataRoles, "roleOne", VdbLexicon.DataRole.DATA_ROLE);
-        verifyProperty(dataRole1, VdbLexicon.Translator.DESCRIPTION, "roleOne described");
-        verifyProperty(dataRole1, VdbLexicon.DataRole.ANY_AUTHENTICATED, Boolean.FALSE.toString());
-        verifyProperty(dataRole1, VdbLexicon.DataRole.GRANT_ALL, Boolean.TRUE.toString());
-        verifyProperty(dataRole1, VdbLexicon.DataRole.ALLOW_CREATE_TEMP_TABLES, Boolean.TRUE.toString());
-        verifyProperty(dataRole1, VdbLexicon.DataRole.MAPPED_ROLE_NAMES, "ROLE1", "ROLE2");
+        KomodoObject dataRole1 = verify(getTransaction(), dataRoles, "roleOne", VdbLexicon.DataRole.DATA_ROLE, null);
+        verifyProperty(getTransaction(), dataRole1, VdbLexicon.Translator.DESCRIPTION, "roleOne described");
+        verifyProperty(getTransaction(), dataRole1, VdbLexicon.DataRole.ANY_AUTHENTICATED, Boolean.FALSE.toString());
+        verifyProperty(getTransaction(), dataRole1, VdbLexicon.DataRole.GRANT_ALL, Boolean.TRUE.toString());
+        verifyProperty(getTransaction(), dataRole1, VdbLexicon.DataRole.ALLOW_CREATE_TEMP_TABLES, Boolean.TRUE.toString());
+        verifyProperty(getTransaction(), dataRole1, VdbLexicon.DataRole.MAPPED_ROLE_NAMES, "ROLE1", "ROLE2");
 
         /*
          *              vdb:permissions
          *                  @jcr:primaryType=vdb:permissions
          */
-        KomodoObject permissions = verify(dataRole1, VdbLexicon.DataRole.PERMISSIONS, VdbLexicon.DataRole.PERMISSIONS);
+        KomodoObject permissions = verify(getTransaction(), dataRole1, VdbLexicon.DataRole.PERMISSIONS,
+                                                                      VdbLexicon.DataRole.PERMISSIONS, null);
 
         /*
          *                  myTable.T1
          *                      @jcr.primaryType=vdb:permission
          *                      @allowRead=true
          */
-        KomodoObject permission1 = verify(permissions, "myTable.T1", VdbLexicon.DataRole.Permission.PERMISSION);
-        verifyProperty(permission1, VdbLexicon.DataRole.Permission.ALLOW_READ, Boolean.TRUE.toString());
+        KomodoObject permission1 = verify(getTransaction(), permissions, "myTable.T1",
+                                                                              VdbLexicon.DataRole.Permission.PERMISSION, null);
+        verifyProperty(getTransaction(), permission1, VdbLexicon.DataRole.Permission.ALLOW_READ, Boolean.TRUE.toString());
 
         /*
          *                  myTable.T2
@@ -774,60 +778,66 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
          *                      @allowExecute=true
          *                      @allowAlter=true
          */
-        KomodoObject permission2 = verify(permissions, "myTable.T2", VdbLexicon.DataRole.Permission.PERMISSION);
-        verifyProperty(permission2, VdbLexicon.DataRole.Permission.ALLOW_CREATE, Boolean.TRUE.toString());
-        verifyProperty(permission2, VdbLexicon.DataRole.Permission.ALLOW_READ, Boolean.FALSE.toString());
-        verifyProperty(permission2, VdbLexicon.DataRole.Permission.ALLOW_UPDATE, Boolean.TRUE.toString());
-        verifyProperty(permission2, VdbLexicon.DataRole.Permission.ALLOW_DELETE, Boolean.TRUE.toString());
-        verifyProperty(permission2, VdbLexicon.DataRole.Permission.ALLOW_EXECUTE, Boolean.TRUE.toString());
-        verifyProperty(permission2, VdbLexicon.DataRole.Permission.ALLOW_ALTER, Boolean.TRUE.toString());
+        KomodoObject permission2 = verify(getTransaction(), permissions, "myTable.T2",
+                                                                              VdbLexicon.DataRole.Permission.PERMISSION, null);
+        verifyProperty(getTransaction(), permission2, VdbLexicon.DataRole.Permission.ALLOW_CREATE, Boolean.TRUE.toString());
+        verifyProperty(getTransaction(), permission2, VdbLexicon.DataRole.Permission.ALLOW_READ, Boolean.FALSE.toString());
+        verifyProperty(getTransaction(), permission2, VdbLexicon.DataRole.Permission.ALLOW_UPDATE, Boolean.TRUE.toString());
+        verifyProperty(getTransaction(), permission2, VdbLexicon.DataRole.Permission.ALLOW_DELETE, Boolean.TRUE.toString());
+        verifyProperty(getTransaction(), permission2, VdbLexicon.DataRole.Permission.ALLOW_EXECUTE, Boolean.TRUE.toString());
+        verifyProperty(getTransaction(), permission2, VdbLexicon.DataRole.Permission.ALLOW_ALTER, Boolean.TRUE.toString());
 
         /*
          *                      vdb:conditions
          *                          @jcr:primaryType=vdb:conditions
          */
-        KomodoObject conditions = verify(permission2, VdbLexicon.DataRole.Permission.CONDITIONS, VdbLexicon.DataRole.Permission.CONDITIONS);
+        KomodoObject conditions = verify(getTransaction(), permission2, VdbLexicon.DataRole.Permission.CONDITIONS,
+                                                                         VdbLexicon.DataRole.Permission.CONDITIONS, null);
 
         /*
          *                          col1 = user()
          *                              @jcr:primaryType=vdb:condition
          *                              @vdb:constraint=false
          */
-        KomodoObject condition = verify(conditions, "col1 = user()", VdbLexicon.DataRole.Permission.Condition.CONDITION);
-        verifyProperty(condition, VdbLexicon.DataRole.Permission.Condition.CONSTRAINT, Boolean.FALSE.toString());
+        KomodoObject condition = verify(getTransaction(), conditions, "col1 = user()",
+                                                                        VdbLexicon.DataRole.Permission.Condition.CONDITION, null);
+        verifyProperty(getTransaction(), condition, VdbLexicon.DataRole.Permission.Condition.CONSTRAINT, Boolean.FALSE.toString());
 
         /*
          *                  myTable.T2.col1
          *                      @jcr.primaryType=vdb:permission
          */
-        KomodoObject permission3 = verify(permissions, "myTable.T2.col1", VdbLexicon.DataRole.Permission.PERMISSION);
+        KomodoObject permission3 = verify(getTransaction(), permissions, "myTable.T2.col1",
+                                                                              VdbLexicon.DataRole.Permission.PERMISSION, null);
 
         /*
          *                      vdb:masks
          *                          @jcr:primaryType=vdb:masks
          */
-        KomodoObject masks = verify(permission3, VdbLexicon.DataRole.Permission.MASKS, VdbLexicon.DataRole.Permission.MASKS);
+        KomodoObject masks = verify(getTransaction(), permission3, VdbLexicon.DataRole.Permission.MASKS,
+                                                                    VdbLexicon.DataRole.Permission.MASKS, null);
 
         /*
          *                          col2
          *                              @jcr:primaryType=vdb:mask
          *                              @vdb:order=1
          */
-        KomodoObject mask = verify(masks, "col2", VdbLexicon.DataRole.Permission.Mask.MASK);
-        verifyProperty(mask, VdbLexicon.DataRole.Permission.Mask.ORDER, Integer.toString(1));
+        KomodoObject mask = verify(getTransaction(), masks, "col2", VdbLexicon.DataRole.Permission.Mask.MASK, null);
+        verifyProperty(getTransaction(), mask, VdbLexicon.DataRole.Permission.Mask.ORDER, Integer.toString(1));
 
         /*
          *                  javascript
          *                      @jcr.primaryType=vdb:permission
          *                      @allowLanguage=true
          */
-        KomodoObject permission4 = verify(permissions, "javascript", VdbLexicon.DataRole.Permission.PERMISSION);
-        verifyProperty(permission4, VdbLexicon.DataRole.Permission.ALLOW_LANGUAGE, Boolean.TRUE.toString());
+        KomodoObject permission4 = verify(getTransaction(), permissions, "javascript",
+                                                                              VdbLexicon.DataRole.Permission.PERMISSION, null);
+        verifyProperty(getTransaction(), permission4, VdbLexicon.DataRole.Permission.ALLOW_LANGUAGE, Boolean.TRUE.toString());
 
-        KomodoObject test = verify(modelTwo, "Test");
+        KomodoObject test = verify(getTransaction(), modelTwo, "Test");
 
-        KomodoObject testQuery = verify(test, TeiidSqlLexicon.Query.ID);
-        verify(testQuery, TeiidSqlLexicon.From.ID, NTLexicon.NT_UNSTRUCTURED, TeiidSqlLexicon.From.ID);
+        KomodoObject testQuery = verify(getTransaction(), test, TeiidSqlLexicon.Query.ID);
+        verify(getTransaction(), testQuery, TeiidSqlLexicon.From.ID, TeiidSqlLexicon.From.ID);
 
     }
 
@@ -1279,21 +1289,21 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
             //
             model.setFilters(null);
 
-            verifyProperty(model, VdbLexicon.Model.METADATA_TYPE, "DDL");
+            verifyProperty(getTransaction(), model, VdbLexicon.Model.METADATA_TYPE, "DDL");
 
             if ("PartsViewModel".equals(model.getName(getTransaction()))) {
                 assertEquals(Type.VIRTUAL, model.getModelType(getTransaction()));
                 assertEquals(PARTS_DYNAMIC_PARTSVIEW_DDL, model.getModelDefinition(getTransaction()));
 
                 // Ddl Sequenced
-                verify(model, "PartsSummary", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.VIEW_STATEMENT);
+                verify(getTransaction(), model, "PartsSummary", TeiidDdlLexicon.CreateTable.VIEW_STATEMENT);
 
             } else if ("PartsSS".equals(model.getName(getTransaction()))) {
                 assertEquals(Type.PHYSICAL, model.getModelType(getTransaction()));
                 assertEquals(PARTS_DYNAMIC_PARTSS_DDL, model.getModelDefinition(getTransaction()));
 
                 // Ddl Sequenced
-                verify(model, "PARTS", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.TABLE_STATEMENT);
+                verify(getTransaction(), model, "PARTS", TeiidDdlLexicon.CreateTable.TABLE_STATEMENT);
             }
         }
     }
@@ -1338,11 +1348,11 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
         assertEquals(5, models.length);
 
         Model model = manager.resolve(getTransaction(), vdb.getChild(getTransaction(), "StocksMatModel"), Model.class);
-        verifyProperty(model, VdbLexicon.Model.METADATA_TYPE, "DDL");
+        verifyProperty(getTransaction(), model, VdbLexicon.Model.METADATA_TYPE, "DDL");
         assertEquals(Type.VIRTUAL, model.getModelType(getTransaction()));
 
         // Ddl Sequenced
-        verify(model, "stockPricesMatView", NTLexicon.NT_UNSTRUCTURED, TeiidDdlLexicon.CreateTable.VIEW_STATEMENT);
+        verify(getTransaction(), model, "stockPricesMatView", TeiidDdlLexicon.CreateTable.VIEW_STATEMENT);
     }
 
     @Test
@@ -1508,8 +1518,8 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
         KomodoObject vdbNode = workspace.getChild(getTransaction(), "patients", VdbLexicon.Vdb.VIRTUAL_DATABASE);
         assertNotNull("Failed - No Vdb Created ", vdbNode);
 
-        KomodoObject patientModel = verify(vdbNode, "Patients", VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        verify(patientModel, "TheServiceView");
+        KomodoObject patientModel = verify(getTransaction(), vdbNode, "Patients", VdbLexicon.Vdb.DECLARATIVE_MODEL, null);
+        verify(getTransaction(), patientModel, "TheServiceView");
     }
 
 }

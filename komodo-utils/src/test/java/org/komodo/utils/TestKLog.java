@@ -147,7 +147,8 @@ public class TestKLog {
 
         String fileMsg = retrieveLogContents(newLogFile);
         System.out.println("The File Message: " + fileMsg);
-        assertTrue(fileMsg.contains("WARN  " + KLogger.class.getName() + "  - " + msg.replace("{0}", param1)));
+        String testMsg = "WARN  " + KLogger.class.getName() + "  - " + msg.replace("{0}", param1);
+        assertTrue(fileMsg.contains(testMsg));
     }
 
     @Test

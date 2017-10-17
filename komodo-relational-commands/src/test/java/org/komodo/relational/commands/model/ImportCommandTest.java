@@ -17,8 +17,8 @@ package org.komodo.relational.commands.model;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.commands.AbstractCommandTest;
-import org.komodo.repository.RepositoryImpl;
 import org.komodo.shell.api.CommandResult;
 
 /**

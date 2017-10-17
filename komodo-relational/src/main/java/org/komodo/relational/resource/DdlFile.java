@@ -21,10 +21,10 @@
  */
 package org.komodo.relational.resource;
 
+import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.TypeResolver;
 import org.komodo.relational.dataservice.DataServiceResource;
 import org.komodo.relational.resource.internal.DdlFileImpl;
-import org.komodo.repository.ObjectImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.KomodoObject;

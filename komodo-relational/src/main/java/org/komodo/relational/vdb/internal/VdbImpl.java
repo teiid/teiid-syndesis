@@ -28,7 +28,9 @@ import java.util.List;
 import java.util.Properties;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
-import org.komodo.modeshape.visitor.VdbNodeVisitor;
+import org.komodo.core.repository.DescriptorImpl;
+import org.komodo.core.repository.PropertyDescriptorImpl;
+import org.komodo.core.visitor.VdbNodeVisitor;
 import org.komodo.relational.DeployStatus;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
@@ -41,24 +43,22 @@ import org.komodo.relational.vdb.Entry;
 import org.komodo.relational.vdb.Translator;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.VdbImport;
-import org.komodo.repository.DescriptorImpl;
-import org.komodo.repository.PropertyDescriptorImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.ExportConstants;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.DocumentType;
+import org.komodo.spi.repository.KPropertyFactory;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyDescriptor;
-import org.komodo.spi.repository.PropertyDescriptor.Type;
 import org.komodo.spi.repository.PropertyValueType;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.FileUtils;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.w3c.dom.Document;
 
 /**
@@ -90,19 +90,18 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.repository.DescriptorImpl#getPropertyDescriptors(org.komodo.spi.repository.Repository.UnitOfWork)
+         * @see org.komodo.core.repository.DescriptorImpl#getPropertyDescriptors(org.komodo.spi.repository.Repository.UnitOfWork)
          */
         @Override
         public PropertyDescriptor[] getPropertyDescriptors( final UnitOfWork transaction ) throws KException {
             final PropertyDescriptor[] propDescriptors = this.delegate.getPropertyDescriptors( transaction );
-            final SpecialProperty[] specialProps = SpecialProperty.values();
 
-            final PropertyDescriptor[] result = new PropertyDescriptor[ propDescriptors.length + specialProps.length ];
+            final PropertyDescriptor[] result = new PropertyDescriptor[ propDescriptors.length + specialProperties.length ];
             System.arraycopy( propDescriptors, 0, result, 0, propDescriptors.length );
 
             int i = propDescriptors.length;
 
-            for ( final SpecialProperty prop : specialProps ) {
+            for ( final SpecialProperty prop : specialProperties ) {
                 result[i++] = prop.getDescriptor();
             }
 
@@ -111,41 +110,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
 
     }
 
-    enum SpecialProperty {
-
-        ALLOWED_LANGUAGES( "allowed-languages" ), //$NON-NLS-1$
-        AUTHENTICATION_TYPE( "authentication-type" ), //$NON-NLS-1$
-        GSS_PATTERN( "gss-pattern" ), //$NON-NLS-1$
-        PASSWORD_PATTERN( "password-pattern" ), //$NON-NLS-1$
-        QUERY_TIMEOUT( "query-timeout" ), //$NON-NLS-1$
-        SECURITY_DOMAIN( "security-domain" ); //$NON-NLS-1$
-
-        /**
-         * @param teiidName
-         *        the Teiid property name whose enumeration is being requested (can be empty)
-         * @return the special property or <code>null</code> if not found
-         */
-        static SpecialProperty fromTeiidName( final String teiidName ) {
-            for ( final SpecialProperty prop : values() ) {
-                if ( prop.toTeiidName().equals( teiidName ) ) {
-                    return prop;
-                }
-            }
-
-            return null;
-        }
-
-        static String[] valuesAsTeiidNames() {
-            final SpecialProperty[] values = values();
-            final String[] result = new String[ values.length ];
-            int i = 0;
-
-            for ( final SpecialProperty prop : values ) {
-                result[i++] = prop.toTeiidName();
-            }
-
-            return result;
-        }
+    private class SpecialProperty {
 
         private final String teiidName;
 
@@ -154,8 +119,9 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         }
 
         PropertyDescriptor getDescriptor() throws KException {
-            final Type type = ( this == QUERY_TIMEOUT ) ? Type.LONG : Type.STRING;
-            return new PropertyDescriptorImpl( false, true, false, toTeiidName(), type, null );
+            final PropertyValueType type = ( this == specialProperties[QUERY_TIMEOUT] ) ? PropertyValueType.LONG : PropertyValueType.STRING;
+            KPropertyFactory factory = VdbImpl.this.getPropertyFactory();
+            return new PropertyDescriptorImpl( false, true, false, toTeiidName(), type, null, factory );
         }
 
         String toTeiidName() {
@@ -163,6 +129,22 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         }
 
     }
+
+    private static final int ALLOWED_LANGUAGES = 0;
+    private static final int AUTHENTICATION_TYPE = 1;
+    private static final int GSS_PATTERN = 2;
+    private static final int PASSWORD_PATTERN = 3;
+    private static final int QUERY_TIMEOUT = 4;
+    private static final int SECURITY_DOMAIN = 5;
+
+    private final SpecialProperty[] specialProperties = new SpecialProperty[] {
+        new SpecialProperty(ALLOWED_LANGUAGES_TEIIDNAME), //$NON-NLS-1$
+        new SpecialProperty(AUTHENTICATION_TYPE_TEIIDNAME), //$NON-NLS-1$
+        new SpecialProperty(GSS_PATTERN_TEIIDNAME), //$NON-NLS-1$
+        new SpecialProperty(PASSWORD_PATTERN_TEIIDNAME), //$NON-NLS-1$
+        new SpecialProperty(QUERY_TIMEOUT_TEIIDNAME), //$NON-NLS-1$
+        new SpecialProperty(SECURITY_DOMAIN_TEIIDNAME), //$NON-NLS-1$
+    };
 
     private class VdbManifestImpl implements VdbManifest {
 
@@ -181,7 +163,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
                 	boolean useTabs = exportProperties.containsKey(ExportConstants.USE_TABS_PROP_KEY);
                 	visitor.setShowTabs(useTabs);
                 }
-                visitor.visit(vdb.node(transaction));
+                visitor.visit(transaction, vdb);
             } catch (final Exception e) {
                 throw new KException(e);
             }
@@ -347,7 +329,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         return getObjectProperty( transaction,
                                   PropertyValueType.STRING,
                                   "getAllowedLanguages", //$NON-NLS-1$
-                                  SpecialProperty.ALLOWED_LANGUAGES.toTeiidName() );
+                                  specialProperties[ALLOWED_LANGUAGES].toTeiidName() );
     }
 
     /**
@@ -360,7 +342,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         return getObjectProperty( transaction,
                                   PropertyValueType.STRING,
                                   "getAuthenticationType", //$NON-NLS-1$
-                                  SpecialProperty.AUTHENTICATION_TYPE.toTeiidName() );
+                                  specialProperties[AUTHENTICATION_TYPE].toTeiidName() );
     }
 
     /**
@@ -408,7 +390,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         }
 
         // child does not exist
-        throw new KException( Messages.getString( org.komodo.repository.Messages.Komodo.CHILD_NOT_FOUND,
+        throw new KException( Messages.getString( org.komodo.core.repository.Messages.Komodo.CHILD_NOT_FOUND,
                                                   name,
                                                   getAbsolutePath() ) );
     }
@@ -460,7 +442,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         }
 
         // child does not exist
-        throw new KException( Messages.getString( org.komodo.repository.Messages.Komodo.CHILD_NOT_FOUND,
+        throw new KException( Messages.getString( org.komodo.core.repository.Messages.Komodo.CHILD_NOT_FOUND,
                                                   name,
                                                   getAbsolutePath() ) );
     }
@@ -533,7 +515,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getChildTypes()
+     * @see org.komodo.core.repository.ObjectImpl#getChildTypes()
      */
     @Override
     public KomodoType[] getChildTypes() {
@@ -652,7 +634,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         return getObjectProperty( transaction,
                                   PropertyValueType.STRING,
                                   "getGssPattern", //$NON-NLS-1$
-                                  SpecialProperty.GSS_PATTERN.toTeiidName() );
+                                  specialProperties[GSS_PATTERN].toTeiidName() );
     }
 
     /**
@@ -743,7 +725,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         return getObjectProperty( transaction,
                                   PropertyValueType.STRING,
                                   "getPasswordPattern", //$NON-NLS-1$
-                                  SpecialProperty.PASSWORD_PATTERN.toTeiidName() );
+                                  specialProperties[PASSWORD_PATTERN].toTeiidName() );
     }
 
     /**
@@ -755,19 +737,18 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
     @Override
     public PropertyDescriptor getPropertyDescriptor( final UnitOfWork transaction,
                                                      final String propName ) throws KException {
-        final SpecialProperty prop = SpecialProperty.fromTeiidName( propName );
-
-        if ( prop == null ) {
-            return super.getPropertyDescriptor( transaction, propName );
+        for (SpecialProperty prop : specialProperties) {
+            if (prop.toTeiidName().equals(propName))
+                return prop.getDescriptor();
         }
 
-        return prop.getDescriptor();
+        return super.getPropertyDescriptor( transaction, propName );        
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getPrimaryType(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.ObjectImpl#getPrimaryType(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public Descriptor getPrimaryType( final UnitOfWork transaction ) throws KException {
@@ -784,7 +765,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         final Integer value = getObjectProperty( transaction,
                                                  PropertyValueType.INTEGER,
                                                  "getQueryTimeout", //$NON-NLS-1$
-                                                 SpecialProperty.QUERY_TIMEOUT.toTeiidName() );
+                                                 specialProperties[QUERY_TIMEOUT].toTeiidName() );
         return ( value == null ) ? -1 : value;
     }
 
@@ -798,7 +779,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         return getObjectProperty( transaction,
                                   PropertyValueType.STRING,
                                   "getSecurityDomain", //$NON-NLS-1$
-                                  SpecialProperty.SECURITY_DOMAIN.toTeiidName() );
+                                  specialProperties[SECURITY_DOMAIN].toTeiidName() );
     }
 
     /**
@@ -1071,7 +1052,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#rename(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.core.repository.ObjectImpl#rename(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
     public void rename( final UnitOfWork transaction,
@@ -1098,7 +1079,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
                                      final String newAllowedLanguages ) throws KException {
         setObjectProperty( transaction,
                            "setAllowedLanguages", //$NON-NLS-1$
-                           SpecialProperty.ALLOWED_LANGUAGES.toTeiidName(),
+                           specialProperties[ALLOWED_LANGUAGES].toTeiidName(),
                            newAllowedLanguages );
     }
 
@@ -1112,7 +1093,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
                                        final String newAuthenticationType ) throws KException {
         setObjectProperty( transaction,
                            "setAuthenticationType", //$NON-NLS-1$
-                           SpecialProperty.AUTHENTICATION_TYPE.toTeiidName(),
+                           specialProperties[AUTHENTICATION_TYPE].toTeiidName(),
                            newAuthenticationType );
     }
 
@@ -1146,7 +1127,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
     @Override
     public void setGssPattern( final UnitOfWork transaction,
                                final String newGssPattern ) throws KException {
-        setObjectProperty( transaction, "setGssPattern", SpecialProperty.GSS_PATTERN.toTeiidName(), newGssPattern ); //$NON-NLS-1$
+        setObjectProperty( transaction, "setGssPattern", specialProperties[GSS_PATTERN].toTeiidName(), newGssPattern ); //$NON-NLS-1$
     }
 
     /**
@@ -1169,7 +1150,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
     @Override
     public void setPasswordPattern( final UnitOfWork transaction,
                                     final String newPasswordPattern ) throws KException {
-        setObjectProperty( transaction, "setPasswordPattern", SpecialProperty.PASSWORD_PATTERN.toTeiidName(), newPasswordPattern ); //$NON-NLS-1$
+        setObjectProperty( transaction, "setPasswordPattern", specialProperties[PASSWORD_PATTERN].toTeiidName(), newPasswordPattern ); //$NON-NLS-1$
     }
 
     /**
@@ -1198,7 +1179,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
             newValue = newQueryTimeout;
         }
 
-        setObjectProperty( transaction, "setQueryTimeout", SpecialProperty.QUERY_TIMEOUT.toTeiidName(), newValue ); //$NON-NLS-1$
+        setObjectProperty( transaction, "setQueryTimeout", specialProperties[QUERY_TIMEOUT].toTeiidName(), newValue ); //$NON-NLS-1$
     }
 
     /**
@@ -1209,7 +1190,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
     @Override
     public void setSecurityDomain( final UnitOfWork transaction,
                                    final String newSecurityDomain ) throws KException {
-        setObjectProperty( transaction, "setSecurityDomain", SpecialProperty.SECURITY_DOMAIN.toTeiidName(), newSecurityDomain ); //$NON-NLS-1$
+        setObjectProperty( transaction, "setSecurityDomain", specialProperties[SECURITY_DOMAIN].toTeiidName(), newSecurityDomain ); //$NON-NLS-1$
     }
 
     /**

@@ -25,14 +25,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.komodo.relational.Messages.Relational;
+import org.komodo.core.repository.Messages;
+import org.komodo.core.repository.ObjectImpl;
+import org.komodo.core.repository.Messages.Komodo;
 import org.komodo.relational.RelationalObject;
 import org.komodo.relational.TypeResolver;
-import org.komodo.repository.Messages;
-import org.komodo.repository.Messages.Komodo;
-import org.komodo.repository.ObjectImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
 import org.komodo.spi.repository.Descriptor;
+import org.komodo.spi.repository.KObjectFactory;
+import org.komodo.spi.repository.KPropertyFactory;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.PropertyDescriptor;
@@ -79,7 +81,7 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.core.repository.ObjectImpl#getChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
     public KomodoObject getChild( final UnitOfWork transaction,
@@ -95,7 +97,7 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
+     * @see org.komodo.core.repository.ObjectImpl#getChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
      *      java.lang.String)
      */
     @Override
@@ -117,7 +119,7 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getChildren(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
+     * @see org.komodo.core.repository.ObjectImpl#getChildren(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
      */
     @Override
     public KomodoObject[] getChildren( final UnitOfWork transaction,
@@ -152,7 +154,7 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getChildrenOfType(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
+     * @see org.komodo.core.repository.ObjectImpl#getChildrenOfType(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
      *      java.lang.String[])
      */
     @Override
@@ -195,7 +197,7 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getDescriptor(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.core.repository.ObjectImpl#getDescriptor(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
     public Descriptor getDescriptor( final UnitOfWork transaction,
@@ -219,7 +221,7 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getDescriptors(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.ObjectImpl#getDescriptors(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public Descriptor[] getDescriptors( final UnitOfWork transaction ) throws KException {
@@ -254,7 +256,7 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.ObjectImpl#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public KomodoObject getParent( final UnitOfWork transaction ) throws KException {
@@ -273,7 +275,7 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getProperty(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.core.repository.ObjectImpl#getProperty(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
     public Property getProperty( final UnitOfWork transaction,
@@ -293,7 +295,7 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getPropertyDescriptor(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.core.repository.ObjectImpl#getPropertyDescriptor(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
     public PropertyDescriptor getPropertyDescriptor( final UnitOfWork transaction,
@@ -312,7 +314,7 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getPropertyDescriptors(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.ObjectImpl#getPropertyDescriptors(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public PropertyDescriptor[] getPropertyDescriptors( final UnitOfWork transaction ) throws KException {
@@ -335,7 +337,7 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getPropertyNames(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.ObjectImpl#getPropertyNames(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public String[] getPropertyNames( final UnitOfWork transaction ) throws KException {
@@ -364,7 +366,7 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#hasChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.core.repository.ObjectImpl#hasChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
     public boolean hasChild( final UnitOfWork transaction,
@@ -399,7 +401,7 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#hasChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
+     * @see org.komodo.core.repository.ObjectImpl#hasChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
      *      java.lang.String)
      */
     @Override
@@ -423,7 +425,7 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#hasChildren(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.ObjectImpl#hasChildren(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public boolean hasChildren( final UnitOfWork transaction ) throws KException {
@@ -440,7 +442,7 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#hasDescriptor(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.core.repository.ObjectImpl#hasDescriptor(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
     public boolean hasDescriptor( final UnitOfWork transaction,
@@ -461,7 +463,7 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#hasProperty(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.core.repository.ObjectImpl#hasProperty(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
     public boolean hasProperty( final UnitOfWork transaction,
@@ -529,7 +531,7 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#removeDescriptor(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
+     * @see org.komodo.core.repository.ObjectImpl#removeDescriptor(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
      */
     @Override
     public void removeDescriptor( final UnitOfWork transaction,
@@ -586,7 +588,7 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#setPrimaryType(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.core.repository.ObjectImpl#setPrimaryType(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      * @throws UnsupportedOperationException
      *         if called
      */
@@ -600,7 +602,7 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#toString()
+     * @see org.komodo.core.repository.ObjectImpl#toString()
      */
     @Override
     public String toString() {
@@ -634,28 +636,14 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
             this.delegate = delegate;
         }
 
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.spi.repository.Descriptor#getChildDescriptors(org.komodo.spi.repository.Repository.UnitOfWork)
-         */
         @Override
-        public Descriptor[] getChildDescriptors( final UnitOfWork transaction ) throws KException {
-            final Descriptor[] descriptors = this.delegate.getChildDescriptors(transaction);
+        public KObjectFactory getNodeFactory() {
+            return delegate.getNodeFactory();
+        }
 
-            if ( descriptors.length == 0 ) {
-                return descriptors;
-            }
-
-            final List< Descriptor > result = new ArrayList<>( descriptors.length );
-
-            for ( final Descriptor descriptor : descriptors ) {
-                if ( !RelationalObjectImpl.this.isDescriptorFiltered( descriptor.getName() ) ) {
-                    result.add( new FilteredDescriptor( descriptor ) );
-                }
-            }
-
-            return result.toArray( new Descriptor[ result.size() ] );
+        @Override
+        public KPropertyFactory getPropertyFactory() {
+            return delegate.getPropertyFactory();
         }
 
         /**

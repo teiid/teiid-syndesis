@@ -224,18 +224,4 @@ public interface MetadataInstance {
      * @return the template property definitions for the given driver
      */
     Collection<TeiidPropertyDefinition> getTemplatePropertyDefns(String driverName);
-
-    /**
-     * Convert the given SQL string to a tree of JCR nodes
-     * @param sql
-     * @param parent
-     * @throws Exception
-     */
-    void convertToJcr(String sql, Object parent) throws Exception;
-
-    /**
-     * Parse the given sql
-     * @param sql
-     */
-    void parse(String sql) throws Exception;
 }

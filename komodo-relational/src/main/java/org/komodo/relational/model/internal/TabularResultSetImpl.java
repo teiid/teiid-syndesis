@@ -80,7 +80,7 @@ public final class TabularResultSetImpl extends RelationalObjectImpl implements 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getChildTypes()
+     * @see org.komodo.core.repository.ObjectImpl#getChildTypes()
      */
     @Override
     public KomodoType[] getChildTypes() {
@@ -165,7 +165,7 @@ public final class TabularResultSetImpl extends RelationalObjectImpl implements 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#rename(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.core.repository.ObjectImpl#rename(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
     public final void rename( final UnitOfWork transaction,

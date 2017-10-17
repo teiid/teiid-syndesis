@@ -149,7 +149,7 @@ public final class DataTypeResultSetImpl extends ResultSetColumnImpl implements 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#rename(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.core.repository.ObjectImpl#rename(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
     public final void rename( final UnitOfWork transaction,

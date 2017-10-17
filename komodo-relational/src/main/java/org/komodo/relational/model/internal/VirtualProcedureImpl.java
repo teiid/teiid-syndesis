@@ -67,7 +67,7 @@ public final class VirtualProcedureImpl extends AbstractProcedureImpl implements
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getTypeIdentifier(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.ObjectImpl#getTypeIdentifier(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public KomodoType getTypeIdentifier( final UnitOfWork transaction ) {

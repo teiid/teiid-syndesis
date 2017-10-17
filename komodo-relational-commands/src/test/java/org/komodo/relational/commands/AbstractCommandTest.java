@@ -10,7 +10,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.komodo.repository.RepositoryImpl;
+import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.shell.api.CommandResult;
 import org.komodo.spi.constants.SystemConstants;
 import org.komodo.utils.KLog;

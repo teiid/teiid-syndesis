@@ -31,17 +31,17 @@ public interface LexiconConstants extends StringConstants {
          * The URI and prefix constants of the base namespace.
          */
         interface Namespace {
-        
+
             /**
              * The base namespace prefix. Value is {@value}.
              */
             String PREFIX = "nt";
-        
+
             /**
              * The base namespace URI. Value is {@value}.
              */
             String URI = "http://www.jcp.org/jcr/nt/1.0";
-        
+
         }
 
         String NT_UNSTRUCTURED = Namespace.PREFIX + COLON + "unstructured";
@@ -49,28 +49,17 @@ public interface LexiconConstants extends StringConstants {
         String NT_RESOURCE = Namespace.PREFIX + COLON + "resource";
 
         String NT_FILE = Namespace.PREFIX + COLON + "file";
-
-        String MODEL_TYPE = Namespace.PREFIX + COLON + "modelType";
-
-        /**
-         * The model types processed by the Teiid sequencers.
-         */
-        interface ModelType {
-            String PHYSICAL = "PHYSICAL";
-        
-            String VIRTUAL = "VIRTUAL";
-        }
     }
 
     interface JcrLexicon {
 
         interface Namespace {
-            
+
             /**
              * The base namespace prefix. Value is {@value}.
              */
             String PREFIX = "jcr";
-        
+
             /**
              * The base namespace URI. Value is {@value}.
              */
@@ -84,5 +73,46 @@ public interface LexiconConstants extends StringConstants {
         String JCR_CONTENT = Namespace.PREFIX + COLON + "content";
 
         String JCR_DATA = Namespace.PREFIX + COLON + "data";
+
+        String JCR_PATH = Namespace.PREFIX + COLON + "path";
+
+        String JCR_SYSTEM = Namespace.PREFIX + COLON + "system";
+
+        String JCR_UUID = Namespace.PREFIX + COLON + "uuid";
+    }
+
+    interface ModeshapeLexicon {
+
+        interface Namespace {
+            String URI = "http://www.modeshape.org/1.0";
+
+            String PREFIX = "mode";
+        }
+
+        String LOCALNAME = Namespace.PREFIX + COLON + "localName";
+
+        String MODE_SHA1 = Namespace.PREFIX + COLON + "sha1";
+    }
+
+    interface CoreLexicon {
+
+        /**
+         * The URI and prefix constants of the core namespace.
+         */
+        public interface Namespace {
+            String URI = "http://www.metamatrix.com/metamodels/Core";
+            String PREFIX = "mmcore";
+        }
+
+        /**
+         * The model types processed by the Teiid sequencers.
+         */
+        interface ModelType {
+            String PHYSICAL = "PHYSICAL";
+
+            String VIRTUAL = "VIRTUAL";
+        }
+
+        String MODEL_TYPE = Namespace.PREFIX + COLON + "modelType";
     }
 }

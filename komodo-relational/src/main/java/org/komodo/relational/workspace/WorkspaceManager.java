@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import org.komodo.core.KomodoLexicon;
+import org.komodo.core.repository.ObjectImpl;
+import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.OptionKeys;
@@ -57,8 +59,6 @@ import org.komodo.relational.resource.UdfFile;
 import org.komodo.relational.resource.internal.DriverImpl;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.internal.VdbImpl;
-import org.komodo.repository.ObjectImpl;
-import org.komodo.repository.RepositoryImpl;
 import org.komodo.spi.KEvent;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
@@ -211,7 +211,7 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getChildTypes()
+     * @see org.komodo.core.repository.ObjectImpl#getChildTypes()
      */
     @Override
     public KomodoType[] getChildTypes() {
@@ -231,7 +231,7 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getTypeId()
+     * @see org.komodo.core.repository.ObjectImpl#getTypeId()
      */
     @Override
     public int getTypeId() {
@@ -813,7 +813,7 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#remove(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.ObjectImpl#remove(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public void remove( final UnitOfWork transaction ) {

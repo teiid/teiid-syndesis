@@ -35,7 +35,7 @@ import org.komodo.rest.relational.KomodoRestUriBuilder.SettingNames;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
-import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
+import org.komodo.spi.lexicon.LexiconConstants.CoreLexicon;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
 
 /**
@@ -51,7 +51,7 @@ public final class RestVdbModel extends RestBasicEntity {
     /**
      * Label used to describe model type
      */
-    public static final String MODEL_TYPE_LABEL = KomodoService.protectPrefix(NTLexicon.MODEL_TYPE);
+    public static final String MODEL_TYPE_LABEL = KomodoService.protectPrefix(CoreLexicon.MODEL_TYPE);
 
     /**
      * Label used to describe visible

@@ -45,12 +45,13 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 import org.komodo.core.KEngine;
 import org.komodo.core.KomodoLexicon;
+import org.komodo.core.internal.repository.search.ComparisonOperator;
+import org.komodo.core.internal.repository.search.ContainsClause;
+import org.komodo.core.internal.repository.search.ObjectSearcher;
+import org.komodo.core.repository.KomodoTypeRegistry;
+import org.komodo.core.repository.KomodoTypeRegistry.TypeIdentifier;
+import org.komodo.core.repository.RepositoryTools;
 import org.komodo.relational.workspace.WorkspaceManager;
-import org.komodo.repository.KomodoTypeRegistry;
-import org.komodo.repository.KomodoTypeRegistry.TypeIdentifier;
-import org.komodo.repository.search.ComparisonOperator;
-import org.komodo.repository.search.ContainsClause;
-import org.komodo.repository.search.ObjectSearcher;
 import org.komodo.rest.KomodoRestException;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
@@ -137,23 +138,6 @@ public final class KomodoSearchService extends KomodoService {
         }
 
         if (contains != null) {
-            /*
-             * No longer necessary due to modeshape 4.4.0+
-             *
-            //
-            // The jcr:name is not included in full-text searches in modeshape versions prior to 4.0
-            // so we need to create a combination clause that checks the properties and the name
-            // of each node. Cannot use jcr:name since its a modeshape pseudo-column but can use
-            // NAME(node).
-            //
-            ContainsClause clause1 = new ContainsClause(null, ALIAS, STAR, KeywordCriteria.ANY, STAR + contains + STAR);
-            // Use custom function property
-            CompareClause clause2 = new CompareClause(LogicalOperator.OR, null,
-                                                                                  "NAME" + OPEN_BRACKET + ALIAS + CLOSE_BRACKET, //$NON-NLS-1$
-                                                                                  ComparisonOperator.LIKE, PERCENT + contains + PERCENT);
-
-            os.addWhereParanthesisClause(operator, clause1, clause2);
-            */
             ContainsClause clause1 = new ContainsClause(operator, ALIAS, STAR, KeywordCriteria.ANY, STAR + contains + STAR);
             os.addWhereClause(clause1);
 
@@ -386,6 +370,8 @@ public final class KomodoSearchService extends KomodoService {
 
                 os.setParameterValue(parameter.getKey(), value);
             }
+
+            System.out.println(RepositoryTools.traverse(uow, this.repo.komodoWorkspace(uow)));
 
             // Execute the search
             List<KomodoObject> searchObjects = os.searchObjects(uow);

@@ -42,12 +42,11 @@ import java.util.zip.Checksum;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
-import javax.jcr.Node;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
+import org.komodo.spi.lexicon.LexiconConstants.CoreLexicon;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository.UnitOfWork;
@@ -107,11 +106,11 @@ public class TestUtilities implements StringConstants {
      */
     public static final String ALL_ELEMENTS_EXAMPLE_SUFFIX = DOT + XML;
 
-    private static final String REST_TRANSLATOR = "rest";
+    public static final String REST_TRANSLATOR = "rest";
 
-    private static final String TWITTER_MODEL = "twitter";
+    public static final String TWITTER_MODEL = "twitter";
 
-    private static final String TWITTER_VIEW_MODEL = "twitterview";
+    public static final String TWITTER_VIEW_MODEL = "twitterview";
 
     /**
      * DDL for the twitter view model
@@ -280,353 +279,11 @@ public class TestUtilities implements StringConstants {
                                                                   TWEET_EXAMPLE_SUFFIX);
     }
 
-    /**
-     * Creates the structure of the tweet example vdb
-     *
-     * @param parentNode parent to append the new vdb
-     * @return the new vdb node
-     * @throws Exception if error occurs
-     */
-    public static Node createTweetExampleNode(Node parentNode) throws Exception {
-        /*
-         * tweet-example-vdb.xml
-         *      @jcr:primaryType=vdb:virtualDatabase
-         *      @jcr:mixinTypes=[mode:derived,mix:referenceable]
-         *      @jcr:uuid={uuid-to-be-created}
-         *      @mode:sha1={sha1-to-be-created}
-         *      @vdb:preview=false
-         *      @vdb:version=1
-         *      @vdb:originalFile=/vdbs/declarativeModels-vdb.xml
-         *      @vdb:name=twitter
-         *      @vdb:description=Shows how to call Web Services
-         *      @UseConnectorMetadata=cached
-         */
-        Node tweetExample = parentNode.addNode(TWEET_EXAMPLE_NAME + TWEET_EXAMPLE_SUFFIX);
-        tweetExample.setPrimaryType(VdbLexicon.Vdb.VIRTUAL_DATABASE);
-        tweetExample.addMixin("mode:derived");
-        tweetExample.addMixin("mix:referenceable");
-        tweetExample.setProperty(VdbLexicon.Vdb.NAME, "twitter");
-        tweetExample.setProperty(VdbLexicon.Vdb.DESCRIPTION, "Shows how to call Web Services");
+    
 
-        // Miscellaneous property
-        tweetExample.setProperty("UseConnectorMetadata", "cached");
+    
 
-        tweetExample.setProperty(VdbLexicon.Vdb.ORIGINAL_FILE, "/vdbs/" + TWEET_EXAMPLE_NAME + TWEET_EXAMPLE_SUFFIX);
-        tweetExample.setProperty(VdbLexicon.Vdb.PREVIEW, false);
-        tweetExample.setProperty(VdbLexicon.Vdb.VERSION, 1);
-
-        /*
-         *      vdb:translators
-         *          @jcr:primaryType=vdb:translators
-         */
-        Node translators = tweetExample.addNode(VdbLexicon.Vdb.TRANSLATORS);
-        translators.setPrimaryType(VdbLexicon.Vdb.TRANSLATORS);
-
-        /*
-         *          rest
-         *              @jcr:primaryType=vdb:translator
-         *              @DefaultServiceMode=MESSAGE
-         *              @DefaultBinding=HTTP
-         *              @vdb:type=ws
-         *              @vdb:description=Rest Web Service translator
-         */
-        Node rest = translators.addNode(REST_TRANSLATOR);
-        rest.setPrimaryType(VdbLexicon.Translator.TRANSLATOR);
-        rest.setProperty(VdbLexicon.Translator.DESCRIPTION, "Rest Web Service translator");
-        rest.setProperty("DefaultServiceMode", "MESSAGE");
-        rest.setProperty("DefaultBinding", "HTTP");
-        rest.setProperty(VdbLexicon.Translator.TYPE, "ws");
-
-        /*
-         *      twitter
-         *          @jcr:primaryType=vdb:declarativeModel
-         *          @jcr:uuid={uuid-to-be-created}
-         *          @mmcore:modelType=PHYSICAL
-         *          @vdb:sourceTranslator=rest
-         *          @vdb:sourceName=twitter
-         *          @vdb:metadataType=DDL
-         *          @vdb:visible=true
-         *          @vdb:sourceJndiName=java:/twitterDS
-         */
-        Node twitter = tweetExample.addNode(TWITTER_MODEL);
-        twitter.setPrimaryType(VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        twitter.setProperty(CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
-        twitter.setProperty(VdbLexicon.Model.VISIBLE, true);
-        twitter.setProperty(VdbLexicon.Model.METADATA_TYPE, "DDL");
-
-        /*
-         *          vdb:sources
-         *              @jcr:primaryType=vdb:sources
-         */
-        Node twitterSources = twitter.addNode(VdbLexicon.Vdb.SOURCES, VdbLexicon.Vdb.SOURCES);
-
-        /*
-         *              twitter
-         *                  @jcr:primaryType=vdb:source
-         *                  @vdb:sourceTranslator=rest
-         *                  @vdb:sourceJndiName=java:/twitterDS
-         */
-        Node twitterSource = twitterSources.addNode(TWITTER_MODEL, VdbLexicon.Source.SOURCE);
-        twitterSource.setProperty(VdbLexicon.Source.TRANSLATOR, REST_TRANSLATOR);
-        twitterSource.setProperty(VdbLexicon.Source.JNDI_NAME, "java:/twitterDS");
-
-        /*
-         *      twitterview
-         *          @jcr:primaryType=vdb:declarativeModel
-         *          @jcr:uuid={uuid-to-be-created}
-         *          @mmcore:modelType=VIRTUAL
-         *          @vdb:visible=true
-         *          @vdb:metadataType=DDL
-         *          @vdb:modelDefinition=CREATE VIRTUAL PROCEDURE getTweets(query varchar) RETURNS (created_on varchar(25), from_user varchar(25), to_user varchar(25), profile_image_url varchar(25), source varchar(25), text varchar(140)) AS select tweet.* from (call twitter.invokeHTTP(action => 'GET', endpoint =>querystring('',query as "q"))) w, XMLTABLE('results' passing JSONTOXML('myxml', w.result) columns created_on string PATH 'created_at', from_user string PATH 'from_user', to_user string PATH 'to_user', profile_image_url string PATH 'profile_image_url', source string PATH 'source', text string PATH 'text') tweet; CREATE VIEW Tweet AS select * FROM twitterview.getTweets;
-         */
-        Node twitterView = tweetExample.addNode(TWITTER_VIEW_MODEL);
-        twitterView.setPrimaryType(VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        twitterView.setProperty(CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
-        twitterView.setProperty(VdbLexicon.Model.METADATA_TYPE, "DDL");
-        twitterView.setProperty(VdbLexicon.Model.VISIBLE, true);
-        twitterView.setProperty(VdbLexicon.Model.MODEL_DEFINITION, TWITTER_VIEW_MODEL_DDL);
-
-        return tweetExample;
-    }
-
-    /**
-     * Creates the structure of the tweet example vdb
-     *
-     * @param parentNode parent to append the new vdb
-     * @return the new vdb node
-     * @throws Exception if error occurs
-     */
-    public static Node createTweetExampleNoTransDescripNode(Node parentNode) throws Exception {
-        /*
-         * tweet-example-vdb.xml
-         *      @jcr:primaryType=vdb:virtualDatabase
-         *      @jcr:mixinTypes=[mode:derived,mix:referenceable]
-         *      @jcr:uuid={uuid-to-be-created}
-         *      @mode:sha1={sha1-to-be-created}
-         *      @vdb:preview=false
-         *      @vdb:version=1
-         *      @vdb:originalFile=/vdbs/declarativeModels-vdb.xml
-         *      @vdb:name=twitter
-         *      @vdb:description=Shows how to call Web Services
-         *      @UseConnectorMetadata=cached
-         */
-        Node tweetExample = parentNode.addNode(TWEET_EXAMPLE_NAME + TWEET_EXAMPLE_SUFFIX);
-        tweetExample.setPrimaryType(VdbLexicon.Vdb.VIRTUAL_DATABASE);
-        tweetExample.addMixin("mode:derived");
-        tweetExample.addMixin("mix:referenceable");
-        tweetExample.setProperty(VdbLexicon.Vdb.NAME, "twitter");
-        tweetExample.setProperty(VdbLexicon.Vdb.DESCRIPTION, "Shows how to call Web Services");
-
-        // Miscellaneous property
-        tweetExample.setProperty("UseConnectorMetadata", "cached");
-
-        tweetExample.setProperty(VdbLexicon.Vdb.ORIGINAL_FILE, "/vdbs/" + TWEET_EXAMPLE_NAME + TWEET_EXAMPLE_SUFFIX);
-        tweetExample.setProperty(VdbLexicon.Vdb.PREVIEW, false);
-        tweetExample.setProperty(VdbLexicon.Vdb.VERSION, 1);
-
-        /*
-         *      vdb:translators
-         *          @jcr:primaryType=vdb:translators
-         */
-        Node translators = tweetExample.addNode(VdbLexicon.Vdb.TRANSLATORS);
-        translators.setPrimaryType(VdbLexicon.Vdb.TRANSLATORS);
-
-        /*
-         *          rest
-         *              @jcr:primaryType=vdb:translator
-         *              @DefaultServiceMode=MESSAGE
-         *              @DefaultBinding=HTTP
-         *              @vdb:type=ws
-         *              @vdb:description=Rest Web Service translator
-         */
-        Node rest = translators.addNode(REST_TRANSLATOR);
-        rest.setPrimaryType(VdbLexicon.Translator.TRANSLATOR);
-        rest.setProperty("DefaultServiceMode", "MESSAGE");
-        rest.setProperty("DefaultBinding", "HTTP");
-        rest.setProperty(VdbLexicon.Translator.TYPE, "ws");
-
-        /*
-         *      twitter
-         *          @jcr:primaryType=vdb:declarativeModel
-         *          @jcr:uuid={uuid-to-be-created}
-         *          @mmcore:modelType=PHYSICAL
-         *          @vdb:sourceTranslator=rest
-         *          @vdb:sourceName=twitter
-         *          @vdb:metadataType=DDL
-         *          @vdb:visible=true
-         *          @vdb:sourceJndiName=java:/twitterDS
-         */
-        Node twitter = tweetExample.addNode(TWITTER_MODEL);
-        twitter.setPrimaryType(VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        twitter.setProperty(CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
-        twitter.setProperty(VdbLexicon.Model.VISIBLE, true);
-        twitter.setProperty(VdbLexicon.Model.METADATA_TYPE, "DDL");
-
-        /*
-         *          vdb:sources
-         *              @jcr:primaryType=vdb:sources
-         */
-        Node twitterSources = twitter.addNode(VdbLexicon.Vdb.SOURCES, VdbLexicon.Vdb.SOURCES);
-
-        /*
-         *              twitter
-         *                  @jcr:primaryType=vdb:source
-         *                  @vdb:sourceTranslator=rest
-         *                  @vdb:sourceJndiName=java:/twitterDS
-         */
-        Node twitterSource = twitterSources.addNode(TWITTER_MODEL, VdbLexicon.Source.SOURCE);
-        twitterSource.setProperty(VdbLexicon.Source.TRANSLATOR, REST_TRANSLATOR);
-        twitterSource.setProperty(VdbLexicon.Source.JNDI_NAME, "java:/twitterDS");
-
-        /*
-         *      twitterview
-         *          @jcr:primaryType=vdb:declarativeModel
-         *          @jcr:uuid={uuid-to-be-created}
-         *          @mmcore:modelType=VIRTUAL
-         *          @vdb:visible=true
-         *          @vdb:metadataType=DDL
-         *          @vdb:modelDefinition=CREATE VIRTUAL PROCEDURE getTweets(query varchar) RETURNS (created_on varchar(25), from_user varchar(25), to_user varchar(25), profile_image_url varchar(25), source varchar(25), text varchar(140)) AS select tweet.* from (call twitter.invokeHTTP(action => 'GET', endpoint =>querystring('',query as "q"))) w, XMLTABLE('results' passing JSONTOXML('myxml', w.result) columns created_on string PATH 'created_at', from_user string PATH 'from_user', to_user string PATH 'to_user', profile_image_url string PATH 'profile_image_url', source string PATH 'source', text string PATH 'text') tweet; CREATE VIEW Tweet AS select * FROM twitterview.getTweets;
-         */
-        Node twitterView = tweetExample.addNode(TWITTER_VIEW_MODEL);
-        twitterView.setPrimaryType(VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        twitterView.setProperty(CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
-        twitterView.setProperty(VdbLexicon.Model.METADATA_TYPE, "DDL");
-        twitterView.setProperty(VdbLexicon.Model.VISIBLE, true);
-        twitterView.setProperty(VdbLexicon.Model.MODEL_DEFINITION, TWITTER_VIEW_MODEL_DDL);
-
-        return tweetExample;
-    }
-
-    /**
-     * Creates the structure of the tweet example vdb
-     *
-     * @param uow the transaction
-     * @param parentObject parent to append the new vdb
-     * @return the new vdb node
-     * @throws KException if error occurs
-     */
-    public static KomodoObject createTweetExampleNode(UnitOfWork uow, KomodoObject parentObject) throws KException {
-        /*
-         * tweet-example-vdb.xml
-         *      @jcr:primaryType=vdb:virtualDatabase
-         *      @jcr:mixinTypes=[mode:derived,mix:referenceable]
-         *      @jcr:uuid={uuid-to-be-created}
-         *      @mode:sha1={sha1-to-be-created}
-         *      @vdb:preview=false
-         *      @vdb:version=1
-         *      @vdb:originalFile=/vdbs/declarativeModels-vdb.xml
-         *      @vdb:name=twitter
-         *      @vdb:description=Shows how to call Web Services
-         *      @UseConnectorMetadata=cached
-         */
-        KomodoObject tweetExample = parentObject.addChild(uow,
-                                                  TWEET_EXAMPLE_NAME + TWEET_EXAMPLE_SUFFIX,
-                                                  VdbLexicon.Vdb.VIRTUAL_DATABASE);
-        tweetExample.addDescriptor(uow, "mode:derived", "mix:referenceable");
-        tweetExample.setProperty(uow, VdbLexicon.Vdb.NAME, "twitter");
-        tweetExample.setProperty(uow, VdbLexicon.Vdb.DESCRIPTION, "Shows how to call Web Services");
-
-        // Miscellaneous property
-        tweetExample.setProperty(uow, "UseConnectorMetadata", "cached");
-
-        tweetExample.setProperty(uow, VdbLexicon.Vdb.ORIGINAL_FILE, "/vdbs/" + TWEET_EXAMPLE_NAME + TWEET_EXAMPLE_SUFFIX);
-        tweetExample.setProperty(uow, VdbLexicon.Vdb.PREVIEW, false);
-        tweetExample.setProperty(uow, VdbLexicon.Vdb.VERSION, 1);
-
-        /*
-         *      vdb:translators
-         *          @jcr:primaryType=vdb:translators
-         */
-        KomodoObject translators = tweetExample.addChild(uow,
-                                                                            VdbLexicon.Vdb.TRANSLATORS,
-                                                                            VdbLexicon.Vdb.TRANSLATORS);
-
-        /*
-         *          rest
-         *              @jcr:primaryType=vdb:translator
-         *              @DefaultServiceMode=MESSAGE
-         *              @DefaultBinding=HTTP
-         *              @vdb:type=ws
-         *              @vdb:description=Rest Web Service translator
-         */
-        KomodoObject rest = translators.addChild(uow,
-                                                                          REST_TRANSLATOR,
-                                                                          VdbLexicon.Translator.TRANSLATOR);
-        rest.setProperty(uow, VdbLexicon.Translator.DESCRIPTION, "Rest Web Service translator");
-        rest.setProperty(uow, "DefaultServiceMode", "MESSAGE");
-        rest.setProperty(uow, "DefaultBinding", "HTTP");
-        rest.setProperty(uow, VdbLexicon.Translator.TYPE, "ws");
-
-        /*
-         *      twitter
-         *          @jcr:primaryType=vdb:declarativeModel
-         *          @jcr:uuid={uuid-to-be-created}
-         *          @mmcore:modelType=PHYSICAL
-         *          @vdb:sourceTranslator=rest
-         *          @vdb:sourceName=twitter
-         *          @vdb:metadataType=DDL
-         *          @vdb:visible=true
-         *          @vdb:sourceJndiName=java:/twitterDS
-         */
-        KomodoObject twitter = tweetExample.addChild(uow,
-                                                                                    TWITTER_MODEL,
-                                                                                    VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        twitter.setProperty(uow, CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
-        twitter.setProperty(uow, VdbLexicon.Model.VISIBLE, true);
-        twitter.setProperty(uow, VdbLexicon.Model.METADATA_TYPE, "DDL");
-
-        /*
-         *          vdb:sources
-         *              @jcr:primaryType=vdb:sources
-         */
-        KomodoObject twitterSources = twitter.addChild(uow,
-                                                                                    VdbLexicon.Vdb.SOURCES,
-                                                                                    VdbLexicon.Vdb.SOURCES);
-
-        /*
-         *              twitter
-         *                  @jcr:primaryType=vdb:source
-         *                  @vdb:sourceTranslator=rest
-         *                  @vdb:sourceJndiName=java:/twitterDS
-         */
-        KomodoObject twitterSource = twitterSources.addChild(uow,
-                                                                                               TWITTER_MODEL,
-                                                                                               VdbLexicon.Source.SOURCE);
-        twitterSource.setProperty(uow, VdbLexicon.Source.TRANSLATOR, REST_TRANSLATOR);
-        twitterSource.setProperty(uow, VdbLexicon.Source.JNDI_NAME, "java:/twitterDS");
-
-        /*
-         *      twitterview
-         *          @jcr:primaryType=vdb:declarativeModel
-         *          @jcr:uuid={uuid-to-be-created}
-         *          @mmcore:modelType=VIRTUAL
-         *          @vdb:visible=true
-         *          @vdb:metadataType=DDL
-         *          @vdb:modelDefinition=CREATE VIRTUAL PROCEDURE getTweets(query varchar) RETURNS (created_on varchar(25), from_user varchar(25), to_user varchar(25), profile_image_url varchar(25), source varchar(25), text varchar(140)) AS select tweet.* from (call twitter.invokeHTTP(action => 'GET', endpoint =>querystring('',query as "q"))) w, XMLTABLE('results' passing JSONTOXML('myxml', w.result) columns created_on string PATH 'created_at', from_user string PATH 'from_user', to_user string PATH 'to_user', profile_image_url string PATH 'profile_image_url', source string PATH 'source', text string PATH 'text') tweet; CREATE VIEW Tweet AS select * FROM twitterview.getTweets;
-         */
-        KomodoObject twitterView = tweetExample.addChild(uow,
-                                                                                           TWITTER_VIEW_MODEL,
-                                                                                           VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        twitterView.setProperty(uow, CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
-        twitterView.setProperty(uow, VdbLexicon.Model.METADATA_TYPE, "DDL");
-        twitterView.setProperty(uow, VdbLexicon.Model.VISIBLE, true);
-
-        StringBuffer modelDefinition = new StringBuffer();
-        modelDefinition.append("CREATE VIRTUAL PROCEDURE getTweets(IN query varchar) ")
-                                .append("RETURNS TABLE (created_on varchar(25), from_user varchar(25), ")
-                                .append("to_user varchar(25), profile_image_url varchar(25), source ")
-                                .append("varchar(25), text varchar(140)) AS select tweet.* from ")
-                                .append("(EXEC twitter.invokeHTTP(")
-                                .append("action => 'GET', endpoint => querystring(\'', query as q))) AS w, ")
-                                .append("XMLTABLE('results' passing JSONTOXML('myxml', w.result) columns ")
-                                .append("created_on string PATH 'created_at', from_user string PATH 'from_user', ")
-                                .append("to_user string PATH 'to_user', profile_image_url string PATH 'profile_image_url', ")
-                                .append("source string PATH 'source', text string PATH 'text') AS tweet; ")
-                                .append("CREATE VIEW Tweet AS select * FROM twitterview.getTweets;");
-        twitterView.setProperty(uow, VdbLexicon.Model.MODEL_DEFINITION, modelDefinition.toString());
-
-        return tweetExample;
-    }
+    
 
     /**
      * @return input stream of all elements example xml
@@ -639,252 +296,7 @@ public class TestUtilities implements StringConstants {
                                                                   ALL_ELEMENTS_EXAMPLE_SUFFIX);
     }
 
-    /**
-     * Creates the structure of the all elements example vdb
-     *
-     * @param parentNode parent to append the new vdb
-     * @return the new vdb node
-     * @throws Exception if error occurs
-     */
-    public static Node createAllElementsExampleNode(Node parentNode) throws Exception {
-        /*
-         * teiid-vdb-all-elements.xml
-         *      @jcr:primaryType=vdb:virtualDatabase
-         *      @jcr:mixinTypes=[mode:derived,mix:referenceable]
-         *      @jcr:uuid={uuid-to-be-created}
-         *      @mode:sha1={sha1-to-be-created}
-         *      @vdb:preview=false
-         *      @vdb:version=1
-         *      @vdb:originalFile=/vdbs/teiid-vdb-all-elements.xml
-         *      @vdb:name=myVDB
-         *      @vdb:description=vdb description
-         *      @vdb:connectionType=NONE
-         *      @vdb-property2=vdb-value2
-         *      @vdb-property=vdb-value
-         */
-        Node myVdbExample = parentNode.addNode(ALL_ELEMENTS_EXAMPLE_NAME + ALL_ELEMENTS_EXAMPLE_SUFFIX);
-        myVdbExample.setPrimaryType(VdbLexicon.Vdb.VIRTUAL_DATABASE);
-        myVdbExample.addMixin("mode:derived");
-        myVdbExample.addMixin("mix:referenceable");
-        myVdbExample.setProperty(VdbLexicon.Vdb.NAME, "myVDB");
-        myVdbExample.setProperty(VdbLexicon.Vdb.DESCRIPTION, "vdb description");
-        myVdbExample.setProperty(VdbLexicon.Vdb.CONNECTION_TYPE, "NONE");
-        myVdbExample.setProperty(VdbLexicon.Vdb.ORIGINAL_FILE, "/vdbs/" + ALL_ELEMENTS_EXAMPLE_NAME + ALL_ELEMENTS_EXAMPLE_SUFFIX);
-        myVdbExample.setProperty(VdbLexicon.Vdb.PREVIEW, false);
-        myVdbExample.setProperty(VdbLexicon.Vdb.VERSION, 1);
-        myVdbExample.setProperty("vdb-property2", "vdb-value2");
-        myVdbExample.setProperty("vdb-property", "vdb-value");
-
-        /*
-         *      vdb:importVdbs
-         *          @jcr:primaryType=vdb:importVdb
-         */
-        Node importVdbs = myVdbExample.addNode(VdbLexicon.Vdb.IMPORT_VDBS, VdbLexicon.Vdb.IMPORT_VDBS);
-
-        /*
-         *          x
-         *              @jcr:primaryType=vdb:importVdb
-         *              @vdb:version=2
-         *              @vdb:import-data-policies=false
-         */
-        Node importVdb = importVdbs.addNode("x", VdbLexicon.ImportVdb.IMPORT_VDB);
-        importVdb.setProperty(VdbLexicon.ImportVdb.VERSION, 2);
-        importVdb.setProperty(VdbLexicon.ImportVdb.IMPORT_DATA_POLICIES, false);
-
-        /*
-         *      model-one
-         *          @jcr:primaryType=vdb:declarativeModel
-         *          @jcr:uuid={uuid-to-be-created}
-         *          @mmcore:modelType=PHYSICAL
-         *          @description=model description
-         *          @vdb:visible=false
-         *          @model-prop=model-value-override
-         */
-        Node modelOne = myVdbExample.addNode("model-one");
-        modelOne.setPrimaryType(VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        modelOne.setProperty(CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
-        modelOne.setProperty(VdbLexicon.Vdb.DESCRIPTION, "model description");
-        modelOne.setProperty(VdbLexicon.Model.VISIBLE, false);
-        modelOne.setProperty("model-prop", "model-value-override");
-
-        /*
-         *          vdb:sources
-         *              @jcr:primaryType=vdb:sources
-         */
-        Node model1Sources = modelOne.addNode(VdbLexicon.Vdb.SOURCES, VdbLexicon.Vdb.SOURCES);
-
-        /*
-         *              s1
-         *                  @jcr:primaryType=vdb:source
-         *                  @vdb:sourceTranslator=translator
-         *                  @vdb:sourceJndiName=java:mybinding
-         */
-        Node model1Src1 = model1Sources.addNode("s1", VdbLexicon.Source.SOURCE);
-        model1Src1.setProperty(VdbLexicon.Source.TRANSLATOR, "translator");
-        model1Src1.setProperty(VdbLexicon.Source.JNDI_NAME, "java:mybinding");
-
-        /*
-         *      model-two
-         *          @jcr:primaryType=vdb:declarativeModel
-         *          @jcr:uuid={uuid-to-be-created}
-         *          @mmcore:modelType=VIRTUAL
-         *          @vdb:visible=true
-         *          @model-prop=model-value
-         */
-        Node modelTwo = myVdbExample.addNode("model-two");
-        modelTwo.setPrimaryType(VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        modelTwo.setProperty(CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
-        modelTwo.setProperty(VdbLexicon.Model.VISIBLE, true);
-        modelTwo.setProperty("model-prop", "model-value");
-        modelTwo.setProperty(VdbLexicon.Model.METADATA_TYPE, "DDL");
-
-        String modelDefinition = "CREATE VIEW Test AS select * FROM Test.getTest;";
-        modelTwo.setProperty(VdbLexicon.Model.MODEL_DEFINITION, modelDefinition);
-
-        /*
-         *          vdb:sources
-         *              @jcr:primaryType=vdb:sources
-         */
-        Node model2Sources = modelTwo.addNode(VdbLexicon.Vdb.SOURCES, VdbLexicon.Vdb.SOURCES);
-
-        /*
-         *              s1
-         *                  @jcr:primaryType=vdb:source
-         *                  @vdb:sourceTranslator=translator
-         *                  @vdb:sourceJndiName=java:binding-one
-         */
-        Node model2Src1 = model2Sources.addNode("s1", VdbLexicon.Source.SOURCE);
-        model2Src1.setProperty(VdbLexicon.Source.TRANSLATOR, "translator");
-        model2Src1.setProperty(VdbLexicon.Source.JNDI_NAME, "java:binding-one");
-
-        /*
-         *              s2
-         *                  @jcr:primaryType=vdb:source
-         *                  @vdb:sourceTranslator=translator
-         *                  @vdb:sourceJndiName=java:binding-two
-         */
-        Node model2Src2 = model2Sources.addNode("s2", VdbLexicon.Source.SOURCE);
-        model2Src2.setProperty(VdbLexicon.Source.TRANSLATOR, "translator");
-        model2Src2.setProperty(VdbLexicon.Source.JNDI_NAME, "java:binding-two");
-
-        /*
-         *      vdb:translators
-         *          @jcr:primaryType=vdb:translators
-         */
-        Node translators = myVdbExample.addNode(VdbLexicon.Vdb.TRANSLATORS);
-        translators.setPrimaryType(VdbLexicon.Vdb.TRANSLATORS);
-
-        /*
-         *          oracleOverride
-         *              @jcr:primaryType=vdb:translator
-         *              @vdb:description=hello world
-         *              @vdb:type=oracle
-         *              my-property=my-value
-         */
-        Node oraTranslator = translators.addNode("oracleOverride");
-        oraTranslator.setPrimaryType(VdbLexicon.Translator.TRANSLATOR);
-        oraTranslator.setProperty(VdbLexicon.Translator.DESCRIPTION, "hello world");
-        oraTranslator.setProperty(VdbLexicon.Translator.TYPE, "oracle");
-        oraTranslator.setProperty("my-property", "my-value");
-
-        /*
-         *      vdb:dataRoles
-         *          @jcr:primaryType=vdb:dataRoles
-         */
-        Node dataRoles = myVdbExample.addNode(VdbLexicon.Vdb.DATA_ROLES, VdbLexicon.Vdb.DATA_ROLES);
-
-        /*
-         *          roleOne
-         *              @jcr:primaryType=vdb:dataRole
-         *              @vdb:anyAuthenticated=false
-         *              @vdb:grantAll=true
-         *              @vdb:allowCreateTemporaryTables=true
-         *              @vdb:description=roleOne described
-         *              @vdb:mappedRoleNames=ROLE1, ROLE2
-         */
-        Node dataRole1 = dataRoles.addNode("roleOne", VdbLexicon.DataRole.DATA_ROLE);
-        dataRole1.setProperty(VdbLexicon.Translator.DESCRIPTION, "roleOne described");
-        dataRole1.setProperty(VdbLexicon.DataRole.ANY_AUTHENTICATED, false);
-        dataRole1.setProperty(VdbLexicon.DataRole.GRANT_ALL, true);
-        dataRole1.setProperty(VdbLexicon.DataRole.ALLOW_CREATE_TEMP_TABLES, true);
-        dataRole1.setProperty(VdbLexicon.DataRole.MAPPED_ROLE_NAMES, new String[]{"ROLE1", "ROLE2"});
-
-        /*
-         *              vdb:permissions
-         *                  @jcr:primaryType=vdb:permissions
-         */
-        Node permissions = dataRole1.addNode(VdbLexicon.DataRole.PERMISSIONS, VdbLexicon.DataRole.PERMISSIONS);
-
-        /*
-         *                  myTable.T1
-         *                      @jcr.primaryType=vdb:permission
-         *                      @allowRead=true
-         */
-        Node permission1 = permissions.addNode("myTable.T1", VdbLexicon.DataRole.Permission.PERMISSION);
-        permission1.setProperty(VdbLexicon.DataRole.Permission.ALLOW_READ, true);
-
-        /*
-         *                  myTable.T2
-         *                      @jcr.primaryType=vdb:permission
-         *                      @allowCreate=true
-         *                      @allowRead=false
-         *                      @allowUpdate=true
-         *                      @allowDelete=true
-         *                      @allowExecute=true
-         *                      @allowAlter=true
-         */
-        Node permission2 = permissions.addNode("myTable.T2", VdbLexicon.DataRole.Permission.PERMISSION);
-        permission2.setProperty(VdbLexicon.DataRole.Permission.ALLOW_CREATE, true);
-        permission2.setProperty(VdbLexicon.DataRole.Permission.ALLOW_READ, false);
-        permission2.setProperty(VdbLexicon.DataRole.Permission.ALLOW_UPDATE, true);
-        permission2.setProperty(VdbLexicon.DataRole.Permission.ALLOW_DELETE, true);
-        permission2.setProperty(VdbLexicon.DataRole.Permission.ALLOW_EXECUTE, true);
-        permission2.setProperty(VdbLexicon.DataRole.Permission.ALLOW_ALTER, true);
-
-        /*
-         *                      vdb:conditions
-         *                          @jcr:primaryType=vdb:conditions
-         */
-        Node conditions = permission2.addNode(VdbLexicon.DataRole.Permission.CONDITIONS, VdbLexicon.DataRole.Permission.CONDITIONS);
-
-        /*
-         *                          col1 = user()
-         *                              @jcr:primaryType=vdb:condition
-         *                              @vdb:constraint=false
-         */
-        Node condition = conditions.addNode("col1 = user()", VdbLexicon.DataRole.Permission.Condition.CONDITION);
-        condition.setProperty(VdbLexicon.DataRole.Permission.Condition.CONSTRAINT, false);
-
-        /*
-         *                  myTable.T2.col1
-         *                      @jcr.primaryType=vdb:permission
-         */
-        Node permission3 = permissions.addNode("myTable.T2.col1", VdbLexicon.DataRole.Permission.PERMISSION);
-
-        /*
-         *                      vdb:masks
-         *                          @jcr:primaryType=vdb:masks
-         */
-        Node masks = permission3.addNode(VdbLexicon.DataRole.Permission.MASKS, VdbLexicon.DataRole.Permission.MASKS);
-
-        /*
-         *                          col2
-         *                              @jcr:primaryType=vdb:mask
-         *                              @vdb:order=1
-         */
-        Node mask = masks.addNode("col2", VdbLexicon.DataRole.Permission.Mask.MASK);
-        mask.setProperty(VdbLexicon.DataRole.Permission.Mask.ORDER, 1);
-
-        /*
-         *                  javascript
-         *                      @jcr.primaryType=vdb:permission
-         *                      @allowLanguage=true
-         */
-        Node permission4 = permissions.addNode("javascript", VdbLexicon.DataRole.Permission.PERMISSION);
-        permission4.setProperty(VdbLexicon.DataRole.Permission.ALLOW_LANGUAGE, true);
-
-        return myVdbExample;
-    }
+    
 
     /**
      * Creates the structure of the all elements example vdb
@@ -950,7 +362,7 @@ public class TestUtilities implements StringConstants {
          *          @model-prop=model-value-override
          */
         KomodoObject modelOne = myVdbExample.addChild(uow, "model-one", VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        modelOne.setProperty(uow, NTLexicon.MODEL_TYPE, NTLexicon.ModelType.PHYSICAL);
+        modelOne.setProperty(uow, CoreLexicon.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
         modelOne.setProperty(uow, VdbLexicon.Vdb.DESCRIPTION, "model description");
         modelOne.setProperty(uow, VdbLexicon.Model.VISIBLE, false);
         modelOne.setProperty(uow, "model-prop", "model-value-override");
@@ -980,7 +392,7 @@ public class TestUtilities implements StringConstants {
          *          @model-prop=model-value
          */
         KomodoObject modelTwo = myVdbExample.addChild(uow, "model-two", VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        modelTwo.setProperty(uow, NTLexicon.MODEL_TYPE, NTLexicon.ModelType.VIRTUAL);
+        modelTwo.setProperty(uow, CoreLexicon.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
         modelTwo.setProperty(uow, VdbLexicon.Model.VISIBLE, true);
         modelTwo.setProperty(uow, "model-prop", "model-value");
         modelTwo.setProperty(uow, VdbLexicon.Model.METADATA_TYPE, "DDL");
@@ -1129,6 +541,241 @@ public class TestUtilities implements StringConstants {
         permission4.setProperty(uow, VdbLexicon.DataRole.Permission.ALLOW_LANGUAGE, true);
 
         return myVdbExample;
+    }
+
+    /**
+     * Creates the structure of the tweet example vdb
+     *
+     * @param parentKomodoObject parent to append the new vdb
+     * @return the new vdb node
+     * @throws Exception if error occurs
+     */
+    public static KomodoObject createTweetExampleNoTransDescripNode(UnitOfWork uow, KomodoObject parentNode) throws Exception {
+        /*
+         * tweet-example-vdb.xml
+         *      @jcr:primaryType=vdb:virtualDatabase
+         *      @jcr:mixinTypes=[mode:derived,mix:referenceable]
+         *      @jcr:uuid={uuid-to-be-created}
+         *      @mode:sha1={sha1-to-be-created}
+         *      @vdb:preview=false
+         *      @vdb:version=1
+         *      @vdb:originalFile=/vdbs/declarativeModels-vdb.xml
+         *      @vdb:name=twitter
+         *      @vdb:description=Shows how to call Web Services
+         *      @UseConnectorMetadata=cached
+         */
+        KomodoObject tweetExample = parentNode.addChild(uow,
+                                                                    TWEET_EXAMPLE_NAME + TWEET_EXAMPLE_SUFFIX,
+                                                                    VdbLexicon.Vdb.VIRTUAL_DATABASE);
+        tweetExample.addDescriptor(uow, "mode:derived", "mix:referenceable");
+        tweetExample.setProperty(uow, VdbLexicon.Vdb.NAME, "twitter");
+        tweetExample.setProperty(uow, VdbLexicon.Vdb.DESCRIPTION, "Shows how to call Web Services");
+    
+        // Miscellaneous property
+        tweetExample.setProperty(uow, "UseConnectorMetadata", "cached");
+    
+        tweetExample.setProperty(uow, VdbLexicon.Vdb.ORIGINAL_FILE, "/vdbs/" + TWEET_EXAMPLE_NAME + TWEET_EXAMPLE_SUFFIX);
+        tweetExample.setProperty(uow, VdbLexicon.Vdb.PREVIEW, false);
+        tweetExample.setProperty(uow, VdbLexicon.Vdb.VERSION, 1);
+    
+        /*
+         *      vdb:translators
+         *          @jcr:primaryType=vdb:translators
+         */
+        KomodoObject translators = tweetExample.addChild(uow, VdbLexicon.Vdb.TRANSLATORS, VdbLexicon.Vdb.TRANSLATORS);
+    
+        /*
+         *          rest
+         *              @jcr:primaryType=vdb:translator
+         *              @DefaultServiceMode=MESSAGE
+         *              @DefaultBinding=HTTP
+         *              @vdb:type=ws
+         *              @vdb:description=Rest Web Service translator
+         */
+        KomodoObject rest = translators.addChild(uow, REST_TRANSLATOR, VdbLexicon.Translator.TRANSLATOR);
+        rest.setProperty(uow, "DefaultServiceMode", "MESSAGE");
+        rest.setProperty(uow, "DefaultBinding", "HTTP");
+        rest.setProperty(uow, VdbLexicon.Translator.TYPE, "ws");
+    
+        /*
+         *      twitter
+         *          @jcr:primaryType=vdb:declarativeModel
+         *          @jcr:uuid={uuid-to-be-created}
+         *          @mmcore:modelType=PHYSICAL
+         *          @vdb:sourceTranslator=rest
+         *          @vdb:sourceName=twitter
+         *          @vdb:metadataType=DDL
+         *          @vdb:visible=true
+         *          @vdb:sourceJndiName=java:/twitterDS
+         */
+        KomodoObject twitter = tweetExample.addChild(uow, TWITTER_MODEL, VdbLexicon.Vdb.DECLARATIVE_MODEL);
+        twitter.setProperty(uow, CoreLexicon.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
+        twitter.setProperty(uow, VdbLexicon.Model.VISIBLE, true);
+        twitter.setProperty(uow, VdbLexicon.Model.METADATA_TYPE, "DDL");
+    
+        /*
+         *          vdb:sources
+         *              @jcr:primaryType=vdb:sources
+         */
+        KomodoObject twitterSources = twitter.addChild(uow, VdbLexicon.Vdb.SOURCES, VdbLexicon.Vdb.SOURCES);
+    
+        /*
+         *              twitter
+         *                  @jcr:primaryType=vdb:source
+         *                  @vdb:sourceTranslator=rest
+         *                  @vdb:sourceJndiName=java:/twitterDS
+         */
+        KomodoObject twitterSource = twitterSources.addChild(uow, TWITTER_MODEL, VdbLexicon.Source.SOURCE);
+        twitterSource.setProperty(uow, VdbLexicon.Source.TRANSLATOR, REST_TRANSLATOR);
+        twitterSource.setProperty(uow, VdbLexicon.Source.JNDI_NAME, "java:/twitterDS");
+    
+        /*
+         *      twitterview
+         *          @jcr:primaryType=vdb:declarativeModel
+         *          @jcr:uuid={uuid-to-be-created}
+         *          @mmcore:modelType=VIRTUAL
+         *          @vdb:visible=true
+         *          @vdb:metadataType=DDL
+         *          @vdb:modelDefinition=CREATE VIRTUAL PROCEDURE getTweets(query varchar) RETURNS (created_on varchar(25), from_user varchar(25), to_user varchar(25), profile_image_url varchar(25), source varchar(25), text varchar(140)) AS select tweet.* from (call twitter.invokeHTTP(action => 'GET', endpoint =>querystring('',query as "q"))) w, XMLTABLE('results' passing JSONTOXML('myxml', w.result) columns created_on string PATH 'created_at', from_user string PATH 'from_user', to_user string PATH 'to_user', profile_image_url string PATH 'profile_image_url', source string PATH 'source', text string PATH 'text') tweet; CREATE VIEW Tweet AS select * FROM twitterview.getTweets;
+         */
+        KomodoObject twitterView = tweetExample.addChild(uow, TWITTER_VIEW_MODEL, VdbLexicon.Vdb.DECLARATIVE_MODEL);
+        twitterView.setProperty(uow, CoreLexicon.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
+        twitterView.setProperty(uow, VdbLexicon.Model.METADATA_TYPE, "DDL");
+        twitterView.setProperty(uow, VdbLexicon.Model.VISIBLE, true);
+        twitterView.setProperty(uow, VdbLexicon.Model.MODEL_DEFINITION, TWITTER_VIEW_MODEL_DDL);
+    
+        return tweetExample;
+    }
+
+    /**
+     * Creates the structure of the tweet example vdb
+     *
+     * @param uow the transaction
+     * @param parentObject parent to append the new vdb
+     * @return the new vdb node
+     * @throws KException if error occurs
+     */
+    public static KomodoObject createTweetExampleNode(UnitOfWork uow, KomodoObject parentObject) throws KException {
+        /*
+         * tweet-example-vdb.xml
+         *      @jcr:primaryType=vdb:virtualDatabase
+         *      @jcr:mixinTypes=[mode:derived,mix:referenceable]
+         *      @jcr:uuid={uuid-to-be-created}
+         *      @mode:sha1={sha1-to-be-created}
+         *      @vdb:preview=false
+         *      @vdb:version=1
+         *      @vdb:originalFile=/vdbs/declarativeModels-vdb.xml
+         *      @vdb:name=twitter
+         *      @vdb:description=Shows how to call Web Services
+         *      @UseConnectorMetadata=cached
+         */
+        KomodoObject tweetExample = parentObject.addChild(uow,
+                                                  TWEET_EXAMPLE_NAME + TWEET_EXAMPLE_SUFFIX,
+                                                  VdbLexicon.Vdb.VIRTUAL_DATABASE);
+        tweetExample.addDescriptor(uow, "mode:derived", "mix:referenceable");
+        tweetExample.setProperty(uow, VdbLexicon.Vdb.NAME, "twitter");
+        tweetExample.setProperty(uow, VdbLexicon.Vdb.DESCRIPTION, "Shows how to call Web Services");
+    
+        // Miscellaneous property
+        tweetExample.setProperty(uow, "UseConnectorMetadata", "cached");
+    
+        tweetExample.setProperty(uow, VdbLexicon.Vdb.ORIGINAL_FILE, "/vdbs/" + TWEET_EXAMPLE_NAME + TWEET_EXAMPLE_SUFFIX);
+        tweetExample.setProperty(uow, VdbLexicon.Vdb.PREVIEW, false);
+        tweetExample.setProperty(uow, VdbLexicon.Vdb.VERSION, 1);
+    
+        /*
+         *      vdb:translators
+         *          @jcr:primaryType=vdb:translators
+         */
+        KomodoObject translators = tweetExample.addChild(uow,
+                                                                            VdbLexicon.Vdb.TRANSLATORS,
+                                                                            VdbLexicon.Vdb.TRANSLATORS);
+    
+        /*
+         *          rest
+         *              @jcr:primaryType=vdb:translator
+         *              @DefaultServiceMode=MESSAGE
+         *              @DefaultBinding=HTTP
+         *              @vdb:type=ws
+         *              @vdb:description=Rest Web Service translator
+         */
+        KomodoObject rest = translators.addChild(uow,
+                                                                          REST_TRANSLATOR,
+                                                                          VdbLexicon.Translator.TRANSLATOR);
+        rest.setProperty(uow, VdbLexicon.Translator.DESCRIPTION, "Rest Web Service translator");
+        rest.setProperty(uow, "DefaultServiceMode", "MESSAGE");
+        rest.setProperty(uow, "DefaultBinding", "HTTP");
+        rest.setProperty(uow, VdbLexicon.Translator.TYPE, "ws");
+    
+        /*
+         *      twitter
+         *          @jcr:primaryType=vdb:declarativeModel
+         *          @jcr:uuid={uuid-to-be-created}
+         *          @mmcore:modelType=PHYSICAL
+         *          @vdb:sourceTranslator=rest
+         *          @vdb:sourceName=twitter
+         *          @vdb:metadataType=DDL
+         *          @vdb:visible=true
+         *          @vdb:sourceJndiName=java:/twitterDS
+         */
+        KomodoObject twitter = tweetExample.addChild(uow,
+                                                                                    TWITTER_MODEL,
+                                                                                    VdbLexicon.Vdb.DECLARATIVE_MODEL);
+        twitter.setProperty(uow, CoreLexicon.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
+        twitter.setProperty(uow, VdbLexicon.Model.VISIBLE, true);
+        twitter.setProperty(uow, VdbLexicon.Model.METADATA_TYPE, "DDL");
+    
+        /*
+         *          vdb:sources
+         *              @jcr:primaryType=vdb:sources
+         */
+        KomodoObject twitterSources = twitter.addChild(uow,
+                                                                                    VdbLexicon.Vdb.SOURCES,
+                                                                                    VdbLexicon.Vdb.SOURCES);
+    
+        /*
+         *              twitter
+         *                  @jcr:primaryType=vdb:source
+         *                  @vdb:sourceTranslator=rest
+         *                  @vdb:sourceJndiName=java:/twitterDS
+         */
+        KomodoObject twitterSource = twitterSources.addChild(uow,
+                                                                                               TWITTER_MODEL,
+                                                                                               VdbLexicon.Source.SOURCE);
+        twitterSource.setProperty(uow, VdbLexicon.Source.TRANSLATOR, REST_TRANSLATOR);
+        twitterSource.setProperty(uow, VdbLexicon.Source.JNDI_NAME, "java:/twitterDS");
+    
+        /*
+         *      twitterview
+         *          @jcr:primaryType=vdb:declarativeModel
+         *          @jcr:uuid={uuid-to-be-created}
+         *          @mmcore:modelType=VIRTUAL
+         *          @vdb:visible=true
+         *          @vdb:metadataType=DDL
+         *          @vdb:modelDefinition=CREATE VIRTUAL PROCEDURE getTweets(query varchar) RETURNS (created_on varchar(25), from_user varchar(25), to_user varchar(25), profile_image_url varchar(25), source varchar(25), text varchar(140)) AS select tweet.* from (call twitter.invokeHTTP(action => 'GET', endpoint =>querystring('',query as "q"))) w, XMLTABLE('results' passing JSONTOXML('myxml', w.result) columns created_on string PATH 'created_at', from_user string PATH 'from_user', to_user string PATH 'to_user', profile_image_url string PATH 'profile_image_url', source string PATH 'source', text string PATH 'text') tweet; CREATE VIEW Tweet AS select * FROM twitterview.getTweets;
+         */
+        KomodoObject twitterView = tweetExample.addChild(uow,
+                                                                                           TWITTER_VIEW_MODEL,
+                                                                                           VdbLexicon.Vdb.DECLARATIVE_MODEL);
+        twitterView.setProperty(uow, CoreLexicon.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
+        twitterView.setProperty(uow, VdbLexicon.Model.METADATA_TYPE, "DDL");
+        twitterView.setProperty(uow, VdbLexicon.Model.VISIBLE, true);
+    
+        StringBuffer modelDefinition = new StringBuffer();
+        modelDefinition.append("CREATE VIRTUAL PROCEDURE getTweets(IN query varchar) ")
+                                .append("RETURNS TABLE (created_on varchar(25), from_user varchar(25), ")
+                                .append("to_user varchar(25), profile_image_url varchar(25), source ")
+                                .append("varchar(25), text varchar(140)) AS select tweet.* from ")
+                                .append("(EXEC twitter.invokeHTTP(")
+                                .append("action => 'GET', endpoint => querystring(\'', query as q))) AS w, ")
+                                .append("XMLTABLE('results' passing JSONTOXML('myxml', w.result) columns ")
+                                .append("created_on string PATH 'created_at', from_user string PATH 'from_user', ")
+                                .append("to_user string PATH 'to_user', profile_image_url string PATH 'profile_image_url', ")
+                                .append("source string PATH 'source', text string PATH 'text') AS tweet; ")
+                                .append("CREATE VIEW Tweet AS select * FROM twitterview.getTweets;");
+        twitterView.setProperty(uow, VdbLexicon.Model.MODEL_DEFINITION, modelDefinition.toString());
+    
+        return tweetExample;
     }
 
     /**

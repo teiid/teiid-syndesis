@@ -19,7 +19,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import java.util.ArrayList;
 import org.junit.Test;
-import org.komodo.repository.RepositoryImpl;
+import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.shell.AbstractCommandTest;
 import org.komodo.shell.api.CommandResult;
 import org.komodo.spi.repository.KomodoObject;

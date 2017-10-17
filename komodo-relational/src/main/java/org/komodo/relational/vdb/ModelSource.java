@@ -21,11 +21,11 @@
  */
 package org.komodo.relational.vdb;
 
+import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.RelationalObject;
 import org.komodo.relational.TypeResolver;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.vdb.internal.ModelSourceImpl;
-import org.komodo.repository.ObjectImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;

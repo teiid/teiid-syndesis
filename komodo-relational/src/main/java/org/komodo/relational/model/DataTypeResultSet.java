@@ -21,10 +21,10 @@
  */
 package org.komodo.relational.model;
 
+import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.RelationalConstants;
 import org.komodo.relational.TypeResolver;
 import org.komodo.relational.model.internal.DataTypeResultSetImpl;
-import org.komodo.repository.ObjectImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon.CreateProcedure;
 import org.komodo.spi.repository.KomodoObject;

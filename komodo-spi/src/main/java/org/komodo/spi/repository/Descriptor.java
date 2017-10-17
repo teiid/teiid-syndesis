@@ -31,14 +31,14 @@ import org.komodo.spi.repository.Repository.UnitOfWork.State;
 public interface Descriptor {
 
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @return the child {@link KomodoObject Komodo object} {@link Descriptor type descriptors} (never <code>null</code> but can
-     *         be empty)
-     * @throws KException
-     *         if an error occurs
+     * @return the node factory
      */
-    Descriptor[] getChildDescriptors( final UnitOfWork transaction ) throws KException;
+    KObjectFactory getNodeFactory();
+
+    /**
+     * @return the property factory
+     */
+    KPropertyFactory getPropertyFactory();
 
     /**
      * @return the type name (never empty)
@@ -54,5 +54,4 @@ public interface Descriptor {
      *         if an error occurs
      */
     PropertyDescriptor[] getPropertyDescriptors( final UnitOfWork transaction ) throws KException;
-
 }

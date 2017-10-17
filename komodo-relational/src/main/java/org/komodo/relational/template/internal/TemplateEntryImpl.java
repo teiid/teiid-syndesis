@@ -21,7 +21,6 @@
  */
 package org.komodo.relational.template.internal;
 
-import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
@@ -81,7 +80,7 @@ public class TemplateEntryImpl extends RelationalObjectImpl implements TemplateE
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
-        final Property prop = getRawProperty( transaction, JcrLexicon.UUID.getString() );
+        final Property prop = getObjectFactory().getId( transaction, this );
         final String result = prop.getStringValue( transaction );
         return result;
     }
@@ -156,10 +155,8 @@ public class TemplateEntryImpl extends RelationalObjectImpl implements TemplateE
             propertyType = PropertyValueType.DOUBLE;
         else if (Integer.class.getCanonicalName().equals(typeClass))
             propertyType = PropertyValueType.INTEGER;
-        else if (BigDecimal.class.getCanonicalName().equals(typeClass))
-            propertyType = PropertyValueType.BIG_DECIMAL;
         else if (Calendar.class.getCanonicalName().equals(typeClass) || Date.class.getCanonicalName().equals(typeClass))
-            propertyType = PropertyValueType.CALENDAR;
+            propertyType = PropertyValueType.DATE;
         else
             propertyType = PropertyValueType.STRING;
 

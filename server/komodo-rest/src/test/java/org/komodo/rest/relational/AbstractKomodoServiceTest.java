@@ -67,9 +67,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.komodo.core.KEngine;
-import org.komodo.repository.SynchronousCallback;
-import org.komodo.repository.search.ComparisonOperator;
-import org.komodo.repository.search.ObjectSearcher;
+import org.komodo.core.internal.repository.search.ComparisonOperator;
+import org.komodo.core.internal.repository.search.ObjectSearcher;
+import org.komodo.core.repository.SynchronousCallback;
 import org.komodo.rest.KomodoRestV1Application;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.RestLink;
@@ -317,7 +317,7 @@ public abstract class AbstractKomodoServiceTest implements V1Constants {
 
         ObjectSearcher columnsWithParamSearch = new ObjectSearcher(repository);
         columnsWithParamSearch.setFromType(TeiidDdlLexicon.CreateTable.TABLE_ELEMENT, "c");
-        columnsWithParamSearch.addWhereCompareClause(null, "c", "localName", ComparisonOperator.LIKE, "{valueParam}");
+        columnsWithParamSearch.addWhereCompareClause(null, "c", "mode:localName", ComparisonOperator.LIKE, "{valueParam}");
         String columnsWithParamSearchName = "Columns Search With Where Parameter";
         columnsWithParamSearch.write(uow, columnsWithParamSearchName);
 

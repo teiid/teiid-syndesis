@@ -22,12 +22,11 @@
 package org.komodo.relational.commands.foreignkey;
 
 import java.util.List;
-
+import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.commands.FindCommand;
 import org.komodo.relational.model.Column;
 import org.komodo.relational.model.ForeignKey;
 import org.komodo.relational.model.Table;
-import org.komodo.repository.ObjectImpl;
 import org.komodo.shell.CommandResultImpl;
 import org.komodo.shell.api.CommandResult;
 import org.komodo.shell.api.TabCompletionModifier;

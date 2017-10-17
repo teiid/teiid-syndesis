@@ -943,6 +943,7 @@ public final class TableImplTest extends RelationalModelTest {
         final Table refTable = RelationalModelFactory.createTable( getTransaction(), _repo, mock( Model.class ), "refTable" );
         final String name = "foreignKey";
         this.table.addForeignKey( getTransaction(), name, refTable );
+        commit();
 
         // Export the table
         byte[] bytes = this.table.export(getTransaction(), new Properties());
@@ -954,6 +955,7 @@ public final class TableImplTest extends RelationalModelTest {
         assertThat( exportedDdl.contains("column1"), is( true ) );
         assertThat( exportedDdl.contains("column2"), is( true ) );
         assertThat( exportedDdl.contains("FOREIGN KEY"), is( true ) );
+        assertThat( exportedDdl.contains("undefined"), is(false));
     }
     
     @Test

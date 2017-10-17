@@ -129,7 +129,7 @@ public final class StoredProcedureImpl extends AbstractProcedureImpl implements 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getChildTypes()
+     * @see org.komodo.core.repository.ObjectImpl#getChildTypes()
      */
     @Override
     public KomodoType[] getChildTypes() {
@@ -197,7 +197,7 @@ public final class StoredProcedureImpl extends AbstractProcedureImpl implements 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getTypeIdentifier(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.ObjectImpl#getTypeIdentifier(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public KomodoType getTypeIdentifier( final UnitOfWork transaction ) {

@@ -133,8 +133,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.komodo</groupId>
-			<artifactId>komodo-test-utils</artifactId>
+			<groupId>org.teiid.komodo</groupId>
+			<artifactId>komodo-core</artifactId>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>

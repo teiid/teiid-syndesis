@@ -21,8 +21,7 @@
  */
 package org.komodo.utils;
 
-import java.util.logging.Level;
-import org.komodo.logging.ModeshapeKLogger;
+import org.komodo.logging.DefaultKLogger;
 import org.komodo.spi.logging.KLogger;
 
 /**
@@ -48,7 +47,7 @@ public class KLog implements KLogger {
      *
      */
     private KLog() {
-        kLogger = new ModeshapeKLogger();
+        kLogger = new DefaultKLogger();
     }
 
     @Override

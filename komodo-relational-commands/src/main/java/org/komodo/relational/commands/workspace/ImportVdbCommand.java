@@ -23,12 +23,12 @@ package org.komodo.relational.commands.workspace;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
+import org.komodo.core.repository.SynchronousCallback;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.OptionKeys;
 import org.komodo.relational.importer.vdb.VdbImporter;
 import org.komodo.relational.vdb.Vdb;
-import org.komodo.repository.SynchronousCallback;
 import org.komodo.shell.CommandResultImpl;
 import org.komodo.shell.CompletionConstants;
 import org.komodo.shell.ShellI18n;

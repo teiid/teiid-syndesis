@@ -48,7 +48,7 @@ public abstract class RelationalChildRestrictedObject extends RelationalObjectIm
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getChildTypes()
+     * @see org.komodo.core.repository.ObjectImpl#getChildTypes()
      */
     @Override
     public final KomodoType[] getChildTypes() {
@@ -58,7 +58,7 @@ public abstract class RelationalChildRestrictedObject extends RelationalObjectIm
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#addChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
+     * @see org.komodo.core.repository.ObjectImpl#addChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
      *      java.lang.String)
      * @throws UnsupportedOperationException
      *         if this method is called
@@ -73,7 +73,7 @@ public abstract class RelationalChildRestrictedObject extends RelationalObjectIm
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getChildren(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
+     * @see org.komodo.core.repository.ObjectImpl#getChildren(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
      */
     @Override
     public final KomodoObject[] getChildren( final UnitOfWork uow,
@@ -84,7 +84,7 @@ public abstract class RelationalChildRestrictedObject extends RelationalObjectIm
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getChildrenOfType(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
+     * @see org.komodo.core.repository.ObjectImpl#getChildrenOfType(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
      *      java.lang.String[])
      */
     @Override
@@ -98,7 +98,7 @@ public abstract class RelationalChildRestrictedObject extends RelationalObjectIm
      * {@inheritDoc}
      *
      * @return <code>false</code>
-     * @see org.komodo.repository.ObjectImpl#hasChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.core.repository.ObjectImpl#hasChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
     public final boolean hasChild( final UnitOfWork uow,
@@ -110,7 +110,7 @@ public abstract class RelationalChildRestrictedObject extends RelationalObjectIm
      * {@inheritDoc}
      *
      * @return <code>false</code>
-     * @see org.komodo.repository.ObjectImpl#hasChildren(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.ObjectImpl#hasChildren(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public final boolean hasChildren( final UnitOfWork uow ) {

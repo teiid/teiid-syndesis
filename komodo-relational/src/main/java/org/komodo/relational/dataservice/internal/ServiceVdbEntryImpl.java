@@ -96,7 +96,7 @@ public class ServiceVdbEntryImpl extends VdbEntryImpl implements ServiceVdbEntry
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getChildTypes()
+     * @see org.komodo.core.repository.ObjectImpl#getChildTypes()
      */
     @Override
     public KomodoType[] getChildTypes() {

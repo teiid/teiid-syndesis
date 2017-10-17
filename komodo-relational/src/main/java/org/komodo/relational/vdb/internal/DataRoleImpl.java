@@ -141,7 +141,7 @@ public final class DataRoleImpl extends RelationalObjectImpl implements DataRole
         }
 
         // child does not exist
-        throw new KException( Messages.getString( org.komodo.repository.Messages.Komodo.CHILD_NOT_FOUND,
+        throw new KException( Messages.getString( org.komodo.core.repository.Messages.Komodo.CHILD_NOT_FOUND,
                                                   name,
                                                   getAbsolutePath() ) );
     }
@@ -169,7 +169,7 @@ public final class DataRoleImpl extends RelationalObjectImpl implements DataRole
         }
 
         // child does not exist
-        throw new KException( Messages.getString( org.komodo.repository.Messages.Komodo.CHILD_NOT_FOUND,
+        throw new KException( Messages.getString( org.komodo.core.repository.Messages.Komodo.CHILD_NOT_FOUND,
                                                   name,
                                                   getAbsolutePath() ) );
     }
@@ -217,7 +217,7 @@ public final class DataRoleImpl extends RelationalObjectImpl implements DataRole
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getChildTypes()
+     * @see org.komodo.core.repository.ObjectImpl#getChildTypes()
      */
     @Override
     public KomodoType[] getChildTypes() {
