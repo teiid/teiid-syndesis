@@ -63,8 +63,8 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.VdbImport;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.utils.KeyInValueHashMap;
-import org.komodo.spi.utils.KeyInValueHashMap.KeyFromValueAdapter;
+import org.komodo.spi.utils.KeyInValueMap;
+import org.komodo.spi.utils.KeyInValueMap.KeyFromValueAdapter;
 
 /**
  *
@@ -90,8 +90,8 @@ public class TypeResolverRegistry {
         return instance;
     }
 
-    private KeyInValueHashMap<KomodoType, TypeResolver<?>> kTypeIndex =
-                    new KeyInValueHashMap<KomodoType, TypeResolver<?>>(new KTypeAdapter());
+    private KeyInValueMap<KomodoType, TypeResolver<?>> kTypeIndex =
+                    new KeyInValueMap<KomodoType, TypeResolver<?>>(new KTypeAdapter());
 
     private Map<Class<? extends KomodoObject>, TypeResolver<?>> kClassIndex =
                     new HashMap<Class<? extends KomodoObject>, TypeResolver<?>>();

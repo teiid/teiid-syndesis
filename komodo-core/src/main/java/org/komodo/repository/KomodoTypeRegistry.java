@@ -29,8 +29,8 @@ import org.komodo.core.KomodoLexicon;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.TeiidSqlLexicon;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.utils.KeyInValueHashMap;
-import org.komodo.spi.utils.KeyInValueHashMap.KeyFromValueAdapter;
+import org.komodo.spi.utils.KeyInValueMap;
+import org.komodo.spi.utils.KeyInValueMap.KeyFromValueAdapter;
 import org.komodo.utils.ArgCheck;
 import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
@@ -111,8 +111,8 @@ public class KomodoTypeRegistry implements StringConstants {
         return instance;
     }
 
-    private KeyInValueHashMap<KomodoType, TypeIdentifier> kTypeIndex =
-                    new KeyInValueHashMap<>(new KTypeAdapter());
+    private KeyInValueMap<KomodoType, TypeIdentifier> kTypeIndex =
+                    new KeyInValueMap<>(new KTypeAdapter());
 
     private KomodoTypeRegistry() {
 
