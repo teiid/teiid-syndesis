@@ -3,34 +3,30 @@
 	xsi:schemaLocation="urn:infinispan:config:7.2 http://www.infinispan.org/schemas/infinispan-config-7.2.xsd"
 	xmlns="urn:infinispan:config:7.2">
 
-	<cache-container name="teiid-local" default-cache="default"
+	<cache-container name="teiid-local" default-cache="resultset"
 		statistics="false" shutdown-hook="DONT_REGISTER">
 
 		<jmx duplicate-domains="true" />
 
 		<local-cache name="resultset">
-		<!-- 
-			<transaction mode="NON_XA" 
-			     transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" 
-			     locking="PESSIMISTIC"/>
-	     -->
-			<eviction max-entries="1024" strategy="LIRS" />
+			<memory>
+				<object size="1024"/>
+			</memory>
 			<expiration lifespan="7200000" />
 		</local-cache>
 
 		<local-cache name="resultset-repl">
-		 <!-- 
-            <transaction mode="NON_XA" 
-                 transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" 
-                 locking="PESSIMISTIC"/>
-          -->
-			<eviction max-entries="1024" strategy="LIRS" />
+			<memory>
+				<object size="1024"/>
+			</memory>
 			<expiration lifespan="7200000" />
 		</local-cache>
 
 		<local-cache name="preparedplan">
 		     <transaction mode="NONE"/>
-			<eviction max-entries="512" strategy="LIRS" />
+			<memory>
+				<object size="512"/>
+			</memory>
 			<expiration lifespan="28800" />
 		</local-cache>
 	</cache-container>
