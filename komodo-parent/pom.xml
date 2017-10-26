@@ -1,11 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<parent>
-		<groupId>org.jboss.integration-platform</groupId>
-		<artifactId>jboss-integration-platform-parent</artifactId>
-		<version>6.0.1.Final</version>
-		<relativePath></relativePath>
-	</parent>
+      <groupId>org.jboss</groupId>
+      <artifactId>jboss-parent</artifactId>
+      <version>24</version>
+      <relativePath></relativePath>
+    </parent>
 
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.komodo</groupId>
@@ -104,15 +104,17 @@
 	<properties>
 
 		<version.ip-bom>6.0.1.Final</version.ip-bom>
-		<version.org.wildfly>10.0.0.Final</version.org.wildfly>
-		<version.org.wildfly.core>2.0.10.Final</version.org.wildfly.core>
+		<version.org.wildfly>11.0.0.Final</version.org.wildfly>
+		<version.org.wildfly.core>3.0.1.Final</version.org.wildfly.core>
 		<!-- Override to stop infinispan-core upgrading to non-compatible version -->
-		<version.org.jgroups>3.6.6.Final</version.org.jgroups>
+		<version.org.jgroups>3.6.13.Final</version.org.jgroups>
 
 		<version.modeshape>4.5.0.Final</version.modeshape>
 		<version.javax.jcr>2.0</version.javax.jcr>
 		<version.commons.io>2.5</version.commons.io>
-		<version.infinispan>7.2.3.Final</version.infinispan>
+		<version.infinispan>8.2.8.Final</version.infinispan>
+		
+		<version.org.teiid>10.0.0.CR2</version.org.teiid>
 
 		<!-- Instruct the build to use only UTF-8 encoding for source code -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -134,7 +136,7 @@
 
 		<server.platform>wildfly</server.platform>
 
-		<!-- The default version of teiid targetted for development -->
+		<!-- The default version of teiid targeted for development -->
 		<teiid.classifier.default>wildfly-dist</teiid.classifier.default>
 
 		<!-- The version of server to use with testing -->
@@ -144,14 +146,12 @@
 		<!-- The test version of server when its unpacked -->
 		<test.server.name>${server.platform}-${test.server.version}</test.server.name>
 
-		<version.wildfly>2.0.10.Final</version.wildfly>
+		<version.wildfly>3.0.1.Final</version.wildfly>
 		<version.aesh>0.33.12.redhat-1</version.aesh>
 		<version.org.jboss.dmr>1.3.0.Final</version.org.jboss.dmr>
 
 		<version.org.jboss.spec.jboss-javaee-7.0>1.0.4.Final</version.org.jboss.spec.jboss-javaee-7.0>
-		<version.org.jboss.xnio>3.4.0.Final</version.org.jboss.xnio>
-		<version.arquillian>1.1.11.Final</version.arquillian>
-		<version.arquillian-container>2.0.0.Final</version.arquillian-container>
+		<version.org.jboss.xnio>3.5.1.Final</version.org.jboss.xnio>
 		<arquillian.container.name>wildfly-managed</arquillian.container.name>
 	</properties>
 
@@ -160,14 +160,6 @@
 		default settings. -->
 	<dependencyManagement>
 		<dependencies>
-			<!--IP-Platform BOM -->
-			<dependency>
-				<groupId>org.jboss.integration-platform</groupId>
-				<artifactId>jboss-integration-platform-bom</artifactId>
-				<version>${version.ip-bom}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
 			<!-- Import the core parent to get all the managed dependencies from core -->
 			<dependency>
 				<groupId>org.wildfly.core</groupId>
@@ -181,6 +173,14 @@
 				<artifactId>wildfly-parent</artifactId>
 				<type>pom</type>
 				<version>${version.org.wildfly}</version>
+				<scope>import</scope>
+			</dependency>
+			<!--IP-Platform BOM -->
+			<dependency>
+				<groupId>org.jboss.integration-platform</groupId>
+				<artifactId>jboss-integration-platform-bom</artifactId>
+				<version>${version.ip-bom}</version>
+				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
 
@@ -229,6 +229,12 @@
 					</exclusion>
 				</exclusions>
 			</dependency>
+			
+			<dependency>
+		        <groupId>org.jboss.marshalling</groupId>
+		        <artifactId>jboss-marshalling-osgi</artifactId>
+		        <version>2.0.0.Final</version>
+		    </dependency>
 
 			<!-- Komodo subprojects -->
 			<dependency>
@@ -364,182 +370,174 @@
 			<dependency>
 				<groupId>org.teiid</groupId>
 				<artifactId>teiid-common-core</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid</groupId>
 				<artifactId>teiid-api</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid</groupId>
 				<artifactId>teiid-engine</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid</groupId>
 				<artifactId>teiid-runtime</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid</groupId>
 				<artifactId>teiid-admin</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid</groupId>
 				<artifactId>teiid-client</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid.connectors</groupId>
 				<artifactId>translator-odata</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid</groupId>
 				<artifactId>teiid-olingo-common</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid</groupId>
 				<artifactId>teiid-olingo-patches</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid.connectors</groupId>
 				<artifactId>translator-loopback</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid.connectors</groupId>
 				<artifactId>translator-solr</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid.connectors</groupId>
 				<artifactId>translator-accumulo</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid.connectors</groupId>
 				<artifactId>translator-cassandra</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid.connectors</groupId>
 				<artifactId>translator-object</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid.connectors</groupId>
 				<artifactId>translator-ws</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid.connectors</groupId>
 				<artifactId>translator-salesforce</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid.connectors</groupId>
 				<artifactId>translator-salesforce-34</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid.connectors</groupId>
 				<artifactId>connector-salesforce</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid.connectors</groupId>
 				<artifactId>connector-salesforce-34</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid.connectors</groupId>
 				<artifactId>translator-jdbc</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid</groupId>
 				<artifactId>teiid-hibernate-dialect</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid.connectors</groupId>
 				<artifactId>google-api</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid.connectors</groupId>
 				<artifactId>mongodb-api</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid.connectors</groupId>
 				<artifactId>couchbase-api</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid.connectors</groupId>
 				<artifactId>simpledb-api</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid.connectors</groupId>
 				<artifactId>document-api</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid.connectors</groupId>
 				<artifactId>file-api</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid</groupId>
 				<artifactId>saxon-xom</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid</groupId>
 				<artifactId>rest-service</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid</groupId>
 				<artifactId>teiid-metadata</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.teiid</groupId>
 				<artifactId>teiid-txn-jbossts</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.teiid.connectors</groupId>
 				<artifactId>translator-file</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid.connectors</groupId>
 				<artifactId>connector-file</artifactId>
-				<version>${project.version}</version>
+				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.teiid</groupId>
 				<artifactId>teiid-data-quality</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-
-			<!--Inherited from BOM, but changes the default scope to "test" -->
-			<dependency>
-				<groupId>junit</groupId>
-				<artifactId>junit</artifactId>
-				<version>${version.junit}</version>
-				<scope>test</scope>
+				<version>${version.org.teiid}</version>
 			</dependency>
 
 			<!--Inherited from BOM, but changes the default scope to "test" -->
@@ -548,35 +546,6 @@
 				<artifactId>hamcrest-library</artifactId>
 				<version>${version.org.hamcrest}</version>
 				<scope>test</scope>
-			</dependency>
-
-			<!--Inherited from BOM, but changes the default scope to "test" -->
-			<dependency>
-				<groupId>org.mockito</groupId>
-				<artifactId>mockito-core</artifactId>
-				<version>${version.org.mockito}</version>
-				<scope>test</scope>
-			</dependency>
-
-			<!--Inherited from BOM, but changes the default scope to "test" -->
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-api</artifactId>
-				<version>${version.org.slf4j}</version>
-			</dependency>
-
-			<!--Inherited from BOM, but changes the default scope to "test" -->
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-log4j12</artifactId>
-				<version>${version.org.slf4j}</version>
-			</dependency>
-
-			<!--Inherited from BOM, but changes the default scope to "test" -->
-			<dependency>
-				<groupId>log4j</groupId>
-				<artifactId>log4j</artifactId>
-				<version>${version.log4j}</version>
 			</dependency>
 
 			<dependency>
@@ -615,38 +584,6 @@
 				<scope>test</scope>
 			</dependency>
 
-			<dependency>
-				<groupId>org.jboss.arquillian</groupId>
-				<artifactId>arquillian-bom</artifactId>
-				<version>${version.arquillian}</version>
-				<scope>import</scope>
-				<type>pom</type>
-			</dependency>
-
-			<dependency>
-				<groupId>org.wildfly.arquillian</groupId>
-				<artifactId>wildfly-arquillian-container-managed</artifactId>
-				<version>${version.arquillian-container}</version>
-				<scope>test</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.wildfly.arquillian</groupId>
-				<artifactId>wildfly-arquillian-common</artifactId>
-				<version>${version.arquillian-container}</version>
-				<scope>test</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.wildfly.arquillian</groupId>
-				<artifactId>wildfly-arquillian-protocol-jmx</artifactId>
-				<version>${version.arquillian-container}</version>
-				<scope>test</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.wildfly.arquillian</groupId>
-				<artifactId>wildfly-arquillian-testenricher-msc</artifactId>
-				<version>${version.arquillian-container}</version>
-				<scope>test</scope>
-			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -659,7 +596,7 @@
 
 		<dependency>
 			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
+			<artifactId>mockito-all</artifactId>
 			<scope>test</scope>
 		</dependency>
 
