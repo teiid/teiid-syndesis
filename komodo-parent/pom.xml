@@ -8,7 +8,7 @@
     </parent>
 
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.komodo</groupId>
+	<groupId>org.teiid.komodo</groupId>
 	<artifactId>komodo-parent</artifactId>
 	<version>0.0.4-SNAPSHOT</version>
 	<name>Komodo Parent</name>
@@ -210,120 +210,120 @@
 
 			<!-- Komodo subprojects -->
 			<dependency>
-				<groupId>org.komodo</groupId>
+				<groupId>org.teiid.komodo</groupId>
 				<artifactId>komodo-spi</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.komodo</groupId>
+				<groupId>org.teiid.komodo</groupId>
 				<artifactId>komodo-utils</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.komodo.plugins</groupId>
+				<groupId>org.teiid.komodo.plugins</groupId>
 				<artifactId>komodo-plugin-framework</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.komodo</groupId>
+				<groupId>org.teiid.komodo</groupId>
 				<artifactId>komodo-plugin-service</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.komodo</groupId>
+				<groupId>org.teiid.komodo</groupId>
 				<artifactId>komodo-ui</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.komodo</groupId>
+				<groupId>org.teiid.komodo</groupId>
 				<artifactId>komodo-utils-logger</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.komodo</groupId>
+				<groupId>org.teiid.komodo</groupId>
 				<artifactId>komodo-metadata-instance</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.komodo</groupId>
+				<groupId>org.teiid.komodo</groupId>
 				<artifactId>komodo-core</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.komodo</groupId>
+				<groupId>org.teiid.komodo</groupId>
 				<artifactId>komodo-modeshape-sequencer-teiid-sql</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.komodo</groupId>
+				<groupId>org.teiid.komodo</groupId>
 				<artifactId>komodo-vdb</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.komodo</groupId>
+				<groupId>org.teiid.komodo</groupId>
 				<artifactId>komodo-shell-api</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.komodo</groupId>
+				<groupId>org.teiid.komodo</groupId>
 				<artifactId>komodo-shell</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.komodo</groupId>
+				<groupId>org.teiid.komodo</groupId>
 				<artifactId>komodo-importer</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.komodo</groupId>
+				<groupId>org.teiid.komodo</groupId>
 				<artifactId>komodo-modeshape-vdb</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.komodo</groupId>
+				<groupId>org.teiid.komodo</groupId>
 				<artifactId>komodo-relational</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.komodo</groupId>
+				<groupId>org.teiid.komodo</groupId>
 				<artifactId>komodo-relational-commands</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.komodo</groupId>
+				<groupId>org.teiid.komodo</groupId>
 				<artifactId>komodo-server-rest</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
 			<dependency>
-				<groupId>org.komodo</groupId>
+				<groupId>org.teiid.komodo</groupId>
 				<artifactId>komodo-utils</artifactId>
 				<version>${project.version}</version>
 				<type>test-jar</type>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
-				<groupId>org.komodo</groupId>
+				<groupId>org.teiid.komodo</groupId>
 				<artifactId>komodo-core</artifactId>
 				<version>${project.version}</version>
 				<type>test-jar</type>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
-				<groupId>org.komodo</groupId>
+				<groupId>org.teiid.komodo</groupId>
 				<artifactId>komodo-shell</artifactId>
 				<version>${project.version}</version>
 				<type>test-jar</type>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
-				<groupId>org.komodo</groupId>
+				<groupId>org.teiid.komodo</groupId>
 				<artifactId>komodo-modeshape-sequencer-teiid-sql-tests</artifactId>
 				<version>${project.version}</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
-				<groupId>org.komodo</groupId>
+				<groupId>org.teiid.komodo</groupId>
 				<artifactId>komodo-integration-utils</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -593,7 +593,7 @@
 					<extensions>true</extensions>
 					<configuration>
 						<instructions>
-							<Export-Package>org.komodo.*</Export-Package>
+							<Export-Package>org.teiid.komodo.*</Export-Package>
 						</instructions>
 					</configuration>
 				</plugin>

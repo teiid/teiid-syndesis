@@ -2,11 +2,11 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>org.komodo</groupId>
+		<groupId>org.teiid.komodo</groupId>
 		<artifactId>komodo-plugins</artifactId>
 		<version>0.0.4-SNAPSHOT</version>
 	</parent>
-	<groupId>org.komodo.plugins.storage</groupId>
+	<groupId>org.teiid.komodo.plugins.storage</groupId>
 	<artifactId>storage-file</artifactId>
 	<name>Komodo Storage File Connector</name>
 	<description>Storage connector for accessing the filesystem</description>
@@ -24,17 +24,17 @@
 		<!-- These will be imported by the bundle at runtime so only required for 
 			development -->
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-spi</artifactId>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-utils</artifactId>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.komodo.plugins</groupId>
+			<groupId>org.teiid.komodo.plugins</groupId>
 			<artifactId>komodo-plugin-framework</artifactId>
 			<scope>provided</scope>
 		</dependency>
@@ -46,7 +46,7 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-utils</artifactId>
 			<type>test-jar</type>
 			<scope>test</scope>

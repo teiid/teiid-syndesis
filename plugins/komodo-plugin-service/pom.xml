@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>org.komodo</groupId>
+		<groupId>org.teiid.komodo</groupId>
 		<artifactId>komodo-plugins</artifactId>
 		<version>0.0.4-SNAPSHOT</version>
 	</parent>
@@ -14,7 +14,7 @@
 		<version.apache.felix.framework>5.4.0</version.apache.felix.framework>
 		<version.apache.felix.fileinstall>3.5.2</version.apache.felix.fileinstall>
 		<includePluginGroupIds>
-			org.komodo.plugins.storage
+			org.teiid.komodo.plugins.storage
 		</includePluginGroupIds>
 	</properties>
 
@@ -35,15 +35,15 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-spi</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-utils</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.komodo.plugins</groupId>
+			<groupId>org.teiid.komodo.plugins</groupId>
 			<artifactId>komodo-plugin-framework</artifactId>
 		</dependency>
 
@@ -62,19 +62,19 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.komodo.plugins.storage</groupId>
+			<groupId>org.teiid.komodo.plugins.storage</groupId>
 			<artifactId>storage-file</artifactId>
 			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
-			<groupId>org.komodo.plugins.storage</groupId>
+			<groupId>org.teiid.komodo.plugins.storage</groupId>
 			<artifactId>storage-git</artifactId>
 			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-utils</artifactId>
 			<type>test-jar</type>
 			<scope>test</scope>

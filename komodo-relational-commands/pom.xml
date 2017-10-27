@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>org.komodo</groupId>
+		<groupId>org.teiid.komodo</groupId>
 		<artifactId>komodo</artifactId>
 		<version>0.0.4-SNAPSHOT</version>
 	</parent>
@@ -78,55 +78,55 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-spi</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-utils</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-core</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-importer</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-relational</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-shell-api</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-shell</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-ui</artifactId>
 		</dependency>
 
 		<!-- Allows test classes in other modules to extend the classes in this module -->
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-shell</artifactId>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-utils</artifactId>
 			<type>test-jar</type>
 			<scope>test</scope>
