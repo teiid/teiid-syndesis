@@ -36,16 +36,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+
 import javax.jcr.Node;
-import org.komodo.metadata.Messages;
+
 import org.komodo.metadata.internal.DataTypeServiceImpl;
-import org.komodo.metadata.internal.NodeGenerator;
 import org.komodo.metadata.internal.MetaArtifactFactory;
+import org.komodo.metadata.internal.NodeGenerator;
 import org.komodo.spi.KEvent;
 import org.komodo.spi.KObserver;
 import org.komodo.spi.metadata.MetadataClientEvent;
-import org.komodo.spi.metadata.MetadataObserver;
 import org.komodo.spi.metadata.MetadataInstance;
+import org.komodo.spi.metadata.MetadataObserver;
 import org.komodo.spi.query.QSColumn;
 import org.komodo.spi.query.QSResult;
 import org.komodo.spi.query.QSRow;
@@ -61,8 +62,8 @@ import org.komodo.spi.type.DataTypeService.DataTypeName;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 import org.teiid.adminapi.VDB;
-import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.core.util.ApplicationInfo;
+import org.teiid.query.parser.QueryParser;
 import org.teiid.query.sql.lang.Command;
 import org.teiid.runtime.EmbeddedConfiguration;
 import org.teiid.runtime.EmbeddedServer;
@@ -159,16 +160,6 @@ public class DefaultMetadataInstance implements MetadataInstance {
             KEvent<MetadataInstance> event = new KEvent<MetadataInstance>(this, KEvent.Type.METADATA_SERVER_STOPPED);
             notifyObservers(event);
         }
-    }
-
-    private boolean isDynamic(VDB vdb) {
-        if (vdb == null)
-            return false;
-
-        if (! (vdb instanceof VDBMetaData))
-            return false;
-
-        return ((VDBMetaData) vdb).isXmlDeployment();
     }
 
     @Override
@@ -318,7 +309,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
         if (sql == null)
             return;
 
-        Command command = server.parseCommand(sql);
+        Command command = QueryParser.getQueryParser().parseDesignerCommand(sql);
 
         NodeGenerator generator = new NodeGenerator((Node) parent, getDataTypeService(), getVersion());
         generator.visitObject(command);
@@ -329,15 +320,12 @@ public class DefaultMetadataInstance implements MetadataInstance {
     @Override
     public Collection<TeiidVdb> getVdbs() throws Exception {
         
-        List<VDBMetaData> vdbs = server.getVdbs();
+        Collection<? extends VDB> vdbs = server.getAdmin().getVDBs();
         if (vdbs.isEmpty())
             return Collections.emptyList();
 
         List<TeiidVdb> teiidVdbs = new ArrayList<>();
-        for (VDBMetaData vdb : vdbs) {
-            if (! isDynamic(vdb))
-                continue;
-
+        for (VDB vdb : vdbs) {
             teiidVdbs.add(factory.createVdb(vdb));
         }
 
@@ -353,12 +341,9 @@ public class DefaultMetadataInstance implements MetadataInstance {
     public TeiidVdb getVdb(String vdbName) throws Exception {
         VDB vdb;
 
-        vdb = server.getVdb(vdbName, "1");
+        vdb = server.getAdmin().getVDB(vdbName, "1");
 
         if (vdb == null)
-            return null;
-
-        if (! isDynamic(vdb))
             return null;
 
         return factory.createVdb(vdb);
@@ -437,6 +422,6 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
     @Override
     public void parse(String sql) throws Exception {
-        server.parseCommand(sql);
+        QueryParser.getQueryParser().parseDesignerCommand(sql);
     }
 }

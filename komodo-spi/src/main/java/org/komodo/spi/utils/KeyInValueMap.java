@@ -23,20 +23,20 @@ package org.komodo.spi.utils;
 
 import java.util.AbstractMap;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 /**
- * A {@link HashMap} which stores values that also reference their
- * own keys. More memory efficient than storing separate references
- * to the keys and values.
+ * A {@link Map} facade which stores values that also reference their
+ * own keys.
  *
  * @param <K> key
  * @param <V> value
  */
 @SuppressWarnings( "unchecked" )
-public class KeyInValueHashMap<K, V> extends AbstractMap<K, V> {
+public class KeyInValueMap<K, V> extends AbstractMap<K, V> {
+	
+	private final Map<K, V> instance;
 
     /**
      * Adapter interface that clients of the class should implement
@@ -59,66 +59,6 @@ public class KeyInValueHashMap<K, V> extends AbstractMap<K, V> {
 
     }
 
-    private class EntryWrapper implements Map.Entry<K, V> {
-
-        V value;
-
-        /**
-         * @param value the Value
-         */
-        public EntryWrapper(V value) {
-            this.value = value;
-        }
-
-        @Override
-        public K getKey() {
-            return (K) adapter.getKey(value);
-        }
-
-        @Override
-        public V getValue() {
-            return value;
-        }
-
-        @Override
-        public V setValue(V value) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((this.value == null) ? 0 : this.value.hashCode());
-            return result;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (getClass() != obj.getClass())
-                return false;
-            EntryWrapper other = (EntryWrapper)obj;
-            if (!getOuterType().equals(other.getOuterType()))
-                return false;
-            if (this.value == null) {
-                if (other.value != null)
-                    return false;
-            } else if (!this.value.equals(other.value))
-                return false;
-            return true;
-        }
-
-        private KeyInValueHashMap<K, V> getOuterType() {
-            return KeyInValueHashMap.this;
-        }
-    }
-
-    private Set<Map.Entry<K, V>> entrySet = new HashSet<Map.Entry<K, V>>();
-
     private KeyFromValueAdapter<K, V> adapter;
 
     /**
@@ -126,8 +66,19 @@ public class KeyInValueHashMap<K, V> extends AbstractMap<K, V> {
      *
      * @param adapter that can convert from the value into the key
      */
-    public KeyInValueHashMap(KeyFromValueAdapter<K, V> adapter) {
+    public KeyInValueMap(KeyFromValueAdapter<K, V> adapter) {
+        this(adapter, new HashMap<>());
+    }
+    
+    /**
+     * Create a new instance, given the existing map
+     *
+     * @param adapter that can convert from the value into the key
+     * @param map
+     */
+    public KeyInValueMap(KeyFromValueAdapter<K, V> adapter, Map<K, V> map) {
         this.adapter = adapter;
+        this.instance = map;
     }
 
     @Override
@@ -144,8 +95,7 @@ public class KeyInValueHashMap<K, V> extends AbstractMap<K, V> {
      * @return true if the value was added.
      */
     public boolean add(V value) {
-        EntryWrapper entry = new EntryWrapper(value);
-        return entrySet.add(entry);
+    	return instance.putIfAbsent(adapter.getKey(value), value) == null;
     }
 
     /**
@@ -158,16 +108,16 @@ public class KeyInValueHashMap<K, V> extends AbstractMap<K, V> {
      */
     @Override
     public V remove(Object value) {
-        EntryWrapper entry = new EntryWrapper((V)value);
-        if (entrySet.remove(entry))
-            return (V)value;
-
-        return null;
+    	try {
+    		return instance.remove(adapter.getKey((V)value));
+    	} catch (ClassCastException e) {
+    		return instance.remove(value);
+    	}
     }
 
-    @Override
-    public Set<Map.Entry<K, V>> entrySet() {
-        return entrySet;
-    }
+	@Override
+	public Set<Entry<K, V>> entrySet() {
+		return instance.entrySet();
+	}
 
 }

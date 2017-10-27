@@ -25,8 +25,8 @@ import java.util.Dictionary;
 import java.util.Set;
 import org.komodo.osgi.PluginService;
 import org.komodo.spi.storage.StorageService;
-import org.komodo.spi.utils.KeyInValueHashMap;
-import org.komodo.spi.utils.KeyInValueHashMap.KeyFromValueAdapter;
+import org.komodo.spi.utils.KeyInValueMap;
+import org.komodo.spi.utils.KeyInValueMap.KeyFromValueAdapter;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleEvent;
 
@@ -44,7 +44,7 @@ public class StorageServiceProvider extends AbstractServiceProvider<StorageServi
         }
     }
 
-    private KeyInValueHashMap<String, StorageService> storageServices = new KeyInValueHashMap<>(new StorageServiceKeyAdapter());
+    private KeyInValueMap<String, StorageService> storageServices = new KeyInValueMap<>(new StorageServiceKeyAdapter());
 
     public StorageServiceProvider(PluginService pluginService) {
         super(pluginService);

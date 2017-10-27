@@ -73,8 +73,8 @@ import org.komodo.spi.repository.RepositoryObserver;
 import org.komodo.spi.storage.StorageConnector;
 import org.komodo.spi.storage.StorageReference;
 import org.komodo.spi.storage.StorageService;
-import org.komodo.spi.utils.KeyInValueHashMap;
-import org.komodo.spi.utils.KeyInValueHashMap.KeyFromValueAdapter;
+import org.komodo.spi.utils.KeyInValueMap;
+import org.komodo.spi.utils.KeyInValueMap.KeyFromValueAdapter;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
 import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
@@ -163,8 +163,8 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
 
     private static KeyFromValueAdapter< CacheKey, WorkspaceManager > adapter = new WskpMgrAdapter();
 
-    private static KeyInValueHashMap< CacheKey, WorkspaceManager > instances = 
-                                                                        new KeyInValueHashMap< CacheKey, WorkspaceManager >(adapter);
+    private static KeyInValueMap< CacheKey, WorkspaceManager > instances = 
+                                                                        new KeyInValueMap< CacheKey, WorkspaceManager >(adapter);
 
     private final String owner;
 

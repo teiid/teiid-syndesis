@@ -34,8 +34,8 @@ import java.util.Map;
 import javax.xml.parsers.SAXParserFactory;
 import org.komodo.rest.json.JsonConstants;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.utils.KeyInValueHashMap;
-import org.komodo.spi.utils.KeyInValueHashMap.KeyFromValueAdapter;
+import org.komodo.spi.utils.KeyInValueMap;
+import org.komodo.spi.utils.KeyInValueMap.KeyFromValueAdapter;
 import org.komodo.utils.StringUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -135,7 +135,7 @@ public class TeiidXsdReader implements XSVisitor, JsonConstants {
         }
     }
 
-    private static KeyInValueHashMap<String, AliasMapper> ALIAS_CACHE = new KeyInValueHashMap<>(new AliasMapperAdapter());
+    private static KeyInValueMap<String, AliasMapper> ALIAS_CACHE = new KeyInValueMap<>(new AliasMapperAdapter());
 
     static {
         AliasMapper vdbMapper = new AliasMapper("vdb");

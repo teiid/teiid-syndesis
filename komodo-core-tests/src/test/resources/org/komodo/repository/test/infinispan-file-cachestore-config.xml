@@ -3,6 +3,9 @@
     xmlns="urn:infinispan:config:7.2">
 
     <cache-container>
+    
+    	<jmx duplicate-domains="true" />
+    	
         <local-cache name="Test Repository" statistics="false">
 
             <transaction

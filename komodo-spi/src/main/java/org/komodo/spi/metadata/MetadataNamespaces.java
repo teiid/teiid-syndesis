@@ -23,8 +23,8 @@ package org.komodo.spi.metadata;
 
 import java.util.Map;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.utils.KeyInValueHashMap;
-import org.komodo.spi.utils.KeyInValueHashMap.KeyFromValueAdapter;
+import org.komodo.spi.utils.KeyInValueMap;
+import org.komodo.spi.utils.KeyInValueMap.KeyFromValueAdapter;
 
 /**
  *
@@ -167,7 +167,7 @@ public interface MetadataNamespaces extends StringConstants {
 
         private String unbracedURI;
 
-        private static KeyInValueHashMap<String, URI> nsMap = null;
+        private static KeyInValueMap<String, URI> nsMap = null;
 
         /**
          * @param prefix uri prefix
@@ -211,7 +211,7 @@ public interface MetadataNamespaces extends StringConstants {
          */
         public static Map<String, URI> map() {
             if (nsMap == null) {
-                nsMap = new KeyInValueHashMap<String, MetadataNamespaces.URI>(new URIMapAdapter());
+                nsMap = new KeyInValueMap<String, MetadataNamespaces.URI>(new URIMapAdapter());
                 nsMap.add(SF);
                 nsMap.add(RELATIONAL);
                 nsMap.add(WS);

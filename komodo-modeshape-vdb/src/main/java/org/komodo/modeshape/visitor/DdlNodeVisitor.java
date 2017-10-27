@@ -48,7 +48,7 @@ import org.komodo.spi.metadata.MetadataNamespaces;
 import org.komodo.spi.runtime.version.MetadataVersion;
 import org.komodo.spi.type.DataTypeService;
 import org.komodo.spi.type.DataTypeService.DataTypeName;
-import org.komodo.spi.utils.KeyInValueHashMap;
+import org.komodo.spi.utils.KeyInValueMap;
 import org.komodo.utils.StringUtils;
 import org.modeshape.jcr.JcrLexicon;
 import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
@@ -103,7 +103,7 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
 
     private Set<DataTypeName> precisionDataTypes;
 
-    private KeyInValueHashMap<String, URI> namespaceMap = new KeyInValueHashMap<String, URI>(new URIMapAdapter());
+    private KeyInValueMap<String, URI> namespaceMap = new KeyInValueMap<String, URI>(new URIMapAdapter());
 
     private static Map<String, MixinTypeName> mixinTypeIndex = new HashMap<String, MixinTypeName>();
 
