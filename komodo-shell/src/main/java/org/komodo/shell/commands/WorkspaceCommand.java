@@ -21,7 +21,7 @@
  ************************************************************************************/
 package org.komodo.shell.commands;
 
-import org.komodo.repository.ObjectImpl;
+import org.komodo.core.repository.ObjectImpl;
 import org.komodo.shell.BuiltInShellCommand;
 import org.komodo.shell.CommandResultImpl;
 import org.komodo.shell.ShellI18n;

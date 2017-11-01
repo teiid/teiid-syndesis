@@ -45,8 +45,7 @@ import org.komodo.spi.runtime.TeiidDataSource;
 import org.komodo.spi.runtime.TeiidPropertyDefinition;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
-import org.modeshape.jcr.JcrLexicon;
-import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
+import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 
 /**
  * Implementation of connection instance model
@@ -94,7 +93,7 @@ public class ConnectionImpl extends RelationalObjectImpl implements Connection, 
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
-        final Property prop = getRawProperty( transaction, JcrLexicon.UUID.getString() );
+        final Property prop = this.getObjectFactory().getId(transaction, this); 
         final String result = prop.getStringValue( transaction );
         return result;
     }
@@ -180,7 +179,7 @@ public class ConnectionImpl extends RelationalObjectImpl implements Connection, 
             return Connection.DEFAULT_JDBC;
         }
 
-        return ( org.teiid.modeshape.sequencer.dataservice.Connection.Type.JDBC.name().equals(connectionType) );
+        return ( DataVirtLexicon.Connection.JDBC_TYPE_CONSTANT.equals(connectionType) );
     }
 
     /**
@@ -246,8 +245,8 @@ public class ConnectionImpl extends RelationalObjectImpl implements Connection, 
     @Override
     public void setJdbc(UnitOfWork uow,
                         boolean isJdbc) throws KException {
-        final String connectionType = ( isJdbc ? org.teiid.modeshape.sequencer.dataservice.Connection.Type.JDBC.name() 
-                                               : org.teiid.modeshape.sequencer.dataservice.Connection.Type.RESOURCE.name() );
+        final String connectionType = ( isJdbc ? DataVirtLexicon.Connection.JDBC_TYPE_CONSTANT 
+                                               : DataVirtLexicon.Connection.RESOURCE_TYPE_CONSTANT );
         setObjectProperty( uow, "setJdbc", DataVirtLexicon.Connection.TYPE, connectionType ); //$NON-NLS-1$
         updatePropFilters(uow);
     }
@@ -357,7 +356,7 @@ public class ConnectionImpl extends RelationalObjectImpl implements Connection, 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#setProperty(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
+     * @see org.komodo.core.repository.ObjectImpl#setProperty(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
      *      java.lang.Object[])
      */
     @Override

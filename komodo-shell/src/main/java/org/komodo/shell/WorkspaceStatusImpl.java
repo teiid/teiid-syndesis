@@ -35,6 +35,7 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -45,11 +46,10 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
-
 import org.komodo.core.KEngine;
-import org.komodo.repository.ObjectImpl;
-import org.komodo.repository.RepositoryImpl;
-import org.komodo.repository.SynchronousCallback;
+import org.komodo.core.repository.ObjectImpl;
+import org.komodo.core.repository.RepositoryImpl;
+import org.komodo.core.repository.SynchronousCallback;
 import org.komodo.shell.api.KomodoShell;
 import org.komodo.shell.api.ShellCommand;
 import org.komodo.shell.api.ShellCommandFactory;
@@ -73,7 +73,6 @@ import org.komodo.utils.FileUtils;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
 import org.komodo.utils.i18n.I18n;
-import org.modeshape.common.collection.Collections;
 
 /**
  * Implementation of WorkspaceStatus
@@ -314,7 +313,7 @@ public class WorkspaceStatusImpl implements PropertyProvider, WorkspaceStatus {
     public void commit( final String source ) throws Exception {
         String newTxName = source;
         final String txName = this.uow.getName();
-        this.uow.getDelegate().commit();
+        this.uow.getWorkspaceTxDelegate().commit();
 
         try {
             final boolean success = this.callback.await( 3, TimeUnit.MINUTES );
@@ -369,7 +368,7 @@ public class WorkspaceStatusImpl implements PropertyProvider, WorkspaceStatus {
     public void rollback( final String source ) throws Exception {
         String newTxName = source;
         final String txName = this.uow.getName();
-        this.uow.getDelegate().rollback();
+        this.uow.getWorkspaceTxDelegate().rollback();
 
         try {
             final boolean success = this.callback.await( 3, TimeUnit.MINUTES );
@@ -1200,7 +1199,7 @@ public class WorkspaceStatusImpl implements PropertyProvider, WorkspaceStatus {
 
         WorkspaceStatusTransaction( final UnitOfWork delegate ) {
             super( delegate.getUserName(), delegate.getName(),
-                   ( ( RepositoryImpl.UnitOfWorkImpl )delegate ).getSession(),
+                   ( ( RepositoryImpl.UnitOfWorkImpl )delegate ).getDelegate(),
                    delegate.isRollbackOnly(),
                    delegate.getCallback() );
             this.delegate = delegate;
@@ -1224,16 +1223,6 @@ public class WorkspaceStatusImpl implements PropertyProvider, WorkspaceStatus {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.spi.repository.Repository.UnitOfWork#decode(java.lang.String)
-         */
-        @Override
-        public String decode( final String encoded ) {
-            return this.delegate.decode( encoded );
-        }
-
-        /**
-         * {@inheritDoc}
-         *
          * @see org.komodo.spi.repository.Repository.UnitOfWork#getCallback()
          */
         @Override
@@ -1241,7 +1230,7 @@ public class WorkspaceStatusImpl implements PropertyProvider, WorkspaceStatus {
             return this.delegate.getCallback();
         }
 
-        UnitOfWork getDelegate() {
+        public UnitOfWork getWorkspaceTxDelegate() {
             return this.delegate;
         }
 

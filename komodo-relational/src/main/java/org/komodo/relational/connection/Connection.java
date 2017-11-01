@@ -22,20 +22,19 @@
 package org.komodo.relational.connection;
 
 import java.util.Properties;
+import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.DeployStatus;
 import org.komodo.relational.RelationalObject;
 import org.komodo.relational.TypeResolver;
 import org.komodo.relational.connection.internal.ConnectionImpl;
-import org.komodo.repository.ObjectImpl;
 import org.komodo.spi.KException;
+import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
-import org.teiid.modeshape.sequencer.dataservice.DataServiceManifest;
-import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 
 /**
  * A model of a connection instance
@@ -43,9 +42,14 @@ import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 public interface Connection extends Exportable, RelationalObject {
 
     /**
+     * The required connection entry suffix. Value is {@value}.
+     */
+    public static final String CONNECTION_ENTRY_SUFFIX = "-connection.xml";
+
+    /**
      * The file extension of connections.
      */
-    DocumentType DOC_TYPE = new DocumentType( DataServiceManifest.CONNECTION_ENTRY_SUFFIX );
+    DocumentType DOC_TYPE = new DocumentType( CONNECTION_ENTRY_SUFFIX );
 
     /**
      * The type identifier.

@@ -21,13 +21,17 @@
  */
 package org.komodo.spi.repository;
 
-import java.math.BigDecimal;
-import java.util.Calendar;
+import java.util.Date;
 
 /**
  * The types of property value
  */
 public enum PropertyValueType {
+    /**
+     * Binary type
+     */
+    BINARY,
+
     /**
      * {@link String} type
      */
@@ -44,11 +48,6 @@ public enum PropertyValueType {
     INTEGER,
 
     /**
-     * {@link BigDecimal} type
-     */
-    BIG_DECIMAL,
-
-    /**
      * {@link Double} type
      */
     DOUBLE,
@@ -59,9 +58,14 @@ public enum PropertyValueType {
     BOOLEAN,
 
     /**
-     * {@link Calendar} type
+     * {@link Date} type
      */
-    CALENDAR,
+    DATE,
+
+    /**
+     * reference type
+     */
+    REFERENCE,
 
     /**
      * undefined type

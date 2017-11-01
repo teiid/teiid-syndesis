@@ -23,10 +23,10 @@ package org.komodo.relational.model;
 
 import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;
+import org.komodo.spi.lexicon.ddl.DdlConstants;
+import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlConstants;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
-import org.teiid.modeshape.sequencer.ddl.DdlConstants;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlConstants;
 
 /**
  * Represents a relational model table constraint.

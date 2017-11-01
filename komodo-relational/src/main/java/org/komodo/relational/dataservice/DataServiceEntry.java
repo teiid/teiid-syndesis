@@ -13,15 +13,13 @@ import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.StringUtils;
-import org.modeshape.jcr.JcrLexicon;
-import org.teiid.modeshape.sequencer.dataservice.DataServiceEntry.PublishPolicy;
-import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 
 /**
  * Represents an entry in a data service archive.
@@ -30,6 +28,62 @@ import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
  *        the entry type
  */
 public interface DataServiceEntry< T extends Exportable & RelationalObject > extends Exportable, RelationalObject {
+
+    /**
+     * Indicates how the entry should uploaded and/or deployed.
+     */
+    public enum PublishPolicy {
+
+        /**
+         * Always publish the file.
+         */
+        ALWAYS( "always" ),
+
+        /**
+         * Only publish if not already published.
+         */
+        IF_MISSING( "ifMissing" ),
+
+        /**
+         * Never publish the file.
+         */
+        NEVER( "never" );
+
+        /**
+         * The default policy.
+         *
+         * @see #IF_MISSING
+         */
+        public static final PublishPolicy DEFAULT = IF_MISSING;
+
+        /**
+         * @param xml the XML value whose type is being requested (can be <code>null</code> or empty)
+         * @return the appropriate type or <code>null</code> if not found
+         */
+        public static PublishPolicy fromXml( final String xml ) {
+            for ( final PublishPolicy type : values() ) {
+                if ( type.xml.equals( xml ) ) {
+                    return type;
+                }
+            }
+
+            return null;
+        }
+
+        private final String xml;
+
+        private PublishPolicy( final String xmlValue ) {
+            this.xml = xmlValue;
+        }
+
+        /**
+         * @return the value appropriate for an XML document (never <code>null</code> or empty)
+         */
+        public String toXml() {
+            return this.xml;
+        }
+
+    }
 
     /**
      * Empty resource content.
@@ -175,7 +229,7 @@ public interface DataServiceEntry< T extends Exportable & RelationalObject > ext
         String refId = null;
 
         if ( reference != null ) {
-            Property uuidProperty = reference.getRawProperty( transaction, JcrLexicon.UUID.getString() );
+            Property uuidProperty = getObjectFactory().getId(transaction, reference);
             if (uuidProperty == null) {
                 String msg = Messages.getString(Messages.Relational.NO_UUID_PROPERTY, reference.getName(transaction));
                 throw new KException(msg);

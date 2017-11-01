@@ -29,16 +29,15 @@ import org.komodo.relational.model.Column;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.TableConstraint;
 import org.komodo.spi.KException;
+import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon;
+import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon.Constraint;
+import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon.CreateTable;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
-import org.modeshape.jcr.JcrLexicon;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.Constraint;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.CreateTable;
 
 /**
  * A base implementation of a relational model table constraint.
@@ -77,7 +76,7 @@ abstract class TableConstraintImpl extends RelationalChildRestrictedObject imple
 
         String[] newRefs = null;
         final Property property = getProperty( transaction, Constraint.REFERENCES );
-        final String columnId = columnToAdd.getRawProperty( transaction, JcrLexicon.UUID.getString() ).getStringValue( transaction );
+        final String columnId = getObjectFactory().getId(transaction, columnToAdd).getStringValue( transaction );
 
         if ( property == null ) {
             newRefs = new String[] { columnId };
@@ -165,7 +164,7 @@ abstract class TableConstraintImpl extends RelationalChildRestrictedObject imple
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotNull( columnToRemove, "columnToRemove" ); //$NON-NLS-1$
 
-        final String columnId = columnToRemove.getRawProperty( transaction, JcrLexicon.UUID.getString() ).getStringValue( transaction );
+        final String columnId = getObjectFactory().getId(transaction, columnToRemove).getStringValue( transaction );
         final Column[] current = getColumns( transaction );
 
         if ( current.length == 0 ) {
@@ -180,7 +179,7 @@ abstract class TableConstraintImpl extends RelationalChildRestrictedObject imple
             if ( column.equals( columnToRemove ) ) {
                 found = true;
             } else {
-                updatedRefs[i] = column.getRawProperty( transaction, JcrLexicon.UUID.getString() ).getStringValue( transaction );
+                updatedRefs[i] = getObjectFactory().getId(transaction, column).getStringValue( transaction );
                 ++i;
             }
         }
@@ -195,7 +194,7 @@ abstract class TableConstraintImpl extends RelationalChildRestrictedObject imple
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#setProperty(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
+     * @see org.komodo.core.repository.ObjectImpl#setProperty(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
      *      java.lang.Object[])
      */
     @Override

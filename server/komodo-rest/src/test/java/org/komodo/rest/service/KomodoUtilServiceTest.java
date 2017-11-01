@@ -21,11 +21,17 @@
  */
 package org.komodo.rest.service;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
@@ -102,6 +108,7 @@ public final class KomodoUtilServiceTest extends AbstractKomodoServiceTest {
         assertNotNull(response.getEntity());
 
         final String entity = response.getEntity();
+        assertThat( response.getStatus(), is( Response.Status.OK.getStatusCode() ) );
         //System.out.println("Response from uri " + uri + ":\n" + entity);
 
         assertTrue(entity.contains("\"swagger\" : \"2.0\""));

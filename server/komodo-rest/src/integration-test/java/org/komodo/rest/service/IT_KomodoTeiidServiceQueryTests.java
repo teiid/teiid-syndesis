@@ -26,7 +26,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.komodo.repository.RepositoryImpl;
+import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.rest.relational.request.KomodoQueryAttribute;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.test.utils.TestUtilities;

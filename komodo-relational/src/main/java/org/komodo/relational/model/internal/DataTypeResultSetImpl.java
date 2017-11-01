@@ -33,7 +33,7 @@ import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
-import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
+import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
 
 /**
  * An implementation of a relational model procedure data type result set.
@@ -149,7 +149,7 @@ public final class DataTypeResultSetImpl extends ResultSetColumnImpl implements 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#rename(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.core.repository.ObjectImpl#rename(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
     public final void rename( final UnitOfWork transaction,

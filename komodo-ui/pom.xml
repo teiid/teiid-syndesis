@@ -8,7 +8,7 @@
     <!-- Parent -->
     <!-- ================================================================== -->
     <parent>
-        <groupId>org.komodo</groupId>
+        <groupId>org.teiid.komodo</groupId>
         <artifactId>komodo</artifactId>
         <version>0.0.4-SNAPSHOT</version>
     </parent>
@@ -44,17 +44,17 @@
     <!-- ================================================================== -->
     <dependencies>
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-core</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-spi</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-utils</artifactId>
 		</dependency>
     </dependencies>

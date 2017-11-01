@@ -61,6 +61,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 import org.komodo.core.KEngine;
+import org.komodo.core.repository.ObjectImpl;
+import org.komodo.core.repository.SynchronousCallback;
 import org.komodo.relational.ViewBuilderCriteriaPredicate;
 import org.komodo.relational.ViewDdlBuilder;
 import org.komodo.relational.connection.Connection;
@@ -76,8 +78,6 @@ import org.komodo.relational.resource.Driver;
 import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
-import org.komodo.repository.ObjectImpl;
-import org.komodo.repository.SynchronousCallback;
 import org.komodo.rest.KomodoRestException;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
@@ -95,6 +95,8 @@ import org.komodo.rest.relational.response.RestVdb;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.ExportConstants;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
@@ -102,8 +104,6 @@ import org.komodo.spi.runtime.ConnectionDriver;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
 import org.teiid.language.SQLConstants;
-import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -2249,7 +2249,7 @@ public final class KomodoDataserviceService extends KomodoService {
         boolean isDifferent = false;
         
         // Compile list of all columns for LH and RH tables in order.  Add aliases to distinguish
-        List<String> tableColNameOrdered = new ArrayList();
+        List<String> tableColNameOrdered = new ArrayList<>();
         Column[] columns = lhTable.getColumns(uow);
         for(Column column : columns) {
             tableColNameOrdered.add( LH_TABLE_ALIAS_DOT + column.getName(uow) );
@@ -2306,7 +2306,7 @@ public final class KomodoDataserviceService extends KomodoService {
      * @return the parsed list of column names
      */
     private List<String> getColumnNamesFromSQL(String sql) {
-        ArrayList<String> columnNames = new ArrayList();
+        ArrayList<String> columnNames = new ArrayList<>();
         
         int startIndex = sql.indexOf(SQLConstants.Reserved.SELECT)+(SQLConstants.Reserved.SELECT).length();
         int endIndex = sql.indexOf(SQLConstants.Reserved.FROM+StringConstants.SPACE);

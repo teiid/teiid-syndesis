@@ -22,7 +22,6 @@
 package org.komodo.spi.repository;
 
 import java.io.InputStream;
-import java.math.BigDecimal;
 import java.util.Calendar;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.Repository.UnitOfWork;
@@ -37,6 +36,11 @@ public interface Property extends KNode {
      * An empty array of model properties.
      */
     Property[] NO_PROPS = {};
+
+    /**
+     * @return the property factory instance
+     */
+    KPropertyFactory getPropertyFactory();
 
     /**
      * @param uow
@@ -63,7 +67,7 @@ public interface Property extends KNode {
      * @throws KException
      *         if the property does not exist or an error occurs
      */
-    boolean getBooleanValue( final UnitOfWork uow ) throws KException;
+    Boolean getBooleanValue( final UnitOfWork uow ) throws KException;
 
     /**
      * @param uow
@@ -72,7 +76,7 @@ public interface Property extends KNode {
      * @throws KException
      *         if not a multi-value property, if property does not exist, or if an error occurs
      */
-    boolean[] getBooleanValues( final UnitOfWork uow ) throws KException;
+    Boolean[] getBooleanValues( final UnitOfWork uow ) throws KException;
 
     /**
      * @param uow
@@ -95,24 +99,6 @@ public interface Property extends KNode {
     /**
      * @param uow
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @return the value represented as a <code>decimal</code> or <code>null</code> if the property doesn't exist
-     * @throws KException
-     *         if the property does not exist or an error occurs
-     */
-    BigDecimal getDecimalValue( final UnitOfWork uow ) throws KException;
-
-    /**
-     * @param uow
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @return the values represented as <code>decimal</code>s (never <code>null</code> or empty)
-     * @throws KException
-     *         if not a multi-value property, if property does not exist, or if an error occurs
-     */
-    BigDecimal[] getDecimalValues( final UnitOfWork uow ) throws KException;
-
-    /**
-     * @param uow
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @return the property descriptor (never <code>null</code>)
      * @throws KException
      *         if an error occurs
@@ -122,11 +108,29 @@ public interface Property extends KNode {
     /**
      * @param uow
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+     * @return the value represented as an <code>integer</code> or <code>null</code> if the property doesn't exist
+     * @throws KException
+     *         if the property does not exist or an error occurs
+     */
+    Integer getIntegerValue( final UnitOfWork uow ) throws KException;
+
+    /**
+     * @param uow
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+     * @return the values represented as <code>integer</code>s (never <code>null</code> or empty)
+     * @throws KException
+     *         if not a multi-value property, if property does not exist, or if an error occurs
+     */
+    Integer[] getIntegerValues( final UnitOfWork uow ) throws KException;
+
+    /**
+     * @param uow
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @return the value represented as a <code>double</code> or <code>null</code> if the property doesn't exist
      * @throws KException
      *         if the property does not exist or an error occurs
      */
-    double getDoubleValue( final UnitOfWork uow ) throws KException;
+    Double getDoubleValue( final UnitOfWork uow ) throws KException;
 
     /**
      * @param uow
@@ -135,7 +139,7 @@ public interface Property extends KNode {
      * @throws KException
      *         if not a multi-value property, if property does not exist, or if an error occurs
      */
-    double[] getDoubleValues( final UnitOfWork uow ) throws KException;
+    Double[] getDoubleValues( final UnitOfWork uow ) throws KException;
 
     /**
      * @param uow
@@ -144,7 +148,7 @@ public interface Property extends KNode {
      * @throws KException
      *         if the property does not exist or an error occurs
      */
-    long getLongValue( final UnitOfWork uow ) throws KException;
+    Long getLongValue( final UnitOfWork uow ) throws KException;
 
     /**
      * @param uow
@@ -153,7 +157,7 @@ public interface Property extends KNode {
      * @throws KException
      *         if not a multi-value property, if property does not exist, or if an error occurs
      */
-    long[] getLongValues( final UnitOfWork uow ) throws KException;
+    Long[] getLongValues( final UnitOfWork uow ) throws KException;
 
     /**
      * @param uow

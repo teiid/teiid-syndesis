@@ -21,6 +21,7 @@
  ************************************************************************************/
 package org.komodo.importer;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -28,8 +29,6 @@ import java.util.List;
 import java.util.Map;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.utils.ArgCheck;
-import org.modeshape.common.text.Position;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlParsingException;
 
 /**
  * ImportMessages
@@ -87,14 +86,16 @@ public class ImportMessages implements StringConstants {
     	}
 
     	String message = exception.getLocalizedMessage();
-    	if (exception instanceof TeiidDdlParsingException) {
-    		TeiidDdlParsingException teiidEx = (TeiidDdlParsingException) exception;
-    		Position position = teiidEx.getPosition();
-
-    		message = Messages.getString(Messages.IMPORTER.teiidParserException,
-    				teiidEx.getMessage(),
-    				position.getLine(),
-    				position.getColumn());
+    	if (exception.getClass().getName().equals("TeiidDdlParsingException")) {
+    	    try {
+    	        Method posMethod = exception.getClass().getMethod("getPosition");
+    	        Object position = posMethod.invoke(exception);
+    	        message = Messages.getString(Messages.IMPORTER.teiidParserException,
+    	                                     exception.getMessage(),
+    	                                     position.toString());
+    	    } catch (Exception ex) {
+    	        message = exception.getMessage();
+    	    }
     	}
 
     	errorMessages.add(message);

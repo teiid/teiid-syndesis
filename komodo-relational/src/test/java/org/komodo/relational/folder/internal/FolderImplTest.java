@@ -37,8 +37,8 @@ import org.komodo.relational.folder.Folder;
 import org.komodo.relational.model.Schema;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.spi.repository.KomodoType;
-import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
+import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public final class FolderImplTest extends RelationalModelTest {

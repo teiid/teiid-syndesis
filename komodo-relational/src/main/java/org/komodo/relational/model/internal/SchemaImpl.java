@@ -22,9 +22,8 @@
 package org.komodo.relational.model.internal;
 
 import java.util.Properties;
-import javax.jcr.Node;
 import org.komodo.core.KomodoLexicon;
-import org.komodo.modeshape.visitor.DdlNodeVisitor;
+import org.komodo.core.visitor.DdlNodeVisitor;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.model.Schema;
 import org.komodo.spi.KException;
@@ -71,10 +70,9 @@ public class SchemaImpl extends RelationalObjectImpl implements Schema {
 
         try {
             final StringBuffer result = new StringBuffer();
-            final Node schemaNode = node( transaction );
 
             final DdlNodeVisitor visitor = new DdlNodeVisitor(getVersion(), getDataTypeService(), false );
-            visitor.visit( schemaNode );
+            visitor.visit(transaction, this);
             result.append( visitor.getDdl() );
 
             return result.toString().getBytes();
@@ -109,7 +107,7 @@ public class SchemaImpl extends RelationalObjectImpl implements Schema {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getTypeIdentifier(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.ObjectImpl#getTypeIdentifier(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public KomodoType getTypeIdentifier( final UnitOfWork uow ) {

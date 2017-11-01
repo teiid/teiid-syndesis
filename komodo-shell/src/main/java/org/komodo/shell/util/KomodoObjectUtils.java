@@ -24,8 +24,8 @@ package org.komodo.shell.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.komodo.repository.RepositoryImpl;
-import org.komodo.repository.RepositoryTools;
+import org.komodo.core.repository.RepositoryImpl;
+import org.komodo.core.repository.RepositoryTools;
 import org.komodo.shell.ShellI18n;
 import org.komodo.shell.api.WorkspaceStatus;
 import org.komodo.spi.KException;
@@ -33,7 +33,7 @@ import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.PropertyDescriptor;
-import org.komodo.spi.repository.PropertyDescriptor.Type;
+import org.komodo.spi.repository.PropertyValueType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.utils.TextFormat;
 import org.komodo.ui.DefaultLabelProvider;
@@ -123,8 +123,8 @@ public class KomodoObjectUtils implements StringConstants {
             final String displayValue = RepositoryTools.getDisplayValue( wsStatus.getTransaction(), property );
 
             // If value is a path, convert it to a display path
-            final Type type = property.getDescriptor( wsStatus.getTransaction() ).getType();
-            final boolean propIsReference = ( ( Type.REFERENCE == type ) || ( Type.WEAKREFERENCE == type ) );
+            final PropertyValueType type = property.getDescriptor( wsStatus.getTransaction() ).getType();
+            final boolean propIsReference = ( ( PropertyValueType.REFERENCE == type ) );
             if(propIsReference) {
                 // Multiple references need to be converted from repo paths to display paths
                 if(property.isMultiple(wsStatus.getTransaction())) {
@@ -346,8 +346,8 @@ public class KomodoObjectUtils implements StringConstants {
 
             // TODO need to account for escaped values
 
-            final Type type = property.getDescriptor( status.getTransaction() ).getType();
-            final boolean propIsReference = ( ( Type.REFERENCE == type ) || ( Type.WEAKREFERENCE == type ) );
+            final PropertyValueType type = property.getDescriptor( status.getTransaction() ).getType();
+            final boolean propIsReference = ( ( PropertyValueType.REFERENCE == type ) );
             String valueAsText = null;
 
             if ( propIsReference ) {
@@ -491,7 +491,7 @@ public class KomodoObjectUtils implements StringConstants {
         }
 
         if ( descriptor != null ) {
-            if ( descriptor.getType() == Type.BOOLEAN ) {
+            if ( descriptor.getType() == PropertyValueType.BOOLEAN ) {
                 return ( FALSE_STRING.equals( value ) || TRUE_STRING.equals( value ) );
             }
 

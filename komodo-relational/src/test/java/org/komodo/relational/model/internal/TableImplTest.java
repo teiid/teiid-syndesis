@@ -55,12 +55,12 @@ import org.komodo.relational.model.UniqueConstraint;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.ExportConstants;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
+import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyDescriptor;
 import org.komodo.utils.StringUtils;
-import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public final class TableImplTest extends RelationalModelTest {
@@ -943,6 +943,7 @@ public final class TableImplTest extends RelationalModelTest {
         final Table refTable = RelationalModelFactory.createTable( getTransaction(), _repo, mock( Model.class ), "refTable" );
         final String name = "foreignKey";
         this.table.addForeignKey( getTransaction(), name, refTable );
+        commit();
 
         // Export the table
         byte[] bytes = this.table.export(getTransaction(), new Properties());
@@ -954,6 +955,7 @@ public final class TableImplTest extends RelationalModelTest {
         assertThat( exportedDdl.contains("column1"), is( true ) );
         assertThat( exportedDdl.contains("column2"), is( true ) );
         assertThat( exportedDdl.contains("FOREIGN KEY"), is( true ) );
+        assertThat( exportedDdl.contains("undefined"), is(false));
     }
     
     @Test

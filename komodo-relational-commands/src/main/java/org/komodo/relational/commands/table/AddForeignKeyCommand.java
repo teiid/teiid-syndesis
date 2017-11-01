@@ -21,8 +21,8 @@
  */
 package org.komodo.relational.commands.table;
 
+import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.model.Table;
-import org.komodo.repository.ObjectImpl;
 import org.komodo.shell.CommandResultImpl;
 import org.komodo.shell.api.CommandResult;
 import org.komodo.shell.api.WorkspaceStatus;

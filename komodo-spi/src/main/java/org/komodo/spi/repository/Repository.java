@@ -21,11 +21,10 @@
  */
 package org.komodo.spi.repository;
 
-import java.io.File;
 import java.net.URL;
 import java.util.List;
-import org.komodo.spi.KException;
 import org.komodo.spi.KClient;
+import org.komodo.spi.KException;
 
 /**
  * A repository is a data store containing artifacts generated while modeling VDBs
@@ -204,6 +203,11 @@ public interface Repository {
         UnitOfWorkListener getCallback();
 
         /**
+         * @return the session delegate of this transaction
+         */
+        UnitOfWorkDelegate getDelegate();
+
+        /**
          * @return an error caught during the transaction (can be <code>null</code>)
          * @see State#ERROR
          */
@@ -240,13 +244,6 @@ public interface Repository {
          * Discards all current changes made during this transaction.
          */
         void rollback();
-
-        /**
-         * Decode the given string if it has been encoded by the UnitOfWork implementation
-         * @param encoded encoded string
-         * @return a decoded string according to the encoding requirements of the implementation
-         */
-        String decode(String encoded);
     }
 
     /**
@@ -283,6 +280,16 @@ public interface Repository {
      * @throws KException if security failure occurs
      */
     void provision(UnitOfWork transaction, KomodoObject object, OperationType requestType) throws KException;
+
+    /**
+     * @return the factory for handling node implementations
+     */
+    KObjectFactory getObjectFactory();
+
+    /**
+     * @return the factory for handling property implementations
+     */
+    KPropertyFactory getPropertyFactory();
 
     /**
      * @param transaction
@@ -449,44 +456,6 @@ public interface Repository {
     ValidationManager getValidationManager() throws KException;
 
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param file
-     *        the file being added to the workspace (cannot be <code>null</code>)
-     * @param name
-     *        the name of the Komodo object to create (cannot be empty)
-     * @param parentPath
-     *        the path to where the object will be created (can be empty if creating at the workspace root)
-     * @return the Komodo object for the file (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    KomodoObject importFile( final UnitOfWork transaction,
-                             final File file,
-                             final String name,
-                             final String parentPath ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param url
-     *        the resource being added to the workspace (cannot be <code>null</code>)
-     * @param name
-     *        the name of the Komodo object to create (cannot be empty)
-     * @param parentPath
-     *        the path to where the Komodo object will be created (can be empty if importing to the root of the workspace)
-     * @return the Komodo object for the resource (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    KomodoObject importResource( final UnitOfWork transaction,
-                                 final URL url,
-                                 final String name,
-                                 final String parentPath ) throws KException;
-
-    /**
      * Notify the repository of the given {@link RepositoryClientEvent}
      *
      * @param event
@@ -621,10 +590,10 @@ public interface Repository {
      *        the transaction (cannot be <code>null</code> or have a state that is not
      *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
      *
-     * @return the komodo teiid cache
+     * @return the komodo validation root
      * @throws KException if an error occurs
      */
-    KomodoObject komodoTeiidCache(final UnitOfWork transaction) throws KException;
+    KomodoObject komodoValidationRoot(final UnitOfWork transaction) throws KException;
 
     /**
     *
@@ -636,4 +605,5 @@ public interface Repository {
     * @throws KException if an error occurs
     */
     KomodoObject komodoServersNode(UnitOfWork transaction) throws KException;
+
 }

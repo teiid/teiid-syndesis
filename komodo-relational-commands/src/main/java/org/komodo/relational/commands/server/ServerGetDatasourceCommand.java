@@ -37,7 +37,7 @@ import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.runtime.TeiidDataSource;
 import org.komodo.utils.StringUtils;
 import org.komodo.utils.i18n.I18n;
-import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
+import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 
 /**
  * A shell command to get a server Datasource and copy into the workspace
