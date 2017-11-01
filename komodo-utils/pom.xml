@@ -20,6 +20,18 @@
 					<target>${maven.compiler.target}</target>
 				</configuration>
 			</plugin>
+			<!-- Overrides test configuration to exclude AllTests classes -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<!-- Excludes AllTests classes since it just executes all tests a second 
+							time -->
+						<exclude>**/AllTests.java</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 

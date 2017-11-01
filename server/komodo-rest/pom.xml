@@ -424,9 +424,11 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
-					<!-- Excludes integration tests when unit tests are run -->
 					<excludes>
+						<!-- Excludes integration tests when unit tests are run -->
 						<exclude>**/IT*.java</exclude>
+						<!-- Excludes AllTests classes since it just executes all tests a second time -->
+						<exclude>**/AllTests.java</exclude>
 					</excludes>
 				</configuration>
 			</plugin>
