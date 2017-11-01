@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.komodo</groupId>
+		<groupId>org.teiid.komodo</groupId>
 		<artifactId>komodo-server</artifactId>
 		<version>0.0.4-SNAPSHOT</version>
 	</parent>
@@ -36,7 +36,7 @@
 
 		<version.resteasy>3.0.19.Final</version.resteasy>
 		<version.jboss.logging>3.3.0.Final</version.jboss.logging>
-		<manifest.dependencies></manifest.dependencies>
+		<manifest.dependencies>org.jboss.as.cli, org.jboss.as.controller-client, org.jboss.dmr, org.jboss.logging, org.infinispan, org.infinispan.commons</manifest.dependencies>
 
 	</properties>
 
@@ -114,27 +114,27 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-spi</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-utils</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-core</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-importer</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-relational</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-plugin-service</artifactId>
 		</dependency>
 		<!-- Have a conflict with tika-parser's dependency javax.ws.rs-api-2.0-m10 so must comes first in the classpath -->
@@ -156,22 +156,6 @@
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.tika</groupId>
-			<artifactId>tika-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.tika</groupId>
-			<artifactId>tika-parsers</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.modeshape</groupId>
-			<artifactId>modeshape-extractor-tika</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.modeshape</groupId>
-			<artifactId>modeshape-jcr</artifactId>
 		</dependency>
 
 		<dependency>
@@ -196,6 +180,21 @@
 		</dependency>
 
 		<!-- add jboss exclusions here -->
+		<dependency>
+			<groupId>org.infinispan</groupId>
+			<artifactId>infinispan-commons</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.infinispan</groupId>
+			<artifactId>infinispan-core</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.logging</groupId>
+			<artifactId>jboss-logging</artifactId>
+			<scope>provided</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.jboss.logging</groupId>
 			<artifactId>jboss-logging</artifactId>
@@ -329,14 +328,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-utils</artifactId>
-			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.komodo</groupId>
-			<artifactId>komodo-test-utils</artifactId>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
@@ -431,9 +424,11 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
-					<!-- Excludes integration tests when unit tests are run -->
 					<excludes>
+						<!-- Excludes integration tests when unit tests are run -->
 						<exclude>**/IT*.java</exclude>
+						<!-- Excludes AllTests classes since it just executes all tests a second time -->
+						<exclude>**/AllTests.java</exclude>
 					</excludes>
 				</configuration>
 			</plugin>

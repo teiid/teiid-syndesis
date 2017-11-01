@@ -71,7 +71,7 @@ import org.komodo.rest.relational.response.RestVdbPermission;
 import org.komodo.rest.relational.response.RestVdbTranslator;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.test.utils.TestUtilities;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 
 @SuppressWarnings( {"javadoc", "nls"} )
 public final class KomodoVdbServiceTest extends AbstractKomodoServiceTest {

@@ -29,7 +29,23 @@ public class SortSpecification extends BaseLanguageObject {
 	
 	public enum NullOrdering {
 		FIRST,
-		LAST
+		LAST;
+
+		 /**
+         * @param name string version of a NullOrdering enum value
+         * @return value with given name
+         */
+        public static NullOrdering findNullOrdering(String name) {
+            if (name == null)
+                return null;
+
+            name = name.toUpperCase();
+            for (NullOrdering no : values()) {
+                if (no.name().equals(name))
+                    return no;
+            }
+            return null;
+        }
 	}
 	
     private Ordering ordering;

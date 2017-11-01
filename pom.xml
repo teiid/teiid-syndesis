@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.komodo</groupId>
+    <groupId>org.teiid.komodo</groupId>
     <artifactId>komodo-parent</artifactId>
     <version>0.0.4-SNAPSHOT</version>
     <relativePath>komodo-parent/pom.xml</relativePath>
@@ -20,24 +20,20 @@
         <!-- First these -->
         <module>komodo-parent</module>
 
-        <module>komodo-modeshape</module>
         <module>komodo-spi</module>
         <module>komodo-utils-logger</module>
         <module>komodo-utils</module>
         <!-- <module>komodo-metadata</module> -->
         <module>komodo-metadata-instance</module>
-        <module>plugins</module>
-        <module>komodo-modeshape-sequencer-teiid-sql</module>
+
         <module>komodo-core</module>
+
+        <module>plugins</module>
 
         <!-- For Testing only -->
         <module>komodo-integration-utils</module>
-        <module>komodo-test-utils</module>
-        <module>komodo-modeshape-sequencer-teiid-sql-tests</module>
-        <module>komodo-core-tests</module>
 
         <module>komodo-ui</module>
-        <module>komodo-modeshape-vdb</module>
         <module>komodo-shell-api</module>
         <module>komodo-shell</module>
         <module>komodo-importer</module>
@@ -58,124 +54,37 @@
 
 	<properties>
 		<rootDir>${project.basedir}</rootDir>
-		<version.teiid.modeshape>0.0.1-SNAPSHOT</version.teiid.modeshape>
 		<version.javax.servlet>3.1.0</version.javax.servlet>
 		<version.javax.jacc>1.0.0.Final</version.javax.jacc>
 		<version.joda.time>2.7</version.joda.time>
 		<version.mapdb>1.0.6</version.mapdb>
-		<version.tika>1.14</version.tika>
 		<version.apache.commons.compress>1.12</version.apache.commons.compress>
 		<version.log4j>1.2.16</version.log4j>
 		<version.slf4j.log4j>1.7.2</version.slf4j.log4j>
+		<version.h2>1.4.196</version.h2>
 	</properties>
 
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
-				<groupId>org.modeshape</groupId>
-				<artifactId>modeshape-common</artifactId>
-				<version>${version.modeshape}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.modeshape</groupId>
-				<artifactId>modeshape-jcr</artifactId>
-				<version>${version.modeshape}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.modeshape</groupId>
-				<artifactId>modeshape-schematic</artifactId>
-				<version>${version.modeshape}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.modeshape</groupId>
-				<artifactId>modeshape-extractor-tika</artifactId>
-				<version>${version.modeshape}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.jboss.teiid.modeshape</groupId>
-				<artifactId>teiid-modeshape-sequencer-vdb</artifactId>
-				<version>${version.teiid.modeshape}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.teiid.modeshape</groupId>
-				<artifactId>teiid-modeshape-sequencer-ddl</artifactId>
-				<version>${version.teiid.modeshape}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.teiid.modeshape</groupId>
-				<artifactId>teiid-modeshape-sequencer-dataservice</artifactId>
-				<version>${version.teiid.modeshape}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.infinispan</groupId>
-				<artifactId>infinispan-cachestore-leveldb</artifactId>
-				<version>${version.infinispan}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.apache.tika</groupId>
-				<artifactId>tika-parsers</artifactId>
-				<version>${version.tika}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.apache.tika</groupId>
-				<artifactId>tika-core</artifactId>
-				<version>${version.tika}</version>
-			</dependency>
-
-			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-compress</artifactId>
 				<version>${version.apache.commons.compress}</version>
 			</dependency>
-
+			<dependency>
+				<groupId>com.h2database</groupId>
+				<artifactId>h2</artifactId>
+				<version>${version.h2}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.h2database</groupId>
+				<artifactId>h2-mvstore</artifactId>
+				<version>${version.h2}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
 	<dependencies>
-		<dependency>
-		<groupId>org.modeshape</groupId>
-		<artifactId>modeshape-common</artifactId>
-		</dependency>
-		<dependency>
-		<groupId>org.modeshape</groupId>
-		<artifactId>modeshape-jcr</artifactId>
-		</dependency>
-		<dependency>
-		<groupId>org.modeshape</groupId>
-		<artifactId>modeshape-schematic</artifactId>
-		</dependency>
-		<dependency>
-		<groupId>org.modeshape</groupId>
-		<artifactId>modeshape-jcr-api</artifactId>
-		</dependency>
-		<dependency>
-		<groupId>org.modeshape</groupId>
-		<artifactId>modeshape-extractor-tika</artifactId>
-		</dependency>
-		<dependency>
-            <groupId>org.jboss.teiid.modeshape</groupId>
-            <artifactId>teiid-modeshape-sequencer-ddl</artifactId>
-		</dependency>
-		<dependency>
-            <groupId>org.jboss.teiid.modeshape</groupId>
-            <artifactId>teiid-modeshape-sequencer-vdb</artifactId>
-		</dependency>
-		<dependency>
-            <groupId>org.jboss.teiid.modeshape</groupId>
-            <artifactId>teiid-modeshape-sequencer-dataservice</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>javax.jcr</groupId>
-			<artifactId>jcr</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.infinispan</groupId>
-			<artifactId>infinispan-cachestore-leveldb</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>

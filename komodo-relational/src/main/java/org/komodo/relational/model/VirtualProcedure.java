@@ -21,15 +21,16 @@
  */
 package org.komodo.relational.model;
 
+import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.TypeResolver;
 import org.komodo.relational.model.internal.VirtualProcedureImpl;
-import org.komodo.repository.ObjectImpl;
 import org.komodo.spi.KException;
+import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon;
+import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon.CreateProcedure;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.CreateProcedure;
 
 /**
  * Represents a virtual procedure (CREATE VIRTUAL PROCEDURE).
@@ -97,7 +98,7 @@ public interface VirtualProcedure extends Procedure {
                    && ObjectImpl.validatePropertyValue( transaction,
                                                         kobject.getRepository(),
                                                         kobject,
-                                                        org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.SchemaElement.TYPE,
+                                                        TeiidDdlLexicon.SchemaElement.TYPE,
                                                         SchemaElementType.VIRTUAL.name() );
         }
 

@@ -36,12 +36,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-
-import javax.jcr.Node;
-
 import org.komodo.metadata.internal.DataTypeServiceImpl;
 import org.komodo.metadata.internal.MetaArtifactFactory;
-import org.komodo.metadata.internal.NodeGenerator;
 import org.komodo.spi.KEvent;
 import org.komodo.spi.KObserver;
 import org.komodo.spi.metadata.MetadataClientEvent;
@@ -64,7 +60,7 @@ import org.komodo.utils.KLog;
 import org.teiid.adminapi.VDB;
 import org.teiid.core.util.ApplicationInfo;
 import org.teiid.query.parser.QueryParser;
-import org.teiid.query.sql.lang.Command;
+import org.teiid.query.sql.LanguageObject;
 import org.teiid.runtime.EmbeddedConfiguration;
 import org.teiid.runtime.EmbeddedServer;
 import org.teiid.translator.loopback.LoopbackExecutionFactory;
@@ -222,6 +218,8 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
     @Override
     public QSResult query(String vdb, String query, int offset, int limit) throws Exception {
+        checkStarted();
+
         QSResult result = new QSResult();
 
         KLog.getLogger().debug("Commencing query execution: {0}", query);
@@ -300,26 +298,9 @@ public class DefaultMetadataInstance implements MetadataInstance {
     }
 
     @Override
-    public void convertToJcr(String sql, Object parent) throws Exception {
+    public Collection<TeiidVdb> getVdbs() throws Exception {
         checkStarted();
 
-        if (! (parent instanceof Node))
-            throw new Exception(Messages.getString(Messages.MetadataServer.NotAJcrNode));
-
-        if (sql == null)
-            return;
-
-        Command command = QueryParser.getQueryParser().parseDesignerCommand(sql);
-
-        NodeGenerator generator = new NodeGenerator((Node) parent, getDataTypeService(), getVersion());
-        generator.visitObject(command);
-        if (generator.errorOccurred())
-            throw generator.getError();
-    }
-
-    @Override
-    public Collection<TeiidVdb> getVdbs() throws Exception {
-        
         Collection<? extends VDB> vdbs = server.getAdmin().getVDBs();
         if (vdbs.isEmpty())
             return Collections.emptyList();
@@ -334,11 +315,15 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
     @Override
     public Collection<String> getVdbNames() {
+        checkStarted();
+
         throw new UnsupportedOperationException();
     }
 
     @Override
     public TeiidVdb getVdb(String vdbName) throws Exception {
+        checkStarted();
+
         VDB vdb;
 
         vdb = server.getAdmin().getVDB(vdbName, "1");
@@ -356,72 +341,99 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
     @Override
     public String getSchema(String vdbName, String version, String modelName) {
+        checkStarted();
+
         throw new UnsupportedOperationException();
     }
 
     @Override
     public void deployDynamicVdb(String vdbDeploymentName, InputStream stream) throws Exception {
+        checkStarted();
+
         server.deployVDB(stream);
     }
 
     @Override
     public void undeployDynamicVdb(String vdbName) {
+        checkStarted();
+
         server.undeployVDB(vdbName);
     }
 
     @Override
     public Collection<TeiidTranslator> getTranslators() {
+        checkStarted();
+
         throw new UnsupportedOperationException();
     }
 
     @Override
     public TeiidTranslator getTranslator(String translatorName) {
+        checkStarted();
+
         throw new UnsupportedOperationException();
     }
 
     @Override
     public Collection<TeiidDataSource> getDataSources() {
+        checkStarted();
+
         throw new UnsupportedOperationException();
     }
 
     @Override
     public Set<String> getDataSourceTypeNames() {
+        checkStarted();
+
         throw new UnsupportedOperationException();
     }
 
     @Override
     public TeiidDataSource getDataSource(String sourceName) {
+        checkStarted();
+
         throw new UnsupportedOperationException();
     }
 
     @Override
     public TeiidDataSource
     getOrCreateDataSource(String connectionName, String jndiName, String sourceType, Properties properties) {
+        checkStarted();
+
         throw new UnsupportedOperationException();
     }
 
     @Override
     public void deleteDataSource(String sourceName) {
+        checkStarted();
+
         throw new UnsupportedOperationException();
     }
 
     @Override
     public Collection<ConnectionDriver> getDrivers() {
+        checkStarted();
+
         throw new UnsupportedOperationException();
     }
 
     @Override
     public void deployDriver(String driverName, File driverFile) {
+        checkStarted();
+
         throw new UnsupportedOperationException();
     }
 
     @Override
     public Collection<TeiidPropertyDefinition> getTemplatePropertyDefns(String driverName) {
+        checkStarted();
+
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    public void parse(String sql) throws Exception {
-        QueryParser.getQueryParser().parseDesignerCommand(sql);
+    public LanguageObject parse(String sql) throws Exception {
+        checkStarted();
+
+        return QueryParser.getQueryParser().parseDesignerCommand(sql);
     }
 }

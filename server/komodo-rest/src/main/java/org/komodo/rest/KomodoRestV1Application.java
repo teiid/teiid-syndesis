@@ -32,7 +32,6 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import javax.annotation.PreDestroy;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.WebApplicationException;
@@ -40,6 +39,7 @@ import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.komodo.core.KEngine;
+import org.komodo.core.repository.SynchronousCallback;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.ExistingNodeOptions;
@@ -51,7 +51,6 @@ import org.komodo.relational.importer.vdb.VdbImporter;
 import org.komodo.relational.resource.Driver;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
-import org.komodo.repository.SynchronousCallback;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.cors.KCorsFactory;
 import org.komodo.rest.cors.KCorsHandler;
@@ -78,6 +77,9 @@ import org.komodo.rest.swagger.RestVdbPermissionConverter;
 import org.komodo.rest.swagger.RestVdbTranslatorConverter;
 import org.komodo.spi.KEvent.Type;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.constants.SystemConstants;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
+import org.komodo.spi.logging.KLogger.Level;
 import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
@@ -85,7 +87,6 @@ import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.RepositoryClientEvent;
 import org.komodo.utils.KLog;
 import org.komodo.utils.observer.KLatchObserver;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 import io.swagger.converter.ModelConverters;
 import io.swagger.jaxrs.config.BeanConfig;
 
@@ -150,11 +151,6 @@ public class KomodoRestV1Application extends Application implements StringConsta
                 return properties.getProperty("app.version");
             }
         }
-
-        /**
-         * The komodo engine's data directory system property
-         */
-        String KOMODO_DATA_DIR = "komodo.dataDir"; //$NON-NLS-1$
 
         /**
          * Jboss server base directory
@@ -603,10 +599,10 @@ public class KomodoRestV1Application extends Application implements StringConsta
             // otherwise use "." relative to the working directory
             String baseDir = System.getProperty(V1Constants.JBOSS_SERVER_BASE_DIR, DOT) + File.separator;
 
-            // Set the komodo data directory prior to starting the engine
-            String komodoDataDir = System.getProperty(V1Constants.KOMODO_DATA_DIR);
+            // Set the komodo data directory prior to starting the engisne
+            String komodoDataDir = System.getProperty(SystemConstants.ENGINE_DATA_DIR);
             if (komodoDataDir == null)
-                System.setProperty(V1Constants.KOMODO_DATA_DIR, baseDir + "data"); //$NON-NLS-1$
+                System.setProperty(SystemConstants.ENGINE_DATA_DIR, baseDir + "data"); //$NON-NLS-1$
 
             // Set the log file path
             KLog.getLogger().setLogPath(baseDir + V1Constants.LOG_FILE_PATH);

@@ -23,8 +23,8 @@ package org.komodo.relational;
 
 import org.komodo.relational.RelationalObject.Filter;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
 import org.komodo.utils.ArgCheck;
-import org.modeshape.jcr.JcrLexicon;
 
 /**
  * A filter for excluding descriptors and properties from specific namespaces.

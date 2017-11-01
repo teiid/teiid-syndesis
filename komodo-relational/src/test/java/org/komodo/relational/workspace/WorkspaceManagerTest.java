@@ -40,6 +40,9 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.komodo.core.repository.ObjectImpl;
+import org.komodo.core.repository.RepositoryImpl;
+import org.komodo.core.repository.SynchronousCallback;
 import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
@@ -72,9 +75,6 @@ import org.komodo.relational.vdb.Permission;
 import org.komodo.relational.vdb.Translator;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.VdbImport;
-import org.komodo.repository.ObjectImpl;
-import org.komodo.repository.RepositoryImpl;
-import org.komodo.repository.SynchronousCallback;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.Exportable;
@@ -86,7 +86,7 @@ import org.komodo.spi.storage.StorageConnector;
 import org.komodo.spi.storage.StorageReference;
 import org.komodo.test.utils.TestUtilities;
 import org.komodo.utils.FileUtils;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 
 @SuppressWarnings( {"javadoc", "nls"} )
 public final class WorkspaceManagerTest extends RelationalModelTest {

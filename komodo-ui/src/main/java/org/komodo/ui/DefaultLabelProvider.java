@@ -29,9 +29,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.komodo.core.KomodoLexicon;
-import org.komodo.repository.Messages;
-import org.komodo.repository.ObjectImpl;
-import org.komodo.repository.RepositoryImpl;
+import org.komodo.core.repository.Messages;
+import org.komodo.core.repository.ObjectImpl;
+import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.Descriptor;

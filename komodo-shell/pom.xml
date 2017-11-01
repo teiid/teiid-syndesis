@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>org.komodo</groupId>
+		<groupId>org.teiid.komodo</groupId>
 		<artifactId>komodo</artifactId>
 		<version>0.0.4-SNAPSHOT</version>
 	</parent>
@@ -22,6 +22,18 @@
 				<configuration>
 					<source>${maven.compiler.source}</source>
 					<target>${maven.compiler.target}</target>
+				</configuration>
+			</plugin>
+			<!-- Overrides test configuration to exclude AllTests classes -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<!-- Excludes AllTests classes since it just executes all tests a second 
+							time -->
+						<exclude>**/AllTests.java</exclude>
+					</excludes>
 				</configuration>
 			</plugin>
 		</plugins>
@@ -50,43 +62,43 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-spi</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-utils</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-core</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-shell-api</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.komodo</groupId>
+			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-ui</artifactId>
 		</dependency>
 
-        <dependency>
-            <groupId>org.komodo</groupId>
-            <artifactId>komodo-utils</artifactId>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.komodo</groupId>
-            <artifactId>komodo-test-utils</artifactId>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
+		<dependency>
+			<groupId>org.teiid.komodo</groupId>
+			<artifactId>komodo-utils</artifactId>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.teiid.komodo</groupId>
+			<artifactId>komodo-core</artifactId>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
 
 	</dependencies>
 </project>

@@ -22,7 +22,7 @@
 package org.komodo.rest.relational.connection;
 
 import org.komodo.rest.KomodoService;
-import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
+import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 
 public class ConnectionSchemaProperty {
 

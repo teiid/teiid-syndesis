@@ -28,14 +28,11 @@ import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.RelationalObject;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.Descriptor;
+import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.PropertyDescriptor;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.modeshape.jcr.JcrLexicon;
-import org.modeshape.jcr.JcrMixLexicon;
-import org.modeshape.jcr.ModeShapeLexicon;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public final class RelationalObjectImplTest extends RelationalModelTest {
@@ -65,29 +62,6 @@ public final class RelationalObjectImplTest extends RelationalModelTest {
 
         for ( final PropertyDescriptor descriptor : this.robject.getPropertyDescriptors( getTransaction() ) ) {
             if ( descriptor.getName().startsWith( JcrLexicon.Namespace.PREFIX ) ) {
-                fail();
-            }
-        }
-    }
-
-    @Test
-    public void shouldFilterMixNamespace() throws Exception {
-        this.robject.addDescriptor( getTransaction(), JcrMixLexicon.CREATED.getString() );
-        this.robject.setFilters( new RelationalObject.Filter[] { RelationalObject.MIX_FILTER } );
-
-        for ( final Descriptor descriptor : this.robject.getDescriptors( getTransaction() ) ) {
-            if ( descriptor.getName().startsWith( JcrMixLexicon.Namespace.PREFIX ) ) {
-                fail();
-            }
-        }
-    }
-
-    @Test
-    public void shouldFilterModeNamespace() throws Exception {
-        this.robject.setFilters( new RelationalObject.Filter[] { RelationalObject.MODE_FILTER } );
-
-        for ( final PropertyDescriptor descriptor : this.robject.getPropertyDescriptors( getTransaction() ) ) {
-            if ( descriptor.getName().startsWith( ModeShapeLexicon.Namespace.PREFIX ) ) {
                 fail();
             }
         }

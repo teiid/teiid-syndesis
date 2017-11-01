@@ -37,12 +37,12 @@ import org.komodo.importer.Messages;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.spi.KException;
+import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
-import org.modeshape.jcr.JcrLexicon;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -72,8 +72,8 @@ public class VdbImporter extends AbstractImporter {
         String vdbFilePath = importOptions.getOption(OptionKeys.VDB_FILE_PATH).toString();
 
         Vdb vdb = getWorkspaceManager(transaction).createVdb(transaction, parentObject, vdbName, vdbFilePath);
-        KomodoObject fileNode = vdb.addChild(transaction, JcrLexicon.CONTENT.getString(), null);
-        fileNode.setProperty(transaction, JcrLexicon.DATA.getString(), content);
+        KomodoObject fileNode = vdb.addChild(transaction, JcrLexicon.JCR_CONTENT, null);
+        fileNode.setProperty(transaction, JcrLexicon.JCR_DATA, content);
     }
 
     protected WorkspaceManager getWorkspaceManager(UnitOfWork transaction) throws KException {

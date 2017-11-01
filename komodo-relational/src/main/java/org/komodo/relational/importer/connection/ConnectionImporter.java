@@ -26,7 +26,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Objects;
-
 import org.komodo.importer.AbstractImporter;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
@@ -36,13 +35,14 @@ import org.komodo.importer.Messages;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.spi.KException;
+import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
+import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
+import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
-import org.modeshape.jcr.api.JcrConstants;
 import org.teiid.modeshape.sequencer.dataservice.ConnectionReader;
-import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 
 /**
  * An importer for connections.
@@ -102,10 +102,10 @@ public class ConnectionImporter extends AbstractImporter {
             if ( shouldSequence ) {
                 // upload connection file so that it will be sequenced
                 final Connection ds = getWorkspaceManager(transaction).createConnection( transaction, parentObject, connection.getName() );
-                final KomodoObject fileNode = ds.addChild( transaction, JcrConstants.JCR_CONTENT, JcrConstants.NT_RESOURCE );
+                final KomodoObject fileNode = ds.addChild( transaction, JcrLexicon.JCR_CONTENT, NTLexicon.NT_RESOURCE );
 
                 ByteArrayInputStream contentStream = new ByteArrayInputStream(content.getBytes());
-                fileNode.setProperty( transaction, JcrConstants.JCR_DATA, contentStream );
+                fileNode.setProperty( transaction, JcrLexicon.JCR_DATA, contentStream );
             }
         } catch ( final Exception e ) {
             if ( e instanceof KException ) {

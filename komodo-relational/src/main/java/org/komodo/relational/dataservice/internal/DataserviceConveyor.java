@@ -53,6 +53,8 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
+import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
 import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.KomodoObject;
@@ -64,7 +66,6 @@ import org.komodo.spi.runtime.TeiidVdb;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.FileUtils;
 import org.komodo.utils.StringUtils;
-import org.modeshape.jcr.api.JcrConstants;
 import org.teiid.modeshape.sequencer.dataservice.DataServiceManifest;
 import org.teiid.modeshape.sequencer.dataservice.DataServiceManifestReader;
 
@@ -253,8 +254,8 @@ public class DataserviceConveyor implements StringConstants {
                                                              ( String )importOptions.getOption( ImportOptions.OptionKeys.NAME ) );
 
             // save content so that sequencer will start
-            final KomodoObject fileNode = dataservice.addChild( transaction, JcrConstants.JCR_CONTENT, JcrConstants.NT_RESOURCE );
-            fileNode.setProperty( transaction, JcrConstants.JCR_DATA, new FileInputStream(zipFile) );
+            final KomodoObject fileNode = dataservice.addChild( transaction, JcrLexicon.JCR_CONTENT, NTLexicon.NT_RESOURCE );
+            fileNode.setProperty( transaction, JcrLexicon.JCR_DATA, new FileInputStream(zipFile) );
         } catch (Exception ex) {
             throw new KException(ex);
         }

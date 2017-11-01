@@ -34,40 +34,12 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import javax.activation.MimeType;
-import javax.crypto.Cipher;
-import javax.crypto.spec.PSource;
-import javax.jcr.Node;
-import javax.management.JMException;
-import javax.management.remote.JMXConnector;
-import javax.naming.Binding;
-import javax.naming.directory.SearchControls;
-import javax.naming.ldap.LdapName;
-import javax.net.SocketFactory;
-import javax.net.ssl.SSLContext;
-import javax.script.ScriptEngineManager;
-import javax.security.auth.SubjectDomainCombiner;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.login.LoginContext;
-import javax.security.auth.spi.LoginModule;
-import javax.security.auth.x500.X500Principal;
-import javax.security.sasl.Sasl;
-import javax.sql.RowSet;
-import javax.sql.rowset.serial.SerialArray;
 import javax.transaction.xa.Xid;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.events.XMLEvent;
 import javax.xml.stream.util.XMLEventConsumer;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.dom.DOMLocator;
-import javax.xml.transform.sax.SAXTransformerFactory;
-import javax.xml.transform.stax.StAXSource;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.SchemaFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
@@ -77,7 +49,7 @@ import org.komodo.plugin.framework.AbstractBundleService;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.constants.SystemConstants;
-import org.komodo.spi.lexicon.TeiidSqlLexicon;
+import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon;
 import org.komodo.spi.outcome.Outcome;
 import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.runtime.version.MetadataVersion;
@@ -87,7 +59,6 @@ import org.komodo.spi.type.DataTypeService;
 import org.komodo.spi.uuid.WorkspaceUUIDService;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KEnvironment;
-import org.modeshape.jcr.api.Session;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
@@ -196,6 +167,8 @@ public class PluginService implements StringConstants {
             TeiidSqlLexicon.class,
             // org.komodo.spi.outcome
             Outcome.class,
+            // org.komodo.spi.repository
+            org.komodo.spi.repository.Repository.class,
             // org.komodo.spi.uuid
             WorkspaceUUIDService.class,
             // org.komodo.spi.storage
@@ -214,69 +187,6 @@ public class PluginService implements StringConstants {
              */
             // org.komodo.utils
             ArgCheck.class,
-
-            /**
-             * The javax libraries are not exported by default in osgi
-             * so need to specify the packages needed by teiid
-             */
-            // javax.activation
-            MimeType.class,
-            // javax.crypto
-            Cipher.class,
-            // javax.crypto.spec
-            PSource.class,
-            // javax.management
-            JMException.class,
-            // javax.management.remote
-            JMXConnector.class,
-            // javax.naming
-            Binding.class,
-            // javax.naming.directory
-            SearchControls.class,
-            // javax.naming.ldap
-            LdapName.class,
-            // javax.net
-            SocketFactory.class,
-            // javax.net.ssl
-            SSLContext.class,
-            // javax.script
-            ScriptEngineManager.class,
-            // javax.security.auth
-            SubjectDomainCombiner.class,
-            // javax.security.auth.callback
-            CallbackHandler.class,
-            // javax.security.auth.login
-            LoginContext.class,
-            // javax.security.auth.spi
-            LoginModule.class,
-            // javax.security.auth.x500
-            X500Principal.class,
-            // javax.security.sasl
-            Sasl.class,
-            // javax.sql
-            RowSet.class,
-            // javax.sql.rowset.serial
-            SerialArray.class,
-            // javax.xml.datatype
-            DatatypeFactory.class,
-            // javax.xml.namespace
-            QName.class,
-            // javax.xml.parsers
-            DocumentBuilder.class,
-            // javax.xml.transform
-            Transformer.class,
-            // javax.xml.transform.dom
-            DOMLocator.class,
-            // javax.xml.transform.sax
-            SAXTransformerFactory.class,
-            // javax.xml.transform.stax
-            StAXSource.class,
-            // javax.xml.transform.stream
-            StreamSource.class,
-            // javax.xml.validation
-            SchemaFactory.class,
-            // javax.xml.xpath
-            XPath.class,
 
             /**
              * The org.xml libraries are not exported by default in osgi
@@ -308,49 +218,35 @@ public class PluginService implements StringConstants {
         };
 
         pkgs.append(appendVersionedPackages(provider.getJavaxXmlStreamVersion(), streamClasses));
-
+        pkgs.append(COMMA);
         //
         // javax.xml.stream classes need a requirement version
         // even though they are being provided by the jre
         //
         Class<?>[] txClasses = new Class<?>[] {
+            // javax.transaction
+            javax.transaction.InvalidTransactionException.class,
             // javax.transaction.xa
             Xid.class
         };
 
         pkgs.append(appendVersionedPackages(provider.getJavaxTransactionVersion(), txClasses));
 
-        //
-        // 3rd party dependencies in the bundles get wired up with a version requirement
-        // so need to provide the version pragma with these packages to match
-        //
-        pkgs.append(Session.class.getPackage().getName())
-                .append(VERSION_PREFIX)
-                .append(SPEECH_MARK)
-                .append(provider.getModeshapeVersion())
-                .append(SPEECH_MARK)
-                .append(COMMA);
-
-        // Need to add in javax.jcr.Node support but also need to specify its version
-        // for apache felix to wire it up correctly.
-        pkgs.append(Node.class.getPackage().getName())
-                .append(VERSION_PREFIX)
-                .append(SPEECH_MARK)
-                .append(provider.getJcrVersion())
-                .append(SPEECH_MARK);
-
         return pkgs;
     }
 
     private String appendVersionedPackages(String version, Class<?>[] pkgClasses) {
         StringBuffer pkgs = new StringBuffer();
-        for (Class<?> klazz : pkgClasses) {
+        for (int i = 0; i < pkgClasses.length; ++i) {
+            Class<?> klazz = pkgClasses[i];
             pkgs.append(pkg(klazz))
                     .append(VERSION_PREFIX)
                     .append(SPEECH_MARK)
                     .append(version)
-                    .append(SPEECH_MARK)
-                    .append(COMMA);
+                    .append(SPEECH_MARK);
+
+            if (i < pkgClasses.length - 1)
+                pkgs.append(COMMA);
         }
 
         return pkgs.toString();

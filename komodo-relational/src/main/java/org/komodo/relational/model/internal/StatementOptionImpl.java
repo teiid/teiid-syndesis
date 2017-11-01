@@ -22,7 +22,6 @@
 package org.komodo.relational.model.internal;
 
 import java.io.InputStream;
-import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -30,6 +29,7 @@ import org.komodo.relational.Messages;
 import org.komodo.relational.internal.RelationalChildRestrictedObject;
 import org.komodo.relational.model.StatementOption;
 import org.komodo.spi.KException;
+import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyDescriptor;
@@ -39,7 +39,6 @@ import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
-import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
 
 /**
  * An implementation of a relational model DDL statement option.
@@ -75,7 +74,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
      * @see org.komodo.spi.repository.Property#getBooleanValue(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public boolean getBooleanValue( final UnitOfWork transaction ) throws KException {
+    public Boolean getBooleanValue( final UnitOfWork transaction ) throws KException {
         final String value = getOption( transaction );
         return Boolean.parseBoolean( value );
     }
@@ -88,7 +87,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
      *         if called
      */
     @Override
-    public boolean[] getBooleanValues( final UnitOfWork transaction ) {
+    public Boolean[] getBooleanValues( final UnitOfWork transaction ) {
         throw new UnsupportedOperationException( Messages.getString( Messages.Relational.INVALID_STATEMENT_OPTION_VALUE ) );
     }
 
@@ -126,29 +125,6 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getDecimalValue(org.komodo.spi.repository.Repository.UnitOfWork)
-     */
-    @Override
-    public BigDecimal getDecimalValue( final UnitOfWork transaction ) throws KException {
-        final String value = getOption( transaction );
-        return new BigDecimal( value );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.spi.repository.Property#getDecimalValues(org.komodo.spi.repository.Repository.UnitOfWork)
-     * @throws UnsupportedOperationException
-     *         if called
-     */
-    @Override
-    public BigDecimal[] getDecimalValues( final UnitOfWork transaction ) {
-        throw new UnsupportedOperationException( Messages.getString( Messages.Relational.INVALID_STATEMENT_OPTION_VALUE ) );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
      * @see org.komodo.spi.repository.Property#getDescriptor(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
@@ -175,7 +151,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
      * @see org.komodo.spi.repository.Property#getDoubleValue(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public double getDoubleValue( final UnitOfWork transaction ) throws KException {
+    public Double getDoubleValue( final UnitOfWork transaction ) throws KException {
         final String value = getOption( transaction );
         return Double.parseDouble( value );
     }
@@ -188,7 +164,30 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
      *         if called
      */
     @Override
-    public double[] getDoubleValues( final UnitOfWork transaction ) {
+    public Double[] getDoubleValues( final UnitOfWork transaction ) {
+        throw new UnsupportedOperationException( Messages.getString( Messages.Relational.INVALID_STATEMENT_OPTION_VALUE ) );
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see org.komodo.spi.repository.Property#getIntegerValue(org.komodo.spi.repository.Repository.UnitOfWork)
+     */
+    @Override
+    public Integer getIntegerValue( final UnitOfWork transaction ) throws KException {
+        final String value = getOption( transaction );
+        return Integer.parseInt( value );
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see org.komodo.spi.repository.Property#getIntegerValues(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @throws UnsupportedOperationException
+     *         if called
+     */
+    @Override
+    public Integer[] getIntegerValues( final UnitOfWork transaction ) {
         throw new UnsupportedOperationException( Messages.getString( Messages.Relational.INVALID_STATEMENT_OPTION_VALUE ) );
     }
 
@@ -198,7 +197,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
      * @see org.komodo.spi.repository.Property#getLongValue(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public long getLongValue( final UnitOfWork transaction ) throws KException {
+    public Long getLongValue( final UnitOfWork transaction ) throws KException {
         final String value = getOption( transaction );
         return Long.parseLong( value );
     }
@@ -211,7 +210,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
      *         if called
      */
     @Override
-    public long[] getLongValues( final UnitOfWork transaction ) {
+    public Long[] getLongValues( final UnitOfWork transaction ) {
         throw new UnsupportedOperationException( Messages.getString( Messages.Relational.INVALID_STATEMENT_OPTION_VALUE ) );
     }
 
@@ -250,7 +249,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.repository.ObjectImpl#getTypeIdentifier(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.ObjectImpl#getTypeIdentifier(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public KomodoType getTypeIdentifier( final UnitOfWork transaction ) {

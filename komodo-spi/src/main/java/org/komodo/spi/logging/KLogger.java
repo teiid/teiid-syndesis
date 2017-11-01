@@ -21,12 +21,19 @@
  */
 package org.komodo.spi.logging;
 
-import java.util.logging.Level;
-
 /**
  *
  */
 public interface KLogger {
+
+    enum Level {
+        OFF,
+        ERROR,
+        WARNING,
+        INFO,
+        DEBUG,
+        TRACE
+    }
 
     /**
      * Dispose of this logger, releasing any resources

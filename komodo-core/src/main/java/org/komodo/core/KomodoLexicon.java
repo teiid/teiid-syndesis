@@ -22,9 +22,8 @@
 package org.komodo.core;
 
 import org.komodo.spi.constants.StringConstants;
-import org.modeshape.jcr.JcrNtLexicon;
-import org.modeshape.jcr.api.JcrConstants;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
+import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
+import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon;
 
 /**
  * Constants for the JCR names of node types and properties related to the Komodo engine.
@@ -788,7 +787,7 @@ public interface KomodoLexicon extends StringConstants {
         /**
          * The node type name of the model's file child node. Value is {@value} .
          */
-        String FILE = JcrNtLexicon.FILE.getString();
+        String FILE = NTLexicon.NT_FILE;
 
         /**
          * The name of the metadata property (e.g., DDL). Value is {@value} .
@@ -917,7 +916,7 @@ public interface KomodoLexicon extends StringConstants {
         /**
          * The node type name of the file child node. Value is {@value} .
          */
-        String FILE_NODE_TYPE = JcrConstants.NT_FILE;
+        String FILE_NODE_TYPE = NTLexicon.NT_FILE;
 
         /**
          * The node name of the child node that contains the original imported resource. Value is {@value} .

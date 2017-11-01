@@ -23,13 +23,13 @@ package org.komodo.relational.commands.model;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
+import org.komodo.core.repository.SynchronousCallback;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.relational.commands.workspace.CreateSchemaCommand;
 import org.komodo.relational.commands.workspace.DeleteSchemaCommand;
 import org.komodo.relational.commands.workspace.WorkspaceCommandsI18n;
 import org.komodo.relational.importer.ddl.DdlImporter;
-import org.komodo.repository.SynchronousCallback;
 import org.komodo.shell.CommandResultImpl;
 import org.komodo.shell.CompletionConstants;
 import org.komodo.shell.ShellI18n;

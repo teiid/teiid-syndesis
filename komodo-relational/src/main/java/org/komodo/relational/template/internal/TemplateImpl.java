@@ -29,6 +29,7 @@ import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.template.Template;
 import org.komodo.relational.template.TemplateEntry;
 import org.komodo.spi.KException;
+import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Property;
@@ -39,8 +40,6 @@ import org.komodo.spi.runtime.EventManager;
 import org.komodo.spi.runtime.ExecutionConfigurationEvent;
 import org.komodo.spi.runtime.ExecutionConfigurationListener;
 import org.komodo.utils.ArgCheck;
-import org.modeshape.jcr.JcrLexicon;
-import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 
 /**
  * Implementation of template instance model
@@ -80,7 +79,7 @@ public class TemplateImpl extends RelationalObjectImpl implements Template, Even
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
-        final Property prop = getRawProperty( transaction, JcrLexicon.UUID.getString() );
+        final Property prop = getObjectFactory().getId( transaction, this );
         final String result = prop.getStringValue( transaction );
         return result;
     }

@@ -21,15 +21,13 @@
  */
 package org.komodo.relational;
 
+import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
+import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
+import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.PropertyDescriptor;
 import org.komodo.utils.ArgCheck;
-import org.modeshape.jcr.JcrLexicon;
-import org.modeshape.jcr.JcrMixLexicon;
-import org.modeshape.jcr.JcrNtLexicon;
-import org.modeshape.jcr.ModeShapeLexicon;
-import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
 
 /**
  * A {@link KomodoObject} related to a relational model.
@@ -75,16 +73,6 @@ public interface RelationalObject extends KomodoObject {
     Filter JCR_FILTER = new ExcludeNamespaceFilter( JcrLexicon.Namespace.PREFIX, JcrLexicon.Namespace.URI );
 
     /**
-     * A filter to exclude MIX-namespaced properties and type descriptors.
-     */
-    Filter MIX_FILTER = new ExcludeNamespaceFilter( JcrMixLexicon.Namespace.PREFIX, JcrMixLexicon.Namespace.URI );
-
-    /**
-     * A filter to exclude MODE-namespaced properties and type descriptors.
-     */
-    Filter MODE_FILTER = new ExcludeNamespaceFilter( ModeShapeLexicon.Namespace.PREFIX, ModeShapeLexicon.Namespace.URI );
-
-    /**
      * An empty collection of filters.
      */
     Filter[] NO_FILTERS = new Filter[ 0 ];
@@ -92,7 +80,7 @@ public interface RelationalObject extends KomodoObject {
     /**
      * A filter to exclude NT-namespaced properties and type descriptors.
      */
-    Filter NT_FILTER = new ExcludeNamespaceFilter( JcrNtLexicon.Namespace.PREFIX, JcrNtLexicon.Namespace.URI );
+    Filter NT_FILTER = new ExcludeNamespaceFilter( NTLexicon.Namespace.PREFIX, NTLexicon.Namespace.URI );
 
     /**
      * A filter to exclude residual properties and type descriptors.
@@ -128,7 +116,7 @@ public interface RelationalObject extends KomodoObject {
     /**
      * The default set of filters for restricting which properties and descriptors apply to relational objects.
      */
-    Filter[] DEFAULT_FILTERS = new Filter[] { DDL_QNAMES_FILTER, JCR_FILTER, MIX_FILTER, MODE_FILTER, NT_FILTER, RESIDUAL_FILTER };
+    Filter[] DEFAULT_FILTERS = new Filter[] { DDL_QNAMES_FILTER, JCR_FILTER, NT_FILTER, RESIDUAL_FILTER };
 
     /**
      * @return the filters to use when deciding which {@link PropertyDescriptor properties} and {@link Descriptor descriptors} are

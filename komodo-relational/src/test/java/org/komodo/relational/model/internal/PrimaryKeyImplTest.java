@@ -35,10 +35,9 @@ import org.komodo.relational.model.PrimaryKey;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.TableConstraint;
 import org.komodo.spi.KException;
+import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon;
+import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon.Constraint;
 import org.komodo.spi.repository.KomodoType;
-import org.modeshape.jcr.JcrLexicon;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.Constraint;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public final class PrimaryKeyImplTest extends RelationalModelTest {
@@ -65,7 +64,8 @@ public final class PrimaryKeyImplTest extends RelationalModelTest {
         assertThat( this.primaryKey.getColumns( getTransaction() )[0], is( column ) );
         assertThat( this.primaryKey.getProperty( getTransaction(), Constraint.REFERENCES ).getValues( getTransaction() ).length, is( 1 ) );
         assertThat( this.primaryKey.getProperty( getTransaction(), Constraint.REFERENCES ).getValues( getTransaction() )[0].toString(),
-                    is( column.getRawProperty( getTransaction(), JcrLexicon.UUID.getString() ).getStringValue( getTransaction() ) ) );
+                    // TODO Is this worth creating a getId() API method??
+                    is( column.getObjectFactory().getId(getTransaction(), column).getStringValue( getTransaction() ) ) );
     }
 
     @Test

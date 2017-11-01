@@ -47,7 +47,7 @@ import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyDescriptor;
-import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
+import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public final class ResultSetColumnImplTest extends RelationalModelTest {
