@@ -1,3 +1,0 @@
-org.teiid.translator.odata.ODataExecutionFactory
-org.teiid.translator.odata.sap.SAPODataExecutionFactory
-org.teiid.translator.odata.sap.SAPNWODataExecutionFactory
