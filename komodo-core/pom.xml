@@ -64,11 +64,6 @@
 				<version>${version.teiid.modeshape}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.jboss.teiid.modeshape</groupId>
-				<artifactId>teiid-modeshape-sequencer-</artifactId>
-				<version>${version.teiid.modeshape}</version>
-			</dependency>
-			<dependency>
 				<groupId>xerces</groupId>
 				<artifactId>xercesImpl</artifactId>
 				<version>${version.xerces}</version>

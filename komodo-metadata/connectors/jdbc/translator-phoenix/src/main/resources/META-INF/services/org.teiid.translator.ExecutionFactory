@@ -1,2 +1,0 @@
-org.teiid.translator.phoenix.PhoenixExecutionFactory
-org.teiid.translator.hbase.HBaseExecutionFactory
