@@ -23,7 +23,7 @@
         <module>komodo-spi</module>
         <module>komodo-utils-logger</module>
         <module>komodo-utils</module>
-        <!-- <module>komodo-metadata</module> -->
+        
         <module>komodo-metadata-instance</module>
 
         <module>komodo-core</module>
