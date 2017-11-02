@@ -19,6 +19,12 @@
         "persistence" : {
             "type" : "file",
             "path": "${komodo.dataDir}/komododb"
+        },
+        "binaryStorage" : {
+            "minimumBinarySizeInBytes" : 4096,
+            "minimumStringSize" : 4096,
+            "directory": "${komodo.dataDir}/storage/content/binaries",
+            "type" : "file"
         }
     },
     "indexProviders" : {

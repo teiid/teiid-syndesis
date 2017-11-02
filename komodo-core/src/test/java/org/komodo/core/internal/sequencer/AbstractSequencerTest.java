@@ -196,7 +196,7 @@ public abstract class AbstractSequencerTest extends MultiUseAbstractTest impleme
             fail("Exception occurred while running the Teiid Sql Sequencer");
         }
 
-        traverse(node);
+//        traverse(node);
 
         return node;
     }

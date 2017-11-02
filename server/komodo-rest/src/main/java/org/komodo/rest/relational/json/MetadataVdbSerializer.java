@@ -21,7 +21,7 @@
  */
 package org.komodo.rest.relational.json;
 
-import org.komodo.rest.relational.response.RestMetadataVdb;
+import org.komodo.rest.relational.response.metadata.RestMetadataVdb;
 import org.komodo.utils.StringUtils;
 
 /**

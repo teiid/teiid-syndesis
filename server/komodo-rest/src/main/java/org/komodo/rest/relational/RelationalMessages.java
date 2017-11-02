@@ -1160,14 +1160,14 @@ public final class RelationalMessages {
         METADATA_SERVICE_UPDATE_MISSING_MODELNAME,
 
         /**
-         * An error indicating update attempt failed because the Teiid VDB name was missing
+         * An error indicating update attempt failed because the Metadata VDB name was missing
          */
-        METADATA_SERVICE_UPDATE_MISSING_TEIID_VDBNAME,
+        METADATA_SERVICE_UPDATE_MISSING_METADATA_VDBNAME,
 
         /**
-         * An error indicating update attempt failed because the Teiid Model name was missing
+         * An error indicating update attempt failed because the Metadata Model name was missing
          */
-        METADATA_SERVICE_UPDATE_MISSING_TEIID_MODELNAME,
+        METADATA_SERVICE_UPDATE_MISSING_METADATA_MODELNAME,
 
         /**
          * An error indicating update attempt failed because retrieval of the teiid DDL failed.

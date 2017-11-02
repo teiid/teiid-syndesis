@@ -37,7 +37,7 @@ import org.komodo.spi.repository.Repository.UnitOfWork;
 /**
  * A connection that can be used by GSON to build a JSON document representation.
  */
-public final class RestConnection extends RestBasicEntity {
+public class RestConnection extends RestBasicEntity {
 
     /**
      * Label used to describe jndi name
@@ -64,6 +64,17 @@ public final class RestConnection extends RestBasicEntity {
      */
     public RestConnection() {
         // nothing to do
+    }
+
+    /**
+     * Constructor for those connections needing more control over what basic properties
+     * should be set
+     *
+     * @param baseUri
+     * @throws KException
+     */
+    public RestConnection(URI baseUri) throws KException {
+        super(baseUri);
     }
 
     /**

@@ -379,7 +379,7 @@ public class DataserviceConveyor implements StringConstants {
         final File driverFile = File.createTempFile( driverName, driverType.toString() );
         FileUtils.write( content, driverFile );
 
-        metadataInstance.deployDriver( driverName, driverFile );
+        metadataInstance.deployDataSourceDriver( driverName, driverFile );
         status.addProgressMessage( Messages.getString( Messages.DataserviceConveyor.DATA_SERVICE_DRIVER_SUCCESSFULLY_DEPLOYED,
                                                        driverName ) );
     }

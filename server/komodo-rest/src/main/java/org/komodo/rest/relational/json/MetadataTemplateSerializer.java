@@ -19,40 +19,45 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.rest.relational.json.connection;
+package org.komodo.rest.relational.json;
 
 import static org.komodo.rest.relational.json.KomodoJsonMarshaller.BUILDER;
 import java.io.IOException;
-import org.komodo.rest.relational.connection.RestTemplate;
-import org.komodo.rest.relational.json.BasicEntitySerializer;
+import org.komodo.rest.relational.response.metadata.RestMetadataTemplate;
+import org.komodo.utils.StringUtils;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
 /**
- * A GSON serializer/deserializer for {@link RestTemplate}s.
+ * A GSON serializer/deserializer for {@link RestMetadataTemplate}s.
  */
-public final class TemplateSerializer extends BasicEntitySerializer<RestTemplate> {
+public final class MetadataTemplateSerializer extends BasicEntitySerializer<RestMetadataTemplate> {
 
     @Override
-    protected RestTemplate createEntity() {
-        return new RestTemplate();
+    protected boolean isComplete(RestMetadataTemplate entity) {
+        return ! StringUtils.isBlank(entity.getId()) && entity.getkType() != null;
     }
 
     @Override
-    public String readExtension(String name, RestTemplate entity, JsonReader in) {
-        if (RestTemplate.ENTRIES_LABEL.equals(name)) {
+    protected RestMetadataTemplate createEntity() {
+        return new RestMetadataTemplate();
+    }
+
+    @Override
+    public String readExtension(String name, RestMetadataTemplate entity, JsonReader in) {
+        if (RestMetadataTemplate.ENTRIES_LABEL.equals(name)) {
             String[] entries = BUILDER.fromJson(in, String[].class);
             entity.setEntries(entries);
-            return RestTemplate.ENTRIES_LABEL;
+            return RestMetadataTemplate.ENTRIES_LABEL;
         }
 
         return null;
     }
 
     @Override
-    public void writeExtensions(final JsonWriter out, final RestTemplate entity) throws IOException {
+    public void writeExtensions(final JsonWriter out, final RestMetadataTemplate entity) throws IOException {
         if (entity.getEntries().size() > 0) {
-            out.name(RestTemplate.ENTRIES_LABEL);
+            out.name(RestMetadataTemplate.ENTRIES_LABEL);
             BUILDER.toJson(entity.getEntries().toArray(new String[0]), String[].class, out);
         }
     }

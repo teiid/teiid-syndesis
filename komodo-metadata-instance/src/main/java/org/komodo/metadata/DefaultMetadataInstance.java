@@ -21,10 +21,12 @@
  */
 package org.komodo.metadata;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.Driver;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -33,16 +35,22 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import org.komodo.metadata.internal.DataTypeServiceImpl;
 import org.komodo.metadata.internal.MetaArtifactFactory;
 import org.komodo.spi.KEvent;
+import org.komodo.spi.KException;
 import org.komodo.spi.KObserver;
+import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.metadata.MetadataClientEvent;
 import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.metadata.MetadataObserver;
+import org.komodo.spi.outcome.Outcome;
+import org.komodo.spi.outcome.OutcomeFactory;
 import org.komodo.spi.query.QSColumn;
 import org.komodo.spi.query.QSResult;
 import org.komodo.spi.query.QSRow;
@@ -57,31 +65,60 @@ import org.komodo.spi.type.DataTypeService;
 import org.komodo.spi.type.DataTypeService.DataTypeName;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
+import org.teiid.adminapi.Admin;
+import org.teiid.adminapi.PropertyDefinition;
+import org.teiid.adminapi.Translator;
 import org.teiid.adminapi.VDB;
+import org.teiid.adminapi.impl.VDBMetaData;
+import org.teiid.adminapi.jboss.AdminFactory;
 import org.teiid.core.util.ApplicationInfo;
+import org.teiid.jdbc.TeiidDriver;
 import org.teiid.query.parser.QueryParser;
 import org.teiid.query.sql.LanguageObject;
-import org.teiid.runtime.EmbeddedConfiguration;
-import org.teiid.runtime.EmbeddedServer;
-import org.teiid.translator.loopback.LoopbackExecutionFactory;
 
 public class DefaultMetadataInstance implements MetadataInstance {
 
+    private class JndiManager implements StringConstants {
+
+        private static final String PREFIX = JAVA + COLON + FORWARD_SLASH;
+
+        public String getName(String name) {
+            if (! name.startsWith(PREFIX))
+                return name;
+
+            name = name.replace(PREFIX, EMPTY_STRING);
+            if (name.startsWith(FORWARD_SLASH))
+                name = name.substring(1);
+
+            return name;
+        }
+    }
+
+    private static final Object TEIID_INSTANCE_LOCK = new Object();
+
+    private static final String TEST_VDB = EMPTY_STRING +
+        "<vdb name=\"ping\" version=\"1\">" +
+            "<model visible=\"true\" name=\"Foo\" type=\"PHYSICAL\" path=\"/dummy/Foo\">" +
+                "<source name=\"s\" translator-name=\"loopback\"/>" +
+                "<metadata type=\"DDL\">" +
+                    "<![CDATA[CREATE FOREIGN TABLE G1 (e1 string, e2 integer);]]>" +
+                "</metadata>" +
+            "</model>" +
+        "</vdb>";
+
     private static DefaultMetadataInstance instance;
 
-    private EmbeddedConfiguration serverConfig;
-
-    private EmbeddedServer server;
-
     private final Set<MetadataObserver> observers = new HashSet<>();
-
-    private Condition condition = Condition.NOT_REACHABLE;
 
     private DataTypeServiceImpl dataTypeService;
 
     private final DefaultMetadataVersion teiidVersion;
 
     private final MetaArtifactFactory factory = new MetaArtifactFactory();
+
+    private final JndiManager jndiMgr = new JndiManager();
+
+    private Admin admin;
 
     public static DefaultMetadataInstance getInstance() {
         if (instance == null)
@@ -95,82 +132,88 @@ public class DefaultMetadataInstance implements MetadataInstance {
         this.teiidVersion = new DefaultMetadataVersion(appInfo.getReleaseNumber());
     }
 
-    @Override
-    public Condition getCondition() {
-        return condition;
-    }
-
-    private void configureServer() {
-        if (serverConfig != null)
-            return;
-
-        serverConfig = new EmbeddedConfiguration();
-        serverConfig.setUseDisk(false);
-    }
-
-    private void addTranslators() throws Exception {
-        LoopbackExecutionFactory lef = new LoopbackExecutionFactory();
-        lef.setSupportsDirectQueryProcedure(true);
-        lef.start();
-        server.addTranslator("loopback", lef);
-    }
-
-    private void startServer() {
-        if (this.condition == Condition.REACHABLE)
-            return;
-
-        configureServer();
-
-        try {
-            server = new EmbeddedServer();
-            server.start(serverConfig);
-
-            addTranslators();
-        } catch (Throwable ex) {
-            errorObservers(ex);
-            return;
+    /**
+     * Wraps error in a {@link KException} if necessary.
+     *
+     * @param e
+     *        the error being handled (cannot be <code>null</code>)
+     * @return the error (never <code>null</code>)
+     */
+    private static KException handleError(Throwable e) {
+        assert (e != null);
+    
+        if (e instanceof KException) {
+            return (KException)e;
         }
-
-        this.condition = Condition.REACHABLE;
-
-        KEvent<MetadataInstance> event = new KEvent<MetadataInstance>(this, KEvent.Type.METADATA_SERVER_STARTED);
-        notifyObservers(event);
+    
+        return new KException(e);
     }
 
-    private void checkStarted() {
-        if (server == null)
-            startServer();
+    private String getAdminUser() {
+        return DEFAULT_ADMIN_USER;
     }
 
-    private void stopServer() {
-        if (this.condition == Condition.NOT_REACHABLE)
-            return;
+    private String getAdminPwd() {
+        return DEFAULT_ADMIN_PASSWORD;
+    }
 
-        try {
-            server.stop();
-        } catch (Throwable ex) {
-            errorObservers(ex);
-        } finally {
-            this.condition = Condition.NOT_REACHABLE;
+    private int getAdminPort() {
+        return DEFAULT_ADMIN_PORT;
+    }
 
-            KEvent<MetadataInstance> event = new KEvent<MetadataInstance>(this, KEvent.Type.METADATA_SERVER_STOPPED);
-            notifyObservers(event);
+    private String getJdbcUser() {
+        return DEFAULT_JDBC_USER;
+    }
+
+    private String getJdbcPwd() {
+        return DEFAULT_JDBC_PASSWORD;
+    }
+
+    private int getJdbcPort() {
+        return DEFAULT_JDBC_PORT;
+    }
+
+    private void connect() throws KException {
+        synchronized(TEIID_INSTANCE_LOCK) {
+            if (this.admin == null) {
+                try {
+                    /*
+                     * By the time this has been called the teiid version should be correct
+                     * for the given host and the host should be up, otherwise admin will
+                     * end up back as null anyway.
+                     */
+                    char[] passwordArray = null;
+                    if (getAdminPwd() != null) {
+                        passwordArray = getAdminPwd().toCharArray();
+                    }
+
+                    this.admin = AdminFactory.getInstance().createAdmin(HOST,
+                                                                        getAdminPort(),
+                                                                        getAdminUser(),
+                                                                        passwordArray);
+
+                    if (admin == null) {
+                        String msg = Messages.getString(Messages.MetadataServer.cannotConnectToInstance, getAdminUser());
+                        throw new KException(msg);
+                    }
+
+                } catch (Exception ex) {
+                    throw handleError(ex);
+                }
+            }
         }
     }
 
-    @Override
-    public void notify( MetadataClientEvent event ) {
-        if (event.getType() == MetadataClientEvent.EventType.STARTED) {
-            // Start the metadata instance if not already started
-            startServer();
-        } else if (event.getType() == MetadataClientEvent.EventType.SHUTTING_DOWN) {
-            stopServer();
+    private void disconnect() {
+        if (this.admin != null) {
+            this.admin.close();
+            this.admin = null;
         }
     }
 
-    protected void notifyObservers(KEvent<?> event) {
+    private void notifyObservers(KEvent<?> event) {
         final Set<MetadataObserver> copy = new HashSet<>(this.observers);
-
+    
         for (final MetadataObserver observer : copy) {
             try {
                 // Ensure all observers are informed even if one throws an exception
@@ -181,13 +224,154 @@ public class DefaultMetadataInstance implements MetadataInstance {
         }
     }
 
-    protected void errorObservers(Throwable ex) {
+    private void errorObservers(Throwable ex) {
         ArgCheck.isNotNull(ex);
-
+    
         final Set<KObserver> copy = new HashSet<>(this.observers);
-
+    
         for (final KObserver observer : copy) {
             observer.errorOccurred(ex);
+        }
+    }
+
+    private void startServer() throws KException {
+        if (getCondition() == Condition.REACHABLE)
+            return;
+
+        try {
+            connect();
+            KEvent<MetadataInstance> event = new KEvent<MetadataInstance>(this, KEvent.Type.METADATA_SERVER_STARTED);
+            notifyObservers(event);
+        } catch (Throwable ex) {
+            errorObservers(ex);
+            throw handleError(ex);
+        }
+    }
+
+    private void checkStarted() throws KException {
+        if (getCondition() != Condition.REACHABLE) {
+            startServer();
+
+            Outcome outcome = ping(ConnectivityType.ADMIN);
+            if (! outcome.isOK()) {
+                throw new KException(outcome.getException());
+            }
+        }
+    }
+
+    private void stopServer() throws KException {
+        if (getCondition() == Condition.NOT_REACHABLE)
+            return;
+
+        try {
+            disconnect();
+        } catch (Throwable ex) {
+            errorObservers(ex);
+            throw handleError(ex);
+        } finally {
+            KEvent<MetadataInstance> event = new KEvent<MetadataInstance>(this, KEvent.Type.METADATA_SERVER_STOPPED);
+            notifyObservers(event);
+        }
+    }
+
+    private Outcome pingAdmin() {
+        if (admin == null) {
+            try {
+                startServer();
+            } catch (Exception ex) {
+                return OutcomeFactory.getInstance().createError(ex.getLocalizedMessage(), ex);
+            }
+        }
+
+        try {
+            admin.getSessions();
+        } catch (Exception ex) {
+            return OutcomeFactory.getInstance().createError(ex.getLocalizedMessage(), ex);
+        }
+
+        return OutcomeFactory.getInstance().createOK();
+    }
+
+    private Outcome pingJdbc() {
+        String protocol = DEFAULT_INSTANCE_PROTOCOL;
+
+        Connection teiidJdbcConnection = null;
+        StringBuffer url = new StringBuffer();
+        url.append("jdbc").append(COLON).append("teiid")
+             .append(COLON).append("ping").append(AMPERSAND)
+             .append(protocol).append(HOST).append(COLON)
+             .append(getJdbcPort());
+
+        try {
+
+            admin.deploy(PING_VDB, new ByteArrayInputStream(TEST_VDB.getBytes()));
+
+            try {
+                StringBuffer urlAndCred = new StringBuffer(url);
+                urlAndCred.append(SEMI_COLON)
+                                     .append("user").append(EQUALS).append(getJdbcUser())
+                                     .append(SEMI_COLON)
+                                     .append("password").append(EQUALS).append(getJdbcPwd())
+                                     .append(SEMI_COLON);
+
+                TeiidDriver teiidDriver = TeiidDriver.getInstance();
+                teiidJdbcConnection = teiidDriver.connect(urlAndCred.toString(), null);
+                //pass
+            } catch (SQLException ex) {
+                String msg = Messages.getString(Messages.MetadataServer.instanceDeployUndeployProblemPingingTeiidJdbc, url);
+                return OutcomeFactory.getInstance().createError(msg, ex);
+            } finally {
+                admin.undeploy(PING_VDB);
+
+                if (teiidJdbcConnection != null) {
+                    teiidJdbcConnection.close();
+                }
+            }
+        } catch (Exception ex) {
+            String msg = Messages.getString(Messages.MetadataServer.instanceDeployUndeployProblemPingingTeiidJdbc, url);
+            return OutcomeFactory.getInstance().createError(msg, ex);
+        }
+
+        return OutcomeFactory.getInstance().createOK();
+    }
+
+    @Override
+    public Condition getCondition() {
+        return admin != null ? Condition.REACHABLE : Condition.NOT_REACHABLE;
+    }
+
+    @Override
+    public void refresh() throws KException {
+        try {
+            stopServer();
+
+            Thread.sleep(2000);
+
+            // Refresh is implied in the getting of the admin object since it will
+            // automatically load and refresh.
+            startServer();
+    
+        } catch (Exception e) {
+            String msg = Messages.getString(Messages.MetadataServer.refreshError, e.getLocalizedMessage()); //$NONNLS1$
+            throw new KException(msg);
+        }
+    }
+
+    @Override
+    public void notify( MetadataClientEvent event ) {
+        this.addObserver(event.getSource());
+
+        try {
+            if (event.getType() == MetadataClientEvent.EventType.STARTED) {
+                startServer();
+            } else if (event.getType() == MetadataClientEvent.EventType.SHUTTING_DOWN) {
+                stopServer();
+            }
+        } catch (KException ex) {
+            //
+            // Error should be captured by observer so log but do not throw
+            //
+            KLog.getLogger().error(Messages.getString(Messages.MetadataServer.startStopFailure, ex.getLocalizedMessage()));
         }
     }
 
@@ -217,7 +401,46 @@ public class DefaultMetadataInstance implements MetadataInstance {
     }
 
     @Override
-    public QSResult query(String vdb, String query, int offset, int limit) throws Exception {
+    public Outcome ping(ConnectivityType connectivityType) {
+        boolean testCausesConnect = false;
+        String msg = Messages.getString(Messages.MetadataServer.cannotConnectToInstance, getAdminUser());
+
+        if (! Condition.REACHABLE.equals(getCondition())) {
+            try {
+                startServer();
+                testCausesConnect = true;
+            } catch (Exception ex) {
+                return OutcomeFactory.getInstance().createError(msg, ex);
+            }
+        }
+
+        Outcome outcome = null;
+        if (! Condition.REACHABLE.equals(getCondition()))
+            return OutcomeFactory.getInstance().createError(msg);
+
+        try {
+            switch (connectivityType) {
+                case JDBC:
+                    outcome = pingJdbc();
+                    break;
+                default:
+                    outcome = pingAdmin();
+            }
+        } catch (Exception ex) {
+            return OutcomeFactory.getInstance().createError(ex.getLocalizedMessage(), ex);
+        }
+
+        // Only disconnect if this test ping caused
+        // the connect
+        if (testCausesConnect) {
+            disconnect();
+        }
+
+        return outcome;
+    }
+
+    @Override
+    public QSResult query(String vdb, String query, int offset, int limit) throws KException {
         checkStarted();
 
         QSResult result = new QSResult();
@@ -228,18 +451,34 @@ public class DefaultMetadataInstance implements MetadataInstance {
         Statement statement = null;
         ResultSet rs = null;
 
-        try {
-            KLog.getLogger().debug("Initialising SQL connection for vdb {0}", vdb);
+        KLog.getLogger().debug("Initialising SQL connection for vdb {0}", vdb);
 
-            Driver driver = server.getDriver();
-            connection = driver.connect("jdbc:teiid:" + vdb, null);
+        //
+        // Don't add in ds.setServerName(HOST) since if it remains null then it
+        // actiually connects as Embedded rather than using a socket
+        //
+        org.teiid.jdbc.TeiidDataSource ds = new org.teiid.jdbc.TeiidDataSource();
+        ds.setDatabaseName(vdb);
+        ds.setUser(getJdbcUser());
+        ds.setPassword(getJdbcPwd());
+        ds.setPortNumber(getJdbcPort());
+        ds.setSecure(true);
+
+        //
+        // Ensure any runtime exceptions are always caught and thrown as KExceptions
+        //
+        try {
+            connection = ds.getConnection();
+
             if (connection == null)
-                throw new Exception("Failed to make a connection to '" + vdb + "'");
+                throw new KException(Messages.getString(Messages.MetadataServer.vdbConnectionFailure, vdb));
 
             statement = connection.createStatement();
 
             KLog.getLogger().debug("Executing SQL Statement for query {0} with offset of {1} and limit of {2}",
-                                                       query, offset, limit);
+                                   query,
+                                   offset,
+                                   limit);
             rs = statement.executeQuery(query);
 
             ResultSetMetaData rsmd = rs.getMetaData();
@@ -281,6 +520,8 @@ public class DefaultMetadataInstance implements MetadataInstance {
             KLog.getLogger().debug("Query executed and returning {0} results", result.getRows().size());
 
             return result;
+        } catch (Throwable t) {
+            throw new KException(t);
         } finally {
             try {
                 if (rs != null)
@@ -298,142 +539,449 @@ public class DefaultMetadataInstance implements MetadataInstance {
     }
 
     @Override
-    public Collection<TeiidVdb> getVdbs() throws Exception {
+    public Collection<ConnectionDriver> getDataSourceDrivers() throws KException {
         checkStarted();
 
-        Collection<? extends VDB> vdbs = server.getAdmin().getVDBs();
-        if (vdbs.isEmpty())
-            return Collections.emptyList();
+        List<ConnectionDriver> drivers = new ArrayList<ConnectionDriver>();
+        Set<String> templateNames = getDataSourceTemplateNames();
+        for (String templateName : templateNames) {
+            if (templateName == null)
+                continue; // Seems to be a null driver installed in wildfly 10.0.1 by default
+            
+            drivers.add(new ConnectionDriver(templateName));
+        }
+        return drivers;
+    }
 
-        List<TeiidVdb> teiidVdbs = new ArrayList<>();
-        for (VDB vdb : vdbs) {
-            teiidVdbs.add(factory.createVdb(vdb));
+    @Override
+    public void deployDataSourceDriver(String driverName, File driverFile) throws KException {
+        checkStarted();
+        ArgCheck.isNotNull(driverName, "driverName"); //$NON-NLS-1$
+        
+        if (!driverFile.exists())
+            throw new KException(Messages.getString(Messages.MetadataServer.jarDeploymentJarNotFound, driverFile.getPath()));
+
+        if (!driverFile.canRead())
+            throw new KException(Messages.getString(Messages.MetadataServer.jarDeploymentJarNotReadable, driverFile.getPath()));
+
+        InputStream iStream = null;
+        try {
+            iStream = new FileInputStream(driverFile);
+        } catch (FileNotFoundException ex) {
+            throw handleError(ex);
         }
 
-        return teiidVdbs;
+        try {
+            admin.deploy(driverName, iStream);
+
+            // Give a 0.5 sec pause for the driver to finish loading.
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                // ignore
+            }
+
+        } catch (Exception ex) {
+            // Jar deployment failed
+            throw handleError(ex);
+        }
     }
 
     @Override
-    public Collection<String> getVdbNames() {
+    public void undeployDataSourceDriver(String driverName) throws KException {
         checkStarted();
+        ArgCheck.isNotNull(driverName, "driverName"); //$NON-NLS-1$
 
-        throw new UnsupportedOperationException();
+        try {
+            admin.undeploy(driverName);
+        } catch (Exception ex) {
+            // Jar deployment failed
+            throw handleError(ex);
+        }
     }
 
     @Override
-    public TeiidVdb getVdb(String vdbName) throws Exception {
+    public boolean dataSourceExists(String name) throws KException {
+        checkStarted();
+        try {
+            return admin.getDataSourceNames().contains(name);
+        } catch (Exception ex) {
+            throw handleError(ex);
+        }
+    }
+
+    @Override
+    public TeiidDataSource getOrCreateDataSource(String displayName, String dsName, String typeName, Properties properties)
+        throws KException {
         checkStarted();
 
-        VDB vdb;
+        ArgCheck.isNotEmpty(displayName, "displayName"); //$NONNLS1$
+        ArgCheck.isNotEmpty(dsName, "dsName"); //$NONNLS1$
+        ArgCheck.isNotEmpty(typeName, "typeName"); //$NONNLS1$
+        ArgCheck.isNotEmpty(properties, "properties"); //$NONNLS1$
 
-        vdb = server.getAdmin().getVDB(vdbName, "1");
+        for (Entry<Object, Object> entry : properties.entrySet()) {
+            Object value = entry.getValue();
+            String errorMsg = "No value for the connection property '" + entry.getKey() + "'"; //$NONNLS1$ //$NONNLS2$
+            ArgCheck.isNotNull(value, errorMsg);
+            ArgCheck.isNotEmpty(value.toString(), errorMsg);
+        }
 
+        checkStarted();
+
+        //
+        // Check for jndi name prefix and drop it
+        //
+        dsName = jndiMgr.getName(dsName);
+
+        // Check if exists, return false
+        if (dataSourceExists(dsName)) {
+            TeiidDataSource tds = getDataSource(dsName);
+            if (tds != null) {
+                return tds;
+            }
+        }
+
+        // For JDBC types, find the matching installed driver.  This is done currently by matching
+        // the profile driver classname to the installed driver classname
+        String connProfileDriverClass = properties.getProperty("driverclass"); //$NONNLS1$
+
+        // Verify the "typeName" exists.
+        if (!getDataSourceTemplateNames().contains(typeName)) {
+            if ("connectorjdbc".equals(typeName)) { //$NONNLS1$
+                throw new KException(Messages.getString(Messages.MetadataServer.jdbcSourceForClassNameNotFound,
+                                                       connProfileDriverClass));
+            } else {
+                throw new KException(Messages.getString(Messages.MetadataServer.dataSourceTypeDoesNotExist, typeName));
+            }
+        }
+
+        properties.setProperty(TeiidDataSource.DATASOURCE_DISPLAYNAME, displayName);
+        try {
+            admin.createDataSource(dsName, typeName, properties);
+        } catch (Exception ex) {
+            throw handleError(ex);
+        }
+
+        // Check that local name list contains new dsName
+        TeiidDataSource tds = getDataSource(dsName);
+        if (tds != null) {
+            return tds;
+        }
+
+        // We shouldn't get here if data source was created
+        throw new KException(Messages.getString(Messages.MetadataServer.errorCreatingDataSource, dsName, typeName));
+    }
+
+    @Override
+    public TeiidDataSource getDataSource(String name) throws KException {
+        checkStarted();
+        Properties dataSource;
+        try {
+            dataSource = admin.getDataSource(name);
+            if (dataSource == null)
+                return null;
+
+            return factory.createDataSource(name, dataSource);
+        } catch (Exception ex) {
+            throw handleError(ex);
+        }
+    }
+
+    @Override
+    public void deleteDataSource(String dsName) throws KException {
+        checkStarted();
+        try {
+            admin.deleteDataSource(dsName);
+        } catch (Exception ex) {
+            throw handleError(ex);
+        }
+    }
+
+    @Override
+    public Collection<TeiidDataSource> getDataSources() throws KException {
+        checkStarted();
+        try {
+            Collection<String> dsNames = admin.getDataSourceNames();
+            if (dsNames.isEmpty())
+                return Collections.emptyList();
+
+            List<TeiidDataSource> dsSources = new ArrayList<>();
+            for (String dsName : dsNames) {
+                TeiidDataSource dataSource = getDataSource(dsName);
+                dsSources.add(dataSource);
+            }
+
+            return dsSources;
+        } catch (Exception ex) {
+            throw handleError(ex);
+        }
+    }
+
+    @Override
+    public TeiidTranslator getTranslator(String name) throws KException {
+        checkStarted();
+        try {
+            return factory.createTranslator(admin.getTranslator(name));
+        } catch (Exception ex) {
+            throw handleError(ex);
+        }
+    }
+
+    @Override
+    public Collection<TeiidTranslator> getTranslators() throws KException {
+        checkStarted();
+        try {
+            Collection<? extends Translator> translators = admin.getTranslators();
+            if (translators.isEmpty())
+                return Collections.emptyList();
+
+            List<TeiidTranslator> teiidTranslators = new ArrayList<>();
+            for (Translator translator : translators) {
+                teiidTranslators.add(factory.createTranslator(translator));
+            }
+
+            return teiidTranslators;
+        } catch (Exception ex) {
+            throw handleError(ex);
+        }
+    }
+
+    private boolean isDynamic(VDB vdb) {
         if (vdb == null)
-            return null;
+            return false;
 
-        return factory.createVdb(vdb);
+        if (! (vdb instanceof VDBMetaData))
+            return false;
+
+        return ((VDBMetaData) vdb).isXmlDeployment();
     }
 
     @Override
-    public boolean hasVdb(String vdbName) throws Exception {
-        return getVdb(vdbName) != null;
+    public Collection<String> getVdbNames() throws KException {
+        checkStarted();
+        try {
+            Collection<? extends VDB> vdbs = admin.getVDBs();
+            if (vdbs.isEmpty())
+                return Collections.emptyList();
+
+            List<String> teiidVdbNames = new ArrayList<String>();
+            for (VDB vdb : vdbs) {
+                teiidVdbNames.add(vdb.getName());
+            }
+
+            return teiidVdbNames;
+        } catch (Exception ex) {
+            throw handleError(ex);
+        }
     }
 
     @Override
-    public String getSchema(String vdbName, String version, String modelName) {
+    public boolean hasVdb(String name) throws KException {
         checkStarted();
-
-        throw new UnsupportedOperationException();
+        return getVdb(name) != null;
     }
 
     @Override
-    public void deployDynamicVdb(String vdbDeploymentName, InputStream stream) throws Exception {
+    public boolean isVdbActive(String vdbName) throws KException {
         checkStarted();
+        if (!hasVdb(vdbName))
+            return false;
 
-        server.deployVDB(stream);
+        return getVdb(vdbName).isActive();
     }
 
     @Override
-    public void undeployDynamicVdb(String vdbName) {
+    public boolean isVdbLoading(String vdbName) throws KException {
         checkStarted();
+        if (!hasVdb(vdbName))
+            return false;
 
-        server.undeployVDB(vdbName);
+        return getVdb(vdbName).isLoading();
     }
 
     @Override
-    public Collection<TeiidTranslator> getTranslators() {
+    public boolean hasVdbFailed(String vdbName) throws KException {
         checkStarted();
+        if (!hasVdb(vdbName))
+            return false;
 
-        throw new UnsupportedOperationException();
+        return getVdb(vdbName).hasFailed();
     }
 
     @Override
-    public TeiidTranslator getTranslator(String translatorName) {
+    public boolean wasVdbRemoved(String vdbName) throws KException {
         checkStarted();
+        if (!hasVdb(vdbName))
+            return false;
 
-        throw new UnsupportedOperationException();
+        return getVdb(vdbName).wasRemoved();
     }
 
     @Override
-    public Collection<TeiidDataSource> getDataSources() {
+    public List<String> retrieveVdbValidityErrors(String vdbName) throws KException {
         checkStarted();
+        if (!hasVdb(vdbName))
+            return Collections.emptyList();
 
-        throw new UnsupportedOperationException();
+        return getVdb(vdbName).getValidityErrors();
     }
 
     @Override
-    public Set<String> getDataSourceTypeNames() {
+    public Collection<TeiidVdb> getVdbs() throws KException {
         checkStarted();
+        try {
+            Collection<? extends VDB> vdbs = admin.getVDBs();
+            if (vdbs.isEmpty())
+                return Collections.emptyList();
 
-        throw new UnsupportedOperationException();
+            List<TeiidVdb> teiidVdbs = new ArrayList<>();
+            for (VDB vdb : vdbs) {
+                if (!isDynamic(vdb))
+                    continue;
+
+                teiidVdbs.add(factory.createVdb(vdb));
+            }
+
+            return teiidVdbs;
+        } catch (Exception ex) {
+            throw handleError(ex);
+        }
     }
 
     @Override
-    public TeiidDataSource getDataSource(String sourceName) {
+    public TeiidVdb getVdb(String name) throws KException {
         checkStarted();
+        try {
+            VDB vdb = admin.getVDB(name, "1");
+            if (vdb == null)
+                return null;
 
-        throw new UnsupportedOperationException();
+            if (!isDynamic(vdb))
+                return null;
+
+            return factory.createVdb(vdb);
+        } catch (Exception ex) {
+            throw handleError(ex);
+        }
     }
 
     @Override
-    public TeiidDataSource
-    getOrCreateDataSource(String connectionName, String jndiName, String sourceType, Properties properties) {
+    public void deployDynamicVdb(String deploymentName, InputStream inStream) throws KException {
         checkStarted();
 
-        throw new UnsupportedOperationException();
+        try {
+            ArgCheck.isNotNull(deploymentName, "deploymentName"); //$NONNLS1$
+            ArgCheck.isNotNull(inStream, "inStream"); //$NONNLS1$
+
+            admin.deploy(deploymentName, inStream);
+
+            // Give a 0.5 sec pause for the VDB to finish loading metadata.
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                // ignore
+            }
+
+        } catch (Exception ex) {
+            throw handleError(ex);
+        }
+    }
+
+    /**
+     * Append the suffix for dynamic VDB to the vdb name if not already appended.
+     * 
+     * @param vdbName
+     * @return
+     */
+    protected String appendDynamicVdbSuffix(String vdbName) {
+        if (vdbName.endsWith(TeiidVdb.DYNAMIC_VDB_SUFFIX))
+            return vdbName;
+
+        return vdbName + TeiidVdb.DYNAMIC_VDB_SUFFIX;
     }
 
     @Override
-    public void deleteDataSource(String sourceName) {
+    public void undeployDynamicVdb(String vdbName) throws KException {
         checkStarted();
-
-        throw new UnsupportedOperationException();
+        try {
+            TeiidVdb vdb = getVdb(vdbName);
+            if (vdb != null) {
+                admin.undeploy(appendDynamicVdbSuffix(vdbName));
+            }
+            vdb = getVdb(vdbName);
+        } catch (Exception ex) {
+            throw handleError(ex);
+        }
     }
 
     @Override
-    public Collection<ConnectionDriver> getDrivers() {
+    public String getSchema(String vdbName, String vdbVersion, String modelName) throws KException {
         checkStarted();
-
-        throw new UnsupportedOperationException();
+        try {
+            return admin.getSchema(vdbName, vdbVersion, modelName, null, null);
+        } catch (Exception ex) {
+            throw handleError(ex);
+        }
     }
 
     @Override
-    public void deployDriver(String driverName, File driverFile) {
+    public Set<String> getDataSourceTemplateNames() throws KException {
         checkStarted();
+        try {
+            Set<String> templateNames = admin.getDataSourceTemplateNames();
 
-        throw new UnsupportedOperationException();
+            //
+            // Workaround for removing vdb-builder.war
+            // H2 driver which appear to return a null name
+            //
+            Iterator<String> iter = templateNames.iterator();
+            while (iter.hasNext()) {
+                String name = iter.next();
+                if (name == null)
+                    iter.remove();
+            }
+
+            return templateNames;
+        } catch (Exception ex) {
+            throw handleError(ex);
+        }
     }
 
     @Override
-    public Collection<TeiidPropertyDefinition> getTemplatePropertyDefns(String driverName) {
+    public Collection<TeiidPropertyDefinition> getTemplatePropertyDefns(String templateName) throws KException {
         checkStarted();
+        try {
+            Collection<? extends PropertyDefinition> propDefs = this.admin.getTemplatePropertyDefinitions(templateName);
+            if (propDefs.isEmpty())
+                return Collections.emptyList();
 
-        throw new UnsupportedOperationException();
+            List<TeiidPropertyDefinition> teiidPropDefs = new ArrayList<>();
+            for (PropertyDefinition propDef : propDefs) {
+                teiidPropDefs.add(factory.createPropertyDefinition(propDef));
+            }
+
+            return teiidPropDefs;
+        } catch (Exception ex) {
+            throw handleError(ex);
+        }
     }
 
-    public LanguageObject parse(String sql) throws Exception {
-        checkStarted();
-
-        return QueryParser.getQueryParser().parseDesignerCommand(sql);
+    /**
+     * Attempt to parse the given sql string and return the {@link LanguageObject} tree
+     *
+     * @param sql
+     * @return tree of {@link LanguageObject}s
+     * @throws KException
+     */
+    public static LanguageObject parse(String sql) throws KException {
+        //
+        // Note: this does not require the metadata instance to be started
+        //
+        try {
+            return QueryParser.getQueryParser().parseDesignerCommand(sql);
+        } catch (Exception ex) {
+            throw handleError(ex);
+        }
     }
 }

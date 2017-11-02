@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.rest.relational.connection;
+package org.komodo.rest.relational.response.metadata;
 
 import java.net.URI;
 import java.util.Collection;
@@ -41,7 +41,7 @@ import org.komodo.utils.ArgCheck;
 /**
  * A templateEntry that can be used by GSON to build a JSON document representation.
  */
-public final class RestTemplateEntry extends RestBasicEntity {
+public final class RestMetadataTemplateEntry extends RestBasicEntity {
 
     /**
      * Required label
@@ -106,7 +106,7 @@ public final class RestTemplateEntry extends RestBasicEntity {
     /**
      * An empty array of templateEntrys.
      */
-    public static final RestTemplateEntry[] NO_ENTRIES = new RestTemplateEntry[ 0 ];
+    public static final RestMetadataTemplateEntry[] NO_ENTRIES = new RestMetadataTemplateEntry[ 0 ];
 
     @JsonProperty(CUSTOM_PROPERTIES_LABEL)
     private Map<String, String> customProperties;
@@ -114,7 +114,7 @@ public final class RestTemplateEntry extends RestBasicEntity {
     /**
      * Constructor for use <strong>only</strong> when deserializing.
      */
-    public RestTemplateEntry() {
+    public RestMetadataTemplateEntry() {
         super();
     }
 
@@ -125,8 +125,15 @@ public final class RestTemplateEntry extends RestBasicEntity {
      * @param uow the transaction
      * @throws KException if error occurs
      */
-    public RestTemplateEntry(URI baseUri, TemplateEntry templateEntry, UnitOfWork uow) throws KException {
-        super(baseUri, templateEntry, uow, false);
+    public RestMetadataTemplateEntry(URI baseUri, TemplateEntry templateEntry, UnitOfWork uow) throws KException {
+        super(baseUri);
+
+        ArgCheck.isNotNull(templateEntry, "templateEntry"); //$NON-NLS-1$
+        ArgCheck.isNotNull(uow, "uow"); //$NON-NLS-1$
+
+        setId(templateEntry.getName(uow));
+        setkType(templateEntry.getTypeIdentifier(uow));
+        setHasChildren(templateEntry.hasChildren(uow));
 
         this.setAllowedValues(templateEntry.getAllowedValues(uow));
         this.setCategory(templateEntry.getCategory(uow));
