@@ -69,7 +69,7 @@ public class SchemaImplTest extends RelationalModelTest {
         this.schema.setRendition( getTransaction(), value );
         commit();
 
-        traverse( getTransaction(), this.schema.getAbsolutePath() );
+//        traverse( getTransaction(), this.schema.getAbsolutePath() );
     }
 
     @Test
@@ -128,7 +128,7 @@ public class SchemaImplTest extends RelationalModelTest {
         // Invalid ddl
         commit(UnitOfWork.State.ERROR);
 
-        traverse( getTransaction(), this.schema.getAbsolutePath() );
+//        traverse( getTransaction(), this.schema.getAbsolutePath() );
 
         byte[] fragmentBytes = this.schema.export(getTransaction(), new Properties());
         final String fragment = new String(fragmentBytes);

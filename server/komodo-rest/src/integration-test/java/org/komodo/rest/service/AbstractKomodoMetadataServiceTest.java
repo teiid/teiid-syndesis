@@ -36,7 +36,10 @@ import java.security.GeneralSecurityException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -66,6 +69,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.importer.ImportOptions.ExistingNodeOptions;
+import org.komodo.metadata.DefaultMetadataInstance;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.relational.KomodoRestUriBuilder;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
@@ -78,13 +82,16 @@ import org.komodo.rest.relational.response.RestQueryResult;
 import org.komodo.rest.relational.response.RestQueryRow;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.constants.SystemConstants;
+import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.DocumentType;
+import org.komodo.spi.runtime.ConnectionDriver;
+import org.komodo.spi.runtime.TeiidDataSource;
 import org.komodo.spi.storage.StorageConnector;
 import org.komodo.test.utils.TestUtilities;
 import org.komodo.utils.FileUtils;
 
 @SuppressWarnings( {"javadoc", "nls"} )
-public abstract class AbstractKomodoTeiidServiceTest implements StringConstants {
+public abstract class AbstractKomodoMetadataServiceTest implements StringConstants {
 
     protected static final String USER_NAME = "user";
     private static final String PASSWORD = "user";
@@ -171,31 +178,35 @@ public abstract class AbstractKomodoTeiidServiceTest implements StringConstants 
         return request;
     }
 
-//    protected void assertNoMysqlDriver() throws Exception {
-//        wait(2);
-//    
-//        Collection<ConnectionDriver> drivers = helperInstance.getDrivers();
-//        for (ConnectionDriver driver : drivers) {
-//            assertFalse(driver.getName().startsWith(MYSQL_DRIVER));
-//        }
-//    }
-//
-//    protected void assertMysqlDriver() throws Exception {
-//        boolean found = false;
-//        for (int i = 0; i < 10 && !found; i++) {
-//            wait(3);
-//            Collection<ConnectionDriver> drivers = helperInstance.getDrivers();
-//            for (ConnectionDriver driver : drivers) {
-//                // Use startswith rather than equals since the
-//                // mysql connector gives up 2 drivers rather than just 1
-//                if (driver.getName().startsWith(MYSQL_DRIVER)) {
-//                    found = true;
-//                    break;
-//                }
-//            }
-//        }
-//        assertTrue("Cannot find deployed driver", found);
-//    }
+    protected void assertNoMysqlDriver() throws Exception {
+        wait(2);
+    
+        Collection<ConnectionDriver> drivers = getMetadataInstance().getDataSourceDrivers();
+        for (ConnectionDriver driver : drivers) {
+            assertFalse(driver.getName().startsWith(MYSQL_DRIVER));
+        }
+    }
+
+    protected void assertMysqlDriver() throws Exception {
+        boolean found = false;
+        for (int i = 0; i < 10 && !found; i++) {
+            wait(3);
+            Collection<ConnectionDriver> drivers = getMetadataInstance().getDataSourceDrivers();
+            for (ConnectionDriver driver : drivers) {
+                // Use startswith rather than equals since the
+                // mysql connector gives up 2 drivers rather than just 1
+                if (driver.getName().startsWith(MYSQL_DRIVER)) {
+                    found = true;
+                    break;
+                }
+            }
+        }
+        assertTrue("Cannot find deployed driver", found);
+    }
+
+    protected MetadataInstance getMetadataInstance() throws Exception {
+        return DefaultMetadataInstance.getInstance();
+    }
 
     protected void waitForVdb() throws Exception {
         Thread.sleep(20);
@@ -217,53 +228,49 @@ public abstract class AbstractKomodoTeiidServiceTest implements StringConstants 
         }
     }
 
-//    protected void undeployDrivers() throws Exception {
-//        Set<String> undeployDrivers = new HashSet<String>();
-//        Collection<ConnectionDriver> drivers = helperInstance.getDrivers();
-//        for (ConnectionDriver driver : drivers) {
-//            if (driver.getName().startsWith(MYSQL_DRIVER)) {
-//                String driverName = driver.getName();
-//                //
-//                // MySQL has 2 drivers so concatenates the class name
-//                // to the end of the driver names but means that the driver
-//                // cannot be undeployed unless the class name is removed
-//                //
-//                int endsWithClass = driverName.lastIndexOf(UNDERSCORE + driver.getClassName());
-//                if (endsWithClass == -1)
-//                    endsWithClass = driverName.lastIndexOf(driver.getClassName());
-//    
-//                if (endsWithClass > -1)
-//                    driverName = driverName.substring(0, endsWithClass);
-//    
-//                undeployDrivers.add(driverName);
-//            }
-//        }
-//    
-//        for (String driver : undeployDrivers) {
-//            try {
-//                helperInstance.undeployDriver(driver);
-//            } catch (Exception ex) {
-//                // Flag as a warning that something in the test is going awry
-//                ex.printStackTrace();
-//            }
-//        }
-//    }
+    protected void undeployDrivers() throws Exception {
+        Set<String> undeployDrivers = new HashSet<String>();
+        Collection<ConnectionDriver> drivers = getMetadataInstance().getDataSourceDrivers();
+        for (ConnectionDriver driver : drivers) {
+            if (driver.getName().startsWith(MYSQL_DRIVER)) {
+                String driverName = driver.getName();
+                //
+                // MySQL has 2 drivers so concatenates the class name
+                // to the end of the driver names but means that the driver
+                // cannot be undeployed unless the class name is removed
+                //
+                int endsWithClass = driverName.lastIndexOf(JAR + UNDERSCORE);
+                if (endsWithClass > -1)
+                    driverName = driverName.substring(0, endsWithClass + JAR.length());
+    
+                undeployDrivers.add(driverName);
+            }
+        }
+    
+        for (String driver : undeployDrivers) {
+            try {
+                getMetadataInstance().undeployDataSourceDriver(driver);
+            } catch (Exception ex) {
+                // Flag as a warning that something in the test is going awry
+                ex.printStackTrace();
+            }
+        }
+    }
 
     private void undeployVdbs() throws Exception {
         deleteSample();
     }
 
-//    private void undeployDataSources() throws Exception {
-//        TeiidInstance teiidInstance = getTeiidInstance();
-//        teiidInstance.connect();
-//    
-//        for (TeiidDataSource ds : teiidInstance.getDataSources()) {
-//            if (ds.getName().contains("Example"))
-//                continue; // Leave the exampleDS in situ
-//
-//            helperInstance.deleteDataSource(ds.getName());
-//        }
-//    }
+    private void undeployDataSources() throws Exception {
+        MetadataInstance teiidInstance = getMetadataInstance();
+    
+        for (TeiidDataSource ds : teiidInstance.getDataSources()) {
+            if (ds.getName().contains("Example"))
+                continue; // Leave the exampleDS in situ
+
+            getMetadataInstance().deleteDataSource(ds.getName());
+        }
+    }
 
     protected void deleteSample() throws Exception {
         //
@@ -356,8 +363,8 @@ public abstract class AbstractKomodoTeiidServiceTest implements StringConstants 
         if (testIndex  == getTestTotalInClass()) {
             try {
                 undeployVdbs();
-//                undeployDataSources();
-//                undeployDrivers();
+                undeployDataSources();
+                undeployDrivers();
                 wait(2);
             } catch (Exception ex) {
                 ex.printStackTrace(); // show in console but avoid failing the test
@@ -377,7 +384,7 @@ public abstract class AbstractKomodoTeiidServiceTest implements StringConstants 
         KomodoStorageAttributes storageAttr = new KomodoStorageAttributes();
         storageAttr.setStorageType("file");
         storageAttr.setDocumentType(DocumentType.ZIP);
-    
+
         InputStream usStatesDSStream = TestUtilities.usStatesDataserviceExample();
         byte[] sampleBytes = TestUtilities.streamToBytes(usStatesDSStream);
         String content = Base64.getEncoder().encodeToString(sampleBytes);

@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.rest.relational.connection;
+package org.komodo.rest.relational.response.metadata;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -35,11 +35,12 @@ import org.komodo.rest.RestLink.LinkType;
 import org.komodo.rest.relational.KomodoRestUriBuilder.SettingNames;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.Repository.UnitOfWork;
+import org.komodo.utils.ArgCheck;
 
 /**
  * A template that can be used by GSON to build a JSON document representation.
  */
-public final class RestTemplate extends RestBasicEntity {
+public final class RestMetadataTemplate extends RestBasicEntity {
 
     /**
      * Is-Jdbc label
@@ -54,14 +55,14 @@ public final class RestTemplate extends RestBasicEntity {
     /**
      * An empty array of templates.
      */
-    public static final RestTemplate[] NO_TEMPLATES = new RestTemplate[0];
+    public static final RestMetadataTemplate[] NO_TEMPLATES = new RestMetadataTemplate[0];
 
     private List<String> entries = Collections.emptyList();
 
     /**
      * Constructor for use <strong>only</strong> when deserializing.
      */
-    public RestTemplate() {
+    public RestMetadataTemplate() {
         // nothing to do
     }
 
@@ -72,14 +73,20 @@ public final class RestTemplate extends RestBasicEntity {
      * @param uow the transaction
      * @throws KException if error occurs
      */
-    public RestTemplate(URI baseUri, Template template, UnitOfWork uow) throws KException {
-        super(baseUri, template, uow, false);
+    public RestMetadataTemplate(URI baseUri, Template template, UnitOfWork uow) throws KException {
+        super(baseUri);
+
+        ArgCheck.isNotNull(template, "template"); //$NON-NLS-1$
+        ArgCheck.isNotNull(uow, "uow"); //$NON-NLS-1$
+
+        setId(template.getName(uow));
+        setkType(template.getTypeIdentifier(uow));
+        setHasChildren(template.hasChildren(uow));
+        setJdbc(template.isJdbc(uow));
 
         Properties settings = getUriBuilder().createSettings(SettingNames.TEMPLATE_NAME, getId());
-        URI parentUri = getUriBuilder().templateParentUri(template, uow);
+        URI parentUri = getUriBuilder().mServerTemplatesUri();
         getUriBuilder().addSetting(settings, SettingNames.PARENT_PATH, parentUri);
-
-        setJdbc(template.isJdbc(uow));
 
         List<TemplateEntry> templateEntries = template.getEntries(uow);
         if (templateEntries != null) {
@@ -91,7 +98,6 @@ public final class RestTemplate extends RestBasicEntity {
 
         addLink(new RestLink(LinkType.SELF, getUriBuilder().templateUri(LinkType.SELF, settings)));
         addLink(new RestLink(LinkType.PARENT, getUriBuilder().templateUri(LinkType.PARENT, settings)));
-        createChildLink();
         addLink(new RestLink(LinkType.TEMPLATE_ENTRIES, getUriBuilder().templateUri(LinkType.TEMPLATE_ENTRIES, settings)));
     }
 

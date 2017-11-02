@@ -30,6 +30,7 @@ import java.util.List;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.komodo.core.AbstractLocalRepositoryTest;
+import org.komodo.metadata.DefaultMetadataInstance;
 import org.komodo.spi.lexicon.sql.teiid.TeiidSqlConstants;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
@@ -122,14 +123,15 @@ public class TestDdlNodeVisitor extends AbstractLocalRepositoryTest {
         KomodoObject ddlObject = workspace.addChild(getTransaction(), "ddl-sequencing" + System.nanoTime(), VdbLexicon.Vdb.DECLARATIVE_MODEL);
         ddlObject.setProperty(getTransaction(), VdbLexicon.Model.MODEL_DEFINITION, ddl);
 
-        traverse(getTransaction(), ddlObject);
+//        traverse(getTransaction(), ddlObject);
 
         //
         // Should wait for the sequencers to complete
         //
         commit();
 
-        DdlNodeVisitor visitor = new DdlNodeVisitor(metadataInstance.getVersion(), metadataInstance.getDataTypeService(), false);
+        DefaultMetadataInstance instance = DefaultMetadataInstance.getInstance();
+        DdlNodeVisitor visitor = new DdlNodeVisitor(instance.getVersion(), instance.getDataTypeService(), false);
         visitor.visit(getTransaction(), ddlObject);
 
         compare(expected, visitor);

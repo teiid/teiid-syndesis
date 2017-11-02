@@ -62,6 +62,8 @@ import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.spi.KEvent;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.KomodoObject;
@@ -77,8 +79,6 @@ import org.komodo.spi.utils.KeyInValueMap;
 import org.komodo.spi.utils.KeyInValueMap.KeyFromValueAdapter;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
-import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
 
 /**
  *
@@ -185,7 +185,7 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
         if (txNotProvided)
             transaction = repository.createTransaction(Repository.SYSTEM_USER, "createWorkspaceManager", false, null ); //$NON-NLS-1$
 
-        WorkspaceManager instance = instances.get(repository.getId());
+        WorkspaceManager instance = instances.get(new CacheKey(repository.getId(), Repository.SYSTEM_USER));
 
         if ( instance == null ) {
             // We must create a transaction here so that it can be passed on to the constructor. Since the
@@ -265,7 +265,7 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
             public void eventOccurred(KEvent<?> event) {
                 // Disposal observer
                 if (getRepository() == null || State.NOT_REACHABLE == getRepository().getState() || !(getRepository().ping())) {
-                    instances.remove(WorkspaceManager.this);
+                    instances.remove(adapter.getKey(WorkspaceManager.this));
                 }
             }
 

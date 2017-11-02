@@ -36,22 +36,22 @@ import javax.ws.rs.core.UriBuilder;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.RestLink;
 import org.komodo.rest.cors.CorsHeaders;
 import org.komodo.rest.relational.connection.RestConnection;
-import org.komodo.rest.relational.connection.RestTemplate;
-import org.komodo.rest.relational.connection.RestTemplateEntry;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
-import org.komodo.rest.relational.response.RestMetadataStatus;
-import org.komodo.rest.relational.response.RestMetadataVdb;
-import org.komodo.rest.relational.response.RestMetadataVdbStatus;
-import org.komodo.rest.relational.response.RestMetadataVdbStatusVdb;
-import org.komodo.rest.relational.response.RestVdb;
-import org.komodo.rest.relational.response.RestVdbTranslator;
+import org.komodo.rest.relational.response.metadata.RestMetadataConnection;
+import org.komodo.rest.relational.response.metadata.RestMetadataStatus;
+import org.komodo.rest.relational.response.metadata.RestMetadataTemplate;
+import org.komodo.rest.relational.response.metadata.RestMetadataTemplateEntry;
+import org.komodo.rest.relational.response.metadata.RestMetadataVdb;
+import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatus;
+import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatusVdb;
+import org.komodo.rest.relational.response.metadata.RestMetadataVdbTranslator;
+import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.test.utils.TestUtilities;
@@ -60,10 +60,10 @@ import net.jcip.annotations.NotThreadSafe;
 @NotThreadSafe
 @RunWith(Arquillian.class)
 @SuppressWarnings( {"javadoc", "nls"} )
-public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServiceTest implements StringConstants {
+public final class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServiceTest implements StringConstants {
 
-    private void testTranslators(RestMetadataStatus status) {
-        assertEquals(56, status.getTranslatorSize());
+    private void testTranslators(RestMetadataStatus status) throws Exception {
+        assertEquals(getMetadataInstance().getTranslators().size(), status.getTranslatorSize());
     }
 
     @Override
@@ -77,7 +77,6 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
     }
 
     @Test
-    @Ignore("Need to implement getDataSources in DefaultMetadataInstance")
     public void shouldGetTeiidStatus() throws Exception {
         URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
                                           .path(V1Constants.METADATA_SEGMENT)
@@ -94,12 +93,12 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
         assertNotNull(status);
 
         assertTrue(status.isAvailable());
-        assertEquals(1, status.getDataSourceSize());
-        assertEquals(3, status.getDataSourceDriverSize());
+        assertEquals(getMetadataInstance().getDataSources().size(), status.getDataSourceSize());
+        assertEquals(getMetadataInstance().getDataSourceDrivers().size(), status.getDataSourceDriverSize());
 
         testTranslators(status);
 
-        assertEquals(1, status.getVdbSize());
+        assertEquals(getMetadataInstance().getVdbs().size(), status.getVdbSize());
     }
 
     @Test
@@ -120,7 +119,7 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
         assertNotNull(status);
 
         List<RestMetadataVdbStatusVdb> vdbProperties = status.getVdbProperties();
-        assertEquals(1, vdbProperties.size());
+        assertTrue(vdbProperties.size() > 0);
 
         RestMetadataVdbStatusVdb vdb = vdbProperties.get(0);
         assertNotNull(vdb);
@@ -218,7 +217,6 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
     }
 
     @Test
-    @Ignore("Need to implement getDataSources in DefaultMetadataInstance")
     public void shouldGetTeiidStatusMultiQueries() throws Exception {
         URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
                                           .path(V1Constants.METADATA_SEGMENT)
@@ -255,10 +253,10 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
                         assertNotNull(status);
 
                         assertTrue(status.isAvailable());
-                        assertEquals(1, status.getDataSourceSize());
-                        assertEquals(3, status.getDataSourceDriverSize());
+                        assertEquals(getMetadataInstance().getDataSources().size(), status.getDataSourceSize());
+                        assertEquals(getMetadataInstance().getDataSourceDrivers().size(), status.getDataSourceDriverSize());
                         testTranslators(status);
-                        assertEquals(1, status.getVdbSize());
+                        assertEquals(getMetadataInstance().getVdbs().size(), status.getVdbSize());
                     } catch (Throwable ex) {
                         assertionFailures.add(ex);
                     } finally {
@@ -280,7 +278,6 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
     }
 
     @Test
-    @Ignore("Not implemented yet")
     public void shouldGetTranslators() throws Exception {
         URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
                                           .path(V1Constants.METADATA_SEGMENT)
@@ -293,17 +290,16 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
 
         checkResponse(response);
 
-        RestVdbTranslator[] translators = KomodoJsonMarshaller.unmarshallArray(entity, RestVdbTranslator[].class);
+        RestMetadataVdbTranslator[] translators = KomodoJsonMarshaller.unmarshallArray(entity, RestMetadataVdbTranslator[].class);
         assertTrue(translators.length > 0);
 
-        for (RestVdbTranslator translator : translators) {
+        for (RestMetadataVdbTranslator translator : translators) {
             assertNotNull(translator.getId());
-            assertEquals(3, translator.getLinks().size());
+            assertEquals(2, translator.getLinks().size());
         }
     }
 
     @Test
-    @Ignore("Connections not implemented yet")
     public void shouldGetConnections() throws Exception {
         URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
                                           .path(V1Constants.METADATA_SEGMENT)
@@ -316,17 +312,16 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
 
         checkResponse(response);
 
-        RestConnection[] connections = KomodoJsonMarshaller.unmarshallArray(entity, RestConnection[].class);
+        RestMetadataConnection[] connections = KomodoJsonMarshaller.unmarshallArray(entity, RestMetadataConnection[].class);
         assertTrue(connections.length > 0);
 
-        for (RestConnection connection : connections) {
+        for (RestMetadataConnection connection : connections) {
             assertNotNull(connection.getId());
-            assertEquals(3, connection.getLinks().size());
+            assertEquals(2, connection.getLinks().size());
         }
     }
 
     @Test
-    @Ignore("Connections not implemented yet")
     public void shouldGetConnectionTemplates() throws Exception {
         URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
                                           .path(V1Constants.METADATA_SEGMENT)
@@ -339,18 +334,17 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
 
         assertEquals(200, response.getStatus());
 
-        RestTemplate[] templates = KomodoJsonMarshaller.unmarshallArray(entity, RestTemplate[].class);
+        RestMetadataTemplate[] templates = KomodoJsonMarshaller.unmarshallArray(entity, RestMetadataTemplate[].class);
         assertTrue(templates.length > 0);
 
-        for (RestTemplate template : templates) {
+        for (RestMetadataTemplate template : templates) {
             assertNotNull(template.getId());
             assertFalse(template.getEntries().isEmpty());
-            assertEquals(4, template.getLinks().size());
+            assertEquals(3, template.getLinks().size());
         }
     }
 
     @Test
-    @Ignore("Connections not implemented yet")
     public void shouldGetConnectionTemplate() throws Exception {
         URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
                                           .path(V1Constants.METADATA_SEGMENT)
@@ -364,16 +358,15 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
 
         assertEquals(200, response.getStatus());
 
-        RestTemplate template = KomodoJsonMarshaller.unmarshall(entity, RestTemplate.class);
+        RestMetadataTemplate template = KomodoJsonMarshaller.unmarshall(entity, RestMetadataTemplate.class);
         assertNotNull(template);
 
         assertNotNull(template.getId());
         assertFalse(template.getEntries().isEmpty());
-        assertEquals(4, template.getLinks().size());
+        assertEquals(3, template.getLinks().size());
     }
 
     @Test
-    @Ignore("Connections not implemented yet")
     public void shouldGetConnectionTemplateEntries() throws Exception {
         URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
                                           .path(V1Constants.METADATA_SEGMENT)
@@ -388,10 +381,10 @@ public final class IT_KomodoTeiidServiceGetTests extends AbstractKomodoTeiidServ
 
         assertEquals(200, response.getStatus());
 
-        RestTemplateEntry[] templateEntries = KomodoJsonMarshaller.unmarshallArray(entity, RestTemplateEntry[].class);
+        RestMetadataTemplateEntry[] templateEntries = KomodoJsonMarshaller.unmarshallArray(entity, RestMetadataTemplateEntry[].class);
         assertTrue(templateEntries.length > 0);
 
-        for (RestTemplateEntry entry : templateEntries) {
+        for (RestMetadataTemplateEntry entry : templateEntries) {
             assertNotNull(entry.getId());
             assertEquals(2, entry.getLinks().size());
         }

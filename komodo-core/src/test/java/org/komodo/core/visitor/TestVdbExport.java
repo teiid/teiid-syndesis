@@ -28,6 +28,7 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 import org.junit.Test;
 import org.komodo.core.AbstractLocalRepositoryTest;
+import org.komodo.metadata.DefaultMetadataInstance;
 import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon;
 import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon;
 import org.komodo.spi.repository.KomodoObject;
@@ -45,7 +46,8 @@ public class TestVdbExport extends AbstractLocalRepositoryTest {
         XMLStreamWriter xtw = null;
         xtw = xof.createXMLStreamWriter(writer);
 
-        return new VdbNodeVisitor(metadataInstance.getVersion(), metadataInstance.getDataTypeService(), xtw);
+        DefaultMetadataInstance instance = DefaultMetadataInstance.getInstance();
+        return new VdbNodeVisitor(instance.getVersion(),instance.getDataTypeService(), xtw);
     }
 
     @Test(timeout=3000000)
@@ -55,7 +57,7 @@ public class TestVdbExport extends AbstractLocalRepositoryTest {
 
         commit();
 
-        traverse(getTransaction(), twitterExample);
+//        traverse(getTransaction(), twitterExample);
 
         //
         // Sequencing completed, now verify
@@ -95,7 +97,7 @@ public class TestVdbExport extends AbstractLocalRepositoryTest {
         KomodoObject twitterExample = TestUtilities.createTweetExampleNoTransDescripNode(getTransaction(), workspace);
         commit();
 
-        traverse(getTransaction(), twitterExample);
+//        traverse(getTransaction(), twitterExample);
 
         //
         // Sequencing completed, now verify
@@ -135,7 +137,7 @@ public class TestVdbExport extends AbstractLocalRepositoryTest {
         KomodoObject allElements = TestUtilities.createAllElementsExampleNode(getTransaction(), workspace);
         commit();
 
-        traverse(getTransaction(), allElements);
+//        traverse(getTransaction(), allElements);
 
         //
         // Sequencing completed, now verify

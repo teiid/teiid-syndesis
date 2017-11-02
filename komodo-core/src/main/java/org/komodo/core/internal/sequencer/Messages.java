@@ -24,19 +24,18 @@ package org.komodo.core.internal.sequencer;
 import java.text.MessageFormat;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import org.komodo.spi.constants.StringConstants;
 
 /**
  *
  */
-public class Messages {
+public class Messages implements StringConstants {
 
-    private static final String BUNDLE_NAME = "org.komodo.modeshape.teiid.messages"; //$NON-NLS-1$
+    private static final String BUNDLE_NAME = Messages.class.getPackage().getName()
+                                                                                       + DOT
+                                                                                       + Messages.class.getSimpleName().toLowerCase();
 
     private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME);
-
-    private static final String DOT = "."; //$NON-NLS-1$
-
-    private static final String UNDERSCORE = "_"; //$NON-NLS-1$
 
     @SuppressWarnings( "javadoc" )
     public enum TeiidSqlSequencer {

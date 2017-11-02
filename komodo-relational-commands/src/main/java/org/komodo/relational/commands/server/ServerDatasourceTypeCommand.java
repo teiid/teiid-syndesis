@@ -67,7 +67,7 @@ public final class ServerDatasourceTypeCommand extends ServerShellCommand {
             Collection<TeiidPropertyDefinition> propDefns = null;
             try {
                 // Check the data source type names to make sure its valid
-                Set< String > typeNames = ServerUtils.getMetadataInstance().getDataSourceTypeNames();
+                Set< String > typeNames = ServerUtils.getMetadataInstance().getDataSourceTemplateNames();
                 if(!typeNames.contains(sourceTypeName)) {
                     return new CommandResultImpl(false, I18n.bind( ServerCommandsI18n.serverDatasourceTypeNotFound, sourceTypeName ), null);
                 }

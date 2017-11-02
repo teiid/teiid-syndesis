@@ -297,10 +297,10 @@ public interface KObjectFactory extends StringConstants, RepositoryConstants {
      * @param uow a transaction that expects to be rolled back since {@link KomodoObject}s created
      *                  by this method are meant to be transient and thrown away once properties have been
      *                  extracted from them.
+     * @param parent
      * @param teiidVdb
-     * @param repository
      * @return a transient Vdb {@link KomodoObject}
      * @throws KException 
      */
-    KomodoObject convertTeiidVdb(UnitOfWork uow, Repository repository, TeiidVdb teiidVdb) throws KException;
+    KomodoObject exportTeiidVdb(UnitOfWork uow, KomodoObject parent, TeiidVdb teiidVdb) throws KException;
 }

@@ -84,7 +84,7 @@ public abstract class AbstractImporterTest extends AbstractLocalRepositoryTest {
             KLog.getLogger().debug(importMessages.errorMessagesToString());
         }
 
-        traverse(getTransaction(), parentObject.getAbsolutePath());
+//        traverse(getTransaction(), parentObject.getAbsolutePath());
 
     }
 }

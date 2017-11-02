@@ -45,15 +45,11 @@ import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.core.repository.RepositoryTools;
 import org.komodo.core.repository.SynchronousCallback;
-import org.komodo.metadata.DefaultMetadataInstance;
 import org.komodo.spi.KClient;
 import org.komodo.spi.KEvent;
 import org.komodo.spi.KException;
 import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
 import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
-import org.komodo.spi.metadata.MetadataClientEvent;
-import org.komodo.spi.metadata.MetadataInstance;
-import org.komodo.spi.metadata.MetadataInstance.Condition;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.Repository;
@@ -90,8 +86,6 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
     protected static final long TIME_TO_WAIT = 3; // in minutes
 
     protected static LocalRepository _repo = null;
-
-    protected static MetadataInstance metadataInstance = null;
 
     @BeforeClass
     public static void initRepository() throws Exception {
@@ -136,30 +130,6 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
                 }
             }
         }
-
-        // Initialise the metadata instance
-        metadataInstance = DefaultMetadataInstance.getInstance();
-        KClient kClient = new KClient() {
-            
-            @Override
-            public void eventOccurred(KEvent<?> event) {
-                // Do Nothing
-            }
-            
-            @Override
-            public void errorOccurred(Throwable e) {
-                fail("Exception occurred while starting metadata instance in test class: " + AbstractLocalRepositoryTest.class);
-            }
-            
-            @Override
-            public org.komodo.spi.KClient.State getState() {
-                return State.SHUTDOWN;
-            }
-        };
-
-        MetadataClientEvent metadataClientEvent = MetadataClientEvent.createStartedEvent(kClient);
-        metadataInstance.notify(metadataClientEvent);
-        assertEquals(Condition.REACHABLE, metadataInstance.getCondition());
     }
 
     /**
@@ -185,32 +155,6 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
             _repo.removeObserver(_repoShutdownObserver);
             _repo = null;
         }
-
-        // Destroy the metadata instance
-        if (metadataInstance == null)
-            return;
-
-        KClient kClient = new KClient() {
-
-            @Override
-            public void eventOccurred(KEvent<?> event) {
-                // Do Nothing
-            }
-            
-            @Override
-            public void errorOccurred(Throwable e) {
-                fail("Exception occurred while stopping metadata instance in test class: " + AbstractLocalRepositoryTest.class);
-            }
-            
-            @Override
-            public org.komodo.spi.KClient.State getState() {
-                return State.STARTED; 
-            }
-        };
-
-        MetadataClientEvent metadataClientEvent = MetadataClientEvent.createShuttingDownEvent(kClient);
-        metadataInstance.notify(metadataClientEvent);
-        assertEquals(Condition.NOT_REACHABLE, metadataInstance.getCondition());
     }
 
     @Rule
@@ -570,7 +514,7 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
         if (parentNode.hasRawChild(uow, relativePath))
             childNode = parentNode.getChild(uow, relativePath + indexExp);
 
-        traverse(uow, parentNode);
+//        traverse(uow, parentNode);
         assertNotNull(childNode);
 
         verifyBaseProperties(uow, childNode, primaryType, mixinType);
