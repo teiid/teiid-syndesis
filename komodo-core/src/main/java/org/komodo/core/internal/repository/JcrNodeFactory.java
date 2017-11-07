@@ -21,8 +21,6 @@
  */
 package org.komodo.core.internal.repository;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -54,6 +52,8 @@ import org.komodo.spi.repository.PropertyDescriptor;
 import org.komodo.spi.repository.PropertyValueType;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
+import org.komodo.spi.runtime.TeiidDataSource;
+import org.komodo.spi.runtime.TeiidTranslator;
 import org.komodo.spi.runtime.TeiidVdb;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
@@ -599,7 +599,7 @@ public class JcrNodeFactory extends AbstractJcrFactory implements KObjectFactory
     }
 
     @Override
-    public KomodoObject convertTeiidVdb(UnitOfWork transaction, Repository repository, TeiidVdb teiidVdb) throws KException {
+    public KomodoObject exportTeiidVdb(UnitOfWork transaction, KomodoObject parent, TeiidVdb teiidVdb) throws KException {
         checkTransaction(transaction);
         ArgCheck.isNotNull(teiidVdb, "teiidVdb");
         ArgCheck.isTrue(transaction.isRollbackOnly(), "transaction should be rollback only");
@@ -613,11 +613,7 @@ public class JcrNodeFactory extends AbstractJcrFactory implements KObjectFactory
 
             org.modeshape.jcr.api.Session mSession = (org.modeshape.jcr.api.Session)session;
 
-            String wkspPath = repository.komodoWorkspace(transaction).getAbsolutePath();
-            String timeNow = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss-SSS"));
-            KomodoObject triageNode = repository.add(transaction, wkspPath, timeNow, null);
-
-            KomodoObject vdb = triageNode.addChild(transaction, teiidVdb.getName(), VdbLexicon.Vdb.VIRTUAL_DATABASE);
+            KomodoObject vdb = parent.addChild(transaction, teiidVdb.getName(), VdbLexicon.Vdb.VIRTUAL_DATABASE);
             KomodoObject fileNode = vdb.addChild(transaction, JcrLexicon.JCR_CONTENT, null);
             fileNode.setProperty(transaction, JcrLexicon.JCR_DATA, vdbContent);
 

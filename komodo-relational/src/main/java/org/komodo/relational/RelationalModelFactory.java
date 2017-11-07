@@ -96,6 +96,7 @@ import org.komodo.relational.resource.internal.UdfFileImpl;
 import org.komodo.relational.template.Template;
 import org.komodo.relational.template.TemplateEntry;
 import org.komodo.relational.template.internal.TemplateEntryImpl;
+import org.komodo.relational.template.internal.TemplateImpl;
 import org.komodo.relational.vdb.Condition;
 import org.komodo.relational.vdb.DataRole;
 import org.komodo.relational.vdb.Entry;
@@ -1291,8 +1292,41 @@ public final class RelationalModelFactory {
                                                                              VdbLexicon.Vdb.TRANSLATORS,
                                                                              VdbLexicon.Vdb.TRANSLATORS );
             final KomodoObject kobject = grouping.addChild( transaction, translatorName, VdbLexicon.Translator.TRANSLATOR );
-            final Translator result = new TranslatorImpl( transaction, repository, kobject.getAbsolutePath() );
+            final Translator result = new TranslatorImpl( transaction, grouping.getRepository(), kobject.getAbsolutePath() );
             result.setType( transaction, translatorType );
+            return result;
+        } catch ( final Exception e ) {
+            throw handleError( e );
+        }
+    }
+
+    /**
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+     * @param repository
+     *        the repository where the model object will be created (cannot be <code>null</code>)
+     * @param parent
+     *        the parent of the template created (cannot be <code>null</code>)
+     * @param templateName
+     *        the name of the template to create (cannot be empty)
+     *
+     * @return the Template object (never <code>null</code>)
+     * @throws KException
+     *         if an error occurs
+     */
+    public static Template createTemplate( final UnitOfWork transaction,
+                                               final Repository repository,
+                                               final KomodoObject parent,
+                                               final String templateName) throws KException {
+        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( repository, "repository" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( parent, "parent" ); //$NON-NLS-1$
+        ArgCheck.isNotEmpty( templateName, "templateName" ); //$NON-NLS-1$
+
+        try {
+            final KomodoObject kobject = parent.addChild( transaction, templateName, DataVirtLexicon.Template.NODE_TYPE);
+            final Template result = new TemplateImpl(transaction, repository, kobject.getAbsolutePath());
             return result;
         } catch ( final Exception e ) {
             throw handleError( e );

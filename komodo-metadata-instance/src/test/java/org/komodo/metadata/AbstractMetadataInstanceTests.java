@@ -21,44 +21,11 @@
  */
 package org.komodo.metadata;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import org.junit.BeforeClass;
-import org.komodo.spi.KClient;
-import org.komodo.spi.KEvent;
-import org.komodo.spi.metadata.MetadataClientEvent;
 import org.komodo.spi.metadata.MetadataInstance;
-import org.komodo.spi.metadata.MetadataInstance.Condition;
 
 public class AbstractMetadataInstanceTests {
 
     protected static final MetadataInstance METADATA_INSTANCE = DefaultMetadataInstance.getInstance();
-
-    @BeforeClass
-    public static void init() {
-        // Initialise the metadata instance
-        KClient kClient = new KClient() {
-    
-            @Override
-            public void eventOccurred(KEvent<?> event) {
-                // Do Nothing
-            }
-    
-            @Override
-            public void errorOccurred(Throwable e) {
-                fail("Exception occurred while starting metadata instance in test class: " + TestDataTypeManager.class);
-            }
-    
-            @Override
-            public org.komodo.spi.KClient.State getState() {
-                return State.SHUTDOWN;
-            }
-        };
-    
-        MetadataClientEvent metadataClientEvent = MetadataClientEvent.createStartedEvent(kClient);
-        METADATA_INSTANCE.notify(metadataClientEvent);
-        assertEquals(Condition.REACHABLE, METADATA_INSTANCE.getCondition());
-    }
 
     protected MetadataInstance getMetadataInstance() {
         return METADATA_INSTANCE;

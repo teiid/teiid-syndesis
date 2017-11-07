@@ -19,20 +19,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.rest.relational.response;
+package org.komodo.rest.relational.response.metadata;
 
 import java.net.URI;
 import java.util.Properties;
 import org.komodo.relational.vdb.Translator;
-import org.komodo.rest.KomodoService;
-import org.komodo.rest.RestBasicEntity;
 import org.komodo.rest.RestLink;
 import org.komodo.rest.RestLink.LinkType;
 import org.komodo.rest.relational.KomodoRestUriBuilder.SettingNames;
+import org.komodo.rest.relational.response.RestVdbTranslator;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
+import org.komodo.utils.ArgCheck;
 
 /**
  * A translator that can be used by GSON to build a JSON document representation.
@@ -52,39 +50,18 @@ import org.komodo.spi.lexicon.vdb.VdbLexicon;
  * </code>
  * </pre>
  */
-public class RestVdbTranslator extends RestBasicEntity {
-
-    /**
-     * Label used to describe description
-     */
-    public static final String DESCRIPTION_LABEL = KomodoService.protectPrefix(VdbLexicon.Translator.DESCRIPTION);
-
-    /**
-     * Label used to describe type
-     */
-    public static final String TYPE_LABEL = KomodoService.protectPrefix(VdbLexicon.Translator.TYPE);
+public final class RestMetadataVdbTranslator extends RestVdbTranslator {
 
     /**
      * An empty array of translators.
      */
-    public static final RestVdbTranslator[] NO_TRANSLATORS = new RestVdbTranslator[ 0 ];
+    public static final RestMetadataVdbTranslator[] NO_TRANSLATORS = new RestMetadataVdbTranslator[ 0 ];
 
     /**
      * Constructor for use <strong>only</strong> when deserializing.
      */
-    public RestVdbTranslator() {
+    public RestMetadataVdbTranslator() {
         // nothing to do
-    }
-
-    /**
-     * Constructor for those translators needing more control over what basic properties
-     * should be set
-     *
-     * @param baseUri
-     * @throws KException
-     */
-    public RestVdbTranslator(URI baseUri) throws KException {
-        super(baseUri);
     }
 
     /**
@@ -94,58 +71,25 @@ public class RestVdbTranslator extends RestBasicEntity {
      * @param uow the transaction
      * @throws KException if error occurs
      */
-    public RestVdbTranslator(URI baseUri, Translator translator, UnitOfWork uow) throws KException {
-        super(baseUri, translator, uow, false);
+    public RestMetadataVdbTranslator(URI baseUri, Translator translator, UnitOfWork uow) throws KException {
+        super(baseUri);
 
+        ArgCheck.isNotNull(translator, "translator"); //$NON-NLS-1$
+        ArgCheck.isNotNull(uow, "uow"); //$NON-NLS-1$
+
+        setId(translator.getName(uow));
+        setkType(translator.getTypeIdentifier(uow));
+        setHasChildren(translator.hasChildren(uow));
         setDescription(translator.getDescription(uow));
         setType(translator.getType(uow));
 
         addExecutionProperties(uow, translator);
 
         Properties settings = getUriBuilder().createSettings(SettingNames.TRANSLATOR_NAME, getId());
-        URI parentUri = getUriBuilder().vdbTranslatorParentUri(translator, uow);
+        URI parentUri = getUriBuilder().mServerTranslatorsUri();
         getUriBuilder().addSetting(settings, SettingNames.PARENT_PATH, parentUri);
-        
-        // VdbTranslators segment is added for Translators in a VDB
-        KomodoObject parentObject = translator.getParent(uow);
-        if(parentObject!=null && VdbLexicon.Vdb.VIRTUAL_DATABASE.equals(parentObject.getPrimaryType(uow).getName())) {
-            getUriBuilder().addSetting(settings, SettingNames.ADD_TRANSLATORS_SEGMENT, "true"); //$NON-NLS-1$
-        }
 
         addLink(new RestLink(LinkType.SELF, getUriBuilder().vdbTranslatorUri(LinkType.SELF, settings)));
         addLink(new RestLink(LinkType.PARENT, getUriBuilder().vdbTranslatorUri(LinkType.PARENT, settings)));
-        createChildLink();
-    }
-
-    /**
-     * @return the description (can be empty)
-     */
-    public String getDescription() {
-        Object description = tuples.get(DESCRIPTION_LABEL);
-        return description != null ? description.toString() : null;
-    }
-
-    /**
-     * @param newDescription
-     *        the new description (can be empty)
-     */
-    public void setDescription( final String newDescription ) {
-        tuples.put(DESCRIPTION_LABEL, newDescription);
-    }
-
-    /**
-     * @return the translator type (can be empty)
-     */
-    public String getType() {
-        Object type = tuples.get(TYPE_LABEL);
-        return type != null ? type.toString() : null;
-    }
-
-    /**
-     * @param newType
-     *        the new translator type (can be empty)
-     */
-    public void setType( final String newType ) {
-        tuples.put(TYPE_LABEL, newType);
     }
 }

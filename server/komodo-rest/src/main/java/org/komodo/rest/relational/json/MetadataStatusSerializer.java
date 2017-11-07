@@ -24,7 +24,7 @@ package org.komodo.rest.relational.json;
 import static org.komodo.rest.relational.json.KomodoJsonMarshaller.BUILDER;
 import java.io.IOException;
 import org.komodo.rest.relational.response.RestConnectionDriver;
-import org.komodo.rest.relational.response.RestMetadataStatus;
+import org.komodo.rest.relational.response.metadata.RestMetadataStatus;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 

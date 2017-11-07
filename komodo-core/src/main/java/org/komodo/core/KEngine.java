@@ -337,9 +337,6 @@ public final class KEngine implements KClient, StringConstants {
             // Notify any registered repositories that this engine has started
             notifyRepositories(RepositoryClientEvent.createStartedEvent(this));
 
-            // Notify the metadata instance that this engine has started
-            notifyMetadataServer(MetadataClientEvent.createStartedEvent(this));
-
             // Notify any 3rd-party listeners that this engine has started
             notifyObservers(engineStartedEvent());
 
@@ -360,7 +357,6 @@ public final class KEngine implements KClient, StringConstants {
     public boolean startAndWait() throws Exception {
 
         KLatchObserver observer = new KLatchObserver(Type.REPOSITORY_STARTED,
-                                                                                                 Type.METADATA_SERVER_STARTED,
                                                                                                  Type.ENGINE_STARTED);
 
         addObserver(observer);
@@ -464,7 +460,7 @@ public final class KEngine implements KClient, StringConstants {
      * @throws Exception
      */
     public LanguageObject parse(String sql) throws Exception {
-        return DefaultMetadataInstance.getInstance().parse(sql);
+        return DefaultMetadataInstance.parse(sql);
     }
     
 }

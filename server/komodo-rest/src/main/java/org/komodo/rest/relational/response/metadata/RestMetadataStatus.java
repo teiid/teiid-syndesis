@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.rest.relational.response;
+package org.komodo.rest.relational.response.metadata;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -29,6 +29,7 @@ import java.util.List;
 import org.komodo.rest.AbstractKEntity;
 import org.komodo.rest.RestLink;
 import org.komodo.rest.RestLink.LinkType;
+import org.komodo.rest.relational.response.RestConnectionDriver;
 import org.komodo.spi.KException;
 import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.metadata.MetadataInstance.Condition;
@@ -122,7 +123,7 @@ public final class RestMetadataStatus extends AbstractKEntity {
             setDataSourceSize(dataSources.size());
             setDataSourcesNames(dataSources);
 
-            Collection<ConnectionDriver> dataSourceDrivers = mServer.getDrivers();
+            Collection<ConnectionDriver> dataSourceDrivers = mServer.getDataSourceDrivers();
             setDataSourceDriverSize(dataSourceDrivers.size());
             if (dataSourceDrivers == null || dataSourceDrivers.isEmpty())
                 this.sourceDrivers = Collections.emptyList();
