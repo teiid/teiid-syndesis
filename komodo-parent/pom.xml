@@ -140,7 +140,7 @@
 		<!-- The version of server to use with testing -->
 		<test.server.group.id>org.wildfly</test.server.group.id>
 		<test.server.artifact.id>wildfly-dist</test.server.artifact.id>
-		<test.server.version>10.1.0.Final</test.server.version>
+		<test.server.version>11.0.0.Final</test.server.version>
 		<!-- The test version of server when its unpacked -->
 		<test.server.name>${server.platform}-${test.server.version}</test.server.name>
 
@@ -351,6 +351,11 @@
 			<dependency>
 				<groupId>org.teiid</groupId>
 				<artifactId>teiid-admin</artifactId>
+				<version>${version.org.teiid}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.teiid</groupId>
+				<artifactId>teiid-jboss-admin</artifactId>
 				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>

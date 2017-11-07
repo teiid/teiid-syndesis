@@ -57,7 +57,7 @@ public final class ServerDeployDriverCommand extends ServerShellCommand {
             // Deploy the driver to the server
             try {
                 // Determine if the server already has a type with the requested name
-                Set< String > serverTypes = ServerUtils.getMetadataInstance().getDataSourceTypeNames();
+                Set< String > serverTypes = ServerUtils.getMetadataInstance().getDataSourceTemplateNames();
                 if(serverTypes.contains(driverName)) {
                     return new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.driverDeployErrorServerHasMatch, driverName ), null );
                 }

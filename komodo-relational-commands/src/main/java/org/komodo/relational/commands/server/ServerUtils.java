@@ -51,8 +51,8 @@ public class ServerUtils {
     /**
      * @return the data source type names
      */
-    public static Set<String> getDataSourceTypeNames() {
-        Set<String> serverTypes = getMetadataInstance().getDataSourceTypeNames();
+    public static Set<String> getDataSourceTypeNames() throws Exception {
+        Set<String> serverTypes = getMetadataInstance().getDataSourceTemplateNames();
         return serverTypes;
     }
 
@@ -159,11 +159,11 @@ public class ServerUtils {
         return existingTranslatorNames;
     }
 
-    public static TeiidDataSource getDataSource(String sourceName) {
+    public static TeiidDataSource getDataSource(String sourceName) throws Exception {
         return getMetadataInstance().getDataSource(sourceName);
     }
 
-    public static boolean hasDataSource(String sourceName) {
+    public static boolean hasDataSource(String sourceName) throws Exception {
         if (sourceName == null)
             return false;
 
@@ -179,16 +179,16 @@ public class ServerUtils {
         return false;
     }
 
-    public static void deleteDataSource(String sourceName) {
+    public static void deleteDataSource(String sourceName) throws Exception {
         getMetadataInstance().deleteDataSource(sourceName);
     }
 
-    public static void getOrCreateDataSource(String sourceName, String jndiName, String sourceType, Properties sourceProps) {
+    public static void getOrCreateDataSource(String sourceName, String jndiName, String sourceType, Properties sourceProps) throws Exception {
         getMetadataInstance().getOrCreateDataSource(sourceName, jndiName, sourceType, sourceProps);
     }
 
-    public static void deployDriver(String driverName, File driverFile) {
-        getMetadataInstance().deployDriver(driverName, driverFile);
+    public static void deployDriver(String driverName, File driverFile) throws Exception {
+        getMetadataInstance().deployDataSourceDriver(driverName, driverFile);
     }
 
     public static void deployDynamicVdb(String vdbDeploymentName, InputStream stream) throws Exception {
@@ -203,7 +203,7 @@ public class ServerUtils {
         return getMetadataInstance().getVdb(vdbName) != null;
     }
 
-    public static TeiidTranslator getTranslator(String translatorName) {
+    public static TeiidTranslator getTranslator(String translatorName) throws Exception {
         return getMetadataInstance().getTranslator(translatorName);
     }
 
@@ -211,7 +211,7 @@ public class ServerUtils {
         return getMetadataInstance().getVdb(vdbName);
     }
 
-    public static void undeployDynamicVdb(String name) {
+    public static void undeployDynamicVdb(String name) throws Exception {
         getMetadataInstance().undeployDynamicVdb(name);
     }
 

@@ -47,6 +47,7 @@ import org.junit.Test;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.OptionKeys;
+import org.komodo.metadata.DefaultMetadataInstance;
 import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.RelationalObject.Filter;
 import org.komodo.relational.connection.Connection;
@@ -685,7 +686,7 @@ public final class DataserviceImplTest extends RelationalModelTest {
         ImportOptions importOptions = new ImportOptions();
         importOptions.setOption( OptionKeys.NAME, "MyDataService" );
 
-        DataserviceConveyor conveyor = new DataserviceConveyor( _repo, metadataInstance );
+        DataserviceConveyor conveyor = new DataserviceConveyor( _repo, DefaultMetadataInstance.getInstance());
         KomodoObject parent = _repo.komodoWorkspace( getTransaction() );
         conveyor.dsImport( getTransaction(), importStream, parent, importOptions, importMessages );
         assertThat( importMessages.hasError(), is( false ) );
@@ -836,7 +837,7 @@ public final class DataserviceImplTest extends RelationalModelTest {
         ImportOptions importOptions = new ImportOptions();
         importOptions.setOption( OptionKeys.NAME, "MyDataService" );
 
-        DataserviceConveyor conveyor = new DataserviceConveyor( _repo, metadataInstance);
+        DataserviceConveyor conveyor = new DataserviceConveyor( _repo, DefaultMetadataInstance.getInstance());
         KomodoObject parent = _repo.komodoWorkspace( getTransaction() );
         conveyor.dsImport( getTransaction(), importStream, parent, importOptions, importMessages );
         assertThat( importMessages.hasError(), is( false ) );

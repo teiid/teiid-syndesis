@@ -526,17 +526,17 @@ public class KomodoRestV1Application extends Application implements StringConsta
         /**
          * The teiid credentials property for modifying the usernames and passwords
          */
-        String TEIID_CREDENTIALS = "credentials"; //$NON-NLS-1$
+        String METADATA__CREDENTIALS = "credentials"; //$NON-NLS-1$
 
         /**
          * The driver property for adding a driver to the teiid server
          */
-        String TEIID_DRIVER = "driver"; //$NON-NLS-1$
+        String METADATA_DRIVER = "driver"; //$NON-NLS-1$
 
         /**
          * Placeholder added to an URI to allow a specific teiid driver id
          */
-        String TEIID_DRIVER_PLACEHOLDER = "{driverName}"; //$NON-NLS-1$
+        String METADATA_DRIVER_PLACEHOLDER = "{driverName}"; //$NON-NLS-1$
 
         /**
          * The teiid status path segment

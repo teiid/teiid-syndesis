@@ -550,7 +550,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
         commitHandleErrors(importMessages);
 
         assertFalse(importMessages.hasError());
-        traverse(getTransaction(), tweet.getAbsolutePath());
+//        traverse(getTransaction(), tweet.getAbsolutePath());
 
         KomodoObject tweetQuery = verify(getTransaction(), tweet, TeiidSqlLexicon.Query.ID);
         verify(getTransaction(), tweetQuery, TeiidSqlLexicon.From.ID, TeiidSqlLexicon.From.ID);

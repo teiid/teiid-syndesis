@@ -1864,7 +1864,7 @@ public final class KomodoDataserviceService extends KomodoService {
             Driver[] drivers = dataservice.getDrivers(uow);
             List<RestConnectionDriver> restDrivers = new ArrayList<>(drivers.length);
             for (Driver driver : drivers) {
-                ConnectionDriver aDriver = new ConnectionDriver(driver.getName(uow),null);
+                ConnectionDriver aDriver = new ConnectionDriver(driver.getName(uow));
                 RestConnectionDriver entity = new RestConnectionDriver(aDriver);
                 restDrivers.add(entity);
                 LOGGER.debug("getDrivers:Drivers from Dataservice '{0}' entity was constructed", dataserviceName); //$NON-NLS-1$

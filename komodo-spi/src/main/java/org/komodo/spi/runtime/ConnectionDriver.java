@@ -28,14 +28,11 @@ public class ConnectionDriver {
 
     private final String name;
 
-    private final String className;
-
     /**
      * Default constructor
      */
-    public ConnectionDriver(String name, String className) {
+    public ConnectionDriver(String name) {
         this.name = name;
-        this.className = className;
     }
 
     /**
@@ -45,23 +42,15 @@ public class ConnectionDriver {
         return name;
     }
 
-    /**
-     * @return class name
-     */
-    public String getClassName() {
-        return className;
-    }
-
     @Override
     public String toString() {
-        return "ConnectionDriver [name=" + this.name + ", className=" + this.className + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        return "ConnectionDriver [name=" + this.name + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((this.className == null) ? 0 : this.className.hashCode());
         result = prime * result + ((this.name == null) ? 0 : this.name.hashCode());
         return result;
     }
@@ -75,11 +64,6 @@ public class ConnectionDriver {
         if (getClass() != obj.getClass())
             return false;
         ConnectionDriver other = (ConnectionDriver)obj;
-        if (this.className == null) {
-            if (other.className != null)
-                return false;
-        } else if (!this.className.equals(other.className))
-            return false;
         if (this.name == null) {
             if (other.name != null)
                 return false;

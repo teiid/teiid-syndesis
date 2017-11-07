@@ -192,7 +192,7 @@ public final class KomodoDriverService extends KomodoService {
             for ( final Driver driver : drivers ) {
                 if ( ( start == 0 ) || ( i >= start ) ) {
                     if ( ( size == ALL_AVAILABLE ) || ( entities.size() < size ) ) {
-                        ConnectionDriver aDriver = new ConnectionDriver(driver.getName(uow),null);
+                        ConnectionDriver aDriver = new ConnectionDriver(driver.getName(uow));
                         RestConnectionDriver entity = new RestConnectionDriver(aDriver);
                         entities.add(entity);
                         LOGGER.debug("getDrivers:Driver '{0}' entity was constructed", driver.getName(uow)); //$NON-NLS-1$

@@ -27,7 +27,6 @@ import java.util.Properties;
 import javax.ws.rs.core.UriBuilder;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.template.Template;
 import org.komodo.relational.vdb.Translator;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.KomodoRestV1Application;
@@ -321,14 +320,6 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
     }
 
     /**
-     * @return the URI to use when requesting the teiid cache  (never <code>null</code>)
-     */
-    public URI teiidCacheUri() {
-        return UriBuilder.fromUri(this.baseUri)
-                                     .path(METADATA_SEGMENT).build();
-    }
-
-    /**
      * @return the URI to use when requesting the metadata server  (never <code>null</code>)
      */
     public URI mServerUri() {
@@ -344,6 +335,36 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
         return UriBuilder.fromUri(this.baseUri)
                                      .path(METADATA_SEGMENT)
                                      .path(VDBS_SEGMENT)
+                                     .build();
+    }
+
+    /**
+     * @return the URI to use when requesting the metadata server translators collection  (never <code>null</code>)
+     */
+    public URI mServerTranslatorsUri() {
+        return UriBuilder.fromUri(this.baseUri)
+                                     .path(METADATA_SEGMENT)
+                                     .path(TRANSLATORS_SEGMENT)
+                                     .build();
+    }
+
+    /**
+     * @return the URI to use when requesting the metadata server templates collection  (never <code>null</code>)
+     */
+    public URI mServerTemplatesUri() {
+        return UriBuilder.fromUri(this.baseUri)
+                                     .path(METADATA_SEGMENT)
+                                     .path(TEMPLATES_SEGMENT)
+                                     .build();
+    }
+
+    /**
+     * @return the URI to use when requesting the metadata server connections collection  (never <code>null</code>)
+     */
+    public URI mServerConnectionsUri() {
+        return UriBuilder.fromUri(this.baseUri)
+                                     .path(METADATA_SEGMENT)
+                                     .path(CONNECTIONS_SEGMENT)
                                      .build();
     }
 
@@ -887,16 +908,6 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
     }
 
     /**
-     * @param template the template whose parent URI is being requested (cannot be <code>null</code>)
-     * @param uow
-     * @return the URI of the parent of the given template
-     * @throws KException
-     */
-    public URI templateParentUri(Template template, UnitOfWork uow) throws KException {
-        return workspaceConnectionsUri();
-    }
-
-    /**
      * @param linkType
      * @param settings
      * @return the connection URI for the given link type and settings
@@ -974,7 +985,7 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
         String templateName = setting(settings, SettingNames.TEMPLATE_NAME);
         String templateEntryName = setting(settings, SettingNames.TEMPLATE_ENTRY_NAME);
 
-        URI templateUri = UriBuilder.fromUri(teiidCacheUri())
+        URI templateUri = UriBuilder.fromUri(mServerTemplatesUri())
                                             .path(TEMPLATES_SEGMENT).path(templateName).build();
 
         switch (linkType) {

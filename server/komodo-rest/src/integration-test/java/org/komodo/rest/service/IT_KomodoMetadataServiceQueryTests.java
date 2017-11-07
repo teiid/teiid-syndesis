@@ -35,7 +35,7 @@ import net.jcip.annotations.NotThreadSafe;
 @NotThreadSafe
 @RunWith(Arquillian.class)
 @SuppressWarnings( {"javadoc", "nls"} )
-public final class IT_KomodoTeiidServiceQueryTests extends AbstractKomodoTeiidServiceTest implements StringConstants {
+public final class IT_KomodoMetadataServiceQueryTests extends AbstractKomodoMetadataServiceTest implements StringConstants {
 
     @Override
     protected int getTestTotalInClass() {
@@ -46,13 +46,8 @@ public final class IT_KomodoTeiidServiceQueryTests extends AbstractKomodoTeiidSe
     public void setup() throws Exception {
         importDataService();
 
-        // Avoid deploying more than once
-        //
-        // TODO
-        // FIXME
-        //
-//        if (! metadataInstance.hasVdb(TestUtilities.US_STATES_VDB_NAME))
-//            deployDataService();
+        if (! getMetadataInstance().hasVdb(TestUtilities.US_STATES_VDB_NAME))
+            deployDataService();
 
         //
         // Give the vdb time to become active
@@ -61,7 +56,6 @@ public final class IT_KomodoTeiidServiceQueryTests extends AbstractKomodoTeiidSe
     }
 
     @Test
-    @Ignore("To be properly implemented")
     public void shouldQueryTeiid() throws Exception {
         KomodoQueryAttribute queryAttr = new KomodoQueryAttribute();
         queryAttr.setQuery("SELECT * FROM state");
@@ -71,7 +65,6 @@ public final class IT_KomodoTeiidServiceQueryTests extends AbstractKomodoTeiidSe
     }
 
     @Test
-    @Ignore("To be properly implemented")
     public void shouldQueryTeiidWithLimitAndOffset() throws Exception {
         KomodoQueryAttribute queryAttr = new KomodoQueryAttribute();
         queryAttr.setQuery("SELECT * FROM state");
@@ -86,7 +79,6 @@ public final class IT_KomodoTeiidServiceQueryTests extends AbstractKomodoTeiidSe
     }
 
     @Test
-    @Ignore("To be properly implemented")
     public void shouldQueryTeiidUsingDataservice() throws Exception {
         String dsPath = RepositoryImpl.komodoWorkspacePath(null) + FORWARD_SLASH +
                                 USER_NAME + FORWARD_SLASH + "UsStatesService";

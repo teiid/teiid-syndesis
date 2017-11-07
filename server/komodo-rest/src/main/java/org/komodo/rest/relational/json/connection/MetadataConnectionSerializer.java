@@ -19,34 +19,24 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.rest.service;
+package org.komodo.rest.relational.json.connection;
 
-import org.jboss.arquillian.junit.Arquillian;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.komodo.spi.constants.StringConstants;
-import net.jcip.annotations.NotThreadSafe;
+import org.komodo.rest.relational.json.BasicEntitySerializer;
+import org.komodo.rest.relational.response.metadata.RestMetadataConnection;
+import org.komodo.utils.StringUtils;
 
-@NotThreadSafe
-@RunWith(Arquillian.class)
-@SuppressWarnings( {"javadoc", "nls"} )
-public final class IT_KomodoTeiidServiceDataServiceTests extends AbstractKomodoTeiidServiceTest implements StringConstants {
+/**
+ * A GSON serializer/deserializer for {@link RestMetadataConnection}s.
+ */
+public final class MetadataConnectionSerializer extends BasicEntitySerializer<RestMetadataConnection> {
 
     @Override
-    protected int getTestTotalInClass() {
-        return 1;
+    protected boolean isComplete(final RestMetadataConnection connection) {
+        return !StringUtils.isBlank(connection.getId()) && connection.getkType() != null;
     }
 
-    //
-    // TODO
-    // FIXME
-    //
-    @Test
-    @Ignore("To be properly implemented")
-    public void shouldDeployDataService() throws Exception {
-        importDataService();
-
-        deployDataService();
+    @Override
+    protected RestMetadataConnection createEntity() {
+        return new RestMetadataConnection();
     }
 }

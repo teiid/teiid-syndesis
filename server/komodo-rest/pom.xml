@@ -36,8 +36,7 @@
 
 		<version.resteasy>3.0.19.Final</version.resteasy>
 		<version.jboss.logging>3.3.0.Final</version.jboss.logging>
-		<manifest.dependencies>org.jboss.as.cli, org.jboss.as.controller-client, org.jboss.dmr, org.jboss.logging, org.infinispan, org.infinispan.commons</manifest.dependencies>
-
+		<manifest.dependencies>org.jboss.as.cli, org.jboss.as.controller-client, org.jboss.dmr, org.jboss.logging, org.jboss.teiid.admin, org.jboss.teiid.common-core, org.jboss.teiid.api, org.jboss.teiid.client, org.jboss.teiid</manifest.dependencies>
 	</properties>
 
 	<dependencyManagement>
@@ -109,6 +108,49 @@
 				<version>${version.jgit}</version>
 				<scope>test</scope>
 			</dependency>
+
+			<dependency>
+				<groupId>org.teiid</groupId>
+				<artifactId>teiid-common-core</artifactId>
+				<version>${version.org.teiid}</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.teiid</groupId>
+				<artifactId>teiid-api</artifactId>
+				<version>${version.org.teiid}</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.teiid</groupId>
+				<artifactId>teiid-engine</artifactId>
+				<version>${version.org.teiid}</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.teiid</groupId>
+				<artifactId>teiid-runtime</artifactId>
+				<version>${version.org.teiid}</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.teiid</groupId>
+				<artifactId>teiid-jboss-admin</artifactId>
+				<version>${version.org.teiid}</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.teiid</groupId>
+				<artifactId>teiid-admin</artifactId>
+				<version>${version.org.teiid}</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.teiid</groupId>
+				<artifactId>teiid-client</artifactId>
+				<version>${version.org.teiid}</version>
+				<scope>provided</scope>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -161,22 +203,37 @@
 		<dependency>
 			<groupId>org.teiid</groupId>
 			<artifactId>teiid-common-core</artifactId>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.teiid</groupId>
 			<artifactId>teiid-api</artifactId>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.teiid</groupId>
 			<artifactId>teiid-engine</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.teiid</groupId>
+			<artifactId>teiid-runtime</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.teiid</groupId>
+			<artifactId>teiid-jboss-admin</artifactId>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.teiid</groupId>
 			<artifactId>teiid-admin</artifactId>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.teiid</groupId>
 			<artifactId>teiid-client</artifactId>
+			<scope>provided</scope>
 		</dependency>
 
 		<!-- add jboss exclusions here -->
@@ -188,11 +245,6 @@
 		<dependency>
 			<groupId>org.infinispan</groupId>
 			<artifactId>infinispan-core</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.jboss.logging</groupId>
-			<artifactId>jboss-logging</artifactId>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -487,6 +539,28 @@
 									<type>zip</type>
 									<overWrite>false</overWrite>
 									<outputDirectory>${project.basedir}/lib/test-server/</outputDirectory>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+					<execution>
+						<id>unpack-teiid</id>
+						<phase>process-sources</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<!-- Not required if skipping integration tests -->
+							<skip>${integration.skipTests}</skip>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.teiid</groupId>
+									<artifactId>teiid</artifactId>
+									<version>${version.org.teiid}</version>
+									<classifier>${teiid.classifier.default}</classifier>
+									<type>zip</type>
+									<overWrite>true</overWrite>
+									<outputDirectory>${project.basedir}/lib/test-server/${test.server.name}</outputDirectory>
 								</artifactItem>
 							</artifactItems>
 						</configuration>

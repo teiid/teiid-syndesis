@@ -63,7 +63,7 @@ public final class ServerDatasourceTypesCommand extends ServerShellCommand {
             final String title = I18n.bind( ServerCommandsI18n.infoMessageDatasourceTypes);
             print( MESSAGE_INDENT, title );
 
-            Set< String > types = ServerUtils.getMetadataInstance().getDataSourceTypeNames();
+            Set< String > types = ServerUtils.getMetadataInstance().getDataSourceTemplateNames();
             if(types.isEmpty()) {
                 print( MESSAGE_INDENT, I18n.bind( ServerCommandsI18n.noDatasourceTypesMsg ) );
             } else {

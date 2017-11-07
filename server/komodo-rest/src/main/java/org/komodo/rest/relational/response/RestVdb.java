@@ -38,7 +38,7 @@ import org.komodo.spi.repository.Repository.UnitOfWork;
 /**
  * A VDB that can be used by GSON to build a JSON document representation.
  */
-public final class RestVdb extends RestBasicEntity {
+public class RestVdb extends RestBasicEntity {
 
     /**
      * Label used to describe name
@@ -75,6 +75,17 @@ public final class RestVdb extends RestBasicEntity {
      */
     public RestVdb() {
         super();
+    }
+
+    /**
+     * Constructor for those vdbs needing more control over what basic properties
+     * should be set
+     *
+     * @param baseUri
+     * @throws KException
+     */
+    public RestVdb(URI baseUri) throws KException {
+        super(baseUri);
     }
 
     /**
