@@ -104,7 +104,7 @@ public class ShellCommandFactoryImpl implements ShellCommandFactory {
                     try {
                         registerCommand( providerId, commandClass, wsStatus );
                     } catch ( final Exception e ) {
-                        KEngine.getInstance().getErrorHandler().error( e );
+                        wsStatus.getShell().getEngine().getErrorHandler().error( e );
                     }
                 }
             }
@@ -144,7 +144,7 @@ public class ShellCommandFactoryImpl implements ShellCommandFactory {
                     commandClassloaders.add( extraCommandsCL );
                 }
             } catch ( final IOException e ) {
-                KEngine.getInstance().getErrorHandler().error( e );
+            	wsStatus.getShell().getEngine().getErrorHandler().error( e );
             }
         }
 

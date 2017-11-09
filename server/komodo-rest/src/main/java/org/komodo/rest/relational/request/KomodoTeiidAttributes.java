@@ -22,17 +22,21 @@
 package org.komodo.rest.relational.request;
 
 import javax.ws.rs.core.MediaType;
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
+
 import org.komodo.rest.KRestEntity;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 
 /**
  * Object to be serialised by GSON that encapsulates a Teiid credential object
  */
-@JsonSerialize(include=Inclusion.NON_NULL)
+@JsonSerialize
+@JsonInclude(value=Include.NON_NULL)
 public class KomodoTeiidAttributes implements KRestEntity {
 
     /**

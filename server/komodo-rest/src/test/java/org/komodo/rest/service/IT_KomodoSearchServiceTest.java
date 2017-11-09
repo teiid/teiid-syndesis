@@ -32,6 +32,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.komodo.rest.RestBasicEntity;
 import org.komodo.rest.relational.AbstractKomodoServiceTest;
@@ -53,7 +54,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 @SuppressWarnings( {"javadoc", "nls", "deprecation"} )
-public final class KomodoSearchServiceTest extends AbstractKomodoServiceTest {
+public final class IT_KomodoSearchServiceTest extends AbstractKomodoServiceTest {
 
     private final static String PORTFOLIO_DATA_PATH = "/tko:komodo/tko:workspace/" + USER_NAME + "/Portfolio";
 

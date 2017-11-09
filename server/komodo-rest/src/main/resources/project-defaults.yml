@@ -1,0 +1,4 @@
+swarm:
+  teiid:
+    jdbc:
+      enable: false

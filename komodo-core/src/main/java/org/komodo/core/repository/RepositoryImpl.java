@@ -40,6 +40,7 @@ import org.komodo.spi.KClient;
 import org.komodo.spi.KEvent;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.query.KQueryManager;
 import org.komodo.spi.repository.Artifact;
 import org.komodo.spi.repository.ArtifactDescriptor;
@@ -545,6 +546,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     private final Set< RepositoryObserver > observers = new HashSet< >();
     private final Type type;
     private ValidationManager validationMgr;
+    protected KEngine kEngine;
 
     /**
      * @param type
@@ -553,7 +555,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
      *        the repository identifier (cannot be <code>null</code>)
      */
     public RepositoryImpl( final Type type,
-                           final Id id ) {
+                           final Id id) {
         ArgCheck.isNotNull(type, "type"); //$NON-NLS-1$
         ArgCheck.isNotNull(id, "id"); //$NON-NLS-1$
 
@@ -569,6 +571,22 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
 
     protected abstract KQueryManager getQueryManager();
 
+    public void registerKEngine(KEngine engine) {
+    	this.kEngine = engine;
+    }
+    
+    public KEngine getKEngine() {
+    	return this.kEngine;
+    }    
+    
+    @Override
+    public MetadataInstance getMetadataInstance() throws KException {
+    	if (this.kEngine != null) {
+    		return this.kEngine.getMetadataInstance();
+    	}
+    	return null;
+    }
+    
     /**
      * Called prior to each external API method. Prepares the object at the given nodePath
      * to be acted upon by the transaction, including testing if such operation violates any
@@ -1133,7 +1151,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
                 // Ensure all observers are informed even if one throws an exception
                 observer.errorOccurred(e);
             } catch (final Exception ex) {
-                KEngine.getInstance().getErrorHandler().error(Messages.getString(Messages.LocalRepository.General_Exception), ex);
+                this.kEngine.getErrorHandler().error(Messages.getString(Messages.LocalRepository.General_Exception), ex);
             }
         }
     }

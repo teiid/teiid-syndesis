@@ -29,6 +29,7 @@ import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import org.komodo.core.KEngine;
+import org.komodo.metadata.DefaultMetadataInstance;
 import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.utils.KLog;
 import org.modeshape.common.annotation.NotThreadSafe;
@@ -37,6 +38,7 @@ import org.modeshape.common.util.CheckArg;
 import org.modeshape.common.util.IoUtil;
 import org.modeshape.jcr.api.nodetype.NodeTypeManager;
 import org.modeshape.jcr.api.sequencer.Sequencer;
+import org.teiid.query.parser.QueryParser;
 import org.teiid.query.sql.LanguageObject;
 
 
@@ -78,14 +80,12 @@ public class TeiidSqlSequencer extends Sequencer {
     public void convertToJcr(String sql, Node parent) throws Exception {
         if (sql == null)
             return;
-
-        KEngine kEngine = KEngine.getInstance();
-        LanguageObject command = kEngine.parse(sql);
-        MetadataInstance mInstance = kEngine.getMetadataInstance();
+        LanguageObject command = QueryParser.getQueryParser().parseDesignerCommand(sql);
+        MetadataInstance mInstance = new DefaultMetadataInstance(null);
         
         NodeGenerator generator = new NodeGenerator((Node) parent,
-                                                                                                    mInstance.getDataTypeService(),
-                                                                                                    mInstance.getVersion());
+                                                    mInstance.getDataTypeService(),
+                                                    mInstance.getVersion());
         generator.visitObject(command);
         if (generator.errorOccurred())
             throw generator.getError();

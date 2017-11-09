@@ -140,7 +140,7 @@ public class LocalRepository extends RepositoryImpl {
      *        the name of the repository workspace in the configuration file (cannot be empty)
      */
     public LocalRepository( final URL configPathUrl,
-                            final String workspaceName ) {
+                            final String workspaceName) {
         super(Type.LOCAL, new LocalRepositoryId(configPathUrl, workspaceName));
     }
 
@@ -326,7 +326,7 @@ public class LocalRepository extends RepositoryImpl {
                             setError( error );
 
                             if (getCallback() == null) {
-                                KEngine.getInstance().getErrorHandler().error( error );
+                                kEngine.getErrorHandler().error( error );
                             } else {
                                 getCallback().errorOccurred( error );
                             }
@@ -393,7 +393,7 @@ public class LocalRepository extends RepositoryImpl {
                     setError( error );
 
                     if (getCallback() == null) {
-                        KEngine.getInstance().getErrorHandler().error( error );
+                        kEngine.getErrorHandler().error( error );
                     } else {
                         getCallback().errorOccurred( error );
                     }
@@ -460,7 +460,7 @@ public class LocalRepository extends RepositoryImpl {
             throw new Exception(msg);
         }
 
-        engine = new JcrEngine(getId());
+        engine = new JcrEngine(getId(), this.kEngine);
         engine.start();
     }
 

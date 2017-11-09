@@ -26,9 +26,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
+
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
-import org.jboss.resteasy.util.Encode;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.core.repository.DescriptorImpl;
@@ -36,11 +38,11 @@ import org.komodo.relational.vdb.Translator;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.RestProperty;
 import org.komodo.rest.relational.response.RestVdbTranslator;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyDescriptor;
 import org.mockito.Mockito;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public final class VdbTranslatorSerializerTest extends AbstractSerializerTest {
@@ -93,7 +95,7 @@ public final class VdbTranslatorSerializerTest extends AbstractSerializerTest {
         "    " + CLOSE_BRACE + COMMA + NEW_LINE +
         "    " + OPEN_BRACE + NEW_LINE +
         "      \"rel\": \"children\"," + NEW_LINE +
-        "      \"href\": \"" + BASE_URI_PREFIX + SEARCH + "parent\\u003d" + Encode.encodeQueryParam(TR_DATA_PATH) + "\"" + NEW_LINE +
+        "      \"href\": \"" + BASE_URI_PREFIX + SEARCH + "parent\\u003d" + URLEncoder.encode(TR_DATA_PATH) + "\"" + NEW_LINE +
         "    " + CLOSE_BRACE + NEW_LINE +
         "  " + CLOSE_SQUARE_BRACKET + NEW_LINE +
     CLOSE_BRACE;

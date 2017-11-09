@@ -36,6 +36,7 @@ import javax.ws.rs.core.UriBuilder;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
@@ -51,13 +52,10 @@ import org.komodo.rest.relational.response.metadata.RestMetadataVdb;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatus;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatusVdb;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbTranslator;
-import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.test.utils.TestUtilities;
-import net.jcip.annotations.NotThreadSafe;
 
-@NotThreadSafe
 @RunWith(Arquillian.class)
 @SuppressWarnings( {"javadoc", "nls"} )
 public final class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServiceTest implements StringConstants {

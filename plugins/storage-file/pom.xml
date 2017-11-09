@@ -57,15 +57,6 @@
 
 		<!-- Usual compiling ensuring the java version is 1.8 -->
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>${maven.compiler.source}</source>
-					<target>${maven.compiler.target}</target>
-				</configuration>
-			</plugin>
-
 			<!-- Bundle plugin responsible for embedding the dependencies in the final 
 				jar and adding the bundle metadata to the manifest. * Excludes komodo-spi 
 				from the build since its imported at runtime * komodo-spi is explicitly labelled 

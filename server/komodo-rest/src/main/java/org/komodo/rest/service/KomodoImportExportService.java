@@ -56,6 +56,7 @@ import org.komodo.rest.relational.response.RestStorageType;
 import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.KomodoObject;
+import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.spi.storage.StorageConnector;
@@ -211,7 +212,7 @@ public class KomodoImportExportService extends KomodoService {
         UnitOfWork uow = null;
         try {
             uow = createTransaction(principal, "exportFromWorkspace", true); //$NON-NLS-1$
-
+            Repository repo = this.kengine.getDefaultRepository();
             String artifactPath = sta.getArtifactPath();
             KomodoObject kObject = repo.getFromWorkspace(uow, artifactPath);
             if (kObject == null) {
@@ -377,7 +378,7 @@ public class KomodoImportExportService extends KomodoService {
             if (! parameters.containsKey(StorageConnector.FILE_PATH_PROPERTY)) {
                 return createErrorResponse(Status.FORBIDDEN, mediaTypes, RelationalMessages.Error.IMPORT_EXPORT_SERVICE_NO_FILE_PATH_ERROR);
             }
-
+            Repository repo = this.kengine.getDefaultRepository();
             uow = createTransaction(principal, "importToWorkspace", false); //$NON-NLS-1$
             KomodoObject importTarget = repo.komodoWorkspace(uow);
             

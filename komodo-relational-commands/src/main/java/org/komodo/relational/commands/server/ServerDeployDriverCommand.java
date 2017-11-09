@@ -56,15 +56,16 @@ public final class ServerDeployDriverCommand extends ServerShellCommand {
 
             // Deploy the driver to the server
             try {
+            	ServerUtils serverUtils = new ServerUtils(getWorkspaceStatus().getEngine());
                 // Determine if the server already has a type with the requested name
-                Set< String > serverTypes = ServerUtils.getMetadataInstance().getDataSourceTemplateNames();
+                Set< String > serverTypes = serverUtils.getMetadataInstance().getDataSourceTemplateNames();
                 if(serverTypes.contains(driverName)) {
                     return new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.driverDeployErrorServerHasMatch, driverName ), null );
                 }
                 
                 File driverFile = new File(fileName);
                 try {
-                    ServerUtils.deployDriver(driverName, driverFile);
+                    serverUtils.deployDriver(driverName, driverFile);
                 } catch (Exception ex) {
                     result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.driverDeploymentError, ex.getLocalizedMessage() ), null );
                     return result;

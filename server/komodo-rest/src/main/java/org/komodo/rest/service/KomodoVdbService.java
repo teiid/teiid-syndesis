@@ -109,6 +109,7 @@ import org.komodo.rest.relational.response.RestVdbTranslator;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.KomodoObject;
+import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.StringNameValidator;
@@ -471,12 +472,13 @@ public final class KomodoVdbService extends KomodoService {
                 oldVdb.setProperty(uow, "deployment-name", vdbName + "-vdb.xml");  //$NON-NLS-1$ //$NON-NLS-2$
             }
 
+            Repository repo = this.kengine.getDefaultRepository();
             // Import to create a new Vdb in the workspace
-            VdbImporter importer = new VdbImporter(this.repo);
+            VdbImporter importer = new VdbImporter(repo);
             final ImportOptions importOptions = new ImportOptions();
             importOptions.setOption( OptionKeys.NAME, newVdbName );
             ImportMessages importMessages = new ImportMessages();
-            importer.importVdb(uow, vdbStream, this.repo.komodoWorkspace(uow), importOptions, importMessages);
+            importer.importVdb(uow, vdbStream, repo.komodoWorkspace(uow), importOptions, importMessages);
 
             if(importMessages.hasError()) {
                 LOGGER.debug("cloneVDB for '{0}' failed", newVdbName); //$NON-NLS-1$

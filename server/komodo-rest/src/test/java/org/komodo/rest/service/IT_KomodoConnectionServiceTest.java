@@ -27,16 +27,22 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+
 import java.net.URI;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
+
 import javax.ws.rs.core.MediaType;
+
+import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
+import org.junit.runner.RunWith;
 import org.komodo.rest.RestLink.LinkType;
 import org.komodo.rest.RestProperty;
 import org.komodo.rest.relational.AbstractKomodoServiceTest;
@@ -44,9 +50,11 @@ import org.komodo.rest.relational.KomodoRestUriBuilder.SettingNames;
 import org.komodo.rest.relational.connection.RestConnection;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.request.KomodoConnectionAttributes;
+import org.wildfly.swarm.arquillian.DefaultDeployment;
 
 @SuppressWarnings( {"javadoc", "nls"} )
-public final class KomodoConnectionServiceTest extends AbstractKomodoServiceTest {
+@RunWith(Arquillian.class)
+public final class IT_KomodoConnectionServiceTest extends AbstractKomodoServiceTest {
 
     public static final String CONNECTION_NAME = "MyConnection"; 
     

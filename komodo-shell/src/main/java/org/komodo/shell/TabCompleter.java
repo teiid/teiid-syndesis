@@ -38,14 +38,16 @@ import org.komodo.shell.api.TabCompletionModifier;
 public class TabCompleter implements Completion {
 
     private final ShellCommandFactory factory;
-
+    private KEngine engine;
+    
     /**
      * Constructor.
      *
      * @param factory the factory
      */
-    public TabCompleter(ShellCommandFactory factory) {
+    public TabCompleter(ShellCommandFactory factory, KEngine engine) {
         this.factory = factory;
+        this.engine = engine;
     }
 
     /**
@@ -58,7 +60,7 @@ public class TabCompleter implements Completion {
         try {
             allCommandsForContext.addAll(factory.getCommandNamesForCurrentContext());
         } catch (Exception ex) {
-            KEngine.getInstance().getErrorHandler().error(ex.getMessage(), ex);
+            this.engine.getErrorHandler().error(ex.getMessage(), ex);
         }
 
     	// Case 1 - nothing has been typed yet - show all commands for this context
@@ -93,7 +95,7 @@ public class TabCompleter implements Completion {
     		try {
     			command = factory.getCommand(commandName);
     		} catch (Exception ex) {
-    		    KEngine.getInstance().getErrorHandler().error(ex.getMessage(), ex);
+    		    this.engine.getErrorHandler().error(ex.getMessage(), ex);
     		}
 
     		// In case it is a command then we print the tabCompletion
@@ -106,7 +108,7 @@ public class TabCompleter implements Completion {
                 try {
                     tabCompletionResult = command.tabCompletion(lastArgument, list);
                 } catch (Exception ex) {
-                    KEngine.getInstance().getErrorHandler().error(ex.getMessage(), ex);
+                    this.engine.getErrorHandler().error(ex.getMessage(), ex);
                 }
 
                 if(tabCompletionResult==TabCompletionModifier.NO_AUTOCOMPLETION){

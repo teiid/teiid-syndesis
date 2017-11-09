@@ -56,6 +56,7 @@ import org.komodo.core.internal.MultiUseAbstractTest;
 import org.komodo.core.internal.SynchronousSequencerListener;
 import org.komodo.core.repository.KSequencerController.SequencerType;
 import org.komodo.metadata.DefaultMetadataInstance;
+import org.komodo.metadata.TeiidConnectionProvider;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
 import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
@@ -65,9 +66,12 @@ import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.runtime.version.MetadataVersion;
 import org.komodo.spi.type.DataTypeService;
 import org.komodo.utils.KLog;
+import org.mockito.Mockito;
+
 import javax.jcr.Session;
 import org.modeshape.jcr.api.observation.Event;
 import org.modeshape.jcr.api.observation.Event.Sequencing;
+import org.teiid.adminapi.Admin;
 
 /**
  * Class which serves as base for various sequencer unit tests. In addition to this, it uses the sequencing events fired by
@@ -118,11 +122,13 @@ public abstract class AbstractSequencerTest extends MultiUseAbstractTest impleme
     }
 
     protected MetadataVersion getMetadataVersion() {
-        return DefaultMetadataInstance.getInstance().getVersion();
+    	TeiidConnectionProvider provider = Mockito.mock(TeiidConnectionProvider.class);
+    	return new DefaultMetadataInstance(provider).getVersion();
     }
 
     protected DataTypeService getDataTypeService() {
-        return DefaultMetadataInstance.getInstance().getDataTypeService();
+    	TeiidConnectionProvider provider = Mockito.mock(TeiidConnectionProvider.class);
+    	return new DefaultMetadataInstance(provider).getDataTypeService();
     }
 
     @Override

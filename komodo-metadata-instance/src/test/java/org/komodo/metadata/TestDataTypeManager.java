@@ -39,8 +39,8 @@ public class TestDataTypeManager extends AbstractMetadataInstanceTests {
 
     private DataTypeService manager;
     @Before
-    public void setup() {
-        manager = METADATA_INSTANCE.getDataTypeService();
+    public void setup() throws Exception {
+        manager = getMetadataInstance().getDataTypeService();
     }
 
     @Test

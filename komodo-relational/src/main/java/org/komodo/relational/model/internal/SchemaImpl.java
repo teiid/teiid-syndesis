@@ -27,6 +27,7 @@ import org.komodo.core.visitor.DdlNodeVisitor;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.model.Schema;
 import org.komodo.spi.KException;
+import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyValueType;
@@ -70,8 +71,8 @@ public class SchemaImpl extends RelationalObjectImpl implements Schema {
 
         try {
             final StringBuffer result = new StringBuffer();
-
-            final DdlNodeVisitor visitor = new DdlNodeVisitor(getVersion(), getDataTypeService(), false );
+            MetadataInstance metadata = getRepository().getMetadataInstance();
+            final DdlNodeVisitor visitor = new DdlNodeVisitor(metadata.getVersion(), metadata.getDataTypeService(), false );
             visitor.visit(transaction, this);
             result.append( visitor.getDdl() );
 

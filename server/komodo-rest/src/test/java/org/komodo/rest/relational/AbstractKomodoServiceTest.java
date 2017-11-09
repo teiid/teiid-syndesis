@@ -24,11 +24,10 @@ package org.komodo.rest.relational;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import java.io.File;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.net.URL;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -44,9 +43,11 @@ import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
+
 import org.apache.http.auth.BasicUserPrincipal;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
@@ -59,8 +60,6 @@ import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.core.executors.ApacheHttpClient4Executor;
 import org.jboss.resteasy.plugins.server.embedded.SecurityDomain;
-import org.jboss.resteasy.plugins.server.tjws.TJWSEmbeddedJaxrsServer;
-import org.jboss.resteasy.test.TestPortProvider;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -98,7 +97,7 @@ public abstract class AbstractKomodoServiceTest implements V1Constants {
 
     private static Path _kengineDataDir;
     protected static KomodoRestV1Application _restApp;
-    protected static TJWSEmbeddedJaxrsServer _server;
+    //protected static TJWSEmbeddedJaxrsServer _server;
     protected static KomodoRestUriBuilder _uriBuilder;
     private static URI _appUri;
 
@@ -135,12 +134,13 @@ public abstract class AbstractKomodoServiceTest implements V1Constants {
 
     @AfterClass
     public static void afterAll() throws Exception {
+    	/*
         if (_server != null)
             _server.stop();
 
         if (_restApp != null)
             _restApp.stop();
-
+		*/
         //
         // Allow other instances of the KomodoRestV1Application to be deployed
         // with a clean komodo engine by destroying the current static instance
@@ -186,11 +186,12 @@ public abstract class AbstractKomodoServiceTest implements V1Constants {
     public static void beforeAll() throws Exception {
         _kengineDataDir = Files.createTempDirectory(null, new FileAttribute[0]);
         System.setProperty(SystemConstants.ENGINE_DATA_DIR, _kengineDataDir.toString());
-
+        _restApp = new KomodoRestV1Application();
+        
+        /*
         _server = new TJWSEmbeddedJaxrsServer();
         _server.setSSLPort(TEST_PORT);
 
-        _restApp = new KomodoRestV1Application();
 
         URL resource = AbstractKomodoServiceTest.class.getClassLoader().getResource("ssl/server.keystore");
         File keyStore = new File(resource.toURI());
@@ -204,14 +205,14 @@ public abstract class AbstractKomodoServiceTest implements V1Constants {
         _server.getDeployment().setApplication(_restApp);
         _server.getDeployment().setSecurityEnabled(true);
         _server.start();
-
+		*/
         System.setProperty("org.jboss.resteasy.port", Integer.toString(TEST_PORT));
-        final URI baseUri = URI.create(TestPortProvider.generateBaseUrl());
+        final URI baseUri = URI.create("http://localhost:8080");
         //
         // Note this lacks the /v1 context since the embedded server does not
         // seem to detect context from the application
         //
-        _appUri = UriBuilder.fromUri(baseUri).scheme("https").build();
+        _appUri = UriBuilder.fromUri(baseUri).scheme("http").build();
         _uriBuilder = new KomodoRestUriBuilder(_appUri);
     }
 
