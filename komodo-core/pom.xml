@@ -89,16 +89,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.teiid</groupId>
-			<artifactId>teiid-runtime</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.teiid</groupId>
-			<artifactId>teiid-engine</artifactId>
-		</dependency>
-
-		<dependency>
 			<groupId>org.modeshape</groupId>
 			<artifactId>modeshape-jcr</artifactId>
 		</dependency>

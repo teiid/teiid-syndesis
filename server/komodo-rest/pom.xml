@@ -110,43 +110,43 @@
 			</dependency>
 
 			<dependency>
-				<groupId>org.teiid</groupId>
+				<groupId>org.jboss.teiid</groupId>
 				<artifactId>teiid-common-core</artifactId>
 				<version>${version.org.teiid}</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
-				<groupId>org.teiid</groupId>
+				<groupId>org.jboss.teiid</groupId>
 				<artifactId>teiid-api</artifactId>
 				<version>${version.org.teiid}</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
-				<groupId>org.teiid</groupId>
+				<groupId>org.jboss.teiid</groupId>
 				<artifactId>teiid-engine</artifactId>
 				<version>${version.org.teiid}</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
-				<groupId>org.teiid</groupId>
+				<groupId>org.jboss.teiid</groupId>
 				<artifactId>teiid-runtime</artifactId>
 				<version>${version.org.teiid}</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
-				<groupId>org.teiid</groupId>
+				<groupId>org.jboss.teiid</groupId>
 				<artifactId>teiid-jboss-admin</artifactId>
 				<version>${version.org.teiid}</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
-				<groupId>org.teiid</groupId>
+				<groupId>org.jboss.teiid</groupId>
 				<artifactId>teiid-admin</artifactId>
 				<version>${version.org.teiid}</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
-				<groupId>org.teiid</groupId>
+				<groupId>org.jboss.teiid</groupId>
 				<artifactId>teiid-client</artifactId>
 				<version>${version.org.teiid}</version>
 				<scope>provided</scope>
@@ -201,37 +201,37 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.teiid</groupId>
+			<groupId>org.jboss.teiid</groupId>
 			<artifactId>teiid-common-core</artifactId>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.teiid</groupId>
+			<groupId>org.jboss.teiid</groupId>
 			<artifactId>teiid-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.teiid</groupId>
+			<groupId>org.jboss.teiid</groupId>
 			<artifactId>teiid-engine</artifactId>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.teiid</groupId>
+			<groupId>org.jboss.teiid</groupId>
 			<artifactId>teiid-runtime</artifactId>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.teiid</groupId>
+			<groupId>org.jboss.teiid</groupId>
 			<artifactId>teiid-jboss-admin</artifactId>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.teiid</groupId>
+			<groupId>org.jboss.teiid</groupId>
 			<artifactId>teiid-admin</artifactId>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.teiid</groupId>
+			<groupId>org.jboss.teiid</groupId>
 			<artifactId>teiid-client</artifactId>
 			<scope>provided</scope>
 		</dependency>
@@ -554,7 +554,7 @@
 							<skip>${integration.skipTests}</skip>
 							<artifactItems>
 								<artifactItem>
-									<groupId>org.teiid</groupId>
+									<groupId>org.jboss.teiid</groupId>
 									<artifactId>teiid</artifactId>
 									<version>${version.org.teiid}</version>
 									<classifier>${teiid.classifier.default}</classifier>
