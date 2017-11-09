@@ -1,0 +1,9 @@
+intermediate/ca/certs/*.pem
+intermediate/ca/csr/*.pem
+intermediate/ca/private/*.pem
+intermediate/ca/index.txt.*
+intermediate/ca/serial.old
+intermediate/ca/newcerts/*
+intermediate/ca/pkcs12
+intermediate/ca/jks
+server.keystore

@@ -1,0 +1,482 @@
+{
+    "kind": "Template",
+    "apiVersion": "v1",
+    "metadata": {
+        "annotations": {
+            "iconClass": "icon-jboss",
+            "description": "Application template for vdb-builder built using S2I.  Includes ability to configure certificates for serving secure content.",
+            "tags": "datavirt,jboss,wildfly,xpaas",
+            "version": "1.0.0",
+            "openshift.io/display-name": "vdb-builder based on teiid and wildfly"
+        },
+        "name": "komodo-teiid-wildfly-s2i"
+    },
+    "labels": {
+        "template": "komodo-teiid-wildfly-s2i",
+        "xpaas": "1.4.0"
+    },
+    "message": "A new data service has been created in your project.  The username/password for accessing the service is ${TEIID_USERNAME}/${TEIID_PASSWORD}.",
+    "parameters": [
+        {
+            "description": "Specify a custom hostname for the http route.  Leave blank to use default hostname, e.g.: <service-name>-<project>.<default-domain-suffix>",
+            "displayName": "Custom http Route Hostname",
+            "name": "HOSTNAME_HTTP",
+            "value": "",
+            "required": false
+        },
+        {
+            "description": "Specify a custom hostname for the https route.  Leave blank to use default hostname, e.g.: secure-<service-name>-<project>.<default-domain-suffix>",
+            "displayName": "Custom https Route Hostname",
+            "name": "HOSTNAME_HTTPS",
+            "value": "",
+            "required": false
+        },
+        {
+            "description": "Specify a custom hostname for the JDBC route.  Leave blank to use default hostname, e.g.: secure-<service-name>-<project>.<default-domain-suffix>",
+            "displayName": "Custom JDBC Route Hostname",
+            "name": "HOSTNAME_JDBC",
+            "value": "",
+            "required": false
+        },
+        {
+            "description": "The URL of the repository with your application source code.",
+            "displayName": "Git Repository URL",
+            "name": "SOURCE_REPOSITORY_URL",
+            "value": "https://github.com/phantomjinx/teiid-komodo",
+            "required": true
+        },
+        {
+            "description": "Set this to a branch name, tag or other ref of your repository if you are not using the default branch.",
+            "displayName": "Git Reference",
+            "name": "SOURCE_REPOSITORY_REF",
+            "value": "master",
+            "required": false
+        },
+        {
+            "description": "The name of the service account to use for the deployment.  The service account should be configured to allow usage of the secret(s) specified by HTTPS_SECRET.",
+            "displayName": "Service Account Name",
+            "name": "SERVICE_ACCOUNT_NAME",
+            "value": "dsb-service-account",
+            "required": true
+        },
+        {
+            "description": "The name of the secret containing the keystore to be used for serving secure content.",
+            "displayName": "Server Keystore Secret Name",
+            "name": "HTTPS_SECRET",
+            "value": "dsb-app-secret",
+            "required": true
+        },
+        {
+            "description": "The name of the keystore file within the secret.",
+            "displayName": "Server Keystore Filename",
+            "name": "HTTPS_KEYSTORE",
+            "value": "keystore.jks",
+            "required": false
+        },
+        {
+            "description": "The type of the keystore file (JKS or JCEKS).",
+            "displayName": "Server Keystore Type",
+            "name": "HTTPS_KEYSTORE_TYPE",
+            "value": "",
+            "required": false
+        },
+        {
+            "description": "The name associated with the server certificate.",
+            "displayName": "Server Certificate Name",
+            "name": "HTTPS_NAME",
+            "value": "jboss",
+            "required": false
+        },
+        {
+            "description": "The password for the keystore and certificate",
+            "displayName": "Server Keystore Password",
+            "name": "HTTPS_PASSWORD",
+            "value": "mykeystorepass",
+            "required": false
+        },
+        {
+            "description": "Username associated with Teiid data service.",
+            "displayName": "Teiid Username",
+            "name": "TEIID_USERNAME",
+            "value": "user",
+            "required": true
+        },
+        {
+            "description": "Password for Teiid user.",
+            "displayName": "Teiid User Password",
+            "name": "TEIID_PASSWORD",
+            "value": "user1234!",
+            "required": true
+        },
+        {
+            "description": "Namespace in which the ImageStreams for Red Hat Middleware images are installed. These ImageStreams are normally installed in the openshift namespace. You should only need to modify this if you've installed the ImageStreams in a different namespace/project.",
+            "displayName": "ImageStream Namespace",
+            "name": "IMAGE_STREAM_NAMESPACE",
+            "value": "openshift",
+            "required": true
+        }
+    ],
+    "objects": [
+        {
+            "kind": "Service",
+            "apiVersion": "v1",
+            "spec": {
+                "ports": [
+                    {
+                        "name": "http",
+                        "port": 8080,
+                        "targetPort": "http"
+                    },
+                    {
+                        "name": "https",
+                        "port": 8443,
+                        "targetPort": "https"
+                    },
+                    {
+                        "name": "admin",
+                        "port": 9990,
+                        "targetPort": "admin"
+                    },
+                    {
+                        "name": "jdbc",
+                        "port": 31000,
+                        "targetPort": "jdbc"
+                    },
+                    {
+                        "name": "jdbcs",
+                        "port": 31443,
+                        "targetPort": "jdbcs"
+                    }
+                ],
+                "selector": {
+                    "deploymentConfig": "vdb-builder"
+                }
+            },
+            "metadata": {
+                "name": "vdb-builder",
+                "labels": {
+                    "application": "vdb-builder"
+                },
+                "annotations": {
+                    "description": "Designing data virtualization services."
+                }
+            }
+        },
+        {
+            "kind": "Route",
+            "apiVersion": "v1",
+            "id": "vdb-builder-http",
+            "metadata": {
+                "name": "vdb-builder",
+                "labels": {
+                    "application": "vdb-builder"
+                },
+                "annotations": {
+                    "description": "Route for application's http (REST) service."
+                }
+            },
+            "spec": {
+                "host": "${HOSTNAME_HTTP}",
+                "port": {
+                    "targetPort": "http"
+                },
+                "to": {
+                    "name": "vdb-builder"
+                }
+            }
+        },
+        {
+            "kind": "Route",
+            "apiVersion": "v1",
+            "id": "vdb-builder-https",
+            "metadata": {
+                "name": "secure-vdb-builder",
+                "labels": {
+                    "application": "vdb-builder"
+                },
+                "annotations": {
+                    "description": "Route for application's https (REST) service."
+                }
+            },
+            "spec": {
+                "host": "${HOSTNAME_HTTPS}",
+                "port": {
+                    "targetPort": "https"
+                },
+                "to": {
+                    "name": "vdb-builder"
+                },
+                "tls": {
+                    "termination": "passthrough"
+                }
+            }
+        },
+        {
+            "kind": "Route",
+            "apiVersion": "v1",
+            "id": "vdb-builder-jdbc",
+            "metadata": {
+                "name": "jdbc-vdb-builder",
+                "labels": {
+                    "application": "vdb-builder"
+                },
+                "annotations": {
+                    "description": "Route for application's JDBC service."
+                }
+            },
+            "spec": {
+                "host": "${HOSTNAME_JDBC}",
+                "port": {
+                    "targetPort": "jdbcs"
+                },
+                "to": {
+                    "name": "vdb-builder"
+                },
+                "tls": {
+                    "termination": "passthrough"
+                }
+            }
+        },
+        {
+            "kind": "ImageStream",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "vdb-builder",
+                "labels": {
+                    "application": "vdb-builder"
+                }
+            }
+        },
+        {
+            "kind": "BuildConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "vdb-builder",
+                "labels": {
+                    "application": "vdb-builder"
+                }
+            },
+            "spec": {
+                "source": {
+                    "type": "Git",
+                    "git": {
+                        "uri": "${SOURCE_REPOSITORY_URL}",
+                        "ref": "${SOURCE_REPOSITORY_REF}"
+                    },
+                    "contextDir": "."
+                },
+                "strategy": {
+                    "type": "Source",
+                    "sourceStrategy": {
+        				"from": {
+        					"kind": "DockerImage",
+        					"name": "openshift/wildfly-101-centos7:latest"
+        				},
+                        "incremental": true,
+                        "env": [
+                            {
+                                "name": "MAVEN_ARGS",
+                                "value": "clean package -Popenshift -DskipTests -B"
+                            },
+                            {
+                                "name": "MAVEN_ARGS_APPEND",
+                                "value": "-pl org.teiid.komodo:komodo-rest,org.teiid.komodo:komodo-openshift -am -Dintegration.skipTests"
+                            }
+                        ]
+                    }
+                },
+                "output": {
+                    "to": {
+                        "kind": "ImageStreamTag",
+                        "name": "vdb-builder:latest"
+                    }
+                },
+                "triggers": [
+                    {
+                        "type": "ImageChange",
+                        "imageChange": {
+                            "from": {
+                                "kind": "ImageStreamTag",
+                                "namespace": "openshift",
+                                "name": "wildfly:10.1"
+                            }
+                        }
+                    },
+                    {
+                        "type": "ConfigChange"
+                    }
+                ]
+            }
+        },
+        {
+            "kind": "DeploymentConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "vdb-builder",
+                "labels": {
+                    "application": "vdb-builder"
+                }
+            },
+            "spec": {
+                "strategy": {
+                    "type": "Recreate"
+                },
+                "triggers": [
+                    {
+                        "type": "ImageChange",
+                        "imageChangeParams": {
+                            "automatic": true,
+                            "containerNames": [
+                                "vdb-builder"
+                            ],
+                            "from": {
+                                "kind": "ImageStreamTag",
+                                "name": "vdb-builder:latest"
+                            }
+                        }
+                    },
+                    {
+                        "type": "ConfigChange"
+                    }
+                ],
+                "replicas": 1,
+                "selector": {
+                    "deploymentConfig": "vdb-builder"
+                },
+                "template": {
+                    "metadata": {
+                        "name": "vdb-builder",
+                        "labels": {
+                            "deploymentConfig": "vdb-builder",
+                            "application": "vdb-builder"
+                        }
+                    },
+                    "spec": {
+                        "serviceAccountName": "${SERVICE_ACCOUNT_NAME}",
+                        "terminationGracePeriodSeconds": 60,
+                        "containers": [
+                            {
+                                "name": "vdb-builder",
+                                "image": "vdb-builder",
+                                "imagePullPolicy": "Always",
+                                "volumeMounts": [
+                                    {
+                                        "name": "vdb-builder-keystore-volume",
+                                        "mountPath": "/etc/dsb-secret-volume",
+                                        "readOnly": true
+                                    }
+                                ],
+                                "resources" : {
+                                    "requests" : {
+                                        "cpu" : "500m",
+                                        "memory" : "1536Mi"
+                                    },
+                                    "limits" : {
+                                        "cpu" : "1",
+                                        "memory" : "1536Mi"
+                                    }
+                                },
+                                "ports": [
+                                    {
+                                        "name": "http",
+                                        "containerPort": 8080,
+                                        "protocol": "TCP"
+                                    },
+                                    {
+                                        "name": "https",
+                                        "containerPort": 8443,
+                                        "protocol": "TCP"
+                                    },
+                                    {
+                                        "name": "jdbc",
+                                        "containerPort": 31000,
+                                        "protocol": "TCP"
+                                    },
+                                    {
+                                        "name": "jdbcs",
+                                        "containerPort": 31443,
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "env": [
+                                    {
+                                        "name": "OPENSHIFT_KUBE_PING_LABELS",
+                                        "value": "application=vdb-builder"
+                                    },
+                                    {
+                                        "name": "OPENSHIFT_KUBE_PING_NAMESPACE",
+                                        "valueFrom": {
+                                            "fieldRef": {
+                                                "fieldPath": "metadata.namespace"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "HTTPS_KEYSTORE_DIR",
+                                        "value": "/etc/dsb-secret-volume"
+                                    },
+                                    {
+                                        "name": "HTTPS_KEYSTORE",
+                                        "value": "${HTTPS_KEYSTORE}"
+                                    },
+                                    {
+                                        "name": "HTTPS_KEYSTORE_TYPE",
+                                        "value": "${HTTPS_KEYSTORE_TYPE}"
+                                    },
+                                    {
+                                        "name": "HTTPS_NAME",
+                                        "value": "${HTTPS_NAME}"
+                                    },
+                                    {
+                                        "name": "HTTPS_PASSWORD",
+                                        "value": "${HTTPS_PASSWORD}"
+                                    },
+                                    {
+                                        "name": "TEIID_USERNAME",
+                                        "value": "${TEIID_USERNAME}"
+                                    },
+                                    {
+                                        "name": "TEIID_PASSWORD",
+                                        "value": "${TEIID_PASSWORD}"
+                                    },
+                                    {
+                                        "name": "HTTPS_TRANSPORT_KEYSTORE",
+                                        "value": "${HTTPS_KEYSTORE}"
+                                    },
+                                    {
+                                        "name": "HTTPS_TRANSPORT_KEYSTORE_TYPE",
+                                        "value": "${HTTPS_KEYSTORE_TYPE}"
+                                    },
+                                    {
+                                        "name": "HTTPS_TRANSPORT_KEY_ALIAS",
+                                        "value": "${HTTPS_NAME}"
+                                    },
+                                    {
+                                        "name": "HTTPS_TRANSPORT_KEYSTORE_PASSWORD",
+                                        "value": "${HTTPS_PASSWORD}"
+                                    },
+                                    {
+                                        "name": "HOSTNAME_HTTP",
+                                        "value": "${HOSTNAME_HTTP}"
+                                    },
+                                    {
+                                        "name": "HOSTNAME_HTTPS",
+                                        "value": "${HOSTNAME_HTTPS}"
+                                    }
+                                ]
+                            }
+                        ],
+                        "volumes": [
+                            {
+                                "name": "vdb-builder-keystore-volume",
+                                "secret": {
+                                    "secretName": "${HTTPS_SECRET}"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}
