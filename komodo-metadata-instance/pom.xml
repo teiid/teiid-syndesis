@@ -117,7 +117,7 @@
 							<skip>${skipTests}</skip>
 							<artifactItems>
 								<artifactItem>
-									<groupId>org.teiid</groupId>
+									<groupId>org.jboss.teiid</groupId>
 									<artifactId>teiid</artifactId>
 									<version>${version.org.teiid}</version>
 									<classifier>${teiid.classifier.default}</classifier>
@@ -184,37 +184,37 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.teiid</groupId>
+			<groupId>org.jboss.teiid</groupId>
 			<artifactId>teiid-common-core</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.teiid</groupId>
+			<groupId>org.jboss.teiid</groupId>
 			<artifactId>teiid-runtime</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.teiid</groupId>
+			<groupId>org.jboss.teiid</groupId>
 			<artifactId>teiid-engine</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.teiid</groupId>
+			<groupId>org.jboss.teiid</groupId>
 			<artifactId>teiid-api</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.teiid</groupId>
+			<groupId>org.jboss.teiid</groupId>
 			<artifactId>teiid-admin</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.teiid</groupId>
+			<groupId>org.jboss.teiid</groupId>
 			<artifactId>teiid-client</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.teiid</groupId>
+			<groupId>org.jboss.teiid</groupId>
 			<artifactId>teiid-jboss-admin</artifactId>
 		</dependency>
 

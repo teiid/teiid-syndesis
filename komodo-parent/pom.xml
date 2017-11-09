@@ -112,7 +112,7 @@
 		<version.commons.io>2.5</version.commons.io>
 		<version.infinispan>8.2.8.Final</version.infinispan>
 		
-		<version.org.teiid>10.0.0.CR2</version.org.teiid>
+		<version.org.teiid>9.3.2</version.org.teiid>
 
 		<!-- Instruct the build to use only UTF-8 encoding for source code -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -140,7 +140,7 @@
 		<!-- The version of server to use with testing -->
 		<test.server.group.id>org.wildfly</test.server.group.id>
 		<test.server.artifact.id>wildfly-dist</test.server.artifact.id>
-		<test.server.version>11.0.0.Final</test.server.version>
+		<test.server.version>10.1.0.Final</test.server.version>
 		<!-- The test version of server when its unpacked -->
 		<test.server.name>${server.platform}-${test.server.version}</test.server.name>
 
@@ -251,16 +251,6 @@
 			</dependency>
 			<dependency>
 				<groupId>org.teiid.komodo</groupId>
-				<artifactId>komodo-modeshape-sequencer-teiid-sql</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.teiid.komodo</groupId>
-				<artifactId>komodo-vdb</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.teiid.komodo</groupId>
 				<artifactId>komodo-shell-api</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -276,11 +266,6 @@
 			</dependency>
 			<dependency>
 				<groupId>org.teiid.komodo</groupId>
-				<artifactId>komodo-modeshape-vdb</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.teiid.komodo</groupId>
 				<artifactId>komodo-relational</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -291,7 +276,7 @@
 			</dependency>
 			<dependency>
 				<groupId>org.teiid.komodo</groupId>
-				<artifactId>komodo-server-rest</artifactId>
+				<artifactId>komodo-rest</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
@@ -318,48 +303,42 @@
 			</dependency>
 			<dependency>
 				<groupId>org.teiid.komodo</groupId>
-				<artifactId>komodo-modeshape-sequencer-teiid-sql-tests</artifactId>
-				<version>${project.version}</version>
-				<scope>test</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.teiid.komodo</groupId>
 				<artifactId>komodo-integration-utils</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
 			<dependency>
-				<groupId>org.teiid</groupId>
+				<groupId>org.jboss.teiid</groupId>
 				<artifactId>teiid-common-core</artifactId>
 				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.teiid</groupId>
+				<groupId>org.jboss.teiid</groupId>
 				<artifactId>teiid-api</artifactId>
 				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.teiid</groupId>
+				<groupId>org.jboss.teiid</groupId>
 				<artifactId>teiid-engine</artifactId>
 				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.teiid</groupId>
+				<groupId>org.jboss.teiid</groupId>
 				<artifactId>teiid-runtime</artifactId>
 				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.teiid</groupId>
+				<groupId>org.jboss.teiid</groupId>
 				<artifactId>teiid-admin</artifactId>
 				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.teiid</groupId>
+				<groupId>org.jboss.teiid</groupId>
 				<artifactId>teiid-jboss-admin</artifactId>
 				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.teiid</groupId>
+				<groupId>org.jboss.teiid</groupId>
 				<artifactId>teiid-client</artifactId>
 				<version>${version.org.teiid}</version>
 			</dependency>
@@ -369,12 +348,12 @@
 				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.teiid</groupId>
+				<groupId>org.jboss.teiid</groupId>
 				<artifactId>teiid-olingo-common</artifactId>
 				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.teiid</groupId>
+				<groupId>org.jboss.teiid</groupId>
 				<artifactId>teiid-olingo-patches</artifactId>
 				<version>${version.org.teiid}</version>
 			</dependency>
@@ -434,7 +413,7 @@
 				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.teiid</groupId>
+				<groupId>org.jboss.teiid</groupId>
 				<artifactId>teiid-hibernate-dialect</artifactId>
 				<version>${version.org.teiid}</version>
 			</dependency>
@@ -469,23 +448,23 @@
 				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.teiid</groupId>
+				<groupId>org.jboss.teiid</groupId>
 				<artifactId>saxon-xom</artifactId>
 				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.teiid</groupId>
+				<groupId>org.jboss.teiid</groupId>
 				<artifactId>rest-service</artifactId>
 				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.teiid</groupId>
+				<groupId>org.jboss.teiid</groupId>
 				<artifactId>teiid-metadata</artifactId>
 				<version>${version.org.teiid}</version>
 			</dependency>
 
 			<dependency>
-				<groupId>org.teiid</groupId>
+				<groupId>org.jboss.teiid</groupId>
 				<artifactId>teiid-txn-jbossts</artifactId>
 				<version>${version.org.teiid}</version>
 			</dependency>
@@ -501,7 +480,7 @@
 				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.teiid</groupId>
+				<groupId>org.jboss.teiid</groupId>
 				<artifactId>teiid-data-quality</artifactId>
 				<version>${version.org.teiid}</version>
 			</dependency>
