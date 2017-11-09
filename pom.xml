@@ -41,7 +41,6 @@
         <module>komodo-relational-commands</module>
         <module>server</module>
 
-        <module>build</module>
 
         <!-- TODO Might need this later -->
         <!--
