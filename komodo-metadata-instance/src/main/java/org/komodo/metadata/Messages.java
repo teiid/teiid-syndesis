@@ -53,6 +53,8 @@ public class Messages implements StringConstants {
         dataSourceTypeDoesNotExist,
         errorCreatingDataSource,
         refreshError,
+        cannotRefreshError,
+        serverCanNotBeReached,
         startStopFailure;
 
         @Override

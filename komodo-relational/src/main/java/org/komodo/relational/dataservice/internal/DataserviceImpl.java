@@ -63,6 +63,7 @@ import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
+import org.komodo.spi.metadata.MetadataInstance;
 
 /**
  * Implementation of data service instance model.
@@ -124,7 +125,8 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
      */
     @Override
     public byte[] export(UnitOfWork transaction, Properties exportProperties) throws KException {
-        DataserviceConveyor conveyor = new DataserviceConveyor(getRepository(), getMetadataInstance());
+    	MetadataInstance metadata = getRepository().getMetadataInstance();
+        DataserviceConveyor conveyor = new DataserviceConveyor(getRepository(), metadata);
         return conveyor.export(transaction, this, exportProperties);
     }
 
@@ -476,8 +478,9 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
     }
 
     @Override
-    public DeployStatus deploy(UnitOfWork uow) {
-        DataserviceConveyor conveyor = new DataserviceConveyor(getRepository(), getMetadataInstance());
+    public DeployStatus deploy(UnitOfWork uow) throws KException {
+    	MetadataInstance metadata = getRepository().getMetadataInstance();
+        DataserviceConveyor conveyor = new DataserviceConveyor(getRepository(), metadata);
         return conveyor.deploy(uow, this);
     }
 

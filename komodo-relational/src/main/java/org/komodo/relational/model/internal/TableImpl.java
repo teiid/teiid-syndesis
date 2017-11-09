@@ -60,6 +60,7 @@ import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
 import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon.Constraint;
 import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon.CreateTable;
 import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon.SchemaElement;
+import org.komodo.spi.metadata.MetadataInstance;
 
 /**
  * An implementation of a relational model table.
@@ -1049,7 +1050,8 @@ public class TableImpl extends RelationalObjectImpl implements Table {
                 exclusions.add(VisitorExclusions.EXCLUDE_TABLE_CONSTRAINTS);
             }
         }
-        DdlNodeVisitor visitor = new DdlNodeVisitor(getVersion(), getDataTypeService(), false, exclusions.toArray(new VisitorExclusions[0]));
+        MetadataInstance metadata = getRepository().getMetadataInstance();
+        DdlNodeVisitor visitor = new DdlNodeVisitor(metadata.getVersion(), metadata.getDataTypeService(), false, exclusions.toArray(new VisitorExclusions[0]));
         visitor.visit(transaction, this);
 
         String result = visitor.getDdl();

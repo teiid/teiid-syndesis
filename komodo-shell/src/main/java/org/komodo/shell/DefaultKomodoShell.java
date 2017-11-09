@@ -103,7 +103,7 @@ public class DefaultKomodoShell implements KomodoShell {
             }
         };
 
-        final DefaultKomodoShell shell = new DefaultKomodoShell( parent, KEngine.getInstance(), System.in, System.out );
+        final DefaultKomodoShell shell = new DefaultKomodoShell( parent, new KEngine(), System.in, System.out );
 
         // Terminate if startup input is not valid
         if( args.length == 1 && !args[0].equals("-simple") ) {  //$NON-NLS-1$

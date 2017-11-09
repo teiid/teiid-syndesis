@@ -22,9 +22,11 @@
 package org.komodo.rest.relational;
 
 import javax.ws.rs.core.MediaType;
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonProperty;
+
 import org.komodo.rest.KRestEntity;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public abstract class AbstractKomodoContentAttribute implements KRestEntity {
 

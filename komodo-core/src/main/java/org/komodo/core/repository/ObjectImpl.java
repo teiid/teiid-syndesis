@@ -28,7 +28,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.komodo.core.KEngine;
 import org.komodo.core.repository.KomodoTypeRegistry.TypeIdentifier;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
@@ -37,7 +36,6 @@ import org.komodo.spi.lexicon.ddl.DdlConstants;
 import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
 import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlConstants;
 import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon;
-import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KObjectFactory;
 import org.komodo.spi.repository.KPropertyFactory;
@@ -51,8 +49,6 @@ import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.OperationType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
-import org.komodo.spi.runtime.version.MetadataVersion;
-import org.komodo.spi.type.DataTypeService;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
@@ -63,8 +59,6 @@ import org.komodo.utils.StringUtils;
 public class ObjectImpl implements KomodoObject, StringConstants {
 
     private static final KLog LOGGER = KLog.getLogger();
-
-    private final MetadataInstance metadataInstance;
 
     protected static Descriptor[] getAllDescriptors( final UnitOfWork transaction,
                                                      final KomodoObject kobject ) throws KException {
@@ -193,7 +187,6 @@ public class ObjectImpl implements KomodoObject, StringConstants {
         this.repository = komodoRepository;
         this.path = path;
         this.index = index;
-        this.metadataInstance = KEngine.getInstance().getMetadataInstance();
     }
 
     protected void provision(UnitOfWork transaction, OperationType operationType) throws KException {
@@ -226,21 +219,6 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     @Override
     public boolean isChildRestricted() {
         return false;
-    }
-
-    /**
-     * @return the metadata instance instance
-     */
-    protected MetadataInstance getMetadataInstance() {
-        return this.metadataInstance;
-    }
-
-    protected MetadataVersion getVersion() {
-        return metadataInstance.getVersion();
-    }
-
-    protected DataTypeService getDataTypeService() {
-        return metadataInstance.getDataTypeService();
     }
 
     /**

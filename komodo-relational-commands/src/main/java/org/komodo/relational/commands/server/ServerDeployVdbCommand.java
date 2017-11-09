@@ -107,10 +107,11 @@ public final class ServerDeployVdbCommand extends ServerShellCommand {
                                                              null );
                 }
 
+                ServerUtils serverUtils = new ServerUtils(getWorkspaceStatus().getEngine());
                 // All VDB source model jndis must exist on the connected server
                 Set<String> sourceJndiNames = getPhysicalModelJndis(vdbToDeploy);
                 if(!sourceJndiNames.isEmpty()) {
-                    List<String> serverJndiNames = ServerUtils.getDatasourceJndiNames();
+                    List<String> serverJndiNames = serverUtils.getDatasourceJndiNames();
                     for(String sourceJndiName : sourceJndiNames) {
                         if(!serverJndiNames.contains(sourceJndiName)) {
                             return new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.vdbDeployFailedMissingSourceJndi, sourceJndiName ), null);
@@ -128,7 +129,7 @@ public final class ServerDeployVdbCommand extends ServerShellCommand {
                 String vdbDeploymentName = vdbToDeployName + VDB_DEPLOYMENT_SUFFIX;
                 InputStream stream = new ByteArrayInputStream(vdbXml);
                 try {
-                    ServerUtils.deployDynamicVdb(vdbDeploymentName, stream);
+                    serverUtils.deployDynamicVdb(vdbDeploymentName, stream);
                 } catch (Exception ex) {
                     result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.vdbDeploymentError, ex.getLocalizedMessage() ), null );
                     return result;
@@ -202,13 +203,14 @@ public final class ServerDeployVdbCommand extends ServerShellCommand {
     }
 
     private boolean serverHasVdb(String vdbName, int vdbVersion) throws Exception {
+    	ServerUtils serverUtils = new ServerUtils(getWorkspaceStatus().getEngine());
         // If no VDB with this name, return false;
-        if(!ServerUtils.hasVdb(vdbName)) {
+        if(!serverUtils.hasVdb(vdbName)) {
             return false;
         }
 
         // May be multiple versions deployed - see if there is one matching supplied version
-        Collection<TeiidVdb> serverVdbs = ServerUtils.getVdbs();
+        Collection<TeiidVdb> serverVdbs = serverUtils.getVdbs();
         for(TeiidVdb serverVdb : serverVdbs) {
             if(serverVdb.getName().equals(vdbName) && serverVdb.getVersion().equals(vdbVersion)) {
                 return true;

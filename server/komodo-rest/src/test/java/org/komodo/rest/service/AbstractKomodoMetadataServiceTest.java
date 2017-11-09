@@ -26,6 +26,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
@@ -40,10 +41,12 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
+
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
@@ -60,7 +63,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
 import org.jboss.resteasy.client.core.executors.ApacheHttpClient4Executor;
-import org.jboss.resteasy.test.TestPortProvider;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
@@ -69,7 +71,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.importer.ImportOptions.ExistingNodeOptions;
-import org.komodo.metadata.DefaultMetadataInstance;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.relational.KomodoRestUriBuilder;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
@@ -113,9 +114,9 @@ public abstract class AbstractKomodoMetadataServiceTest implements StringConstan
         _kengineDataDir = Files.createTempDirectory(null, new FileAttribute[0]);
         System.setProperty(SystemConstants.ENGINE_DATA_DIR, _kengineDataDir.toString());
 
-        System.setProperty("org.jboss.resteasy.port", TEST_PORT);
-        final URI baseUri = URI.create(TestPortProvider.generateBaseUrl());
-        BASE_URI = UriBuilder.fromUri(baseUri).scheme("https").path("/vdb-builder/v1").build();
+        System.setProperty("org.jboss.resteasy.port", "8080");
+        final URI baseUri = URI.create("http://localhost:8080");
+        BASE_URI = UriBuilder.fromUri(baseUri).scheme("http").path("/vdb-builder/v1").build();
         _uriBuilder = new KomodoRestUriBuilder(BASE_URI);
     }
 
@@ -141,7 +142,7 @@ public abstract class AbstractKomodoMetadataServiceTest implements StringConstan
     private ApacheHttpClient4Executor createSSLTrustingClientExecutor() throws GeneralSecurityException {
         RegistryBuilder<ConnectionSocketFactory> registryBuilder = RegistryBuilder.<ConnectionSocketFactory>create()
             .register("http", PlainConnectionSocketFactory.getSocketFactory());
-    
+        /*
         TrustStrategy trustStrategy = new TrustStrategy() {
             @Override
             public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException {
@@ -166,7 +167,9 @@ public abstract class AbstractKomodoMetadataServiceTest implements StringConstan
         CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
         credentialsProvider.setCredentials(org.apache.http.auth.AuthScope.ANY, credentials);
         clientBuilder.setDefaultCredentialsProvider(credentialsProvider);
-    
+    	*/
+        HttpClientBuilder clientBuilder = HttpClientBuilder.create();
+        
         return new ApacheHttpClient4Executor(clientBuilder.build());
     }
 
@@ -205,7 +208,8 @@ public abstract class AbstractKomodoMetadataServiceTest implements StringConstan
     }
 
     protected MetadataInstance getMetadataInstance() throws Exception {
-        return DefaultMetadataInstance.getInstance();
+        //return DefaultMetadataInstance.getInstance();
+    	return null;
     }
 
     protected void waitForVdb() throws Exception {

@@ -38,6 +38,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -57,7 +58,7 @@ import org.komodo.rest.relational.response.RestVdb;
 import org.komodo.test.utils.TestUtilities;
 
 @SuppressWarnings( {"javadoc", "nls"} )
-public final class KomodoDataserviceServiceTest extends AbstractKomodoServiceTest {
+public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoServiceTest {
 
     public static final String DATASERVICE_NAME = "MyDataService"; 
     

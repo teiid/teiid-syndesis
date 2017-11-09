@@ -100,7 +100,12 @@ public final class Messages {
         /**
          * An error indicating the token found in a JSON representation is unknown or misplaced.
          */
-        UNEXPECTED_JSON_TOKEN;
+        UNEXPECTED_JSON_TOKEN,
+        
+        /**
+         * CORS Filter error
+         */
+        ORIGIN_NOT_ALLOWED;
 
         /**
          * {@inheritDoc}

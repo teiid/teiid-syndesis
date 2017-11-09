@@ -62,13 +62,14 @@ public final class ServerVdbCommand extends ServerShellCommand {
 
             TeiidVdb vdb = null; 
             try {
+            	ServerUtils serverUtils = new ServerUtils(getWorkspaceStatus().getEngine());
                 // Check the vdb name to make sure its valid
-                List< String > existingVdbNames = ServerUtils.getVdbNames();
+                List< String > existingVdbNames = serverUtils.getVdbNames();
                 if(!existingVdbNames.contains(vdbName)) {
                     return new CommandResultImpl(false, I18n.bind( ServerCommandsI18n.serverVdbNotFound, vdbName ), null);
                 }
                 // Get the vdb
-                vdb = ServerUtils.getMetadataInstance().getVdb(vdbName);
+                vdb = serverUtils.getMetadataInstance().getVdb(vdbName);
             } catch (Exception ex) {
                 result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.serverGetVdbError, vdbName, ex.getLocalizedMessage() ), null );
                 return result;
@@ -143,7 +144,8 @@ public final class ServerVdbCommand extends ServerShellCommand {
         final Arguments args = getArguments();
 
         try {
-            List< String > existingVdbNames = ServerUtils.getVdbNames();
+        	ServerUtils serverUtils = new ServerUtils(getWorkspaceStatus().getEngine());
+            List< String > existingVdbNames = serverUtils.getVdbNames();
             Collections.sort(existingVdbNames);
 
             if ( args.isEmpty() ) {

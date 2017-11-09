@@ -61,13 +61,14 @@ public final class ServerUndeployDatasourceCommand extends ServerShellCommand {
 
             // Undeploy the VDB
             try {
+            	ServerUtils serverUtils = new ServerUtils(getWorkspaceStatus().getEngine());
                 // Check the data source name to make sure its valid
-                List< String > existingSourceNames = ServerUtils.getDatasourceNames();
+                List< String > existingSourceNames = serverUtils.getDatasourceNames();
                 if(!existingSourceNames.contains(sourceName)) {
                     return new CommandResultImpl(false, I18n.bind( ServerCommandsI18n.serverDatasourceNotFound, sourceName ), null);
                 }
                 // DataSource found - undeploy it
-                ServerUtils.getMetadataInstance().deleteDataSource(sourceName);
+                serverUtils.getMetadataInstance().deleteDataSource(sourceName);
             } catch (Exception ex) {
                 result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.accessError ), ex );
                 return result;
@@ -134,7 +135,8 @@ public final class ServerUndeployDatasourceCommand extends ServerShellCommand {
         final Arguments args = getArguments();
 
         try {
-            List<String> existingDatasourceNames = ServerUtils.getDatasourceNames();
+        	ServerUtils serverUtils = new ServerUtils(getWorkspaceStatus().getEngine());
+            List<String> existingDatasourceNames = serverUtils.getDatasourceNames();
             Collections.sort(existingDatasourceNames);
             
             if ( args.isEmpty() ) {

@@ -67,6 +67,7 @@ import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
 import org.komodo.spi.query.LogicalOperator;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
+import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.KeywordCriteria;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
@@ -114,10 +115,12 @@ public final class KomodoSearchService extends KomodoService {
         return NTLexicon.NT_UNSTRUCTURED;
     }
 
-    private ObjectSearcher createObjectSearcher(String type, String parent, String ancestor,
-                                                                             String path, String contains, String name) {
-        final String ALIAS = "nt";  //$NON-NLS-1$
-        ObjectSearcher os = new ObjectSearcher(this.repo);
+	private ObjectSearcher createObjectSearcher(String type, String parent, String ancestor, String path,
+			String contains, String name) throws KException {
+		
+    	Repository repo = this.kengine.getDefaultRepository();
+    	final String ALIAS = "nt";  //$NON-NLS-1$
+        ObjectSearcher os = new ObjectSearcher(repo);
 
         os.setFromType(convertType(type), ALIAS);
 
@@ -239,6 +242,7 @@ public final class KomodoSearchService extends KomodoService {
 
         UnitOfWork uow = null;
         try {
+        	Repository repo = this.kengine.getDefaultRepository();
             uow = createTransaction(principal, "objectFromWorkspace", true); //$NON-NLS-1$
 
             ObjectSearcher os;
@@ -350,6 +354,7 @@ public final class KomodoSearchService extends KomodoService {
         UnitOfWork uow = null;
 
         try {
+        	Repository repo = this.kengine.getDefaultRepository();
             uow = createTransaction(principal, "objectFromWorkspace", true); //$NON-NLS-1$
 
             ObjectSearcher os;
@@ -371,7 +376,7 @@ public final class KomodoSearchService extends KomodoService {
                 os.setParameterValue(parameter.getKey(), value);
             }
 
-            System.out.println(RepositoryTools.traverse(uow, this.repo.komodoWorkspace(uow)));
+            System.out.println(RepositoryTools.traverse(uow, repo.komodoWorkspace(uow)));
 
             // Execute the search
             List<KomodoObject> searchObjects = os.searchObjects(uow);
@@ -431,6 +436,7 @@ public final class KomodoSearchService extends KomodoService {
 
         UnitOfWork uow = null;
         try {
+        	Repository repo = this.kengine.getDefaultRepository();
             uow = createTransaction(principal, "searchesFromWorkspace", true); //$NON-NLS-1$
 
             String searchesGroupPath = repo.komodoSearches(uow).getAbsolutePath();
@@ -591,6 +597,7 @@ public final class KomodoSearchService extends KomodoService {
 
         UnitOfWork uow = null;
         try {
+        	Repository repo = this.kengine.getDefaultRepository();
             uow = createTransaction(principal, "removeSearchFromWorkspace", false); //$NON-NLS-1$
 
             String searchesGroupPath = repo.komodoSearches(uow).getAbsolutePath();

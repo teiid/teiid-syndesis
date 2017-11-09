@@ -24,9 +24,11 @@ package org.komodo.rest.relational.json;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+
+import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.List;
-import org.jboss.resteasy.util.Encode;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.relational.vdb.DataRole;
@@ -90,7 +92,7 @@ public final class VdbDataRoleSerializerTest extends AbstractSerializerTest {
         "    " + CLOSE_BRACE + COMMA + NEW_LINE +
         "    " + OPEN_BRACE + NEW_LINE +
         "      \"rel\": \"children\"," + NEW_LINE +
-        "      \"href\": \"" + BASE_URI_PREFIX + SEARCH + "parent\\u003d" + Encode.encodeQueryParam(ROLE_DATA_PATH) + "\"" + NEW_LINE +
+        "      \"href\": \"" + BASE_URI_PREFIX + SEARCH + "parent\\u003d" + URLEncoder.encode(ROLE_DATA_PATH) + "\"" + NEW_LINE +
         "    " + CLOSE_BRACE + COMMA + NEW_LINE +
         "    " + OPEN_BRACE + NEW_LINE +
         "      \"rel\": \"permissions\"," + NEW_LINE +
@@ -146,7 +148,7 @@ public final class VdbDataRoleSerializerTest extends AbstractSerializerTest {
         "        },\n" +
         "        {\n" +
         "          \"rel\": \"children\"," + NEW_LINE +
-        "          \"href\": \"" + BASE_URI_PREFIX + SEARCH + "parent\\u003d" + Encode.encodeQueryParam( PERMISSION_DATA_PATH ) + "\"" + NEW_LINE +
+        "          \"href\": \"" + BASE_URI_PREFIX + SEARCH + "parent\\u003d" + URLEncoder.encode( PERMISSION_DATA_PATH ) + "\"" + NEW_LINE +
         "        },\n" +
         "        {\n" +
         "          \"rel\": \"conditions\"," + NEW_LINE +
@@ -170,7 +172,7 @@ public final class VdbDataRoleSerializerTest extends AbstractSerializerTest {
         "    " + CLOSE_BRACE + COMMA + NEW_LINE +
         "    " + OPEN_BRACE + NEW_LINE +
         "      \"rel\": \"children\"," + NEW_LINE +
-        "      \"href\": \"" + BASE_URI_PREFIX + SEARCH + "parent\\u003d" + Encode.encodeQueryParam(ROLE_DATA_PATH) + "\"" + NEW_LINE +
+        "      \"href\": \"" + BASE_URI_PREFIX + SEARCH + "parent\\u003d" + URLEncoder.encode(ROLE_DATA_PATH) + "\"" + NEW_LINE +
         "    " + CLOSE_BRACE + COMMA + NEW_LINE +
         "    " + OPEN_BRACE + NEW_LINE +
         "      \"rel\": \"permissions\"," + NEW_LINE +

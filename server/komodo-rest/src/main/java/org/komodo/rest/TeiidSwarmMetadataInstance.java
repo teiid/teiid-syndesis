@@ -19,40 +19,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.rest.cors;
+package org.komodo.rest;
 
-import javax.ws.rs.core.Response;
-import org.jboss.resteasy.spi.LoggableFailure;
+import org.komodo.metadata.DefaultMetadataInstance;
+import org.komodo.metadata.TeiidConnectionProvider;
 
-public class ForbiddenException extends LoggableFailure {
+public class TeiidSwarmMetadataInstance extends DefaultMetadataInstance {
 
-    private static final long serialVersionUID = -7370671758722865878L;
-
-    public ForbiddenException() {
-        super(403);
-    }
-
-    public ForbiddenException(String s) {
-        super(s, 403);
-    }
-
-    public ForbiddenException(String s, Response response) {
-        super(s, response);
-    }
-
-    public ForbiddenException(String s, Throwable throwable, Response response) {
-        super(s, throwable, response);
-    }
-
-    public ForbiddenException(String s, Throwable throwable) {
-        super(s, throwable, 403);
-    }
-
-    public ForbiddenException(Throwable throwable) {
-        super(throwable, 403);
-    }
-
-    public ForbiddenException(Throwable throwable, Response response) {
-        super(throwable, response);
-    }
+    public TeiidSwarmMetadataInstance(TeiidConnectionProvider connectionProvider) {
+		super(connectionProvider);
+	}
 }

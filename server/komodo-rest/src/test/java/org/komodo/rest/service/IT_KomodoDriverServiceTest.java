@@ -40,7 +40,7 @@ import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.response.RestConnectionDriver;
 
 @SuppressWarnings( {"javadoc", "nls", "deprecation"} )
-public final class KomodoDriverServiceTest extends AbstractKomodoServiceTest {
+public final class IT_KomodoDriverServiceTest extends AbstractKomodoServiceTest {
 
     public static final String DRIVER_NAME = "MyDriver"; 
     

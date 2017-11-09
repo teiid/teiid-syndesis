@@ -24,7 +24,9 @@ package org.komodo.rest.relational.json;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import org.jboss.resteasy.util.Encode;
+
+import java.net.URLEncoder;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.relational.vdb.Vdb;
@@ -61,7 +63,7 @@ public final class VdbImportSerializerTest extends AbstractSerializerTest {
         "    " + CLOSE_BRACE + COMMA + NEW_LINE +
         "    " + OPEN_BRACE + NEW_LINE +
         "      \"rel\": \"children\"," + NEW_LINE +
-        "      \"href\": \"" + BASE_URI_PREFIX + SEARCH + "parent\\u003d" + Encode.encodeQueryParam(IMP_DATA_PATH)  + "\"" + NEW_LINE +
+        "      \"href\": \"" + BASE_URI_PREFIX + SEARCH + "parent\\u003d" + URLEncoder.encode(IMP_DATA_PATH)  + "\"" + NEW_LINE +
         "    " + CLOSE_BRACE + NEW_LINE +
         "  " + CLOSE_SQUARE_BRACKET + NEW_LINE +
       CLOSE_BRACE;

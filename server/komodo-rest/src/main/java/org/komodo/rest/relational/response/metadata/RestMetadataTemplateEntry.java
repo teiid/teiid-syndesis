@@ -27,7 +27,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import org.codehaus.jackson.annotate.JsonProperty;
+
 import org.komodo.relational.template.Template;
 import org.komodo.relational.template.TemplateEntry;
 import org.komodo.rest.RestBasicEntity;
@@ -37,6 +37,8 @@ import org.komodo.rest.relational.KomodoRestUriBuilder.SettingNames;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * A templateEntry that can be used by GSON to build a JSON document representation.

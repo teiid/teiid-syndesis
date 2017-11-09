@@ -47,6 +47,7 @@ import org.komodo.spi.KException;
 import org.komodo.spi.constants.ExportConstants;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
+import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.KPropertyFactory;
@@ -157,8 +158,8 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
             try {
                 final XMLOutputFactory xof = XMLOutputFactory.newInstance();
                 final XMLStreamWriter xsw = xof.createXMLStreamWriter(writer);
-
-                final VdbNodeVisitor visitor = new VdbNodeVisitor(getVersion(), getDataTypeService(), xsw);
+                MetadataInstance metadata = getRepository().getMetadataInstance();
+                final VdbNodeVisitor visitor = new VdbNodeVisitor(metadata.getVersion(), metadata.getDataTypeService(), xsw);
                 if( exportProperties != null && !exportProperties.isEmpty() ) {
                 	boolean useTabs = exportProperties.containsKey(ExportConstants.USE_TABS_PROP_KEY);
                 	visitor.setShowTabs(useTabs);
@@ -1242,7 +1243,8 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
 
             String vdbToDeployName = getName(uow);
             String vdbDeploymentName = vdbToDeployName + VDB_DEPLOYMENT_SUFFIX;
-            getMetadataInstance().deployDynamicVdb(vdbDeploymentName, new ByteArrayInputStream(vdbXml));
+            MetadataInstance metadata = getRepository().getMetadataInstance();
+            metadata.deployDynamicVdb(vdbDeploymentName, new ByteArrayInputStream(vdbXml));
 
             status.addProgressMessage("VDB deployed " + vdbName + " to teiid"); //$NON-NLS-1$ //$NON-NLS-2$
         } catch (Exception ex) {

@@ -121,6 +121,8 @@ public class JcrEngine extends Thread implements RepoEngine {
     private final JcrQueryManager queryManager;
 
     private KSequencerController sequencers;
+    
+    private KEngine kEngine;
 
     /**
      * Create this thread and give it a name
@@ -128,10 +130,11 @@ public class JcrEngine extends Thread implements RepoEngine {
      * @param repoId
      *        information identifying the repository (cannot be <code>null</code>)
      */
-    public JcrEngine( final Repository.Id repoId ) {
+    public JcrEngine( final Repository.Id repoId , KEngine kEngine) {
         super("Modeshape Engine Thread"); //$NON-NLS-1$
         this.repoId = repoId;
         this.identifier = new WorkspaceIdentifier(repoId.getWorkspaceName());
+        this.kEngine = kEngine;
         setDaemon(true);
         nodeFactory = new JcrNodeFactory();
         propertyFactory = nodeFactory.getPropertyFactory();
@@ -417,10 +420,10 @@ public class JcrEngine extends Thread implements RepoEngine {
                                                                    problem.getMessageString()),
                                                                    problem.getThrowable());
                         case WARNING:
-                            KEngine.getInstance().getErrorHandler().warn(problem.getMessageString());
+                            this.kEngine.getErrorHandler().warn(problem.getMessageString());
                             break;
                         default:
-                            KEngine.getInstance().getErrorHandler().error(problem.getThrowable());
+                            this.kEngine.getErrorHandler().error(problem.getThrowable());
                     }
                 }
             }
@@ -441,7 +444,7 @@ public class JcrEngine extends Thread implements RepoEngine {
                         case ERROR:
                             throw new Exception(Messages.getString(Messages.LocalRepository.Deployment_Failure, problem.getMessageString()), problem.getThrowable());
                         default:
-                            KEngine.getInstance().getErrorHandler().error(problem.getThrowable());
+                            this.kEngine.getErrorHandler().error(problem.getThrowable());
                     }
                 }
             }
@@ -605,7 +608,7 @@ public class JcrEngine extends Thread implements RepoEngine {
             } catch (final Exception e) {
                 stop = true;
                 error = e;
-                KEngine.getInstance().getErrorHandler().error(Messages.getString(Messages.LocalRepository.General_Exception), e);
+                this.kEngine.getErrorHandler().error(Messages.getString(Messages.LocalRepository.General_Exception), e);
             }
         }
     }
@@ -615,7 +618,7 @@ public class JcrEngine extends Thread implements RepoEngine {
         try {
             queue.put(request);
         } catch (InterruptedException ex) {
-            KEngine.getInstance().getErrorHandler().error(Messages.getString(Messages.LocalRepository.General_Exception), ex);
+            this.kEngine.getErrorHandler().error(Messages.getString(Messages.LocalRepository.General_Exception), ex);
         }
     }
 }

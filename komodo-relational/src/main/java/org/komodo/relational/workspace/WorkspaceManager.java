@@ -64,6 +64,7 @@ import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
+import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.KomodoObject;
@@ -955,7 +956,8 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
                 importer.importDdl(transaction, stream, parent, importOptions, importMessages);
             }
             else if (DocumentType.ZIP.equals(storageRef.getDocumentType())) {
-                DataserviceConveyor conveyor = new DataserviceConveyor(getRepository(), getMetadataInstance());
+            	MetadataInstance metadata = getRepository().getMetadataInstance();
+                DataserviceConveyor conveyor = new DataserviceConveyor(getRepository(), metadata);
                 conveyor.dsImport(transaction, stream, parent, importOptions, importMessages);
             }
             else if (DocumentType.JAR.equals(storageRef.getDocumentType())) {

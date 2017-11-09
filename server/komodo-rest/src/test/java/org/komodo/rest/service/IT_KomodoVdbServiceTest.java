@@ -47,6 +47,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -74,7 +75,7 @@ import org.komodo.test.utils.TestUtilities;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
 
 @SuppressWarnings( {"javadoc", "nls"} )
-public final class KomodoVdbServiceTest extends AbstractKomodoServiceTest {
+public final class IT_KomodoVdbServiceTest extends AbstractKomodoServiceTest {
 
     @Rule
     public TestName testName = new TestName();

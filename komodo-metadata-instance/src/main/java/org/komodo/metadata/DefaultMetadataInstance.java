@@ -21,7 +21,6 @@
  */
 package org.komodo.metadata;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -40,17 +39,15 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+
 import org.komodo.metadata.internal.DataTypeServiceImpl;
 import org.komodo.metadata.internal.MetaArtifactFactory;
-import org.komodo.spi.KEvent;
 import org.komodo.spi.KException;
-import org.komodo.spi.KObserver;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.metadata.MetadataClientEvent;
 import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.metadata.MetadataObserver;
 import org.komodo.spi.outcome.Outcome;
-import org.komodo.spi.outcome.OutcomeFactory;
 import org.komodo.spi.query.QSColumn;
 import org.komodo.spi.query.QSResult;
 import org.komodo.spi.query.QSRow;
@@ -66,13 +63,12 @@ import org.komodo.spi.type.DataTypeService.DataTypeName;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 import org.teiid.adminapi.Admin;
+import org.teiid.adminapi.AdminException;
 import org.teiid.adminapi.PropertyDefinition;
 import org.teiid.adminapi.Translator;
 import org.teiid.adminapi.VDB;
 import org.teiid.adminapi.impl.VDBMetaData;
-import org.teiid.adminapi.jboss.AdminFactory;
 import org.teiid.core.util.ApplicationInfo;
-import org.teiid.jdbc.TeiidDriver;
 import org.teiid.query.parser.QueryParser;
 import org.teiid.query.sql.LanguageObject;
 
@@ -94,20 +90,6 @@ public class DefaultMetadataInstance implements MetadataInstance {
         }
     }
 
-    private static final Object TEIID_INSTANCE_LOCK = new Object();
-
-    private static final String TEST_VDB = EMPTY_STRING +
-        "<vdb name=\"ping\" version=\"1\">" +
-            "<model visible=\"true\" name=\"Foo\" type=\"PHYSICAL\" path=\"/dummy/Foo\">" +
-                "<source name=\"s\" translator-name=\"loopback\"/>" +
-                "<metadata type=\"DDL\">" +
-                    "<![CDATA[CREATE FOREIGN TABLE G1 (e1 string, e2 integer);]]>" +
-                "</metadata>" +
-            "</model>" +
-        "</vdb>";
-
-    private static DefaultMetadataInstance instance;
-
     private final Set<MetadataObserver> observers = new HashSet<>();
 
     private DataTypeServiceImpl dataTypeService;
@@ -118,20 +100,18 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
     private final JndiManager jndiMgr = new JndiManager();
 
-    private Admin admin;
+    private TeiidConnectionProvider connectionProvider;
 
-    public static DefaultMetadataInstance getInstance() {
-        if (instance == null)
-            instance = new DefaultMetadataInstance();
-
-        return instance;
-    }
-
-    private DefaultMetadataInstance() {
+    public DefaultMetadataInstance(TeiidConnectionProvider connectionProvider) {
         ApplicationInfo appInfo = ApplicationInfo.getInstance();
         this.teiidVersion = new DefaultMetadataVersion(appInfo.getReleaseNumber());
+        this.connectionProvider = connectionProvider;
     }
 
+    private Admin admin() throws AdminException {
+    	return connectionProvider.getAdmin();
+    }
+    
     /**
      * Wraps error in a {@link KException} if necessary.
      *
@@ -149,229 +129,38 @@ public class DefaultMetadataInstance implements MetadataInstance {
         return new KException(e);
     }
 
-    private String getAdminUser() {
-        return DEFAULT_ADMIN_USER;
-    }
-
-    private String getAdminPwd() {
-        return DEFAULT_ADMIN_PASSWORD;
-    }
-
-    private int getAdminPort() {
-        return DEFAULT_ADMIN_PORT;
-    }
-
-    private String getJdbcUser() {
-        return DEFAULT_JDBC_USER;
-    }
-
-    private String getJdbcPwd() {
-        return DEFAULT_JDBC_PASSWORD;
-    }
-
-    private int getJdbcPort() {
-        return DEFAULT_JDBC_PORT;
-    }
-
-    private void connect() throws KException {
-        synchronized(TEIID_INSTANCE_LOCK) {
-            if (this.admin == null) {
-                try {
-                    /*
-                     * By the time this has been called the teiid version should be correct
-                     * for the given host and the host should be up, otherwise admin will
-                     * end up back as null anyway.
-                     */
-                    char[] passwordArray = null;
-                    if (getAdminPwd() != null) {
-                        passwordArray = getAdminPwd().toCharArray();
-                    }
-
-                    this.admin = AdminFactory.getInstance().createAdmin(HOST,
-                                                                        getAdminPort(),
-                                                                        getAdminUser(),
-                                                                        passwordArray);
-
-                    if (admin == null) {
-                        String msg = Messages.getString(Messages.MetadataServer.cannotConnectToInstance, getAdminUser());
-                        throw new KException(msg);
-                    }
-
-                } catch (Exception ex) {
-                    throw handleError(ex);
-                }
-            }
-        }
-    }
-
-    private void disconnect() {
-        if (this.admin != null) {
-            this.admin.close();
-            this.admin = null;
-        }
-    }
-
-    private void notifyObservers(KEvent<?> event) {
-        final Set<MetadataObserver> copy = new HashSet<>(this.observers);
-    
-        for (final MetadataObserver observer : copy) {
-            try {
-                // Ensure all observers are informed even if one throws an exception
-                observer.eventOccurred(event);
-            } catch (final Exception ex) {
-                observer.errorOccurred(ex);
-            }
-        }
-    }
-
-    private void errorObservers(Throwable ex) {
-        ArgCheck.isNotNull(ex);
-    
-        final Set<KObserver> copy = new HashSet<>(this.observers);
-    
-        for (final KObserver observer : copy) {
-            observer.errorOccurred(ex);
-        }
-    }
-
-    private void startServer() throws KException {
-        if (getCondition() == Condition.REACHABLE)
-            return;
-
-        try {
-            connect();
-            KEvent<MetadataInstance> event = new KEvent<MetadataInstance>(this, KEvent.Type.METADATA_SERVER_STARTED);
-            notifyObservers(event);
-        } catch (Throwable ex) {
-            errorObservers(ex);
-            throw handleError(ex);
-        }
-    }
-
     private void checkStarted() throws KException {
         if (getCondition() != Condition.REACHABLE) {
-            startServer();
-
-            Outcome outcome = ping(ConnectivityType.ADMIN);
-            if (! outcome.isOK()) {
-                throw new KException(outcome.getException());
-            }
+        	String msg = Messages.getString(Messages.MetadataServer.serverCanNotBeReached);
+	        throw new KException(msg);
         }
-    }
-
-    private void stopServer() throws KException {
-        if (getCondition() == Condition.NOT_REACHABLE)
-            return;
-
-        try {
-            disconnect();
-        } catch (Throwable ex) {
-            errorObservers(ex);
-            throw handleError(ex);
-        } finally {
-            KEvent<MetadataInstance> event = new KEvent<MetadataInstance>(this, KEvent.Type.METADATA_SERVER_STOPPED);
-            notifyObservers(event);
-        }
-    }
-
-    private Outcome pingAdmin() {
-        if (admin == null) {
-            try {
-                startServer();
-            } catch (Exception ex) {
-                return OutcomeFactory.getInstance().createError(ex.getLocalizedMessage(), ex);
-            }
-        }
-
-        try {
-            admin.getSessions();
-        } catch (Exception ex) {
-            return OutcomeFactory.getInstance().createError(ex.getLocalizedMessage(), ex);
-        }
-
-        return OutcomeFactory.getInstance().createOK();
-    }
-
-    private Outcome pingJdbc() {
-        String protocol = DEFAULT_INSTANCE_PROTOCOL;
-
-        Connection teiidJdbcConnection = null;
-        StringBuffer url = new StringBuffer();
-        url.append("jdbc").append(COLON).append("teiid")
-             .append(COLON).append("ping").append(AMPERSAND)
-             .append(protocol).append(HOST).append(COLON)
-             .append(getJdbcPort());
-
-        try {
-
-            admin.deploy(PING_VDB, new ByteArrayInputStream(TEST_VDB.getBytes()));
-
-            try {
-                StringBuffer urlAndCred = new StringBuffer(url);
-                urlAndCred.append(SEMI_COLON)
-                                     .append("user").append(EQUALS).append(getJdbcUser())
-                                     .append(SEMI_COLON)
-                                     .append("password").append(EQUALS).append(getJdbcPwd())
-                                     .append(SEMI_COLON);
-
-                TeiidDriver teiidDriver = TeiidDriver.getInstance();
-                teiidJdbcConnection = teiidDriver.connect(urlAndCred.toString(), null);
-                //pass
-            } catch (SQLException ex) {
-                String msg = Messages.getString(Messages.MetadataServer.instanceDeployUndeployProblemPingingTeiidJdbc, url);
-                return OutcomeFactory.getInstance().createError(msg, ex);
-            } finally {
-                admin.undeploy(PING_VDB);
-
-                if (teiidJdbcConnection != null) {
-                    teiidJdbcConnection.close();
-                }
-            }
-        } catch (Exception ex) {
-            String msg = Messages.getString(Messages.MetadataServer.instanceDeployUndeployProblemPingingTeiidJdbc, url);
-            return OutcomeFactory.getInstance().createError(msg, ex);
-        }
-
-        return OutcomeFactory.getInstance().createOK();
     }
 
     @Override
     public Condition getCondition() {
-        return admin != null ? Condition.REACHABLE : Condition.NOT_REACHABLE;
+        try {
+			return admin() != null ? Condition.REACHABLE : Condition.NOT_REACHABLE;
+		} catch (AdminException e) {
+			return Condition.NOT_REACHABLE;
+		}
     }
 
     @Override
     public void refresh() throws KException {
-        try {
-            stopServer();
-
-            Thread.sleep(2000);
-
-            // Refresh is implied in the getting of the admin object since it will
-            // automatically load and refresh.
-            startServer();
-    
-        } catch (Exception e) {
-            String msg = Messages.getString(Messages.MetadataServer.refreshError, e.getLocalizedMessage()); //$NONNLS1$
-            throw new KException(msg);
-        }
+    	// in reality unless you are working with the embedded server, KEngine does not 
+    	// control the life cycle of the server. 
+        String msg = Messages.getString(Messages.MetadataServer.cannotRefreshError); 
+        throw new KException(msg);
     }
 
     @Override
     public void notify( MetadataClientEvent event ) {
         this.addObserver(event.getSource());
 
-        try {
-            if (event.getType() == MetadataClientEvent.EventType.STARTED) {
-                startServer();
-            } else if (event.getType() == MetadataClientEvent.EventType.SHUTTING_DOWN) {
-                stopServer();
-            }
-        } catch (KException ex) {
-            //
-            // Error should be captured by observer so log but do not throw
-            //
-            KLog.getLogger().error(Messages.getString(Messages.MetadataServer.startStopFailure, ex.getLocalizedMessage()));
+        if (event.getType() == MetadataClientEvent.EventType.STARTED) {
+            this.connectionProvider.onStart();
+        } else if (event.getType() == MetadataClientEvent.EventType.SHUTTING_DOWN) {
+            this.connectionProvider.onShutdown();
         }
     }
 
@@ -402,41 +191,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
     @Override
     public Outcome ping(ConnectivityType connectivityType) {
-        boolean testCausesConnect = false;
-        String msg = Messages.getString(Messages.MetadataServer.cannotConnectToInstance, getAdminUser());
-
-        if (! Condition.REACHABLE.equals(getCondition())) {
-            try {
-                startServer();
-                testCausesConnect = true;
-            } catch (Exception ex) {
-                return OutcomeFactory.getInstance().createError(msg, ex);
-            }
-        }
-
-        Outcome outcome = null;
-        if (! Condition.REACHABLE.equals(getCondition()))
-            return OutcomeFactory.getInstance().createError(msg);
-
-        try {
-            switch (connectivityType) {
-                case JDBC:
-                    outcome = pingJdbc();
-                    break;
-                default:
-                    outcome = pingAdmin();
-            }
-        } catch (Exception ex) {
-            return OutcomeFactory.getInstance().createError(ex.getLocalizedMessage(), ex);
-        }
-
-        // Only disconnect if this test ping caused
-        // the connect
-        if (testCausesConnect) {
-            disconnect();
-        }
-
-        return outcome;
+    	return this.connectionProvider.ping(connectivityType);
     }
 
     @Override
@@ -454,21 +209,10 @@ public class DefaultMetadataInstance implements MetadataInstance {
         KLog.getLogger().debug("Initialising SQL connection for vdb {0}", vdb);
 
         //
-        // Don't add in ds.setServerName(HOST) since if it remains null then it
-        // actiually connects as Embedded rather than using a socket
-        //
-        org.teiid.jdbc.TeiidDataSource ds = new org.teiid.jdbc.TeiidDataSource();
-        ds.setDatabaseName(vdb);
-        ds.setUser(getJdbcUser());
-        ds.setPassword(getJdbcPwd());
-        ds.setPortNumber(getJdbcPort());
-        ds.setSecure(true);
-
-        //
         // Ensure any runtime exceptions are always caught and thrown as KExceptions
         //
         try {
-            connection = ds.getConnection();
+            connection = this.connectionProvider.getConnection(vdb, "1");
 
             if (connection == null)
                 throw new KException(Messages.getString(Messages.MetadataServer.vdbConnectionFailure, vdb));
@@ -572,7 +316,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
         }
 
         try {
-            admin.deploy(driverName, iStream);
+            admin().deploy(driverName, iStream);
 
             // Give a 0.5 sec pause for the driver to finish loading.
             try {
@@ -593,7 +337,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
         ArgCheck.isNotNull(driverName, "driverName"); //$NON-NLS-1$
 
         try {
-            admin.undeploy(driverName);
+            admin().undeploy(driverName);
         } catch (Exception ex) {
             // Jar deployment failed
             throw handleError(ex);
@@ -604,7 +348,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
     public boolean dataSourceExists(String name) throws KException {
         checkStarted();
         try {
-            return admin.getDataSourceNames().contains(name);
+            return admin().getDataSourceNames().contains(name);
         } catch (Exception ex) {
             throw handleError(ex);
         }
@@ -658,7 +402,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
         properties.setProperty(TeiidDataSource.DATASOURCE_DISPLAYNAME, displayName);
         try {
-            admin.createDataSource(dsName, typeName, properties);
+            admin().createDataSource(dsName, typeName, properties);
         } catch (Exception ex) {
             throw handleError(ex);
         }
@@ -678,7 +422,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
         checkStarted();
         Properties dataSource;
         try {
-            dataSource = admin.getDataSource(name);
+            dataSource = admin().getDataSource(name);
             if (dataSource == null)
                 return null;
 
@@ -692,7 +436,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
     public void deleteDataSource(String dsName) throws KException {
         checkStarted();
         try {
-            admin.deleteDataSource(dsName);
+            admin().deleteDataSource(dsName);
         } catch (Exception ex) {
             throw handleError(ex);
         }
@@ -702,7 +446,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
     public Collection<TeiidDataSource> getDataSources() throws KException {
         checkStarted();
         try {
-            Collection<String> dsNames = admin.getDataSourceNames();
+            Collection<String> dsNames = admin().getDataSourceNames();
             if (dsNames.isEmpty())
                 return Collections.emptyList();
 
@@ -722,7 +466,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
     public TeiidTranslator getTranslator(String name) throws KException {
         checkStarted();
         try {
-            return factory.createTranslator(admin.getTranslator(name));
+            return factory.createTranslator(admin().getTranslator(name));
         } catch (Exception ex) {
             throw handleError(ex);
         }
@@ -732,7 +476,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
     public Collection<TeiidTranslator> getTranslators() throws KException {
         checkStarted();
         try {
-            Collection<? extends Translator> translators = admin.getTranslators();
+            Collection<? extends Translator> translators = admin().getTranslators();
             if (translators.isEmpty())
                 return Collections.emptyList();
 
@@ -761,7 +505,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
     public Collection<String> getVdbNames() throws KException {
         checkStarted();
         try {
-            Collection<? extends VDB> vdbs = admin.getVDBs();
+            Collection<? extends VDB> vdbs = admin().getVDBs();
             if (vdbs.isEmpty())
                 return Collections.emptyList();
 
@@ -831,7 +575,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
     public Collection<TeiidVdb> getVdbs() throws KException {
         checkStarted();
         try {
-            Collection<? extends VDB> vdbs = admin.getVDBs();
+            Collection<? extends VDB> vdbs = admin().getVDBs();
             if (vdbs.isEmpty())
                 return Collections.emptyList();
 
@@ -853,7 +597,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
     public TeiidVdb getVdb(String name) throws KException {
         checkStarted();
         try {
-            VDB vdb = admin.getVDB(name, "1");
+            VDB vdb = admin().getVDB(name, "1");
             if (vdb == null)
                 return null;
 
@@ -874,7 +618,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
             ArgCheck.isNotNull(deploymentName, "deploymentName"); //$NONNLS1$
             ArgCheck.isNotNull(inStream, "inStream"); //$NONNLS1$
 
-            admin.deploy(deploymentName, inStream);
+            admin().deploy(deploymentName, inStream);
 
             // Give a 0.5 sec pause for the VDB to finish loading metadata.
             try {
@@ -907,7 +651,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
         try {
             TeiidVdb vdb = getVdb(vdbName);
             if (vdb != null) {
-                admin.undeploy(appendDynamicVdbSuffix(vdbName));
+                admin().undeploy(appendDynamicVdbSuffix(vdbName));
             }
             vdb = getVdb(vdbName);
         } catch (Exception ex) {
@@ -919,7 +663,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
     public String getSchema(String vdbName, String vdbVersion, String modelName) throws KException {
         checkStarted();
         try {
-            return admin.getSchema(vdbName, vdbVersion, modelName, null, null);
+            return admin().getSchema(vdbName, vdbVersion, modelName, null, null);
         } catch (Exception ex) {
             throw handleError(ex);
         }
@@ -929,7 +673,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
     public Set<String> getDataSourceTemplateNames() throws KException {
         checkStarted();
         try {
-            Set<String> templateNames = admin.getDataSourceTemplateNames();
+            Set<String> templateNames = admin().getDataSourceTemplateNames();
 
             //
             // Workaround for removing vdb-builder.war
@@ -952,7 +696,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
     public Collection<TeiidPropertyDefinition> getTemplatePropertyDefns(String templateName) throws KException {
         checkStarted();
         try {
-            Collection<? extends PropertyDefinition> propDefs = this.admin.getTemplatePropertyDefinitions(templateName);
+            Collection<? extends PropertyDefinition> propDefs = admin().getTemplatePropertyDefinitions(templateName);
             if (propDefs.isEmpty())
                 return Collections.emptyList();
 

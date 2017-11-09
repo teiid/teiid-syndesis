@@ -60,6 +60,7 @@ import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
+import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.Id;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
@@ -139,13 +140,14 @@ public final class KomodoUtilService extends KomodoService {
         repoStatus.addAttribute(APP_DESCRIPTION, KomodoRestV1Application.V1Constants.App.description());
         repoStatus.addAttribute(APP_VERSION, KomodoRestV1Application.V1Constants.App.version());
 
-        Id id = this.repo.getId();
-        repoStatus.addAttribute(REPO_WKSP_LABEL, id.getWorkspaceName());
-        repoStatus.addAttribute(REPO_CONFIG_LABEL, id.getConfiguration().toString());
-
         List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
         UnitOfWork uow = null;
         try {
+            Repository repo = this.kengine.getDefaultRepository();
+            Id id = repo.getId();
+            repoStatus.addAttribute(REPO_WKSP_LABEL, id.getWorkspaceName());
+            repoStatus.addAttribute(REPO_CONFIG_LABEL, id.getConfiguration().toString());
+        	
             // find VDBs
             uow = systemTx("getVdbs", true); //$NON-NLS-1$
             Vdb[] vdbs = getWorkspaceManager(uow).findVdbs(uow);
@@ -232,7 +234,8 @@ public final class KomodoUtilService extends KomodoService {
                 ImportOptions importOptions = new ImportOptions();
                 importOptions.setOption(OptionKeys.HANDLE_EXISTING, ExistingNodeOptions.RETURN);
                 ImportMessages importMessages = new ImportMessages();
-
+                
+                Repository repo = this.kengine.getDefaultRepository();
                 KomodoObject workspace = repo.komodoWorkspace(uow);
                 VdbImporter importer = new VdbImporter(repo);
                 importer.importVdb(uow, sampleStream, workspace, importOptions, importMessages);

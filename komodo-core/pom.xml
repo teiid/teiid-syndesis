@@ -10,74 +10,11 @@
 	<name>Komodo Core</name>
 	<description>Komodo Core</description>
 
-	<properties>
-		<version.modeshape>5.4.1.Final</version.modeshape>
-		<version.teiid.modeshape>0.0.1-SNAPSHOT</version.teiid.modeshape>
-		<version.xerces>2.9.1</version.xerces>
-	</properties>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>${maven.compiler.source}</source>
-					<target>${maven.compiler.target}</target>
-				</configuration>
-			</plugin>
-			<!-- Overrides test configuration to exclude AllTests classes -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<excludes>
-						<!-- Excludes AllTests classes since it just executes all tests a second 
-							time -->
-						<exclude>**/AllTests.java</exclude>
-					</excludes>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
-
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.modeshape</groupId>
-				<artifactId>modeshape-jcr</artifactId>
-				<version>${version.modeshape}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.teiid.modeshape</groupId>
-				<artifactId>teiid-modeshape-sequencer-vdb</artifactId>
-				<version>${version.teiid.modeshape}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.teiid.modeshape</groupId>
-				<artifactId>teiid-modeshape-sequencer-ddl</artifactId>
-				<version>${version.teiid.modeshape}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.teiid.modeshape</groupId>
-				<artifactId>teiid-modeshape-sequencer-dataservice</artifactId>
-				<version>${version.teiid.modeshape}</version>
-			</dependency>
-			<dependency>
-				<groupId>xerces</groupId>
-				<artifactId>xercesImpl</artifactId>
-				<version>${version.xerces}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
-
 	<dependencies>
-
 		<dependency>
 			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-spi</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-utils</artifactId>
@@ -88,7 +25,7 @@
 			<artifactId>komodo-metadata-instance</artifactId>
 		</dependency>
 
-		<dependency>
+<!-- 		<dependency>
 			<groupId>org.teiid</groupId>
 			<artifactId>teiid-runtime</artifactId>
 		</dependency>
@@ -96,7 +33,7 @@
 		<dependency>
 			<groupId>org.teiid</groupId>
 			<artifactId>teiid-engine</artifactId>
-		</dependency>
+		</dependency> -->
 
 		<dependency>
 			<groupId>org.modeshape</groupId>
@@ -116,16 +53,16 @@
 			<artifactId>teiid-modeshape-sequencer-dataservice</artifactId>
 		</dependency>
 
-		<dependency>
+<!-- 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-		</dependency>
+		</dependency> -->
 
 		<!-- For rule validation -->
-		<dependency>
+<!-- 		<dependency>
 			<groupId>xerces</groupId>
 			<artifactId>xercesImpl</artifactId>
-		</dependency>
+		</dependency> -->
 
 		<!-- Needed to get at modeshape's underlying logging system - see JcrLogConfigurator for details -->
 		<dependency>
