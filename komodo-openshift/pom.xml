@@ -1,0 +1,107 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.teiid.komodo</groupId>
+		<artifactId>komodo-parent</artifactId>
+		<version>0.0.4-SNAPSHOT</version>
+		<relativePath>../komodo-parent/pom.xml</relativePath>
+	</parent>
+
+	<artifactId>komodo-openshift</artifactId>
+
+	<name>Komodo Openshift Configuration</name>
+
+	<profiles>
+		<profile>
+			<id>openshift</id>
+			<properties>
+				<jboss.home>/wildfly</jboss.home>
+			</properties>
+
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-dependency-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>unpack-teiid</id>
+								<phase>process-sources</phase>
+								<goals>
+									<goal>unpack</goal>
+								</goals>
+								<configuration>
+									<artifactItems>
+										<artifactItem>
+											<groupId>org.jboss.teiid</groupId>
+											<artifactId>teiid</artifactId>
+											<version>${version.org.teiid}</version>
+											<classifier>wildfly-dist</classifier>
+											<type>zip</type>
+											<overWrite>true</overWrite>
+											<outputDirectory>${jboss.home}</outputDirectory>
+										</artifactItem>
+									</artifactItems>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+
+					<!-- Adds credentials and ssl support to wildfly server -->
+					<plugin>
+						<artifactId>maven-resources-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>copy-resources-credentials</id>
+								<phase>process-sources</phase>
+								<goals>
+									<goal>copy-resources</goal>
+								</goals>
+								<configuration>
+									<overwrite>true</overwrite>
+									<outputDirectory>${jboss.home}/standalone/configuration</outputDirectory>
+									<resources>
+										<resource>
+											<directory>src/main/resources/credentials</directory>
+											<includes>
+												<include>*.properties</include>
+											</includes>
+											<filtering>true</filtering>
+										</resource>
+										<resource>
+											<targetPath>${jboss.home}/standalone/configuration/ssl</targetPath>
+											<directory>src/main/resources/ssl</directory>
+										</resource>
+										<resource>
+											<targetPath>${jboss.home}/standalone/configuration</targetPath>
+											<directory>src/main/resources/standalone-config/</directory>
+											<includes>
+												<include>standalone-komodo-openshift.xml</include>
+											</includes>
+										</resource>
+										<resource>
+											<targetPath>${jboss.home}/bin</targetPath>
+											<directory>src/main/resources/bin/</directory>
+											<includes>
+												<include>standalone.conf</include>
+											</includes>
+										</resource>
+										<resource>
+											<targetPath>${jboss.home}/standalone/deployments</targetPath>
+											<directory>src/main/resources/drivers</directory>
+											<includes>
+												<include>*.jar</include>
+											</includes>
+										</resource>
+									</resources>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+</project>
