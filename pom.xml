@@ -34,11 +34,8 @@
         <module>komodo-integration-utils</module>
 
         <module>komodo-ui</module>
-        <module>komodo-shell-api</module>
-        <module>komodo-shell</module>
         <module>komodo-importer</module>
         <module>komodo-relational</module>
-        <module>komodo-relational-commands</module>
         <module>server</module>
 
 

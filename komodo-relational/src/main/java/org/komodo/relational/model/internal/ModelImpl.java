@@ -48,6 +48,7 @@ import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon.CreateProcedure;
 import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon.CreateTable;
 import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon.SchemaElement;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
+import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
@@ -784,7 +785,8 @@ public final class ModelImpl extends RelationalObjectImpl implements Model {
     }
 
     private String exportDdl(UnitOfWork transaction, Properties exportProperties) throws Exception {
-        DdlNodeVisitor visitor = new DdlNodeVisitor(getVersion(), getDataTypeService(), false);
+    	MetadataInstance metadata = getRepository().getMetadataInstance();
+        DdlNodeVisitor visitor = new DdlNodeVisitor(metadata.getVersion(), metadata.getDataTypeService(), false);
         visitor.visit(transaction, this);
 
         String result = visitor.getDdl();

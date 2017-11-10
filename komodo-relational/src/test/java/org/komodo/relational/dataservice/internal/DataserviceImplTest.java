@@ -48,6 +48,7 @@ import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.OptionKeys;
 import org.komodo.metadata.DefaultMetadataInstance;
+import org.komodo.metadata.TeiidConnectionProvider;
 import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.RelationalObject.Filter;
 import org.komodo.relational.connection.Connection;
@@ -72,6 +73,7 @@ import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Property;
 import org.komodo.test.utils.TestUtilities;
+import org.mockito.Mockito;
 import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.w3c.dom.Document;
@@ -143,7 +145,6 @@ public final class DataserviceImplTest extends RelationalModelTest {
     @Test
     public void shouldSetLastModified() throws Exception {
         final Calendar date = Calendar.getInstance();
-        date.setTimeZone(TimeZone.getTimeZone(ZoneId.of("Europe/London")));
         date.set( 2016, 8, 23, 13, 48, 33 );
         this.dataservice.setLastModified( getTransaction(), date );
         assertThat( this.dataservice.getLastModified( getTransaction() ), is( date ) );
@@ -686,7 +687,8 @@ public final class DataserviceImplTest extends RelationalModelTest {
         ImportOptions importOptions = new ImportOptions();
         importOptions.setOption( OptionKeys.NAME, "MyDataService" );
 
-        DataserviceConveyor conveyor = new DataserviceConveyor( _repo, DefaultMetadataInstance.getInstance());
+        TeiidConnectionProvider provider = Mockito.mock(TeiidConnectionProvider.class);
+        DataserviceConveyor conveyor = new DataserviceConveyor( _repo, new DefaultMetadataInstance(provider));
         KomodoObject parent = _repo.komodoWorkspace( getTransaction() );
         conveyor.dsImport( getTransaction(), importStream, parent, importOptions, importMessages );
         assertThat( importMessages.hasError(), is( false ) );
@@ -836,8 +838,9 @@ public final class DataserviceImplTest extends RelationalModelTest {
         ImportMessages importMessages = new ImportMessages();
         ImportOptions importOptions = new ImportOptions();
         importOptions.setOption( OptionKeys.NAME, "MyDataService" );
-
-        DataserviceConveyor conveyor = new DataserviceConveyor( _repo, DefaultMetadataInstance.getInstance());
+        
+        TeiidConnectionProvider provider = Mockito.mock(TeiidConnectionProvider.class);
+        DataserviceConveyor conveyor = new DataserviceConveyor( _repo, new DefaultMetadataInstance(provider));
         KomodoObject parent = _repo.komodoWorkspace( getTransaction() );
         conveyor.dsImport( getTransaction(), importStream, parent, importOptions, importMessages );
         assertThat( importMessages.hasError(), is( false ) );

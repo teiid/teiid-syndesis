@@ -59,8 +59,9 @@ public final class ServerTranslatorsCommand extends ServerShellCommand {
             // Print title
             final String title = I18n.bind( ServerCommandsI18n.infoMessageTranslators);
             print( MESSAGE_INDENT, title );
-
-            List< String > translatorNames = ServerUtils.getTranslatorNames();
+            
+            ServerUtils serverUtils = new ServerUtils(getWorkspaceStatus().getEngine());
+            List< String > translatorNames = serverUtils.getTranslatorNames();
             if(translatorNames.isEmpty()) {
                 print( MESSAGE_INDENT, I18n.bind( ServerCommandsI18n.noTranslatorsMsg ) );
             } else {

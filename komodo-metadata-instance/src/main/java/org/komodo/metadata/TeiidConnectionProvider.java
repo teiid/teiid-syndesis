@@ -19,18 +19,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.rest.cors.rest3;
+package org.komodo.metadata;
 
-import org.komodo.rest.cors.KCorsHandler;
+import java.sql.Connection;
+import java.sql.SQLException;
 
-/**
- * Class to exploit the rest 3 CorsFilter and implement
- * the {@link KCorsHandler} to allow the factory to instantiate it
- *
- * Only compiled against resteasy 3 libraries. Excluded for resteasy 2
- */
-public class KCorsFilter extends org.jboss.resteasy.plugins.interceptors.CorsFilter implements KCorsHandler {
+import org.komodo.spi.metadata.MetadataInstance.ConnectivityType;
+import org.komodo.spi.outcome.Outcome;
+import org.teiid.adminapi.Admin;
+import org.teiid.adminapi.AdminException;
 
-    // Nothing else required
+public interface TeiidConnectionProvider {
 
+	Admin getAdmin() throws AdminException;
+	
+	Connection getConnection(String vdb, String version) throws SQLException;
+	
+	Outcome ping(ConnectivityType connectivityType);
+	
+	void onStart();
+	
+	void onShutdown();
 }

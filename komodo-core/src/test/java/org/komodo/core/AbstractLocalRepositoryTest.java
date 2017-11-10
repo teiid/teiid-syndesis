@@ -45,6 +45,8 @@ import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.core.repository.RepositoryTools;
 import org.komodo.core.repository.SynchronousCallback;
+import org.komodo.metadata.DefaultMetadataInstance;
+import org.komodo.metadata.TeiidConnectionProvider;
 import org.komodo.spi.KClient;
 import org.komodo.spi.KEvent;
 import org.komodo.spi.KException;
@@ -59,6 +61,7 @@ import org.komodo.spi.repository.Repository.UnitOfWorkListener;
 import org.komodo.spi.repository.RepositoryClientEvent;
 import org.komodo.utils.KLog;
 import org.komodo.utils.observer.KLatchRepositoryObserver;
+import org.mockito.Mockito;
 
 /**
  * Provides framework for testing an instance of the local repository
@@ -94,6 +97,12 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
         _repo = new LocalRepository(id);
         assertThat(_repo.getState(), is(State.NOT_REACHABLE));
         assertThat(_repo.ping(), is(false));
+
+    	KEngine engine = new KEngine();
+    	TeiidConnectionProvider provider = Mockito.mock(TeiidConnectionProvider.class);
+    	DefaultMetadataInstance metadata = new DefaultMetadataInstance(provider);
+    	engine.setMetadataInstance(metadata);
+        engine.setDefaultRepository(_repo);
 
         KLatchRepositoryObserver _repoStartedObserver = new KLatchRepositoryObserver(KEvent.Type.REPOSITORY_STARTED);
         _repo.addObserver(_repoStartedObserver);

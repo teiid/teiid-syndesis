@@ -251,7 +251,7 @@ public interface Dataservice extends Exportable, RelationalObject, VdbEntryConta
      *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
      * @return the deployment status of this data service
      */
-    DeployStatus deploy( UnitOfWork uow);
+    DeployStatus deploy( UnitOfWork uow) throws KException;
 
     /**
      * @param transaction

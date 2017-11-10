@@ -22,16 +22,21 @@
 package org.komodo.rest.relational.response.metadata;
 
 import java.util.List;
+
 import javax.ws.rs.core.MediaType;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
+
 import org.komodo.rest.KRestEntity;
 import org.komodo.spi.runtime.TeiidVdb;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
  * Object to be serialised by GSON that encapsulates the status of a deployed vdb
  */
-@JsonSerialize( include = Inclusion.NON_NULL )
+@JsonSerialize
+@JsonInclude(value=Include.NON_NULL)
 public class RestMetadataVdbStatusVdb implements KRestEntity {
 
     /**

@@ -1168,7 +1168,7 @@ public class WorkspaceStatusImpl implements PropertyProvider, WorkspaceStatus {
                     commandClassloaders.add( extraCommandsCL );
                 }
             } catch ( final IOException e ) {
-                KEngine.getInstance().getErrorHandler().error( e );
+                shell.getEngine().getErrorHandler().error( e );
             }
         }
 

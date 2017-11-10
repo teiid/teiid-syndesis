@@ -46,6 +46,7 @@ import org.komodo.spi.runtime.TeiidPropertyDefinition;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
 import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
+import org.komodo.spi.metadata.MetadataInstance;
 
 /**
  * Implementation of connection instance model
@@ -271,8 +272,9 @@ public class ConnectionImpl extends RelationalObjectImpl implements Connection, 
     public Properties getPropertiesForServerDeployment(UnitOfWork transaction) throws Exception {
         Properties sourceProps = new Properties();
 
+        MetadataInstance metadata = getRepository().getMetadataInstance();            
         // Get the Property Defns for this type of source.
-        Collection<TeiidPropertyDefinition> templatePropDefns = getMetadataInstance().getTemplatePropertyDefns(getDriverName(transaction));
+        Collection<TeiidPropertyDefinition> templatePropDefns = metadata.getTemplatePropertyDefns(getDriverName(transaction));
 
         // Connection driverName and jndiName must be defined.
         String driverName = getDriverName(transaction);
@@ -393,8 +395,8 @@ public class ConnectionImpl extends RelationalObjectImpl implements Connection, 
             Properties properties = getPropertiesForServerDeployment(uow);
 
             status.addProgressMessage("Attempting to deploy connection " + connName + " to teiid"); //$NON-NLS-1$ //$NON-NLS-2$
-
-            TeiidDataSource teiidDataSrc = getMetadataInstance().getOrCreateDataSource(connName,
+            MetadataInstance metadata = getRepository().getMetadataInstance();
+            TeiidDataSource teiidDataSrc = metadata.getOrCreateDataSource(connName,
                                                                                jndiName,
                                                                                sourceType,
                                                                                properties);

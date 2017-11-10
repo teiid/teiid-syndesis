@@ -36,6 +36,7 @@ import javax.ws.rs.core.UriBuilder;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
@@ -44,11 +45,12 @@ import org.komodo.rest.relational.AbstractKomodoServiceTest;
 import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.response.KomodoStatusObject;
+import org.komodo.rest.service.KomodoUtilService;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.test.utils.TestUtilities;
 
 @SuppressWarnings( {"javadoc", "nls"} )
-public final class KomodoUtilServiceTest extends AbstractKomodoServiceTest {
+public final class IT_KomodoUtilServiceTest extends AbstractKomodoServiceTest {
 
     private void loadSamples(String user) throws Exception {
         for (String sample : KomodoUtilService.SAMPLES) {

@@ -66,13 +66,14 @@ public final class ServerDatasourceTypeCommand extends ServerShellCommand {
 
             Collection<TeiidPropertyDefinition> propDefns = null;
             try {
+            	ServerUtils serverUtils = new ServerUtils(getWorkspaceStatus().getEngine());
                 // Check the data source type names to make sure its valid
-                Set< String > typeNames = ServerUtils.getMetadataInstance().getDataSourceTemplateNames();
+                Set< String > typeNames = serverUtils.getMetadataInstance().getDataSourceTemplateNames();
                 if(!typeNames.contains(sourceTypeName)) {
                     return new CommandResultImpl(false, I18n.bind( ServerCommandsI18n.serverDatasourceTypeNotFound, sourceTypeName ), null);
                 }
                 // Get the source type properties
-                propDefns = ServerUtils.getMetadataInstance().getTemplatePropertyDefns(sourceTypeName);
+                propDefns = serverUtils.getMetadataInstance().getTemplatePropertyDefns(sourceTypeName);
             } catch (Exception ex) {
                 result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.accessError ), ex );
                 return result;
@@ -163,7 +164,8 @@ public final class ServerDatasourceTypeCommand extends ServerShellCommand {
         final Arguments args = getArguments();
 
         try {
-            Set< String > types = ServerUtils.getDataSourceTypeNames();
+        	ServerUtils serverUtils = new ServerUtils(getWorkspaceStatus().getEngine());
+            Set< String > types = serverUtils.getDataSourceTypeNames();
             List< String > existingTypes = new ArrayList< String >(types);
             Collections.sort(existingTypes);
 

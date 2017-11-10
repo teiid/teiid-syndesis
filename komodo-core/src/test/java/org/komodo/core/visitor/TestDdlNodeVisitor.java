@@ -25,15 +25,19 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import org.junit.Ignore;
 import org.junit.Test;
 import org.komodo.core.AbstractLocalRepositoryTest;
 import org.komodo.metadata.DefaultMetadataInstance;
+import org.komodo.metadata.TeiidConnectionProvider;
 import org.komodo.spi.lexicon.sql.teiid.TeiidSqlConstants;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
+import org.mockito.Mockito;
 
 /**
  *
@@ -130,7 +134,8 @@ public class TestDdlNodeVisitor extends AbstractLocalRepositoryTest {
         //
         commit();
 
-        DefaultMetadataInstance instance = DefaultMetadataInstance.getInstance();
+        TeiidConnectionProvider provider = Mockito.mock(TeiidConnectionProvider.class);
+        DefaultMetadataInstance instance = new DefaultMetadataInstance(provider);
         DdlNodeVisitor visitor = new DdlNodeVisitor(instance.getVersion(), instance.getDataTypeService(), false);
         visitor.visit(getTransaction(), ddlObject);
 

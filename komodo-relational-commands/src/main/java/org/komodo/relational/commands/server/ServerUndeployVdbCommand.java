@@ -61,17 +61,18 @@ public final class ServerUndeployVdbCommand extends ServerShellCommand {
 
 
             try {
+            	ServerUtils serverUtils = new ServerUtils(getWorkspaceStatus().getEngine());
                 // Check the vdb name to make sure its valid
-                List< String > existingVdbNames = ServerUtils.getVdbNames();
+                List< String > existingVdbNames = serverUtils.getVdbNames();
                 if(!existingVdbNames.contains(vdbName)) {
                     return new CommandResultImpl(false, I18n.bind( ServerCommandsI18n.serverVdbNotFound, vdbName ), null);
                 }
-                TeiidVdb vdb = ServerUtils.getVdb(vdbName);
+                TeiidVdb vdb = serverUtils.getVdb(vdbName);
 
                 if(vdb==null) {
                     return new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.serverVdbNotFound, vdbName ), null );
                 } else {
-                    ServerUtils.undeployDynamicVdb(vdb.getName());
+                    serverUtils.undeployDynamicVdb(vdb.getName());
                 }
             } catch (Exception ex) {
                 result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.accessError ), ex );
@@ -139,7 +140,8 @@ public final class ServerUndeployVdbCommand extends ServerShellCommand {
         final Arguments args = getArguments();
 
         try {
-            List<String> existingVdbNames = ServerUtils.getVdbNames();
+        	ServerUtils serverUtils = new ServerUtils(getWorkspaceStatus().getEngine());
+            List<String> existingVdbNames = serverUtils.getVdbNames();
             Collections.sort(existingVdbNames);
 
             if ( args.isEmpty() ) {

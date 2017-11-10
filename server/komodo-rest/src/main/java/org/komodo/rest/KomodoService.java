@@ -25,11 +25,13 @@ import static org.komodo.rest.Messages.Error.COMMIT_TIMEOUT;
 import static org.komodo.rest.Messages.Error.RESOURCE_NOT_FOUND;
 import static org.komodo.rest.Messages.General.GET_OPERATION_NAME;
 import static org.komodo.rest.relational.RelationalMessages.Error.SECURITY_FAILURE_ERROR;
+
 import java.io.StringWriter;
 import java.security.Principal;
 import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -43,6 +45,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
 import javax.xml.namespace.QName;
+
 import org.komodo.core.KEngine;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.core.repository.SynchronousCallback;
@@ -66,6 +69,7 @@ import org.komodo.spi.repository.Repository.UnitOfWorkListener;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
+
 import com.google.gson.Gson;
 
 /**
@@ -155,7 +159,7 @@ public abstract class KomodoService implements V1Constants {
 
     protected final static SecurityPrincipal SYSTEM_USER = new SecurityPrincipal(RepositoryImpl.SYSTEM_USER, null);
     
-    protected final Repository repo;
+    protected final KEngine kengine;
 
     protected RestEntityFactory entityFactory = new RestEntityFactory();
 
@@ -169,7 +173,7 @@ public abstract class KomodoService implements V1Constants {
      *        the Komodo Engine (cannot be <code>null</code> and must be started)
      */
     protected KomodoService( final KEngine engine ) {
-        this.repo = engine.getDefaultRepository();
+        this.kengine = engine;
     }
 
     /**
@@ -197,6 +201,8 @@ public abstract class KomodoService implements V1Constants {
     }
 
     protected SecurityPrincipal checkSecurityContext(HttpHeaders headers) {
+    	return new SecurityPrincipal("anonymous", null);
+    	/*
         try {
             if (securityContext == null)
                 throw new Exception("No security context available");
@@ -214,7 +220,8 @@ public abstract class KomodoService implements V1Constants {
                                          createErrorResponse(Status.UNAUTHORIZED,
                                                                                  headers.getAcceptableMediaTypes(),
                                                                                  ex, SECURITY_FAILURE_ERROR));
-        }        
+        }
+        */
     }
 
     /**
@@ -240,6 +247,7 @@ public abstract class KomodoService implements V1Constants {
     }
 
     protected WorkspaceManager getWorkspaceManager(UnitOfWork transaction) throws KException {
+    	Repository repo = this.kengine.getDefaultRepository();
         return WorkspaceManager.getInstance(repo, transaction);
     }
 
@@ -494,7 +502,8 @@ public abstract class KomodoService implements V1Constants {
      */
     protected UnitOfWork createTransaction(final SecurityPrincipal user, final String name,
                                             final boolean rollbackOnly, final UnitOfWorkListener callback) throws KException {
-        final UnitOfWork result = this.repo.createTransaction( user.getUserName(), 
+    	Repository repo = this.kengine.getDefaultRepository();
+        final UnitOfWork result = repo.createTransaction( user.getUserName(), 
                                                                (getClass().getSimpleName() + COLON + name + COLON + System.currentTimeMillis()),
                                                                rollbackOnly, callback );
         LOGGER.debug( "createTransaction:created '{0}', rollbackOnly = '{1}'", result.getName(), result.isRollbackOnly() ); //$NON-NLS-1$
@@ -514,8 +523,9 @@ public abstract class KomodoService implements V1Constants {
      */
     protected UnitOfWork createTransaction(final SecurityPrincipal user, final String name,
                                             final boolean rollbackOnly ) throws KException {
+    	Repository repo = this.kengine.getDefaultRepository();
         final SynchronousCallback callback = new SynchronousCallback();
-        final UnitOfWork result = this.repo.createTransaction(user.getUserName(), 
+        final UnitOfWork result = repo.createTransaction(user.getUserName(), 
                                                                (getClass().getSimpleName() + COLON + name + COLON + System.currentTimeMillis()),
                                                                rollbackOnly, callback );
         LOGGER.debug( "createTransaction:created '{0}', rollbackOnly = '{1}'", result.getName(), result.isRollbackOnly() ); //$NON-NLS-1$
