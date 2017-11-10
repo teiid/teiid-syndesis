@@ -74,6 +74,26 @@ import org.teiid.query.sql.LanguageObject;
 
 public class DefaultMetadataInstance implements MetadataInstance {
 
+    private static DataTypeServiceImpl dataTypeService;
+
+    private static DefaultMetadataVersion metadataVersion;
+
+    public static DataTypeService dataTypeService() {
+        if (dataTypeService == null)
+            dataTypeService = new DataTypeServiceImpl(metadataVersion());
+
+        return dataTypeService;
+    }
+
+    public static MetadataVersion metadataVersion() {
+        if (metadataVersion == null) {
+            ApplicationInfo appInfo = ApplicationInfo.getInstance();
+            metadataVersion = new DefaultMetadataVersion(appInfo.getReleaseNumber());
+        }
+
+        return metadataVersion;
+    }
+
     private class JndiManager implements StringConstants {
 
         private static final String PREFIX = JAVA + COLON + FORWARD_SLASH;
@@ -92,10 +112,6 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
     private final Set<MetadataObserver> observers = new HashSet<>();
 
-    private DataTypeServiceImpl dataTypeService;
-
-    private final DefaultMetadataVersion teiidVersion;
-
     private final MetaArtifactFactory factory = new MetaArtifactFactory();
 
     private final JndiManager jndiMgr = new JndiManager();
@@ -103,8 +119,6 @@ public class DefaultMetadataInstance implements MetadataInstance {
     private TeiidConnectionProvider connectionProvider;
 
     public DefaultMetadataInstance(TeiidConnectionProvider connectionProvider) {
-        ApplicationInfo appInfo = ApplicationInfo.getInstance();
-        this.teiidVersion = new DefaultMetadataVersion(appInfo.getReleaseNumber());
         this.connectionProvider = connectionProvider;
     }
 
@@ -178,15 +192,12 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
     @Override
     public MetadataVersion getVersion() {
-        return teiidVersion;
+        return metadataVersion();
     }
 
     @Override
     public DataTypeService getDataTypeService() {
-        if (dataTypeService == null)
-            dataTypeService = new DataTypeServiceImpl(getVersion());
-
-        return dataTypeService;
+        return dataTypeService();
     }
 
     @Override

@@ -81,11 +81,9 @@ public class TeiidSqlSequencer extends Sequencer {
         if (sql == null)
             return;
         LanguageObject command = QueryParser.getQueryParser().parseDesignerCommand(sql);
-        MetadataInstance mInstance = new DefaultMetadataInstance(null);
-        
         NodeGenerator generator = new NodeGenerator((Node) parent,
-                                                    mInstance.getDataTypeService(),
-                                                    mInstance.getVersion());
+                                                    DefaultMetadataInstance.dataTypeService(),
+                                                    DefaultMetadataInstance.metadataVersion());
         generator.visitObject(command);
         if (generator.errorOccurred())
             throw generator.getError();
