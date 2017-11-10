@@ -33,7 +33,6 @@
         <!-- For Testing only -->
         <module>komodo-integration-utils</module>
 
-        <module>komodo-ui</module>
         <module>komodo-importer</module>
         <module>komodo-relational</module>
         <module>server</module>
