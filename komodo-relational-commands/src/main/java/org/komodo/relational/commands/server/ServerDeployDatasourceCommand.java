@@ -84,10 +84,10 @@ public final class ServerDeployDatasourceCommand extends ServerShellCommand {
                                                                                DataVirtLexicon.Connection.NODE_TYPE );
 
             final Connection sourceToDeploy = Connection.RESOLVER.resolve(getTransaction(), datasourceObj);
-
+            ServerUtils serverUtils = new ServerUtils(getWorkspaceStatus().getEngine());
             // Make sure that the sourceType is OK for the connected server.
             String sourceType = sourceToDeploy.getDriverName(getTransaction());
-            if(StringUtils.isEmpty(sourceType) || !ServerUtils.hasDatasourceType(sourceType)) {
+            if(StringUtils.isEmpty(sourceType) || !serverUtils.hasDatasourceType(sourceType)) {
                 return new CommandResultImpl( false,
                                               I18n.bind( ServerCommandsI18n.datasourceDeploymentTypeNotFound,
                                                          sourceType ),
@@ -96,7 +96,7 @@ public final class ServerDeployDatasourceCommand extends ServerShellCommand {
 
             // Determine if the server already has a deployed Datasource with this name
             try {
-                boolean serverHasDatasource = ServerUtils.hasDataSource(sourceName);
+                boolean serverHasDatasource = serverUtils.hasDataSource(sourceName);
                 if(serverHasDatasource && !overwrite) {
                     return new CommandResultImpl( false,
                                                   I18n.bind( ServerCommandsI18n.datasourceDeploymentOverwriteDisabled,
@@ -116,10 +116,10 @@ public final class ServerDeployDatasourceCommand extends ServerShellCommand {
                 try {
                     // If overwriting, delete the existing source first
                     if(serverHasDatasource) {
-                        ServerUtils.deleteDataSource(sourceName);
+                        serverUtils.deleteDataSource(sourceName);
                     }
                     // Create the source
-                    ServerUtils.getOrCreateDataSource(sourceName, sourceName, sourceType, sourceProps);
+                    serverUtils.getOrCreateDataSource(sourceName, sourceName, sourceType, sourceProps);
                 } catch (Exception ex) {
                     result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.datasourceDeploymentError, ex.getLocalizedMessage() ), null );
                     return result;

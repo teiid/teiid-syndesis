@@ -58,8 +58,8 @@ public final class ServerDatasourcesCommand extends ServerShellCommand {
             // Print title
             final String title = I18n.bind( ServerCommandsI18n.infoMessageDatasources );
             print( MESSAGE_INDENT, title );
-
-            List<String> sourceNames = ServerUtils.getDatasourceNames();
+            ServerUtils serverUtils = new ServerUtils(getWorkspaceStatus().getEngine());
+            List<String> sourceNames = serverUtils.getDatasourceNames();
             if(sourceNames.isEmpty()) {
                 print( MESSAGE_INDENT, I18n.bind( ServerCommandsI18n.noDatasourcesMsg ) );
             } else {

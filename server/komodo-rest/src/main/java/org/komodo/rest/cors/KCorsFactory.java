@@ -21,8 +21,6 @@
  */
 package org.komodo.rest.cors;
 
-import org.komodo.rest.cors.rest3.KCorsFilter;
-
 /**
  * Factory for instantiating the Cors interceptor / filter
  */

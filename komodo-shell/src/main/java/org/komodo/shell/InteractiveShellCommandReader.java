@@ -102,7 +102,7 @@ public class InteractiveShellCommandReader extends AbstractShellCommandReader {
         settings.setLogging( true );
 
         consoleReader = new Console( settings );
-        consoleReader.addCompletion( new TabCompleter( getFactory() ) );
+        consoleReader.addCompletion( new TabCompleter( getFactory(), getWorkspaceStatus().getEngine()) );
     }
 
     /**

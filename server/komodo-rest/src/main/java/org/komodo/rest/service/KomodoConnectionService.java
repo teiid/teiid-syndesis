@@ -58,6 +58,7 @@ import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 import org.komodo.spi.repository.KomodoObject;
+import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.StringUtils;
@@ -649,7 +650,7 @@ public final class KomodoConnectionService extends KomodoService {
         UnitOfWork uow = null;
         try {
             uow = createTransaction(principal, "removeConnectionFromWorkspace", false); //$NON-NLS-1$
-
+            Repository repo = this.kengine.getDefaultRepository();
             final WorkspaceManager mgr = WorkspaceManager.getInstance( repo, uow );
             KomodoObject connection = mgr.getChild(uow, connectionName, DataVirtLexicon.Connection.NODE_TYPE);
 

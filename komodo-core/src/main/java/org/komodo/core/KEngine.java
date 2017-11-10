@@ -29,8 +29,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import org.komodo.core.repository.LocalRepository;
-import org.komodo.metadata.DefaultMetadataInstance;
+
+import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.spi.KClient;
 import org.komodo.spi.KErrorHandler;
 import org.komodo.spi.KEvent;
@@ -47,6 +47,7 @@ import org.komodo.utils.KEnvironment;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
 import org.komodo.utils.observer.KLatchObserver;
+import org.teiid.query.parser.QueryParser;
 import org.teiid.query.sql.LanguageObject;
 
 /**
@@ -54,32 +55,20 @@ import org.teiid.query.sql.LanguageObject;
  */
 public final class KEngine implements KClient, StringConstants {
 
-    private static KEngine _instance;
-
     private static final String PREFIX = KEngine.class.getSimpleName() + DOT;
 
     /**
      * @return engine started event
      */
-    private static KEvent<KEngine> engineStartedEvent() {
-        return new KEvent<KEngine>(KEngine.getInstance(), Type.ENGINE_STARTED);
+    private static KEvent<KEngine> engineStartedEvent(KEngine engine) {
+        return new KEvent<KEngine>(engine, Type.ENGINE_STARTED);
     }
 
     /**
      * @return engine shutdown event
      */
-    private static KEvent<KEngine> engineShutdownEvent() {
-        return new KEvent<KEngine>(KEngine.getInstance(), Type.ENGINE_SHUTDOWN);
-    }
-
-    /**
-     * @return the shared engine (never <code>null</code>)
-     */
-    public static KEngine getInstance() {
-        if (_instance == null)
-            _instance = new KEngine();
-
-        return _instance;
+    private static KEvent<KEngine> engineShutdownEvent(KEngine engine) {
+        return new KEvent<KEngine>(engine, Type.ENGINE_SHUTDOWN);
     }
 
     private final Set<Repository> repositories = new HashSet<Repository>();
@@ -94,10 +83,10 @@ public final class KEngine implements KClient, StringConstants {
 
     private final Set<KObserver> observers = new HashSet<>();
 
-    private KEngine() {
+    public KEngine() {
         KEnvironment.checkDataDirProperty();
 
-        // Initialise the logging system
+        // Initialize the logging system
         try {
             KLog.getLogger();
         } catch (Exception ex) {
@@ -114,16 +103,10 @@ public final class KEngine implements KClient, StringConstants {
     /**
      * @return the defaultRepository
      */
-    public Repository getDefaultRepository() {
-        if (this.defaultRepository == null) {
-            defaultRepository = new LocalRepository();
-            try {
-                add(defaultRepository);
-            } catch (Exception ex) {
-                errorOccurred(ex);
-            }
+    public Repository getDefaultRepository() throws KException {
+        if (this.defaultRepository == null) {        	
+            throw new KException(Messages.getString(Messages.KEngine.No_Repository));
         }
-
         return this.defaultRepository;
     }
 
@@ -153,17 +136,23 @@ public final class KEngine implements KClient, StringConstants {
 
         // Set the new repository
         defaultRepository = repository;
-        if (repository != null)
+        if (repository != null) {
             add(defaultRepository);
+            ((RepositoryImpl)defaultRepository).registerKEngine(this);
+        }
     }
 
-    public MetadataInstance getMetadataInstance() {
+    public MetadataInstance getMetadataInstance() throws KException {
         if (this.metadataInstance == null) {
-            metadataInstance = DefaultMetadataInstance.getInstance();
-            metadataInstance.addObserver(this);
+        	throw new KException(Messages.getString(Messages.KEngine.No_Metadata_Instance));
         }
-
         return this.metadataInstance;
+    }
+    
+    public void setMetadataInstance(MetadataInstance instance) {
+    	assert instance != null;
+    	this.metadataInstance = instance;
+    	metadataInstance.addObserver(this);
     }
 
     /**
@@ -214,7 +203,7 @@ public final class KEngine implements KClient, StringConstants {
         }
     }
 
-    private void notifyMetadataServer(final MetadataClientEvent event) {
+    private void notifyMetadataServer(final MetadataClientEvent event) throws KException {
         ArgCheck.isNotNull(event);
 
         getMetadataInstance().notify(event);
@@ -252,7 +241,7 @@ public final class KEngine implements KClient, StringConstants {
             notifyMetadataServer(MetadataClientEvent.createShuttingDownEvent(this));
 
             // Notify any 3rd-party listeners that this engine has shutdown
-            notifyObservers(engineShutdownEvent());
+            notifyObservers(engineShutdownEvent(this));
 
         } catch (final Exception e) {
             this.state = State.ERROR;
@@ -338,7 +327,7 @@ public final class KEngine implements KClient, StringConstants {
             notifyRepositories(RepositoryClientEvent.createStartedEvent(this));
 
             // Notify any 3rd-party listeners that this engine has started
-            notifyObservers(engineStartedEvent());
+            notifyObservers(engineStartedEvent(this));
 
         } catch (final Exception e) {
             this.state = State.ERROR;
@@ -460,7 +449,6 @@ public final class KEngine implements KClient, StringConstants {
      * @throws Exception
      */
     public LanguageObject parse(String sql) throws Exception {
-        return DefaultMetadataInstance.parse(sql);
+        return QueryParser.getQueryParser().parseDesignerCommand(sql);
     }
-    
 }

@@ -26,10 +26,13 @@ import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.ws.rs.core.UriBuilder;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;

@@ -30,9 +30,7 @@ import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.rest.relational.request.KomodoQueryAttribute;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.test.utils.TestUtilities;
-import net.jcip.annotations.NotThreadSafe;
 
-@NotThreadSafe
 @RunWith(Arquillian.class)
 @SuppressWarnings( {"javadoc", "nls"} )
 public final class IT_KomodoMetadataServiceQueryTests extends AbstractKomodoMetadataServiceTest implements StringConstants {

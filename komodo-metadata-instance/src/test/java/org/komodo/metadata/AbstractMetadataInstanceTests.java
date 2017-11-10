@@ -22,12 +22,20 @@
 package org.komodo.metadata;
 
 import org.komodo.spi.metadata.MetadataInstance;
+import org.mockito.Mockito;
+import org.teiid.adminapi.Admin;
 
 public class AbstractMetadataInstanceTests {
 
-    protected static final MetadataInstance METADATA_INSTANCE = DefaultMetadataInstance.getInstance();
+    private static MetadataInstance METADATA_INSTANCE;
 
-    protected MetadataInstance getMetadataInstance() {
+    protected MetadataInstance getMetadataInstance() throws Exception {
+    	if (METADATA_INSTANCE == null) {
+		    Admin admin = Mockito.mock(Admin.class);
+		    TeiidConnectionProvider provider = Mockito.mock(TeiidConnectionProvider.class);
+		    Mockito.stub(provider.getAdmin()).toReturn(admin);
+		    METADATA_INSTANCE = new DefaultMetadataInstance(provider);
+    	}
         return METADATA_INSTANCE;
     }
 

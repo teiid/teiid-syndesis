@@ -41,17 +41,22 @@ import org.komodo.utils.StringUtils;
  */
 public class ServerUtils {
 
+	private KEngine engine;
+	
+	public ServerUtils(KEngine engine) {
+		this.engine = engine;
+	}
     /**
      * @return the metadata instance instance
      */
-    public static MetadataInstance getMetadataInstance() {
-        return KEngine.getInstance().getMetadataInstance();
+    public MetadataInstance getMetadataInstance() throws Exception {
+        return engine.getMetadataInstance();
     }
 
     /**
      * @return the data source type names
      */
-    public static Set<String> getDataSourceTypeNames() throws Exception {
+    public Set<String> getDataSourceTypeNames() throws Exception {
         Set<String> serverTypes = getMetadataInstance().getDataSourceTemplateNames();
         return serverTypes;
     }
@@ -63,7 +68,7 @@ public class ServerUtils {
      * @return 'true' if the type exists on the server, 'false' if not.
      * @throws Exception the exception
      */
-    public static boolean hasDatasourceType(String sourceType) throws Exception {
+    public boolean hasDatasourceType(String sourceType) throws Exception {
         // Look for matching name
         Set<String> serverTypes = getDataSourceTypeNames();
         for(String serverType : serverTypes) {
@@ -81,7 +86,7 @@ public class ServerUtils {
      * @return the collection of data source names
      * @throws Exception the exception
      */
-    public static List<String> getDatasourceNames() throws Exception {
+    public List<String> getDatasourceNames() throws Exception {
         Collection< TeiidDataSource > sources = getMetadataInstance().getDataSources();
         if(sources.isEmpty()) return Collections.emptyList();
 
@@ -98,7 +103,7 @@ public class ServerUtils {
      * @return the collection of data source display names
      * @throws Exception the exception
      */
-    public static List<String> getDatasourceDisplayNames() throws Exception {
+    public List<String> getDatasourceDisplayNames() throws Exception {
         Collection< TeiidDataSource > sources = getMetadataInstance().getDataSources();
         if(sources.isEmpty()) return Collections.emptyList();
         
@@ -115,7 +120,7 @@ public class ServerUtils {
      * @return the collection of data source jndi names
      * @throws Exception the exception
      */
-    public static List<String> getDatasourceJndiNames() throws Exception {
+    public List<String> getDatasourceJndiNames() throws Exception {
         Collection< TeiidDataSource > sources = getMetadataInstance().getDataSources();
         if(sources.isEmpty()) return Collections.emptyList();
         
@@ -135,7 +140,7 @@ public class ServerUtils {
      * @return the collection of vdb names
      * @throws Exception the exception
      */
-    public static List<String> getVdbNames() throws Exception {
+    public List<String> getVdbNames() throws Exception {
         Collection< String > vdbNames = getMetadataInstance().getVdbNames();
         if(vdbNames.isEmpty()) return Collections.emptyList();
         
@@ -148,7 +153,7 @@ public class ServerUtils {
      * @return the collection of translator names
      * @throws Exception the exception
      */
-    public static List<String> getTranslatorNames() throws Exception {
+    public List<String> getTranslatorNames() throws Exception {
         Collection< TeiidTranslator > translators = getMetadataInstance().getTranslators();
         if(translators.isEmpty()) return Collections.emptyList();
         
@@ -159,11 +164,11 @@ public class ServerUtils {
         return existingTranslatorNames;
     }
 
-    public static TeiidDataSource getDataSource(String sourceName) throws Exception {
+    public TeiidDataSource getDataSource(String sourceName) throws Exception {
         return getMetadataInstance().getDataSource(sourceName);
     }
 
-    public static boolean hasDataSource(String sourceName) throws Exception {
+    public boolean hasDataSource(String sourceName) throws Exception {
         if (sourceName == null)
             return false;
 
@@ -179,39 +184,39 @@ public class ServerUtils {
         return false;
     }
 
-    public static void deleteDataSource(String sourceName) throws Exception {
+    public void deleteDataSource(String sourceName) throws Exception {
         getMetadataInstance().deleteDataSource(sourceName);
     }
 
-    public static void getOrCreateDataSource(String sourceName, String jndiName, String sourceType, Properties sourceProps) throws Exception {
+    public void getOrCreateDataSource(String sourceName, String jndiName, String sourceType, Properties sourceProps) throws Exception {
         getMetadataInstance().getOrCreateDataSource(sourceName, jndiName, sourceType, sourceProps);
     }
 
-    public static void deployDriver(String driverName, File driverFile) throws Exception {
+    public void deployDriver(String driverName, File driverFile) throws Exception {
         getMetadataInstance().deployDataSourceDriver(driverName, driverFile);
     }
 
-    public static void deployDynamicVdb(String vdbDeploymentName, InputStream stream) throws Exception {
+    public void deployDynamicVdb(String vdbDeploymentName, InputStream stream) throws Exception {
         getMetadataInstance().deployDynamicVdb(vdbDeploymentName, stream);
     }
 
-    public static Collection<TeiidVdb> getVdbs() throws Exception {
+    public Collection<TeiidVdb> getVdbs() throws Exception {
         return getMetadataInstance().getVdbs();
     }
 
-    public static boolean hasVdb(String vdbName) throws Exception {
+    public boolean hasVdb(String vdbName) throws Exception {
         return getMetadataInstance().getVdb(vdbName) != null;
     }
 
-    public static TeiidTranslator getTranslator(String translatorName) throws Exception {
+    public TeiidTranslator getTranslator(String translatorName) throws Exception {
         return getMetadataInstance().getTranslator(translatorName);
     }
 
-    public static TeiidVdb getVdb(String vdbName) throws Exception {
+    public TeiidVdb getVdb(String vdbName) throws Exception {
         return getMetadataInstance().getVdb(vdbName);
     }
 
-    public static void undeployDynamicVdb(String name) throws Exception {
+    public void undeployDynamicVdb(String name) throws Exception {
         getMetadataInstance().undeployDynamicVdb(name);
     }
 

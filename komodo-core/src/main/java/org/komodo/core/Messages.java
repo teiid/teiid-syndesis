@@ -53,7 +53,9 @@ public class Messages implements StringConstants {
         Shutdown_Failure,
 
         KSequencers_Unknown_Message,
-        KSequencers_Problem_Message;
+        KSequencers_Problem_Message,
+        No_Repository,
+        No_Metadata_Instance;
 
         @Override
         public String toString() {

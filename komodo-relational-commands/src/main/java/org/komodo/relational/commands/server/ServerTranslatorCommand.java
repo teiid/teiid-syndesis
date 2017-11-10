@@ -62,13 +62,14 @@ public final class ServerTranslatorCommand extends ServerShellCommand {
 
             TeiidTranslator translator = null;
             try {
+            	ServerUtils serverUtils = new ServerUtils(getWorkspaceStatus().getEngine());
                 // Check the translator name to make sure its valid
-                List< String > existingTranslatorNames = ServerUtils.getTranslatorNames();
+                List< String > existingTranslatorNames = serverUtils.getTranslatorNames();
                 if(!existingTranslatorNames.contains(translatorName.toLowerCase())) {
                     return new CommandResultImpl(false, I18n.bind( ServerCommandsI18n.serverTranslatorNotFound, translatorName ), null);
                 }
                 // Get the translator
-                translator = ServerUtils.getTranslator(translatorName);
+                translator = serverUtils.getTranslator(translatorName);
             } catch (Exception ex) {
                 result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.accessError ), ex );
                 return result;
@@ -143,7 +144,8 @@ public final class ServerTranslatorCommand extends ServerShellCommand {
         final Arguments args = getArguments();
 
         try {
-            List< String > existingTranslatorNames = ServerUtils.getTranslatorNames();
+        	ServerUtils serverUtils = new ServerUtils(getWorkspaceStatus().getEngine());
+            List< String > existingTranslatorNames = serverUtils.getTranslatorNames();
             Collections.sort(existingTranslatorNames);
 
             if ( args.isEmpty() ) {

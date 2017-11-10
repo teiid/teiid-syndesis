@@ -51,7 +51,7 @@ import org.mockito.Mockito;
 public abstract class AbstractCommandTest extends AbstractLocalRepositoryTest {
 
     private static final KLog LOGGER = KLog.getLogger();
-    private static KEngine kEngine = KEngine.getInstance();
+    private static KEngine kEngine = new KEngine();
     protected static Path _shellDataDirectory;
 
     private Writer commandWriter;

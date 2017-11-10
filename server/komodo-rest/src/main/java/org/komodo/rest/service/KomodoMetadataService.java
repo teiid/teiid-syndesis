@@ -100,6 +100,7 @@ import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.query.QSResult;
 import org.komodo.spi.repository.KomodoObject;
+import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.spi.runtime.ConnectionDriver;
@@ -233,7 +234,7 @@ public class KomodoMetadataService extends KomodoService {
     }
 
     private synchronized MetadataInstance getMetadataInstance() throws KException {
-        return KEngine.getInstance().getMetadataInstance();
+        return this.kengine.getMetadataInstance();
     }
 
     private String getSchema(UnitOfWork uow, String vdbName, String modelName) throws Exception {
@@ -276,7 +277,7 @@ public class KomodoMetadataService extends KomodoService {
             return hasDriver;
 
         } catch (KException ex) {
-            KEngine.getInstance().getErrorHandler().error(ex);
+            this.kengine.getErrorHandler().error(ex);
 
             throw ex;
         }
@@ -297,7 +298,7 @@ public class KomodoMetadataService extends KomodoService {
             return hasVdb;
 
         } catch (KException ex) {
-            KEngine.getInstance().getErrorHandler().error(ex);
+            this.kengine.getErrorHandler().error(ex);
             throw ex;
         }
     }
@@ -317,7 +318,7 @@ public class KomodoMetadataService extends KomodoService {
             return hasDataSource;
 
         } catch (KException ex) {
-            KEngine.getInstance().getErrorHandler().error(ex);
+            this.kengine.getErrorHandler().error(ex);
             throw ex;
         }
     }
@@ -440,9 +441,9 @@ public class KomodoMetadataService extends KomodoService {
             LOGGER.debug("getVdbs:found '{0}' VDBs", vdbs.size()); //$NON-NLS-1$
 
             final List<RestMetadataVdb> entities = new ArrayList<>();
-
+            Repository repo = this.kengine.getDefaultRepository();
             for (final TeiidVdb vdb : vdbs) {
-                RestMetadataVdb entity = entityFactory.createMetadataVdb(uow, this.repo, vdb, uriInfo.getBaseUri());
+                RestMetadataVdb entity = entityFactory.createMetadataVdb(uow, repo, vdb, uriInfo.getBaseUri());
                 entities.add(entity);
                 LOGGER.debug("getVdbs:VDB '{0}' entity was constructed", vdb.getName()); //$NON-NLS-1$
             }
@@ -504,10 +505,10 @@ public class KomodoMetadataService extends KomodoService {
             TeiidVdb vdb = getMetadataInstance().getVdb(vdbName);
             if (vdb == null)
                 return commitNoVdbFound(uow, mediaTypes, vdbName);
-
+            Repository repo = this.kengine.getDefaultRepository();
             KomodoProperties properties = new KomodoProperties();
             properties.addProperty(VDB_EXPORT_XML_PROPERTY, mediaTypes.contains(MediaType.APPLICATION_XML_TYPE));
-            RestMetadataVdb entity = entityFactory.createMetadataVdb(uow, this.repo, vdb, uriInfo.getBaseUri());
+            RestMetadataVdb entity = entityFactory.createMetadataVdb(uow, repo, vdb, uriInfo.getBaseUri());
             LOGGER.debug("getVdb:VDB '{0}' entity was constructed", vdb.getName()); //$NON-NLS-1$
             return commit(uow, mediaTypes, entity);
 
@@ -583,7 +584,7 @@ public class KomodoMetadataService extends KomodoService {
                         workspaceVdbNames.add(workspaceVdb.getName(uow));
                     }
                 }
-
+                Repository repo = this.kengine.getDefaultRepository();
                 // Copy the server VDB into the workspace, if no workspace VDB with the same name
                 for(TeiidVdb serverVdb : serverVdbs) {
                     if(!workspaceVdbNames.contains(serverVdb.getName())) {
@@ -592,10 +593,10 @@ public class KomodoMetadataService extends KomodoService {
                         InputStream vdbStream = new ByteArrayInputStream(vdbXml.getBytes());
 
                         // Import to create a new Vdb in the workspace
-                        VdbImporter importer = new VdbImporter(this.repo);
+                        VdbImporter importer = new VdbImporter(repo);
                         ImportOptions options = new ImportOptions();
                         ImportMessages importMessages = new ImportMessages();
-                        importer.importVdb(uow, vdbStream, this.repo.komodoWorkspace(uow), options, importMessages);
+                        importer.importVdb(uow, vdbStream, repo.komodoWorkspace(uow), options, importMessages);
 
                         if(importMessages.hasError()) {
                             LOGGER.debug("importVDB for '{0}' failed", serverVdb.getName()); //$NON-NLS-1$
@@ -1142,6 +1143,7 @@ public class KomodoMetadataService extends KomodoService {
         UnitOfWork uow = null;
 
         try {
+        	Repository repo = this.kengine.getDefaultRepository();
             // find translators
             uow = createTransaction(principal, "getTranslators", true); //$NON-NLS-1$
 
@@ -1151,7 +1153,7 @@ public class KomodoMetadataService extends KomodoService {
             final List<RestMetadataVdbTranslator> entities = new ArrayList<>();
 
             for (TeiidTranslator translator : translators) {
-                RestMetadataVdbTranslator entity = entityFactory.createMetadataTranslator(uow, this.repo, translator, uriInfo.getBaseUri());
+                RestMetadataVdbTranslator entity = entityFactory.createMetadataTranslator(uow, repo, translator, uriInfo.getBaseUri());
                 entities.add(entity);
                 LOGGER.debug("getTranslators:Translator '{0}' entity was constructed", translator.getName()); //$NON-NLS-1$
             }
@@ -1201,6 +1203,7 @@ public class KomodoMetadataService extends KomodoService {
         UnitOfWork uow = null;
 
         try {
+        	Repository repo = this.kengine.getDefaultRepository();
             uow = createTransaction(principal, "getConnections", true); //$NON-NLS-1$
 
             // Get teiid datasources
@@ -1210,7 +1213,7 @@ public class KomodoMetadataService extends KomodoService {
             final List<RestMetadataConnection> entities = new ArrayList<>();
 
             for (TeiidDataSource dataSource : dataSources) {
-                RestMetadataConnection entity = entityFactory.createMetadataDataSource(uow, this.repo, dataSource, uriInfo.getBaseUri());
+                RestMetadataConnection entity = entityFactory.createMetadataDataSource(uow, repo, dataSource, uriInfo.getBaseUri());
                 entities.add(entity);
                 LOGGER.debug("getConnections:Data Source '{0}' entity was constructed", dataSource.getName()); //$NON-NLS-1$
             }
@@ -1265,13 +1268,14 @@ public class KomodoMetadataService extends KomodoService {
         
         UnitOfWork uow = null;
         try {
+        	Repository repo = this.kengine.getDefaultRepository();
             // find DataSource
             uow = createTransaction(principal, "getConnection-" + connectionName, true); //$NON-NLS-1$
             TeiidDataSource dataSource = getMetadataInstance().getDataSource(connectionName);
             if (dataSource == null)
                 return commitNoConnectionFound(uow, mediaTypes, connectionName);
 
-            final RestMetadataConnection restDataSource = entityFactory.createMetadataDataSource(uow, this.repo, dataSource, uriInfo.getBaseUri());
+            final RestMetadataConnection restDataSource = entityFactory.createMetadataDataSource(uow, repo, dataSource, uriInfo.getBaseUri());
             LOGGER.debug("getConnection:Datasource '{0}' entity was constructed", dataSource.getName()); //$NON-NLS-1$
             return commit( uow, mediaTypes, restDataSource );
 
@@ -1408,6 +1412,7 @@ public class KomodoMetadataService extends KomodoService {
         UnitOfWork uow = null;
 
         try {
+        	Repository repo = this.kengine.getDefaultRepository();
             // find Connections
             uow = createTransaction(principal, "connectionsFromTeiid", false); //$NON-NLS-1$
             Collection<TeiidDataSource> teiidConns = getMetadataInstance().getDataSources();
@@ -1442,7 +1447,7 @@ public class KomodoMetadataService extends KomodoService {
                     continue;
 
                 final Connection connection = getWorkspaceManager(uow).createConnection( uow, null, name);
-                final RestMetadataConnection teiidConnEntity = entityFactory.createMetadataDataSource(uow, this.repo, teiidConn, uriInfo.getBaseUri());
+                final RestMetadataConnection teiidConnEntity = entityFactory.createMetadataDataSource(uow, repo, teiidConn, uriInfo.getBaseUri());
 
                 setProperties(uow, connection, teiidConnEntity);
             }
@@ -1571,6 +1576,7 @@ public class KomodoMetadataService extends KomodoService {
         byte[] driverContent = null;
 
         try {
+        	Repository repo = this.kengine.getDefaultRepository();
             uow = createTransaction(principal, "deployTeiidDriver", false); //$NON-NLS-1$
 
             if (driverAttributes.contains(KomodoPathAttribute.PATH_LABEL)) {
@@ -1581,7 +1587,7 @@ public class KomodoMetadataService extends KomodoService {
                         return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.METADATA_SERVICE_DRIVER_MISSING_PATH);
                     }
 
-                    List<KomodoObject> results = this.repo.searchByPath(uow, kpa.getPath());
+                    List<KomodoObject> results = repo.searchByPath(uow, kpa.getPath());
                     if (results.size() == 0) {
                         return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.METADATA_SERVICE_NO_DRIVER_FOUND_IN_WKSP, kpa.getPath());
                     }
@@ -1874,9 +1880,10 @@ public class KomodoMetadataService extends KomodoService {
         UnitOfWork uow = null;
 
         try {
+        	Repository repo = this.kengine.getDefaultRepository();
             uow = createTransaction(principal, "deployTeiidDataservice", false); //$NON-NLS-1$
 
-            List<KomodoObject> dataServices = this.repo.searchByPath(uow, kpa.getPath());
+            List<KomodoObject> dataServices = repo.searchByPath(uow, kpa.getPath());
             if (dataServices.size() == 0) {
                 return createErrorResponseWithForbidden(mediaTypes,
                                                         RelationalMessages.Error.METADATA_SERVICE_NO_DATA_SERVICE_FOUND,
@@ -1997,9 +2004,10 @@ public class KomodoMetadataService extends KomodoService {
         UnitOfWork uow = null;
 
         try {
+        	Repository repo = this.kengine.getDefaultRepository();
             uow = createTransaction(principal, "deployTeiidConnection", false); //$NON-NLS-1$
 
-            List<KomodoObject> connections = this.repo.searchByPath(uow, kpa.getPath());
+            List<KomodoObject> connections = repo.searchByPath(uow, kpa.getPath());
             if (connections.size() == 0) {
                 return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.METADATA_SERVICE_NO_CONNECTION_FOUND);
             }
@@ -2263,9 +2271,10 @@ public class KomodoMetadataService extends KomodoService {
 
         UnitOfWork uow = null;
         try {
+        	Repository repo = this.kengine.getDefaultRepository();
             uow = createTransaction(principal, "deployVdb", false); //$NON-NLS-1$
 
-            List<KomodoObject> vdbs = this.repo.searchByPath(uow, kpa.getPath());
+            List<KomodoObject> vdbs = repo.searchByPath(uow, kpa.getPath());
             if (vdbs.size() == 0) {
                 return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.METADATA_SERVICE_NO_VDB_FOUND);
             }
@@ -2322,6 +2331,7 @@ public class KomodoMetadataService extends KomodoService {
     }
 
     private String extractServiceVdbName(UnitOfWork uow, WorkspaceManager mgr, String dsPath) throws KException {
+    	Repository repo = this.kengine.getDefaultRepository();
         KomodoObject dsObject = repo.getFromWorkspace(uow, dsPath);
         if (dsObject == null)
             return null; // Not a path in the workspace
@@ -3099,6 +3109,7 @@ public class KomodoMetadataService extends KomodoService {
         UnitOfWork uow = null;
 
         try {
+        	Repository repo = this.kengine.getDefaultRepository();
             // find templates
             uow = createTransaction(principal, "getTemplates", true); //$NON-NLS-1$
 
@@ -3109,7 +3120,7 @@ public class KomodoMetadataService extends KomodoService {
 
             for (String template : templateNames) {
                 Collection<TeiidPropertyDefinition> propertyDefns = getMetadataInstance().getTemplatePropertyDefns(template);
-                RestMetadataTemplate entity = entityFactory.createMetadataTemplate(uow, this.repo, template, propertyDefns, uriInfo.getBaseUri());
+                RestMetadataTemplate entity = entityFactory.createMetadataTemplate(uow, repo, template, propertyDefns, uriInfo.getBaseUri());
                 entities.add(entity);
                 LOGGER.debug("getTemplates:Template '{0}' entity was constructed", template); //$NON-NLS-1$
             }
@@ -3163,6 +3174,7 @@ public class KomodoMetadataService extends KomodoService {
         UnitOfWork uow = null;
 
         try {
+        	Repository repo = this.kengine.getDefaultRepository();
             // find template
             uow = createTransaction(principal, "getTemplates", true); //$NON-NLS-1$
 
@@ -3174,7 +3186,7 @@ public class KomodoMetadataService extends KomodoService {
                 return commitNoTemplateFound(uow, mediaTypes, templateName);
 
             Collection<TeiidPropertyDefinition> propertyDefns = getMetadataInstance().getTemplatePropertyDefns(templateName);
-            RestMetadataTemplate restTemplate = entityFactory.createMetadataTemplate(uow, this.repo, templateName, propertyDefns, uriInfo.getBaseUri());
+            RestMetadataTemplate restTemplate = entityFactory.createMetadataTemplate(uow, repo, templateName, propertyDefns, uriInfo.getBaseUri());
             LOGGER.debug("getConnectionTemplate:Template '{0}' entity was constructed", templateName); //$NON-NLS-1$
             return commit( uow, mediaTypes, restTemplate );
 
@@ -3227,6 +3239,7 @@ public class KomodoMetadataService extends KomodoService {
         UnitOfWork uow = null;
 
         try {
+        	Repository repo = this.kengine.getDefaultRepository();
             // find template
             uow = createTransaction(principal, "getTemplateEntries", true); //$NON-NLS-1$
 
@@ -3243,7 +3256,7 @@ public class KomodoMetadataService extends KomodoService {
             Collections.sort(propertyDefns, new TeiidPropertyDefinitionComparator());
             List<String> priorityNames = Arrays.asList(PRIORITY_TEMPLATE_NAMES);
 
-            List<RestMetadataTemplateEntry> entities = entityFactory.createMetadataTemplateEntry(uow, this.repo, propertyDefns, uriInfo.getBaseUri());
+            List<RestMetadataTemplateEntry> entities = entityFactory.createMetadataTemplateEntry(uow, repo, propertyDefns, uriInfo.getBaseUri());
 
             for (RestMetadataTemplateEntry entity : entities) {
                 if (priorityNames.contains(entity.getId())) {

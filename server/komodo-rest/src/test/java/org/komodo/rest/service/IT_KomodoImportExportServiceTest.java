@@ -47,6 +47,7 @@ import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.model.Model;
@@ -69,7 +70,7 @@ import org.komodo.utils.StringUtils;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
 
 @SuppressWarnings({"deprecation"})
-public class KomodoImportExportServiceTest extends AbstractKomodoServiceTest {
+public class IT_KomodoImportExportServiceTest extends AbstractKomodoServiceTest {
 
     private File myGitDir;
 

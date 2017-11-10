@@ -85,13 +85,14 @@ public final class ServerGetDatasourceCommand extends ServerShellCommand {
             // Get the Data Source from the server
             TeiidDataSource serverDS = null;
             try {
+            	ServerUtils serverUtils = new ServerUtils(getWorkspaceStatus().getEngine());
                 // Check the data source name to make sure its valid
-                List< String > existingSourceNames = ServerUtils.getDatasourceNames();
+                List< String > existingSourceNames = serverUtils.getDatasourceNames();
                 if(!existingSourceNames.contains(datasourceName)) {
                     return new CommandResultImpl(false, I18n.bind( ServerCommandsI18n.serverDatasourceNotFound, datasourceName ), null);
                 }
                 // Get the data source
-                serverDS = ServerUtils.getMetadataInstance().getDataSource(datasourceName);
+                serverDS = serverUtils.getMetadataInstance().getDataSource(datasourceName);
             } catch (Exception ex) {
                 result = new CommandResultImpl( false, I18n.bind( ServerCommandsI18n.accessError ), ex );
                 return result;
@@ -182,7 +183,8 @@ public final class ServerGetDatasourceCommand extends ServerShellCommand {
         final Arguments args = getArguments();
 
         try {
-            List<String> existingDatasourceNames = ServerUtils.getDatasourceNames();
+        	ServerUtils serverUtils = new ServerUtils(getWorkspaceStatus().getEngine());
+            List<String> existingDatasourceNames = serverUtils.getDatasourceNames();
             Collections.sort(existingDatasourceNames);
 
             if ( args.isEmpty() ) {

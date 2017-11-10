@@ -25,6 +25,7 @@ import static org.komodo.rest.Messages.Error.KOMODO_ENGINE_CLEAR_TIMEOUT;
 import static org.komodo.rest.Messages.Error.KOMODO_ENGINE_SHUTDOWN_ERROR;
 import static org.komodo.rest.Messages.Error.KOMODO_ENGINE_SHUTDOWN_TIMEOUT;
 import static org.komodo.rest.Messages.Error.KOMODO_ENGINE_STARTUP_TIMEOUT;
+
 import java.io.File;
 import java.io.InputStream;
 import java.util.Collections;
@@ -32,13 +33,16 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
 import javax.annotation.PreDestroy;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+
 import org.komodo.core.KEngine;
+import org.komodo.core.repository.LocalRepository;
 import org.komodo.core.repository.SynchronousCallback;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
@@ -54,7 +58,6 @@ import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.cors.KCorsFactory;
 import org.komodo.rest.cors.KCorsHandler;
-import org.komodo.rest.cors.OptionsExceptionMapper;
 import org.komodo.rest.json.JsonConstants;
 import org.komodo.rest.service.KomodoConnectionService;
 import org.komodo.rest.service.KomodoDataserviceService;
@@ -76,6 +79,7 @@ import org.komodo.rest.swagger.RestVdbModelSourceConverter;
 import org.komodo.rest.swagger.RestVdbPermissionConverter;
 import org.komodo.rest.swagger.RestVdbTranslatorConverter;
 import org.komodo.spi.KEvent.Type;
+import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.constants.SystemConstants;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
@@ -87,8 +91,9 @@ import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.RepositoryClientEvent;
 import org.komodo.utils.KLog;
 import org.komodo.utils.observer.KLatchObserver;
+
 import io.swagger.converter.ModelConverters;
-import io.swagger.jaxrs.config.BeanConfig;
+//import io.swagger.jaxrs.config.BeanConfig;
 
 /**
  * The JAX-RS {@link Application} that provides the Komodo REST API.
@@ -628,7 +633,6 @@ public class KomodoRestV1Application extends Application implements StringConsta
         objs.add( new KomodoMetadataService( this.kengine ));
         objs.add( new KomodoImportExportService( this.kengine ));
 
-        objs.add(new OptionsExceptionMapper());
         objs.add(corsHandler);
 
         this.singletons = Collections.unmodifiableSet( objs );
@@ -664,20 +668,20 @@ public class KomodoRestV1Application extends Application implements StringConsta
         converters.addConverter(new RestVdbTranslatorConverter());
         converters.addConverter(new RestDataserviceConverter());
 
-        BeanConfig beanConfig = new BeanConfig();
-        beanConfig.setTitle(V1Constants.App.title());
-        beanConfig.setDescription(V1Constants.App.description());
-        beanConfig.setVersion(V1Constants.App.version());
-        beanConfig.setSchemes(new String[]{"https"});
-        beanConfig.setBasePath(V1Constants.App.name() + V1Constants.APP_PATH);
-
-        // No need to setHost as it will pick up the one its running on
-
-        beanConfig.setResourcePackage(
-                                      RestProperty.class.getPackage().getName() + COMMA +
-                                      KomodoVdbService.class.getPackage().getName());
-        beanConfig.setPrettyPrint(true);
-        beanConfig.setScan(true);
+//        BeanConfig beanConfig = new BeanConfig();
+//        beanConfig.setTitle(V1Constants.App.title());
+//        beanConfig.setDescription(V1Constants.App.description());
+//        beanConfig.setVersion(V1Constants.App.version());
+//        beanConfig.setSchemes(new String[]{"http"});
+//        beanConfig.setBasePath(V1Constants.App.name() + V1Constants.APP_PATH);
+//
+//        // No need to setHost as it will pick up the one its running on
+//
+//        beanConfig.setResourcePackage(
+//                                      RestProperty.class.getPackage().getName() + COMMA +
+//                                      KomodoVdbService.class.getPackage().getName());
+//        beanConfig.setPrettyPrint(true);
+//        beanConfig.setScan(true);
     }
 
     /**
@@ -685,7 +689,7 @@ public class KomodoRestV1Application extends Application implements StringConsta
      *            Should only be applicable for testing.
      *
      */
-    public Repository getDefaultRepository() {
+    public Repository getDefaultRepository() throws KException {
         return kengine.getDefaultRepository();
     }
 
@@ -696,8 +700,13 @@ public class KomodoRestV1Application extends Application implements StringConsta
      *         if an error occurs clearing the repository
      */
     public void clearRepository() throws WebApplicationException {
-        final RepositoryClientEvent event = RepositoryClientEvent.createClearEvent( this.kengine );
-        this.kengine.getDefaultRepository().notify( event );
+        try {
+			final RepositoryClientEvent event = RepositoryClientEvent.createClearEvent( this.kengine );
+			this.kengine.getDefaultRepository().notify( event );
+		} catch (KException e1) {
+            throw new WebApplicationException( new Exception(Messages.getString( KOMODO_ENGINE_CLEAR_TIMEOUT, TIMEOUT, UNIT )),
+                    Status.INTERNAL_SERVER_ERROR );
+		}
 
         KLatchObserver observer = new KLatchObserver(Type.REPOSITORY_CLEARED);
         this.kengine.addObserver(observer);
@@ -734,18 +743,27 @@ public class KomodoRestV1Application extends Application implements StringConsta
         Set<Class<?>> resources = new HashSet<Class<?>>();
 
         // Enable swagger support
-        resources.add(io.swagger.jaxrs.listing.ApiListingResource.class);
-        resources.add(io.swagger.jaxrs.listing.SwaggerSerializers.class);
+//        resources.add(io.swagger.jaxrs.listing.ApiListingResource.class);
+//        resources.add(io.swagger.jaxrs.listing.SwaggerSerializers.class);
 
         return resources;
     }
 
     private KEngine start() throws WebApplicationException {
-        final KEngine kengine = KEngine.getInstance();
+        final KEngine kengine = new KEngine();
 
         boolean started;
         try {
-           started = kengine.startAndWait();
+        	// configure metadata
+        	TeiidSwarmConnectionProvider connectionProvider = new TeiidSwarmConnectionProvider();
+        	TeiidSwarmMetadataInstance metadata = new TeiidSwarmMetadataInstance(connectionProvider);
+        	kengine.setMetadataInstance(metadata);
+        	
+        	// configure repository
+        	LocalRepository repository = new LocalRepository(); 
+        	kengine.setDefaultRepository(repository);
+        	
+        	started = kengine.startAndWait();
         } catch (Exception e) {
             throw new WebApplicationException( e, Status.INTERNAL_SERVER_ERROR );
         }

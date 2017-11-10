@@ -25,9 +25,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.komodo.spi.constants.StringConstants;
-import net.jcip.annotations.NotThreadSafe;
 
-@NotThreadSafe
 @RunWith(Arquillian.class)
 @SuppressWarnings( {"javadoc", "nls"} )
 public final class IT_KomodoMetadataServiceDataServiceTests extends AbstractKomodoMetadataServiceTest implements StringConstants {

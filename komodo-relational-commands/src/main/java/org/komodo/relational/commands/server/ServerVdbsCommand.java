@@ -60,7 +60,8 @@ public final class ServerVdbsCommand extends ServerShellCommand {
             final String title = I18n.bind( ServerCommandsI18n.infoMessageVdbs);
             print( MESSAGE_INDENT, title );
 
-            List< String > vdbNames = ServerUtils.getVdbNames();
+            ServerUtils serverUtils = new ServerUtils(getWorkspaceStatus().getEngine());
+            List< String > vdbNames = serverUtils.getVdbNames();
             if(vdbNames.isEmpty()) {
                 print( MESSAGE_INDENT, I18n.bind( ServerCommandsI18n.noVdbsMsg ) );
             } else {

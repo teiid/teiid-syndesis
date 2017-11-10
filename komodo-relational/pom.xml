@@ -41,31 +41,21 @@
 			<artifactId>komodo-ui</artifactId>
 		</dependency>
 
-		<dependency>
+<!-- 		<dependency>
 			<groupId>org.wildfly.core</groupId>
 			<artifactId>wildfly-cli</artifactId>
-			</dependency>
+	        <exclusions>
+	            <exclusion>
+	                <groupId>sun.jdk</groupId>
+	                <artifactId>jconsole</artifactId>
+	            </exclusion>
+	        </exclusions>				
+		</dependency>
+			
 		<dependency>
 			<groupId>org.wildfly.core</groupId>
 			<artifactId>wildfly-controller-client</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.jboss.arquillian.junit</groupId>
-			<artifactId>arquillian-junit-container</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.jboss.spec</groupId>
-			<artifactId>jboss-javaee-7.0</artifactId>
-			<type>pom</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.wildfly.arquillian</groupId>
-			<artifactId>wildfly-arquillian-container-managed</artifactId>
-			<scope>test</scope>
-		</dependency>
+		</dependency> -->
 
 		<dependency>
 			<groupId>org.teiid.komodo</groupId>
@@ -99,75 +89,6 @@
 						<nonFilteredFileExtension>txt</nonFilteredFileExtension>
 					</nonFilteredFileExtensions>
 				</configuration>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>${maven.compiler.source}</source>
-					<target>${maven.compiler.target}</target>
-				</configuration>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<excludes>
-						<!-- Excludes AllTests classes since it just executes all tests a second time -->
-						<exclude>**/AllTests.java</exclude>
-					</excludes>
-				</configuration>
-				<executions>
-					<execution>
-						<id>default-test</id>
-						<goals>
-							<goal>test</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
-			<!-- On clean, remove the jbossas testing directory -->
-			<plugin>
-				<artifactId>maven-clean-plugin</artifactId>
-				<configuration>
-					<filesets>
-						<fileset>
-							<directory>${project.basedir}/lib/test-server</directory>
-							<followSymlinks>false</followSymlinks>
-						</fileset>
-					</filesets>
-				</configuration>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>unpack-for-testing</id>
-						<phase>process-sources</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<!-- Skip tests -->
-							<skip>${skipTests}</skip>
-							<artifactItems>
-								<artifactItem>
-									<groupId>${test.server.group.id}</groupId>
-									<artifactId>${test.server.artifact.id}</artifactId>
-									<version>${test.server.version}</version>
-									<type>zip</type>
-									<overWrite>false</overWrite>
-									<outputDirectory>${project.basedir}/lib/test-server/</outputDirectory>
-								</artifactItem>
-							</artifactItems>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>

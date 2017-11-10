@@ -25,6 +25,7 @@ import java.net.URL;
 import java.util.List;
 import org.komodo.spi.KClient;
 import org.komodo.spi.KException;
+import org.komodo.spi.metadata.MetadataInstance;
 
 /**
  * A repository is a data store containing artifacts generated while modeling VDBs
@@ -606,4 +607,10 @@ public interface Repository {
     */
     KomodoObject komodoServersNode(UnitOfWork transaction) throws KException;
 
+    
+    /**
+     * Get Metadata Instance
+     * @return
+     */
+    MetadataInstance getMetadataInstance() throws KException;
 }
