@@ -1,6 +1,0 @@
-workspace
-add-child blah
-cd blah
-set-property foo bar
-add-child blahblah
-cd blahblah
