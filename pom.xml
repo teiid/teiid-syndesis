@@ -37,14 +37,6 @@
         <module>komodo-importer</module>
         <module>komodo-relational</module>
         <module>server</module>
-
-
-        <!-- TODO Might need this later -->
-        <!--
-          The JBoss AS7 subsystem needs the web components and (local) JDBC drivers.
-        -->
-        <!--<module>deploy/jbossas</module>-->
-        <!--<module>komodo-distribution</module>-->
         
 	</modules>
 
