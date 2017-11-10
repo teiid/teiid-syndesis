@@ -145,7 +145,7 @@
 		<version.gson>2.2.4</version.gson>
 		<version.apache.commons.codec>1.10</version.apache.commons.codec>
 		<version.guava>16.0.1</version.guava>
-		<version.swagger>1.5.0</version.swagger>
+		<version.swagger>1.5.8</version.swagger>
 		<version.jaxrs>2.13</version.jaxrs>
 		<version.xsom>20130531</version.xsom>
 		<version.relaxngDatatype>20020414</version.relaxngDatatype>
