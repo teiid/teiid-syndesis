@@ -67,17 +67,6 @@ import org.komodo.rest.service.KomodoMetadataService;
 import org.komodo.rest.service.KomodoSearchService;
 import org.komodo.rest.service.KomodoUtilService;
 import org.komodo.rest.service.KomodoVdbService;
-import org.komodo.rest.swagger.RestDataserviceConverter;
-import org.komodo.rest.swagger.RestPropertyConverter;
-import org.komodo.rest.swagger.RestVdbConditionConverter;
-import org.komodo.rest.swagger.RestVdbConverter;
-import org.komodo.rest.swagger.RestVdbDataRoleConverter;
-import org.komodo.rest.swagger.RestVdbImportConverter;
-import org.komodo.rest.swagger.RestVdbMaskConverter;
-import org.komodo.rest.swagger.RestVdbModelConverter;
-import org.komodo.rest.swagger.RestVdbModelSourceConverter;
-import org.komodo.rest.swagger.RestVdbPermissionConverter;
-import org.komodo.rest.swagger.RestVdbTranslatorConverter;
 import org.komodo.spi.KEvent.Type;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
@@ -91,9 +80,6 @@ import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.RepositoryClientEvent;
 import org.komodo.utils.KLog;
 import org.komodo.utils.observer.KLatchObserver;
-
-import io.swagger.converter.ModelConverters;
-//import io.swagger.jaxrs.config.BeanConfig;
 
 /**
  * The JAX-RS {@link Application} that provides the Komodo REST API.
@@ -655,18 +641,18 @@ public class KomodoRestV1Application extends Application implements StringConsta
         //
         // Add converters for display of definitions
         //
-        ModelConverters converters = ModelConverters.getInstance();
-        converters.addConverter(new RestPropertyConverter());
-        converters.addConverter(new RestVdbConditionConverter());
-        converters.addConverter(new RestVdbConverter());
-        converters.addConverter(new RestVdbDataRoleConverter());
-        converters.addConverter(new RestVdbImportConverter());
-        converters.addConverter(new RestVdbMaskConverter());
-        converters.addConverter(new RestVdbModelConverter());
-        converters.addConverter(new RestVdbModelSourceConverter());
-        converters.addConverter(new RestVdbPermissionConverter());
-        converters.addConverter(new RestVdbTranslatorConverter());
-        converters.addConverter(new RestDataserviceConverter());
+//        ModelConverters converters = ModelConverters.getInstance();
+//        converters.addConverter(new RestPropertyConverter());
+//        converters.addConverter(new RestVdbConditionConverter());
+//        converters.addConverter(new RestVdbConverter());
+//        converters.addConverter(new RestVdbDataRoleConverter());
+//        converters.addConverter(new RestVdbImportConverter());
+//        converters.addConverter(new RestVdbMaskConverter());
+//        converters.addConverter(new RestVdbModelConverter());
+//        converters.addConverter(new RestVdbModelSourceConverter());
+//        converters.addConverter(new RestVdbPermissionConverter());
+//        converters.addConverter(new RestVdbTranslatorConverter());
+//        converters.addConverter(new RestDataserviceConverter());
 
 //        BeanConfig beanConfig = new BeanConfig();
 //        beanConfig.setTitle(V1Constants.App.title());
@@ -743,9 +729,12 @@ public class KomodoRestV1Application extends Application implements StringConsta
         Set<Class<?>> resources = new HashSet<Class<?>>();
 
         // Enable swagger support
-//        resources.add(io.swagger.jaxrs.listing.ApiListingResource.class);
-//        resources.add(io.swagger.jaxrs.listing.SwaggerSerializers.class);
-
+        try {
+			resources.add(this.getClass().forName("io.swagger.jaxrs.listing.ApiListingResource"));
+			resources.add(this.getClass().forName("io.swagger.jaxrs.listing.SwaggerSerializers"));
+		} catch (ClassNotFoundException e) {
+			// ignore. Swarm fraction not adding this correctly looks like
+		}
         return resources;
     }
 

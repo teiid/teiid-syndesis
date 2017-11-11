@@ -24,7 +24,8 @@
 		<app.rest.title>Vdb Builder</app.rest.title>
 		<app.rest.version>${project.version}</app.rest.version>
 		<app.rest.description>A tool that allows creating, editing and managing dynamic VDBs and their contents</app.rest.description>
-		<manifest.dependencies>org.jboss.logging,org.jboss.teiid,com.fasterxml.jackson.core.jackson-core,com.fasterxml.jackson.core.jackson-databind, com.fasterxml.jackson.core.jackson-annotations</manifest.dependencies>
+		<manifest.dependencies>org.jboss.logging,org.jboss.teiid.api, org.jboss.teiid.admin, org.jboss.teiid.common-core,org.jboss.teiid</manifest.dependencies>
+	    <!--com.fasterxml.jackson.core.jackson-core,com.fasterxml.jackson.core.jackson-databind, com.fasterxml.jackson.core.jackson-annotations -->
 	</properties>
 
 	<dependencies>
