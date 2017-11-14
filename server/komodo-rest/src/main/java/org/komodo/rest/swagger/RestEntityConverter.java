@@ -28,7 +28,6 @@ import org.komodo.rest.RestLink;
 import org.komodo.rest.json.JsonConstants;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.utils.KLog;
-import com.fasterxml.jackson.databind.JavaType;
 import io.swagger.converter.ModelConverter;
 import io.swagger.converter.ModelConverterContext;
 import io.swagger.models.Model;
@@ -37,7 +36,6 @@ import io.swagger.models.properties.BooleanProperty;
 import io.swagger.models.properties.IntegerProperty;
 import io.swagger.models.properties.Property;
 import io.swagger.models.properties.StringProperty;
-import io.swagger.util.Json;
 
 /**
  * @param <T> Class to be converted
@@ -64,12 +62,20 @@ public abstract class RestEntityConverter<T> implements ModelConverter, JsonCons
         if (type == null)
             return false;
 
-        JavaType _type = Json.mapper().constructType(type);
-        if (_type == null)
+        //
+        // Workaround for SWARM-1666. Cannot use Json.mapper().constructType(type)
+        // since this causes a LinkageError due to an underlying static being already loaded
+        // via the swarm-swagger fraction. The latter uses a different version of com.fasterxml (2.8.4)
+        // to the rest of swarm (2.7.4) hence the LinkageError.
+        //
+        //      JavaType _type = Json.mapper().constructType(type);
+        //      if (_type == null)
+        //          return false;
+        //
+        if (! (type instanceof Class<?>))
             return false;
 
-        Class<?> cls = _type.getRawClass();
-
+        Class<?> cls = (Class<?>)type;
         if (! klazz.isAssignableFrom(cls))
             return false;
 
