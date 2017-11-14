@@ -36,11 +36,6 @@
 			<artifactId>komodo-importer</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>org.teiid.komodo</groupId>
-			<artifactId>komodo-ui</artifactId>
-		</dependency>
-
 <!-- 		<dependency>
 			<groupId>org.wildfly.core</groupId>
 			<artifactId>wildfly-cli</artifactId>
