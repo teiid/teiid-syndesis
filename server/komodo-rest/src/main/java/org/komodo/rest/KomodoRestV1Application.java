@@ -91,6 +91,7 @@ import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.RepositoryClientEvent;
 import org.komodo.utils.KLog;
 import org.komodo.utils.observer.KLatchObserver;
+
 import io.swagger.converter.ModelConverters;
 
 /**
@@ -721,14 +722,17 @@ public class KomodoRestV1Application extends Application implements StringConsta
         return this.singletons;
     }
 
-    @Override
+	@Override
     public Set<Class<?>> getClasses() {
         Set<Class<?>> resources = new HashSet<Class<?>>();
 
+        // When getClasses and/or getSingleton and/or getProperties is overridden in the
+        // Application class, RestEasy scanner for @Path do not look any further than classes defined
+        // in these methods. To make /swagger.json work this is alternative way to extend the scanning.
         // Enable swagger support
         try {
-			resources.add(this.getClass().forName("io.swagger.jaxrs.listing.ApiListingResource"));
-			resources.add(this.getClass().forName("io.swagger.jaxrs.listing.SwaggerSerializers"));
+			resources.add(Class.forName("io.swagger.jaxrs.listing.ApiListingResource"));
+			resources.add(Class.forName("io.swagger.jaxrs.listing.SwaggerSerializers"));
 		} catch (ClassNotFoundException e) {
 			// ignore. Swarm fraction not adding this correctly looks like
 		}

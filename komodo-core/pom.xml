@@ -43,17 +43,6 @@
 			<artifactId>teiid-modeshape-sequencer-dataservice</artifactId>
 		</dependency>
 
-<!-- 		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-		</dependency> -->
-
-		<!-- For rule validation -->
-<!-- 		<dependency>
-			<groupId>xerces</groupId>
-			<artifactId>xercesImpl</artifactId>
-		</dependency> -->
-
 		<!-- Needed to get at modeshape's underlying logging system - see JcrLogConfigurator for details -->
 		<dependency>
 			<groupId>log4j</groupId>
