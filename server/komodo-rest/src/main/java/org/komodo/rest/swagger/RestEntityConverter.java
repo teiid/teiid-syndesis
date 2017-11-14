@@ -72,14 +72,13 @@ public abstract class RestEntityConverter<T> implements ModelConverter, JsonCons
         //      if (_type == null)
         //          return false;
         //
-        if (! (type instanceof Class<?>))
-            return false;
-
-        Class<?> cls = (Class<?>)type;
-        if (! klazz.isAssignableFrom(cls))
-            return false;
-
-        return true;
+        if (type instanceof Class<?>) {
+            Class<?> cls = (Class<?>)type;
+            if (klazz.isAssignableFrom(cls)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     protected Model defaultAction(Type type, ModelConverterContext context, Iterator<ModelConverter> chain) {

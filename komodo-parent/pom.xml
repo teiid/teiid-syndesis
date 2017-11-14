@@ -145,14 +145,14 @@
 		<version.gson>2.2.4</version.gson>
 		<version.apache.commons.codec>1.10</version.apache.commons.codec>
 		<version.guava>16.0.1</version.guava>
-		<version.swagger>1.5.8</version.swagger>
+		<version.swagger>1.5.16</version.swagger>
 		<version.jaxrs>2.13</version.jaxrs>
 		<version.xsom>20130531</version.xsom>
 		<version.relaxngDatatype>20020414</version.relaxngDatatype>
 		<version.resteasy>3.0.19.Final</version.resteasy>
 		<version.jboss.logging>3.3.0.Final</version.jboss.logging>
 		<version.org.mockito>1.10.19</version.org.mockito>	
-		<version.com.fasterxml.jackson>2.5.4</version.com.fasterxml.jackson>			
+		<version.com.fasterxml.jackson>2.7.4</version.com.fasterxml.jackson>			
 	</properties>
 
 	<!-- This section defines the default dependency settings inherited by child 
