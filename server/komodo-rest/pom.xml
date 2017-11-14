@@ -24,27 +24,60 @@
 		<app.rest.title>Vdb Builder</app.rest.title>
 		<app.rest.version>${project.version}</app.rest.version>
 		<app.rest.description>A tool that allows creating, editing and managing dynamic VDBs and their contents</app.rest.description>
-		<manifest.dependencies>org.jboss.logging,org.jboss.teiid.api, org.jboss.teiid.admin, org.jboss.teiid.common-core,org.jboss.teiid</manifest.dependencies>
-	    <!--com.fasterxml.jackson.core.jackson-core,com.fasterxml.jackson.core.jackson-databind, com.fasterxml.jackson.core.jackson-annotations -->
+		<manifest.dependencies>org.jboss.logging,org.jboss.teiid.api, org.jboss.teiid.admin, org.jboss.teiid.common-core,org.jboss.teiid,io.swagger,com.fasterxml.jackson.core.jackson-core,com.fasterxml.jackson.core.jackson-databind, com.fasterxml.jackson.core.jackson-annotations</manifest.dependencies>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-relational</artifactId>
+            <exclusions>
+              <exclusion>
+                <groupId>org.jboss.teiid</groupId>
+                <artifactId>*</artifactId>
+              </exclusion>
+            </exclusions>
 		</dependency>
-			
-		<!-- Have a conflict with tika-parser's dependency javax.ws.rs-api-2.0-m10 so must comes first in the classpath -->
-		<dependency>
-			<groupId>org.jboss.teiid</groupId>
-			<artifactId>teiid-engine</artifactId>
-			<scope>provided</scope>
-		</dependency>
+        <dependency>
+          <groupId>org.wildfly.swarm</groupId>
+          <artifactId>undertow</artifactId>
+        </dependency>   
+        <dependency>
+            <groupId>org.wildfly.swarm</groupId>
+              <artifactId>management</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.wildfly.swarm</groupId>
+          <artifactId>swagger</artifactId>         
+        </dependency>
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-core</artifactId>
+            <scope>provided</scope>
+            <exclusions>
+              <exclusion>
+                <groupId>*</groupId>
+                <artifactId>*</artifactId>
+              </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-models</artifactId>
+            <scope>provided</scope>
+            <exclusions>
+              <exclusion>
+                <groupId>*</groupId>
+                <artifactId>*</artifactId>
+              </exclusion>
+            </exclusions>
+        </dependency>               			
+    
 		<dependency>
 			<groupId>org.jboss.teiid</groupId>
 			<artifactId>teiid-api</artifactId>
 			<scope>provided</scope>
-		</dependency>
+		</dependency> 
 		<dependency>
 			<groupId>org.jboss.teiid</groupId>
 			<artifactId>teiid-client</artifactId>
@@ -60,36 +93,25 @@
 			<artifactId>teiid-admin</artifactId>
 			<scope>provided</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>org.jboss.teiid</groupId>
 			<artifactId>teiid-jboss-admin</artifactId>
 			<scope>provided</scope>
-		</dependency>
-					
-		<!-- Have a conflict with tika-parser's dependency javax.ws.rs-api-2.0-m10 so must comes first in the classpath -->
-		<dependency>
-			<groupId>commons-codec</groupId>
-			<artifactId>commons-codec</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<scope>compile</scope>
+            <exclusions>
+              <exclusion>
+                <groupId>org.jboss.teiid</groupId>
+                <artifactId>*</artifactId>
+              </exclusion>
+            </exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.xsom</groupId>
 			<artifactId>xsom</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>relaxngDatatype</groupId>
-			<artifactId>relaxngDatatype</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
 		</dependency>
-
  		<dependency>
 			<groupId>org.wildfly.swarm</groupId>
 			<artifactId>teiid</artifactId>		
@@ -97,29 +119,14 @@
   		<dependency>
 			<groupId>org.wildfly.swarm</groupId>
 			<artifactId>teiid-jdbc</artifactId>
+            <exclusions>
+              <exclusion>
+                <groupId>org.jboss.teiid</groupId>
+                <artifactId>*</artifactId>
+              </exclusion>
+            </exclusions>      
 		</dependency>
-		<dependency>
-			<groupId>org.wildfly.swarm</groupId>
-			<artifactId>undertow</artifactId>
-		</dependency>		
-		<dependency>
-			<groupId>org.wildfly.swarm</groupId>
-			<artifactId>jaxrs-validator</artifactId>
-		</dependency>	
-		<dependency>
-		    <groupId>org.wildfly.swarm</groupId>
-  		    <artifactId>management</artifactId>
-		</dependency>
-<!-- 		<dependency>
-			<groupId>javax.inject</groupId>
-			<artifactId>javax.inject</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>javax.enterprise</groupId>
-			<artifactId>cdi-api</artifactId>
-			<scope>provided</scope>
-		</dependency> -->
+
 	    <dependency>
 	      <groupId>javax</groupId>
 	      <artifactId>javaee-api</artifactId>
@@ -130,59 +137,29 @@
 		  <groupId>org.wildfly.swarm</groupId>
 		  <artifactId>logging</artifactId>
 		</dependency>
-		
+        <dependency>
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpclient</artifactId>
+          <version>4.5.3</version>
+        </dependency>   
+	
   		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		<dependency>
+ 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 			<scope>provided</scope>
-		</dependency>
+		</dependency> 
 		<dependency>
 		    <groupId>com.fasterxml.jackson.core</groupId>
 		    <artifactId>jackson-annotations</artifactId>
 		    <scope>provided</scope>
-		</dependency>		
-		<!--
-		<dependency>
-			<groupId>org.codehaus.jackson</groupId>
-			<artifactId>jackson-core-asl</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.codehaus.jackson</groupId>
-			<artifactId>jackson-mapper-asl</artifactId>
-		</dependency> -->
-		<dependency>
-		  <groupId>org.wildfly.swarm</groupId>
-		  <artifactId>swagger</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.swagger</groupId>
-			<artifactId>swagger-core</artifactId>
-		</dependency>
-		<!--
- 		<dependency>
-			<groupId>io.swagger</groupId>
-			<artifactId>swagger-annotations</artifactId>
-		</dependency>
-				
-		<dependency>
-			<groupId>io.swagger</groupId>
-			<artifactId>swagger-models</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.swagger</groupId>
-			<artifactId>swagger-jaxrs</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.jboss.resteasy</groupId>
-			<artifactId>resteasy-test-tjws</artifactId>
-			<scope>test</scope>
-		</dependency>
-		 -->
+		</dependency>	
+
+        <!-- Test Dependencies -->
 		<dependency>
 			<groupId>org.jboss.spec</groupId>
 			<artifactId>jboss-javaee-7.0</artifactId>
@@ -198,6 +175,7 @@
 	  	<dependency>
 			<groupId>org.wildfly.swarm</groupId>
 			<artifactId>arquillian</artifactId>
+            <scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jgit</groupId>
@@ -216,11 +194,6 @@
 			<version>${version.resteasy}</version>
 			<scope>test</scope>
 		</dependency>
-        <dependency>
-          <groupId>org.apache.httpcomponents</groupId>
-          <artifactId>httpclient</artifactId>
-          <version>4.5.3</version>
-        </dependency>		
 
 		<!-- THIS Saxon-HE DEPENDENCY NEEDS TO BE REMOVED AFTER UPGRADE IN TEIID OR SWARM -->
         <dependency>
