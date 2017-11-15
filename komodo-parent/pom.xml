@@ -716,5 +716,35 @@
 				<updatePolicy>never</updatePolicy>
 			</snapshots>
 		</repository>
+		<repository>
+			<!-- To be removed on release of wildfly-swarm 2017.12 -->
+			<id>local-user-repository</id>
+			<name>Local User Repository</name>
+			<url>http://192.168.88.5:8081/repository/maven-public</url>
+			<layout>default</layout>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
 	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<!-- To be removed on release of wildfly-swarm 2017.12 -->
+			<id>local-user-repository</id>
+			<name>Local User Repository</name>
+			<url>http://192.168.88.5:8081/repository/maven-public</url>
+			<layout>default</layout>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
 </project>
