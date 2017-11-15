@@ -150,7 +150,7 @@ organizationalUnitName		= Organizational Unit Name (eg, section)
 organizationalUnitName_default	= Testing
 
 commonName			= Common Name (eg, your name or your server\'s hostname)
-commonName_max			= 64
+commonName_max			= 128
 
 emailAddress			= Email Address
 emailAddress_max		= 64

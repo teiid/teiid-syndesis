@@ -90,17 +90,21 @@ echo "=== KEYSTORE NAME: ${KEYSTORE} ==="
 echo "=== KEYSTORE ALIAS: ${ALIAS} ==="
 
 #
-# Create newcerts directory if not already created
+# Create directories if not already created
 #
-mkdir -p newcerts
+mkdir -p newcerts private csr certs
 
 #
 # Create the domain key
 #
-echo "=== Generating private key for domain ==="
-openssl genrsa -aes256 \
-  -passout pass:${PASSWORD} \
-  -out private/${DOMAIN}.key.pem 2048
+if [ ! -f private/${DOMAIN}.key.pem ]; then
+  echo "=== Generating private key for domain ==="
+  openssl genrsa -aes256 \
+    -passout pass:${PASSWORD} \
+    -out private/${DOMAIN}.key.pem 2048
+else
+  echo "=== Skipping private key generation for domain ... already exists ==="
+fi
 
 chmod 400 private/${DOMAIN}.key.pem
 
