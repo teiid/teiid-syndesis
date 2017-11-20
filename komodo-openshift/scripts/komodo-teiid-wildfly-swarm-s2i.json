@@ -221,7 +221,7 @@
                         "env": [
                             {
                                "name": "MAVEN_ARGS",
-                               "value": "clean install -s settings.xml -DskipTests -Dintegration.skipTests -B -pl org.teiid.komodo:komodo-rest -am"
+                               "value": "clean install -s settings.xml -Popenshift_s2i -DskipTests -Dintegration.skipTests -B -pl org.teiid.komodo:komodo-rest,org.teiid.komodo:komodo-openshift -am"
                             }
                         ]
                     }
