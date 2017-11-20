@@ -36,7 +36,8 @@
         <module>komodo-importer</module>
         <module>komodo-relational</module>
         <module>server</module>
-        
+
+        <module>komodo-openshift</module>
 	</modules>
 
 	<properties>

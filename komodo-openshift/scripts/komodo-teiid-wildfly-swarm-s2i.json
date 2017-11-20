@@ -1,0 +1,363 @@
+{
+    "kind": "Template",
+    "apiVersion": "v1",
+    "metadata": {
+        "annotations": {
+            "iconClass": "icon-jboss",
+            "description": "Application template for vdb-builder built using S2I.  Includes ability to configure certificates for serving secure content.",
+            "tags": "datavirt,jboss,wildfly-swarm",
+            "version": "1.0.0",
+            "openshift.io/display-name": "vdb-builder based on teiid and wildfly"
+        },
+        "name": "komodo-teiid-wildfly-swarm-s2i"
+    },
+    "labels": {
+        "template": "komodo-teiid-wildfly-s2i"
+    },
+    "message": "The username/password for accessing the service is ${TEIID_USERNAME}/${TEIID_PASSWORD}.",
+    "parameters": [
+        {
+            "description": "Specify a custom hostname for the http route.  Leave blank to use default hostname, e.g.: <service-name>-<project>.<default-domain-suffix>",
+            "displayName": "Custom http Route Hostname",
+            "name": "HOSTNAME_HTTP",
+            "value": "",
+            "required": false
+        },
+        {
+            "description": "Specify a custom hostname for the JDBC route.  Leave blank to use default hostname, e.g.: secure-<service-name>-<project>.<default-domain-suffix>",
+            "displayName": "Custom JDBC Route Hostname",
+            "name": "HOSTNAME_JDBC",
+            "value": "",
+            "required": false
+        },
+        {
+            "description": "Username associated with Teiid data service.",
+            "displayName": "Teiid Username",
+            "name": "TEIID_USERNAME",
+            "value": "user",
+            "required": true
+        },
+        {
+            "description": "Password for Teiid user.",
+            "displayName": "Teiid User Password",
+            "name": "TEIID_PASSWORD",
+            "value": "user1234!",
+            "required": true
+        },
+        {
+            "description": "Additional maven repository for finding dependencies",
+            "displayName": "Additional maven repository",
+            "name": "MVN_LOCAL_REPO",
+            "value": "https://repository.jboss.org/nexus/content/repositories/central/",
+            "required": true
+        }
+    ],
+    "objects": [
+        {
+            "kind": "Service",
+            "apiVersion": "v1",
+            "spec": {
+                "ports": [
+                    {
+                        "name": "http",
+                        "port": 8080,
+                        "targetPort": "http"
+                    },
+                    {
+                        "name": "admin",
+                        "port": 9990,
+                        "targetPort": "admin"
+                    },
+                    {
+                        "name": "jdbc",
+                        "port": 31000,
+                        "targetPort": "jdbc"
+                    }
+                ],
+                "selector": {
+                    "deploymentConfig": "vdb-builder"
+                }
+            },
+            "metadata": {
+                "name": "vdb-builder",
+                "labels": {
+                    "application": "vdb-builder"
+                },
+                "annotations": {
+                    "description": "Designing data virtualization services."
+                }
+            }
+        },
+        {
+            "kind": "Route",
+            "apiVersion": "v1",
+            "id": "vdb-builder-http",
+            "metadata": {
+                "name": "vdb-builder",
+                "labels": {
+                    "application": "vdb-builder"
+                },
+                "annotations": {
+                    "description": "Route for application's http (REST) service."
+                }
+            },
+            "spec": {
+                "host": "${HOSTNAME_HTTP}",
+                "port": {
+                    "targetPort": "http"
+                },
+                "to": {
+                    "name": "vdb-builder"
+                }
+            }
+        },
+        {
+            "kind": "Route",
+            "apiVersion": "v1",
+            "id": "vdb-builder-jdbc",
+            "metadata": {
+                "name": "jdbc-vdb-builder",
+                "labels": {
+                    "application": "vdb-builder"
+                },
+                "annotations": {
+                    "description": "Route for application's JDBC service."
+                }
+            },
+            "spec": {
+                "host": "${HOSTNAME_JDBC}",
+                "port": {
+                    "targetPort": "jdbcs"
+                },
+                "to": {
+                    "name": "vdb-builder"
+                },
+                "tls": {
+                    "termination": "passthrough"
+                }
+            }
+        },
+        {
+            "kind": "ImageStream",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "wildfly-swarm",
+                "labels": {
+                    "application": "wildfly-swarm"
+                }
+            }
+        },
+        {
+            "kind": "ImageStream",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "vdb-builder",
+                "labels": {
+                    "application": "vdb-builder"
+                }
+            }
+        },
+        {
+            "kind": "BuildConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "wildfly-swarm-build",
+                "labels": {
+                    "application": "wildfly-swarm"
+                }
+            },
+            "spec": {
+                "source" : {
+                    "type" : "Git",
+                    "git" : {
+                        "uri": "git://github.com/wildfly-swarm/sti-wildflyswarm"
+                    },
+                    "contextDir": "1.0"
+                },
+                "strategy": {
+                    "type": "Docker",
+                    "dockerStrategy": {
+                        "from": {
+                            "kind": "DockerImage",
+                            "name": "openshift/base-centos7:latest"
+                        }
+                    }
+                },
+                "output": {
+                    "to": {
+                        "kind": "ImageStreamTag",
+                        "name": "wildfly-swarm:latest"
+                    }
+                },
+                "triggers": [
+                    {
+                        "type": "ImageChange",
+                        "imageChange": {}
+                    },
+                    {
+                        "type": "ConfigChange"
+                    }
+                ]
+            }
+        },
+        {
+            "kind": "BuildConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "vdb-builder-build",
+                "labels": {
+                    "application": "vdb-builder"
+                }
+            },
+            "spec": {
+                "source" : {
+                    "type" : "Git",
+                    "git" : {
+                        "uri": "git://github.com/phantomjinx/teiid-komodo.git"
+                    },
+                    "contextDir": "."
+                },
+                "strategy": {
+                    "type": "Source",
+                    "sourceStrategy": {
+                        "from": {
+                            "kind": "ImageStreamTag",
+                            "name": "wildfly-swarm:latest"
+                        },
+                        "incremental": true,
+                        "env": [
+                            {
+                               "name": "MAVEN_ARGS",
+                               "value": "clean install -s settings.xml -Popenshift_s2i -Dlocal-repo=${MVN_LOCAL_REPO} -DskipTests -Dintegration.skipTests -B -pl org.teiid.komodo:komodo-rest,org.teiid.komodo:komodo-openshift -am"
+                            }
+                        ]
+                    }
+                },
+                "output": {
+                    "to": {
+                        "kind": "ImageStreamTag",
+                        "name": "vdb-builder:latest"
+                    }
+                },
+                "triggers": [
+                    {
+                        "type": "ImageChange",
+                        "imageChange": {
+                            "from": {
+                                "kind": "ImageStreamTag",
+                                "name": "wildfly-swarm:latest"
+                            }
+                        }
+                    },
+                    {
+                        "type": "ConfigChange"
+                    }
+                ]
+            }
+        },
+        {
+            "kind": "DeploymentConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "vdb-builder",
+                "labels": {
+                    "application": "vdb-builder"
+                }
+            },
+            "spec": {
+                "strategy": {
+                    "type": "Recreate"
+                },
+                "triggers": [
+                    {
+                        "type": "ImageChange",
+                        "imageChangeParams": {
+                            "automatic": true,
+                            "containerNames": [
+                                "vdb-builder"
+                            ],
+                            "from": {
+                                "kind": "ImageStreamTag",
+                                "name": "vdb-builder:latest"
+                            }
+                        }
+                    },
+                    {
+                        "type": "ConfigChange"
+                    }
+                ],
+                "replicas": 1,
+                "selector": {
+                    "deploymentConfig": "vdb-builder"
+                },
+                "template": {
+                    "metadata": {
+                        "name": "vdb-builder",
+                        "labels": {
+                            "deploymentConfig": "vdb-builder",
+                            "application": "vdb-builder"
+                        }
+                    },
+                    "spec": {
+                        "terminationGracePeriodSeconds": 60,
+                        "containers": [
+                            {
+                                "name": "vdb-builder",
+                                "image": "vdb-builder",
+                                "imagePullPolicy": "Always",
+                                "resources" : {
+                                    "requests" : {
+                                        "cpu" : "500m",
+                                        "memory" : "1536Mi"
+                                    },
+                                    "limits" : {
+                                        "cpu" : "1",
+                                        "memory" : "1536Mi"
+                                    }
+                                },
+                                "ports": [
+                                    {
+                                        "name": "http",
+                                        "containerPort": 8080,
+                                        "protocol": "TCP"
+                                    },
+                                    {
+                                        "name": "jdbc",
+                                        "containerPort": 31000,
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "env": [
+                                    {
+                                        "name": "OPENSHIFT_KUBE_PING_LABELS",
+                                        "value": "application=vdb-builder"
+                                    },
+                                    {
+                                        "name": "OPENSHIFT_KUBE_PING_NAMESPACE",
+                                        "valueFrom": {
+                                            "fieldRef": {
+                                                "fieldPath": "metadata.namespace"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "TEIID_USERNAME",
+                                        "value": "${TEIID_USERNAME}"
+                                    },
+                                    {
+                                        "name": "TEIID_PASSWORD",
+                                        "value": "${TEIID_PASSWORD}"
+                                    },
+                                    {
+                                        "name": "HOSTNAME_HTTP",
+                                        "value": "${HOSTNAME_HTTP}"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}

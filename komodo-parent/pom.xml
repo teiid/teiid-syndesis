@@ -701,4 +701,63 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<repositories>
+		<repository>
+			<id>releases</id>
+			<name>jboss releases</name>
+			<url>https://repository.jboss.org</url>
+			<layout>default</layout>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</snapshots>
+		</repository>
+	</repositories>
+
+	<profiles>
+		<profile>
+			<id>my-local-repository</id>
+			<activation>
+				<property>
+					<name>local-repo</name>
+				</property>
+			</activation>
+			<repositories>
+				<repository>
+					<!-- To be removed on release of wildfly-swarm 2017.12 -->
+					<id>local-user-repository</id>
+					<name>Local User Repository</name>
+					<url>${local-repo}</url>
+					<layout>default</layout>
+					<releases>
+						<enabled>true</enabled>
+					</releases>
+					<snapshots>
+						<enabled>true</enabled>
+						<updatePolicy>always</updatePolicy>
+					</snapshots>
+				</repository>
+			</repositories>
+			<pluginRepositories>
+				<pluginRepository>
+					<!-- To be removed on release of wildfly-swarm 2017.12 -->
+					<id>local-user-repository</id>
+					<name>Local User Repository</name>
+					<url>${local-repo}</url>
+					<layout>default</layout>
+					<releases>
+						<enabled>true</enabled>
+					</releases>
+					<snapshots>
+						<enabled>true</enabled>
+						<updatePolicy>always</updatePolicy>
+					</snapshots>
+				</pluginRepository>
+			</pluginRepositories>
+		</profile>
+	</profiles>
 </project>
