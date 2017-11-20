@@ -17,8 +17,9 @@
 #
 #################
 function show_help {
-	echo "Usage: $0 -h"
-	echo "-h - ip|hostname of Openshift host"
+	echo "Usage: $0 -h [-r]"
+	echo "-h ip|hostname: location of Openshift host"
+	echo "-r local mvn repo: provides an additional nexus repository"
   exit 1
 }
 
@@ -35,10 +36,11 @@ fi
 #
 # Determine the command line options
 #
-while getopts "h:" opt;
+while getopts "h:r:" opt;
 do
 	case $opt in
 	h) OS_HOST=$OPTARG ;;
+	r) LOCAL_MVN_REPO=$OPTARG ;;
 	*) show_help ;;
 	esac
 done
@@ -63,11 +65,17 @@ oc get template ${OS_TEMPLATE} 2>&1 > /dev/null || \
 	oc create -f ${OS_TEMPLATE}.json || \
 	{ echo "FAILED: Could not create application template" && exit 1; }
 
+APP_ARGS="--param=TEIID_USERNAME=${TEIID_USERNAME}"
+APP_ARGS="${APP_ARGS} --param=TEIID_PASSWORD=${TEIID_PASSWORD}"
+                      
+if [ -n "LOCAL_MVN_REPO" ]; then
+  APP_ARGS="${APP_ARGS} --param=MVN_LOCAL_REPO=${LOCAL_MVN_REPO}"
+fi
+  
 echo -e "\n\n=== Deploying ${OS_TEMPLATE} template with default values ==="
 oc get dc/vdb-builder 2>&1 >/dev/null || \
 	oc new-app ${OS_TEMPLATE} \
-		--param=TEIID_USERNAME=${TEIID_USERNAME} \
-		--param=TEIID_PASSWORD=${TEIID_PASSWORD} \
+		${APP_ARGS} \
 		-l app=vdb-builder
 
 echo "==============================================="
