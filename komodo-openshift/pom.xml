@@ -15,7 +15,37 @@
 
 	<profiles>
 		<profile>
-			<id>openshift</id>
+			<id>openshift_s2i</id>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-resources-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>copy-swarm-plugin-to-root</id>
+								<phase>package</phase>
+								<goals>
+									<goal>copy-resources</goal>
+								</goals>
+								<configuration>
+									<overwrite>true</overwrite>
+									<outputDirectory>
+										${project.basedir}/../target/
+									</outputDirectory>
+									<resources>
+										<resource>
+											<directory>${project.basedir}/../server/komodo-rest/target</directory>
+											<includes>
+												<include>*-swarm.jar</include>
+											</includes>
+										</resource>
+									</resources>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 	</profiles>
 </project>
