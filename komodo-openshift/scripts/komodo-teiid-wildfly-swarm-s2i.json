@@ -43,6 +43,13 @@
             "name": "TEIID_PASSWORD",
             "value": "user1234!",
             "required": true
+        },
+        {
+            "description": "Additional maven repository for finding dependencies",
+            "displayName": "Additional maven repository",
+            "name": "MVN_LOCAL_REPO",
+            "value": "https://repository.jboss.org/nexus/content/repositories/central/",
+            "required": true
         }
     ],
     "objects": [
@@ -221,7 +228,7 @@
                         "env": [
                             {
                                "name": "MAVEN_ARGS",
-                               "value": "clean install -s settings.xml -Popenshift_s2i -DskipTests -Dintegration.skipTests -B -pl org.teiid.komodo:komodo-rest,org.teiid.komodo:komodo-openshift -am"
+                               "value": "clean install -s settings.xml -Popenshift_s2i -Dlocal-repo=${MVN_LOCAL_REPO} -DskipTests -Dintegration.skipTests -B -pl org.teiid.komodo:komodo-rest,org.teiid.komodo:komodo-openshift -am"
                             }
                         ]
                     }
