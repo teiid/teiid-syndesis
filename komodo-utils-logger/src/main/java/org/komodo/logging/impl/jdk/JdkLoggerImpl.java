@@ -124,8 +124,6 @@ final class JdkLoggerImpl extends org.komodo.logging.Logger {
 
     @Override
     public void setLogPath(String logPath) throws Exception {
-        super.setLogPath(logPath);
-
         if (fileHandler != null) {
             fileHandler.close();
             logger.removeHandler(fileHandler);
@@ -138,10 +136,15 @@ final class JdkLoggerImpl extends org.komodo.logging.Logger {
             if (oldLog.canRead() && oldLog.length() == 0L) {
                 Files.deleteIfExists(oldLog.toPath());
             }
+            File directory = oldLog.getParentFile();
+            if (directory.list().length == 0) {
+                Files.deleteIfExists(directory.toPath());
+            }
         }
 
         String logPathMsg = "Location of old log file was " + this.logPath; //$NON-NLS-1$
 
+        super.setLogPath(logPath);
         configureLogging();
 
         // Log the location of the old log file in case anyone ever needs it
