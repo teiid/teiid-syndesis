@@ -36,7 +36,9 @@ public interface TeiidConnectionProvider {
 	Connection getConnection(String vdb, String version) throws SQLException;
 	
 	Outcome ping(ConnectivityType connectivityType);
-	
+
+	void reconnect() throws Exception;
+
 	void onStart();
 	
 	void onShutdown();

@@ -27,15 +27,14 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import java.net.URI;
 import java.util.List;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
-import org.jboss.resteasy.client.ClientRequest;
-import org.jboss.resteasy.client.ClientResponse;
-import org.junit.Ignore;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.junit.Test;
 import org.komodo.rest.RestBasicEntity;
-import org.komodo.rest.relational.AbstractKomodoServiceTest;
 import org.komodo.rest.relational.KomodoProperties;
 import org.komodo.rest.relational.RestEntityFactory;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
@@ -53,10 +52,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-@SuppressWarnings( {"javadoc", "nls", "deprecation"} )
-public final class IT_KomodoSearchServiceTest extends AbstractKomodoServiceTest {
+@SuppressWarnings( {"javadoc", "nls"} )
+public class KomodoSearchServiceTest extends AbstractKomodoServiceTest {
 
-    private final static String PORTFOLIO_DATA_PATH = "/tko:komodo/tko:workspace/" + USER_NAME + "/Portfolio";
+    private static String PORTFOLIO_DATA_PATH = "/tko:komodo/tko:workspace/" + USER_NAME + "/Portfolio";
 
     @Test
     public void shouldFailNoParameters() throws Exception {
@@ -64,10 +63,11 @@ public final class IT_KomodoSearchServiceTest extends AbstractKomodoServiceTest 
         KomodoProperties properties = new KomodoProperties();
         URI uri = _uriBuilder.searchUri(properties);
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        assertResponse(response, HttpStatus.SC_FORBIDDEN);
+        String entity = extractResponse(response);
         System.out.println("Response:\n" + entity);
 
         JsonElement jelement = new JsonParser().parse(entity);
@@ -85,9 +85,9 @@ public final class IT_KomodoSearchServiceTest extends AbstractKomodoServiceTest 
         properties.addProperty(SEARCH_CONTAINS_PARAMETER, "view");
         URI uri = _uriBuilder.searchUri(properties);
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
-        final String entity = response.getEntity();
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        HttpResponse response = executeOk(request);
+        String entity = extractResponse(response);
         // System.out.println("Response:\n" + entity);
 
         RestBasicEntity[] entities = KomodoJsonMarshaller.unmarshallArray(entity, RestBasicEntity[].class);
@@ -113,9 +113,9 @@ public final class IT_KomodoSearchServiceTest extends AbstractKomodoServiceTest 
         properties.addProperty(SEARCH_CONTAINS_PARAMETER, "view");
         URI uri = _uriBuilder.searchUri(properties);
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
-        final String entity = response.getEntity();
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        HttpResponse response = executeOk(request);
+        String entity = extractResponse(response);
         // System.out.println("Response:\n" + entity);
 
         RestBasicEntity[] entities = KomodoJsonMarshaller.unmarshallArray(entity, RestBasicEntity[].class);
@@ -142,9 +142,9 @@ public final class IT_KomodoSearchServiceTest extends AbstractKomodoServiceTest 
         properties.addProperty(SEARCH_CONTAINS_PARAMETER, "view");
         URI uri = _uriBuilder.searchUri(properties);
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
-        final String entity = response.getEntity();
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        HttpResponse response = executeOk(request);
+        String entity = extractResponse(response);
         // System.out.println("Response:\n" + entity);
 
         RestBasicEntity[] entities = KomodoJsonMarshaller.unmarshallArray(entity, RestBasicEntity[].class);
@@ -170,9 +170,9 @@ public final class IT_KomodoSearchServiceTest extends AbstractKomodoServiceTest 
         properties.addProperty(SEARCH_PATH_PARAMETER, PORTFOLIO_DATA_PATH);
         URI uri = _uriBuilder.searchUri(properties);
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
-        final String entity = response.getEntity();
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        HttpResponse response = executeOk(request);
+        String entity = extractResponse(response);
         // System.out.println("Response:\n" + entity);
         RestBasicEntity[] entities = KomodoJsonMarshaller.unmarshallArray(entity, RestBasicEntity[].class);
         assertEquals(1, entities.length);
@@ -193,9 +193,9 @@ public final class IT_KomodoSearchServiceTest extends AbstractKomodoServiceTest 
         properties.addProperty(SEARCH_PARENT_PARAMETER, PORTFOLIO_DATA_PATH);
         URI uri = _uriBuilder.searchUri(properties);
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
-        final String entity = response.getEntity();
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        HttpResponse response = executeOk(request);
+        String entity = extractResponse(response);
         // System.out.println("Response:\n" + entity);
         RestBasicEntity[] entities = KomodoJsonMarshaller.unmarshallArray(entity, RestBasicEntity[].class);
         assertEquals(5, entities.length);
@@ -215,9 +215,9 @@ public final class IT_KomodoSearchServiceTest extends AbstractKomodoServiceTest 
         properties.addProperty(SEARCH_ANCESTOR_PARAMETER, PORTFOLIO_DATA_PATH);
         URI uri = _uriBuilder.searchUri(properties);
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
-        final String entity = response.getEntity();
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        HttpResponse response = executeOk(request);
+        String entity = extractResponse(response);
         // System.out.println("Response:\n" + entity);
         RestBasicEntity[] entities = KomodoJsonMarshaller.unmarshallArray(entity, RestBasicEntity[].class);
         assertEquals(110, entities.length);
@@ -232,9 +232,9 @@ public final class IT_KomodoSearchServiceTest extends AbstractKomodoServiceTest 
         properties.addProperty(SEARCH_TYPE_PARAMETER, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
         URI uri = _uriBuilder.searchUri(properties);
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
-        final String entity = response.getEntity();
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        HttpResponse response = executeOk(request);
+        String entity = extractResponse(response);
         // System.out.println("Response:\n" + entity);
         RestBasicEntity[] entities = KomodoJsonMarshaller.unmarshallArray(entity, RestBasicEntity[].class);
         assertEquals(38, entities.length);
@@ -254,9 +254,9 @@ public final class IT_KomodoSearchServiceTest extends AbstractKomodoServiceTest 
         properties.addProperty(SEARCH_TYPE_PARAMETER, KomodoType.COLUMN.getType());
         URI uri = _uriBuilder.searchUri(properties);
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
-        final String entity = response.getEntity();
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        HttpResponse response = executeOk(request);
+        String entity = extractResponse(response);
         // System.out.println("Response:\n" + entity);
         RestBasicEntity[] entities = KomodoJsonMarshaller.unmarshallArray(entity, RestBasicEntity[].class);
         assertEquals(38, entities.length);
@@ -277,9 +277,9 @@ public final class IT_KomodoSearchServiceTest extends AbstractKomodoServiceTest 
         properties.addProperty(SEARCH_OBJECT_NAME_PARAMETER, "%ID%");
         URI uri = _uriBuilder.searchUri(properties);
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
-        final String entity = response.getEntity();
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        HttpResponse response = executeOk(request);
+        String entity = extractResponse(response);
         // System.out.println("Response:\n" + entity);
         RestBasicEntity[] entities = KomodoJsonMarshaller.unmarshallArray(entity, RestBasicEntity[].class);
         assertEquals(12, entities.length);
@@ -302,9 +302,9 @@ public final class IT_KomodoSearchServiceTest extends AbstractKomodoServiceTest 
         properties.addProperty(SEARCH_SAVED_NAME_PARAMETER, searchNames.get(0));
         URI uri = _uriBuilder.searchUri(properties);
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
-        final String entity = response.getEntity();
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        HttpResponse response = executeOk(request);
+        String entity = extractResponse(response);
         // System.out.println("Response:\n" + entity);
         RestBasicEntity[] entities = KomodoJsonMarshaller.unmarshallArray(entity, RestBasicEntity[].class);
         assertEquals(4, entities.length);
@@ -325,9 +325,9 @@ public final class IT_KomodoSearchServiceTest extends AbstractKomodoServiceTest 
         KomodoProperties properties = new KomodoProperties();
         URI uri = _uriBuilder.savedSearchCollectionUri(properties);
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
-        final String entity = response.getEntity();
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        HttpResponse response = executeOk(request);
+        String entity = extractResponse(response);
         // System.out.println("Response:\n" + entity);
         KomodoSavedSearcher[] entities = KomodoJsonMarshaller.unmarshallArray(entity, KomodoSavedSearcher[].class);
         assertEquals(searchNames.size(), entities.length);
@@ -349,10 +349,10 @@ public final class IT_KomodoSearchServiceTest extends AbstractKomodoServiceTest 
         searchAttr.setSearchName(searchName);
         searchAttr.setType(VdbLexicon.Vdb.VIRTUAL_DATABASE);
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, searchAttr);
-        request.post(String.class);
+        executeOk(request);
 
         Repository repository = getRestApp().getDefaultRepository();
         UnitOfWork uow = repository.createTransaction(USER_NAME,
@@ -377,10 +377,10 @@ public final class IT_KomodoSearchServiceTest extends AbstractKomodoServiceTest 
         searchAttr.setSearchName(searchName);
         searchAttr.setType("{fromTypeParam}");
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, searchAttr);
-        request.post(String.class);
+        executeOk(request);
 
         Repository repository = getRestApp().getDefaultRepository();
         UnitOfWork uow = repository.createTransaction(USER_NAME,
@@ -403,9 +403,9 @@ public final class IT_KomodoSearchServiceTest extends AbstractKomodoServiceTest 
         String searchName = searchNames.get(0);
         uri = UriBuilder.fromUri(uri).path(searchName).build();
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpDelete request = jsonRequest(uri, RequestType.DELETE);
         addJsonConsumeContentType(request);
-        request.delete(String.class);
+        execute(request);
 
         Repository repository = getRestApp().getDefaultRepository();
         UnitOfWork uow = repository.createTransaction(USER_NAME,
@@ -431,12 +431,13 @@ public final class IT_KomodoSearchServiceTest extends AbstractKomodoServiceTest 
         KomodoSearcherAttributes searchAttr = new KomodoSearcherAttributes();
         searchAttr.setContains("view");
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, searchAttr);
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
         // System.out.println("Response:\n" + entity);
 
         RestBasicEntity[] entities = KomodoJsonMarshaller.unmarshallArray(entity, RestBasicEntity[].class);
@@ -464,12 +465,13 @@ public final class IT_KomodoSearchServiceTest extends AbstractKomodoServiceTest 
         searchAttr.setType(VdbLexicon.Vdb.DECLARATIVE_MODEL);
         searchAttr.setContains("view");
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, searchAttr);
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
         // System.out.println("Response:\n" + entity);
 
         RestBasicEntity[] entities = KomodoJsonMarshaller.unmarshallArray(entity, RestBasicEntity[].class);
@@ -498,12 +500,13 @@ public final class IT_KomodoSearchServiceTest extends AbstractKomodoServiceTest 
         searchAttr.setParent(PORTFOLIO_DATA_PATH);
         searchAttr.setContains("view");
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, searchAttr);
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
         // System.out.println("Response:\n" + entity);
 
         RestBasicEntity[] entities = KomodoJsonMarshaller.unmarshallArray(entity, RestBasicEntity[].class);
@@ -531,14 +534,15 @@ public final class IT_KomodoSearchServiceTest extends AbstractKomodoServiceTest 
         KomodoSearcherAttributes searchAttr = new KomodoSearcherAttributes();
         searchAttr.setPath(PORTFOLIO_DATA_PATH);
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, searchAttr);
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
         System.out.println("Response:\n" + entity);
-        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
 
         RestBasicEntity[] entities = KomodoJsonMarshaller.unmarshallArray(entity, RestBasicEntity[].class);
         assertEquals(1, entities.length);
@@ -561,12 +565,13 @@ public final class IT_KomodoSearchServiceTest extends AbstractKomodoServiceTest 
         KomodoSearcherAttributes searchAttr = new KomodoSearcherAttributes();
         searchAttr.setParent(PORTFOLIO_DATA_PATH);
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, searchAttr);
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
         // System.out.println("Response:\n" + entity);
         RestBasicEntity[] entities = KomodoJsonMarshaller.unmarshallArray(entity, RestBasicEntity[].class);
         assertEquals(5, entities.length);
@@ -588,12 +593,13 @@ public final class IT_KomodoSearchServiceTest extends AbstractKomodoServiceTest 
         KomodoSearcherAttributes searchAttr = new KomodoSearcherAttributes();
         searchAttr.setAncestor(PORTFOLIO_DATA_PATH);
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, searchAttr);
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
         // System.out.println("Response:\n" + entity);
         RestBasicEntity[] entities = KomodoJsonMarshaller.unmarshallArray(entity, RestBasicEntity[].class);
         assertEquals(110, entities.length);
@@ -610,12 +616,13 @@ public final class IT_KomodoSearchServiceTest extends AbstractKomodoServiceTest 
         KomodoSearcherAttributes searchAttr = new KomodoSearcherAttributes();
         searchAttr.setType(TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, searchAttr);
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
         System.out.println("Response:\n" + entity);
         RestBasicEntity[] entities = KomodoJsonMarshaller.unmarshallArray(entity, RestBasicEntity[].class);
         assertEquals(38, entities.length);
@@ -637,12 +644,13 @@ public final class IT_KomodoSearchServiceTest extends AbstractKomodoServiceTest 
         KomodoSearcherAttributes searchAttr = new KomodoSearcherAttributes();
         searchAttr.setType(KomodoType.COLUMN.getType());
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, searchAttr);
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
         // System.out.println("Response:\n" + entity);
         RestBasicEntity[] entities = KomodoJsonMarshaller.unmarshallArray(entity, RestBasicEntity[].class);
         assertEquals(38, entities.length);
@@ -665,12 +673,13 @@ public final class IT_KomodoSearchServiceTest extends AbstractKomodoServiceTest 
         searchAttr.setType(KomodoType.COLUMN.getType());
         searchAttr.setObjectName("%ID%");
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, searchAttr);
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
         // System.out.println("Response:\n" + entity);
         RestBasicEntity[] entities = KomodoJsonMarshaller.unmarshallArray(entity, RestBasicEntity[].class);
         assertEquals(12, entities.length);
@@ -695,12 +704,13 @@ public final class IT_KomodoSearchServiceTest extends AbstractKomodoServiceTest 
         KomodoSearcherAttributes searchAttr = new KomodoSearcherAttributes();
         searchAttr.setSearchName(searchNames.get(0));
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, searchAttr);
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
         // System.out.println("Response:\n" + entity);
         RestBasicEntity[] entities = KomodoJsonMarshaller.unmarshallArray(entity, RestBasicEntity[].class);
         assertEquals(4, entities.length);
@@ -725,14 +735,15 @@ public final class IT_KomodoSearchServiceTest extends AbstractKomodoServiceTest 
         searchAttr.setSearchName(searchNames.get(2));
         searchAttr.setParameter("valueParam", "%_ID");
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, searchAttr);
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
         // System.out.println("Response:\n" + entity);
         RestBasicEntity[] entities = KomodoJsonMarshaller.unmarshallArray(entity, RestBasicEntity[].class);
         assertEquals(12, entities.length);
@@ -756,13 +767,14 @@ public final class IT_KomodoSearchServiceTest extends AbstractKomodoServiceTest 
         KomodoSearcherAttributes searchAttr = new KomodoSearcherAttributes();
         searchAttr.setSearchName(searchNames.get(2));
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, searchAttr);
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
+        
+        assertResponse(response, HttpStatus.SC_FORBIDDEN);
 
-        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), response.getStatus());
-        final String entity = response.getEntity();
+        String entity = extractResponse(response);
         System.out.println("Response:\n" + entity);
         assertTrue(entity.contains("An error occurred whilst searching the workspace: " +
                             "Search requires the parameter valueParam but has not been provided a value"));
@@ -781,12 +793,13 @@ public final class IT_KomodoSearchServiceTest extends AbstractKomodoServiceTest 
         searchAttr.setSearchName(searchNames.get(3));
         searchAttr.setParameter("fromTypeParam", "Vdb");
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, searchAttr);
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
         // System.out.println("Response:\n" + entity);
         RestBasicEntity[] entities = KomodoJsonMarshaller.unmarshallArray(entity, RestBasicEntity[].class);
         assertEquals(4, entities.length);

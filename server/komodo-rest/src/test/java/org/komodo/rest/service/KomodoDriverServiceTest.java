@@ -28,21 +28,19 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import java.net.URI;
-import javax.ws.rs.core.MediaType;
-import org.jboss.resteasy.client.ClientRequest;
-import org.jboss.resteasy.client.ClientResponse;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
-import org.komodo.rest.relational.AbstractKomodoServiceTest;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.response.RestConnectionDriver;
 
-@SuppressWarnings( {"javadoc", "nls", "deprecation"} )
-public final class IT_KomodoDriverServiceTest extends AbstractKomodoServiceTest {
+@SuppressWarnings( {"javadoc", "nls"} )
+public class KomodoDriverServiceTest extends AbstractKomodoServiceTest {
 
-    public static final String DRIVER_NAME = "MyDriver"; 
+    public static String DRIVER_NAME = "MyDriver"; 
     
     @Rule
     public TestName testName = new TestName();
@@ -54,12 +52,13 @@ public final class IT_KomodoDriverServiceTest extends AbstractKomodoServiceTest 
 
         // get
         URI uri = _uriBuilder.workspaceDriversUri();
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        HttpResponse response = executeOk(request);
 
-        assertNotNull(response.getEntity());
 
-        final String entities = response.getEntity();
+        String entities = extractResponse(response);
+        assertNotNull(entities);
+        
         assertThat(entities, is(notNullValue()));
 
         // System.out.println("Response:\n" + entities);
@@ -74,10 +73,11 @@ public final class IT_KomodoDriverServiceTest extends AbstractKomodoServiceTest 
     @Test
     public void shouldReturnEmptyListWhenNoDriversInWorkspace() throws Exception {
         URI uri = _uriBuilder.workspaceDriversUri();
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
         assertThat(entity, is(notNullValue()));
 
         //System.out.println("Response:\n" + entity);

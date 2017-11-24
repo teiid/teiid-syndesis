@@ -21,36 +21,30 @@
  */
 package org.komodo.rest.service;
 
-import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Map;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
-import org.jboss.resteasy.client.ClientRequest;
-import org.jboss.resteasy.client.ClientResponse;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
 import org.komodo.rest.cors.CorsHeaders;
-import org.komodo.rest.relational.AbstractKomodoServiceTest;
 import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.response.KomodoStatusObject;
-import org.komodo.rest.service.KomodoUtilService;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.test.utils.TestUtilities;
 
 @SuppressWarnings( {"javadoc", "nls"} )
-public final class IT_KomodoUtilServiceTest extends AbstractKomodoServiceTest {
+public class KomodoUtilServiceTest extends AbstractKomodoServiceTest {
 
     private void loadSamples(String user) throws Exception {
         for (String sample : KomodoUtilService.SAMPLES) {
@@ -77,15 +71,11 @@ public final class IT_KomodoUtilServiceTest extends AbstractKomodoServiceTest {
                                                     .path(V1Constants.SERVICE_SEGMENT)
                                                     .path(V1Constants.ABOUT).build();
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpGet request = jsonRequest(uri, RequestType.GET);
         addHeader(request, CorsHeaders.ORIGIN, "http://localhost:2772");
+        HttpResponse response = executeOk(request);
 
-        ClientResponse<String> response = request.get(String.class);
-        
-
-        assertNotNull(response.getEntity());
-
-        final String entity = response.getEntity();
+        String entity = extractResponse(response);
         System.out.println("Response from uri " + uri + ":\n" + entity);
         for (String expected : EXPECTED) {
             assertTrue(entity.contains(expected));
@@ -99,31 +89,6 @@ public final class IT_KomodoUtilServiceTest extends AbstractKomodoServiceTest {
     }
 
     @Test
-    public void shouldReturnSwaggerSpec() throws Exception {
-
-        // get
-        URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
-                                                    .path("swagger.json").build();
-
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
-        assertNotNull(response.getEntity());
-
-        final String entity = response.getEntity();
-        assertThat( response.getStatus(), is( Response.Status.OK.getStatusCode() ) );
-        //System.out.println("Response from uri " + uri + ":\n" + entity);
-
-        assertTrue(entity.contains("\"swagger\" : \"2.0\""));
-        assertTrue(entity.contains("\"/service/about\""));
-        assertTrue(entity.contains("\"/service/samples\""));
-        assertTrue(entity.contains("\"/service/schema\""));
-        assertTrue(entity.contains("\"/workspace/vdbs\""));
-        assertTrue(entity.contains("\"/workspace/vdbs/{vdbName}\""));
-        assertTrue(entity.contains("\"keng__id\""));
-        assertTrue(entity.contains("\"keng__kType\""));
-    }
-
-    @Test
     public void shouldLoadSampleData() throws Exception {
 
         // get
@@ -131,11 +96,10 @@ public final class IT_KomodoUtilServiceTest extends AbstractKomodoServiceTest {
                                                     .path(V1Constants.SERVICE_SEGMENT)
                                                     .path(V1Constants.SAMPLE_DATA).build();
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.post(String.class);
-        assertNotNull(response.getEntity());
-
-        final String entity = response.getEntity();
+        HttpPost request = jsonRequest(uri, RequestType.POST);
+        HttpResponse response = executeOk(request);
+        
+        String entity = extractResponse(response);
         // System.out.println("Response from uri " + uri + ":\n" + entity);
 
         KomodoStatusObject status = KomodoJsonMarshaller.unmarshall(entity, KomodoStatusObject.class);
@@ -162,11 +126,10 @@ public final class IT_KomodoUtilServiceTest extends AbstractKomodoServiceTest {
                                                     .path(V1Constants.SERVICE_SEGMENT)
                                                     .path(V1Constants.SAMPLE_DATA).build();
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.post(String.class);
-        assertNotNull(response.getEntity());
+        HttpPost request = jsonRequest(uri, RequestType.POST);
+        HttpResponse response = executeOk(request);
 
-        final String entity = response.getEntity();
+        String entity = extractResponse(response);
         // System.out.println("Response from uri " + uri + ":\n" + entity);
 
         KomodoStatusObject status = KomodoJsonMarshaller.unmarshall(entity, KomodoStatusObject.class);
@@ -195,11 +158,10 @@ public final class IT_KomodoUtilServiceTest extends AbstractKomodoServiceTest {
                                                     .path(V1Constants.SCHEMA_SEGMENT)
                                                     .build();
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
-        assertNotNull(response.getEntity());
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        HttpResponse response = executeOk(request);
 
-        final String entity = response.getEntity();
+        String entity = extractResponse(response);
         System.out.println("Response from uri " + uri + ":\n" + entity);
 
         InputStream schemaStream = getClass().getResourceAsStream("teiid-schema.json");
@@ -225,11 +187,10 @@ public final class IT_KomodoUtilServiceTest extends AbstractKomodoServiceTest {
                                          .queryParam(KomodoService.QueryParamKeys.KTYPE, KomodoType.MODEL)
                                          .build();
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
-        assertNotNull(response.getEntity());
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        HttpResponse response = executeOk(request);
 
-        String entity = response.getEntity();
+        String entity = extractResponse(response);
         System.out.println("Response from uri " + uri + ":\n" + entity);
 
         assertFalse(entity.contains("\"schema-1\" : {"));
@@ -252,11 +213,10 @@ public final class IT_KomodoUtilServiceTest extends AbstractKomodoServiceTest {
                                   .queryParam(KomodoService.QueryParamKeys.KTYPE, KomodoType.VDB_DATA_ROLE)
                                   .build();
 
-        request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        response = request.get(String.class);
-        assertNotNull(response.getEntity());
+        request = jsonRequest(uri, RequestType.GET);
+        response = executeOk(request);
 
-        entity = response.getEntity();
+        entity = extractResponse(response);
 
         //System.out.println("Response from uri " + uri + ":\n" + entity);
 
@@ -280,11 +240,10 @@ public final class IT_KomodoUtilServiceTest extends AbstractKomodoServiceTest {
                                    queryParam(KomodoService.QueryParamKeys.KTYPE, KomodoType.VDB_MASK)
                                    .build();
 
-        request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        response = request.get(String.class);
-        assertNotNull(response.getEntity());
+        request = jsonRequest(uri, RequestType.GET);
+        response = executeOk(request);
 
-        entity = response.getEntity();
+        entity = extractResponse(response);
         //System.out.println("Response from uri " + uri + ":\n" + entity);
 
         assertFalse(entity.contains("\"schema-1\" : {"));
@@ -307,12 +266,11 @@ public final class IT_KomodoUtilServiceTest extends AbstractKomodoServiceTest {
                                    queryParam(KomodoService.QueryParamKeys.KTYPE, KomodoType.CONNECTION)
                                    .build();
 
-        request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        request = jsonRequest(uri, RequestType.GET);
         addJsonConsumeContentType(request);
-        response = request.get(String.class);
-        assertNotNull(response.getEntity());
+        response = executeOk(request);
 
-        entity = response.getEntity();
+        entity = extractResponse(response);
 //        System.out.println("Response from uri " + uri + ":\n" + entity);
 
         assertFalse(entity.contains("\"schema-1\" : {"));

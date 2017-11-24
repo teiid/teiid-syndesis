@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.rest.service;
+package org.komodo.rest.service.integration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -30,13 +30,11 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.Base64;
 import java.util.Map;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpPost;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.ClientRequest;
-import org.jboss.resteasy.client.ClientResponse;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
@@ -49,8 +47,8 @@ import org.komodo.test.utils.TestUtilities;
 import org.komodo.utils.FileUtils;
 
 @RunWith(Arquillian.class)
-@SuppressWarnings( {"javadoc", "nls", "deprecation"} )
-public final class IT_KomodoMetadataServiceDriverTests extends AbstractKomodoMetadataServiceTest implements StringConstants {
+@SuppressWarnings( {"javadoc", "nls"} )
+public class IT_KomodoMetadataServiceDriverTests extends AbstractKomodoMetadataServiceTest implements StringConstants {
 
     @Override
     protected int getTestTotalInClass() {
@@ -77,13 +75,11 @@ public final class IT_KomodoMetadataServiceDriverTests extends AbstractKomodoMet
         String content = Base64.getEncoder().encodeToString(driverBytes);
         fileAttr.setContent(content);
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        request.body(MediaType.APPLICATION_JSON_TYPE, fileAttr);
-        ClientResponse<String> response = request.post(String.class);
-        final String entity = response.getEntity();
+        HttpPost request = jsonRequest(uri, RequestType.POST);
+        addBody(request, fileAttr);
+        HttpResponse response = executeOk(request);
 
-        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-
+        String entity = extractResponse(response);
         KomodoStatusObject status = KomodoJsonMarshaller.unmarshall(entity, KomodoStatusObject.class);
         assertNotNull(status);
 
@@ -124,12 +120,11 @@ public final class IT_KomodoMetadataServiceDriverTests extends AbstractKomodoMet
                                             .path(MYSQL_DRIVER)
                                             .build();
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.delete(String.class);
-        final String entity = response.getEntity();
+        HttpDelete request = jsonRequest(uri, RequestType.DELETE);
+        HttpResponse response = executeOk(request);
 
-        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-
+        
+        String entity = extractResponse(response);
         KomodoStatusObject status = KomodoJsonMarshaller.unmarshall(entity, KomodoStatusObject.class);
         assertNotNull(status);
 

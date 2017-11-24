@@ -27,36 +27,28 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-
 import java.net.URI;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
-
-import javax.ws.rs.core.MediaType;
-
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.ClientRequest;
-import org.jboss.resteasy.client.ClientResponse;
-import org.junit.Ignore;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
-import org.junit.runner.RunWith;
 import org.komodo.rest.RestLink.LinkType;
 import org.komodo.rest.RestProperty;
-import org.komodo.rest.relational.AbstractKomodoServiceTest;
 import org.komodo.rest.relational.KomodoRestUriBuilder.SettingNames;
 import org.komodo.rest.relational.connection.RestConnection;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.request.KomodoConnectionAttributes;
-import org.wildfly.swarm.arquillian.DefaultDeployment;
 
 @SuppressWarnings( {"javadoc", "nls"} )
-@RunWith(Arquillian.class)
-public final class IT_KomodoConnectionServiceTest extends AbstractKomodoServiceTest {
+public class KomodoConnectionServiceTest extends AbstractKomodoServiceTest {
 
-    public static final String CONNECTION_NAME = "MyConnection"; 
+    public static String CONNECTION_NAME = "MyConnection"; 
     
     @Rule
     public TestName testName = new TestName();
@@ -67,12 +59,10 @@ public final class IT_KomodoConnectionServiceTest extends AbstractKomodoServiceT
 
         // get
         URI uri = _uriBuilder.workspaceConnectionsUri();
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        HttpResponse response = executeOk(request);
 
-        assertNotNull(response.getEntity());
-
-        final String entities = response.getEntity();
+        String entities = extractResponse(response);
         assertThat(entities, is(notNullValue()));
 
         // System.out.println("Response:\n" + entities);
@@ -90,10 +80,10 @@ public final class IT_KomodoConnectionServiceTest extends AbstractKomodoServiceT
     @Test
     public void shouldReturnEmptyListWhenNoDataservicesInWorkspace() throws Exception {
         URI uri = _uriBuilder.workspaceDataservicesUri();
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        String entity = extractResponse(response);
         assertThat(entity, is(notNullValue()));
 
         //System.out.println("Response:\n" + entity);
@@ -112,13 +102,11 @@ public final class IT_KomodoConnectionServiceTest extends AbstractKomodoServiceT
         _uriBuilder.addSetting(settings, SettingNames.PARENT_PATH, _uriBuilder.workspaceConnectionsUri());
 
         URI uri = _uriBuilder.connectionUri(LinkType.SELF, settings);
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
-        assertThat(entity, is(notNullValue()));
-
-        System.out.println("Response:\n" + entity);
+        String entity = extractResponse(response);
+//        System.out.println("Response:\n" + entity);
 
         RestConnection connection = KomodoJsonMarshaller.unmarshall(entity, RestConnection.class);
         assertNotNull(connection);
@@ -133,7 +121,7 @@ public final class IT_KomodoConnectionServiceTest extends AbstractKomodoServiceT
         _uriBuilder.addSetting(settings, SettingNames.PARENT_PATH, _uriBuilder.workspaceConnectionsUri());
 
         URI uri = _uriBuilder.connectionUri(LinkType.SELF, settings);
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
 
         KomodoConnectionAttributes rcAttr = new KomodoConnectionAttributes();
         rcAttr.setJndi("jndi:/MySqlDS1");
@@ -143,9 +131,9 @@ public final class IT_KomodoConnectionServiceTest extends AbstractKomodoServiceT
         rcAttr.setParameter("password", "myPassword");
 
         addBody(request, rcAttr);
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = executeOk(request);
 
-        final String entity = response.getEntity();
+        String entity = extractResponse(response);
         assertThat(entity, is(notNullValue()));
         System.out.println("Response:\n" + entity);
 
@@ -179,7 +167,7 @@ public final class IT_KomodoConnectionServiceTest extends AbstractKomodoServiceT
         _uriBuilder.addSetting(settings, SettingNames.PARENT_PATH, _uriBuilder.workspaceConnectionsUri());
 
         URI uri = _uriBuilder.connectionUri(LinkType.SELF, settings);
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPut request = jsonRequest(uri, RequestType.PUT);
 
         KomodoConnectionAttributes rcAttr = new KomodoConnectionAttributes();
         rcAttr.setJndi("jndi:/MySqlDS1");
@@ -189,9 +177,9 @@ public final class IT_KomodoConnectionServiceTest extends AbstractKomodoServiceT
         rcAttr.setParameter("password", "myPassword");
 
         addBody(request, rcAttr);
-        ClientResponse<String> response = request.put(String.class);
+        HttpResponse response = executeOk(request);
 
-        final String entity = response.getEntity();
+        String entity = extractResponse(response);
         assertThat(entity, is(notNullValue()));
         System.out.println("Response:\n" + entity);
 

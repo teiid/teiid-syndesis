@@ -8,8 +8,8 @@
 function show_help {
 	echo "Usage: $0 [-d] [-s] [-q] [-h]"
 	echo "-d - enable maven debugging"
-	echo "-s - skip test execution"
-	echo "-q - skip integration test execution"
+	echo "-s - skip unit test execution"
+	echo "-q - execute integration test execution"
   echo ""
   echo "To passthrough additional arguments straight to maven, enter '--' followed by the extra arguments"
   exit 1
@@ -51,12 +51,12 @@ DEBUG=0
 #
 while getopts ":dhsq" opt;
 do
-	case $opt in
-	d) DEBUG=1 ;;
-	h) show_help ;;
-  s) SKIP=1 ;;
-  q) INT_SKIP=1 ;;
-	esac
+  case $opt in
+    d) DEBUG=1 ;;
+    h) show_help ;;
+    s) SKIP=1 ;;
+    q) INT_TEST=1 ;;
+  esac
 done
 shift "$(expr $OPTIND - 1)"
 
@@ -93,18 +93,17 @@ fi
 #
 if [ "${SKIP}" == "1" ]; then
   SKIP_FLAG="-DskipTests"
-  INTEGRATION_SKIP_FLAG="-Dintegration.skipTests=true"
 fi
 
-if [ "${INT_SKIP}" == "1" ]; then
-  INTEGRATION_SKIP_FLAG="-Dintegration.skipTests=true"
+if [ "${INT_TEST}" == "1" ]; then
+  INTEGRATION_TEST_FLAG="-Parquillian"
 fi
 
 #
 # Maven options
 # -D maven.repo.local : Assign the $LOCAL_REPO as the target repository
 #
-MVN_FLAGS="${MVN_FLAGS} -s settings.xml -Dmaven.repo.local=${LOCAL_REPO} ${SKIP_FLAG} ${INTEGRATION_SKIP_FLAG}"
+MVN_FLAGS="${MVN_FLAGS} -s settings.xml -Dmaven.repo.local=${LOCAL_REPO} ${SKIP_FLAG} ${INTEGRATION_TEST_FLAG}"
 
 echo "==============="
 
