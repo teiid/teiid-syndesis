@@ -32,10 +32,12 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
@@ -43,23 +45,20 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.treewalk.TreeWalk;
-import org.jboss.resteasy.client.ClientRequest;
-import org.jboss.resteasy.client.ClientResponse;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
-import org.komodo.rest.relational.AbstractKomodoServiceTest;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.response.ImportExportStatus;
 import org.komodo.rest.relational.response.KomodoStorageAttributes;
 import org.komodo.rest.relational.response.RestStorageType;
 import org.komodo.rest.relational.response.RestStorageTypeDescriptor;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
@@ -67,10 +66,8 @@ import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.test.utils.TestUtilities;
 import org.komodo.utils.FileUtils;
 import org.komodo.utils.StringUtils;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
 
-@SuppressWarnings({"deprecation"})
-public class IT_KomodoImportExportServiceTest extends AbstractKomodoServiceTest {
+public class KomodoImportExportServiceTest extends AbstractKomodoServiceTest {
 
     private File myGitDir;
 
@@ -159,11 +156,13 @@ public class IT_KomodoImportExportServiceTest extends AbstractKomodoServiceTest 
 
         KomodoStorageAttributes storageAttr = new KomodoStorageAttributes();
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, storageAttr);
-        ClientResponse<String> response = request.post(String.class);
-        final String entity = response.getEntity();
+        HttpResponse response = execute(request);
+
+        assertResponse(response, HttpStatus.SC_FORBIDDEN);
+        String entity = extractResponse(response);
 
         assertTrue(entity.contains("The storage type requested from the import export service is unsupported"));
     }
@@ -191,14 +190,15 @@ public class IT_KomodoImportExportServiceTest extends AbstractKomodoServiceTest 
 
         assertFalse(workspace.hasChild(uow, TestUtilities.PORTFOLIO_VDB_NAME));
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, storageAttr);
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
 
-        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        okResponse(response);
         ImportExportStatus status = KomodoJsonMarshaller.unmarshall(entity, ImportExportStatus.class);
         assertNotNull(status);
 
@@ -225,12 +225,13 @@ public class IT_KomodoImportExportServiceTest extends AbstractKomodoServiceTest 
         String tmpDirPath = System.getProperty("java.io.tmpdir");
         storageAttr.setParameter("files-home-path-property", tmpDirPath);
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, storageAttr);
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        assertResponse(response, HttpStatus.SC_FORBIDDEN);
+        String entity = extractResponse(response);
 
         assertTrue(entity.contains("No artifact could be found to export at path"));
     }
@@ -250,13 +251,13 @@ public class IT_KomodoImportExportServiceTest extends AbstractKomodoServiceTest 
         String tmpDirPath = System.getProperty("java.io.tmpdir");
         storageAttr.setParameter("files-home-path-property", tmpDirPath);
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, storageAttr);
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
-        assertNotNull(entity);
+        okResponse(response);
+        String entity = extractResponse(response);
 
         //
         // Test that the file storage connector really did export the vdb
@@ -314,14 +315,15 @@ public class IT_KomodoImportExportServiceTest extends AbstractKomodoServiceTest 
 
         assertFalse(workspace.hasChild(uow, dsName));
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, storageAttr);
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
         System.out.println(entity);
-        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
 
         ImportExportStatus status = KomodoJsonMarshaller.unmarshall(entity, ImportExportStatus.class);
         assertNotNull(status);
@@ -372,14 +374,15 @@ public class IT_KomodoImportExportServiceTest extends AbstractKomodoServiceTest 
 
         assertFalse(workspace.hasChild(uow, dsName));
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, storageAttr);
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
         System.out.println(entity);
-        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
 
         ImportExportStatus status = KomodoJsonMarshaller.unmarshall(entity, ImportExportStatus.class);
         assertNotNull(status);
@@ -425,14 +428,15 @@ public class IT_KomodoImportExportServiceTest extends AbstractKomodoServiceTest 
 
         assertFalse(workspace.hasChild(uow, dsName));
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, storageAttr);
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
         System.out.println(entity);
-        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
 
         ImportExportStatus status = KomodoJsonMarshaller.unmarshall(entity, ImportExportStatus.class);
         assertNotNull(status);
@@ -472,14 +476,13 @@ public class IT_KomodoImportExportServiceTest extends AbstractKomodoServiceTest 
         String tmpDirPath = System.getProperty("java.io.tmpdir");
         storageAttr.setParameter("files-home-path-property", tmpDirPath);
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, storageAttr);
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
-        assertNotNull(entity);
-        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        okResponse(response);
+        String entity = extractResponse(response);
 
         //
         // Test that the file storage connector really did export the data service
@@ -527,15 +530,14 @@ public class IT_KomodoImportExportServiceTest extends AbstractKomodoServiceTest 
         storageAttr.setParameter("author-name-property", "user");
         storageAttr.setParameter("author-email-property", "user@user.com");
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, storageAttr);
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
-        assertNotNull(entity);
+        okResponse(response);
+        String entity = extractResponse(response);
         System.out.println(entity);
-        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         ImportExportStatus status = KomodoJsonMarshaller.unmarshall(entity, ImportExportStatus.class);
         assertNotNull(status);
@@ -578,12 +580,12 @@ public class IT_KomodoImportExportServiceTest extends AbstractKomodoServiceTest 
                                         .path(V1Constants.IMPORT_EXPORT_SEGMENT)
                                         .path(V1Constants.STORAGE_TYPES).build();
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
-        final String entity = response.getEntity();
-        assertNotNull(entity);
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        HttpResponse response = execute(request);
+
+        okResponse(response);
+        String entity = extractResponse(response);
         System.out.println(entity);
-        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         RestStorageType[] entities = KomodoJsonMarshaller.unmarshallArray(entity, RestStorageType[].class);
         assertNotNull(entities);
@@ -630,14 +632,15 @@ public class IT_KomodoImportExportServiceTest extends AbstractKomodoServiceTest 
         String content = Base64.getEncoder().encodeToString(patientsDdlCnt.getBytes());
         storageAttr.setContent(content);
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, storageAttr);
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
 
-        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
         ImportExportStatus status = KomodoJsonMarshaller.unmarshall(entity, ImportExportStatus.class);
         assertNotNull(status);
 

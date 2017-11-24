@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.rest.service;
+package org.komodo.rest.service.integration;
 
 import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Test;
@@ -28,7 +28,7 @@ import org.komodo.spi.constants.StringConstants;
 
 @RunWith(Arquillian.class)
 @SuppressWarnings( {"javadoc", "nls"} )
-public final class IT_KomodoMetadataServiceDataServiceTests extends AbstractKomodoMetadataServiceTest implements StringConstants {
+public class IT_KomodoMetadataServiceDataServiceTests extends AbstractKomodoMetadataServiceTest implements StringConstants {
 
     @Override
     protected int getTestTotalInClass() {

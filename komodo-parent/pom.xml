@@ -130,7 +130,7 @@
 		<!-- The version of jgit -->
 		<version.jgit>4.4.1.201607150455-r</version.jgit>
 
-		<version.wildfly>3.0.1.Final</version.wildfly>
+		<version.wildfly>2.2.1.Final</version.wildfly>
 
 		<version.aesh>0.33.12.redhat-1</version.aesh>
 		<version.org.jboss.dmr>1.3.0.Final</version.org.jboss.dmr>
@@ -439,23 +439,7 @@
 		      <version>1.1.10.Final</version>
 		      <type>pom</type>
 		      <scope>import</scope>
-		    </dependency>	
-		    			
-<!-- 			<dependency>
-				<groupId>org.jboss.resteasy</groupId>
-				<artifactId>resteasy-jaxrs</artifactId>
-				<version>${version.resteasy}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.resteasy</groupId>
-				<artifactId>jaxrs-api</artifactId>
-				<version>${version.resteasy}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.resteasy</groupId>
-				<artifactId>resteasy-jackson-provider</artifactId>
-				<version>${version.resteasy}</version>
-			</dependency> -->
+		    </dependency>
 
 			<dependency>
 				<groupId>commons-codec</groupId>
@@ -516,6 +500,11 @@
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-databind</artifactId>
+				<version>${version.com.fasterxml.jackson}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.dataformat</groupId>
+				<artifactId>jackson-dataformat-yaml</artifactId>
 				<version>${version.com.fasterxml.jackson}</version>
 			</dependency>
 			<dependency>
@@ -703,20 +692,6 @@
 	</build>
 
 	<repositories>
-		<repository>
-			<id>releases</id>
-			<name>jboss releases</name>
-			<url>https://repository.jboss.org</url>
-			<layout>default</layout>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-				<updatePolicy>never</updatePolicy>
-			</snapshots>
-		</repository>
-	</repositories>
 
 	<profiles>
 		<profile>
@@ -738,7 +713,7 @@
 					</releases>
 					<snapshots>
 						<enabled>true</enabled>
-						<updatePolicy>always</updatePolicy>
+						<updatePolicy>daily</updatePolicy>
 					</snapshots>
 				</repository>
 			</repositories>
@@ -754,7 +729,7 @@
 					</releases>
 					<snapshots>
 						<enabled>true</enabled>
-						<updatePolicy>always</updatePolicy>
+						<updatePolicy>daily</updatePolicy>
 					</snapshots>
 				</pluginRepository>
 			</pluginRepositories>
