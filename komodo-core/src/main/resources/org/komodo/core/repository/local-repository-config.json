@@ -25,6 +25,9 @@
             "minimumStringSize" : 4096,
             "directory": "${komodo.dataDir}/storage/content/binaries",
             "type" : "file"
+        },
+        "transactionManagerLookup" : {
+            "name" : "org.komodo.core.internal.repository.KTransactionManagerLookup" 
         }
     },
     "indexProviders" : {
