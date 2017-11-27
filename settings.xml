@@ -26,11 +26,6 @@
             <updatePolicy>never</updatePolicy>
           </snapshots>
         </repository>
-        <repository>
-          <id>nexus-central-repo</id>
-          <name>Central repository</name>
-          <url>https://repository.jboss.org/nexus/content/repositories/central/</url>
-        </repository>
       </repositories>
       <pluginRepositories>
         <pluginRepository>
@@ -170,6 +165,7 @@
           </releases>
           <snapshots>
             <enabled>false</enabled>
+			<updatePolicy>daily</updatePolicy>
           </snapshots>
         </repository>
       </repositories>
@@ -184,9 +180,11 @@
           <layout>default</layout>
           <releases>
             <enabled>false</enabled>
+			<updatePolicy>never</updatePolicy>
           </releases>
           <snapshots>
             <enabled>true</enabled>
+			<updatePolicy>daily</updatePolicy>
           </snapshots>
         </repository>
       </repositories>
@@ -201,10 +199,11 @@
           <layout>default</layout>
           <releases>
             <enabled>true</enabled>
-            <updatePolicy>always</updatePolicy>
+            <updatePolicy>never</updatePolicy>
           </releases>
           <snapshots>
             <enabled>true</enabled>
+			<updatePolicy>daily</updatePolicy>
           </snapshots>
         </repository>
       </repositories>
@@ -217,7 +216,7 @@
     <activeProfile>jboss-public-repository</activeProfile>
     <activeProfile>jboss-developer-repository</activeProfile>
     <activeProfile>jboss-earlyaccess</activeProfile>
-    <activeProfile>jboss-snapshots-repository</activeProfile>
+    <!--activeProfile>jboss-snapshots-repository</activeProfile-->
     <activeProfile>eclipse</activeProfile>
   </activeProfiles>
 </settings>

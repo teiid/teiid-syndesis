@@ -25,7 +25,6 @@ import java.io.ByteArrayInputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
-
 import org.komodo.metadata.TeiidConnectionProvider;
 import org.komodo.spi.metadata.MetadataInstance.ConnectivityType;
 import org.komodo.spi.outcome.Outcome;
@@ -49,9 +48,23 @@ public class TeiidSwarmConnectionProvider implements TeiidConnectionProvider {
 	private Admin admin;
 	
 	public TeiidSwarmConnectionProvider() throws AdminException {
-		this.admin = AdminFactory.getInstance().createAdmin("localhost", 9990, "admin", "admin".toCharArray());
+		connect();
 	}
-	
+
+    protected synchronized void connect() throws AdminException {
+        if (admin != null)
+            return;
+
+        this.admin = AdminFactory.getInstance().createAdmin("localhost", 9990, "admin", "admin".toCharArray());
+    }
+
+    protected synchronized void disconnect() throws AdminException {
+        if (this.admin != null) {
+            this.admin.close();
+            this.admin = null;
+        }
+    }
+    
 	@Override
 	public Admin getAdmin() throws AdminException {
 		return admin;
@@ -78,6 +91,20 @@ public class TeiidSwarmConnectionProvider implements TeiidConnectionProvider {
 		return OutcomeFactory.getInstance().createOK();
 	}
 	
+	@Override
+	public void reconnect() throws Exception {
+	    disconnect();
+
+	    //
+	    // Give disconnect and teiid connection time to clear up
+	    //
+	    Thread.sleep(500);
+
+	    // Refresh is implied in the getting of the admin object since it will
+	    // automatically load and refresh.
+	    connect();
+	}
+
 	@Override
 	public void onStart() {
 		try {
