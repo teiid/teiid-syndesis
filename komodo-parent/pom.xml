@@ -691,8 +691,6 @@
 		</plugins>
 	</build>
 
-	<repositories>
-
 	<profiles>
 		<profile>
 			<id>my-local-repository</id>
