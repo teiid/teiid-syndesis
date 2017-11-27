@@ -34,11 +34,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
-import org.jboss.resteasy.client.ClientRequest;
-import org.jboss.resteasy.client.ClientResponse;
-import org.junit.Ignore;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -46,7 +46,6 @@ import org.komodo.relational.ViewBuilderCriteriaPredicate;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.RestLink;
 import org.komodo.rest.RestLink.LinkType;
-import org.komodo.rest.relational.AbstractKomodoServiceTest;
 import org.komodo.rest.relational.KomodoRestUriBuilder.SettingNames;
 import org.komodo.rest.relational.connection.RestConnection;
 import org.komodo.rest.relational.dataservice.RestDataservice;
@@ -58,9 +57,9 @@ import org.komodo.rest.relational.response.RestVdb;
 import org.komodo.test.utils.TestUtilities;
 
 @SuppressWarnings( {"javadoc", "nls"} )
-public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoServiceTest {
+public class KomodoDataserviceServiceTest extends AbstractKomodoServiceTest {
 
-    public static final String DATASERVICE_NAME = "MyDataService"; 
+    public static String DATASERVICE_NAME = "MyDataService"; 
     
     @Rule
     public TestName testName = new TestName();
@@ -71,12 +70,11 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
 
         // get
         URI uri = _uriBuilder.workspaceDataservicesUri();
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        HttpResponse response = execute(request);
 
-        assertNotNull(response.getEntity());
-
-        final String entities = response.getEntity();
+        okResponse(response);
+        String entities = extractResponse(response);
         assertThat(entities, is(notNullValue()));
 
         // make sure the Dataservice JSON document is returned for each dataservice
@@ -93,10 +91,12 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
     @Test
     public void shouldReturnEmptyListWhenNoDataservicesInWorkspace() throws Exception {
         URI uri = _uriBuilder.workspaceDataservicesUri();
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
+        
         assertThat(entity, is(notNullValue()));
 
         RestDataservice[] dataservices = KomodoJsonMarshaller.unmarshallArray(entity, RestDataservice[].class);
@@ -113,10 +113,11 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
         _uriBuilder.addSetting(settings, SettingNames.DATA_SERVICE_PARENT_PATH, _uriBuilder.workspaceDataservicesUri());
 
         URI uri = _uriBuilder.dataserviceUri(LinkType.SELF, settings);
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
         assertThat(entity, is(notNullValue()));
 
         RestDataservice dataservice = KomodoJsonMarshaller.unmarshall(entity, RestDataservice.class);
@@ -135,10 +136,11 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
         _uriBuilder.addSetting(settings, SettingNames.DATA_SERVICE_PARENT_PATH, _uriBuilder.workspaceDataservicesUri());
 
         URI uri = _uriBuilder.dataserviceUri(LinkType.CONNECTIONS, settings);
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
         assertThat(entity, is(notNullValue()));
 
         System.out.println("Response:\n" + entity);
@@ -177,10 +179,11 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
         _uriBuilder.addSetting(settings, SettingNames.DATA_SERVICE_PARENT_PATH, _uriBuilder.workspaceDataservicesUri());
 
         URI uri = _uriBuilder.dataserviceUri(LinkType.DRIVERS, settings);
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
         assertThat(entity, is(notNullValue()));
 
         System.out.println("Response:\n" + entity);
@@ -203,10 +206,11 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
         _uriBuilder.addSetting(settings, SettingNames.DATA_SERVICE_PARENT_PATH, _uriBuilder.workspaceDataservicesUri());
 
         URI uri = _uriBuilder.dataserviceUri(LinkType.SERVICE_VIEW_INFO, settings);
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
         assertThat(entity, is(notNullValue()));
 
         RestDataserviceViewInfo[] viewInfos = KomodoJsonMarshaller.unmarshallArray(entity, RestDataserviceViewInfo[].class);
@@ -240,10 +244,11 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
         _uriBuilder.addSetting(settings, SettingNames.DATA_SERVICE_PARENT_PATH, _uriBuilder.workspaceDataservicesUri());
 
         URI uri = _uriBuilder.dataserviceUri(LinkType.SERVICE_VIEW_INFO, settings);
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
         assertThat(entity, is(notNullValue()));
 
         RestDataserviceViewInfo[] viewInfos = KomodoJsonMarshaller.unmarshallArray(entity, RestDataserviceViewInfo[].class);
@@ -288,10 +293,11 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
         _uriBuilder.addSetting(settings, SettingNames.DATA_SERVICE_PARENT_PATH, _uriBuilder.workspaceDataservicesUri());
 
         URI uri = _uriBuilder.dataserviceUri(LinkType.SERVICE_VIEW_INFO, settings);
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
         assertThat(entity, is(notNullValue()));
 
         RestDataserviceViewInfo[] viewInfos = KomodoJsonMarshaller.unmarshallArray(entity, RestDataserviceViewInfo[].class);
@@ -337,10 +343,11 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
         _uriBuilder.addSetting(settings, SettingNames.DATA_SERVICE_PARENT_PATH, _uriBuilder.workspaceDataservicesUri());
 
         URI uri = _uriBuilder.dataserviceUri(LinkType.SOURCE_VDB_MATCHES, settings);
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
         assertThat(entity, is(notNullValue()));
 
         RestVdb[] vdbs = KomodoJsonMarshaller.unmarshallArray(entity, RestVdb[].class);
@@ -361,10 +368,11 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
         _uriBuilder.addSetting(settings, SettingNames.DATA_SERVICE_PARENT_PATH, _uriBuilder.workspaceDataservicesUri());
 
         URI uri = _uriBuilder.dataserviceUri(LinkType.SOURCE_VDB_MATCHES, settings);
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        ClientResponse<String> response = request.get(String.class);
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
         assertThat(entity, is(notNullValue()));
 
         RestVdb[] vdbs = KomodoJsonMarshaller.unmarshallArray(entity, RestVdb[].class);
@@ -385,13 +393,14 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
         updateAttr.setDataserviceName(DATASERVICE_NAME);
         updateAttr.setTablePath("/path/to/table");
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, updateAttr);
 
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        assertResponse(response, HttpStatus.SC_FORBIDDEN);
+        String entity = extractResponse(response);
         assertTrue(entity.contains("missing one or more required parameters"));
     }
 
@@ -409,13 +418,14 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
         updateAttr.setTablePath("/path/to/table");
         updateAttr.setModelSourcePath("/path/to/ModelSource");
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, updateAttr);
 
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        assertResponse(response, HttpStatus.SC_FORBIDDEN);
+        String entity = extractResponse(response);
         assertTrue(entity.contains("specified Table does not exist"));
     }
 
@@ -433,13 +443,14 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
         updateAttr.setModelSourcePath("tko:komodo/tko:workspace/"+USER_NAME+"/Portfolio/Accounts/vdb:sources/h2-connector");
         updateAttr.setViewDdl("CREATE VIEW blah blah");
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, updateAttr);
 
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        assertResponse(response, HttpStatus.SC_INTERNAL_SERVER_ERROR);
+        String entity = extractResponse(response);
         assertTrue(entity.contains("DDL Parsing encountered a problem"));
     }
 
@@ -456,13 +467,14 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
         updateAttr.setTablePath("tko:komodo/tko:workspace/"+USER_NAME+"/Portfolio/PersonalValuations/Sheet1");
         updateAttr.setModelSourcePath("tko:komodo/tko:workspace/"+USER_NAME+"/Portfolio/Accounts/vdb:sources/h2-connector");
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, updateAttr);
 
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
         assertTrue(entity.contains("Successfully updated"));
     }
     
@@ -481,13 +493,14 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
         updateAttr.setRhTablePath("/path/to/rhTable");
         updateAttr.setModelSourcePath("/path/to/lhModelSource");
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, updateAttr);
 
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        assertResponse(response, HttpStatus.SC_FORBIDDEN);
+        String entity = extractResponse(response);
         assertTrue(entity.contains("missing one or more required parameters"));
     }
 
@@ -509,13 +522,14 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
         updateAttr.setRhModelSourcePath("/path/to/rhModelSource");
         updateAttr.setViewDdl("CREATE VIEW blah blah");
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, updateAttr);
 
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        assertResponse(response, HttpStatus.SC_FORBIDDEN);
+        String entity = extractResponse(response);
         assertTrue(entity.contains("specified Table does not exist"));
     }
 
@@ -535,14 +549,15 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
         updateAttr.setRhModelSourcePath("tko:komodo/tko:workspace/"+USER_NAME+"/Portfolio/Accounts/vdb:sources/h2-connector");
         updateAttr.setViewDdl("CREATE VIEW blah blah");
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, updateAttr);
 
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
         // Bogus DDL results in an error
-        final String entity = response.getEntity();
+        assertResponse(response, HttpStatus.SC_INTERNAL_SERVER_ERROR);
+        String entity = extractResponse(response);
         assertTrue(entity.contains("DDL Parsing encountered a problem"));
     }
     
@@ -559,14 +574,15 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
         KomodoDataserviceUpdateAttributes updateAttr = new KomodoDataserviceUpdateAttributes();
         updateAttr.setDataserviceName(DATASERVICE_NAME);
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, updateAttr);
 
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
         // Bogus DDL results in an error
-        final String entity = response.getEntity();
+        assertResponse(response, HttpStatus.SC_FORBIDDEN);
+        String entity = extractResponse(response);
         assertTrue(entity.contains("missing one or more required parameters"));
     }
     
@@ -584,14 +600,15 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
         updateAttr.setDataserviceName(DATASERVICE_NAME);
         updateAttr.setTablePath("/path/to/table");
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, updateAttr);
 
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
         // Bogus DDL results in an error
-        final String entity = response.getEntity();
+        assertResponse(response, HttpStatus.SC_FORBIDDEN);
+        String entity = extractResponse(response);
         assertTrue(entity.contains("specified Table does not exist"));
     }
     
@@ -609,13 +626,14 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
         updateAttr.setDataserviceName(DATASERVICE_NAME);
         updateAttr.setTablePath("tko:komodo/tko:workspace/"+USER_NAME+"/Portfolio/PersonalValuations/Sheet1");
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, updateAttr);
 
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
         
         RestDataserviceViewInfo viewInfo = KomodoJsonMarshaller.unmarshall(entity, RestDataserviceViewInfo.class);
         assertEquals(RestDataserviceViewInfo.DDL_INFO, viewInfo.getInfoType());
@@ -638,13 +656,14 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
         updateAttr.setTablePath("/path/to/lhTable");
         updateAttr.setRhTablePath("/path/to/rhTable");
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, updateAttr);
 
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        assertResponse(response, HttpStatus.SC_FORBIDDEN);
+        String entity = extractResponse(response);
         assertTrue(entity.contains("missing one or more required parameters"));
     }
 
@@ -663,13 +682,14 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
         updateAttr.setRhTablePath("/path/to/rhTable");
         updateAttr.setJoinType("INNER");
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, updateAttr);
 
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        assertResponse(response, HttpStatus.SC_FORBIDDEN);
+        String entity = extractResponse(response);
         assertTrue(entity.contains("specified Table does not exist"));
     }
     
@@ -688,13 +708,14 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
         updateAttr.setRhTablePath("tko:komodo/tko:workspace/"+USER_NAME+"/Portfolio/PersonalValuations/Sheet1");
         updateAttr.setJoinType("INNER");
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, updateAttr);
 
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
         
         RestDataserviceViewInfo viewInfo = KomodoJsonMarshaller.unmarshall(entity, RestDataserviceViewInfo.class);
         assertEquals(RestDataserviceViewInfo.DDL_INFO, viewInfo.getInfoType());
@@ -711,16 +732,15 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
         createDataservice( DATASERVICE_NAME );
 
         // try and validate the same name of an existing data service
-        final URI dsUri = _uriBuilder.workspaceDataservicesUri();
-        final URI uri = UriBuilder.fromUri( dsUri )
+        URI dsUri = _uriBuilder.workspaceDataservicesUri();
+        URI uri = UriBuilder.fromUri( dsUri )
                                   .path( V1Constants.NAME_VALIDATION_SEGMENT )
                                   .path( DATASERVICE_NAME )
                                   .build();
-        final ClientRequest request = request( uri, MediaType.TEXT_PLAIN_TYPE );
-        final ClientResponse< String > response = request.get( String.class );
-        assertThat( response.getStatus(), is( Response.Status.OK.getStatusCode() ) );
+        HttpGet request = request(uri, RequestType.GET, MediaType.TEXT_PLAIN_TYPE );
+        HttpResponse response = executeOk(request);
 
-        final String errorMsg = response.getEntity();
+        String errorMsg = extractResponse(response);
         assertThat( errorMsg, is( notNullValue() ) );
     }
 
@@ -730,125 +750,119 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
         createVdb( DATASERVICE_NAME );
 
         // try and validate the same name of an existing data service
-        final URI dsUri = _uriBuilder.workspaceDataservicesUri();
-        final URI uri = UriBuilder.fromUri( dsUri )
+        URI dsUri = _uriBuilder.workspaceDataservicesUri();
+        URI uri = UriBuilder.fromUri( dsUri )
                                   .path( V1Constants.NAME_VALIDATION_SEGMENT )
                                   .path( DATASERVICE_NAME )
                                   .build();
-        final ClientRequest request = request( uri, MediaType.TEXT_PLAIN_TYPE );
-        final ClientResponse< String > response = request.get( String.class );
-        assertThat( response.getStatus(), is( Response.Status.OK.getStatusCode() ) );
+        HttpGet request = request(uri, RequestType.GET, MediaType.TEXT_PLAIN_TYPE );
+        HttpResponse response = executeOk(request);
 
-        final String errorMsg = response.getEntity();
+        String errorMsg = extractResponse(response);
         assertThat( errorMsg, is( notNullValue() ) );
         assertThat( errorMsg.isEmpty(), is( false ) );
     }
 
     @Test
     public void shouldFailNameValidationWhenNameHasInvalidCharacters() throws Exception {
-        final URI dsUri = _uriBuilder.workspaceDataservicesUri();
-        final URI uri = UriBuilder.fromUri( dsUri )
+        URI dsUri = _uriBuilder.workspaceDataservicesUri();
+        URI uri = UriBuilder.fromUri( dsUri )
                                   .path( V1Constants.NAME_VALIDATION_SEGMENT )
                                   .path( "InvalidN@me" )
                                   .build();
-        final ClientRequest request = request( uri, MediaType.TEXT_PLAIN_TYPE );
-        final ClientResponse< String > response = request.get( String.class );
-        assertThat( response.getStatus(), is( Response.Status.OK.getStatusCode() ) );
+        HttpGet request = request(uri, RequestType.GET, MediaType.TEXT_PLAIN_TYPE );
+        HttpResponse response = executeOk(request);
 
-        final String errorMsg = response.getEntity();
+        String errorMsg = extractResponse(response);
         assertThat( errorMsg, is( notNullValue() ) );
         assertThat( errorMsg.isEmpty(), is( false ) );
     }
 
     @Test
     public void shouldFailNameValidationWhenNameIsEmpty() throws Exception {
-        final URI dsUri = _uriBuilder.workspaceDataservicesUri();
-        final URI uri = UriBuilder.fromUri( dsUri )
+        URI dsUri = _uriBuilder.workspaceDataservicesUri();
+        URI uri = UriBuilder.fromUri( dsUri )
                                   .path( V1Constants.NAME_VALIDATION_SEGMENT )
                                   .path( "" )
                                   .build();
-        final ClientRequest request = request( uri, MediaType.TEXT_PLAIN_TYPE );
-        final ClientResponse< String > response = request.get( String.class );
-        assertThat( response.getStatus(), is( Response.Status.INTERNAL_SERVER_ERROR.getStatusCode() ) );
+        HttpGet request = request(uri, RequestType.GET, MediaType.TEXT_PLAIN_TYPE );
+        HttpResponse response = execute(request);
+        assertThat( response.getStatusLine().getStatusCode(), is( HttpStatus.SC_INTERNAL_SERVER_ERROR) );
 
-        final String errorMsg = response.getEntity();
+        String errorMsg = extractResponse(response);
         assertThat( errorMsg, startsWith( "RESTEASY" ) );
     }
 
     @Test
     public void shouldFailNameValidationWhenNameHasSpaces() throws Exception {
-        final URI dsUri = _uriBuilder.workspaceDataservicesUri();
-        final URI uri = UriBuilder.fromUri( dsUri )
+        URI dsUri = _uriBuilder.workspaceDataservicesUri();
+        URI uri = UriBuilder.fromUri( dsUri )
                                   .path( V1Constants.NAME_VALIDATION_SEGMENT )
                                   .path( "a b c" )
                                   .build();
-        final ClientRequest request = request( uri, MediaType.TEXT_PLAIN_TYPE );
-        final ClientResponse< String > response = request.get( String.class );
-        assertThat( response.getStatus(), is( Response.Status.OK.getStatusCode() ) );
+        HttpGet request = request(uri, RequestType.GET, MediaType.TEXT_PLAIN_TYPE );
+        HttpResponse response = executeOk(request);
 
-        final String errorMsg = response.getEntity();
+        String errorMsg = extractResponse(response);
         assertThat( errorMsg, is( notNullValue() ) );
         assertThat( errorMsg.isEmpty(), is( false ) );
     }
 
     @Test
     public void shouldFailNameValidationWhenNameHasBackslash() throws Exception {
-        final URI dsUri = _uriBuilder.workspaceDataservicesUri();
-        final URI uri = UriBuilder.fromUri( dsUri )
+        URI dsUri = _uriBuilder.workspaceDataservicesUri();
+        URI uri = UriBuilder.fromUri( dsUri )
                                   .path( V1Constants.NAME_VALIDATION_SEGMENT )
                                   .path( "\\" )
                                   .build();
-        final ClientRequest request = request( uri, MediaType.TEXT_PLAIN_TYPE );
-        final ClientResponse< String > response = request.get( String.class );
-        assertThat( response.getStatus(), is( Response.Status.OK.getStatusCode() ) );
+        HttpGet request = request(uri, RequestType.GET, MediaType.TEXT_PLAIN_TYPE );
+        HttpResponse response = executeOk(request);
 
-        final String errorMsg = response.getEntity();
+        String errorMsg = extractResponse(response);
         assertThat( errorMsg, is( notNullValue() ) );
         assertThat( errorMsg.isEmpty(), is( false ) );
     }
 
     @Test
     public void shouldFailNameValidationWhenNameHasSpecialChars() throws Exception {
-        final URI dsUri = _uriBuilder.workspaceDataservicesUri();
-        final URI uri = UriBuilder.fromUri( dsUri )
+        URI dsUri = _uriBuilder.workspaceDataservicesUri();
+        URI uri = UriBuilder.fromUri( dsUri )
                                   .path( V1Constants.NAME_VALIDATION_SEGMENT )
                                   .path( "a#" )
                                   .build();
-        final ClientRequest request = request( uri, MediaType.TEXT_PLAIN_TYPE );
-        final ClientResponse< String > response = request.get( String.class );
-        assertThat( response.getStatus(), is( Response.Status.OK.getStatusCode() ) );
+        HttpGet request = request(uri, RequestType.GET, MediaType.TEXT_PLAIN_TYPE );
+        HttpResponse response = executeOk(request);
 
-        final String errorMsg = response.getEntity();
+        String errorMsg = extractResponse(response);
         assertThat( errorMsg, is( notNullValue() ) );
         assertThat( errorMsg.isEmpty(), is( false ) );
     }
 
     @Test
     public void shouldFailNameValidationWhenMissingNameSegment() throws Exception {
-        final URI dsUri = _uriBuilder.workspaceDataservicesUri();
-        final URI uri = UriBuilder.fromUri( dsUri )
+        URI dsUri = _uriBuilder.workspaceDataservicesUri();
+        URI uri = UriBuilder.fromUri( dsUri )
                                   .path( V1Constants.NAME_VALIDATION_SEGMENT )
                                   .build();
-        final ClientRequest request = request( uri, MediaType.TEXT_PLAIN_TYPE );
-        final ClientResponse< String > response = request.get( String.class );
-        assertThat( response.getStatus(), is( Response.Status.INTERNAL_SERVER_ERROR.getStatusCode() ) );
+        HttpGet request = request(uri, RequestType.GET, MediaType.TEXT_PLAIN_TYPE );
+        HttpResponse response = execute(request);
+        assertThat( response.getStatusLine().getStatusCode(), is( HttpStatus.SC_INTERNAL_SERVER_ERROR) );
 
-        final String errorMsg = response.getEntity();
+        String errorMsg = extractResponse(response);
         assertThat( errorMsg, startsWith( "RESTEASY" ) );
     }
 
     @Test
     public void shouldValidateName() throws Exception {
-        final URI dsUri = _uriBuilder.workspaceDataservicesUri();
-        final URI uri = UriBuilder.fromUri( dsUri )
+        URI dsUri = _uriBuilder.workspaceDataservicesUri();
+        URI uri = UriBuilder.fromUri( dsUri )
                                   .path( V1Constants.NAME_VALIDATION_SEGMENT )
                                   .path( "ValidName" )
                                   .build();
-        final ClientRequest request = request( uri, MediaType.TEXT_PLAIN_TYPE );
-        final ClientResponse< String > response = request.get( String.class );
-        assertThat( response.getStatus(), is( Response.Status.OK.getStatusCode() ) );
+        HttpGet request = request(uri, RequestType.GET, MediaType.TEXT_PLAIN_TYPE );
+        HttpResponse response = executeOk(request);
 
-        final String errorMsg = response.getEntity();
+        String errorMsg = extractResponse(response);
         assertThat( errorMsg, is( "" ) ); // no error message since name was valid
     }
 
@@ -864,13 +878,14 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
         KomodoDataserviceUpdateAttributes updateAttr = new KomodoDataserviceUpdateAttributes();
         updateAttr.setTablePath("/path/to/lhTable");
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, updateAttr);
 
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        assertResponse(response, HttpStatus.SC_FORBIDDEN);
+        String entity = extractResponse(response);
         assertTrue(entity.contains("missing one or more required parameters"));
     }
 
@@ -887,13 +902,14 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
         updateAttr.setTablePath("/path/to/lhTable");
         updateAttr.setRhTablePath("/path/to/rhTable");
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, updateAttr);
 
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        assertResponse(response, HttpStatus.SC_FORBIDDEN);
+        String entity = extractResponse(response);
         assertTrue(entity.contains("specified Table does not exist"));
     }
     
@@ -911,13 +927,14 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
         updateAttr.setTablePath("tko:komodo/tko:workspace/"+USER_NAME+"/MyPartsVDB_Dynamic/PartsSS/PARTS");
         updateAttr.setRhTablePath("tko:komodo/tko:workspace/"+USER_NAME+"/MyPartsVDB_Dynamic/PartsSS/STATUS");
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, updateAttr);
 
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
         
         // Info is returned but the criteria is empty, since there are no table pk-fk relationships
         assertThat(entity, is(notNullValue()));
@@ -941,13 +958,14 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
         updateAttr.setTablePath("tko:komodo/tko:workspace/"+USER_NAME+"/MyPartsVDB_Dynamic/PartsSS/PARTS");
         updateAttr.setRhTablePath("tko:komodo/tko:workspace/"+USER_NAME+"/MyPartsVDB_Dynamic/PartsSS/SUPPLIER_PARTS");
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, updateAttr);
 
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
         
         // Info returned.  Should contain a single criteria predicate (PART_ID = PART_ID).
         assertThat(entity, is(notNullValue()));
@@ -965,18 +983,19 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
         createDataservice(DATASERVICE_NAME);
 
         URI dataservicesUri = _uriBuilder.workspaceDataservicesUri();
-        final URI uri = UriBuilder.fromUri( dataservicesUri )
+        URI uri = UriBuilder.fromUri( dataservicesUri )
                                   .path( V1Constants.CLONE_SEGMENT )
                                   .path( DATASERVICE_NAME )
                                   .build();
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, "newDataservice");
 
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        okResponse(response);
+        String entity = extractResponse(response);
         assertThat(entity, is(notNullValue()));
 
         RestDataservice dataservice = KomodoJsonMarshaller.unmarshall(entity, RestDataservice.class);
@@ -990,19 +1009,20 @@ public final class IT_KomodoDataserviceServiceTest extends AbstractKomodoService
         createDataservice(DATASERVICE_NAME);
 
         URI dataservicesUri = _uriBuilder.workspaceDataservicesUri();
-        final URI uri = UriBuilder.fromUri( dataservicesUri )
+        URI uri = UriBuilder.fromUri( dataservicesUri )
                                   .path( V1Constants.CLONE_SEGMENT )
                                   .path( DATASERVICE_NAME )
                                   .build();
 
         // Attempt to clone using the same service name should fail...
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
         addBody(request, DATASERVICE_NAME);
 
-        ClientResponse<String> response = request.post(String.class);
+        HttpResponse response = execute(request);
 
-        final String entity = response.getEntity();
+        assertResponse(response, HttpStatus.SC_FORBIDDEN);
+        String entity = extractResponse(response);
         assertTrue(entity.contains("cannot be the same"));
     }
 

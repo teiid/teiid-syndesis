@@ -161,10 +161,11 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
     @Override
     public void refresh() throws KException {
-    	// in reality unless you are working with the embedded server, KEngine does not 
-    	// control the life cycle of the server. 
-        String msg = Messages.getString(Messages.MetadataServer.cannotRefreshError); 
-        throw new KException(msg);
+        try {
+            this.connectionProvider.reconnect();
+        } catch (Exception e) {
+            throw new KException(e);
+        }
     }
 
     @Override

@@ -2,3 +2,7 @@ swarm:
   teiid:
     jdbc:
       enable: false
+  security:
+    security-domains:
+      teiid-security:
+        cache-type: default

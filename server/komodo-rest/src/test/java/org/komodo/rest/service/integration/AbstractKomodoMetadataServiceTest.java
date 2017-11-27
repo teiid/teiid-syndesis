@@ -19,58 +19,34 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.rest.service;
+package org.komodo.rest.service.integration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.FileAttribute;
-import java.security.GeneralSecurityException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import javax.net.ssl.SSLContext;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
-
-import org.apache.http.auth.Credentials;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLContextBuilder;
-import org.apache.http.conn.ssl.TrustStrategy;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.resteasy.client.ClientRequest;
-import org.jboss.resteasy.client.ClientResponse;
-import org.jboss.resteasy.client.core.executors.ApacheHttpClient4Executor;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.importer.ImportOptions.ExistingNodeOptions;
+import org.komodo.rest.TeiidSwarmConnectionProvider;
+import org.komodo.rest.TeiidSwarmMetadataInstance;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.relational.KomodoRestUriBuilder;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
@@ -81,8 +57,7 @@ import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.KomodoStorageAttributes;
 import org.komodo.rest.relational.response.RestQueryResult;
 import org.komodo.rest.relational.response.RestQueryRow;
-import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.constants.SystemConstants;
+import org.komodo.rest.service.AbstractFrameworkTest;
 import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.runtime.ConnectionDriver;
@@ -92,17 +67,13 @@ import org.komodo.test.utils.TestUtilities;
 import org.komodo.utils.FileUtils;
 
 @SuppressWarnings( {"javadoc", "nls"} )
-public abstract class AbstractKomodoMetadataServiceTest implements StringConstants {
+public abstract class AbstractKomodoMetadataServiceTest extends AbstractFrameworkTest {
 
-    protected static final String USER_NAME = "user";
-    private static final String PASSWORD = "user";
-    private static final String TEST_PORT = "8443";
-    protected static final String MYSQL_DRIVER = "mysql-connector";
-    private static Path _kengineDataDir;
-    protected static KomodoRestUriBuilder _uriBuilder;
-    protected static URI BASE_URI;
+    protected static String MYSQL_DRIVER = "mysql-connector";
 
     private int testIndex = 0;
+
+    private TeiidSwarmMetadataInstance instance;
 
     @Deployment( testable = false )
     public static WebArchive createRestDeployment() {
@@ -110,75 +81,11 @@ public abstract class AbstractKomodoMetadataServiceTest implements StringConstan
     }
 
     @BeforeClass
-    public static void beforeAll() throws Exception {
-        _kengineDataDir = Files.createTempDirectory(null, new FileAttribute[0]);
-        System.setProperty(SystemConstants.ENGINE_DATA_DIR, _kengineDataDir.toString());
-
-        System.setProperty("org.jboss.resteasy.port", "8080");
-        final URI baseUri = URI.create("http://localhost:8080");
-        BASE_URI = UriBuilder.fromUri(baseUri).scheme("http").path("/vdb-builder/v1").build();
-        _uriBuilder = new KomodoRestUriBuilder(BASE_URI);
-    }
-
-    @AfterClass
-    public static void afterAll() throws Exception {
-        if (_kengineDataDir != null) {
-            FileUtils.removeDirectoryAndChildren(_kengineDataDir.toFile());
-        }
-    }
-
-    protected void addHeader(ClientRequest request, String name, Object value) {
-        request.getHeadersAsObjects().add(name, value);
-    }
-
-    /**
-     * Builds an {@link ApacheHttpClient4Executor} which does NOT verify ssl certificates so allows for the
-     * self-signed certificates used in the integration testing.
-     *
-     * @return client executor with no ssl certificate verification
-     *
-     * @throws GeneralSecurityException
-     */
-    private ApacheHttpClient4Executor createSSLTrustingClientExecutor() throws GeneralSecurityException {
-        RegistryBuilder<ConnectionSocketFactory> registryBuilder = RegistryBuilder.<ConnectionSocketFactory>create()
-            .register("http", PlainConnectionSocketFactory.getSocketFactory());
-        /*
-        TrustStrategy trustStrategy = new TrustStrategy() {
-            @Override
-            public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-                return true;
-            }
-        };
-    
-        SSLContextBuilder sslctxBuilder = new SSLContextBuilder();
-        sslctxBuilder.loadTrustMaterial(null, trustStrategy);
-        SSLContext sslContext = sslctxBuilder.build();
-    
-        SSLConnectionSocketFactory sslSocketFactory = new SSLConnectionSocketFactory(sslContext,
-                                                                                                 SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-        registryBuilder.register("https", sslSocketFactory);
-    
-        BasicHttpClientConnectionManager mgr = new BasicHttpClientConnectionManager(registryBuilder.build());
-    
-        HttpClientBuilder clientBuilder = HttpClientBuilder.create();
-        clientBuilder.setConnectionManager(mgr);
-    
-        Credentials credentials = new UsernamePasswordCredentials(USER_NAME, PASSWORD);
-        CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-        credentialsProvider.setCredentials(org.apache.http.auth.AuthScope.ANY, credentials);
-        clientBuilder.setDefaultCredentialsProvider(credentialsProvider);
-    	*/
-        HttpClientBuilder clientBuilder = HttpClientBuilder.create();
-        
-        return new ApacheHttpClient4Executor(clientBuilder.build());
-    }
-
-    protected ClientRequest request(final URI uri, MediaType type) throws Exception {
-        ClientRequest request = new ClientRequest(uri.toString(), createSSLTrustingClientExecutor());
-        if (type != null)
-            request.accept(type);
-    
-        return request;
+    public static void beforeAllSetupBaseUri() throws Exception {
+        System.setProperty("org.jboss.resteasy.port", Integer.toString(TEST_PORT));
+        URI baseUri = URI.create("http://localhost" + COLON + TEST_PORT);
+        baseUri = UriBuilder.fromUri(baseUri).scheme("http").path("/vdb-builder/v1").build();
+        _uriBuilder = new KomodoRestUriBuilder(baseUri);
     }
 
     protected void assertNoMysqlDriver() throws Exception {
@@ -208,8 +115,12 @@ public abstract class AbstractKomodoMetadataServiceTest implements StringConstan
     }
 
     protected MetadataInstance getMetadataInstance() throws Exception {
-        //return DefaultMetadataInstance.getInstance();
-    	return null;
+        if (instance == null) {
+            TeiidSwarmConnectionProvider connectionProvider = new TeiidSwarmConnectionProvider();
+            instance = new TeiidSwarmMetadataInstance(connectionProvider);
+        }
+
+        return instance;
     }
 
     protected void waitForVdb() throws Exception {
@@ -221,14 +132,6 @@ public abstract class AbstractKomodoMetadataServiceTest implements StringConstan
             Thread.sleep(seconds * 1000);
         } catch (Exception ex) {
             // Nothing required
-        }
-    }
-
-    protected void checkResponse(ClientResponse<String> response) {
-        assertNotNull(response);
-        String entity = response.getEntity();
-        if (Response.Status.OK.getStatusCode() != response.getStatus()) {
-            fail(response.getStatus() + COLON + SPACE + entity.toString());
         }
     }
 
@@ -285,9 +188,10 @@ public abstract class AbstractKomodoMetadataServiceTest implements StringConstan
                                             .path(V1Constants.VDBS_SEGMENT)
                                             .path(TestUtilities.SAMPLE_VDB_NAME).build();
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        request.header("Content-Type", MediaType.APPLICATION_JSON);
-        ClientResponse<String> response = request.delete(String.class);
+        HttpUriRequest request = jsonRequest(uri, RequestType.DELETE);
+        addJsonConsumeContentType(request);
+
+        execute(request);
     }
 
     protected void loadSample() throws Exception {
@@ -309,14 +213,13 @@ public abstract class AbstractKomodoMetadataServiceTest implements StringConstan
         String content = Base64.getEncoder().encodeToString(sampleCnt.getBytes());
         storageAttr.setContent(content);
 
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        request.header("Content-Type", MediaType.APPLICATION_JSON);
-        request.body(MediaType.APPLICATION_JSON_TYPE, storageAttr);
-        ClientResponse<String> response = request.post(String.class);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
+        addJsonConsumeContentType(request);
+        addBody(request, storageAttr);
 
-        String entity = response.getEntity();
+        HttpResponse response = executeOk(request);
 
-        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        String entity = extractResponse(response);
         ImportExportStatus status = KomodoJsonMarshaller.unmarshall(entity, ImportExportStatus.class);
         assertNotNull(status);
 
@@ -327,7 +230,7 @@ public abstract class AbstractKomodoMetadataServiceTest implements StringConstan
         //
         // DEPLOY SAMPLE TO METADATA SERVER
         //
-        String samplePath = "/tko:komodo/tko:workspace/user/sample";
+        String samplePath = "/tko:komodo/tko:workspace/" + USER_NAME + "/sample";
         KomodoPathAttribute pathAttribute = new KomodoPathAttribute();
         pathAttribute.setPath(samplePath);
 
@@ -335,12 +238,11 @@ public abstract class AbstractKomodoMetadataServiceTest implements StringConstan
                                     .path(V1Constants.METADATA_SEGMENT)
                                     .path(V1Constants.VDB_SEGMENT).build();
 
-        request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        request.header("Content-Type", MediaType.APPLICATION_JSON);
-        request.body(MediaType.APPLICATION_JSON_TYPE, pathAttribute);
-        response = request.post(String.class);
+        request = jsonRequest(uri, RequestType.POST);
+        addJsonConsumeContentType(request);
+        addBody(request, pathAttribute);
 
-        checkResponse(response);
+        response = executeOk(request);
     }
 
     @Before
@@ -394,11 +296,10 @@ public abstract class AbstractKomodoMetadataServiceTest implements StringConstan
         String content = Base64.getEncoder().encodeToString(sampleBytes);
         storageAttr.setContent(content);
     
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        request.body(MediaType.APPLICATION_JSON_TYPE, storageAttr);
-        ClientResponse<String> response = request.post(String.class);
-    
-        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        HttpPost request = jsonRequest(uri, RequestType.POST);
+        addBody(request, storageAttr);
+
+        executeOk(request);
     }
 
     protected void deployDataService() throws Exception {
@@ -415,12 +316,12 @@ public abstract class AbstractKomodoMetadataServiceTest implements StringConstan
                                     .path(V1Constants.DATA_SERVICE_SEGMENT)
                                     .build();
     
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        request.body(MediaType.APPLICATION_JSON_TYPE, pathAttr);
-        ClientResponse<String> response = request.post(String.class);
-        checkResponse(response);
+        HttpPost request = jsonRequest(uri, RequestType.POST);
+        addBody(request, pathAttr);
+        HttpResponse response = executeOk(request);
     
-        KomodoStatusObject status = KomodoJsonMarshaller.unmarshall(response.getEntity(), KomodoStatusObject.class);
+        String entity = extractResponse(response);
+        KomodoStatusObject status = KomodoJsonMarshaller.unmarshall(entity, KomodoStatusObject.class);
         assertNotNull(status);
     
         Map<String, String> attributes = status.getAttributes();
@@ -441,13 +342,11 @@ public abstract class AbstractKomodoMetadataServiceTest implements StringConstan
                                     .path(V1Constants.QUERY_SEGMENT)
                                     .build();
     
-        ClientRequest request = request(uri, MediaType.APPLICATION_JSON_TYPE);
-        request.body(MediaType.APPLICATION_JSON_TYPE, queryAttr);
-        ClientResponse<String> response = request.post(String.class);
-        entity = response.getEntity();
-    
-        checkResponse(response);
-    
+        HttpPost request = jsonRequest(uri, RequestType.POST);
+        addBody(request, queryAttr);
+        HttpResponse response = executeOk(request);
+
+        entity = extractResponse(response);
         RestQueryResult result = KomodoJsonMarshaller.unmarshall(entity, RestQueryResult.class);
         assertNotNull(result);
         assertEquals(expRowCount, result.getRows().length);

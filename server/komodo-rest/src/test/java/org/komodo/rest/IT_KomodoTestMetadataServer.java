@@ -19,18 +19,22 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.metadata;
+package org.komodo.rest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,15 +47,25 @@ import org.komodo.test.utils.TestUtilities;
 import org.teiid.adminapi.AdminProcessingException;
 import org.teiid.core.util.ApplicationInfo;
 
-@Ignore
 @RunWith( Arquillian.class )
-public class TestMetadataServer {
+public class IT_KomodoTestMetadataServer {
 
-	private MetadataInstance getMetadataInstance() {
-		// TODO:
-		return null;
-	}
-	
+    @Deployment(testable=false)
+    public static WebArchive createDeployment() throws Exception {
+        return ShrinkWrap.createFromZipFile(WebArchive.class, new File("target/vdb-builder.war"));
+    }
+
+    private TeiidSwarmMetadataInstance instance;
+
+    private MetadataInstance getMetadataInstance() throws Exception {
+        if (instance == null) {
+            TeiidSwarmConnectionProvider connectionProvider = new TeiidSwarmConnectionProvider();
+            instance = new TeiidSwarmMetadataInstance(connectionProvider);
+        }
+
+        return instance;
+    }
+
     @Test
     public void testVersion() throws Exception {
         ApplicationInfo info = ApplicationInfo.getInstance();
@@ -87,6 +101,7 @@ public class TestMetadataServer {
     }
 
     @Test
+    @Ignore("Requires configuration of loopback translator")
     public void testDeployment() throws Exception {
         getMetadataInstance().deployDynamicVdb(TestUtilities.SAMPLE_VDB_FILE, TestUtilities.sampleExample());
         Thread.sleep(2000);
@@ -94,10 +109,17 @@ public class TestMetadataServer {
         Collection<TeiidVdb> vdbs = getMetadataInstance().getVdbs();
         assertEquals(1, vdbs.size());
 
-        TeiidVdb vdb = getMetadataInstance().getVdb(TestUtilities.SAMPLE_VDB_NAME);
-        assertNotNull(vdb);
-        assertEquals(0, vdb.getValidityErrors().size());
+        TeiidVdb vdb;
+        long timeout = System.currentTimeMillis() + 120000;
+        do {
+            vdb = getMetadataInstance().getVdb(TestUtilities.SAMPLE_VDB_NAME);
+            assertNotNull(vdb);
+            assertEquals(0, vdb.getValidityErrors().size());
 
+            Thread.sleep(3000);
+        } while (vdb.isLoading() && System.currentTimeMillis() < timeout);
+
+        assertFalse(vdb.isLoading());
         assertTrue(vdb.isActive());
 
         getMetadataInstance().undeployDynamicVdb(TestUtilities.SAMPLE_VDB_NAME);
@@ -126,7 +148,7 @@ public class TestMetadataServer {
         Collection<ConnectionDriver> dataSourceDrivers = getMetadataInstance().getDataSourceDrivers();
         assertTrue(dataSourceDrivers.size() > 0);
 
-        String[] driverNamesArr = {"h2", "teiid-local", "teiid"};
+        String[] driverNamesArr = {"h2", "teiid"};
         List<String> driverNames = Arrays.asList(driverNamesArr);
 
         Iterator<ConnectionDriver> iter = dataSourceDrivers.iterator();
