@@ -213,7 +213,7 @@
                 "source" : {
                     "type" : "Git",
                     "git" : {
-                        "uri": "git://github.com/phantomjinx/teiid-komodo.git"
+                        "uri": "git://github.com/teiid/teiid-komodo.git"
                     },
                     "contextDir": "."
                 },
