@@ -19,29 +19,28 @@
 	<inceptionYear>2013</inceptionYear>
 
 	<organization>
-		<name>JBoss, a division of Red Hat</name>
-		<url>http://www.jboss.org</url>
+		<name>Red Hat</name>
+		<url>http://www.jboss.org/teiid</url>
 	</organization>
 
 	<licenses>
 		<license>
 			<name>GNU Lesser General Public License</name>
 			<url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
-			<!--url>http://www.gnu.org/licenses/lgpl.html</url -->
 			<distribution>repo</distribution>
 			<comments>A business-friendly OSS license</comments>
 		</license>
 	</licenses>
 
 	<scm>
-		<connection>scm:git:git://github.com/Teiid-Designer/komodo.git</connection>
-		<developerConnection>scm:git:git@github.com:Teiid-Designer/komodo.git</developerConnection>
-		<url>http://github.com/Teiid-Designer/komodo</url>
+		<connection>scm:git:git://github.com/teiid/teiid-komodo.git</connection>
+		<developerConnection>scm:git:git@github.com:teiid/teiid-komodo.git</developerConnection>
+		<url>http://github.com/teiid/teiid-komodo</url>
 	</scm>
 
 	<issueManagement>
 		<system>jira</system>
-		<url>http://issues.jboss.org/browse/TEIIDDES</url>
+		<url>http://issues.jboss.org/browse/TEIIDTOOLS</url>
 	</issueManagement>
 
 	<developers>
@@ -49,7 +48,29 @@
 			<name>Barry Lafond</name>
 			<id>blafond</id>
 			<email>blafond@redhat.com</email>
-			<organization>JBoss, a division of Red Hat</organization>
+			<organization>Red Hat</organization>
+			<roles>
+				<role>Project Lead</role>
+				<role>Developer</role>
+			</roles>
+			<timezone>-6</timezone>
+		</developer>
+		<developer>
+			<name>Steve Hawkins</name>
+			<id>shawkins</id>
+			<email>shawkins@redhat.com</email>
+			<organization>Red Hat</organization>
+			<roles>
+				<role>Project Lead</role>
+				<role>Developer</role>
+			</roles>
+			<timezone>-6</timezone>
+		</developer>
+		<developer>
+			<name>Ramesh Reddy</name>
+			<id>rareddy</id>
+			<email>rareddy@redhat.com</email>
+			<organization>Red Hat</organization>
 			<roles>
 				<role>Project Lead</role>
 				<role>Developer</role>
@@ -60,7 +81,7 @@
 			<name>Dan Florian</name>
 			<id>danflo</id>
 			<email>dflorian@redhat.com</email>
-			<organization>JBoss, a division of Red Hat</organization>
+			<organization>Red Hat</organization>
 			<roles>
 				<role>Developer</role>
 			</roles>
@@ -70,7 +91,7 @@
 			<name>Paul Richardson</name>
 			<id>phantomjinx</id>
 			<email>p.g.richardson@redhat.com</email>
-			<organization>JBoss, a division of Red Hat</organization>
+			<organization>Red Hat</organization>
 			<roles>
 				<role>Developer</role>
 			</roles>
@@ -80,7 +101,7 @@
 			<name>Mark Drilling</name>
 			<id>mdrilling</id>
 			<email>mdrillin@redhat.com</email>
-			<organization>JBoss, a division of Red Hat</organization>
+			<organization>Red Hat</organization>
 			<roles>
 				<role>Developer</role>
 			</roles>
@@ -90,7 +111,7 @@
 			<name>Ted Jones</name>
 			<id>tejones</id>
 			<email>tejones@redhat.com</email>
-			<organization>JBoss, a division of Red Hat</organization>
+			<organization>Red Hat</organization>
 			<roles>
 				<role>Developer</role>
 			</roles>
