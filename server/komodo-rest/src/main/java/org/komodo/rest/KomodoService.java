@@ -24,10 +24,12 @@ package org.komodo.rest;
 import static org.komodo.rest.Messages.Error.COMMIT_TIMEOUT;
 import static org.komodo.rest.Messages.Error.RESOURCE_NOT_FOUND;
 import static org.komodo.rest.Messages.General.GET_OPERATION_NAME;
+
 import java.io.StringWriter;
 import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -41,6 +43,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
 import javax.xml.namespace.QName;
+
 import org.komodo.core.KEngine;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.core.repository.SynchronousCallback;
@@ -64,6 +67,7 @@ import org.komodo.spi.repository.Repository.UnitOfWorkListener;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
+
 import com.google.gson.Gson;
 
 /**
@@ -72,6 +76,7 @@ import com.google.gson.Gson;
 public abstract class KomodoService implements V1Constants {
 
     public static final String KOMODO_USER = "anonymous";
+    public static final String DEV_MODE = "DEV_MODE";
 
     protected static final KLog LOGGER = KLog.getLogger();
 
@@ -197,27 +202,14 @@ public abstract class KomodoService implements V1Constants {
     }
 
     protected SecurityPrincipal checkSecurityContext(HttpHeaders headers) {
-    	return new SecurityPrincipal(KOMODO_USER, null);
-    	/*
-        try {
-            if (securityContext == null)
-                throw new Exception("No security context available");
-
-            if (!securityContext.isSecure())
-                throw new Exception("Access to REST service should ONLY be via a secure channel");
-
-            Principal userPrincipal = securityContext.getUserPrincipal();
-            if (userPrincipal == null)
-                throw new Exception("No user associated with request");
-
-            return new SecurityPrincipal(userPrincipal.getName(), null);
-        } catch (Exception ex) {
-            return new SecurityPrincipal(null, 
-                                         createErrorResponse(Status.UNAUTHORIZED,
-                                                                                 headers.getAcceptableMediaTypes(),
-                                                                                 ex, SECURITY_FAILURE_ERROR));
-        }
-        */
+    	if (AuthHandlingFilter.threadOAuthCredentials.get() != null) {
+    		return new SecurityPrincipal(AuthHandlingFilter.threadOAuthCredentials.get().getUser(), null);	
+    	}
+    	if (System.getProperty(DEV_MODE) != null) {
+    		return new SecurityPrincipal(KOMODO_USER, null);
+    	}
+		return new SecurityPrincipal(null, createErrorResponse(Status.UNAUTHORIZED,
+				headers.getAcceptableMediaTypes(), RelationalMessages.Error.SECURITY_FAILURE_ERROR));
     }
 
     /**

@@ -91,6 +91,7 @@ public class AbstractFrameworkTest implements StringConstants, V1Constants {
         // Sets the persistence type to H2 for test purposes
         //
         System.setProperty(SystemConstants.REPOSITORY_PERSISTENCE_TYPE, PersistenceType.H2.name());
+        System.setProperty(KomodoService.DEV_MODE, "true");
     }
 
     @AfterClass
@@ -104,6 +105,7 @@ public class AbstractFrameworkTest implements StringConstants, V1Constants {
         } catch (Exception ex) {
             _kengineDataDir.toFile().deleteOnExit();
         }
+        System.setProperty(KomodoService.DEV_MODE, null);
     }
 
     protected HttpClient requestClient() {

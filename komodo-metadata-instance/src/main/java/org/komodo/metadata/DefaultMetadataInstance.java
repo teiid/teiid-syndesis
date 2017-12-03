@@ -122,7 +122,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
         this.connectionProvider = connectionProvider;
     }
 
-    private Admin admin() throws AdminException {
+    protected Admin admin() throws AdminException {
     	return connectionProvider.getAdmin();
     }
     
@@ -133,7 +133,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
      *        the error being handled (cannot be <code>null</code>)
      * @return the error (never <code>null</code>)
      */
-    private static KException handleError(Throwable e) {
+    protected static KException handleError(Throwable e) {
         assert (e != null);
     
         if (e instanceof KException) {
@@ -143,7 +143,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
         return new KException(e);
     }
 
-    private void checkStarted() throws KException {
+    protected void checkStarted() throws KException {
         if (getCondition() != Condition.REACHABLE) {
         	String msg = Messages.getString(Messages.MetadataServer.serverCanNotBeReached);
 	        throw new KException(msg);
