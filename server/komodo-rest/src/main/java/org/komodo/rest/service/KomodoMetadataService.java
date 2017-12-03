@@ -35,7 +35,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
+
 import javax.naming.InitialContext;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -55,6 +57,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
+
 import org.komodo.core.KEngine;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
@@ -71,6 +74,7 @@ import org.komodo.rest.CallbackTimeoutException;
 import org.komodo.rest.KomodoRestException;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
+import org.komodo.rest.TeiidSwarmMetadataInstance;
 import org.komodo.rest.relational.KomodoProperties;
 import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.connection.RestConnection;
@@ -112,10 +116,12 @@ import org.komodo.utils.ArgCheck;
 import org.komodo.utils.FileUtils;
 import org.komodo.utils.ModelType.Type;
 import org.komodo.utils.StringUtils;
+import org.teiid.adminapi.Admin;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -1175,6 +1181,28 @@ public class KomodoMetadataService extends KomodoService {
         }
     }
 
+    @GET
+    @Path("test")
+    @Produces( MediaType.APPLICATION_JSON )
+    @ApiOperation(value = "Test", response = String.class)
+    @ApiResponses(value = {
+        @ApiResponse(code = 403, message = "An error has occurred.")
+    })
+    public String test(final @Context HttpHeaders headers,
+                                   final @Context UriInfo uriInfo) throws KomodoRestException {
+    	try {
+    		TeiidSwarmMetadataInstance mi = (TeiidSwarmMetadataInstance)getMetadataInstance();
+    		Admin admin = mi.adminX();
+			Properties props = new Properties();
+			props.setProperty("connection-url", "jdbc:postgresql://db02.mw.lab.eng.bos.redhat.com:5432/bqt2");
+			props.setProperty("user-name", "bqt2");
+			props.setProperty("password", "mm");
+			admin.createDataSource("my-postgres", "postgresql", props);
+    	} catch (Exception e) {
+    		
+    	}
+    	return "{\"result\": \"executed\"}";
+    }
     /**
      * @param headers
      *        the request headers (never <code>null</code>)

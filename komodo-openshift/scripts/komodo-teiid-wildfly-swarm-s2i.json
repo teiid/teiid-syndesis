@@ -492,7 +492,7 @@
                                     },
                                     {
                                     	"name": "SWARM_JAR_ARGS",
-                                    	"value": "-DREPOSITORY_PERSISTENCE_HOST=vdb-builder-persistence"
+                                    	"value": "-DREPOSITORY_PERSISTENCE_HOST=vdb-builder-persistence -DDEV_MODE=true"
                                     },
                                     {
                                         "name": "TEIID_USERNAME",

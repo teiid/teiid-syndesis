@@ -25,7 +25,7 @@
 		<app.rest.version>${project.version}</app.rest.version>
 		<app.rest.description>A tool that allows creating, editing and managing dynamic VDBs and their contents</app.rest.description>
 		<!-- Must remain all on one line. Otherwise, VFSUtils.readManifest complains of invalid header -->
-		<manifest.dependencies>org.jboss.logging,org.jboss.teiid.api,org.jboss.teiid.admin,org.jboss.teiid.common-core,org.jboss.teiid,org.jboss.teiid.client,io.swagger,com.fasterxml.jackson.core.jackson-core,com.fasterxml.jackson.core.jackson-databind,com.fasterxml.jackson.core.jackson-annotations</manifest.dependencies>
+		<manifest.dependencies>org.jboss.logging,org.jboss.teiid.api,org.jboss.teiid.admin,org.jboss.teiid.common-core,org.jboss.teiid,org.jboss.teiid.client,io.swagger,com.fasterxml.jackson.core.jackson-core,com.fasterxml.jackson.core.jackson-databind,com.fasterxml.jackson.core.jackson-annotations,org.jboss.as.cli,org.jboss.as.controller,org.jboss.dmr</manifest.dependencies>
 	</properties>
 
 	<dependencies>
@@ -34,7 +34,7 @@
 			<artifactId>komodo-relational</artifactId>
             <exclusions>
               <exclusion>
-                <groupId>org.jboss.teiid</groupId>
+                <groupId>org.teiid</groupId>
                 <artifactId>*</artifactId>
               </exclusion>
             </exclusions>
@@ -75,37 +75,37 @@
         </dependency>               			
     
 		<dependency>
-			<groupId>org.jboss.teiid</groupId>
+			<groupId>org.teiid</groupId>
 			<artifactId>teiid-api</artifactId>
 			<scope>provided</scope>
 		</dependency> 
 		<dependency>
-			<groupId>org.jboss.teiid</groupId>
+			<groupId>org.teiid</groupId>
 			<artifactId>teiid-client</artifactId>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.jboss.teiid</groupId>
+			<groupId>org.teiid</groupId>
 			<artifactId>teiid-engine</artifactId>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.jboss.teiid</groupId>
+			<groupId>org.teiid</groupId>
 			<artifactId>teiid-common-core</artifactId>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.jboss.teiid</groupId>
+			<groupId>org.teiid</groupId>
 			<artifactId>teiid-admin</artifactId>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.jboss.teiid</groupId>
+			<groupId>org.teiid</groupId>
 			<artifactId>teiid-jboss-admin</artifactId>
 			<scope>provided</scope>
             <exclusions>
               <exclusion>
-                <groupId>org.jboss.teiid</groupId>
+                <groupId>org.teiid</groupId>
                 <artifactId>*</artifactId>
               </exclusion>
             </exclusions>
@@ -127,12 +127,11 @@
 			<artifactId>teiid-jdbc</artifactId>
             <exclusions>
               <exclusion>
-                <groupId>org.jboss.teiid</groupId>
+                <groupId>org.teiid</groupId>
                 <artifactId>*</artifactId>
               </exclusion>
             </exclusions>      
 		</dependency>
-
 	    <dependency>
 	      <groupId>javax</groupId>
 	      <artifactId>javaee-api</artifactId>
@@ -146,9 +145,7 @@
         <dependency>
           <groupId>org.apache.httpcomponents</groupId>
           <artifactId>httpclient</artifactId>
-          <version>4.5.3</version>
         </dependency>   
-	
   		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
@@ -169,6 +166,20 @@
 		    <artifactId>jackson-annotations</artifactId>
 		    <scope>provided</scope>
 		</dependency>	
+        <dependency>
+          <groupId>org.osb</groupId>
+          <artifactId>kubernetes-service-catalog-client</artifactId>
+            <exclusions>
+              <exclusion>
+    			<groupId>com.fasterxml.jackson.core</groupId>
+    			<artifactId>*</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+              </exclusion>
+            </exclusions>                   
+        </dependency>
 
         <!-- Test Dependencies -->
 		<dependency>
@@ -307,6 +318,46 @@
 					</arguments>
 				</configuration>
 			</plugin>
+              <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>0.23.0</version>
+                <configuration>
+                  <registry>registry.hub.docker.com</registry>
+                  <images>
+                    <image>
+                      <name>teiid/komodo:${project.version}</name>
+                      <alias>komodo</alias>
+                      <build>
+                        <filter>@</filter>
+                        <dockerFileDir>${project.basedir}/docker</dockerFileDir>
+                        <assembly>
+                            <inline>
+                              <fileSets>
+                              <fileSet>
+                                <directory>${project.build.directory}</directory>
+                                <outputDirectory>/</outputDirectory>   
+                                <includes>
+                                  <include>**/*-swarm.jar</include>
+                                </includes>
+                              </fileSet>
+                             </fileSets>                            
+                            </inline>
+                        </assembly>
+                      </build>
+                    </image>                   
+                  </images>
+                </configuration>
+                <executions>
+                  <execution>
+                    <id>docker-build</id>
+                    <goals>
+                      <goal>build</goal>
+                      <goal>push</goal>
+                    </goals>
+                  </execution>
+                </executions>
+              </plugin>      
 		</plugins>
 	</build>
 
