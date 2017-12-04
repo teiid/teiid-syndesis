@@ -49,7 +49,7 @@
             "displayName": "Additional maven repository",
             "name": "MVN_LOCAL_REPO",
             "value": "https://repository.jboss.org/nexus/content/repositories/central/",
-            "required": true
+            "required": false
         }
     ],
     "objects": [
