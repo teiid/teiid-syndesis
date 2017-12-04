@@ -69,7 +69,7 @@ import org.komodo.utils.FileUtils;
 @SuppressWarnings( {"javadoc", "nls"} )
 public abstract class AbstractKomodoMetadataServiceTest extends AbstractFrameworkTest {
 
-    protected static String MYSQL_DRIVER = "mysql-connector";
+    protected static final String MYSQL_DRIVER = "mysql-connector";
 
     private int testIndex = 0;
 
