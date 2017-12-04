@@ -32,11 +32,17 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.core.AbstractLoggingTest;
@@ -45,10 +51,12 @@ import org.komodo.core.repository.LocalRepository.LocalRepositoryId;
 import org.komodo.spi.KClient;
 import org.komodo.spi.KEvent;
 import org.komodo.spi.KException;
+import org.komodo.spi.constants.SystemConstants;
 import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
 import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
 import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 import org.komodo.spi.repository.KomodoObject;
+import org.komodo.spi.repository.PersistenceType;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.Repository.State;
 import org.komodo.spi.repository.Repository.UnitOfWork;
@@ -58,9 +66,13 @@ import org.komodo.utils.FileUtils;
 import org.komodo.utils.observer.KLatchRepositoryObserver;
 
 @SuppressWarnings( {"javadoc", "nls"} )
-public class TestLocalRepositoryPersistence extends AbstractLoggingTest {
+public class TestLocalRepositoryPersistence extends AbstractLoggingTest implements SystemConstants {
 
     protected static final long TIME_TO_WAIT = 3; // in minutes
+
+    private static final String CLEANUP_PSQL = EMPTY_STRING +
+                                                    "drop table if exists modeshape_repository cascade;" +
+                                                    "drop table if exists content_store cascade;";
 
     private String PRODUCTION_REPOSITORY_DB;
 
@@ -68,13 +80,39 @@ public class TestLocalRepositoryPersistence extends AbstractLoggingTest {
 
     protected LocalRepository _repo = null;
 
+    private Connection connection = null;
+
     private String komodoTestDir() {
-        System.setProperty("komodo.dataDir", System.getProperty("java.io.tmpdir") + File.separator + "TestLocalRepositoryPersistence");
-        return System.getProperty("komodo.dataDir");
+        System.setProperty(ENGINE_DATA_DIR, System.getProperty(JAVA_IO_TMPDIR) + File.separator + "TestLocalRepositoryPersistence");
+        return System.getProperty(ENGINE_DATA_DIR);
     }
 
-    private void setKomodoDataDir() {
+    private String komodoPersistenceHost() {
+        System.setProperty(REPOSITORY_PERSISTENCE_HOST, "localhost");
+        return System.getProperty(REPOSITORY_PERSISTENCE_HOST);
+    }
+
+    private String komodoConnectionUrl(PersistenceType persistenceType) {
+        System.setProperty(SystemConstants.REPOSITORY_CONNECTION_URL, persistenceType.getConnUrl());
+        return System.getProperty(SystemConstants.REPOSITORY_CONNECTION_URL);
+    }
+
+    private String komodoBinaryUrl(PersistenceType persistenceType) {
+        System.setProperty(SystemConstants.REPOSITORY_BINARY_STORE_URL, persistenceType.getBinaryStoreUrl());
+        return System.getProperty(SystemConstants.REPOSITORY_BINARY_STORE_URL);
+    }
+
+    private String komodoConnectionDriver(PersistenceType persistenceType) {
+        System.setProperty(SystemConstants.REPOSITORY_CONNECTION_DRIVER, persistenceType.getDriver());
+        return System.getProperty(SystemConstants.REPOSITORY_CONNECTION_DRIVER);
+    }
+
+    private void setKomodoDataDir(PersistenceType persistenceType) {
         komodoTestDir();
+        komodoPersistenceHost();
+        komodoConnectionUrl(persistenceType);
+        komodoBinaryUrl(persistenceType);
+        komodoConnectionDriver(persistenceType);
         PRODUCTION_REPOSITORY_DB = komodoTestDir() + File.separator + "komododb";
     }
 
@@ -135,7 +173,8 @@ public class TestLocalRepositoryPersistence extends AbstractLoggingTest {
      * @throws Exception
      */
     private void destroyLocalRepository() throws Exception {
-        assertNotNull(_repo);
+        if (_repo == null)
+            return; // nothing to do
 
         KLatchRepositoryObserver _repoStoppedObserver = new KLatchRepositoryObserver(KEvent.Type.REPOSITORY_STOPPED);
         _repo.addObserver(_repoStoppedObserver);
@@ -159,9 +198,48 @@ public class TestLocalRepositoryPersistence extends AbstractLoggingTest {
             FileUtils.removeDirectoryAndChildren(testDb);
     }
 
+    private void clearPostgresDb() {
+        if (connection == null)
+            return;
+
+        try {
+            PreparedStatement stmt = connection.prepareStatement(CLEANUP_PSQL);
+            stmt.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if(connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    // nothing to do
+                }
+            }
+        }
+
+        connection = null;
+    }
+
+    private Connection postgresDBConnection() {
+        Connection connection = null;
+        //
+        // Check we have a postgres db handy. If not then skip this test
+        //
+        try {
+            Class.forName(PersistenceType.PGSQL.getDriver());
+            connection = DriverManager.getConnection(PersistenceType.PGSQL.getConnUrl(),
+                                                                    REPOSITORY_PERSISTENCE_USERNAME,
+                                                                    REPOSITORY_PERSISTENCE_PASSWORD);
+        } catch (Exception ex) {
+            // Nothing to do
+        }
+
+        return connection;
+    }
+
     @Before
     public void setup() throws Exception {
-        setKomodoDataDir();
+        setKomodoDataDir(PersistenceType.H2);
 
         deleteDbDir(PRODUCTION_REPOSITORY_DB);
         assertFalse(dbExists(PRODUCTION_REPOSITORY_DB));
@@ -171,6 +249,7 @@ public class TestLocalRepositoryPersistence extends AbstractLoggingTest {
     public void cleanup() throws Exception {
         destroyLocalRepository();
         deleteDbDir(komodoTestDir());
+        clearPostgresDb();
     }
 
     /**
@@ -262,7 +341,16 @@ public class TestLocalRepositoryPersistence extends AbstractLoggingTest {
     }
 
     @Test
-    public void testProductionRepositoryPersistenceWorkspace() throws Exception {
+    public void testProductionRepositoryPersistenceWorkspaceH2() throws Exception {
+        helpTestPersistenceWorkspace(PRODUCTION_REPOSITORY_DB, PRODUCTION_REPOSITORY_CONFIG);
+    }
+
+    @Test
+    public void testProductionRepositoryPersistenceWorkspacePSQL() throws Exception {
+        connection  = postgresDBConnection();
+        Assume.assumeNotNull(connection);
+
+        setKomodoDataDir(PersistenceType.PGSQL);
         helpTestPersistenceWorkspace(PRODUCTION_REPOSITORY_DB, PRODUCTION_REPOSITORY_CONFIG);
     }
 
@@ -334,7 +422,16 @@ public class TestLocalRepositoryPersistence extends AbstractLoggingTest {
     }
 
     @Test
-    public void testProductionRepositoryPersistenceObjects() throws Exception {
+    public void testProductionRepositoryPersistenceObjectsH2() throws Exception {
+        helpTestPersistenceObjects(PRODUCTION_REPOSITORY_DB, PRODUCTION_REPOSITORY_CONFIG);
+    }
+
+    @Test
+    public void testProductionRepositoryPersistenceObjectsPSQL() throws Exception {
+        connection = postgresDBConnection();
+        Assume.assumeNotNull(connection);
+
+        setKomodoDataDir(PersistenceType.PGSQL);
         helpTestPersistenceObjects(PRODUCTION_REPOSITORY_DB, PRODUCTION_REPOSITORY_CONFIG);
     }
 
@@ -356,8 +453,7 @@ public class TestLocalRepositoryPersistence extends AbstractLoggingTest {
         return driver;
     }
 
-    @Test
-    public void testBinaryValuePersistence() throws Exception {
+    private void helpTestBinaryValuePersistence() throws Exception, IOException, KException {
         //
         // Get control values for testing the created properties against
         //
@@ -436,5 +532,19 @@ public class TestLocalRepositoryPersistence extends AbstractLoggingTest {
         }
 
         uow.commit();
+    }
+
+    @Test
+    public void testBinaryValuePersistenceH2() throws Exception {
+        helpTestBinaryValuePersistence();
+    }
+
+    @Test
+    public void testBinaryValuePersistencePSQL() throws Exception {
+        connection = postgresDBConnection();
+        Assume.assumeNotNull(connection);
+
+        setKomodoDataDir(PersistenceType.PGSQL);
+        helpTestBinaryValuePersistence();
     }
 }

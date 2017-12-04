@@ -43,6 +43,11 @@
 			<artifactId>teiid-modeshape-sequencer-dataservice</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+		</dependency>
+
 		<!-- Needed to get at modeshape's underlying logging system - see JcrLogConfigurator for details -->
 		<dependency>
 			<groupId>log4j</groupId>

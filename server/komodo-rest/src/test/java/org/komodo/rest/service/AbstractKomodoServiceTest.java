@@ -63,7 +63,7 @@ public abstract class AbstractKomodoServiceTest extends AbstractFrameworkTest {
     private static URI _appUri;
 
     @BeforeClass
-    public static void beforeAll() throws Exception {
+    public static void beforeAllSetupServer() throws Exception {
         _restApp = new KomodoRestV1Application();
 
         _server = new TJWSEmbeddedJaxrsServer();

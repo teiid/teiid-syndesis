@@ -259,6 +259,129 @@
             "kind": "DeploymentConfig",
             "apiVersion": "v1",
             "metadata": {
+                "name": "vdb-builder-persistence",
+                "labels": {
+                    "app": "postgresql-persistent",
+                    "template": "postgresql-persistent-template"
+                }
+            },
+            "spec": {
+                "strategy": {
+                    "type": "Recreate"
+                },
+                "triggers": [
+                    {
+                        "type": "ImageChange",
+                        "imageChangeParams": {
+                            "automatic": true,
+                            "containerNames": [
+                                "postgresql"
+                            ],
+                            "from": {
+                                "kind": "ImageStreamTag",
+                                "name": "postgresql:9.5",
+                                "namespace": "openshift"
+                            }
+                        }
+                    },
+                    {
+                        "type": "ConfigChange"
+                    }
+                ],
+                "replicas": 1,
+                "selector": {
+                    "name": "vdb-builder-persistence"
+                },
+                "template": {
+                    "metadata": {
+                        "labels": {
+                            "name": "vdb-builder-persistence"
+                        }
+                    },
+                    "spec": {
+                        "terminationGracePeriodSeconds": 60,
+                        "containers": [
+                            {
+                                "name": "postgresql",
+                                "image": "centos/postgresql-95-centos7",
+                                "imagePullPolicy": "Always",
+                                "resources" : {
+                                    "limits" : {
+                                        "cpu" : "1",
+                                        "memory" : "512Mi"
+                                    }
+                                },
+                                "ports": [
+                                    {
+                                        "containerPort": 5432,
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "volumeMounts": [
+                                    {
+                                        "name": "vdb-builder-persistence-data",
+                                        "mountPath": "/var/lib/pgsql/data"
+                                    }
+                                ],
+                                "livenessProbe": {
+                                    "tcpSocket": {
+                                        "port": 5432
+                                    },
+                                    "initialDelaySeconds": 30,
+                                    "timeoutSeconds": 1,
+                                    "periodSeconds": 10,
+                                    "successThreshold": 1,
+                                    "failureThreshold": 3
+                                },
+                                "readinessProbe": {
+                                    "exec": {
+                                        "command": [
+                                            "/bin/sh",
+                                            "-i",
+                                            "-c",
+                                           "psql -h 127.0.0.1 -U $POSTGRESQL_USER -q -d $POSTGRESQL_DATABASE -c 'SELECT 1'"
+                                        ]
+                                    },
+                                    "initialDelaySeconds": 5,
+                                    "timeoutSeconds": 1,
+                                    "periodSeconds": 10,
+                                    "successThreshold": 1,
+                                    "failureThreshold": 3
+                                },
+                                "env": [
+                                    {
+                                        "name": "POSTGRESQL_USER",
+                                        "valueFrom": {
+                                            "secretKeyRef": {
+                                                "name": "vdb-builder-persistence",
+                                                "key": "database-user"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "POSTGRESQL_PASSWORD",
+                                        "valueFrom": {
+                                            "secretKeyRef": {
+                                                "name": "vdb-builder-persistence",
+                                                "key": "database-password"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "POSTGRESQL_DATABASE",
+                                        "value": "komodo"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }                
+            }
+        },
+        {
+            "kind": "DeploymentConfig",
+            "apiVersion": "v1",
+            "metadata": {
                 "name": "vdb-builder",
                 "labels": {
                     "application": "vdb-builder"
@@ -339,6 +462,10 @@
                                                 "fieldPath": "metadata.namespace"
                                             }
                                         }
+                                    },
+                                    {
+                                        "name": "komodo.persistenceHost",
+                                        "value": "vdb-builder-persistence"
                                     },
                                     {
                                         "name": "TEIID_USERNAME",

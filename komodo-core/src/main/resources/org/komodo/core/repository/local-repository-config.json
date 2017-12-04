@@ -17,14 +17,18 @@
     },
     "storage" : {
         "persistence" : {
-            "type" : "file",
-            "path": "${komodo.dataDir}/komododb"
+            "type" : "db",
+            "connectionUrl": "${komodo.connectionUrl}",
+            "driver" : "${komodo.connectionDriver}",
+            "username" : "komodo",
+            "password" : "komodo"
         },
         "binaryStorage" : {
-            "minimumBinarySizeInBytes" : 4096,
-            "minimumStringSize" : 4096,
-            "directory": "${komodo.dataDir}/storage/content/binaries",
-            "type" : "file"
+          "type"  : "database",
+          "driverClass" : "${komodo.connectionDriver}",
+          "url" : "${komodo.binaryStoreUrl}",
+          "username" : "komodo",
+          "password" : "komodo"
         },
         "transactionManagerLookup" : {
             "name" : "org.komodo.core.internal.repository.KTransactionManagerLookup" 
