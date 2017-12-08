@@ -9,9 +9,9 @@
 
     <connections>
         <connection-file
-            path="connections/MySqlPool-connection.xml"
+            path="connections/USStatesConnection.xml"
             publish="ifMissing"
-            jndiName="java:/MySqlDS" />
+            jndiName="java:/USStatesSource" />
     </connections>
 
     <drivers>

@@ -4,12 +4,12 @@
 <description>xx</description>
 <property name="dsbServiceSource" value="true"/>
 
-<model name="MySqlStates" type="PHYSICAL">
+<model name="USStates" type="PHYSICAL">
 <property name="importer.UseFullSchemaName" value="false"/>
 <property name="importer.UseQualifiedName" value="false"/>
 <property name="importer.UseCatalogName" value="false"/>
 <property name="importer.TableTypes" value="TABLE"/>
-<source name="MySqlStates" translator-name="mysql5" connection-jndi-name="java:/MySqlDS"/>
+<source name="USStates" translator-name="h2" connection-jndi-name="java:/USStatesSource"/>
 </model>
 
 </vdb>

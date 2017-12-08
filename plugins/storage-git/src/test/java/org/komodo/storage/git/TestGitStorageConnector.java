@@ -78,7 +78,7 @@ public class TestGitStorageConnector implements StringConstants {
         FORWARD_SLASH + "usstates" + FORWARD_SLASH + "META-INF" + NEW_LINE +
         FORWARD_SLASH + "usstates" + FORWARD_SLASH + "META-INF" + FORWARD_SLASH + "dataservice.xml" + NEW_LINE +
         FORWARD_SLASH + "usstates" + FORWARD_SLASH + "connections" + NEW_LINE +
-        FORWARD_SLASH + "usstates" + FORWARD_SLASH + "connections" + FORWARD_SLASH + "MySqlPool-connection.xml" + NEW_LINE +
+        FORWARD_SLASH + "usstates" + FORWARD_SLASH + "connections" + FORWARD_SLASH + "USStatesConnection.xml" + NEW_LINE +
         FORWARD_SLASH + "usstates" + FORWARD_SLASH + "drivers" + NEW_LINE +
         FORWARD_SLASH + "usstates" + FORWARD_SLASH + "drivers" + FORWARD_SLASH + "mysql-connector-java-5.1.39-bin.jar" + NEW_LINE +
         FORWARD_SLASH + "usstates" + FORWARD_SLASH + "usstates-vdb.xml" + NEW_LINE;
