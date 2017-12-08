@@ -56,6 +56,33 @@
         {
             "kind": "Service",
             "apiVersion": "v1",
+            "metadata": {
+                "name": "vdb-builder-persistence",
+                "labels": {
+                    "app": "postgresql-persistent",
+                    "template": "postgresql-persistent-template"
+                },
+                "annotations": {
+                    "template.openshift.io/expose-uri": "postgres://{.spec.clusterIP}:{.spec.ports[?(.name==\"postgresql\")].port}"
+                }
+            },
+            "spec": {
+                "ports": [
+                    {
+                        "name": "postgresql",
+                        "protocol": "TCP",
+                        "port": 5432,
+                        "targetPort": 5432
+                   }
+                ],
+                "selector": {
+                    "name": "vdb-builder-persistence"
+                }
+            }
+        },
+        {
+            "kind": "Service",
+            "apiVersion": "v1",
             "spec": {
                 "ports": [
                     {
@@ -351,20 +378,11 @@
                                 "env": [
                                     {
                                         "name": "POSTGRESQL_USER",
-                                        "valueFrom": {
-                                            "secretKeyRef": {
-                                                "name": "vdb-builder-persistence",
-                                                "key": "database-user"
-                                            }
-                                        }
+                                        "value": "komodo"
                                     },
                                     {
                                         "name": "POSTGRESQL_PASSWORD",
-                                        "valueFrom": {
-                                            "secretKeyRef": {
-                                                "name": "vdb-builder-persistence",
-                                                "key": "database-password"
-                                            }
+                                        "value": "komodo"
                                         }
                                     },
                                     {
@@ -372,6 +390,11 @@
                                         "value": "komodo"
                                     }
                                 ]
+                            }
+                        ],
+                        "volumes": [
+                            {
+                                "name": "vdb-builder-persistence-data"
                             }
                         ]
                     }
@@ -464,8 +487,12 @@
                                         }
                                     },
                                     {
-                                        "name": "komodo.persistenceHost",
-                                        "value": "vdb-builder-persistence"
+                                    	"name": "SWARM_JVM_ARGS",
+                                    	"value": "-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n"
+                                    },
+                                    {
+                                    	"name": "SWARM_JAR_ARGS",
+                                    	"value": "-DREPOSITORY_PERSISTENCE_HOST=vdb-builder-persistence"
                                     },
                                     {
                                         "name": "TEIID_USERNAME",
