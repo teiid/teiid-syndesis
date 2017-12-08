@@ -41,13 +41,14 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.importer.ImportOptions.ExistingNodeOptions;
+import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.TeiidSwarmConnectionProvider;
 import org.komodo.rest.TeiidSwarmMetadataInstance;
-import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.relational.KomodoRestUriBuilder;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.request.KomodoPathAttribute;
@@ -64,6 +65,7 @@ import org.komodo.spi.runtime.ConnectionDriver;
 import org.komodo.spi.runtime.TeiidDataSource;
 import org.komodo.spi.storage.StorageConnector;
 import org.komodo.test.utils.TestUtilities;
+import org.komodo.test.utils.UsStatesTestDB;
 import org.komodo.utils.FileUtils;
 
 @SuppressWarnings( {"javadoc", "nls"} )
@@ -74,6 +76,8 @@ public abstract class AbstractKomodoMetadataServiceTest extends AbstractFramewor
     private int testIndex = 0;
 
     private TeiidSwarmMetadataInstance instance;
+
+    private static UsStatesTestDB testDB;
 
     @Deployment( testable = false )
     public static WebArchive createRestDeployment() {
@@ -86,6 +90,16 @@ public abstract class AbstractKomodoMetadataServiceTest extends AbstractFramewor
         URI baseUri = URI.create("http://localhost" + COLON + TEST_PORT);
         baseUri = UriBuilder.fromUri(baseUri).scheme("http").path("/vdb-builder/v1").build();
         _uriBuilder = new KomodoRestUriBuilder(baseUri);
+
+        testDB = new UsStatesTestDB();
+    }
+
+    @AfterClass
+    public static void afterAllTests() throws Exception {
+        if (testDB == null)
+            return;
+
+        testDB.dispose();
     }
 
     protected void assertNoMysqlDriver() throws Exception {
@@ -331,7 +345,7 @@ public abstract class AbstractKomodoMetadataServiceTest extends AbstractFramewor
         }
     }
 
-    protected void queryDataService(KomodoQueryAttribute queryAttr, int expRowCount, int firstCellValue) throws Exception {
+    protected void queryDataService(KomodoQueryAttribute queryAttr, int expRowCount, String firstCellValue) throws Exception {
         URI uri;
         String entity;
         //
@@ -353,6 +367,6 @@ public abstract class AbstractKomodoMetadataServiceTest extends AbstractFramewor
     
         RestQueryRow firstRow = result.getRows()[0];
         String value = firstRow.getValues()[0];
-        assertEquals(new Integer(firstCellValue).toString(), value);
+        assertEquals(firstCellValue, value);
     }
 }

@@ -34,6 +34,10 @@ import org.komodo.test.utils.TestUtilities;
 @SuppressWarnings( {"javadoc", "nls"} )
 public class IT_KomodoMetadataServiceQueryTests extends AbstractKomodoMetadataServiceTest implements StringConstants {
 
+    private static final String USSTATES_TARGET = "usstates";
+
+    private static final String STATES_QUERY = "SELECT * FROM states";
+
     @Override
     protected int getTestTotalInClass() {
         return 3;
@@ -55,24 +59,24 @@ public class IT_KomodoMetadataServiceQueryTests extends AbstractKomodoMetadataSe
     @Test
     public void shouldQueryTeiid() throws Exception {
         KomodoQueryAttribute queryAttr = new KomodoQueryAttribute();
-        queryAttr.setQuery("SELECT * FROM state");
-        queryAttr.setTarget("usstates");
+        queryAttr.setQuery(STATES_QUERY);
+        queryAttr.setTarget(USSTATES_TARGET);
 
-        queryDataService(queryAttr, 59, 1);
+        queryDataService(queryAttr, 51, "AK");
     }
 
     @Test
     public void shouldQueryTeiidWithLimitAndOffset() throws Exception {
         KomodoQueryAttribute queryAttr = new KomodoQueryAttribute();
-        queryAttr.setQuery("SELECT * FROM state");
-        queryAttr.setTarget("usstates");
+        queryAttr.setQuery(STATES_QUERY);
+        queryAttr.setTarget(USSTATES_TARGET);
 
         int offset = 5;
         int limit = 10;
         queryAttr.setLimit(limit);
         queryAttr.setOffset(offset);
 
-        queryDataService(queryAttr, limit, offset);
+        queryDataService(queryAttr, limit, "CA");
     }
 
     @Test
@@ -81,9 +85,9 @@ public class IT_KomodoMetadataServiceQueryTests extends AbstractKomodoMetadataSe
                                 USER_NAME + FORWARD_SLASH + "UsStatesService";
 
         KomodoQueryAttribute queryAttr = new KomodoQueryAttribute();
-        queryAttr.setQuery("SELECT * FROM state");
+        queryAttr.setQuery(STATES_QUERY);
         queryAttr.setTarget(dsPath);
 
-        queryDataService(queryAttr, 59, 1);
+        queryDataService(queryAttr, 51, "AK");
     }
 }

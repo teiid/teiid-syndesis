@@ -150,9 +150,9 @@ public class KomodoDataserviceServiceTest extends AbstractKomodoServiceTest {
         assertEquals(1, connections.length);
 
         RestConnection connection = connections[0];
-        assertEquals("MySqlPool", connection.getId());
-        assertEquals("java:/MySqlDS", connection.getJndiName());
-        assertEquals("mysql-connector-java-5.1.39-bin.jar_com.mysql.jdbc.Driver_5_1", connection.getDriverName());
+        assertEquals("USStatesConnection", connection.getId());
+        assertEquals("java:/USStatesSource", connection.getJndiName());
+        assertEquals("h2", connection.getDriverName());
 
         Collection<RestLink> links = connection.getLinks();
         assertNotNull(links);

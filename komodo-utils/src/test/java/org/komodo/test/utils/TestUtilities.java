@@ -156,7 +156,12 @@ public class TestUtilities implements StringConstants {
     /**
      * US States Dataservice Example Zip
      */
-    public static final String US_STATES_DATASERVICE_TEIID_FILE = "usstates-dataservice-teiid9.zip";
+    public static final String US_STATES_SQL_FILE = "usstates.sql";
+
+    /**
+     * US States Dataservice Example Zip
+     */
+    public static final String US_STATES_DATASERVICE_TEIID_FILE = "usstates-dataservice.zip";
 
     /**
      * US States Dataservice name
@@ -796,6 +801,16 @@ public class TestUtilities implements StringConstants {
         return getResourceAsStream(TestUtilities.class,
                                    RESOURCES_DIRECTORY,
                                    SAMPLE_DATASERVICE_FILE);
+    }
+
+    /**
+     * @return input stream of us-states sql schema
+     * @throws Exception if error occurs
+     */
+    public static InputStream usStatesSql() throws Exception {
+            return getResourceAsStream(TestUtilities.class,
+                                       RESOURCES_DIRECTORY,
+                                       US_STATES_SQL_FILE);
     }
 
     /**
