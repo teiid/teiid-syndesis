@@ -68,7 +68,7 @@ public class KomodoSearchServiceTest extends AbstractKomodoServiceTest {
 
         assertResponse(response, HttpStatus.SC_FORBIDDEN);
         String entity = extractResponse(response);
-        System.out.println("Response:\n" + entity);
+//        System.out.println("Response:\n" + entity);
 
         JsonElement jelement = new JsonParser().parse(entity);
         assertNotNull(jelement);
@@ -541,7 +541,7 @@ public class KomodoSearchServiceTest extends AbstractKomodoServiceTest {
 
         okResponse(response);
         String entity = extractResponse(response);
-        System.out.println("Response:\n" + entity);
+//        System.out.println("Response:\n" + entity);
         assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
 
         RestBasicEntity[] entities = KomodoJsonMarshaller.unmarshallArray(entity, RestBasicEntity[].class);
@@ -623,7 +623,7 @@ public class KomodoSearchServiceTest extends AbstractKomodoServiceTest {
 
         okResponse(response);
         String entity = extractResponse(response);
-        System.out.println("Response:\n" + entity);
+//        System.out.println("Response:\n" + entity);
         RestBasicEntity[] entities = KomodoJsonMarshaller.unmarshallArray(entity, RestBasicEntity[].class);
         assertEquals(38, entities.length);
 
@@ -775,7 +775,7 @@ public class KomodoSearchServiceTest extends AbstractKomodoServiceTest {
         assertResponse(response, HttpStatus.SC_FORBIDDEN);
 
         String entity = extractResponse(response);
-        System.out.println("Response:\n" + entity);
+//        System.out.println("Response:\n" + entity);
         assertTrue(entity.contains("An error occurred whilst searching the workspace: " +
                             "Search requires the parameter valueParam but has not been provided a value"));
     }
