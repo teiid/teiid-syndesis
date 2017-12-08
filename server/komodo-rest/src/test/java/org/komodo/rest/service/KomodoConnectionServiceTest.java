@@ -135,7 +135,7 @@ public class KomodoConnectionServiceTest extends AbstractKomodoServiceTest {
 
         String entity = extractResponse(response);
         assertThat(entity, is(notNullValue()));
-        System.out.println("Response:\n" + entity);
+//        System.out.println("Response:\n" + entity);
 
         RestConnection rsObj = KomodoJsonMarshaller.unmarshall(entity, RestConnection.class);
         assertEquals(rcAttr.getDriver(), rsObj.getDriverName());
@@ -181,7 +181,7 @@ public class KomodoConnectionServiceTest extends AbstractKomodoServiceTest {
 
         String entity = extractResponse(response);
         assertThat(entity, is(notNullValue()));
-        System.out.println("Response:\n" + entity);
+//        System.out.println("Response:\n" + entity);
 
         RestConnection rsObj = KomodoJsonMarshaller.unmarshall(entity, RestConnection.class);
         assertEquals(rcAttr.getDriver(), rsObj.getDriverName());

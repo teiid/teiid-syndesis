@@ -87,11 +87,9 @@ public class TestObjectOperations implements StringConstants {
 
     @AfterClass
     public static void oneTimeTeardown() throws InterruptedException, ExecutionException {
-        System.out.println("Tearing down engine");
         if (engine == null)
             return;
 
-        System.out.println("State reachable so shutting down");
         Future<Boolean> shutdown = engine.shutdown();
         // Await the shutdown
         shutdown.get();
