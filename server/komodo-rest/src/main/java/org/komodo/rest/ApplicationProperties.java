@@ -21,9 +21,27 @@
  */
 package org.komodo.rest;
 
-public class ApplicationProperties {
+import org.komodo.spi.constants.SystemConstants;
+
+public class ApplicationProperties implements SystemConstants{
 
 	public static String getNamespace() {
 		return System.getProperty("NAMESPACE");
 	}
+
+	public static String getRepositoryPersistenceDriver() {
+		return System.getProperty(REPOSITORY_PERSISTENCE_CONNECTION_DRIVER);
+	}
+	
+	public static String getRepositoryPersistenceURL() {
+		return System.getProperty(REPOSITORY_PERSISTENCE_CONNECTION_URL);
+	}
+	
+	public static String getRepositoryPersistenceUser() {
+		return System.getProperty(REPOSITORY_PERSISTENCE_CONNECTION_USERNAME);
+	}
+	
+	public static String getRepositoryPersistencePassword() {
+		return System.getProperty(REPOSITORY_PERSISTENCE_CONNECTION_PASSWORD);
+	}	
 }

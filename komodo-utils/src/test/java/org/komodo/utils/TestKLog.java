@@ -33,6 +33,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.FileAttribute;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -54,8 +57,14 @@ public class TestKLog {
     @BeforeClass
     public static void initDataDirectory() throws Exception {
         // create data directory for engine logging
-        _dataDirectory = Files.createTempDirectory( "KomodoEngineDataDir" );
-        System.setProperty( SystemConstants.ENGINE_DATA_DIR, _dataDirectory.toString() );
+        _dataDirectory = Paths.get("target/KomodoEngineDataDir");    	
+    	File f = new File (_dataDirectory.toAbsolutePath().toString());
+    	if (f.exists()) {
+    		f.delete();
+    	} else {
+    		Files.createDirectory(_dataDirectory, new FileAttribute[0]);    		
+    	}
+        System.setProperty(SystemConstants.ENGINE_DATA_DIR,  _dataDirectory.toAbsolutePath().toString());     	
     }
 
     @AfterClass

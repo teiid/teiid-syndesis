@@ -22,9 +22,13 @@
 package org.komodo.core;
 
 import static org.junit.Assert.assertEquals;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.FileAttribute;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.komodo.spi.constants.StringConstants;
@@ -73,8 +77,14 @@ public abstract class AbstractLoggingTest implements StringConstants {
     @BeforeClass
     public static void initLogging() throws Exception {
         // create data directory for engine logging
-        _dataDirectory = Files.createTempDirectory( "KomodoEngineDataDir" );
-        System.setProperty( SystemConstants.ENGINE_DATA_DIR, _dataDirectory.toString() );
+        _dataDirectory = Paths.get("target/KomodoEngineDataDir");    	
+    	File f = new File (_dataDirectory.toAbsolutePath().toString());
+    	if (f.exists()) {
+    		f.delete();
+    	} else {
+    		Files.createDirectory(_dataDirectory, new FileAttribute[0]);    		
+    	}
+        System.setProperty(SystemConstants.ENGINE_DATA_DIR,  _dataDirectory.toAbsolutePath().toString());        
 
         // Initialises logging and reduces modeshape logging from DEBUG to INFO
         configureLogPath(KLog.getLogger());
