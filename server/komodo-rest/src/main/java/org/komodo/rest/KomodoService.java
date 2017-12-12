@@ -58,6 +58,7 @@ import org.komodo.rest.relational.RestEntityFactory;
 import org.komodo.rest.relational.connection.RestConnection;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.spi.KException;
+import org.komodo.spi.constants.SystemConstants;
 import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
@@ -76,7 +77,6 @@ import com.google.gson.Gson;
 public abstract class KomodoService implements V1Constants {
 
     public static final String KOMODO_USER = "anonymous";
-    public static final String DEV_MODE = "DEV_MODE";
 
     protected static final KLog LOGGER = KLog.getLogger();
 
@@ -205,7 +205,7 @@ public abstract class KomodoService implements V1Constants {
     	if (AuthHandlingFilter.threadOAuthCredentials.get() != null) {
     		return new SecurityPrincipal(AuthHandlingFilter.threadOAuthCredentials.get().getUser(), null);	
     	}
-    	if (System.getProperty(DEV_MODE) != null) {
+    	if (Boolean.getBoolean(SystemConstants.DEV_MODE)) {
     		return new SecurityPrincipal(KOMODO_USER, null);
     	}
 		return new SecurityPrincipal(null, createErrorResponse(Status.UNAUTHORIZED,

@@ -23,11 +23,14 @@ package org.komodo.rest.service;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.FileAttribute;
 import javax.ws.rs.core.MediaType;
 import org.apache.http.HttpEntity;
@@ -84,14 +87,20 @@ public class AbstractFrameworkTest implements StringConstants, V1Constants {
 
     @BeforeClass
     public static void beforeAllFramework() throws Exception {
-        _kengineDataDir = Files.createTempDirectory(null, new FileAttribute[0]);
-        System.setProperty(SystemConstants.ENGINE_DATA_DIR, _kengineDataDir.toString());
+    	_kengineDataDir = Paths.get("target/KomodoEngineDataDir");    	
+    	File f = new File (_kengineDataDir.toAbsolutePath().toString());
+    	if (f.exists()) {
+    		f.delete();
+    	} else {
+    		Files.createDirectory(_kengineDataDir, new FileAttribute[0]);    		
+    	}
+        System.setProperty(SystemConstants.ENGINE_DATA_DIR,  _kengineDataDir.toAbsolutePath().toString());
 
         //
         // Sets the persistence type to H2 for test purposes
         //
         System.setProperty(SystemConstants.REPOSITORY_PERSISTENCE_TYPE, PersistenceType.H2.name());
-        System.setProperty(KomodoService.DEV_MODE, "true");
+        System.setProperty(SystemConstants.DEV_MODE, "true");
     }
 
     @AfterClass
@@ -105,7 +114,7 @@ public class AbstractFrameworkTest implements StringConstants, V1Constants {
         } catch (Exception ex) {
             _kengineDataDir.toFile().deleteOnExit();
         }
-        System.setProperty(KomodoService.DEV_MODE, null);
+        System.setProperty(SystemConstants.DEV_MODE, "true");
     }
 
     protected HttpClient requestClient() {
