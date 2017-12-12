@@ -50,36 +50,35 @@ public interface SystemConstants extends StringConstants {
     String REPOSITORY_PERSISTENCE_TYPE = "REPOSITORY_PERSISTENCE_TYPE";
 
     /**
-     * The environment variable that defines the name of the host where the persistence store is located
-     * Cannot use 'komodo.' prefix since Openshift considers this invalid.
-     */
-    String REPOSITORY_PERSISTENCE_HOST = "REPOSITORY_PERSISTENCE_HOST";
-
-    /**
      * The environment variable that defines the connection url of the persistence database.
      * Values should be in the format "jdbc:<type>:<path>"
      */
-    String REPOSITORY_CONNECTION_URL = "komodo.connectionUrl";
+    String REPOSITORY_PERSISTENCE_CONNECTION_URL = "komodo.connectionUrl";
 
     /**
      * The environment variable that defines the connection url to the binary store of
      * the persistence database.
      * Values should be in the format "jdbc:<type>:<path>"
      */
-    String REPOSITORY_BINARY_STORE_URL = "komodo.binaryStoreUrl";
+    String REPOSITORY_PERSISTENCE_BINARY_STORE_URL = "komodo.binaryStoreUrl";
 
     /**
      * The environment variable that defines the driver used for connection to the persistence database
      */
-    String REPOSITORY_CONNECTION_DRIVER = "komodo.connectionDriver";
+    String REPOSITORY_PERSISTENCE_CONNECTION_DRIVER = "komodo.connectionDriver";
 
     /**
      * The repository persistence username
      */
-    String REPOSITORY_PERSISTENCE_USERNAME = "komodo";
+    String REPOSITORY_PERSISTENCE_CONNECTION_USERNAME = "komodo.user";
 
     /**
      * The repository persistence password
      */
-    String REPOSITORY_PERSISTENCE_PASSWORD = "komodo";
+    String REPOSITORY_PERSISTENCE_CONNECTION_PASSWORD = "komodo.password";
+    
+    /**
+     * Set true in Development mode.
+     */
+    String DEV_MODE = "DEV_MODE";    
 }
