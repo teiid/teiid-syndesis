@@ -2103,8 +2103,6 @@ public class TeiidSqlNodeVisitor extends AbstractNodeVisitor implements StringCo
 
         // join criteria
         KomodoObject[] criterions = references(context.tx(), node, JoinPredicate.JOIN_CRITERIA_REF_NAME);
-        int size = size(context.tx(), node, JoinPredicate.JOIN_CRITERIA_REF_NAME);
-        System.out.println(size);
         if (criterions.length > 0) {
             append(SPACE);
             append(ON);

@@ -1491,9 +1491,6 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
             paths.add(ko.getAbsolutePath());
         Collections.sort(paths);
 
-        for (String path : paths)
-            System.out.println(path);
-
         assertEquals(22, results.size());
     }
 

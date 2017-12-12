@@ -322,7 +322,7 @@ public class KomodoImportExportServiceTest extends AbstractKomodoServiceTest {
 
         okResponse(response);
         String entity = extractResponse(response);
-        System.out.println(entity);
+//        System.out.println(entity);
         assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
 
         ImportExportStatus status = KomodoJsonMarshaller.unmarshall(entity, ImportExportStatus.class);
@@ -381,7 +381,7 @@ public class KomodoImportExportServiceTest extends AbstractKomodoServiceTest {
 
         okResponse(response);
         String entity = extractResponse(response);
-        System.out.println(entity);
+//        System.out.println(entity);
         assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
 
         ImportExportStatus status = KomodoJsonMarshaller.unmarshall(entity, ImportExportStatus.class);
@@ -435,7 +435,7 @@ public class KomodoImportExportServiceTest extends AbstractKomodoServiceTest {
 
         okResponse(response);
         String entity = extractResponse(response);
-        System.out.println(entity);
+//        System.out.println(entity);
         assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
 
         ImportExportStatus status = KomodoJsonMarshaller.unmarshall(entity, ImportExportStatus.class);
@@ -515,7 +515,7 @@ public class KomodoImportExportServiceTest extends AbstractKomodoServiceTest {
 
         String dsName = "UsStatesService";
         List<String> zipEntries = TestUtilities.zipEntries(dsName, TestUtilities.usStatesDataserviceExample());
-        System.out.println(zipEntries);
+//        System.out.println(zipEntries);
 
         URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
                                             .path(V1Constants.IMPORT_EXPORT_SEGMENT)
@@ -537,7 +537,7 @@ public class KomodoImportExportServiceTest extends AbstractKomodoServiceTest {
 
         okResponse(response);
         String entity = extractResponse(response);
-        System.out.println(entity);
+//        System.out.println(entity);
 
         ImportExportStatus status = KomodoJsonMarshaller.unmarshall(entity, ImportExportStatus.class);
         assertNotNull(status);
@@ -585,7 +585,7 @@ public class KomodoImportExportServiceTest extends AbstractKomodoServiceTest {
 
         okResponse(response);
         String entity = extractResponse(response);
-        System.out.println(entity);
+//        System.out.println(entity);
 
         RestStorageType[] entities = KomodoJsonMarshaller.unmarshallArray(entity, RestStorageType[].class);
         assertNotNull(entities);

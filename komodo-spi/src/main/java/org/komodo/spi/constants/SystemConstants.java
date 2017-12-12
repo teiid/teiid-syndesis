@@ -24,7 +24,7 @@ package org.komodo.spi.constants;
 /**
  * Constants associated with the Komodo system and environment.
  */
-public interface SystemConstants {
+public interface SystemConstants extends StringConstants {
 
     /**
      * The environmental variable that can be set with the directory the Komodo engine will use while running. Default is
@@ -35,7 +35,7 @@ public interface SystemConstants {
     /**
      * The Komodo log file name.
      */
-    String LOG_FILE_NAME = StringConstants.KOMODO + StringConstants.DOT + StringConstants.LOG;
+    String LOG_FILE_NAME = KOMODO + DOT + LOG;
 
     /**
      * The environmental variable that can be set with the directory VDB Builder will use while running. Default is
@@ -43,4 +43,43 @@ public interface SystemConstants {
      */
     String VDB_BUILDER_DATA_DIR = "vdbbuilder.dataDir"; //$NON-NLS-1$
 
+    /**
+     * The environment variable that defines the type of the persistence to be used for modeshape.
+     * Values are either PGSQL or H2.
+     */
+    String REPOSITORY_PERSISTENCE_TYPE = "REPOSITORY_PERSISTENCE_TYPE";
+
+    /**
+     * The environment variable that defines the name of the host where the persistence store is located
+     * Cannot use 'komodo.' prefix since Openshift considers this invalid.
+     */
+    String REPOSITORY_PERSISTENCE_HOST = "REPOSITORY_PERSISTENCE_HOST";
+
+    /**
+     * The environment variable that defines the connection url of the persistence database.
+     * Values should be in the format "jdbc:<type>:<path>"
+     */
+    String REPOSITORY_CONNECTION_URL = "komodo.connectionUrl";
+
+    /**
+     * The environment variable that defines the connection url to the binary store of
+     * the persistence database.
+     * Values should be in the format "jdbc:<type>:<path>"
+     */
+    String REPOSITORY_BINARY_STORE_URL = "komodo.binaryStoreUrl";
+
+    /**
+     * The environment variable that defines the driver used for connection to the persistence database
+     */
+    String REPOSITORY_CONNECTION_DRIVER = "komodo.connectionDriver";
+
+    /**
+     * The repository persistence username
+     */
+    String REPOSITORY_PERSISTENCE_USERNAME = "komodo";
+
+    /**
+     * The repository persistence password
+     */
+    String REPOSITORY_PERSISTENCE_PASSWORD = "komodo";
 }

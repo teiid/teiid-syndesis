@@ -76,7 +76,7 @@ public class KomodoUtilServiceTest extends AbstractKomodoServiceTest {
         HttpResponse response = executeOk(request);
 
         String entity = extractResponse(response);
-        System.out.println("Response from uri " + uri + ":\n" + entity);
+//        System.out.println("Response from uri " + uri + ":\n" + entity);
         for (String expected : EXPECTED) {
             assertTrue(entity.contains(expected));
         }
@@ -162,7 +162,7 @@ public class KomodoUtilServiceTest extends AbstractKomodoServiceTest {
         HttpResponse response = executeOk(request);
 
         String entity = extractResponse(response);
-        System.out.println("Response from uri " + uri + ":\n" + entity);
+//        System.out.println("Response from uri " + uri + ":\n" + entity);
 
         InputStream schemaStream = getClass().getResourceAsStream("teiid-schema.json");
         String expected = TestUtilities.toString(schemaStream);
@@ -191,7 +191,7 @@ public class KomodoUtilServiceTest extends AbstractKomodoServiceTest {
         HttpResponse response = executeOk(request);
 
         String entity = extractResponse(response);
-        System.out.println("Response from uri " + uri + ":\n" + entity);
+//        System.out.println("Response from uri " + uri + ":\n" + entity);
 
         assertFalse(entity.contains("\"schema-1\" : {"));
         assertFalse(entity.contains("\"keng__id\" : \"vdb\""));
