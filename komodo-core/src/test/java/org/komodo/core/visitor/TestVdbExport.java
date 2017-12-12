@@ -81,7 +81,7 @@ public class TestVdbExport extends AbstractLocalRepositoryTest {
         // Create an XML Document from the filled writer
         //
         String testXML = testWriter.toString();
-        System.out.println(testXML);
+//        System.out.println(testXML);
         Document testDoc = TestUtilities.createDocument(testXML);
 
         //
@@ -121,7 +121,7 @@ public class TestVdbExport extends AbstractLocalRepositoryTest {
         // Create an XML Document from the filled writer
         //
         String testXML = testWriter.toString();
-        System.out.println(testXML);
+//        System.out.println(testXML);
         Document testDoc = TestUtilities.createDocument(testXML);
 
         //

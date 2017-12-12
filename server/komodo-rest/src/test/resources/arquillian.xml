@@ -6,7 +6,7 @@
 	<container qualifier="wildfly-swarm" default="true">
 		<configuration>
 			<property name="javaVmArguments">-Xmx2048m -Xms512m -XX:MaxPermSize=128m
-				-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n</property>
+				-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n -DREPOSITORY_PERSISTENCE_TYPE=H2</property>
 		</configuration>
 	</container>
 </arquillian>

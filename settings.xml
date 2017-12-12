@@ -22,7 +22,7 @@
             <enabled>true</enabled>
           </releases>
           <snapshots>
-            <enabled>true</enabled>
+            <enabled>false</enabled>
             <updatePolicy>never</updatePolicy>
           </snapshots>
         </repository>
@@ -35,7 +35,7 @@
             <enabled>true</enabled>
           </releases>
           <snapshots>
-            <enabled>true</enabled>
+            <enabled>false</enabled>
           </snapshots>
         </pluginRepository>
         <pluginRepository>
@@ -110,7 +110,7 @@
             <updatePolicy>never</updatePolicy>
           </releases>
           <snapshots>
-            <enabled>true</enabled>
+            <enabled>false</enabled>
             <updatePolicy>never</updatePolicy>
           </snapshots>
         </repository>
@@ -126,7 +126,7 @@
             <updatePolicy>never</updatePolicy>
           </releases>
           <snapshots>
-            <enabled>true</enabled>
+            <enabled>false</enabled>
             <updatePolicy>never</updatePolicy>
           </snapshots>
         </pluginRepository>
@@ -145,7 +145,7 @@
             <updatePolicy>never</updatePolicy>
           </releases>
           <snapshots>
-            <enabled>true</enabled>
+            <enabled>false</enabled>
             <updatePolicy>never</updatePolicy>
           </snapshots>
         </repository>
@@ -202,7 +202,7 @@
             <updatePolicy>never</updatePolicy>
           </releases>
           <snapshots>
-            <enabled>true</enabled>
+            <enabled>false</enabled>
 			<updatePolicy>daily</updatePolicy>
           </snapshots>
         </repository>

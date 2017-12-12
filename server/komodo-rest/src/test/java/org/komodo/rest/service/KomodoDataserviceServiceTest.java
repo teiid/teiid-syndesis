@@ -143,16 +143,16 @@ public class KomodoDataserviceServiceTest extends AbstractKomodoServiceTest {
         String entity = extractResponse(response);
         assertThat(entity, is(notNullValue()));
 
-        System.out.println("Response:\n" + entity);
+//        System.out.println("Response:\n" + entity);
 
         RestConnection[] connections = KomodoJsonMarshaller.unmarshallArray(entity, RestConnection[].class);
         assertNotNull(connections);
         assertEquals(1, connections.length);
 
         RestConnection connection = connections[0];
-        assertEquals("MySqlPool", connection.getId());
-        assertEquals("java:/MySqlDS", connection.getJndiName());
-        assertEquals("mysql-connector-java-5.1.39-bin.jar_com.mysql.jdbc.Driver_5_1", connection.getDriverName());
+        assertEquals("USStatesConnection", connection.getId());
+        assertEquals("java:/USStatesSource", connection.getJndiName());
+        assertEquals("h2", connection.getDriverName());
 
         Collection<RestLink> links = connection.getLinks();
         assertNotNull(links);
@@ -186,7 +186,7 @@ public class KomodoDataserviceServiceTest extends AbstractKomodoServiceTest {
         String entity = extractResponse(response);
         assertThat(entity, is(notNullValue()));
 
-        System.out.println("Response:\n" + entity);
+//        System.out.println("Response:\n" + entity);
 
         RestConnectionDriver[] drivers = KomodoJsonMarshaller.unmarshallArray(entity, RestConnectionDriver[].class);
         assertNotNull(drivers);

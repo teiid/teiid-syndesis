@@ -376,7 +376,7 @@ public final class KomodoSearchService extends KomodoService {
                 os.setParameterValue(parameter.getKey(), value);
             }
 
-            System.out.println(RepositoryTools.traverse(uow, repo.komodoWorkspace(uow)));
+//            System.out.println(RepositoryTools.traverse(uow, repo.komodoWorkspace(uow)));
 
             // Execute the search
             List<KomodoObject> searchObjects = os.searchObjects(uow);

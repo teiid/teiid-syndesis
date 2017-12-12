@@ -50,7 +50,7 @@ public class IT_KomodoTest {
 		HttpGet httpGet = new HttpGet("http://localhost:8080/vdb-builder/v1/workspace/connections");
 		CloseableHttpResponse response1 = httpclient.execute(httpGet);
 		try {
-		    System.out.println(response1.getStatusLine());
+//		    System.out.println(response1.getStatusLine());
 		    HttpEntity entity1 = response1.getEntity();
 		    // do something useful with the response body
 		    // and ensure it is fully consumed

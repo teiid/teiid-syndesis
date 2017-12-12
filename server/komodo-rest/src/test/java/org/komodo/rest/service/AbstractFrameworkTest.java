@@ -56,6 +56,7 @@ import org.komodo.rest.relational.KomodoRestUriBuilder;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.constants.SystemConstants;
+import org.komodo.spi.repository.PersistenceType;
 import org.komodo.utils.FileUtils;
 
 public class AbstractFrameworkTest implements StringConstants, V1Constants {
@@ -67,11 +68,11 @@ public class AbstractFrameworkTest implements StringConstants, V1Constants {
         DELETE
     }
 
-    protected static int TEST_PORT = 8080;
+    protected static final int TEST_PORT = 8080;
 
-    protected static String USER_NAME = KomodoService.KOMODO_USER;
+    protected static final String USER_NAME = KomodoService.KOMODO_USER;
     
-    protected static String PASSWORD = "user";
+    protected static final String PASSWORD = "user";
 
     protected static Path _kengineDataDir;
 
@@ -82,9 +83,14 @@ public class AbstractFrameworkTest implements StringConstants, V1Constants {
     }
 
     @BeforeClass
-    public static void beforeAll() throws Exception {
+    public static void beforeAllFramework() throws Exception {
         _kengineDataDir = Files.createTempDirectory(null, new FileAttribute[0]);
         System.setProperty(SystemConstants.ENGINE_DATA_DIR, _kengineDataDir.toString());
+
+        //
+        // Sets the persistence type to H2 for test purposes
+        //
+        System.setProperty(SystemConstants.REPOSITORY_PERSISTENCE_TYPE, PersistenceType.H2.name());
     }
 
     @AfterClass

@@ -496,7 +496,6 @@ public class TestObjectSearcher extends AbstractLocalRepositoryTest {
                                      " AND ISCHILDNODE('" + testModel1.getAbsolutePath() + "')" +
                                      " )";
         assertEquals(expected, os.toString(getTransaction()));
-        System.out.println(expected);
 
         List<KomodoObject> searchObjects = os.searchObjects(getTransaction());
 
@@ -524,7 +523,6 @@ public class TestObjectSearcher extends AbstractLocalRepositoryTest {
                                      testModel1.getAbsolutePath() + "/%'" +
                                      " )";
         assertEquals(expected, os.toString(getTransaction()));
-        System.out.println(expected);
 
         searchObjects = os.searchObjects(getTransaction());
 
@@ -533,7 +531,6 @@ public class TestObjectSearcher extends AbstractLocalRepositoryTest {
 
         for (KomodoObject searchObject : searchObjects) {
             String name = searchObject.getName(getTransaction());
-            System.out.println(searchObject.getAbsolutePath());
             assertTrue(name.startsWith("TestModelSource1-"));
         }
     }
