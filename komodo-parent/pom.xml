@@ -131,7 +131,7 @@
 		<!-- dependencies from IP-BOM -->
 				
 		<version.commons.io>2.5</version.commons.io>
-		<version.org.teiid>9.3.2</version.org.teiid>
+		<version.org.teiid>10.0.0.Final</version.org.teiid>
 
 		<!-- Instruct the build to use only UTF-8 encoding for source code -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -174,7 +174,9 @@
 		<version.resteasy>3.0.19.Final</version.resteasy>
 		<version.jboss.logging>3.3.0.Final</version.jboss.logging>
 		<version.org.mockito>1.10.19</version.org.mockito>	
-		<version.com.fasterxml.jackson>2.7.4</version.com.fasterxml.jackson>			
+		<version.com.fasterxml.jackson>2.7.4</version.com.fasterxml.jackson>
+        <version.org.osb>1.0.0-SNAPSHOT</version.org.osb>
+        <org.apache.httpcomponents.version>4.5.3</org.apache.httpcomponents.version>			
 	</properties>
 
 	<!-- This section defines the default dependency settings inherited by child 
@@ -339,37 +341,37 @@
 			</dependency>
 
 			<dependency>
-				<groupId>org.jboss.teiid</groupId>
+				<groupId>org.teiid</groupId>
 				<artifactId>teiid-common-core</artifactId>
 				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.jboss.teiid</groupId>
+				<groupId>org.teiid</groupId>
 				<artifactId>teiid-api</artifactId>
 				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.jboss.teiid</groupId>
+				<groupId>org.teiid</groupId>
 				<artifactId>teiid-engine</artifactId>
 				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.jboss.teiid</groupId>
+				<groupId>org.teiid</groupId>
 				<artifactId>teiid-runtime</artifactId>
 				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.jboss.teiid</groupId>
+				<groupId>org.teiid</groupId>
 				<artifactId>teiid-admin</artifactId>
 				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.jboss.teiid</groupId>
+				<groupId>org.teiid</groupId>
 				<artifactId>teiid-jboss-admin</artifactId>
 				<version>${version.org.teiid}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.jboss.teiid</groupId>
+				<groupId>org.teiid</groupId>
 				<artifactId>teiid-client</artifactId>
 				<version>${version.org.teiid}</version>
 			</dependency>
@@ -378,6 +380,17 @@
 				<artifactId>teiid-jdbc</artifactId>
 				<version>${version.wildfly.swarm}</version>
 			</dependency>
+      
+            <dependency>
+              <groupId>org.osb</groupId>
+              <artifactId>kubernetes-service-catalog-client</artifactId>
+              <version>${version.org.osb}</version>        
+            </dependency>   
+            <dependency>
+              <groupId>org.apache.httpcomponents</groupId>
+              <artifactId>httpclient</artifactId>
+              <version>${org.apache.httpcomponents.version}</version>
+            </dependency>                
 
 			<!--Inherited from BOM, but changes the default scope to "test" -->
 			<dependency>
