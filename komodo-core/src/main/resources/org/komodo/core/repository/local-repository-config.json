@@ -20,15 +20,15 @@
             "type" : "db",
             "connectionUrl": "${komodo.connectionUrl}",
             "driver" : "${komodo.connectionDriver}",
-            "username" : "${komodo.user}",
-            "password" : "${komodo.password}"
+            "username" : "komodo",
+            "password" : "komodo"
         },
         "binaryStorage" : {
           "type"  : "database",
           "driverClass" : "${komodo.connectionDriver}",
           "url" : "${komodo.binaryStoreUrl}",
-          "username" : "${komodo.user}",
-          "password" : "${komodo.password}"
+          "username" : "komodo",
+          "password" : "komodo"
         },
         "transactionManagerLookup" : {
             "name" : "org.komodo.core.internal.repository.KTransactionManagerLookup" 

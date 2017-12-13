@@ -30,23 +30,17 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.FileAttribute;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
 import org.junit.After;
 import org.junit.Assume;
 import org.junit.Before;
@@ -88,38 +82,37 @@ public class TestLocalRepositoryPersistence extends AbstractLoggingTest implemen
 
     private Connection connection = null;
 
-    private String komodoTestDir() throws IOException{
-    	Path dir = Paths.get("target/TestLocalRepositoryPersistence");    	
-    	File f = new File (dir.toAbsolutePath().toString());
-    	if (f.exists()) {
-    		f.delete();
-    	} else {
-    		Files.createDirectory(dir, new FileAttribute[0]);    		
-    	}
-        System.setProperty(ENGINE_DATA_DIR,  dir.toAbsolutePath().toString());
+    private String komodoTestDir() {
+        System.setProperty(ENGINE_DATA_DIR, System.getProperty(JAVA_IO_TMPDIR) + File.separator + "TestLocalRepositoryPersistence");
         return System.getProperty(ENGINE_DATA_DIR);
     }
 
+    private String komodoPersistenceHost() {
+        System.setProperty(REPOSITORY_PERSISTENCE_HOST, "localhost");
+        return System.getProperty(REPOSITORY_PERSISTENCE_HOST);
+    }
+
     private String komodoConnectionUrl(PersistenceType persistenceType) {
-        System.setProperty(SystemConstants.REPOSITORY_PERSISTENCE_CONNECTION_URL, persistenceType.getConnUrl());
-        return System.getProperty(SystemConstants.REPOSITORY_PERSISTENCE_CONNECTION_URL);
+        System.setProperty(SystemConstants.REPOSITORY_CONNECTION_URL, persistenceType.getConnUrl());
+        return System.getProperty(SystemConstants.REPOSITORY_CONNECTION_URL);
     }
 
     private String komodoBinaryUrl(PersistenceType persistenceType) {
-        System.setProperty(SystemConstants.REPOSITORY_PERSISTENCE_BINARY_STORE_URL, persistenceType.getBinaryStoreUrl());
-        return System.getProperty(SystemConstants.REPOSITORY_PERSISTENCE_BINARY_STORE_URL);
+        System.setProperty(SystemConstants.REPOSITORY_BINARY_STORE_URL, persistenceType.getBinaryStoreUrl());
+        return System.getProperty(SystemConstants.REPOSITORY_BINARY_STORE_URL);
     }
 
     private String komodoConnectionDriver(PersistenceType persistenceType) {
-        System.setProperty(SystemConstants.REPOSITORY_PERSISTENCE_CONNECTION_DRIVER, persistenceType.getDriver());
-        return System.getProperty(SystemConstants.REPOSITORY_PERSISTENCE_CONNECTION_DRIVER);
+        System.setProperty(SystemConstants.REPOSITORY_CONNECTION_DRIVER, persistenceType.getDriver());
+        return System.getProperty(SystemConstants.REPOSITORY_CONNECTION_DRIVER);
     }
 
-    private void setKomodoDataDir(PersistenceType persistenceType) throws Exception {
-    	komodoTestDir();
-    	komodoConnectionUrl(persistenceType);
-    	komodoBinaryUrl(persistenceType);
-    	komodoConnectionDriver(persistenceType);    	
+    private void setKomodoDataDir(PersistenceType persistenceType) {
+        komodoTestDir();
+        komodoPersistenceHost();
+        komodoConnectionUrl(persistenceType);
+        komodoBinaryUrl(persistenceType);
+        komodoConnectionDriver(persistenceType);
         PRODUCTION_REPOSITORY_DB = komodoTestDir() + File.separator + "komododb";
     }
 
@@ -227,14 +220,16 @@ public class TestLocalRepositoryPersistence extends AbstractLoggingTest implemen
         connection = null;
     }
 
-    private Connection postgresDBConnection(PersistenceType type) {
+    private Connection postgresDBConnection() {
         Connection connection = null;
         //
         // Check we have a postgres db handy. If not then skip this test
         //
         try {
-            Class.forName(type.getDriver());
-            connection = DriverManager.getConnection(type.getConnUrl(), type.getUser(), type.getPassword());
+            Class.forName(PersistenceType.PGSQL.getDriver());
+            connection = DriverManager.getConnection(PersistenceType.PGSQL.getConnUrl(),
+                                                                    REPOSITORY_PERSISTENCE_USERNAME,
+                                                                    REPOSITORY_PERSISTENCE_PASSWORD);
         } catch (Exception ex) {
             // Nothing to do
         }
@@ -352,7 +347,7 @@ public class TestLocalRepositoryPersistence extends AbstractLoggingTest implemen
 
     @Test
     public void testProductionRepositoryPersistenceWorkspacePSQL() throws Exception {
-        connection  = postgresDBConnection(PersistenceType.PGSQL);
+        connection  = postgresDBConnection();
         Assume.assumeNotNull(connection);
 
         setKomodoDataDir(PersistenceType.PGSQL);
@@ -433,7 +428,7 @@ public class TestLocalRepositoryPersistence extends AbstractLoggingTest implemen
 
     @Test
     public void testProductionRepositoryPersistenceObjectsPSQL() throws Exception {
-        connection = postgresDBConnection(PersistenceType.PGSQL);
+        connection = postgresDBConnection();
         Assume.assumeNotNull(connection);
 
         setKomodoDataDir(PersistenceType.PGSQL);
@@ -546,7 +541,7 @@ public class TestLocalRepositoryPersistence extends AbstractLoggingTest implemen
 
     @Test
     public void testBinaryValuePersistencePSQL() throws Exception {
-        connection = postgresDBConnection(PersistenceType.PGSQL);
+        connection = postgresDBConnection();
         Assume.assumeNotNull(connection);
 
         setKomodoDataDir(PersistenceType.PGSQL);

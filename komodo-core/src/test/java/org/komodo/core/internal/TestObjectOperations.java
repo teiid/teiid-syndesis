@@ -28,12 +28,9 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.FileAttribute;
 import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -84,14 +81,8 @@ public class TestObjectOperations implements StringConstants {
 
     @BeforeClass
     public static void oneTimeSetup() throws Exception {
-        _dataDirectory = Paths.get("target/KomodoEngineDataDir");    	
-    	File f = new File (_dataDirectory.toAbsolutePath().toString());
-    	if (f.exists()) {
-    		f.delete();
-    	} else {
-    		Files.createDirectory(_dataDirectory, new FileAttribute[0]);    		
-    	}
-        System.setProperty(SystemConstants.ENGINE_DATA_DIR,  _dataDirectory.toAbsolutePath().toString()); 
+        _dataDirectory = Files.createTempDirectory( "KomodoEngineDataDir" );
+        System.setProperty( SystemConstants.ENGINE_DATA_DIR, _dataDirectory.toString() );
     }
 
     @AfterClass

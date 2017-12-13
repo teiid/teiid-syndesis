@@ -36,8 +36,8 @@ public enum PersistenceType {
     /**
      * PostgreSQL database used for production
      */
-    PGSQL (System.getProperty(SystemConstants.REPOSITORY_PERSISTENCE_CONNECTION_URL),
-    		System.getProperty(SystemConstants.REPOSITORY_PERSISTENCE_CONNECTION_DRIVER), true);
+    PGSQL ("jdbc:postgresql://${REPOSITORY_PERSISTENCE_HOST}/komodo",
+                   "org.postgresql.Driver", true);
 
     private String connUrl;
 
@@ -72,9 +72,6 @@ public enum PersistenceType {
     }
 
     public String getConnUrl() {
-    	if (connUrl == null && Boolean.getBoolean(SystemConstants.DEV_MODE)) {
-    		return "jdbc:postgresql://localhost/komodo";
-    	}
         return connUrl;
     }
 
@@ -82,14 +79,12 @@ public enum PersistenceType {
      * @return the connection url with any know system properties replaced with their values
      */
     public String getEvaluatedConnUrl() {
-        String url = substitute(getConnUrl(), SystemConstants.ENGINE_DATA_DIR);
+        String url = substitute(connUrl, SystemConstants.ENGINE_DATA_DIR);
+        url = substitute(connUrl, SystemConstants.REPOSITORY_PERSISTENCE_HOST);
         return url;
     }
 
     public String getBinaryStoreUrl() {
-    	if (binaryUrl == null) {
-    		return getConnUrl();
-    	}
         return binaryUrl;
     }
 
@@ -97,33 +92,15 @@ public enum PersistenceType {
      * @return the binary store url with any know system properties replaced with their values
      */
     public String getEvaluatedBinaryStoreUrl() {
-        String url = substitute(getBinaryStoreUrl(), SystemConstants.ENGINE_DATA_DIR);
+        String url = substitute(binaryUrl, SystemConstants.ENGINE_DATA_DIR);
+        url = substitute(binaryUrl, SystemConstants.REPOSITORY_PERSISTENCE_HOST);
         return url;
     }
 
     public String getDriver() {
-    	if (driver == null && Boolean.getBoolean(SystemConstants.DEV_MODE)) {
-    		return "org.postgresql.Driver";
-    	}
         return driver;
     }
-    
-    public String getUser() {
-    	String user = System.getProperty(SystemConstants.REPOSITORY_PERSISTENCE_CONNECTION_USERNAME);
-    	if (user == null && Boolean.getBoolean(SystemConstants.DEV_MODE)) {
-    		return "komodo";
-    	}    	
-    	return user;
-    }
 
-    public String getPassword() {
-    	String password = System.getProperty(SystemConstants.REPOSITORY_PERSISTENCE_CONNECTION_PASSWORD);
-    	if (password == null && Boolean.getBoolean(SystemConstants.DEV_MODE)) {
-    		return "komodo";
-    	}
-    	return password;
-    }
-    
     /**
      * In cases like PGSQL, the data store is externally managed while H2 is internally managed.
      * This flag distinguishes between the two types of store.
