@@ -621,26 +621,26 @@ public class KomodoRestV1Application extends Application implements SystemConsta
             //
             PersistenceType persistenceType = PersistenceType.PGSQL;
             String pType = System.getProperty(REPOSITORY_PERSISTENCE_TYPE);
-            if (PersistenceType.H2.name().equals(pType)) {
+            if (PersistenceType.H2.name().equals(pType))
                 persistenceType = PersistenceType.H2;
-            }
-            if (System.getProperty(REPOSITORY_PERSISTENCE_CONNECTION_URL) == null) {
-            	System.setProperty(REPOSITORY_PERSISTENCE_CONNECTION_URL, persistenceType.getConnUrl());
-            }
-            if (System.getProperty(REPOSITORY_PERSISTENCE_BINARY_STORE_URL) == null) {
-            	System.setProperty(REPOSITORY_PERSISTENCE_BINARY_STORE_URL, persistenceType.getBinaryStoreUrl());
-            }
-            if (System.getProperty(REPOSITORY_PERSISTENCE_CONNECTION_DRIVER) == null) {
-            	System.setProperty(REPOSITORY_PERSISTENCE_CONNECTION_DRIVER, persistenceType.getDriver());
-            }
-            
+
+            //
+            // Configure properties for persistence connection
+            //
+            String persistenceHost = System.getProperty(REPOSITORY_PERSISTENCE_HOST);
+            if (persistenceHost == null)
+                System.setProperty(REPOSITORY_PERSISTENCE_HOST, "localhost"); // default to localhost if not set
+
+            System.setProperty(REPOSITORY_CONNECTION_URL, persistenceType.getConnUrl());
+            System.setProperty(REPOSITORY_BINARY_STORE_URL, persistenceType.getBinaryStoreUrl());
+            System.setProperty(REPOSITORY_CONNECTION_DRIVER, persistenceType.getDriver());
+
             //
             // No preStartCheck for H2 as its generated upon first repository connection
             // Other persistence types are external so do require this.
             //
-            if(persistenceType.isExternal()) {
+            if(persistenceType.isExternal())
                 preStartCheck(persistenceType);
-            }
 
         } catch (Exception ex) {
             throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
@@ -781,11 +781,14 @@ public class KomodoRestV1Application extends Application implements SystemConsta
         java.sql.Connection connection = null;
         String connUrl = persistenceType.getEvaluatedConnUrl();
         try  {
-			connection = DriverManager.getConnection(connUrl, ApplicationProperties.getRepositoryPersistenceUser(),
-					ApplicationProperties.getRepositoryPersistencePassword());
+            connection = DriverManager.getConnection(connUrl,
+                                                                        REPOSITORY_PERSISTENCE_USERNAME,
+                                                                        REPOSITORY_PERSISTENCE_PASSWORD);
         } catch (Exception ex) {
-        	// this is a check do not throw a exception, not put passwords in log.
-        	KLog.getLogger().info("Failed to connect to " + persistenceType.name() + " database: " + persistenceType.getConnUrl());
+            throw new WebApplicationException("Failed to connect to " + persistenceType.name() + " database: " +
+                                                                                     connUrl + SEMI_COLON +
+                                                                                    REPOSITORY_PERSISTENCE_USERNAME + COLON +
+                                                                                    REPOSITORY_PERSISTENCE_PASSWORD, ex);
         } finally {
             if(connection != null) {
                 try {
