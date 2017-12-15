@@ -492,8 +492,8 @@
                                     },
                                     {
                                     	"name": "SWARM_JAR_ARGS",
-                                    	"value": "-DREPOSITORY_PERSISTENCE_HOST=vdb-builder-persistence"
-                                    },
+                                    	"value": "-Dkomodo.user=komodo -Dkomodo.password=komodo -Dkomodo.connectionUrl=jdbc:postgresql://vdb-builder-persistence:5432/komodo -Dkomodo.binaryStoreUrl=jdbc:postgresql://vdb-builder-persistence:5432/komodo -Dkomodo.connectionDriver=org.postgresql.Driver"
+                                    },                                    
                                     {
                                         "name": "TEIID_USERNAME",
                                         "value": "${TEIID_USERNAME}"

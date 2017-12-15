@@ -52,6 +52,7 @@ import org.komodo.spi.query.QSColumn;
 import org.komodo.spi.query.QSResult;
 import org.komodo.spi.query.QSRow;
 import org.komodo.spi.runtime.ConnectionDriver;
+import org.komodo.spi.runtime.ServiceCatalogDataSource;
 import org.komodo.spi.runtime.TeiidDataSource;
 import org.komodo.spi.runtime.TeiidPropertyDefinition;
 import org.komodo.spi.runtime.TeiidTranslator;
@@ -122,7 +123,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
         this.connectionProvider = connectionProvider;
     }
 
-    private Admin admin() throws AdminException {
+    protected Admin admin() throws AdminException {
     	return connectionProvider.getAdmin();
     }
     
@@ -133,7 +134,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
      *        the error being handled (cannot be <code>null</code>)
      * @return the error (never <code>null</code>)
      */
-    private static KException handleError(Throwable e) {
+    protected static KException handleError(Throwable e) {
         assert (e != null);
     
         if (e instanceof KException) {
@@ -143,7 +144,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
         return new KException(e);
     }
 
-    private void checkStarted() throws KException {
+    protected void checkStarted() throws KException {
         if (getCondition() != Condition.REACHABLE) {
         	String msg = Messages.getString(Messages.MetadataServer.serverCanNotBeReached);
 	        throw new KException(msg);
@@ -740,4 +741,14 @@ public class DefaultMetadataInstance implements MetadataInstance {
             throw handleError(ex);
         }
     }
+
+	@Override
+	public Set<ServiceCatalogDataSource> getServiceCatalogSources() throws KException {
+        throw new KException(Messages.getString(Messages.MetadataServer.notImplemented));
+	}
+
+	@Override
+	public void bindToServiceCatalogSource(String dsName) throws KException {
+		throw new KException(Messages.getString(Messages.MetadataServer.notImplemented));
+	}
 }

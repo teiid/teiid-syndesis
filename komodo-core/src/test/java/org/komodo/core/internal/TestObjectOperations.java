@@ -26,14 +26,15 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.PathNotFoundException;
@@ -45,6 +46,7 @@ import javax.jcr.Session;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -52,12 +54,12 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.constants.SystemConstants;
 import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
 import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
 import org.komodo.test.utils.TestUtilities;
 import org.komodo.utils.FileUtils;
 import org.komodo.utils.KLog;
+import org.komodo.utils.TestKLog;
 import org.modeshape.common.collection.Problem;
 import org.modeshape.common.collection.Problems;
 import org.modeshape.jcr.JcrRepository;
@@ -81,8 +83,7 @@ public class TestObjectOperations implements StringConstants {
 
     @BeforeClass
     public static void oneTimeSetup() throws Exception {
-        _dataDirectory = Files.createTempDirectory( "KomodoEngineDataDir" );
-        System.setProperty( SystemConstants.ENGINE_DATA_DIR, _dataDirectory.toString() );
+        _dataDirectory = TestKLog.createEngineDirectory(); 	
     }
 
     @AfterClass

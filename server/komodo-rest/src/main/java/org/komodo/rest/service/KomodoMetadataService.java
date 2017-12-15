@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.naming.InitialContext;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -55,6 +56,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
+
 import org.komodo.core.KEngine;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
@@ -80,10 +82,12 @@ import org.komodo.rest.relational.request.KomodoDataSourceJdbcTableAttributes;
 import org.komodo.rest.relational.request.KomodoFileAttributes;
 import org.komodo.rest.relational.request.KomodoPathAttribute;
 import org.komodo.rest.relational.request.KomodoQueryAttribute;
+import org.komodo.rest.relational.request.KomodoServiceCatalogDataSourceAttributes;
 import org.komodo.rest.relational.request.KomodoVdbUpdateAttributes;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.RestConnectionDriver;
 import org.komodo.rest.relational.response.RestQueryResult;
+import org.komodo.rest.relational.response.RestServiceCatalogDataSource;
 import org.komodo.rest.relational.response.RestVdb;
 import org.komodo.rest.relational.response.RestVdbTranslator;
 import org.komodo.rest.relational.response.metadata.RestMetadataConnection;
@@ -104,6 +108,7 @@ import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.spi.runtime.ConnectionDriver;
+import org.komodo.spi.runtime.ServiceCatalogDataSource;
 import org.komodo.spi.runtime.TeiidDataSource;
 import org.komodo.spi.runtime.TeiidPropertyDefinition;
 import org.komodo.spi.runtime.TeiidTranslator;
@@ -116,6 +121,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -3284,4 +3290,123 @@ public class KomodoMetadataService extends KomodoService {
             return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.METADATA_SERVICE_GET_TEMPLATE_ENTRIES_ERROR);
         }
     }
+    
+	@GET
+	@Path(V1Constants.SERVICE_CATALOG_SOURCES)
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "Display the collection of a", response = RestServiceCatalogDataSource[].class)
+	@ApiResponses(value = { @ApiResponse(code = 403, message = "An error has occurred.") })
+	public Response getServiceCatalogSources(final @Context HttpHeaders headers, final @Context UriInfo uriInfo)
+			throws KomodoRestException {
+
+		SecurityPrincipal principal = checkSecurityContext(headers);
+		if (principal.hasErrorResponse())
+			return principal.getErrorResponse();
+
+		List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+		UnitOfWork uow = null;
+
+		try {
+			Repository repo = this.kengine.getDefaultRepository();
+			uow = createTransaction(principal, "availableSources", true); //$NON-NLS-1$
+
+			// Get OpenShift based available data services
+			Collection<ServiceCatalogDataSource> dataSources = getMetadataInstance().getServiceCatalogSources();
+			LOGGER.info("serviceCatalogSources '{0}' DataSources", dataSources.size()); //$NON-NLS-1$
+
+			final List<RestServiceCatalogDataSource> entities = new ArrayList<>();
+
+			for (ServiceCatalogDataSource dataSource : dataSources) {
+				RestServiceCatalogDataSource entity = entityFactory.createServiceCatalogDataSource(uow, repo,
+						dataSource, uriInfo.getBaseUri());
+				entities.add(entity);
+				LOGGER.info("serviceCatalogSources:Data Source '{0}' entity was constructed", dataSource.getName()); //$NON-NLS-1$
+			}
+			// create response
+			return commit(uow, mediaTypes, entities);
+		} catch (CallbackTimeoutException ex) {
+			return createTimeoutResponse(mediaTypes);
+		} catch (Throwable e) {
+			if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+				uow.rollback();
+			}
+			if (e instanceof KomodoRestException) {
+				throw (KomodoRestException) e;
+			}
+			return createErrorResponseWithForbidden(mediaTypes, e,
+					RelationalMessages.Error.METADATA_SERVICE_CATALOG_GET_DATA_SOURCES_ERROR);
+		}
+	}
+	
+	/**
+	 * Binds a Service Catalog Data Service
+	 * 
+	 * @param headers
+	 *            the request headers (never <code>null</code>)
+	 * @param uriInfo
+	 *            the request URI information (never <code>null</code>)
+	 * @param payload
+	 *            the payload that contains the name of the service (never
+	 *            <code>null</code>)
+	 * @return a JSON representation of the status (never <code>null</code>)
+	 * @throws KomodoRestException
+	 *             if there is an error adding the Connection
+	 */
+	@SuppressWarnings("nls")
+	@POST
+	@Path(V1Constants.SERVICE_CATALOG_SOURCES)
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes({ MediaType.APPLICATION_JSON })
+	@ApiOperation(value = "Bind the Service Catalog Data Service and Create connection based on it for Teiid Engine")
+	@ApiResponses(value = { @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
+			@ApiResponse(code = 403, message = "An error has occurred.") })
+	public Response bindServiceCatalogSource(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
+			@ApiParam(value = "JSON of the properties of the connection:<br>" + OPEN_PRE_TAG + OPEN_BRACE + BR + NBSP
+					+ "name: \"Name of the Service Catalog Data Service\"" + BR + CLOSE_BRACE
+					+ CLOSE_PRE_TAG, required = true) final String payload)
+			throws KomodoRestException {
+
+		SecurityPrincipal principal = checkSecurityContext(headers);
+		if (principal.hasErrorResponse())
+			return principal.getErrorResponse();
+
+		List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+		if (!isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
+			return notAcceptableMediaTypesBuilder().build();
+
+		//
+		// Error if there is no name attribute defined
+		//
+		KomodoServiceCatalogDataSourceAttributes attributes;
+		try {
+			attributes = KomodoJsonMarshaller.unmarshall(payload, KomodoServiceCatalogDataSourceAttributes.class);
+			if (attributes.getName() == null) {
+				return createErrorResponseWithForbidden(mediaTypes,
+						RelationalMessages.Error.METADATA_SERVICE_CATALOG_DATA_SERVICE_BIND_MISSING_NAME);
+			}
+		} catch (Exception ex) {
+			return createErrorResponseWithForbidden(mediaTypes, ex,
+					RelationalMessages.Error.METADATA_SERVICE_CATALOG_DATA_SERVICE_BIND_PARSE_ERROR);
+		}
+
+		UnitOfWork uow = null;
+
+		try {
+			uow = createTransaction(principal, "bindServiceCatalogService", false); //$NON-NLS-1$
+			getMetadataInstance().bindToServiceCatalogSource(attributes.getName());
+			String title = RelationalMessages.getString(
+					RelationalMessages.Info.METADATA_SERVICE_CATALOG_DATA_SERVIVE_BIND_TITLE, attributes.getName());
+			KomodoStatusObject status = new KomodoStatusObject(title);
+			return commit(uow, mediaTypes, status);
+		} catch (final Exception e) {
+			if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+				uow.rollback();
+			}
+			if (e instanceof KomodoRestException) {
+				throw (KomodoRestException) e;
+			}
+			return createErrorResponse(Status.FORBIDDEN, mediaTypes, e,
+					RelationalMessages.Error.METADATA_SERVICE_CATALOG_DATA_SERVIVE_BIND_ERROR, e, attributes.getName());
+		   }
+    }	
 }

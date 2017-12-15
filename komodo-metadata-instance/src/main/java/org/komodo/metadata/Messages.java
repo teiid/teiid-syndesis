@@ -55,7 +55,8 @@ public class Messages implements StringConstants {
         refreshError,
         cannotRefreshError,
         serverCanNotBeReached,
-        startStopFailure;
+        startStopFailure,
+        notImplemented;
 
         @Override
         public String toString() {

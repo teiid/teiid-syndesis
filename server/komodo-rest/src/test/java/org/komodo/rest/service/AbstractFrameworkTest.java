@@ -23,13 +23,15 @@ package org.komodo.rest.service;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.FileAttribute;
+
 import javax.ws.rs.core.MediaType;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
@@ -41,6 +43,7 @@ import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -51,13 +54,13 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.komodo.rest.KRestEntity;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
-import org.komodo.rest.KomodoService;
 import org.komodo.rest.relational.KomodoRestUriBuilder;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.constants.SystemConstants;
 import org.komodo.spi.repository.PersistenceType;
 import org.komodo.utils.FileUtils;
+import org.komodo.utils.TestKLog;
 
 public class AbstractFrameworkTest implements StringConstants, V1Constants {
 
@@ -70,7 +73,7 @@ public class AbstractFrameworkTest implements StringConstants, V1Constants {
 
     protected static final int TEST_PORT = 8080;
 
-    protected static final String USER_NAME = KomodoService.KOMODO_USER;
+    protected static final String USER_NAME = "komodo";
     
     protected static final String PASSWORD = "user";
 
@@ -84,13 +87,16 @@ public class AbstractFrameworkTest implements StringConstants, V1Constants {
 
     @BeforeClass
     public static void beforeAllFramework() throws Exception {
-        _kengineDataDir = Files.createTempDirectory(null, new FileAttribute[0]);
-        System.setProperty(SystemConstants.ENGINE_DATA_DIR, _kengineDataDir.toString());
-
+    	_kengineDataDir = TestKLog.createEngineDirectory();  	
         //
         // Sets the persistence type to H2 for test purposes
         //
         System.setProperty(SystemConstants.REPOSITORY_PERSISTENCE_TYPE, PersistenceType.H2.name());
+        System.setProperty(SystemConstants.REPOSITORY_PERSISTENCE_CONNECTION_DRIVER, PersistenceType.H2.getDriver());
+        System.setProperty(SystemConstants.REPOSITORY_PERSISTENCE_CONNECTION_URL, PersistenceType.H2.getConnUrl());
+        System.setProperty(SystemConstants.REPOSITORY_PERSISTENCE_BINARY_STORE_URL, PersistenceType.H2.getBinaryStoreUrl());
+        System.setProperty(SystemConstants.REPOSITORY_PERSISTENCE_CONNECTION_USERNAME, USER_NAME);
+        System.setProperty(SystemConstants.REPOSITORY_PERSISTENCE_CONNECTION_PASSWORD, PASSWORD);
     }
 
     @AfterClass
@@ -158,26 +164,35 @@ public class AbstractFrameworkTest implements StringConstants, V1Constants {
         request.setEntity(requestEntity);
     }
 
+    private void injectTestUser(HttpRequestBase request) {
+    	request.addHeader("X-Forwarded-Access-Token", "dev-token");
+    	request.addHeader("X-Forwarded-User", USER_NAME);
+    }
+    
     @SuppressWarnings( "unchecked" )
     protected <T extends HttpUriRequest> T request(URI uri, RequestType requestType, MediaType type) throws Exception {
         switch (requestType) {
             case GET: {
                 HttpGet request = new HttpGet(uri);
+                injectTestUser(request);
                 if (type != null) request.setHeader(HttpHeaders.ACCEPT, type.toString());
                 return (T) request;
             }
             case POST: {
                 HttpPost request = new HttpPost(uri);
+                injectTestUser(request);
                 if (type != null) request.setHeader(HttpHeaders.ACCEPT, type.toString());
                 return (T) request;
             }
             case PUT: {
                 HttpPut request = new HttpPut(uri);
+                injectTestUser(request);
                 if (type != null) request.setHeader(HttpHeaders.ACCEPT, type.toString());
                 return (T) request;
             }
             case DELETE: {
                 HttpDelete request = new HttpDelete(uri);
+                injectTestUser(request);
                 if (type != null) request.setHeader(HttpHeaders.ACCEPT, type.toString());
                 return (T) request;
             }

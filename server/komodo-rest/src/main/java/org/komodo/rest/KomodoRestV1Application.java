@@ -25,6 +25,7 @@ import static org.komodo.rest.Messages.Error.KOMODO_ENGINE_CLEAR_TIMEOUT;
 import static org.komodo.rest.Messages.Error.KOMODO_ENGINE_SHUTDOWN_ERROR;
 import static org.komodo.rest.Messages.Error.KOMODO_ENGINE_SHUTDOWN_TIMEOUT;
 import static org.komodo.rest.Messages.Error.KOMODO_ENGINE_STARTUP_TIMEOUT;
+
 import java.io.File;
 import java.io.InputStream;
 import java.sql.DriverManager;
@@ -34,12 +35,14 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
 import javax.annotation.PreDestroy;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+
 import org.komodo.core.KEngine;
 import org.komodo.core.repository.LocalRepository;
 import org.komodo.core.repository.SynchronousCallback;
@@ -68,6 +71,7 @@ import org.komodo.rest.service.KomodoUtilService;
 import org.komodo.rest.service.KomodoVdbService;
 import org.komodo.rest.swagger.RestDataserviceConverter;
 import org.komodo.rest.swagger.RestPropertyConverter;
+import org.komodo.rest.swagger.RestServiceCatalogDataSourceConverter;
 import org.komodo.rest.swagger.RestVdbConditionConverter;
 import org.komodo.rest.swagger.RestVdbConverter;
 import org.komodo.rest.swagger.RestVdbDataRoleConverter;
@@ -84,12 +88,12 @@ import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.logging.KLogger.Level;
 import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.repository.PersistenceType;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.RepositoryClientEvent;
 import org.komodo.utils.KLog;
 import org.komodo.utils.observer.KLatchObserver;
+
 import io.swagger.converter.ModelConverters;
 
 /**
@@ -579,6 +583,16 @@ public class KomodoRestV1Application extends Application implements SystemConsta
          * The name of the URI ping type parameter
          */
         String PING_TYPE_PARAMETER = "pingType"; //$NON-NLS-1$
+        
+        /**
+         * Available sources from OpenShift Service catalog
+         */
+        String SERVICE_CATALOG_SOURCES = "serviceCatalogSources"; //$NON-NLS-1$
+        
+        /**
+         * Bing to available source in OpenShift Service catalog
+         */
+        String BIND_TO_SERVICE_CATALOG_SOURCE = "bindToServiceCatalogSource"; //$NON-NLS-1$        
     }
 
     private static final int TIMEOUT = 1;
@@ -615,32 +629,10 @@ public class KomodoRestV1Application extends Application implements SystemConsta
             corsHandler = initCorsHandler();
 
             //
-            // If the env variable REPOSITORY_PERSISTENCE_TYPE is defined then respect
-            // its value and set the persistence type accordingly. If not defined then assume
-            // PGSQL is required.
-            //
-            PersistenceType persistenceType = PersistenceType.PGSQL;
-            String pType = System.getProperty(REPOSITORY_PERSISTENCE_TYPE);
-            if (PersistenceType.H2.name().equals(pType))
-                persistenceType = PersistenceType.H2;
-
-            //
-            // Configure properties for persistence connection
-            //
-            String persistenceHost = System.getProperty(REPOSITORY_PERSISTENCE_HOST);
-            if (persistenceHost == null)
-                System.setProperty(REPOSITORY_PERSISTENCE_HOST, "localhost"); // default to localhost if not set
-
-            System.setProperty(REPOSITORY_CONNECTION_URL, persistenceType.getConnUrl());
-            System.setProperty(REPOSITORY_BINARY_STORE_URL, persistenceType.getBinaryStoreUrl());
-            System.setProperty(REPOSITORY_CONNECTION_DRIVER, persistenceType.getDriver());
-
-            //
             // No preStartCheck for H2 as its generated upon first repository connection
             // Other persistence types are external so do require this.
             //
-            if(persistenceType.isExternal())
-                preStartCheck(persistenceType);
+            checkRepoStorage();
 
         } catch (Exception ex) {
             throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
@@ -658,7 +650,7 @@ public class KomodoRestV1Application extends Application implements SystemConsta
         objs.add( new KomodoSearchService( this.kengine ));
         objs.add( new KomodoMetadataService( this.kengine ));
         objs.add( new KomodoImportExportService( this.kengine ));
-
+        objs.add(new AuthHandlingFilter());
         objs.add(corsHandler);
 
         this.singletons = Collections.unmodifiableSet( objs );
@@ -693,6 +685,7 @@ public class KomodoRestV1Application extends Application implements SystemConsta
         converters.addConverter(new RestVdbPermissionConverter());
         converters.addConverter(new RestVdbTranslatorConverter());
         converters.addConverter(new RestDataserviceConverter());
+        converters.addConverter(new RestServiceCatalogDataSourceConverter());
     }
 
     /**
@@ -766,38 +759,44 @@ public class KomodoRestV1Application extends Application implements SystemConsta
         return resources;
     }
 
+	public void validateRepositoryProperties() throws WebApplicationException {
+		if (ApplicationProperties.getRepositoryPersistenceDriver() == null
+				|| ApplicationProperties.getRepositoryPersistenceURL() == null) {
+			throw new WebApplicationException(
+					"Properties required to make connection to the repository storage missing");
+		}
+	}
+	
 	/**
 	 * Check there is a store for repository persistence.
 	 * @param persistenceType type of persistence store
 	 * @throws WebApplicationException
 	 */
-	private void preStartCheck(PersistenceType persistenceType) throws WebApplicationException {
-        try {
-            Class.forName(persistenceType.getDriver());
-        } catch (Exception ex) {
-            throw new WebApplicationException("Failed to initialised repository persistence driver", ex);
-        }
+	private void checkRepoStorage() throws WebApplicationException {
+		validateRepositoryProperties();
+		try {
+			Class.forName(ApplicationProperties.getRepositoryPersistenceDriver());
+		} catch (Exception ex) {
+			throw new WebApplicationException("Failed to initialise repository persistence driver", ex);
+		}
 
-        java.sql.Connection connection = null;
-        String connUrl = persistenceType.getEvaluatedConnUrl();
-        try  {
-            connection = DriverManager.getConnection(connUrl,
-                                                                        REPOSITORY_PERSISTENCE_USERNAME,
-                                                                        REPOSITORY_PERSISTENCE_PASSWORD);
-        } catch (Exception ex) {
-            throw new WebApplicationException("Failed to connect to " + persistenceType.name() + " database: " +
-                                                                                     connUrl + SEMI_COLON +
-                                                                                    REPOSITORY_PERSISTENCE_USERNAME + COLON +
-                                                                                    REPOSITORY_PERSISTENCE_PASSWORD, ex);
-        } finally {
-            if(connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    // nothing to do
-                }
-            }
-        }
+		java.sql.Connection connection = null;
+		try {
+			connection = DriverManager.getConnection(ApplicationProperties.getRepositoryPersistenceURL(),
+					ApplicationProperties.getRepositoryPersistenceUser(),
+					ApplicationProperties.getRepositoryPersistencePassword());
+		} catch (Exception ex) {
+			KLog.getLogger().info(
+					"Failed to connect to database: " + ApplicationProperties.getRepositoryPersistenceURL());
+		} finally {
+			if (connection != null) {
+				try {
+					connection.close();
+				} catch (SQLException e) {
+					// nothing to do
+				}
+			}
+		}
 	}
 
     private KEngine start() throws WebApplicationException {
