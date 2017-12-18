@@ -31,15 +31,15 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.jboss.teiid.modeshape</groupId>
+			<groupId>org.teiid.modeshape</groupId>
 			<artifactId>teiid-modeshape-sequencer-vdb</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.jboss.teiid.modeshape</groupId>
+			<groupId>org.teiid.modeshape</groupId>
 			<artifactId>teiid-modeshape-sequencer-ddl</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.jboss.teiid.modeshape</groupId>
+			<groupId>org.teiid.modeshape</groupId>
 			<artifactId>teiid-modeshape-sequencer-dataservice</artifactId>
 		</dependency>
 
