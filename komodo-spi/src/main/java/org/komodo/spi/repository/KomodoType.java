@@ -276,7 +276,12 @@ public enum KomodoType {
     /**
      * Type for a data service UDF file entry.
      */
-    UDF_ENTRY;
+    UDF_ENTRY,
+    
+    /**
+     * Data Source from Service Catalog 
+     */
+    SERVICE_CATALOG_DATA_SOURCE;
 
     private Collection<String> aliases;
 

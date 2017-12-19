@@ -22,16 +22,17 @@
 package org.komodo.core;
 
 import static org.junit.Assert.assertEquals;
+
 import java.io.File;
-import java.nio.file.Files;
 import java.nio.file.Path;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.constants.SystemConstants;
 import org.komodo.spi.logging.KLogger.Level;
 import org.komodo.utils.FileUtils;
 import org.komodo.utils.KLog;
+import org.komodo.utils.TestKLog;
 
 /**
  * Configures the logging for tests and most importantly aims
@@ -73,8 +74,7 @@ public abstract class AbstractLoggingTest implements StringConstants {
     @BeforeClass
     public static void initLogging() throws Exception {
         // create data directory for engine logging
-        _dataDirectory = Files.createTempDirectory( "KomodoEngineDataDir" );
-        System.setProperty( SystemConstants.ENGINE_DATA_DIR, _dataDirectory.toString() );
+    	_dataDirectory = TestKLog.createEngineDirectory();        
 
         // Initialises logging and reduces modeshape logging from DEBUG to INFO
         configureLogPath(KLog.getLogger());
