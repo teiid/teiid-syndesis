@@ -225,7 +225,12 @@ public final class RelationalMessages {
         /**
          * Connection transfer to repo success
          */
-        CONNECTION_TO_REPO_SUCCESS;
+        CONNECTION_TO_REPO_SUCCESS,
+        
+        /**
+         * Bind operation with Service Catalog Data Source
+         */
+        METADATA_SERVICE_CATALOG_DATA_SERVIVE_BIND_TITLE;
 
         /**
          * {@inheritDoc}
@@ -1297,7 +1302,28 @@ public final class RelationalMessages {
         /**
          * An import export service storage types missing parameter error
          */
-        IMPORT_EXPORT_SERVICE_MISSING_PARAMETER_ERROR;
+        IMPORT_EXPORT_SERVICE_MISSING_PARAMETER_ERROR,
+        
+        /**
+         * An error indicating the failed status of to get a data services from service catalog
+         */
+        METADATA_SERVICE_CATALOG_GET_DATA_SOURCES_ERROR,
+        
+        /**
+         * An error indicating a name of data service missing from bind operation on service catalog service 
+         */
+        METADATA_SERVICE_CATALOG_DATA_SERVICE_BIND_MISSING_NAME,
+        
+        /**
+         * An error indicating payload parse error from bind operation on service catalog service 
+         */
+        METADATA_SERVICE_CATALOG_DATA_SERVICE_BIND_PARSE_ERROR,
+        
+        /**
+         * An error indicating from bind operation on service catalog service
+         */
+        METADATA_SERVICE_CATALOG_DATA_SERVIVE_BIND_ERROR;
+        
 
         /**
          * {@inheritDoc}
