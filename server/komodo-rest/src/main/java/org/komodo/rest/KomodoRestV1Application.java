@@ -25,7 +25,6 @@ import static org.komodo.rest.Messages.Error.KOMODO_ENGINE_CLEAR_TIMEOUT;
 import static org.komodo.rest.Messages.Error.KOMODO_ENGINE_SHUTDOWN_ERROR;
 import static org.komodo.rest.Messages.Error.KOMODO_ENGINE_SHUTDOWN_TIMEOUT;
 import static org.komodo.rest.Messages.Error.KOMODO_ENGINE_STARTUP_TIMEOUT;
-
 import java.io.File;
 import java.io.InputStream;
 import java.sql.DriverManager;
@@ -35,14 +34,12 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
 import javax.annotation.PreDestroy;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-
 import org.komodo.core.KEngine;
 import org.komodo.core.repository.LocalRepository;
 import org.komodo.core.repository.SynchronousCallback;
@@ -87,13 +84,14 @@ import org.komodo.spi.constants.SystemConstants;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.logging.KLogger.Level;
 import org.komodo.spi.metadata.MetadataInstance;
+import org.komodo.spi.repository.ApplicationProperties;
 import org.komodo.spi.repository.KomodoObject;
+import org.komodo.spi.repository.PersistenceType;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.RepositoryClientEvent;
 import org.komodo.utils.KLog;
 import org.komodo.utils.observer.KLatchObserver;
-
 import io.swagger.converter.ModelConverters;
 
 /**
@@ -615,7 +613,7 @@ public class KomodoRestV1Application extends Application implements SystemConsta
             // otherwise use "." relative to the working directory
             String baseDir = System.getProperty(V1Constants.JBOSS_SERVER_BASE_DIR, DOT) + File.separator;
 
-            // Set the komodo data directory prior to starting the engisne
+            // Set the komodo data directory prior to starting the engine
             String komodoDataDir = System.getProperty(ENGINE_DATA_DIR);
             if (komodoDataDir == null)
                 System.setProperty(ENGINE_DATA_DIR, baseDir + "data"); //$NON-NLS-1$
@@ -628,11 +626,7 @@ public class KomodoRestV1Application extends Application implements SystemConsta
 
             corsHandler = initCorsHandler();
 
-            //
-            // No preStartCheck for H2 as its generated upon first repository connection
-            // Other persistence types are external so do require this.
-            //
-            checkRepoStorage();
+            initPersistenceEnvironment();
 
         } catch (Exception ex) {
             throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
@@ -667,6 +661,57 @@ public class KomodoRestV1Application extends Application implements SystemConsta
         corsHandler.setCorsMaxAge(1209600);
         return corsHandler;
     }
+
+    //
+    // Configure properties for persistence connection
+    //
+    private void initPersistenceEnvironment() {
+        //
+        // If the env variable REPOSITORY_PERSISTENCE_TYPE is defined then respect
+        // its value and set the persistence type accordingly. If not defined then assume
+        // PGSQL is required.
+        //
+        PersistenceType persistenceType = PersistenceType.PGSQL;
+        String pType = ApplicationProperties.getRepositoryPersistenceType();
+        if (PersistenceType.H2.name().equals(pType)) {
+            persistenceType = PersistenceType.H2;
+        }
+
+        if (ApplicationProperties.getRepositoryPersistenceHost() == null) {
+            ApplicationProperties.setRepositoryPersistenceHost("localhost");
+        }
+
+        if (ApplicationProperties.getRepositoryPersistenceURL() == null) {
+            ApplicationProperties.setRepositoryPersistenceURL(persistenceType.getConnUrl());
+        }
+
+        if (ApplicationProperties.getRepositoryPersistenceBinaryStoreURL() == null) {
+
+            //
+            // If the connection url has been defined then prefer that before the default
+            //
+            String binaryStoreUrl = ApplicationProperties.getRepositoryPersistenceURL();
+            if (binaryStoreUrl == null) {
+                //
+                // Connection Url not defined so assume the default
+                //
+                binaryStoreUrl = persistenceType.getBinaryStoreUrl();
+            }
+
+            ApplicationProperties.setRepositoryPersistenceBinaryStoreURL(binaryStoreUrl);
+        }
+
+        if (ApplicationProperties.getRepositoryPersistenceDriver() == null) {
+            ApplicationProperties.setRepositoryPersistenceDriver(persistenceType.getDriver());
+        }
+
+        //
+        // No need to check repo storage for H2 as its generated upon first repository connection
+        // Other persistence types are external so do require this.
+        //
+        if(persistenceType.isExternal())
+            checkRepoStorage();
+        }
 
     @SuppressWarnings( "nls" )
     private void initSwaggerConfiguration() {
@@ -769,7 +814,6 @@ public class KomodoRestV1Application extends Application implements SystemConsta
 	
 	/**
 	 * Check there is a store for repository persistence.
-	 * @param persistenceType type of persistence store
 	 * @throws WebApplicationException
 	 */
 	private void checkRepoStorage() throws WebApplicationException {
@@ -781,22 +825,29 @@ public class KomodoRestV1Application extends Application implements SystemConsta
 		}
 
 		java.sql.Connection connection = null;
-		try {
-			connection = DriverManager.getConnection(ApplicationProperties.getRepositoryPersistenceURL(),
-					ApplicationProperties.getRepositoryPersistenceUser(),
-					ApplicationProperties.getRepositoryPersistencePassword());
-		} catch (Exception ex) {
-			KLog.getLogger().info(
-					"Failed to connect to database: " + ApplicationProperties.getRepositoryPersistenceURL());
-		} finally {
-			if (connection != null) {
-				try {
-					connection.close();
-				} catch (SQLException e) {
-					// nothing to do
-				}
-			}
-		}
+        String connUrl = ApplicationProperties.getRepositoryPersistenceURL();
+
+        //
+        // If HOST has been defined then ensure that connection url is evaluated first to replace the
+        // property name with its value. Otherwise connection url remains unchanged
+        //
+        connUrl = ApplicationProperties.substitute(connUrl, SystemConstants.REPOSITORY_PERSISTENCE_HOST);
+
+        String user = ApplicationProperties.getRepositoryPersistenceUser();
+        String password = ApplicationProperties.getRepositoryPersistencePassword();
+        try  {
+            connection = DriverManager.getConnection(connUrl, user, password);
+        } catch (Exception ex) {
+            throw new WebApplicationException("Failed to connect to persistence storage: " + connUrl + SEMI_COLON + user, ex);
+        } finally {
+            if(connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    // nothing to do
+                }
+            }
+        }
 	}
 
     private KEngine start() throws WebApplicationException {

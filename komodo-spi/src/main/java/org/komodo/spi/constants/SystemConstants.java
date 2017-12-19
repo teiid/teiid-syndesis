@@ -47,7 +47,20 @@ public interface SystemConstants extends StringConstants {
      * The environment variable that defines the type of the persistence to be used for modeshape.
      * Values are either PGSQL or H2.
      */
-    String REPOSITORY_PERSISTENCE_TYPE = "REPOSITORY_PERSISTENCE_TYPE";
+    String REPOSITORY_PERSISTENCE_TYPE = "komodo.repositoryPersistenceType";
+
+    /**
+     * The environment variable that defines the name of the host where the persistence store is located
+     * Cannot use 'komodo.' prefix since Openshift considers this invalid.
+     *
+     * This remains a convenience variable for changing the host of the persistence store but keeping the
+     * jdbc connection url as specified by PersistenceType.PGSQL, ie.
+     * jdbc:postgresql://${REPOSITORY_PERSISTENCE_HOST}/komodo.
+     *
+     * This value is subject to being overwritten by {@link #REPOSITORY_PERSISTENCE_CONNECTION_URL}
+     * if defined.
+     */
+    String REPOSITORY_PERSISTENCE_HOST = "komodo.repositoryPersistenceHost";
 
     /**
      * The environment variable that defines the connection url of the persistence database.
@@ -68,12 +81,22 @@ public interface SystemConstants extends StringConstants {
     String REPOSITORY_PERSISTENCE_CONNECTION_DRIVER = "komodo.connectionDriver";
 
     /**
-     * The repository persistence username
+     * The environment variable that defines the user name for connection to the persistence database
      */
     String REPOSITORY_PERSISTENCE_CONNECTION_USERNAME = "komodo.user";
 
     /**
-     * The repository persistence password
+     * The default value of the user name for connection to the persistence database
+     */
+    String REPOSITORY_PERSISTENCE_CONNECTION_USERNAME_DEFAULT = "komodo";
+
+    /**
+     * The environment variable that defines the password for connection to the persistence database
      */
     String REPOSITORY_PERSISTENCE_CONNECTION_PASSWORD = "komodo.password";
+
+    /**
+     * The default value of the password for connection to the persistence database
+     */
+    String REPOSITORY_PERSISTENCE_CONNECTION_PASSWORD_DEFAULT = "komodo";
 }
