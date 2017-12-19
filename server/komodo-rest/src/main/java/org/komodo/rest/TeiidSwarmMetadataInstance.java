@@ -30,16 +30,14 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
-
 import org.komodo.metadata.DefaultMetadataInstance;
 import org.komodo.metadata.TeiidConnectionProvider;
 import org.komodo.spi.KException;
+import org.komodo.spi.repository.ApplicationProperties;
 import org.komodo.spi.runtime.ServiceCatalogDataSource;
 import org.komodo.utils.KLog;
 import org.teiid.adminapi.AdminException;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.kubernetes.client.LocalObjectReference;
 import io.kubernetes.client.ModelServiceCatalogClient;
 import io.kubernetes.client.ParametersFromSource;

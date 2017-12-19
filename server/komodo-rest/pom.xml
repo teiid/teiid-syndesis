@@ -317,47 +317,7 @@
 						<argument>openshift</argument>
 					</arguments>
 				</configuration>
-			</plugin>
-              <plugin>
-                <groupId>io.fabric8</groupId>
-                <artifactId>docker-maven-plugin</artifactId>
-                <version>0.23.0</version>
-                <configuration>
-                  <registry>registry.hub.docker.com</registry>
-                  <images>
-                    <image>
-                      <name>teiid/komodo:${project.version}</name>
-                      <alias>komodo</alias>
-                      <build>
-                        <filter>@</filter>
-                        <dockerFileDir>${project.basedir}/docker</dockerFileDir>
-                        <assembly>
-                            <inline>
-                              <fileSets>
-                              <fileSet>
-                                <directory>${project.build.directory}</directory>
-                                <outputDirectory>/</outputDirectory>   
-                                <includes>
-                                  <include>**/*-swarm.jar</include>
-                                </includes>
-                              </fileSet>
-                             </fileSets>                            
-                            </inline>
-                        </assembly>
-                      </build>
-                    </image>                   
-                  </images>
-                </configuration>
-                <executions>
-                  <execution>
-                    <id>docker-build</id>
-                    <goals>
-                      <goal>build</goal>
-                      <goal>push</goal>
-                    </goals>
-                  </execution>
-                </executions>
-              </plugin>      
+			</plugin>      
 		</plugins>
 	</build>
 
@@ -389,6 +349,53 @@
 							</execution>
 						</executions>
 					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>docker-release</id>
+			<build>
+				<plugins>
+					<plugin>
+                		<groupId>io.fabric8</groupId>
+                		<artifactId>docker-maven-plugin</artifactId>
+                		<version>0.23.0</version>
+                		<configuration>
+                  		<registry>registry.hub.docker.com</registry>
+                  			<images>
+                    			<image>
+                     				<name>teiid/komodo:${project.version}</name>
+                      				<alias>komodo</alias>
+                      				<build>
+                        				<filter>@</filter>
+                        				<dockerFileDir>${project.basedir}/docker</dockerFileDir>
+                        				<assembly>
+                            				<inline>
+                              					<fileSets>
+                              						<fileSet>
+                                						<directory>${project.build.directory}</directory>
+                                						<outputDirectory>/</outputDirectory>   
+                                						<includes>
+                                  							<include>**/*-swarm.jar</include>
+                                						</includes>
+                              						</fileSet>
+                             					</fileSets>
+                            				</inline>
+                        				</assembly>
+                      				</build>
+                    			</image>                   
+                  			</images>
+                		</configuration>
+                		<executions>
+                  			<execution>
+                    			<id>docker-build</id>
+                    			<goals>
+                      				<goal>build</goal>
+                      				<goal>push</goal>
+                    			</goals>
+                  			</execution>
+                		</executions>
+              		</plugin>
 				</plugins>
 			</build>
 		</profile>

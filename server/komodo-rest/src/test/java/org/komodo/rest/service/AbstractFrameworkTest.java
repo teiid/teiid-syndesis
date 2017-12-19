@@ -23,15 +23,12 @@ package org.komodo.rest.service;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-
 import javax.ws.rs.core.MediaType;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
@@ -57,7 +54,7 @@ import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.relational.KomodoRestUriBuilder;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.constants.SystemConstants;
+import org.komodo.spi.repository.ApplicationProperties;
 import org.komodo.spi.repository.PersistenceType;
 import org.komodo.utils.FileUtils;
 import org.komodo.utils.TestKLog;
@@ -91,12 +88,7 @@ public class AbstractFrameworkTest implements StringConstants, V1Constants {
         //
         // Sets the persistence type to H2 for test purposes
         //
-        System.setProperty(SystemConstants.REPOSITORY_PERSISTENCE_TYPE, PersistenceType.H2.name());
-        System.setProperty(SystemConstants.REPOSITORY_PERSISTENCE_CONNECTION_DRIVER, PersistenceType.H2.getDriver());
-        System.setProperty(SystemConstants.REPOSITORY_PERSISTENCE_CONNECTION_URL, PersistenceType.H2.getConnUrl());
-        System.setProperty(SystemConstants.REPOSITORY_PERSISTENCE_BINARY_STORE_URL, PersistenceType.H2.getBinaryStoreUrl());
-        System.setProperty(SystemConstants.REPOSITORY_PERSISTENCE_CONNECTION_USERNAME, USER_NAME);
-        System.setProperty(SystemConstants.REPOSITORY_PERSISTENCE_CONNECTION_PASSWORD, PASSWORD);
+        ApplicationProperties.setRepositoryPersistenceType(PersistenceType.H2.name());
     }
 
     @AfterClass
