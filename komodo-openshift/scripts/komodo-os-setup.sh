@@ -64,9 +64,6 @@ echo -e '\n\n=== Creating the template. ==='
 oc get template ${OS_TEMPLATE} 2>&1 > /dev/null || \
 	oc create -f ${OS_TEMPLATE}.json || \
 	{ echo "FAILED: Could not create application template" && exit 1; }
-
-APP_ARGS="--param=TEIID_USERNAME=${TEIID_USERNAME}"
-APP_ARGS="${APP_ARGS} --param=TEIID_PASSWORD=${TEIID_PASSWORD}"
                       
 if [ -n "LOCAL_MVN_REPO" ]; then
   APP_ARGS="${APP_ARGS} --param=MVN_LOCAL_REPO=${LOCAL_MVN_REPO}"

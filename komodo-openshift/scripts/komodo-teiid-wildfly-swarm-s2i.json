@@ -14,7 +14,6 @@
     "labels": {
         "template": "komodo-teiid-wildfly-s2i"
     },
-    "message": "The username/password for accessing the service is ${TEIID_USERNAME}/${TEIID_PASSWORD}.",
     "parameters": [
         {
             "description": "Specify a custom hostname for the http route.  Leave blank to use default hostname, e.g.: <service-name>-<project>.<default-domain-suffix>",
@@ -31,18 +30,18 @@
             "required": false
         },
         {
-            "description": "Username associated with Teiid data service.",
-            "displayName": "Teiid Username",
-            "name": "TEIID_USERNAME",
-            "value": "user",
-            "required": true
+            "description": "Username of the persistence storage database.",
+            "displayName": "Persistence Storage Username",
+            "name": "PERSISTENCE_STORAGE_USER",
+            "value": "komodo",
+            "required": false
         },
         {
-            "description": "Password for Teiid user.",
-            "displayName": "Teiid User Password",
-            "name": "TEIID_PASSWORD",
-            "value": "user1234!",
-            "required": true
+            "description": "Password of the persistence storage database.",
+            "displayName": "Persistence Storage Password",
+            "name": "PERSISTENCE_STORAGE_PASSWORD",
+            "value": "komodo",
+            "required": false
         },
         {
             "description": "Additional maven repository for finding dependencies",
@@ -378,12 +377,11 @@
                                 "env": [
                                     {
                                         "name": "POSTGRESQL_USER",
-                                        "value": "komodo"
+                                        "value": "${PERSISTENCE_STORAGE_USER}"
                                     },
                                     {
                                         "name": "POSTGRESQL_PASSWORD",
-                                        "value": "komodo"
-                                        }
+                                        "value": "${PERSISTENCE_STORAGE_PASSWORD}"
                                     },
                                     {
                                         "name": "POSTGRESQL_DATABASE",
@@ -492,15 +490,7 @@
                                     },
                                     {
                                     	"name": "SWARM_JAR_ARGS",
-                                    	"value": "-Dkomodo.user=komodo -Dkomodo.password=komodo -Dkomodo.connectionUrl=jdbc:postgresql://vdb-builder-persistence:5432/komodo -Dkomodo.binaryStoreUrl=jdbc:postgresql://vdb-builder-persistence:5432/komodo -Dkomodo.connectionDriver=org.postgresql.Driver"
-                                    },                                    
-                                    {
-                                        "name": "TEIID_USERNAME",
-                                        "value": "${TEIID_USERNAME}"
-                                    },
-                                    {
-                                        "name": "TEIID_PASSWORD",
-                                        "value": "${TEIID_PASSWORD}"
+                                    	"value": "-Dkomodo.user=${PERSISTENCE_STORAGE_USER} -Dkomodo.password=${PERSISTENCE_STORAGE_PASSWORD} -Dkomodo.repositoryPersistenceHost=vdb-builder-persistence"
                                     },
                                     {
                                         "name": "HOSTNAME_HTTP",

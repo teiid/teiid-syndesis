@@ -58,6 +58,7 @@ import org.komodo.rest.relational.RestEntityFactory;
 import org.komodo.rest.relational.connection.RestConnection;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.spi.KException;
+import org.komodo.spi.constants.SystemConstants;
 import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
@@ -202,8 +203,10 @@ public abstract class KomodoService implements V1Constants {
     	if (AuthHandlingFilter.threadOAuthCredentials.get() != null) {
     		return new SecurityPrincipal(AuthHandlingFilter.threadOAuthCredentials.get().getUser(), null);	
     	}
-		return new SecurityPrincipal(null, createErrorResponse(Status.UNAUTHORIZED,
-				headers.getAcceptableMediaTypes(), RelationalMessages.Error.SECURITY_FAILURE_ERROR));
+		return new SecurityPrincipal(
+		                             SystemConstants.REPOSITORY_PERSISTENCE_CONNECTION_USERNAME_DEFAULT,
+		                             createErrorResponse(Status.UNAUTHORIZED,
+		                             headers.getAcceptableMediaTypes(), RelationalMessages.Error.SECURITY_FAILURE_ERROR));
     }
 
     /**

@@ -21,7 +21,6 @@
  */
 package org.komodo.spi.repository;
 
-import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.constants.SystemConstants;
 
 public enum PersistenceType {
@@ -29,15 +28,15 @@ public enum PersistenceType {
     /**
      * H2 database for testing purposes
      */
-    H2 ("jdbc:h2:file:${komodo.dataDir}/komododb;AUTO_SERVER=TRUE",
-            "jdbc:h2:file:${komodo.dataDir}/storage/content/binaries;DB_CLOSE_DELAY=-1",
+    H2 ("jdbc:h2:file:${" + SystemConstants.ENGINE_DATA_DIR + "}/komododb;AUTO_SERVER=TRUE",
+            "jdbc:h2:file:${" + SystemConstants.ENGINE_DATA_DIR + "}/storage/content/binaries;DB_CLOSE_DELAY=-1",
             "org.h2.Driver", false),
 
     /**
-     * PostgreSQL database used for production
+     * PostgreSQL database
      */
-    PGSQL (System.getProperty(SystemConstants.REPOSITORY_PERSISTENCE_CONNECTION_URL),
-    		System.getProperty(SystemConstants.REPOSITORY_PERSISTENCE_CONNECTION_DRIVER), true);
+    PGSQL ("jdbc:postgresql://${" + SystemConstants.REPOSITORY_PERSISTENCE_HOST + "}/komodo",
+                   "org.postgresql.Driver", true);
 
     private String connUrl;
 
@@ -59,18 +58,6 @@ public enum PersistenceType {
         this.binaryUrl = binaryUrl;
     }
 
-    private String substitute(String value, String property) {
-        String propValue = System.getProperty(property);
-        if (propValue == null) {
-            return value; // Just confuse if value returns null
-        }
-
-        String target = StringConstants.DOLLAR_SIGN + StringConstants.OPEN_BRACE +
-                                                  property + StringConstants.CLOSE_BRACE;
-        value = value.replace(target, propValue);
-        return value;
-    }
-
     public String getConnUrl() {
         return connUrl;
     }
@@ -79,7 +66,8 @@ public enum PersistenceType {
      * @return the connection url with any know system properties replaced with their values
      */
     public String getEvaluatedConnUrl() {
-        String url = substitute(getConnUrl(), SystemConstants.ENGINE_DATA_DIR);
+        String url = ApplicationProperties.substitute(connUrl, SystemConstants.ENGINE_DATA_DIR);
+        url = ApplicationProperties.substitute(connUrl, SystemConstants.REPOSITORY_PERSISTENCE_HOST);
         return url;
     }
 
@@ -94,22 +82,15 @@ public enum PersistenceType {
      * @return the binary store url with any know system properties replaced with their values
      */
     public String getEvaluatedBinaryStoreUrl() {
-        String url = substitute(getBinaryStoreUrl(), SystemConstants.ENGINE_DATA_DIR);
+        String url = ApplicationProperties.substitute(binaryUrl, SystemConstants.ENGINE_DATA_DIR);
+        url = ApplicationProperties.substitute(binaryUrl, SystemConstants.REPOSITORY_PERSISTENCE_HOST);
         return url;
     }
 
     public String getDriver() {
         return driver;
     }
-    
-    public String getUser() {
-    	return System.getProperty(SystemConstants.REPOSITORY_PERSISTENCE_CONNECTION_USERNAME);
-    }
 
-    public String getPassword() {
-    	return System.getProperty(SystemConstants.REPOSITORY_PERSISTENCE_CONNECTION_PASSWORD);
-    }
-    
     /**
      * In cases like PGSQL, the data store is externally managed while H2 is internally managed.
      * This flag distinguishes between the two types of store.
