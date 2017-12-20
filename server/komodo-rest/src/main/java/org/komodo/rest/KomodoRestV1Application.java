@@ -705,6 +705,26 @@ public class KomodoRestV1Application extends Application implements SystemConsta
             ApplicationProperties.setRepositoryPersistenceDriver(persistenceType.getDriver());
         }
 
+        String persistenceUser = ApplicationProperties.getRepositoryPersistenceUser();
+        if (ApplicationProperties.getRepositoryPersistenceDefaultUser().equals(persistenceUser)) {
+            //
+            // Either the default user is being used or more importantly the user has not been set
+            // To ensure komodo does not complain about a lack of user, ie. exceptions concerning
+            // ${komodo.user} set the user accordingly.
+            //
+            ApplicationProperties.setRepositoryPersistenceUser(persistenceUser);
+        }
+
+        String persistencePasswd = ApplicationProperties.getRepositoryPersistencePassword();
+        if (ApplicationProperties.getRepositoryPersistenceDefaultPassword().equals(persistencePasswd)) {
+            //
+            // Either the default password is being used or more importantly the password has not been set
+            // To ensure komodo does not complain about a lack of password, ie. exceptions concerning
+            // ${komodo.password} set the password accordingly.
+            //
+            ApplicationProperties.setRepositoryPersistencePassword(persistencePasswd);
+        }
+
         //
         // No need to check repo storage for H2 as its generated upon first repository connection
         // Other persistence types are external so do require this.
