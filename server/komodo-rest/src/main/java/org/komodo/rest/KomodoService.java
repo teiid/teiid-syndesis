@@ -51,6 +51,7 @@ import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
+import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.RestBasicEntity.ResourceNotFound;
 import org.komodo.rest.relational.RelationalMessages;
@@ -200,9 +201,17 @@ public abstract class KomodoService implements V1Constants {
     }
 
     protected SecurityPrincipal checkSecurityContext(HttpHeaders headers) {
-    	if (AuthHandlingFilter.threadOAuthCredentials.get() != null) {
-    		return new SecurityPrincipal(AuthHandlingFilter.threadOAuthCredentials.get().getUser(), null);	
-    	}
+        OAuthCredentials oAuthCredentials = AuthHandlingFilter.threadOAuthCredentials.get();
+
+        //
+        // Without oauth proxy running oAuthCredentials is not null but its user is.
+        // This will allow the default to the 'komodo' user but the catalog-service resource methods
+        // will not be available.
+        //
+        if (oAuthCredentials != null && oAuthCredentials.getUser() != null) {
+            return new SecurityPrincipal(oAuthCredentials.getUser(), null);
+        }
+
 		return new SecurityPrincipal(
 		                             SystemConstants.REPOSITORY_PERSISTENCE_CONNECTION_USERNAME_DEFAULT,
 		                             createErrorResponse(Status.UNAUTHORIZED,

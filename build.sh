@@ -99,11 +99,13 @@ if [ "${INT_TEST}" == "1" ]; then
   INTEGRATION_TEST_FLAG="-Parquillian"
 fi
 
+DOCKER_RELEASE="-Pdocker-release"
+
 #
 # Maven options
 # -D maven.repo.local : Assign the $LOCAL_REPO as the target repository
 #
-MVN_FLAGS="${MVN_FLAGS} -s settings.xml -Dmaven.repo.local=${LOCAL_REPO} ${SKIP_FLAG} ${INTEGRATION_TEST_FLAG}"
+MVN_FLAGS="${MVN_FLAGS} -s settings.xml -Dmaven.repo.local=${LOCAL_REPO} ${SKIP_FLAG} ${INTEGRATION_TEST_FLAG} ${DOCKER_RELEASE}"
 
 echo "==============="
 
