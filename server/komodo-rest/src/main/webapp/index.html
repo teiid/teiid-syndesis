@@ -1,8 +1,33 @@
-<html>
-<title>Komodo Server</title>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+
+	<!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+	<link type="text/css" href="css/style.css" rel="stylesheet" />
+	<title>vdb-builder</title>
+</head>
+
 <body>
-	<h1>Komodo Server</h1>
-	<a href="api-docs">swagger-ui</a><p/>
-	<a href="v1/swagger.json">swagger.json</a>
+	<div class="container">
+		<div class="row">
+			<img class="teiid-logo-img" src="img/teiid-logo.svg" alt="teiid-logo" />
+		</div>
+		<div class="row vdb-builder-title">
+			<h1>Vdb Builder</h1>
+		</div>
+		<div class="row">
+			<div class="col-sm-6 col-md-6 col-lg-6 vdb-builder-link-cell">
+				<a class="vdb-builder-link" href="api-docs">Rest API Documentation</a>
+			</div>
+			<div class="col-sm-6 col-md-6 col-lg-6 vdb-builder-link-cell">
+				<a class="vdb-builder-link" href="v1/swagger.json">API Json Specification</a>
+			</div>
+		</div>
+	</div>
 </body>
 </html>
