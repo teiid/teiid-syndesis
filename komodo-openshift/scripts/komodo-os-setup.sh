@@ -19,6 +19,8 @@
 function show_help {
 	echo "Usage: $0 -h [-r]"
 	echo "-h ip|hostname: location of Openshift host"
+	echo "-m url: maven mirror url"
+	echo "-s url: source repository location url"
 	echo "-r local mvn repo: provides an additional nexus repository"
   exit 1
 }
@@ -36,11 +38,13 @@ fi
 #
 # Determine the command line options
 #
-while getopts "h:r:" opt;
+while getopts "h:m:r:s:" opt;
 do
 	case $opt in
 	h) OS_HOST=$OPTARG ;;
+	m) MVN_MIRROR=$OPTARG ;;
 	r) LOCAL_MVN_REPO=$OPTARG ;;
+	s) SOURCE_REPO=$OPTARG ;;
 	*) show_help ;;
 	esac
 done
@@ -64,9 +68,17 @@ echo -e '\n\n=== Creating the template. ==='
 oc get template ${OS_TEMPLATE} 2>&1 > /dev/null || \
 	oc create -f ${OS_TEMPLATE}.json || \
 	{ echo "FAILED: Could not create application template" && exit 1; }
+
+if [ -n "MVN_MIRROR" ]; then
+  APP_ARGS="${APP_ARGS} --param=MVN_MIRROR_URL=${MVN_MIRROR}"
+fi
                       
 if [ -n "LOCAL_MVN_REPO" ]; then
   APP_ARGS="${APP_ARGS} --param=MVN_LOCAL_REPO=${LOCAL_MVN_REPO}"
+fi
+
+if [ -n "SOURCE_REPO" ]; then
+  APP_ARGS="${APP_ARGS} --param=KOMODO_GIT_URL=${SOURCE_REPO}"
 fi
   
 echo -e "\n\n=== Deploying ${OS_TEMPLATE} template with default values ==="
