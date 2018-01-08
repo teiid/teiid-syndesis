@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <settings>
+
+	<!-- Add a mirror here if required. Do not remove these tags since they are required placeholders for openshift -->
+	<mirrors>
+	</mirrors>
+
 	<profiles>
 		<!-- Redefine the Maven central repository to enable snapshots. The url 
 			will be replaced by the mirror -->

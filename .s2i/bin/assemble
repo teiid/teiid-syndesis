@@ -1,0 +1,72 @@
+#!/bin/bash
+
+#
+# Overridden version of wildfly-sti assemble script
+# https://github.com/wildfly-swarm-archive/sti-wildflyswarm/blob/master/1.0/s2i/bin/assemble
+#
+# Includes ability to set a MAVEN_MIRROR_URL to help build performance times
+#
+
+# restore maven dependencies downloaded in a previous build,
+# so they do not have to be downloaded again.
+# /opt/s2i/destination/artifacts will only be present in the incremental build scenario
+# in which the target image name is an existing docker image which contains
+# dependencies from a prior build execution.
+function restore_saved_artifacts() {
+  if [ "$(ls -A /opt/s2i/destination/artifacts/ 2>/dev/null)" ]; then
+    echo -n "Restoring saved artifacts from prior build..."
+    mv /opt/s2i/destination/artifacts/.m2 $HOME/.m2
+  fi
+}
+
+# Source code provided to S2I is at ${HOME}
+LOCAL_SOURCE_DIR=${HOME}
+mkdir -p $LOCAL_SOURCE_DIR
+
+# Copy the source for compilation
+cp -Rf /opt/s2i/destination/src/. $LOCAL_SOURCE_DIR
+chgrp -R 0 $LOCAL_SOURCE_DIR
+chmod -R g+rw $LOCAL_SOURCE_DIR
+
+# If a pom.xml is present, this is a normal build scenario
+# so run maven.
+if [ -f "$LOCAL_SOURCE_DIR/pom.xml" ]; then
+  # restore any maven dependencies which will be present if this is an
+  # incremental build
+  restore_saved_artifacts
+
+  pushd $LOCAL_SOURCE_DIR &> /dev/null
+
+  # add maven mirror
+  if [ -n "$MAVEN_MIRROR_URL" ]; then
+    echo "The MAVEN_MIRROR_URL enivonment variable is defined so inserting it as a mirror to ${LOCAL_SOURCE_DIR}/settings.xml"
+    sed -i -e 's/<mirrors>/&\n    <mirror>\n      <id>sti-mirror<\/id>\n      <url>${MAVEN_MIRROR_URL}<\/url>\n      <mirrorOf>external:*<\/mirrorOf>\n    <\/mirror>/' ${LOCAL_SOURCE_DIR}/settings.xml
+  else
+    echo "The MAVEN_MIRROR_URL environment variable not defined so dependencies to be downloaded directly"
+  fi
+
+  if [ -z "$MAVEN_ARGS" ]; then
+    export MAVEN_ARGS="-U install -Popenshift -DskipTests"
+  fi
+  if [ -z "$MAVEN_ARGS_APPEND" ]; then
+    export MAVEN_ARGS="$MAVEN_ARGS $MAVEN_ARGS_APPEND"
+  fi
+  echo "Found pom.xml... attempting to build with 'mvn ${MAVEN_ARGS}'"
+
+  mvn --version
+  mvn $MAVEN_ARGS
+
+  ERR=$?
+  if [ $ERR -ne 0 ]; then
+    echo "Aborting due to error code $ERR from mvn package"
+    exit $ERR
+  fi
+
+  popd &> /dev/null
+
+else
+  echo "Oops - only maven builds are supported for now."
+  exit 1
+fi
+
+echo "...done"
