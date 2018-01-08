@@ -16,6 +16,13 @@
     },
     "parameters": [
         {
+            "description": "The location url of the komodo source repository",
+            "displayName": "Komodo Source URL",
+            "name": "KOMODO_GIT_URL",
+            "value": "git://github.com/teiid/teiid-komodo.git",
+            "required": false
+        },
+        {
             "description": "Specify a custom hostname for the http route.  Leave blank to use default hostname, e.g.: <service-name>-<project>.<default-domain-suffix>",
             "displayName": "Custom http Route Hostname",
             "name": "HOSTNAME_HTTP",
@@ -48,6 +55,12 @@
             "displayName": "Additional maven repository",
             "name": "MVN_LOCAL_REPO",
             "value": "https://repository.jboss.org/nexus/content/repositories/central/",
+            "required": false
+        },
+        {
+            "description": "Maven Mirror Url for finding dependencies",
+            "displayName": "Maven Mirror Url",
+            "name": "MVN_MIRROR_URL",
             "required": false
         }
     ],
@@ -239,7 +252,7 @@
                 "source" : {
                     "type" : "Git",
                     "git" : {
-                        "uri": "git://github.com/teiid/teiid-komodo.git"
+                        "uri": "${KOMODO_GIT_URL}"
                     },
                     "contextDir": "."
                 },
@@ -252,6 +265,10 @@
                         },
                         "incremental": true,
                         "env": [
+                            {
+                               "name": "MAVEN_MIRROR_URL",
+                               "value": "${MVN_MIRROR_URL}"
+                            },
                             {
                                "name": "MAVEN_ARGS",
                                "value": "clean install -s settings.xml -Popenshift_s2i -Dlocal-repo=${MVN_LOCAL_REPO} -DskipTests -Dintegration.skipTests -B -pl org.teiid.komodo:komodo-rest,org.teiid.komodo:komodo-openshift -am"
