@@ -6,13 +6,15 @@
 #
 #################
 function show_help {
-	echo "Usage: $0 [-d] [-s] [-q] [-h]"
+	echo "Usage: $0 [-d] [-s] [-q] [-z] [-h]"
 	echo "-d - enable maven debugging"
+	echo "-h - show this help"
 	echo "-s - skip unit test execution"
 	echo "-q - execute integration test execution"
-  echo ""
-  echo "To passthrough additional arguments straight to maven, enter '--' followed by the extra arguments"
-  exit 1
+	echo "-z - skip docker image creation and deployment"
+	echo ""
+	echo "To passthrough additional arguments straight to maven, enter '--' followed by the extra arguments"
+	exit 1
 }
 
 #
@@ -49,13 +51,14 @@ DEBUG=0
 #
 # Determine the command line options
 #
-while getopts ":dhsq" opt;
+while getopts ":dhsqz" opt;
 do
   case $opt in
     d) DEBUG=1 ;;
     h) show_help ;;
     s) SKIP=1 ;;
     q) INT_TEST=1 ;;
+    z) NO_DOCKER=1 ;;
   esac
 done
 shift "$(expr $OPTIND - 1)"
@@ -85,6 +88,7 @@ MVN="mvn clean install"
 # Turn on dedugging if required
 #
 if [ "${DEBUG}" == "1" ]; then
+  echo "** Adding debugging maven parameters **"
   MVN_FLAGS="-e -X -U"
 fi
 
@@ -92,14 +96,20 @@ fi
 # Skip tests
 #
 if [ "${SKIP}" == "1" ]; then
+  echo "** Skipping all unit testing **"
   SKIP_FLAG="-DskipTests"
 fi
 
 if [ "${INT_TEST}" == "1" ]; then
+  echo "** Execution of integration tests enabled **" 
   INTEGRATION_TEST_FLAG="-Parquillian"
 fi
 
 DOCKER_RELEASE="-Pdocker-release"
+if [ "${NO_DOCKER}" == "1" ]; then
+  echo "** Skipping docker image build and local registration using docker-release profile **"
+  DOCKER_RELEASE=""
+fi
 
 #
 # Maven options
