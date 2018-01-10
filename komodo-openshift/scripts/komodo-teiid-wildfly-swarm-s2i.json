@@ -66,6 +66,16 @@
     ],
     "objects": [
         {
+            "apiVersion":"v1",
+            "kind":"ServiceAccount",
+            "metadata": {
+                "name":"vdb-builder-gateway",
+                "annotations": {
+                    "serviceaccounts.openshift.io/oauth-redirectreference.primary":"{\"kind\":\"OAuthRedirectReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"Route\",\"name\":\"vdb-builder-gateway\"}}"
+                }
+            }
+        },
+        {
             "kind": "Service",
             "apiVersion": "v1",
             "metadata": {
@@ -89,6 +99,28 @@
                 ],
                 "selector": {
                     "name": "vdb-builder-persistence"
+                }
+            }
+        },
+        {
+            "apiVersion":"v1",
+            "kind":"Service",
+            "metadata": {
+                "name":"vdb-builder-gateway",
+                "annotations": {
+                    "service.alpha.openshift.io/serving-cert-secret-name":"proxy-tls"
+                }
+            },
+            "spec": {
+                "ports": [
+                    {
+                        "name":"vdb-builder-gateway",
+                        "port": 443,
+                        "targetPort": 8443
+                    }
+                ],
+                "selector": {
+                    "app":"vdb-builder-gateway"
                 }
             }
         },
@@ -123,7 +155,28 @@
                     "application": "vdb-builder"
                 },
                 "annotations": {
-                    "description": "Designing data virtualization services."
+                    "description": "Designing data virtualization services.",
+                    "service.alpha.openshift.io/dependencies":"[{\"name\": \"vdb-builder-persistence\", \"kind\": \"Service\"}]"
+                }
+            }
+        },
+        {
+            "apiVersion":"v1",
+            "kind":"Route",
+            "metadata": {
+                "name":"vdb-builder-gateway"
+            },
+            "spec": {
+                "path": "/vdb-builder",
+                "port": {
+                    "targetPort": 8443
+                },
+                "to": {
+                    "name":"vdb-builder-gateway",
+                    "kind":"Service"
+                },
+                "tls": {
+                    "termination":"Reencrypt"
                 }
             }
         },
@@ -460,6 +513,7 @@
                         }
                     },
                     "spec": {
+                        "serviceAccountName":"vdb-builder-gateway",
                         "terminationGracePeriodSeconds": 60,
                         "containers": [
                             {
@@ -514,6 +568,76 @@
                                         "value": "${HOSTNAME_HTTP}"
                                     }
                                 ]
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion":"extensions/v1beta1",
+            "kind":"Deployment",
+            "metadata": {
+                "name":"vdb-builder-gateway"
+            },
+            "spec": {
+                "replicas":1,
+                "selector": {
+                    "matchLabels": {
+                        "app":"vdb-builder-gateway"
+                    }
+                },
+                "template": {
+                    "metadata": {
+                        "labels": {
+                            "app":"vdb-builder-gateway"
+                        }
+                    },
+                    "spec": {
+                        "serviceAccountName":"vdb-builder-gateway",
+                        "containers": [
+                            {
+                                "name":"oauth-proxy",
+                                "image":"openshift/oauth-proxy:v1.0.0",
+                                "imagePullPolicy":"IfNotPresent",
+                                "ports": [
+                                    {
+                                        "containerPort":8443,
+                                        "name":"public"
+                                    }
+                                ],
+                                "args": [
+                                    "--https-address=:8443",
+                                    "--provider=openshift",
+                                    "--openshift-service-account=vdb-builder-gateway",
+                                    "--upstream=http://vdb-builder:8080/vdb-builder/",
+                                    "--tls-cert=/etc/tls/private/tls.crt",
+                                    "--tls-key=/etc/tls/private/tls.key",
+                                    "--cookie-secret=V2lsZDAwZDJXaWxkMDBkMg==",
+                                    "--pass-access-token=true",
+                                    "--skip-provider-button=true",
+                                    "--pass-basic-auth=true",
+                                    "--pass-user-headers=true",
+                                    "--pass-host-header=true",
+                                    "--skip-auth-preflight",
+                                    "--openshift-ca=/etc/pki/tls/certs/ca-bundle.crt",
+                                    "--openshift-ca=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt",
+                                    "--scope=user:info user:check-access role:admin:vdb-builder:! role:cluster-admin:vdb-builder:!"
+                                ],
+                                "volumeMounts": [
+                                    {
+                                        "mountPath":"/etc/tls/private",
+                                        "name":"proxy-tls"
+                                    }
+                                ]
+                            }
+                        ],
+                        "volumes": [
+                            {
+                                "name":"proxy-tls",
+                                "secret": {
+                                    "secretName":"proxy-tls"
+                                }
                             }
                         ]
                     }
