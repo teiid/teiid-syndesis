@@ -19,10 +19,59 @@ teiid-komodo
 There are two methods available for running teiid-komodo.
 
 ### Using the locally-built image
-Build teiid-komodo locally then once built, the docker image and Dockerfile will be available in 'server/komodo-rest/target/docker'. It should also have been registered in the local docker registry.
+There is a pre-built docker image for teiid-komodo, to make use of it follow the directions here https://github.com/teiid/data-access-service-templates/blob/master/README.md
 
-An Openshift template that utilises this image is available [here](https://github.com/rareddy/osb-data-services/blob/master/komodo/data-access-service.json). This should be download and loaded into Openshift, inc. [minishift](https://github.com/minishift/minishift).
+Please note this image may be behind the current master version of the code. If you need to test with upto date follow below directions as to how to build a version locally.
 
+### Building the locally-built image
+
+If you would like to build your own version of the teiid-komodo docker image please follow the below steps.
+
+Create your own [dockerhub](https://hub.docker.com/) account if you do not have already have an account. Make sure that you have docker is installed on your system and docker daemon is running.
+
+Edit "server/komodo-rest/pom.xml" under "docker-release" profile, edit the dockerhub details. For example:
+
+```
+<name>teiid/komodo:${project.version}</name>
+
+```
+to
+
+```
+<name>mydockerhub/komodo:${project.version}</name>
+
+```
+
+Build "teiid-komodo" docker image locally by executing the following command. 
+
+```
+$mvn clean install -P docker-release
+```
+
+then once built, the docker image is put into you local docker repository that can be viewed by executing
+
+```
+$sudo docker images
+
+REPOSITORY             TAG                 IMAGE ID            CREATED             SIZE
+mydockerhub/komodo     0.0.4-SNAPSHOT      ab150823ea3b        10 seconds ago      624 MB
+
+```
+Now we need to push this image to your [dockerhub](https://hub.docker.com/) account. 
+
+```
+docker push mydockerhub/komodo:${tag}
+```
+
+Once the upload is done, then clone the [Data Access Services] (https://github.com/teiid/data-access-service-templates) templates, and modify the "das/komodo-image-streams.json" file and update with your dockerhub details.
+
+Have your favorite OpenShift instance running and (minishift, cdk etc), then deploy the updated templates by running as admin
+
+```
+das/load.sh
+```
+
+The above command will deploy the templates into your instance of OpenShift, then you can access the "data access service" in the OpenShift mall.
 
 
 ### Building inside Openshift
