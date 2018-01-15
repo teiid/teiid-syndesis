@@ -139,6 +139,11 @@ public class TestUtilities implements StringConstants {
     public static final String SAMPLE_DATASERVICE_FILE = "sample-ds.zip";
 
     /**
+     * Sample Dataservice name
+     */
+    public static final String SAMPLE_DATA_SERVICE_NAME = "MyDataService";
+
+    /**
      * DSB Single Source Parts Dataservice Zip
      */
     public static final String PARTS_SINGLE_SOURCE_FILE = "PartsSingleSource.zip";
@@ -227,6 +232,11 @@ public class TestUtilities implements StringConstants {
      * Service Source vdb for usstates
      */
     public static final String USSTATES_SOURCE_VDB_FILE = "USStates-source-vdb.xml";
+
+    /**
+     * Service Source vdb name for usstates
+     */
+    public static final String USSTATES_SOURCE_VDB_NAME = "ServiceSource";
 
     /**
      * Parts vdb name

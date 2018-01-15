@@ -42,13 +42,12 @@ import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.request.KomodoFileAttributes;
 import org.komodo.rest.relational.response.KomodoStatusObject;
-import org.komodo.spi.constants.StringConstants;
 import org.komodo.test.utils.TestUtilities;
 import org.komodo.utils.FileUtils;
 
 @RunWith(Arquillian.class)
 @SuppressWarnings( {"javadoc", "nls"} )
-public class IT_KomodoMetadataServiceDriverTests extends AbstractKomodoMetadataServiceTest implements StringConstants {
+public class IT_KomodoMetadataServiceDriverTests extends AbstractKomodoMetadataServiceTest  {
 
     @Override
     protected int getTestTotalInClass() {

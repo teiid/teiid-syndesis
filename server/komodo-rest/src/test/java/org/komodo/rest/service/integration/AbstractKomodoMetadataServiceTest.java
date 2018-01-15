@@ -61,7 +61,7 @@ import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.KomodoStorageAttributes;
 import org.komodo.rest.relational.response.RestQueryResult;
 import org.komodo.rest.relational.response.RestQueryRow;
-import org.komodo.rest.service.AbstractFrameworkTest;
+import org.komodo.rest.service.AbstractServiceTest;
 import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.runtime.ConnectionDriver;
@@ -72,9 +72,11 @@ import org.komodo.test.utils.UsStatesTestDB;
 import org.komodo.utils.FileUtils;
 
 @SuppressWarnings( {"javadoc", "nls"} )
-public abstract class AbstractKomodoMetadataServiceTest extends AbstractFrameworkTest {
+public abstract class AbstractKomodoMetadataServiceTest extends AbstractServiceTest {
 
     protected static final String MYSQL_DRIVER = "mysql-connector";
+
+    protected static KomodoRestUriBuilder _uriBuilder;
 
     private int testIndex = 0;
 

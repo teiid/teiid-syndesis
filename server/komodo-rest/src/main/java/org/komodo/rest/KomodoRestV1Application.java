@@ -45,15 +45,7 @@ import org.komodo.core.repository.LocalRepository;
 import org.komodo.core.repository.SynchronousCallback;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
-import org.komodo.importer.ImportOptions.ExistingNodeOptions;
-import org.komodo.importer.ImportOptions.OptionKeys;
-import org.komodo.relational.connection.Connection;
-import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.dataservice.internal.DataserviceConveyor;
 import org.komodo.relational.importer.vdb.VdbImporter;
-import org.komodo.relational.resource.Driver;
-import org.komodo.relational.vdb.Vdb;
-import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.cors.KCorsFactory;
 import org.komodo.rest.cors.KCorsHandler;
@@ -81,9 +73,7 @@ import org.komodo.rest.swagger.RestVdbTranslatorConverter;
 import org.komodo.spi.KEvent.Type;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.SystemConstants;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.logging.KLogger.Level;
-import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.ApplicationProperties;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.PersistenceType;
@@ -754,6 +744,14 @@ public class KomodoRestV1Application extends Application implements SystemConsta
     }
 
     /**
+     * @return the komodo engine of this application.
+     *           Should only be applicable for testing.
+     */
+    public KEngine getEngine() throws KException {
+        return kengine;
+    }
+
+    /**
      * @return the default repository of this application.
      *            Should only be applicable for testing.
      *
@@ -938,7 +936,7 @@ public class KomodoRestV1Application extends Application implements SystemConsta
      *
      * @throws Exception if error occurs
      */
-    public void importVdb(InputStream vdbStream, String user) throws Exception {
+    public ImportMessages importVdb(InputStream vdbStream, String user) throws Exception {
         Repository repository = this.kengine.getDefaultRepository();
 
         SynchronousCallback callback = new SynchronousCallback();
@@ -952,229 +950,7 @@ public class KomodoRestV1Application extends Application implements SystemConsta
         importer.importVdb(uow, vdbStream, workspace, importOptions, importMessages);
         uow.commit();
         callback.await(3, TimeUnit.MINUTES);
-    }
 
-    /**
-     * Import a dataservice into the komodo engine
-     *
-     * @param dsStream dataservice input stream
-     * @param user initiating import
-     *
-     * @throws Exception if error occurs
-     */
-    public void importDataservice(InputStream dsStream, String user) throws Exception {
-        Repository repository = this.kengine.getDefaultRepository();
-        MetadataInstance metadataInstance = this.kengine.getMetadataInstance();
-
-        SynchronousCallback callback = new SynchronousCallback();
-        UnitOfWork uow = repository.createTransaction(user, "Import Dataservice", false, callback); //$NON-NLS-1$
-
-        ImportOptions importOptions = new ImportOptions();
-        ImportMessages importMessages = new ImportMessages();
-
-        KomodoObject workspace = repository.komodoWorkspace(uow);
-        DataserviceConveyor dsConveyor = new DataserviceConveyor(repository, metadataInstance);
-        dsConveyor.dsImport(uow, dsStream, workspace, importOptions, importMessages);
-        uow.commit();
-        callback.await(3, TimeUnit.MINUTES);
-    }
-
-    /**
-     * @param user initiating call
-     *
-     * @return the vdbs directly from the kEngine
-     * @throws Exception if error occurs
-     */
-    public Vdb[] getVdbs(String user) throws Exception {
-        Repository repository = this.kengine.getDefaultRepository();
-
-        UnitOfWork uow = repository.createTransaction(user, "Find vdbs", true, null); //$NON-NLS-1$
-        WorkspaceManager mgr = WorkspaceManager.getInstance(repository, uow);
-        Vdb[] vdbs = mgr.findVdbs(uow);
-
-        uow.commit();
-
-        return vdbs;
-    }
-
-    /**
-     * Create a dataservice in the komodo engine (used for mostly test purposes)
-     *
-     * @param dataserviceName the service name
-     * @param populateWithSamples true if dataservice should be populated with example vdbs
-     * @param user initiating transaction
-     * @throws Exception if error occurs
-     */
-    public void createDataservice(String dataserviceName, boolean populateWithSamples, String user) throws Exception {
-        Repository repository = this.kengine.getDefaultRepository();
-
-        SynchronousCallback callback = new SynchronousCallback();
-        UnitOfWork uow = repository.createTransaction(user, "Create Dataservice", false, callback); //$NON-NLS-1$
-
-        KomodoObject wkspace = repository.komodoWorkspace(uow);
-        WorkspaceManager wsMgr = WorkspaceManager.getInstance(repository, uow);
-
-        VdbImporter importer = new VdbImporter(repository);
-        ImportMessages importMessages = new ImportMessages();
-        ImportOptions importOptions = new ImportOptions();
-        importOptions.setOption(OptionKeys.HANDLE_EXISTING, ExistingNodeOptions.RETURN);
-
-        String portfolioSample = KomodoUtilService.SAMPLES[1];
-        String nwSample = KomodoUtilService.SAMPLES[4];
-        InputStream portSampleStream = KomodoUtilService.getVdbSample(portfolioSample);
-        InputStream nwindSampleStream = KomodoUtilService.getVdbSample(nwSample);
-
-        importer.importVdb(uow, portSampleStream, wkspace, importOptions, importMessages);
-        importer.importVdb(uow, nwindSampleStream, wkspace, importOptions, importMessages);
-
-        KomodoObject pfSampleObj = wkspace.getChild(uow, "Portfolio");
-        Vdb pfVdb = wsMgr.resolve(uow, pfSampleObj, Vdb.class);
-
-        KomodoObject nwSampleObj = wkspace.getChild(uow, "Northwind");
-        Vdb nwVdb = wsMgr.resolve(uow, nwSampleObj, Vdb.class);
-
-        Dataservice dataservice = wsMgr.createDataservice(uow, wkspace, dataserviceName);
-        dataservice.setDescription(uow, "This is my dataservice");
-
-        dataservice.addVdb(uow, pfVdb);
-        dataservice.setServiceVdb(uow, nwVdb);
-
-        uow.commit();
-        callback.await(3, TimeUnit.MINUTES);
-    }
-
-    /**
-     * @param user initiating call
-     *
-     * @return the dataservices directly from the kEngine
-     * @throws Exception if error occurs
-     */
-    public Dataservice[] getDataservices(String user) throws Exception {
-        Repository repository = this.kengine.getDefaultRepository();
-
-        UnitOfWork uow = repository.createTransaction(user, "Find dataservices", true, null); //$NON-NLS-1$
-        WorkspaceManager mgr = WorkspaceManager.getInstance(repository, uow);
-        Dataservice[] services = mgr.findDataservices(uow);
-        uow.commit();
-
-        return services;
-    }
-    
-    /**
-     * Create a Vdb in the komodo engine
-     *
-     * @param vdbName the vdb name
-     * @param user initiating call
-     * @throws Exception if error occurs
-     */
-    public void createVdb(String vdbName, String user) throws Exception {
-        Repository repository = this.kengine.getDefaultRepository();
-
-        SynchronousCallback callback = new SynchronousCallback();
-        UnitOfWork uow = repository.createTransaction(user, "Create VDB", false, callback); //$NON-NLS-1$
-
-        WorkspaceManager wsMgr = WorkspaceManager.getInstance(repository, uow);
-        wsMgr.createVdb(uow, null, vdbName, vdbName);
-
-        uow.commit();
-        callback.await(3, TimeUnit.MINUTES);
-    }
-
-    /**
-     * Create a Model within a vdb in the komodo engine
-     *
-     * @param vdbName the vdb name
-     * @param modelName the vdb name
-     * @param user initiating call
-     * @throws Exception if error occurs
-     */
-    public void createVdbModel(String vdbName, String modelName, String user) throws Exception {
-        Repository repository = this.kengine.getDefaultRepository();
-
-        SynchronousCallback callback = new SynchronousCallback();
-        UnitOfWork uow = repository.createTransaction(user, "Create Model", false, callback); //$NON-NLS-1$
-
-        WorkspaceManager wsMgr = WorkspaceManager.getInstance(repository, uow);
-        if(!wsMgr.hasChild(uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE)) {
-            wsMgr.createVdb(uow, null, vdbName, vdbName);
-        }
-        
-        KomodoObject kobj = wsMgr.getChild(uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE);
-        Vdb vdb = Vdb.RESOLVER.resolve(uow, kobj);
-        
-        vdb.addModel(uow, modelName);
-
-        uow.commit();
-        callback.await(3, TimeUnit.MINUTES);
-    }
-
-    /**
-     * Create a connection in the komodo engine
-     *
-     * @param connectionName the connection name
-     * @param user initiating call
-     * @throws Exception if error occurs
-     */
-    public void createConnection(String connectionName, String user) throws Exception {
-        Repository repository = this.kengine.getDefaultRepository();
-
-        SynchronousCallback callback = new SynchronousCallback();
-        UnitOfWork uow = repository.createTransaction(user, "Create Connection", false, callback); //$NON-NLS-1$
-
-        WorkspaceManager wsMgr = WorkspaceManager.getInstance(repository, uow);
-        wsMgr.createConnection(uow, null, connectionName);
-
-        uow.commit();
-        callback.await(3, TimeUnit.MINUTES);
-    }
-
-    /**
-     * @param user initiating call
-     *
-     * @return the connections directly from the kEngine
-     * @throws Exception if error occurs
-     */
-    public Connection[] getConnections(String user) throws Exception {
-        Repository repository = this.kengine.getDefaultRepository();
-
-        UnitOfWork uow = repository.createTransaction(user, "Find connections", true, null); //$NON-NLS-1$
-        WorkspaceManager mgr = WorkspaceManager.getInstance(repository, uow);
-        Connection[] sources = mgr.findConnections(uow);
-        uow.commit();
-
-        return sources;
-    }
-    
-    /**
-     * Create a Driver in the komodo engine
-     *
-     * @param driverName the driver name
-     * @throws Exception if error occurs
-     */
-    public void createDriver(String driverName) throws Exception {
-        Repository repository = this.kengine.getDefaultRepository();
-
-        SynchronousCallback callback = new SynchronousCallback();
-        UnitOfWork uow = repository.createTransaction(Repository.SYSTEM_USER, "Create Driver", false, callback); //$NON-NLS-1$
-
-        WorkspaceManager wsMgr = WorkspaceManager.getInstance(repository, uow);
-        wsMgr.createDriver(uow, null, driverName);
-
-        uow.commit();
-        callback.await(3, TimeUnit.MINUTES);
-    }
-
-    /**
-     * @return the drivers directly from the kEngine
-     * @throws Exception if error occurs
-     */
-    public Driver[] getDrivers() throws Exception {
-        Repository repository = this.kengine.getDefaultRepository();
-        UnitOfWork uow = repository.createTransaction(Repository.SYSTEM_USER, "Find drivers", true, null); //$NON-NLS-1$
-        WorkspaceManager mgr = WorkspaceManager.getInstance(repository, uow);
-        Driver[] drivers = mgr.findDrivers(uow);
-        uow.commit();
-
-        return drivers;
+        return importMessages;
     }
 }

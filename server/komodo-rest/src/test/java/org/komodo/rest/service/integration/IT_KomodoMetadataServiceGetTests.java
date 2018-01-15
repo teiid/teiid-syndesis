@@ -27,6 +27,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -48,13 +51,16 @@ import org.komodo.rest.relational.response.metadata.RestMetadataVdb;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatus;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatusVdb;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbTranslator;
-import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.KomodoType;
+import org.komodo.spi.runtime.ConnectionDriver;
+import org.komodo.spi.runtime.version.DefaultMetadataVersion;
 import org.komodo.test.utils.TestUtilities;
+import org.teiid.adminapi.AdminProcessingException;
+import org.teiid.core.util.ApplicationInfo;
 
 @RunWith(Arquillian.class)
 @SuppressWarnings( {"javadoc", "nls"} )
-public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServiceTest implements StringConstants {
+public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServiceTest {
 
     private void testTranslators(RestMetadataStatus status) throws Exception {
         assertEquals(getMetadataInstance().getTranslators().size(), status.getTranslatorSize());
@@ -62,7 +68,13 @@ public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServ
 
     @Override
     protected int getTestTotalInClass() {
-        return 12;
+        return 14;
+    }
+
+    @Test
+    public void testVersion() throws Exception {
+        ApplicationInfo info = ApplicationInfo.getInstance();
+        assertEquals(new DefaultMetadataVersion(info.getReleaseNumber()), getMetadataInstance().getVersion());
     }
 
     @Test
@@ -394,6 +406,41 @@ public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServ
         for (RestMetadataTemplateEntry entry : templateEntries) {
             assertNotNull(entry.getId());
             assertEquals(2, entry.getLinks().size());
+        }
+    }
+
+    @Test
+    public void shouldGetDataSourceDrivers() throws Exception {
+        Collection<ConnectionDriver> dataSourceDrivers = getMetadataInstance().getDataSourceDrivers();
+        assertTrue(dataSourceDrivers.size() > 0);
+
+        String[] driverNamesArr = {"h2", "teiid"};
+        List<String> driverNames = Arrays.asList(driverNamesArr);
+
+        Iterator<ConnectionDriver> iter = dataSourceDrivers.iterator();
+        int found = 0;
+        while (iter.hasNext()) {
+            ConnectionDriver driver = iter.next();
+            if (driverNames.contains(driver.getName()))
+                found++;
+        }
+
+        assertEquals(driverNamesArr.length, found);
+    }
+
+    @Test
+    public void shouldFailToGetSchema() throws Exception {
+        try {
+            getMetadataInstance().getSchema("blah", "1.0", "model");
+        } catch (Exception ex) {
+            //
+            // Should throw this exception since blah does not exist but should not
+            // throw a NumberFormatException or NoSuchMethodException
+            //
+            Throwable cause = ex.getCause();
+            assertNotNull(cause);
+            assertTrue(cause instanceof AdminProcessingException);
+            assertTrue(cause.getMessage().contains("does not exist or is not ACTIVE"));
         }
     }
 

@@ -26,8 +26,6 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import javax.ws.rs.core.MediaType;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
@@ -47,19 +45,14 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.rules.ExternalResource;
 import org.komodo.rest.KRestEntity;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
-import org.komodo.rest.relational.KomodoRestUriBuilder;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.repository.ApplicationProperties;
-import org.komodo.spi.repository.PersistenceType;
-import org.komodo.utils.FileUtils;
-import org.komodo.utils.TestKLog;
 
-public class AbstractFrameworkTest implements StringConstants, V1Constants {
+public class AbstractServiceTest implements StringConstants, V1Constants {
 
     public static enum RequestType {
         GET,
@@ -68,40 +61,21 @@ public class AbstractFrameworkTest implements StringConstants, V1Constants {
         DELETE
     }
 
-    protected static final int TEST_PORT = 8080;
+    public static final int TEST_PORT = 8080;
 
-    protected static final String USER_NAME = "komodo";
+    public static final String USER_NAME = "komodo";
     
-    protected static final String PASSWORD = "user";
+    public static final String PASSWORD = "user";
 
-    protected static Path _kengineDataDir;
+    //
+    // With this rule placed here and in the suites ensures that ServiceResources
+    // will be correctly instantiated whether running in a suite or as a single test class
+    //
+    @ClassRule
+    public static ExternalResource serviceResources = ServiceResources.getInstance();
 
-    protected static KomodoRestUriBuilder _uriBuilder;
-
-    public AbstractFrameworkTest() {
+    public AbstractServiceTest() {
         super();
-    }
-
-    @BeforeClass
-    public static void beforeAllFramework() throws Exception {
-    	_kengineDataDir = TestKLog.createEngineDirectory();  	
-        //
-        // Sets the persistence type to H2 for test purposes
-        //
-        ApplicationProperties.setRepositoryPersistenceType(PersistenceType.H2.name());
-    }
-
-    @AfterClass
-    public static void afterAll() throws Exception {
-        if (_kengineDataDir != null) {
-            FileUtils.removeDirectoryAndChildren(_kengineDataDir.toFile());
-        }
-
-        try {
-            Files.deleteIfExists(_kengineDataDir);
-        } catch (Exception ex) {
-            _kengineDataDir.toFile().deleteOnExit();
-        }
     }
 
     protected HttpClient requestClient() {

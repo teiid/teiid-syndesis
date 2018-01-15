@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.rest.service;
+package org.komodo.rest.service.unit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -32,26 +32,30 @@ import javax.ws.rs.core.UriBuilder;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.junit.Assert;
 import org.junit.Test;
+import org.komodo.importer.ImportMessages;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
 import org.komodo.rest.cors.CorsHeaders;
 import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.response.KomodoStatusObject;
+import org.komodo.rest.service.KomodoUtilService;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.test.utils.TestUtilities;
 
 @SuppressWarnings( {"javadoc", "nls"} )
-public class KomodoUtilServiceTest extends AbstractKomodoServiceTest {
+public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
+
+    public KomodoUtilServiceTestInSuite() throws Exception {
+        super();
+    }
 
     private void loadSamples(String user) throws Exception {
         for (String sample : KomodoUtilService.SAMPLES) {
-            getRestApp().importVdb(KomodoUtilService.getVdbSample(sample), user);
+            ImportMessages msgs = restApp().importVdb(KomodoUtilService.getVdbSample(sample), user);
+            assertTrue(msgs.getErrorMessages().isEmpty());
         }
-
-        Assert.assertEquals(KomodoUtilService.SAMPLES.length, getRestApp().getVdbs(user).length);
     }
 
     @Test
@@ -61,13 +65,13 @@ public class KomodoUtilServiceTest extends AbstractKomodoServiceTest {
             "  \"Information\": " +  OPEN_BRACE + NEW_LINE,
             "    \"Repository Workspace\": \"komodoLocalWorkspace\"," + NEW_LINE,
             "    \"Repository Configuration\"", // Configuration Url contains local file names so impossible to test
-            "    \"Repository Vdb Total\": \"" + KomodoUtilService.SAMPLES.length + "\"" + NEW_LINE,
+            "    \"Repository Vdb Total\": \"",
             "  " + CLOSE_BRACE + NEW_LINE };
 
         loadSamples(USER_NAME);
 
         // get
-        URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
+        URI uri = UriBuilder.fromUri(uriBuilder().baseUri())
                                                     .path(V1Constants.SERVICE_SEGMENT)
                                                     .path(V1Constants.ABOUT).build();
 
@@ -91,29 +95,34 @@ public class KomodoUtilServiceTest extends AbstractKomodoServiceTest {
     @Test
     public void shouldLoadSampleData() throws Exception {
 
-        // get
-        URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
-                                                    .path(V1Constants.SERVICE_SEGMENT)
-                                                    .path(V1Constants.SAMPLE_DATA).build();
+        try {
+            serviceTestUtilities.deleteVdbs(USER_NAME);
 
-        HttpPost request = jsonRequest(uri, RequestType.POST);
-        HttpResponse response = executeOk(request);
-        
-        String entity = extractResponse(response);
-        // System.out.println("Response from uri " + uri + ":\n" + entity);
+            // get
+            URI uri = UriBuilder.fromUri(uriBuilder().baseUri()).path(V1Constants.SERVICE_SEGMENT).path(V1Constants.SAMPLE_DATA).build();
 
-        KomodoStatusObject status = KomodoJsonMarshaller.unmarshall(entity, KomodoStatusObject.class);
-        assertNotNull(status);
+            HttpPost request = jsonRequest(uri, RequestType.POST);
+            HttpResponse response = executeOk(request);
 
-        assertEquals("Sample Vdb Import", status.getTitle());
-        Map<String, String> attributes = status.getAttributes();
+            String entity = extractResponse(response);
+            // System.out.println("Response from uri " + uri + ":\n" + entity);
 
-        for (String sample : KomodoUtilService.SAMPLES) {
-            String message = attributes.get(sample);
-            assertNotNull(message);
-            assertEquals(
-                         RelationalMessages.getString(RelationalMessages.Error.VDB_SAMPLE_IMPORT_SUCCESS, sample),
-                         message);
+            KomodoStatusObject status = KomodoJsonMarshaller.unmarshall(entity, KomodoStatusObject.class);
+            assertNotNull(status);
+
+            assertEquals("Sample Vdb Import", status.getTitle());
+            Map<String, String> attributes = status.getAttributes();
+
+            for (String sample : KomodoUtilService.SAMPLES) {
+                String message = attributes.get(sample);
+                assertNotNull(message);
+                assertTrue(message.startsWith("The sample vdb"));
+            }
+        } finally {
+            //
+            // Restore the sample vdbs
+            //
+            unitServiceResources.loadVdbs();            
         }
     }
 
@@ -122,7 +131,7 @@ public class KomodoUtilServiceTest extends AbstractKomodoServiceTest {
         loadSamples(USER_NAME);
 
         // get
-        URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
+        URI uri = UriBuilder.fromUri(uriBuilder().baseUri())
                                                     .path(V1Constants.SERVICE_SEGMENT)
                                                     .path(V1Constants.SAMPLE_DATA).build();
 
@@ -153,7 +162,7 @@ public class KomodoUtilServiceTest extends AbstractKomodoServiceTest {
     public void shouldReturnTeiidSchema() throws Exception {
 
         // get
-        URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
+        URI uri = UriBuilder.fromUri(uriBuilder().baseUri())
                                                     .path(V1Constants.SERVICE_SEGMENT)
                                                     .path(V1Constants.SCHEMA_SEGMENT)
                                                     .build();
@@ -178,7 +187,7 @@ public class KomodoUtilServiceTest extends AbstractKomodoServiceTest {
     public void shouldReturnTeiidSchemaForKType() throws Exception {
 
         // get
-        UriBuilder baseBuilder = UriBuilder.fromUri(_uriBuilder.baseUri())
+        UriBuilder baseBuilder = UriBuilder.fromUri(uriBuilder().baseUri())
                                                     .path(V1Constants.SERVICE_SEGMENT)
                                                     .path(V1Constants.SCHEMA_SEGMENT);
 

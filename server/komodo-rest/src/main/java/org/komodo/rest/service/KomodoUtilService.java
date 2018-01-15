@@ -84,13 +84,13 @@ public final class KomodoUtilService extends KomodoService {
 
     private static final String REPO_VDB_TOTAL = "Repository Vdb Total"; //$NON-NLS-1$
 
-    static final String APP_NAME = "App Name"; //$NON-NLS-1$
+    public static final String APP_NAME = "App Name"; //$NON-NLS-1$
 
-    static final String APP_TITLE = "App Title"; //$NON-NLS-1$
+    public static final String APP_TITLE = "App Title"; //$NON-NLS-1$
 
-    static final String APP_DESCRIPTION = "App Description"; //$NON-NLS-1$
+    public static final String APP_DESCRIPTION = "App Description"; //$NON-NLS-1$
 
-    static final String APP_VERSION = "App Version"; //$NON-NLS-1$
+    public static final String APP_VERSION = "App Version"; //$NON-NLS-1$
 
     /**
      * The sample vdbs provided by this service
