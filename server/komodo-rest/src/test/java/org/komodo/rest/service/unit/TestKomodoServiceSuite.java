@@ -3,41 +3,45 @@
  * See the COPYRIGHT.txt file distributed with this work for information
  * regarding copyright ownership.  Some portions may be licensed
  * to Red Hat, Inc. under one or more contributor license agreements.
- *
+ * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- *
+ * 
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.rest.service.integration;
+package org.komodo.rest.service.unit;
 
-import org.jboss.arquillian.junit.Arquillian;
-import org.junit.Test;
+import org.junit.ClassRule;
+import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
+import org.komodo.rest.service.ServiceResources;
 
-@RunWith(Arquillian.class)
-@SuppressWarnings( {"javadoc", "nls"} )
-public class IT_KomodoMetadataServiceDataServiceTests extends AbstractKomodoMetadataServiceTest {
+@RunWith(Suite.class)
+@SuiteClasses({
+    KomodoConnectionServiceTestInSuite.class,
+    KomodoDataserviceServiceTestInSuite.class,
+    KomodoDriverServiceTestInSuite.class,
+    KomodoImportExportServiceTestInSuite.class,
+    KomodoSearchServiceTestInSuite.class,
+    KomodoUtilServiceTestInSuite.class,
+    KomodoVdbServiceTestInSuite.class
+    })
+public class TestKomodoServiceSuite {
 
-    @Override
-    protected int getTestTotalInClass() {
-        return 1;
-    }
-
-    @Test
-    public void shouldDeployDataService() throws Exception {
-        importDataService();
-
-        deployDataService();
-    }
+    @ClassRule
+    public static RuleChain chain = RuleChain
+                           .outerRule(ServiceResources.getInstance())
+                           .around(UnitServiceResources.getInstance());
 }

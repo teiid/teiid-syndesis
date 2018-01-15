@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.rest.service;
+package org.komodo.rest.service.unit;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
@@ -38,20 +38,23 @@ import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.response.RestConnectionDriver;
 
 @SuppressWarnings( {"javadoc", "nls"} )
-public class KomodoDriverServiceTest extends AbstractKomodoServiceTest {
+public class KomodoDriverServiceTestInSuite extends AbstractKomodoServiceTest {
 
-    public static String DRIVER_NAME = "MyDriver"; 
-    
+    public KomodoDriverServiceTestInSuite() throws Exception {
+        super();
+    }
+
     @Rule
     public TestName testName = new TestName();
 
     @Test
     @Ignore
     public void shouldGetDrivers() throws Exception {
-        createDriver(DRIVER_NAME);
+        String driverName = "shouldGetDrivers";
+        createDriver(driverName);
 
         // get
-        URI uri = _uriBuilder.workspaceDriversUri();
+        URI uri = uriBuilder().workspaceDriversUri();
         HttpGet request = jsonRequest(uri, RequestType.GET);
         HttpResponse response = executeOk(request);
 
@@ -67,12 +70,12 @@ public class KomodoDriverServiceTest extends AbstractKomodoServiceTest {
 
         assertEquals(1, driver.length);
         RestConnectionDriver myDriver = driver[0];
-        assertTrue(DRIVER_NAME.equals(myDriver.getName()));
+        assertTrue(driverName.equals(myDriver.getName()));
     }
     
     @Test
     public void shouldReturnEmptyListWhenNoDriversInWorkspace() throws Exception {
-        URI uri = _uriBuilder.workspaceDriversUri();
+        URI uri = uriBuilder().workspaceDriversUri();
         HttpGet request = jsonRequest(uri, RequestType.GET);
         HttpResponse response = execute(request);
 
@@ -80,7 +83,7 @@ public class KomodoDriverServiceTest extends AbstractKomodoServiceTest {
         String entity = extractResponse(response);
         assertThat(entity, is(notNullValue()));
 
-        //System.out.println("Response:\n" + entity);
+        System.out.println("Response:\n" + entity);
 
         RestConnectionDriver[] drivers = KomodoJsonMarshaller.unmarshallArray(entity, RestConnectionDriver[].class);
         assertNotNull(drivers);

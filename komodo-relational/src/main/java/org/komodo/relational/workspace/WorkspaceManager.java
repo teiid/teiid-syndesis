@@ -186,7 +186,7 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
         if (txNotProvided)
             transaction = repository.createTransaction(Repository.SYSTEM_USER, "createWorkspaceManager", false, null ); //$NON-NLS-1$
 
-        WorkspaceManager instance = instances.get(new CacheKey(repository.getId(), Repository.SYSTEM_USER));
+        WorkspaceManager instance = instances.get(new CacheKey(repository.getId(), transaction.getUserName()));
 
         if ( instance == null ) {
             // We must create a transaction here so that it can be passed on to the constructor. Since the

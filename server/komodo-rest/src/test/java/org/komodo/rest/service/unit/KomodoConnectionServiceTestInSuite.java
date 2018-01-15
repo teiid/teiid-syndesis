@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.rest.service;
+package org.komodo.rest.service.unit;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
@@ -46,19 +46,22 @@ import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.request.KomodoConnectionAttributes;
 
 @SuppressWarnings( {"javadoc", "nls"} )
-public class KomodoConnectionServiceTest extends AbstractKomodoServiceTest {
+public class KomodoConnectionServiceTestInSuite extends AbstractKomodoServiceTest {
 
-    public static String CONNECTION_NAME = "MyConnection"; 
-    
     @Rule
     public TestName testName = new TestName();
 
+    public KomodoConnectionServiceTestInSuite() throws Exception {
+        super();
+    }
+
     @Test
     public void shouldGetConnections() throws Exception {
-        createConnection(CONNECTION_NAME);
+        String connectionName = "shouldGetConnections";
+        createConnection(connectionName);
 
         // get
-        URI uri = _uriBuilder.workspaceConnectionsUri();
+        URI uri = uriBuilder().workspaceConnectionsUri();
         HttpGet request = jsonRequest(uri, RequestType.GET);
         HttpResponse response = executeOk(request);
 
@@ -67,19 +70,24 @@ public class KomodoConnectionServiceTest extends AbstractKomodoServiceTest {
 
         // System.out.println("Response:\n" + entities);
         // make sure the Dataservice JSON document is returned for each dataservice
-        RestConnection[] connection = KomodoJsonMarshaller.unmarshallArray(entities, RestConnection[].class);
+        RestConnection[] connections = KomodoJsonMarshaller.unmarshallArray(entities, RestConnection[].class);
+        assertTrue(connections.length > 0);
 
-        assertEquals(1, connection.length);
-        RestConnection mySource = connection[0];
-        assertNotNull(mySource.getId());
-        assertTrue(CONNECTION_NAME.equals(mySource.getId()));
+        RestConnection mySource = null;
+        for (RestConnection conn : connections) {
+            if (connectionName.equals(conn.getId())) {
+                mySource = conn;
+                break;
+            }
+        }
+        assertNotNull(mySource);
         assertNotNull(mySource.getDataPath());
         assertNotNull(mySource.getkType());
     }
     
     @Test
     public void shouldReturnEmptyListWhenNoDataservicesInWorkspace() throws Exception {
-        URI uri = _uriBuilder.workspaceDataservicesUri();
+        URI uri = uriBuilder().workspaceDataservicesUri();
         HttpGet request = jsonRequest(uri, RequestType.GET);
         HttpResponse response = execute(request);
 
@@ -95,13 +103,14 @@ public class KomodoConnectionServiceTest extends AbstractKomodoServiceTest {
     
     @Test
     public void shouldGetConnection() throws Exception {
-        createConnection(CONNECTION_NAME);
+        String connectionName = "shouldGetConnection";
+        createConnection(connectionName);
 
         // get
-        Properties settings = _uriBuilder.createSettings(SettingNames.CONNECTION_NAME, CONNECTION_NAME);
-        _uriBuilder.addSetting(settings, SettingNames.PARENT_PATH, _uriBuilder.workspaceConnectionsUri());
+        Properties settings = uriBuilder().createSettings(SettingNames.CONNECTION_NAME, connectionName);
+        uriBuilder().addSetting(settings, SettingNames.PARENT_PATH, uriBuilder().workspaceConnectionsUri());
 
-        URI uri = _uriBuilder.connectionUri(LinkType.SELF, settings);
+        URI uri = uriBuilder().connectionUri(LinkType.SELF, settings);
         HttpGet request = jsonRequest(uri, RequestType.GET);
         HttpResponse response = execute(request);
 
@@ -111,16 +120,18 @@ public class KomodoConnectionServiceTest extends AbstractKomodoServiceTest {
         RestConnection connection = KomodoJsonMarshaller.unmarshall(entity, RestConnection.class);
         assertNotNull(connection);
         
-        assertEquals(connection.getId(), CONNECTION_NAME);
+        assertEquals(connection.getId(), connectionName);
     }
 
     @Test
     public void shouldCreateConnection() throws Exception {
-        // post
-        Properties settings = _uriBuilder.createSettings(SettingNames.CONNECTION_NAME, CONNECTION_NAME);
-        _uriBuilder.addSetting(settings, SettingNames.PARENT_PATH, _uriBuilder.workspaceConnectionsUri());
+        String connectionName = "shouldCreateConnection";
 
-        URI uri = _uriBuilder.connectionUri(LinkType.SELF, settings);
+        // post
+        Properties settings = uriBuilder().createSettings(SettingNames.CONNECTION_NAME, connectionName);
+        uriBuilder().addSetting(settings, SettingNames.PARENT_PATH, uriBuilder().workspaceConnectionsUri());
+
+        URI uri = uriBuilder().connectionUri(LinkType.SELF, settings);
         HttpPost request = jsonRequest(uri, RequestType.POST);
 
         KomodoConnectionAttributes rcAttr = new KomodoConnectionAttributes();
@@ -160,13 +171,15 @@ public class KomodoConnectionServiceTest extends AbstractKomodoServiceTest {
 
     @Test
     public void shouldUpdateConnection() throws Exception {
-        createConnection(CONNECTION_NAME);
+        String connectionName = "shouldUpdateConnection";
+
+        createConnection(connectionName);
 
         // put
-        Properties settings = _uriBuilder.createSettings(SettingNames.CONNECTION_NAME, CONNECTION_NAME);
-        _uriBuilder.addSetting(settings, SettingNames.PARENT_PATH, _uriBuilder.workspaceConnectionsUri());
+        Properties settings = uriBuilder().createSettings(SettingNames.CONNECTION_NAME, connectionName);
+        uriBuilder().addSetting(settings, SettingNames.PARENT_PATH, uriBuilder().workspaceConnectionsUri());
 
-        URI uri = _uriBuilder.connectionUri(LinkType.SELF, settings);
+        URI uri = uriBuilder().connectionUri(LinkType.SELF, settings);
         HttpPut request = jsonRequest(uri, RequestType.PUT);
 
         KomodoConnectionAttributes rcAttr = new KomodoConnectionAttributes();

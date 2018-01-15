@@ -27,12 +27,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.rest.relational.request.KomodoQueryAttribute;
-import org.komodo.spi.constants.StringConstants;
 import org.komodo.test.utils.TestUtilities;
 
 @RunWith(Arquillian.class)
 @SuppressWarnings( {"javadoc", "nls"} )
-public class IT_KomodoMetadataServiceQueryTests extends AbstractKomodoMetadataServiceTest implements StringConstants {
+public class IT_KomodoMetadataServiceQueryTests extends AbstractKomodoMetadataServiceTest {
 
     private static final String USSTATES_TARGET = "usstates";
 

@@ -19,17 +19,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.rest;
+package org.komodo.rest.service.integration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import java.io.File;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Properties;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -38,17 +35,15 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.komodo.rest.TeiidSwarmConnectionProvider;
+import org.komodo.rest.TeiidSwarmMetadataInstance;
 import org.komodo.spi.metadata.MetadataInstance;
-import org.komodo.spi.runtime.ConnectionDriver;
 import org.komodo.spi.runtime.TeiidDataSource;
 import org.komodo.spi.runtime.TeiidVdb;
-import org.komodo.spi.runtime.version.DefaultMetadataVersion;
 import org.komodo.test.utils.TestUtilities;
-import org.teiid.adminapi.AdminProcessingException;
-import org.teiid.core.util.ApplicationInfo;
 
 @RunWith( Arquillian.class )
-public class IT_KomodoTestMetadataServer {
+public class IT_KomodoMetadataServiceCreateTests {
 
     @Deployment(testable=false)
     public static WebArchive createDeployment() throws Exception {
@@ -66,11 +61,7 @@ public class IT_KomodoTestMetadataServer {
         return instance;
     }
 
-    @Test
-    public void testVersion() throws Exception {
-        ApplicationInfo info = ApplicationInfo.getInstance();
-        assertEquals(new DefaultMetadataVersion(info.getReleaseNumber()), getMetadataInstance().getVersion());
-    }
+    
 
     @Test
     public void testCreateDataSource() throws Exception {
@@ -125,41 +116,6 @@ public class IT_KomodoTestMetadataServer {
         getMetadataInstance().undeployDynamicVdb(TestUtilities.SAMPLE_VDB_NAME);
         vdbs = getMetadataInstance().getVdbs();
         assertEquals(0, vdbs.size());
-    }
-
-    @Test
-    public void testGetSchema() throws Exception {
-        try {
-            getMetadataInstance().getSchema("blah", "1.0", "model");
-        } catch (Exception ex) {
-            //
-            // Should throw this exception since blah does not exist but should not
-            // throw a NumberFormatException or NoSuchMethodException
-            //
-            Throwable cause = ex.getCause();
-            assertNotNull(cause);
-            assertTrue(cause instanceof AdminProcessingException);
-            assertTrue(cause.getMessage().contains("does not exist or is not ACTIVE"));
-        }
-    }
-
-    @Test
-    public void testDataSourceDrivers() throws Exception {
-        Collection<ConnectionDriver> dataSourceDrivers = getMetadataInstance().getDataSourceDrivers();
-        assertTrue(dataSourceDrivers.size() > 0);
-
-        String[] driverNamesArr = {"h2", "teiid"};
-        List<String> driverNames = Arrays.asList(driverNamesArr);
-
-        Iterator<ConnectionDriver> iter = dataSourceDrivers.iterator();
-        int found = 0;
-        while (iter.hasNext()) {
-            ConnectionDriver driver = iter.next();
-            if (driverNames.contains(driver.getName()))
-                found++;
-        }
-
-        assertEquals(driverNamesArr.length, found);
     }
 
 }
