@@ -173,8 +173,10 @@
 		<version.jboss.logging>3.3.0.Final</version.jboss.logging>
 		<version.org.mockito>1.10.19</version.org.mockito>	
 		<version.com.fasterxml.jackson>2.7.4</version.com.fasterxml.jackson>
-        <version.org.osb>1.0.0-SNAPSHOT</version.org.osb>
-        <org.apache.httpcomponents.version>4.5.3</org.apache.httpcomponents.version>			
+        <version.kubernetes-service-catalog-client>0.0.2</version.kubernetes-service-catalog-client>
+        <org.apache.httpcomponents.version>4.5.3</org.apache.httpcomponents.version>
+        <version.mysql>6.0.6</version.mysql>
+        <version.org.mongodb>3.6.1</version.org.mongodb>			
 	</properties>
 
 	<!-- This section defines the default dependency settings inherited by child 
@@ -380,9 +382,9 @@
 			</dependency>
       
             <dependency>
-              <groupId>org.osb</groupId>
+              <groupId>org.teiid</groupId>
               <artifactId>kubernetes-service-catalog-client</artifactId>
-              <version>${version.org.osb}</version>        
+              <version>${version.kubernetes-service-catalog-client}</version>        
             </dependency>   
             <dependency>
               <groupId>org.apache.httpcomponents</groupId>
@@ -538,8 +540,18 @@
 			    <groupId>com.fasterxml.jackson.core</groupId>
 			    <artifactId>jackson-annotations</artifactId>
 			    <version>${version.com.fasterxml.jackson}</version>
-			</dependency>			
-		</dependencies>
+			</dependency>
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>${version.mysql}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mongodb</groupId>
+                <artifactId>mongo-java-driver</artifactId>
+                <version>${version.org.mongodb}</version>
+            </dependency>            
+		</dependencies>    
 	</dependencyManagement>
 
 	<dependencies>
