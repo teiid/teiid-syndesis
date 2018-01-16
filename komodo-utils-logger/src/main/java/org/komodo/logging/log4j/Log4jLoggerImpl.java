@@ -143,7 +143,7 @@ final class Log4jLoggerImpl extends org.komodo.logging.Logger {
                 Files.deleteIfExists(oldLog.toPath());
             }
             File directory = oldLog.getParentFile();
-            if (directory.list().length == 0) {
+            if (directory.exists() && directory.list().length == 0) {
                 Files.deleteIfExists(directory.toPath());
             }
         }
