@@ -69,15 +69,15 @@ oc get template ${OS_TEMPLATE} 2>&1 > /dev/null || \
 	oc create -f ${OS_TEMPLATE}.json || \
 	{ echo "FAILED: Could not create application template" && exit 1; }
 
-if [ -n "MVN_MIRROR" ]; then
+if [ -n "${MVN_MIRROR}" ]; then
   APP_ARGS="${APP_ARGS} --param=MVN_MIRROR_URL=${MVN_MIRROR}"
 fi
                       
-if [ -n "LOCAL_MVN_REPO" ]; then
+if [ -n "${LOCAL_MVN_REPO}" ]; then
   APP_ARGS="${APP_ARGS} --param=MVN_LOCAL_REPO=${LOCAL_MVN_REPO}"
 fi
 
-if [ -n "SOURCE_REPO" ]; then
+if [ -n "${SOURCE_REPO}" ]; then
   APP_ARGS="${APP_ARGS} --param=KOMODO_GIT_URL=${SOURCE_REPO}"
 fi
   
