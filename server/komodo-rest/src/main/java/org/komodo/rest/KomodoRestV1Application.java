@@ -578,9 +578,14 @@ public class KomodoRestV1Application extends Application implements SystemConsta
         String SERVICE_CATALOG_SOURCES = "serviceCatalogSources"; //$NON-NLS-1$
         
         /**
-         * Bing to available source in OpenShift Service catalog
+         * Bind to available source in OpenShift Service catalog
          */
-        String BIND_TO_SERVICE_CATALOG_SOURCE = "bindToServiceCatalogSource"; //$NON-NLS-1$        
+        String BIND_TO_SERVICE_CATALOG_SOURCE = "bindToServiceCatalogSource"; //$NON-NLS-1$
+
+        /**
+         * User profile resource method constant
+         */
+        String USER_PROFILE = "userProfile"; //$NON-NLS-1$
     }
 
     private static final int TIMEOUT = 1;

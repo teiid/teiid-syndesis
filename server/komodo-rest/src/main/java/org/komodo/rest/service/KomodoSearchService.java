@@ -50,7 +50,6 @@ import org.komodo.core.internal.repository.search.ContainsClause;
 import org.komodo.core.internal.repository.search.ObjectSearcher;
 import org.komodo.core.repository.KomodoTypeRegistry;
 import org.komodo.core.repository.KomodoTypeRegistry.TypeIdentifier;
-import org.komodo.core.repository.RepositoryTools;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.rest.KomodoRestException;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;

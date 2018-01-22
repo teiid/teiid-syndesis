@@ -93,6 +93,37 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
     }
 
     @Test
+    public void shouldGetUserProfile() throws Exception {
+        String[] EXPECTED = {
+            OPEN_BRACE + NEW_LINE,
+            "  \"Information\": " +  OPEN_BRACE + NEW_LINE,
+            "    \"" + KomodoUtilService.USER_NAME + "\": \"" + USER_NAME + "\"," + NEW_LINE,
+            "    \"" + KomodoUtilService.WORKSPACE + "\": \"" + serviceTestUtilities.getWorkspace(USER_NAME) + "\"," + NEW_LINE, // Configuration Url contains local file names so impossible to test
+            "    \"Repository Vdb Total\": \"",
+            "  " + CLOSE_BRACE + NEW_LINE };
+
+        // get
+        URI uri = UriBuilder.fromUri(uriBuilder().baseUri())
+                                                    .path(V1Constants.SERVICE_SEGMENT)
+                                                    .path(V1Constants.USER_PROFILE).build();
+
+        HttpGet request = jsonRequest(uri, RequestType.GET);
+        addHeader(request, CorsHeaders.ORIGIN, "http://localhost:2772");
+        HttpResponse response = executeOk(request);
+
+        String entity = extractResponse(response);
+        System.out.println("Response from uri " + uri + ":\n" + entity);
+        for (String expected : EXPECTED) {
+            System.out.println("Expected " + expected);
+            assertTrue(entity.contains(expected));
+        }
+
+        // This are generated on build from maven variables so check they are listed
+        assertTrue(entity.contains(KomodoUtilService.USER_NAME));
+        assertTrue(entity.contains(KomodoUtilService.WORKSPACE));
+    }
+
+    @Test
     public void shouldLoadSampleData() throws Exception {
 
         try {
