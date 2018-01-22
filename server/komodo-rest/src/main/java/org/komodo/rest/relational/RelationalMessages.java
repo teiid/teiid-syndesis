@@ -1322,7 +1322,17 @@ public final class RelationalMessages {
         /**
          * An error indicating from bind operation on service catalog service
          */
-        METADATA_SERVICE_CATALOG_DATA_SERVIVE_BIND_ERROR;
+        METADATA_SERVICE_CATALOG_DATA_SERVIVE_BIND_ERROR,
+
+        /**
+         * An error indicating the about service failed
+         */
+        ABOUT_SERVICE_ERROR,
+
+        /**
+         * An error indicating the user profile service method failed
+         */
+        USER_PROFILE_SERVICE_ERROR;
         
 
         /**
