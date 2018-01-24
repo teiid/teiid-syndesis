@@ -101,6 +101,17 @@ The *komodo-os-setup.sh* provides some additional options for building and deplo
 -s url: The source repository, by default, is (https://github.com/teiid/teiid-komodo). Should an alternative be required, eg. a fork to test new functionality, then this can be specified and new builds will use that instead;
 -r local mvn repo: An additional maven repository can be specified that can be checked for maven dependencies. This is useful, for example, if custom / snapshot builds of dependencies are required that have not yet been pushed to a public maven repository.
 
+#### Remote Debugging
+By default, the built images are deployed with java virtual machine debugging enabled, using port 8787. This allows for developers to remotely connect to the running vdb-builder using an IDE like [Eclipse](https://www.eclipse.org).
+
+The port 8787 is not offered by any of the routes, although a route can be setup if preferred. A quick alternative is to [port-forward](https://docs.openshift.com/enterprise/3.0/dev_guide/port_forwarding.html) the port to the localhost using the following command:
+
+> oc port-forward vdb-builder-x-yyyy 8787:8787
+
+where *vdb-builder-x-yyyy* is the latest deployed vdb-builder pod.
+
+If using Eclipse, open the _Debugging Configurations_ window and create a new _Remote Java Application_ configuration. Setting the host to **localhost** and the port to **8787**, the configuration can then be executed. The debug perspective will indicate the connection has been successfully undertaken and all breakpoints will be fired by the vdb-builder image.
+
 #### Troubleshooting
 
 ##### DNS Resolution in Minishift
