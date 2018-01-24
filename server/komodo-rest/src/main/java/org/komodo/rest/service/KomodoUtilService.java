@@ -22,7 +22,6 @@
 package org.komodo.rest.service;
 
 import static org.komodo.rest.relational.RelationalMessages.Error.SCHEMA_SERVICE_GET_SCHEMA_ERROR;
-import static org.komodo.rest.relational.RelationalMessages.Error.VDB_SERVICE_GET_VDBS_ERROR;
 import java.io.File;
 import java.io.InputStream;
 import java.util.List;
@@ -91,6 +90,10 @@ public final class KomodoUtilService extends KomodoService {
     public static final String APP_DESCRIPTION = "App Description"; //$NON-NLS-1$
 
     public static final String APP_VERSION = "App Version"; //$NON-NLS-1$
+
+    public static final String USER_NAME = "User Name"; //$NON-NLS-1$
+
+    public static final String WORKSPACE = "Workspace"; //$NON-NLS-1$
 
     /**
      * The sample vdbs provided by this service
@@ -163,7 +166,7 @@ public final class KomodoUtilService extends KomodoService {
             }
 
             String errorMsg = e.getLocalizedMessage() != null ? e.getLocalizedMessage() : e.getClass().getSimpleName();
-            errorMsg = RelationalMessages.getString(RelationalMessages.Error.VDB_SERVICE_GET_VDBS_ERROR, errorMsg);
+            errorMsg = RelationalMessages.getString(RelationalMessages.Error.ABOUT_SERVICE_ERROR, errorMsg);
             repoStatus.addAttribute(REPO_VDB_TOTAL, errorMsg);
         }
 
@@ -171,7 +174,7 @@ public final class KomodoUtilService extends KomodoService {
         try {
             return commit(uow, mediaTypes, repoStatus);
         } catch (Exception ex) {
-            return createErrorResponseWithForbidden(mediaTypes, ex, VDB_SERVICE_GET_VDBS_ERROR);
+            return createErrorResponseWithForbidden(mediaTypes, ex, RelationalMessages.Error.ABOUT_SERVICE_ERROR);
         }
     }
 
@@ -398,5 +401,63 @@ public final class KomodoUtilService extends KomodoService {
         }
 
         return Response.ok().build();
+    }
+
+    /**
+     * @param headers
+     *        the request headers (never <code>null</code>)
+     * @param uriInfo
+     *        the request URI information (never <code>null</code>)
+     * @return user profile
+     * @throws KomodoRestException if error occurs
+     */
+    @GET
+    @Path(V1Constants.USER_PROFILE)
+    @ApiOperation( value = "Display profile of the individual user", response = String.class )
+    @ApiResponses(value = {
+        @ApiResponse(code = 403, message = "An error has occurred.")
+    })
+    public Response userProfile(final @Context HttpHeaders headers,
+                                               final @Context UriInfo uriInfo) throws KomodoRestException {
+
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        KomodoStatusObject userProfileStatus = new KomodoStatusObject();
+
+        userProfileStatus.addAttribute(USER_NAME, principal.getUserName());
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        UnitOfWork uow = null;
+        try {
+            uow = createTransaction(principal, "userProfile", true ); //$NON-NLS-1$
+
+            Repository repo = this.kengine.getDefaultRepository();
+            KomodoObject workspace = repo.komodoWorkspace(uow);
+            userProfileStatus.addAttribute(WORKSPACE, workspace.getAbsolutePath());
+
+            Vdb[] vdbs = getWorkspaceManager(uow).findVdbs(uow);
+            userProfileStatus.addAttribute(REPO_VDB_TOTAL, Integer.toString(vdbs.length));
+        } catch (final Exception e) {
+            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+                uow.rollback();
+            }
+
+            if (e instanceof KomodoRestException) {
+                throw (KomodoRestException)e;
+            }
+
+            String errorMsg = e.getLocalizedMessage() != null ? e.getLocalizedMessage() : e.getClass().getSimpleName();
+            errorMsg = RelationalMessages.getString(RelationalMessages.Error.USER_PROFILE_SERVICE_ERROR, errorMsg);
+            userProfileStatus.addAttribute(REPO_VDB_TOTAL, errorMsg);
+        }
+
+        // create response
+        try {
+            return commit(uow, mediaTypes, userProfileStatus);
+        } catch (Exception ex) {
+            return createErrorResponseWithForbidden(mediaTypes, ex, RelationalMessages.Error.USER_PROFILE_SERVICE_ERROR);
+        }
     }
 }
