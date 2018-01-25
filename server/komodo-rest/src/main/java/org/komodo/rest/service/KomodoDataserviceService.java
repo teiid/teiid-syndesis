@@ -35,6 +35,7 @@ import static org.komodo.rest.relational.RelationalMessages.Error.DATASERVICE_SE
 import static org.komodo.rest.relational.RelationalMessages.Error.DATASERVICE_SERVICE_SERVICE_NAME_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.DATASERVICE_SERVICE_SET_SERVICE_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.DATASERVICE_SERVICE_UPDATE_DATASERVICE_ERROR;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,6 +47,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -60,6 +62,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
+
 import org.komodo.core.KEngine;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.SynchronousCallback;
@@ -87,6 +90,7 @@ import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.connection.RestConnection;
 import org.komodo.rest.relational.dataservice.RestDataservice;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
+import org.komodo.rest.relational.request.KomodoDataserviceSingleSourceAttributes;
 import org.komodo.rest.relational.request.KomodoDataserviceUpdateAttributes;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.RestConnectionDriver;
@@ -104,6 +108,7 @@ import org.komodo.spi.runtime.ConnectionDriver;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
 import org.teiid.language.SQLConstants;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -642,28 +647,28 @@ public final class KomodoDataserviceService extends KomodoService {
     }
 
     /**
-     * Sets the service VDB for the specified Dataservice using the specified table and sourceModel
-     * The supplied table is used to generate the view DDL for the service vdb's view
+     * Sets the service VDB for the specified Dataservice using the specified tables and sourceModel
+     * The supplied tables are used to generate the view DDL for the service vdb's view
      * The supplied modelSource is used to generate the sourceModel for the service vdb
      * @param headers
      *        the request headers (never <code>null</code>)
      * @param uriInfo
      *        the request URI information (never <code>null</code>)
-     * @param dataserviceUpdateAttributes
-     *        the attributes for the update (cannot be empty)
-     * @return a JSON representation of the updated dataservice (never <code>null</code>)
+     * @param dataserviceSingleSourceAttributes
+     *        the attributes for the single source service (cannot be empty)
+     * @return a JSON representation of the dataservice (never <code>null</code>)
      * @throws KomodoRestException
-     *         if there is an error updating the VDB
+     *         if there is an error setting the VDB
      */
     @POST
-    @Path( StringConstants.FORWARD_SLASH + V1Constants.SERVICE_VDB_FOR_SINGLE_TABLE )
+    @Path( StringConstants.FORWARD_SLASH + V1Constants.SERVICE_VDB_FOR_SINGLE_SOURCE_TABLES )
     @Produces( MediaType.APPLICATION_JSON )
     @ApiOperation(value = "Sets the data service's service vdb")
     @ApiResponses(value = {
         @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
-    public Response setServiceVdbForSingleTable( final @Context HttpHeaders headers,
+    public Response setServiceVdbForSingleSourceTables( final @Context HttpHeaders headers,
     		final @Context UriInfo uriInfo,
     		@ApiParam(
                       value = "" + 
@@ -671,15 +676,15 @@ public final class KomodoDataserviceService extends KomodoService {
                               OPEN_PRE_TAG +
                               OPEN_BRACE + BR +
                               NBSP + "dataserviceName: \"name of the data service\"" + COMMA + BR +
-                              NBSP + "tablePath: \"/path/to/table\"" + COMMA + BR +
+                              NBSP + "tablePaths: [\"/path/to/table1\",\"/path/to/table2\", ...]" + COMMA + BR +
                               NBSP + "modelSourcePath: \"/path/to/modelSource\"" + COMMA + BR +
-                              NBSP + "columnNames: {name1, name2, ...} [OPTIONAL]" + COMMA + BR +
+                              NBSP + "columnNames: {table1: [col1, col2, col3], table2: [col1, col3], ...} [OPTIONAL]" + COMMA + BR +
                               NBSP + "viewDdl: \"DDL for the service view\" [OPTIONAL]" + BR +
                               CLOSE_BRACE +
                               CLOSE_PRE_TAG,
                       required = true
             )
-    		final String dataserviceUpdateAttributes) throws KomodoRestException {
+    		final String dataserviceSingleSourceAttributes) throws KomodoRestException {
 
         SecurityPrincipal principal = checkSecurityContext(headers);
         if (principal.hasErrorResponse())
@@ -690,10 +695,12 @@ public final class KomodoDataserviceService extends KomodoService {
             return notAcceptableMediaTypesBuilder().build();
 
         // Get the attributes for doing the service update for single table view
-        KomodoDataserviceUpdateAttributes attr;
+        KomodoDataserviceSingleSourceAttributes attr;
         try {
-        	attr = KomodoJsonMarshaller.unmarshall(dataserviceUpdateAttributes, KomodoDataserviceUpdateAttributes.class);
-            Response response = checkDataserviceUpdateAttributesSingleTableView(attr, mediaTypes);
+        	attr = KomodoJsonMarshaller.unmarshall(dataserviceSingleSourceAttributes, KomodoDataserviceSingleSourceAttributes.class);
+            String json = KomodoJsonMarshaller.marshall( attr );
+            
+            Response response = checkDataserviceSingleSourceAttributes(attr, mediaTypes);
             if (response.getStatus() != Status.OK.getStatusCode())
                 return response;
 
@@ -716,9 +723,9 @@ public final class KomodoDataserviceService extends KomodoService {
             viewDdlSupplied = true;
         }
         
-        String absTablePath = attr.getTablePath();
-        // Error if the viewTablePath is missing 
-        if (StringUtils.isBlank( absTablePath )) {
+        List<String> absTablePaths = attr.getTablePaths();
+        // Error if viewTablePaths is missing 
+        if ( absTablePaths == null || absTablePaths.size() == 0 ) {
             return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.DATASERVICE_SERVICE_SET_SERVICE_MISSING_TABLEPATH, dataserviceName);
         }
         
@@ -728,8 +735,8 @@ public final class KomodoDataserviceService extends KomodoService {
             return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.DATASERVICE_SERVICE_SET_SERVICE_MISSING_MODELSOURCE_PATH, dataserviceName);
         }
 
-        // Desired column names for the service (may be empty)
-        List<String> columnNames = attr.getColumnNames();
+        // Desired column names for each table (may be empty)
+        Map<String, List<String>> columnNamesMap = attr.getColumnNames();
         
         UnitOfWork uow = null;
         try {
@@ -746,12 +753,16 @@ public final class KomodoDataserviceService extends KomodoService {
             final KomodoObject kobject = wkspMgr.getChild( uow, dataserviceName, DataVirtLexicon.DataService.NODE_TYPE );
             final Dataservice dataservice = wkspMgr.resolve( uow, kobject, Dataservice.class );
 
-            // Check for existence of Table
-            List<KomodoObject> tableObjs = wkspMgr.getRepository().searchByPath(uow, absTablePath);
-            if( tableObjs.isEmpty() || !Table.RESOLVER.resolvable(uow, tableObjs.get(0)) ) {
-                return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.DATASERVICE_SERVICE_SOURCE_TABLE_DNE, absTablePath);
+            // Check for existence of all Tables for the views
+            List<Table> viewTables = new ArrayList<Table>();
+            for(String absTablePath: absTablePaths) {
+                List<KomodoObject> tableObjs = wkspMgr.getRepository().searchByPath(uow, absTablePath);
+                if( tableObjs.isEmpty() || !Table.RESOLVER.resolvable(uow, tableObjs.get(0)) ) {
+                    return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.DATASERVICE_SERVICE_SOURCE_TABLE_DNE, absTablePath);
+                }
+                Table viewTable = Table.RESOLVER.resolve(uow, tableObjs.get(0));
+                viewTables.add(viewTable);
             }
-            Table sourceTable = Table.RESOLVER.resolve(uow, tableObjs.get(0));
 
             // Check for existence of ModelSource
             List<KomodoObject> modelObjs = wkspMgr.getRepository().searchByPath(uow, absServiceModelSourcePath);
@@ -777,7 +788,15 @@ public final class KomodoDataserviceService extends KomodoService {
             
             // If viewDdl wasn't supplied, generate it using the specified table, then set the viewModel content.
             if(!viewDdlSupplied) {
-                viewDdl = ViewDdlBuilder.getODataViewDdl(uow, dataserviceName+SERVICE_VDB_VIEW_SUFFIX, sourceTable, columnNames);
+            	StringBuilder sb = new StringBuilder();
+            	for(int i=0; i<viewTables.size(); i++) {
+            		String absTablePath = absTablePaths.get(i);
+            		Table viewTable = viewTables.get(i);
+            		List<String> colNames = columnNamesMap.get(absTablePath);
+            		String tblDdl = ViewDdlBuilder.getODataViewDdl(uow, viewTable.getName(uow)+SERVICE_VDB_VIEW_SUFFIX, viewTable, colNames);
+            		sb.append(tblDdl);
+            	}
+            	viewDdl = sb.toString();
             }
             viewModel.setModelDefinition(uow, viewDdl);
 
@@ -790,12 +809,16 @@ public final class KomodoDataserviceService extends KomodoService {
         	Model sourceModel = serviceVdb.addModel(uow, physicalModelName);
         	sourceModel.setModelType(uow, Type.PHYSICAL);
 
-            // The source model DDL contains the table DDL only.  This limits the source metadata which is loaded on deployment.
+            // The source model DDL contains the relevant table DDL only.  This limits the source metadata which is loaded on deployment.
             Properties exportProps = new Properties();
             exportProps.put( ExportConstants.EXCLUDE_TABLE_CONSTRAINTS_KEY, true );
-        	byte[] bytes = sourceTable.export(uow, exportProps);
-        	String tableString = new String(bytes);
-            sourceModel.setModelDefinition(uow, tableString);
+            StringBuilder sourceDdl = new StringBuilder();
+            for(Table viewTable: viewTables) {
+            	byte[] bytes = viewTable.export(uow, exportProps);
+            	String tableDdl = new String(bytes);
+            	sourceDdl.append(tableDdl);
+            }
+            sourceModel.setModelDefinition(uow, sourceDdl.toString());
             
         	// Add a ModelSource of same name to the physical model and set its Jndi and translator
         	ModelSource modelSource = sourceModel.addSource(uow, physicalModelSourceName);
@@ -805,7 +828,7 @@ public final class KomodoDataserviceService extends KomodoService {
             // Set the service VDB on the dataservice
             dataservice.setServiceVdb(uow, serviceVdb);
 
-            KomodoStatusObject kso = new KomodoStatusObject("Update DataService Status"); //$NON-NLS-1$
+            KomodoStatusObject kso = new KomodoStatusObject("Single Source DataService Status"); //$NON-NLS-1$
             kso.addAttribute(dataserviceName, "Successfully updated"); //$NON-NLS-1$
 
             return commit(uow, mediaTypes, kso);
@@ -1666,6 +1689,22 @@ public final class KomodoDataserviceService extends KomodoService {
         }
     }
     
+    /*
+     * Checks the supplied attributes for single source dataservices
+     *  - dataserviceName, table paths and modelSource path are required
+     *  - columnNames are optional
+     */
+    private Response checkDataserviceSingleSourceAttributes(KomodoDataserviceSingleSourceAttributes attr,
+                                                            List<MediaType> mediaTypes) throws Exception {
+
+        if (attr == null || attr.getDataserviceName() == null || attr.getModelSourcePath() == null
+        		         || attr.getTablePaths() == null || attr.getTablePaths().size() == 0 ) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.DATASERVICE_SERVICE_MISSING_PARAMETER_ERROR);
+        }
+
+        return Response.ok().build();
+    }
+
     /*
      * Checks the supplied attributes for single table view
      *  - dataserviceName, table path and modelSource path are required

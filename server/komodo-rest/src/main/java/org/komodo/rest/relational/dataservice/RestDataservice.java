@@ -57,9 +57,9 @@ public final class RestDataservice extends RestBasicEntity {
     public static final String DATASERVICE_VIEW_MODEL_LABEL = "serviceViewModel"; //$NON-NLS-1$
 
     /**
-     * Label used to describe dataservice viewName
+     * Label used to describe dataservice viewNames
      */
-    public static final String DATASERVICE_VIEW_LABEL = "serviceView"; //$NON-NLS-1$
+    public static final String DATASERVICE_VIEWS_LABEL = "serviceViews"; //$NON-NLS-1$
 
     /**
      * Label used to describe dataservice vdbName
@@ -119,7 +119,7 @@ public final class RestDataservice extends RestBasicEntity {
             setServiceVdbName(serviceVdb.getVdbName( uow ));
             setServiceVdbVersion(Integer.toString(serviceVdb.getVersion( uow )));
             setServiceViewModel(dataService.getServiceViewModelName(uow));
-            setServiceViewName(dataService.getServiceViewName(uow));
+            setServiceViewNames(dataService.getServiceViewNames(uow));
             
             // Get the current tables from source models
             List<String> tableNames = new ArrayList<String>();
@@ -183,16 +183,15 @@ public final class RestDataservice extends RestBasicEntity {
     /**
      * @return the service view name (can be empty)
      */
-    public String getServiceViewName() {
-        Object viewName = tuples.get(DATASERVICE_VIEW_LABEL);
-        return viewName != null ? viewName.toString() : null;
+    public String[] getServiceViewNames() {
+        return (String[])tuples.get(DATASERVICE_VIEWS_LABEL);
     }
 
     /**
-     * @param viewName the service view name to set
+     * @param viewNames the service view names to set
      */
-    public void setServiceViewName(String viewName) {
-        tuples.put(DATASERVICE_VIEW_LABEL, viewName);
+    public void setServiceViewNames(final String[] viewNames) {
+        tuples.put(DATASERVICE_VIEWS_LABEL, viewNames);
     }
 
     /**
