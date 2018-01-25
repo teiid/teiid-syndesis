@@ -29,13 +29,17 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
@@ -52,6 +56,7 @@ import org.komodo.rest.relational.KomodoRestUriBuilder.SettingNames;
 import org.komodo.rest.relational.connection.RestConnection;
 import org.komodo.rest.relational.dataservice.RestDataservice;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
+import org.komodo.rest.relational.request.KomodoDataserviceSingleSourceAttributes;
 import org.komodo.rest.relational.request.KomodoDataserviceUpdateAttributes;
 import org.komodo.rest.relational.response.RestConnectionDriver;
 import org.komodo.rest.relational.response.RestDataserviceViewInfo;
@@ -398,21 +403,26 @@ public class KomodoDataserviceServiceTestInSuite extends AbstractKomodoServiceTe
     }
 
     @Test
-    public void shouldNotSetServiceVdbForSingleTableMissingParameter() throws Exception {
-        String dataserviceName = "shouldNotSetServiceVdbForSingleTableMissingParameter";
+    public void shouldNotSetServiceVdbForSingleSourceTablesMissingParameter() throws Exception {
+        String dataserviceName = "shouldNotSetServiceVdbForSingleSourceTablesMissingParameter";
         createDataservice(dataserviceName);
         URI dataservicesUri = uriBuilder().workspaceDataservicesUri();
-        URI uri = UriBuilder.fromUri(dataservicesUri).path(V1Constants.SERVICE_VDB_FOR_SINGLE_TABLE).build();
+        URI uri = UriBuilder.fromUri(dataservicesUri).path(V1Constants.SERVICE_VDB_FOR_SINGLE_SOURCE_TABLES).build();
 
         // Required parms (dataserviceName, modelSourcePath, tablePath).
         // fails due to missing modelSourcePath
-        KomodoDataserviceUpdateAttributes updateAttr = new KomodoDataserviceUpdateAttributes();
-        updateAttr.setDataserviceName(dataserviceName);
-        updateAttr.setTablePath("/path/to/table");
+        KomodoDataserviceSingleSourceAttributes ssrcAttr = new KomodoDataserviceSingleSourceAttributes();
+        ssrcAttr.setDataserviceName(dataserviceName);
+        // List of Table paths
+        List<String> tablePaths = new ArrayList<String>();
+        String tablePath = "tko:komodo/tko:workspace/" + USER_NAME + "/Portfolio/PersonalValuations/Sheet1";
+        tablePaths.add(tablePath);
+        tablePaths.add(tablePath);
+        ssrcAttr.setTablePaths(tablePaths);
 
         HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
-        addBody(request, updateAttr);
+        addBody(request, ssrcAttr);
 
         HttpResponse response = execute(request);
 
@@ -423,22 +433,27 @@ public class KomodoDataserviceServiceTestInSuite extends AbstractKomodoServiceTe
     }
 
     @Test
-    public void shouldNotSetServiceVdbForSingleTableBadTablePath() throws Exception {
-        String dataserviceName = "shouldNotSetServiceVdbForSingleTableBadTablePath";
+    public void shouldNotSetServiceVdbForSingleSourceTablesBadTablePath() throws Exception {
+        String dataserviceName = "shouldNotSetServiceVdbForSingleSourceTablesBadTablePath";
         createDataservice(dataserviceName);
         URI dataservicesUri = uriBuilder().workspaceDataservicesUri();
-        URI uri = UriBuilder.fromUri(dataservicesUri).path(V1Constants.SERVICE_VDB_FOR_SINGLE_TABLE).build();
+        URI uri = UriBuilder.fromUri(dataservicesUri).path(V1Constants.SERVICE_VDB_FOR_SINGLE_SOURCE_TABLES).build();
 
         // Required parms (dataserviceName, modelSourcePath, tablePath).
         // fails due to bad table path - (doesnt resolve to a table)
-        KomodoDataserviceUpdateAttributes updateAttr = new KomodoDataserviceUpdateAttributes();
-        updateAttr.setDataserviceName(dataserviceName);
-        updateAttr.setTablePath("/path/to/table");
-        updateAttr.setModelSourcePath("/path/to/ModelSource");
+        KomodoDataserviceSingleSourceAttributes ssrcAttr = new KomodoDataserviceSingleSourceAttributes();
+        ssrcAttr.setDataserviceName(dataserviceName);
+        // List of Table paths
+        List<String> tablePaths = new ArrayList<String>();
+        String tablePath = "/path/to/table";
+        tablePaths.add(tablePath);
+        tablePaths.add(tablePath);
+        ssrcAttr.setTablePaths(tablePaths);
+        ssrcAttr.setModelSourcePath("/path/to/ModelSource");
 
         HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
-        addBody(request, updateAttr);
+        addBody(request, ssrcAttr);
 
         HttpResponse response = execute(request);
 
@@ -449,21 +464,27 @@ public class KomodoDataserviceServiceTestInSuite extends AbstractKomodoServiceTe
     }
 
     @Test
-    public void shouldNotSetServiceVdbForSingleTableBadDdl() throws Exception {
-        String dataserviceName = "shouldNotSetServiceVdbForSingleTableBadDdl";
+    public void shouldNotSetServiceVdbForSingleSourceTablesBadDdl() throws Exception {
+        String dataserviceName = "shouldNotSetServiceVdbForSingleSourceTablesBadDdl";
         createDataservice(dataserviceName);
         URI dataservicesUri = uriBuilder().workspaceDataservicesUri();
-        URI uri = UriBuilder.fromUri(dataservicesUri).path(V1Constants.SERVICE_VDB_FOR_SINGLE_TABLE).build();
+        URI uri = UriBuilder.fromUri(dataservicesUri).path(V1Constants.SERVICE_VDB_FOR_SINGLE_SOURCE_TABLES).build();
 
-        KomodoDataserviceUpdateAttributes updateAttr = new KomodoDataserviceUpdateAttributes();
-        updateAttr.setDataserviceName(dataserviceName);
-        updateAttr.setTablePath("tko:komodo/tko:workspace/" + USER_NAME + "/Portfolio/PersonalValuations/Sheet1");
-        updateAttr.setModelSourcePath("tko:komodo/tko:workspace/" + USER_NAME + "/Portfolio/Accounts/vdb:sources/h2-connector");
-        updateAttr.setViewDdl("CREATE VIEW blah blah");
+        KomodoDataserviceSingleSourceAttributes ssrcAttr = new KomodoDataserviceSingleSourceAttributes();
+        ssrcAttr.setDataserviceName(dataserviceName);
+        // List of Table paths
+        List<String> tablePaths = new ArrayList<String>();
+        String tablePath = "tko:komodo/tko:workspace/" + USER_NAME + "/Portfolio/PersonalValuations/Sheet1";
+        tablePaths.add(tablePath);
+        tablePaths.add(tablePath);
+        ssrcAttr.setTablePaths(tablePaths);
+
+        ssrcAttr.setModelSourcePath("tko:komodo/tko:workspace/" + USER_NAME + "/Portfolio/Accounts/vdb:sources/h2-connector");
+        ssrcAttr.setViewDdl("CREATE VIEW blah blah");
 
         HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
-        addBody(request, updateAttr);
+        addBody(request, ssrcAttr);
 
         try {
             HttpResponse response = execute(request);
@@ -482,20 +503,25 @@ public class KomodoDataserviceServiceTestInSuite extends AbstractKomodoServiceTe
     }
 
     @Test
-    public void shouldSetServiceVdbForSingleTable() throws Exception {
-        String dataserviceName = "shouldSetServiceVdbForSingleTable";
+    public void shouldSetServiceVdbForSingleSourceTables() throws Exception {
+        String dataserviceName = "shouldSetServiceVdbForSingleSourceTables";
         createDataservice(dataserviceName);
         URI dataservicesUri = uriBuilder().workspaceDataservicesUri();
-        URI uri = UriBuilder.fromUri(dataservicesUri).path(V1Constants.SERVICE_VDB_FOR_SINGLE_TABLE).build();
+        URI uri = UriBuilder.fromUri(dataservicesUri).path(V1Constants.SERVICE_VDB_FOR_SINGLE_SOURCE_TABLES).build();
 
-        KomodoDataserviceUpdateAttributes updateAttr = new KomodoDataserviceUpdateAttributes();
-        updateAttr.setDataserviceName(dataserviceName);
-        updateAttr.setTablePath("tko:komodo/tko:workspace/" + USER_NAME + "/Portfolio/PersonalValuations/Sheet1");
-        updateAttr.setModelSourcePath("tko:komodo/tko:workspace/" + USER_NAME + "/Portfolio/Accounts/vdb:sources/h2-connector");
+        KomodoDataserviceSingleSourceAttributes ssrcAttr = new KomodoDataserviceSingleSourceAttributes();
+        ssrcAttr.setDataserviceName(dataserviceName);
+        // List of Table paths
+        List<String> tablePaths = new ArrayList<String>();
+        String tablePath = "tko:komodo/tko:workspace/" + USER_NAME + "/Portfolio/PersonalValuations/Sheet1";
+        tablePaths.add(tablePath);
+        tablePaths.add(tablePath);
+        ssrcAttr.setTablePaths(tablePaths);
+        ssrcAttr.setModelSourcePath("tko:komodo/tko:workspace/" + USER_NAME + "/Portfolio/Accounts/vdb:sources/h2-connector");
 
         HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
-        addBody(request, updateAttr);
+        addBody(request, ssrcAttr);
 
         try {
             HttpResponse response = execute(request);
@@ -512,7 +538,7 @@ public class KomodoDataserviceServiceTestInSuite extends AbstractKomodoServiceTe
                 logObjectPath(vdb.getAbsolutePath());
         }
     }
-
+    
     @Test
     public void shouldNotSetServiceVdbForJoinTablesMissingParameter() throws Exception {
         String dataserviceName = "shouldNotSetServiceVdbForJoinTablesMissingParameter";
