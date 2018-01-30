@@ -224,7 +224,7 @@ public abstract class AbstractKomodoMetadataServiceTest extends AbstractServiceT
                                             .path(V1Constants.IMPORT).build();
 
         KomodoStorageAttributes storageAttr = new KomodoStorageAttributes();
-        storageAttr.setStorageType("file");
+        storageAttr.setStorageType(StorageConnector.Types.FILE.id());
         storageAttr.setDocumentType(DocumentType.VDB_XML);
         storageAttr.setParameter(StorageConnector.IMPORT_OVERWRITE_PROPERTY, ExistingNodeOptions.OVERWRITE.name());
 
@@ -307,7 +307,7 @@ public abstract class AbstractKomodoMetadataServiceTest extends AbstractServiceT
                                           .build();
     
         KomodoStorageAttributes storageAttr = new KomodoStorageAttributes();
-        storageAttr.setStorageType("file");
+        storageAttr.setStorageType(StorageConnector.Types.FILE.id());
         storageAttr.setDocumentType(DocumentType.ZIP);
 
         InputStream usStatesDSStream = TestUtilities.usStatesDataserviceExample();

@@ -93,8 +93,6 @@ public class UnitServiceResources extends ExternalResource {
     }
 
     private void initResources() throws Exception {
-        System.out.println("XXX - Generating Unit Service Resources");
-
         _restApp = new KomodoRestV1Application();
         loadVdbs();
 
@@ -115,8 +113,6 @@ public class UnitServiceResources extends ExternalResource {
     }
 
     private void destroyResources() {
-        System.out.println("XXX - Tearing down unit service resources!!");
-
         if (_server != null)
             _server.stop();
 

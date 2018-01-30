@@ -78,6 +78,17 @@ public interface StorageConnector extends StringConstants {
     }
 
     /**
+     * The types of storage connector currently supported.
+     */
+    enum Types {
+        GIT, FILE;
+
+        public String id() {
+            return this.name().toLowerCase();
+        }
+    }
+
+    /**
      * The path to the home directory of the location of files. Used by some connectors.
      */
     String FILES_HOME_PATH_PROPERTY = "files-home-path-property";
