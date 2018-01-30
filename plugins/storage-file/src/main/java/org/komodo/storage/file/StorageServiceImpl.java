@@ -30,7 +30,7 @@ import org.komodo.spi.storage.StorageConnector.Descriptor;
 
 public class StorageServiceImpl extends AbstractBundleService implements StorageService {
 
-    public static final String STORAGE_ID = "file";
+    public static final String STORAGE_ID = StorageConnector.Types.FILE.id();
 
     public static final String DESCRIPTION = "Storage of files directly on server filesystem (provides download capability to clients)";
 

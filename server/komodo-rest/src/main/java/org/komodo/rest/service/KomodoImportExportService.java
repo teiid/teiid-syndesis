@@ -24,8 +24,10 @@ package org.komodo.rest.service;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import javax.ws.rs.Consumes;
@@ -33,10 +35,12 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
@@ -505,6 +509,176 @@ public class KomodoImportExportService extends KomodoService {
         } catch (Exception e) {
             return createErrorResponseWithForbidden(mediaTypes, e,
                                        RelationalMessages.Error.IMPORT_EXPORT_SERVICE_STORAGE_TYPES_ERROR);
+        }
+    }
+
+    /**
+     * Exports an artifact from the workspace to a git repository.
+     *
+     * Additional parameters can be added as query parameters to the rest url.
+     * Most of the time the given parameters should be sufficient.
+     *
+     * @param headers
+     *        the request headers (never <code>null</code>)
+     * @param uriInfo
+     *        the request URI information (never <code>null</code>)
+     * @param artifactPath
+     *        the workspace path to the artifact to be exported (cannot be <code>null</code>)
+     * @param repositoryURL
+     *        the url of the destination git repository
+     * @param destinationPath
+     *        the path of the destination directory (optional)
+     * @return a JSON document including Base64 content of the file 
+     *                  (never <code>null</code>)
+     * @throws KomodoRestException
+     *         if there is a problem with the export
+     */
+    @POST
+    @Path(V1Constants.EXPORT_TO_GIT)
+    @Produces( MediaType.APPLICATION_JSON )
+    @Consumes ( { MediaType.APPLICATION_JSON } )
+    @ApiOperation(
+                  value = "" +
+                     "Exports a workspace artefact to a git repository using parameters provided in the request body.<br>" +
+                     "Additional parameters can be added if required:<br>" +
+                     NBSP + "repo-branch-property: \"Destination git branch\"" +  COMMA + BR +
+                     NBSP + "repo-username-property: \"Username to access the repository\"" + COMMA + BR +
+                     NBSP + "repo-password-property: \"The passphrase or token to allow access to the repository\"" + COMMA + BR +
+                     NBSP + "author-name-property: \"Name of the author to use in commit messages\"" + COMMA + BR +
+                     NBSP + "author-email-property: \"Email address to use in commit messages\"",
+                  response = ImportExportStatus.class)
+    @ApiResponses(value = {
+        @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
+        @ApiResponse(code = 403, message = "An error has occurred.")
+    })
+    public Response exportArtifactToGit( final @Context HttpHeaders headers,
+                             final @Context UriInfo uriInfo,
+                             @ApiParam(
+                                       value="The path of the artifact in the workspace",
+                                       required=true
+                             )
+                            @QueryParam(value = EXPORT_ARTIFACT_PATH_PARAMETER)
+                            final String artifactPath,
+                            @ApiParam(
+                                      value="The URL of the destination repository",
+                                      required=true
+                            )
+                            @QueryParam(value = EXPORT_REPOSITORY_URL_PARAMETER)
+                            final String repositoryURL,
+                            @ApiParam(
+                                      value="The path of destination directory",
+                                      required=false
+                            )
+                            @QueryParam(value = EXPORT_DESTINATION_PATH_PARAMETER)
+                            final String destinationPath) throws KomodoRestException {
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
+            return notAcceptableMediaTypesBuilder().build();
+
+        KomodoStorageAttributes sta = new KomodoStorageAttributes();
+        sta.setStorageType(StorageConnector.Types.GIT.id());
+        sta.setArtifactPath(artifactPath);
+        sta.setParameter("repo-path-property", repositoryURL);
+
+        if (destinationPath != null) {
+            sta.setParameter(StorageConnector.FILE_PATH_PROPERTY, destinationPath);
+        }
+
+        //
+        // Check for an extra dynamic unknown properties
+        //
+        MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
+        for (Entry<String, List<String>> entry : queryParameters.entrySet()) {
+            String key = entry.getKey();
+            if (key.equals("artifactPath") || key.equals("repositoryURL") || key.equals("destinationPath"))
+                continue;
+
+            if (entry.getValue() == null)
+                continue;
+
+            Iterator<String> iter = entry.getValue().iterator();
+            sta.setParameter(key, iter.next());
+        }
+
+        if (! sta.getParameters().containsKey("author-name-property"))
+            sta.setParameter("author-name-property", principal.getUserName());
+
+        if (! sta.getParameters().containsKey("author-email-property"))
+            sta.setParameter("author-email-property", principal.getUserName() + AT + "komodo");
+
+        try {
+            Response response = checkStorageAttributes(sta, mediaTypes);
+            if (response.getStatus() != Status.OK.getStatusCode())
+                return response;
+
+        } catch (Exception ex) {
+            return createErrorResponseWithForbidden(mediaTypes, ex, RelationalMessages.Error.IMPORT_EXPORT_SERVICE_REQUEST_PARSING_ERROR);
+        }
+
+        ImportExportStatus status = new ImportExportStatus();
+        UnitOfWork uow = null;
+        try {
+            uow = createTransaction(principal, "exportFromWorkspace", true); //$NON-NLS-1$
+            Repository repo = this.kengine.getDefaultRepository();
+            KomodoObject kObject = repo.getFromWorkspace(uow, sta.getArtifactPath());
+            if (kObject == null) {
+                return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.IMPORT_EXPORT_SERVICE_NO_ARTIFACT_ERROR, artifactPath);
+            }
+
+            Exportable artifact = getWorkspaceManager(uow).resolve(uow, kObject, Exportable.class);
+            if (artifact == null) {
+                return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.IMPORT_EXPORT_SERVICE_ARTIFACT_NOT_EXPORTABLE_ERROR, artifactPath);
+            }
+
+            DocumentType documentType = artifact.getDocumentType(uow);
+            Properties parameters = sta.convertParameters();
+            String fileName = documentType.fileName(artifact.getName(uow));
+            if (! parameters.containsKey(StorageConnector.FILE_PATH_PROPERTY)) {
+                parameters.setProperty(StorageConnector.FILE_PATH_PROPERTY, fileName);
+            } else {
+                String filePathProperty = parameters.getProperty(StorageConnector.FILE_PATH_PROPERTY);
+                File filePath = new File(filePathProperty);
+                if (! filePath.getName().contains(DOT)) {
+                    //
+                    // User has specified a directory
+                    // (assume this rather than a file with no dot in it)
+                    //
+                    File fullFilePath = new File(filePath, fileName);
+                    parameters.setProperty(StorageConnector.FILE_PATH_PROPERTY, fullFilePath.getPath());
+                }
+
+                //
+                // If user specified a filename with extension then
+                // assume the user wants to override the name of
+                // artifact.
+                //
+            }
+
+            status.setName(parameters.getProperty(StorageConnector.FILE_PATH_PROPERTY));
+            status.setType(documentType.toString());
+
+            getWorkspaceManager(uow).exportArtifact(uow, artifact, sta.getStorageType(), parameters);
+
+            //
+            // Artifact exported to git is by definition not downloadable
+            //
+            status.setDownloadable(false);
+            status.setSuccess(true);
+
+            return commit( uow, mediaTypes, status );
+
+        } catch (final Exception e) {
+            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+                uow.rollback();
+            }
+
+            return createErrorResponse(Status.FORBIDDEN, mediaTypes, e,
+                                       RelationalMessages.Error.IMPORT_EXPORT_SERVICE_EXPORT_ERROR,
+                                       sta.getArtifactPath(), sta.getStorageType());
         }
     }
 }

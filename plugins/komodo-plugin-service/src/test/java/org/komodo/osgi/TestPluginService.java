@@ -97,7 +97,7 @@ public class TestPluginService extends AbstractTestPluginService implements Stri
     public void testGetGitStorageConnector()  throws Exception {
         assertEquals(Bundle.ACTIVE, service.getState());
 
-        String storageType = "git";
+        String storageType = StorageConnector.Types.GIT.id();
         Set<String> storageTypes = service.getSupportedStorageTypes();
         assertTrue(storageTypes.contains(storageType));
 
