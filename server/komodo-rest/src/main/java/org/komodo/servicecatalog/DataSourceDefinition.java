@@ -1,0 +1,97 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * See the COPYRIGHT.txt file distributed with this work for information
+ * regarding copyright ownership.  Some portions may be licensed
+ * to Red Hat, Inc. under one or more contributor license agreements.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ * 02110-1301 USA.
+ */
+package org.komodo.servicecatalog;
+
+import java.util.Map;
+import java.util.Properties;
+
+import org.komodo.servicecatalog.datasources.DefaultServiceCatalogDataSource;
+
+/**
+ * Service catalog based Data Services that are available
+ */
+public abstract class DataSourceDefinition {
+    static final String SP = "            ";
+    static final String NL = "\n";
+
+    /**
+     * Returns the type of the database. Matches with name of driver in WildFlySwarm
+     * @return name of the source type
+     */
+    public abstract String getName();
+
+    /**
+     * @return return the text to include in pom.xml as dependencies for this source
+     */
+    public abstract String getPomDendencies();
+
+    /**
+     * Returns the matching translator type
+     * @return translator name
+     */
+    public abstract String getTranslatorName();
+
+    /**
+     * Check to see if the properties given match to the Data Source definition, using which
+     * connection can be made.
+     * @param properties
+     * @return true if the properties match
+     */
+    public abstract boolean matches(Map<String, String> properties);
+
+    /**
+     * Given the service specific properties to engine specific properties.
+     * @param properties
+     * @return return the modified property set to make the connection in the given environment
+     */
+    public abstract Properties transformProperties(Map<String, String> properties);
+
+
+    /**
+     * Given the connection properties from the Service Catalog secrets generate WildFly Swarm's
+     * configuration file to configure the data source
+     * @param datasource data source details
+     * @param jndiName JNDI Name of the source
+     * @return properties properties required to create a connection in target environment
+     */
+    public abstract Properties getDatasourceConfiguration(DefaultServiceCatalogDataSource datasource, String jndiName);
+
+    /**
+     * Returns true if the data source type is a resource adapter, otherwise false.
+     * @return true if resource adapter
+     */
+    public boolean isResouceAdapter() {
+        return false;
+    }
+
+    protected void ds(Properties props, DefaultServiceCatalogDataSource scd, String key, String value) {
+        if (scd.getDefinition().isResouceAdapter()) {
+            props.setProperty(
+                    "swarm.resource-adapter.resource-adapters." + scd.getName() + ".connection-definitions." + key,
+                    value);
+        } else {
+            props.setProperty(
+                    "swarm.datasources.data-sources." + scd.getName() + "." + key,
+                    value);
+        }
+    }
+}

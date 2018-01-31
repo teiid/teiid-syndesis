@@ -18,22 +18,42 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
- */
-package org.komodo.rest;
+ */package org.komodo.servicecatalog;
 
-import org.komodo.metadata.DefaultMetadataInstance;
-import org.komodo.metadata.TeiidConnectionProvider;
-import org.teiid.adminapi.Admin;
-import org.teiid.adminapi.AdminException;
+import java.util.Collection;
 
-public class TeiidSwarmMetadataInstance extends DefaultMetadataInstance {
+import io.fabric8.kubernetes.api.model.EnvVar;
 
-    public TeiidSwarmMetadataInstance(TeiidConnectionProvider connectionProvider) {
-        super(connectionProvider);
+public class BuildStatus {
+    protected enum Status {NOTFOUND, BUILDING, DEPLOYING, RUNNING, FAILED, CANCELLED}
+    protected String buildName;
+    protected String deploymentName;
+    protected String vdbName;
+    protected String namespace;
+    protected long lastUpdated = 0L;
+    protected Collection<EnvVar> envs;
+    protected String statusMessage;
+    protected Status status = Status.NOTFOUND;
+
+    public String getBuildName() {
+        return buildName;
     }
-
-    @Override
-    public Admin admin() throws AdminException {
-        return admin();
+    public String getDeploymentName() {
+        return deploymentName;
+    }
+    public String getVdbName() {
+        return vdbName;
+    }
+    public String getNamespace() {
+        return namespace;
+    }
+    public String getStatusMessage() {
+        return statusMessage;
+    }
+    public long getLastUpdated() {
+        return lastUpdated;
+    }
+    public String getStatus() {
+        return status.name();
     }
 }

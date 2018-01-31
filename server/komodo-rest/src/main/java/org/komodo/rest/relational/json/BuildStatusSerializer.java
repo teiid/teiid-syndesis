@@ -19,21 +19,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.rest;
+package org.komodo.rest.relational.json;
 
-import org.komodo.metadata.DefaultMetadataInstance;
-import org.komodo.metadata.TeiidConnectionProvider;
-import org.teiid.adminapi.Admin;
-import org.teiid.adminapi.AdminException;
+import org.komodo.rest.relational.response.RestBuildStatus;
+import org.komodo.utils.StringUtils;
 
-public class TeiidSwarmMetadataInstance extends DefaultMetadataInstance {
+/**
+ * A GSON serializer/deserializer for {@link RestBuildStatus}.
+ */
+public final class BuildStatusSerializer extends BasicEntitySerializer<RestBuildStatus> {
 
-    public TeiidSwarmMetadataInstance(TeiidConnectionProvider connectionProvider) {
-        super(connectionProvider);
+    @Override
+    protected boolean isComplete(final RestBuildStatus status) {
+        return super.isComplete(status) && !StringUtils.isBlank(status.getId());
     }
 
     @Override
-    public Admin admin() throws AdminException {
-        return admin();
+    protected RestBuildStatus createEntity() {
+        return new RestBuildStatus();
     }
 }

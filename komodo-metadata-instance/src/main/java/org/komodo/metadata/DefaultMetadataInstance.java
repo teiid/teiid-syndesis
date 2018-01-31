@@ -3,17 +3,17 @@
  * See the COPYRIGHT.txt file distributed with this work for information
  * regarding copyright ownership.  Some portions may be licensed
  * to Red Hat, Inc. under one or more contributor license agreements.
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
@@ -52,7 +52,6 @@ import org.komodo.spi.query.QSColumn;
 import org.komodo.spi.query.QSResult;
 import org.komodo.spi.query.QSRow;
 import org.komodo.spi.runtime.ConnectionDriver;
-import org.komodo.spi.runtime.ServiceCatalogDataSource;
 import org.komodo.spi.runtime.TeiidDataSource;
 import org.komodo.spi.runtime.TeiidPropertyDefinition;
 import org.komodo.spi.runtime.TeiidTranslator;
@@ -126,7 +125,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
     protected Admin admin() throws AdminException {
     	return connectionProvider.getAdmin();
     }
-    
+
     /**
      * Wraps error in a {@link KException} if necessary.
      *
@@ -136,11 +135,11 @@ public class DefaultMetadataInstance implements MetadataInstance {
      */
     protected static KException handleError(Throwable e) {
         assert (e != null);
-    
+
         if (e instanceof KException) {
             return (KException)e;
         }
-    
+
         return new KException(e);
     }
 
@@ -257,11 +256,11 @@ public class DefaultMetadataInstance implements MetadataInstance {
             while (rs.next()) {
                 rowNum++;
 
-                if (offset > NO_OFFSET && rowNum < offset) {
+                if ((offset > NO_OFFSET) && (rowNum < offset)) {
                     continue;
                 }
 
-                if (limit > NO_LIMIT && result.getRows().size() >= limit) {
+                if ((limit > NO_LIMIT) && (result.getRows().size() >= limit)) {
                     break;
                 }
 
@@ -304,7 +303,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
         for (String templateName : templateNames) {
             if (templateName == null)
                 continue; // Seems to be a null driver installed in wildfly 10.0.1 by default
-            
+
             drivers.add(new ConnectionDriver(templateName));
         }
         return drivers;
@@ -314,7 +313,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
     public void deployDataSourceDriver(String driverName, File driverFile) throws KException {
         checkStarted();
         ArgCheck.isNotNull(driverName, "driverName"); //$NON-NLS-1$
-        
+
         if (!driverFile.exists())
             throw new KException(Messages.getString(Messages.MetadataServer.jarDeploymentJarNotFound, driverFile.getPath()));
 
@@ -647,7 +646,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
     /**
      * Append the suffix for dynamic VDB to the vdb name if not already appended.
-     * 
+     *
      * @param vdbName
      * @return
      */
@@ -741,14 +740,4 @@ public class DefaultMetadataInstance implements MetadataInstance {
             throw handleError(ex);
         }
     }
-
-	@Override
-	public Set<ServiceCatalogDataSource> getServiceCatalogSources() throws KException {
-        throw new KException(Messages.getString(Messages.MetadataServer.notImplemented));
-	}
-
-	@Override
-	public void bindToServiceCatalogSource(String dsName) throws KException {
-		throw new KException(Messages.getString(Messages.MetadataServer.notImplemented));
-	}
 }

@@ -3,17 +3,17 @@
  * See the COPYRIGHT.txt file distributed with this work for information
  * regarding copyright ownership.  Some portions may be licensed
  * to Red Hat, Inc. under one or more contributor license agreements.
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
@@ -103,7 +103,7 @@ public class ApplicationProperties implements SystemConstants {
         if (host != null) {
             connUrl = substitute(connUrl, REPOSITORY_PERSISTENCE_HOST);
         }
-            
+
         return connUrl;
     }
 
@@ -184,7 +184,7 @@ public class ApplicationProperties implements SystemConstants {
 
     /**
      * Replaces in the target any instances of the given system property with its value
-     * 
+     *
      * @param target
      * @param property
      * @return the value with any instances of the given system property replaced
@@ -194,9 +194,25 @@ public class ApplicationProperties implements SystemConstants {
         if (propValue == null) {
             return target; // Just confuse if value returns null
         }
-    
+
         String template = DOLLAR_SIGN + OPEN_BRACE + property + CLOSE_BRACE;
         target = target.replace(template, propValue);
         return target;
+    }
+
+    /**
+     * Get a arbitrary property given by the name. first look in system properties, then in environment properties
+     * @param property Name of the property
+     */
+    public static String getProperty(String property, String defalt) {
+        String propValue = System.getProperty(property);
+        if (propValue != null) {
+        	return propValue;
+        }
+        propValue = System.getenv(property);
+        if (propValue != null) {
+        	return propValue;
+        }
+        return defalt;
     }
 }

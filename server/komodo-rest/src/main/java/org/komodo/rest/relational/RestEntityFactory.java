@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
+
 import org.komodo.relational.RelationalModelFactory;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
@@ -50,6 +51,7 @@ import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.RestBasicEntity;
 import org.komodo.rest.relational.connection.RestConnection;
 import org.komodo.rest.relational.dataservice.RestDataservice;
+import org.komodo.rest.relational.response.RestBuildStatus;
 import org.komodo.rest.relational.response.RestServiceCatalogDataSource;
 import org.komodo.rest.relational.response.RestVdb;
 import org.komodo.rest.relational.response.RestVdbCondition;
@@ -67,6 +69,7 @@ import org.komodo.rest.relational.response.metadata.RestMetadataTemplate;
 import org.komodo.rest.relational.response.metadata.RestMetadataTemplateEntry;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdb;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbTranslator;
+import org.komodo.servicecatalog.BuildStatus;
 import org.komodo.spi.KException;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
@@ -194,7 +197,7 @@ public class RestEntityFactory implements V1Constants {
         return repository.add(transaction, wkspPath, timeNow, primaryType);
     }
 
-    public RestMetadataVdb createMetadataVdb(UnitOfWork transaction, Repository repository, 
+    public RestMetadataVdb createMetadataVdb(UnitOfWork transaction, Repository repository,
                                                                                        TeiidVdb teiidVdb, URI baseUri) throws Exception {
         checkTransaction(transaction);
         ArgCheck.isTrue(transaction.isRollbackOnly(), "transaction should be rollback-only");
@@ -267,23 +270,23 @@ public class RestEntityFactory implements V1Constants {
         }
         return resultValue;
     }
-        
+
     private TemplateEntry createMetadataTemplateEntry(UnitOfWork transaction, Template template, String factoryClass,
                            TeiidPropertyDefinition definition) throws KException {
 
         TemplateEntry templateEntry = template.addEntry(transaction, definition.getName());
         templateEntry.setDescription(transaction, definition.getDescription());
         templateEntry.setDisplayName(transaction, definition.getDisplayName());
-    
+
         Collection<String> allowedValues = definition.getAllowedValues();
-        if (allowedValues != null && ! allowedValues.isEmpty()) {
+        if ((allowedValues != null) && ! allowedValues.isEmpty()) {
             List<Object> valuesList = new ArrayList<Object>();
             for (String value : allowedValues)
                 valuesList.add(value);
-    
+
             templateEntry.setAllowedValues(transaction, valuesList);
         }
-    
+
         templateEntry.setCategory(transaction, definition.getCategory());
         templateEntry.setDefaultValue(transaction, definition.getDefaultValue());
         templateEntry.setTypeClassName(transaction, definition.getPropertyTypeClassName());
@@ -293,7 +296,7 @@ public class RestEntityFactory implements V1Constants {
         templateEntry.setModifiable(transaction, definition.isModifiable());
         templateEntry.setRequired(transaction, definition.isRequired());
         templateEntry.setCustomProperties(transaction, definition.getProperties());
-    
+
         // Copy the 'managedconnectionfactory-class' default value into the 'class-name' default value
         if(definition.getName().equals(Template.CLASSNAME_KEY)) {
             templateEntry.setDefaultValue(transaction, factoryClass);
@@ -335,7 +338,7 @@ public class RestEntityFactory implements V1Constants {
 
         KomodoObject parent = createTemporaryParent(transaction, repository, null);
         Template template = RelationalModelFactory.createTemplate(transaction, repository, parent, "tempTemplate");
-        
+
         // Get the Managed connection factory class for rars
         String factoryClass = getManagedConnectionFactoryClassDefault(propertyDefns);
 
@@ -348,14 +351,24 @@ public class RestEntityFactory implements V1Constants {
 
         return restEntries;
     }
-    
+
 	public RestServiceCatalogDataSource createServiceCatalogDataSource(UnitOfWork transaction, Repository repository,
 			ServiceCatalogDataSource datasource, URI baseUri) throws Exception {
         checkTransaction(transaction);
         ArgCheck.isTrue(transaction.isRollbackOnly(), "transaction should be rollback-only");
-        
+
         // TODO:  phantomjinx what needs to be done here?
         KomodoObject parent = createTemporaryParent(transaction, repository, null);
         return new RestServiceCatalogDataSource(baseUri, parent, datasource, transaction);
-	}  
+	}
+
+    public RestBuildStatus createBuildStatus(UnitOfWork transaction, Repository repository,
+            BuildStatus status, URI baseUri) throws Exception {
+        checkTransaction(transaction);
+        ArgCheck.isTrue(transaction.isRollbackOnly(), "transaction should be rollback-only");
+
+        // TODO:  phantomjinx what needs to be done here?
+        KomodoObject parent = createTemporaryParent(transaction, repository, null);
+        return new RestBuildStatus(baseUri, parent, status, transaction);
+    }
 }

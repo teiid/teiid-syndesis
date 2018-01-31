@@ -49,9 +49,14 @@ public class RestServiceCatalogDataSource extends RestBasicEntity implements Ser
     public static final String TYPE_LABEL = KomodoService.protectPrefix(ServiceCatalogLexicon.DataService.TYPE);
 
     /**
-     * Label used to describe bound 
+     * Label used to describe bound
      */
     public static final String BOUND_LABEL = KomodoService.protectPrefix(ServiceCatalogLexicon.DataService.BOUND);
+
+    /**
+     * Label used to describe bound
+     */
+    public static final String TRANSLATOR_LABEL = KomodoService.protectPrefix(ServiceCatalogLexicon.DataService.TRANSLATOR);
 
     /**
      * Constructor for use when deserializing
@@ -59,57 +64,68 @@ public class RestServiceCatalogDataSource extends RestBasicEntity implements Ser
     public RestServiceCatalogDataSource() {
         super();
     }
-    
+
 	public RestServiceCatalogDataSource(URI baseUri, KomodoObject parent, ServiceCatalogDataSource datasource,
 			UnitOfWork uow) throws KException {
 		super(baseUri, parent, uow);
-		
+
         ArgCheck.isNotNull(datasource, "datasource"); //$NON-NLS-1$
         ArgCheck.isNotNull(uow, "uow"); //$NON-NLS-1$
 
         setId(datasource.getName());
         setkType(KomodoType.SERVICE_CATALOG_DATA_SOURCE);
         setHasChildren(false);
-        
+
         setName(datasource.getName());
         setType(datasource.getType());
         setBound(datasource.isBound());
+        setTranslatorName(datasource.getTranslatorName());
 
         Properties settings = getUriBuilder().createSettings(SettingNames.CONNECTION_NAME, getId());
         URI parentUri = getUriBuilder().mServerConnectionsUri();
         getUriBuilder().addSetting(settings, SettingNames.PARENT_PATH, parentUri);
 
         addLink(new RestLink(LinkType.SELF, getUriBuilder().connectionUri(LinkType.SELF, settings)));
-        addLink(new RestLink(LinkType.PARENT, getUriBuilder().connectionUri(LinkType.PARENT, settings)));		
-	}
+        addLink(new RestLink(LinkType.PARENT, getUriBuilder().connectionUri(LinkType.PARENT, settings)));
+    }
 
-	@Override
-	public String getName() {
+    @Override
+    public String getName() {
         Object name = tuples.get(NAME_LABEL);
         return name != null ? name.toString() : null;
-	}
+    }
 
-	@Override
-	public String getType() {
+    @Override
+    public String getType() {
         Object type = tuples.get(TYPE_LABEL);
         return type != null ? type.toString() : null;
-	}
+    }
 
-	@Override
-	public boolean isBound() {
-		Object label = tuples.get(BOUND_LABEL);
-		return label != null ? Boolean.parseBoolean(label.toString()) : false;
-	}
-	
-	public void setName(String name) {
-		tuples.put(NAME_LABEL, name);		
-	}
+    @Override
+    public boolean isBound() {
+        Object label = tuples.get(BOUND_LABEL);
+        return label != null ? Boolean.parseBoolean(label.toString()) : false;
+    }
 
-	public void setType(String type) {
-		tuples.put(TYPE_LABEL, type);
-	}
+    public void setName(String name) {
+        tuples.put(NAME_LABEL, name);
+    }
 
-	public void setBound(boolean bound) {
-		tuples.put(BOUND_LABEL, bound);
-	}	
+    public void setType(String type) {
+        tuples.put(TYPE_LABEL, type);
+    }
+
+    public void setBound(boolean bound) {
+        tuples.put(BOUND_LABEL, bound);
+    }
+
+    @Override
+    public String getTranslatorName() {
+        Object name = tuples.get(TRANSLATOR_LABEL);
+        return name != null ? name.toString() : null;
+    }
+
+    public void setTranslatorName(String name) {
+        tuples.put(TRANSLATOR_LABEL, name);
+    }
 }

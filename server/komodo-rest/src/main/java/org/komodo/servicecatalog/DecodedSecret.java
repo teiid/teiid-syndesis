@@ -19,21 +19,28 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.rest;
+package org.komodo.servicecatalog;
 
-import org.komodo.metadata.DefaultMetadataInstance;
-import org.komodo.metadata.TeiidConnectionProvider;
-import org.teiid.adminapi.Admin;
-import org.teiid.adminapi.AdminException;
+import java.util.Map;
 
-public class TeiidSwarmMetadataInstance extends DefaultMetadataInstance {
+public class DecodedSecret {
+    private String secretName;
+    private Map<String, String> data;
 
-    public TeiidSwarmMetadataInstance(TeiidConnectionProvider connectionProvider) {
-        super(connectionProvider);
+    public DecodedSecret(String name, Map<String, String> data) {
+        this.secretName = name;
+        this.data = data;
     }
 
-    @Override
-    public Admin admin() throws AdminException {
-        return admin();
+    public String getSecretName() {
+        return secretName;
+    }
+
+    public Map<String, String> getData() {
+        return data;
+    }
+
+    public String canonicalKey(String key) {
+        return secretName.replace('-','_').toUpperCase() + "_" + key.toUpperCase();
     }
 }
