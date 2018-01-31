@@ -3,17 +3,17 @@
  * See the COPYRIGHT.txt file distributed with this work for information
  * regarding copyright ownership.  Some portions may be licensed
  * to Red Hat, Inc. under one or more contributor license agreements.
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
@@ -49,6 +49,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
@@ -85,6 +86,7 @@ import org.komodo.rest.relational.request.KomodoQueryAttribute;
 import org.komodo.rest.relational.request.KomodoServiceCatalogDataSourceAttributes;
 import org.komodo.rest.relational.request.KomodoVdbUpdateAttributes;
 import org.komodo.rest.relational.response.KomodoStatusObject;
+import org.komodo.rest.relational.response.RestBuildStatus;
 import org.komodo.rest.relational.response.RestConnectionDriver;
 import org.komodo.rest.relational.response.RestQueryResult;
 import org.komodo.rest.relational.response.RestServiceCatalogDataSource;
@@ -98,6 +100,8 @@ import org.komodo.rest.relational.response.metadata.RestMetadataTemplateEntry;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdb;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatus;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbTranslator;
+import org.komodo.servicecatalog.BuildStatus;
+import org.komodo.servicecatalog.TeiidOpenShiftClient;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
@@ -189,7 +193,7 @@ public class KomodoMetadataService extends KomodoService {
                 // Ignore exception. Will be dealt with below
             }
 
-            if (entry1Name == null && entry2Name == null)
+            if ((entry1Name == null) && (entry2Name == null))
                 return 0; // Not a lot
             else if (entry1Name == null)
                 return -1;
@@ -210,7 +214,7 @@ public class KomodoMetadataService extends KomodoService {
             if (entry1Advanced && !entry2Advanced)
                 return 1; // De-prioritise advanced
             else if (! entry1Advanced && entry2Advanced)
-                return -1; // De-prioritise advanced    
+                return -1; // De-prioritise advanced
 
             return entry1Name.compareTo(entry2Name);
         }
@@ -226,17 +230,21 @@ public class KomodoMetadataService extends KomodoService {
      */
     private Map<String, String> urlContentTranslatorMap = new HashMap<String,String>();
 
+    private TeiidOpenShiftClient openshiftClient;
+
     /**
      * @param engine
      *        the Komodo Engine (cannot be <code>null</code> and must be started)
      * @throws WebApplicationException
      *         if there is a problem obtaining the {@link WorkspaceManager workspace manager}
      */
-    public KomodoMetadataService(final KEngine engine) throws WebApplicationException {
+    public KomodoMetadataService(final KEngine engine, TeiidOpenShiftClient openshiftClient) throws WebApplicationException {
         super(engine);
         // Loads default translator mappings
         loadDriverTranslatorMap();
         loadUrlContentTranslatorMap();
+
+        this.openshiftClient = openshiftClient;
     }
 
     private synchronized MetadataInstance getMetadataInstance() throws KException {
@@ -256,7 +264,7 @@ public class KomodoMetadataService extends KomodoService {
     }
 
     private Response checkFileAttributes(KomodoFileAttributes kfa, List<MediaType> mediaTypes) throws Exception {
-        if (kfa == null || (kfa.getName() == null && kfa.getContent() == null))
+        if ((kfa == null) || ((kfa.getName() == null) && (kfa.getContent() == null)))
             return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.METADATA_SERVICE_FILE_ATTRIB_NO_PARAMETERS);
 
         if (kfa.getName() == null)
@@ -288,7 +296,7 @@ public class KomodoMetadataService extends KomodoService {
             throw ex;
         }
     }
-    
+
     private boolean hasDynamicVdb(String vdbName) throws Exception {
         boolean hasVdb = false;
 
@@ -378,7 +386,7 @@ public class KomodoMetadataService extends KomodoService {
      *         if there is a problem constructing the VDBs JSON document
      */
     @GET
-    @Path(V1Constants.STATUS_SEGMENT + StringConstants.FORWARD_SLASH + 
+    @Path(V1Constants.STATUS_SEGMENT + StringConstants.FORWARD_SLASH +
                   V1Constants.VDBS_SEGMENT)
     @Produces( MediaType.APPLICATION_JSON )
     @ApiOperation(value = "Display the status of the vdbs of the metadata instance",
@@ -503,7 +511,7 @@ public class KomodoMetadataService extends KomodoService {
             return principal.getErrorResponse();
 
         List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        
+
         UnitOfWork uow = null;
         try {
             // find VDB
@@ -534,7 +542,7 @@ public class KomodoMetadataService extends KomodoService {
     }
 
     /**
-     * Copy a VDBs from the server into the workspace that are not present in the workspace 
+     * Copy a VDBs from the server into the workspace that are not present in the workspace
      * @param headers
      *        the request headers (never <code>null</code>)
      * @param uriInfo
@@ -568,14 +576,14 @@ public class KomodoMetadataService extends KomodoService {
             // find VDB
             uow = createTransaction(principal, "vdbsFromTeiid", false); //$NON-NLS-1$
             Collection<TeiidVdb> serverVdbs = getMetadataInstance().getVdbs();
-            
+
             boolean importError = false;
             if(serverVdbs.size() > 0) {
                 // Get current list of workspace Vdbs
                 final WorkspaceManager mgr = getWorkspaceManager(uow);
                 Vdb[] workspaceVdbs = mgr.findVdbs( uow );
                 List<String> workspaceVdbNames = new ArrayList<String>(workspaceVdbs.length);
-                
+
                 // Remove any service source vdbs that dont belong to user.  Compile list of remaining workspace vdbs
                 for(Vdb workspaceVdb : workspaceVdbs) {
                     // Source VDB not belonging to user are removed
@@ -611,10 +619,10 @@ public class KomodoMetadataService extends KomodoService {
                     }
                 }
             }
-            
+
             String title = RelationalMessages.getString(RelationalMessages.Info.VDB_TO_REPO_STATUS_TITLE);
             KomodoStatusObject status = new KomodoStatusObject(title);
-            if(!importError) 
+            if(!importError)
                 status.addAttribute("copyVdbsToRepo", RelationalMessages.getString(RelationalMessages.Info.VDB_TO_REPO_SUCCESS)); //$NON-NLS-1$
             else
                 status.addAttribute("copyVdbsToRepo", RelationalMessages.getString(RelationalMessages.Error.VDB_TO_REPO_IMPORT_ERROR)); //$NON-NLS-1$
@@ -633,7 +641,7 @@ public class KomodoMetadataService extends KomodoService {
             return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.VDB_TO_REPO_IMPORT_ERROR);
         }
     }
-    
+
     /**
      * Update workspace VDBs with latest Teiid status.
      * @param headers
@@ -668,19 +676,19 @@ public class KomodoMetadataService extends KomodoService {
         try {
             // Goes directly to the server to get vdb status
             uow = createTransaction(principal, "vdbUpdateFromTeiid", false); //$NON-NLS-1$
-            
+
             // Get list of Teiid VDBs directly from the server
             Collection<TeiidVdb> teiidVdbs = getMetadataInstance().getVdbs();
-            
+
             // Get list of workspace VDBs
             WorkspaceManager wsMgr = getWorkspaceManager(uow);
             Vdb[] workspaceVdbs = wsMgr.findVdbs( uow );
-            
+
             // Set status properties on the workspace VDBs, based on the matching Teiid VDB.
             for( Vdb wkspVdb : workspaceVdbs) {
                 updateVdbProperties(uow, wkspVdb, teiidVdbs);
             }
-            
+
             String title = RelationalMessages.getString(RelationalMessages.Info.VDB_TO_REPO_STATUS_TITLE);
             KomodoStatusObject status = new KomodoStatusObject(title);
             status.addAttribute("success", "true"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -699,7 +707,7 @@ public class KomodoMetadataService extends KomodoService {
             return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.VDB_TO_REPO_IMPORT_ERROR);
         }
     }
-    
+
     /*
      * Updates workspace vdb properties based on the corresponding teiid VDB state
      */
@@ -713,24 +721,24 @@ public class KomodoMetadataService extends KomodoService {
                 break;
             }
         }
-        
+
         // Update workspace VDB properties based on server status
         String status = RelationalMessages.getString(RelationalMessages.Info.VDB_STATUS_NEW);
         String statusMessage = RelationalMessages.getString(RelationalMessages.Info.VDB_STATUS_MSG_NEW);
         if(serverVdbMatch!=null) {
             List<String> errors = serverVdbMatch.getValidityErrors();
-            if(errors!=null && errors.size() > 0) {
+            if((errors!=null) && (errors.size() > 0)) {
                 status = RelationalMessages.getString(RelationalMessages.Info.VDB_STATUS_ERROR);
                 statusMessage = errors.get(0);
             } else if(serverVdbMatch.hasFailed()) {
                 status = RelationalMessages.getString(RelationalMessages.Info.VDB_STATUS_ERROR);
-                statusMessage = RelationalMessages.getString(RelationalMessages.Info.VDB_STATUS_MSG_UNKNOWN);   
+                statusMessage = RelationalMessages.getString(RelationalMessages.Info.VDB_STATUS_MSG_UNKNOWN);
             } else if(serverVdbMatch.isActive()) {
                 status = RelationalMessages.getString(RelationalMessages.Info.VDB_STATUS_ACTIVE);
                 statusMessage = RelationalMessages.getString(RelationalMessages.Info.VDB_STATUS_MSG_ACTIVE);
             } else if(serverVdbMatch.isLoading()) {
                 status = RelationalMessages.getString(RelationalMessages.Info.VDB_STATUS_LOADING);
-                statusMessage = RelationalMessages.getString(RelationalMessages.Info.VDB_STATUS_MSG_LOADING);   
+                statusMessage = RelationalMessages.getString(RelationalMessages.Info.VDB_STATUS_MSG_LOADING);
             } else {
                 status = RelationalMessages.getString(RelationalMessages.Info.VDB_STATUS_UNKNOWN);
                 statusMessage = RelationalMessages.getString(RelationalMessages.Info.VDB_STATUS_MSG_UNKNOWN);
@@ -751,11 +759,11 @@ public class KomodoMetadataService extends KomodoService {
                 }
             }
         }
-        
+
         workspaceVdb.setProperty(uow, DSB_PROP_METADATA_STATUS, status);
         workspaceVdb.setProperty(uow, DSB_PROP_METADATA_STATUS_MSG, statusMessage);
     }
-    
+
     /**
      * Creates or updates a workspace VDB model using DDL from the teiid VDB model.
      * If the target VDB does not exist, it is created.  If the specified model already exists, it is replaced - otherwise a new model is created.
@@ -780,7 +788,7 @@ public class KomodoMetadataService extends KomodoService {
     public Response updateModelFromDdl( final @Context HttpHeaders headers,
             final @Context UriInfo uriInfo,
             @ApiParam(
-                      value = "" + 
+                      value = "" +
                               "JSON of update attributes:" + BR +
                               OPEN_PRE_TAG +
                               OPEN_BRACE + BR +
@@ -855,7 +863,7 @@ public class KomodoMetadataService extends KomodoService {
             if (StringUtils.isBlank( modelDdl )) {
                 return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.METADATA_SERVICE_UPDATE_DDL_DNE);
             }
-            
+
             // Check for existence of Dataservice, Table and ModelSource before continuing...
             WorkspaceManager wkspMgr = getWorkspaceManager(uow);
 
@@ -899,7 +907,7 @@ public class KomodoMetadataService extends KomodoService {
     private Response checkVdbUpdateAttributes(KomodoVdbUpdateAttributes attr,
                                               List<MediaType> mediaTypes) throws Exception {
 
-        if (attr == null || attr.getVdbName() == null || attr.getModelName() == null || attr.getVdbName() == null || attr.getModelName() == null) {
+        if ((attr == null) || (attr.getVdbName() == null) || (attr.getModelName() == null) || (attr.getVdbName() == null) || (attr.getModelName() == null)) {
             return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.METADATA_SERVICE_UPDATE_MISSING_PARAMETER_ERROR);
         }
 
@@ -909,13 +917,13 @@ public class KomodoMetadataService extends KomodoService {
     private Response checkJdbcTableAttributes(KomodoDataSourceJdbcTableAttributes attr,
                                               List<MediaType> mediaTypes) throws Exception {
 
-        if (attr == null || attr.getDataSourceName() == null || attr.getCatalogFilter() == null || attr.getSchemaFilter() == null || attr.getTableFilter() == null) {
+        if ((attr == null) || (attr.getDataSourceName() == null) || (attr.getCatalogFilter() == null) || (attr.getSchemaFilter() == null) || (attr.getTableFilter() == null)) {
             return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.METADATA_SERVICE_UPDATE_MISSING_PARAMETER_ERROR);
         }
 
         return Response.ok().build();
     }
-        
+
     /**
      * Remove a VDB from the server
      * @param headers
@@ -982,7 +990,7 @@ public class KomodoMetadataService extends KomodoService {
             return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.METADATA_SERVICE_UNDEPLOY_VDB_ERROR, vdbName);
         }
     }
-    
+
     /**
      * Remove a Connection from the server
      * @param headers
@@ -1055,7 +1063,7 @@ public class KomodoMetadataService extends KomodoService {
             return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.METADATA_SERVICE_UNDEPLOY_CONNECTION_ERROR, connectionName);
         }
     }
-    
+
     /**
      * Get the schema for a model in a deployed VDB
      * @param headers
@@ -1093,7 +1101,7 @@ public class KomodoMetadataService extends KomodoService {
             return principal.getErrorResponse();
 
         List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        
+
         UnitOfWork uow = null;
         try {
             // Get the model schema
@@ -1240,7 +1248,7 @@ public class KomodoMetadataService extends KomodoService {
             return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.METADATA_SERVICE_GET_DATA_SOURCES_ERROR);
         }
     }
-    
+
     /**
      * @param headers
      *        the request headers (never <code>null</code>)
@@ -1271,7 +1279,7 @@ public class KomodoMetadataService extends KomodoService {
             return principal.getErrorResponse();
 
         List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        
+
         UnitOfWork uow = null;
         try {
         	Repository repo = this.kengine.getDefaultRepository();
@@ -1299,7 +1307,7 @@ public class KomodoMetadataService extends KomodoService {
             return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.METADATA_SERVICE_GET_DATA_SOURCE_ERROR, connectionName);
         }
     }
-    
+
     /**
      * Return the default translator to be used for a Connection
      * @param headers
@@ -1310,10 +1318,10 @@ public class KomodoMetadataService extends KomodoService {
      *        the id of the Connection being retrieved (cannot be empty)
      * @return the translator for the connection (never <code>null</code>)
      * @throws KomodoRestException
-     *         if there is a problem finding the specified connection 
+     *         if there is a problem finding the specified connection
      */
     @GET
-    @Path( V1Constants.CONNECTIONS_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.CONNECTION_PLACEHOLDER 
+    @Path( V1Constants.CONNECTIONS_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.CONNECTION_PLACEHOLDER
            + StringConstants.FORWARD_SLASH + V1Constants.TRANSLATOR_DEFAULT_SEGMENT)
     @Produces( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
     @ApiOperation(value = "Get the default translator recommended for a connection")
@@ -1346,13 +1354,13 @@ public class KomodoMetadataService extends KomodoService {
 
             // Get the translator name from the default driver - translator mappings
             String translatorName = driverTranslatorMap.get(driverName);
-            
+
             // If translator not found using driver mappings, use the connection url if available.
             // The urlContentTranslatorMap keys are unique strings within the connection url which would identify the required translator
             if(translatorName==null) {
                 String connectionUrl = dataSource.getPropertyValue("connection-url"); //$NON-NLS-1$
                 // No connection url property - unknown translator
-                if(connectionUrl == null || connectionUrl.isEmpty()) {
+                if((connectionUrl == null) || connectionUrl.isEmpty()) {
                     translatorName = UNKNOWN_TRANSLATOR;
                 // Connection url property found - use mappings to get translator, if possible
                 } else {
@@ -1367,7 +1375,7 @@ public class KomodoMetadataService extends KomodoService {
                     }
                 }
             }
-            
+
             // Return a status object with the translator
             KomodoStatusObject kso = new KomodoStatusObject();
             kso.addAttribute("Translator", translatorName); //$NON-NLS-1$
@@ -1387,7 +1395,7 @@ public class KomodoMetadataService extends KomodoService {
     }
 
     /**
-     * Copy  connections from the server into the workspace that are not present in the workspace 
+     * Copy  connections from the server into the workspace that are not present in the workspace
      * @param headers
      *        the request headers (never <code>null</code>)
      * @param uriInfo
@@ -1444,7 +1452,7 @@ public class KomodoMetadataService extends KomodoService {
 
                 workspaceConnNames.add(workspaceConn.getName(uow));
             }
-                
+
             // Copy the teiid connection into the workspace, if no workspace connection with the same name
             for(TeiidDataSource teiidConn : teiidConns) {
                 String name = teiidConn.getName();
@@ -1556,7 +1564,7 @@ public class KomodoMetadataService extends KomodoService {
     public Response addDriver(final @Context HttpHeaders headers,
                                    final @Context UriInfo uriInfo,
                                    @ApiParam(
-                                             value = "" + 
+                                             value = "" +
                                                      "JSON of the properties of the driver to add:<br>" +
                                                      OPEN_PRE_TAG +
                                                      OPEN_BRACE + BR +
@@ -1626,7 +1634,7 @@ public class KomodoMetadataService extends KomodoService {
                 }
             }
 
-            if (driverName == null || driverContent == null) {
+            if ((driverName == null) || (driverContent == null)) {
                 return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.METADATA_SERVICE_DRIVER_ATTRIBUTES_MISSING);
             }
 
@@ -1744,10 +1752,10 @@ public class KomodoMetadataService extends KomodoService {
      *        the id of the Dataservice being requested for deployment (cannot be empty)
      * @return the deployable status for the Dataservice (never <code>null</code>)
      * @throws KomodoRestException
-     *         if there is a problem determining the status 
+     *         if there is a problem determining the status
      */
     @GET
-    @Path( V1Constants.DATA_SERVICE_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.DATA_SERVICE_PLACEHOLDER 
+    @Path( V1Constants.DATA_SERVICE_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.DATA_SERVICE_PLACEHOLDER
            + StringConstants.FORWARD_SLASH + V1Constants.DEPLOYABLE_STATUS_SEGMENT)
     @Produces( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
     @ApiOperation(value = "Get deployable status for a dataservice", response = KomodoStatusObject.class)
@@ -1776,7 +1784,7 @@ public class KomodoMetadataService extends KomodoService {
             Dataservice dataservice = findDataservice(uow, dataserviceName);
             if (dataservice == null)
                 return commitNoDataserviceFound(uow, mediaTypes, dataserviceName);
-            
+
 
             // Get the serviceVDB name associated with the dataservice
             Vdb serviceVdb = dataservice.getServiceVdb(uow);
@@ -1792,10 +1800,10 @@ public class KomodoMetadataService extends KomodoService {
                 if(serverVdbOwner != null) {
                     // server vdb owner is different than the current user.
                     if(!serverVdbOwner.equals(uow.getUserName())) {
-                        deployableStatusMessage = RelationalMessages.getString(RelationalMessages.Info.VDB_ALREADY_DEPLOYED_OWNER, serviceVdbName, serverVdbOwner);    
+                        deployableStatusMessage = RelationalMessages.getString(RelationalMessages.Info.VDB_ALREADY_DEPLOYED_OWNER, serviceVdbName, serverVdbOwner);
                     }
                 } else {
-                    deployableStatusMessage = RelationalMessages.getString(RelationalMessages.Info.VDB_ALREADY_DEPLOYED, serviceVdbName);    
+                    deployableStatusMessage = RelationalMessages.getString(RelationalMessages.Info.VDB_ALREADY_DEPLOYED, serviceVdbName);
                 }
             }
 
@@ -1824,7 +1832,7 @@ public class KomodoMetadataService extends KomodoService {
             }
         }
    }
-    
+
     /**
      * Adds (deploys) a Dataservice to the server
      * @param headers
@@ -1850,7 +1858,7 @@ public class KomodoMetadataService extends KomodoService {
     public Response addDataservice(final @Context HttpHeaders headers,
                                    final @Context UriInfo uriInfo,
                                    @ApiParam(
-                                             value = "" + 
+                                             value = "" +
                                                      "JSON of the properties of the data service:<br>" +
                                                      OPEN_PRE_TAG +
                                                      OPEN_BRACE + BR +
@@ -1974,7 +1982,7 @@ public class KomodoMetadataService extends KomodoService {
     public Response addConnection( final @Context HttpHeaders headers,
                                    final @Context UriInfo uriInfo,
                                    @ApiParam(
-                                             value = "" + 
+                                             value = "" +
                                                      "JSON of the properties of the connection:<br>" +
                                                      OPEN_PRE_TAG +
                                                      OPEN_BRACE + BR +
@@ -2082,7 +2090,7 @@ public class KomodoMetadataService extends KomodoService {
 //
 //    Cannot refresh teiid either since its not part of the API
 //    see https://issues.jboss.org/browse/TEIID-4592
-//    
+//
 //    /**
 //     * Updates a Connection on the server (deletes then adds)
 //     * @param headers
@@ -2108,7 +2116,7 @@ public class KomodoMetadataService extends KomodoService {
 //    public Response updateConnection( final @Context HttpHeaders headers,
 //                                   final @Context UriInfo uriInfo,
 //                                   @ApiParam(
-//                                             value = "" + 
+//                                             value = "" +
 //                                                     "JSON of the properties of the connection:<br>" +
 //                                                     OPEN_PRE_TAG +
 //                                                     OPEN_BRACE + BR +
@@ -2242,7 +2250,7 @@ public class KomodoMetadataService extends KomodoService {
     public Response addVdb(final @Context HttpHeaders headers,
                            final @Context UriInfo uriInfo,
                            @ApiParam(
-                                     value = "" + 
+                                     value = "" +
                                              "JSON of the properties of the vdb:<br>" +
                                              OPEN_PRE_TAG +
                                              OPEN_BRACE + BR +
@@ -2257,7 +2265,7 @@ public class KomodoMetadataService extends KomodoService {
         SecurityPrincipal principal = checkSecurityContext(headers);
         if (principal.hasErrorResponse())
             return principal.getErrorResponse();
-        
+
         List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
         if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
             return notAcceptableMediaTypesBuilder().build();
@@ -2378,7 +2386,7 @@ public class KomodoMetadataService extends KomodoService {
     public Response query(final @Context HttpHeaders headers,
                                    final @Context UriInfo uriInfo,
                                    @ApiParam(
-                                             value = "" + 
+                                             value = "" +
                                                      "JSON of the properties of the query:<br>" +
                                                      OPEN_PRE_TAG +
                                                      OPEN_BRACE + BR +
@@ -2465,12 +2473,12 @@ public class KomodoMetadataService extends KomodoService {
             return createErrorResponse(Status.FORBIDDEN, mediaTypes, RelationalMessages.Error.METADATA_SERVICE_QUERY_ERROR, e.getLocalizedMessage());
         }
     }
-    
+
     private boolean isJdbc(TeiidDataSource dataSource) {
     	// TODO: re-evaluate for better approach.  (We will probably not need this method after schema retrieval changes)
     	String dsDriverName = dataSource.getPropertyValue(TeiidDataSource.DATASOURCE_DRIVERNAME);
-        
-        if (dsDriverName == null || dsDriverName.equals("cassandra") || dsDriverName.equals("file") || dsDriverName.equals("google")
+
+        if ((dsDriverName == null) || dsDriverName.equals("cassandra") || dsDriverName.equals("file") || dsDriverName.equals("google")
                             || dsDriverName.equals("ldap") || dsDriverName.equals("mongodb") || dsDriverName.equals("salesforce")
                             || dsDriverName.equals("salesforce-34") || dsDriverName.equals("solr") || dsDriverName.equals("webservice")) {
           return false;
@@ -2479,7 +2487,7 @@ public class KomodoMetadataService extends KomodoService {
     }
 
     /**
-     * Return the table names for a teiid JDBC connection 
+     * Return the table names for a teiid JDBC connection
      * @param headers
      *        the request headers (never <code>null</code>)
      * @param uriInfo
@@ -2488,7 +2496,7 @@ public class KomodoMetadataService extends KomodoService {
      *        the attributes for fetching the tables (cannot be empty)
      * @return the JDBC table names for the Connection (never <code>null</code>)
      * @throws KomodoRestException
-     *         if there is a problem finding the specified connection 
+     *         if there is a problem finding the specified connection
      */
     @POST
     @Path( V1Constants.CONNECTIONS_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.TABLES_SEGMENT)
@@ -2502,7 +2510,7 @@ public class KomodoMetadataService extends KomodoService {
     public Response getConnectionJdbcTables( final @Context HttpHeaders headers,
                                              final @Context UriInfo uriInfo,
                                              @ApiParam(
-                                                       value = "" + 
+                                                       value = "" +
                                                                "JSON of the properties of the data source jdbc tables:<br>" +
                                                                OPEN_PRE_TAG +
                                                                OPEN_BRACE + BR +
@@ -2604,10 +2612,10 @@ public class KomodoMetadataService extends KomodoService {
      *        the id of the Connection being retrieved (cannot be empty)
      * @return the JDBC catalog names for the Connection (never <code>null</code>)
      * @throws KomodoRestException
-     *         if there is a problem finding the specified workspace Connection 
+     *         if there is a problem finding the specified workspace Connection
      */
     @GET
-    @Path( V1Constants.CONNECTIONS_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.CONNECTION_PLACEHOLDER 
+    @Path( V1Constants.CONNECTIONS_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.CONNECTION_PLACEHOLDER
            + StringConstants.FORWARD_SLASH + V1Constants.JDBC_CATALOG_SCHEMA_SEGMENT)
     @Produces( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
     @ApiOperation(value = "Get catalog and schema info for a jdbc connection",
@@ -2797,10 +2805,10 @@ public class KomodoMetadataService extends KomodoService {
      *        the id of the Connection being retrieved (cannot be empty)
      * @return the JDBC table names for the Connection (never <code>null</code>)
      * @throws KomodoRestException
-     *         if there is a problem finding the specified workspace Connection 
+     *         if there is a problem finding the specified workspace Connection
      */
     @GET
-    @Path( V1Constants.CONNECTIONS_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.CONNECTION_PLACEHOLDER 
+    @Path( V1Constants.CONNECTIONS_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.CONNECTION_PLACEHOLDER
            + StringConstants.FORWARD_SLASH + V1Constants.JDBC_INFO_SEGMENT)
     @Produces( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
     @ApiOperation(value = "Get info for a jdbc source", response = RestConnectionJdbcInfo.class)
@@ -2870,7 +2878,7 @@ public class KomodoMetadataService extends KomodoService {
             }
         }
    }
-    
+
     /*
      * Populate the JDBC info using the supplied connection
      * @param connection the JDBC connection
@@ -2909,7 +2917,7 @@ public class KomodoMetadataService extends KomodoService {
             throw new KException(e);
         }
     }
-    
+
     /*
      * Get List of Tables using the supplied connection
      * @param connection the JDBC connection
@@ -2985,7 +2993,7 @@ public class KomodoMetadataService extends KomodoService {
             throw new KException(e1);
         }
 
-        while (ne!=null && ne.hasMoreElements()) {
+        while ((ne!=null) && ne.hasMoreElements()) {
             javax.naming.NameClassPair o = ne.nextElement();
             String className = o.getClassName();
             if (! isDataSource(className))
@@ -2997,7 +3005,7 @@ public class KomodoMetadataService extends KomodoService {
 
             try {
                 Object jdbcObject = initialContext.lookup(jdbcContext + o.getName());
-                if(jdbcObject != null && jdbcObject instanceof DataSource) {
+                if((jdbcObject != null) && (jdbcObject instanceof DataSource)) {
                     jdbcDataSource = (DataSource)jdbcObject;
                     break;
                 }
@@ -3016,20 +3024,20 @@ public class KomodoMetadataService extends KomodoService {
             throw new KException(ex);
         }
     }
-    
+
     /*
      * Loads driver name - translator mappings from resource file
      */
     private void loadDriverTranslatorMap() {
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream( DRIVER_TRANSLATOR_MAPPING_FILE );
-        
+
         if(inputStream==null) {
             LOGGER.error(RelationalMessages.getString(RelationalMessages.Error.METADATA_SERVICE_DEFAULT_TRANSLATOR_MAPPINGS_NOT_FOUND_ERROR));
             return;
         }
-        
+
         driverTranslatorMap.clear();
-        
+
         // Load the mappings file
         Document doc;
         try {
@@ -3039,7 +3047,7 @@ public class KomodoMetadataService extends KomodoService {
             LOGGER.error(RelationalMessages.getString(RelationalMessages.Error.METADATA_SERVICE_LOAD_DEFAULT_TRANSLATOR_MAPPINGS_ERROR, ex.getLocalizedMessage()));
             return;
         }
-        
+
         // Single child node contains the mappings
         final Node mappingsNode = doc.getChildNodes().item(0);
         if ( mappingsNode.getNodeType() != Node.ELEMENT_NODE ) {
@@ -3061,14 +3069,14 @@ public class KomodoMetadataService extends KomodoService {
      */
     private void loadUrlContentTranslatorMap() {
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream( URLCONTENT_TRANSLATOR_MAPPING_FILE );
-        
+
         if(inputStream==null) {
             LOGGER.error(RelationalMessages.getString(RelationalMessages.Error.METADATA_SERVICE_DEFAULT_TRANSLATOR_MAPPINGS_NOT_FOUND_ERROR));
             return;
         }
-        
+
         urlContentTranslatorMap.clear();
-        
+
         // Load the mappings file
         Document doc;
         try {
@@ -3078,7 +3086,7 @@ public class KomodoMetadataService extends KomodoService {
             LOGGER.error(RelationalMessages.getString(RelationalMessages.Error.METADATA_SERVICE_LOAD_DEFAULT_TRANSLATOR_MAPPINGS_ERROR, ex.getLocalizedMessage()));
             return;
         }
-        
+
         // Single child node contains the mappings
         final Node mappingsNode = doc.getChildNodes().item(0);
         if ( mappingsNode.getNodeType() != Node.ELEMENT_NODE ) {
@@ -3193,7 +3201,7 @@ public class KomodoMetadataService extends KomodoService {
             uow = createTransaction(principal, "getTemplates", true); //$NON-NLS-1$
 
             Set<String> templateNames = getMetadataInstance().getDataSourceTemplateNames();
-            if (templateNames == null || templateNames.isEmpty())
+            if ((templateNames == null) || templateNames.isEmpty())
                 return commitNoTemplateFound(uow, mediaTypes, templateName);
 
             if (! templateNames.contains(templateName))
@@ -3230,7 +3238,7 @@ public class KomodoMetadataService extends KomodoService {
      */
     @GET
     @Path(V1Constants.TEMPLATES_SEGMENT + StringConstants.FORWARD_SLASH +
-                  V1Constants.TEMPLATE_PLACEHOLDER + StringConstants.FORWARD_SLASH + 
+                  V1Constants.TEMPLATE_PLACEHOLDER + StringConstants.FORWARD_SLASH +
                   V1Constants.TEMPLATE_ENTRIES_SEGMENT)
     @Produces( MediaType.APPLICATION_JSON )
     @ApiOperation(value = "Find the template entries of the named template",
@@ -3258,7 +3266,7 @@ public class KomodoMetadataService extends KomodoService {
             uow = createTransaction(principal, "getTemplateEntries", true); //$NON-NLS-1$
 
             Set<String> templateNames = getMetadataInstance().getDataSourceTemplateNames();
-            if (templateNames == null || templateNames.isEmpty())
+            if ((templateNames == null) || templateNames.isEmpty())
                 return commitNoTemplateFound(uow, mediaTypes, templateName);
 
             if (! templateNames.contains(templateName))
@@ -3298,7 +3306,7 @@ public class KomodoMetadataService extends KomodoService {
             return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.METADATA_SERVICE_GET_TEMPLATE_ENTRIES_ERROR);
         }
     }
-    
+
 	@GET
 	@Path(V1Constants.SERVICE_CATALOG_SOURCES)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -3319,7 +3327,7 @@ public class KomodoMetadataService extends KomodoService {
 			uow = createTransaction(principal, "availableSources", true); //$NON-NLS-1$
 
 			// Get OpenShift based available data services
-			Collection<ServiceCatalogDataSource> dataSources = getMetadataInstance().getServiceCatalogSources();
+			Collection<ServiceCatalogDataSource> dataSources = this.openshiftClient.getServiceCatalogSources();
 			LOGGER.info("serviceCatalogSources '{0}' DataSources", dataSources.size()); //$NON-NLS-1$
 
 			final List<RestServiceCatalogDataSource> entities = new ArrayList<>();
@@ -3345,10 +3353,10 @@ public class KomodoMetadataService extends KomodoService {
 					RelationalMessages.Error.METADATA_SERVICE_CATALOG_GET_DATA_SOURCES_ERROR);
 		}
 	}
-	
+
 	/**
 	 * Binds a Service Catalog Data Service
-	 * 
+	 *
 	 * @param headers
 	 *            the request headers (never <code>null</code>)
 	 * @param uriInfo
@@ -3401,7 +3409,7 @@ public class KomodoMetadataService extends KomodoService {
 
 		try {
 			uow = createTransaction(principal, "bindServiceCatalogService", false); //$NON-NLS-1$
-			getMetadataInstance().bindToServiceCatalogSource(attributes.getName());
+			this.openshiftClient.bindToServiceCatalogSource(attributes.getName());
 			String title = RelationalMessages.getString(
 					RelationalMessages.Info.METADATA_SERVICE_CATALOG_DATA_SERVIVE_BIND_TITLE, attributes.getName());
 			KomodoStatusObject status = new KomodoStatusObject(title);
@@ -3416,5 +3424,172 @@ public class KomodoMetadataService extends KomodoService {
 			return createErrorResponse(Status.FORBIDDEN, mediaTypes, e,
 					RelationalMessages.Error.METADATA_SERVICE_CATALOG_DATA_SERVIVE_BIND_ERROR, e, attributes.getName());
 		   }
-    }	
+    }
+
+    @GET
+    @Path(V1Constants.PUBLISH)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Gets the published services", response = RestBuildStatus[].class)
+    @ApiResponses(value = { @ApiResponse(code = 403, message = "An error has occurred.") })
+    public Response getAllPublishedVdbServices(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
+            @ApiParam(value = "true to include in progress services", required = true, defaultValue="true")
+            @QueryParam("includeInProgress") final boolean includeInProgressServices) throws KomodoRestException {
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        UnitOfWork uow = null;
+        try {
+            Repository repo = this.kengine.getDefaultRepository();
+            uow = createTransaction(principal, "publish", true); //$NON-NLS-1$
+            final List<RestBuildStatus> entityList = new ArrayList<>();
+            List<BuildStatus> list = this.openshiftClient.getPublishedVdbs(includeInProgressServices);
+            for (BuildStatus status : list) {
+                entityList.add(entityFactory.createBuildStatus(uow, repo, status, uriInfo.getBaseUri()));
+            }
+            return commit(uow, mediaTypes, entityList);
+        } catch (CallbackTimeoutException ex) {
+            return createTimeoutResponse(mediaTypes);
+        } catch (Throwable e) {
+            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+                uow.rollback();
+            }
+            if (e instanceof KomodoRestException) {
+                throw (KomodoRestException) e;
+            }
+            return createErrorResponseWithForbidden(mediaTypes, e,
+                    RelationalMessages.Error.PUBLISH_ERROR);
+        }
+    }
+
+    @GET
+    @Path(V1Constants.PUBLISH + StringConstants.FORWARD_SLASH + V1Constants.VDB_PLACEHOLDER)
+    @Produces( MediaType.APPLICATION_JSON )
+    @ApiOperation(value = "Find Build Status by VDB name", response = RestBuildStatus.class)
+    @ApiResponses(value = {
+        @ApiResponse(code = 404, message = "No VDB could be found with name"),
+        @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
+        @ApiResponse(code = 403, message = "An error has occurred.")
+    })
+    public Response getVDBService(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
+            @ApiParam(value = "Name of the VDB", required = true) final @PathParam("vdbName") String vdbName)
+            throws KomodoRestException {
+
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        UnitOfWork uow = null;
+        try {
+            Repository repo = this.kengine.getDefaultRepository();
+            uow = createTransaction(principal, "publish", true); //$NON-NLS-1$
+            BuildStatus status = this.openshiftClient.getPublishedVdbStatus(vdbName);
+            return commit(uow, mediaTypes, entityFactory.createBuildStatus(uow, repo, status, uriInfo.getBaseUri()));
+        } catch (CallbackTimeoutException ex) {
+            return createTimeoutResponse(mediaTypes);
+        } catch (Throwable e) {
+            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+                uow.rollback();
+            }
+            if (e instanceof KomodoRestException) {
+                throw (KomodoRestException) e;
+            }
+            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.PUBLISH_ERROR);
+        }
+    }
+
+    @DELETE
+    @Path(V1Constants.PUBLISH + StringConstants.FORWARD_SLASH + V1Constants.VDB_PLACEHOLDER)
+    @Produces( MediaType.APPLICATION_JSON )
+    @ApiOperation(value = "Delete VDB Service by VDB name",response = RestBuildStatus.class)
+    @ApiResponses(value = {
+        @ApiResponse(code = 404, message = "No VDB could be found with name"),
+        @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
+        @ApiResponse(code = 403, message = "An error has occurred.")
+    })
+    public Response deleteVDBService(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
+            @ApiParam(value = "Name of the VDB", required = true) final @PathParam("vdbName") String vdbName)
+            throws KomodoRestException {
+
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        UnitOfWork uow = null;
+        try {
+            Repository repo = this.kengine.getDefaultRepository();
+            uow = createTransaction(principal, "publish", true); //$NON-NLS-1$
+            BuildStatus status = this.openshiftClient.deletePublishedVdb(vdbName);
+            return commit(uow, mediaTypes, entityFactory.createBuildStatus(uow, repo, status, uriInfo.getBaseUri()));
+        } catch (CallbackTimeoutException ex) {
+            return createTimeoutResponse(mediaTypes);
+        } catch (Throwable e) {
+            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+                uow.rollback();
+            }
+            if (e instanceof KomodoRestException) {
+                throw (KomodoRestException) e;
+            }
+            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.PUBLISH_ERROR);
+        }
+    }
+
+    @POST
+    @Path(V1Constants.PUBLISH)
+    @Produces( MediaType.APPLICATION_JSON )
+    @ApiOperation(value = "Publish VDB Service",response = RestBuildStatus.class)
+    @ApiResponses(value = {
+        @ApiResponse(code = 404, message = "No VDB could be found with name"),
+        @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
+        @ApiResponse(code = 403, message = "An error has occurred.")
+    })
+    public Response publishVDBService(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
+            @ApiParam(value = "JSON of the properties of the VDB:<br>" + OPEN_PRE_TAG + OPEN_BRACE + BR + NBSP
+            + "name: \"Name of the VDB\"" + BR + CLOSE_BRACE
+            + CLOSE_PRE_TAG, required = true) final String payload)
+            throws KomodoRestException {
+
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse()) {
+            return principal.getErrorResponse();
+        }
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        if (!isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
+            return notAcceptableMediaTypesBuilder().build();
+        //
+        // Error if there is no name attribute defined
+        //
+        KomodoServiceCatalogDataSourceAttributes attributes;
+        try {
+            attributes = KomodoJsonMarshaller.unmarshall(payload, KomodoServiceCatalogDataSourceAttributes.class);
+            if (attributes.getName() == null) {
+                return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_NAME_NOT_PROVIDED);
+            }
+        } catch (Exception ex) {
+            return createErrorResponseWithForbidden(mediaTypes, ex, RelationalMessages.Error.VDB_NAME_NOT_PROVIDED);
+        }
+        UnitOfWork uow = null;
+        try {
+            Repository repo = this.kengine.getDefaultRepository();
+            uow = createTransaction(principal, "publish", true); //$NON-NLS-1$
+            Vdb vdb = findVdb(uow, attributes.getName());
+            if (vdb == null) {
+                return createErrorResponse(Status.NOT_FOUND, mediaTypes, RelationalMessages.Error.VDB_NOT_FOUND);
+            }
+            BuildStatus status = this.openshiftClient.publishVdb(uow, vdb);
+            return commit(uow, mediaTypes, entityFactory.createBuildStatus(uow, repo, status, uriInfo.getBaseUri()));
+        } catch (Throwable e) {
+            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+                uow.rollback();
+            }
+            if (e instanceof KomodoRestException) {
+                throw (KomodoRestException) e;
+            }
+            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.PUBLISH_ERROR);
+        }
+    }
 }

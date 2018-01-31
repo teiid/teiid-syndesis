@@ -24,10 +24,12 @@ package org.komodo.rest.relational;
 import static org.komodo.spi.constants.StringConstants.CLOSE_ANGLE_BRACKET;
 import static org.komodo.spi.constants.StringConstants.DOT;
 import static org.komodo.spi.constants.StringConstants.OPEN_ANGLE_BRACKET;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+
 import org.komodo.spi.repository.KomodoType;
 
 /**
@@ -36,17 +38,17 @@ import org.komodo.spi.repository.KomodoType;
 public final class RelationalMessages {
 
     public enum Info {
-        
+
         /**
          * A successfully deleted message.
          */
         DELETE_STATUS_MSG,
-        
+
         /**
          * The title of a delete status.
          */
         DELETE_STATUS_TITLE,
-        
+
         /**
          * Tag for VDB Active Status
          */
@@ -131,12 +133,12 @@ public final class RelationalMessages {
          * Driver successfully deployed
          */
         DRIVER_SUCCESSFULLY_UNDEPLOYED,
-        
+
         /**
          * An import export service import success message
          */
         IMPORT_EXPORT_SERVICE_IMPORT_SUCCESS_MESSAGE,
-        
+
         /**
          * VDB undeployment request sent but not yet undeployed
          */
@@ -156,7 +158,7 @@ public final class RelationalMessages {
          * Connection successfully deployed
          */
         CONNECTION_SUCCESSFULLY_UNDEPLOYED,
-        
+
         /**
          * Data service deployable status title
          */
@@ -226,7 +228,7 @@ public final class RelationalMessages {
          * Connection transfer to repo success
          */
         CONNECTION_TO_REPO_SUCCESS,
-        
+
         /**
          * Bind operation with Service Catalog Data Source
          */
@@ -272,7 +274,7 @@ public final class RelationalMessages {
          * An error indicating an error due to missing tablePath
          */
         DATASERVICE_SERVICE_GET_JOIN_MISSING_TABLEPATH,
-        
+
         /**
          * An error indicating an error occurred trying to obtain a dataservice's drivers
          */
@@ -292,7 +294,7 @@ public final class RelationalMessages {
          * An error indicating a request to delete a dataservice failed
          */
         DATASERVICE_SERVICE_DELETE_DATASERVICE_ERROR,
-        
+
         /**
          * An error indicating a request to update a dataservice failed
          */
@@ -302,22 +304,22 @@ public final class RelationalMessages {
          * An error indicating create attempt was missing a name
          */
         DATASERVICE_SERVICE_CREATE_MISSING_NAME,
- 
+
         /**
          * An error indicating clone attempt was missing a name
          */
         DATASERVICE_SERVICE_CLONE_MISSING_NAME,
- 
+
         /**
          * An error indicating clone attempt was missing a new service name
          */
         DATASERVICE_SERVICE_CLONE_MISSING_NEW_NAME,
- 
+
         /**
          * An error indicating the desired new clone name is same as dataservice being cloned
          */
         DATASERVICE_SERVICE_CLONE_SAME_NAME_ERROR,
-        
+
         /**
          * An error indicating an error occurred trying to find a service view info
          */
@@ -337,12 +339,12 @@ public final class RelationalMessages {
          * An error indicating update attempt was missing a name
          */
         DATASERVICE_SERVICE_UPDATE_MISSING_NAME,
-        
+
         /**
          * An error indicating update attempt was missing json arg
          */
         DATASERVICE_SERVICE_UPDATE_MISSING_JSON,
- 
+
         /**
          * An error indicating the Dataservice name is missing from the input JSON document.
          */
@@ -352,7 +354,7 @@ public final class RelationalMessages {
          * An error indicating that the service does not exist
          */
         DATASERVICE_SERVICE_SERVICE_DNE,
-        
+
         /**
          * An error indicating the parameter and JSON dataservice name does not match for a dataservice being created.
          */
@@ -362,22 +364,22 @@ public final class RelationalMessages {
          * An error indicating create attempt failed because same name already exists
          */
         DATASERVICE_SERVICE_CREATE_ALREADY_EXISTS,
-        
+
         /**
          * An error indicating clone attempt failed because same name already exists
          */
         DATASERVICE_SERVICE_CLONE_ALREADY_EXISTS,
-        
+
         /**
          * An error indicating that a table does not exist
          */
         DATASERVICE_SERVICE_SOURCE_TABLE_DNE,
-        
+
         /**
          * An error indicating that a model source does not exist
          */
         DATASERVICE_SERVICE_MODEL_SOURCE_DNE,
-        
+
         /**
          * The dataservice service lacks at least one parameter
          */
@@ -387,37 +389,37 @@ public final class RelationalMessages {
          * An error indicating set attempt failed because the dataservice name was missing
          */
         DATASERVICE_SERVICE_SET_SERVICE_MISSING_NAME,
-        
+
         /**
          * An error indicating set attempt failed because the tablePath was missing
          */
         DATASERVICE_SERVICE_SET_SERVICE_MISSING_TABLEPATH,
-        
+
         /**
          * An error indicating set attempt failed because the modelSource path was missing
          */
         DATASERVICE_SERVICE_SET_SERVICE_MISSING_MODELSOURCE_PATH,
-        
+
         /**
          * An error indicating set attempt failed because the Join type was missing
          */
         DATASERVICE_SERVICE_SET_SERVICE_MISSING_JOIN_TYPE,
-        
+
         /**
          * An error indicating set attempt failed because the Join criteria lh column was missing
          */
         DATASERVICE_SERVICE_SET_SERVICE_MISSING_JOIN_LH_COLUMN,
-        
+
         /**
          * An error indicating set attempt failed because the Join criteria rh column was missing
          */
         DATASERVICE_SERVICE_SET_SERVICE_MISSING_JOIN_RH_COLUMN,
-        
+
         /**
          * An error indicating set attempt failed because the expected view ddl was missing
          */
         DATASERVICE_SERVICE_SET_SERVICE_MISSING_VIEWDDL,
-        
+
         /**
          * An error indicating set attempt failed
          */
@@ -457,7 +459,7 @@ public final class RelationalMessages {
          * An error indicating a request to delete a connection failed
          */
         CONNECTION_SERVICE_DELETE_CONNECTION_ERROR,
-        
+
         /**
          * An error indicating a request to update a connection failed
          */
@@ -467,37 +469,37 @@ public final class RelationalMessages {
          * An error indicating create attempt was missing a name
          */
         CONNECTION_SERVICE_CREATE_MISSING_NAME,
- 
+
         /**
          * An error indicating clone attempt was missing a name
          */
         CONNECTION_SERVICE_CLONE_MISSING_NAME,
- 
+
         /**
          * An error indicating clone attempt was missing a new connection name
          */
         CONNECTION_SERVICE_CLONE_MISSING_NEW_NAME,
- 
+
         /**
          * An error indicating the desired new clone name is same as connection being cloned
          */
         CONNECTION_SERVICE_CLONE_SAME_NAME_ERROR,
-        
+
         /**
          * An error indicating update attempt was missing a name
          */
         CONNECTION_SERVICE_UPDATE_MISSING_NAME,
-        
+
         /**
          * An error indicating that the connection does not exist
          */
         CONNECTION_SERVICE_UPDATE_CONNECTION_DNE,
-        
+
         /**
          * An error indicating update attempt was missing json arg
          */
         CONNECTION_SERVICE_UPDATE_MISSING_JSON,
- 
+
         /**
          * An error indicating the connection name is missing from the input JSON document.
          */
@@ -512,7 +514,7 @@ public final class RelationalMessages {
          * An error indicating create attempt failed because same name already exists
          */
         CONNECTION_SERVICE_CREATE_ALREADY_EXISTS,
-        
+
         /**
          * An error indicating clone attempt failed because same name already exists
          */
@@ -532,7 +534,7 @@ public final class RelationalMessages {
          * An error indicating at least one parameter is lacking
          */
         CONNECTION_SERVICE_MISSING_PARAMETER_ERROR,
-        
+
         /**
          * The Connection service cannot parse the request body
          */
@@ -542,7 +544,7 @@ public final class RelationalMessages {
          * An error indicating create attempt failed because the specified Openshift ServiceCatalog source was not found
          */
         CONNECTION_SERVICE_CATALOG_SOURCE_DNE_ERROR,
-        
+
         /**
          * Error transferring connections from server to repo
          */
@@ -577,7 +579,7 @@ public final class RelationalMessages {
          * An error indicating a VDB data role could not be created.
          */
         VDB_SERVICE_CREATE_DATA_ROLE_ERROR,
-        
+
         /**
          * An error indicating create attempt was missing a VDB data role name.
          */
@@ -587,17 +589,17 @@ public final class RelationalMessages {
          * An error indicating create attempt was missing a VDB name
          */
         VDB_SERVICE_CREATE_MISSING_VDB_NAME,
- 
+
         /**
          * An error indicating create attempt was missing a Model name
          */
         VDB_SERVICE_CREATE_MISSING_MODEL_NAME,
- 
+
         /**
          * An error indicating create attempt was missing a ModelSource name
          */
         VDB_SERVICE_CREATE_MISSING_MODEL_SOURCE_NAME,
- 
+
         /**
          * An error indicating a VDB could not be created.
          */
@@ -617,37 +619,37 @@ public final class RelationalMessages {
          * An error indicating a request to clone a VDB failed
          */
         VDB_SERVICE_CLONE_VDB_ERROR,
-        
+
         /**
          * An error indicating clone attempt failed because same name already exists
          */
         VDB_SERVICE_CLONE_ALREADY_EXISTS,
-        
+
         /**
          * An error indicating clone attempt was missing a name
          */
         VDB_SERVICE_CLONE_MISSING_NAME,
- 
+
         /**
          * An error indicating clone attempt was missing a new VDB name
          */
         VDB_SERVICE_CLONE_MISSING_NEW_NAME,
- 
+
         /**
          * An error indicating the desired new clone name is same as VDB being cloned
          */
         VDB_SERVICE_CLONE_SAME_NAME_ERROR,
-        
+
         /**
          * An error indicating a data role with the specified name already exists.
          */
         VDB_SERVICE_DATA_ROLE_ALREADY_EXISTS,
-        
+
         /**
          * An error indicating the specified VDB data role could not be deleted.
          */
         VDB_SERVICE_DELETE_DATA_ROLE_ERROR,
-        
+
         /**
          * An error indicating a VDB could not be deleted.
          */
@@ -782,7 +784,7 @@ public final class RelationalMessages {
          * An error indicating the VDB data role name is missing from the input JSON document.
          */
         VDB_SERVICE_MISSING_JSON_DATA_ROLE_NAME,
-        
+
         /**
          * An error indicating the parameter and JSON VDB data role name does not match.
          */
@@ -812,27 +814,27 @@ public final class RelationalMessages {
          * An error indicating update attempt was missing a VDB name
          */
         VDB_SERVICE_UPDATE_MISSING_VDB_NAME,
-        
+
         /**
          * An error indicating update attempt was missing a Model name
          */
         VDB_SERVICE_UPDATE_MISSING_MODEL_NAME,
-        
+
         /**
          * An error indicating update attempt was missing a ModelSource name
          */
         VDB_SERVICE_UPDATE_MISSING_MODEL_SOURCE_NAME,
-        
+
         /**
          * An error indicating that the vdb does not exist
          */
         VDB_SERVICE_UPDATE_VDB_DNE,
-        
+
         /**
          * An error indicating that the Vdb model does not exist
          */
         VDB_SERVICE_UPDATE_VDB_MODEL_DNE,
-        
+
         /**
          * An error indicating a VDB with the specified name already exists and therefore cannot be created.
          */
@@ -862,7 +864,7 @@ public final class RelationalMessages {
          * An error indicating the parameter and JSON ModelSource name does not match.
          */
         VDB_SERVICE_MODEL_SOURCE_NAME_DONT_MATCH_ERROR,
-        
+
         /**
          * An error indicating delete attempt was missing a VDB data role name.
          */
@@ -872,17 +874,17 @@ public final class RelationalMessages {
          * An error indicating delete attempt was missing a VDB name
          */
         VDB_SERVICE_DELETE_MISSING_VDB_NAME,
-        
+
         /**
          * An error indicating delete attempt was missing a Model name
          */
         VDB_SERVICE_DELETE_MISSING_MODEL_NAME,
-        
+
         /**
          * An error indicating delete attempt was missing a ModelSource name
          */
         VDB_SERVICE_DELETE_MISSING_MODEL_SOURCE_NAME,
-        
+
         /**
          * An error indicating an exception occurred while importing a sample vdb
          */
@@ -922,7 +924,7 @@ public final class RelationalMessages {
          * Error transferring vdb from server to repo
          */
         VDB_TO_REPO_IMPORT_ERROR,
-        
+
         /**
          * An error occurred while trying to obtain the teiid schema
          */
@@ -1093,7 +1095,7 @@ public final class RelationalMessages {
          * An error indicating a teiid Vdb undeploy failure
          */
         METADATA_SERVICE_UNDEPLOY_VDB_ERROR,
-        
+
         /**
          * An error indicating a teiid driver deployment failure
          */
@@ -1193,12 +1195,12 @@ public final class RelationalMessages {
          * An error indicating update attempt failed because retrieval of the teiid DDL failed.
          */
         METADATA_SERVICE_UPDATE_DDL_FETCH_ERROR,
-        
+
         /**
          * An error indicating update attempt failed because the Teiid Model DDL was empty
          */
         METADATA_SERVICE_UPDATE_DDL_DNE,
-        
+
         /**
          * An error indicating data source isn not a JDBC source.
          */
@@ -1208,17 +1210,17 @@ public final class RelationalMessages {
          * An error indicating data source cannot be instantiated from available data sources
          */
         METADATA_SERVICE_GET_DATA_SOURCE_INSTANTIATION_FAILURE,
-        
+
         /**
          * An error indicating attempt to get source JDBC connection failed.
          */
         METADATA_SERVICE_GET_DATA_SOURCE_CONNECTION_ERROR,
-        
+
         /**
          * An error indicating attempt to fetch source JDBC tables failed.
          */
         METADATA_SERVICE_GET_DATA_SOURCE_TABLE_FETCH_ERROR,
-        
+
         /**
          * An error indicating attempt to get source tables failed.
          */
@@ -1308,7 +1310,7 @@ public final class RelationalMessages {
          * An import export service import artifact error
          */
         IMPORT_EXPORT_SERVICE_IMPORT_ARTIFACT_ERROR,
-        
+
         /**
          * An import export service storage types retrieval error
          */
@@ -1328,17 +1330,17 @@ public final class RelationalMessages {
          * An error indicating the failed status of to get a data services from service catalog
          */
         METADATA_SERVICE_CATALOG_GET_DATA_SOURCES_ERROR,
-        
+
         /**
-         * An error indicating a name of data service missing from bind operation on service catalog service 
+         * An error indicating a name of data service missing from bind operation on service catalog service
          */
         METADATA_SERVICE_CATALOG_DATA_SERVICE_BIND_MISSING_NAME,
-        
+
         /**
-         * An error indicating payload parse error from bind operation on service catalog service 
+         * An error indicating payload parse error from bind operation on service catalog service
          */
         METADATA_SERVICE_CATALOG_DATA_SERVICE_BIND_PARSE_ERROR,
-        
+
         /**
          * An error indicating from bind operation on service catalog service
          */
@@ -1378,7 +1380,7 @@ public final class RelationalMessages {
          * An error indicating a missing git repository password
          */
         PROFILE_GIT_REPO_CREATE_MISSING_REPO_PASSWORD,
-        
+
         /**
          * An error indicating a malformed git repository url
          */
@@ -1402,7 +1404,23 @@ public final class RelationalMessages {
         /**
          * A failure to decrypt sensitive data
          */
-        DECRYPT_FAILURE;
+        DECRYPT_FAILURE,
+
+        /**
+         * An error indicating from publish operation on service catalog service
+         */
+        PUBLISH_ERROR,
+
+        /**
+         * VDB Not found
+         */
+        VDB_NOT_FOUND,
+
+        /**
+         * VDB name not provided
+         */
+        VDB_NAME_NOT_PROVIDED;
+
 
         /**
          * {@inheritDoc}

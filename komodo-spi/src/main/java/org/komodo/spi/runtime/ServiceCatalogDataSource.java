@@ -43,4 +43,10 @@ public interface ServiceCatalogDataSource {
      * @return
      */
     boolean isBound();
+    
+    /**
+     * Returns the matching translator type
+     * @return translator name
+     */
+    String getTranslatorName();
 }

@@ -3,17 +3,17 @@
  * See the COPYRIGHT.txt file distributed with this work for information
  * regarding copyright ownership.  Some portions may be licensed
  * to Red Hat, Inc. under one or more contributor license agreements.
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
@@ -27,12 +27,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.outcome.Outcome;
 import org.komodo.spi.query.QSResult;
 import org.komodo.spi.runtime.ConnectionDriver;
-import org.komodo.spi.runtime.ServiceCatalogDataSource;
 import org.komodo.spi.runtime.TeiidDataSource;
 import org.komodo.spi.runtime.TeiidPropertyDefinition;
 import org.komodo.spi.runtime.TeiidTranslator;
@@ -60,7 +60,7 @@ public interface MetadataInstance extends StringConstants {
     /**
      * The default admin port for the metadata instance
      */
-    int DEFAULT_ADMIN_PORT = 9990; //$NON-NLS-1$
+    int DEFAULT_ADMIN_PORT = 9990;
 
     /**
      * The default jdbc user for the metadata instance
@@ -75,7 +75,7 @@ public interface MetadataInstance extends StringConstants {
     /**
      * The default jdbc port for the metadata instance
      */
-    int DEFAULT_JDBC_PORT = 31000; //$NON-NLS-1$
+    int DEFAULT_JDBC_PORT = 31000;
 
     /**
      * The default protocol for the metadata instance
@@ -99,8 +99,8 @@ public interface MetadataInstance extends StringConstants {
         /**
          * Admin connection of the metadata instance
          */
-        ADMIN, 
-        
+        ADMIN,
+
         /**
          * JDBC connection of the metadata instance
          */
@@ -194,8 +194,8 @@ public interface MetadataInstance extends StringConstants {
      * @param connectivityType
      *
      * @return {@link Outcome} describing state of ping
-     * 
-     * @throws KException 
+     *
+     * @throws KException
      */
     Outcome ping(ConnectivityType connectivityType);
 
@@ -213,65 +213,65 @@ public interface MetadataInstance extends StringConstants {
 
     /**
      * @return the collection of deployed vdbs
-     * @throws KException 
+     * @throws KException
      */
     Collection<TeiidVdb> getVdbs() throws KException;
 
     /**
      * @return the names of all the deployed vdbs
-     * @throws KException 
+     * @throws KException
      */
     Collection<String> getVdbNames() throws KException;
 
     /**
      * @param vdbDeploymentName
      * @return the deployed vdb
-     * @throws KException 
+     * @throws KException
      */
     TeiidVdb getVdb(String vdbDeploymentName) throws KException;
 
     /**
-     * @param name 
+     * @param name
      * @return whether metadata instance contains a vdb with the given name
-     * @throws KException 
+     * @throws KException
      */
     boolean hasVdb( String name ) throws KException;
-    
+
     /**
      * @param vdbName
-     *  
+     *
      * @return <code>true</code> if the vdb is active
-     * @throws KException 
+     * @throws KException
      */
     boolean isVdbActive(String vdbName) throws KException;
-    
+
     /**
      * @param vdbName
-     *  
+     *
      * @return <code>true</code> if the vdb is loading
      * @throws KException
      */
     boolean isVdbLoading(String vdbName) throws KException;
-    
+
     /**
      * @param vdbName
-     *  
+     *
      * @return <code>true</code> if the vdb failed
      * @throws KException
      */
     boolean hasVdbFailed(String vdbName) throws KException;
-    
+
     /**
-     * @param vdbName 
-     * 
+     * @param vdbName
+     *
      * @return <code>true</code> if the vdb was removed
      * @throws KException
      */
     boolean wasVdbRemoved(String vdbName) throws KException;
-    
+
     /**
      * @param vdbName
-     * 
+     *
      * @return any validity errors from the vdb when it was deployed
      * @throws KException
      */
@@ -282,7 +282,7 @@ public interface MetadataInstance extends StringConstants {
      * @param version
      * @param modelName
      * @return the schema from the given model in the vdb with the given name
-     * @throws KException 
+     * @throws KException
      */
     String getSchema(String vdbName, String version, String modelName) throws KException;
 
@@ -291,27 +291,27 @@ public interface MetadataInstance extends StringConstants {
      *
      * @param vdbDeploymentName
      * @param stream
-     * @throws KException 
+     * @throws KException
      */
     void deployDynamicVdb(String vdbDeploymentName, InputStream stream) throws KException;
 
     /**
      * Undeploy the dynamic vdb with the given name
      * @param name
-     * @throws KException 
+     * @throws KException
      */
     void undeployDynamicVdb(String name) throws KException;
 
     /**
      * @return the collection of translators
-     * @throws KException 
+     * @throws KException
      */
     Collection<TeiidTranslator> getTranslators() throws KException;
 
     /**
      * @param translatorName
      * @return the translator with the given name
-     * @throws KException 
+     * @throws KException
      */
     TeiidTranslator getTranslator(String translatorName) throws KException;
 
@@ -323,10 +323,10 @@ public interface MetadataInstance extends StringConstants {
 
     /**
      * Deploys a driver (jar or rar) to the related metadata instance
-     * 
+     *
      * @param driverName the deployment name to use for the driver
      * @param driverFile the file to deploy
-     * 
+     *
      * @throws KException if deployment fails
      */
     void deployDataSourceDriver(String driverName, File driverFile) throws KException;
@@ -342,14 +342,14 @@ public interface MetadataInstance extends StringConstants {
 
     /**
      * @return the collection of data sources
-     * @throws KException 
+     * @throws KException
      */
     Collection<TeiidDataSource> getDataSources() throws KException;
 
     /**
      * Get the specified DataSource, or create one if it does not exist.  When the datasource is create thru the admin API,
-     * it is given a JNDI name which is the same as the sourceName.  For example if dsName 'mySource' is supplied, then the 
-     * JNDI name is set as 'java:/mySource' (java context is added).  When the sources created by any other user are retrieved 
+     * it is given a JNDI name which is the same as the sourceName.  For example if dsName 'mySource' is supplied, then the
+     * JNDI name is set as 'java:/mySource' (java context is added).  When the sources created by any other user are retrieved
      * from the metadata instance, however, it is not guaranteed that the dsName and jndi name will match.
      * @param displayName the data source display name
      * @param dsName the data source name
@@ -366,20 +366,20 @@ public interface MetadataInstance extends StringConstants {
     /**
      * @param sourceName
      * @return the data source with the given name
-     * @throws KException 
+     * @throws KException
      */
     TeiidDataSource getDataSource(String sourceName) throws KException;
 
     /**
      * @param name the name of the data source
      * @return true if data source exists with the provided name. else false.
-     * @throws KException 
+     * @throws KException
      */
      boolean dataSourceExists(String name) throws KException;
 
      /**
       * Removes the data source from the metadata instance (if exists)
-      * 
+      *
       * @param dsName the data source name
       * @throws KException if failure in deleting data source on metadata instance
       */
@@ -388,7 +388,7 @@ public interface MetadataInstance extends StringConstants {
     /**
      * @param driverName
      * @return the template property definitions for the given driver
-     * @throws KException 
+     * @throws KException
      */
     Collection<TeiidPropertyDefinition> getTemplatePropertyDefns(String driverName) throws KException;
 
@@ -401,23 +401,7 @@ public interface MetadataInstance extends StringConstants {
 
     /**
      * Refresh this instance to clear any cached and get the latest metadata.
-     * @throws KException 
+     * @throws KException
      */
     void refresh() throws KException;
-    
-    
-    /**
-     * Gets available data service instances in the OpenShift's Service Catalog
-     * @return
-     * @throws KException
-     */
-    Set<ServiceCatalogDataSource> getServiceCatalogSources() throws KException;
-    
-    /**
-     * Binds the to the service catalog based source if needed and then creates the connection
-     * in the Teiid.
-     * @param dsName - Name of the Service Catalog data service
-     * @throws KException
-     */
-    void bindToServiceCatalogSource(String dsName) throws KException;
 }
