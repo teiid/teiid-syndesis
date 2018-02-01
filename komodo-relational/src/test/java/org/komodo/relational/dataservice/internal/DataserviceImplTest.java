@@ -580,8 +580,13 @@ public final class DataserviceImplTest extends RelationalModelTest {
         virtualModel.setModelType( getTransaction(), Model.Type.VIRTUAL );
 
         // Add a view to the virtual model
-        final String serviceView = "serviceView";
-        virtualModel.addView( getTransaction(), serviceView );
+        final String serviceView1 = "serviceView1";
+        final String serviceView2 = "serviceView2";
+        virtualModel.addView( getTransaction(), serviceView1 );
+        virtualModel.addView( getTransaction(), serviceView2 );
+        final String[] serviceViews = new String[2];
+        serviceViews[0] = serviceView1;
+        serviceViews[1] = serviceView2;
 
         commit(); // need this so that VDB will be found by query that sets reference
 
@@ -592,7 +597,7 @@ public final class DataserviceImplTest extends RelationalModelTest {
         assertThat( this.dataservice.getServiceVdbEntry( getTransaction() ).getName( getTransaction() ), is( name ) );
         assertThat( this.dataservice.getServiceVdb( getTransaction() ), is( notNullValue() ) );
         assertThat( this.dataservice.getServiceViewModelName( getTransaction() ), is( serviceViewModel ) );
-        assertThat( this.dataservice.getServiceViewName( getTransaction() ), is( serviceView ) );
+        assertThat( this.dataservice.getServiceViewNames( getTransaction() ), is( serviceViews ) );
     }
 
     @Test

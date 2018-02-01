@@ -2467,7 +2467,15 @@ public class KomodoMetadataService extends KomodoService {
     }
     
     private boolean isJdbc(TeiidDataSource dataSource) {
-        return dataSource.getPropertyValue("bob") != null;
+    	// TODO: re-evaluate for better approach.  (We will probably not need this method after schema retrieval changes)
+    	String dsDriverName = dataSource.getPropertyValue(TeiidDataSource.DATASOURCE_DRIVERNAME);
+        
+        if (dsDriverName == null || dsDriverName.equals("cassandra") || dsDriverName.equals("file") || dsDriverName.equals("google")
+                            || dsDriverName.equals("ldap") || dsDriverName.equals("mongodb") || dsDriverName.equals("salesforce")
+                            || dsDriverName.equals("salesforce-34") || dsDriverName.equals("solr") || dsDriverName.equals("webservice")) {
+          return false;
+        }
+        return true;
     }
 
     /**

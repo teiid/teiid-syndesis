@@ -54,7 +54,8 @@ public final class RestDataserviceTest {
     private static final String SERVICE_VDB_NAME = "serviceVdbName";
     private static final String SERVICE_VDB_VERSION = "1";
     private static final String SERVICE_VIEW_MODEL = "serviceViewModel";
-    private static final String SERVICE_VIEW = "serviceView";
+    private static final String SERVICE_VIEW1 = "serviceView1";
+    private static final String SERVICE_VIEW2 = "serviceView2";
     private static final String SERVICE_VIEW_SRCTABLE1 = "sourceTable1";
     private static final String SERVICE_VIEW_SRCTABLE2 = "sourceTable2";
 
@@ -74,7 +75,7 @@ public final class RestDataserviceTest {
         copy.setServiceVdbName(this.dataservice.getServiceVdbName());
         copy.setServiceVdbVersion(this.dataservice.getServiceVdbVersion());
         copy.setServiceViewModel(this.dataservice.getServiceViewModel());
-        copy.setServiceViewName(this.dataservice.getServiceViewName());
+        copy.setServiceViewNames(this.dataservice.getServiceViewNames());
         copy.setServiceViewTables(this.dataservice.getServiceViewTables());
         copy.setDriverTotal(this.dataservice.getDriverTotal());
         copy.setConnectionTotal(this.dataservice.getConnectionTotal());
@@ -115,7 +116,10 @@ public final class RestDataserviceTest {
         this.dataservice.setServiceVdbName(SERVICE_VDB_NAME);
         this.dataservice.setServiceVdbVersion(SERVICE_VDB_VERSION);
         this.dataservice.setServiceViewModel(SERVICE_VIEW_MODEL);
-        this.dataservice.setServiceViewName(SERVICE_VIEW);
+        String[] viewNames = new String[2];
+        viewNames[0] = SERVICE_VIEW1;
+        viewNames[1] = SERVICE_VIEW2;
+        this.dataservice.setServiceViewNames(viewNames);
         String[] viewTables = new String[2];
         viewTables[0] = SERVICE_VIEW_SRCTABLE1;
         viewTables[1] = SERVICE_VIEW_SRCTABLE2;
@@ -200,9 +204,11 @@ public final class RestDataserviceTest {
 
     @Test
     public void shouldSetServiceView() {
-        final String newServiceView = "blah";
-        this.dataservice.setServiceViewName(newServiceView);
-        assertEquals(this.dataservice.getServiceViewName(), newServiceView);
+    	final String[] views = new String[2];
+    	views[0] = "blah1";
+    	views[1] = "blah2";
+        this.dataservice.setServiceViewNames(views);
+        assertEquals(this.dataservice.getServiceViewNames(), views);
     }
 
 
