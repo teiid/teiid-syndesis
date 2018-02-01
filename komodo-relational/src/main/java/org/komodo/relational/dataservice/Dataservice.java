@@ -181,11 +181,11 @@ public interface Dataservice extends Exportable, RelationalObject, VdbEntryConta
      * @param uow
      *        the transaction (cannot be <code>null</code> or have a state that is not
      *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @return the name of the dataservice view (may be <code>null</code> if not found)
+     * @return the names of the dataservice views (may be empty if not found)
      * @throws KException
      *         if an error occurs
      */
-    String getServiceViewName( UnitOfWork uow ) throws KException;
+    String[] getServiceViewNames( UnitOfWork uow ) throws KException;
 
     /**
      * @param uow

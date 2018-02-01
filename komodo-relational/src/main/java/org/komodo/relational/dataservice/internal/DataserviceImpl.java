@@ -488,8 +488,8 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
      * @see org.komodo.relational.dataservice.Dataservice#getDataserviceView(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public String getServiceViewName(UnitOfWork uow) throws KException {
-        String viewName = null;
+    public String[] getServiceViewNames(UnitOfWork uow) throws KException {
+        List<String> viewNames = new ArrayList<String>();
         // Only ONE virtual model should exist in the dataservice vdb.
         // The returned view name is the first view in the first virtual model found - or null if none found.
         Vdb serviceVdb = getServiceVdb(uow);
@@ -500,13 +500,12 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
                 if(modelType == Type.VIRTUAL) {
                     View[] views = model.getViews(uow);
                     for(View view : views) {
-                        viewName = view.getName(uow);
-                        break;
+                        viewNames.add(view.getName(uow));
                     }
                 }
             }
         }
-        return viewName;
+        return viewNames.toArray(new String[0]);
     }
 
     /* (non-Javadoc)

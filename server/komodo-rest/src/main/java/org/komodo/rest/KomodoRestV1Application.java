@@ -303,9 +303,9 @@ public class KomodoRestV1Application extends Application implements SystemConsta
         String TEMPLATE_ENTRY_PLACEHOLDER = "{templateEntryName}"; //$NON-NLS-1$
 
         /**
-         * The name of the URI path segment for a setting a dataservice's service vdb for single table view
+         * The name of the URI path segment for a setting a dataservice's service vdb for single source table views
          */
-        String SERVICE_VDB_FOR_SINGLE_TABLE = "ServiceVdbForSingleTable"; //$NON-NLS-1$
+        String SERVICE_VDB_FOR_SINGLE_SOURCE_TABLES = "ServiceVdbForSingleSourceTables"; //$NON-NLS-1$
 
         /**
          * The name of the URI path segment for a setting a dataservice's service vdb for join view
