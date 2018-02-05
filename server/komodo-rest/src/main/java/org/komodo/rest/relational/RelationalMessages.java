@@ -1342,8 +1342,42 @@ public final class RelationalMessages {
         /**
          * An error indicating no user profile can be found
          */
-        NO_USER_PROFILE;
+        NO_USER_PROFILE,
+
+        /**
+         * An error indicating a missing git repository name
+         */
+        PROFILE_GIT_REPO_MISSING_REPO_NAME,
+
+        /**
+         * An error indicating a missing git repository url
+         */
+        PROFILE_GIT_REPO_CREATE_MISSING_REPO_URL,
+
+        /**
+         * An error indicating a missing git repository user
+         */
+        PROFILE_GIT_REPO_CREATE_MISSING_REPO_USER,
+
+        /**
+         * An error indicating a missing git repository password
+         */
+        PROFILE_GIT_REPO_CREATE_MISSING_REPO_PASSWORD,
         
+        /**
+         * An error indicating a malformed git repository url
+         */
+        PROFILE_GIT_REPO_CREATE_MALFORMED_URL,
+
+        /**
+         * An error indicating a problem with creating a git repository configuration
+         */
+        PROFILE_GIT_REPO_CREATE_ERROR,
+
+        /**
+         * An error indicating a problem with removing a git repository configuration
+         */
+        PROFILE_GIT_REPO_REMOVE_ERROR;
 
         /**
          * {@inheritDoc}

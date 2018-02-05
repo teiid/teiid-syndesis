@@ -25,21 +25,32 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.komodo.spi.storage.git.GitStorageConnectorConstants.AUTHOR_EMAIL_PROPERTY;
+import static org.komodo.spi.storage.git.GitStorageConnectorConstants.AUTHOR_NAME_PROPERTY;
+import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_PASSWORD;
+import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_PATH_PROPERTY;
+import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_USERNAME;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URL;
 import java.util.Map;
 import javax.ws.rs.core.UriBuilder;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.junit.Test;
 import org.komodo.importer.ImportMessages;
+import org.komodo.relational.profile.GitRepository;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
 import org.komodo.rest.cors.CorsHeaders;
 import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.response.KomodoStatusObject;
+import org.komodo.rest.relational.response.KomodoStorageAttributes;
+import org.komodo.rest.relational.response.RestGitRepository;
 import org.komodo.rest.service.KomodoUtilService;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.test.utils.TestUtilities;
@@ -112,9 +123,8 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
         HttpResponse response = executeOk(request);
 
         String entity = extractResponse(response);
-        System.out.println("Response from uri " + uri + ":\n" + entity);
+//        System.out.println("Response from uri " + uri + ":\n" + entity);
         for (String expected : EXPECTED) {
-            System.out.println("Expected " + expected);
             assertTrue(entity.contains(expected));
         }
 
@@ -327,5 +337,103 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
         assertFalse(entity.contains("\"keng__id\" : \"condition\""));
         assertFalse(entity.contains("\"keng__id\" : \"mask\""));
         assertFalse(entity.contains("\"keng__id\" : \"entry\""));
+    }
+
+    @Test
+    public void shouldAddUserProfileGitRepository() throws Exception {
+        String gitName = "myGitRepo";
+        String gitUrl = "https://github.com/teiid/mygit";
+        String gitBranch = "testWork1";
+        String gitUser = "user";
+        String gitPassword = "user";
+        String gitCommitAuthor = "User";
+        String gitCommitEmail = "user@user.com";
+
+        String[] EXPECTED = {
+            OPEN_BRACE + NEW_LINE,
+            "\"name\": " + SPEECH_MARK + gitName + SPEECH_MARK + COMMA + NEW_LINE,
+            "\"url\": " + SPEECH_MARK + gitUrl + SPEECH_MARK + COMMA + NEW_LINE,
+            "\"branch\": " + SPEECH_MARK + gitBranch + SPEECH_MARK + COMMA + NEW_LINE,
+            "\"user\": " + SPEECH_MARK + gitUser + SPEECH_MARK + COMMA + NEW_LINE,
+            "\"password\": " + SPEECH_MARK + gitPassword + SPEECH_MARK + COMMA + NEW_LINE,
+            "\"commitAuthor\": " + SPEECH_MARK + gitCommitAuthor + SPEECH_MARK + COMMA + NEW_LINE,
+            "\"commitEmail\": " + SPEECH_MARK + gitCommitEmail + SPEECH_MARK,
+            CLOSE_BRACE};
+
+        // put
+        URI uri = UriBuilder.fromUri(uriBuilder().baseUri())
+                                                    .path(V1Constants.SERVICE_SEGMENT)
+                                                    .path(V1Constants.USER_PROFILE)
+                                                    .path(V1Constants.GIT_REPOSITORY).build();
+
+        RestGitRepository gitRepository = new RestGitRepository();
+        gitRepository.setName(gitName);
+        gitRepository.setUrl(new URL(gitUrl));
+        gitRepository.setBranch(gitBranch);
+        gitRepository.setUser(gitUser);
+        gitRepository.setPassword(gitPassword);
+        gitRepository.setCommitAuthor(gitCommitAuthor);
+        gitRepository.setCommitEmail(gitCommitEmail);
+
+        HttpPut request = jsonRequest(uri, RequestType.PUT);
+        addHeader(request, CorsHeaders.ORIGIN, "http://localhost:2772");
+        addBody(request, gitRepository);
+        HttpResponse response = executeOk(request);
+
+        String entity = extractResponse(response);
+//        System.out.println("Response from uri " + uri + ":\n" + entity);
+        for (String expected : EXPECTED) {
+            assertTrue(entity.contains(expected));
+        }
+    }
+
+    @Test
+    public void shouldRemoveUserProfileGitRepository() throws Exception {
+        String gitName = "myGitRepo";
+        String gitUrl = "https://github.com/teiid/mygit";
+        String gitUser = "user";
+        String gitPassword = "user";
+        String gitCommitAuthor = "User";
+        String gitCommitEmail = "user@user.com";
+
+        //
+        // Populate the user profile ready for the test
+        //
+        KomodoStorageAttributes storageAttr = new KomodoStorageAttributes();
+        storageAttr.setParameter(REPO_PATH_PROPERTY, gitUrl);
+        storageAttr.setParameter(REPO_USERNAME, gitUser);
+        storageAttr.setParameter(REPO_PASSWORD, gitPassword);
+        storageAttr.setParameter(AUTHOR_NAME_PROPERTY, gitCommitAuthor);
+        storageAttr.setParameter(AUTHOR_EMAIL_PROPERTY, gitCommitEmail);
+        GitRepository config = serviceTestUtilities.addGitRepositoryConfig(USER_NAME, gitName, storageAttr);
+        assertNotNull(config);
+
+        // delete
+        URI uri = UriBuilder.fromUri(uriBuilder().baseUri())
+                                                    .path(V1Constants.SERVICE_SEGMENT)
+                                                    .path(V1Constants.USER_PROFILE)
+                                                    .path(V1Constants.GIT_REPOSITORY)
+                                                    .path(gitName)
+                                                    .build();
+
+        HttpDelete request = jsonRequest(uri, RequestType.DELETE);
+        addHeader(request, CorsHeaders.ORIGIN, "http://localhost:2772");
+        HttpResponse response = executeOk(request);
+
+        String entity = extractResponse(response);
+//        System.out.println("Response from uri " + uri + ":\n" + entity);
+
+        KomodoStatusObject status = KomodoJsonMarshaller.unmarshall(entity, KomodoStatusObject.class);
+        assertNotNull(status);
+
+        assertEquals("Delete Status", status.getTitle());
+        Map<String, String> attributes = status.getAttributes();
+
+        for (Map.Entry<String, String> entry : attributes.entrySet()) {
+            String message = entry.getValue();
+            assertNotNull(message);
+
+            assertEquals("Successfully deleted", message);
+        }
     }
 }
