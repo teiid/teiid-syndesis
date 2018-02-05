@@ -33,37 +33,37 @@ public class RestGitRepository extends AbstractKEntity {
     /**
      * Label used to repository name
      */
-    public static final String NAME_LABEL = "Name";
+    public static final String NAME_LABEL = "name";
 
     /**
      * Label used to repository url
      */
-    public static final String URL_LABEL = "URL";
+    public static final String URL_LABEL = "url";
 
     /**
      * Label used to repository branch
      */
-    public static final String BRANCH_LABEL = "Branch";
+    public static final String BRANCH_LABEL = "branch";
 
     /**
      * Label used to repository user
      */
-    public static final String USER_LABEL = "User";
+    public static final String USER_LABEL = "user";
 
     /**
      * Label used to repository password
      */
-    public static final String PASSWORD_LABEL = "Password";
+    public static final String PASSWORD_LABEL = "password";
 
     /**
      * Label used to repository commit author
      */
-    public static final String COMMIT_AUTHOR_LABEL = "CommitAuthor";
+    public static final String COMMIT_AUTHOR_LABEL = "commitAuthor";
 
     /**
      * Label used to repository commit email
      */
-    public static final String COMMIT_EMAIL_LABEL = "CommitEmail";
+    public static final String COMMIT_EMAIL_LABEL = "commitEmail";
 
     /**
      * Constructor for use when deserializing

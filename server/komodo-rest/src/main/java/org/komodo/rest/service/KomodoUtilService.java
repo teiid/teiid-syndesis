@@ -24,10 +24,14 @@ package org.komodo.rest.service;
 import static org.komodo.rest.relational.RelationalMessages.Error.SCHEMA_SERVICE_GET_SCHEMA_ERROR;
 import java.io.File;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -468,6 +472,180 @@ public final class KomodoUtilService extends KomodoService {
             return commit(uow, mediaTypes, userProfileStatus);
         } catch (Exception ex) {
             return createErrorResponseWithForbidden(mediaTypes, ex, RelationalMessages.Error.USER_PROFILE_SERVICE_ERROR);
+        }
+    }
+
+    /**
+     * @param headers
+     *        the request headers (never <code>null</code>)
+     * @param uriInfo
+     *        the request URI information (never <code>null</code>)
+     * @return stashed git repository
+     * @throws KomodoRestException if error occurs
+     */
+    @PUT
+    @Path(V1Constants.USER_PROFILE + FORWARD_SLASH + V1Constants.GIT_REPOSITORY)
+    @ApiOperation( value = "Store a git repository configuration in the user's profile", response = String.class )
+    @ApiResponses(value = {
+        @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
+        @ApiResponse(code = 403, message = "An error has occurred.")
+    })
+    public Response stashGitRepository(final @Context HttpHeaders headers,
+                                               final @Context UriInfo uriInfo,
+                                               @ApiParam(
+                                                         value = "" +
+                                                                 "JSON of the git repository configuration:<br>" +
+                                                                 OPEN_PRE_TAG +
+                                                                 OPEN_BRACE + BR +
+                                                                 NBSP + RestGitRepository.NAME_LABEL + ": \"Unqiue name or identifier of the git repository\"" + BR +
+                                                                 NBSP + RestGitRepository.URL_LABEL + ": \"Destination git repository url\"" + COMMA + BR +
+                                                                 NBSP + RestGitRepository.USER_LABEL + ": \"User name to access the git repository\"" + COMMA + BR +
+                                                                 NBSP + RestGitRepository.PASSWORD_LABEL + ": \"Password to access the git repository\"" + COMMA + BR +
+                                                                 NBSP + RestGitRepository.COMMIT_AUTHOR_LABEL + ": \"Name of author to use for commits\"" + COMMA + BR +
+                                                                 NBSP + RestGitRepository.COMMIT_EMAIL_LABEL + ": \"Email of author to use for commits\"" + COMMA + BR +
+                                                                 NBSP + RestGitRepository.BRANCH_LABEL + ": \"The git repository branch\"" + BR +
+                                                                 NBSP + OPEN_PRE_CMT + "(Optional. By default: \"master\")" + CLOSE_PRE_CMT  + BR +
+                                                                 CLOSE_BRACE +
+                                                                 CLOSE_PRE_TAG,
+                                                         required = true
+                                               )
+                                               final String gitRepositoryConfig) throws KomodoRestException {
+
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
+            return notAcceptableMediaTypesBuilder().build();
+
+        RestGitRepository restGitRepo = KomodoJsonMarshaller.unmarshall(gitRepositoryConfig, RestGitRepository.class);
+        String repoName = restGitRepo.getName();
+        String repoUrlStr = restGitRepo.getUrl();
+        String repoUser = restGitRepo.getUser();
+        String repoPassword = restGitRepo.getPassword();
+
+        if (StringUtils.isBlank(repoName)) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.PROFILE_GIT_REPO_MISSING_REPO_NAME);
+        }
+
+        if (StringUtils.isBlank(repoUrlStr)) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.PROFILE_GIT_REPO_CREATE_MISSING_REPO_URL);
+        }
+
+        if (StringUtils.isBlank(repoUser)) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.PROFILE_GIT_REPO_CREATE_MISSING_REPO_USER);
+        }
+
+        if (StringUtils.isBlank(repoPassword)) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.PROFILE_GIT_REPO_CREATE_MISSING_REPO_PASSWORD);
+        }
+
+        URL repoUrl;
+        try {
+            repoUrl = new URL(repoUrlStr);
+        } catch (MalformedURLException ex) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.PROFILE_GIT_REPO_CREATE_MALFORMED_URL);
+        }
+
+        UnitOfWork uow = null;
+        try {
+            uow = createTransaction(principal, "addUserProfileGitRepository", false); //$NON-NLS-1$
+
+            Profile userProfile = getUserProfile(uow);
+            GitRepository gitRepository = userProfile.addGitRepository(uow, repoName, repoUrl,
+                                                                                                                                     repoUser, repoPassword);
+            String branch = restGitRepo.getBranch();
+            if (branch != null)
+                gitRepository.setBranch(uow, branch);
+
+            String commitAuthor = restGitRepo.getCommitAuthor();
+            if (commitAuthor != null)
+                gitRepository.setCommitAuthor(uow, commitAuthor);
+
+            String commitEmail = restGitRepo.getCommitEmail();
+            if (commitEmail != null)
+                gitRepository.setCommitEmail(uow, commitEmail);
+
+            final RestGitRepository entity = new RestGitRepository(uriInfo.getBaseUri(), gitRepository, uow);
+            return commit(uow, mediaTypes, entity);
+
+        } catch (final Exception e) {
+            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+                uow.rollback();
+            }
+
+            if (e instanceof KomodoRestException) {
+                throw (KomodoRestException)e;
+            }
+
+            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.PROFILE_GIT_REPO_CREATE_ERROR);
+        }
+    }
+
+    /**
+     * @param headers
+     *        the request headers (never <code>null</code>)
+     * @param uriInfo
+     *        the request URI information (never <code>null</code>)
+     * @return a JSON document representing the results of the removal
+     * @throws KomodoRestException if error occurs
+     */
+    @DELETE
+    @Path(V1Constants.USER_PROFILE + FORWARD_SLASH +
+                  V1Constants.GIT_REPOSITORY + FORWARD_SLASH +
+                  V1Constants.GIT_REPO_PLACEHOLDER)
+    @ApiOperation( value = "Remove a git repository configuration from the user's profile", response = String.class )
+    @ApiResponses(value = {
+        @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
+        @ApiResponse(code = 403, message = "An error has occurred.")
+    })
+    public Response removeGitRepository(final @Context HttpHeaders headers,
+                                               final @Context UriInfo uriInfo,
+                                               @ApiParam(
+                                                         value = "Name of the git repository to remove",
+                                                         required = true
+                                               )
+                                               final @PathParam("gitRepositoryName") String gitRepositoryName) throws KomodoRestException {
+
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
+            return notAcceptableMediaTypesBuilder().build();
+
+        if (StringUtils.isBlank(gitRepositoryName)) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.PROFILE_GIT_REPO_MISSING_REPO_NAME);
+        }
+
+        UnitOfWork uow = null;
+        try {
+            uow = createTransaction(principal, "removeUserProfileGitRepository", false); //$NON-NLS-1$
+
+            Profile userProfile = getUserProfile(uow);
+            GitRepository[] repositories = userProfile.getGitRepositories(uow, gitRepositoryName);
+            if (repositories.length == 0)
+                return Response.noContent().build();
+
+            userProfile.removeGitRepository(uow, gitRepositoryName);
+
+            KomodoStatusObject kso = new KomodoStatusObject("Delete Status"); //$NON-NLS-1$
+            kso.addAttribute(gitRepositoryName, "Successfully deleted"); //$NON-NLS-1$
+
+            return commit(uow, mediaTypes, kso);
+
+        } catch (final Exception e) {
+            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+                uow.rollback();
+            }
+
+            if (e instanceof KomodoRestException) {
+                throw (KomodoRestException)e;
+            }
+
+            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.PROFILE_GIT_REPO_REMOVE_ERROR);
         }
     }
 }

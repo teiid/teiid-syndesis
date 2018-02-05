@@ -591,6 +591,16 @@ public class KomodoRestV1Application extends Application implements SystemConsta
          * User profile resource method constant
          */
         String USER_PROFILE = "userProfile"; //$NON-NLS-1$
+
+        /**
+         * The git repository configuration to the user profile
+         */
+        String GIT_REPOSITORY = "gitRepository"; //$NON-NLS-1$
+
+        /**
+         * Git repository configuration placeholder
+         */
+        String GIT_REPO_PLACEHOLDER = "{gitRepositoryName}"; //$NON-NLS-1$
     }
 
     private static final int TIMEOUT = 1;
