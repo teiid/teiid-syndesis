@@ -49,6 +49,7 @@ import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.core.repository.SynchronousCallback;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
+import org.komodo.relational.profile.Profile;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
@@ -243,6 +244,18 @@ public abstract class KomodoService implements V1Constants {
     protected WorkspaceManager getWorkspaceManager(UnitOfWork transaction) throws KException {
     	Repository repo = this.kengine.getDefaultRepository();
         return WorkspaceManager.getInstance(repo, transaction);
+    }
+
+    protected Profile getUserProfile(UnitOfWork transaction) throws KException {
+        Repository repo = this.kengine.getDefaultRepository();
+        KomodoObject userProfileObj = repo.komodoProfile(transaction);
+        Profile userProfile = getWorkspaceManager(transaction).resolve(transaction, userProfileObj, Profile.class);
+        if (userProfile == null) {
+            String msg = RelationalMessages.getString(RelationalMessages.Error.NO_USER_PROFILE, transaction.getUserName());
+            throw new KException(msg);
+        }
+
+        return userProfile;
     }
 
     protected Object createErrorResponseEntity(List<MediaType> acceptableMediaTypes, String errorMessage) {

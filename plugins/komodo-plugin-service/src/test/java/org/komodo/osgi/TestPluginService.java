@@ -33,6 +33,7 @@ import org.junit.Test;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.storage.StorageConnector;
 import org.komodo.spi.storage.StorageConnector.Descriptor;
+import org.komodo.spi.storage.git.GitStorageConnectorConstants;
 import org.komodo.spi.storage.StorageService;
 import org.osgi.framework.Bundle;
 
@@ -105,7 +106,7 @@ public class TestPluginService extends AbstractTestPluginService implements Stri
         assertNotNull(storageService);
 
         Properties parameters = new Properties();
-        parameters.setProperty("repo-path-property", "http://github.com/test/blob.git");
+        parameters.setProperty(GitStorageConnectorConstants.REPO_PATH_PROPERTY, "http://github.com/test/blob.git");
         StorageConnector connector = storageService.getConnector(parameters);
         assertNotNull(connector);
 

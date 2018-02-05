@@ -558,21 +558,6 @@ public class KomodoRestV1Application extends Application implements SystemConsta
         String EXPORT_TO_GIT = "exportToGit"; //$NON-NLS-1$
 
         /**
-         * The export artifact path parameter
-         */
-        String EXPORT_ARTIFACT_PATH_PARAMETER = "artifactPath";
-
-        /**
-         * The export repository url parameter
-         */
-        String EXPORT_REPOSITORY_URL_PARAMETER = "repositoryURL";
-
-        /**
-         * The export destination path parameter
-         */
-        String EXPORT_DESTINATION_PATH_PARAMETER = "destinationPath";
-
-        /**
          * The available storage types of the import export service
          */
         String STORAGE_TYPES = "availableStorageTypes"; //$NON-NLS-1$

@@ -56,6 +56,7 @@ import org.komodo.rest.relational.response.ImportExportStatus;
 import org.komodo.rest.relational.response.KomodoSavedSearcher;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.KomodoStorageAttributes;
+import org.komodo.rest.relational.response.RestGitRepository;
 import org.komodo.rest.relational.response.RestQueryColumn;
 import org.komodo.rest.relational.response.RestQueryResult;
 import org.komodo.rest.relational.response.RestQueryRow;
@@ -152,7 +153,8 @@ public final class KomodoJsonMarshaller {
                                                   .registerTypeAdapter(RestQueryResult.class, new QueryResultSerializer())
                                                   .registerTypeAdapter(RestQueryColumn.class, new QueryColumnSerializer())
                                                   .registerTypeAdapter(RestQueryRow.class, new QueryRowSerializer())
-                                                  .registerTypeAdapter(KomodoConnectionAttributes.class, new ConnectionAttributesSerializer());
+                                                  .registerTypeAdapter(KomodoConnectionAttributes.class, new ConnectionAttributesSerializer())
+                                                  .registerTypeAdapter(RestGitRepository.class, new GitRepositorySerializer());
 
         BUILDER = temp.create();
         PRETTY_BUILDER = temp.setPrettyPrinting().create();

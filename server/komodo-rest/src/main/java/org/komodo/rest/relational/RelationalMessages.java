@@ -1303,7 +1303,12 @@ public final class RelationalMessages {
          * An import export service storage types missing parameter error
          */
         IMPORT_EXPORT_SERVICE_MISSING_PARAMETER_ERROR,
-        
+
+        /**
+         * An import export service no git repository in profile error
+         */
+        IMPORT_EXPORT_SERVICE_NO_NAMED_GIT_REPO_ERROR,
+
         /**
          * An error indicating the failed status of to get a data services from service catalog
          */
@@ -1332,7 +1337,12 @@ public final class RelationalMessages {
         /**
          * An error indicating the user profile service method failed
          */
-        USER_PROFILE_SERVICE_ERROR;
+        USER_PROFILE_SERVICE_ERROR,
+
+        /**
+         * An error indicating no user profile can be found
+         */
+        NO_USER_PROFILE;
         
 
         /**
