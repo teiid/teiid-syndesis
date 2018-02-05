@@ -24,7 +24,6 @@ package org.komodo.spi.storage;
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.Set;
-import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 
@@ -34,7 +33,7 @@ import org.komodo.spi.repository.Repository.UnitOfWork;
  * repositories, allowing writes to the storage and retrieval of
  * individual artifacts
  */
-public interface StorageConnector extends StringConstants {
+public interface StorageConnector extends StorageConnectorConstants {
 
     /**
      * Describes a parameter/property applicable to this storage connector
@@ -76,37 +75,6 @@ public interface StorageConnector extends StringConstants {
             return encoded;
         }
     }
-
-    /**
-     * The types of storage connector currently supported.
-     */
-    enum Types {
-        GIT, FILE;
-
-        public String id() {
-            return this.name().toLowerCase();
-        }
-    }
-
-    /**
-     * The path to the home directory of the location of files. Used by some connectors.
-     */
-    String FILES_HOME_PATH_PROPERTY = "files-home-path-property";
-
-    /**
-     * The path where the file should be located
-     */
-    String FILE_PATH_PROPERTY = "file-path-property";
-
-    /**
-     * Should a file be 'downloadable' once stored then this property is populated
-     */
-    String DOWNLOADABLE_PATH_PROPERTY = "downloadable-path-property";
-
-    /**
-     * Parameter to specify overwrite option for imports
-     */
-    String IMPORT_OVERWRITE_PROPERTY = "import-overwrite-property";
 
     /**
      * @return the id of the connector

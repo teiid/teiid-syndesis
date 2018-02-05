@@ -47,6 +47,8 @@ import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.ExistingNodeOptions;
 import org.komodo.importer.ImportOptions.OptionKeys;
 import org.komodo.relational.importer.vdb.VdbImporter;
+import org.komodo.relational.profile.GitRepository;
+import org.komodo.relational.profile.Profile;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.rest.KomodoRestException;
@@ -56,6 +58,7 @@ import org.komodo.rest.KomodoService;
 import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.response.KomodoStatusObject;
+import org.komodo.rest.relational.response.RestGitRepository;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
@@ -436,6 +439,13 @@ public final class KomodoUtilService extends KomodoService {
             Repository repo = this.kengine.getDefaultRepository();
             KomodoObject workspace = repo.komodoWorkspace(uow);
             userProfileStatus.addAttribute(WORKSPACE, workspace.getAbsolutePath());
+
+            Profile userProfile = getUserProfile(uow);
+            for (GitRepository repository : userProfile.getGitRepositories(uow)) {
+                RestGitRepository restRepo = new RestGitRepository(uriInfo.getBaseUri(), repository, uow);
+                String jsonRepo = KomodoJsonMarshaller.marshall(restRepo);
+                userProfileStatus.addAttribute("Git Repository", jsonRepo);
+            }
 
             Vdb[] vdbs = getWorkspaceManager(uow).findVdbs(uow);
             userProfileStatus.addAttribute(REPO_VDB_TOTAL, Integer.toString(vdbs.length));

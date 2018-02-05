@@ -21,13 +21,21 @@
  */
 package org.komodo.rest.service;
 
+import static org.komodo.spi.storage.StorageConnectorConstants.DOWNLOADABLE_PATH_PROPERTY;
+import static org.komodo.spi.storage.StorageConnectorConstants.FILES_HOME_PATH_PROPERTY;
+import static org.komodo.spi.storage.StorageConnectorConstants.FILE_PATH_PROPERTY;
+import static org.komodo.spi.storage.StorageConnectorConstants.IMPORT_OVERWRITE_PROPERTY;
+import static org.komodo.spi.storage.git.GitStorageConnectorConstants.AUTHOR_EMAIL_PROPERTY;
+import static org.komodo.spi.storage.git.GitStorageConnectorConstants.AUTHOR_NAME_PROPERTY;
+import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_BRANCH_PROPERTY;
+import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_PASSWORD;
+import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_PATH_PROPERTY;
+import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_USERNAME;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import javax.ws.rs.Consumes;
@@ -35,12 +43,10 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
@@ -49,6 +55,8 @@ import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.OptionKeys;
 import org.komodo.osgi.PluginService;
+import org.komodo.relational.profile.GitRepository;
+import org.komodo.relational.profile.Profile;
 import org.komodo.rest.KomodoRestException;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
@@ -83,6 +91,12 @@ import io.swagger.annotations.ApiResponses;
 @Api( tags = {V1Constants.IMPORT_EXPORT_SEGMENT} )
 public class KomodoImportExportService extends KomodoService {
 
+    /**
+     * Property key used to specify the name of a git repository
+     * contained in the user's profile.
+     */
+    public static final String PROFILE_REPOSITORY_NAME = "profile-repository-name";
+
     public KomodoImportExportService(KEngine engine) throws WebApplicationException {
         super(engine);
     }
@@ -109,7 +123,7 @@ public class KomodoImportExportService extends KomodoService {
             if (! descriptor.isRequired())
                 continue;
 
-            if (StorageConnector.FILE_PATH_PROPERTY.equals(descriptor.getName()))
+            if (FILE_PATH_PROPERTY.equals(descriptor.getName()))
                 continue; // This is handled separately in import/export and can be populated if missing
 
             if (! parameters.containsKey(descriptor.getName())) {
@@ -174,12 +188,12 @@ public class KomodoImportExportService extends KomodoService {
                                                NBSP + OPEN_PRE_CMT + "(Used to help determine the expected file type, " + 
                                                "eg. zip, xml, directory)" + CLOSE_PRE_CMT + BR +
                                                NBSP + "parameters: " + OPEN_BRACE + BR +
-                                               NBSP + NBSP +  "files-home-path-property: \"Path to the parent " +
+                                               NBSP + NBSP + FILES_HOME_PATH_PROPERTY + ": \"Path to the parent " +
                                                "directory of the export files\"" + COMMA + BR +
-                                               NBSP + NBSP + "file-path-property: \"Relative path, inc. name, " +
+                                               NBSP + NBSP + FILE_PATH_PROPERTY + ": \"Relative path, inc. name, " +
                                                "of the destination exported file\"" + COMMA + BR +
                                                NBSP + NBSP + OPEN_PRE_CMT +  "(Optional if documentType specified)" + CLOSE_PRE_CMT + BR +
-                                               NBSP + NBSP + "downloadable-path-property: \"Should a file be " +
+                                               NBSP + NBSP + DOWNLOADABLE_PATH_PROPERTY + ": \"Should a file be " +
                                                "downloadable once exported\"" + COMMA + BR +
                                                NBSP + NBSP + "useTabs: \"Should tabs be used in exporting xml\"" + COMMA + BR +
                                                NBSP + NBSP + "excludeTableConstraints: \"Should table constraints " +
@@ -230,9 +244,9 @@ public class KomodoImportExportService extends KomodoService {
 
             DocumentType documentType = artifact.getDocumentType(uow);
             Properties parameters = sta.convertParameters();
-            if (! parameters.containsKey(StorageConnector.FILE_PATH_PROPERTY)) {
+            if (! parameters.containsKey(FILE_PATH_PROPERTY)) {
                 String fileName = documentType.fileName(artifact.getName(uow));
-                parameters.setProperty(StorageConnector.FILE_PATH_PROPERTY, fileName);
+                parameters.setProperty(FILE_PATH_PROPERTY, fileName);
             }
 
             status.setName(artifact.getName(uow));
@@ -326,9 +340,9 @@ public class KomodoImportExportService extends KomodoService {
                                                NBSP + "documentType: \"Type of the file being imported\"" + BR +
                                                NBSP + OPEN_PRE_CMT + "(Required for content type, eg. zip, xml, directory)" + CLOSE_PRE_CMT + BR +
                                                NBSP + "parameters: " + OPEN_BRACE + BR +
-                                               NBSP + NBSP +  "files-home-path-property: \"Path to the parent " +
+                                               NBSP + NBSP + FILES_HOME_PATH_PROPERTY + ": \"Path to the parent " +
                                                "location of the file to import\"" + COMMA + BR +
-                                               NBSP + NBSP + "file-path-property: \"Relative path, inc. name, " + 
+                                               NBSP + NBSP + FILE_PATH_PROPERTY + ": \"Relative path, inc. name, " + 
                                                "of the file to import\"" + BR +
                                                NBSP + NBSP + OPEN_PRE_CMT +  "(Further parameters are specific to storage type. " +
                                                "see /importexport/availableStorageType REST link)" + CLOSE_PRE_CMT + BR +
@@ -374,12 +388,12 @@ public class KomodoImportExportService extends KomodoService {
                 FileUtils.write(content, cttFile);
 
                 // Ensure the new location of the file is conveyed to the storage plugin
-                sta.setParameter(StorageConnector.FILES_HOME_PATH_PROPERTY, tempDir);
-                sta.setParameter(StorageConnector.FILE_PATH_PROPERTY, fileName);
+                sta.setParameter(FILES_HOME_PATH_PROPERTY, tempDir);
+                sta.setParameter(FILE_PATH_PROPERTY, fileName);
             }
 
             Properties parameters = sta.convertParameters();
-            if (! parameters.containsKey(StorageConnector.FILE_PATH_PROPERTY)) {
+            if (! parameters.containsKey(FILE_PATH_PROPERTY)) {
                 return createErrorResponse(Status.FORBIDDEN, mediaTypes, RelationalMessages.Error.IMPORT_EXPORT_SERVICE_NO_FILE_PATH_ERROR);
             }
             Repository repo = this.kengine.getDefaultRepository();
@@ -401,8 +415,8 @@ public class KomodoImportExportService extends KomodoService {
 
             // Set desired overwrite setting in options
             ImportOptions importOptions = new ImportOptions();
-            if(parameters.containsKey(StorageConnector.IMPORT_OVERWRITE_PROPERTY)) {
-                String importOverwrite = parameters.getProperty(StorageConnector.IMPORT_OVERWRITE_PROPERTY);
+            if(parameters.containsKey(IMPORT_OVERWRITE_PROPERTY)) {
+                String importOverwrite = parameters.getProperty(IMPORT_OVERWRITE_PROPERTY);
                 // RETURN supplied
                 if( importOverwrite.equals(ImportOptions.ExistingNodeOptions.RETURN.name()) ) {
                     importOptions.setOption(OptionKeys.HANDLE_EXISTING, ImportOptions.ExistingNodeOptions.RETURN);
@@ -538,14 +552,7 @@ public class KomodoImportExportService extends KomodoService {
     @Produces( MediaType.APPLICATION_JSON )
     @Consumes ( { MediaType.APPLICATION_JSON } )
     @ApiOperation(
-                  value = "" +
-                     "Exports a workspace artefact to a git repository using parameters provided in the request body.<br>" +
-                     "Additional parameters can be added if required:<br>" +
-                     NBSP + "repo-branch-property: \"Destination git branch\"" +  COMMA + BR +
-                     NBSP + "repo-username-property: \"Username to access the repository\"" + COMMA + BR +
-                     NBSP + "repo-password-property: \"The passphrase or token to allow access to the repository\"" + COMMA + BR +
-                     NBSP + "author-name-property: \"Name of the author to use in commit messages\"" + COMMA + BR +
-                     NBSP + "author-email-property: \"Email address to use in commit messages\"",
+                  value = "Exports a workspace artefact to a git repository using parameters provided in the request body.",
                   response = ImportExportStatus.class)
     @ApiResponses(value = {
         @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
@@ -554,23 +561,29 @@ public class KomodoImportExportService extends KomodoService {
     public Response exportArtifactToGit( final @Context HttpHeaders headers,
                              final @Context UriInfo uriInfo,
                              @ApiParam(
-                                       value="The path of the artifact in the workspace",
-                                       required=true
+                                       value = "" + 
+                                               "JSON of the possible git storage attributes:<br>" +
+                                               OPEN_PRE_TAG +
+                                               OPEN_BRACE + BR +
+                                               NBSP + "dataPath: \"Path of the object to be exported\"" + COMMA + BR +
+                                               NBSP + "parameters: " + OPEN_BRACE + BR +
+                                               NBSP + NBSP + "profile-repository-name: \"Name of a git repository listed in user's profile\"" + BR +
+                                               NBSP + OPEN_PRE_CMT + "(Optional. If specified all other parameters are subject to the profile's settings)" + CLOSE_PRE_CMT  + COMMA + BR +
+                                               NBSP + NBSP + REPO_PATH_PROPERTY + ": \"Destination git repository url\"" + COMMA + BR +
+                                               NBSP + NBSP + REPO_USERNAME + ": \"User name to access the git repository\"" + COMMA + BR +
+                                               NBSP + NBSP + REPO_PASSWORD + ": \"Password to access the git repository\"" + COMMA + BR +
+                                               NBSP + NBSP + AUTHOR_NAME_PROPERTY + ": \"Name of author to use for commits\"" + COMMA + BR +
+                                               NBSP + NBSP + AUTHOR_EMAIL_PROPERTY + ": \"Email of author to use for commits\"" + COMMA + BR +
+                                               NBSP + NBSP + FILE_PATH_PROPERTY + ": \"Optional. Relative path, inc. name, " +
+                                               "of the destination exported file\"" + COMMA + BR +
+                                               NBSP + NBSP + REPO_BRANCH_PROPERTY + ": \"The git repository branch\"" + BR +
+                                               NBSP + OPEN_PRE_CMT + "(Optional. By default: \"master\")" + CLOSE_PRE_CMT  + BR +
+                                               NBSP + CLOSE_BRACE + BR +
+                                               CLOSE_BRACE +
+                                               CLOSE_PRE_TAG,
+                                       required = true
                              )
-                            @QueryParam(value = EXPORT_ARTIFACT_PATH_PARAMETER)
-                            final String artifactPath,
-                            @ApiParam(
-                                      value="The URL of the destination repository",
-                                      required=true
-                            )
-                            @QueryParam(value = EXPORT_REPOSITORY_URL_PARAMETER)
-                            final String repositoryURL,
-                            @ApiParam(
-                                      value="The path of destination directory",
-                                      required=false
-                            )
-                            @QueryParam(value = EXPORT_DESTINATION_PATH_PARAMETER)
-                            final String destinationPath) throws KomodoRestException {
+                             final String storageGitAttributes) throws KomodoRestException {
         SecurityPrincipal principal = checkSecurityContext(headers);
         if (principal.hasErrorResponse())
             return principal.getErrorResponse();
@@ -579,89 +592,133 @@ public class KomodoImportExportService extends KomodoService {
         if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
             return notAcceptableMediaTypesBuilder().build();
 
-        KomodoStorageAttributes sta = new KomodoStorageAttributes();
-        sta.setStorageType(StorageConnector.Types.GIT.id());
-        sta.setArtifactPath(artifactPath);
-        sta.setParameter("repo-path-property", repositoryURL);
-
-        if (destinationPath != null) {
-            sta.setParameter(StorageConnector.FILE_PATH_PROPERTY, destinationPath);
-        }
-
-        //
-        // Check for an extra dynamic unknown properties
-        //
-        MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
-        for (Entry<String, List<String>> entry : queryParameters.entrySet()) {
-            String key = entry.getKey();
-            if (key.equals("artifactPath") || key.equals("repositoryURL") || key.equals("destinationPath"))
-                continue;
-
-            if (entry.getValue() == null)
-                continue;
-
-            Iterator<String> iter = entry.getValue().iterator();
-            sta.setParameter(key, iter.next());
-        }
-
-        if (! sta.getParameters().containsKey("author-name-property"))
-            sta.setParameter("author-name-property", principal.getUserName());
-
-        if (! sta.getParameters().containsKey("author-email-property"))
-            sta.setParameter("author-email-property", principal.getUserName() + AT + "komodo");
-
-        try {
-            Response response = checkStorageAttributes(sta, mediaTypes);
-            if (response.getStatus() != Status.OK.getStatusCode())
-                return response;
-
-        } catch (Exception ex) {
-            return createErrorResponseWithForbidden(mediaTypes, ex, RelationalMessages.Error.IMPORT_EXPORT_SERVICE_REQUEST_PARSING_ERROR);
-        }
-
-        ImportExportStatus status = new ImportExportStatus();
         UnitOfWork uow = null;
-        try {
-            uow = createTransaction(principal, "exportFromWorkspace", true); //$NON-NLS-1$
-            Repository repo = this.kengine.getDefaultRepository();
-            KomodoObject kObject = repo.getFromWorkspace(uow, sta.getArtifactPath());
-            if (kObject == null) {
-                return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.IMPORT_EXPORT_SERVICE_NO_ARTIFACT_ERROR, artifactPath);
-            }
+        KomodoStorageAttributes sta = KomodoJsonMarshaller.unmarshall(storageGitAttributes, KomodoStorageAttributes.class);
+        sta.setStorageType(StorageConnector.Types.GIT.id());
+        Map<String, String> parameters = sta.getParameters();
 
+        try {
+            Repository repo = this.kengine.getDefaultRepository();
+            uow = createTransaction(principal, "exportFromWorkspace", true); //$NON-NLS-1$
+
+            //
+            // Check an artifact exists at the path provided
+            //
+            KomodoObject kObject = repo.getFromWorkspace(uow, sta.getArtifactPath());
+            if (kObject == null)
+                return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.IMPORT_EXPORT_SERVICE_NO_ARTIFACT_ERROR, sta.getArtifactPath());
+
+            //
+            // Resolve the artifact to an exportable
+            //
             Exportable artifact = getWorkspaceManager(uow).resolve(uow, kObject, Exportable.class);
-            if (artifact == null) {
-                return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.IMPORT_EXPORT_SERVICE_ARTIFACT_NOT_EXPORTABLE_ERROR, artifactPath);
-            }
+            if (artifact == null)
+                return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.IMPORT_EXPORT_SERVICE_ARTIFACT_NOT_EXPORTABLE_ERROR, sta.getArtifactPath());
 
             DocumentType documentType = artifact.getDocumentType(uow);
-            Properties parameters = sta.convertParameters();
             String fileName = documentType.fileName(artifact.getName(uow));
-            if (! parameters.containsKey(StorageConnector.FILE_PATH_PROPERTY)) {
-                parameters.setProperty(StorageConnector.FILE_PATH_PROPERTY, fileName);
-            } else {
-                String filePathProperty = parameters.getProperty(StorageConnector.FILE_PATH_PROPERTY);
-                File filePath = new File(filePathProperty);
-                if (! filePath.getName().contains(DOT)) {
-                    //
-                    // User has specified a directory
-                    // (assume this rather than a file with no dot in it)
-                    //
-                    File fullFilePath = new File(filePath, fileName);
-                    parameters.setProperty(StorageConnector.FILE_PATH_PROPERTY, fullFilePath.getPath());
-                }
+            
+            //
+            // If a name git repository has been specified then fetch it from the profile
+            // and populate the storageAttributes object with its configuration
+            //
+            if (parameters.containsKey(PROFILE_REPOSITORY_NAME)) {
+                String repoName = parameters.get(PROFILE_REPOSITORY_NAME);
+                Profile profile = getUserProfile(uow);
+                GitRepository[] gitRepositories = profile.getGitRepositories(uow, repoName);
+                if (gitRepositories.length == 0)
+                    return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.IMPORT_EXPORT_SERVICE_NO_NAMED_GIT_REPO_ERROR, repoName);
+    
+                sta.setParameter(REPO_PATH_PROPERTY, gitRepositories[0].getUrl(uow).toString());
+                sta.setParameter(REPO_USERNAME, gitRepositories[0].getUser(uow));
+                sta.setParameter(REPO_PASSWORD, gitRepositories[0].getPassword(uow));
+                sta.setParameter(REPO_BRANCH_PROPERTY, gitRepositories[0].getBranch(uow));
+
+                String commitAuthor = gitRepositories[0].getCommitAuthor(uow);
+                String commitEmail = gitRepositories[0].getCommitEmail(uow);
+                if (commitAuthor != null)
+                    sta.setParameter(AUTHOR_NAME_PROPERTY, commitAuthor);
+                if (commitEmail != null)
+                    sta.setParameter(AUTHOR_EMAIL_PROPERTY, commitEmail);
 
                 //
-                // If user specified a filename with extension then
-                // assume the user wants to override the name of
-                // artifact.
+                // If a target directory was specified in the configuration then prefix this
+                // to the target file name and populate the file-path-property accordingly
                 //
+                String targetDirectory = gitRepositories[0].getTargetDirectory(uow);
+                if (targetDirectory != null) {
+                    File fullFilePath = new File(targetDirectory, fileName);
+                    sta.setParameter(FILE_PATH_PROPERTY, fullFilePath.getPath());
+                }
+            } else {
+                //
+                // No git repository config in profile so sta object populated
+                // solely by this method.
+                //
+
+                //
+                // Check the file-path-property and update with the name of the artifact.
+                // If not populated then it will be sorted out later.
+                //
+                String filePathProperty = parameters.get(FILE_PATH_PROPERTY);
+                if (filePathProperty != null) {
+                    File filePath = new File(filePathProperty);
+                    if (! filePath.getName().contains(DOT)) {
+                        //
+                        // The file path specified appears to be one or set of directories.
+                        // (Not a full-proof conclusion since .extensions optional but this is assumed)
+                        //
+                        filePath = new File(filePath, fileName);
+                        sta.setParameter(FILE_PATH_PROPERTY, filePath.getPath());
+                    }
+
+                    //
+                    // If user specified a filename with extension then
+                    // assume the user wants to override the name of
+                    // artifact.
+                    //
+                }
             }
 
-            status.setName(parameters.getProperty(StorageConnector.FILE_PATH_PROPERTY));
+            //
+            // Populate the author parameters if not already populated
+            //
+            if (! parameters.containsKey(AUTHOR_NAME_PROPERTY))
+                sta.setParameter(AUTHOR_NAME_PROPERTY, principal.getUserName());
+
+            if (! parameters.containsKey(AUTHOR_EMAIL_PROPERTY))
+                sta.setParameter(AUTHOR_EMAIL_PROPERTY, principal.getUserName() + AT + V1Constants.App.name());
+
+            //
+            // Check the storage attributes object that the expected components
+            // have been fully populated
+            //
+            try {
+                Response response = checkStorageAttributes(sta, mediaTypes);
+                if (response.getStatus() != Status.OK.getStatusCode())
+                    return response;
+            } catch (Exception ex) {
+                return createErrorResponseWithForbidden(mediaTypes, ex, RelationalMessages.Error.IMPORT_EXPORT_SERVICE_REQUEST_PARSING_ERROR);
+            }
+
+            //
+            // File path property is optional. If not specified then the
+            // root of the git repository will be assumed so the file path
+            // will simply be the name of the file
+            //
+            if (! parameters.containsKey(FILE_PATH_PROPERTY)) {
+                sta.setParameter(FILE_PATH_PROPERTY, fileName);
+            }
+
+            //
+            // Everything ready to go so being the export
+            //
+            ImportExportStatus status = new ImportExportStatus();
+            status.setName(parameters.get(FILE_PATH_PROPERTY));
             status.setType(documentType.toString());
 
-            getWorkspaceManager(uow).exportArtifact(uow, artifact, sta.getStorageType(), parameters);
+            Properties properties = sta.convertParameters();
+            getWorkspaceManager(uow).exportArtifact(uow, artifact, sta.getStorageType(), properties);
 
             //
             // Artifact exported to git is by definition not downloadable
