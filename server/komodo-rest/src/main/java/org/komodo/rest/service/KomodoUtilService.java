@@ -553,8 +553,17 @@ public final class KomodoUtilService extends KomodoService {
             uow = createTransaction(principal, "addUserProfileGitRepository", false); //$NON-NLS-1$
 
             Profile userProfile = getUserProfile(uow);
+
+            //
+            // Secure the password using encryption
+            //
+            String encrypted = encryptSensitiveData(headers, principal.getUserName(), repoPassword);
+            if (encrypted == null)
+                return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.ENCRYPT_FAILURE, principal.getUserName());
+
+            encrypted = ENCRYPTED_PREFIX + encrypted;
             GitRepository gitRepository = userProfile.addGitRepository(uow, repoName, repoUrl,
-                                                                                                                                     repoUser, repoPassword);
+                                                                                                                                     repoUser, encrypted);
             String branch = restGitRepo.getBranch();
             if (branch != null)
                 gitRepository.setBranch(uow, branch);

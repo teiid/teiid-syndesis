@@ -631,7 +631,12 @@ public class KomodoImportExportService extends KomodoService {
     
                 sta.setParameter(REPO_PATH_PROPERTY, gitRepositories[0].getUrl(uow).toString());
                 sta.setParameter(REPO_USERNAME, gitRepositories[0].getUser(uow));
-                sta.setParameter(REPO_PASSWORD, gitRepositories[0].getPassword(uow));
+                String password = gitRepositories[0].getPassword(uow);
+                if (password != null && password.startsWith(ENCRYPTED_PREFIX)) {
+                    password = password.replaceAll(ENCRYPTED_PREFIX, EMPTY_STRING);
+                    password = decryptSensitiveData(headers, principal.getUserName(), password);
+                }
+                sta.setParameter(REPO_PASSWORD, password);
                 sta.setParameter(REPO_BRANCH_PROPERTY, gitRepositories[0].getBranch(uow));
 
                 String commitAuthor = gitRepositories[0].getCommitAuthor(uow);

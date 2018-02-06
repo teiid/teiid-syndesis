@@ -1377,7 +1377,17 @@ public final class RelationalMessages {
         /**
          * An error indicating a problem with removing a git repository configuration
          */
-        PROFILE_GIT_REPO_REMOVE_ERROR;
+        PROFILE_GIT_REPO_REMOVE_ERROR,
+
+        /**
+         * A failure to encrypt and secure sensitive data
+         */
+        ENCRYPT_FAILURE,
+
+        /**
+         * A failure to decrypt sensitive data
+         */
+        DECRYPT_FAILURE;
 
         /**
          * {@inheritDoc}
