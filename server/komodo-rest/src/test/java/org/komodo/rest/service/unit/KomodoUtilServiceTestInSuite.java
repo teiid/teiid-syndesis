@@ -54,9 +54,12 @@ import org.komodo.rest.relational.response.RestGitRepository;
 import org.komodo.rest.service.KomodoUtilService;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.test.utils.TestUtilities;
+import com.google.common.net.HttpHeaders;
 
 @SuppressWarnings( {"javadoc", "nls"} )
 public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
+
+    private static final String AUTH_HEADER_VALUE = "Basic YWRtaW48";
 
     public KomodoUtilServiceTestInSuite() throws Exception {
         super();
@@ -355,7 +358,7 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
             "\"url\": " + SPEECH_MARK + gitUrl + SPEECH_MARK + COMMA + NEW_LINE,
             "\"branch\": " + SPEECH_MARK + gitBranch + SPEECH_MARK + COMMA + NEW_LINE,
             "\"user\": " + SPEECH_MARK + gitUser + SPEECH_MARK + COMMA + NEW_LINE,
-            "\"password\": " + SPEECH_MARK + gitPassword + SPEECH_MARK + COMMA + NEW_LINE,
+            "\"password\": " + SPEECH_MARK + KomodoService.ENCRYPTED_PREFIX,
             "\"commitAuthor\": " + SPEECH_MARK + gitCommitAuthor + SPEECH_MARK + COMMA + NEW_LINE,
             "\"commitEmail\": " + SPEECH_MARK + gitCommitEmail + SPEECH_MARK,
             CLOSE_BRACE};
@@ -377,6 +380,7 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
 
         HttpPut request = jsonRequest(uri, RequestType.PUT);
         addHeader(request, CorsHeaders.ORIGIN, "http://localhost:2772");
+        addHeader(request, HttpHeaders.AUTHORIZATION, AUTH_HEADER_VALUE);
         addBody(request, gitRepository);
         HttpResponse response = executeOk(request);
 

@@ -24,12 +24,12 @@ package org.komodo.rest;
 import static org.komodo.rest.Messages.Error.COMMIT_TIMEOUT;
 import static org.komodo.rest.Messages.Error.RESOURCE_NOT_FOUND;
 import static org.komodo.rest.Messages.General.GET_OPERATION_NAME;
-
 import java.io.StringWriter;
 import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -43,7 +43,6 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
 import javax.xml.namespace.QName;
-
 import org.komodo.core.KEngine;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.core.repository.SynchronousCallback;
@@ -70,13 +69,16 @@ import org.komodo.spi.repository.Repository.UnitOfWorkListener;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
-
 import com.google.gson.Gson;
 
 /**
  * A Komodo service implementation.
  */
 public abstract class KomodoService implements V1Constants {
+
+    public static final String ENCRYPTED_PREFIX = "ENCRYPTED-";
+
+    protected static final String ENCRYPTION_ALGORITHM = "Blowfish";
 
     protected static final KLog LOGGER = KLog.getLogger();
 
@@ -256,6 +258,40 @@ public abstract class KomodoService implements V1Constants {
         }
 
         return userProfile;
+    }
+
+    protected String encryptSensitiveData(final HttpHeaders headers, String user, String plainText) {
+        String authorization = headers.getHeaderString(HttpHeaders.AUTHORIZATION);
+        if (authorization == null)
+            return null;
+
+        try {
+            SecretKeySpec skeyspec=new SecretKeySpec(authorization.getBytes(),ENCRYPTION_ALGORITHM);
+            Cipher cipher = Cipher.getInstance(ENCRYPTION_ALGORITHM);
+            cipher.init(Cipher.ENCRYPT_MODE, skeyspec);
+            byte[] encrypted = cipher.doFinal(plainText.getBytes());
+            return new String(encrypted);
+        } catch (Exception ex) {
+            KLog.getLogger().error(RelationalMessages.getString(RelationalMessages.Error.ENCRYPT_FAILURE, user), ex);
+            return null;
+        }
+    }
+
+    protected String decryptSensitiveData(final HttpHeaders headers, String user, String encrypted) {
+        String authorization = headers.getHeaderString(HttpHeaders.AUTHORIZATION);
+        if (authorization == null)
+            return null;
+
+        try {
+            SecretKeySpec skeyspec=new SecretKeySpec(authorization.getBytes(),ENCRYPTION_ALGORITHM);
+            Cipher cipher = Cipher.getInstance(ENCRYPTION_ALGORITHM);
+            cipher.init(Cipher.DECRYPT_MODE, skeyspec);
+            byte[] plainText = cipher.doFinal(encrypted.getBytes());
+            return new String(plainText);
+        } catch (Exception ex) {
+            KLog.getLogger().error(RelationalMessages.getString(RelationalMessages.Error.DECRYPT_FAILURE, user), ex);
+            return null;
+        }
     }
 
     protected Object createErrorResponseEntity(List<MediaType> acceptableMediaTypes, String errorMessage) {
