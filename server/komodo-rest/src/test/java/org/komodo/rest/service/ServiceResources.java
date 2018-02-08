@@ -74,8 +74,6 @@ public class ServiceResources extends ExternalResource {
     private Path _kengineDataDir;
 
     private void initResources() throws IOException {
-        System.out.println("XXX - Generating Engine Directory!!");
-
         _kengineDataDir = TestKLog.createEngineDirectory();     
         //
         // Sets the persistence type to H2 for test purposes
@@ -84,8 +82,6 @@ public class ServiceResources extends ExternalResource {
     }
 
     private void destroyResources() {
-        System.out.println("XXX - Tearing down Engine Directory!!");
-
         if (_kengineDataDir != null) {
             FileUtils.removeDirectoryAndChildren(_kengineDataDir.toFile());
         }

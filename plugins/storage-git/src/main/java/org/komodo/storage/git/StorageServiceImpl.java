@@ -30,7 +30,7 @@ import org.komodo.spi.storage.StorageConnector.Descriptor;
 
 public class StorageServiceImpl extends AbstractBundleService implements StorageService {
 
-    public static final String STORAGE_ID = "git";
+    public static final String STORAGE_ID = StorageConnector.Types.GIT.id();
 
     public static final String DESCRIPTION = "Storage of files in a git repository";
 

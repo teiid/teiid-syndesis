@@ -159,6 +159,16 @@ public enum KomodoType {
     PRIMARY_KEY,
 
     /**
+     * Profile
+     */
+    PROFILE,
+
+    /**
+     * Git Repository
+     */
+    GIT_REPOSITORY,
+
+    /**
      * Stored Procedure
      */
     STORED_PROCEDURE,

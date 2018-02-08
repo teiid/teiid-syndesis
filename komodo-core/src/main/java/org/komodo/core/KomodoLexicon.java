@@ -33,7 +33,7 @@ public interface KomodoLexicon extends StringConstants {
     /**
      * JCR names that relate to the Teiid DDL namespace.
      */
-    public interface TeiidDdl extends TeiidDdlLexicon.CreateProcedure {
+    interface TeiidDdl extends TeiidDdlLexicon.CreateProcedure {
 
         /**
          * The node type name for a result set.
@@ -45,7 +45,7 @@ public interface KomodoLexicon extends StringConstants {
     /**
      * The JCR names associated with a data service node type.
      */
-    public interface DataService {
+    interface DataService {
 
         /**
          * The name and node type name of the data services grouping node. Value is {@value} .
@@ -57,7 +57,7 @@ public interface KomodoLexicon extends StringConstants {
     /**
      * The JCR names associated with a data source node type.
      */
-    public interface DataSource {
+    interface DataSource {
 
         /**
          * The name and node type name of the data sources grouping node. Value is {@value} .
@@ -69,7 +69,7 @@ public interface KomodoLexicon extends StringConstants {
     /**
      * The JCR names associated with the Komodo environment node type.
      */
-    public interface Environment {
+    interface Environment {
 
         /**
          * The name and node type name of the Komodo environment node. Value is {@value} .
@@ -87,20 +87,15 @@ public interface KomodoLexicon extends StringConstants {
         String VALIDATION = Namespace.PREFIX + COLON + "validation"; //$NON-NLS-1$
 
         /**
-         * The name of the Komodo environment servers child node. Value is {@value} .
+         * The name of the Komodo environment profiles child node. Value is {@value} .
          */
-        String SERVERS = Namespace.PREFIX + COLON + "servers"; //$NON-NLS-1$
-
-        /**
-         * The name and node type name of the Komodo Teiid Cache. Value is {@value}.
-         */
-        String TEIID_CACHE = Namespace.PREFIX + COLON + "teiidCache"; //$NON-NLS-1$
+        String PROFILES = Namespace.PREFIX + COLON + "profiles"; //$NON-NLS-1$
     }
 
     /**
      * The JCR names associated with a folder node type.
      */
-    public interface Folder extends LibraryComponent, WorkspaceItem {
+    interface Folder extends LibraryComponent, WorkspaceItem {
 
         /**
          * The node type name of a folder. Value is {@value} .
@@ -112,7 +107,7 @@ public interface KomodoLexicon extends StringConstants {
     /**
      * The JCR names associated with the Komodo node type.
      */
-    public interface Komodo {
+    interface Komodo {
 
         /**
          * The name of the Komodo environment child node. Value is {@value} .
@@ -143,7 +138,7 @@ public interface KomodoLexicon extends StringConstants {
     /**
      * The JCR names associated with the Komodo library node type.
      */
-    public interface Library {
+    interface Library {
 
         /**
          * The name and node type name of the Komodo library's data source grouping node. Value is {@value} .
@@ -200,7 +195,7 @@ public interface KomodoLexicon extends StringConstants {
     /**
      * The JCR names associated with the library component mixin. Library nodes are versionable and referenceable.
      */
-    public interface LibraryComponent {
+    interface LibraryComponent {
 
         /**
          * The name of the description property of a library component. Value is {@value} .
@@ -217,7 +212,7 @@ public interface KomodoLexicon extends StringConstants {
     /**
      * The JCR names associated with the Komodo namespace.
      */
-    public interface Namespace {
+    interface Namespace {
 
         /**
          * The Komodo namespace prefix. Value is {@value} .
@@ -234,7 +229,7 @@ public interface KomodoLexicon extends StringConstants {
     /**
      * The JCR names associated with repositories.
      */
-    public interface Repository extends WorkspaceItem {
+    interface Repository extends WorkspaceItem {
 
         /**
          * The name of the <code>nt:address</code> node type for the child node. Value is {@value} .
@@ -261,7 +256,7 @@ public interface KomodoLexicon extends StringConstants {
     /**
      * The JCR names associated with validation rules.
      */
-    public interface Rule {
+    interface Rule {
 
         /**
          * The name of the property used to indicate if the rule is built-in. Value is {@value} .
@@ -429,7 +424,7 @@ public interface KomodoLexicon extends StringConstants {
     /**
      * The JCR names associated with schemas.
      */
-    public interface Schema extends LibraryComponent, WorkspaceItem {
+    interface Schema extends LibraryComponent, WorkspaceItem {
 
         /**
          * The name of the property used for the external file location. Value is {@value} .
@@ -461,7 +456,7 @@ public interface KomodoLexicon extends StringConstants {
     /**
      * The JCR names associated with searches.
      */
-    public interface Search {
+    interface Search {
         /**
          * The name and node type name of the Komodo Search grouping node. Value is {@value}.
          */
@@ -652,25 +647,9 @@ public interface KomodoLexicon extends StringConstants {
     }
 
     /**
-     * The JCR names associated with the Komodo teiid cache node type.
-     */
-    public interface TeiidCache {
-        /**
-         * The name of the Teiid Cache node type. Value is {@value} .
-         */
-        String NODE_TYPE = Namespace.PREFIX + COLON + "teiidCache"; //$NON-NLS-1$
-
-        /**
-         * The threshold in milliseconds of how long a cached teiid should remain
-         * before a new request overwrites it
-         */
-        String EXPIRATION_THRESHOLD = Namespace.PREFIX + COLON + "expirationThreshold"; //$NON-NLS-1$
-    }
-
-    /**
      * Abstract model of a Teiid connection properties
      */
-    public interface TeiidArchetype {
+    interface TeiidArchetype {
 
         /**
          * The version property. Value is {@value} .
@@ -731,7 +710,7 @@ public interface KomodoLexicon extends StringConstants {
     /**
      * The JCR names associated with VDBs.
      */
-    public interface Vdb extends LibraryComponent, WorkspaceItem {
+    interface Vdb extends LibraryComponent, WorkspaceItem {
 
         /**
          * The name and node type name of the Komodo workspace and library's VDB grouping node. Value is {@value} .
@@ -748,7 +727,7 @@ public interface KomodoLexicon extends StringConstants {
     /**
      * The JCR names associated with VDB manifest entries.
      */
-    public interface VdbEntry extends LibraryComponent {
+    interface VdbEntry extends LibraryComponent {
 
         /**
          * The name and node type name of the Komodo library's VDB manifest entry grouping node. Value is {@value} .
@@ -765,7 +744,7 @@ public interface KomodoLexicon extends StringConstants {
     /**
      * The JCR names associated with VDB manifest Import VDBs.
      */
-    public interface VdbImport extends LibraryComponent {
+    interface VdbImport extends LibraryComponent {
 
         /**
          * The name and node type name of the Komodo library's VDB manifest Import VDB grouping node. Value is {@value} .
@@ -782,7 +761,7 @@ public interface KomodoLexicon extends StringConstants {
     /**
      * The JCR names associated with VDB manifest models.
      */
-    public interface VdbModel extends LibraryComponent {
+    interface VdbModel extends LibraryComponent {
 
         /**
          * The node type name of the model's file child node. Value is {@value} .
@@ -824,7 +803,7 @@ public interface KomodoLexicon extends StringConstants {
     /**
      * The JCR names associated with VDB manifest model sources.
      */
-    public interface VdbModelSource extends LibraryComponent {
+    interface VdbModelSource extends LibraryComponent {
 
         /**
          * The name and node type name of the Komodo library's VDB manifest model source grouping node. Value is {@value} .
@@ -851,7 +830,7 @@ public interface KomodoLexicon extends StringConstants {
     /**
      * The JCR names associated with VDB manifest translators.
      */
-    public interface VdbTranslator extends LibraryComponent {
+    interface VdbTranslator extends LibraryComponent {
 
         /**
          * The name and node type name of the Komodo library's VDB manifest translator grouping chld node. Value is {@value} .
@@ -868,7 +847,7 @@ public interface KomodoLexicon extends StringConstants {
     /**
      * The JCR names associated with the Komodo workspace node type.
      */
-    public interface Workspace {
+    interface Workspace {
 
         /**
          * The name and node type name of the Komodo workspace node. Value is {@value} .
@@ -885,7 +864,7 @@ public interface KomodoLexicon extends StringConstants {
     /**
      * The JCR names associated with the Komodo workspace node type.
      */
-    public interface Home {
+    interface Home {
 
         /**
          * The name and node type name of the Komodo workspace node. Value is {@value} .
@@ -901,7 +880,7 @@ public interface KomodoLexicon extends StringConstants {
     /**
      * The JCR names associated with the workspace item mixin. Workspace item nodes are referenceable.
      */
-    public interface WorkspaceItem {
+    interface WorkspaceItem {
 
         /**
          * The name of the workspace item mixin. Value is {@value} .
@@ -925,4 +904,70 @@ public interface KomodoLexicon extends StringConstants {
 
     }
 
+    /**
+     * The JCR names associated with the user profile node type.
+     */
+    interface Profile {
+
+        /**
+         * The name and node type name of the user profile grouping child node. Value is {@value} .
+         */
+        String GROUP_NODE = Namespace.PREFIX + COLON + "profiles"; //$NON-NLS-1$
+
+        /**
+         * The name of the user profile node type. Value is {@value} .
+         */
+        String NODE_TYPE = Namespace.PREFIX + COLON + "profile"; //$NON-NLS-1$
+
+        /**
+         * The name of the git repositories child node. Value is {@value} .
+         */
+        String GIT_REPOSITORIES = Namespace.PREFIX + COLON + "gitRepositories"; //$NON-NLS-1$
+    }
+
+    /**
+     * The JCR names associated with the git repository node type.
+     */
+    interface GitRepository {
+
+        /**
+         * The name of the git repository node type. Value is {@value} .
+         */
+        String NODE_TYPE = Namespace.PREFIX + COLON + "gitRepository"; //$NON-NLS-1$
+
+        /**
+         * The name of the repository url property. Value is {@value} .
+         */
+        String URL = Namespace.PREFIX + COLON + "url"; //$NON-NLS-1$
+
+        /**
+         * The name of the repository branch property. Value is {@value} .
+         */
+        String BRANCH = Namespace.PREFIX + COLON + "branch"; //$NON-NLS-1$
+
+        /**
+         * The name of the repository user property. Value is {@value} .
+         */
+        String USER = Namespace.PREFIX + COLON + "user"; //$NON-NLS-1$
+
+        /**
+         * The name of the repository password property. Value is {@value} .
+         */
+        String PASSWORD = Namespace.PREFIX + COLON + "pswd"; //$NON-NLS-1$
+
+        /**
+         * The name of commit author property. Value is {@value} .
+         */
+        String COMMIT_AUTHOR = Namespace.PREFIX + COLON + "commitAuthor"; //$NON-NLS-1$
+
+        /**
+         * The name of the commit email property. Value is {@value} .
+         */
+        String COMMIT_EMAIL = Namespace.PREFIX + COLON + "commitEmail"; //$NON-NLS-1$
+
+        /**
+         * The name of the target directory property. Value is {@value} .
+         */
+        String TARGET_DIRECTORY = Namespace.PREFIX + COLON + "targetDirectory"; //$NON-NLS-1$
+    }
 }

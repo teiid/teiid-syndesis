@@ -49,6 +49,8 @@ import org.komodo.relational.model.UserDefinedFunction;
 import org.komodo.relational.model.View;
 import org.komodo.relational.model.VirtualProcedure;
 import org.komodo.relational.model.internal.AccessPatternImpl;
+import org.komodo.relational.profile.GitRepository;
+import org.komodo.relational.profile.Profile;
 import org.komodo.relational.resource.Driver;
 import org.komodo.relational.template.Template;
 import org.komodo.relational.template.TemplateEntry;
@@ -114,6 +116,8 @@ public class TypeResolverRegistry {
 
         index(KomodoType.FOREIGN_KEY, ForeignKey.RESOLVER);
 
+        index(KomodoType.GIT_REPOSITORY, GitRepository.RESOLVER);
+
         index(KomodoType.INDEX, Index.RESOLVER);
 
         index(KomodoType.MODEL, Model.RESOLVER);
@@ -121,6 +125,8 @@ public class TypeResolverRegistry {
         index(KomodoType.PARAMETER, Parameter.RESOLVER);
 
         index(KomodoType.PRIMARY_KEY, PrimaryKey.RESOLVER);
+
+        index(KomodoType.PROFILE, Profile.RESOLVER);
 
         index(KomodoType.PUSHDOWN_FUNCTION, PushdownFunction.RESOLVER);
 

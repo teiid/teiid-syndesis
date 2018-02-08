@@ -586,6 +586,19 @@ public interface Repository {
     KomodoObject komodoWorkspace( final UnitOfWork transaction) throws KException;
 
     /**
+     * The komodo user's profile in the repository, ie. /tko:komodo/tko:environment/tko:profiles/${user}
+     * where ${user} is the user owning the given transaction
+     *
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not
+     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *
+     * @return the komodo user profile
+     * @throws KException if an error occurs
+     */
+    KomodoObject komodoProfile(final UnitOfWork uow) throws KException;
+
+    /**
      *
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
@@ -602,12 +615,11 @@ public interface Repository {
     *        the transaction (cannot be <code>null</code> or have a state that is not
     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
     *
-    * @return the komodo servers node
+    * @return the komodo user profiles node
     * @throws KException if an error occurs
     */
-    KomodoObject komodoServersNode(UnitOfWork transaction) throws KException;
+    KomodoObject komodoProfiles(UnitOfWork transaction) throws KException;
 
-    
     /**
      * Get Metadata Instance
      * @return

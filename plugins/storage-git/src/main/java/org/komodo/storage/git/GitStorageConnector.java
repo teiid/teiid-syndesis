@@ -60,64 +60,14 @@ import org.komodo.spi.storage.StorageConnectorId;
 import org.komodo.spi.storage.StorageNode;
 import org.komodo.spi.storage.StorageParent;
 import org.komodo.spi.storage.StorageTree;
+import org.komodo.spi.storage.git.GitStorageConnectorConstants;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.FileUtils;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 
-public class GitStorageConnector implements StorageConnector {
-
-    /**
-     * The path to the remote repository
-     */
-    public static final String REPO_PATH_PROPERTY = "repo-path-property";
-
-    /**
-     * The destination into which to clone the repository
-     */
-    public static final String REPO_DEST_PROPERTY = "repo-dest-property";
-
-    /**
-     * The branch to checkout
-     */
-    public static final String REPO_BRANCH_PROPERTY = "repo-branch-property";
-
-    /**
-     * The ssh private key
-     */
-    public static final String REPO_PRIVATE_KEY = "repo-private-key-property";
-
-    /**
-     * The ssh passphrase
-     */
-    public static final String REPO_PASSPHRASE = "repo-passphrase-property";
-
-    /**
-     * The known hosts key for this repository
-     */
-    public static final String REPO_KNOWN_HOSTS_ID = "repo-known-hosts-property";
-
-    /**
-     * The password property (used by http)
-     */
-    public static final String REPO_USERNAME = "repo-username-property";
-
-    /**
-     * The password property (used by both ssh and http)
-     */
-    public static final String REPO_PASSWORD = "repo-password-property";
-
-    /**
-     * The name of the author to be applied when writing a commit
-     */
-    public static final String AUTHOR_NAME_PROPERTY = "author-name-property";
-
-    /**
-     * The email of the author to be applied when writing a commit
-     */
-    public static final String AUTHOR_EMAIL_PROPERTY = "author-email-property";
-
+public class GitStorageConnector implements StorageConnector, GitStorageConnectorConstants {
 
     static final Set<Descriptor> DESCRIPTORS = new HashSet<>();
 
@@ -143,7 +93,7 @@ public class GitStorageConnector implements StorageConnector {
                        new Descriptor(
                                      StorageConnector.FILE_PATH_PROPERTY,
                                      true,
-                                     "The relative (to the directory specified by \"repo-dest-property\") path of the file. " +
+                                     "The relative (to the directory specified by \"" + REPO_DEST_PROPERTY + "\") path of the file. " +
                                      "It is enough to specify only the name of the file."));
         DESCRIPTORS.add(
                         new Descriptor(

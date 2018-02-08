@@ -299,7 +299,13 @@ public class Messages implements StringConstants {
         /**
          * An error indicating there document type of an import is invalid
          */
-        STORAGE_DOCUMENT_TYPE_INVALID;
+        STORAGE_DOCUMENT_TYPE_INVALID,
+
+        /**
+         * An error indicating a git repository object could not be found
+         * while trying to remove it
+         */
+        GIT_REPO_NOT_FOUND_TO_REMOVE;
 
         @Override
         public String toString() {

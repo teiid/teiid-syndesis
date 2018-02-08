@@ -21,8 +21,17 @@
  */
 package org.komodo.rest.service;
 
+import static org.junit.Assert.assertNotNull;
+import static org.komodo.spi.storage.git.GitStorageConnectorConstants.AUTHOR_EMAIL_PROPERTY;
+import static org.komodo.spi.storage.git.GitStorageConnectorConstants.AUTHOR_NAME_PROPERTY;
+import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_BRANCH_PROPERTY;
+import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_PASSWORD;
+import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_PATH_PROPERTY;
+import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_USERNAME;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.komodo.core.KEngine;
@@ -35,10 +44,14 @@ import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.internal.DataserviceConveyor;
 import org.komodo.relational.importer.vdb.VdbImporter;
+import org.komodo.relational.internal.AdapterFactory;
 import org.komodo.relational.model.Model;
+import org.komodo.relational.profile.GitRepository;
+import org.komodo.relational.profile.Profile;
 import org.komodo.relational.resource.Driver;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
+import org.komodo.rest.relational.response.KomodoStorageAttributes;
 import org.komodo.spi.KException;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.metadata.MetadataInstance;
@@ -470,5 +483,26 @@ public final class ServiceTestUtilities {
         UnitOfWork uow = repository.createTransaction(user, "Get Workspace", true, null); //$NON-NLS-1$
         KomodoObject workspace = repository.komodoWorkspace(uow);
         return workspace.getAbsolutePath();
+    }
+
+    public GitRepository addGitRepositoryConfig(String user, String repoName, KomodoStorageAttributes sta) throws Exception {
+        UnitOfWork uow = repository.createTransaction(user, "Create Git Repository Config", false, null); //$NON-NLS-1$
+        KomodoObject profileObj = repository.komodoProfile(uow);
+        assertNotNull(profileObj);
+
+        Profile profile = new AdapterFactory().adapt(uow, profileObj, Profile.class);
+        Map<String, String> parameters = sta.getParameters();
+
+        URL url = new URL(parameters.get(REPO_PATH_PROPERTY));
+        GitRepository gitRepository = profile.addGitRepository(uow, repoName, url,
+                                                                                                                           parameters.get(REPO_USERNAME),
+                                                                                                                           parameters.get(REPO_PASSWORD));
+        gitRepository.setBranch(uow, parameters.get(REPO_BRANCH_PROPERTY));
+        gitRepository.setCommitAuthor(uow, parameters.get(AUTHOR_NAME_PROPERTY));
+        gitRepository.setCommitEmail(uow, parameters.get(AUTHOR_EMAIL_PROPERTY));
+
+        uow.commit();
+
+        return gitRepository;
     }
 }
