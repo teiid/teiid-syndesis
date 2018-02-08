@@ -1303,7 +1303,12 @@ public final class RelationalMessages {
          * An import export service storage types missing parameter error
          */
         IMPORT_EXPORT_SERVICE_MISSING_PARAMETER_ERROR,
-        
+
+        /**
+         * An import export service no git repository in profile error
+         */
+        IMPORT_EXPORT_SERVICE_NO_NAMED_GIT_REPO_ERROR,
+
         /**
          * An error indicating the failed status of to get a data services from service catalog
          */
@@ -1332,8 +1337,57 @@ public final class RelationalMessages {
         /**
          * An error indicating the user profile service method failed
          */
-        USER_PROFILE_SERVICE_ERROR;
+        USER_PROFILE_SERVICE_ERROR,
+
+        /**
+         * An error indicating no user profile can be found
+         */
+        NO_USER_PROFILE,
+
+        /**
+         * An error indicating a missing git repository name
+         */
+        PROFILE_GIT_REPO_MISSING_REPO_NAME,
+
+        /**
+         * An error indicating a missing git repository url
+         */
+        PROFILE_GIT_REPO_CREATE_MISSING_REPO_URL,
+
+        /**
+         * An error indicating a missing git repository user
+         */
+        PROFILE_GIT_REPO_CREATE_MISSING_REPO_USER,
+
+        /**
+         * An error indicating a missing git repository password
+         */
+        PROFILE_GIT_REPO_CREATE_MISSING_REPO_PASSWORD,
         
+        /**
+         * An error indicating a malformed git repository url
+         */
+        PROFILE_GIT_REPO_CREATE_MALFORMED_URL,
+
+        /**
+         * An error indicating a problem with creating a git repository configuration
+         */
+        PROFILE_GIT_REPO_CREATE_ERROR,
+
+        /**
+         * An error indicating a problem with removing a git repository configuration
+         */
+        PROFILE_GIT_REPO_REMOVE_ERROR,
+
+        /**
+         * A failure to encrypt and secure sensitive data
+         */
+        ENCRYPT_FAILURE,
+
+        /**
+         * A failure to decrypt sensitive data
+         */
+        DECRYPT_FAILURE;
 
         /**
          * {@inheritDoc}

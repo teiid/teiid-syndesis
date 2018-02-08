@@ -55,7 +55,7 @@
   - tko:description (string)
 
 /*
- * The Komodo workspace keeps track of the Teiid servers, Komodo repositories, Teiid 
+ * The Komodo workspace keeps track of the Komodo repositories, Teiid 
  * data sources, dataservices, folders and other resources created and being worked by users.
  */
 [tko:workspace] > nt:unstructured
@@ -197,11 +197,42 @@
 [tko:vdbEntry] > vdb:entry, tko:libraryComponent
 
 /*
+ * Settings for connecting to a git repository. The
+ * name of the node is a unique identifier for the repository
+ * so should be possible to have two repositories with the
+ * same url
+ */
+[tko:gitRepository] > nt:unstructured
+  - tko:url (string) mandatory
+  - tko:targetDirectory (string)
+  - tko:user (string) mandatory
+  - tko:pswd (string) mandatory
+  - tko:branch (string) = 'master' autocreated
+  - tko:commitAuthor (string) = 'komodo' autocreated
+  - tko:commitEmail (string) = 'komodo@komodo.openshift.org' autocreated
+
+[tko:gitRepositories] > nt:unstructured
+  + * (tko:gitRepository) copy
+
+/*
+ * A user profile node, detailing saved options available for each user
+ * The name of the node will be the user id of the user.
+ */
+[tko:profile] > nt:unstructured
+  + tko:gitRepositories (tko:gitRepositories) copy
+
+/*
+ * The grouping node for user profiles
+ */
+[tko:profiles] > nt:unstructured
+  + * (tko:profile) copy
+
+/*
  * The Komodo environment keeps any environmental settings used by the user.
  */
 [tko:environment] > nt:unstructured
   + tko:validation (nt:unstructured)
-  + tko:servers (nt:unstructured)
+  + tko:profiles (tko:profiles) copy
 
 /*
  * A grouping node for localized messages.

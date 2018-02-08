@@ -148,8 +148,14 @@ public class KomodoStorageAttributes extends AbstractKomodoContentAttribute {
         if (this.parameters == null)
             return props;
 
-        for (Map.Entry<String, String> entry : this.parameters.entrySet())
-            props.setProperty(entry.getKey(), entry.getValue());
+        for (Map.Entry<String, String> entry : this.parameters.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            if (key == null || value == null)
+                continue;
+
+            props.setProperty(key, value);
+        }
 
         return props;
     }

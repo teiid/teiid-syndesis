@@ -21,6 +21,7 @@
  */
 package org.komodo.relational;
 
+import java.net.URL;
 import org.komodo.core.KomodoLexicon;
 import org.komodo.core.repository.RepositoryTools;
 import org.komodo.relational.connection.Connection;
@@ -85,6 +86,9 @@ import org.komodo.relational.model.internal.UniqueConstraintImpl;
 import org.komodo.relational.model.internal.UserDefinedFunctionImpl;
 import org.komodo.relational.model.internal.ViewImpl;
 import org.komodo.relational.model.internal.VirtualProcedureImpl;
+import org.komodo.relational.profile.GitRepository;
+import org.komodo.relational.profile.Profile;
+import org.komodo.relational.profile.internal.GitRepositoryImpl;
 import org.komodo.relational.resource.DdlFile;
 import org.komodo.relational.resource.Driver;
 import org.komodo.relational.resource.ResourceFile;
@@ -695,6 +699,48 @@ public final class RelationalModelFactory {
         final ForeignKey fk = new ForeignKeyImpl( transaction, repository, kobject.getAbsolutePath() );
         fk.setReferencesTable( transaction, tableReference );
         return fk;
+    }
+
+    /**
+     * /**
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+     * @param repository
+     *        the repository where the model object will be created (cannot be <code>null</code>)
+     * @param profile
+     *        the profile object where the object is being created (cannot be <code>null</code>)
+     * @param repo~Name
+     *        the name of the git repository to create (cannot be empty)
+     *
+     * @return the git repository configuration object (never <code>null</code>)
+     * @throws KException
+     *         if an error occurs
+     */
+    public static GitRepository createGitRepository(UnitOfWork transaction, Repository repository, Profile profile,
+                                                                                                String repoName, URL url, String user, String password) throws KException {
+        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( repository, "repository" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( profile, "profile" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( repoName, "repoName" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( url, "url" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( user, "user" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( password, "password" ); //$NON-NLS-1$
+
+        try {
+            final KomodoObject grouping = RepositoryTools.findOrCreateChild( transaction,
+                                                                             profile,
+                                                                             KomodoLexicon.Profile.GIT_REPOSITORIES,
+                                                                             KomodoLexicon.Profile.GIT_REPOSITORIES );
+            final KomodoObject kobject = grouping.addChild( transaction, repoName, KomodoLexicon.GitRepository.NODE_TYPE );
+            final GitRepository result = new GitRepositoryImpl( transaction, repository, kobject.getAbsolutePath() );
+            result.setUrl(transaction, url);
+            result.setUser(transaction, user);
+            result.setPassword(transaction, password);
+            return result;
+        } catch ( final Exception e ) {
+            throw handleError( e );
+        }
     }
 
     /**

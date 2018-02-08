@@ -438,9 +438,9 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     public static final String VALIDATION_ROOT = ENV_ROOT + FORWARD_SLASH + Environment.VALIDATION;
 
     /**
-     * The root path of the Komodo repository environment servers area
+     * The root path of the Komodo repository environment profiles area
      */
-    public static final String SERVERS_ROOT = ENV_ROOT + FORWARD_SLASH + Environment.SERVERS;
+    public static final String PROFILES_ROOT = ENV_ROOT + FORWARD_SLASH + Environment.PROFILES;
 
     /**
      * The root path of the Komodo repository workspace area.
@@ -495,6 +495,27 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     }
 
     /**
+     * The komodo user's profile in the repository, ie. /tko:komodo/tko:environment/tko:profiles/${user}
+     * where ${user} is the user owning the given transaction
+     *
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not
+     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *
+     * @return the profile path for the user who owns the transaction
+     */
+    public static String komodoProfilePath(final UnitOfWork uow) {
+        if(uow == null)
+            return PROFILES_ROOT;
+
+        String userName = uow.getUserName();
+        if (userName == null || isSystemTx(uow))
+            return PROFILES_ROOT;
+
+        return PROFILES_ROOT + FORWARD_SLASH + userName;
+    }
+
+    /**
      * @param path the path to test
      *
      * @return true if the path is a reserved path
@@ -510,7 +531,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
             path = path.substring(0, path.length() - 1);
 
         if (KOMODO_ROOT.equals(path) || LIBRARY_ROOT.equals(path) || ENV_ROOT.equals(path)
-                || SEARCHES_ROOT.equals(path) || VALIDATION_ROOT.equals(path) || SERVERS_ROOT.equals(path)
+                || SEARCHES_ROOT.equals(path) || VALIDATION_ROOT.equals(path) || PROFILES_ROOT.equals(path)
                 || WORKSPACE_ROOT.equals(path))
             return true;
 
@@ -534,7 +555,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
         paths.add(ENV_ROOT);
         paths.add(SEARCHES_ROOT);
         paths.add(VALIDATION_ROOT);
-        paths.add(SERVERS_ROOT);
+        paths.add(PROFILES_ROOT);
         paths.add(WORKSPACE_ROOT);
         paths.add(komodoWorkspacePath(transaction));
 
@@ -600,6 +621,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
      */
     protected void provision(UnitOfWork transaction, String nodePath, OperationType operationType) throws KException {
         String userWksp = komodoWorkspacePath(transaction);
+        String userProfile = komodoProfilePath(transaction);
 
         if (isSystemTx(transaction))
             return; // System can do what it wishes
@@ -625,9 +647,6 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
                   return;
                 }
 
-                if (nodePath.startsWith(SERVERS_ROOT))
-                    return; // Read the group of servers
-
                 if (nodePath.startsWith(VALIDATION_ROOT))
                     return; // Read the group of validation rules
 
@@ -637,6 +656,10 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
                 if(nodePath.startsWith(userWksp))
                     return; // Read the contents of the user's workspace
 
+                if (nodePath.startsWith(userProfile)) {
+                    return; // Read the contents of the user's profile
+                }
+
                 if (nodePath.startsWith(SEARCHES_ROOT))
                     return; // Read the contents of the searches
 
@@ -645,11 +668,6 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
                                                         nodePath, transaction.getUserName() ));
 
             case CHILD_OPERATION:
-                if (SERVERS_ROOT.equals(nodePath))
-                    return; // Add/Remove servers
-
-                // Only system can add/remove cached teiids
-
                 if (nodePath.startsWith(VALIDATION_ROOT))
                     return; // Add/Remove validation rules from both the validation root and its children
 
@@ -657,6 +675,9 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
 
                 if (nodePath.startsWith(userWksp))
                     return; // Add/Remove children in the user's workspace
+
+                if (nodePath.startsWith(userProfile))
+                    return; // Add/Remove children in the user's profile
 
                 if (nodePath.startsWith(SEARCHES_ROOT))
                     return; // Add/Remove searches from the searches location
@@ -666,14 +687,14 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
                                                         nodePath, transaction.getUserName() ));
 
             case MODIFY_OPERATION:
-                if (nodePath.startsWith(SERVERS_ROOT) && ! SERVERS_ROOT.equals(nodePath))
-                    return; // Can modify servers
-
                 if (nodePath.startsWith(VALIDATION_ROOT) && ! VALIDATION_ROOT.equals(nodePath))
                     return; // Can modify validation rules
 
                 if(nodePath.startsWith(userWksp) && ! userWksp.equals(nodePath))
                     return; // Can modify contents of workspace
+
+                if(nodePath.startsWith(userProfile) && ! userProfile.equals(nodePath))
+                    return; // Can modify contents of user profile
 
                 if (nodePath.startsWith(SEARCHES_ROOT))
                     return; // Can modify searches in the search location
@@ -683,14 +704,14 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
                                                              nodePath, transaction.getUserName() ));
 
             case REMOVE_OPERATION:
-                if (nodePath.startsWith(SERVERS_ROOT) && ! SERVERS_ROOT.equals(nodePath))
-                    return; // Can remove servers
-
                 if (nodePath.startsWith(VALIDATION_ROOT) && ! VALIDATION_ROOT.equals(nodePath))
                     return; // Can remove validation rules
 
                 if(nodePath.startsWith(userWksp) && ! userWksp.equals(nodePath))
                     return; // Can remove contents of workspace
+
+                if(nodePath.startsWith(userProfile) && ! userProfile.equals(nodePath))
+                    return; // Can remove contents of user profile
 
                 if (nodePath.startsWith(SEARCHES_ROOT))
                     return; // Can remove searches in the search location
@@ -1426,6 +1447,12 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     }
 
     @Override
+    public KomodoObject komodoProfile(final UnitOfWork uow) throws KException {
+        komodoProfiles(uow);
+        return create(uow, komodoProfilePath(uow), KomodoLexicon.Profile.NODE_TYPE);
+    }
+
+    @Override
     public KomodoObject komodoSearches(UnitOfWork transaction) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
@@ -1435,13 +1462,13 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     }
 
     @Override
-    public KomodoObject komodoServersNode(UnitOfWork transaction) throws KException {
+    public KomodoObject komodoProfiles(UnitOfWork transaction) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
         "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         komodoEnvironment(transaction);
-        return create(transaction, SERVERS_ROOT, null);
+        return create(transaction, PROFILES_ROOT, KomodoLexicon.Profile.GROUP_NODE);
     }
 
     @Override

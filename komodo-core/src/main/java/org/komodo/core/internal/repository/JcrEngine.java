@@ -537,7 +537,7 @@ public class JcrEngine extends Thread implements RepoEngine {
                             final Node kid = itr.nextNode();
 
                             // don't delete validation rules
-                            if (Environment.VALIDATION.equals( kid.getName() ) || Environment.SERVERS.equals( kid.getName() )) {
+                            if (Environment.VALIDATION.equals( kid.getName() ) || Environment.PROFILES.equals( kid.getName() )) {
                                 continue;
                             }
 

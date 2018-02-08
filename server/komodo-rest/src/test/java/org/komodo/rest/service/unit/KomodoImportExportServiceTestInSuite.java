@@ -25,6 +25,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.komodo.spi.storage.StorageConnectorConstants.FILES_HOME_PATH_PROPERTY;
+import static org.komodo.spi.storage.StorageConnectorConstants.FILE_PATH_PROPERTY;
+import static org.komodo.spi.storage.git.GitStorageConnectorConstants.AUTHOR_EMAIL_PROPERTY;
+import static org.komodo.spi.storage.git.GitStorageConnectorConstants.AUTHOR_NAME_PROPERTY;
+import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_DEST_PROPERTY;
+import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_PATH_PROPERTY;
+import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_USERNAME;
+import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_PASSWORD;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -50,6 +58,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.model.Model;
+import org.komodo.relational.profile.GitRepository;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
@@ -58,11 +67,13 @@ import org.komodo.rest.relational.response.ImportExportStatus;
 import org.komodo.rest.relational.response.KomodoStorageAttributes;
 import org.komodo.rest.relational.response.RestStorageType;
 import org.komodo.rest.relational.response.RestStorageTypeDescriptor;
+import org.komodo.rest.service.KomodoImportExportService;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
+import org.komodo.spi.storage.StorageConnector;
 import org.komodo.test.utils.TestUtilities;
 import org.komodo.utils.FileUtils;
 import org.komodo.utils.StringUtils;
@@ -175,7 +186,7 @@ public class KomodoImportExportServiceTestInSuite extends AbstractKomodoServiceT
         URI uri = UriBuilder.fromUri(uriBuilder().baseUri()).path(V1Constants.IMPORT_EXPORT_SEGMENT).path(V1Constants.IMPORT).build();
 
         KomodoStorageAttributes storageAttr = new KomodoStorageAttributes();
-        storageAttr.setStorageType("file");
+        storageAttr.setStorageType(StorageConnector.Types.FILE.id());
         storageAttr.setDocumentType(DocumentType.VDB_XML);
 
         String portfolioCnt = FileUtils.streamToString(TestUtilities.portfolioExample());
@@ -209,12 +220,12 @@ public class KomodoImportExportServiceTestInSuite extends AbstractKomodoServiceT
         URI uri = UriBuilder.fromUri(uriBuilder().baseUri()).path(V1Constants.IMPORT_EXPORT_SEGMENT).path(V1Constants.EXPORT).build();
 
         KomodoStorageAttributes storageAttr = new KomodoStorageAttributes();
-        storageAttr.setStorageType("file");
+        storageAttr.setStorageType(StorageConnector.Types.FILE.id());
         String artifactPath = "/export/blah";
         storageAttr.setArtifactPath(artifactPath);
 
         String tmpDirPath = System.getProperty("java.io.tmpdir");
-        storageAttr.setParameter("files-home-path-property", tmpDirPath);
+        storageAttr.setParameter(FILES_HOME_PATH_PROPERTY, tmpDirPath);
 
         HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
@@ -232,11 +243,11 @@ public class KomodoImportExportServiceTestInSuite extends AbstractKomodoServiceT
         URI uri = UriBuilder.fromUri(uriBuilder().baseUri()).path(V1Constants.IMPORT_EXPORT_SEGMENT).path(V1Constants.EXPORT).build();
 
         KomodoStorageAttributes storageAttr = new KomodoStorageAttributes();
-        storageAttr.setStorageType("file");
+        storageAttr.setStorageType(StorageConnector.Types.FILE.id());
         storageAttr.setArtifactPath(serviceTestUtilities.getWorkspace(USER_NAME) + FORWARD_SLASH + "myVDB");
 
         String tmpDirPath = System.getProperty("java.io.tmpdir");
-        storageAttr.setParameter("files-home-path-property", tmpDirPath);
+        storageAttr.setParameter(FILES_HOME_PATH_PROPERTY, tmpDirPath);
 
         HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
@@ -290,7 +301,7 @@ public class KomodoImportExportServiceTestInSuite extends AbstractKomodoServiceT
         URI uri = UriBuilder.fromUri(uriBuilder().baseUri()).path(V1Constants.IMPORT_EXPORT_SEGMENT).path(V1Constants.IMPORT).build();
 
         KomodoStorageAttributes storageAttr = new KomodoStorageAttributes();
-        storageAttr.setStorageType("file");
+        storageAttr.setStorageType(StorageConnector.Types.FILE.id());
         storageAttr.setDocumentType(DocumentType.ZIP);
 
         String dsName = "MyDataService";
@@ -364,7 +375,7 @@ public class KomodoImportExportServiceTestInSuite extends AbstractKomodoServiceT
         URI uri = UriBuilder.fromUri(uriBuilder().baseUri()).path(V1Constants.IMPORT_EXPORT_SEGMENT).path(V1Constants.IMPORT).build();
 
         KomodoStorageAttributes storageAttr = new KomodoStorageAttributes();
-        storageAttr.setStorageType("file");
+        storageAttr.setStorageType(StorageConnector.Types.FILE.id());
         storageAttr.setDocumentType(DocumentType.ZIP);
 
         String dsName = TestUtilities.US_STATES_DATA_SERVICE_NAME;
@@ -422,12 +433,12 @@ public class KomodoImportExportServiceTestInSuite extends AbstractKomodoServiceT
         URI uri = UriBuilder.fromUri(uriBuilder().baseUri()).path(V1Constants.IMPORT_EXPORT_SEGMENT).path(V1Constants.IMPORT).build();
 
         KomodoStorageAttributes storageAttr = new KomodoStorageAttributes();
-        storageAttr.setStorageType("git");
+        storageAttr.setStorageType(StorageConnector.Types.GIT.id());
         storageAttr.setDocumentType(DocumentType.ZIP);
-        storageAttr.setParameter("repo-path-property", "file://" + myGitDir);
-        storageAttr.setParameter("file-path-property", dsName);
-        storageAttr.setParameter("author-name-property", "user");
-        storageAttr.setParameter("author-email-property", "user@user.com");
+        storageAttr.setParameter(REPO_PATH_PROPERTY, "file://" + myGitDir);
+        storageAttr.setParameter(FILE_PATH_PROPERTY, dsName);
+        storageAttr.setParameter(AUTHOR_NAME_PROPERTY, "user");
+        storageAttr.setParameter(AUTHOR_EMAIL_PROPERTY, "user@user.com");
 
         assertFalse(workspace.hasChild(uow, dsName));
 
@@ -470,11 +481,11 @@ public class KomodoImportExportServiceTestInSuite extends AbstractKomodoServiceT
         URI uri = UriBuilder.fromUri(uriBuilder().baseUri()).path(V1Constants.IMPORT_EXPORT_SEGMENT).path(V1Constants.EXPORT).build();
 
         KomodoStorageAttributes storageAttr = new KomodoStorageAttributes();
-        storageAttr.setStorageType("file");
+        storageAttr.setStorageType(StorageConnector.Types.FILE.id());
         storageAttr.setArtifactPath(serviceTestUtilities.getWorkspace(USER_NAME) + FORWARD_SLASH + dsName);
 
         String tmpDirPath = System.getProperty("java.io.tmpdir");
-        storageAttr.setParameter("files-home-path-property", tmpDirPath);
+        storageAttr.setParameter(FILES_HOME_PATH_PROPERTY, tmpDirPath);
 
         HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
@@ -520,13 +531,13 @@ public class KomodoImportExportServiceTestInSuite extends AbstractKomodoServiceT
         URI uri = UriBuilder.fromUri(uriBuilder().baseUri()).path(V1Constants.IMPORT_EXPORT_SEGMENT).path(V1Constants.EXPORT).build();
 
         KomodoStorageAttributes storageAttr = new KomodoStorageAttributes();
-        storageAttr.setStorageType("git");
+        storageAttr.setStorageType(StorageConnector.Types.GIT.id());
         storageAttr.setArtifactPath(serviceTestUtilities.getWorkspace(USER_NAME) + FORWARD_SLASH + dsName);
 
-        storageAttr.setParameter("repo-path-property", "file://" + myGitDir);
-        storageAttr.setParameter("repo-dest-property", gitRepoDest.getAbsolutePath());
-        storageAttr.setParameter("author-name-property", "user");
-        storageAttr.setParameter("author-email-property", "user@user.com");
+        storageAttr.setParameter(REPO_PATH_PROPERTY, "file://" + myGitDir);
+        storageAttr.setParameter(REPO_DEST_PROPERTY, gitRepoDest.getAbsolutePath());
+        storageAttr.setParameter(AUTHOR_NAME_PROPERTY, "user");
+        storageAttr.setParameter(AUTHOR_EMAIL_PROPERTY, "user@user.com");
 
         HttpPost request = jsonRequest(uri, RequestType.POST);
         addJsonConsumeContentType(request);
@@ -536,6 +547,238 @@ public class KomodoImportExportServiceTestInSuite extends AbstractKomodoServiceT
         okResponse(response);
         String entity = extractResponse(response);
         //        System.out.println(entity);
+
+        ImportExportStatus status = KomodoJsonMarshaller.unmarshall(entity, ImportExportStatus.class);
+        assertNotNull(status);
+
+        assertTrue(status.isSuccess());
+        assertFalse(status.hasDownloadable());
+        assertEquals(ZIP, status.getType());
+
+        //
+        // Test that the git storage connector really did export the data service
+        //
+        org.eclipse.jgit.lib.Repository repository = myGit.getRepository();
+        ObjectId commitId = repository.resolve(Constants.HEAD);
+        try (RevWalk revWalk = new RevWalk(repository)) {
+            RevCommit commit = revWalk.parseCommit(commitId);
+            RevTree tree = commit.getTree();
+
+            try (TreeWalk treeWalk = new TreeWalk(repository)) {
+                treeWalk.addTree(tree);
+                treeWalk.setRecursive(false);
+                while (treeWalk.next()) {
+                    zipEntries.remove(treeWalk.getPathString());
+
+                    if (treeWalk.isSubtree())
+                        treeWalk.enterSubtree();
+                }
+            }
+
+            //
+            // All entries in the original zip have been extracted
+            // and pushed to the git repository
+            //
+            assertTrue("Remaining entries: " + Arrays.toString(zipEntries.toArray(new String[0])), zipEntries.isEmpty());
+        }
+    }
+
+    @Test
+    public void shouldExportDSUsingExportToGitResourceMethod() throws Exception {
+        loadStatesDataService();
+
+        String dsName = "UsStatesService";
+        List<String> zipEntries = TestUtilities.zipEntries(dsName, TestUtilities.usStatesDataserviceExample());
+        //        System.out.println(zipEntries);
+
+        KomodoStorageAttributes storageAttr = new KomodoStorageAttributes();
+        storageAttr.setArtifactPath(serviceTestUtilities.getWorkspace(USER_NAME) + FORWARD_SLASH + dsName);
+        storageAttr.setParameter(REPO_PATH_PROPERTY, "file://" + myGitDir);
+        storageAttr.setParameter(REPO_DEST_PROPERTY, gitRepoDest.getAbsolutePath());
+        storageAttr.setParameter(AUTHOR_NAME_PROPERTY, "user");
+        storageAttr.setParameter(AUTHOR_EMAIL_PROPERTY, "user@user.com");
+
+        //
+        // Adds extra parameter of repo-dest-property so that we can check
+        // the commits and files have been properly exported
+        //
+        URI uri = UriBuilder.fromUri(uriBuilder().baseUri())
+                                            .path(V1Constants.IMPORT_EXPORT_SEGMENT)
+                                            .path(V1Constants.EXPORT_TO_GIT)
+                                            .build();
+
+        HttpPost request = jsonRequest(uri, RequestType.POST);
+        addJsonConsumeContentType(request);
+        addBody(request, storageAttr);
+        HttpResponse response = execute(request);
+
+        okResponse(response);
+        String entity = extractResponse(response);
+//        System.out.println(entity);
+
+        ImportExportStatus status = KomodoJsonMarshaller.unmarshall(entity, ImportExportStatus.class);
+        assertNotNull(status);
+
+        assertTrue(status.isSuccess());
+        assertFalse(status.hasDownloadable());
+        assertEquals(ZIP, status.getType());
+
+        //
+        // Test that the git storage connector really did export the data service
+        //
+        org.eclipse.jgit.lib.Repository repository = myGit.getRepository();
+        ObjectId commitId = repository.resolve(Constants.HEAD);
+        try (RevWalk revWalk = new RevWalk(repository)) {
+            RevCommit commit = revWalk.parseCommit(commitId);
+            RevTree tree = commit.getTree();
+
+            try (TreeWalk treeWalk = new TreeWalk(repository)) {
+                treeWalk.addTree(tree);
+                treeWalk.setRecursive(false);
+                while (treeWalk.next()) {
+                    zipEntries.remove(treeWalk.getPathString());
+
+                    if (treeWalk.isSubtree())
+                        treeWalk.enterSubtree();
+                }
+            }
+
+            //
+            // All entries in the original zip have been extracted
+            // and pushed to the git repository
+            //
+            assertTrue("Remaining entries: " + Arrays.toString(zipEntries.toArray(new String[0])), zipEntries.isEmpty());
+        }
+    }
+
+    /*
+     * Adds parameter for destination directory
+     */
+    @Test
+    public void shouldExportDSUsingExportToGitResourceMethod2() throws Exception {
+        loadStatesDataService();
+
+        String dsName = "UsStatesService";
+        String dsDir = dsName + "Directory";
+        List<String> zipEntries = TestUtilities.zipEntries(dsName, TestUtilities.usStatesDataserviceExample());
+        //        System.out.println(zipEntries);
+
+        KomodoStorageAttributes storageAttr = new KomodoStorageAttributes();
+        storageAttr.setArtifactPath(serviceTestUtilities.getWorkspace(USER_NAME) + FORWARD_SLASH + dsName);
+        storageAttr.setParameter(REPO_PATH_PROPERTY, "file://" + myGitDir);
+        storageAttr.setParameter(REPO_DEST_PROPERTY, gitRepoDest.getAbsolutePath());
+        storageAttr.setParameter(FILE_PATH_PROPERTY, dsDir);
+        storageAttr.setParameter(AUTHOR_NAME_PROPERTY, "user");
+        storageAttr.setParameter(AUTHOR_EMAIL_PROPERTY, "user@user.com");
+
+        //
+        // Adds extra parameter of repo-dest-property so that we can check
+        // the commits and files have been properly exported
+        //
+        URI uri = UriBuilder.fromUri(uriBuilder().baseUri())
+                                            .path(V1Constants.IMPORT_EXPORT_SEGMENT)
+                                            .path(V1Constants.EXPORT_TO_GIT)
+                                            .build();
+
+        HttpPost request = jsonRequest(uri, RequestType.POST);
+        addJsonConsumeContentType(request);
+        addBody(request, storageAttr);
+        HttpResponse response = execute(request);
+
+        okResponse(response);
+        String entity = extractResponse(response);
+//        System.out.println(entity);
+
+        ImportExportStatus status = KomodoJsonMarshaller.unmarshall(entity, ImportExportStatus.class);
+        assertNotNull(status);
+
+        assertTrue(status.isSuccess());
+        assertFalse(status.hasDownloadable());
+        assertEquals(ZIP, status.getType());
+
+        //
+        // Test that the git storage connector really did export the data service
+        //
+        org.eclipse.jgit.lib.Repository repository = myGit.getRepository();
+        ObjectId commitId = repository.resolve(Constants.HEAD);
+        try (RevWalk revWalk = new RevWalk(repository)) {
+            RevCommit commit = revWalk.parseCommit(commitId);
+            RevTree tree = commit.getTree();
+
+            try (TreeWalk treeWalk = new TreeWalk(repository)) {
+                treeWalk.addTree(tree);
+                treeWalk.setRecursive(false);
+                while (treeWalk.next()) {
+                    String treePath = treeWalk.getPathString();
+                    if (! treePath.startsWith(dsDir))
+                        continue;
+
+                    //
+                    // Strip the path prefix since we've proved its there
+                    // by getting to here.
+                    //
+                    treePath = treePath.replace(dsDir + FORWARD_SLASH, EMPTY_STRING);
+                    zipEntries.remove(treePath);
+
+                    if (treeWalk.isSubtree())
+                        treeWalk.enterSubtree();
+                }
+            }
+
+            //
+            // All entries in the original zip have been extracted
+            // and pushed to the git repository.
+            //
+            assertTrue("Remaining entries: " + Arrays.toString(zipEntries.toArray(new String[0])), zipEntries.isEmpty());
+        }
+    }
+
+    @Test
+    public void shouldExportDSUsingExportToGitAndProfileGitRepostoryConfig() throws Exception {
+        loadStatesDataService();
+
+        String dsName = "UsStatesService";
+        String myRepo = "MyGitRepo";
+        List<String> zipEntries = TestUtilities.zipEntries(dsName, TestUtilities.usStatesDataserviceExample());
+
+        //
+        // Populate the user profile ready for the test
+        //
+        KomodoStorageAttributes storageAttr = new KomodoStorageAttributes();
+        storageAttr.setParameter(REPO_PATH_PROPERTY, "file://" + myGitDir);
+        storageAttr.setParameter(REPO_USERNAME, "user");
+        storageAttr.setParameter(REPO_PASSWORD, "password");
+        storageAttr.setParameter(AUTHOR_NAME_PROPERTY, "user");
+        storageAttr.setParameter(AUTHOR_EMAIL_PROPERTY, "user@user.com");
+        GitRepository config = serviceTestUtilities.addGitRepositoryConfig(USER_NAME, myRepo, storageAttr);
+        assertNotNull(config);
+
+        //
+        // Now the config is populated, reset the storage attributed to include
+        // only the profile repository name (and dest property for monitoring)
+        //
+        storageAttr = new KomodoStorageAttributes();
+        storageAttr.setArtifactPath(serviceTestUtilities.getWorkspace(USER_NAME) + FORWARD_SLASH + dsName);
+        storageAttr.setParameter(KomodoImportExportService.PROFILE_REPOSITORY_NAME, myRepo);
+        storageAttr.setParameter(REPO_DEST_PROPERTY, gitRepoDest.getAbsolutePath());
+
+        //
+        // Adds extra parameter of repo-dest-property so that we can check
+        // the commits and files have been properly exported
+        //
+        URI uri = UriBuilder.fromUri(uriBuilder().baseUri())
+                                            .path(V1Constants.IMPORT_EXPORT_SEGMENT)
+                                            .path(V1Constants.EXPORT_TO_GIT)
+                                            .build();
+
+        HttpPost request = jsonRequest(uri, RequestType.POST);
+        addJsonConsumeContentType(request);
+        addBody(request, storageAttr);
+        HttpResponse response = execute(request);
+
+        okResponse(response);
+        String entity = extractResponse(response);
+//        System.out.println(entity);
 
         ImportExportStatus status = KomodoJsonMarshaller.unmarshall(entity, ImportExportStatus.class);
         assertNotNull(status);
@@ -593,7 +836,7 @@ public class KomodoImportExportServiceTestInSuite extends AbstractKomodoServiceT
             assertTrue(descriptors.size() > 0);
 
             String name = type.getName();
-            assertTrue(name.equals("file") || name.equals("git"));
+            assertTrue(name.equals(StorageConnector.Types.FILE.id()) || name.equals(StorageConnector.Types.GIT.id()));
         }
     }
 
@@ -619,7 +862,7 @@ public class KomodoImportExportServiceTestInSuite extends AbstractKomodoServiceT
         URI uri = UriBuilder.fromUri(uriBuilder().baseUri()).path(V1Constants.IMPORT_EXPORT_SEGMENT).path(V1Constants.IMPORT).build();
 
         KomodoStorageAttributes storageAttr = new KomodoStorageAttributes();
-        storageAttr.setStorageType("file");
+        storageAttr.setStorageType(StorageConnector.Types.FILE.id());
         storageAttr.setDocumentType(DocumentType.DDL);
         String modelPath = testModel.getAbsolutePath();
         storageAttr.setArtifactPath(modelPath);
