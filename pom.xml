@@ -28,7 +28,7 @@
 
         <module>komodo-core</module>
 
-        <module>plugins</module>
+        <module>storage</module>
 
         <!-- For Testing only -->
         <module>komodo-integration-utils</module>

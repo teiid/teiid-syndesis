@@ -54,7 +54,6 @@ import org.komodo.core.KEngine;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.OptionKeys;
-import org.komodo.osgi.PluginService;
 import org.komodo.relational.profile.GitRepository;
 import org.komodo.relational.profile.Profile;
 import org.komodo.rest.KomodoRestException;
@@ -75,6 +74,7 @@ import org.komodo.spi.storage.StorageConnector;
 import org.komodo.spi.storage.StorageConnector.Descriptor;
 import org.komodo.spi.storage.StorageReference;
 import org.komodo.spi.storage.StorageService;
+import org.komodo.storage.StorageServiceProvider;
 import org.komodo.utils.FileUtils;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
@@ -109,12 +109,12 @@ public class KomodoImportExportService extends KomodoService {
             return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.IMPORT_EXPORT_SERVICE_NO_PARAMETERS_ERROR);
         }
 
-        Set<String> supportedTypes = PluginService.getInstance().getSupportedStorageTypes();
+        Set<String> supportedTypes = StorageServiceProvider.getInstance().getSupportedStorageTypes();
         if (! supportedTypes.contains(sta.getStorageType())) {
             return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.IMPORT_EXPORT_SERVICE_UNSUPPORTED_TYPE_ERROR);
         }
 
-        StorageService storageService = PluginService.getInstance().getStorageService(sta.getStorageType());
+        StorageService storageService = StorageServiceProvider.getInstance().getStorageService(sta.getStorageType());
 
         //
         // Check the required descriptors exist
@@ -501,15 +501,15 @@ public class KomodoImportExportService extends KomodoService {
             return notAcceptableMediaTypesBuilder().build();
 
         try {
-            PluginService pluginService = PluginService.getInstance();
-            Set<String> storageTypes = pluginService.getSupportedStorageTypes();
+            StorageServiceProvider storageServiceProvider = StorageServiceProvider.getInstance();
+            Set<String> storageTypes = storageServiceProvider.getSupportedStorageTypes();
             if (storageTypes == null || storageTypes.isEmpty()) {
                 return Response.noContent().build();
             }
 
             List<RestStorageType> restStorageTypes = new ArrayList<>(storageTypes.size());
             for (String storageType : storageTypes) {
-                StorageService storageService = pluginService.getStorageService(storageType);
+                StorageService storageService = storageServiceProvider.getStorageService(storageType);
                 String description = storageService.getDescription();
                 Set<Descriptor> descriptors = storageService.getDescriptors();
 

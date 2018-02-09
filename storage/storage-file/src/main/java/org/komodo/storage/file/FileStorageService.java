@@ -19,36 +19,38 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.spi.storage;
+package org.komodo.storage.file;
 
 import java.util.Properties;
 import java.util.Set;
+import org.komodo.spi.storage.StorageConnector;
 import org.komodo.spi.storage.StorageConnector.Descriptor;
+import org.komodo.spi.storage.StorageService;
 
-public interface StorageService {
+public class FileStorageService implements StorageService {
 
-    /**
-     * @return the storage Id for this service
-     * @throws Exception 
-     */
-    String getStorageId() throws Exception;
+    public static final String STORAGE_ID = StorageConnector.Types.FILE.id();
 
-    /**
-     * @return the description of this service
-     * @throws Exception
-     */
-    String getDescription() throws Exception;
+    public static final String DESCRIPTION = "Storage of files directly on server filesystem (provides download capability to clients)";
 
-    /**
-     * @return the set of applicable parameters for this storage connector
-     * @throws Exception
-     */
-    Set<Descriptor> getDescriptors() throws Exception;
+    @Override
+    public String getStorageId() {
+        return STORAGE_ID;
+    }
 
-    /**
-     * @param parameters
-     * @return an instance of the {@link StorageConnector}
-     * @throws Exception
-     */
-    StorageConnector getConnector(Properties parameters) throws Exception;
+    @Override
+    public String getDescription() throws Exception {
+        return DESCRIPTION;
+    }
+
+    @Override
+    public Set<Descriptor> getDescriptors() throws Exception {
+        return FileStorageConnector.DESCRIPTORS;
+    }
+
+    @Override
+    public StorageConnector getConnector(Properties parameters) throws Exception {
+        return new FileStorageConnector(parameters);
+    }
+
 }

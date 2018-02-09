@@ -253,13 +253,8 @@
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.teiid.komodo.plugins</groupId>
-				<artifactId>komodo-plugin-framework</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
 				<groupId>org.teiid.komodo</groupId>
-				<artifactId>komodo-plugin-service</artifactId>
+				<artifactId>komodo-storage-service</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -300,11 +295,6 @@
 			<dependency>
 				<groupId>org.teiid.komodo</groupId>
 				<artifactId>komodo-relational</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.teiid.komodo</groupId>
-				<artifactId>komodo-relational-commands</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
