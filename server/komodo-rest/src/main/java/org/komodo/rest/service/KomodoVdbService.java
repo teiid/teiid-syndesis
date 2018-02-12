@@ -115,7 +115,6 @@ import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
-import com.google.common.base.Objects;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -544,6 +543,10 @@ public final class KomodoVdbService extends KomodoService {
         }
     }
 
+    private static boolean equals(Object a, Object b) {
+        return a == b || (a != null && a.equals(b));
+    }
+
     // Sets Model properties using the supplied RestVdbModel object
     private void setProperties(final UnitOfWork uow, Model model, RestVdbModel restVdbModel) throws KException {
         // 'New' = requested RestVdbModel properties
@@ -568,21 +571,21 @@ public final class KomodoVdbService extends KomodoService {
         // model type
         final Type newModelType = restVdbModel.getModelType();
         
-        if ( !Objects.equal( newModelType, model.getModelType( uow ) ) ) {
+        if ( ! equals( newModelType, model.getModelType( uow ) ) ) {
             model.setModelType( uow, newModelType );
         }
         
         // metadata type
         final String newMetadataType = restVdbModel.getMetadataType();
         
-        if ( !Objects.equal( newMetadataType, model.getMetadataType( uow ) ) ) {
+        if ( ! equals( newMetadataType, model.getMetadataType( uow ) ) ) {
             model.setMetadataType( uow, newMetadataType );
         }
         
         // model definition
         final String newDdl = restVdbModel.getDdl();
         
-        if ( !Objects.equal( newDdl, model.getModelDefinition( uow ) ) ) {
+        if ( ! equals( newDdl, model.getModelDefinition( uow ) ) ) {
             model.setModelDefinition( uow, newDdl );
         }
         

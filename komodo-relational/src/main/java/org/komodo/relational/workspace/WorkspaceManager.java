@@ -33,7 +33,6 @@ import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.OptionKeys;
-import org.komodo.osgi.PluginService;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.RelationalModelFactory;
@@ -78,6 +77,7 @@ import org.komodo.spi.storage.StorageReference;
 import org.komodo.spi.storage.StorageService;
 import org.komodo.spi.utils.KeyInValueMap;
 import org.komodo.spi.utils.KeyInValueMap.KeyFromValueAdapter;
+import org.komodo.storage.StorageServiceProvider;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
 
@@ -933,7 +933,7 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
         StorageConnector connector = null;
         InputStream stream = null;
         try {
-            StorageService storageService = PluginService.getInstance().getStorageService(storageRef.getStorageType());
+            StorageService storageService = StorageServiceProvider.getInstance().getStorageService(storageRef.getStorageType());
             if (storageService == null)
                 throw new KException(Messages.getString(Relational.STORAGE_TYPE_INVALID,
                                                         storageRef.getStorageType()));
@@ -1030,7 +1030,7 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
         ArgCheck.isNotNull(artifact, "artifact"); //$NON-NLS-1$
 
         try {
-            StorageService storageService = PluginService.getInstance().getStorageService(storageType);
+            StorageService storageService = StorageServiceProvider.getInstance().getStorageService(storageType);
             if (storageService == null)
                 throw new KException(Messages.getString(Relational.STORAGE_TYPE_INVALID, storageType));
 

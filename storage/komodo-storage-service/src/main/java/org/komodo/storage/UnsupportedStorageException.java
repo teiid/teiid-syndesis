@@ -19,36 +19,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.spi.storage;
+package org.komodo.storage;
 
-import java.util.Properties;
-import java.util.Set;
-import org.komodo.spi.storage.StorageConnector.Descriptor;
+/**
+ * Exception thrown if version of teiid is unsupported
+ */
+public class UnsupportedStorageException extends Exception {
 
-public interface StorageService {
+    private static final long serialVersionUID = 1L;
 
-    /**
-     * @return the storage Id for this service
-     * @throws Exception 
-     */
-    String getStorageId() throws Exception;
-
-    /**
-     * @return the description of this service
-     * @throws Exception
-     */
-    String getDescription() throws Exception;
-
-    /**
-     * @return the set of applicable parameters for this storage connector
-     * @throws Exception
-     */
-    Set<Descriptor> getDescriptors() throws Exception;
-
-    /**
-     * @param parameters
-     * @return an instance of the {@link StorageConnector}
-     * @throws Exception
-     */
-    StorageConnector getConnector(Properties parameters) throws Exception;
+    public UnsupportedStorageException(String storageId) {
+        super(Messages.getString(Messages.Error.UnsupportedStorageType, storageId));
+    }
 }

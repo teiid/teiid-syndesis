@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.teiid.komodo</groupId>
+		<artifactId>komodo-parent</artifactId>
+		<version>0.0.4-SNAPSHOT</version>
+		<relativePath>../komodo-parent/pom.xml</relativePath>
+	</parent>
+
+	<artifactId>komodo-storage</artifactId>
+	<packaging>pom</packaging>
+	<name>Komodo Storage</name>
+	<description>Service and connectors for accessing external storage facilities</description>
+
+	<modules>
+		<module>komodo-storage-service</module>
+		<module>storage-file</module>
+		<module>storage-git</module>
+	</modules>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.teiid.komodo.storage</groupId>
+				<artifactId>storage-file</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.teiid.komodo.storage</groupId>
+				<artifactId>storage-git</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.teiid.komodo</groupId>
+				<artifactId>komodo-utils</artifactId>
+				<version>${project.version}</version>
+				<type>test-jar</type>
+				<scope>test</scope>
+			</dependency>
+
+		</dependencies>
+	</dependencyManagement>
+
+</project>
