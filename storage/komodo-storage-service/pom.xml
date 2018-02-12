@@ -3,72 +3,76 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.teiid.komodo</groupId>
-		<artifactId>komodo</artifactId>
+		<artifactId>komodo-storage</artifactId>
 		<version>0.0.4-SNAPSHOT</version>
 	</parent>
-	<artifactId>komodo-relational</artifactId>
-	<name>Komodo Relational</name>
-	<description>Relational modelling framework</description>
+	<artifactId>komodo-storage-service</artifactId>
+	<name>Komodo Storage Service</name>
+	<description>Service for making available the storage connectors</description>
+
 
 	<dependencies>
 		<dependency>
 			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-spi</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-utils</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.teiid.komodo</groupId>
-			<artifactId>komodo-storage-service</artifactId>
+			<groupId>org.teiid.komodo.storage</groupId>
+			<artifactId>storage-file</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.teiid.komodo</groupId>
-			<artifactId>komodo-core</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.teiid.komodo</groupId>
-			<artifactId>komodo-importer</artifactId>
+			<groupId>org.teiid.komodo.storage</groupId>
+			<artifactId>storage-git</artifactId>
 		</dependency>
 
 		<dependency>
 			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-utils</artifactId>
-			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.teiid.komodo</groupId>
-			<artifactId>komodo-core</artifactId>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
 	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+
 		<testResources>
 			<testResource>
-				<directory>${project.basedir}/src/test/resources</directory>
+				<directory>src/test/resources</directory>
 				<filtering>true</filtering>
 			</testResource>
 		</testResources>
 
+		<!-- Usual compiling ensuring the java version is 1.8 -->
 		<plugins>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
+				<dependencies>
+					<!-- Required for the filtering of default resources -->
+					<dependency>
+						<groupId>org.apache.maven.shared</groupId>
+						<artifactId>maven-filtering</artifactId>
+						<version>3.1.0</version>
+					</dependency>
+				</dependencies>
 				<configuration>
 					<nonFilteredFileExtensions>
-						<nonFilteredFileExtension>ddl</nonFilteredFileExtension>
-						<nonFilteredFileExtension>txt</nonFilteredFileExtension>
+						<nonFilteredFileExtension>jar</nonFilteredFileExtension>
 					</nonFilteredFileExtensions>
 				</configuration>
 			</plugin>
 		</plugins>
+
 	</build>
 </project>
