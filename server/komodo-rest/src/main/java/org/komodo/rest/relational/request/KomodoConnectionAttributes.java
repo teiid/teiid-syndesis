@@ -21,10 +21,6 @@
  */
 package org.komodo.rest.relational.request;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.ws.rs.core.MediaType;
 
 import org.komodo.rest.KRestEntity;
@@ -44,36 +40,20 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 public class KomodoConnectionAttributes implements KRestEntity {
 
     /**
-     * Label for the jndi
+     * Label for the description
      */
-    public static final String JNDI_LABEL = "jndiName"; //$NON-NLS-1$
+    public static final String DESCRIPTION_LABEL = "description"; //$NON-NLS-1$
 
     /**
-     * Label for the jdbc
+     * Label for the serviceCatalogSource
      */
-    public static final String JDBC_LABEL = "jdbc"; //$NON-NLS-1$
+    public static final String SERVICE_CATALOG_SOURCE_LABEL = "serviceCatalogSource"; //$NON-NLS-1$
 
-    /**
-     * Label for the driver
-     */
-    public static final String DRIVER_LABEL = "driverName"; //$NON-NLS-1$
+    @JsonProperty(DESCRIPTION_LABEL)
+    private String description;
 
-    /**
-     * Label for the parameters
-     */
-    public static final String PARAMETERS_LABEL = "parameters"; //$NON-NLS-1$
-
-    @JsonProperty(JNDI_LABEL)
-    private String jndi;
-
-    @JsonProperty(JDBC_LABEL)
-    private boolean jdbc;
-
-    @JsonProperty(DRIVER_LABEL)
-    private String driver;
-
-    @JsonProperty(PARAMETERS_LABEL)
-    private Map<String, Object> parameters;
+    @JsonProperty(SERVICE_CATALOG_SOURCE_LABEL)
+    private String serviceCatalogSource;
 
     /**
      * Default constructor for deserialization
@@ -95,77 +75,39 @@ public class KomodoConnectionAttributes implements KRestEntity {
     }
 
     /**
-     * @return the jndi
+     * @return the description
      */
-    public String getJndi() {
-        return this.jndi;
+    public String getDescription() {
+        return this.description;
     }
 
     /**
-     * @param Jndi the Jndi to set
+     * @param description the description to set
      */
-    public void setJndi(String Jndi) {
-        this.jndi = Jndi;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     /**
-     * @return the jdbc
+     * @return the ServiceCatalogSource
      */
-    public boolean isJdbc() {
-        return this.jdbc;
+    public String getServiceCatalogSource() {
+        return this.serviceCatalogSource;
     }
 
     /**
-     * @param jdbc the jdbc to set
+     * @param serviceCatalogSource the ServiceCatalogSource to set
      */
-    public void setJdbc(boolean jdbc) {
-        this.jdbc = jdbc;
-    }
-
-    /**
-     * @return the Driver
-     */
-    public String getDriver() {
-        return this.driver;
-    }
-
-    /**
-     * @param Driver the Driver to set
-     */
-    public void setDriver(String Driver) {
-        this.driver = Driver;
-    }
-
-    /**
-     * @return the parameters
-     */
-    public Map<String, Object> getParameters() {
-        if (parameters == null)
-            return Collections.emptyMap();
-
-        return Collections.unmodifiableMap(this.parameters);
-    }
-
-    /**
-     * Add a parameter with value
-     * @param name the name
-     * @param value the value
-     */
-    public void setParameter(String name, Object value) {
-        if (this.parameters == null)
-            this.parameters = new HashMap<>();
-
-        this.parameters.put(name, value);
+    public void setServiceCatalogSource(String serviceCatalogSource) {
+        this.serviceCatalogSource = serviceCatalogSource;
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((driver == null) ? 0 : driver.hashCode());
-        result = prime * result + ((jndi == null) ? 0 : jndi.hashCode());
-        result = prime * result + ((parameters == null) ? 0 : parameters.hashCode());
-        result = prime * result + (jdbc ? 1231 : 1237);
+        result = prime * result + ((serviceCatalogSource == null) ? 0 : serviceCatalogSource.hashCode());
+        result = prime * result + ((description == null) ? 0 : description.hashCode());
         return result;
     }
 
@@ -178,28 +120,21 @@ public class KomodoConnectionAttributes implements KRestEntity {
         if (getClass() != obj.getClass())
             return false;
         KomodoConnectionAttributes other = (KomodoConnectionAttributes)obj;
-        if (driver == null) {
-            if (other.driver != null)
+        if (serviceCatalogSource == null) {
+            if (other.serviceCatalogSource != null)
                 return false;
-        } else if (!driver.equals(other.driver))
+        } else if (!serviceCatalogSource.equals(other.serviceCatalogSource))
             return false;
-        if (jndi == null) {
-            if (other.jndi != null)
+        if (description == null) {
+            if (other.description != null)
                 return false;
-        } else if (!jndi.equals(other.jndi))
-            return false;
-        if (parameters == null) {
-            if (other.parameters != null)
-                return false;
-        } else if (!parameters.equals(other.parameters))
-            return false;
-        if (jdbc != other.jdbc)
+        } else if (!description.equals(other.description))
             return false;
         return true;
     }
 
     @Override
     public String toString() {
-        return "KomodoConnectionAttributes [JndiId=" + this.jndi + ", jdbc=" + this.jdbc + ", Driver=" + this.driver + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+        return "KomodoConnectionAttributes [description=" + this.description + ", ServiceCatalogSource=" + this.serviceCatalogSource + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 }
