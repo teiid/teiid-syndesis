@@ -278,6 +278,11 @@ public class KomodoRestV1Application extends Application implements SystemConsta
         String CONNECTION_PLACEHOLDER = "{connectionName}"; //$NON-NLS-1$
 
         /**
+         * The name of the URI path segment for service catalog.
+         */
+        String SERVICE_CATALOG_SEGMENT = "serviceCatalog"; //$NON-NLS-1$
+
+        /**
          * The name of the URI path segment for templates.
          */
         String TEMPLATES_SEGMENT = "templates"; //$NON-NLS-1$
