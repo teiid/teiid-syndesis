@@ -26,6 +26,8 @@
 		<app.rest.description>A tool that allows creating, editing and managing dynamic VDBs and their contents</app.rest.description>
 		<!-- Must remain all on one line. Otherwise, VFSUtils.readManifest complains of invalid header -->
 		<manifest.dependencies>org.jboss.logging,org.jboss.teiid.api,org.jboss.teiid.admin,org.jboss.teiid.common-core,org.jboss.teiid,org.jboss.teiid.client,io.swagger,com.fasterxml.jackson.core.jackson-core,com.fasterxml.jackson.core.jackson-databind,com.fasterxml.jackson.core.jackson-annotations,org.jboss.as.cli,org.jboss.as.controller,org.jboss.dmr</manifest.dependencies>
+        <docker.username>teiid</docker.username>
+        <docker.imagename>komodo</docker.imagename>
 	</properties>
 
 	<dependencies>
@@ -372,7 +374,7 @@
                   		<registry>registry.hub.docker.com</registry>
                   			<images>
                     			<image>
-                     				<name>teiid/komodo:${project.version}</name>
+                     				<name>${docker.username}/${docker.imagename}:${project.version}</name>
                       				<alias>komodo</alias>
                       				<build>
                         				<filter>@</filter>
