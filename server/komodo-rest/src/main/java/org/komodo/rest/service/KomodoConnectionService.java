@@ -24,10 +24,12 @@ package org.komodo.rest.service;
 import static org.komodo.rest.relational.RelationalMessages.Error.CONNECTION_SERVICE_NAME_EXISTS;
 import static org.komodo.rest.relational.RelationalMessages.Error.CONNECTION_SERVICE_NAME_VALIDATION_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.VDB_DATA_SOURCE_NAME_EXISTS;
+
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
+
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -40,7 +42,9 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
+
 import org.komodo.core.KEngine;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.connection.Connection;
@@ -55,13 +59,18 @@ import org.komodo.rest.relational.connection.RestConnection;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.request.KomodoConnectionAttributes;
 import org.komodo.rest.relational.response.KomodoStatusObject;
+import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
+import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.runtime.ServiceCatalogDataSource;
+import org.komodo.spi.runtime.TeiidDataSource;
 import org.komodo.utils.StringUtils;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -274,9 +283,9 @@ public final class KomodoConnectionService extends KomodoService {
             return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.CONNECTION_SERVICE_GET_CONNECTION_ERROR, connectionName);
         }
     }
-
+    
     /**
-     * Create a new Connection in the komodo repository
+     * Create a new Connection in the komodo repository, using a service catalogSource
      * @param headers
      *        the request headers (never <code>null</code>)
      * @param uriInfo
@@ -292,7 +301,7 @@ public final class KomodoConnectionService extends KomodoService {
     @POST
     @Path( StringConstants.FORWARD_SLASH + V1Constants.CONNECTION_PLACEHOLDER )
     @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Create a connection in the workspace")
+    @ApiOperation(value = "Create a connection in the workspace, using ServiceCatalogSource")
     @ApiResponses(value = {
         @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
         @ApiResponse(code = 403, message = "An error has occurred.")
@@ -300,24 +309,20 @@ public final class KomodoConnectionService extends KomodoService {
     public Response createConnection( final @Context HttpHeaders headers,
                                       final @Context UriInfo uriInfo,
                                       @ApiParam(
-                                                value = "Name of the connection",
-                                                required = true
+                                              value = "Name of the connection",
+                                              required = true
                                       )
                                       final @PathParam( "connectionName" ) String connectionName,
                                       @ApiParam(
-                                                value = "" + 
-                                                        "JSON of the properties of the new connection:<br>" +
-                                                        OPEN_PRE_TAG +
-                                                        OPEN_BRACE + BR +
-                                                        NBSP + "driverName: \"name of the driver, eg. mysql\"" + COMMA + BR +
-                                                        NBSP + "jndiName: \"the jndi name of the connection\"" + COMMA + BR +
-                                                        NBSP + "jdbc: \"true if jdbc, otherwise false\"" + BR +
-                                                        NBSP + "parameters: " + OPEN_BRACE + BR +
-                                                        NBSP + NBSP + "property1...n: \"key/value pairs of properties applicable to connection" + BR +
-                                                        NBSP + CLOSE_BRACE + BR +
-                                                        CLOSE_BRACE +
-                                                        CLOSE_PRE_TAG,
-                                                required = true
+                                              value = "" + 
+                                                      "Properties for the new connection:<br>" +
+                                                      OPEN_PRE_TAG +
+                                                      OPEN_BRACE + BR +
+                                                      NBSP + "description: \"description for the connection\"" + COMMA + BR +
+                                                      NBSP + "serviceCatalogSource: \"serviceCatalog source for the connection\"" + BR +
+                                                      CLOSE_BRACE +
+                                                      CLOSE_PRE_TAG,
+                                              required = true
                                       )
                                       final String connectionJson) throws KomodoRestException {
 
@@ -334,21 +339,43 @@ public final class KomodoConnectionService extends KomodoService {
             return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.CONNECTION_SERVICE_CREATE_MISSING_NAME);
         }
 
+        // Get the attributes - ensure valid attributes provided
+        KomodoConnectionAttributes rcAttr;
+        try {
+        	rcAttr = KomodoJsonMarshaller.unmarshall(connectionJson, KomodoConnectionAttributes.class);
+            
+            Response response = checkConnectionAttributes(rcAttr, mediaTypes);
+            if (response.getStatus() != Status.OK.getStatusCode())
+                return response;
+
+        } catch (Exception ex) {
+            return createErrorResponseWithForbidden(mediaTypes, ex, RelationalMessages.Error.CONNECTION_SERVICE_REQUEST_PARSING_ERROR);
+        }
+        
+        ServiceCatalogDataSource serviceCatalogSource = null;
+        
         RestConnection restConnection = new RestConnection();
         restConnection.setId(connectionName);
 
-        final KomodoConnectionAttributes rcAttr;
         try {
-            rcAttr = KomodoJsonMarshaller.unmarshall(connectionJson, KomodoConnectionAttributes.class);
-
-            restConnection.setDriverName(rcAttr.getDriver());
-            restConnection.setJndiName(rcAttr.getJndi());
-            restConnection.setJdbc(rcAttr.isJdbc());
-
-            for (Map.Entry<String, Object> entry : rcAttr.getParameters().entrySet()) {
-                restConnection.addProperty(entry.getKey(), entry.getValue());
-            }
-
+            // Add properties for the description and serviceCatalogSource
+            restConnection.addProperty("description", rcAttr.getDescription());
+            restConnection.addProperty("serviceCatalogSource", rcAttr.getServiceCatalogSource());
+            restConnection.setJdbc(true);
+            
+            // Get the specified ServiceCatalogDataSource from the metadata instance
+            Collection<ServiceCatalogDataSource> dataSources = getMetadataInstance().getServiceCatalogSources();
+			for(ServiceCatalogDataSource ds: dataSources) {
+				if(ds.getName().equals(rcAttr.getServiceCatalogSource())) {
+					serviceCatalogSource = ds;
+					break;
+				}
+			}
+			// If catalogSource is not found, exit with error
+			if (serviceCatalogSource == null) {
+				return createErrorResponseWithForbidden(mediaTypes,
+						RelationalMessages.Error.CONNECTION_SERVICE_CATALOG_SOURCE_DNE_ERROR);
+			}
         } catch (Exception ex) {
             throw new KomodoRestException(ex);
         }
@@ -361,6 +388,18 @@ public final class KomodoConnectionService extends KomodoService {
             if ( getWorkspaceManager(uow).hasChild( uow, connectionName ) ) {
                 return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.CONNECTION_SERVICE_CREATE_ALREADY_EXISTS);
             }
+
+			// Ensures service catalog is bound, and creates the corresponding datasource in wildfly
+			getMetadataInstance().bindToServiceCatalogSource(serviceCatalogSource.getName());
+			
+			// Get the connection from the wildfly instance (should be available after binding)
+            TeiidDataSource dataSource = getMetadataInstance().getDataSource(serviceCatalogSource.getName());
+            if (dataSource == null)
+                return commitNoConnectionFound(uow, mediaTypes, connectionName);
+			
+            // Add the jndi and driver to the komodo connection to be created
+            restConnection.setJndiName(dataSource.getJndiName());
+            restConnection.setDriverName(dataSource.getType());
 
             // create new Connection
             return doAddConnection( uow, uriInfo.getBaseUri(), mediaTypes, restConnection );
@@ -474,7 +513,7 @@ public final class KomodoConnectionService extends KomodoService {
     }
 
     /**
-     * Update a Connection in the komodo repository
+     * Update a Connection in the komodo repository, using service catalog source
      * @param headers
      *        the request headers (never <code>null</code>)
      * @param uriInfo
@@ -504,15 +543,11 @@ public final class KomodoConnectionService extends KomodoService {
                                       final @PathParam( "connectionName" ) String connectionName,
                                       @ApiParam(
                                                 value = "" + 
-                                                        "JSON of the properties of the connection:<br>" +
+                                                        "Properties for the connection update:<br>" +
                                                         OPEN_PRE_TAG +
                                                         OPEN_BRACE + BR +
-                                                        NBSP + "driverName: \"name of the driver, eg. mysql\"" + COMMA + BR +
-                                                        NBSP + "jndiName: \"the jndi name of the connection\"" + COMMA + BR +
-                                                        NBSP + "jdbc: \"true if jdbc, otherwise false\"" + BR +
-                                                        NBSP + "parameters: " + OPEN_BRACE + BR +
-                                                        NBSP + NBSP + "property1...n: \"key/value pairs of properties applicable to connection" + BR +
-                                                        NBSP + CLOSE_BRACE + BR +
+                                                        NBSP + "description: \"description for the connection\"" + COMMA + BR +
+                                                        NBSP + "serviceCatalogSource: \"serviceCatalog source for the connection\"" + BR +
                                                         CLOSE_BRACE +
                                                         CLOSE_PRE_TAG,
                                                 required = true
@@ -531,22 +566,43 @@ public final class KomodoConnectionService extends KomodoService {
         if (StringUtils.isBlank( connectionName )) {
             return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.CONNECTION_SERVICE_UPDATE_MISSING_NAME);
         }
+        
+        // Get the attributes - ensure valid attributes provided
+        KomodoConnectionAttributes rcAttr;
+        try {
+        	rcAttr = KomodoJsonMarshaller.unmarshall(connectionJson, KomodoConnectionAttributes.class);
+            
+            Response response = checkConnectionAttributes(rcAttr, mediaTypes);
+            if (response.getStatus() != Status.OK.getStatusCode())
+                return response;
+
+        } catch (Exception ex) {
+            return createErrorResponseWithForbidden(mediaTypes, ex, RelationalMessages.Error.CONNECTION_SERVICE_REQUEST_PARSING_ERROR);
+        }
+
+        ServiceCatalogDataSource serviceCatalogSource = null;
 
         RestConnection restConnection = new RestConnection();
         restConnection.setId(connectionName);
 
-        final KomodoConnectionAttributes rcAttr;
         try {
-            rcAttr = KomodoJsonMarshaller.unmarshall(connectionJson, KomodoConnectionAttributes.class);
-
-            restConnection.setDriverName(rcAttr.getDriver());
-            restConnection.setJndiName(rcAttr.getJndi());
-            restConnection.setJdbc(rcAttr.isJdbc());
-
-            for (Map.Entry<String, Object> entry : rcAttr.getParameters().entrySet()) {
-                restConnection.addProperty(entry.getKey(), entry.getValue());
-            }
-
+            // Add properties for the description and serviceCatalogSource
+            restConnection.addProperty("description", rcAttr.getDescription());
+            restConnection.addProperty("serviceCatalogSource", rcAttr.getServiceCatalogSource());
+            restConnection.setJdbc(true);
+            
+            // Get the specified ServiceCatalogDataSource from the metadata instance
+            Collection<ServiceCatalogDataSource> dataSources = getMetadataInstance().getServiceCatalogSources();
+			for(ServiceCatalogDataSource ds: dataSources) {
+				if(ds.getName().equals(rcAttr.getServiceCatalogSource())) {
+					serviceCatalogSource = ds;
+					break;
+				}
+			}
+			// If catalogSource is not found, exit with error
+			if(serviceCatalogSource == null) {
+                return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.CONNECTION_SERVICE_CATALOG_SOURCE_DNE_ERROR);
+			}
         } catch (Exception ex) {
             throw new KomodoRestException(ex);
         }
@@ -556,15 +612,28 @@ public final class KomodoConnectionService extends KomodoService {
             uow = createTransaction(principal, "updateConnection", false ); //$NON-NLS-1$
 
             final boolean exists = getWorkspaceManager(uow).hasChild( uow, connectionName );
-            // Error if the specified service does not exist
+            // Error if the specified connection does not exist
             if ( !exists ) {
-                return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.CONNECTION_SERVICE_UPDATE_SOURCE_DNE);
+                return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.CONNECTION_SERVICE_UPDATE_CONNECTION_DNE);
             }
 
-            // must be an update
+            // Update deletes the existing connection and recreates it.
             final KomodoObject kobject = getWorkspaceManager(uow).getChild( uow, connectionName, DataVirtLexicon.Connection.NODE_TYPE );
             getWorkspaceManager(uow).delete(uow, kobject);
 
+			// Ensures service catalog is bound, and creates the corresponding datasource in wildfly
+			getMetadataInstance().bindToServiceCatalogSource(serviceCatalogSource.getName());
+			
+			// Get the connection from the wildfly instance (should be available after binding)
+            TeiidDataSource dataSource = getMetadataInstance().getDataSource(serviceCatalogSource.getName());
+            if (dataSource == null)
+                return commitNoConnectionFound(uow, mediaTypes, connectionName);
+			
+            // Add the jndi and driver to the komodo connection to be created
+            restConnection.setJndiName(dataSource.getJndiName());
+            restConnection.setDriverName(dataSource.getType());
+
+            // Create the connection
             Response response = doAddConnection( uow, uriInfo.getBaseUri(), mediaTypes, restConnection );
 
             LOGGER.debug("updateConnection: connection '{0}' entity was updated", connectionName); //$NON-NLS-1$
@@ -761,4 +830,24 @@ public final class KomodoConnectionService extends KomodoService {
                                                      CONNECTION_SERVICE_NAME_VALIDATION_ERROR );
         }
     }
+    
+    private synchronized MetadataInstance getMetadataInstance() throws KException {
+        return this.kengine.getMetadataInstance();
+    }
+    
+    /*
+     * Checks the supplied attributes for create and update of connections
+     *  - serviceCatalogSource is required
+     *  - description is optional
+     */
+    private Response checkConnectionAttributes(KomodoConnectionAttributes attr,
+                                               List<MediaType> mediaTypes) throws Exception {
+
+        if ( attr == null || attr.getServiceCatalogSource() == null ) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.CONNECTION_SERVICE_MISSING_PARAMETER_ERROR);
+        }
+
+        return Response.ok().build();
+    }
+    
 }

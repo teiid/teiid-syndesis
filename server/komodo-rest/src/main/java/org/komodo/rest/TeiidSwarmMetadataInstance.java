@@ -78,6 +78,8 @@ public class TeiidSwarmMetadataInstance extends DefaultMetadataInstance {
 							scd.setType(type.name());
 							ServiceBinding binding = getServiceBinding(svc);
 							if (binding == null) {
+								scd.setBound(false);
+							} else {
 								scd.setBound(true);
 							}
 							sources.add(scd);
@@ -260,9 +262,9 @@ public class TeiidSwarmMetadataInstance extends DefaultMetadataInstance {
 			 */
 			Properties props = new Properties();
 			props.setProperty("connection-url", "jdbc:mysql://"+map.get("DATABASE_SERVICE_NAME")+":3306/" 
-					+ map.get("database-name"));
-			props.setProperty("user-name", map.get("database-user"));
-			props.setProperty("password", map.get("database-password"));
+					+ map.get("database_name"));
+			props.setProperty("user-name", map.get("username"));
+			props.setProperty("password", map.get("password"));
 			admin().createDataSource(name, driverName, props);
 		} else if (type.equals(SourceType.mongodb)) {
 			/*
