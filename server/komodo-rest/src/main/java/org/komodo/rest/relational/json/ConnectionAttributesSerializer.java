@@ -22,14 +22,13 @@
 package org.komodo.rest.relational.json;
 
 import static org.komodo.rest.Messages.Error.UNEXPECTED_JSON_TOKEN;
-import static org.komodo.rest.relational.json.KomodoJsonMarshaller.BUILDER;
+
 import java.io.IOException;
-import java.lang.reflect.Type;
-import java.util.Map;
+
 import org.komodo.rest.Messages;
 import org.komodo.rest.relational.request.KomodoConnectionAttributes;
+
 import com.google.gson.TypeAdapter;
-import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
@@ -37,8 +36,6 @@ import com.google.gson.stream.JsonWriter;
  * A GSON serializer/deserializer for {@status KomodoConnectionObject}s.
  */
 public final class ConnectionAttributesSerializer extends TypeAdapter<KomodoConnectionAttributes> {
-
-    private static final Type OBJECT_MAP_TYPE = new TypeToken< Map< String, Object > >() {/* nothing to do */}.getType();
 
     protected KomodoConnectionAttributes createEntity() {
         return new KomodoConnectionAttributes();
@@ -51,27 +48,18 @@ public final class ConnectionAttributesSerializer extends TypeAdapter<KomodoConn
      */
     @Override
     public KomodoConnectionAttributes read( final JsonReader in ) throws IOException {
-        final KomodoConnectionAttributes ConnectionAttr = createEntity();
+        final KomodoConnectionAttributes connectionAttr = createEntity();
         in.beginObject();
 
         while ( in.hasNext() ) {
             final String name = in.nextName();
 
             switch ( name ) {
-                case KomodoConnectionAttributes.JNDI_LABEL:
-                    ConnectionAttr.setJndi(in.nextString());
+                case KomodoConnectionAttributes.DESCRIPTION_LABEL:
+                	connectionAttr.setDescription(in.nextString());
                     break;
-                case KomodoConnectionAttributes.JDBC_LABEL:
-                    ConnectionAttr.setJdbc(in.nextBoolean());
-                    break;
-                case KomodoConnectionAttributes.DRIVER_LABEL:
-                    ConnectionAttr.setDriver(in.nextString());
-                    break;
-                case KomodoConnectionAttributes.PARAMETERS_LABEL:
-                    Map<String, String> parameters = BUILDER.fromJson(in, Map.class);
-                    for (Map.Entry<String, String> parameter : parameters.entrySet()) {
-                        ConnectionAttr.setParameter(parameter.getKey(), parameter.getValue());
-                    }
+                case KomodoConnectionAttributes.SERVICE_CATALOG_SOURCE_LABEL:
+                	connectionAttr.setServiceCatalogSource(in.nextString());
                     break;
                 default:
                     throw new IOException( Messages.getString( UNEXPECTED_JSON_TOKEN, name ) );
@@ -80,7 +68,7 @@ public final class ConnectionAttributesSerializer extends TypeAdapter<KomodoConn
 
         in.endObject();
 
-        return ConnectionAttr;
+        return connectionAttr;
     }
 
     /**
@@ -94,19 +82,11 @@ public final class ConnectionAttributesSerializer extends TypeAdapter<KomodoConn
 
         out.beginObject();
 
-        out.name(KomodoConnectionAttributes.JNDI_LABEL);
-        out.value(value.getJndi());
+        out.name(KomodoConnectionAttributes.DESCRIPTION_LABEL);
+        out.value(value.getDescription());
 
-        out.name(KomodoConnectionAttributes.DRIVER_LABEL);
-        out.value(value.getDriver());
-
-        out.name(KomodoConnectionAttributes.JDBC_LABEL);
-        out.value(value.isJdbc());
-
-        if (! value.getParameters().isEmpty()) {
-            out.name(KomodoConnectionAttributes.PARAMETERS_LABEL);
-            BUILDER.toJson(value.getParameters(), OBJECT_MAP_TYPE, out);
-        }
+        out.name(KomodoConnectionAttributes.SERVICE_CATALOG_SOURCE_LABEL);
+        out.value(value.getServiceCatalogSource());
 
         out.endObject();
     }

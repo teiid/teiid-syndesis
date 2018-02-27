@@ -27,11 +27,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+
 import java.net.URI;
-import java.util.List;
-import java.util.Map.Entry;
 import java.util.Properties;
+
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
@@ -39,7 +40,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.komodo.rest.RestLink.LinkType;
-import org.komodo.rest.RestProperty;
 import org.komodo.rest.relational.KomodoRestUriBuilder.SettingNames;
 import org.komodo.rest.relational.connection.RestConnection;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
@@ -124,8 +124,8 @@ public class KomodoConnectionServiceTestInSuite extends AbstractKomodoServiceTes
     }
 
     @Test
-    public void shouldCreateConnection() throws Exception {
-        String connectionName = "shouldCreateConnection";
+    public void shouldFailCreateConnectionNoServiceCatalog() throws Exception {
+        String connectionName = "shouldFailCreateConnectionNoServiceCatalog";
 
         // post
         Properties settings = uriBuilder().createSettings(SettingNames.CONNECTION_NAME, connectionName);
@@ -135,43 +135,19 @@ public class KomodoConnectionServiceTestInSuite extends AbstractKomodoServiceTes
         HttpPost request = jsonRequest(uri, RequestType.POST);
 
         KomodoConnectionAttributes rcAttr = new KomodoConnectionAttributes();
-        rcAttr.setJndi("jndi:/MySqlDS1");
-        rcAttr.setDriver("mysql");
-        rcAttr.setJdbc(true);
-        rcAttr.setParameter("username", "test");
-        rcAttr.setParameter("password", "myPassword");
+        rcAttr.setDescription("A description");
 
         addBody(request, rcAttr);
-        HttpResponse response = executeOk(request);
+        HttpResponse response = execute(request);
 
+        assertResponse(response, HttpStatus.SC_FORBIDDEN);
         String entity = extractResponse(response);
-        assertThat(entity, is(notNullValue()));
-//        System.out.println("Response:\n" + entity);
-
-        RestConnection rsObj = KomodoJsonMarshaller.unmarshall(entity, RestConnection.class);
-        assertEquals(rcAttr.getDriver(), rsObj.getDriverName());
-        assertEquals(rcAttr.getJndi(), rsObj.getJndiName());
-        assertEquals(rcAttr.isJdbc(), rsObj.isJdbc());
-
-        List<RestProperty> rsProps = rsObj.getProperties();
-        for (Entry<String, Object> parameter : rcAttr.getParameters().entrySet()) {
-            RestProperty rsProp = null;
-
-            for (RestProperty rsp : rsProps) {
-                if (! rsp.getName().equals(parameter.getKey()))
-                    continue;
-
-                rsProp = rsp;
-            }
-
-            assertNotNull(parameter.getKey() + " property not handled", rsProp);
-            assertEquals(parameter.getValue(), rsProp.getValue());
-        }
+        assertTrue(entity.contains("missing one or more required parameters"));
     }
 
     @Test
-    public void shouldUpdateConnection() throws Exception {
-        String connectionName = "shouldUpdateConnection";
+    public void shouldFailUpdateConnectionNoServiceCatalog() throws Exception {
+        String connectionName = "shouldFailUpdateConnectionNoServiceCatalog";
 
         createConnection(connectionName);
 
@@ -183,37 +159,13 @@ public class KomodoConnectionServiceTestInSuite extends AbstractKomodoServiceTes
         HttpPut request = jsonRequest(uri, RequestType.PUT);
 
         KomodoConnectionAttributes rcAttr = new KomodoConnectionAttributes();
-        rcAttr.setJndi("jndi:/MySqlDS1");
-        rcAttr.setDriver("mysql");
-        rcAttr.setJdbc(true);
-        rcAttr.setParameter("username", "test");
-        rcAttr.setParameter("password", "myPassword");
+        rcAttr.setDescription("A description");
 
         addBody(request, rcAttr);
-        HttpResponse response = executeOk(request);
+        HttpResponse response = execute(request);
 
+        assertResponse(response, HttpStatus.SC_FORBIDDEN);
         String entity = extractResponse(response);
-        assertThat(entity, is(notNullValue()));
-//        System.out.println("Response:\n" + entity);
-
-        RestConnection rsObj = KomodoJsonMarshaller.unmarshall(entity, RestConnection.class);
-        assertEquals(rcAttr.getDriver(), rsObj.getDriverName());
-        assertEquals(rcAttr.getJndi(), rsObj.getJndiName());
-        assertEquals(rcAttr.isJdbc(), rsObj.isJdbc());
-
-        List<RestProperty> rsProps = rsObj.getProperties();
-        for (Entry<String, Object> parameter : rcAttr.getParameters().entrySet()) {
-            RestProperty rsProp = null;
-
-            for (RestProperty rsp : rsProps) {
-                if (! rsp.getName().equals(parameter.getKey()))
-                    continue;
-
-                rsProp = rsp;
-            }
-
-            assertNotNull(parameter.getKey() + " property not handled", rsProp);
-            assertEquals(parameter.getValue(), rsProp.getValue());
-        }
+        assertTrue(entity.contains("missing one or more required parameters"));
     }
 }

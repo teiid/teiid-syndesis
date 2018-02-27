@@ -53,6 +53,13 @@ public class RestServiceCatalogDataSource extends RestBasicEntity implements Ser
      */
     public static final String BOUND_LABEL = KomodoService.protectPrefix(ServiceCatalogLexicon.DataService.BOUND);
 
+    /**
+     * Constructor for use when deserializing
+     */
+    public RestServiceCatalogDataSource() {
+        super();
+    }
+    
 	public RestServiceCatalogDataSource(URI baseUri, KomodoObject parent, ServiceCatalogDataSource datasource,
 			UnitOfWork uow) throws KException {
 		super(baseUri, parent, uow);

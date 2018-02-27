@@ -491,7 +491,7 @@ public final class RelationalMessages {
         /**
          * An error indicating that the connection does not exist
          */
-        CONNECTION_SERVICE_UPDATE_SOURCE_DNE,
+        CONNECTION_SERVICE_UPDATE_CONNECTION_DNE,
         
         /**
          * An error indicating update attempt was missing json arg
@@ -528,6 +528,21 @@ public final class RelationalMessages {
          */
         CONNECTION_SERVICE_NAME_VALIDATION_ERROR,
 
+        /**
+         * An error indicating at least one parameter is lacking
+         */
+        CONNECTION_SERVICE_MISSING_PARAMETER_ERROR,
+        
+        /**
+         * The Connection service cannot parse the request body
+         */
+        CONNECTION_SERVICE_REQUEST_PARSING_ERROR,
+
+        /**
+         * An error indicating create attempt failed because the specified Openshift ServiceCatalog source was not found
+         */
+        CONNECTION_SERVICE_CATALOG_SOURCE_DNE_ERROR,
+        
         /**
          * Error transferring connections from server to repo
          */
