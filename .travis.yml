@@ -1,0 +1,20 @@
+language: java
+sudo: required
+
+services:
+- docker
+git:
+  depth: 1
+
+cache:
+  directories:
+  - "$HOME/.m2"
+
+install: true
+script: "mvn clean install -B -s settings.xml -Pdocker-release -Parquillian"
+
+after_success:
+  - if [[ ( "$TRAVIS_BRANCH" == "master" ) && ( "$TRAVIS_PULL_REQUEST" == "false" ) ]]; then
+      docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD ;
+      docker push $DOCKER_USERNAME/komodo ;
+    fi
