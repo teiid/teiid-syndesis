@@ -21,6 +21,7 @@
  */
 package org.komodo.rest.service;
 
+import static org.komodo.rest.relational.RelationalMessages.Error.CONNECTION_SERVICE_DEPLOY_CONNECTION_VDB_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.CONNECTION_SERVICE_NAME_EXISTS;
 import static org.komodo.rest.relational.RelationalMessages.Error.CONNECTION_SERVICE_NAME_VALIDATION_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.VDB_DATA_SOURCE_NAME_EXISTS;
@@ -47,9 +48,13 @@ import javax.ws.rs.core.UriInfo;
 
 import org.komodo.core.KEngine;
 import org.komodo.core.repository.ObjectImpl;
+import org.komodo.relational.DeployStatus;
 import org.komodo.relational.connection.Connection;
+import org.komodo.relational.model.Model;
+import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
+import org.komodo.rest.KRestEntity;
 import org.komodo.rest.KomodoRestException;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
@@ -59,6 +64,8 @@ import org.komodo.rest.relational.connection.RestConnection;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.request.KomodoConnectionAttributes;
 import org.komodo.rest.relational.response.KomodoStatusObject;
+import org.komodo.rest.relational.response.RestObjectVdbStatus;
+import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatusVdb;
 import org.komodo.servicecatalog.TeiidOpenShiftClient;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
@@ -70,6 +77,7 @@ import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.spi.runtime.ServiceCatalogDataSource;
 import org.komodo.spi.runtime.TeiidDataSource;
+import org.komodo.spi.runtime.TeiidVdb;
 import org.komodo.utils.StringUtils;
 
 import io.swagger.annotations.Api;
@@ -88,6 +96,12 @@ public final class KomodoConnectionService extends KomodoService {
 
     private static final int ALL_AVAILABLE = -1;
     private TeiidOpenShiftClient openshiftClient;
+    private static final String CONNECTION_VDB_SUFFIX = "BtlConn"; //$NON-NLS-1$
+
+    /**
+     * Time to wait after deploying/undeploying an artifact from the metadata instance
+     */
+    private final static int DEPLOYMENT_WAIT_TIME = 10000;
 
     /**
      * @param engine
@@ -340,7 +354,7 @@ public final class KomodoConnectionService extends KomodoService {
 
         // Error if the connection name is missing
         if (StringUtils.isBlank( connectionName )) {
-            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.CONNECTION_SERVICE_CREATE_MISSING_NAME);
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.CONNECTION_SERVICE_MISSING_NAME);
         }
 
         // Get the attributes - ensure valid attributes provided
@@ -466,7 +480,7 @@ public final class KomodoConnectionService extends KomodoService {
 
         // Error if the connection name is missing
         if (StringUtils.isBlank( connectionName )) {
-            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.CONNECTION_SERVICE_CLONE_MISSING_NAME);
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.CONNECTION_SERVICE_MISSING_NAME);
         }
 
         // Error if the new connection name is missing
@@ -568,7 +582,7 @@ public final class KomodoConnectionService extends KomodoService {
 
         // Error if the connection name is missing
         if (StringUtils.isBlank( connectionName )) {
-            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.CONNECTION_SERVICE_UPDATE_MISSING_NAME);
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.CONNECTION_SERVICE_MISSING_NAME);
         }
         
         // Get the attributes - ensure valid attributes provided
@@ -835,6 +849,204 @@ public final class KomodoConnectionService extends KomodoService {
         }
     }
     
+    /**
+     * Deploy a VDB for the specified workspace connection
+     * @param headers
+     *            the request headers (never <code>null</code>)
+     * @param uriInfo
+     *            the request URI information (never <code>null</code>)
+     * @param connectionName
+     *            the Connection name being deployed (cannot be empty)
+     * @return a JSON document representing the results of the removal
+     * @throws KomodoRestException
+     *             if there is a problem deploying the vdb
+     */
+    @POST
+    @Path( V1Constants.CONNECTION_DEPLOY_VDB_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.CONNECTION_PLACEHOLDER )
+    @Produces( { MediaType.APPLICATION_JSON } )
+    @ApiOperation( value = "Deploy a VDB for the workspace connection" )
+    @ApiResponses(value = {
+            @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
+            @ApiResponse(code = 403, message = "An error has occurred.")
+        })
+    public Response deployVdbForConnection( final @Context HttpHeaders headers,
+                                     final @Context UriInfo uriInfo,
+                                     @ApiParam( value = "Name of the connection", required = true )
+                                     final @PathParam( "connectionName" ) String connectionName ) throws KomodoRestException {
+
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
+            return notAcceptableMediaTypesBuilder().build();
+
+        // Error if the connection name is missing
+        if (StringUtils.isBlank( connectionName )) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.CONNECTION_SERVICE_MISSING_NAME);
+        }
+
+        UnitOfWork uow = null;
+
+        try {
+            uow = createTransaction( principal, "deployVdbForConnection", false ); //$NON-NLS-1$
+
+            // Get the connection
+            Connection connection = findConnection(uow, connectionName);
+            if (connection == null)
+                return commitNoConnectionFound(uow, mediaTypes, connectionName);
+            String jndiName = connection.getJndiName(uow);
+            String driverName = connection.getDriverName(uow);
+            
+            // Name of VDB to be created, based on connection
+            String vdbName = connectionName + CONNECTION_VDB_SUFFIX;
+            
+            // If VDB with name already exists, delete it
+            Repository repo = this.kengine.getDefaultRepository();
+            final WorkspaceManager mgr = WorkspaceManager.getInstance( repo, uow );
+            String repoPath = repo.komodoWorkspace( uow ).getAbsolutePath();
+            
+            final Vdb existingVdb = findVdb( uow, vdbName );
+
+            if ( existingVdb != null ) {
+                mgr.delete(uow, existingVdb);
+            }
+            
+            // Create new VDB
+            String vdbPath = repoPath + "/" + vdbName;
+            final Vdb vdb = getWorkspaceManager(uow).createVdb( uow, null, vdbName, vdbPath );
+            vdb.setDescription(uow, "Vdb for connection "+connectionName);
+                        
+            // Add model to the VDB
+            Model model = vdb.addModel(uow, connectionName);
+            model.setModelType(uow, Model.Type.PHYSICAL);
+            model.setProperty(uow, "importer.TableTypes", "TABLE,VIEW");
+            model.setProperty(uow, "importer.UseQualifiedName", "true");
+            model.setProperty(uow, "importer.UseCatalogName", "false");
+            model.setProperty(uow, "importer.UseFullSchemaName", "false");
+            
+            // Add model source to the model
+            ModelSource modelSource = model.addSource(uow, connectionName);
+            modelSource.setJndiName(uow, jndiName);
+            modelSource.setTranslatorName(uow, driverName);
+            
+            // Deploy the VDB
+            DeployStatus deployStatus = vdb.deploy(uow);
+            
+            // Await the deployment to end
+            Thread.sleep(DEPLOYMENT_WAIT_TIME);
+
+            String title = RelationalMessages.getString(RelationalMessages.Info.VDB_DEPLOYMENT_STATUS_TITLE);
+            KomodoStatusObject status = new KomodoStatusObject(title);
+
+            List<String> progressMessages = deployStatus.getProgressMessages();
+            for (int i = 0; i < progressMessages.size(); ++i) {
+                status.addAttribute("ProgressMessage" + (i + 1), progressMessages.get(i));
+            }
+
+            if (deployStatus.ok()) {
+                status.addAttribute("deploymentSuccess", Boolean.TRUE.toString());
+                status.addAttribute(vdb.getName(uow),
+                                    RelationalMessages.getString(RelationalMessages.Info.VDB_SUCCESSFULLY_DEPLOYED));
+            } else {
+                status.addAttribute("deploymentSuccess", Boolean.FALSE.toString());
+                List<String> errorMessages = deployStatus.getErrorMessages();
+                for (int i = 0; i < errorMessages.size(); ++i) {
+                    status.addAttribute("ErrorMessage" + (i + 1), errorMessages.get(i));
+                }
+
+                status.addAttribute(vdb.getName(uow),
+                                    RelationalMessages.getString(RelationalMessages.Info.VDB_DEPLOYED_WITH_ERRORS));
+            }
+
+           return commit(uow, mediaTypes, status);
+        } catch ( final Exception e ) {
+            if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
+                uow.rollback();
+            }
+
+            if ( e instanceof KomodoRestException ) {
+                throw ( KomodoRestException )e;
+            }
+
+            return createErrorResponseWithForbidden( headers.getAcceptableMediaTypes(), 
+                                                     e, 
+                                                     CONNECTION_SERVICE_DEPLOY_CONNECTION_VDB_ERROR );
+        }
+    }
+    
+    /**
+     * Gets the VDBStatus for all connections in the workspace.  If no VDB found for a connection,
+     * no status is returned.
+     * @param headers
+     *        the request headers (never <code>null</code>)
+     * @param uriInfo
+     *        the request URI information (never <code>null</code>)
+     * @return a JSON document the name of all connections and their VDB status in the local server (never <code>null</code>)
+     * @throws KomodoRestException
+     *         if there is a problem constructing the VDBs JSON document
+     */
+    @GET
+    @Path(V1Constants.VDB_STATUS_SEGMENT)
+    @Produces( MediaType.APPLICATION_JSON )
+    @ApiOperation(value = "Display the VDBStatus of all connections in the workspace",
+                  response = RestObjectVdbStatus.class)
+    @ApiResponses(value = {
+        @ApiResponse(code = 403, message = "An error has occurred.")
+    })
+    public Response getVdbStatuses(final @Context HttpHeaders headers,
+                                   final @Context UriInfo uriInfo) throws KomodoRestException {
+
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        UnitOfWork uow = null;
+
+        List<KRestEntity> statusList = new ArrayList<KRestEntity>();
+        try {
+            uow = createTransaction(principal, "getConnectionVdbStatuses", true ); //$NON-NLS-1$
+            
+            // Get all workspace connections and all metadata instance VDBs
+            Connection[] connections = getWorkspaceManager(uow).findConnections( uow );
+            Collection<TeiidVdb> vdbs = getMetadataInstance().getVdbs();
+            
+            for(Connection connection: connections) {
+            	String connectionName = connection.getName(uow);
+            	String connVdbName = connectionName+CONNECTION_VDB_SUFFIX;
+            	
+            	// Find VDB for the connection and add status
+            	TeiidVdb connVdb = null;
+                for(TeiidVdb vdb : vdbs) {
+                	if(vdb.getName().equals(connVdbName)) {
+                		connVdb = vdb;
+                		break;
+                	}
+                }
+        		RestMetadataVdbStatusVdb vdbStatus = null;
+                if(connVdb!=null) {
+            		vdbStatus = new RestMetadataVdbStatusVdb(connVdb);
+                } else {
+            		vdbStatus = RestMetadataVdbStatusVdb.emptyVdb();
+                }
+        		statusList.add(new RestObjectVdbStatus(connectionName,vdbStatus));
+            }
+
+            // create response
+            return commit( uow, mediaTypes, statusList );
+
+        } catch (Throwable e) {
+
+            if ( e instanceof KomodoRestException ) {
+                throw ( KomodoRestException )e;
+            }
+
+            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.CONNECTION_SERVICE_VDBS_STATUS_ERROR);
+        }
+    }
+
     private synchronized MetadataInstance getMetadataInstance() throws KException {
         return this.kengine.getMetadataInstance();
     }

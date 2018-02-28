@@ -284,6 +284,11 @@ public class KomodoRestV1Application extends Application implements SystemConsta
         String CONNECTION_PLACEHOLDER = "{connectionName}"; //$NON-NLS-1$
 
         /**
+         * The name of the URI path segment for deploying connection VDB
+         */
+        String CONNECTION_DEPLOY_VDB_SEGMENT = "deployVdb"; //$NON-NLS-1$
+        
+        /**
          * The name of the URI path segment for service catalog.
          */
         String SERVICE_CATALOG_SEGMENT = "serviceCatalog"; //$NON-NLS-1$
@@ -547,6 +552,11 @@ public class KomodoRestV1Application extends Application implements SystemConsta
          * The teiid status path segment
          */
         String STATUS_SEGMENT = "status"; //$NON-NLS-1$
+
+        /**
+         * The teiid VDB status path segment
+         */
+        String VDB_STATUS_SEGMENT = "vdbStatus"; //$NON-NLS-1$
 
         /**
          * The name of the resource used for importing and exporting artifacts

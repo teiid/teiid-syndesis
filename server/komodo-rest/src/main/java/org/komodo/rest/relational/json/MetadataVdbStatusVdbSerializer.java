@@ -93,30 +93,32 @@ public final class MetadataVdbStatusVdbSerializer extends TypeAdapter< RestMetad
 
         out.beginObject();
 
-        out.name(RestMetadataVdbStatusVdb.VDB_STATUS_NAME);
-        out.value(value.getName());
+        if(value.getType() == RestMetadataVdbStatusVdb.Type.VDB) {
+        	out.name(RestMetadataVdbStatusVdb.VDB_STATUS_NAME);
+        	out.value(value.getName());
 
-        out.name(RestMetadataVdbStatusVdb.VDB_STATUS_DEPLOYED_NAME);
-        out.value(value.getDeployedName());
+        	out.name(RestMetadataVdbStatusVdb.VDB_STATUS_DEPLOYED_NAME);
+        	out.value(value.getDeployedName());
 
-        out.name(RestMetadataVdbStatusVdb.VDB_STATUS_VERSION);
-        out.value(value.getVersion());
+        	out.name(RestMetadataVdbStatusVdb.VDB_STATUS_VERSION);
+        	out.value(value.getVersion());
 
-        out.name(RestMetadataVdbStatusVdb.VDB_STATUS_ACTIVE);
-        out.value(value.isActive());
+        	out.name(RestMetadataVdbStatusVdb.VDB_STATUS_ACTIVE);
+        	out.value(value.isActive());
 
-        out.name(RestMetadataVdbStatusVdb.VDB_STATUS_LOADING);
-        out.value(value.isLoading());
+        	out.name(RestMetadataVdbStatusVdb.VDB_STATUS_LOADING);
+        	out.value(value.isLoading());
 
-        out.name(RestMetadataVdbStatusVdb.VDB_STATUS_FAILED);
-        out.value(value.isFailed());
+        	out.name(RestMetadataVdbStatusVdb.VDB_STATUS_FAILED);
+        	out.value(value.isFailed());
 
-        out.name(RestMetadataVdbStatusVdb.VDB_STATUS_ERROR);
-        out.beginArray();
-        for (String val: value.getErrors()) {
-            out.value(val);
+        	out.name(RestMetadataVdbStatusVdb.VDB_STATUS_ERROR);
+        	out.beginArray();
+        	for (String val: value.getErrors()) {
+        		out.value(val);
+        	}
+        	out.endArray();
         }
-        out.endArray();
 
         out.endObject();
     }
