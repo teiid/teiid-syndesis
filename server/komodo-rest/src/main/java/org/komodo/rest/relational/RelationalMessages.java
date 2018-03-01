@@ -1402,7 +1402,23 @@ public final class RelationalMessages {
         /**
          * A failure to decrypt sensitive data
          */
-        DECRYPT_FAILURE;
+        DECRYPT_FAILURE,
+
+        /**
+         * An error indicating from publish operation on service catalog service
+         */
+        PUBLISH_ERROR,
+
+        /**
+         * VDB Not found
+         */
+        VDB_NOT_FOUND,
+
+        /**
+         * VDB name not provided
+         */
+        VDB_NAME_NOT_PROVIDED;
+
 
         /**
          * {@inheritDoc}

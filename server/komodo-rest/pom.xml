@@ -25,9 +25,9 @@
 		<app.rest.version>${project.version}</app.rest.version>
 		<app.rest.description>A tool that allows creating, editing and managing dynamic VDBs and their contents</app.rest.description>
 		<!-- Must remain all on one line. Otherwise, VFSUtils.readManifest complains of invalid header -->
-		<manifest.dependencies>org.jboss.logging,org.jboss.teiid.api,org.jboss.teiid.admin,org.jboss.teiid.common-core,org.jboss.teiid,org.jboss.teiid.client,io.swagger,com.fasterxml.jackson.core.jackson-core,com.fasterxml.jackson.core.jackson-databind,com.fasterxml.jackson.core.jackson-annotations,org.jboss.as.cli,org.jboss.as.controller,org.jboss.dmr</manifest.dependencies>
         <docker.username>teiid</docker.username>
         <docker.imagename>komodo</docker.imagename>
+		<manifest.dependencies>org.jboss.logging,org.jboss.teiid.api,org.jboss.teiid.admin,org.jboss.teiid.common-core,org.jboss.teiid,org.jboss.teiid.client,io.swagger,com.fasterxml.jackson.core.jackson-core,com.fasterxml.jackson.core.jackson-databind,com.fasterxml.jackson.core.jackson-annotations,com.fasterxml.jackson.dataformat,org.jboss.as.cli,org.jboss.as.controller,org.jboss.dmr</manifest.dependencies>
 	</properties>
 
 	<dependencies>
@@ -182,6 +182,34 @@
               </exclusion>
             </exclusions>                   
         </dependency>
+        <dependency>
+            <groupId>io.fabric8</groupId>
+            <artifactId>openshift-client</artifactId>
+            <exclusions>
+              <exclusion>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-yaml</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>*</artifactId>            
+              </exclusion>
+            </exclusions>
+        </dependency>     
+        <dependency>
+          <groupId>io.fabric8</groupId>
+          <artifactId>kubernetes-api</artifactId>
+          <exclusions>
+            <exclusion>
+              <groupId>com.fasterxml.jackson.dataformat</groupId>
+              <artifactId>jackson-dataformat-yaml</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>com.fasterxml.jackson.core</groupId>
+              <artifactId>*</artifactId>            
+            </exclusion>
+          </exclusions>          
+        </dependency>           
         <!-- data source driver dependencies -->
         <dependency>
             <groupId>mysql</groupId>
@@ -204,6 +232,12 @@
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
+        <dependency>
+          <groupId>org.teiid.komodo</groupId>
+          <artifactId>komodo-core</artifactId>
+          <type>test-jar</type>
+          <scope>test</scope>
+        </dependency>
 		<dependency>
 			<groupId>org.wildfly.swarm</groupId>
 			<artifactId>arquillian</artifactId>
@@ -408,43 +442,6 @@
               		</plugin>
 				</plugins>
 			</build>
-		</profile>
-		<profile>
-			<id>openshift</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>io.fabric8</groupId>
-						<artifactId>fabric8-maven-plugin</artifactId>
-						<executions>
-							<execution>
-								<goals>
-									<goal>resource</goal>
-									<goal>build</goal>
-								</goals>
-							</execution>
-						</executions>
-						<configuration>
-							<generator>
-								<includes>
-									<include>wildfly-swarm</include>
-								</includes>
-								<excludes>
-									<exclude>webapp</exclude>
-								</excludes>
-							</generator>
-							<enricher>
-								<config>
-									<wildfly-swarm-health-check>
-										<path>/</path>
-									</wildfly-swarm-health-check>
-								</config>
-							</enricher>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-			<activation />
 		</profile>
 	</profiles>
 </project>

@@ -55,6 +55,11 @@ public interface ServiceCatalogLexicon {
         /**
          * The name of the property whose value contains the data service is bound or not. Value is {@value}.
          */
-        String BOUND = Namespace.PREFIX + ":bound";           
+        String BOUND = Namespace.PREFIX + ":bound";
+
+        /**
+         * The name of the property whose value contains the data service's recommended translator. Value is {@value}.
+         */		
+        String TRANSLATOR = Namespace.PREFIX + ":translator";           
     }
 }
