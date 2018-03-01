@@ -1,0 +1,12 @@
+swarm:
+  teiid:
+    odbc:
+      enable: true
+  security:
+    security-domains:
+      teiid-security:
+        cache-type: default
+  logging:
+    loggers:
+      org.teiid:
+        level: INFO

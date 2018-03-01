@@ -59,6 +59,7 @@ import org.komodo.rest.relational.connection.RestConnection;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.request.KomodoConnectionAttributes;
 import org.komodo.rest.relational.response.KomodoStatusObject;
+import org.komodo.servicecatalog.TeiidOpenShiftClient;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
@@ -86,16 +87,19 @@ import io.swagger.annotations.ApiResponses;
 public final class KomodoConnectionService extends KomodoService {
 
     private static final int ALL_AVAILABLE = -1;
-
+    private TeiidOpenShiftClient openshiftClient;
 
     /**
      * @param engine
      *        the Komodo Engine (cannot be <code>null</code> and must be started)
+     * @param openshiftClient OpenShift Client to access service catalog
      * @throws WebApplicationException
      *         if there is a problem obtaining the {@link WorkspaceManager workspace manager}
      */
-    public KomodoConnectionService( final KEngine engine ) throws WebApplicationException {
+    public KomodoConnectionService(final KEngine engine, TeiidOpenShiftClient openshiftClient)
+            throws WebApplicationException {
         super( engine );
+        this.openshiftClient = openshiftClient;
     }
 
     /**
@@ -364,7 +368,7 @@ public final class KomodoConnectionService extends KomodoService {
             restConnection.setJdbc(true);
             
             // Get the specified ServiceCatalogDataSource from the metadata instance
-            Collection<ServiceCatalogDataSource> dataSources = getMetadataInstance().getServiceCatalogSources();
+            Collection<ServiceCatalogDataSource> dataSources = openshiftClient.getServiceCatalogSources();
 			for(ServiceCatalogDataSource ds: dataSources) {
 				if(ds.getName().equals(rcAttr.getServiceCatalogSource())) {
 					serviceCatalogSource = ds;
@@ -390,7 +394,7 @@ public final class KomodoConnectionService extends KomodoService {
             }
 
 			// Ensures service catalog is bound, and creates the corresponding datasource in wildfly
-			getMetadataInstance().bindToServiceCatalogSource(serviceCatalogSource.getName());
+			openshiftClient.bindToServiceCatalogSource(serviceCatalogSource.getName());
 			
 			// Get the connection from the wildfly instance (should be available after binding)
             TeiidDataSource dataSource = getMetadataInstance().getDataSource(serviceCatalogSource.getName());
@@ -592,7 +596,7 @@ public final class KomodoConnectionService extends KomodoService {
             restConnection.setJdbc(true);
             
             // Get the specified ServiceCatalogDataSource from the metadata instance
-            Collection<ServiceCatalogDataSource> dataSources = getMetadataInstance().getServiceCatalogSources();
+            Collection<ServiceCatalogDataSource> dataSources = openshiftClient.getServiceCatalogSources();
 			for(ServiceCatalogDataSource ds: dataSources) {
 				if(ds.getName().equals(rcAttr.getServiceCatalogSource())) {
 					serviceCatalogSource = ds;
@@ -622,7 +626,7 @@ public final class KomodoConnectionService extends KomodoService {
             getWorkspaceManager(uow).delete(uow, kobject);
 
 			// Ensures service catalog is bound, and creates the corresponding datasource in wildfly
-			getMetadataInstance().bindToServiceCatalogSource(serviceCatalogSource.getName());
+			openshiftClient.bindToServiceCatalogSource(serviceCatalogSource.getName());
 			
 			// Get the connection from the wildfly instance (should be available after binding)
             TeiidDataSource dataSource = getMetadataInstance().getDataSource(serviceCatalogSource.getName());
