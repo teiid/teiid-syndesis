@@ -21,33 +21,36 @@
  */
 package org.komodo.rest.swagger;
 
-import org.komodo.rest.relational.dataservice.RestDataservice;
-import org.komodo.rest.relational.response.RestServiceCatalogDataSource;
+import org.komodo.rest.relational.response.RestBuildStatus;
 import org.komodo.spi.repository.KomodoType;
 
 import io.swagger.converter.ModelConverterContext;
 import io.swagger.models.ModelImpl;
 
 /**
- * Converter to display properties of {@link RestDataservice} class in swagger
+ * Converter to display properties of {@link RestBuildStatus} class in swagger
  */
-public class RestServiceCatalogDataSourceConverter extends RestEntityConverter<RestServiceCatalogDataSource> {
+public class RestBuildStatusConverter extends RestEntityConverter<RestBuildStatus> {
 
     @Override
-    protected Class<RestServiceCatalogDataSource> getEntityClass() {
-        return RestServiceCatalogDataSource.class;
+    protected Class<RestBuildStatus> getEntityClass() {
+        return RestBuildStatus.class;
     }
 
     @Override
     protected KomodoType getKomodoType() {
-        return KomodoType.SERVICE_CATALOG_DATA_SOURCE;
+        return KomodoType.BUILD_STATUS;
     }
 
     @Override
     protected void addProperties(ModelImpl model, ModelConverterContext context) throws Exception {
-        model.property(RestServiceCatalogDataSource.NAME_LABEL, requiredProperty(String.class));
-        model.property(RestServiceCatalogDataSource.TYPE_LABEL, property(String.class));
-        model.property(RestServiceCatalogDataSource.BOUND_LABEL, property(Boolean.class));
-        model.property(RestServiceCatalogDataSource.TRANSLATOR_LABEL, property(String.class));
+        model.property(RestBuildStatus.VDB_NAME, requiredProperty(String.class));
+        model.property(RestBuildStatus.BUILD_NAME, property(String.class));
+        model.property(RestBuildStatus.DEPLOYMENT_NAME, property(String.class));
+        model.property(RestBuildStatus.NAMESPACE, property(String.class));
+        model.property(RestBuildStatus.STATUS, property(String.class));
+        model.property(RestBuildStatus.STATUS_MSG, property(String.class));
+        model.property(RestBuildStatus.LAST_UPDATED, property(String.class));
+
     }
 }

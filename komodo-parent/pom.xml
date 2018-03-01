@@ -13,9 +13,9 @@
 	<version>0.0.4-SNAPSHOT</version>
 	<name>Komodo Parent</name>
 
-	<url>http://www.jboss.org/teiiddesigner</url>
+	<url>http://teiid.org</url>
 	<packaging>pom</packaging>
-	<description> tool that allows creating, editing and managing dynamic VDBs for the Teiid server.</description>
+	<description>Tool that allows creating, editing and managing dynamic VDBs for the Teiid OpenShift Deployment.</description>
 	<inceptionYear>2013</inceptionYear>
 
 	<organization>
@@ -161,7 +161,7 @@
 		<version.teiid.modeshape>1.0.0.Final</version.teiid.modeshape>
 		<version.postgresql>42.1.4</version.postgresql>
 		<version.xerces>2.9.1</version.xerces>		
-		<version.wildfly.swarm>2017.12.1</version.wildfly.swarm>
+		<version.wildfly.swarm>2018.2.0</version.wildfly.swarm>
 		<version.gson>2.2.4</version.gson>
 		<version.apache.commons.codec>1.10</version.apache.commons.codec>
 		<version.guava>16.0.1</version.guava>
@@ -172,11 +172,18 @@
 		<version.resteasy>3.0.19.Final</version.resteasy>
 		<version.jboss.logging>3.3.0.Final</version.jboss.logging>
 		<version.org.mockito>1.10.19</version.org.mockito>	
-		<version.com.fasterxml.jackson>2.7.4</version.com.fasterxml.jackson>
-        <version.kubernetes-service-catalog-client>0.0.2</version.kubernetes-service-catalog-client>
+		<version.com.fasterxml.jackson>2.8.4</version.com.fasterxml.jackson>
+        <version.kubernetes-service-catalog-client>0.0.3</version.kubernetes-service-catalog-client>
         <org.apache.httpcomponents.version>4.5.3</org.apache.httpcomponents.version>
+        <version.org.yaml>1.17</version.org.yaml>
+        <version.io.fabric8.openshift-client>3.0.3</version.io.fabric8.openshift-client>
+        <version.io.fabric8.kubernetes-api>3.0.8</version.io.fabric8.kubernetes-api>
+        
+        <!-- DO NOT CHANGE VERSION PROPETY NAMES, THESE ARE USED IN CODE At komodo-rest/template-pom.xml-->        
         <version.mysql>6.0.6</version.mysql>
-        <version.org.mongodb>3.6.1</version.org.mongodb>			
+        <version.org.mongodb>3.6.1</version.org.mongodb>
+        <version.postgresql>42.1.4</version.postgresql>
+        <!-- DO NOT CHANGE VERSION PROPETY NAMES, THESE ARE USED IN CODE -->        			
 	</properties>
 
 	<!-- This section defines the default dependency settings inherited by child 
@@ -381,7 +388,17 @@
               <artifactId>httpclient</artifactId>
               <version>${org.apache.httpcomponents.version}</version>
             </dependency>                
-
+            <dependency>
+                <groupId>io.fabric8</groupId>
+                <artifactId>openshift-client</artifactId>
+                <version>${version.io.fabric8.openshift-client}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.fabric8</groupId>
+                <artifactId>kubernetes-api</artifactId>
+                <version>${version.io.fabric8.kubernetes-api}</version>
+            </dependency>            
+            
 			<!--Inherited from BOM, but changes the default scope to "test" -->
 			<dependency>
 				<groupId>org.hamcrest</groupId>
@@ -540,7 +557,12 @@
                 <groupId>org.mongodb</groupId>
                 <artifactId>mongo-java-driver</artifactId>
                 <version>${version.org.mongodb}</version>
-            </dependency>            
+            </dependency>
+            <dependency>
+              <groupId>org.yaml</groupId>
+              <artifactId>snakeyaml</artifactId>
+              <version>${version.org.yaml}</version>        
+            </dependency>        
 		</dependencies>    
 	</dependencyManagement>
 

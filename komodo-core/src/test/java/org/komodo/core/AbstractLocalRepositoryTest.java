@@ -29,10 +29,12 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
+
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -86,7 +88,7 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
 
     private static final String TEST_REPOSITORY_CONFIG = "internal/test-local-repository-in-memory-config.json";
 
-    protected static final long TIME_TO_WAIT = 3; // in minutes
+    protected static final long TIME_TO_WAIT = 1; // in minutes
 
     protected static LocalRepository _repo = null;
 
@@ -113,7 +115,7 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
         _repo.notify(event);
 
         // Wait for the starting of the repository or timeout of 1 minute
-        if (!_repoStartedObserver.getLatch().await(50, TimeUnit.MINUTES)) {
+        if (!_repoStartedObserver.getLatch().await(TIME_TO_WAIT, TimeUnit.MINUTES)) {
             fail("Test timed-out waiting for local repository to start");
         }
 
