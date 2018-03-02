@@ -18,7 +18,7 @@
     <version.teiid>
       10.0.0.Final
     </version.teiid>
-    <version.mysql>6.0.6</version.mysql>
+    <version.mysql>5.1.40</version.mysql>
     <version.org.mongodb>3.6.1</version.org.mongodb>
     <version.postgresql>42.1.4</version.postgresql>    
   </properties>
