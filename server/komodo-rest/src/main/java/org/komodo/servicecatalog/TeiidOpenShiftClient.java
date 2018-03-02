@@ -667,7 +667,7 @@ public class TeiidOpenShiftClient {
         }});
     }
 
-    public BuildStatus publishVdb(UnitOfWork uow, Vdb vdb) throws KException {
+    public BuildStatus publishVirtualization(UnitOfWork uow, Vdb vdb) throws KException {
         String namespace = ApplicationProperties.getNamespace();
         Config config = new ConfigBuilder().build();
         KubernetesClient kubernetesClient = new DefaultKubernetesClient(config);
@@ -676,7 +676,7 @@ public class TeiidOpenShiftClient {
         String vdbName = vdb.getVdbName(uow);
         boolean enableOData = true;
         try {
-            BuildStatus status = getPublishedVdbStatus(vdbName);
+            BuildStatus status = getVirtualizationStatus(vdbName);
             if ((status.status == Status.BUILDING) || (status.status == Status.DEPLOYING)
                     || (status.status == Status.RUNNING)) {
                 return status;
@@ -703,7 +703,7 @@ public class TeiidOpenShiftClient {
                 addToQueue(namespace, vdbName, build.getMetadata().getName(), null, envs);
             }
             monitorWork();
-            return getPublishedVdbStatus(vdbName);
+            return getVirtualizationStatus(vdbName);
         } catch (KubernetesClientException | IOException e) {
             throw new KException(e);
         } finally {
@@ -789,7 +789,7 @@ public class TeiidOpenShiftClient {
         return new EnvVarBuilder().withName(name).withValue(value).build();
     }
 
-    public BuildStatus getPublishedVdbStatus(String vdbName) {
+    public BuildStatus getVirtualizationStatus(String vdbName) {
         for (BuildStatus status: workQueue) {
             if (status.vdbName.equals(vdbName)) {
                 return status;
@@ -851,7 +851,7 @@ public class TeiidOpenShiftClient {
         return status;
     }
 
-    public List<BuildStatus> getPublishedVdbs(boolean includeInQueue){
+    public List<BuildStatus> getVirtualizations(boolean includeInQueue){
         String namespace = ApplicationProperties.getNamespace();
         Config config = new ConfigBuilder().build();
         KubernetesClient kubernetesClient = new DefaultKubernetesClient(config);
@@ -873,7 +873,7 @@ public class TeiidOpenShiftClient {
         return services;
     }
 
-    public BuildStatus deletePublishedVdb(String vdbName) {
+    public BuildStatus deleteVirtualization(String vdbName) {
         BuildStatus runningBuild = null;
         for (BuildStatus status: workQueue) {
             if (status.vdbName.equals(vdbName)) {
@@ -890,7 +890,7 @@ public class TeiidOpenShiftClient {
             if (runningBuild != null) {
                 client.builds().inNamespace(runningBuild.namespace).withName(runningBuild.buildName).delete();
             } else {
-                runningBuild = getPublishedVdbStatus(vdbName);
+                runningBuild = getVirtualizationStatus(vdbName);
             }
             client.buildConfigs().inNamespace(namespace).withName(getBuildConfigName(vdbName)).delete();
             client.deploymentConfigs().inNamespace(namespace).withLabel("application", vdbName).delete();
@@ -914,7 +914,7 @@ public class TeiidOpenShiftClient {
      * @return pom.xml contents
      * @throws KException
      */
-    public String generatePomXml(UnitOfWork uow, Vdb vdb, boolean enableOdata) throws KException {
+    protected String generatePomXml(UnitOfWork uow, Vdb vdb, boolean enableOdata) throws KException {
         try {
             StringBuilder builder = new StringBuilder();
             InputStream is = this.getClass().getClassLoader().getResourceAsStream("s2i/template-pom.xml");

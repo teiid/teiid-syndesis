@@ -3430,9 +3430,9 @@ public class KomodoMetadataService extends KomodoService {
     @GET
     @Path(V1Constants.PUBLISH)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Gets the published services", response = RestBuildStatus[].class)
+    @ApiOperation(value = "Gets the published virtualization services", response = RestBuildStatus[].class)
     @ApiResponses(value = { @ApiResponse(code = 403, message = "An error has occurred.") })
-    public Response getAllPublishedVdbServices(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
+    public Response getVirtualizations(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
             @ApiParam(value = "true to include in progress services", required = true, defaultValue="true")
             @QueryParam("includeInProgress") final boolean includeInProgressServices) throws KomodoRestException {
         SecurityPrincipal principal = checkSecurityContext(headers);
@@ -3445,7 +3445,7 @@ public class KomodoMetadataService extends KomodoService {
             Repository repo = this.kengine.getDefaultRepository();
             uow = createTransaction(principal, "publish", true); //$NON-NLS-1$
             final List<RestBuildStatus> entityList = new ArrayList<>();
-            List<BuildStatus> list = this.openshiftClient.getPublishedVdbs(includeInProgressServices);
+            List<BuildStatus> list = this.openshiftClient.getVirtualizations(includeInProgressServices);
             for (BuildStatus status : list) {
                 entityList.add(entityFactory.createBuildStatus(uow, repo, status, uriInfo.getBaseUri()));
             }
@@ -3467,13 +3467,13 @@ public class KomodoMetadataService extends KomodoService {
     @GET
     @Path(V1Constants.PUBLISH + StringConstants.FORWARD_SLASH + V1Constants.VDB_PLACEHOLDER)
     @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Find Build Status by VDB name", response = RestBuildStatus.class)
+    @ApiOperation(value = "Find Build Status of Virtualization by VDB name", response = RestBuildStatus.class)
     @ApiResponses(value = {
         @ApiResponse(code = 404, message = "No VDB could be found with name"),
         @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
-    public Response getVDBService(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
+    public Response getVirtualizationStatus(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
             @ApiParam(value = "Name of the VDB", required = true) final @PathParam("vdbName") String vdbName)
             throws KomodoRestException {
 
@@ -3486,7 +3486,7 @@ public class KomodoMetadataService extends KomodoService {
         try {
             Repository repo = this.kengine.getDefaultRepository();
             uow = createTransaction(principal, "publish", true); //$NON-NLS-1$
-            BuildStatus status = this.openshiftClient.getPublishedVdbStatus(vdbName);
+            BuildStatus status = this.openshiftClient.getVirtualizationStatus(vdbName);
             return commit(uow, mediaTypes, entityFactory.createBuildStatus(uow, repo, status, uriInfo.getBaseUri()));
         } catch (CallbackTimeoutException ex) {
             return createTimeoutResponse(mediaTypes);
@@ -3504,13 +3504,13 @@ public class KomodoMetadataService extends KomodoService {
     @DELETE
     @Path(V1Constants.PUBLISH + StringConstants.FORWARD_SLASH + V1Constants.VDB_PLACEHOLDER)
     @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Delete VDB Service by VDB name",response = RestBuildStatus.class)
+    @ApiOperation(value = "Delete Virtualization Service by VDB name",response = RestBuildStatus.class)
     @ApiResponses(value = {
         @ApiResponse(code = 404, message = "No VDB could be found with name"),
         @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
-    public Response deleteVDBService(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
+    public Response deleteVirtualization(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
             @ApiParam(value = "Name of the VDB", required = true) final @PathParam("vdbName") String vdbName)
             throws KomodoRestException {
 
@@ -3523,7 +3523,7 @@ public class KomodoMetadataService extends KomodoService {
         try {
             Repository repo = this.kengine.getDefaultRepository();
             uow = createTransaction(principal, "publish", true); //$NON-NLS-1$
-            BuildStatus status = this.openshiftClient.deletePublishedVdb(vdbName);
+            BuildStatus status = this.openshiftClient.deleteVirtualization(vdbName);
             return commit(uow, mediaTypes, entityFactory.createBuildStatus(uow, repo, status, uriInfo.getBaseUri()));
         } catch (CallbackTimeoutException ex) {
             return createTimeoutResponse(mediaTypes);
@@ -3541,13 +3541,13 @@ public class KomodoMetadataService extends KomodoService {
     @POST
     @Path(V1Constants.PUBLISH)
     @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Publish VDB Service",response = RestBuildStatus.class)
+    @ApiOperation(value = "Publish Virtualization Service based on VDB",response = RestBuildStatus.class)
     @ApiResponses(value = {
         @ApiResponse(code = 404, message = "No VDB could be found with name"),
         @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
-    public Response publishVDBService(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
+    public Response publishVirtualization(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
             @ApiParam(value = "JSON of the properties of the VDB:<br>" + OPEN_PRE_TAG + OPEN_BRACE + BR + NBSP
             + "name: \"Name of the VDB\"" + BR + CLOSE_BRACE
             + CLOSE_PRE_TAG, required = true) final String payload)
@@ -3581,7 +3581,7 @@ public class KomodoMetadataService extends KomodoService {
             if (vdb == null) {
                 return createErrorResponse(Status.NOT_FOUND, mediaTypes, RelationalMessages.Error.VDB_NOT_FOUND);
             }
-            BuildStatus status = this.openshiftClient.publishVdb(uow, vdb);
+            BuildStatus status = this.openshiftClient.publishVirtualization(uow, vdb);
             return commit(uow, mediaTypes, entityFactory.createBuildStatus(uow, repo, status, uriInfo.getBaseUri()));
         } catch (Throwable e) {
             if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
