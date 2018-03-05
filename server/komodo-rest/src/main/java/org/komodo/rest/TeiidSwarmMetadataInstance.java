@@ -34,6 +34,6 @@ public class TeiidSwarmMetadataInstance extends DefaultMetadataInstance {
 
     @Override
     public Admin admin() throws AdminException {
-        return admin();
+        return super.admin();
     }
 }
