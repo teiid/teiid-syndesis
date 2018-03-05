@@ -49,6 +49,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
@@ -85,6 +86,7 @@ import org.komodo.rest.relational.request.KomodoQueryAttribute;
 import org.komodo.rest.relational.request.KomodoServiceCatalogDataSourceAttributes;
 import org.komodo.rest.relational.request.KomodoVdbUpdateAttributes;
 import org.komodo.rest.relational.response.KomodoStatusObject;
+import org.komodo.rest.relational.response.RestBuildStatus;
 import org.komodo.rest.relational.response.RestConnectionDriver;
 import org.komodo.rest.relational.response.RestQueryResult;
 import org.komodo.rest.relational.response.RestServiceCatalogDataSource;
@@ -98,6 +100,8 @@ import org.komodo.rest.relational.response.metadata.RestMetadataTemplateEntry;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdb;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatus;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbTranslator;
+import org.komodo.servicecatalog.BuildStatus;
+import org.komodo.servicecatalog.TeiidOpenShiftClient;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
@@ -226,17 +230,22 @@ public class KomodoMetadataService extends KomodoService {
      */
     private Map<String, String> urlContentTranslatorMap = new HashMap<String,String>();
 
+    private TeiidOpenShiftClient openshiftClient;
+
     /**
      * @param engine
      *        the Komodo Engine (cannot be <code>null</code> and must be started)
+     * @param openshiftClient OpenShift client to access service catalog        
      * @throws WebApplicationException
      *         if there is a problem obtaining the {@link WorkspaceManager workspace manager}
      */
-    public KomodoMetadataService(final KEngine engine) throws WebApplicationException {
+    public KomodoMetadataService(final KEngine engine, TeiidOpenShiftClient openshiftClient) throws WebApplicationException {
         super(engine);
         // Loads default translator mappings
         loadDriverTranslatorMap();
         loadUrlContentTranslatorMap();
+
+        this.openshiftClient = openshiftClient;
     }
 
     private synchronized MetadataInstance getMetadataInstance() throws KException {
@@ -3319,7 +3328,7 @@ public class KomodoMetadataService extends KomodoService {
 			uow = createTransaction(principal, "availableSources", true); //$NON-NLS-1$
 
 			// Get OpenShift based available data services
-			Collection<ServiceCatalogDataSource> dataSources = getMetadataInstance().getServiceCatalogSources();
+			Collection<ServiceCatalogDataSource> dataSources = this.openshiftClient.getServiceCatalogSources();
 			LOGGER.info("serviceCatalogSources '{0}' DataSources", dataSources.size()); //$NON-NLS-1$
 
 			final List<RestServiceCatalogDataSource> entities = new ArrayList<>();
@@ -3401,7 +3410,7 @@ public class KomodoMetadataService extends KomodoService {
 
 		try {
 			uow = createTransaction(principal, "bindServiceCatalogService", false); //$NON-NLS-1$
-			getMetadataInstance().bindToServiceCatalogSource(attributes.getName());
+			this.openshiftClient.bindToServiceCatalogSource(attributes.getName());
 			String title = RelationalMessages.getString(
 					RelationalMessages.Info.METADATA_SERVICE_CATALOG_DATA_SERVIVE_BIND_TITLE, attributes.getName());
 			KomodoStatusObject status = new KomodoStatusObject(title);
@@ -3416,5 +3425,172 @@ public class KomodoMetadataService extends KomodoService {
 			return createErrorResponse(Status.FORBIDDEN, mediaTypes, e,
 					RelationalMessages.Error.METADATA_SERVICE_CATALOG_DATA_SERVIVE_BIND_ERROR, e, attributes.getName());
 		   }
-    }	
+    }
+
+    @GET
+    @Path(V1Constants.PUBLISH)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Gets the published virtualization services", response = RestBuildStatus[].class)
+    @ApiResponses(value = { @ApiResponse(code = 403, message = "An error has occurred.") })
+    public Response getVirtualizations(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
+            @ApiParam(value = "true to include in progress services", required = true, defaultValue="true")
+            @QueryParam("includeInProgress") final boolean includeInProgressServices) throws KomodoRestException {
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        UnitOfWork uow = null;
+        try {
+            Repository repo = this.kengine.getDefaultRepository();
+            uow = createTransaction(principal, "publish", true); //$NON-NLS-1$
+            final List<RestBuildStatus> entityList = new ArrayList<>();
+            List<BuildStatus> list = this.openshiftClient.getVirtualizations(includeInProgressServices);
+            for (BuildStatus status : list) {
+                entityList.add(entityFactory.createBuildStatus(uow, repo, status, uriInfo.getBaseUri()));
+            }
+            return commit(uow, mediaTypes, entityList);
+        } catch (CallbackTimeoutException ex) {
+            return createTimeoutResponse(mediaTypes);
+        } catch (Throwable e) {
+            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+                uow.rollback();
+            }
+            if (e instanceof KomodoRestException) {
+                throw (KomodoRestException) e;
+            }
+            return createErrorResponseWithForbidden(mediaTypes, e,
+                    RelationalMessages.Error.PUBLISH_ERROR);
+        }
+    }
+
+    @GET
+    @Path(V1Constants.PUBLISH + StringConstants.FORWARD_SLASH + V1Constants.VDB_PLACEHOLDER)
+    @Produces( MediaType.APPLICATION_JSON )
+    @ApiOperation(value = "Find Build Status of Virtualization by VDB name", response = RestBuildStatus.class)
+    @ApiResponses(value = {
+        @ApiResponse(code = 404, message = "No VDB could be found with name"),
+        @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
+        @ApiResponse(code = 403, message = "An error has occurred.")
+    })
+    public Response getVirtualizationStatus(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
+            @ApiParam(value = "Name of the VDB", required = true) final @PathParam("vdbName") String vdbName)
+            throws KomodoRestException {
+
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        UnitOfWork uow = null;
+        try {
+            Repository repo = this.kengine.getDefaultRepository();
+            uow = createTransaction(principal, "publish", true); //$NON-NLS-1$
+            BuildStatus status = this.openshiftClient.getVirtualizationStatus(vdbName);
+            return commit(uow, mediaTypes, entityFactory.createBuildStatus(uow, repo, status, uriInfo.getBaseUri()));
+        } catch (CallbackTimeoutException ex) {
+            return createTimeoutResponse(mediaTypes);
+        } catch (Throwable e) {
+            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+                uow.rollback();
+            }
+            if (e instanceof KomodoRestException) {
+                throw (KomodoRestException) e;
+            }
+            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.PUBLISH_ERROR);
+        }
+    }
+
+    @DELETE
+    @Path(V1Constants.PUBLISH + StringConstants.FORWARD_SLASH + V1Constants.VDB_PLACEHOLDER)
+    @Produces( MediaType.APPLICATION_JSON )
+    @ApiOperation(value = "Delete Virtualization Service by VDB name",response = RestBuildStatus.class)
+    @ApiResponses(value = {
+        @ApiResponse(code = 404, message = "No VDB could be found with name"),
+        @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
+        @ApiResponse(code = 403, message = "An error has occurred.")
+    })
+    public Response deleteVirtualization(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
+            @ApiParam(value = "Name of the VDB", required = true) final @PathParam("vdbName") String vdbName)
+            throws KomodoRestException {
+
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        UnitOfWork uow = null;
+        try {
+            Repository repo = this.kengine.getDefaultRepository();
+            uow = createTransaction(principal, "publish", true); //$NON-NLS-1$
+            BuildStatus status = this.openshiftClient.deleteVirtualization(vdbName);
+            return commit(uow, mediaTypes, entityFactory.createBuildStatus(uow, repo, status, uriInfo.getBaseUri()));
+        } catch (CallbackTimeoutException ex) {
+            return createTimeoutResponse(mediaTypes);
+        } catch (Throwable e) {
+            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+                uow.rollback();
+            }
+            if (e instanceof KomodoRestException) {
+                throw (KomodoRestException) e;
+            }
+            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.PUBLISH_ERROR);
+        }
+    }
+
+    @POST
+    @Path(V1Constants.PUBLISH)
+    @Produces( MediaType.APPLICATION_JSON )
+    @ApiOperation(value = "Publish Virtualization Service based on VDB",response = RestBuildStatus.class)
+    @ApiResponses(value = {
+        @ApiResponse(code = 404, message = "No VDB could be found with name"),
+        @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
+        @ApiResponse(code = 403, message = "An error has occurred.")
+    })
+    public Response publishVirtualization(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
+            @ApiParam(value = "JSON of the properties of the VDB:<br>" + OPEN_PRE_TAG + OPEN_BRACE + BR + NBSP
+            + "name: \"Name of the VDB\"" + BR + CLOSE_BRACE
+            + CLOSE_PRE_TAG, required = true) final String payload)
+            throws KomodoRestException {
+
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse()) {
+            return principal.getErrorResponse();
+        }
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        if (!isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
+            return notAcceptableMediaTypesBuilder().build();
+        //
+        // Error if there is no name attribute defined
+        //
+        KomodoServiceCatalogDataSourceAttributes attributes;
+        try {
+            attributes = KomodoJsonMarshaller.unmarshall(payload, KomodoServiceCatalogDataSourceAttributes.class);
+            if (attributes.getName() == null) {
+                return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_NAME_NOT_PROVIDED);
+            }
+        } catch (Exception ex) {
+            return createErrorResponseWithForbidden(mediaTypes, ex, RelationalMessages.Error.VDB_NAME_NOT_PROVIDED);
+        }
+        UnitOfWork uow = null;
+        try {
+            Repository repo = this.kengine.getDefaultRepository();
+            uow = createTransaction(principal, "publish", true); //$NON-NLS-1$
+            Vdb vdb = findVdb(uow, attributes.getName());
+            if (vdb == null) {
+                return createErrorResponse(Status.NOT_FOUND, mediaTypes, RelationalMessages.Error.VDB_NOT_FOUND);
+            }
+            BuildStatus status = this.openshiftClient.publishVirtualization(uow, vdb);
+            return commit(uow, mediaTypes, entityFactory.createBuildStatus(uow, repo, status, uriInfo.getBaseUri()));
+        } catch (Throwable e) {
+            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+                uow.rollback();
+            }
+            if (e instanceof KomodoRestException) {
+                throw (KomodoRestException) e;
+            }
+            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.PUBLISH_ERROR, e.getMessage());
+        }
+    }
 }
