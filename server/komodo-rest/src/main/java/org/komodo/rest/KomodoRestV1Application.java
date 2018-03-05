@@ -960,7 +960,7 @@ public class KomodoRestV1Application extends Application implements SystemConsta
             this.kengine.shutdownAndWait();
             shutdown = observer.getLatch().await(TIMEOUT, UNIT);
         } catch (final Exception e) {
-            throw new WebApplicationException(new Exception(Messages.getString(KOMODO_ENGINE_SHUTDOWN_ERROR)),
+            throw new WebApplicationException(new Exception(Messages.getString(KOMODO_ENGINE_SHUTDOWN_ERROR, e)),
                                               Status.INTERNAL_SERVER_ERROR);
         } finally {
             this.kengine = null;
