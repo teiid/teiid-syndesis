@@ -32,7 +32,6 @@ import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.outcome.Outcome;
 import org.komodo.spi.query.QSResult;
 import org.komodo.spi.runtime.ConnectionDriver;
-import org.komodo.spi.runtime.ServiceCatalogDataSource;
 import org.komodo.spi.runtime.TeiidDataSource;
 import org.komodo.spi.runtime.TeiidPropertyDefinition;
 import org.komodo.spi.runtime.TeiidTranslator;
@@ -404,20 +403,4 @@ public interface MetadataInstance extends StringConstants {
      * @throws KException 
      */
     void refresh() throws KException;
-    
-    
-    /**
-     * Gets available data service instances in the OpenShift's Service Catalog
-     * @return
-     * @throws KException
-     */
-    Set<ServiceCatalogDataSource> getServiceCatalogSources() throws KException;
-    
-    /**
-     * Binds the to the service catalog based source if needed and then creates the connection
-     * in the Teiid.
-     * @param dsName - Name of the Service Catalog data service
-     * @throws KException
-     */
-    void bindToServiceCatalogSource(String dsName) throws KException;
 }

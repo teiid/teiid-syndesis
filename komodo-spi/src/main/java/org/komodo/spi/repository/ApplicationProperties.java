@@ -199,4 +199,20 @@ public class ApplicationProperties implements SystemConstants {
         target = target.replace(template, propValue);
         return target;
     }
+
+    /**
+     * Get a arbitrary property given by the name. first look in system properties, then in environment properties
+     * @param property Name of the property
+     */
+    public static String getProperty(String property, String defalt) {
+        String propValue = System.getProperty(property);
+        if (propValue != null) {
+        	return propValue;
+        }
+        propValue = System.getenv(property);
+        if (propValue != null) {
+        	return propValue;
+        }
+        return defalt;
+    }
 }

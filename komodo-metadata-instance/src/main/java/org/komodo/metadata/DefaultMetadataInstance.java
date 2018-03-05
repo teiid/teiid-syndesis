@@ -52,7 +52,6 @@ import org.komodo.spi.query.QSColumn;
 import org.komodo.spi.query.QSResult;
 import org.komodo.spi.query.QSRow;
 import org.komodo.spi.runtime.ConnectionDriver;
-import org.komodo.spi.runtime.ServiceCatalogDataSource;
 import org.komodo.spi.runtime.TeiidDataSource;
 import org.komodo.spi.runtime.TeiidPropertyDefinition;
 import org.komodo.spi.runtime.TeiidTranslator;
@@ -741,14 +740,4 @@ public class DefaultMetadataInstance implements MetadataInstance {
             throw handleError(ex);
         }
     }
-
-	@Override
-	public Set<ServiceCatalogDataSource> getServiceCatalogSources() throws KException {
-        throw new KException(Messages.getString(Messages.MetadataServer.notImplemented));
-	}
-
-	@Override
-	public void bindToServiceCatalogSource(String dsName) throws KException {
-		throw new KException(Messages.getString(Messages.MetadataServer.notImplemented));
-	}
 }

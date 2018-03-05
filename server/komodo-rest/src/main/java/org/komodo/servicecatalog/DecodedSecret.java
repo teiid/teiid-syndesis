@@ -3,37 +3,48 @@
  * See the COPYRIGHT.txt file distributed with this work for information
  * regarding copyright ownership.  Some portions may be licensed
  * to Red Hat, Inc. under one or more contributor license agreements.
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.rest;
+package org.komodo.servicecatalog;
 
-import org.komodo.metadata.DefaultMetadataInstance;
-import org.komodo.metadata.TeiidConnectionProvider;
-import org.teiid.adminapi.Admin;
-import org.teiid.adminapi.AdminException;
+import java.util.Map;
 
-public class TeiidSwarmMetadataInstance extends DefaultMetadataInstance {
+import org.komodo.spi.constants.StringConstants;
 
-    public TeiidSwarmMetadataInstance(TeiidConnectionProvider connectionProvider) {
-        super(connectionProvider);
+public class DecodedSecret {
+    private String secretName;
+    private Map<String, String> data;
+
+    public DecodedSecret(String name, Map<String, String> data) {
+        this.secretName = name;
+        this.data = data;
     }
 
-    @Override
-    public Admin admin() throws AdminException {
-        return admin();
+    public String getSecretName() {
+        return secretName;
+    }
+
+    public Map<String, String> getData() {
+        return data;
+    }
+
+    public String canonicalKey(String key) {
+        return secretName.replace(StringConstants.HYPHEN, StringConstants.UNDERSCORE).toUpperCase()
+                + StringConstants.UNDERSCORE
+                + key.replace(StringConstants.HYPHEN, StringConstants.UNDERSCORE).toUpperCase();
     }
 }

@@ -50,6 +50,7 @@ import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.RestBasicEntity;
 import org.komodo.rest.relational.connection.RestConnection;
 import org.komodo.rest.relational.dataservice.RestDataservice;
+import org.komodo.rest.relational.response.RestBuildStatus;
 import org.komodo.rest.relational.response.RestServiceCatalogDataSource;
 import org.komodo.rest.relational.response.RestVdb;
 import org.komodo.rest.relational.response.RestVdbCondition;
@@ -67,6 +68,7 @@ import org.komodo.rest.relational.response.metadata.RestMetadataTemplate;
 import org.komodo.rest.relational.response.metadata.RestMetadataTemplateEntry;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdb;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbTranslator;
+import org.komodo.servicecatalog.BuildStatus;
 import org.komodo.spi.KException;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
@@ -357,5 +359,15 @@ public class RestEntityFactory implements V1Constants {
         // TODO:  phantomjinx what needs to be done here?
         KomodoObject parent = createTemporaryParent(transaction, repository, null);
         return new RestServiceCatalogDataSource(baseUri, parent, datasource, transaction);
-	}  
+	}
+
+    public RestBuildStatus createBuildStatus(UnitOfWork transaction, Repository repository,
+            BuildStatus status, URI baseUri) throws Exception {
+        checkTransaction(transaction);
+        ArgCheck.isTrue(transaction.isRollbackOnly(), "transaction should be rollback-only");
+
+        // TODO:  phantomjinx what needs to be done here?
+        KomodoObject parent = createTemporaryParent(transaction, repository, null);
+        return new RestBuildStatus(baseUri, parent, status, transaction);
+    }
 }
