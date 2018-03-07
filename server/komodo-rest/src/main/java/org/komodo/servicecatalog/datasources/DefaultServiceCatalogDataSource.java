@@ -42,7 +42,7 @@ public class DefaultServiceCatalogDataSource implements ServiceCatalogDataSource
 
     @Override
     public String getType() {
-        return definition.getName();
+        return definition.getType();
     }
 
     @Override
