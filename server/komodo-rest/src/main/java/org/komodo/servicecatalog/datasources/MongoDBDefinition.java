@@ -29,7 +29,7 @@ import org.komodo.servicecatalog.DataSourceDefinition;
 public class MongoDBDefinition extends DataSourceDefinition {
 
     @Override
-    public String getName() {
+    public String getType() {
         return "mongodb";
     }
 

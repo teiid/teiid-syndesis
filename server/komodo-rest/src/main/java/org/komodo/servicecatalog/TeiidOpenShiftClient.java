@@ -132,7 +132,7 @@ public class TeiidOpenShiftClient {
     }
 
     private void add(DataSourceDefinition def) {
-        sources.put(def.getName(), def);
+        sources.put(def.getType(), def);
     }
 
     /**
@@ -202,7 +202,7 @@ public class TeiidOpenShiftClient {
     }
 
     public void bindToServiceCatalogSource(String dsName) throws KException {
-        KLog.getLogger().info("Bind to Service" + dsName);
+        KLog.getLogger().info("Bind to Service:" + dsName);
         String token = AuthHandlingFilter.threadOAuthCredentials.get().getToken();
         this.scClient.setAuthHeader(token);
         try {
@@ -234,7 +234,7 @@ public class TeiidOpenShiftClient {
             DefaultServiceCatalogDataSource scd = buildServiceCatalogDataSource(svc, binding);
             Collection<String> dsNames = this.metadata.admin().getDataSourceNames();
             if (!dsNames.contains(dsName)) {
-                createDataSource(dsName, scd.getName(), scd);
+                createDataSource(dsName, scd);
             }
         } catch (Exception e) {
             throw handleError(e);
@@ -345,17 +345,18 @@ public class TeiidOpenShiftClient {
         return null;
     }
 
-    private void createDataSource(String name, String dsType, DefaultServiceCatalogDataSource scd)
+    private void createDataSource(String name, DefaultServiceCatalogDataSource scd)
             throws AdminException, KException {
         
-        KLog.getLogger().debug("Creating the Datasource = "+ name + " of Type " + dsType);
+        KLog.getLogger().debug("Creating the Datasource = "+ name + " of Type " + scd.getType());
 
         String driverName = null;
         Set<String> templateNames = this.metadata.admin().getDataSourceTemplateNames();
         KLog.getLogger().debug("template names:"+templateNames);
+        String dsType = scd.getDefinition().getType();
         for (String template : templateNames) {
             // TODO: there is null entering from above call from getDataSourceTemplateNames need to investigate why
-            if ((template != null) && template.startsWith(dsType)) {
+            if ((template != null) && template.contains(dsType)) {
                 driverName = template;
                 break;
             }

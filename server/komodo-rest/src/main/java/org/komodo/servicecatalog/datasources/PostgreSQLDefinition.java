@@ -29,7 +29,7 @@ import org.komodo.servicecatalog.DataSourceDefinition;
 public class PostgreSQLDefinition extends DataSourceDefinition {
 
     @Override
-    public String getName() {
+    public String getType() {
         return "postgresql";
     }
 
@@ -80,6 +80,8 @@ public class PostgreSQLDefinition extends DataSourceDefinition {
         props.setProperty("user-name", source.getProperty("username"));
         props.setProperty("password", source.getProperty("password"));
         return props;
+        
+        
     }
 
     @Override
