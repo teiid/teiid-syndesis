@@ -34,7 +34,7 @@ public abstract class DataSourceDefinition {
      * Returns the type of the database. Matches with name of driver in WildFlySwarm
      * @return name of the source type
      */
-    public abstract String getName();
+    public abstract String getType();
 
     /**
      * @return return the text to include in pom.xml as dependencies for this source

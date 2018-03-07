@@ -28,7 +28,7 @@ import org.komodo.servicecatalog.DataSourceDefinition;
 public class ODataV4Definition extends DataSourceDefinition {
 
     @Override
-    public String getName() {
+    public String getType() {
         return "odata4";
     }
 

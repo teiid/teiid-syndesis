@@ -28,7 +28,7 @@ import org.komodo.servicecatalog.DataSourceDefinition;
 public class WebServiceDefinition extends DataSourceDefinition {
 
     @Override
-    public String getName() {
+    public String getType() {
         return "ws";
     }
 
