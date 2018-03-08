@@ -76,6 +76,23 @@
             }
         },
         {
+          "kind": "RoleBinding",
+          "apiVersion": "v1",
+          "metadata": {
+              "name": "vdb-builder-gateway_admin"
+          },
+          "groupNames": null,
+          "subjects": [
+              {
+                  "kind": "ServiceAccount",
+                  "name": "vdb-builder-gateway"
+              }
+          ],
+          "roleRef": {
+              "name": "admin"
+          }
+        },        
+        {
             "kind": "Service",
             "apiVersion": "v1",
             "metadata": {
