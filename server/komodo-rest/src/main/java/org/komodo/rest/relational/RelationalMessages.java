@@ -434,6 +434,11 @@ public final class RelationalMessages {
         DATASERVICE_SERVICE_NAME_VALIDATION_ERROR,
 
         /**
+         * An error indicating attempt to get dataservice VDB statuses failed
+         */
+        DATASERVICE_SERVICE_VDBS_STATUS_ERROR,
+
+        /**
          * An error indicating a JSON document representing the Connections in the workspace could not be retrieved.
          */
         CONNECTION_SERVICE_GET_CONNECTIONS_ERROR,
@@ -464,14 +469,9 @@ public final class RelationalMessages {
         CONNECTION_SERVICE_UPDATE_CONNECTION_ERROR,
 
         /**
-         * An error indicating create attempt was missing a name
+         * An error indicating the operation was missing the connection name
          */
-        CONNECTION_SERVICE_CREATE_MISSING_NAME,
- 
-        /**
-         * An error indicating clone attempt was missing a name
-         */
-        CONNECTION_SERVICE_CLONE_MISSING_NAME,
+        CONNECTION_SERVICE_MISSING_NAME,
  
         /**
          * An error indicating clone attempt was missing a new connection name
@@ -482,11 +482,6 @@ public final class RelationalMessages {
          * An error indicating the desired new clone name is same as connection being cloned
          */
         CONNECTION_SERVICE_CLONE_SAME_NAME_ERROR,
-        
-        /**
-         * An error indicating update attempt was missing a name
-         */
-        CONNECTION_SERVICE_UPDATE_MISSING_NAME,
         
         /**
          * An error indicating that the connection does not exist
@@ -529,6 +524,11 @@ public final class RelationalMessages {
         CONNECTION_SERVICE_NAME_VALIDATION_ERROR,
 
         /**
+         * A message indicating an unexpected error occurred during connection VDB deployment
+         */
+        CONNECTION_SERVICE_DEPLOY_CONNECTION_VDB_ERROR,
+        
+        /**
          * An error indicating at least one parameter is lacking
          */
         CONNECTION_SERVICE_MISSING_PARAMETER_ERROR,
@@ -543,6 +543,11 @@ public final class RelationalMessages {
          */
         CONNECTION_SERVICE_CATALOG_SOURCE_DNE_ERROR,
         
+        /**
+         * An error indicating attempt to get connection VDB statuses failed
+         */
+        CONNECTION_SERVICE_VDBS_STATUS_ERROR,
+
         /**
          * Error transferring connections from server to repo
          */

@@ -39,6 +39,7 @@ import static org.komodo.rest.relational.RelationalMessages.Error.DATASERVICE_SE
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -81,6 +82,7 @@ import org.komodo.relational.resource.Driver;
 import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
+import org.komodo.rest.KRestEntity;
 import org.komodo.rest.KomodoRestException;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
@@ -95,16 +97,20 @@ import org.komodo.rest.relational.request.KomodoDataserviceUpdateAttributes;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.RestConnectionDriver;
 import org.komodo.rest.relational.response.RestDataserviceViewInfo;
+import org.komodo.rest.relational.response.RestObjectVdbStatus;
 import org.komodo.rest.relational.response.RestVdb;
+import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatusVdb;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.ExportConstants;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
+import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.spi.runtime.ConnectionDriver;
+import org.komodo.spi.runtime.TeiidVdb;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
 import org.teiid.language.SQLConstants;
@@ -368,6 +374,78 @@ public final class KomodoDataserviceService extends KomodoService {
             }
 
             return createErrorResponseWithForbidden(mediaTypes, e, DATASERVICE_SERVICE_GET_DATASERVICE_ERROR, dataserviceName);
+        }
+    }
+
+    /**
+     * Gets the VDBStatus for all dataservices in the workspace.  If no VDB found for a dataservice,
+     * no status is returned.
+     * @param headers
+     *        the request headers (never <code>null</code>)
+     * @param uriInfo
+     *        the request URI information (never <code>null</code>)
+     * @return a JSON document the name of all dataservices and their VDB status in the local server (never <code>null</code>)
+     * @throws KomodoRestException
+     *         if there is a problem constructing the JSON document
+     */
+    @GET
+    @Path(V1Constants.VDB_STATUS_SEGMENT)
+    @Produces( MediaType.APPLICATION_JSON )
+    @ApiOperation(value = "Display the VDBStatus of all dataservices in the workspace",
+                  response = RestObjectVdbStatus.class)
+    @ApiResponses(value = {
+        @ApiResponse(code = 403, message = "An error has occurred.")
+    })
+    public Response getVdbStatuses(final @Context HttpHeaders headers,
+                                   final @Context UriInfo uriInfo) throws KomodoRestException {
+
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        UnitOfWork uow = null;
+
+        List<KRestEntity> statusList = new ArrayList<KRestEntity>();
+        try {
+            uow = createTransaction(principal, "getDataserviceVdbStatuses", true ); //$NON-NLS-1$
+            
+            // Get all workspace dataservices and all metadata instance VDBs
+            Dataservice[] dataservices = getWorkspaceManager(uow).findDataservices( uow );
+            Collection<TeiidVdb> vdbs = getMetadataInstance().getVdbs();
+            
+            for(Dataservice dataservice: dataservices) {
+            	String dataserviceName = dataservice.getName(uow);
+            	Vdb serviceVdb = dataservice.getServiceVdb(uow);
+            	String serviceVdbName = serviceVdb.getName(uow);
+            	
+            	// Find VDB for the dataservice and add status
+            	TeiidVdb teiidServiceVdb = null;
+                for(TeiidVdb vdb : vdbs) {
+                	if(vdb.getName().equals(serviceVdbName)) {
+                		teiidServiceVdb = vdb;
+                		break;
+                	}
+                }
+        		RestMetadataVdbStatusVdb vdbStatus = null;
+                if(teiidServiceVdb!=null) {
+            		vdbStatus = new RestMetadataVdbStatusVdb(teiidServiceVdb);
+                } else {
+            		vdbStatus = RestMetadataVdbStatusVdb.emptyVdb();
+                }
+        		statusList.add(new RestObjectVdbStatus(dataserviceName,vdbStatus));
+            }
+
+            // create response
+            return commit( uow, mediaTypes, statusList );
+
+        } catch (Throwable e) {
+
+            if ( e instanceof KomodoRestException ) {
+                throw ( KomodoRestException )e;
+            }
+
+            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.DATASERVICE_SERVICE_VDBS_STATUS_ERROR);
         }
     }
 
@@ -698,7 +776,6 @@ public final class KomodoDataserviceService extends KomodoService {
         KomodoDataserviceSingleSourceAttributes attr;
         try {
         	attr = KomodoJsonMarshaller.unmarshall(dataserviceSingleSourceAttributes, KomodoDataserviceSingleSourceAttributes.class);
-            String json = KomodoJsonMarshaller.marshall( attr );
             
             Response response = checkDataserviceSingleSourceAttributes(attr, mediaTypes);
             if (response.getStatus() != Status.OK.getStatusCode())
@@ -1689,6 +1766,10 @@ public final class KomodoDataserviceService extends KomodoService {
         }
     }
     
+    private synchronized MetadataInstance getMetadataInstance() throws KException {
+        return this.kengine.getMetadataInstance();
+    }
+    
     /*
      * Checks the supplied attributes for single source dataservices
      *  - dataserviceName, table paths and modelSource path are required
@@ -1699,21 +1780,6 @@ public final class KomodoDataserviceService extends KomodoService {
 
         if (attr == null || attr.getDataserviceName() == null || attr.getModelSourcePath() == null
         		         || attr.getTablePaths() == null || attr.getTablePaths().size() == 0 ) {
-            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.DATASERVICE_SERVICE_MISSING_PARAMETER_ERROR);
-        }
-
-        return Response.ok().build();
-    }
-
-    /*
-     * Checks the supplied attributes for single table view
-     *  - dataserviceName, table path and modelSource path are required
-     *  - columnNames is optional
-     */
-    private Response checkDataserviceUpdateAttributesSingleTableView(KomodoDataserviceUpdateAttributes attr,
-                                                                     List<MediaType> mediaTypes) throws Exception {
-
-        if (attr == null || attr.getDataserviceName() == null || attr.getTablePath() == null || attr.getModelSourcePath() == null) {
             return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.DATASERVICE_SERVICE_MISSING_PARAMETER_ERROR);
         }
 

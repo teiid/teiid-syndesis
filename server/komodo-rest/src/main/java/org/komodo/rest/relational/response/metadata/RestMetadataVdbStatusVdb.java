@@ -39,6 +39,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonInclude(value=Include.NON_NULL)
 public class RestMetadataVdbStatusVdb implements KRestEntity {
 
+    public enum Type {EMPTY_VDB, VDB}
+
     /**
      * Label for the name
      */
@@ -74,6 +76,8 @@ public class RestMetadataVdbStatusVdb implements KRestEntity {
      */
     public static final String VDB_STATUS_ERROR = "errors";
 
+    private Type type = Type.VDB;
+
     private String name;
 
     private String deployedName;
@@ -88,6 +92,20 @@ public class RestMetadataVdbStatusVdb implements KRestEntity {
 
     private List<String> errors;
 
+    // Private static instance for not found VDBs
+    private static RestMetadataVdbStatusVdb emptyVDBInstance = new RestMetadataVdbStatusVdb(Type.EMPTY_VDB);
+     
+ 
+    // Private Constructor for empty VDB
+    private RestMetadataVdbStatusVdb(Type vdbType){
+         type = vdbType;
+    }
+     
+    // Static method to return the empty VDB
+    public static RestMetadataVdbStatusVdb emptyVdb(){
+        return emptyVDBInstance;
+    }
+    
     /**
      * Default constructor for deserialization
      */
@@ -113,6 +131,14 @@ public class RestMetadataVdbStatusVdb implements KRestEntity {
     @Override
     public Object getXml() {
         throw new UnsupportedOperationException();
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
     }
 
     public String getName() {
@@ -175,6 +201,7 @@ public class RestMetadataVdbStatusVdb implements KRestEntity {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
+        result = prime * result + ((type == null) ? 0 : type.hashCode());
         result = prime * result + (active ? 1231 : 1237);
         result = prime * result + ((deployedName == null) ? 0 : deployedName.hashCode());
         result = prime * result + ((errors == null) ? 0 : errors.hashCode());
@@ -194,6 +221,8 @@ public class RestMetadataVdbStatusVdb implements KRestEntity {
         if (getClass() != obj.getClass())
             return false;
         RestMetadataVdbStatusVdb other = (RestMetadataVdbStatusVdb)obj;
+        if (type != other.type)
+            return false;
         if (active != other.active)
             return false;
         if (deployedName == null) {
