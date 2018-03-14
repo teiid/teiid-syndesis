@@ -512,7 +512,7 @@ public final class KomodoConnectionService extends KomodoService {
                 throw (KomodoRestException)e;
             }
 
-            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.CONNECTION_SERVICE_CLONE_CONNECTION_ERROR);
+            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.CONNECTION_SERVICE_CLONE_CONNECTION_ERROR, connectionName);
         }
     }
 
@@ -652,7 +652,7 @@ public final class KomodoConnectionService extends KomodoService {
                 throw (KomodoRestException)e;
             }
 
-            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.CONNECTION_SERVICE_UPDATE_CONNECTION_ERROR);
+            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.CONNECTION_SERVICE_UPDATE_CONNECTION_ERROR, connectionName);
         }
     }
 
@@ -748,7 +748,7 @@ public final class KomodoConnectionService extends KomodoService {
                 throw (KomodoRestException)e;
             }
 
-            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.CONNECTION_SERVICE_DELETE_CONNECTION_ERROR);
+            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.CONNECTION_SERVICE_DELETE_CONNECTION_ERROR, connectionName);
         }
     }
 
