@@ -106,6 +106,9 @@ public class TeiidOpenShiftClient {
     private static final String MANAGED_BY = "managed-by";
     private static final String OSURL = "https://openshift.default.svc";
     private static final String SC_VERSION = "v1beta1";
+    
+    private static String CONTENT_TYPE = " -H 'Content-Type: application/json' ";
+    private static String MANAGEMENT_URL = "http://127.0.0.1:9990/management";
 
     private ConcurrentLinkedQueue<BuildStatus> workQueue = new ConcurrentLinkedQueue<>();
     private boolean running = false;
@@ -422,6 +425,21 @@ public class TeiidOpenShiftClient {
 
     private DeploymentConfig createDeploymentConfig(OpenShiftClient client, String namespace, String vdbName,
             Collection<EnvVar> envs) {
+        
+        String readinessPayload = "-d '{\"operation\": \"execute-query\", "
+                + "\"vdb-name\": \""+vdbName+"\","
+                + "\"vdb-version\": \"1.0.0\", "
+                + "\"sql-query\": \"select 1\", "
+                + "\"timeout-in-milli\": 100, "
+                + "\"address\": [\"subsystem\",\"teiid\"], "
+                + "\"json.pretty\":1}'";
+        
+        String livenessPayload = "-d '{\"operation\": \"get-vdb\", "
+                + "\"vdb-name\": \""+vdbName+"\","
+                + "\"vdb-version\": \"1.0.0\", "
+                + "\"address\": [\"subsystem\",\"teiid\"], "
+                + "\"json.pretty\":1}'";
+        
         return client.deploymentConfigs().inNamespace(namespace).createOrReplaceWithNew()
             .withNewMetadata().withName(vdbName)
                 .addToLabels("application", vdbName)
@@ -451,6 +469,30 @@ public class TeiidOpenShiftClient {
                     .withImage(" ")
                     .withImagePullPolicy("Always")
                     .addAllToEnv(envs)
+                    .withNewReadinessProbe()
+                      .withNewExec()
+                        .withCommand("/bin/sh", "-i", "-c", 
+                                "curl -X POST " + readinessPayload + CONTENT_TYPE + MANAGEMENT_URL 
+                                + " | grep '\"outcome\" : \"success\"'")
+                      .endExec()
+                      .withInitialDelaySeconds(30)
+                      .withTimeoutSeconds(80)
+                      .withPeriodSeconds(60)
+                      .withFailureThreshold(5)
+                      .withSuccessThreshold(1)                      
+                    .endReadinessProbe()
+                    .withNewLivenessProbe()
+                      .withNewExec()
+                        .withCommand("/bin/sh", "-i", "-c", 
+                              "curl -X POST " + livenessPayload + CONTENT_TYPE + MANAGEMENT_URL 
+                              + " | grep '\"outcome\" : \"success\"'")
+                      .endExec()
+                      .withInitialDelaySeconds(30)
+                      .withTimeoutSeconds(80)
+                      .withPeriodSeconds(60)
+                      .withFailureThreshold(5)
+                      .withSuccessThreshold(1)
+                    .endLivenessProbe()
                     .addNewPort().withName("jolokia").withContainerPort(8778).withProtocol("TCP").endPort()
                     .addNewPort().withName("odata").withContainerPort(8080).withProtocol("TCP").endPort()
                     .addNewPort().withName("jdbc").withContainerPort(31000).withProtocol("TCP").endPort()
