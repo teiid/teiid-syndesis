@@ -3542,15 +3542,15 @@ public class KomodoMetadataService extends KomodoService {
     @POST
     @Path(V1Constants.PUBLISH)
     @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Publish Virtualization Service based on VDB",response = RestBuildStatus.class)
+    @ApiOperation(value = "Publish Virtualization Service based on VDB or Dataservice",response = RestBuildStatus.class)
     @ApiResponses(value = {
-        @ApiResponse(code = 404, message = "No VDB could be found with name"),
+        @ApiResponse(code = 404, message = "No VDB or Dataservice could be found with name"),
         @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
     public Response publishVirtualization(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
-            @ApiParam(value = "JSON of the properties of the VDB:<br>" + OPEN_PRE_TAG + OPEN_BRACE + BR + NBSP
-            + "name: \"Name of the VDB\"" + BR + CLOSE_BRACE
+            @ApiParam(value = "JSON properties:<br>" + OPEN_PRE_TAG + OPEN_BRACE + BR + NBSP
+            + "name: \"Name of the VDB or Dataservice\"" + BR + CLOSE_BRACE
             + CLOSE_PRE_TAG, required = true) final String payload)
             throws KomodoRestException {
 
@@ -3580,12 +3580,27 @@ public class KomodoMetadataService extends KomodoService {
             uow = createTransaction(principal, "publish", true); //$NON-NLS-1$
             Vdb vdb = findVdb(uow, attributes.getName());
             if (vdb == null) {
+                //
+                // We don't have a vdb so maybe we have a dataservice instead
+                // Find the dataservice's vdb to publish.
+                //
+                Dataservice dataservice = findDataservice(uow, attributes.getName());
+                if (dataservice == null) {
+                    return createErrorResponse(Status.NOT_FOUND, mediaTypes, RelationalMessages.Error.VDB_NOT_FOUND);
+                }
+
+                vdb = dataservice.getServiceVdb(uow);
+            }
+
+            if (vdb == null) {
                 return createErrorResponse(Status.NOT_FOUND, mediaTypes, RelationalMessages.Error.VDB_NOT_FOUND);
             }
+
             // the properties in this class can be exposed for user input
             PublishConfiguration config = new PublishConfiguration();
             config.setVDB(vdb);
             BuildStatus status = this.openshiftClient.publishVirtualization(uow, config);
+
             return commit(uow, mediaTypes, entityFactory.createBuildStatus(uow, repo, status, uriInfo.getBaseUri()));
         } catch (Throwable e) {
             if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
