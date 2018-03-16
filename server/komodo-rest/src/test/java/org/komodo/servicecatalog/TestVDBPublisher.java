@@ -169,13 +169,15 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
 
         Collection<EnvVar> variables = generator
                 .getEnvironmentVaribalesForVDBDataSources(getTransaction(), vdbs[0]);
-        assertThat( variables.size(), is(12));
+        assertThat( variables.size(), is(13));
         String javaOptions= " -Dswarm.datasources.data-sources.accounts-xyz.driver-name=postgresql "
                 + "-Dswarm.datasources.data-sources.accounts-xyz.user-name=$(MYSECRECT_PG_USERNAME) "
                 + "-Dswarm.datasources.data-sources.accounts-xyz.jndi-name=java:/accountsDS "
                 + "-Dswarm.datasources.data-sources.accounts-xyz.password=$(MYSECRECT_PG_PASSWORD) "
                 + "-Dswarm.datasources.data-sources.accounts-xyz.connection-url="
-                + "jdbc:postgresql://$(PARAMETERS_PG_DATABASE_SERVICE_NAME):5432/$(MYSECRECT_PG_DATABASE_NAME)";
+                + "jdbc:postgresql://$(PARAMETERS_PG_DATABASE_SERVICE_NAME):5432/$(MYSECRECT_PG_DATABASE_NAME)"
+                + " -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
+                + " -Djava.net.preferIPv4Addresses=true -Djava.net.preferIPv4Stack=true";
 
         assertThat(variables, hasItem(new EnvVar("PARAMETERS_PG_NAMESPACE", "openshift", null)));
         assertThat(variables, hasItem(new EnvVar("PARAMETERS_PG_VOLUME_CAPACITY", "1Gi", null)));
@@ -195,5 +197,6 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
         
         assertThat(variables, hasItem(new EnvVar("AB_JOLOKIA_OFF", "true", null)));
         assertThat(variables, hasItem(new EnvVar("AB_OFF", "true", null)));
+        assertThat(variables, hasItem(new EnvVar("GC_MAX_METASPACE_SIZE", "256", null)));
     }
 }

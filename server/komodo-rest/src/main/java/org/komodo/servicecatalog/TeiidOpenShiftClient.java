@@ -73,9 +73,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.fabric8.kubernetes.api.KubernetesHelper;
 import io.fabric8.kubernetes.api.builds.Builds;
+import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
 import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.ConfigBuilder;
@@ -423,11 +425,10 @@ public class TeiidOpenShiftClient {
         return build;
     }
 
-    private DeploymentConfig createDeploymentConfig(OpenShiftClient client, String namespace, String vdbName,
-            Collection<EnvVar> envs) {
+    private DeploymentConfig createDeploymentConfig(OpenShiftClient client, BuildStatus config) {
         
         String readinessPayload = "-d '{\"operation\": \"execute-query\", "
-                + "\"vdb-name\": \""+vdbName+"\","
+                + "\"vdb-name\": \""+config.vdbName+"\","
                 + "\"vdb-version\": \"1.0.0\", "
                 + "\"sql-query\": \"select 1\", "
                 + "\"timeout-in-milli\": 100, "
@@ -435,14 +436,14 @@ public class TeiidOpenShiftClient {
                 + "\"json.pretty\":1}'";
         
         String livenessPayload = "-d '{\"operation\": \"get-vdb\", "
-                + "\"vdb-name\": \""+vdbName+"\","
+                + "\"vdb-name\": \""+config.vdbName+"\","
                 + "\"vdb-version\": \"1.0.0\", "
                 + "\"address\": [\"subsystem\",\"teiid\"], "
                 + "\"json.pretty\":1}'";
         
-        return client.deploymentConfigs().inNamespace(namespace).createOrReplaceWithNew()
-            .withNewMetadata().withName(vdbName)
-                .addToLabels("application", vdbName)
+        return client.deploymentConfigs().inNamespace(config.namespace).createOrReplaceWithNew()
+            .withNewMetadata().withName(config.vdbName)
+                .addToLabels("application", config.vdbName)
             .endMetadata()
             .withNewSpec()
               .withReplicas(1)
@@ -452,23 +453,23 @@ public class TeiidOpenShiftClient {
                 .withType("ImageChange")
                     .withNewImageChangeParams()
                         .withAutomatic(true)
-                        .addToContainerNames(vdbName)
-                        .withNewFrom().withKind("ImageStreamTag").withName(vdbName+":latest").endFrom()
+                        .addToContainerNames(config.vdbName)
+                        .withNewFrom().withKind("ImageStreamTag").withName(config.vdbName+":latest").endFrom()
                     .endImageChangeParams()
               .endTrigger()
-              .addToSelector("deploymentConfig", vdbName)
+              .addToSelector("deploymentConfig", config.vdbName)
               .withNewTemplate()
                 .withNewMetadata()
-                  .withName(vdbName)
-                  .addToLabels("application", vdbName)
-                  .addToLabels("deploymentConfig", vdbName)
+                  .withName(config.vdbName)
+                  .addToLabels("application", config.vdbName)
+                  .addToLabels("deploymentConfig", config.vdbName)
                 .endMetadata()
                 .withNewSpec()
                   .addNewContainer()
-                    .withName(vdbName)
+                    .withName(config.vdbName)
                     .withImage(" ")
                     .withImagePullPolicy("Always")
-                    .addAllToEnv(envs)
+                    .addAllToEnv(config.publishConfiguration.envs)
                     .withNewReadinessProbe()
                       .withNewExec()
                         .withCommand("/bin/sh", "-i", "-c", 
@@ -493,11 +494,11 @@ public class TeiidOpenShiftClient {
                       .withFailureThreshold(5)
                       .withSuccessThreshold(1)
                     .endLivenessProbe()
-                    .addNewPort().withName("jolokia").withContainerPort(8778).withProtocol("TCP").endPort()
-                    .addNewPort().withName("odata").withContainerPort(8080).withProtocol("TCP").endPort()
-                    .addNewPort().withName("jdbc").withContainerPort(31000).withProtocol("TCP").endPort()
-                    .addNewPort().withName("odbc").withContainerPort(35432).withProtocol("TCP").endPort()
-                    .addNewPort().withName("sodata").withContainerPort(8443).withProtocol("TCP").endPort()
+                    .withNewResources()
+                      .addToLimits("memory", new Quantity(config.publishConfiguration.containerMemorySize))
+                      //.addToLimits("cpu", new Quantity(config.cpuUnits))
+                    .endResources()
+                    .addAllToPorts(getDeploymentPorts(config.publishConfiguration))
                   .endContainer()
                 .endSpec()
               .endTemplate()
@@ -505,6 +506,26 @@ public class TeiidOpenShiftClient {
             .done();
     }
 
+    private List<ContainerPort> getDeploymentPorts(PublishConfiguration config){
+        List<ContainerPort> ports = new ArrayList<>();
+        ports.add(createPort("jolokia", 8778, "TCP"));
+        ports.add(createPort("jdbc", 31000, "TCP"));
+        ports.add(createPort("odbc", 35432, "TCP"));
+        if (config.enableOdata) {
+            ports.add(createPort("odata", 8080, "TCP"));
+            ports.add(createPort("sodata", 8443, "TCP"));
+        }
+        return ports;
+    }
+    
+    private ContainerPort createPort(String name, int port, String protocol) {
+        ContainerPort p = new ContainerPort();
+        p.setName(name);
+        p.setContainerPort(port);
+        p.setProtocol(protocol);
+        return p;
+    }
+    
     private Service createService(OpenShiftClient client, String namespace, String vdbName, String type, int port) {
         String serviceName = vdbName+"-"+type;
         Service service = client.services().inNamespace(namespace).withName(serviceName).get();
@@ -599,7 +620,7 @@ public class TeiidOpenShiftClient {
     }
 
     private void addToQueue(final String namespace, final String vdbName, String buildName, String deployConfigName,
-            Collection<EnvVar> envs) {
+            PublishConfiguration publishConfig) {
         BuildStatus work = new BuildStatus();
         work.buildName = buildName;
         work.status = Status.BUILDING;
@@ -608,7 +629,7 @@ public class TeiidOpenShiftClient {
         work.deploymentName = deployConfigName;
         work.statusMessage = "Build Running";
         work.lastUpdated = System.currentTimeMillis();
-        work.envs = envs;
+        work.publishConfiguration = publishConfig;
         this.workQueue.add(work);
     }
 
@@ -654,8 +675,7 @@ public class TeiidOpenShiftClient {
                     if (Builds.isCompleted(lastStatus)) {
                         work.statusMessage = "build completed, deployment started";
                         if (work.deploymentName == null) {
-                            DeploymentConfig dc = createDeploymentConfig(client, work.namespace, work.vdbName,
-                                        work.envs);
+                            DeploymentConfig dc = createDeploymentConfig(client, work);
                             work.deploymentName = dc.getMetadata().getName();
                             work.status = Status.DEPLOYING;
                             client.deploymentConfigs()
@@ -710,14 +730,14 @@ public class TeiidOpenShiftClient {
         }});
     }
 
-    public BuildStatus publishVirtualization(UnitOfWork uow, Vdb vdb) throws KException {
+    public BuildStatus publishVirtualization(UnitOfWork uow, PublishConfiguration publishConfig) throws KException {
         String namespace = ApplicationProperties.getNamespace();
         Config config = new ConfigBuilder().build();
         KubernetesClient kubernetesClient = new DefaultKubernetesClient(config);
         final OpenShiftClient client = kubernetesClient.adapt(OpenShiftClient.class);
 
+        Vdb vdb = publishConfig.vdb;
         String vdbName = vdb.getVdbName(uow);
-        boolean enableOData = true;
         try {
             BuildStatus status = getVirtualizationStatus(vdbName);
             if ((status.status == Status.BUILDING) || (status.status == Status.DEPLOYING)
@@ -727,7 +747,7 @@ public class TeiidOpenShiftClient {
                 KLog.getLogger().info("Deploying " + vdbName + "as Service");
                 // create build contents as tar file
                 GenericArchive archive = ShrinkWrap.create(GenericArchive.class, "contents.zip");
-                archive.add(new StringAsset(generatePomXml(uow, vdb, enableOData)), "pom.xml");
+                archive.add(new StringAsset(generatePomXml(uow, vdb, publishConfig.enableOdata)), "pom.xml");
                 archive.add(new ByteArrayAsset(vdb.export(uow, null)), "/src/main/vdb/"+vdbName+"-vdb.xml");
 
                 InputStream configIs = this.getClass().getClassLoader().getResourceAsStream("s2i/project-defaults.yml");
@@ -742,8 +762,10 @@ public class TeiidOpenShiftClient {
                 Build build = createBuild(client, namespace, buildConfig, buildContents);
                 KLog.getLogger().info("Build Started:"+build.getMetadata().getName()+" for VDB "+ vdbName + " to publish");
                 waitUntilPodIsReady(client, build.getMetadata().getName() + "-build", 20);
+                
                 Collection<EnvVar> envs = getEnvironmentVaribalesForVDBDataSources(uow, vdb);
-                addToQueue(namespace, vdbName, build.getMetadata().getName(), null, envs);
+                publishConfig.addEnvironmentVariables(envs);
+                addToQueue(namespace, vdbName, build.getMetadata().getName(), null, publishConfig);
             }
             monitorWork();
             return getVirtualizationStatus(vdbName);
@@ -795,9 +817,13 @@ public class TeiidOpenShiftClient {
                 }
             }
         }
+        // These options need to be removed after the base image gets updated with them natively
+        javaOptions.append(" -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap");
+        javaOptions.append(" -Djava.net.preferIPv4Addresses=true -Djava.net.preferIPv4Stack=true");
         envs.add(env("JAVA_OPTIONS", javaOptions.toString()));
         envs.add(env("AB_JOLOKIA_OFF", "true"));
         envs.add(env("AB_OFF", "true"));
+        envs.add(env("GC_MAX_METASPACE_SIZE", "256"));
         return envs;
     }
 
