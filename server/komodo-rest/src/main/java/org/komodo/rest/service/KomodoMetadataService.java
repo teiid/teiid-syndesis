@@ -101,6 +101,7 @@ import org.komodo.rest.relational.response.metadata.RestMetadataVdb;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatus;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbTranslator;
 import org.komodo.servicecatalog.BuildStatus;
+import org.komodo.servicecatalog.PublishConfiguration;
 import org.komodo.servicecatalog.TeiidOpenShiftClient;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
@@ -3581,7 +3582,10 @@ public class KomodoMetadataService extends KomodoService {
             if (vdb == null) {
                 return createErrorResponse(Status.NOT_FOUND, mediaTypes, RelationalMessages.Error.VDB_NOT_FOUND);
             }
-            BuildStatus status = this.openshiftClient.publishVirtualization(uow, vdb);
+            // the properties in this class can be exposed for user input
+            PublishConfiguration config = new PublishConfiguration();
+            config.setVDB(vdb);
+            BuildStatus status = this.openshiftClient.publishVirtualization(uow, config);
             return commit(uow, mediaTypes, entityFactory.createBuildStatus(uow, repo, status, uriInfo.getBaseUri()));
         } catch (Throwable e) {
             if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {

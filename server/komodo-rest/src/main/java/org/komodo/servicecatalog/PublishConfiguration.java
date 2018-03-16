@@ -21,37 +21,35 @@
  */
 package org.komodo.servicecatalog;
 
-public class BuildStatus {
-    protected enum Status {NOTFOUND, BUILDING, DEPLOYING, RUNNING, FAILED, CANCELLED}
-    protected String buildName;
-    protected String deploymentName;
-    protected String vdbName;
-    protected String namespace;
-    protected long lastUpdated = 0L;
-    protected String statusMessage;
-    protected Status status = Status.NOTFOUND;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
-    protected PublishConfiguration publishConfiguration;
+import org.komodo.relational.vdb.Vdb;
+
+import io.fabric8.kubernetes.api.model.EnvVar;
+
+public class PublishConfiguration {
+    protected Vdb vdb;
+    protected boolean enableOdata = true;
+    protected String containerMemorySize = "1024Mi";
+    protected List<EnvVar> envs = new ArrayList<>();
     
-    public String getBuildName() {
-        return buildName;
+    public void setVDB(Vdb vdb) {
+        this.vdb = vdb;
     }
-    public String getDeploymentName() {
-        return deploymentName;
+    
+    public void setEnableOData(boolean flag) {
+        this.enableOdata = flag;
     }
-    public String getVdbName() {
-        return vdbName;
+    
+    public void setContainerMemorySize(String size) {
+        this.containerMemorySize = size;
     }
-    public String getNamespace() {
-        return namespace;
-    }
-    public String getStatusMessage() {
-        return statusMessage;
-    }
-    public long getLastUpdated() {
-        return lastUpdated;
-    }
-    public String getStatus() {
-        return status.name();
-    }
+
+    public void addEnvironmentVariables(Collection<EnvVar> envs) {
+        if (envs != null && !envs.isEmpty()) {
+            this.envs.addAll(envs);
+        }
+    }    
 }
