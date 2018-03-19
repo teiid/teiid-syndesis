@@ -263,6 +263,15 @@ public interface DataVirtLexicon {
          * The type-specifier of non-jdbc connections
          */
         String RESOURCE_TYPE_CONSTANT = "RESOURCE";
+
+        /**
+         * The name of the service catalogue property. Value is {@value}.
+         *
+         * TODO
+         * Note. there is no prefix for this property since it currently lines up
+         * with beetle-studio.
+         */
+        String SERVICE_CATALOG_SOURCE = "serviceCatalogSource"; //$NON-NLS-1$
     }
 
     /**

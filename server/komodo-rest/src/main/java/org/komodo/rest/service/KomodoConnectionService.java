@@ -364,7 +364,7 @@ public final class KomodoConnectionService extends KomodoService {
         try {
             // Add properties for the description and serviceCatalogSource
             restConnection.addProperty("description", rcAttr.getDescription());
-            restConnection.addProperty("serviceCatalogSource", rcAttr.getServiceCatalogSource());
+            restConnection.addProperty(DataVirtLexicon.Connection.SERVICE_CATALOG_SOURCE, rcAttr.getServiceCatalogSource());
             restConnection.setJdbc(true);
             
             // Get the specified ServiceCatalogDataSource from the metadata instance
@@ -592,7 +592,7 @@ public final class KomodoConnectionService extends KomodoService {
         try {
             // Add properties for the description and serviceCatalogSource
             restConnection.addProperty("description", rcAttr.getDescription());
-            restConnection.addProperty("serviceCatalogSource", rcAttr.getServiceCatalogSource());
+            restConnection.addProperty(DataVirtLexicon.Connection.SERVICE_CATALOG_SOURCE, rcAttr.getServiceCatalogSource());
             restConnection.setJdbc(true);
             
             // Get the specified ServiceCatalogDataSource from the metadata instance

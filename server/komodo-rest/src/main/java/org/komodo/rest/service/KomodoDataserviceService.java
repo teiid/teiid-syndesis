@@ -707,7 +707,7 @@ public final class KomodoDataserviceService extends KomodoService {
         } catch (Exception ex) {
             return createErrorResponseWithForbidden(mediaTypes, ex, RelationalMessages.Error.DATASERVICE_SERVICE_REQUEST_PARSING_ERROR);
         }
-        
+
         // Inputs for constructing the Service VDB.  The paths should be obtained from the Attributes passed in.
         String dataserviceName = attr.getDataserviceName();
         // Error if the dataservice name is missing 
@@ -777,6 +777,7 @@ public final class KomodoDataserviceService extends KomodoService {
             	KomodoObject svcVdbObj = wkspMgr.getChild(uow, serviceVdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE);
             	svcVdbObj.remove(uow);
             }
+
             KomodoObject vdbObj = wkspMgr.createVdb(uow, null, serviceVdbName, serviceVdbName);
             // Set owner property on the service vdb
             vdbObj.setProperty(uow, DSB_PROP_OWNER, uow.getUserName());
@@ -802,10 +803,10 @@ public final class KomodoDataserviceService extends KomodoService {
 
         	// Add a physical model to the VDB for the sources
         	// physicalModelName ==> sourceVDBName
-        	// physicalModelSourceName ==> sourceVDBModelName
+        	// physicalModelSourceName ==> sourceModelSourceName
         	String physicalModelName = svcModelSource.getParent(uow).getParent(uow).getName(uow);
-        	String physicalModelSourceName = svcModelSource.getParent(uow).getName(uow);
-        	
+        	String physicalModelSourceName = svcModelSource.getName(uow);
+
         	Model sourceModel = serviceVdb.addModel(uow, physicalModelName);
         	sourceModel.setModelType(uow, Type.PHYSICAL);
 
@@ -819,12 +820,21 @@ public final class KomodoDataserviceService extends KomodoService {
             	sourceDdl.append(tableDdl);
             }
             sourceModel.setModelDefinition(uow, sourceDdl.toString());
-            
+
         	// Add a ModelSource of same name to the physical model and set its Jndi and translator
-        	ModelSource modelSource = sourceModel.addSource(uow, physicalModelSourceName);
-        	modelSource.setJndiName(uow, svcModelSource.getJndiName(uow));
-        	modelSource.setTranslatorName(uow, svcModelSource.getTranslatorName(uow));     
-            
+            ModelSource modelSource = sourceModel.addSource(uow, physicalModelSourceName);
+            modelSource.setJndiName(uow, svcModelSource.getJndiName(uow));
+            modelSource.setTranslatorName(uow, svcModelSource.getTranslatorName(uow));
+
+            //
+            // If the svcModelSource has an associated connection (which it should)
+            // then apply its reference to this model source as well
+            //
+            Connection connection = svcModelSource.getAssociatedConnection(uow);
+            if (connection != null) {
+                modelSource.setAssociatedConnection(uow, connection);
+            }
+
             // Set the service VDB on the dataservice
             dataservice.setServiceVdb(uow, serviceVdb);
 
