@@ -435,6 +435,47 @@ public abstract class TeiidSqlConstants {
             String IMPORT = "IMPORT"; //$NON-NLS-1$
         }
 
+        public interface Phrases extends StringConstants, Reserved {
+            /**
+             * LH Table Alias
+             */
+            String LH_TABLE_ALIAS = "A"; //$NON-NLS-1$
+
+            /**
+             * LH Table Alias Dot
+             */
+            String LH_TABLE_ALIAS_DOT = "A."; //$NON-NLS-1$
+
+            /**
+             * RH Table Alias
+             */
+            String RH_TABLE_ALIAS = "B"; //$NON-NLS-1$
+
+            /**
+             * RH Table Alias Dot
+             */
+            String RH_TABLE_ALIAS_DOT = "B."; //$NON-NLS-1$
+
+            /**
+             * INNER JOIN DDL
+             */
+            String INNER_JOIN = INNER + SPACE + JOIN;
+
+            /**
+             * LEFT OUTER JOIN DDL
+             */
+            String LEFT_OUTER_JOIN = LEFT + SPACE + OUTER + SPACE + JOIN;
+
+            /**
+             * RIGHT OUTER JOIN DDL
+             */
+            String RIGHT_OUTER_JOIN = RIGHT + SPACE + OUTER +SPACE + JOIN;
+
+            /**
+             * FULL OUTER JOIN DDL
+             */
+            String FULL_OUTER_JOIN = FULL + SPACE + OUTER + SPACE + JOIN;
+        }
     /**
      * Set of CAPITALIZED reserved words for checking whether a string is a reserved word.
      */

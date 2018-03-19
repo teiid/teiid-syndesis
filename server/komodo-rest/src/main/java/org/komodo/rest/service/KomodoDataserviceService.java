@@ -35,7 +35,6 @@ import static org.komodo.rest.relational.RelationalMessages.Error.DATASERVICE_SE
 import static org.komodo.rest.relational.RelationalMessages.Error.DATASERVICE_SERVICE_SERVICE_NAME_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.DATASERVICE_SERVICE_SET_SERVICE_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.DATASERVICE_SERVICE_UPDATE_DATASERVICE_ERROR;
-
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,7 +46,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -62,7 +60,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
-
 import org.komodo.core.KEngine;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.SynchronousCallback;
@@ -100,6 +97,7 @@ import org.komodo.spi.KException;
 import org.komodo.spi.constants.ExportConstants;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
+import org.komodo.spi.lexicon.sql.teiid.TeiidSqlConstants;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository.UnitOfWork;
@@ -108,7 +106,6 @@ import org.komodo.spi.runtime.ConnectionDriver;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
 import org.teiid.language.SQLConstants;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -123,29 +120,11 @@ import io.swagger.annotations.ApiResponses;
 @Path(V1Constants.WORKSPACE_SEGMENT + StringConstants.FORWARD_SLASH +
            V1Constants.DATA_SERVICES_SEGMENT)
 @Api(tags = {V1Constants.DATA_SERVICES_SEGMENT})
-public final class KomodoDataserviceService extends KomodoService {
+public final class KomodoDataserviceService extends KomodoService
+    implements TeiidSqlConstants.Reserved, TeiidSqlConstants.Tokens, TeiidSqlConstants.Phrases {
 
     private static final int ALL_AVAILABLE = -1;
 
-    private static final String SERVICE_VDB_SUFFIX = "VDB"; //$NON-NLS-1$
-    private static final String SERVICE_VDB_VIEW_MODEL = "views"; //$NON-NLS-1$
-    private static final String SERVICE_VDB_VIEW_SUFFIX = "View"; //$NON-NLS-1$
-    private static final String LH_TABLE_ALIAS = "A"; //$NON-NLS-1$
-    private static final String LH_TABLE_ALIAS_DOT = "A."; //$NON-NLS-1$
-    private static final String RH_TABLE_ALIAS = "B"; //$NON-NLS-1$
-    private static final String RH_TABLE_ALIAS_DOT = "B."; //$NON-NLS-1$
-    private static final String INNER_JOIN = "INNER JOIN"; //$NON-NLS-1$
-    private static final String LEFT_OUTER_JOIN = "LEFT OUTER JOIN"; //$NON-NLS-1$
-    private static final String RIGHT_OUTER_JOIN = "RIGHT OUTER JOIN"; //$NON-NLS-1$
-    private static final String FULL_OUTER_JOIN = "FULL OUTER JOIN"; //$NON-NLS-1$
-    private static final String OR = "OR"; //$NON-NLS-1$
-    private static final String AND = "AND"; //$NON-NLS-1$
-    private static final String EQ = "="; //$NON-NLS-1$
-    private static final String NE = "<>"; //$NON-NLS-1$
-    private static final String LT = "<"; //$NON-NLS-1$
-    private static final String GT = ">"; //$NON-NLS-1$
-    private static final String LE = "<="; //$NON-NLS-1$
-    private static final String GE = ">="; //$NON-NLS-1$
     private static final StringNameValidator VALIDATOR = new StringNameValidator();
 
     /**
@@ -386,7 +365,7 @@ public final class KomodoDataserviceService extends KomodoService {
      *         if there is an error creating the DataService
      */
     @POST
-    @Path( StringConstants.FORWARD_SLASH + V1Constants.DATA_SERVICE_PLACEHOLDER )
+    @Path( FORWARD_SLASH + V1Constants.DATA_SERVICE_PLACEHOLDER )
     @Produces( MediaType.APPLICATION_JSON )
     @ApiOperation(
                   value = "Create a dataservice in the workspace",
@@ -484,7 +463,7 @@ public final class KomodoDataserviceService extends KomodoService {
      *         if there is an error creating the DataService
      */
     @POST
-    @Path( StringConstants.FORWARD_SLASH + V1Constants.CLONE_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.DATA_SERVICE_PLACEHOLDER )
+    @Path( FORWARD_SLASH + V1Constants.CLONE_SEGMENT + FORWARD_SLASH + V1Constants.DATA_SERVICE_PLACEHOLDER )
     @Produces( MediaType.APPLICATION_JSON )
     @ApiOperation(value = "Clone a dataservice in the workspace")
     @ApiResponses(value = {
@@ -550,7 +529,7 @@ public final class KomodoDataserviceService extends KomodoService {
             final Dataservice newDataservice = getWorkspaceManager(uow1).createDataservice( uow1, null, newDataserviceName);
             newDataservice.setDescription(uow1, srcDescription);
             newDataservice.setServiceVdb(uow1, null);
-            String tgtServiceVdbName = newDataserviceName+SERVICE_VDB_SUFFIX;
+            String tgtServiceVdbName = newDataserviceName.toLowerCase() + SERVICE_VDB_SUFFIX;
             if(getWorkspaceManager(uow1).hasChild(uow1, tgtServiceVdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE)) {
                 KomodoObject svcVdbObj = getWorkspaceManager(uow1).getChild(uow1, tgtServiceVdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE);
                 svcVdbObj.remove(uow1);
@@ -661,7 +640,7 @@ public final class KomodoDataserviceService extends KomodoService {
      *         if there is an error setting the VDB
      */
     @POST
-    @Path( StringConstants.FORWARD_SLASH + V1Constants.SERVICE_VDB_FOR_SINGLE_SOURCE_TABLES )
+    @Path( FORWARD_SLASH + V1Constants.SERVICE_VDB_FOR_SINGLE_SOURCE_TABLES )
     @Produces( MediaType.APPLICATION_JSON )
     @ApiOperation(value = "Sets the data service's service vdb")
     @ApiResponses(value = {
@@ -698,8 +677,7 @@ public final class KomodoDataserviceService extends KomodoService {
         KomodoDataserviceSingleSourceAttributes attr;
         try {
         	attr = KomodoJsonMarshaller.unmarshall(dataserviceSingleSourceAttributes, KomodoDataserviceSingleSourceAttributes.class);
-            String json = KomodoJsonMarshaller.marshall( attr );
-            
+
             Response response = checkDataserviceSingleSourceAttributes(attr, mediaTypes);
             if (response.getStatus() != Status.OK.getStatusCode())
                 return response;
@@ -714,7 +692,7 @@ public final class KomodoDataserviceService extends KomodoService {
         if (StringUtils.isBlank( dataserviceName )) {
             return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.DATASERVICE_SERVICE_SET_SERVICE_MISSING_NAME);
         }
-        String serviceVdbName = dataserviceName+SERVICE_VDB_SUFFIX;
+        String serviceVdbName = dataserviceName.toLowerCase() + SERVICE_VDB_SUFFIX;
 
         // Determine if viewDdl was supplied.  If so, it will override the supplied table info.
         String viewDdl = attr.getViewDdl();
@@ -869,7 +847,7 @@ public final class KomodoDataserviceService extends KomodoService {
      *         if there is an error generating the DDL
      */
     @POST
-    @Path( StringConstants.FORWARD_SLASH + V1Constants.SERVICE_VIEW_DDL_FOR_SINGLE_TABLE )
+    @Path( FORWARD_SLASH + V1Constants.SERVICE_VIEW_DDL_FOR_SINGLE_TABLE )
     @Produces( MediaType.APPLICATION_JSON )
     @ApiOperation(value = "Gets generated View DDL using parameters provided in the request body")
     @ApiResponses(value = {
@@ -981,7 +959,7 @@ public final class KomodoDataserviceService extends KomodoService {
      *         if there is an error updating the VDB
      */
     @POST
-    @Path( StringConstants.FORWARD_SLASH + V1Constants.SERVICE_VDB_FOR_JOIN_TABLES )
+    @Path( FORWARD_SLASH + V1Constants.SERVICE_VDB_FOR_JOIN_TABLES )
     @Produces( MediaType.APPLICATION_JSON )
     @ApiOperation(value = "Sets the dataservice vdb using parameters provided in the request body")
     @ApiResponses(value = {
@@ -1037,7 +1015,7 @@ public final class KomodoDataserviceService extends KomodoService {
         if (StringUtils.isBlank( dataserviceName )) {
             return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.DATASERVICE_SERVICE_SET_SERVICE_MISSING_NAME);
         }
-        String serviceVdbName = dataserviceName+SERVICE_VDB_SUFFIX;
+        String serviceVdbName = dataserviceName.toLowerCase() + SERVICE_VDB_SUFFIX;
         
         String absLhTablePath = attr.getTablePath();
         String absRhTablePath = attr.getRhTablePath();
@@ -1247,7 +1225,7 @@ public final class KomodoDataserviceService extends KomodoService {
      *         if there is an error generating the DDL
      */
     @POST
-    @Path( StringConstants.FORWARD_SLASH + V1Constants.SERVICE_VIEW_DDL_FOR_JOIN_TABLES )
+    @Path( FORWARD_SLASH + V1Constants.SERVICE_VIEW_DDL_FOR_JOIN_TABLES )
     @Produces( MediaType.APPLICATION_JSON )
     @ApiOperation(value = "Gets generated View DDL using parameters provided in the request body")
     @ApiResponses(value = {
@@ -1387,7 +1365,7 @@ public final class KomodoDataserviceService extends KomodoService {
      *         if there is an error generating the criteria
      */
     @POST
-    @Path( StringConstants.FORWARD_SLASH + V1Constants.CRITERIA_FOR_JOIN_TABLES )
+    @Path( FORWARD_SLASH + V1Constants.CRITERIA_FOR_JOIN_TABLES )
     @Produces( MediaType.APPLICATION_JSON )
     @ApiOperation(value = "Generates join criteria using table parameters provided in the request body")
     @ApiResponses(value = {
@@ -1491,7 +1469,7 @@ public final class KomodoDataserviceService extends KomodoService {
      *         if there is an error updating the VDB
      */
     @PUT
-    @Path( StringConstants.FORWARD_SLASH + V1Constants.DATA_SERVICE_PLACEHOLDER )
+    @Path( FORWARD_SLASH + V1Constants.DATA_SERVICE_PLACEHOLDER )
     @Produces( MediaType.APPLICATION_JSON )
     @ApiOperation(value = "Update a dataservice in the workspace")
     @ApiResponses(value = {
@@ -1813,7 +1791,7 @@ public final class KomodoDataserviceService extends KomodoService {
      */
     @GET
     @Path( V1Constants.DATA_SERVICE_PLACEHOLDER +
-                   StringConstants.FORWARD_SLASH + V1Constants.CONNECTIONS_SEGMENT)
+                   FORWARD_SLASH + V1Constants.CONNECTIONS_SEGMENT)
     @Produces( { MediaType.APPLICATION_JSON } )
     @ApiOperation(value = "Find a dataservice's connections ", response = RestDataservice.class)
     @ApiResponses(value = {
@@ -1880,7 +1858,7 @@ public final class KomodoDataserviceService extends KomodoService {
      */
     @GET
     @Path( V1Constants.DATA_SERVICE_PLACEHOLDER +
-                   StringConstants.FORWARD_SLASH + V1Constants.DRIVERS_SEGMENT)
+                   FORWARD_SLASH + V1Constants.DRIVERS_SEGMENT)
     @Produces( { MediaType.APPLICATION_JSON } )
     @ApiOperation(value = "Find a dataservice's drivers ", response = RestConnectionDriver.class)
     @ApiResponses(value = {
@@ -1947,7 +1925,7 @@ public final class KomodoDataserviceService extends KomodoService {
      *         if there is a problem finding the specified workspace VDB or constructing the JSON representation
      */
     @GET
-    @Path( V1Constants.DATA_SERVICE_PLACEHOLDER + StringConstants.FORWARD_SLASH + V1Constants.SOURCE_VDB_MATCHES)
+    @Path( V1Constants.DATA_SERVICE_PLACEHOLDER + FORWARD_SLASH + V1Constants.SOURCE_VDB_MATCHES)
     @Produces( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
     @ApiOperation(value = "Find workspace source VDB matches for a Dataservice", response = RestVdb[].class)
     @ApiResponses(value = {
@@ -2035,7 +2013,7 @@ public final class KomodoDataserviceService extends KomodoService {
      *         if there is a problem finding the specified workspace Dataservice or constructing the info response.
      */
     @GET
-    @Path( V1Constants.DATA_SERVICE_PLACEHOLDER + StringConstants.FORWARD_SLASH + V1Constants.SERVICE_VIEW_INFO)
+    @Path( V1Constants.DATA_SERVICE_PLACEHOLDER + FORWARD_SLASH + V1Constants.SERVICE_VIEW_INFO)
     @Produces( { MediaType.APPLICATION_JSON } )
     @ApiOperation(value = "retrieve the service view information for a dataservice")
     @ApiResponses(value = {
@@ -2098,19 +2076,19 @@ public final class KomodoDataserviceService extends KomodoService {
             
             // Determine LHS vs RHS for SQL tables (the map keys are aliased for joins)
             Set<String> sqlTables = tableColumnMap.keySet();
-            String leftSqlTableName = StringConstants.EMPTY_STRING;
-            String rightSqlTableName = StringConstants.EMPTY_STRING;
+            String leftSqlTableName = EMPTY_STRING;
+            String rightSqlTableName = EMPTY_STRING;
             boolean leftSqlTableAliased = false;
             boolean rightSqlTableAliased = false;
             for(String sqlTable : sqlTables) {
                 // Left aliased
-                if(sqlTable.endsWith(StringConstants.SPACE+SQLConstants.Reserved.AS+StringConstants.SPACE+LH_TABLE_ALIAS)) {
-                    int aliasIndx = sqlTable.indexOf(StringConstants.SPACE+SQLConstants.Reserved.AS+StringConstants.SPACE+LH_TABLE_ALIAS);
+                if(sqlTable.endsWith(SPACE+SQLConstants.Reserved.AS+SPACE+LH_TABLE_ALIAS)) {
+                    int aliasIndx = sqlTable.indexOf(SPACE+SQLConstants.Reserved.AS+SPACE+LH_TABLE_ALIAS);
                     leftSqlTableName = sqlTable.substring(0,aliasIndx);
                     leftSqlTableAliased = true;
                 // Right aliased
-                } else if(sqlTable.endsWith(StringConstants.SPACE+SQLConstants.Reserved.AS+StringConstants.SPACE+RH_TABLE_ALIAS)) {
-                    int aliasIndx = sqlTable.indexOf(StringConstants.SPACE+SQLConstants.Reserved.AS+StringConstants.SPACE+RH_TABLE_ALIAS);
+                } else if(sqlTable.endsWith(SPACE+SQLConstants.Reserved.AS+SPACE+RH_TABLE_ALIAS)) {
+                    int aliasIndx = sqlTable.indexOf(SPACE+SQLConstants.Reserved.AS+SPACE+RH_TABLE_ALIAS);
                     rightSqlTableName = sqlTable.substring(0,aliasIndx);
                     rightSqlTableAliased = true;
                 // No alias - left
@@ -2129,7 +2107,7 @@ public final class KomodoDataserviceService extends KomodoService {
                 
                 String tblName = srcTable.getName(uow);
                 String tblSrc = srcTable.getParent(uow).getName(uow);
-                String qualifiedTblName = tblSrc + StringConstants.DOT + srcTable.getName(uow);
+                String qualifiedTblName = tblSrc + DOT + srcTable.getName(uow);
                 // Set LH vs RH on info
                 if(qualifiedTblName.equals(leftSqlTableName)) {
                     viewInfo.setInfoType(RestDataserviceViewInfo.LH_TABLE_INFO);
@@ -2154,9 +2132,9 @@ public final class KomodoDataserviceService extends KomodoService {
                 String mapKey = qualifiedTblName;
                 if(viewInfo.getInfoType()!=null) {
                     if(viewInfo.getInfoType().equals(RestDataserviceViewInfo.LH_TABLE_INFO) && leftSqlTableAliased) {
-                        mapKey = mapKey+StringConstants.SPACE+SQLConstants.Reserved.AS+StringConstants.SPACE+LH_TABLE_ALIAS;
+                        mapKey = mapKey+SPACE+SQLConstants.Reserved.AS+SPACE+LH_TABLE_ALIAS;
                     } else if(viewInfo.getInfoType().equals(RestDataserviceViewInfo.RH_TABLE_INFO) && rightSqlTableAliased) {
-                        mapKey = mapKey+StringConstants.SPACE+SQLConstants.Reserved.AS+StringConstants.SPACE+RH_TABLE_ALIAS;
+                        mapKey = mapKey+SPACE+SQLConstants.Reserved.AS+SPACE+RH_TABLE_ALIAS;
                     } 
                 }
                 List<String> colsForTable = tableColumnMap.get(mapKey);
@@ -2235,26 +2213,26 @@ public final class KomodoDataserviceService extends KomodoService {
             }
             
             // Get SQL after the FROM keyword to the end.
-            String fromStr = StringConstants.EMPTY_STRING;
-            int fromStartIndex = viewSql.indexOf(SQLConstants.Reserved.FROM+StringConstants.SPACE);
+            String fromStr = EMPTY_STRING;
+            int fromStartIndex = viewSql.indexOf(SQLConstants.Reserved.FROM+SPACE);
             if(fromStartIndex > -1) {
-                fromStr = viewSql.substring(fromStartIndex + (SQLConstants.Reserved.FROM+StringConstants.SPACE).length());
+                fromStr = viewSql.substring(fromStartIndex + (SQLConstants.Reserved.FROM+SPACE).length());
             }
             
             // Handle JOIN SQL
             if(fromStr.contains(INNER_JOIN) || fromStr.contains(LEFT_OUTER_JOIN) || fromStr.contains(RIGHT_OUTER_JOIN) || fromStr.contains(FULL_OUTER_JOIN)) {
                 int indxStart = 0;
-                int indxEnd = fromStr.indexOf(SQLConstants.Reserved.AS+StringConstants.SPACE+LH_TABLE_ALIAS); 
+                int indxEnd = fromStr.indexOf(SQLConstants.Reserved.AS+SPACE+LH_TABLE_ALIAS); 
                 String lhTable = null;
                 if(indxEnd > -1) {
                     lhTable = fromStr.substring(indxStart, indxEnd).trim();
                 }
 
-                indxStart = fromStr.indexOf(SQLConstants.Reserved.JOIN+StringConstants.SPACE);
-                indxEnd = fromStr.indexOf(SQLConstants.Reserved.AS+StringConstants.SPACE+RH_TABLE_ALIAS); 
+                indxStart = fromStr.indexOf(SQLConstants.Reserved.JOIN+SPACE);
+                indxEnd = fromStr.indexOf(SQLConstants.Reserved.AS+SPACE+RH_TABLE_ALIAS); 
                 String rhTable = null;
                 if(indxStart > -1 && indxEnd > -1) {
-                    rhTable = fromStr.substring(indxStart+(SQLConstants.Reserved.JOIN+StringConstants.SPACE).length(), indxEnd).trim();
+                    rhTable = fromStr.substring(indxStart+(SQLConstants.Reserved.JOIN+SPACE).length(), indxEnd).trim();
                 }
                 
                 // Now the table aliases have been determined - separate the original column names with the appropriate alias
@@ -2271,8 +2249,8 @@ public final class KomodoDataserviceService extends KomodoService {
                 // If either of the tables is blank, there was a problem - leave the map empty
                 // For joins the table alias is included to determine left and right
                 if(!StringUtils.isBlank(lhTable) && !StringUtils.isBlank(rhTable)) {
-                    tableColumnMap.put(lhTable+StringConstants.SPACE+SQLConstants.Reserved.AS+StringConstants.SPACE+LH_TABLE_ALIAS, lhCols);
-                    tableColumnMap.put(rhTable+StringConstants.SPACE+SQLConstants.Reserved.AS+StringConstants.SPACE+RH_TABLE_ALIAS, rhCols);
+                    tableColumnMap.put(lhTable+SPACE+SQLConstants.Reserved.AS+SPACE+LH_TABLE_ALIAS, lhCols);
+                    tableColumnMap.put(rhTable+SPACE+SQLConstants.Reserved.AS+SPACE+RH_TABLE_ALIAS, rhCols);
                 }
             // Handle single source SQL
             } else {
@@ -2358,9 +2336,9 @@ public final class KomodoDataserviceService extends KomodoService {
         ArrayList<String> columnNames = new ArrayList<>();
         
         int startIndex = sql.indexOf(SQLConstants.Reserved.SELECT)+(SQLConstants.Reserved.SELECT).length();
-        int endIndex = sql.indexOf(SQLConstants.Reserved.FROM+StringConstants.SPACE);
+        int endIndex = sql.indexOf(SQLConstants.Reserved.FROM+SPACE);
         // If SELECT or FROM not found, assume empty columns
-        String columnsStr = StringConstants.EMPTY_STRING;
+        String columnsStr = EMPTY_STRING;
         String[] cols = new String[0];
         if(startIndex > -1 && endIndex > startIndex) {
             columnsStr = sql.substring(startIndex,endIndex);
@@ -2490,9 +2468,9 @@ public final class KomodoDataserviceService extends KomodoService {
             }
             
             // Find the criteria string
-            String asRhAliasOn = SQLConstants.Reserved.AS + StringConstants.SPACE + RH_TABLE_ALIAS + StringConstants.SPACE + SQLConstants.Reserved.ON;
+            String asRhAliasOn = SQLConstants.Reserved.AS + SPACE + RH_TABLE_ALIAS + SPACE + SQLConstants.Reserved.ON;
             int startIndex = viewSql.indexOf(asRhAliasOn);
-            String criteriaStr = StringConstants.EMPTY_STRING;
+            String criteriaStr = EMPTY_STRING;
             if(startIndex > -1) {
                 criteriaStr = viewSql.substring(startIndex+(asRhAliasOn).length());
             }
@@ -2501,15 +2479,15 @@ public final class KomodoDataserviceService extends KomodoService {
             if(!StringUtils.isEmpty(criteriaStr)) {
                 // Process the criteriaStr predicates
                 while ( !StringUtils.isEmpty(criteriaStr) ) {
-                    int orIndex = criteriaStr.indexOf(StringConstants.SPACE+OR+StringConstants.SPACE);
-                    int andIndex = criteriaStr.indexOf(StringConstants.SPACE+AND+StringConstants.SPACE);
+                    int orIndex = criteriaStr.indexOf(SPACE+OR+SPACE);
+                    int andIndex = criteriaStr.indexOf(SPACE+AND+SPACE);
                     // No OR or AND.  Either a single predicate or the last predicate
                     if( orIndex == -1 && andIndex == -1 ) {
                         ViewBuilderCriteriaPredicate predicate = parsePredicate(criteriaStr, AND);
                         if(predicate.isComplete()) {
                             predicates.add(predicate);
                         }
-                        criteriaStr = StringConstants.EMPTY_STRING;
+                        criteriaStr = EMPTY_STRING;
                     // Has OR but no AND.
                     } else if( orIndex > -1 && andIndex == -1 ) {
                         String predicateStr = criteriaStr.substring(0, orIndex);
@@ -2517,7 +2495,7 @@ public final class KomodoDataserviceService extends KomodoService {
                         if(predicate.isComplete()) {
                             predicates.add(predicate);
                         }
-                        criteriaStr = criteriaStr.substring(orIndex + (StringConstants.SPACE+OR+StringConstants.SPACE).length());
+                        criteriaStr = criteriaStr.substring(orIndex + (SPACE+OR+SPACE).length());
                     // Has AND but no OR.
                     } else if( orIndex == -1 && andIndex > -1 ) {
                         String predicateStr = criteriaStr.substring(0, andIndex);
@@ -2525,7 +2503,7 @@ public final class KomodoDataserviceService extends KomodoService {
                         if(predicate.isComplete()) {
                             predicates.add(predicate);
                         }
-                        criteriaStr = criteriaStr.substring(andIndex + (StringConstants.SPACE+AND+StringConstants.SPACE).length());
+                        criteriaStr = criteriaStr.substring(andIndex + (SPACE+AND+SPACE).length());
                     // Has both - OR is first.
                     } else if( orIndex < andIndex ) {
                         String predicateStr = criteriaStr.substring(0, orIndex);
@@ -2533,7 +2511,7 @@ public final class KomodoDataserviceService extends KomodoService {
                         if(predicate.isComplete()) {
                             predicates.add(predicate);
                         }
-                        criteriaStr = criteriaStr.substring(orIndex + (StringConstants.SPACE+OR+StringConstants.SPACE).length());
+                        criteriaStr = criteriaStr.substring(orIndex + (SPACE+OR+SPACE).length());
                     // Has both - AND is first.
                     } else {
                         String predicateStr = criteriaStr.substring(0, andIndex);
@@ -2541,7 +2519,7 @@ public final class KomodoDataserviceService extends KomodoService {
                         if(predicate.isComplete()) {
                             predicates.add(predicate);
                         }
-                        criteriaStr = criteriaStr.substring(andIndex + (StringConstants.SPACE+AND+StringConstants.SPACE).length());
+                        criteriaStr = criteriaStr.substring(andIndex + (SPACE+AND+SPACE).length());
                     }
                 }
                 criteriaInfo.setCriteriaPredicates(predicates);                
@@ -2567,22 +2545,22 @@ public final class KomodoDataserviceService extends KomodoService {
         predicate.setCombineKeyword(combineKeyword);
 
         String[] criteriaCols = null;
-        if( predicateStr.indexOf(StringConstants.SPACE+EQ+StringConstants.SPACE) > -1 ) {
+        if( predicateStr.indexOf(SPACE+EQ+SPACE) > -1 ) {
             predicate.setOperator(EQ);
             criteriaCols = predicateStr.split(EQ);
-        } else if( predicateStr.indexOf(StringConstants.SPACE+LT+StringConstants.SPACE) > -1) {
+        } else if( predicateStr.indexOf(SPACE+LT+SPACE) > -1) {
             predicate.setOperator(LT);
             criteriaCols = predicateStr.split(LT);
-        } else if( predicateStr.indexOf(StringConstants.SPACE+GT+StringConstants.SPACE) > -1) {
+        } else if( predicateStr.indexOf(SPACE+GT+SPACE) > -1) {
             predicate.setOperator(GT);
             criteriaCols = predicateStr.split(GT);
-        } else if( predicateStr.indexOf(StringConstants.SPACE+NE+StringConstants.SPACE) > -1) {
+        } else if( predicateStr.indexOf(SPACE+NE+SPACE) > -1) {
             predicate.setOperator(NE);
             criteriaCols = predicateStr.split(NE);
-        } else if( predicateStr.indexOf(StringConstants.SPACE+LE+StringConstants.SPACE) > -1) {
+        } else if( predicateStr.indexOf(SPACE+LE+SPACE) > -1) {
             predicate.setOperator(LE);
             criteriaCols = predicateStr.split(LE);
-        } else if( predicateStr.indexOf(StringConstants.SPACE+GE+StringConstants.SPACE) > -1) {
+        } else if( predicateStr.indexOf(SPACE+GE+SPACE) > -1) {
             predicate.setOperator(GE);
             criteriaCols = predicateStr.split(GE);
         }
@@ -2627,7 +2605,7 @@ public final class KomodoDataserviceService extends KomodoService {
 	 *             constructing the response
 	 */
     @GET
-    @Path( V1Constants.NAME_VALIDATION_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.DATA_SERVICE_PLACEHOLDER )
+    @Path( V1Constants.NAME_VALIDATION_SEGMENT + FORWARD_SLASH + V1Constants.DATA_SERVICE_PLACEHOLDER )
     @Produces( { MediaType.TEXT_PLAIN } )
     @ApiOperation( value = "Returns an error message if the data service name is invalid" )
     @ApiResponses( value = {
