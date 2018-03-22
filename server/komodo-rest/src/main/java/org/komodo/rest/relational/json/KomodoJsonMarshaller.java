@@ -82,6 +82,7 @@ import org.komodo.rest.relational.response.metadata.RestMetadataVdb;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatus;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatusVdb;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbTranslator;
+import org.komodo.rest.relational.response.virtualization.RestVirtualizationStatus;
 import org.komodo.rest.schema.json.TeiidXsdReader;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.utils.ArgCheck;
@@ -156,7 +157,8 @@ public final class KomodoJsonMarshaller {
                                                   .registerTypeAdapter(RestQueryColumn.class, new QueryColumnSerializer())
                                                   .registerTypeAdapter(RestQueryRow.class, new QueryRowSerializer())
                                                   .registerTypeAdapter(KomodoConnectionAttributes.class, new ConnectionAttributesSerializer())
-                                                  .registerTypeAdapter(RestGitRepository.class, new GitRepositorySerializer());
+                                                  .registerTypeAdapter(RestGitRepository.class, new GitRepositorySerializer())
+                                                  .registerTypeAdapter(RestVirtualizationStatus.class, new VirtualizationStatusSerializer());
 
         BUILDER = temp.create();
         PRETTY_BUILDER = temp.setPrettyPrinting().create();
