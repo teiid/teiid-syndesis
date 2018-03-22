@@ -76,6 +76,7 @@ import io.fabric8.kubernetes.api.builds.Builds;
 import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
+import io.fabric8.kubernetes.api.model.ObjectReference;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.Service;
@@ -94,6 +95,7 @@ import io.fabric8.openshift.api.model.DeploymentConfig;
 import io.fabric8.openshift.api.model.ImageStream;
 import io.fabric8.openshift.api.model.Route;
 import io.fabric8.openshift.client.OpenShiftClient;
+import io.fabric8.openshift.client.OpenShiftConfig;
 import io.kubernetes.client.LocalObjectReference;
 import io.kubernetes.client.ModelServiceCatalogClient;
 import io.kubernetes.client.ParametersFromSource;
@@ -383,8 +385,14 @@ public class TeiidOpenShiftClient {
         return is;
     }
 
-    private BuildConfig createBuildConfig(OpenShiftClient client, String namespace, String vdbName, ImageStream is) {
+    private BuildConfig createBuildConfig(OpenShiftClient client, String namespace, String vdbName, ImageStream is,
+            PublishConfiguration publishConfiguration) throws KException {
         String imageStreamName = is.getMetadata().getName()+":latest";
+        ObjectReference fromImage = publishConfiguration.getBaseJDKImage(client);
+        if (fromImage == null) {
+            throw new KException("Build can not be started as there are no JDK base images availble. "
+                    + "Make sure 'redhat-openjdk18-openshift' image stream is available");
+        }
         BuildConfig bc = client.buildConfigs().inNamespace(namespace).createOrReplaceWithNew()
             .withNewMetadata().withName(getBuildConfigName(vdbName))
                 .addToLabels("application", vdbName)
@@ -395,11 +403,7 @@ public class TeiidOpenShiftClient {
                 .withNewSource().withType("Binary").endSource()
                 .withNewStrategy()
                 .withType("Source").withNewSourceStrategy()
-                .withNewFrom()
-                    .withName("redhat-openjdk18-openshift:1.2")
-                    .withKind("ImageStreamTag")
-                    .withNamespace("openshift")
-                .endFrom()
+                .withFrom(fromImage)
                 .withIncremental(false)
                 .withEnv(new EnvVar("AB_JOLOKIA_OFF", "true", null), new EnvVar("AB_OFF", "true", null))
                 .endSourceStrategy()
@@ -469,7 +473,7 @@ public class TeiidOpenShiftClient {
                     .withName(config.vdbName)
                     .withImage(" ")
                     .withImagePullPolicy("Always")
-                    .addAllToEnv(config.publishConfiguration.envs)
+                    .addAllToEnv(config.publishConfiguration.allEnvironmentVariables)
                     .withNewReadinessProbe()
                       .withNewExec()
                         .withCommand("/bin/sh", "-i", "-c", 
@@ -496,7 +500,7 @@ public class TeiidOpenShiftClient {
                     .endLivenessProbe()
                     .withNewResources()
                       .addToLimits("memory", new Quantity(config.publishConfiguration.containerMemorySize))
-                      //.addToLimits("cpu", new Quantity(config.cpuUnits))
+                      .addToLimits("cpu", new Quantity(config.publishConfiguration.cpuUnits()))
                     .endResources()
                     .addAllToPorts(getDeploymentPorts(config.publishConfiguration))
                   .endContainer()
@@ -620,7 +624,7 @@ public class TeiidOpenShiftClient {
     }
 
     private void addToQueue(final String namespace, final String vdbName, String buildName, String deployConfigName,
-            PublishConfiguration publishConfig) {
+            PublishConfiguration publishConfig, Collection<EnvVar> envs) {
         BuildStatus work = new BuildStatus();
         work.buildName = buildName;
         work.status = Status.BUILDING;
@@ -630,6 +634,7 @@ public class TeiidOpenShiftClient {
         work.statusMessage = "Build Running";
         work.lastUpdated = System.currentTimeMillis();
         work.publishConfiguration = publishConfig;
+        work.publishConfiguration.addEnvironmentVariables(envs);
         this.workQueue.add(work);
     }
 
@@ -733,6 +738,7 @@ public class TeiidOpenShiftClient {
     public BuildStatus publishVirtualization(UnitOfWork uow, PublishConfiguration publishConfig) throws KException {
         String namespace = ApplicationProperties.getNamespace();
         Config config = new ConfigBuilder().build();
+        OpenShiftConfig.wrap(config).setBuildTimeout(publishConfig.buildTimeoutInSeconds);
         KubernetesClient kubernetesClient = new DefaultKubernetesClient(config);
         final OpenShiftClient client = kubernetesClient.adapt(OpenShiftClient.class);
 
@@ -746,7 +752,7 @@ public class TeiidOpenShiftClient {
             } else {
                 KLog.getLogger().info("Deploying " + vdbName + "as Service");
                 // create build contents as tar file
-                GenericArchive archive = ShrinkWrap.create(GenericArchive.class, "contents.zip");
+                GenericArchive archive = ShrinkWrap.create(GenericArchive.class, "contents.tar");
                 archive.add(new StringAsset(generatePomXml(uow, vdb, publishConfig.enableOdata)), "pom.xml");
                 archive.add(new ByteArrayAsset(vdb.export(uow, null)), "/src/main/vdb/"+vdbName+"-vdb.xml");
 
@@ -758,14 +764,13 @@ public class TeiidOpenShiftClient {
 
                 // use the contents to invoke a binary build
                 ImageStream is = createImageStream(client, namespace, vdbName);
-                BuildConfig buildConfig = createBuildConfig(client, namespace, vdbName, is);
+                BuildConfig buildConfig = createBuildConfig(client, namespace, vdbName, is, publishConfig);
                 Build build = createBuild(client, namespace, buildConfig, buildContents);
                 KLog.getLogger().info("Build Started:"+build.getMetadata().getName()+" for VDB "+ vdbName + " to publish");
                 waitUntilPodIsReady(client, build.getMetadata().getName() + "-build", 20);
                 
-                Collection<EnvVar> envs = getEnvironmentVaribalesForVDBDataSources(uow, vdb);
-                publishConfig.addEnvironmentVariables(envs);
-                addToQueue(namespace, vdbName, build.getMetadata().getName(), null, publishConfig);
+                Collection<EnvVar> envs = getEnvironmentVaribalesForVDBDataSources(uow, vdb, publishConfig);
+                addToQueue(namespace, vdbName, build.getMetadata().getName(), null, publishConfig, envs);
             }
             monitorWork();
             return getVirtualizationStatus(vdbName);
@@ -776,7 +781,8 @@ public class TeiidOpenShiftClient {
         }
     }
 
-    Collection<EnvVar> getEnvironmentVaribalesForVDBDataSources(UnitOfWork uow, Vdb vdb) throws KException {
+    Collection<EnvVar> getEnvironmentVaribalesForVDBDataSources(UnitOfWork uow, Vdb vdb,
+            PublishConfiguration publishConfig) throws KException {
         List<EnvVar> envs = new ArrayList<>();
         StringBuilder javaOptions = new StringBuilder();
         Model[] models = vdb.getModels(uow);
@@ -818,12 +824,11 @@ public class TeiidOpenShiftClient {
             }
         }
         // These options need to be removed after the base image gets updated with them natively
-        javaOptions.append(" -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap");
-        javaOptions.append(" -Djava.net.preferIPv4Addresses=true -Djava.net.preferIPv4Stack=true");
+        javaOptions.append(publishConfig.getUserJavaOptions());
         envs.add(env("JAVA_OPTIONS", javaOptions.toString()));
-        envs.add(env("AB_JOLOKIA_OFF", "true"));
-        envs.add(env("AB_OFF", "true"));
-        envs.add(env("GC_MAX_METASPACE_SIZE", "256"));
+        for (Map.Entry<String, String> entry : publishConfig.getUserEnvironmentVariables().entrySet()) {
+            envs.add(env(entry.getKey(), entry.getValue()));
+        }
         return envs;
     }
 

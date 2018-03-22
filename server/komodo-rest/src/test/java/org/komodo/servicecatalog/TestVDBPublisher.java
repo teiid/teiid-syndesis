@@ -166,9 +166,9 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
 
         final Vdb[] vdbs = WorkspaceManager.getInstance( _repo, getTransaction() ).findVdbs( getTransaction() );
         assertThat( vdbs.length, is(1));
-
+        PublishConfiguration config = new PublishConfiguration();
         Collection<EnvVar> variables = generator
-                .getEnvironmentVaribalesForVDBDataSources(getTransaction(), vdbs[0]);
+                .getEnvironmentVaribalesForVDBDataSources(getTransaction(), vdbs[0], config);
         assertThat( variables.size(), is(13));
         String javaOptions= " -Dswarm.datasources.data-sources.accounts-xyz.driver-name=postgresql "
                 + "-Dswarm.datasources.data-sources.accounts-xyz.user-name=$(MYSECRECT_PG_USERNAME) "
@@ -177,7 +177,10 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
                 + "-Dswarm.datasources.data-sources.accounts-xyz.connection-url="
                 + "jdbc:postgresql://$(PARAMETERS_PG_DATABASE_SERVICE_NAME):5432/$(MYSECRECT_PG_DATABASE_NAME)"
                 + " -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
-                + " -Djava.net.preferIPv4Addresses=true -Djava.net.preferIPv4Stack=true";
+                + " -Djava.net.preferIPv4Addresses=true -Djava.net.preferIPv4Stack=true"
+                + " -XX:ParallelGCThreads=1 -XX:ConcGCThreads=1"
+                + " -Djava.util.concurrent.ForkJoinPool.common.parallelism=1"
+                + " -Dio.netty.eventLoopThreads=2";
 
         assertThat(variables, hasItem(new EnvVar("PARAMETERS_PG_NAMESPACE", "openshift", null)));
         assertThat(variables, hasItem(new EnvVar("PARAMETERS_PG_VOLUME_CAPACITY", "1Gi", null)));

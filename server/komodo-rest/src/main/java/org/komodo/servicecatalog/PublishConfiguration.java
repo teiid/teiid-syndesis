@@ -24,16 +24,28 @@ package org.komodo.servicecatalog;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.komodo.relational.vdb.Vdb;
+import org.komodo.utils.KLog;
 
 import io.fabric8.kubernetes.api.model.EnvVar;
+import io.fabric8.kubernetes.api.model.ObjectReference;
+import io.fabric8.kubernetes.api.model.ObjectReferenceBuilder;
+import io.fabric8.openshift.api.model.ImageStream;
+import io.fabric8.openshift.api.model.TagReference;
+import io.fabric8.openshift.client.OpenShiftClient;
 
 public class PublishConfiguration {
     protected Vdb vdb;
     protected boolean enableOdata = true;
     protected String containerMemorySize = "1024Mi";
-    protected List<EnvVar> envs = new ArrayList<>();
+    protected long buildTimeoutInSeconds = 2 * 60 * 1000L;
+    protected List<EnvVar> allEnvironmentVariables = new ArrayList<>();
+    
+    // cpu units
+    private int cpuUnits = 500; //100m is 0.1 of CPU, at 500m we have 1/2 CPU as default
     
     public void setVDB(Vdb vdb) {
         this.vdb = vdb;
@@ -46,10 +58,62 @@ public class PublishConfiguration {
     public void setContainerMemorySize(String size) {
         this.containerMemorySize = size;
     }
-
+    
     public void addEnvironmentVariables(Collection<EnvVar> envs) {
         if (envs != null && !envs.isEmpty()) {
-            this.envs.addAll(envs);
+            this.allEnvironmentVariables.addAll(envs);
         }
+    }     
+    
+    protected ObjectReference getBaseJDKImage(OpenShiftClient client) {
+        ImageStream is = client.imageStreams().inNamespace("openshift").withName("redhat-openjdk18-openshift")
+                .get();
+        if (is != null) {
+            List<TagReference> tagRef = is.getSpec().getTags();
+            String tag = tagRef.get(tagRef.size()-1).getName();
+            KLog.getLogger().debug("Using redhat-openjdk18-openshift:"+tag+" as the base image for the vdb based service");
+            return new ObjectReferenceBuilder().withKind("ImageStreamTag").withNamespace("openshift")
+                    .withName("redhat-openjdk18-openshift:"+tag).build();
+        }
+        /*
+         * It has been observed that swarm application is not able start successfully with this image. 
+         * More investigation is needed. 
+        KLog.getLogger().debug("Using fabric8/s2i-java:latest as the base image for the vdb based service");
+        return new ObjectReferenceBuilder().withKind("DockerImage")
+                .withName("fabric8/s2i-java:latest").build();
+        */
+        return null;
+    }
+    
+    protected String getUserJavaOptions() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(" -XX:+UnlockExperimentalVMOptions");
+        sb.append(" -XX:+UseCGroupMemoryLimitForHeap");
+        sb.append(" -Djava.net.preferIPv4Addresses=true");
+        sb.append(" -Djava.net.preferIPv4Stack=true");
+
+        // CPU specific JVM options
+        sb.append(" -XX:ParallelGCThreads="+cpuLimit());
+        sb.append(" -XX:ConcGCThreads="+cpuLimit());
+        sb.append(" -Djava.util.concurrent.ForkJoinPool.common.parallelism="+cpuLimit());
+        sb.append(" -Dio.netty.eventLoopThreads="+(2*cpuLimit()));
+        return sb.toString();
+    }
+    
+    
+    protected Map<String, String> getUserEnvironmentVariables() {
+        Map<String, String> envs = new TreeMap<>();
+        envs.put("AB_JOLOKIA_OFF", "true");
+        envs.put("AB_OFF", "true");
+        envs.put("GC_MAX_METASPACE_SIZE", "256");
+        return envs;
+    }    
+    
+    protected String cpuUnits() {
+        return Integer.toString(cpuUnits)+"m";
+    }
+    
+    private int cpuLimit() {
+        return Math.max(cpuUnits/1000, 1);
     }    
 }
