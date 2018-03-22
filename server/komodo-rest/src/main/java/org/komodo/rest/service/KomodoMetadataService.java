@@ -86,7 +86,6 @@ import org.komodo.rest.relational.request.KomodoQueryAttribute;
 import org.komodo.rest.relational.request.KomodoServiceCatalogDataSourceAttributes;
 import org.komodo.rest.relational.request.KomodoVdbUpdateAttributes;
 import org.komodo.rest.relational.response.KomodoStatusObject;
-import org.komodo.rest.relational.response.RestBuildStatus;
 import org.komodo.rest.relational.response.RestConnectionDriver;
 import org.komodo.rest.relational.response.RestQueryResult;
 import org.komodo.rest.relational.response.RestServiceCatalogDataSource;
@@ -100,6 +99,7 @@ import org.komodo.rest.relational.response.metadata.RestMetadataTemplateEntry;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdb;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatus;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbTranslator;
+import org.komodo.rest.relational.response.virtualization.RestVirtualizationStatus;
 import org.komodo.servicecatalog.BuildStatus;
 import org.komodo.servicecatalog.PublishConfiguration;
 import org.komodo.servicecatalog.TeiidOpenShiftClient;
@@ -3431,7 +3431,7 @@ public class KomodoMetadataService extends KomodoService {
     @GET
     @Path(V1Constants.PUBLISH)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Gets the published virtualization services", response = RestBuildStatus[].class)
+    @ApiOperation(value = "Gets the published virtualization services", response = RestVirtualizationStatus[].class)
     @ApiResponses(value = { @ApiResponse(code = 403, message = "An error has occurred.") })
     public Response getVirtualizations(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
             @ApiParam(value = "true to include in progress services", required = true, defaultValue="true")
@@ -3445,7 +3445,7 @@ public class KomodoMetadataService extends KomodoService {
         try {
             Repository repo = this.kengine.getDefaultRepository();
             uow = createTransaction(principal, "publish", true); //$NON-NLS-1$
-            final List<RestBuildStatus> entityList = new ArrayList<>();
+            final List<RestVirtualizationStatus> entityList = new ArrayList<>();
             List<BuildStatus> list = this.openshiftClient.getVirtualizations(includeInProgressServices);
             for (BuildStatus status : list) {
                 entityList.add(entityFactory.createBuildStatus(uow, repo, status, uriInfo.getBaseUri()));
@@ -3468,7 +3468,7 @@ public class KomodoMetadataService extends KomodoService {
     @GET
     @Path(V1Constants.PUBLISH + StringConstants.FORWARD_SLASH + V1Constants.VDB_PLACEHOLDER)
     @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Find Build Status of Virtualization by VDB name", response = RestBuildStatus.class)
+    @ApiOperation(value = "Find Build Status of Virtualization by VDB name", response = RestVirtualizationStatus.class)
     @ApiResponses(value = {
         @ApiResponse(code = 404, message = "No VDB could be found with name"),
         @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
@@ -3505,7 +3505,7 @@ public class KomodoMetadataService extends KomodoService {
     @DELETE
     @Path(V1Constants.PUBLISH + StringConstants.FORWARD_SLASH + V1Constants.VDB_PLACEHOLDER)
     @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Delete Virtualization Service by VDB name",response = RestBuildStatus.class)
+    @ApiOperation(value = "Delete Virtualization Service by VDB name",response = RestVirtualizationStatus.class)
     @ApiResponses(value = {
         @ApiResponse(code = 404, message = "No VDB could be found with name"),
         @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
@@ -3542,7 +3542,7 @@ public class KomodoMetadataService extends KomodoService {
     @POST
     @Path(V1Constants.PUBLISH)
     @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Publish Virtualization Service based on VDB or Dataservice",response = RestBuildStatus.class)
+    @ApiOperation(value = "Publish Virtualization Service based on VDB or Dataservice",response = RestVirtualizationStatus.class)
     @ApiResponses(value = {
         @ApiResponse(code = 404, message = "No VDB or Dataservice could be found with name"),
         @ApiResponse(code = 406, message = "Only JSON returned by this operation"),

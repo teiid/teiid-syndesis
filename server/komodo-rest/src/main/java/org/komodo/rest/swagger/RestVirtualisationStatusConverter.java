@@ -21,20 +21,20 @@
  */
 package org.komodo.rest.swagger;
 
-import org.komodo.rest.relational.response.RestBuildStatus;
+import org.komodo.rest.relational.response.virtualization.RestVirtualizationStatus;
 import org.komodo.spi.repository.KomodoType;
 
 import io.swagger.converter.ModelConverterContext;
 import io.swagger.models.ModelImpl;
 
 /**
- * Converter to display properties of {@link RestBuildStatus} class in swagger
+ * Converter to display properties of {@link RestVirtualizationStatus} class in swagger
  */
-public class RestBuildStatusConverter extends RestEntityConverter<RestBuildStatus> {
+public class RestVirtualisationStatusConverter extends RestEntityConverter<RestVirtualizationStatus> {
 
     @Override
-    protected Class<RestBuildStatus> getEntityClass() {
-        return RestBuildStatus.class;
+    protected Class<RestVirtualizationStatus> getEntityClass() {
+        return RestVirtualizationStatus.class;
     }
 
     @Override
@@ -44,13 +44,13 @@ public class RestBuildStatusConverter extends RestEntityConverter<RestBuildStatu
 
     @Override
     protected void addProperties(ModelImpl model, ModelConverterContext context) throws Exception {
-        model.property(RestBuildStatus.VDB_NAME, requiredProperty(String.class));
-        model.property(RestBuildStatus.BUILD_NAME, property(String.class));
-        model.property(RestBuildStatus.DEPLOYMENT_NAME, property(String.class));
-        model.property(RestBuildStatus.NAMESPACE, property(String.class));
-        model.property(RestBuildStatus.STATUS, property(String.class));
-        model.property(RestBuildStatus.STATUS_MSG, property(String.class));
-        model.property(RestBuildStatus.LAST_UPDATED, property(String.class));
+        model.property(RestVirtualizationStatus.VDB_NAME_LABEL, requiredProperty(String.class));
+        model.property(RestVirtualizationStatus.BUILD_NAME_LABEL, property(String.class));
+        model.property(RestVirtualizationStatus.DEPLOYMENT_NAME_LABEL, property(String.class));
+        model.property(RestVirtualizationStatus.NAMESPACE_LABEL, property(String.class));
+        model.property(RestVirtualizationStatus.STATUS_LABEL, property(String.class));
+        model.property(RestVirtualizationStatus.STATUS_MSG_LABEL, property(String.class));
+        model.property(RestVirtualizationStatus.LAST_UPDATED_LABEL, property(String.class));
 
     }
 }
