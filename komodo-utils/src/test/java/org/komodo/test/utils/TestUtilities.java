@@ -42,8 +42,13 @@ import java.util.zip.Checksum;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.LexiconConstants.CoreLexicon;
@@ -58,6 +63,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 
 /**
@@ -70,6 +76,11 @@ public class TestUtilities implements StringConstants {
      * Relative path to the resources directory
      */
     public static final String RESOURCES_DIRECTORY = convertPackageToDirPath(TestUtilities.class.getPackage());
+
+    /**
+     * Teiid Vdb Schema xsd
+     */
+    public static final String TEIID_VDB_XSD = "teiid-vdb.xsd";
 
     /**
      * Tweet example file name
@@ -270,6 +281,16 @@ public class TestUtilities implements StringConstants {
 
     public static String convertPackageToDirPath(Package pkg) {
         return pkg.getName().replaceAll(DOUBLE_BACK_SLASH + DOT, FORWARD_SLASH);
+    }
+
+    /**
+     * @return input stream of teiid vdb xsd
+     * @throws Exception if error occurs
+     */
+    public static InputStream teiidVdbXsd() throws Exception {
+        return getResourceAsStream(TestUtilities.class,
+                                                                  RESOURCES_DIRECTORY,
+                                                                  TEIID_VDB_XSD);
     }
 
     /**
@@ -1056,20 +1077,39 @@ public class TestUtilities implements StringConstants {
      * Create a document from the given xml string
      *
      * @param xml the string of xml
+     * @param errorHandler handler for validation errors
      * @return the new document
      * @throws Exception if error occurs
      */
-    public static Document createDocument(String xml) throws Exception {
+    public static Document createDocument(String xml, ErrorHandler errorHandler) throws Exception {
         xml = xml.replaceAll(NEW_LINE, SPACE);
         xml = xml.replaceAll(">[\\s]+<", CLOSE_ANGLE_BRACKET + OPEN_ANGLE_BRACKET);
         xml = xml.replaceAll("[\\s]+", SPACE);
         xml = xml.replaceAll("CDATA\\[[\\s]+", "CDATA[");
         xml = xml.replaceAll("; \\]\\]", ";]]");
 
+        InputStream is = null;
+        Schema schema = null;
+        try {
+            String language = XMLConstants.W3C_XML_SCHEMA_NS_URI;
+            SchemaFactory factory = SchemaFactory.newInstance(language);
+            is = TestUtilities.teiidVdbXsd();
+            Source source = new StreamSource(is);
+            schema = factory.newSchema(source);           
+        } finally {
+            if (is != null)
+                is.close();
+        }
+
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setIgnoringElementContentWhitespace(true);
         dbf.setIgnoringComments(true);
+        dbf.setNamespaceAware(true);
+        dbf.setValidating(true);
+        dbf.setSchema(schema);
         DocumentBuilder db = dbf.newDocumentBuilder();
+        if (errorHandler != null)
+            db.setErrorHandler(errorHandler);
 
         Document doc = db.parse(new InputSource(new StringReader(xml)));
         doc .setXmlStandalone(true);
@@ -1081,12 +1121,13 @@ public class TestUtilities implements StringConstants {
      * Create a document from the given xml stream
      *
      * @param xmlStream the stream of xml
+     * @param errorHandler handler for validation errors
      * @return the new document
      * @throws Exception if error occurs
      */
-    public static Document createDocument(InputStream xmlStream) throws Exception {
+    public static Document createDocument(InputStream xmlStream, ErrorHandler errorHandler) throws Exception {
         String xml = streamToString(xmlStream);
-        return createDocument(xml);
+        return createDocument(xml, errorHandler);
     }
 
     private static boolean compareAttributes(Element expectedElement, Element actualElement, StringBuilder errorMessages) {
@@ -1141,16 +1182,18 @@ public class TestUtilities implements StringConstants {
 
         // compare element names
         if (expectedElement.getLocalName() != null) {
-            if (! expectedElement.getLocalName().equals(actualElement.getLocalName()))
+            if (! expectedElement.getLocalName().equals(actualElement.getLocalName())) {
                 errorMessages.append(errorMsg + " Different name\n");
                 return false;
+            }
         }
 
         // compare element ns
         if (expectedElement.getNamespaceURI() != null) {
-            if (! expectedElement.getNamespaceURI().equals(actualElement.getNamespaceURI()))
+            if (! expectedElement.getNamespaceURI().equals(actualElement.getNamespaceURI())) {
                 errorMessages.append(errorMsg + " Different namespace URI\n");
                 return false;
+            }
         }
 
         // compare attributes

@@ -62,6 +62,7 @@ import org.komodo.servicecatalog.datasources.SalesforceDefinition;
 import org.komodo.servicecatalog.datasources.WebServiceDefinition;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.logging.KLogger;
 import org.komodo.spi.repository.ApplicationProperties;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.runtime.ServiceCatalogDataSource;
@@ -105,7 +106,9 @@ import io.kubernetes.client.ServiceBindingList;
 import io.kubernetes.client.ServiceInstance;
 import io.kubernetes.client.ServiceInstanceList;
 
-public class TeiidOpenShiftClient {
+public class TeiidOpenShiftClient implements StringConstants {
+    private static final KLogger logger = KLog.getLogger();
+
     private static final String DAS = "das";
     private static final String MANAGED_BY = "managed-by";
     private static final String OSURL = "https://openshift.default.svc";
@@ -136,6 +139,13 @@ public class TeiidOpenShiftClient {
         add(new SalesforceDefinition());
         add(new WebServiceDefinition());
         add(new AmazonS3Definition());
+    }
+
+    private void debug(String message) {
+        if (! logger.isDebugEnabled())
+            return;
+
+        logger.debug(message);
     }
 
     private void add(DataSourceDefinition def) {
@@ -657,6 +667,7 @@ public class TeiidOpenShiftClient {
                 while(!workQueue.isEmpty()) {
                     BuildStatus work = workQueue.peek();
                     if (work == null) {
+                        debug("Publishing - No build in the build queue");
                         break;
                     }
 
@@ -672,12 +683,15 @@ public class TeiidOpenShiftClient {
                     Build build = client.builds().inNamespace(work.namespace).withName(work.buildName).get();
                     if (build == null) {
                         // build got deleted some how ignore..
+                        debug("Publishing " + work.vdbName + " - No build available for building");
                         continue;
                     }
 
                     boolean shouldReQueue = true;
                     String lastStatus = build.getStatus().getPhase();
                     if (Builds.isCompleted(lastStatus)) {
+                        debug("Publishing " + work.vdbName + " - Build completed. Preparing to deploy");
+
                         work.statusMessage = "build completed, deployment started";
                         if (work.deploymentName == null) {
                             DeploymentConfig dc = createDeploymentConfig(client, work);
@@ -692,10 +706,12 @@ public class TeiidOpenShiftClient {
                                     .withName(work.deploymentName).get();
                             if (isDeploymentInReadyState(dc)) {
                                 // it done now..
+                                debug("Publishing " + work.vdbName + " - Deployment completed");
                                 createServices(client, work.namespace, work.vdbName);
                                 work.status = Status.RUNNING;
                                 shouldReQueue = false;
                             } else {
+                                debug("Publishing " + work.vdbName + " - Deployment invalid");
                                 DeploymentCondition cond = getDeploymentConfigStatus(dc);
                                 if (cond != null) {
                                     work.statusMessage = cond.getMessage();
@@ -705,6 +721,7 @@ public class TeiidOpenShiftClient {
                             }
                         }
                     } else if (Builds.isCancelled(lastStatus)) {
+                        debug("Publishing " + work.vdbName + " - Build cancelled");
                         // once failed do not queue the work again.
                         shouldReQueue = false;
                         work.status = Status.CANCELLED;
@@ -712,6 +729,7 @@ public class TeiidOpenShiftClient {
                         KLog.getLogger().debug("Build cancelled :" + work.buildName + ". Reason "
                                 + build.getStatus().getLogSnippet());
                     } else if (Builds.isFailed(lastStatus)) {
+                        debug("Publishing " + work.vdbName + " - Build failed");
                         // once failed do not queue the work again.
                         shouldReQueue = false;
                         work.status = Status.FAILED;
@@ -745,35 +763,68 @@ public class TeiidOpenShiftClient {
         Vdb vdb = publishConfig.vdb;
         String vdbName = vdb.getVdbName(uow);
         try {
+            debug("Publishing (" + vdbName + ") - Start publishing of virtualization: " + vdbName);
+
             BuildStatus status = getVirtualizationStatus(vdbName);
+            debug("Publishing (" + vdbName + ") - Virtualisation status: " + status.status);
+
             if ((status.status == Status.BUILDING) || (status.status == Status.DEPLOYING)
                     || (status.status == Status.RUNNING)) {
                 return status;
             } else {
-                KLog.getLogger().info("Deploying " + vdbName + "as Service");
+                logger.info("Deploying " + vdbName + "as Service");
+
                 // create build contents as tar file
+
+                debug("Publishing (" + vdbName + ") - Creating zip archive");
                 GenericArchive archive = ShrinkWrap.create(GenericArchive.class, "contents.tar");
-                archive.add(new StringAsset(generatePomXml(uow, vdb, publishConfig.enableOdata)), "pom.xml");
-                archive.add(new ByteArrayAsset(vdb.export(uow, null)), "/src/main/vdb/"+vdbName+"-vdb.xml");
+                
+                String pomFile = generatePomXml(uow, vdb, publishConfig.enableOdata);
+
+                debug("Publishing (" + vdbName + ") - Generated pom file: " + NEW_LINE + pomFile);
+                archive.add(new StringAsset(pomFile), "pom.xml");
+
+                byte[] vdbFile = vdb.export(uow, null);
+                debug("Publishing (" + vdbName + ") - Exported vdb: " + NEW_LINE + new String(vdbFile));
+                archive.add(new ByteArrayAsset(vdbFile), "/src/main/vdb/"+vdbName+"-vdb.xml");
 
                 InputStream configIs = this.getClass().getClassLoader().getResourceAsStream("s2i/project-defaults.yml");
                 archive.add(new ByteArrayAsset(ObjectConverterUtil.convertToByteArray(configIs)),
                         "/src/main/resources/project-defaults.yml");
 
-                InputStream buildContents = archive.as(TarExporter.class).exportAsInputStream();
+                debug("Publishing (" + vdbName + ") - Converting archive to TarExport");
+                InputStream buildContents = archive.as(TarExporter.class).exportAsInputStream();                
+                debug("Publishing (" + vdbName + ") - Completed creating build contents construction");
 
+                debug("Publishing (" + vdbName + ") - Creating image stream");
                 // use the contents to invoke a binary build
                 ImageStream is = createImageStream(client, namespace, vdbName);
+
+                debug("Publishing (" + vdbName + ") - Creating build config");
                 BuildConfig buildConfig = createBuildConfig(client, namespace, vdbName, is, publishConfig);
+
+                debug("Publishing (" + vdbName + ") - Creating build");
                 Build build = createBuild(client, namespace, buildConfig, buildContents);
                 KLog.getLogger().info("Build Started:"+build.getMetadata().getName()+" for VDB "+ vdbName + " to publish");
+
+                debug("Publishing (" + vdbName + ") - Awaiting pod readiness ...");
                 waitUntilPodIsReady(client, build.getMetadata().getName() + "-build", 20);
-                
+
+                debug("Publishing (" + vdbName + ") - Fetching environment variables for vdb data sources");
                 Collection<EnvVar> envs = getEnvironmentVaribalesForVDBDataSources(uow, vdb, publishConfig);
+
+                debug("Publishing (" + vdbName + ") - Adding to queue");
                 addToQueue(namespace, vdbName, build.getMetadata().getName(), null, publishConfig, envs);
             }
+
+            debug("Publishing (" + vdbName + ") - Initiating work monitor if not already running");
             monitorWork();
-            return getVirtualizationStatus(vdbName);
+
+            BuildStatus virtualizationStatus = getVirtualizationStatus(vdbName);
+            debug("Published (" + vdbName + ") - Status of build + " + virtualizationStatus.buildName + 
+                         COLON + SPACE + virtualizationStatus.status);
+            return virtualizationStatus;
+
         } catch (KubernetesClientException | IOException e) {
             throw new KException(e);
         } finally {
