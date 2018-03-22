@@ -21,13 +21,14 @@
  */
 package org.komodo.core.visitor;
 
+import static org.junit.Assert.assertTrue;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.Writer;
-
+import java.util.ArrayList;
+import java.util.List;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
-
 import org.junit.Test;
 import org.komodo.core.AbstractLocalRepositoryTest;
 import org.komodo.metadata.DefaultMetadataInstance;
@@ -38,12 +39,50 @@ import org.komodo.spi.repository.KomodoObject;
 import org.komodo.test.utils.TestUtilities;
 import org.mockito.Mockito;
 import org.w3c.dom.Document;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  *
  */
 @SuppressWarnings({"nls", "javadoc"})
 public class TestVdbExport extends AbstractLocalRepositoryTest {
+
+    private class VdbErrorHandler implements ErrorHandler {
+
+        List<Exception> exceptions = new ArrayList<>();
+
+        @Override
+        public void warning(SAXParseException exception) throws SAXException {
+            exceptions.add(exception);
+        }
+
+        @Override
+        public void error(SAXParseException exception) throws SAXException {
+            String msg = exception.getMessage();
+
+            if (msg.contains("Document is invalid: no grammar found."))
+                return; // Ignore
+            if (msg.contains("Document root element \"vdb\", must match DOCTYPE root \"null\"."))
+                return; // Ignore
+
+            exceptions.add(exception);
+        }
+
+        @Override
+        public void fatalError(SAXParseException exception) throws SAXException {
+            exceptions.add(exception);
+        }
+
+        public boolean noExceptions() {
+            for (Exception ex : exceptions) {
+                System.err.println(ex.getMessage());
+            }
+            return exceptions.isEmpty();
+        }
+        
+    };
 
     private VdbNodeVisitor createNodeVisitor(Writer writer) throws Exception {
         XMLOutputFactory xof = XMLOutputFactory.newInstance();
@@ -82,13 +121,17 @@ public class TestVdbExport extends AbstractLocalRepositoryTest {
         //
         String testXML = testWriter.toString();
 //        System.out.println(testXML);
-        Document testDoc = TestUtilities.createDocument(testXML);
+        VdbErrorHandler errorHandler = new VdbErrorHandler();
+        Document testDoc = TestUtilities.createDocument(testXML, errorHandler);
+        assertTrue(errorHandler.noExceptions());
 
         //
         // Create comparison XML Document from the example xml files
         //
         InputStream compareStream = TestUtilities.tweetExample();
-        Document compareDoc = TestUtilities.createDocument(compareStream);
+        errorHandler = new VdbErrorHandler();
+        Document compareDoc = TestUtilities.createDocument(compareStream, errorHandler);
+        assertTrue(errorHandler.noExceptions());
 
         // Compare the XML documents. Unlike Document.isEqualNode(document)
         // the document nodes can be in a different order and the documents are
@@ -122,13 +165,17 @@ public class TestVdbExport extends AbstractLocalRepositoryTest {
         //
         String testXML = testWriter.toString();
 //        System.out.println(testXML);
-        Document testDoc = TestUtilities.createDocument(testXML);
+        VdbErrorHandler errorHandler = new VdbErrorHandler();
+        Document testDoc = TestUtilities.createDocument(testXML, errorHandler);
+        assertTrue(errorHandler.noExceptions());
 
         //
         // Create comparison XML Document from the example xml files
         //
         InputStream compareStream = TestUtilities.undefinedAttrExample();
-        Document compareDoc = TestUtilities.createDocument(compareStream);
+        errorHandler = new VdbErrorHandler();
+        Document compareDoc = TestUtilities.createDocument(compareStream, errorHandler);
+        assertTrue(errorHandler.noExceptions());
 
         // Compare the XML documents. Unlike Document.isEqualNode(document)
         // the document nodes can be in a different order and the documents are
@@ -161,13 +208,18 @@ public class TestVdbExport extends AbstractLocalRepositoryTest {
         // Create an XML Document from the filled writer
         //
         String testXML = testWriter.toString();
-        Document testDoc = TestUtilities.createDocument(testXML);
+//        System.out.println(testXML);
+        VdbErrorHandler errorHandler = new VdbErrorHandler();
+        Document testDoc = TestUtilities.createDocument(testXML, errorHandler);
+        assertTrue(errorHandler.noExceptions());
 
         //
         // Create comparison XML Document from the example xml files
         //
         InputStream compareStream = TestUtilities.allElementsExample();
-        Document compareDoc = TestUtilities.createDocument(compareStream);
+        errorHandler = new VdbErrorHandler();
+        Document compareDoc = TestUtilities.createDocument(compareStream, errorHandler);
+        assertTrue(errorHandler.noExceptions());
 
         // Compare the XML documents. Unlike Document.isEqualNode(document)
         // the document nodes can be in a different order and the documents are

@@ -369,6 +369,12 @@ public abstract class KomodoService implements V1Constants {
     
     protected Response createErrorResponse(Status returnCode, List<MediaType> mediaTypes, String resultMsg) {
         Object responseEntity = createErrorResponseEntity(mediaTypes, resultMsg);
+
+        //
+        // Log the error in the komodo log for future reference
+        //
+        KLog.getLogger().error(Messages.getString(Messages.Error.RESPONSE_ERROR, returnCode, resultMsg));
+
         return Response.status(returnCode).entity(responseEntity).build();
     }
 
