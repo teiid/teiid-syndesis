@@ -36,7 +36,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import javax.naming.InitialContext;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -57,7 +61,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
-
 import org.komodo.core.KEngine;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
@@ -69,7 +72,9 @@ import org.komodo.relational.model.Model;
 import org.komodo.relational.resource.Driver;
 import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
+import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.relational.workspace.WorkspaceManager;
+import org.komodo.rest.AuthHandlingFilter.AuthToken;
 import org.komodo.rest.CallbackTimeoutException;
 import org.komodo.rest.KomodoRestException;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
@@ -126,7 +131,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -3329,7 +3333,7 @@ public class KomodoMetadataService extends KomodoService {
 			uow = createTransaction(principal, "availableSources", true); //$NON-NLS-1$
 
 			// Get OpenShift based available data services
-			Collection<ServiceCatalogDataSource> dataSources = this.openshiftClient.getServiceCatalogSources();
+			Collection<ServiceCatalogDataSource> dataSources = this.openshiftClient.getServiceCatalogSources(getAuthenticationToken());
 			LOGGER.info("serviceCatalogSources '{0}' DataSources", dataSources.size()); //$NON-NLS-1$
 
 			final List<RestServiceCatalogDataSource> entities = new ArrayList<>();
@@ -3411,7 +3415,7 @@ public class KomodoMetadataService extends KomodoService {
 
 		try {
 			uow = createTransaction(principal, "bindServiceCatalogService", false); //$NON-NLS-1$
-			this.openshiftClient.bindToServiceCatalogSource(attributes.getName());
+			this.openshiftClient.bindToServiceCatalogSource(getAuthenticationToken(), attributes.getName());
 			String title = RelationalMessages.getString(
 					RelationalMessages.Info.METADATA_SERVICE_CATALOG_DATA_SERVIVE_BIND_TITLE, attributes.getName());
 			KomodoStatusObject status = new KomodoStatusObject(title);
@@ -3542,7 +3546,8 @@ public class KomodoMetadataService extends KomodoService {
     @POST
     @Path(V1Constants.PUBLISH)
     @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Publish Virtualization Service based on VDB or Dataservice",response = RestVirtualizationStatus.class)
+    @ApiOperation(value = "Publish Virtualization Service based on VDB or Dataservice",
+                                response = KomodoStatusObject.class)
     @ApiResponses(value = {
         @ApiResponse(code = 404, message = "No VDB or Dataservice could be found with name"),
         @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
@@ -3576,8 +3581,7 @@ public class KomodoMetadataService extends KomodoService {
         }
         UnitOfWork uow = null;
         try {
-            Repository repo = this.kengine.getDefaultRepository();
-            uow = createTransaction(principal, "publish", true); //$NON-NLS-1$
+            uow = createTransaction(principal, "publish-init", true); //$NON-NLS-1$
             Vdb vdb = findVdb(uow, attributes.getName());
             if (vdb == null) {
                 //
@@ -3596,12 +3600,78 @@ public class KomodoMetadataService extends KomodoService {
                 return createErrorResponse(Status.NOT_FOUND, mediaTypes, RelationalMessages.Error.VDB_NOT_FOUND);
             }
 
-            // the properties in this class can be exposed for user input
-            PublishConfiguration config = new PublishConfiguration();
-            config.setVDB(vdb);
-            BuildStatus status = this.openshiftClient.publishVirtualization(uow, config);
+            KomodoStatusObject status = new KomodoStatusObject();
+            status.addAttribute("Publishing", "Operation initiated");
 
-            return commit(uow, mediaTypes, entityFactory.createBuildStatus(uow, repo, status, uriInfo.getBaseUri()));
+            final String vdbPath = vdb.getAbsolutePath();
+            final AuthToken token = getAuthenticationToken();
+
+            //
+            // This publishing could take 30+ seconds to return hence the need to
+            // check it then return before the http request actually times out.
+            //
+            // Waits up to 10 seconds to see if the publishing returns (and probably
+            // has failed!) then returns an indication that things are underway.
+            //
+            ExecutorService threadService = Executors.newFixedThreadPool(1);
+            Callable<BuildStatus> task = new Callable<BuildStatus>() {
+                @Override
+                public BuildStatus call() throws Exception {
+                    //
+                    // Start the publishing procedure
+                    //
+                    UnitOfWork uow = null;
+                    AuthToken authToken = new AuthToken(token.toString());
+                    try {
+                        uow = createTransaction(principal, "publish", true); //$NON-NLS-1$
+                        Vdb theVdb = new VdbImpl(uow, kengine.getDefaultRepository(), vdbPath);
+
+                        // the properties in this class can be exposed for user input
+                        PublishConfiguration config = new PublishConfiguration();
+                        config.setVDB(theVdb);
+                        return openshiftClient.publishVirtualization(authToken, uow, config);
+                    } catch (Exception ex) {
+                        throw ex;
+                    } finally {
+                        if (uow != null)
+                            uow.rollback();
+                    }
+                }
+            };
+            Future<BuildStatus> result = threadService.submit(task);
+
+            for (int i = 0; i < 2; ++i) {
+                if (result.isDone()) {
+                    try {
+                        BuildStatus buildStatus = result.get(1, TimeUnit.MINUTES);
+                        //
+                        // If the thread concludes within the time of the parent thread sleeping
+                        // then add some build status messages.
+                        //
+                        status.addAttribute("Vdb Name", buildStatus.getVdbName());
+                        status.addAttribute("Build Status", buildStatus.getStatus());
+                        status.addAttribute("Build Status Message", buildStatus.getStatusMessage());
+                    } catch (Exception ex) {
+                        status.addAttribute("Build Status", BuildStatus.Status.FAILED.name());
+                        status.addAttribute("Build Status Message", ex.getMessage());
+                    }
+
+                    //
+                    // operation complete so exit the loop
+                    //
+                    break;
+                }
+
+                //
+                // Wait for 5 seconds before checking again
+                //
+                Thread.sleep(5000);
+            }
+
+            //
+            // Return the status from this request. Otherwise, monitor using #getVirtualizations()
+            //
+            return commit(uow, mediaTypes, status);
         } catch (Throwable e) {
             if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
                 uow.rollback();

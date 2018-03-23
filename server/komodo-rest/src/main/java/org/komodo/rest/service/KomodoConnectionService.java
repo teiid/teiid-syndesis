@@ -368,7 +368,7 @@ public final class KomodoConnectionService extends KomodoService {
             restConnection.setJdbc(true);
             
             // Get the specified ServiceCatalogDataSource from the metadata instance
-            Collection<ServiceCatalogDataSource> dataSources = openshiftClient.getServiceCatalogSources();
+            Collection<ServiceCatalogDataSource> dataSources = openshiftClient.getServiceCatalogSources(getAuthenticationToken());
 			for(ServiceCatalogDataSource ds: dataSources) {
 				if(ds.getName().equals(rcAttr.getServiceCatalogSource())) {
 					serviceCatalogSource = ds;
@@ -394,7 +394,7 @@ public final class KomodoConnectionService extends KomodoService {
             }
 
 			// Ensures service catalog is bound, and creates the corresponding datasource in wildfly
-			openshiftClient.bindToServiceCatalogSource(serviceCatalogSource.getName());
+			openshiftClient.bindToServiceCatalogSource(getAuthenticationToken(), serviceCatalogSource.getName());
 			
 			// Get the connection from the wildfly instance (should be available after binding)
             TeiidDataSource dataSource = getMetadataInstance().getDataSource(serviceCatalogSource.getName());
@@ -596,7 +596,7 @@ public final class KomodoConnectionService extends KomodoService {
             restConnection.setJdbc(true);
             
             // Get the specified ServiceCatalogDataSource from the metadata instance
-            Collection<ServiceCatalogDataSource> dataSources = openshiftClient.getServiceCatalogSources();
+            Collection<ServiceCatalogDataSource> dataSources = openshiftClient.getServiceCatalogSources(getAuthenticationToken());
 			for(ServiceCatalogDataSource ds: dataSources) {
 				if(ds.getName().equals(rcAttr.getServiceCatalogSource())) {
 					serviceCatalogSource = ds;
@@ -626,7 +626,7 @@ public final class KomodoConnectionService extends KomodoService {
             getWorkspaceManager(uow).delete(uow, kobject);
 
 			// Ensures service catalog is bound, and creates the corresponding datasource in wildfly
-			openshiftClient.bindToServiceCatalogSource(serviceCatalogSource.getName());
+			openshiftClient.bindToServiceCatalogSource(getAuthenticationToken(), serviceCatalogSource.getName());
 			
 			// Get the connection from the wildfly instance (should be available after binding)
             TeiidDataSource dataSource = getMetadataInstance().getDataSource(serviceCatalogSource.getName());

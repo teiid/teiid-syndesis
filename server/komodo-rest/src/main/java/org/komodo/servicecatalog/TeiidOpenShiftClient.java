@@ -38,7 +38,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
 import org.jboss.shrinkwrap.api.GenericArchive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
@@ -47,7 +46,7 @@ import org.jboss.shrinkwrap.api.exporter.TarExporter;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
-import org.komodo.rest.AuthHandlingFilter;
+import org.komodo.rest.AuthHandlingFilter.AuthToken;
 import org.komodo.rest.TeiidSwarmMetadataInstance;
 import org.komodo.servicecatalog.BuildStatus.Status;
 import org.komodo.servicecatalog.datasources.AmazonS3Definition;
@@ -69,9 +68,7 @@ import org.komodo.spi.runtime.ServiceCatalogDataSource;
 import org.komodo.utils.KLog;
 import org.teiid.adminapi.AdminException;
 import org.teiid.core.util.ObjectConverterUtil;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.fabric8.kubernetes.api.KubernetesHelper;
 import io.fabric8.kubernetes.api.builds.Builds;
 import io.fabric8.kubernetes.api.model.ContainerPort;
@@ -180,9 +177,8 @@ public class TeiidOpenShiftClient implements StringConstants {
         return null;
     }
 
-    public Set<ServiceCatalogDataSource> getServiceCatalogSources() throws KException {
-        String token = AuthHandlingFilter.threadOAuthCredentials.get().getToken();
-        this.scClient.setAuthHeader(token);
+    public Set<ServiceCatalogDataSource> getServiceCatalogSources(AuthToken authToken) throws KException {
+        this.scClient.setAuthHeader(authToken.toString());
         Set<ServiceCatalogDataSource> sources = new HashSet<>();
         try {
             ServiceInstanceList serviceList = this.scClient.getServiceInstances(ApplicationProperties.getNamespace());
@@ -218,10 +214,9 @@ public class TeiidOpenShiftClient implements StringConstants {
         return sources;
     }
 
-    public void bindToServiceCatalogSource(String dsName) throws KException {
+    public void bindToServiceCatalogSource(AuthToken authToken, String dsName) throws KException {
         KLog.getLogger().info("Bind to Service:" + dsName);
-        String token = AuthHandlingFilter.threadOAuthCredentials.get().getToken();
-        this.scClient.setAuthHeader(token);
+        this.scClient.setAuthHeader(authToken.toString());
         try {
             ServiceInstance svc = this.scClient.getServiceInstance(ApplicationProperties.getNamespace(), dsName);
             if (svc == null) {
@@ -277,9 +272,8 @@ public class TeiidOpenShiftClient implements StringConstants {
         return new DecodedSecret(secretName, map);
     }
 
-    public DefaultServiceCatalogDataSource getServiceCatalogDataSource(String dsName) throws KException {
-        String token = AuthHandlingFilter.threadOAuthCredentials.get().getToken();
-        this.scClient.setAuthHeader(token);
+    public DefaultServiceCatalogDataSource getServiceCatalogDataSource(AuthToken authToken, String dsName) throws KException {
+        this.scClient.setAuthHeader(authToken.toString());
         try {
             ServiceInstance svc = this.scClient.getServiceInstance(ApplicationProperties.getNamespace(), dsName);
             if (svc == null) {
@@ -753,7 +747,16 @@ public class TeiidOpenShiftClient implements StringConstants {
         }});
     }
 
-    public BuildStatus publishVirtualization(UnitOfWork uow, PublishConfiguration publishConfig) throws KException {
+    /**
+     * Publish the vdb as a virtualization
+     *
+     * @param authToken the authentication token for Openshift
+     * @param uow the transaction for accessing the vdb's properties
+     * @param vdb the vdb for virtualising
+     * @return the build status of the virtualization
+     * @throws KException if error occurs
+     */
+    public BuildStatus publishVirtualization(AuthToken authToken, UnitOfWork uow, PublishConfiguration publishConfig) throws KException {
         String namespace = ApplicationProperties.getNamespace();
         Config config = new ConfigBuilder().build();
         OpenShiftConfig.wrap(config).setBuildTimeout(publishConfig.buildTimeoutInSeconds);
@@ -778,8 +781,7 @@ public class TeiidOpenShiftClient implements StringConstants {
 
                 debug("Publishing (" + vdbName + ") - Creating zip archive");
                 GenericArchive archive = ShrinkWrap.create(GenericArchive.class, "contents.tar");
-                
-                String pomFile = generatePomXml(uow, vdb, publishConfig.enableOdata);
+                String pomFile = generatePomXml(authToken, uow, vdb, publishConfig.enableOdata);
 
                 debug("Publishing (" + vdbName + ") - Generated pom file: " + NEW_LINE + pomFile);
                 archive.add(new StringAsset(pomFile), "pom.xml");
@@ -811,7 +813,7 @@ public class TeiidOpenShiftClient implements StringConstants {
                 waitUntilPodIsReady(client, build.getMetadata().getName() + "-build", 20);
 
                 debug("Publishing (" + vdbName + ") - Fetching environment variables for vdb data sources");
-                Collection<EnvVar> envs = getEnvironmentVaribalesForVDBDataSources(uow, vdb, publishConfig);
+                Collection<EnvVar> envs = getEnvironmentVariablesForVDBDataSources(authToken, uow, vdb, publishConfig);
 
                 debug("Publishing (" + vdbName + ") - Adding to queue");
                 addToQueue(namespace, vdbName, build.getMetadata().getName(), null, publishConfig, envs);
@@ -832,7 +834,7 @@ public class TeiidOpenShiftClient implements StringConstants {
         }
     }
 
-    Collection<EnvVar> getEnvironmentVaribalesForVDBDataSources(UnitOfWork uow, Vdb vdb,
+    Collection<EnvVar> getEnvironmentVariablesForVDBDataSources(AuthToken authToken, UnitOfWork uow, Vdb vdb,
             PublishConfiguration publishConfig) throws KException {
         List<EnvVar> envs = new ArrayList<>();
         StringBuilder javaOptions = new StringBuilder();
@@ -845,7 +847,7 @@ public class TeiidOpenShiftClient implements StringConstants {
                 DataSourceDefinition def = getSourceDefinitionThatMatchesTranslator(translatorName);
                 DefaultServiceCatalogDataSource ds = null;
                 if (def.isServiceCatalogSource()) {
-                    ds = getServiceCatalogDataSource(name);
+                    ds = getServiceCatalogDataSource(authToken, name);
                     if (ds == null) {
                         throw new KException("Datasource "+name+" not found service catalog");
                     }
@@ -863,7 +865,7 @@ public class TeiidOpenShiftClient implements StringConstants {
                     ds.setDefinition(def);
                 }
 
-                //  build properties to create data source in WF-SWARAM
+                //  build properties to create data source in WF-SWARM
                 convertSecretsToEnvironmentVariables(ds, envs);
 
                 Properties config = def.getWFSDataSourceProperties(ds, source.getJndiName(uow));
@@ -1034,12 +1036,13 @@ public class TeiidOpenShiftClient implements StringConstants {
 
     /**
      * This method generates the pom.xml file, that needs to be saved in the root of the project.
+     * @param authToken - token for Openshift authentication
      * @param uow - Unit Of Work
      * @param vdb - VDB for which pom.xml is generated
      * @return pom.xml contents
      * @throws KException
      */
-    protected String generatePomXml(UnitOfWork uow, Vdb vdb, boolean enableOdata) throws KException {
+    protected String generatePomXml(AuthToken authToken, UnitOfWork uow, Vdb vdb, boolean enableOdata) throws KException {
         try {
             StringBuilder builder = new StringBuilder();
             InputStream is = this.getClass().getClassLoader().getResourceAsStream("s2i/template-pom.xml");
@@ -1055,7 +1058,7 @@ public class TeiidOpenShiftClient implements StringConstants {
                 for (ModelSource source : sources) {
                     String name = source.getName(uow);
                     String translatorName = source.getTranslatorName(uow);
-                    DefaultServiceCatalogDataSource ds = getServiceCatalogDataSource(name);
+                    DefaultServiceCatalogDataSource ds = getServiceCatalogDataSource(authToken, name);
                     if (ds == null) {
                         throw new KException("Datasource " + name + " not found in the service catalog");
                     }
