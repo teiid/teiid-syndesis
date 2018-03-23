@@ -52,6 +52,7 @@ import org.komodo.relational.profile.Profile;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
+import org.komodo.rest.AuthHandlingFilter.AuthToken;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.RestBasicEntity.ResourceNotFound;
 import org.komodo.rest.relational.RelationalMessages;
@@ -201,6 +202,10 @@ public abstract class KomodoService implements V1Constants {
 
         value = value.replaceAll(PREFIX_SEPARATOR, COLON);
         return value;
+    }
+
+    protected AuthToken getAuthenticationToken() {
+        return AuthHandlingFilter.threadOAuthCredentials.get().getToken();
     }
 
     protected SecurityPrincipal checkSecurityContext(HttpHeaders headers) {
