@@ -24,41 +24,41 @@
         <description>roleOne described</description>
         <permission>
             <resource-name>myTable.T1</resource-name>
-            <allow-alter>false</allow-alter>
             <allow-create>false</allow-create>
-            <allow-delete>false</allow-delete>
-            <allow-execute>false</allow-execute>
             <allow-read>true</allow-read>
             <allow-update>false</allow-update>
+            <allow-delete>false</allow-delete>
+            <allow-execute>false</allow-execute>
+            <allow-alter>false</allow-alter>
         </permission>
         <permission>
             <resource-name>myTable.T2</resource-name>
-           	<allow-alter>true</allow-alter>
-			<allow-create>true</allow-create>
-			<allow-delete>true</allow-delete>
-			<allow-execute>true</allow-execute>
-			<allow-read>false</allow-read>
-			<allow-update>true</allow-update>
+            <allow-create>true</allow-create>
+            <allow-read>false</allow-read>
+            <allow-update>true</allow-update>
+            <allow-delete>true</allow-delete>
+            <allow-execute>true</allow-execute>
+            <allow-alter>true</allow-alter>
             <condition constraint="false">col1 = user()</condition>
         </permission>
         <permission>
             <resource-name>myTable.T2.col1</resource-name>
+            <allow-create>false</allow-create>
+            <allow-read>false</allow-read>
+            <allow-update>false</allow-update>
+            <allow-delete>false</allow-delete>
+            <allow-execute>false</allow-execute>
             <allow-alter>false</allow-alter>
-			<allow-create>false</allow-create>
-			<allow-delete>false</allow-delete>
-			<allow-execute>false</allow-execute>
-			<allow-read>false</allow-read>
-			<allow-update>false</allow-update>
             <mask order="1">col2</mask>
         </permission>
         <permission>
             <resource-name>javascript</resource-name>
-            <allow-alter>false</allow-alter>
             <allow-create>false</allow-create>
-            <allow-delete>false</allow-delete>
-            <allow-execute>false</allow-execute>
             <allow-read>false</allow-read>
             <allow-update>false</allow-update>
+            <allow-delete>false</allow-delete>
+            <allow-execute>false</allow-execute>
+            <allow-alter>false</allow-alter>
             <allow-language>true</allow-language>
         </permission>
         <mapped-role-name>ROLE1</mapped-role-name>

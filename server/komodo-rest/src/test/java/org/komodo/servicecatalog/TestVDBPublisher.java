@@ -45,6 +45,7 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.rest.AuthHandlingFilter;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
+import org.komodo.rest.AuthHandlingFilter.AuthToken;
 import org.komodo.rest.TeiidSwarmMetadataInstance;
 import org.komodo.servicecatalog.datasources.DefaultServiceCatalogDataSource;
 import org.komodo.servicecatalog.datasources.MySQLDefinition;
@@ -86,11 +87,11 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
 
         TeiidOpenShiftClient client = new TeiidOpenShiftClient(metadata) {
             @Override
-            public Set<ServiceCatalogDataSource> getServiceCatalogSources() throws KException {
+            public Set<ServiceCatalogDataSource> getServiceCatalogSources(AuthToken authToken) throws KException {
                 return sources;
             }
             @Override
-            public DefaultServiceCatalogDataSource getServiceCatalogDataSource(String dsName) throws KException {
+            public DefaultServiceCatalogDataSource getServiceCatalogDataSource(AuthToken authToken, String dsName) throws KException {
                 if (dsName.equals("accounts-xyz")) {
                     return getPostgreSQL();
                 } else {
@@ -156,7 +157,8 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
         final Vdb[] vdbs = WorkspaceManager.getInstance( _repo, getTransaction() ).findVdbs( getTransaction() );
         assertThat( vdbs.length, is(1));
 
-        String pom = generator.generatePomXml(getTransaction(), vdbs[0], false);
+        final AuthToken authToken = AuthHandlingFilter.threadOAuthCredentials.get().getToken();
+        String pom = generator.generatePomXml(authToken, getTransaction(), vdbs[0], false);
         assertEquals(ObjectConverterUtil.convertFileToString(new File("src/test/resources/generated-pom.xml")), pom);
     }
 
@@ -166,9 +168,11 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
 
         final Vdb[] vdbs = WorkspaceManager.getInstance( _repo, getTransaction() ).findVdbs( getTransaction() );
         assertThat( vdbs.length, is(1));
+
+        final AuthToken authToken = AuthHandlingFilter.threadOAuthCredentials.get().getToken();
         PublishConfiguration config = new PublishConfiguration();
         Collection<EnvVar> variables = generator
-                .getEnvironmentVaribalesForVDBDataSources(getTransaction(), vdbs[0], config);
+                .getEnvironmentVariablesForVDBDataSources(authToken, getTransaction(), vdbs[0], config);
         assertThat( variables.size(), is(13));
         String javaOptions= " -Dswarm.datasources.data-sources.accounts-xyz.driver-name=postgresql "
                 + "-Dswarm.datasources.data-sources.accounts-xyz.user-name=$(MYSECRECT_PG_USERNAME) "

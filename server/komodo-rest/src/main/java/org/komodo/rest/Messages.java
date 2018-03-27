@@ -105,7 +105,12 @@ public final class Messages {
         /**
          * CORS Filter error
          */
-        ORIGIN_NOT_ALLOWED;
+        ORIGIN_NOT_ALLOWED,
+
+        /**
+         * An error response occurred
+         */
+        RESPONSE_ERROR;
 
         /**
          * {@inheritDoc}

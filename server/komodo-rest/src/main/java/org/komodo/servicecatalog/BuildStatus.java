@@ -22,7 +22,16 @@
 package org.komodo.servicecatalog;
 
 public class BuildStatus {
-    protected enum Status {NOTFOUND, BUILDING, DEPLOYING, RUNNING, FAILED, CANCELLED}
+
+    public enum Status {
+        NOTFOUND,
+        BUILDING,
+        DEPLOYING,
+        RUNNING,
+        FAILED,
+        CANCELLED
+    }
+
     protected String buildName;
     protected String deploymentName;
     protected String vdbName;

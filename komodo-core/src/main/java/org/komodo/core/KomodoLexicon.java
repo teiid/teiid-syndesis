@@ -825,6 +825,10 @@ public interface KomodoLexicon extends StringConstants {
          */
         String TRANSLATOR = "vdb:sourceTranslator"; //$NON-NLS-1$
 
+        /**
+         * The name of the associated connection property. Value is {@value} .
+         */
+        String ASSOCIATED_CONNECTION = Namespace.PREFIX + COLON + "associatedConnection"; //$NON-NLS-1$
     }
 
     /**

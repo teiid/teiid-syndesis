@@ -320,12 +320,13 @@ public class VdbNodeVisitor extends AbstractNodeVisitor implements StringConstan
         writeTab(ElementTabValue.RESOURCE_NAME);
         writeElementWithText(VdbLexicon.ManifestIds.RESOURCE_NAME, kObject.getName(transaction));
 
-        String[][] permTags = {{VdbLexicon.DataRole.Permission.ALLOW_ALTER, VdbLexicon.ManifestIds.ALLOW_ALTER},
+        String[][] permTags = {
             {VdbLexicon.DataRole.Permission.ALLOW_CREATE, VdbLexicon.ManifestIds.ALLOW_CREATE},
-            {VdbLexicon.DataRole.Permission.ALLOW_DELETE, VdbLexicon.ManifestIds.ALLOW_DELETE},
-            {VdbLexicon.DataRole.Permission.ALLOW_EXECUTE, VdbLexicon.ManifestIds.ALLOW_EXECUTE},
             {VdbLexicon.DataRole.Permission.ALLOW_READ, VdbLexicon.ManifestIds.ALLOW_READ},
             {VdbLexicon.DataRole.Permission.ALLOW_UPDATE, VdbLexicon.ManifestIds.ALLOW_UPDATE},
+            {VdbLexicon.DataRole.Permission.ALLOW_DELETE, VdbLexicon.ManifestIds.ALLOW_DELETE},
+            {VdbLexicon.DataRole.Permission.ALLOW_EXECUTE, VdbLexicon.ManifestIds.ALLOW_EXECUTE},
+            {VdbLexicon.DataRole.Permission.ALLOW_ALTER, VdbLexicon.ManifestIds.ALLOW_ALTER},
             {VdbLexicon.DataRole.Permission.ALLOW_LANGUAGE, VdbLexicon.ManifestIds.ALLOW_LANGUAGE}};
 
         for (int i = 0; i < permTags.length; ++i) {
