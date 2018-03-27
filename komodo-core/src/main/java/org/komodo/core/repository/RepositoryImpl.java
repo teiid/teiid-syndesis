@@ -265,7 +265,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
                         this.error = new KException( e );
 
                         if (this.callback == null) {
-                            LOGGER.error( Messages.getString( Messages.Komodo.ERROR_TRYING_TO_COMMIT, e, getName() ) );
+                            LOGGER.error( Messages.getString( Messages.Komodo.ERROR_TRYING_TO_COMMIT, getName(), e ) );
                             rollback();
                             this.state = State.ERROR;
                         } else {

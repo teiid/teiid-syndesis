@@ -23,6 +23,8 @@ package org.komodo.rest.relational.response;
 
 import java.net.URI;
 import java.util.Properties;
+import org.komodo.core.KomodoLexicon;
+import org.komodo.relational.connection.Connection;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Translator;
@@ -33,9 +35,9 @@ import org.komodo.rest.RestLink;
 import org.komodo.rest.RestLink.LinkType;
 import org.komodo.rest.relational.KomodoRestUriBuilder.SettingNames;
 import org.komodo.spi.KException;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
 
 /**
  * A VDB model source that can be used by GSON to build a JSON model source representation.
@@ -51,6 +53,11 @@ public final class RestVdbModelSource extends RestBasicEntity {
      * Label used to describe translator
      */
     public static final String TRANSLATOR_LABEL = KomodoService.protectPrefix(VdbLexicon.Source.TRANSLATOR);
+
+    /**
+     * Label used to describe the associated connection
+     */
+    public static final String CONNECTION_LABEL = KomodoService.protectPrefix(KomodoLexicon.VdbModelSource.ASSOCIATED_CONNECTION);
 
     /**
      * Constructor for use when deserializing
@@ -72,6 +79,10 @@ public final class RestVdbModelSource extends RestBasicEntity {
         setJndiName(source.getJndiName(uow));
         String translatorName = source.getTranslatorName(uow);
         setTranslator(translatorName);
+        Connection connection = source.getAssociatedConnection(uow);
+        if (connection != null) {
+            setConnection(connection.getAbsolutePath());
+        }
 
         Model model = ancestor(source, Model.class, uow);
         ArgCheck.isNotNull(model);
@@ -126,5 +137,20 @@ public final class RestVdbModelSource extends RestBasicEntity {
      */
     public void setTranslator(String translator) {
         tuples.put(TRANSLATOR_LABEL, translator);
+    }
+
+    /**
+     * @return the associated connection
+     */
+    public String getConnection() {
+        Object connection = tuples.get(CONNECTION_LABEL);
+        return connection != null ? connection.toString() : null;
+    }
+
+    /**
+     * @param connection the associated connection to set
+     */
+    public void setConnection(String connection) {
+        tuples.put(CONNECTION_LABEL, connection);
     }
 }

@@ -33,17 +33,30 @@ import org.komodo.utils.KLog;
 @Provider
 @PreMatching
 public class AuthHandlingFilter implements ContainerRequestFilter {
-	
+
+    public static class AuthToken {
+        private String token;
+
+        public AuthToken(String token) {
+            this.token = token;
+        }
+
+        @Override
+        public String toString() {
+            return token;
+        }
+    }
+
 	public static class OAuthCredentials {
-		private String token;
+		private AuthToken token;
 		private String user;
-		
+
 		public OAuthCredentials(String token, String user) {
-			this.token = token;
+			this.token = new AuthToken(token);
 			this.user = user;
 		}
 		
-		public String getToken() {
+		public AuthToken getToken() {
 			return token;
 		}
 		public String getUser() {

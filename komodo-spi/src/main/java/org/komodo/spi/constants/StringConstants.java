@@ -76,7 +76,7 @@ public interface StringConstants {
     /**
      * AT sign.
      */
-    String AT= "@"; //$NON-NLS-1$
+    String AT = "@"; //$NON-NLS-1$
 
     /**
      * A Comma.
@@ -207,12 +207,12 @@ public interface StringConstants {
     /**
      * Open Angle Bracket
      */
-	String OPEN_ANGLE_BRACKET = "<"; //$NON-NLS-1$
+    String OPEN_ANGLE_BRACKET = "<"; //$NON-NLS-1$
 
-	/**
-	 * Close Angle Bracket
-	 */
-	String CLOSE_ANGLE_BRACKET = ">"; //$NON-NLS-1$
+    /**
+     * Close Angle Bracket
+     */
+    String CLOSE_ANGLE_BRACKET = ">"; //$NON-NLS-1$
 
     /**
      * Open Square Bracket
@@ -289,139 +289,153 @@ public interface StringConstants {
      */
     String CLOSE_PRE_CMT = "</pre-cmt>";
 
-	/**
-   * komodo
-   */
-  String KOMODO = "komodo"; //$NON-NLS-1$
+    /**
+    * komodo
+    */
+    String KOMODO = "komodo"; //$NON-NLS-1$
 
-  /**
-   * .komodo
-   */
-  String DOT_KOMODO = ".komodo"; //$NON-NLS-1$
+    /**
+     * .komodo
+     */
+    String DOT_KOMODO = ".komodo"; //$NON-NLS-1$
 
-  /**
-   * log
-   */
-  String LOG = "log"; //$NON-NLS-1$
+    /**
+     * log
+     */
+    String LOG = "log"; //$NON-NLS-1$
 
-	/**
-	 * Current Folder Symbol
-	 */
-	String CURRENT_FOLDER_SYMBOL = "."; //$NON-NLS-1$
+    /**
+     * Current Folder Symbol
+     */
+    String CURRENT_FOLDER_SYMBOL = "."; //$NON-NLS-1$
 
-	/**
-	 * Parent Folder Symbol
-	 */
-	String PARENT_FOLDER_SYMBOL = ".."; //$NON-NLS-1$
+    /**
+     * Parent Folder Symbol
+     */
+    String PARENT_FOLDER_SYMBOL = ".."; //$NON-NLS-1$
 
-	/**
-	 * Drive Separator
-	 */
-	String DRIVE_SEPARATOR = ":"; //$NON-NLS-1$
+    /**
+     * Drive Separator
+     */
+    String DRIVE_SEPARATOR = ":"; //$NON-NLS-1$
 
-	/**
-	 * File Extension separator
-	 */
-	String FILE_EXTENSION_SEPARATOR = "."; //$NON-NLS-1$
+    /**
+     * File Extension separator
+     */
+    String FILE_EXTENSION_SEPARATOR = "."; //$NON-NLS-1$
 
-	/**
-	 * File name wildcard
-	 */
-	String FILE_NAME_WILDCARD = "*"; //$NON-NLS-1$
+    /**
+     * File name wildcard
+     */
+    String FILE_NAME_WILDCARD = "*"; //$NON-NLS-1$
 
-  /**
-   * Target directory
-   */
-  String TARGET = "target"; //$NON-NLS-1$
+    /**
+     * Target directory
+     */
+    String TARGET = "target"; //$NON-NLS-1$
 
-  /**
-   * sources jar component
-   */
-  String SOURCES = "sources"; //$NON-NLS-1$
+    /**
+     * sources jar component
+     */
+    String SOURCES = "sources"; //$NON-NLS-1$
 
-  /**
-   * JAR File Extension
-   */
-  String JAR = "jar"; //$NON-NLS-1$
+    /**
+     * JAR File Extension
+     */
+    String JAR = "jar"; //$NON-NLS-1$
 
-  /**
-   * JAVA File Extension
-   */
-  String JAVA = "java"; //$NON-NLS-1$
+    /**
+     * JAVA File Extension
+     */
+    String JAVA = "java"; //$NON-NLS-1$
 
-  /**
-   * ZIP File Extension
-   */
-  String ZIP = "zip"; //$NON-NLS-1$
+    /**
+     * ZIP File Extension
+     */
+    String ZIP = "zip"; //$NON-NLS-1$
 
-  /**
-   * src directory
-   */
-  String SRC = "src"; //$NON-NLS-1$
+    /**
+     * src directory
+     */
+    String SRC = "src"; //$NON-NLS-1$
 
-  /**
-   * public
-   */
-  String PUBLIC = "public"; //$NON-NLS-1$
+    /**
+     * public
+     */
+    String PUBLIC = "public"; //$NON-NLS-1$
 
-  /**
-   * static
-   */
-  String STATIC = "static"; //$NON-NLS-1$
+    /**
+     * static
+     */
+    String STATIC = "static"; //$NON-NLS-1$
 
-  /**
-   * final
-   */
-  String FINAL = "final"; //$NON-NLS-1$
+    /**
+     * final
+     */
+    String FINAL = "final"; //$NON-NLS-1$
 
-  /**
-   * private
-   */
-  String PRIVATE = "private"; //$NON-NLS-1$
+    /**
+     * private
+     */
+    String PRIVATE = "private"; //$NON-NLS-1$
 
-  /**
-   * The default local repository workspace name (cannot be empty and must match the workspace name in the config file).
-   */
-  String DEFAULT_LOCAL_WORKSPACE_NAME = "komodoLocalWorkspace"; //$NON-NLS-1$
+    /**
+     * The default local repository workspace name (cannot be empty and must match the workspace name in the config file).
+     */
+    String DEFAULT_LOCAL_WORKSPACE_NAME = "komodoLocalWorkspace"; //$NON-NLS-1$
 
-  /**
-   * RegExp pattern for determining a property's prefix and name
-   */
-  String PREFIX_PATTERN = "([a-zA-Z]+):(.*)"; //$NON-NLS-1$
+    /**
+     * RegExp pattern for determining a property's prefix and name
+     */
+    String PREFIX_PATTERN = "([a-zA-Z]+):(.*)"; //$NON-NLS-1$
 
-  /**
-   * Vdb Prefix
-   */
-  String VDB_PREFIX = "Vdb-"; //$NON-NLS-1$
+    /**
+     * Vdb Prefix
+     */
+    String VDB_PREFIX = "Vdb-"; //$NON-NLS-1$
 
-  /**
-   * XML Suffix
-   */
-  String XML_SUFFIX = DOT + XML;
+    /**
+     * XML Suffix
+     */
+    String XML_SUFFIX = DOT + XML;
 
-  /**
-   * ZIP Suffix
-   */
-  String ZIP_SUFFIX = DOT + ZIP;
+    /**
+     * ZIP Suffix
+     */
+    String ZIP_SUFFIX = DOT + ZIP;
 
-  /**
-   * Vdb Deployment Suffix
-   */
-  String VDB_DEPLOYMENT_SUFFIX = "-vdb" + XML_SUFFIX; //$NON-NLS-1$
+    /**
+     * Vdb Deployment Suffix
+     */
+    String VDB_DEPLOYMENT_SUFFIX = "-vdb" + XML_SUFFIX; //$NON-NLS-1$
 
-  /**
-   * Connection Suffix
-   */
-  String CONNECTION_SUFFIX = "-connection.xml"; //$NON-NLS-1$
+    /**
+     * Connection Suffix
+     */
+    String CONNECTION_SUFFIX = "-connection.xml"; //$NON-NLS-1$
 
-  /**
-   * jboss temp directory
-   */
-  String JBOSS_SERVER_TMP_DIR = "jboss.server.temp.dir"; //$NON-NLS-1$
+    /**
+     * jboss temp directory
+     */
+    String JBOSS_SERVER_TMP_DIR = "jboss.server.temp.dir"; //$NON-NLS-1$
 
-  /**
-   * Java temp directory
-   */
-  String JAVA_IO_TMPDIR = "java.io.tmpdir"; //$NON-NLS-1$
+    /**
+     * Java temp directory
+     */
+    String JAVA_IO_TMPDIR = "java.io.tmpdir"; //$NON-NLS-1$
+
+    /**
+     * Service vdb suffix
+     */
+    String SERVICE_VDB_SUFFIX = "vdb"; //$NON-NLS-1$
+
+    /**
+     * Service vdb view model
+     */
+    String SERVICE_VDB_VIEW_MODEL = "views"; //$NON-NLS-1$
+
+    /**
+     * Service vdb view suffix
+     */
+    String SERVICE_VDB_VIEW_SUFFIX = "View"; //$NON-NLS-1$
 }
-

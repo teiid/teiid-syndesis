@@ -597,9 +597,21 @@ public final class KomodoVdbService extends KomodoService {
 
     // Sets ModelSource properties using the supplied RestVdbModel object
     private void setProperties(final UnitOfWork uow, ModelSource modelSource, RestVdbModelSource restVdbModelSource) throws KException {
+
+        //
+        // Associate the connection to the model source
+        //
+        String connectionPath = restVdbModelSource.getConnection();
+        KomodoObject kObject = modelSource.getRepository().getFromWorkspace(uow, connectionPath);
+        if (Connection.RESOLVER.resolvable(uow, kObject)) {
+            Connection connection = Connection.RESOLVER.resolve(uow, kObject);
+            modelSource.setAssociatedConnection(uow, connection);
+        }
+
         // 'New' = requested RestVdbModelSource properties
         String newTranslator = restVdbModelSource.getTranslator();
         String newJndi = restVdbModelSource.getJndiName();
+
         List<RestProperty> newProperties = restVdbModelSource.getProperties();
 
         // 'Old' = current ModelSource properties
@@ -2456,7 +2468,8 @@ public final class KomodoVdbService extends KomodoService {
                                               NBSP + OPEN_PRE_CMT + "(eg keng\\_\\_dataPath: \"tko:komodo\\tko:workspace\\\\{username\\}\\\\{vdbName\\}\\\\{modelName\\}\\vdb:sources\\\\{sourceName\\}\")" + CLOSE_PRE_CMT + BR +
                                               NBSP + "keng\\_\\_kType: \"VdbModelSource\"" + COMMA + BR +
                                               NBSP + "vdb\\_\\_sourceJndiName: \"the jndi name\"" + COMMA + BR +
-                                              NBSP + "vdb\\_\\_sourceTranslator: \"the translator name\"" + BR +
+                                              NBSP + "vdb\\_\\_sourceTranslator: \"the translator name\"" + COMMA + BR +
+                                              NBSP + "tko\\_\\_associatedConnection: \tko:komodo\\tko:workspace\\\\{username\\}\\\\{connectionName\\}" + BR +
                                               CLOSE_BRACE +
                                               CLOSE_PRE_TAG,
                                       required = true

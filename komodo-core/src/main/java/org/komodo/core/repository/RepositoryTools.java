@@ -34,6 +34,7 @@ import org.komodo.spi.repository.Repository.OperationType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
+import org.modeshape.jcr.api.JcrTools;
 
 /**
  * Utility functions for adding remove objects from repositories
@@ -197,7 +198,11 @@ public class RepositoryTools implements StringConstants {
      */
     public static String getDisplayValue(UnitOfWork transaction,
                                          Property property) throws Exception {
-    	StringBuilder sb = new StringBuilder();
+        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
+                         "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+
+        StringBuilder sb = new StringBuilder();
         final PropertyValueType type = property.getDescriptor( transaction ).getType();
         final boolean propIsReference = ( ( PropertyValueType.REFERENCE == type ) );
         final boolean propIsBinary = ( PropertyValueType.BINARY == type );
@@ -257,6 +262,10 @@ public class RepositoryTools implements StringConstants {
      */
     public static String traverse(UnitOfWork transaction,
                                   KomodoObject kObject) throws Exception {
+        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
+                         "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+
         TraversalOutputVisitor visitor = new TraversalOutputVisitor();
         return visitor.visit(transaction, kObject);
     }
@@ -333,5 +342,100 @@ public class RepositoryTools implements StringConstants {
             else
                 target.setProperty(transaction, propName, property.getValues(transaction));
         }
+    }
+
+    /**
+     * Return true is the object's primary type is has the given name, false otherwise.
+     *
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not
+     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     * @param kObject the object to test
+     * @param primaryType the primary type required
+     * @return true if object has the primary type or false otherwise
+     * @throws KException if error occurs
+     */
+    public static boolean hasPrimaryType(UnitOfWork transaction, KomodoObject kObject, String primaryType) throws KException {
+        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
+                         "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+
+        if (kObject == null)
+            return false;
+
+        return kObject.getPrimaryType(transaction).getName().equals(primaryType);
+    }
+
+    /**
+     * Get an object with the same name as the given kObject with the given type,
+     * eg. find the connection with the same name as a vdb model source
+     *
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not
+     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     * @param kObject object with the name to find
+     * @param type the type of the object to find
+     * @return the object with the same name and given type
+     * @throws KException if error occurs
+     */
+    public static KomodoObject getSameNameObject(UnitOfWork transaction, KomodoObject kObject, String type) throws KException {
+        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
+                         "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+
+        if (kObject == null || type == null)
+            return null;
+
+        //
+        // Find the object with the same name and given type
+        // from the workspace
+        //
+        String name = kObject.getName(transaction);
+        Repository repository = kObject.getRepository();
+        KomodoObject result = repository.getFromWorkspace(transaction, name);
+        if (! hasPrimaryType(transaction, result, type))
+            return null;
+
+        return result;
+    }
+
+    /**
+     * Find the given property value from the given object, also checking for the non-prefixed version
+     * of the property name.
+     *
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not
+     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     * @param kObject the object containing the property
+     * @param propName the name of the property to find
+     * @return the {@link String} value of the property
+     * @throws KException if error occurs
+     */
+    public static String findPropertyValue(UnitOfWork transaction, KomodoObject kObject, String propName) throws KException {
+        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
+                         "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+
+        if (kObject == null || propName == null)
+            return null;
+
+        //
+        // Determine if the object has the property
+        //
+        Property property = null;
+
+        if (kObject.hasRawProperty(transaction, propName)) {
+            property = kObject.getRawProperty(transaction, propName);
+        }
+
+        if (property == null) {
+            // Check there is not a legacy version which has no prefix
+            propName = propName.substring(propName.indexOf(COLON) + 1);
+            if (kObject.hasRawProperty(transaction, propName)) {
+                property = kObject.getRawProperty(transaction, propName);
+            }
+        }
+
+        return property != null ? property.getStringValue(transaction) : null;
     }
 }

@@ -38,7 +38,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
 import org.jboss.shrinkwrap.api.GenericArchive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
@@ -47,7 +46,7 @@ import org.jboss.shrinkwrap.api.exporter.TarExporter;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
-import org.komodo.rest.AuthHandlingFilter;
+import org.komodo.rest.AuthHandlingFilter.AuthToken;
 import org.komodo.rest.TeiidSwarmMetadataInstance;
 import org.komodo.servicecatalog.BuildStatus.Status;
 import org.komodo.servicecatalog.datasources.AmazonS3Definition;
@@ -62,15 +61,14 @@ import org.komodo.servicecatalog.datasources.SalesforceDefinition;
 import org.komodo.servicecatalog.datasources.WebServiceDefinition;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.logging.KLogger;
 import org.komodo.spi.repository.ApplicationProperties;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.runtime.ServiceCatalogDataSource;
 import org.komodo.utils.KLog;
 import org.teiid.adminapi.AdminException;
 import org.teiid.core.util.ObjectConverterUtil;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.fabric8.kubernetes.api.KubernetesHelper;
 import io.fabric8.kubernetes.api.builds.Builds;
 import io.fabric8.kubernetes.api.model.ContainerPort;
@@ -105,7 +103,9 @@ import io.kubernetes.client.ServiceBindingList;
 import io.kubernetes.client.ServiceInstance;
 import io.kubernetes.client.ServiceInstanceList;
 
-public class TeiidOpenShiftClient {
+public class TeiidOpenShiftClient implements StringConstants {
+    private static final KLogger logger = KLog.getLogger();
+
     private static final String DAS = "das";
     private static final String MANAGED_BY = "managed-by";
     private static final String OSURL = "https://openshift.default.svc";
@@ -136,6 +136,13 @@ public class TeiidOpenShiftClient {
         add(new SalesforceDefinition());
         add(new WebServiceDefinition());
         add(new AmazonS3Definition());
+    }
+
+    private void debug(String message) {
+        if (! logger.isDebugEnabled())
+            return;
+
+        logger.debug(message);
     }
 
     private void add(DataSourceDefinition def) {
@@ -170,9 +177,8 @@ public class TeiidOpenShiftClient {
         return null;
     }
 
-    public Set<ServiceCatalogDataSource> getServiceCatalogSources() throws KException {
-        String token = AuthHandlingFilter.threadOAuthCredentials.get().getToken();
-        this.scClient.setAuthHeader(token);
+    public Set<ServiceCatalogDataSource> getServiceCatalogSources(AuthToken authToken) throws KException {
+        this.scClient.setAuthHeader(authToken.toString());
         Set<ServiceCatalogDataSource> sources = new HashSet<>();
         try {
             ServiceInstanceList serviceList = this.scClient.getServiceInstances(ApplicationProperties.getNamespace());
@@ -208,10 +214,9 @@ public class TeiidOpenShiftClient {
         return sources;
     }
 
-    public void bindToServiceCatalogSource(String dsName) throws KException {
+    public void bindToServiceCatalogSource(AuthToken authToken, String dsName) throws KException {
         KLog.getLogger().info("Bind to Service:" + dsName);
-        String token = AuthHandlingFilter.threadOAuthCredentials.get().getToken();
-        this.scClient.setAuthHeader(token);
+        this.scClient.setAuthHeader(authToken.toString());
         try {
             ServiceInstance svc = this.scClient.getServiceInstance(ApplicationProperties.getNamespace(), dsName);
             if (svc == null) {
@@ -267,9 +272,8 @@ public class TeiidOpenShiftClient {
         return new DecodedSecret(secretName, map);
     }
 
-    public DefaultServiceCatalogDataSource getServiceCatalogDataSource(String dsName) throws KException {
-        String token = AuthHandlingFilter.threadOAuthCredentials.get().getToken();
-        this.scClient.setAuthHeader(token);
+    public DefaultServiceCatalogDataSource getServiceCatalogDataSource(AuthToken authToken, String dsName) throws KException {
+        this.scClient.setAuthHeader(authToken.toString());
         try {
             ServiceInstance svc = this.scClient.getServiceInstance(ApplicationProperties.getNamespace(), dsName);
             if (svc == null) {
@@ -657,6 +661,7 @@ public class TeiidOpenShiftClient {
                 while(!workQueue.isEmpty()) {
                     BuildStatus work = workQueue.peek();
                     if (work == null) {
+                        debug("Publishing - No build in the build queue");
                         break;
                     }
 
@@ -672,12 +677,15 @@ public class TeiidOpenShiftClient {
                     Build build = client.builds().inNamespace(work.namespace).withName(work.buildName).get();
                     if (build == null) {
                         // build got deleted some how ignore..
+                        debug("Publishing " + work.vdbName + " - No build available for building");
                         continue;
                     }
 
                     boolean shouldReQueue = true;
                     String lastStatus = build.getStatus().getPhase();
                     if (Builds.isCompleted(lastStatus)) {
+                        debug("Publishing " + work.vdbName + " - Build completed. Preparing to deploy");
+
                         work.statusMessage = "build completed, deployment started";
                         if (work.deploymentName == null) {
                             DeploymentConfig dc = createDeploymentConfig(client, work);
@@ -692,10 +700,12 @@ public class TeiidOpenShiftClient {
                                     .withName(work.deploymentName).get();
                             if (isDeploymentInReadyState(dc)) {
                                 // it done now..
+                                debug("Publishing " + work.vdbName + " - Deployment completed");
                                 createServices(client, work.namespace, work.vdbName);
                                 work.status = Status.RUNNING;
                                 shouldReQueue = false;
                             } else {
+                                debug("Publishing " + work.vdbName + " - Deployment invalid");
                                 DeploymentCondition cond = getDeploymentConfigStatus(dc);
                                 if (cond != null) {
                                     work.statusMessage = cond.getMessage();
@@ -705,6 +715,7 @@ public class TeiidOpenShiftClient {
                             }
                         }
                     } else if (Builds.isCancelled(lastStatus)) {
+                        debug("Publishing " + work.vdbName + " - Build cancelled");
                         // once failed do not queue the work again.
                         shouldReQueue = false;
                         work.status = Status.CANCELLED;
@@ -712,6 +723,7 @@ public class TeiidOpenShiftClient {
                         KLog.getLogger().debug("Build cancelled :" + work.buildName + ". Reason "
                                 + build.getStatus().getLogSnippet());
                     } else if (Builds.isFailed(lastStatus)) {
+                        debug("Publishing " + work.vdbName + " - Build failed");
                         // once failed do not queue the work again.
                         shouldReQueue = false;
                         work.status = Status.FAILED;
@@ -735,7 +747,16 @@ public class TeiidOpenShiftClient {
         }});
     }
 
-    public BuildStatus publishVirtualization(UnitOfWork uow, PublishConfiguration publishConfig) throws KException {
+    /**
+     * Publish the vdb as a virtualization
+     *
+     * @param authToken the authentication token for Openshift
+     * @param uow the transaction for accessing the vdb's properties
+     * @param vdb the vdb for virtualising
+     * @return the build status of the virtualization
+     * @throws KException if error occurs
+     */
+    public BuildStatus publishVirtualization(AuthToken authToken, UnitOfWork uow, PublishConfiguration publishConfig) throws KException {
         String namespace = ApplicationProperties.getNamespace();
         Config config = new ConfigBuilder().build();
         OpenShiftConfig.wrap(config).setBuildTimeout(publishConfig.buildTimeoutInSeconds);
@@ -745,35 +766,67 @@ public class TeiidOpenShiftClient {
         Vdb vdb = publishConfig.vdb;
         String vdbName = vdb.getVdbName(uow);
         try {
+            debug("Publishing (" + vdbName + ") - Start publishing of virtualization: " + vdbName);
+
             BuildStatus status = getVirtualizationStatus(vdbName);
+            debug("Publishing (" + vdbName + ") - Virtualisation status: " + status.status);
+
             if ((status.status == Status.BUILDING) || (status.status == Status.DEPLOYING)
                     || (status.status == Status.RUNNING)) {
                 return status;
             } else {
-                KLog.getLogger().info("Deploying " + vdbName + "as Service");
+                logger.info("Deploying " + vdbName + "as Service");
+
                 // create build contents as tar file
+
+                debug("Publishing (" + vdbName + ") - Creating zip archive");
                 GenericArchive archive = ShrinkWrap.create(GenericArchive.class, "contents.tar");
-                archive.add(new StringAsset(generatePomXml(uow, vdb, publishConfig.enableOdata)), "pom.xml");
-                archive.add(new ByteArrayAsset(vdb.export(uow, null)), "/src/main/vdb/"+vdbName+"-vdb.xml");
+                String pomFile = generatePomXml(authToken, uow, vdb, publishConfig.enableOdata);
+
+                debug("Publishing (" + vdbName + ") - Generated pom file: " + NEW_LINE + pomFile);
+                archive.add(new StringAsset(pomFile), "pom.xml");
+
+                byte[] vdbFile = vdb.export(uow, null);
+                debug("Publishing (" + vdbName + ") - Exported vdb: " + NEW_LINE + new String(vdbFile));
+                archive.add(new ByteArrayAsset(vdbFile), "/src/main/vdb/"+vdbName+"-vdb.xml");
 
                 InputStream configIs = this.getClass().getClassLoader().getResourceAsStream("s2i/project-defaults.yml");
                 archive.add(new ByteArrayAsset(ObjectConverterUtil.convertToByteArray(configIs)),
                         "/src/main/resources/project-defaults.yml");
 
-                InputStream buildContents = archive.as(TarExporter.class).exportAsInputStream();
+                debug("Publishing (" + vdbName + ") - Converting archive to TarExport");
+                InputStream buildContents = archive.as(TarExporter.class).exportAsInputStream();                
+                debug("Publishing (" + vdbName + ") - Completed creating build contents construction");
 
+                debug("Publishing (" + vdbName + ") - Creating image stream");
                 // use the contents to invoke a binary build
                 ImageStream is = createImageStream(client, namespace, vdbName);
+
+                debug("Publishing (" + vdbName + ") - Creating build config");
                 BuildConfig buildConfig = createBuildConfig(client, namespace, vdbName, is, publishConfig);
+
+                debug("Publishing (" + vdbName + ") - Creating build");
                 Build build = createBuild(client, namespace, buildConfig, buildContents);
                 KLog.getLogger().info("Build Started:"+build.getMetadata().getName()+" for VDB "+ vdbName + " to publish");
+
+                debug("Publishing (" + vdbName + ") - Awaiting pod readiness ...");
                 waitUntilPodIsReady(client, build.getMetadata().getName() + "-build", 20);
-                
-                Collection<EnvVar> envs = getEnvironmentVaribalesForVDBDataSources(uow, vdb, publishConfig);
+
+                debug("Publishing (" + vdbName + ") - Fetching environment variables for vdb data sources");
+                Collection<EnvVar> envs = getEnvironmentVariablesForVDBDataSources(authToken, uow, vdb, publishConfig);
+
+                debug("Publishing (" + vdbName + ") - Adding to queue");
                 addToQueue(namespace, vdbName, build.getMetadata().getName(), null, publishConfig, envs);
             }
+
+            debug("Publishing (" + vdbName + ") - Initiating work monitor if not already running");
             monitorWork();
-            return getVirtualizationStatus(vdbName);
+
+            BuildStatus virtualizationStatus = getVirtualizationStatus(vdbName);
+            debug("Published (" + vdbName + ") - Status of build + " + virtualizationStatus.buildName + 
+                         COLON + SPACE + virtualizationStatus.status);
+            return virtualizationStatus;
+
         } catch (KubernetesClientException | IOException e) {
             throw new KException(e);
         } finally {
@@ -781,7 +834,7 @@ public class TeiidOpenShiftClient {
         }
     }
 
-    Collection<EnvVar> getEnvironmentVaribalesForVDBDataSources(UnitOfWork uow, Vdb vdb,
+    Collection<EnvVar> getEnvironmentVariablesForVDBDataSources(AuthToken authToken, UnitOfWork uow, Vdb vdb,
             PublishConfiguration publishConfig) throws KException {
         List<EnvVar> envs = new ArrayList<>();
         StringBuilder javaOptions = new StringBuilder();
@@ -794,7 +847,7 @@ public class TeiidOpenShiftClient {
                 DataSourceDefinition def = getSourceDefinitionThatMatchesTranslator(translatorName);
                 DefaultServiceCatalogDataSource ds = null;
                 if (def.isServiceCatalogSource()) {
-                    ds = getServiceCatalogDataSource(name);
+                    ds = getServiceCatalogDataSource(authToken, name);
                     if (ds == null) {
                         throw new KException("Datasource "+name+" not found service catalog");
                     }
@@ -812,7 +865,7 @@ public class TeiidOpenShiftClient {
                     ds.setDefinition(def);
                 }
 
-                //  build properties to create data source in WF-SWARAM
+                //  build properties to create data source in WF-SWARM
                 convertSecretsToEnvironmentVariables(ds, envs);
 
                 Properties config = def.getWFSDataSourceProperties(ds, source.getJndiName(uow));
@@ -983,12 +1036,13 @@ public class TeiidOpenShiftClient {
 
     /**
      * This method generates the pom.xml file, that needs to be saved in the root of the project.
+     * @param authToken - token for Openshift authentication
      * @param uow - Unit Of Work
      * @param vdb - VDB for which pom.xml is generated
      * @return pom.xml contents
      * @throws KException
      */
-    protected String generatePomXml(UnitOfWork uow, Vdb vdb, boolean enableOdata) throws KException {
+    protected String generatePomXml(AuthToken authToken, UnitOfWork uow, Vdb vdb, boolean enableOdata) throws KException {
         try {
             StringBuilder builder = new StringBuilder();
             InputStream is = this.getClass().getClassLoader().getResourceAsStream("s2i/template-pom.xml");
@@ -1004,7 +1058,7 @@ public class TeiidOpenShiftClient {
                 for (ModelSource source : sources) {
                     String name = source.getName(uow);
                     String translatorName = source.getTranslatorName(uow);
-                    DefaultServiceCatalogDataSource ds = getServiceCatalogDataSource(name);
+                    DefaultServiceCatalogDataSource ds = getServiceCatalogDataSource(authToken, name);
                     if (ds == null) {
                         throw new KException("Datasource " + name + " not found in the service catalog");
                     }
