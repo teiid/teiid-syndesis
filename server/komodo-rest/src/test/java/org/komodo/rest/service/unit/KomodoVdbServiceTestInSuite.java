@@ -755,6 +755,12 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
     @Test
     public void shouldGetVdbModelSource() throws Exception {
 
+        //
+        // Create the connection in the repository to ensure the model source
+        // returns an origin reference to it
+        //
+        String connectionPath = createConnection(TestUtilities.PORTFOLIO_CONNECTION_NAME);
+
         // get
         Properties settings = uriBuilder().createSettings(SettingNames.VDB_NAME, TestUtilities.PORTFOLIO_VDB_NAME);
         uriBuilder().addSetting(settings, SettingNames.VDB_PARENT_PATH, uriBuilder().workspaceVdbsUri());
@@ -774,6 +780,7 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
         assertEquals(KomodoType.VDB_MODEL_SOURCE, source.getkType());
         assertEquals("java:/excel-file", source.getJndiName());
         assertEquals("excel", source.getTranslator());
+        assertEquals(connectionPath, source.getConnection());
 
         Collection<RestLink> links = source.getLinks();
         assertEquals(3, links.size());

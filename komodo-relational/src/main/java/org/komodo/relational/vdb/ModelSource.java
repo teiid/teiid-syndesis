@@ -142,7 +142,7 @@ public interface ModelSource extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    Connection getAssociatedConnection( final UnitOfWork transaction ) throws KException;
+    Connection getOriginConnection( final UnitOfWork transaction ) throws KException;
 
     /**
      * @param transaction

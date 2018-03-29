@@ -20,6 +20,7 @@ SELECT PartsSS.PARTS.PART_ID, PartsSS.PARTS.PART_NAME, PartsSS.PARTS.PART_COLOR,
 		</metadata>
 	</model>
 	<model name="PartsSS" type="PHYSICAL">
+	    <property name="origin-conn-src-PartsSS" value="PartsSSConnection1"></property>
 		<source name="PartsSS" translator-name="sqlserver" connection-jndi-name="PartsSS"></source>
 		<metadata type="DDL">
 			<![CDATA[CREATE FOREIGN TABLE PARTS (

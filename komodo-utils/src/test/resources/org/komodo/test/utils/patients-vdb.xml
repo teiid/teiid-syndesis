@@ -24,6 +24,7 @@
         </metadata>
     </model>
     <model name="PatientSource" type="PHYSICAL">
+        <property name="origin-conn-src-PatientSource" value="PatientSourceConnection1"></property>
         <source name="PatientSource" translator-name="mysql5" connection-jndi-name="java:/MySqlPatients"/>
     </model>
 

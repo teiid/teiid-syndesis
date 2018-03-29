@@ -14,6 +14,7 @@
 </model>
 <model name="ServiceSource" type="PHYSICAL">
 	<property name="importer.useFullSchemaName" value="false"/>
+	<property name="origin-conn-src-jdbc-connector" value="USStatesConnection"></property>
 	<source name="jdbc-connector" translator-name="h2" connection-jndi-name="java:/USStatesSource"/>
 	<metadata type="DDL">
 		<![CDATA[
