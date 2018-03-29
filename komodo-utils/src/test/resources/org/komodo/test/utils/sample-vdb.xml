@@ -7,6 +7,7 @@
     <property name="{http://teiid.org/rest}security-role" value="example-role"/>
     
     <model name="Txns">
+        <property name="origin-conn-src-text-connector" value="TextConnection1"></property>
         <source name="text-connector" translator-name="loopback" />
          <metadata type="DDL"><![CDATA[
                 CREATE FOREIGN TABLE G1 (e1 string, e2 integer);

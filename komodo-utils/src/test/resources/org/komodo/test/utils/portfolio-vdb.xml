@@ -26,6 +26,7 @@
             Each source represents a translator and data source. There are
             pre-defined translators, or you can create one.
         -->
+        <property name="assoc-conn-text-connector" value="TextConnection1"></property>
         <source name="text-connector" translator-name="file" connection-jndi-name="java:/marketdata-file"/>
     </model>
  
@@ -45,6 +46,7 @@
  
           -->
  
+        <property name="origin-conn-src-h2-connector" value="H2Connection1"></property>
         <source name="h2-connector" translator-name="h2" connection-jndi-name="java:/accounts-ds"/>
  
     </model>
@@ -52,6 +54,7 @@
     <model name="PersonalValuations">
         <property name="importer.headerRowNumber" value="1"/>
         <property name="importer.ExcelFileName" value="otherholdings.xls"/>
+        <property name="origin-conn-src-excelconnector" value="ExcelConnection1"></property>
         <source name="excelconnector" translator-name="excel"  connection-jndi-name="java:/excel-file"/>
         <metadata type="DDL"><![CDATA[
  
