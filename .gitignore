@@ -16,3 +16,5 @@ tmp
 **/commandOutput.txt
 
 **/_remote.repositories
+/.metadata/
+/.recommenders/

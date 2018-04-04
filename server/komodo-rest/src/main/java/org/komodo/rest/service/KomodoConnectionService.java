@@ -47,7 +47,10 @@ import javax.ws.rs.core.UriInfo;
 
 import org.komodo.core.KEngine;
 import org.komodo.core.repository.ObjectImpl;
+import org.komodo.relational.DeployStatus;
 import org.komodo.relational.connection.Connection;
+import org.komodo.relational.model.Model;
+import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.rest.KomodoRestException;
@@ -59,6 +62,9 @@ import org.komodo.rest.relational.connection.RestConnection;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.request.KomodoConnectionAttributes;
 import org.komodo.rest.relational.response.KomodoStatusObject;
+import org.komodo.rest.relational.response.RestConnectionSummary;
+import org.komodo.rest.relational.response.RestNamedVdbStatus;
+import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatusVdb;
 import org.komodo.servicecatalog.TeiidOpenShiftClient;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
@@ -70,9 +76,12 @@ import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.spi.runtime.ServiceCatalogDataSource;
 import org.komodo.spi.runtime.TeiidDataSource;
+import org.komodo.spi.runtime.TeiidVdb;
 import org.komodo.utils.StringUtils;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -86,8 +95,28 @@ import io.swagger.annotations.ApiResponses;
 @Api(tags = {V1Constants.CONNECTIONS_SEGMENT})
 public final class KomodoConnectionService extends KomodoService {
 
-    private static final int ALL_AVAILABLE = -1;
+	private interface QueryParam {
+
+        /**
+         * Indicates if schema statuses should be returned. Defaults to <code>false</code>.
+         */
+        String INCLUDE_SCHEMA_STATUS = "include-schema-status"; //$NON-NLS-1$
+
+        /**
+         * Indicates if workspace connection should be included. Defaults to <code>true</code>.
+         */
+        String INCLUDE_CONNECTION = "include-connection"; //$NON-NLS-1$
+
+    }
+
+	private static final int ALL_AVAILABLE = -1;
     private TeiidOpenShiftClient openshiftClient;
+    private static final String CONNECTION_VDB_SUFFIX = "btlconn"; //$NON-NLS-1$
+
+    /**
+     * Time to wait after deploying/undeploying an connection VDB from the metadata instance
+     */
+    private final static int DEPLOYMENT_WAIT_TIME = 5000;
 
     /**
      * @param engine
@@ -103,19 +132,51 @@ public final class KomodoConnectionService extends KomodoService {
     }
 
     /**
-     * Get the Connections from the komodo repository
+     * Get connection summaries from the komodo repository
      * @param headers
      *        the request headers (never <code>null</code>)
      * @param uriInfo
      *        the request URI information (never <code>null</code>)
-     * @return a JSON document representing all the Connections in the Komodo workspace (never <code>null</code>)
+     * @return a JSON document representing the summaries of the requested connections in the Komodo workspace (never <code>null</code>)
      * @throws KomodoRestException
      *         if there is a problem constructing the Connection JSON document
      */
     @GET
     @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Return the collection of connections",
-                            response = RestConnection[].class)
+    @ApiOperation(value = "Return the summaries of the requested connections",
+                  response = RestConnectionSummary[].class)
+    @ApiImplicitParams({
+    	@ApiImplicitParam(
+    			name = QueryParam.INCLUDE_CONNECTION,
+    			value = "Include connections in result.  If not present, connections are returned.",
+    			required = false,
+    			dataType = "boolean",
+    			paramType = "query"),
+    	@ApiImplicitParam(
+    			name = QueryParam.INCLUDE_SCHEMA_STATUS,
+    			value = "Include statuses in result. If not present, status are not returned.",
+    			required = false,
+    			dataType = "boolean",
+    			paramType = "query"),
+    	@ApiImplicitParam(
+    			name = QueryParamKeys.PATTERN,
+    			value = "A regex expression used when searching. If not present, all objects are returned.",
+    			required = false,
+    			dataType = "string",
+    			paramType = "query"),
+    	@ApiImplicitParam(
+    			name = QueryParamKeys.SIZE,
+    			value = "The number of objects to return. If not present, all objects are returned",
+    			required = false,
+    			dataType = "integer",
+    			paramType = "query"),
+    	@ApiImplicitParam(
+    			name = QueryParamKeys.START,
+    			value = "Index of the first dataservice to return",
+    			required = false,
+    			dataType = "integer",
+    			paramType = "query")
+      })
     @ApiResponses(value = {
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
@@ -128,93 +189,130 @@ public final class KomodoConnectionService extends KomodoService {
 
         List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
         UnitOfWork uow = null;
+        boolean includeSchemaStatus = false;
+        boolean includeConnection = true;
+        final List< RestConnectionSummary > summaries = new ArrayList<>();
 
         try {
+            { // include-schema-status query parameter
+                final String param = uriInfo.getQueryParameters().getFirst( QueryParam.INCLUDE_SCHEMA_STATUS );
+
+                if ( param != null ) {
+                    includeSchemaStatus = Boolean.parseBoolean( param );
+                }
+            }
+
+            { // include-connection query parameter
+                final String param = uriInfo.getQueryParameters().getFirst( QueryParam.INCLUDE_CONNECTION );
+
+                if ( param != null ) {
+                	includeConnection = Boolean.parseBoolean( param );
+                }
+            }
+
             final String searchPattern = uriInfo.getQueryParameters().getFirst( QueryParamKeys.PATTERN );
+            includeConnection = includeConnection || !StringUtils.isBlank( searchPattern ); // assume if search pattern exists that connections should be returned
 
             // find connections
-            uow = createTransaction(principal, "getConnections", true ); //$NON-NLS-1$
+            final String txId = "getConnections?includeSchemaStatus=" + includeSchemaStatus + "&includeConnection=" + includeConnection; //$NON-NLS-1$ //$NON-NLS-2$
+            uow = createTransaction(principal, txId, true );
+
+            final Collection< TeiidVdb > vdbs = includeSchemaStatus ? getMetadataInstance().getVdbs() : null;
             Connection[] connections = null;
 
-            if ( StringUtils.isBlank( searchPattern ) ) {
-                connections = getWorkspaceManager(uow).findConnections( uow );
-                LOGGER.debug( "getConnections:found '{0}' Connections", connections.length ); //$NON-NLS-1$
-            } else {
-                final String[] connectionPaths = getWorkspaceManager(uow).findByType( uow, DataVirtLexicon.Connection.NODE_TYPE, null, searchPattern, false );
+            if ( includeConnection ) {	
+	            if ( StringUtils.isBlank( searchPattern ) ) {
+	                connections = getWorkspaceManager(uow).findConnections( uow );
+	                LOGGER.debug( "getConnections:found '{0}' Connections", connections.length ); //$NON-NLS-1$
+	            } else {
+	                final String[] connectionPaths = getWorkspaceManager(uow).findByType( uow, DataVirtLexicon.Connection.NODE_TYPE, null, searchPattern, false );
+	
+	                if ( connectionPaths.length == 0 ) {
+	                    connections = Connection.NO_CONNECTIONS;
+	                } else {
+	                    connections = new Connection[ connectionPaths.length ];
+	                    int i = 0;
+	
+	                    for ( final String path : connectionPaths ) {
+	                        connections[ i++ ] = getWorkspaceManager(uow).resolve( uow, new ObjectImpl( getWorkspaceManager(uow).getRepository(), path, 0 ), Connection.class );
+	                    }
+	
+	                    LOGGER.debug( "getConnections:found '{0}' Connections using pattern '{1}'", connections.length, searchPattern ); //$NON-NLS-1$
+	                }
+	            }
+	
+	            int start = 0;
+	
+	            { // start query parameter
+	                final String qparam = uriInfo.getQueryParameters().getFirst( QueryParamKeys.START );
+	
+	                if ( qparam != null ) {
+	
+	                    try {
+	                        start = Integer.parseInt( qparam );
+	
+	                        if ( start < 0 ) {
+	                            start = 0;
+	                        }
+	                    } catch ( final Exception e ) {
+	                        start = 0;
+	                    }
+	                }
+	            }
+	
+	            int size = ALL_AVAILABLE;
+	
+	            { // size query parameter
+	                final String qparam = uriInfo.getQueryParameters().getFirst( QueryParamKeys.SIZE );
+	
+	                if ( qparam != null ) {
+	
+	                    try {
+	                        size = Integer.parseInt( qparam );
+	
+	                        if ( size <= 0 ) {
+	                            size = ALL_AVAILABLE;
+	                        }
+	                    } catch ( final Exception e ) {
+	                        size = ALL_AVAILABLE;
+	                    }
+	                }
+	            }
+	
+	            int i = 0;
+	
+	            KomodoProperties properties = new KomodoProperties();
+	            for ( final Connection connection : connections ) {
+	                if ( ( start == 0 ) || ( i >= start ) ) {
+	                	RestConnection restConnection = null;
+	                	RestNamedVdbStatus restStatus = null;
 
-                if ( connectionPaths.length == 0 ) {
-                    connections = Connection.NO_CONNECTIONS;
-                } else {
-                    connections = new Connection[ connectionPaths.length ];
-                    int i = 0;
+	                	if ( ( size == ALL_AVAILABLE ) || ( summaries.size() < size ) ) {                        
+	                        restConnection = entityFactory.create(connection, uriInfo.getBaseUri(), uow, properties);
+	                        LOGGER.debug("getConnections:Connection '{0}' entity was constructed", connection.getName(uow)); //$NON-NLS-1$
 
-                    for ( final String path : connectionPaths ) {
-                        connections[ i++ ] = getWorkspaceManager(uow).resolve( uow, new ObjectImpl( getWorkspaceManager(uow).getRepository(), path, 0 ), Connection.class );
-                    }
+	                        if ( includeSchemaStatus ) {
+	                           	restStatus = createVdbStatusRestEntity( uow, vdbs, connection );
+	                        }
 
-                    LOGGER.debug( "getConnections:found '{0}' Connections using pattern '{1}'", connections.length, searchPattern ); //$NON-NLS-1$
+	                        summaries.add( new RestConnectionSummary( uriInfo.getBaseUri(), restConnection, restStatus ) );
+	                	} else {
+	                        break;
+	                    }
+	                }
+	
+	                ++i;
+	            }
+            } else if ( includeSchemaStatus ) { // include schema status and no connections
+            	connections = getWorkspaceManager(uow).findConnections( uow );
+                
+                for ( final Connection connection: connections ) {
+                	RestNamedVdbStatus restStatus = createVdbStatusRestEntity( uow, vdbs, connection );
+                    summaries.add( new RestConnectionSummary( uriInfo.getBaseUri(), null, restStatus ) );
                 }
             }
 
-            int start = 0;
-
-            { // start query parameter
-                final String qparam = uriInfo.getQueryParameters().getFirst( QueryParamKeys.START );
-
-                if ( qparam != null ) {
-
-                    try {
-                        start = Integer.parseInt( qparam );
-
-                        if ( start < 0 ) {
-                            start = 0;
-                        }
-                    } catch ( final Exception e ) {
-                        start = 0;
-                    }
-                }
-            }
-
-            int size = ALL_AVAILABLE;
-
-            { // size query parameter
-                final String qparam = uriInfo.getQueryParameters().getFirst( QueryParamKeys.SIZE );
-
-                if ( qparam != null ) {
-
-                    try {
-                        size = Integer.parseInt( qparam );
-
-                        if ( size <= 0 ) {
-                            size = ALL_AVAILABLE;
-                        }
-                    } catch ( final Exception e ) {
-                        size = ALL_AVAILABLE;
-                    }
-                }
-            }
-
-            final List< RestConnection > entities = new ArrayList< >();
-            int i = 0;
-
-            KomodoProperties properties = new KomodoProperties();
-            for ( final Connection connection : connections ) {
-                if ( ( start == 0 ) || ( i >= start ) ) {
-                    if ( ( size == ALL_AVAILABLE ) || ( entities.size() < size ) ) {                        
-                        RestConnection entity = entityFactory.create(connection, uriInfo.getBaseUri(), uow, properties);
-                        entities.add(entity);
-                        LOGGER.debug("getConnections:Connection '{0}' entity was constructed", connection.getName(uow)); //$NON-NLS-1$
-                    } else {
-                        break;
-                    }
-                }
-
-                ++i;
-            }
-
-            // create response
-            return commit( uow, mediaTypes, entities );
-
+            return commit( uow, mediaTypes, summaries );
         } catch ( final Exception e ) {
             if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
                 uow.rollback();
@@ -228,21 +326,59 @@ public final class KomodoConnectionService extends KomodoService {
         }
     }
 
+    private RestNamedVdbStatus createVdbStatusRestEntity( final UnitOfWork uow,
+    		                                              final Collection< TeiidVdb > vdbs,
+                                                          final Connection connection ) throws Exception {
+    	final String connectionName = connection.getName( uow );
+    	final String connVdbName = connectionName + CONNECTION_VDB_SUFFIX;
+    	
+    	// Find VDB for the connection and add status
+    	TeiidVdb connVdb = null;
+
+    	for ( final TeiidVdb vdb : vdbs ) {
+        	if ( vdb.getName().equals( connVdbName ) ) {
+        		connVdb = vdb;
+        		break;
+        	}
+        }
+
+    	if ( connVdb == null ) {
+    		return new RestNamedVdbStatus( connectionName );
+        }
+ 
+        final RestMetadataVdbStatusVdb vdbStatus = new RestMetadataVdbStatusVdb( connVdb );
+        return new RestNamedVdbStatus( connectionName, vdbStatus );
+    }
+ 
     /**
      * @param headers
      *        the request headers (never <code>null</code>)
      * @param uriInfo
      *        the request URI information (never <code>null</code>)
      * @param connectionName
-     *        the id of the Connection being retrieved (cannot be empty)
-     * @return the JSON representation of the Connection (never <code>null</code>)
+     *        the id of the connection whose summary is being retrieved (cannot be empty)
+     * @return a JSON document representing the summary of the requested connection in the Komodo workspace (never <code>null</code>)
      * @throws KomodoRestException
      *         if there is a problem finding the specified workspace Connection or constructing the JSON representation
      */
     @GET
     @Path( V1Constants.CONNECTION_PLACEHOLDER )
     @Produces( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
-    @ApiOperation(value = "Find connection by name", response = RestConnection.class)
+    @ApiOperation(value = "Find connection by name", response = RestConnectionSummary.class)
+    @ApiImplicitParams({
+    	@ApiImplicitParam(
+    			name = QueryParam.INCLUDE_CONNECTION,
+    			value = "Include connections in result.  If not present, connections are returned.",
+    			required = false,
+    			dataType = "boolean",
+    			paramType = "query"),
+    	@ApiImplicitParam(
+    			name = QueryParam.INCLUDE_SCHEMA_STATUS,
+    			value = "Include statuses in result. If not present, status are not returned.",
+    			required = false,
+    			dataType = "boolean",
+    			paramType = "query"),
+      })
     @ApiResponses(value = {
         @ApiResponse(code = 404, message = "No Connection could be found with name"),
         @ApiResponse(code = 406, message = "Only JSON or XML is returned by this operation"),
@@ -262,18 +398,49 @@ public final class KomodoConnectionService extends KomodoService {
 
         List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
         UnitOfWork uow = null;
+        boolean includeSchemaStatus = false;
+        boolean includeConnection = true;
 
         try {
-            uow = createTransaction(principal, "getConnection", true ); //$NON-NLS-1$
+            { // include-schema-status query parameter
+                final String param = uriInfo.getQueryParameters().getFirst( QueryParam.INCLUDE_SCHEMA_STATUS );
+
+                if ( param != null ) {
+                    includeSchemaStatus = Boolean.parseBoolean( param );
+                }
+            }
+
+            { // include-connection query parameter
+                final String param = uriInfo.getQueryParameters().getFirst( QueryParam.INCLUDE_CONNECTION );
+
+                if ( param != null ) {
+                	includeConnection = Boolean.parseBoolean( param );
+                }
+            }
+
+            final String txId = "getConnection?includeSchemaStatus=" + includeSchemaStatus + "&includeConnection=" + includeConnection; //$NON-NLS-1$ //$NON-NLS-2$
+            uow = createTransaction(principal, txId, true ); //$NON-NLS-1$
 
             Connection connection = findConnection(uow, connectionName);
             if (connection == null)
                 return commitNoConnectionFound(uow, mediaTypes, connectionName);
 
-            KomodoProperties properties = new KomodoProperties();
-            final RestConnection restConnection = entityFactory.create(connection, uriInfo.getBaseUri(), uow, properties);
-            LOGGER.debug("getConnection:Connection '{0}' entity was constructed", connection.getName(uow)); //$NON-NLS-1$
-            return commit( uow, mediaTypes, restConnection );
+        	RestConnection restConnection = null;
+        	RestNamedVdbStatus restStatus = null;
+
+        	if ( includeConnection ) {
+	        	KomodoProperties properties = new KomodoProperties();
+	            restConnection = entityFactory.create(connection, uriInfo.getBaseUri(), uow, properties);
+	            LOGGER.debug("getConnection:Connection '{0}' entity was constructed", connection.getName(uow)); //$NON-NLS-1$
+        	}
+
+        	if ( includeSchemaStatus ) {
+        		restStatus = createVdbStatusRestEntity( uow, getMetadataInstance().getVdbs(), connection );
+	            LOGGER.debug("getConnection:Connection '{0}' status entity was constructed", connection.getName(uow)); //$NON-NLS-1$
+        	}
+
+        	final RestConnectionSummary summary = new RestConnectionSummary( uriInfo.getBaseUri(), restConnection, restStatus );
+        	return commit( uow, mediaTypes, summary );
 
         } catch ( final Exception e ) {
             if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
@@ -340,7 +507,7 @@ public final class KomodoConnectionService extends KomodoService {
 
         // Error if the connection name is missing
         if (StringUtils.isBlank( connectionName )) {
-            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.CONNECTION_SERVICE_CREATE_MISSING_NAME);
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.CONNECTION_SERVICE_MISSING_CONNECTION_NAME);
         }
 
         // Get the attributes - ensure valid attributes provided
@@ -466,7 +633,7 @@ public final class KomodoConnectionService extends KomodoService {
 
         // Error if the connection name is missing
         if (StringUtils.isBlank( connectionName )) {
-            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.CONNECTION_SERVICE_CLONE_MISSING_NAME);
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.CONNECTION_SERVICE_MISSING_CONNECTION_NAME);
         }
 
         // Error if the new connection name is missing
@@ -568,7 +735,7 @@ public final class KomodoConnectionService extends KomodoService {
 
         // Error if the connection name is missing
         if (StringUtils.isBlank( connectionName )) {
-            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.CONNECTION_SERVICE_UPDATE_MISSING_NAME);
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.CONNECTION_SERVICE_MISSING_CONNECTION_NAME);
         }
         
         // Get the attributes - ensure valid attributes provided
@@ -835,6 +1002,137 @@ public final class KomodoConnectionService extends KomodoService {
         }
     }
     
+    /**
+     * Initiate schema refresh for a Connection
+     * @param headers
+     *        the request headers (never <code>null</code>)
+     * @param uriInfo
+     *        the request URI information (never <code>null</code>)
+     * @param connectionName
+     *        the connection name (cannot be empty)
+     * @return a JSON representation of the refresh status (never <code>null</code>)
+     * @throws KomodoRestException
+     *         if there is an error initiating a connection schema refresh
+     */
+    @POST
+    @Path( StringConstants.FORWARD_SLASH + V1Constants.REFRESH_SCHEMA_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.CONNECTION_PLACEHOLDER )
+    @Produces( MediaType.APPLICATION_JSON )
+    @ApiOperation(value = "Initiate schema refresh for a workspace connection")
+    @ApiResponses(value = {
+        @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
+        @ApiResponse(code = 403, message = "An error has occurred.")
+    })
+    public Response refreshConnectionSchema( final @Context HttpHeaders headers,
+                                             final @Context UriInfo uriInfo,
+                                             @ApiParam(
+                                               value = "Name of the connection",
+                                               required = true
+                                             )
+                                             final @PathParam( "connectionName" ) String connectionName) throws KomodoRestException {
+
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
+            return notAcceptableMediaTypesBuilder().build();
+
+        // Error if the connection name is missing
+        if (StringUtils.isBlank( connectionName )) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.CONNECTION_SERVICE_MISSING_CONNECTION_NAME);
+        }
+
+        UnitOfWork uow = null;
+
+        try {
+            uow = createTransaction(principal, "refreshConnectionSchema", false ); //$NON-NLS-1$
+
+            // Find the requested connection
+            Connection connection = findConnection(uow, connectionName);
+            if (connection == null)
+                return commitNoConnectionFound(uow, mediaTypes, connectionName);
+
+            // Initiate the VDB deployment
+            doDeployConnectionVdb(uow, connection);
+
+            KomodoStatusObject kso = new KomodoStatusObject("Connection Schema refresh status"); //$NON-NLS-1$
+            kso.addAttribute(connectionName, "Initiated schema refresh"); //$NON-NLS-1$
+
+            return commit(uow, mediaTypes, kso);
+        } catch (final Exception e) {
+            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+                uow.rollback();
+            }
+
+            if (e instanceof KomodoRestException) {
+                throw (KomodoRestException)e;
+            }
+
+            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.CONNECTION_SERVICE_REFRESH_SCHEMA_ERROR);
+        }
+    }
+
+    /**
+     * Deploy / re-deploy a VDB to the metadata instance for the provided workspace connection.
+     * @param uow the transaction
+     * @param connection the connection
+     * @return the DeployStatus from deploying the VDB
+     * @throws KException
+     * @throws InterruptedException
+     */
+    private DeployStatus doDeployConnectionVdb( final UnitOfWork uow,
+    		                                    Connection connection ) throws KException, InterruptedException {
+    	assert( uow.getState() == State.NOT_STARTED );
+    	assert( connection != null );
+
+    	// Get necessary info from the connection
+    	String connectionName = connection.getName(uow);
+        String jndiName = connection.getJndiName(uow);
+        String driverName = connection.getDriverName(uow);
+        
+        // Name of VDB to be created is based on the connection name
+        String vdbName = connectionName + CONNECTION_VDB_SUFFIX;
+        
+        // VDB is created in the repository.  If it already exists, delete it
+        Repository repo = this.kengine.getDefaultRepository();
+        final WorkspaceManager mgr = WorkspaceManager.getInstance( repo, uow );
+        String repoPath = repo.komodoWorkspace( uow ).getAbsolutePath();
+        
+        final Vdb existingVdb = findVdb( uow, vdbName );
+
+        if ( existingVdb != null ) {
+            mgr.delete(uow, existingVdb);
+        }
+        
+        // Create new VDB
+        String vdbPath = repoPath + "/" + vdbName;
+        final Vdb vdb = getWorkspaceManager(uow).createVdb( uow, null, vdbName, vdbPath );
+        vdb.setDescription(uow, "Vdb for connection "+connectionName);
+                    
+        // Add model to the VDB
+        Model model = vdb.addModel(uow, connectionName);
+        model.setModelType(uow, Model.Type.PHYSICAL);
+        model.setProperty(uow, "importer.TableTypes", "TABLE,VIEW");
+        model.setProperty(uow, "importer.UseQualifiedName", "true");
+        model.setProperty(uow, "importer.UseCatalogName", "false");
+        model.setProperty(uow, "importer.UseFullSchemaName", "false");
+        
+        // Add model source to the model
+        ModelSource modelSource = model.addSource(uow, connectionName);
+        modelSource.setJndiName(uow, jndiName);
+        modelSource.setTranslatorName(uow, driverName);
+        modelSource.setAssociatedConnection(uow, connection);
+        
+        // Deploy the VDB
+        DeployStatus deployStatus = vdb.deploy(uow);
+        
+        // Wait for deployment to complete
+        Thread.sleep(DEPLOYMENT_WAIT_TIME);
+        
+        return deployStatus;
+    }
+
     private synchronized MetadataInstance getMetadataInstance() throws KException {
         return this.kengine.getMetadataInstance();
     }
