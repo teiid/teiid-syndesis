@@ -113,8 +113,10 @@ public final class MetadataVdbStatusVdbSerializer extends TypeAdapter< RestMetad
 
         out.name(RestMetadataVdbStatusVdb.VDB_STATUS_ERROR);
         out.beginArray();
-        for (String val: value.getErrors()) {
-            out.value(val);
+        if(value.getErrors() != null ) {
+            for (String val: value.getErrors()) {
+                out.value(val);
+            }
         }
         out.endArray();
 
