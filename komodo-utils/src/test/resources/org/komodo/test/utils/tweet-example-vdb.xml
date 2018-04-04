@@ -7,6 +7,7 @@
  	<property name="UseConnectorMetadata" value="cached" />
 
     <model name="twitter" type="PHYSICAL">
+    	<property name="origin-conn-src-twitter" value="twitterConnection1"></property>
         <source name="twitter" translator-name="rest" connection-jndi-name="java:/twitterDS"/>
     </model>
     <model name="twitterview" type="VIRTUAL">

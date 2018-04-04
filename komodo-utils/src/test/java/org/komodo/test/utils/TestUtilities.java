@@ -33,6 +33,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -45,13 +47,19 @@ import java.util.zip.ZipInputStream;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.LexiconConstants.CoreLexicon;
+import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository.UnitOfWork;
@@ -117,9 +125,15 @@ public class TestUtilities implements StringConstants {
      */
     public static final String ALL_ELEMENTS_EXAMPLE_SUFFIX = DOT + XML;
 
+    public static final String S1_CONNECTION = "S1Connection";
+
+    public static final String S2_CONNECTION = "S2Connection";
+
     public static final String REST_TRANSLATOR = "rest";
 
     public static final String TWITTER_MODEL = "twitter";
+
+    private static final String TWITTER_CONNECTION = "twitterConnection1";
 
     public static final String TWITTER_VIEW_MODEL = "twitterview";
 
@@ -228,6 +242,11 @@ public class TestUtilities implements StringConstants {
      * Portfolio vdb name
      */
     public static final String PORTFOLIO_VDB_NAME = "Portfolio";
+
+    /**
+     * Portfolio model source connection
+     */
+    public static final String PORTFOLIO_CONNECTION_NAME = "ExcelConnection1";
 
     /**
      * Parts vdb
@@ -345,6 +364,17 @@ public class TestUtilities implements StringConstants {
      */
     public static KomodoObject createAllElementsExampleNode(UnitOfWork uow, KomodoObject parentObject) throws Exception {
         /*
+         * Create twitter connection to base the model source on
+         */
+        KomodoObject S1Connection = parentObject.addChild(uow,
+                                                               S1_CONNECTION,
+                                                                DataVirtLexicon.Connection.NODE_TYPE);
+
+        KomodoObject S2Connection = parentObject.addChild(uow,
+                                                              S2_CONNECTION,
+                                                              DataVirtLexicon.Connection.NODE_TYPE);
+
+        /*
          * teiid-vdb-all-elements.xml
          *      @jcr:primaryType=vdb:virtualDatabase
          *      @jcr:mixinTypes=[mode:derived,mix:referenceable]
@@ -418,6 +448,7 @@ public class TestUtilities implements StringConstants {
         KomodoObject model1Src1 = model1Sources.addChild(uow, "s1", VdbLexicon.Source.SOURCE);
         model1Src1.setProperty(uow, VdbLexicon.Source.TRANSLATOR, "translator");
         model1Src1.setProperty(uow, VdbLexicon.Source.JNDI_NAME, "java:mybinding");
+        setModelSourceOriginConnection(uow, model1Src1, S1Connection);
 
         /*
          *      model-two
@@ -451,6 +482,7 @@ public class TestUtilities implements StringConstants {
         KomodoObject model2Src1 = model2Sources.addChild(uow, "s1", VdbLexicon.Source.SOURCE);
         model2Src1.setProperty(uow, VdbLexicon.Source.TRANSLATOR, "translator");
         model2Src1.setProperty(uow, VdbLexicon.Source.JNDI_NAME, "java:binding-one");
+        setModelSourceOriginConnection(uow, model2Src1, S1Connection);
 
         /*
          *              s2
@@ -461,6 +493,7 @@ public class TestUtilities implements StringConstants {
         KomodoObject model2Src2 = model2Sources.addChild(uow, "s2", VdbLexicon.Source.SOURCE);
         model2Src2.setProperty(uow, VdbLexicon.Source.TRANSLATOR, "translator");
         model2Src2.setProperty(uow, VdbLexicon.Source.JNDI_NAME, "java:binding-two");
+        setModelSourceOriginConnection(uow, model2Src2, S2Connection);
 
         /*
          *      vdb:translators
@@ -586,7 +619,14 @@ public class TestUtilities implements StringConstants {
      * @return the new vdb node
      * @throws Exception if error occurs
      */
-    public static KomodoObject createTweetExampleNoTransDescripNode(UnitOfWork uow, KomodoObject parentNode) throws Exception {
+    public static KomodoObject createTweetExampleNoTransDescripNode(UnitOfWork uow, KomodoObject parentObject) throws Exception {
+        /*
+         * Create twitter connection to base the model source on
+         */
+        KomodoObject twitterConnection = parentObject.addChild(uow,
+                                                               TWITTER_CONNECTION,
+                                                                DataVirtLexicon.Connection.NODE_TYPE);
+
         /*
          * tweet-example-vdb.xml
          *      @jcr:primaryType=vdb:virtualDatabase
@@ -600,7 +640,7 @@ public class TestUtilities implements StringConstants {
          *      @vdb:description=Shows how to call Web Services
          *      @UseConnectorMetadata=cached
          */
-        KomodoObject tweetExample = parentNode.addChild(uow,
+        KomodoObject tweetExample = parentObject.addChild(uow,
                                                                     TWEET_EXAMPLE_NAME + TWEET_EXAMPLE_SUFFIX,
                                                                     VdbLexicon.Vdb.VIRTUAL_DATABASE);
         tweetExample.addDescriptor(uow, "mode:derived", "mix:referenceable");
@@ -664,6 +704,7 @@ public class TestUtilities implements StringConstants {
         KomodoObject twitterSource = twitterSources.addChild(uow, TWITTER_MODEL, VdbLexicon.Source.SOURCE);
         twitterSource.setProperty(uow, VdbLexicon.Source.TRANSLATOR, REST_TRANSLATOR);
         twitterSource.setProperty(uow, VdbLexicon.Source.JNDI_NAME, "java:/twitterDS");
+        setModelSourceOriginConnection(uow, twitterSource, twitterConnection);
     
         /*
          *      twitterview
@@ -692,6 +733,14 @@ public class TestUtilities implements StringConstants {
      * @throws KException if error occurs
      */
     public static KomodoObject createTweetExampleNode(UnitOfWork uow, KomodoObject parentObject) throws KException {
+
+        /*
+         * Create twitter connection to base the model source on
+         */
+        KomodoObject twitterConnection = parentObject.addChild(uow,
+                                                               TWITTER_CONNECTION,
+                                                                DataVirtLexicon.Connection.NODE_TYPE);
+        
         /*
          * tweet-example-vdb.xml
          *      @jcr:primaryType=vdb:virtualDatabase
@@ -768,19 +817,21 @@ public class TestUtilities implements StringConstants {
         KomodoObject twitterSources = twitter.addChild(uow,
                                                                                     VdbLexicon.Vdb.SOURCES,
                                                                                     VdbLexicon.Vdb.SOURCES);
-    
+
         /*
          *              twitter
          *                  @jcr:primaryType=vdb:source
          *                  @vdb:sourceTranslator=rest
          *                  @vdb:sourceJndiName=java:/twitterDS
+         *                  @vdb:associatedConnection={uuid}
          */
         KomodoObject twitterSource = twitterSources.addChild(uow,
                                                                                                TWITTER_MODEL,
                                                                                                VdbLexicon.Source.SOURCE);
         twitterSource.setProperty(uow, VdbLexicon.Source.TRANSLATOR, REST_TRANSLATOR);
         twitterSource.setProperty(uow, VdbLexicon.Source.JNDI_NAME, "java:/twitterDS");
-    
+        setModelSourceOriginConnection(uow, twitterSource, twitterConnection);
+
         /*
          *      twitterview
          *          @jcr:primaryType=vdb:declarativeModel
@@ -812,6 +863,10 @@ public class TestUtilities implements StringConstants {
         twitterView.setProperty(uow, VdbLexicon.Model.MODEL_DEFINITION, modelDefinition.toString());
     
         return tweetExample;
+    }
+
+    private static void setModelSourceOriginConnection(UnitOfWork uow, KomodoObject source, KomodoObject connection) throws KException {
+        source.setProperty(uow, VdbLexicon.Source.ORIGIN_CONNECTION, connection.getName(uow));
     }
 
     /**
@@ -1279,6 +1334,24 @@ public class TestUtilities implements StringConstants {
         StringBuilder errorMessages = new StringBuilder();
         if (! compareNodes(document1.getDocumentElement(), document2.getDocumentElement(), errorMessages))
             fail(errorMessages.toString());
+    }
+
+    /**
+     * Print an xml {@link Document} to the given {@link OutputStream}
+     * @param doc the given document
+     * @param out the output stream, eg. System.out
+     * @throws Exception if error occurs
+     */
+    public static void printDocument(Document doc, OutputStream out) throws Exception {
+        TransformerFactory tf = TransformerFactory.newInstance();
+        Transformer transformer = tf.newTransformer();
+        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+        transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+
+        transformer.transform(new DOMSource(doc), new StreamResult(new OutputStreamWriter(out, "UTF-8")));
     }
 
     /**
