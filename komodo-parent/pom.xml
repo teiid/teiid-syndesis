@@ -158,7 +158,7 @@
 		<version.org.jboss.xnio>3.5.1.Final</version.org.jboss.xnio>
 		
 		<version.modeshape>5.4.1.Final</version.modeshape>
-		<version.teiid.modeshape>1.0.0.Final</version.teiid.modeshape>
+		<version.teiid.modeshape>1.0.1.Final</version.teiid.modeshape>
 		<version.postgresql>42.1.4</version.postgresql>
 		<version.xerces>2.9.1</version.xerces>		
 		<version.wildfly.swarm>2018.2.0</version.wildfly.swarm>

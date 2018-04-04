@@ -87,6 +87,11 @@ public interface VdbLexicon {
         String JNDI_NAME = Namespace.PREFIX + ":sourceJndiName";
         String SOURCE = Namespace.PREFIX + ":source";
         String TRANSLATOR = Namespace.PREFIX + ":sourceTranslator";
+
+        /**
+         * The name of the origin connection property. Value is {@value} .
+         */
+        String ORIGIN_CONNECTION = Namespace.PREFIX + ":originConnection";
     }
 
     /**
@@ -140,6 +145,7 @@ public interface VdbLexicon {
         String MODEL = "model";
         String NAME = "name";
         String ORDER = "order";
+        String ORIGIN_SRC_CONNECTION = "origin-conn-src";
         String PATH = "path";
         String PERMISSION = "permission";
         String PREVIEW = "preview";

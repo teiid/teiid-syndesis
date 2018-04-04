@@ -808,7 +808,7 @@ public final class KomodoDataserviceService extends KomodoService
             // If the svcModelSource has an associated connection (which it should)
             // then apply its reference to this model source as well
             //
-            Connection connection = svcModelSource.getAssociatedConnection(uow);
+            Connection connection = svcModelSource.getOriginConnection(uow);
             if (connection != null) {
                 modelSource.setAssociatedConnection(uow, connection);
             }
@@ -1167,6 +1167,15 @@ public final class KomodoDataserviceService extends KomodoService
             lhPhysicalModelSource.setJndiName(uow, lhModelSource.getJndiName(uow));
             lhPhysicalModelSource.setTranslatorName(uow, lhModelSource.getTranslatorName(uow));
             
+            //
+            // If the lhPhysicalModelSource has an associated connection (which it should)
+            // then apply its reference to this model source as well
+            //
+            Connection connection = lhPhysicalModelSource.getOriginConnection(uow);
+            if (connection != null) {
+                lhPhysicalModelSource.setAssociatedConnection(uow, connection);
+            }
+
             // --------------------------------------------------
             // Add physical model for rh modelSource
             // - (dont add duplicate if same as left)

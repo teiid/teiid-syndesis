@@ -32,6 +32,7 @@ CREATE VIEW bookInfo (
         ]]> </metadata>
     </model>
     <model name="BooksSource" type="PHYSICAL" visible="true">
+        <property name="origin-conn-src-BooksSource" value="BooksSrcConnection1"></property>
         <source name="BooksSource" connection-jndi-name="BooksSource" translator-name="db2"/>
     </model>
     <translator name="books_db2" type="db2" description="">

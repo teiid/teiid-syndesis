@@ -443,6 +443,45 @@ public class VdbNodeVisitor extends AbstractNodeVisitor implements StringConstan
         writeEndElement();
     }
 
+    /**
+     * Due to properties not being allowed in the sources element, sources' association connections
+     * properties must be added as properties to their parent model.
+     *
+     * Since the xml writer runs in order this must be added prior to the visiting of the sources and
+     * does not conform to the visitor pattern. Assuming that properties can be added to the source
+     * element in the future this can revert to being in the source method.
+     *
+     * @param transaction
+     * @param model
+     * @return
+     * @throws Exception
+     */
+    private Properties sourceConnections(UnitOfWork transaction, KomodoObject model) throws Exception {
+        Properties props = new Properties();
+    
+        if (! model.hasChild(transaction, NodeTypeName.SOURCES.getId()))
+            return props;
+
+        KomodoObject sources = model.getChild(transaction, NodeTypeName.SOURCES.getId());
+        for (KomodoObject source : sources.getChildrenOfType(transaction, NodeTypeName.SOURCE.getId())) {
+            if (! source.hasProperty(transaction, VdbLexicon.Source.ORIGIN_CONNECTION))
+                continue;
+
+            Property connProperty = source.getProperty(transaction, VdbLexicon.Source.ORIGIN_CONNECTION);
+            String connName = connProperty.getStringValue(transaction);
+            if (connName == null)
+                continue;
+
+            /*
+             * Add a property to the model that specifies the association
+             * between the named source and the named connection
+             */
+            props.setProperty(VdbLexicon.ManifestIds.ORIGIN_SRC_CONNECTION + "-" + source.getName(transaction), connName);
+        }
+
+        return props;
+    }
+
     private void model(UnitOfWork transaction, KomodoObject kObject) throws Exception {
         if (!isPrimaryNodeType(transaction, kObject, NodeTypeName.MODEL))
             return;
@@ -470,6 +509,10 @@ public class VdbNodeVisitor extends AbstractNodeVisitor implements StringConstan
         description(transaction, kObject, ElementTabValue.MODEL_DESCRIPTION);
 
         Properties exportableProps = filterExportableProperties(transaction, kObject, CoreLexicon.MODEL_TYPE);
+
+        // Find sources associated connections and add them to the model's exportable properties
+        Properties assocConnProps = sourceConnections(transaction, kObject);
+        exportableProps.putAll(assocConnProps);
 
         properties(transaction, kObject, ElementTabValue.MODEL_PROPERTY, exportableProps);
 

@@ -7,10 +7,13 @@
     <model name="model-one" type="PHYSICAL" visible="false">
         <description>model description</description>
         <property name="model-prop" value="model-value-override"></property>
+        <property name="origin-conn-src-s1" value="S1Connection"></property>
         <source name="s1" translator-name="translator" connection-jndi-name="java:mybinding"></source>
     </model>
     <model name="model-two" type="VIRTUAL">
         <property name="model-prop" value="model-value"></property>
+        <property name="origin-conn-src-s1" value="S1Connection"></property>
+        <property name="origin-conn-src-s2" value="S2Connection"></property>
         <source name="s1" translator-name="translator" connection-jndi-name="java:binding-one"></source>
         <source name="s2" translator-name="translator" connection-jndi-name="java:binding-two"></source>
         <metadata type="DDL"><![CDATA[

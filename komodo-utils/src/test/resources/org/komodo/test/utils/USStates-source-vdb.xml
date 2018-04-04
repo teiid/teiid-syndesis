@@ -9,6 +9,7 @@
 <property name="importer.UseQualifiedName" value="false"/>
 <property name="importer.UseCatalogName" value="false"/>
 <property name="importer.TableTypes" value="TABLE"/>
+<property name="origin-conn-src-USStates" value="USStatesConnection"></property>
 <source name="USStates" translator-name="h2" connection-jndi-name="java:/USStatesSource"/>
 </model>
 

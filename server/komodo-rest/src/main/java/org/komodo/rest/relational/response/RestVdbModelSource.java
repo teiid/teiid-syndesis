@@ -23,7 +23,6 @@ package org.komodo.rest.relational.response;
 
 import java.net.URI;
 import java.util.Properties;
-import org.komodo.core.KomodoLexicon;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.vdb.ModelSource;
@@ -55,9 +54,9 @@ public final class RestVdbModelSource extends RestBasicEntity {
     public static final String TRANSLATOR_LABEL = KomodoService.protectPrefix(VdbLexicon.Source.TRANSLATOR);
 
     /**
-     * Label used to describe the associated connection
+     * Label used to describe the origin connection
      */
-    public static final String CONNECTION_LABEL = KomodoService.protectPrefix(KomodoLexicon.VdbModelSource.ASSOCIATED_CONNECTION);
+    public static final String CONNECTION_LABEL = KomodoService.protectPrefix(VdbLexicon.Source.ORIGIN_CONNECTION);
 
     /**
      * Constructor for use when deserializing
@@ -79,7 +78,7 @@ public final class RestVdbModelSource extends RestBasicEntity {
         setJndiName(source.getJndiName(uow));
         String translatorName = source.getTranslatorName(uow);
         setTranslator(translatorName);
-        Connection connection = source.getAssociatedConnection(uow);
+        Connection connection = source.getOriginConnection(uow);
         if (connection != null) {
             setConnection(connection.getAbsolutePath());
         }
