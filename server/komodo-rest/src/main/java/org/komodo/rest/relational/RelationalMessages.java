@@ -464,14 +464,9 @@ public final class RelationalMessages {
         CONNECTION_SERVICE_UPDATE_CONNECTION_ERROR,
 
         /**
-         * An error indicating create attempt was missing a name
+         * An error indicating the expected connection name was missing
          */
-        CONNECTION_SERVICE_CREATE_MISSING_NAME,
- 
-        /**
-         * An error indicating clone attempt was missing a name
-         */
-        CONNECTION_SERVICE_CLONE_MISSING_NAME,
+        CONNECTION_SERVICE_MISSING_CONNECTION_NAME,
  
         /**
          * An error indicating clone attempt was missing a new connection name
@@ -482,11 +477,6 @@ public final class RelationalMessages {
          * An error indicating the desired new clone name is same as connection being cloned
          */
         CONNECTION_SERVICE_CLONE_SAME_NAME_ERROR,
-        
-        /**
-         * An error indicating update attempt was missing a name
-         */
-        CONNECTION_SERVICE_UPDATE_MISSING_NAME,
         
         /**
          * An error indicating that the connection does not exist
@@ -532,6 +522,11 @@ public final class RelationalMessages {
          * An error indicating at least one parameter is lacking
          */
         CONNECTION_SERVICE_MISSING_PARAMETER_ERROR,
+        
+        /**
+         * An error indicating a refresh error
+         */
+        CONNECTION_SERVICE_REFRESH_SCHEMA_ERROR,
         
         /**
          * The Connection service cannot parse the request body

@@ -1703,21 +1703,6 @@ public final class KomodoDataserviceService extends KomodoService
     }
 
     /*
-     * Checks the supplied attributes for single table view
-     *  - dataserviceName, table path and modelSource path are required
-     *  - columnNames is optional
-     */
-    private Response checkDataserviceUpdateAttributesSingleTableView(KomodoDataserviceUpdateAttributes attr,
-                                                                     List<MediaType> mediaTypes) throws Exception {
-
-        if (attr == null || attr.getDataserviceName() == null || attr.getTablePath() == null || attr.getModelSourcePath() == null) {
-            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.DATASERVICE_SERVICE_MISSING_PARAMETER_ERROR);
-        }
-
-        return Response.ok().build();
-    }
-
-    /*
      * Checks the supplied attributes for getting the single table DDL
      *  - dataserviceName and table path are required
      *  - columnNames is optional
