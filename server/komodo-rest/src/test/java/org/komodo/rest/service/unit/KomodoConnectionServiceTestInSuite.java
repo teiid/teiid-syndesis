@@ -44,6 +44,7 @@ import org.komodo.rest.relational.KomodoRestUriBuilder.SettingNames;
 import org.komodo.rest.relational.connection.RestConnection;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.request.KomodoConnectionAttributes;
+import org.komodo.rest.relational.response.RestConnectionSummary;
 
 @SuppressWarnings( {"javadoc", "nls"} )
 public class KomodoConnectionServiceTestInSuite extends AbstractKomodoServiceTest {
@@ -70,19 +71,20 @@ public class KomodoConnectionServiceTestInSuite extends AbstractKomodoServiceTes
 
         // System.out.println("Response:\n" + entities);
         // make sure the Dataservice JSON document is returned for each dataservice
-        RestConnection[] connections = KomodoJsonMarshaller.unmarshallArray(entities, RestConnection[].class);
-        assertTrue(connections.length > 0);
+        RestConnectionSummary[] connectionSummaries = KomodoJsonMarshaller.unmarshallArray(entities, RestConnectionSummary[].class);
+        assertTrue(connectionSummaries.length > 0);
 
-        RestConnection mySource = null;
-        for (RestConnection conn : connections) {
-            if (connectionName.equals(conn.getId())) {
-                mySource = conn;
+        RestConnection connection = null;
+        for (RestConnectionSummary summary : connectionSummaries) {
+        	RestConnection summaryConn = summary.getConnection();
+            if (connectionName.equals(summaryConn.getId())) {
+            	connection = summaryConn;
                 break;
             }
         }
-        assertNotNull(mySource);
-        assertNotNull(mySource.getDataPath());
-        assertNotNull(mySource.getkType());
+        assertNotNull(connection);
+        assertNotNull(connection.getDataPath());
+        assertNotNull(connection.getkType());
     }
     
     @Test
@@ -117,10 +119,12 @@ public class KomodoConnectionServiceTestInSuite extends AbstractKomodoServiceTes
         String entity = extractResponse(response);
 //        System.out.println("Response:\n" + entity);
 
-        RestConnection connection = KomodoJsonMarshaller.unmarshall(entity, RestConnection.class);
-        assertNotNull(connection);
+        RestConnectionSummary connectionSummary = KomodoJsonMarshaller.unmarshall(entity, RestConnectionSummary.class);
+        assertNotNull(connectionSummary);
         
-        assertEquals(connection.getId(), connectionName);
+        RestConnection conn = connectionSummary.getConnection();
+        assertNotNull(conn);
+        assertEquals(conn.getId(), connectionName);
     }
 
     @Test

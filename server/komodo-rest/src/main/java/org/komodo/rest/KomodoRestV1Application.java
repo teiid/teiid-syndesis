@@ -284,6 +284,11 @@ public class KomodoRestV1Application extends Application implements SystemConsta
         String CONNECTION_PLACEHOLDER = "{connectionName}"; //$NON-NLS-1$
 
         /**
+         * The name of the URI path segment for schema refresh
+         */
+        String REFRESH_SCHEMA_SEGMENT = "refresh-schema"; //$NON-NLS-1$
+
+        /**
          * The name of the URI path segment for service catalog.
          */
         String SERVICE_CATALOG_SEGMENT = "serviceCatalog"; //$NON-NLS-1$

@@ -39,6 +39,11 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonInclude(value=Include.NON_NULL)
 public class RestMetadataVdbStatusVdb implements KRestEntity {
 
+	/**
+	 * A status indicating no VDB was found to provide a status for.
+	 */
+	public static final RestMetadataVdbStatusVdb NO_VDB_STATUS = new RestMetadataVdbStatusVdb();
+
     /**
      * Label for the name
      */
@@ -103,6 +108,13 @@ public class RestMetadataVdbStatusVdb implements KRestEntity {
         failed = vdb.hasFailed();
         loading = vdb.isLoading();
         errors = vdb.getValidityErrors();
+    }
+
+    /**
+     * @return <code>true</code> if a VDB exists for this status
+     */
+    public boolean hasVdb() {
+    	return this != RestMetadataVdbStatusVdb.NO_VDB_STATUS;
     }
 
     @Override
@@ -222,7 +234,7 @@ public class RestMetadataVdbStatusVdb implements KRestEntity {
 
     @Override
     public String toString() {
-        return "RestTeiidVdbStatusProps [name=" + name + ", deployedName=" + deployedName + ", version=" + version + ", active="
+        return "RestMetadataVdbStatusVdb [name=" + name + ", deployedName=" + deployedName + ", version=" + version + ", active="
                + active + ", failed=" + failed + ", loading=" + loading + ", errors=" + errors + "]";
     }
 }
