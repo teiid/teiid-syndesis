@@ -22,6 +22,7 @@
 package org.komodo.spi.repository;
 
 import org.komodo.spi.constants.SystemConstants;
+import org.komodo.spi.logging.KLogger;
 
 public class ApplicationProperties implements SystemConstants {
 
@@ -32,6 +33,15 @@ public class ApplicationProperties implements SystemConstants {
         return System.getProperty("NAMESPACE");
     }
 
+    /**
+     * Gets the log level or defaults to INFO
+     */
+    public static KLogger.Level getLogLevel() {
+        String value = System.getProperty("LOGLEVEL");
+        KLogger.Level level = KLogger.Level.level(value); 
+        return level != null ? level : KLogger.Level.INFO;
+    }
+    
     /**
      * Gets the type system property for connection persistence.
      * If none is defined then return the default {@link PersistenceType#PGSQL} type name

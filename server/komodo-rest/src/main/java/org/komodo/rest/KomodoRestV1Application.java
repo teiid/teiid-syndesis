@@ -25,7 +25,6 @@ import static org.komodo.rest.Messages.Error.KOMODO_ENGINE_CLEAR_TIMEOUT;
 import static org.komodo.rest.Messages.Error.KOMODO_ENGINE_SHUTDOWN_ERROR;
 import static org.komodo.rest.Messages.Error.KOMODO_ENGINE_SHUTDOWN_TIMEOUT;
 import static org.komodo.rest.Messages.Error.KOMODO_ENGINE_STARTUP_TIMEOUT;
-
 import java.io.File;
 import java.io.InputStream;
 import java.sql.DriverManager;
@@ -35,14 +34,12 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
 import javax.annotation.PreDestroy;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-
 import org.komodo.core.KEngine;
 import org.komodo.core.repository.LocalRepository;
 import org.komodo.core.repository.SynchronousCallback;
@@ -61,7 +58,6 @@ import org.komodo.rest.service.KomodoMetadataService;
 import org.komodo.rest.service.KomodoSearchService;
 import org.komodo.rest.service.KomodoUtilService;
 import org.komodo.rest.service.KomodoVdbService;
-import org.komodo.rest.swagger.RestVirtualisationStatusConverter;
 import org.komodo.rest.swagger.RestDataserviceConverter;
 import org.komodo.rest.swagger.RestPropertyConverter;
 import org.komodo.rest.swagger.RestServiceCatalogDataSourceConverter;
@@ -74,11 +70,11 @@ import org.komodo.rest.swagger.RestVdbModelConverter;
 import org.komodo.rest.swagger.RestVdbModelSourceConverter;
 import org.komodo.rest.swagger.RestVdbPermissionConverter;
 import org.komodo.rest.swagger.RestVdbTranslatorConverter;
+import org.komodo.rest.swagger.RestVirtualisationStatusConverter;
 import org.komodo.servicecatalog.TeiidOpenShiftClient;
 import org.komodo.spi.KEvent.Type;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.SystemConstants;
-import org.komodo.spi.logging.KLogger.Level;
 import org.komodo.spi.repository.ApplicationProperties;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.PersistenceType;
@@ -87,7 +83,6 @@ import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.RepositoryClientEvent;
 import org.komodo.utils.KLog;
 import org.komodo.utils.observer.KLatchObserver;
-
 import io.swagger.converter.ModelConverters;
 
 /**
@@ -653,7 +648,7 @@ public class KomodoRestV1Application extends Application implements SystemConsta
             KLog.getLogger().setLogPath(baseDir + V1Constants.LOG_FILE_PATH);
 
             // Ensure server logging level is reduced to something sane!
-            KLog.getLogger().setLevel(Level.INFO);
+            KLog.getLogger().setLevel(ApplicationProperties.getLogLevel());
 
             corsHandler = initCorsHandler();
 
