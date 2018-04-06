@@ -389,14 +389,19 @@ public class TeiidOpenShiftClient implements StringConstants {
         return is;
     }
 
-    private BuildConfig createBuildConfig(OpenShiftClient client, String namespace, String vdbName, ImageStream is,
-            PublishConfiguration publishConfiguration) throws KException {
-        String imageStreamName = is.getMetadata().getName()+":latest";
+    private ObjectReference baseImage(OpenShiftClient client, PublishConfiguration publishConfiguration) throws KException {
         ObjectReference fromImage = publishConfiguration.getBaseJDKImage(client);
         if (fromImage == null) {
             throw new KException("Build can not be started as there are no JDK base images availble. "
                     + "Make sure 'redhat-openjdk18-openshift' image stream is available");
         }
+        return fromImage;
+    }
+
+    private BuildConfig createBuildConfig(OpenShiftClient client, String namespace, String vdbName, ImageStream is,
+            PublishConfiguration publishConfiguration) throws KException {
+        String imageStreamName = is.getMetadata().getName()+":latest";
+        ObjectReference fromImage = baseImage(client, publishConfiguration);
         BuildConfig bc = client.buildConfigs().inNamespace(namespace).createOrReplaceWithNew()
             .withNewMetadata().withName(getBuildConfigName(vdbName))
                 .addToLabels("application", vdbName)
@@ -776,6 +781,9 @@ public class TeiidOpenShiftClient implements StringConstants {
                 return status;
             } else {
                 logger.info("Deploying " + vdbName + "as Service");
+
+                debug("Publishing (" + vdbName + ") - Checking for base image");
+                baseImage(client, publishConfig);
 
                 // create build contents as tar file
 

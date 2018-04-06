@@ -32,7 +32,19 @@ public interface KLogger {
         WARNING,
         INFO,
         DEBUG,
-        TRACE
+        TRACE;
+
+        public static Level level(String level) {
+            if (level == null)
+                return null;
+
+            for (Level myLevel : Level.values()) {
+                if (myLevel.name().equalsIgnoreCase(level))
+                    return myLevel;
+            }
+
+            return null;
+        }
     }
 
     /**

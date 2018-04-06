@@ -26,10 +26,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
 import org.komodo.relational.vdb.Vdb;
+import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.repository.ApplicationProperties;
 import org.komodo.utils.KLog;
-
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.ObjectReference;
 import io.fabric8.kubernetes.api.model.ObjectReferenceBuilder;
@@ -37,7 +37,12 @@ import io.fabric8.openshift.api.model.ImageStream;
 import io.fabric8.openshift.api.model.TagReference;
 import io.fabric8.openshift.client.OpenShiftClient;
 
-public class PublishConfiguration {
+public class PublishConfiguration implements StringConstants {
+
+    private static final String DEFAULT_NAMESPACE = "openshift";
+
+    private static final String BASE_OPENSHIFT_IMAGE = "redhat-openjdk18-openshift";
+
     protected Vdb vdb;
     protected boolean enableOdata = true;
     protected String containerMemorySize = "1024Mi";
@@ -66,22 +71,31 @@ public class PublishConfiguration {
     }     
     
     protected ObjectReference getBaseJDKImage(OpenShiftClient client) {
-        ImageStream is = client.imageStreams().inNamespace("openshift").withName("redhat-openjdk18-openshift")
-                .get();
-        if (is != null) {
-            List<TagReference> tagRef = is.getSpec().getTags();
-            String tag = tagRef.get(tagRef.size()-1).getName();
-            KLog.getLogger().debug("Using redhat-openjdk18-openshift:"+tag+" as the base image for the vdb based service");
-            return new ObjectReferenceBuilder().withKind("ImageStreamTag").withNamespace("openshift")
-                    .withName("redhat-openjdk18-openshift:"+tag).build();
+        //
+        // Search the openshift namespace by default but if the base image cannot be
+        // found then try the application namespace just to be sure
+        //
+        String[] namespaces = new String[] { DEFAULT_NAMESPACE, ApplicationProperties.getNamespace() };
+        ImageStream is = null;
+        for (String namespace : namespaces) {
+            is = client.imageStreams().inNamespace(namespace).withName(BASE_OPENSHIFT_IMAGE).get();
+            if (is != null) {
+                List<TagReference> tagRef = is.getSpec().getTags();
+                String tag = tagRef.get(tagRef.size()-1).getName();
+                KLog.getLogger().debug("Using " + BASE_OPENSHIFT_IMAGE + COLON + tag + " as the base image for the vdb based service");
+                return new ObjectReferenceBuilder().withKind("ImageStreamTag").withNamespace(namespace)
+                        .withName(BASE_OPENSHIFT_IMAGE + COLON + tag).build();
+
+                /*
+                 * It has been observed that swarm application is not able start successfully with this image. 
+                 * More investigation is needed.
+                KLog.getLogger().debug("Using fabric8/s2i-java:latest as the base image for the vdb based service");
+                return new ObjectReferenceBuilder().withKind("DockerImage")
+                        .withName("fabric8/s2i-java:latest").build();
+                */
+            }
         }
-        /*
-         * It has been observed that swarm application is not able start successfully with this image. 
-         * More investigation is needed. 
-        KLog.getLogger().debug("Using fabric8/s2i-java:latest as the base image for the vdb based service");
-        return new ObjectReferenceBuilder().withKind("DockerImage")
-                .withName("fabric8/s2i-java:latest").build();
-        */
+
         return null;
     }
     
