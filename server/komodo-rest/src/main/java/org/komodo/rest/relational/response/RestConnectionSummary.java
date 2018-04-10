@@ -25,6 +25,7 @@ import java.net.URI;
 
 import org.komodo.rest.RestBasicEntity;
 import org.komodo.rest.relational.connection.RestConnection;
+import org.komodo.rest.relational.response.metadata.RestMetadataConnectionStatus;
 import org.komodo.spi.KException;
 
 /**
@@ -43,7 +44,7 @@ public final class RestConnectionSummary extends RestBasicEntity {
     public static final String STATUS_LABEL = "status"; // //$NON-NLS-1$
 
 	private RestConnection connection;
-	private RestNamedVdbStatus status;
+	private RestMetadataConnectionStatus status;
 
 	/**
      * Constructor for use <strong>only</strong> when deserializing.
@@ -60,7 +61,7 @@ public final class RestConnectionSummary extends RestBasicEntity {
      */
     public RestConnectionSummary( final URI baseUri,
                                    final RestConnection connection,
-                                   final RestNamedVdbStatus status ) throws KException {
+                                   final RestMetadataConnectionStatus status ) throws KException {
         setConnection( connection );
         setStatus( status );
     }
@@ -75,7 +76,7 @@ public final class RestConnectionSummary extends RestBasicEntity {
     /**
      * @return the connection status (can be <code>null</code>)
      */
-    public RestNamedVdbStatus getStatus() {
+    public RestMetadataConnectionStatus getStatus() {
     	return this.status;
     }
 
@@ -89,7 +90,7 @@ public final class RestConnectionSummary extends RestBasicEntity {
     /**
      * @param status the status being set (can be <code>null</code>)
      */
-    public void setStatus( final RestNamedVdbStatus status ) {
+    public void setStatus( final RestMetadataConnectionStatus status ) {
     	this.status = status;
     }
 

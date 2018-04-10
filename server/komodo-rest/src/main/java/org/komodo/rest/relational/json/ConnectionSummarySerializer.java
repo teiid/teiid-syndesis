@@ -27,7 +27,7 @@ import java.io.IOException;
 
 import org.komodo.rest.relational.connection.RestConnection;
 import org.komodo.rest.relational.response.RestConnectionSummary;
-import org.komodo.rest.relational.response.RestNamedVdbStatus;
+import org.komodo.rest.relational.response.metadata.RestMetadataConnectionStatus;
 
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
@@ -54,7 +54,7 @@ public final class ConnectionSummarySerializer  extends BasicEntitySerializer< R
             summary.setConnection(conn);
             return name;
         } else if (RestConnectionSummary.STATUS_LABEL.equals(name)) {
-            RestNamedVdbStatus status = BUILDER.fromJson(in, RestNamedVdbStatus.class);
+            RestMetadataConnectionStatus status = BUILDER.fromJson(in, RestMetadataConnectionStatus.class);
             summary.setStatus(status);
             return name;
         }
@@ -69,10 +69,10 @@ public final class ConnectionSummarySerializer  extends BasicEntitySerializer< R
     		out.name(RestConnectionSummary.CONNECTION_LABEL);
     		BUILDER.getAdapter( RestConnection.class ).write( out, summary.getConnection() );
     	}
-    	RestNamedVdbStatus status = summary.getStatus();
+    	RestMetadataConnectionStatus status = summary.getStatus();
     	if(status!=null) {
     		out.name(RestConnectionSummary.STATUS_LABEL);
-    		BUILDER.getAdapter( RestNamedVdbStatus.class ).write( out, summary.getStatus() );
+    		BUILDER.getAdapter( RestMetadataConnectionStatus.class ).write( out, summary.getStatus() );
     	}
     }
 
