@@ -1,5 +1,6 @@
 teiid-komodo
 ============
+[![Build Status](https://travis-ci.org/teiid/teiid-komodo.svg?branch=master)](https://travis-ci.org/teiid/teiid-komodo)
 
 ## Building teiid-komodo locally
 - Install JDK 1.8 or higher;
