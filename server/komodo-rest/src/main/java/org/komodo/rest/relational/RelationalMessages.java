@@ -544,6 +544,11 @@ public final class RelationalMessages {
         CONNECTION_TO_REPO_IMPORT_ERROR,
 
         /**
+         * An error occurred during the request for schema tables.
+         */
+        CONNECTION_SERVICE_GET_TABLES_ERROR,
+
+        /**
          * An error indicating a JSON document representing the Drivers in the workspace could not be retrieved.
          */
         DRIVER_SERVICE_GET_DRIVERS_ERROR,
