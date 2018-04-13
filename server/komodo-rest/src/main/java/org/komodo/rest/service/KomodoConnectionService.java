@@ -384,12 +384,64 @@ public final class KomodoConnectionService extends KomodoService {
         return null;
     }
 
+    private Vdb findConnectionWorkspaceVdb( final UnitOfWork uow,
+    		                                final Connection connection ) throws KException {
+    	final WorkspaceManager wkspMgr = getWorkspaceManager( uow );
+    	final String connectionName = connection.getName( uow );
+
+    	final String wsConnectionVdbName = this.getConnectionWorkspaceVdbName(connectionName);
+    	final KomodoObject vdb = wkspMgr.getChild(uow, 
+    			                                  wsConnectionVdbName, 
+    			                                  VdbLexicon.Vdb.VIRTUAL_DATABASE);
+
+    	if(vdb == null) return null;
+
+    	return wkspMgr.resolve( uow, vdb, Vdb.class );
+    }
+    
+    private ModelSource findConnectionWorkspaceVdbModelSource( final UnitOfWork uow,
+    		                                                   final Connection connection ) throws KException {
+        ModelSource modelSource = null;
+        
+    	final Vdb vdb = findConnectionWorkspaceVdb( uow, connection );
+
+    	if ( vdb != null ) {
+    		final String connectionName = connection.getName( uow );
+    		final String schemaModelName = getSchemaModelName( connectionName );
+    		final Model[] models = vdb.getModels(uow, schemaModelName);
+
+    		Model model = null;
+    		if ( models.length != 0 ) {
+    			model = models[ 0 ];
+    		}
+    		
+    		if( model != null ) {
+        		final String schemaModelSourceName = getSchemaModelSourceName( uow, connection );
+    			final ModelSource[] modelSources = model.getSources(uow, schemaModelSourceName);
+    			if ( modelSources.length != 0 ) {
+    				modelSource = modelSources[ 0 ];
+    			}
+    		}
+    	}
+
+    	return modelSource;
+    }
+
     private String getConnectionWorkspaceVdbName( final String connectionName ) {
         return MessageFormat.format( CONNECTION_VDB_PATTERN, connectionName.toLowerCase() );
     }
 
     private String getSchemaModelName( final String connectionName ) {
         return MessageFormat.format( SCHEMA_MODEL_NAME_PATTERN, connectionName.toLowerCase() );
+    }
+
+    private String getSchemaModelSourceName( final UnitOfWork uow, final Connection connection ) throws KException {
+    	String svcCatalogSourceName = null;
+    	if(connection.hasProperty(uow, "serviceCatalogSource")) {
+            svcCatalogSourceName = connection.getProperty(uow, "serviceCatalogSource").getStringValue(uow);
+    	}
+    	String schemaModelSourceName = svcCatalogSourceName != null ? svcCatalogSourceName : connection.getId(uow).toLowerCase();
+    	return schemaModelSourceName;
     }
 
     private String getSchemaVdbName( final String connectionName ) {
@@ -1391,8 +1443,8 @@ public final class KomodoConnectionService extends KomodoService {
                     final String schemaVdbName = getSchemaVdbName( connectionName );
                     schemaVdb = wkspMgr.createVdb( uow, connection, schemaVdbName, schemaVdbName );
 
-                    // create schema model
-                    schemaModel = schemaVdb.addModel( uow, schemaModelName );
+                    // Add schema model to schema vdb
+                    schemaModel = addModelToSchemaVdb(uow, schemaVdb, connection, schemaModelName);
                 } else {
                     final Model[] models = schemaVdb.getModels( uow, schemaModelName );
 
@@ -1400,7 +1452,7 @@ public final class KomodoConnectionService extends KomodoService {
                         schemaModel = models[ 0 ];
                     } else {
                         // should never happen but just in case
-                        schemaModel = schemaVdb.addModel( uow, schemaModelName );
+                        schemaModel = addModelToSchemaVdb(uow, schemaVdb, connection, schemaModelName);
                     }
                 }
 
@@ -1480,7 +1532,8 @@ public final class KomodoConnectionService extends KomodoService {
         model.setProperty(uow, "importer.UseFullSchemaName", "false");
         
         // Add model source to the model
-        ModelSource modelSource = model.addSource(uow, connectionName.toLowerCase());
+        final String modelSourceName = getSchemaModelSourceName(uow, connection);
+        ModelSource modelSource = model.addSource(uow, modelSourceName);
         modelSource.setJndiName(uow, jndiName);
         modelSource.setTranslatorName(uow, driverName);
         modelSource.setAssociatedConnection(uow, connection);
@@ -1494,6 +1547,31 @@ public final class KomodoConnectionService extends KomodoService {
         return deployStatus;
     }
 
+    /**
+     * Add model to the schema vdb
+     * @param uow the transaction
+     * @param schemaVdb the schema VDB
+     * @param connection the connection
+     * @param schemaModelName the name for the schema model being created
+     * @return the created schema model
+     * @throws KException
+     */
+    private Model addModelToSchemaVdb(final UnitOfWork uow, final Vdb schemaVdb, final Connection connection, final String schemaModelName) throws KException {
+        // create schema model
+        Model schemaModel = schemaVdb.addModel( uow, schemaModelName );
+        
+        // Make a copy of the workspace connection vdb model source under the connection schema vdb model
+        final ModelSource workspaceVdbModelSource = findConnectionWorkspaceVdbModelSource( uow, connection );
+        if( workspaceVdbModelSource != null ) {
+        	ModelSource mdlSource = schemaModel.addSource(uow, workspaceVdbModelSource.getName(uow));
+        	mdlSource.setJndiName(uow, workspaceVdbModelSource.getJndiName(uow));
+        	mdlSource.setTranslatorName(uow, workspaceVdbModelSource.getTranslatorName(uow));
+        	mdlSource.setAssociatedConnection(uow, workspaceVdbModelSource.getOriginConnection(uow));
+        }
+        
+        return schemaModel;
+    }
+    
     private synchronized MetadataInstance getMetadataInstance() throws KException {
         return this.kengine.getMetadataInstance();
     }
