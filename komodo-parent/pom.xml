@@ -131,7 +131,7 @@
 		<!-- dependencies from IP-BOM -->
 				
 		<version.commons.io>2.5</version.commons.io>
-		<version.org.teiid>10.0.0.Final</version.org.teiid>
+		<version.org.teiid>10.2.0</version.org.teiid>
 
 		<!-- Instruct the build to use only UTF-8 encoding for source code -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -161,7 +161,7 @@
 		<version.teiid.modeshape>1.0.0.Final</version.teiid.modeshape>
 		<version.postgresql>42.1.4</version.postgresql>
 		<version.xerces>2.9.1</version.xerces>		
-		<version.wildfly.swarm>2018.2.0</version.wildfly.swarm>
+		<version.wildfly.swarm>2018.4.1</version.wildfly.swarm>
 		<version.gson>2.2.4</version.gson>
 		<version.apache.commons.codec>1.10</version.apache.commons.codec>
 		<version.guava>16.0.1</version.guava>
