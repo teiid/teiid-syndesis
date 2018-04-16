@@ -10,13 +10,13 @@
   <packaging>vdb</packaging>
   <properties>
     <version.wildfly.swarm>
-      2018.2.0
+      2018.4.1
     </version.wildfly.swarm>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <version.teiid>
-      10.0.0.Final
+      10.2.0
     </version.teiid>
     <version.mysql>5.1.40</version.mysql>
     <version.org.mongodb>3.6.1</version.org.mongodb>
@@ -27,7 +27,7 @@
       <dependency>
         <groupId>org.wildfly.swarm</groupId>
         <artifactId>bom-all</artifactId>
-        <version>2018.2.0</version>
+        <version>2018.4.1</version>
         <scope>import</scope>
         <type>pom</type>
       </dependency>
@@ -44,7 +44,7 @@
       <plugin>
         <groupId>org.wildfly.swarm</groupId>
         <artifactId>wildfly-swarm-plugin</artifactId>
-        <version>2018.2.0</version>
+        <version>2018.4.1</version>
         <executions>
           <execution>
             <goals>
