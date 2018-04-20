@@ -70,23 +70,28 @@ public class MongoDBDefinition extends DataSourceDefinition {
         {
               "DATABASE_SERVICE_NAME":"mongodb",
               "MEMORY_LIMIT":"512Mi",
+              "MONGODB_ADMIN_PASSWORD" "pwd",
               "MONGODB_DATABASE":"sampledb",
+              "MONGODB_PASSWORD": "pass",
+              "MONGODB_USER": "user",
               "MONGODB_VERSION":"3.2",
               "NAMESPACE":"openshift",
               "VOLUME_CAPACITY":"1Gi"
-              database-password
-              database-name
-              database-admin-password
-              database-user
+              admin_password
+              database_name
+              password
+              uri
+              username
         }
         */
         Properties props = new Properties();
         props.setProperty("remoteServerList", source.getProperty("DATABASE_SERVICE_NAME")+":27017");
-        props.setProperty("username", source.getProperty("database-user"));
-        props.setProperty("password", source.getProperty("database-password"));
-        props.setProperty("database", source.getProperty("database-name"));
+        props.setProperty("username", source.getProperty("username"));
+        props.setProperty("password", source.getProperty("password"));
+        props.setProperty("database", source.getProperty("database_name"));
+        props.setProperty("class-name", "org.teiid.resource.adapter.mongodb.MongoDBManagedConnectionFactory");
         props.setProperty("securityType", "SCRAM_SHA_1");
-        props.setProperty("authDatabase", source.getProperty("database-name"));
+        props.setProperty("authDatabase", source.getProperty("database_name"));
         props.setProperty("ssl", "false");
         return props;
     }
