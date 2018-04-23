@@ -31,7 +31,9 @@ import org.komodo.relational.model.Table;
 import org.komodo.relational.model.UniqueConstraint;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
 import org.komodo.spi.lexicon.sql.teiid.TeiidSqlConstants;
+import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.utils.StringUtils;
 
@@ -41,6 +43,9 @@ import org.komodo.utils.StringUtils;
 public class ViewDdlBuilder {
 
     private static final char SQL_ESCAPE_CHAR = '\"';
+    private static final String OPEN_SQUARE_BRACKET = "[";
+    private static final String CLOSE_SQUARE_BRACKET = "]";
+
     /**
      * Inner Join Type
      */
@@ -111,7 +116,7 @@ public class ViewDdlBuilder {
         for (int i = 0; i < columns.length; i++) {
             if(includeAllColumns || includedColumnNames.contains(columns[i].getName(uow))) {
                 colNames.add(columns[i].getName(uow));
-                colTypes.add(columns[i].getDatatypeName(uow));
+                colTypes.add(getColumnDatatypeString(uow, columns[i]));
             }
         }
         
@@ -521,4 +526,19 @@ public class ViewDdlBuilder {
         return c >= '0' && c <= '9';
     }
 
+    private static String getColumnDatatypeString(UnitOfWork uow, Column col) throws KException {
+    	String typeName = col.getDatatypeName(uow);
+    	
+    	// Determine if array type
+        if (col.hasRawProperty(uow, StandardDdlLexicon.DATATYPE_ARRAY_DIMENSIONS)) {
+            Property colArrDimsProp = col.getRawProperty(uow, StandardDdlLexicon.DATATYPE_ARRAY_DIMENSIONS);
+            long colArrDims = colArrDimsProp != null ? colArrDimsProp.getLongValue(uow) : -1;
+
+            for (long dims = colArrDims; dims > 0; dims--) {
+                typeName = typeName.concat(OPEN_SQUARE_BRACKET).concat(CLOSE_SQUARE_BRACKET);
+            }
+        }
+    
+        return typeName;
+    }
 }

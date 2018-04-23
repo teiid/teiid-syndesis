@@ -162,6 +162,19 @@ public class TestDdlNodeVisitor extends AbstractLocalRepositoryTest {
     }
 
     @Test(timeout = 5000000)
+    public void testForeignTable2() throws Exception {
+        String ddl = "CREATE FOREIGN TABLE G1 (" + NEW_LINE +
+                TAB + "street string," + NEW_LINE +
+                TAB + "zipcode string," + NEW_LINE +
+                TAB + "building string," + NEW_LINE +
+                TAB + "coord object[]," + NEW_LINE +
+                TAB + "test string" + NEW_LINE +
+                ") OPTIONS (\"UPDATABLE\" 'true', \"UUID\" 'uuid2');";
+
+        helpTest(ddl, ddl, SEQUENCE_DDL_PATH + "G1");
+    }
+
+    @Test(timeout = 5000000)
     public void testMultiKeyPK() throws Exception {
         String ddl = "CREATE FOREIGN TABLE G1 (" + NEW_LINE +
                 TAB + "e1 integer," + NEW_LINE +
