@@ -48,6 +48,7 @@ import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.AuthHandlingFilter.AuthToken;
 import org.komodo.rest.TeiidSwarmMetadataInstance;
+import org.komodo.servicecatalog.BuildStatus.RouteStatus;
 import org.komodo.servicecatalog.BuildStatus.Status;
 import org.komodo.servicecatalog.datasources.AmazonS3Definition;
 import org.komodo.servicecatalog.datasources.DefaultServiceCatalogDataSource;
@@ -74,6 +75,7 @@ import io.fabric8.kubernetes.api.builds.Builds;
 import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
+import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.ObjectReference;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.Quantity;
@@ -92,6 +94,8 @@ import io.fabric8.openshift.api.model.DeploymentCondition;
 import io.fabric8.openshift.api.model.DeploymentConfig;
 import io.fabric8.openshift.api.model.ImageStream;
 import io.fabric8.openshift.api.model.Route;
+import io.fabric8.openshift.api.model.RouteList;
+import io.fabric8.openshift.api.model.RouteSpec;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftConfig;
 import io.kubernetes.client.LocalObjectReference;
@@ -104,6 +108,7 @@ import io.kubernetes.client.ServiceInstance;
 import io.kubernetes.client.ServiceInstanceList;
 
 public class TeiidOpenShiftClient implements StringConstants {
+
     private static final KLogger logger = KLog.getLogger();
 
     private static final String DAS = "das";
@@ -521,12 +526,12 @@ public class TeiidOpenShiftClient implements StringConstants {
 
     private List<ContainerPort> getDeploymentPorts(PublishConfiguration config){
         List<ContainerPort> ports = new ArrayList<>();
-        ports.add(createPort("jolokia", 8778, "TCP"));
-        ports.add(createPort("jdbc", 31000, "TCP"));
-        ports.add(createPort("odbc", 35432, "TCP"));
+        ports.add(createPort(ProtocolType.JOLOKIA.id(), 8778, "TCP"));
+        ports.add(createPort(ProtocolType.JDBC.id(), 31000, "TCP"));
+        ports.add(createPort(ProtocolType.ODBC.id(), 35432, "TCP"));
         if (config.enableOdata) {
-            ports.add(createPort("odata", 8080, "TCP"));
-            ports.add(createPort("sodata", 8443, "TCP"));
+            ports.add(createPort(ProtocolType.ODATA.id(), 8080, "TCP"));
+            ports.add(createPort(ProtocolType.SODATA.id(), 8443, "TCP"));
         }
         return ports;
     }
@@ -605,11 +610,11 @@ public class TeiidOpenShiftClient implements StringConstants {
 
     private void createServices(final OpenShiftClient client, final String namespace,
             final String vdbName) {
-        createService(client, namespace, vdbName, "odata", 8080);
-        createService(client, namespace, vdbName, "jdbc", 31000);
-        createService(client, namespace, vdbName, "odbc", 35432);
-        createRoute(client, namespace, vdbName, "odata");
-        //createRoute(client, namespace, vdbName, "jdbc");
+        createService(client, namespace, vdbName, ProtocolType.ODATA.id(), 8080);
+        createService(client, namespace, vdbName, ProtocolType.JDBC.id(), 31000);
+        createService(client, namespace, vdbName, ProtocolType.ODBC.id(), 35432);
+        createRoute(client, namespace, vdbName, ProtocolType.ODATA.id());
+        //createRoute(client, namespace, vdbName, RouteType.JDBC.id());
     }
 
     private boolean isDeploymentInReadyState(DeploymentConfig dc) {
@@ -965,7 +970,21 @@ public class TeiidOpenShiftClient implements StringConstants {
                         status.deploymentName = dc.getMetadata().getName();
                         if (isDeploymentInReadyState(dc)) {
                             status.status = Status.RUNNING;
+
+                            //
+                            // Only if status is running then populate the routes
+                            // for this virtualization
+                            //
+                            ProtocolType[] types = { ProtocolType.ODATA, ProtocolType.JDBC, ProtocolType.ODBC };
+                            for (ProtocolType type : types) {
+                                RouteStatus route = getRoute(vdbName, type);
+                                if (route == null)
+                                    continue;
+
+                                status.addRoute(route);
+                            }
                         }
+
                         DeploymentCondition cond = getDeploymentConfigStatus(dc);
                         if (cond != null) {
                             status.statusMessage = cond.getMessage();
@@ -1029,17 +1048,51 @@ public class TeiidOpenShiftClient implements StringConstants {
             }
             client.buildConfigs().inNamespace(namespace).withName(getBuildConfigName(vdbName)).delete();
             client.deploymentConfigs().inNamespace(namespace).withLabel("application", vdbName).delete();
-            //client.routes().inNamespace(namespace).withName(vdbName+"-jdbc").delete();
-            client.routes().inNamespace(namespace).withName(vdbName+"-odata").delete();
-            client.services().inNamespace(namespace).withName(vdbName+"-jdbc").delete();
-            client.services().inNamespace(namespace).withName(vdbName+"-odata").delete();
-            client.services().inNamespace(namespace).withName(vdbName+"-odbc").delete();
+            //client.routes().inNamespace(namespace).withName(vdbName+HYPHEN + RouteType.JDBC.id()).delete();
+            client.routes().inNamespace(namespace).withName(vdbName+HYPHEN + ProtocolType.ODATA.id()).delete();
+            client.services().inNamespace(namespace).withName(vdbName+HYPHEN + ProtocolType.JDBC.id()).delete();
+            client.services().inNamespace(namespace).withName(vdbName+HYPHEN + ProtocolType.ODATA.id()).delete();
+            client.services().inNamespace(namespace).withName(vdbName+HYPHEN + ProtocolType.ODBC.id()).delete();
             client.imageStreams().inNamespace(namespace).withName(vdbName).delete();
         } finally {
             kubernetesClient.close();
         }
         runningBuild.statusMessage = "deleted";
         return runningBuild;
+    }
+
+    private RouteStatus getRoute(String vdbName, ProtocolType protocolType) {
+        String namespace = ApplicationProperties.getNamespace();
+        Config config = new ConfigBuilder().build();
+        KubernetesClient kubernetesClient = new DefaultKubernetesClient(config);
+        final OpenShiftClient client = kubernetesClient.adapt(OpenShiftClient.class);
+        try {
+            RouteStatus theRoute = null;
+            KLog.getLogger().info("Getting route of type " + protocolType.id() + " for " + vdbName + " Service");
+            RouteList routes = client.routes().inNamespace(namespace).list();
+            if (routes == null || routes.getItems().isEmpty())
+                return theRoute;
+
+            for (Route route : routes.getItems()) {
+                ObjectMeta metadata = route.getMetadata();
+                String name = metadata.getName();
+                if (! name.endsWith(HYPHEN + protocolType.id()))
+                    continue;
+
+                theRoute = new RouteStatus(name, protocolType);
+
+                RouteSpec spec = route.getSpec();
+                theRoute.setHost(spec.getHost());
+                theRoute.setPath(spec.getPath());
+                theRoute.setPort(spec.getPort().getTargetPort().getStrVal());
+                theRoute.setTarget(spec.getTo().getName());
+            }
+
+            return theRoute;
+
+        } finally {
+            kubernetesClient.close();
+        }
     }
 
     /**

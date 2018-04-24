@@ -21,6 +21,10 @@
  */
 package org.komodo.servicecatalog;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class BuildStatus {
 
     public enum Status {
@@ -32,6 +36,60 @@ public class BuildStatus {
         CANCELLED
     }
 
+    public static class RouteStatus {
+        private final String name;
+        private final ProtocolType kind;
+        private String host;
+        private String path;
+        private String target;
+        private String port;
+
+        public RouteStatus(String name, ProtocolType kind) {
+            this.name = name;
+            this.kind = kind;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public ProtocolType getKind() {
+            return kind;
+        }
+
+        public String getHost() {
+            return host;
+        }
+
+        public void setHost(String host) {
+            this.host = host;
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        public void setPath(String path) {
+            this.path = path;
+        }
+
+        public String getTarget() {
+            return target;
+        }
+
+        public void setTarget(String target) {
+            this.target = target;
+        }
+
+        public String getPort() {
+            return port;
+        }
+
+        public void setPort(String port) {
+            this.port = port;
+        }
+    }
+
     protected String buildName;
     protected String deploymentName;
     protected String vdbName;
@@ -39,6 +97,7 @@ public class BuildStatus {
     protected long lastUpdated = 0L;
     protected String statusMessage;
     protected Status status = Status.NOTFOUND;
+    protected List<RouteStatus> routes = null;
 
     protected PublishConfiguration publishConfiguration;
     
@@ -62,5 +121,26 @@ public class BuildStatus {
     }
     public String getStatus() {
         return status.name();
+    }
+
+    public List<RouteStatus> getRoutes() {
+        if (this.routes == null)
+            return Collections.emptyList();
+
+        return this.routes;
+    }
+
+    public void addRoute(RouteStatus route) {
+        if (route == null)
+            return;
+
+        if (this.routes == null)
+            this.routes = new ArrayList<RouteStatus>();
+
+        this.routes.add(route);
+    }
+
+    public void setRoutes(List<RouteStatus> routes) {
+        this.routes = routes;
     }
 }

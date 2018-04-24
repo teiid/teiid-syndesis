@@ -2495,7 +2495,7 @@ public class KomodoMetadataService extends KomodoService {
             final List<RestVirtualizationStatus> entityList = new ArrayList<>();
             List<BuildStatus> list = this.openshiftClient.getVirtualizations(includeInProgressServices);
             for (BuildStatus status : list) {
-                entityList.add(entityFactory.createBuildStatus(uow, repo, status, uriInfo.getBaseUri()));
+                entityList.add(entityFactory.createBuildStatus(status, uriInfo.getBaseUri()));
             }
             return commit(uow, mediaTypes, entityList);
         } catch (CallbackTimeoutException ex) {
@@ -2535,7 +2535,8 @@ public class KomodoMetadataService extends KomodoService {
             Repository repo = this.kengine.getDefaultRepository();
             uow = createTransaction(principal, "publish", true); //$NON-NLS-1$
             BuildStatus status = this.openshiftClient.getVirtualizationStatus(vdbName);
-            return commit(uow, mediaTypes, entityFactory.createBuildStatus(uow, repo, status, uriInfo.getBaseUri()));
+
+            return commit(uow, mediaTypes, entityFactory.createBuildStatus(status, uriInfo.getBaseUri()));
         } catch (CallbackTimeoutException ex) {
             return createTimeoutResponse(mediaTypes);
         } catch (Throwable e) {
@@ -2572,7 +2573,7 @@ public class KomodoMetadataService extends KomodoService {
             Repository repo = this.kengine.getDefaultRepository();
             uow = createTransaction(principal, "publish", true); //$NON-NLS-1$
             BuildStatus status = this.openshiftClient.deleteVirtualization(vdbName);
-            return commit(uow, mediaTypes, entityFactory.createBuildStatus(uow, repo, status, uriInfo.getBaseUri()));
+            return commit(uow, mediaTypes, entityFactory.createBuildStatus(status, uriInfo.getBaseUri()));
         } catch (CallbackTimeoutException ex) {
             return createTimeoutResponse(mediaTypes);
         } catch (Throwable e) {
