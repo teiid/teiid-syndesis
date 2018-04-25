@@ -30,9 +30,31 @@ import org.komodo.relational.model.Column;
 import org.komodo.relational.model.PrimaryKey;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.UniqueConstraint;
+import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
 
 @SuppressWarnings({ "javadoc", "nls" })
 public class ViewDdlBuilderTest extends RelationalModelTest {
+
+    @Test
+    public void shouldGeneratedODataViewDDLFromTableWithArrayType() throws Exception {
+        String EXPECTED_DDL = "CREATE VIEW MyView (RowId integer PRIMARY KEY, Col1 string, Col2 object[]) AS \n"
+        + "SELECT ROW_NUMBER() OVER (ORDER BY Col1), Col1, Col2 \n"
+        + "FROM MyVDB.MyTable;";
+
+        Table aTable = createTable("MyVDB", VDB_PATH, "MyModel", "MyTable");
+        Column col1 = aTable.addColumn(getTransaction(), "Col1");
+        col1.setDatatypeName(getTransaction(), "string");
+        Column col2 = aTable.addColumn(getTransaction(), "Col2");
+        col2.setDatatypeName(getTransaction(), "object");
+        col2.setProperty(getTransaction(), StandardDdlLexicon.DATATYPE_ARRAY_DIMENSIONS, 1);
+        
+        List<String> colNames = new ArrayList<String>();
+        colNames.add("Col1");
+        colNames.add("Col2");
+        
+        String viewDdl = ViewDdlBuilder.getODataViewDdl(getTransaction(), "MyView", aTable, colNames);
+        assertThat(viewDdl, is(EXPECTED_DDL));
+    }
 
     @Test
     public void shouldGeneratedODataViewDDLFromTableWithNoPK() throws Exception {

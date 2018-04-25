@@ -94,7 +94,6 @@ import org.komodo.rest.relational.response.RestConnectionDriver;
 import org.komodo.rest.relational.response.RestDataserviceViewInfo;
 import org.komodo.rest.relational.response.RestVdb;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.ExportConstants;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 import org.komodo.spi.lexicon.sql.teiid.TeiidSqlConstants;
@@ -789,11 +788,9 @@ public final class KomodoDataserviceService extends KomodoService
         	sourceModel.setModelType(uow, Type.PHYSICAL);
 
             // The source model DDL contains the relevant table DDL only.  This limits the source metadata which is loaded on deployment.
-            Properties exportProps = new Properties();
-            exportProps.put( ExportConstants.EXCLUDE_TABLE_CONSTRAINTS_KEY, true );
             StringBuilder sourceDdl = new StringBuilder();
             for(Table viewTable: viewTables) {
-            	byte[] bytes = viewTable.export(uow, exportProps);
+            	byte[] bytes = viewTable.export(uow, new Properties());
             	String tableDdl = new String(bytes);
             	sourceDdl.append(tableDdl);
             }
@@ -1146,13 +1143,11 @@ public final class KomodoDataserviceService extends KomodoService
             lhPhysicalModel.setModelType(uow, Type.PHYSICAL);
 
             // The source model DDL contains the table DDL only.  This limits the source metadata which is loaded on deployment.
-            Properties exportProps = new Properties();
-            exportProps.put( ExportConstants.EXCLUDE_TABLE_CONSTRAINTS_KEY, true );
             // LH Table DDL
-            byte[] bytes = lhSourceTable.export(uow, exportProps);
+            byte[] bytes = lhSourceTable.export(uow, new Properties());
             String lhTableDdl = new String(bytes);
             // RH Table DDL
-            bytes = rhSourceTable.export(uow, exportProps);
+            bytes = rhSourceTable.export(uow, new Properties());
             String rhTableDdl = new String(bytes);
             
             // If same LH and RH Model, add the RH table DDL as well
