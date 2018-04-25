@@ -29,6 +29,7 @@ import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import javax.ws.rs.DELETE;
@@ -54,6 +55,7 @@ import org.komodo.relational.DeployStatus;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Table;
+import org.komodo.relational.model.internal.OptionContainerUtils;
 import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
@@ -63,6 +65,7 @@ import org.komodo.rest.KomodoService;
 import org.komodo.rest.relational.KomodoProperties;
 import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.connection.RestConnection;
+import org.komodo.rest.relational.connection.RestSchemaNode;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.request.KomodoConnectionAttributes;
 import org.komodo.rest.relational.response.KomodoStatusObject;
@@ -136,6 +139,11 @@ public final class KomodoConnectionService extends KomodoService {
      * Time to wait after deploying/undeploying a connection VDB from the metadata instance
      */
     private final static int DEPLOYMENT_WAIT_TIME = 5000;
+    
+    /**
+     * fqn table option key
+     */
+    private final static String TABLE_OPTION_FQN = "teiid_rel:fqn"; //$NON-NLS-1$
 
     /**
      * @param engine
@@ -515,46 +523,26 @@ public final class KomodoConnectionService extends KomodoService {
      *        the request URI information (never <code>null</code>)
      * @param connectionName
      *        the name of the connection whose tables are being requested (cannot be empty)
-     * @param searchPattern
-     *        an optional query parameter containing a regex for matching table names
-     * @param start
-     *        an optional query parameter for the index of the first connection to return (defaults to 0)
-     * @param size
-     *        an optional query parameter for the number of connections to return (defaults to returning all)
      * @return the JSON representation of the tables collection (never <code>null</code>)
      * @throws KomodoRestException
      *         if there is a problem finding the specified workspace connection or constructing the JSON representation
      */
     @GET
-    @Path( "{connectionName}/tables" )
+    @Path( "{connectionName}/schema" )
     @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation( value = "Find all tables belonging to the connection schema",
-                   response = RestVdbModelTable[].class )
+    @ApiOperation( value = "Get the native schema for the connection",
+                   response = RestSchemaNode[].class )
     @ApiResponses( value = {
         @ApiResponse( code = 403, message = "An error has occurred." ),
         @ApiResponse( code = 404, message = "No connection could be found with the specified name" ),
         @ApiResponse( code = 406, message = "Only JSON is returned by this operation" )
     } )
-    public Response getTables( @Context final HttpHeaders headers,
+    public Response getSchema( @Context final HttpHeaders headers,
                                final @Context UriInfo uriInfo,
                                @ApiParam( value = "Name of the connection",
                                           required = true )
                                @PathParam( "connectionName" )
-                               final String connectionName,
-                               @ApiParam( value = "A regex used to match table names",
-                                          required = false )
-                               @QueryParam( QueryParamKeys.PATTERN )
-                               final String searchPattern,
-                               @ApiParam( value = "The index of the first table to return.",
-                                          required = false )
-                               @DefaultValue( "0" )
-                               @QueryParam( QueryParamKeys.START )
-                               final int start,
-                               @ApiParam( value = "The max number of tables to return at one time.",
-                                          required = false )
-                               @DefaultValue( "-1" )
-                               @QueryParam( QueryParamKeys.SIZE )
-                               final int size ) throws KomodoRestException {
+                               final String connectionName ) throws KomodoRestException {
         final SecurityPrincipal principal = checkSecurityContext( headers );
 
         if ( principal.hasErrorResponse() ) {
@@ -565,7 +553,7 @@ public final class KomodoConnectionService extends KomodoService {
         UnitOfWork uow = null;
 
         try {
-            uow = createTransaction( principal, "getTables?connectionName=" + connectionName, true ); //$NON-NLS-1$
+            uow = createTransaction( principal, "getSchema?connectionName=" + connectionName, true ); //$NON-NLS-1$
             final Connection connection = findConnection( uow, connectionName );
 
             // connection not found so return 404 error response
@@ -573,32 +561,16 @@ public final class KomodoConnectionService extends KomodoService {
                 return commitNoConnectionFound( uow, mediaTypes, connectionName );
             }
 
-            final List< RestVdbModelTable > restTables = new ArrayList<>();
             final Model schemaModel = findSchemaModel( uow, connection );
 
+            List<RestSchemaNode> schemaNodes = Collections.emptyList();
             if ( schemaModel != null ) {
-                final Table[] tables = StringUtils.isBlank( searchPattern ) ? schemaModel.getTables( uow )
-                                                                            : schemaModel.getTables( uow, searchPattern  );
-                int i = 0;
-
-                for ( final Table table : tables ) {
-                    if ( ( start == 0 ) || ( i >= start ) ) {
-                        if ( ( size == ALL_AVAILABLE ) || ( restTables.size() < size ) ) {
-                            final RestVdbModelTable restTable = this.entityFactory.create( table,
-                                                                                           uriInfo.getBaseUri(),
-                                                                                           uow,
-                                                                                           null );
-                            restTables.add( restTable );
-                        } else {
-                            break; // reached number of requested
-                        }
-                    }
-
-                    ++i;
-                }
+                final Table[] tables = schemaModel.getTables( uow );
+                
+                schemaNodes = this.generateConnectionSchema(uow, connectionName, tables);
             }
 
-            return commit( uow, mediaTypes, restTables ); 
+            return commit( uow, mediaTypes, schemaNodes ); 
         } catch ( final Exception e ) {
             if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
                 uow.rollback();
@@ -612,87 +584,6 @@ public final class KomodoConnectionService extends KomodoService {
         }
     }
 
-    /**
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
-     * @param connectionName
-     *        the name of the connection whose table is being requested (cannot be empty)
-     * @param tableName
-     *        the name of the table being requested (cannot be empty)
-     * @return the JSON representation of the tables collection (never <code>null</code>)
-     * @throws KomodoRestException
-     *         if there is a problem finding the specified workspace connection or constructing the JSON representation
-     */
-    @GET
-    @Path( "{connectionName}/tables/{tableName}" )
-    @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation( value = "Find the specified table belonging to the connection schema",
-                   response = RestVdbModelTable.class )
-    @ApiResponses( value = {
-        @ApiResponse( code = 403, message = "An error has occurred." ),
-        @ApiResponse( code = 404, message = "Either the connection, schema VDB, schema model, or requested table could not be found" ),
-        @ApiResponse( code = 406, message = "Only JSON is returned by this operation" )
-    } )
-    public Response getTable( @Context final HttpHeaders headers,
-                              final @Context UriInfo uriInfo,
-                              @ApiParam( value = "Name of the connection",
-                                         required = true )
-                              @PathParam( "connectionName" )
-                              final String connectionName,
-                              @ApiParam( value = "Name of the table",
-                                         required = true )
-                              @PathParam( "tableName" )
-                              final String tableName ) throws KomodoRestException {
-        final SecurityPrincipal principal = checkSecurityContext( headers );
-
-        if ( principal.hasErrorResponse() ) {
-            return principal.getErrorResponse();
-        }
-
-        final List< MediaType > mediaTypes = headers.getAcceptableMediaTypes();
-        UnitOfWork uow = null;
-
-        try {
-            final String txId = "getTable?connectionName=" + connectionName + "?tableName=" + tableName; //$NON-NLS-1$ //$NON-NLS-2$
-            uow = createTransaction( principal, txId, true );
-            final Connection connection = findConnection( uow, connectionName );
-
-            // connection not found so return 404 error response
-            if ( connection == null ) {
-                return commitNoConnectionFound( uow, mediaTypes, connectionName );
-            }
-    
-            // find workspace schema VDB, schema model, and requested table
-            final Model schemaModel = findSchemaModel( uow, connection );
-
-            if ( schemaModel != null ) {
-                final Table[] tables = schemaModel.getTables( uow, tableName );
-
-                if ( tables.length != 0 ) {
-                    final Table table = tables[ 0 ];
-                    final RestVdbModelTable restTable = new RestVdbModelTable( uriInfo.getBaseUri(), table, uow );
-                    return commit( uow, mediaTypes, restTable );
-                }
-            }
-
-            final String schemaModelName = getSchemaModelName( connectionName );
-            final String schemaVdbName = getSchemaVdbName( connectionName );
-            return commitNoTableFound( uow, mediaTypes, tableName, schemaModelName, schemaVdbName );
-        } catch ( final Exception e ) {
-            if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
-                uow.rollback();
-            }
-
-            if ( e instanceof KomodoRestException ) {
-                throw ( KomodoRestException )e;
-            }
-
-            return createErrorResponseWithForbidden( mediaTypes, e, RelationalMessages.Error.CONNECTION_SERVICE_GET_TABLES_ERROR );
-        }
-    }
- 
     /**
      * @param headers
      *        the request headers (never <code>null</code>)
@@ -1590,5 +1481,132 @@ public final class KomodoConnectionService extends KomodoService {
 
         return Response.ok().build();
     }
+
+    /**
+     * Generate the Connection Schema structure using the supplied table fqn information.
+     * @param uow the transaction
+     * @param connectionName the name of the connection
+     * @param tables the supplied array of tables
+     * @return the list of schema nodes
+     * @throws KException exception if problem occurs
+     */
+    private List<RestSchemaNode> generateConnectionSchema(final UnitOfWork uow, final String connectionName, final Table[] tables) throws KException {
+    	List<RestSchemaNode> schemaNodes = new ArrayList<RestSchemaNode>();
+
+    	for(final Table table : tables) {
+    		// Use the fqb table option do determine native structure
+            final String option = OptionContainerUtils.getOption( uow, table, TABLE_OPTION_FQN );
+            if( option != null ) {
+            	// Break fqn into segments (segment starts at root, eg "schema=public/table=customer")
+                String[] segments = option.split(FORWARD_SLASH);
+                // Get the parent node of the final segment in the 'path'.  New nodes are created if needed.
+                RestSchemaNode parentNode = getLeafNodeParent(connectionName, schemaNodes, segments);
+
+                // Use last segment to create the leaf node child in the parent.  If parent is null, was root (and leaf already created).
+                if( parentNode != null ) {
+                	String type = getSegmentType(segments[segments.length-1]);
+                	String name = getSegmentName(segments[segments.length-1]);
+                	RestSchemaNode node = new RestSchemaNode(connectionName, name, type);
+                	node.setQueryable(true);
+                	parentNode.addChild(node);
+                }
+            }
+    	}
+    	
+    	return schemaNodes;
+    }
+
+    /**
+     * Get the RestSchemaNode immediately above the last path segment (leaf parent).  If the parent nodes do not already exist,
+     * they are created and added to the currentNodes.  The returned List is a list of the root nodes.  The root node children,
+     * children's children, etc, are built out according to the path segments.
+     * @param connectionName the connection name
+     * @param currentNodes the current node list
+     * @param segments the full path of segments, starting at the root
+     * @return the final segments parent node.  (null if final segment is at the root)
+     */
+    private RestSchemaNode getLeafNodeParent(String connectionName, List<RestSchemaNode> currentNodes, String[] segments) {
+    	RestSchemaNode parentNode = null;
+    	// Determine number of levels to process.
+    	// - process one level if one segment
+    	// - if more than one level, process nSegment - 1 levels
+    	int nLevels = (segments.length > 1) ? segments.length-1 : 1;
+
+    	// Start at beginning of segment path, creating nodes if necessary
+    	for( int i=0; i < nLevels; i++ ) {
+        	String type = getSegmentType(segments[i]);
+        	String name = getSegmentName(segments[i]);
+        	// Root Level - look for matching root node in the list 
+    		if( i == 0 ) {
+    			RestSchemaNode matchNode = getMatchingNode(connectionName, name, type, currentNodes.toArray( new RestSchemaNode[ currentNodes.size() ] ));
+    			// No match - create a new node
+    			if(matchNode == null) {
+    				matchNode = new RestSchemaNode(connectionName, name, type);
+    				currentNodes.add(matchNode);
+    			}
+    		    // Set parent for next iteration
+    			if( segments.length == 1 ) {       // Only one segment - parent is null (root)
+    				matchNode.setQueryable(true);
+    				parentNode = null;
+    			} else {
+    				// Set next parent if not last level
+    				if( i != segments.length-1 ) { 
+    					parentNode = matchNode;
+    				}
+    			}
+    		// Not at root - look for matching node in parents children
+    		} else {
+    			RestSchemaNode matchNode = getMatchingNode(connectionName, name, type, parentNode.getChildren());
+    			// No match - create a new node
+    			if(matchNode == null) {
+    				matchNode = new RestSchemaNode(connectionName, name, type);
+    				parentNode.addChild(matchNode);
+    			}
+    			// Set next parent if not last level
+    			if( i != segments.length-1 ) {
+    				parentNode = matchNode;
+    			}
+    		}
+    	}
+    	return parentNode;
+    }
+
+    /**
+     * Searches the supplied list for node with matching name and type.  Does NOT search children or parents of supplied nodes.
+     * @param connectionName the connection name
+     * @param name the node name
+     * @param type the node type
+     * @param nodeList the list of nodes to search
+     * @return the matching node, if found
+     */
+    private RestSchemaNode getMatchingNode(String connectionName, String name, String type, RestSchemaNode[] nodeArray) {
+		RestSchemaNode matchedNode = null;
+    	for(RestSchemaNode node : nodeArray) {
+			if( node.getConnectionName().equals(connectionName) && node.getName().equals(name) && node.getType().equals(type) ) {
+				matchedNode = node;
+				break;
+			}
+		}
+    	return matchedNode;
+    }
+
+    /**
+     * Split the segment apart and return the name
+     * @param segment the segment (eg "table=customer")
+     * @return the name
+     */
+    private String getSegmentName(String segment) {
+    	String[] parts = segment.split(EQUALS);
+    	return parts[1].trim();
+    }
     
+    /**
+     * Split the segment apart and return the type
+     * @param segment the segment (eg "table=customer")
+     * @return the type
+     */
+    private String getSegmentType(String segment) {
+    	String[] parts = segment.split(EQUALS);
+    	return parts[0].trim();
+    }
 }
