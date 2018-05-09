@@ -42,6 +42,11 @@ public class RestRouteStatus extends AbstractKEntity {
     public static final String TARGET_LABEL = "target";
 
     /**
+     * Label for the secure flag of the route
+     */
+    public static final String SECURE_LABEL = "secure";
+
+    /**
      * Label for the host of the route
      */
     public static final String HOST_LABEL = "host";
@@ -66,6 +71,7 @@ public class RestRouteStatus extends AbstractKEntity {
         setPath(route.getPath());
         setPort(route.getPort());
         setHost(route.getHost());
+        setSecure(route.isSecure());
     }
 
     public String getName() {
@@ -120,5 +126,17 @@ public class RestRouteStatus extends AbstractKEntity {
 
     public void setTarget(String target) {
         addTuple(TARGET_LABEL, target);
+    }
+
+    public boolean isSecure() {
+        Object value = tuples.get(SECURE_LABEL);
+        if (value == null)
+            return false;
+
+        return Boolean.parseBoolean(value.toString());
+    }
+
+    public void setSecure(boolean secure) {
+        addTuple(SECURE_LABEL, secure);
     }
 }

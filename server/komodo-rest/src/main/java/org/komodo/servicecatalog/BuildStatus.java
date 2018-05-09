@@ -43,6 +43,7 @@ public class BuildStatus {
         private String path;
         private String target;
         private String port;
+        private boolean secure;
 
         public RouteStatus(String name, ProtocolType kind) {
             this.name = name;
@@ -87,6 +88,14 @@ public class BuildStatus {
 
         public void setPort(String port) {
             this.port = port;
+        }
+
+        public boolean isSecure() {
+            return this.secure;
+        }
+
+        public void setSecure(boolean secure) {
+            this.secure = secure;
         }
     }
 

@@ -96,6 +96,7 @@ import io.fabric8.openshift.api.model.ImageStream;
 import io.fabric8.openshift.api.model.Route;
 import io.fabric8.openshift.api.model.RouteList;
 import io.fabric8.openshift.api.model.RouteSpec;
+import io.fabric8.openshift.api.model.TLSConfigBuilder;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftConfig;
 import io.kubernetes.client.LocalObjectReference;
@@ -108,6 +109,10 @@ import io.kubernetes.client.ServiceInstance;
 import io.kubernetes.client.ServiceInstanceList;
 
 public class TeiidOpenShiftClient implements StringConstants {
+
+    private static final String DESCRIPTION_ANNOTATION_LABEL = "description";
+
+    private static final String SERVICE_DESCRIPTION = "Virtual Database (VDB)";
 
     private static final KLogger logger = KLog.getLogger();
 
@@ -552,7 +557,7 @@ public class TeiidOpenShiftClient implements StringConstants {
               .withNewMetadata()
                 .withName(serviceName)
                 .addToLabels("application", vdbName)
-                .addToAnnotations("description", "Virtual Database (VDB)")
+                .addToAnnotations(DESCRIPTION_ANNOTATION_LABEL, SERVICE_DESCRIPTION)
               .endMetadata()
               .withNewSpec()
                 .addToSelector("application", vdbName)
@@ -573,15 +578,25 @@ public class TeiidOpenShiftClient implements StringConstants {
         String routeName = vdbName+"-"+type;
         Route route = client.routes().inNamespace(namespace).withName(routeName).get();
         if (route == null) {
+            //
+            // Create edge termination SSL configuration
+            //
+            TLSConfigBuilder builder = new TLSConfigBuilder();
+            builder.withTermination("edge");
+
+            //
+            // Creates secured route
+            //
             route = client.routes().inNamespace(namespace).createNew()
               .withNewMetadata()
                 .withName(routeName)
                 .addToLabels("application", vdbName)
-                .addToAnnotations("description", "Virtual Database (VDB)")
+                .addToAnnotations(DESCRIPTION_ANNOTATION_LABEL, SERVICE_DESCRIPTION)
               .endMetadata()
               .withNewSpec()
               .withNewPort().withNewTargetPort().withStrVal(type).endTargetPort().endPort()
               .withNewTo().withName(routeName).endTo()
+              .withTls(builder.build())
               .endSpec()
               .done();
         }
@@ -940,13 +955,13 @@ public class TeiidOpenShiftClient implements StringConstants {
         KubernetesClient kubernetesClient = new DefaultKubernetesClient(config);
         final OpenShiftClient client = kubernetesClient.adapt(OpenShiftClient.class);
         try {
-            return getVDBSerice(vdbName, namespace, client);
+            return getVDBService(vdbName, namespace, client);
         } finally {
             kubernetesClient.close();
         }
     }
 
-    private BuildStatus getVDBSerice(String vdbName, String namespace, final OpenShiftClient client) {
+    private BuildStatus getVDBService(String vdbName, String namespace, final OpenShiftClient client) {
         BuildStatus status = new BuildStatus();
         status.vdbName = vdbName;
         status.namespace = namespace;
@@ -1015,7 +1030,7 @@ public class TeiidOpenShiftClient implements StringConstants {
             BuildList bl = client.builds().inNamespace(namespace).withLabel(MANAGED_BY, DAS).list();
             for (Build b : bl.getItems()) {
                 String vdbName = b.getMetadata().getLabels().get("application");
-                services.add(getVDBSerice(vdbName, namespace, client));
+                services.add(getVDBService(vdbName, namespace, client));
             }
         } finally {
             kubernetesClient.close();
@@ -1079,13 +1094,26 @@ public class TeiidOpenShiftClient implements StringConstants {
                 if (! name.endsWith(HYPHEN + protocolType.id()))
                     continue;
 
-                theRoute = new RouteStatus(name, protocolType);
-
                 RouteSpec spec = route.getSpec();
+                String target = spec.getTo().getName();
+
+                Map<String, String> annotations = metadata.getAnnotations();
+                String description = annotations.get(DESCRIPTION_ANNOTATION_LABEL);
+                if (description == null || ! SERVICE_DESCRIPTION.equals(description))
+                    continue;
+
+                //
+                // Check we have the right route for the vdb in question
+                //
+                if (! target.equals(vdbName + HYPHEN + protocolType.id()))
+                    continue;
+
+                theRoute = new RouteStatus(name, protocolType);
                 theRoute.setHost(spec.getHost());
                 theRoute.setPath(spec.getPath());
                 theRoute.setPort(spec.getPort().getTargetPort().getStrVal());
-                theRoute.setTarget(spec.getTo().getName());
+                theRoute.setTarget(target);
+                theRoute.setSecure(spec.getTls() != null);
             }
 
             return theRoute;

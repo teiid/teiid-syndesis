@@ -66,6 +66,9 @@ public final class RouteStatusSerializer extends TypeAdapter< RestRouteStatus > 
                 case RestRouteStatus.PATH_LABEL:
                     route.setPath(in.nextString());
                     break;
+                case RestRouteStatus.SECURE_LABEL:
+                    route.setSecure(in.nextBoolean());
+                    break;
                 default:
                     throw new IOException( Messages.getString( UNEXPECTED_JSON_TOKEN, name ) );
             }
@@ -104,6 +107,9 @@ public final class RouteStatusSerializer extends TypeAdapter< RestRouteStatus > 
 
         out.name(RestRouteStatus.PATH_LABEL);
         out.value(value.getPath());
+
+        out.name(RestRouteStatus.SECURE_LABEL);
+        out.value(value.isSecure());
 
         out.endObject();
     }
