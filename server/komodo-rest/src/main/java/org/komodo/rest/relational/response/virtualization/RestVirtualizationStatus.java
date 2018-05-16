@@ -62,16 +62,16 @@ public class RestVirtualizationStatus extends AbstractKEntity {
 
         ArgCheck.isNotNull(status, "status"); //$NON-NLS-1$
 
-        setVdbName(status.getVdbName());
-        setBuildName(status.getBuildName());
-        setDeploymentName(status.getDeploymentName());
-        setStatus(status.getStatus());
-        setStatusMsg(status.getStatusMessage());
-        setNamespace(status.getNamespace());
-        Date date = new Date(status.getLastUpdated());
+        setVdbName(status.vdbName());
+        setBuildName(status.buildName());
+        setDeploymentName(status.deploymentName());
+        setStatus(status.status().name());
+        setStatusMsg(status.statusMessage());
+        setNamespace(status.namespace());
+        Date date = new Date(status.lastUpdated());
         setLastUpdated(sdf.format(date));
 
-        List<RouteStatus> routeStatuses = status.getRoutes();
+        List<RouteStatus> routeStatuses = status.routes();
         if (routeStatuses != null && routeStatuses.size() > 0) {
             this.routes = new ArrayList<>(routeStatuses.size());
             for (RouteStatus route : routeStatuses) {

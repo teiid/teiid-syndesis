@@ -27,8 +27,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import org.komodo.relational.vdb.Vdb;
+import org.komodo.rest.AuthHandlingFilter.AuthToken;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.ApplicationProperties;
+import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.utils.KLog;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.ObjectReference;
@@ -43,6 +45,8 @@ public class PublishConfiguration implements StringConstants {
 
     private static final String BASE_OPENSHIFT_IMAGE = "redhat-openjdk18-openshift";
 
+    protected AuthToken authToken;
+    protected UnitOfWork uow;
     protected Vdb vdb;
     protected boolean enableOdata = true;
     protected String containerMemorySize = "1024Mi";
@@ -129,5 +133,20 @@ public class PublishConfiguration implements StringConstants {
     
     private int cpuLimit() {
         return Math.max(cpuUnits/1000, 1);
-    }    
+    }
+
+    public void setAuthenticationToken(AuthToken authToken) {
+        this.authToken = authToken;
+    }
+
+    public void setTransaction(UnitOfWork uow) {
+        this.uow = uow;
+    }
+
+    public void dispose() {
+        if (this.uow == null)
+            return;
+
+        this.uow.rollback();
+    }
 }

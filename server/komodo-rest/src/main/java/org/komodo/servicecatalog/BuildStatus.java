@@ -29,6 +29,8 @@ public class BuildStatus {
 
     public enum Status {
         NOTFOUND,
+        SUBMITTED,
+        CONFIGURING,
         BUILDING,
         DEPLOYING,
         RUNNING,
@@ -99,40 +101,83 @@ public class BuildStatus {
         }
     }
 
-    protected String buildName;
-    protected String deploymentName;
-    protected String vdbName;
-    protected String namespace;
-    protected long lastUpdated = 0L;
-    protected String statusMessage;
-    protected Status status = Status.NOTFOUND;
-    protected List<RouteStatus> routes = null;
+    private Status status = Status.NOTFOUND;
+    private PublishConfiguration publishConfiguration;
 
-    protected PublishConfiguration publishConfiguration;
-    
-    public String getBuildName() {
+    private String buildName;
+    private String deploymentName;
+    private final String vdbName;
+    private String namespace;
+    private long lastUpdated = 0L;
+    private String statusMessage;
+
+    private List<RouteStatus> routes = null;
+
+    public BuildStatus(String vdbName) {
+        this.vdbName = vdbName;
+    }
+
+    public PublishConfiguration publishConfiguration() {
+        return publishConfiguration;
+    }
+
+    public synchronized void setPublishConfiguration(PublishConfiguration publishConfiguration) {
+        this.publishConfiguration = publishConfiguration;
+    }
+
+    public String buildName() {
         return buildName;
     }
-    public String getDeploymentName() {
-        return deploymentName;
-    }
-    public String getVdbName() {
-        return vdbName;
-    }
-    public String getNamespace() {
-        return namespace;
-    }
-    public String getStatusMessage() {
-        return statusMessage;
-    }
-    public long getLastUpdated() {
-        return lastUpdated;
-    }
-    public String getStatus() {
-        return status.name();
+
+    public synchronized void setBuildName(String buildName) {
+        this.buildName = buildName;
     }
 
-    public List<RouteStatus> getRoutes() {
+    public String deploymentName() {
+        return deploymentName;
+    }
+
+    public synchronized void setDeploymentName(String deploymentName) {
+        this.deploymentName = deploymentName;
+    }
+
+    public String vdbName() {
+        return vdbName;
+    }
+
+    public String namespace() {
+        return namespace;
+    }
+
+    public synchronized void setNamespace(String namespace) {
+        this.namespace = namespace;
+    }
+
+    public String statusMessage() {
+        return statusMessage;
+    }
+
+    public synchronized void setStatusMessage(String statusMessage) {
+        this.statusMessage = statusMessage;
+    }
+
+    public long lastUpdated() {
+        return lastUpdated;
+    }
+
+    public synchronized void setLastUpdated() {
+        this.lastUpdated = System.currentTimeMillis();
+    }
+
+    public Status status() {
+        return status;
+    }
+
+    public synchronized void setStatus(Status status) {
+        this.status = status;
+    }
+
+    public List<RouteStatus> routes() {
         if (this.routes == null)
             return Collections.emptyList();
 
