@@ -33,12 +33,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -54,7 +48,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
-
 import org.komodo.core.KEngine;
 import org.komodo.relational.DeployStatus;
 import org.komodo.relational.connection.Connection;
@@ -113,7 +106,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -2482,20 +2474,25 @@ public class KomodoMetadataService extends KomodoService {
     @ApiResponses(value = { @ApiResponse(code = 403, message = "An error has occurred.") })
     public Response getVirtualizations(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
             @ApiParam(value = "true to include in progress services", required = true, defaultValue="true")
-            @QueryParam("includeInProgress") final boolean includeInProgressServices) throws KomodoRestException {
+            @QueryParam("includeInProgress") boolean includeInProgressServices) throws KomodoRestException {
         SecurityPrincipal principal = checkSecurityContext(headers);
         if (principal.hasErrorResponse())
             return principal.getErrorResponse();
 
+        //
+        // Ensure include in-progress services is included by default
+        //
+        if (! uriInfo.getQueryParameters().containsKey("includeInProgressServices"))
+            includeInProgressServices = true;
+
         List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
         UnitOfWork uow = null;
         try {
-            Repository repo = this.kengine.getDefaultRepository();
             uow = createTransaction(principal, "publish", true); //$NON-NLS-1$
             final List<RestVirtualizationStatus> entityList = new ArrayList<>();
-            List<BuildStatus> list = this.openshiftClient.getVirtualizations(includeInProgressServices);
-            for (BuildStatus status : list) {
-                entityList.add(entityFactory.createBuildStatus(uow, repo, status, uriInfo.getBaseUri()));
+            Collection<BuildStatus> statuses = this.openshiftClient.getVirtualizations(includeInProgressServices);
+            for (BuildStatus status : statuses) {
+                entityList.add(entityFactory.createBuildStatus(status, uriInfo.getBaseUri()));
             }
             return commit(uow, mediaTypes, entityList);
         } catch (CallbackTimeoutException ex) {
@@ -2532,10 +2529,10 @@ public class KomodoMetadataService extends KomodoService {
         List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
         UnitOfWork uow = null;
         try {
-            Repository repo = this.kengine.getDefaultRepository();
             uow = createTransaction(principal, "publish", true); //$NON-NLS-1$
             BuildStatus status = this.openshiftClient.getVirtualizationStatus(vdbName);
-            return commit(uow, mediaTypes, entityFactory.createBuildStatus(uow, repo, status, uriInfo.getBaseUri()));
+
+            return commit(uow, mediaTypes, entityFactory.createBuildStatus(status, uriInfo.getBaseUri()));
         } catch (CallbackTimeoutException ex) {
             return createTimeoutResponse(mediaTypes);
         } catch (Throwable e) {
@@ -2569,10 +2566,9 @@ public class KomodoMetadataService extends KomodoService {
         List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
         UnitOfWork uow = null;
         try {
-            Repository repo = this.kengine.getDefaultRepository();
             uow = createTransaction(principal, "publish", true); //$NON-NLS-1$
             BuildStatus status = this.openshiftClient.deleteVirtualization(vdbName);
-            return commit(uow, mediaTypes, entityFactory.createBuildStatus(uow, repo, status, uriInfo.getBaseUri()));
+            return commit(uow, mediaTypes, entityFactory.createBuildStatus(status, uriInfo.getBaseUri()));
         } catch (CallbackTimeoutException ex) {
             return createTimeoutResponse(mediaTypes);
         } catch (Throwable e) {
@@ -2649,67 +2645,23 @@ public class KomodoMetadataService extends KomodoService {
             final String vdbPath = vdb.getAbsolutePath();
             final AuthToken token = getAuthenticationToken();
 
+            UnitOfWork publishUow = createTransaction(principal, "publish", true); //$NON-NLS-1$
+            Vdb theVdb = new VdbImpl(publishUow, kengine.getDefaultRepository(), vdbPath);
+
+            // the properties in this class can be exposed for user input
+            PublishConfiguration config = new PublishConfiguration();
+            config.setVDB(theVdb);
+            config.setAuthenticationToken(new AuthToken(token.toString()));
+            config.setTransaction(publishUow);
+            BuildStatus buildStatus = openshiftClient.publishVirtualization(config);
+
             //
-            // This publishing could take 30+ seconds to return hence the need to
-            // check it then return before the http request actually times out.
+            // If the thread concludes within the time of the parent thread sleeping
+            // then add some build status messages.
             //
-            // Waits up to 10 seconds to see if the publishing returns (and probably
-            // has failed!) then returns an indication that things are underway.
-            //
-            ExecutorService threadService = Executors.newFixedThreadPool(1);
-            Callable<BuildStatus> task = new Callable<BuildStatus>() {
-                @Override
-                public BuildStatus call() throws Exception {
-                    //
-                    // Start the publishing procedure
-                    //
-                    UnitOfWork uow = null;
-                    AuthToken authToken = new AuthToken(token.toString());
-                    try {
-                        uow = createTransaction(principal, "publish", true); //$NON-NLS-1$
-                        Vdb theVdb = new VdbImpl(uow, kengine.getDefaultRepository(), vdbPath);
-
-                        // the properties in this class can be exposed for user input
-                        PublishConfiguration config = new PublishConfiguration();
-                        config.setVDB(theVdb);
-                        return openshiftClient.publishVirtualization(authToken, uow, config);
-                    } catch (Exception ex) {
-                        throw ex;
-                    } finally {
-                        if (uow != null)
-                            uow.rollback();
-                    }
-                }
-            };
-            Future<BuildStatus> result = threadService.submit(task);
-
-            for (int i = 0; i < 2; ++i) {
-                if (result.isDone()) {
-                    try {
-                        BuildStatus buildStatus = result.get(1, TimeUnit.MINUTES);
-                        //
-                        // If the thread concludes within the time of the parent thread sleeping
-                        // then add some build status messages.
-                        //
-                        status.addAttribute("Vdb Name", buildStatus.getVdbName());
-                        status.addAttribute("Build Status", buildStatus.getStatus());
-                        status.addAttribute("Build Status Message", buildStatus.getStatusMessage());
-                    } catch (Exception ex) {
-                        status.addAttribute("Build Status", BuildStatus.Status.FAILED.name());
-                        status.addAttribute("Build Status Message", ex.getMessage());
-                    }
-
-                    //
-                    // operation complete so exit the loop
-                    //
-                    break;
-                }
-
-                //
-                // Wait for 5 seconds before checking again
-                //
-                Thread.sleep(5000);
-            }
+            status.addAttribute("Vdb Name", buildStatus.vdbName());
+            status.addAttribute("Build Status", buildStatus.status().name());
+            status.addAttribute("Build Status Message", buildStatus.statusMessage());
 
             //
             // Return the status from this request. Otherwise, monitor using #getVirtualizations()
