@@ -21,10 +21,16 @@
  */
 package org.komodo.servicecatalog;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -68,10 +74,13 @@ import org.komodo.servicecatalog.datasources.WebServiceDefinition;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.logging.KLogger;
+import org.komodo.spi.logging.KLogger.Level;
 import org.komodo.spi.repository.ApplicationProperties;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.runtime.ServiceCatalogDataSource;
+import org.komodo.utils.FileUtils;
 import org.komodo.utils.KLog;
+import org.komodo.utils.StringUtils;
 import org.teiid.adminapi.AdminException;
 import org.teiid.core.util.ObjectConverterUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -148,7 +157,7 @@ public class TeiidOpenShiftClient implements StringConstants {
                 while (!workQueue.isEmpty()) {
                     BuildStatus work = workQueue.peek();
                     if (work == null) {
-                        info("Publishing - No build in the build queue");
+                        error(null, "Publishing - No build in the build queue");
                         continue;
                     }
 
@@ -166,7 +175,7 @@ public class TeiidOpenShiftClient implements StringConstants {
                         // build submitted for configuration. This is done on another
                         // thread to avoid clogging up the monitor thread.
                         //
-                        info("Publishing " + work.vdbName() + " - Submitted build to be configured");
+                        info(work.vdbName(), "Publishing - Submitted build to be configured");
                         configureBuild(work);
                         continue;
                     }
@@ -189,24 +198,24 @@ public class TeiidOpenShiftClient implements StringConstants {
                         workQueue.poll(); // remove
                         workQueue.offer(work); // add at end
 
-                        info("Publishing " + work.vdbName() + " - Continuing monitoring as configuring");
+                        debug(work.vdbName(), "Publishing - Continuing monitoring as configuring");
                         continue;
                     }
 
                     Build build = client.builds().inNamespace(work.namespace()).withName(work.buildName()).get();
                     if (build == null) {
                         // build got deleted some how ignore..
-                        error("Publishing " + work.vdbName() + " - No build available for building");
+                        error(work.vdbName(), "Publishing - No build available for building");
                         continue;
                     }
 
                     boolean shouldReQueue = true;
                     String lastStatus = build.getStatus().getPhase();
                     if (Builds.isCompleted(lastStatus)) {
-                        info("Publishing " + work.vdbName() + " - Build completed. Preparing to deploy");
+                        if (! Status.DEPLOYING.equals(work.status())) {
+                            info(work.vdbName(), "Publishing - Build completed. Preparing to deploy");
+                            work.setStatusMessage("build completed, deployment started");
 
-                        work.setStatusMessage("build completed, deployment started");
-                        if (work.deploymentName() == null) {
                             DeploymentConfig dc = createDeploymentConfig(client, work);
                             work.setDeploymentName(dc.getMetadata().getName());
                             work.setStatus(Status.DEPLOYING);
@@ -215,14 +224,15 @@ public class TeiidOpenShiftClient implements StringConstants {
                             DeploymentConfig dc = client.deploymentConfigs().inNamespace(work.namespace()).withName(work.deploymentName()).get();
                             if (isDeploymentInReadyState(dc)) {
                                 // it done now..
-                                info("Publishing " + work.vdbName() + " - Deployment completed");
+                                info(work.vdbName(), "Publishing - Deployment completed");
                                 createServices(client, work.namespace(), work.vdbName());
                                 work.setStatus(Status.RUNNING);
                                 shouldReQueue = false;
                             } else {
-                                error("Publishing " + work.vdbName() + " - Deployment invalid");
+                                debug(work.vdbName(), "Publishing - Deployment not ready");
                                 DeploymentCondition cond = getDeploymentConfigStatus(dc);
                                 if (cond != null) {
+                                    debug(work.vdbName(), "Publishing - Deployment condition: " + cond.getMessage());
                                     work.setStatusMessage(cond.getMessage());
                                 } else {
                                     work.setStatusMessage("Available condition not found in the Deployment Config");
@@ -230,19 +240,19 @@ public class TeiidOpenShiftClient implements StringConstants {
                             }
                         }
                     } else if (Builds.isCancelled(lastStatus)) {
-                        info("Publishing " + work.vdbName() + " - Build cancelled");
+                        info(work.vdbName(), "Publishing - Build cancelled");
                         // once failed do not queue the work again.
                         shouldReQueue = false;
                         work.setStatus(Status.CANCELLED);
                         work.setStatusMessage(build.getStatus().getMessage());
-                        debug("Build cancelled :" + work.buildName() + ". Reason " + build.getStatus().getLogSnippet());
+                        debug(work.vdbName(), "Build cancelled: " + work.buildName() + ". Reason " + build.getStatus().getLogSnippet());
                     } else if (Builds.isFailed(lastStatus)) {
-                        error("Publishing " + work.vdbName() + " - Build failed");
+                        error(work.vdbName(), "Publishing - Build failed");
                         // once failed do not queue the work again.
                         shouldReQueue = false;
                         work.setStatus(Status.FAILED);
                         work.setStatusMessage(build.getStatus().getMessage());
-                        debug("Build failed :" + work.buildName() + ". Reason " + build.getStatus().getLogSnippet());
+                        error(work.vdbName(), "Build failed :" + work.buildName() + ". Reason " + build.getStatus().getLogSnippet());
                     }
 
                     synchronized (work) {
@@ -251,6 +261,11 @@ public class TeiidOpenShiftClient implements StringConstants {
                         if (shouldReQueue) {
                             workQueue.offer(work); // add at end
                         } else {
+                            //
+                            // Close the log as no longer needed actively
+                            //
+                            closeLog(work.vdbName());
+
                             //
                             // dispose of the publish config artifacts
                             //
@@ -262,9 +277,11 @@ public class TeiidOpenShiftClient implements StringConstants {
                 //
                 // This should catch all possible exceptions in the thread
                 // and ensure it never throws up to the monitor service causing
-                // the latter to suppress future attempts at running this thread
+                // the latter to suppress future attempts at running this thread.
                 //
-                error("Monitor thread exception", ex);
+                // Does not specify an id so will only be logged in the KLog.
+                //
+                error(null, "Monitor thread exception", ex);
             } finally {
                 kubernetesClient.close();
             }
@@ -288,7 +305,7 @@ public class TeiidOpenShiftClient implements StringConstants {
         }
 
         private void restartMonitorService(Throwable error) {
-            error("Monitor thread failure", error);
+            error(null, "Monitor thread failure", error);
             setMonitorState(MonitorState.STOPPED);
             monitorWork();
         }
@@ -383,6 +400,8 @@ public class TeiidOpenShiftClient implements StringConstants {
      */
     private ExecutorService configureService = Executors.newFixedThreadPool(3);
 
+    private Map<String, PrintWriter> logBuffers = new HashMap<>();
+
     public TeiidOpenShiftClient(TeiidSwarmMetadataInstance metadata) {
         this.metadata = metadata;
         this.scClient = new ModelServiceCatalogClient(ApplicationProperties.getProperty("OSURL", OSURL), SC_VERSION);
@@ -399,23 +418,87 @@ public class TeiidOpenShiftClient implements StringConstants {
         add(new AmazonS3Definition());
     }
 
-    private void debug(String message) {
+    private String getLogPath(String id) {
+        String parentDir;
+        try {
+            File loggerPath = new File(logger.getLogPath());
+            parentDir = loggerPath.getParent();
+        } catch(Exception ex) {
+            logger.error("Failure to get logger path", ex);
+            parentDir = FileUtils.tempDirectory();
+        }
+
+        return parentDir + File.separator + id + ".log";
+    }
+
+    private void closeLog(String id) {
+        PrintWriter pw = logBuffers.remove(id);
+        if (pw == null)
+            return;
+
+        pw.close();
+    }
+    private void addLog(String id, Level level, String message) {
+        if (id == null)
+            return; // Cannot record these log messages
+
+        try {
+            PrintWriter pw = logBuffers.get(id);
+            if (pw == null) {
+                // No cached buffered writer
+                String logPath = getLogPath(id);
+                File logFile = new File(logPath);
+
+                FileWriter fw = new FileWriter(logFile, true);
+                BufferedWriter bw = new BufferedWriter(fw);
+                pw = new PrintWriter(bw);
+                logBuffers.put(id, pw);
+            }
+
+            Calendar calendar = Calendar.getInstance();
+            message = OPEN_SQUARE_BRACKET + level + CLOSE_SQUARE_BRACKET + SPACE +
+                                        OPEN_BRACKET + calendar.getTime() + CLOSE_BRACKET + SPACE + HYPHEN + SPACE +
+                                        message + NEW_LINE;
+            pw.write(message);
+            pw.flush();
+
+        } catch (Exception ex) {
+            error(id, "Error with logging to file", ex);
+        }
+    }
+
+    private void removeLog(String id) {
+        closeLog(id);
+
+        String logPath = getLogPath(id);
+        File logFile = new File(logPath);
+        if (logFile.exists())
+            logFile.delete();
+    }
+
+    private void debug(String id, String message) {
         if (! logger.isDebugEnabled())
             return;
 
         logger.debug(message);
+        addLog(id, Level.DEBUG, message);
     }
 
-    private void error(String message, Throwable ex) {
+    private void error(String id, String message, Throwable ex) {
         logger.error(message, ex);
+        String cause = StringUtils.exceptionToString(ex);
+        addLog(id, Level.ERROR, message);
+        addLog(id, Level.ERROR, cause);
     }
 
-    private void error(String message) {
+    private void error(String id, String message) {
         logger.error(message);
+        addLog(id, Level.ERROR, message);
     }
 
-    private void info(String message) {
+    private void info(String id, String message) {
         logger.info(message);
+        addLog(id, Level.INFO, message);
     }
 
     private void add(DataSourceDefinition def) {
@@ -475,7 +558,7 @@ public class TeiidOpenShiftClient implements StringConstants {
                                     scd.setDefinition(def);
                                 }
                             } else {
-                                info("Parameters not found for source "+ svc.getMetadata().getName());
+                                info(svc.getMetadata().getName(), "Parameters not found for source");
                             }
                         }
                     }
@@ -488,7 +571,7 @@ public class TeiidOpenShiftClient implements StringConstants {
     }
 
     public void bindToServiceCatalogSource(AuthToken authToken, String dsName) throws KException {
-        info("Bind to Service:" + dsName);
+        info(dsName, "Bind to Service: " + dsName);
         this.scClient.setAuthHeader(authToken.toString());
         try {
             ServiceInstance svc = this.scClient.getServiceInstance(ApplicationProperties.getNamespace(), dsName);
@@ -498,11 +581,11 @@ public class TeiidOpenShiftClient implements StringConstants {
 
             ServiceBinding binding = getServiceBinding(svc.getMetadata().getName());
             if (binding != null) {
-                debug("Found existing Binding = " + binding);
+                debug(dsName, "Found existing Binding = " + binding);
             }
             if (binding == null) {
                 binding = this.scClient.createServiceBinding(svc);
-                debug("Created new Binding = " + binding);
+                debug(dsName, "Created new Binding = " + binding);
             }
 
             //TODO: need to come up async based operation
@@ -624,7 +707,7 @@ public class TeiidOpenShiftClient implements StringConstants {
             }
             return new DecodedSecret(secretName, map);
         } else {
-            debug(svc.getMetadata().getName()+":No Parameters Secret found");
+            debug(svc.getMetadata().getName(), "No Parameters Secret found");
         }
         return null;
     }
@@ -632,11 +715,11 @@ public class TeiidOpenShiftClient implements StringConstants {
     private void createDataSource(String name, DefaultServiceCatalogDataSource scd)
             throws AdminException, KException {
         
-        debug("Creating the Datasource = "+ name + " of Type " + scd.getType());
+        debug(name, "Creating the Datasource of Type " + scd.getType());
 
         String driverName = null;
         Set<String> templateNames = this.metadata.admin().getDataSourceTemplateNames();
-        debug("template names:"+templateNames);
+        debug(name, "template names: " + templateNames);
         String dsType = scd.getDefinition().getType();
         for (String template : templateNames) {
             // TODO: there is null entering from above call from getDataSourceTemplateNames need to investigate why
@@ -866,7 +949,7 @@ public class TeiidOpenShiftClient implements StringConstants {
         return route;
     }
 
-    private void waitUntilPodIsReady(final OpenShiftClient client, String podName, int nAwaitTimeout) {
+    private void waitUntilPodIsReady(String vdbName, final OpenShiftClient client, String podName, int nAwaitTimeout) {
         final CountDownLatch readyLatch = new CountDownLatch(1);
         try (Watch watch = client.pods().withName(podName).watch(new Watcher<Pod>() {
             @Override
@@ -882,7 +965,7 @@ public class TeiidOpenShiftClient implements StringConstants {
         })) {
             readyLatch.await(nAwaitTimeout, TimeUnit.SECONDS);
         } catch (KubernetesClientException | InterruptedException e) {
-            error("Could not watch pod", e);
+            error(vdbName, "Publishing - Could not watch pod", e);
         }
     }
 
@@ -971,13 +1054,13 @@ public class TeiidOpenShiftClient implements StringConstants {
         // if all threads are currently undergoing tasks. This ensures
         // that the monitor thread will not try to do anything more with it.
         //
-        info("Publishing (" + work.vdbName() + ") - Adding configuring task");
+        info(work.vdbName(), "Publishing  - Adding configuring task");
         work.setStatus(Status.CONFIGURING);
 
         configureService.execute(new Runnable() {
             @Override
             public void run() {
-                info("Publishing (" + work.vdbName() + ") - Configuring ...");
+                info(work.vdbName(), "Publishing  - Configuring ...");
 
                 String namespace = work.namespace();
                 PublishConfiguration publishConfig = work.publishConfiguration();
@@ -986,54 +1069,54 @@ public class TeiidOpenShiftClient implements StringConstants {
                 AuthToken authToken = publishConfig.authToken;
                 KubernetesClient kubernetesClient = null;
 
+                String vdbName = work.vdbName();
                 try {
-                    String vdbName = work.vdbName();
                     Config config = new ConfigBuilder().build();
                     OpenShiftConfig.wrap(config).setBuildTimeout(publishConfig.buildTimeoutInSeconds);
                     kubernetesClient = new DefaultKubernetesClient(config);
                     final OpenShiftClient client = kubernetesClient.adapt(OpenShiftClient.class);
 
-                    info("Publishing (" + vdbName + ") - Checking for base image");
+                    info(vdbName, "Publishing - Checking for base image");
                     baseImage(client, publishConfig);
 
                     // create build contents as tar file
 
-                    info("Publishing (" + vdbName + ") - Creating zip archive");
+                    info(vdbName, "Publishing - Creating zip archive");
                     GenericArchive archive = ShrinkWrap.create(GenericArchive.class, "contents.tar");
                     String pomFile = generatePomXml(authToken, uow, vdb, publishConfig.enableOdata);
 
-                    info("Publishing (" + vdbName + ") - Generated pom file: " + NEW_LINE + pomFile);
+                    debug(vdbName, "Publishing - Generated pom file: " + NEW_LINE + pomFile);
                     archive.add(new StringAsset(pomFile), "pom.xml");
 
                     byte[] vdbFile = vdb.export(uow, null);
-                    info("Publishing (" + vdbName + ") - Exported vdb: " + NEW_LINE + new String(vdbFile));
+                    debug(vdbName, "Publishing - Exported vdb: " + NEW_LINE + new String(vdbFile));
                     archive.add(new ByteArrayAsset(vdbFile), "/src/main/vdb/" + vdbName + "-vdb.xml");
 
                     InputStream configIs = this.getClass().getClassLoader().getResourceAsStream("s2i/project-defaults.yml");
                     archive.add(new ByteArrayAsset(ObjectConverterUtil.convertToByteArray(configIs)),
                                 "/src/main/resources/project-defaults.yml");
 
-                    info("Publishing (" + vdbName + ") - Converting archive to TarExport");
+                    info(vdbName, "Publishing - Converting archive to TarExport");
                     InputStream buildContents = archive.as(TarExporter.class).exportAsInputStream();
-                    info("Publishing (" + vdbName + ") - Completed creating build contents construction");
+                    info(vdbName, "Publishing - Completed creating build contents construction");
 
-                    info("Publishing (" + vdbName + ") - Creating image stream");
+                    info(vdbName, "Publishing - Creating image stream");
                     // use the contents to invoke a binary build
                     ImageStream is = createImageStream(client, namespace, vdbName);
 
-                    info("Publishing (" + vdbName + ") - Creating build config");
+                    info(vdbName, "Publishing - Creating build config");
                     BuildConfig buildConfig = createBuildConfig(client, namespace, vdbName, is, publishConfig);
 
-                    info("Publishing (" + vdbName + ") - Creating build");
+                    info(vdbName, "Publishing - Creating build");
                     Build build = createBuild(client, namespace, buildConfig, buildContents);
 
                     String buildName = build.getMetadata().getName();
-                    info("Build Started:" + buildName + " for VDB " + vdbName + " to publish");
+                    info(vdbName, "Publishing - Build created: " + buildName);
 
-                    info("Publishing (" + vdbName + ") - Awaiting pod readiness ...");
-                    waitUntilPodIsReady(client, buildName + "-build", 20);
+                    info(vdbName, "Publishing - Awaiting pod readiness ...");
+                    waitUntilPodIsReady(vdbName, client, buildName + "-build", 20);
 
-                    info("Publishing (" + vdbName + ") - Fetching environment variables for vdb data sources");
+                    info(vdbName, "Publishing - Fetching environment variables for vdb data sources");
                     Collection<EnvVar> envs = getEnvironmentVariablesForVDBDataSources(authToken, uow, vdb, publishConfig);
 
                     publishConfig.addEnvironmentVariables(envs);
@@ -1042,18 +1125,24 @@ public class TeiidOpenShiftClient implements StringConstants {
                     work.setLastUpdated();
                     work.setStatus(Status.BUILDING);
 
-                    info("Publishing (" + work.vdbName() + ") - Configuration completed.");
+                    info(vdbName, "Publishing  - Configuration completed. Building ...");
+
                 } catch (Exception ex) {
                     work.setStatus(Status.FAILED);
                     work.setStatusMessage(ex.getLocalizedMessage());
 
-                    error("Publishing " + work.vdbName() + " - Build failed", ex);
+                    error(work.vdbName(), "Publishing - Build failed", ex);
 
                     work.setLastUpdated();
                     workQueue.remove(work);
                 } finally {
                     if (kubernetesClient != null)
                         kubernetesClient.close();
+
+                    //
+                    // Building is a long running operation so close the log file
+                    //
+                    closeLog(vdbName);
                 }
             }
         });
@@ -1068,24 +1157,26 @@ public class TeiidOpenShiftClient implements StringConstants {
     public BuildStatus publishVirtualization(PublishConfiguration publishConfig) throws KException {
         Vdb vdb = publishConfig.vdb;
         String vdbName = vdb.getVdbName(publishConfig.uow);
-        info("Publishing (" + vdbName + ") - Start publishing of virtualization: " + vdbName);
+
+        removeLog(vdbName);
+        info(vdbName, "Publishing - Start publishing of virtualization: " + vdbName);
 
         BuildStatus status = getVirtualizationStatus(vdbName);
-        info("Publishing (" + vdbName + ") - Virtualisation status: " + status.status());
+        info(vdbName, "Publishing - Virtualisation status: " + status.status());
 
         if ((status.status().equals(Status.BUILDING)) || (status.status().equals(Status.DEPLOYING)) ||
                 (status.status().equals(Status.RUNNING))) {
             return status;
         } else {
-            info("Publishing (" + vdbName + ") - Adding to work queue");
+            info(vdbName, "Publishing - Adding to work queue");
             status = addToQueue(vdbName, publishConfig);
 
-            info("Publishing (" + vdbName + ") - Initiating work monitor if not already running");
+            debug(vdbName, "Publishing - Initiating work monitor if not already running");
             synchronized (monitorState) {
                monitorWork();
             }
 
-            info("Published (" + vdbName + ") - Status of build + " + status.status());
+            info(vdbName, "Publishing - Status of build + " + status.status());
             return status;
         }
     }
@@ -1189,6 +1280,19 @@ public class TeiidOpenShiftClient implements StringConstants {
         }
     }
 
+    public String getVirtualizationLog(String vdbName) {
+        String logPath = getLogPath(vdbName);
+        File logFile = new File(logPath);
+        if (! logFile.exists())
+            return "No log available";
+
+        try {
+            return FileUtils.readSafe(logFile);
+        } catch (FileNotFoundException e) {
+            return "No log available";
+        }
+    }
+
     private BuildStatus getVDBService(String vdbName, String namespace, final OpenShiftClient client) {
         BuildStatus status = new BuildStatus(vdbName);
         status.setNamespace(namespace);
@@ -1274,7 +1378,7 @@ public class TeiidOpenShiftClient implements StringConstants {
 
         if (logger.isDebugEnabled() ) {
             for (BuildStatus build : services.values()) {
-                debug("Publish Status: " + build.vdbName() + " - " + build.status());
+                debug(build.vdbName(), "Publish Status: " + build.status());
             }
         }
         return services.values();
@@ -1293,7 +1397,7 @@ public class TeiidOpenShiftClient implements StringConstants {
         KubernetesClient kubernetesClient = new DefaultKubernetesClient(config);
         final OpenShiftClient client = kubernetesClient.adapt(OpenShiftClient.class);
         try {
-            info("Deleting the " + vdbName + "that is deployed as Service");
+            info(vdbName, "Deleting virtualisation deployed as Service");
             if (runningBuild != null) {
                 client.builds().inNamespace(runningBuild.namespace()).withName(runningBuild.buildName()).delete();
             } else {
@@ -1321,7 +1425,7 @@ public class TeiidOpenShiftClient implements StringConstants {
         final OpenShiftClient client = kubernetesClient.adapt(OpenShiftClient.class);
         try {
             RouteStatus theRoute = null;
-            debug("Getting route of type " + protocolType.id() + " for " + vdbName + " Service");
+            debug(vdbName, "Getting route of type " + protocolType.id() + " for Service");
             RouteList routes = client.routes().inNamespace(namespace).list();
             if (routes == null || routes.getItems().isEmpty())
                 return theRoute;

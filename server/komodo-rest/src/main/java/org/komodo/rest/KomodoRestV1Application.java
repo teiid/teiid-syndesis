@@ -627,6 +627,11 @@ public class KomodoRestV1Application extends Application implements SystemConsta
          * Publish VDB
          */
         String PUBLISH = "publish"; //$NON-NLS-1$
+
+        /**
+         * Publish VDB Logs
+         */
+        String PUBLISH_LOGS = "publishLogs"; //$NON-NLS-1$
     }
 
     private static final int TIMEOUT = 1;
