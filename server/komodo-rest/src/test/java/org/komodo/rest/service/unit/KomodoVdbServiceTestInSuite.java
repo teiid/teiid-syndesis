@@ -1463,4 +1463,104 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
         String errorMsg = extractResponse(response);
         assertThat(errorMsg, is("")); // no error message since name was valid
     }
+
+    @Test
+    public void shouldFailViewNameValidationWhenNameAlreadyExists() throws Exception {
+    	createVdbModelView("aVdb","aModel","aView");
+
+        Properties settings = uriBuilder().createSettings(SettingNames.VDB_NAME, "aVdb");
+        uriBuilder().addSetting(settings, SettingNames.VDB_PARENT_PATH, uriBuilder().workspaceVdbsUri());
+        uriBuilder().addSetting(settings, SettingNames.MODEL_NAME, "aModel");
+        URI modelUri = uriBuilder().vdbModelUri(LinkType.SELF, settings);
+        URI uri = UriBuilder.fromUri(modelUri).path(V1Constants.VIEWS_SEGMENT).path(V1Constants.NAME_VALIDATION_SEGMENT).path("aView").build();
+        HttpGet request = request(uri, RequestType.GET, MediaType.TEXT_PLAIN_TYPE);
+        HttpResponse response = executeOk(request);
+
+        extractResponse(response);
+    }
+
+    @Test
+    public void shouldFailViewNameValidationWhenNameHasInvalidCharacters() throws Exception {
+        Properties settings = uriBuilder().createSettings(SettingNames.VDB_NAME, TestUtilities.PARTS_VDB_NAME);
+        uriBuilder().addSetting(settings, SettingNames.VDB_PARENT_PATH, uriBuilder().workspaceVdbsUri());
+        uriBuilder().addSetting(settings, SettingNames.MODEL_NAME, "PartsSS");
+        URI modelUri = uriBuilder().vdbModelUri(LinkType.SELF, settings);
+        URI uri = UriBuilder.fromUri(modelUri).path(V1Constants.VIEWS_SEGMENT).path(V1Constants.NAME_VALIDATION_SEGMENT).path("InvalidN@me").build();
+        HttpGet request = request(uri, RequestType.GET, MediaType.TEXT_PLAIN_TYPE);
+        HttpResponse response = executeOk(request);
+
+        extractResponse(response);
+    }
+
+    @Test
+    public void shouldFailViewNameValidationWhenNameIsEmpty() throws Exception {
+        Properties settings = uriBuilder().createSettings(SettingNames.VDB_NAME, TestUtilities.PARTS_VDB_NAME);
+        uriBuilder().addSetting(settings, SettingNames.VDB_PARENT_PATH, uriBuilder().workspaceVdbsUri());
+        uriBuilder().addSetting(settings, SettingNames.MODEL_NAME, "PartsSS");
+        URI modelUri = uriBuilder().vdbModelUri(LinkType.SELF, settings);
+        URI uri = UriBuilder.fromUri(modelUri).path(V1Constants.VIEWS_SEGMENT).path(V1Constants.NAME_VALIDATION_SEGMENT).path("").build();
+        HttpGet request = request(uri, RequestType.GET, MediaType.TEXT_PLAIN_TYPE);
+        HttpResponse response = execute(request);
+
+        assertResponse(response, HttpStatus.SC_INTERNAL_SERVER_ERROR);
+        String errorMsg = extractResponse(response);
+        assertThat(errorMsg, startsWith("RESTEASY"));
+    }
+
+    @Test
+    public void shouldFailViewNameValidationWhenNameHasSpaces() throws Exception {
+        Properties settings = uriBuilder().createSettings(SettingNames.VDB_NAME, TestUtilities.PARTS_VDB_NAME);
+        uriBuilder().addSetting(settings, SettingNames.VDB_PARENT_PATH, uriBuilder().workspaceVdbsUri());
+        uriBuilder().addSetting(settings, SettingNames.MODEL_NAME, "PartsSS");
+        URI modelUri = uriBuilder().vdbModelUri(LinkType.SELF, settings);
+        URI uri = UriBuilder.fromUri(modelUri).path(V1Constants.VIEWS_SEGMENT).path(V1Constants.NAME_VALIDATION_SEGMENT).path("a b c").build();
+        HttpGet request = request(uri, RequestType.GET, MediaType.TEXT_PLAIN_TYPE);
+        HttpResponse response = executeOk(request);
+
+        String errorMsg = extractResponse(response);
+        assertThat(errorMsg, is(notNullValue()));
+    }
+
+    @Test
+    public void shouldFailViewNameValidationWhenVdbNotFound() throws Exception {
+        Properties settings = uriBuilder().createSettings(SettingNames.VDB_NAME, "VdbNotFound");
+        uriBuilder().addSetting(settings, SettingNames.VDB_PARENT_PATH, uriBuilder().workspaceVdbsUri());
+        uriBuilder().addSetting(settings, SettingNames.MODEL_NAME, "PartsSS");
+        URI modelUri = uriBuilder().vdbModelUri(LinkType.SELF, settings);
+        URI uri = UriBuilder.fromUri(modelUri).path(V1Constants.VIEWS_SEGMENT).path(V1Constants.NAME_VALIDATION_SEGMENT).path("ValidName").build();
+        HttpGet request = request(uri, RequestType.GET, MediaType.TEXT_PLAIN_TYPE);
+        HttpResponse response = execute(request);
+
+        String errorMsg = extractResponse(response);
+        assertThat(errorMsg, is(notNullValue()));
+    }
+
+    @Test
+    public void shouldFailViewNameValidationWhenVdbModelNotFound() throws Exception {
+        Properties settings = uriBuilder().createSettings(SettingNames.VDB_NAME, TestUtilities.PARTS_VDB_NAME);
+        uriBuilder().addSetting(settings, SettingNames.VDB_PARENT_PATH, uriBuilder().workspaceVdbsUri());
+        uriBuilder().addSetting(settings, SettingNames.MODEL_NAME, "NotFoundModel");
+        URI modelUri = uriBuilder().vdbModelUri(LinkType.SELF, settings);
+        URI uri = UriBuilder.fromUri(modelUri).path(V1Constants.VIEWS_SEGMENT).path(V1Constants.NAME_VALIDATION_SEGMENT).path("ValidName").build();
+        HttpGet request = request(uri, RequestType.GET, MediaType.TEXT_PLAIN_TYPE);
+        HttpResponse response = execute(request);
+
+        String errorMsg = extractResponse(response);
+        assertThat(errorMsg, is(notNullValue()));
+    }
+
+    @Test
+    public void shouldValidateViewName() throws Exception {
+        Properties settings = uriBuilder().createSettings(SettingNames.VDB_NAME, TestUtilities.PARTS_VDB_NAME);
+        uriBuilder().addSetting(settings, SettingNames.VDB_PARENT_PATH, uriBuilder().workspaceVdbsUri());
+        uriBuilder().addSetting(settings, SettingNames.MODEL_NAME, "PartsSS");
+        URI modelUri = uriBuilder().vdbModelUri(LinkType.SELF, settings);
+        URI uri = UriBuilder.fromUri(modelUri).path(V1Constants.VIEWS_SEGMENT).path(V1Constants.NAME_VALIDATION_SEGMENT).path("ValidName").build();
+        HttpGet request = request(uri, RequestType.GET, MediaType.TEXT_PLAIN_TYPE);
+        HttpResponse response = executeOk(request);
+
+        String errorMsg = extractResponse(response);
+        assertThat(errorMsg, is("")); // no error message since name was valid
+    }
+    
 }
