@@ -235,6 +235,11 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
         Assert.assertNotNull(serviceTestUtilities.getVdbModel(USER_NAME, vdbName, modelName));
     }
 
+    protected void createVdbModelView( String vdbName, String modelName, String viewName ) throws Exception {
+        serviceTestUtilities.createVdbModelView(vdbName, modelName, viewName, USER_NAME);
+        Assert.assertNotNull(serviceTestUtilities.getVdbModelView(USER_NAME, vdbName, modelName, viewName));
+    }
+
     protected List<String> loadSampleSearches() throws Exception {
         List<String> searchNames = new ArrayList<>();
         Repository repository = restApp().getDefaultRepository();

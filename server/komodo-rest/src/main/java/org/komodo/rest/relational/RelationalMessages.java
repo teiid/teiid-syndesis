@@ -924,6 +924,16 @@ public final class RelationalMessages {
         VDB_TO_REPO_IMPORT_ERROR,
         
         /**
+         * A message indicating that a View with the given name already exists.
+         */
+        VIEW_NAME_EXISTS,
+
+        /**
+         * A message indicating an unexpected error occurred during name validation.
+         */
+        VIEW_NAME_VALIDATION_ERROR,
+
+        /**
          * An error occurred while trying to obtain the teiid schema
          */
         SCHEMA_SERVICE_GET_SCHEMA_ERROR,

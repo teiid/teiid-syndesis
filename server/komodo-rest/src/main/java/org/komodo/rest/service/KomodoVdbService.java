@@ -45,6 +45,9 @@ import static org.komodo.rest.relational.RelationalMessages.Error.VDB_SERVICE_GE
 import static org.komodo.rest.relational.RelationalMessages.Error.VDB_SERVICE_GET_TRANSLATOR_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.VDB_SERVICE_GET_VDBS_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.VDB_SERVICE_GET_VDB_ERROR;
+import static org.komodo.rest.relational.RelationalMessages.Error.VIEW_NAME_EXISTS;
+import static org.komodo.rest.relational.RelationalMessages.Error.VIEW_NAME_VALIDATION_ERROR;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URI;
@@ -75,6 +78,7 @@ import org.komodo.relational.model.Column;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Model.Type;
 import org.komodo.relational.model.Table;
+import org.komodo.relational.model.View;
 import org.komodo.relational.vdb.Condition;
 import org.komodo.relational.vdb.DataRole;
 import org.komodo.relational.vdb.Mask;
@@ -108,13 +112,14 @@ import org.komodo.rest.relational.response.RestVdbPermission;
 import org.komodo.rest.relational.response.RestVdbTranslator;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -651,6 +656,15 @@ public final class KomodoVdbService extends KomodoService {
     	}
     	LOGGER.debug( "Table '{0}' was found", tableName ); //$NON-NLS-1$
     	return tables[0];
+    }
+    
+    private View findView(UnitOfWork uow, List<MediaType> mediaTypes, String viewName, Model model) throws KException {
+    	View[] views = model.getViews(uow, viewName);
+    	if(views.length == 0) {
+    		return null;
+    	}
+    	LOGGER.debug( "View '{0}' was found", viewName ); //$NON-NLS-1$
+    	return views[0];
     }
     
     private DataRole findDataRole(UnitOfWork uow, List<MediaType> mediaTypes,
@@ -3614,4 +3628,99 @@ public final class KomodoVdbService extends KomodoService {
                                                      VDB_NAME_VALIDATION_ERROR );
         }
     }
+    
+    /**
+     * @param headers
+     *        the request headers (never <code>null</code>)
+     * @param uriInfo
+     *        the request URI information (never <code>null</code>)
+     * @param vdbName
+     *        the id of the Vdb being retrieved (cannot be empty)
+     * @param modelName
+     *        the id of the Model being retrieved (cannot be empty)
+	 * @param viewName
+	 *        the view name being validated (cannot be empty)
+	 * @return the response (never <code>null</code>) with an entity that is
+	 *         either an empty string, when the name is valid, or an error
+	 *         message
+	 * @throws KomodoRestException
+	 *         if there is a problem validating the View name or constructing
+	 *         the response
+     */
+    @GET
+    @Path( V1Constants.VDB_PLACEHOLDER + StringConstants.FORWARD_SLASH +
+                V1Constants.MODELS_SEGMENT + StringConstants.FORWARD_SLASH +
+                V1Constants.MODEL_PLACEHOLDER + StringConstants.FORWARD_SLASH +
+                V1Constants.VIEWS_SEGMENT + StringConstants.FORWARD_SLASH + 
+                V1Constants.NAME_VALIDATION_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.VIEW_PLACEHOLDER)
+    @Produces( { MediaType.TEXT_PLAIN } )
+    @ApiOperation( value = "Returns an error message if the view name is invalid" )
+    @ApiResponses( value = {
+            @ApiResponse( code = 400, message = "The URI cannot contain encoded slashes or backslashes." ),
+            @ApiResponse( code = 403, message = "An unexpected error has occurred." ),
+            @ApiResponse( code = 404, message = "No vdb could be found with name" ),
+            @ApiResponse( code = 500, message = "The view name cannot be empty." )
+    } )
+    public Response validateViewName( final @Context HttpHeaders headers,
+                                      final @Context UriInfo uriInfo,
+                                      @ApiParam(value = "Name of the Vdb", required = true)
+                                      final @PathParam( "vdbName" ) String vdbName,
+                                      @ApiParam(value = "Name of the Model to get its tables", required = true)
+                                      final @PathParam( "modelName" ) String modelName,
+                                      @ApiParam( value = "The View name being checked", required = true )
+                                      final @PathParam( "viewName" ) String viewName ) throws KomodoRestException {
+
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        final String errorMsg = VALIDATOR.checkValidName( viewName );
+        
+        // a name validation error occurred
+        if ( errorMsg != null ) {
+            return Response.ok().entity( errorMsg ).build();
+        }
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        UnitOfWork uow = null;
+
+        try {
+            uow = createTransaction( principal, "validateViewName", true ); //$NON-NLS-1$
+
+            Vdb vdb = findVdb(uow, vdbName);
+            if (vdb == null)
+                return commitNoVdbFound(uow, mediaTypes, vdbName);
+
+            Model model = findModel(uow, mediaTypes, modelName, vdb);
+            if (model == null) {
+                return commitNoModelFound(uow, mediaTypes, modelName, vdbName);
+            }
+
+            // make sure an existing View does not have that name
+            final View view = findView( uow, mediaTypes, viewName, model );
+
+            if ( view == null ) {
+            	// name is valid
+            	return Response.ok().build();
+            }
+
+            // name is the same as an existing View
+            return Response.ok()
+                           .entity( RelationalMessages.getString( VIEW_NAME_EXISTS ) )
+                           .build();
+        } catch ( final Exception e ) {
+            if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
+                uow.rollback();
+            }
+
+            if ( e instanceof KomodoRestException ) {
+                throw ( KomodoRestException )e;
+            }
+
+            return createErrorResponseWithForbidden( headers.getAcceptableMediaTypes(), 
+                                                     e, 
+                                                     VIEW_NAME_VALIDATION_ERROR );
+        }
+    }
+
 }
