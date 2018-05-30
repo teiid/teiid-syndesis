@@ -30,6 +30,7 @@ import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Table;
+import org.komodo.relational.model.internal.OptionContainerUtils;
 import org.komodo.relational.resource.Driver;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.KomodoService;
@@ -87,6 +88,16 @@ public final class RestDataservice extends RestBasicEntity {
     public static final String DATASERVICE_VIEW_TABLES_LABEL = "serviceViewTables"; //$NON-NLS-1$
 
     /**
+     * fqn table option key
+     */
+    private final static String TABLE_OPTION_FQN = "teiid_rel:fqn"; //$NON-NLS-1$
+
+    /**
+     * schema model suffix
+     */
+    private final static String SCHEMA_MODEL_SUFFIX = "schemavdb"; //$NON-NLS-1$
+    
+    /**
      * Constructor for use when deserializing
      */
     public RestDataservice() {
@@ -129,7 +140,14 @@ public final class RestDataservice extends RestBasicEntity {
                     if(model.getModelType(uow) == Model.Type.PHYSICAL) {
                         Table[] tables = model.getTables(uow);
                         for(Table table : tables) {
-                            tableNames.add(model.getName(uow)+"."+table.getName(uow)); //$NON-NLS-1$
+                    		// 'tableNames' are generated using the fqn table option, if available.
+                            final String tableFqn = OptionContainerUtils.getOption( uow, table, TABLE_OPTION_FQN );
+                            if (tableFqn != null && tableFqn.length()>0) {
+                                final String mdlName = model.getName(uow);
+                                final int endIndex = mdlName.indexOf(SCHEMA_MODEL_SUFFIX);
+                                final String connName = mdlName.substring(0, endIndex);
+                                tableNames.add("connection="+connName+"/"+tableFqn); //$NON-NLS-1$
+                            }
                         }
                     }
                 }

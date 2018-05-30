@@ -85,6 +85,11 @@ public final class RestLink {
         TABLES(KomodoType.TABLE),
 
         /**
+         * A link to a vdb view resource
+         */
+        VIEWS(KomodoType.VIEW),
+
+        /**
          * A link to a table column resource
          */
         COLUMNS(KomodoType.COLUMN),
