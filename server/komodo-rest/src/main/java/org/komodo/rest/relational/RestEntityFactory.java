@@ -29,12 +29,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
+
 import org.komodo.relational.RelationalModelFactory;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.model.Column;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Table;
+import org.komodo.relational.model.View;
 import org.komodo.relational.template.Template;
 import org.komodo.relational.template.TemplateEntry;
 import org.komodo.relational.vdb.Condition;
@@ -60,6 +62,7 @@ import org.komodo.rest.relational.response.RestVdbModel;
 import org.komodo.rest.relational.response.RestVdbModelSource;
 import org.komodo.rest.relational.response.RestVdbModelTable;
 import org.komodo.rest.relational.response.RestVdbModelTableColumn;
+import org.komodo.rest.relational.response.RestVdbModelView;
 import org.komodo.rest.relational.response.RestVdbPermission;
 import org.komodo.rest.relational.response.RestVdbTranslator;
 import org.komodo.rest.relational.response.metadata.RestMetadataConnection;
@@ -137,6 +140,9 @@ public class RestEntityFactory implements V1Constants {
             case VDB_MODEL_SOURCE:
                 ModelSource source = wsMgr.resolve(transaction, kObject, ModelSource.class);
                 return (T)new RestVdbModelSource(baseUri, source, transaction);
+            case VIEW:
+                View view = wsMgr.resolve(transaction, kObject, View.class);
+                return (T)new RestVdbModelView(baseUri, view, transaction);
             case TABLE:
                 Table table = wsMgr.resolve(transaction, kObject, Table.class);
                 return (T)new RestVdbModelTable(baseUri, table, transaction);

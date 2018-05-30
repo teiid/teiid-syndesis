@@ -599,6 +599,11 @@ public final class RelationalMessages {
         VDB_SERVICE_CREATE_MISSING_MODEL_SOURCE_NAME,
  
         /**
+         * An error indicating create attempt was missing a View name
+         */
+        VDB_SERVICE_CREATE_MISSING_VIEW_NAME,
+ 
+        /**
          * An error indicating a VDB could not be created.
          */
         VDB_SERVICE_CREATE_VDB_ERROR,
@@ -612,6 +617,16 @@ public final class RelationalMessages {
          * An error indicating a VDB model source could not be created.
          */
         VDB_SERVICE_CREATE_VDB_MODEL_SOURCE_ERROR,
+        
+        /**
+         * An error indicating a View could not be created.
+         */
+        VDB_SERVICE_CREATE_VDB_MODEL_VIEW_ERROR,
+
+        /**
+         * The VDB service request lacks at least one parameter
+         */
+        VDB_SERVICE_MISSING_PARAMETER_ERROR,
 
         /**
          * An error indicating a request to clone a VDB failed
@@ -664,6 +679,11 @@ public final class RelationalMessages {
         VDB_SERVICE_DELETE_VDB_MODEL_SOURCE_ERROR,
 
         /**
+         * An error indicating a VDB model view could not be deleted.
+         */
+        VDB_SERVICE_DELETE_VDB_MODEL_VIEW_ERROR,
+        
+        /**
          * An error indicating a request to update a vdb failed
          */
         VDB_SERVICE_UPDATE_VDB_ERROR,
@@ -679,6 +699,11 @@ public final class RelationalMessages {
         VDB_SERVICE_UPDATE_VDB_MODEL_SOURCE_ERROR,
 
         /**
+         * An error indicating a request to update a vdb model view failed
+         */
+        VDB_SERVICE_UPDATE_VDB_MODEL_VIEW_ERROR,
+        
+        /**
          * An error indicating a JSON document representing the VDBs in the workspace could not be retrieved.
          */
         VDB_SERVICE_GET_VDBS_ERROR,
@@ -689,95 +714,100 @@ public final class RelationalMessages {
         VDB_SERVICE_GET_VDB_ERROR,
 
         /**
-         * An error indicating an error occurred trying to obain a VDB's models.
+         * An error indicating an error occurred trying to obtain a VDB's models.
          */
         VDB_SERVICE_GET_MODELS_ERROR,
 
         /**
-         * An error indicating an error occurred trying to obain a specific model from a VDB
+         * An error indicating an error occurred trying to obtain a specific model from a VDB
          */
         VDB_SERVICE_GET_MODEL_ERROR,
 
         /**
-         * An error indicating an error occurred trying to obain a VDB Model's sources
+         * An error indicating an error occurred trying to obtain a VDB Model's sources
          */
         VDB_SERVICE_GET_SOURCES_ERROR,
 
         /**
-         * An error indicating an error occurred trying to obain a VDB Model's source
+         * An error indicating an error occurred trying to obtain a VDB Model's source
          */
         VDB_SERVICE_GET_SOURCE_ERROR,
 
         /**
-         * An error indicating an error occurred trying to obain a Models tables
+         * An error indicating an error occurred trying to obtain a Models tables
          */
         VDB_SERVICE_GET_TABLES_ERROR,
 
         /**
-         * An error indicating an error occurred trying to obain a Tables columns
+         * An error indicating an error occurred trying to obtain a Tables columns
          */
         VDB_SERVICE_GET_COLUMNS_ERROR,
 
         /**
-         * An error indicating an error occurred trying to obain a VDB's translators
+         * An error indicating an error occurred trying to obtain a VDB's translators
          */
         VDB_SERVICE_GET_TRANSLATORS_ERROR,
 
         /**
-         * An error indicating an error occurred trying to obain a VDB's translator
+         * An error indicating an error occurred trying to obtain a VDB's translator
          */
         VDB_SERVICE_GET_TRANSLATOR_ERROR,
 
         /**
-         * An error indicating an error occurred trying to obain a VDB's imports
+         * An error indicating an error occurred trying to obtain a VDB's imports
          */
         VDB_SERVICE_GET_IMPORTS_ERROR,
 
         /**
-         * An error indicating an error occurred trying to obain a VDB's import
+         * An error indicating an error occurred trying to obtain a VDB's import
          */
         VDB_SERVICE_GET_IMPORT_ERROR,
 
         /**
-         * An error indicating an error occurred trying to obain a VDB's data roles
+         * An error indicating an error occurred trying to obtain a VDB's data roles
          */
         VDB_SERVICE_GET_DATA_ROLES_ERROR,
 
         /**
-         * An error indicating an error occurred trying to obain a VDB's data role
+         * An error indicating an error occurred trying to obtain a VDB's data role
          */
         VDB_SERVICE_GET_DATA_ROLE_ERROR,
 
         /**
-         * An error indicating an error occurred trying to obain a VDB's data role permissions
+         * An error indicating an error occurred trying to obtain a VDB's data role permissions
          */
         VDB_SERVICE_GET_PERMISSIONS_ERROR,
 
         /**
-         * An error indicating an error occurred trying to obain a data role's permission
+         * An error indicating an error occurred trying to obtain a data role's permission
          */
         VDB_SERVICE_GET_PERMISSION_ERROR,
 
         /**
-         * An error indicating an error occurred trying to obain a permission's conditions
+         * An error indicating an error occurred trying to obtain a permission's conditions
          */
         VDB_SERVICE_GET_CONDITIONS_ERROR,
 
         /**
-         * An error indicating an error occurred trying to obain a permission's condition
+         * An error indicating an error occurred trying to obtain a permission's condition
          */
         VDB_SERVICE_GET_CONDITION_ERROR,
 
         /**
-         * An error indicating an error occurred trying to obain a permission's masks
+         * An error indicating an error occurred trying to obtain a permission's masks
          */
         VDB_SERVICE_GET_MASKS_ERROR,
 
         /**
-         * An error indicating an error occurred trying to obain a permission's mask
+         * An error indicating an error occurred trying to obtain a permission's mask
          */
         VDB_SERVICE_GET_MASK_ERROR,
 
+        /**
+         * An error indicating an error occurred trying to obtain model views.
+         */
+        VDB_SERVICE_GET_VIEWS_ERROR,
+        
         /**
          * An error indicating the VDB data role name is missing from the input JSON document.
          */
@@ -809,6 +839,11 @@ public final class RelationalMessages {
         VDB_SERVICE_MISSING_JSON_MODEL_SOURCE_NAME,
 
         /**
+         * An error indicating the View name is missing from the input JSON document.
+         */
+        VDB_SERVICE_MISSING_JSON_MODEL_VIEW_NAME,
+        
+        /**
          * An error indicating update attempt was missing a VDB name
          */
         VDB_SERVICE_UPDATE_MISSING_VDB_NAME,
@@ -822,6 +857,11 @@ public final class RelationalMessages {
          * An error indicating update attempt was missing a ModelSource name
          */
         VDB_SERVICE_UPDATE_MISSING_MODEL_SOURCE_NAME,
+        
+        /**
+         * An error indicating update attempt was missing a View name
+         */
+        VDB_SERVICE_UPDATE_MISSING_MODEL_VIEW_NAME,
         
         /**
          * An error indicating that the vdb does not exist
@@ -849,6 +889,11 @@ public final class RelationalMessages {
         VDB_SERVICE_VDB_MODEL_SOURCE_ALREADY_EXISTS,
 
         /**
+         * An error indicating a VDB Model View with the specified name already exists and therefore cannot be created.
+         */
+        VDB_SERVICE_VDB_MODEL_VIEW_ALREADY_EXISTS,
+        
+        /**
          * An error indicating the parameter and JSON VDB name does not match.
          */
         VDB_SERVICE_VDB_NAME_DONT_MATCH_ERROR,
@@ -862,6 +907,11 @@ public final class RelationalMessages {
          * An error indicating the parameter and JSON ModelSource name does not match.
          */
         VDB_SERVICE_MODEL_SOURCE_NAME_DONT_MATCH_ERROR,
+        
+        /**
+         * An error indicating the parameter and JSON View name does not match.
+         */
+        VDB_SERVICE_MODEL_VIEW_NAME_DONT_MATCH_ERROR,
         
         /**
          * An error indicating delete attempt was missing a VDB data role name.
@@ -884,10 +934,55 @@ public final class RelationalMessages {
         VDB_SERVICE_DELETE_MISSING_MODEL_SOURCE_NAME,
         
         /**
+         * An error indicating delete attempt was missing a View name
+         */
+        VDB_SERVICE_DELETE_MISSING_VIEW_NAME,
+        
+        /**
          * An error indicating an exception occurred while importing a sample vdb
          */
         VDB_SERVICE_LOAD_SAMPLE_ERROR,
 
+        /**
+         * The VDB service cannot parse the request body
+         */
+        VDB_SERVICE_REQUEST_PARSING_ERROR,
+
+        /**
+         * An error indicating define views failed because the view names were missing
+         */
+        VDB_SERVICE_DEFINE_VIEWS_MISSING_VIEW_NAMES,
+
+        /**
+         * An error indicating define views failed because the table paths were missing
+         */
+        VDB_SERVICE_DEFINE_VIEWS_MISSING_TABLE_PATHS,
+
+        /**
+         * An error indicating define views failed because the viewName and tablePath lists different size
+         */
+        VDB_SERVICE_DEFINE_VIEWS_ARRAY_SIZE_ERROR,
+        
+        /**
+         * An error indicating define views failed because the modelSource paths were missing
+         */
+        VDB_SERVICE_DEFINE_VIEWS_MISSING_MODELSOURCE_PATHS,
+
+        /**
+         * An error indicating that a table does not exist
+         */
+        VDB_SERVICE_SOURCE_TABLE_DNE,
+        
+        /**
+         * An error indicating that a model source does not exist
+         */
+        VDB_SERVICE_MODEL_SOURCE_DNE,
+        
+        /**
+         * An error indicating an error occurred trying to define vdb model views
+         */
+        VDB_SERVICE_DEFINE_VIEWS_ERROR,
+        
         /**
          * An error indicating the content of a sample vdb could not be loaded into a stream
          */

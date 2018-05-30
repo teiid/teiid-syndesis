@@ -63,7 +63,7 @@ public final class DataserviceSerializerTest extends AbstractSerializerTest  {
         "    " + CLOSE_BRACE + COMMA + NEW_LINE +
         "    " + OPEN_BRACE + NEW_LINE +
         "      \"rel\": \"children\"," + NEW_LINE +
-        "      \"href\": \"" + BASE_URI_PREFIX + SEARCH + "parent\\u003d" + URLEncoder.encode(DATASERVICE_DATA_PATH) + "\"" + NEW_LINE +
+        "      \"href\": \"" + BASE_URI_PREFIX + SEARCH + "parent\\u003d" + DATASERVICE_DATA_PATH + "\"" + NEW_LINE +
         "    " + CLOSE_BRACE + COMMA + NEW_LINE +
         "    " + OPEN_BRACE + NEW_LINE +
         "      \"rel\": \"vdbs\"," + NEW_LINE +

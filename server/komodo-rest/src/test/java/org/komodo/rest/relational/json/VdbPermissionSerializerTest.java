@@ -79,7 +79,7 @@ public final class VdbPermissionSerializerTest extends AbstractSerializerTest {
     "    " + CLOSE_BRACE + COMMA + NEW_LINE +
     "    " + OPEN_BRACE + NEW_LINE +
     "      \"rel\": \"children\"," + NEW_LINE +
-    "      \"href\": \"" + BASE_URI_PREFIX + SEARCH + "parent\\u003d" + URLEncoder.encode(PERM_DATA_PATH) + "\"" + NEW_LINE +
+    "      \"href\": \"" + BASE_URI_PREFIX + SEARCH + "parent\\u003d" + PERM_DATA_PATH + "\"" + NEW_LINE +
     "    " + CLOSE_BRACE + COMMA + NEW_LINE +
     "    " + OPEN_BRACE + NEW_LINE +
     "      \"rel\": \"conditions\"," + NEW_LINE +
