@@ -46,6 +46,7 @@ import org.komodo.relational.dataservice.internal.DataserviceConveyor;
 import org.komodo.relational.importer.vdb.VdbImporter;
 import org.komodo.relational.internal.AdapterFactory;
 import org.komodo.relational.model.Model;
+import org.komodo.relational.model.View;
 import org.komodo.relational.profile.GitRepository;
 import org.komodo.relational.profile.Profile;
 import org.komodo.relational.resource.Driver;
@@ -190,6 +191,34 @@ public final class ServiceTestUtilities {
     }
 
     /**
+     * @param user initiaiting the call
+     * @param vdbName the name of the parent vdb
+     * @param vdbModelName the name of the model
+     * @param viewName the name of the view
+     *
+     * @return the view directly from the kEngine
+     * @throws Exception if error occurs
+     */
+    public View getVdbModelView(String user, String vdbName, String vdbModelName, String viewName) throws Exception {
+        Model vdbModel = getVdbModel(user, vdbName, vdbModelName);
+        if (vdbModel == null)
+            return null;
+    
+        UnitOfWork uow = repository.createTransaction(user, "Find vdb model view " + viewName, true, null); //$NON-NLS-1$
+        View[] views = vdbModel.getViews(uow, viewName);
+        View theView = null;
+        for(View view : views) {
+            if (viewName.equals(view.getName(uow))) {
+                theView = view;
+                break;
+            }
+        }
+        uow.commit();
+    
+        return theView;
+    }
+
+    /**
      * Create a dataservice in the komodo engine (used for mostly test purposes)
      *
      * @param dataserviceName the service name
@@ -318,6 +347,39 @@ public final class ServiceTestUtilities {
         Vdb vdb = Vdb.RESOLVER.resolve(uow, kobj);
         
         vdb.addModel(uow, modelName);
+    
+        uow.commit();
+        callback.await(3, TimeUnit.MINUTES);
+    }
+
+    /**
+     * Create a View within a vdb model in the komodo engine
+     *
+     * @param vdbName the vdb name
+     * @param modelName the model name
+     * @param viewName the view name
+     * @param user initiating call
+     * @throws Exception if error occurs
+     */
+    public void createVdbModelView(String vdbName, String modelName, String viewName, String user) throws Exception {
+    
+        SynchronousCallback callback = new SynchronousCallback();
+        UnitOfWork uow = repository.createTransaction(user, "Create View", false, callback); //$NON-NLS-1$
+    
+        WorkspaceManager wsMgr = WorkspaceManager.getInstance(repository, uow);
+        if(!wsMgr.hasChild(uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE)) {
+            wsMgr.createVdb(uow, null, vdbName, vdbName);
+        }
+        
+        KomodoObject kobj = wsMgr.getChild(uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE);
+        Vdb vdb = Vdb.RESOLVER.resolve(uow, kobj);
+        
+        if(!vdb.hasChild(uow, modelName, VdbLexicon.Vdb.MODEL)) {
+        	vdb.addModel(uow, modelName);
+        }
+        
+        Model[] models = vdb.getModels(uow, modelName);
+        models[0].addView(uow, viewName);
     
         uow.commit();
         callback.await(3, TimeUnit.MINUTES);

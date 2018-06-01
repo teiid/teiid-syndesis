@@ -361,13 +361,7 @@ public class RestEntityFactory implements V1Constants {
         return new RestServiceCatalogDataSource(baseUri, parent, datasource, transaction);
 	}
 
-    public RestVirtualizationStatus createBuildStatus(UnitOfWork transaction, Repository repository,
-            BuildStatus status, URI baseUri) throws Exception {
-        checkTransaction(transaction);
-        ArgCheck.isTrue(transaction.isRollbackOnly(), "transaction should be rollback-only");
-
-        // TODO:  phantomjinx what needs to be done here?
-        KomodoObject parent = createTemporaryParent(transaction, repository, null);
-        return new RestVirtualizationStatus(baseUri, parent, status, transaction);
+    public RestVirtualizationStatus createBuildStatus(BuildStatus status, URI baseUri) throws Exception {
+        return new RestVirtualizationStatus(baseUri, status);
     }
 }

@@ -22,8 +22,11 @@
 package org.komodo.rest.relational.json;
 
 import static org.komodo.rest.Messages.Error.UNEXPECTED_JSON_TOKEN;
+import static org.komodo.rest.relational.json.KomodoJsonMarshaller.BUILDER;
 import java.io.IOException;
+import java.util.List;
 import org.komodo.rest.Messages;
+import org.komodo.rest.relational.response.virtualization.RestRouteStatus;
 import org.komodo.rest.relational.response.virtualization.RestVirtualizationStatus;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
@@ -69,6 +72,9 @@ public final class VirtualizationStatusSerializer extends TypeAdapter< RestVirtu
                 case RestVirtualizationStatus.STATUS_MSG_LABEL:
                     virtual.setStatusMsg(in.nextString());
                     break;
+                case RestVirtualizationStatus.ROUTES_LABEL:
+                    final RestRouteStatus[] routes = BUILDER.fromJson( in, RestRouteStatus[].class );
+                    virtual.setRoutes(routes);
                 default:
                     throw new IOException( Messages.getString( UNEXPECTED_JSON_TOKEN, name ) );
             }
@@ -110,6 +116,12 @@ public final class VirtualizationStatusSerializer extends TypeAdapter< RestVirtu
 
         out.name(RestVirtualizationStatus.STATUS_MSG_LABEL);
         out.value(value.getStatusMsg());
+
+        List<RestRouteStatus> routes = value.getRoutes();
+        if (routes != null && routes.size() > 0) {
+            out.name(RestVirtualizationStatus.ROUTES_LABEL);
+            BUILDER.toJson(routes.toArray(new RestRouteStatus[0]), RestRouteStatus[].class, out);
+        }
 
         out.endObject();
     }

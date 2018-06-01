@@ -364,6 +364,16 @@ public class KomodoRestV1Application extends Application implements SystemConsta
         String SOURCE_PLACEHOLDER = "{sourceName}"; //$NON-NLS-1$
 
         /**
+         * The name of the URI path segment for the collection of views of a vdb model
+         */
+        String VIEWS_SEGMENT = "Views"; //$NON-NLS-1$
+
+        /**
+         * Placeholder added to an URI to allow a specific view id
+         */
+        String VIEW_PLACEHOLDER = "{viewName}"; //$NON-NLS-1$
+
+        /**
          * The name of the URI path segment for the collection of catalogs
          */
         String JDBC_CATALOG_SCHEMA_SEGMENT = "JdbcCatalogSchema"; //$NON-NLS-1$
