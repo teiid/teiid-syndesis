@@ -2546,6 +2546,46 @@ public class KomodoMetadataService extends KomodoService {
         }
     }
 
+    @GET
+    @Path(V1Constants.PUBLISH_LOGS + StringConstants.FORWARD_SLASH + V1Constants.VDB_PLACEHOLDER)
+    @Produces( MediaType.APPLICATION_JSON )
+    @ApiOperation(value = "Find Publish Logs of Virtualization by VDB name", response = KomodoStatusObject.class)
+    @ApiResponses(value = {
+        @ApiResponse(code = 404, message = "No VDB could be found with name"),
+        @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
+        @ApiResponse(code = 403, message = "An error has occurred.")
+    })
+    public Response getVirtualizationLogs(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
+            @ApiParam(value = "Name of the VDB", required = true) final @PathParam("vdbName") String vdbName)
+            throws KomodoRestException {
+
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        KomodoStatusObject status = new KomodoStatusObject("Logs for " + vdbName);
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        UnitOfWork uow = null;
+        try {
+            uow = createTransaction(principal, "publish", true); //$NON-NLS-1$
+            String log = this.openshiftClient.getVirtualizationLog(vdbName);
+            status.addAttribute("log", log);
+
+            return commit(uow, mediaTypes, status);
+        } catch (CallbackTimeoutException ex) {
+            return createTimeoutResponse(mediaTypes);
+        } catch (Throwable e) {
+            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+                uow.rollback();
+            }
+            if (e instanceof KomodoRestException) {
+                throw (KomodoRestException) e;
+            }
+            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.PUBLISH_ERROR);
+        }
+    }
+
     @DELETE
     @Path(V1Constants.PUBLISH + StringConstants.FORWARD_SLASH + V1Constants.VDB_PLACEHOLDER)
     @Produces( MediaType.APPLICATION_JSON )
