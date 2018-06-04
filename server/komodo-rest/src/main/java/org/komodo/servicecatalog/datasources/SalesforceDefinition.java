@@ -21,6 +21,7 @@
  */
 package org.komodo.servicecatalog.datasources;
 
+import java.util.Map;
 import java.util.Properties;
 
 import org.komodo.servicecatalog.DataSourceDefinition;
@@ -50,20 +51,30 @@ public class SalesforceDefinition extends DataSourceDefinition {
     public boolean isResouceAdapter() {
         return true;
     }
+    
+    @Override
+    public boolean isTypeOf(Map<String, String> properties) {
+        if ((properties != null) && (properties.get("SALESFORCE_URL") != null)) {
+            return true;
+        }
+        return false;
+    }
+    
+    @Override
+    public Properties getDataSourceProperties(DefaultServiceCatalogDataSource source) {
+        Properties props = new Properties();
+        props.setProperty("class-name", "org.teiid.resource.adapter.salesforce.SalesForceManagedConnectionFactory");
+        props.setProperty("URL", source.getProperty("url"));
+        props.setProperty("username", source.getProperty("username"));
+        props.setProperty("password", source.getProperty("password"));
+        return props;
+    }    
 
     @Override
     public Properties getWFSDataSourceProperties(DefaultServiceCatalogDataSource scd, String jndiName) {
-        Properties props = new Properties();
-
-        // consult Teiid documents for all the properties; Then map to properties from OpenShift Service
-        props.setProperty("swarm.resource-adapter.resource-adapters." + scd.getName()+".module=",
-                "org.jboss.teiid.resource-adapter.salesforce-41");
-
-        ds(props, scd, "class-name", "org.teiid.resource.adapter.salesforce.SalesForceManagedConnectionFactory");
-        ds(props, scd, "jndi-name", jndiName);
-        ds(props, scd, "enabled", "true");
-        ds(props, scd, "use-java-context", "true");
-        ds(props, scd, "URL", scd.canonicalEnvKey("URL"));
+        Properties props = setupResourceAdapter(scd.getName(), "org.jboss.teiid.resource-adapter.salesforce-41",
+                "org.teiid.resource.adapter.salesforce.SalesForceManagedConnectionFactory", jndiName);
+        ds(props, scd, "URL", scd.canonicalEnvKey("url"));
         ds(props, scd, "username", scd.canonicalEnvKey("username"));
         ds(props, scd, "password", scd.canonicalEnvKey("password"));
         return props;
