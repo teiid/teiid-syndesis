@@ -21,6 +21,7 @@
  */
 package org.komodo.servicecatalog.datasources;
 
+import java.util.Map;
 import java.util.Properties;
 
 import org.komodo.servicecatalog.DataSourceDefinition;
@@ -29,7 +30,7 @@ public class WebServiceDefinition extends DataSourceDefinition {
 
     @Override
     public String getType() {
-        return "ws";
+        return "webservice";
     }
 
     @Override
@@ -57,17 +58,30 @@ public class WebServiceDefinition extends DataSourceDefinition {
     }
 
     @Override
-    public Properties getWFSDataSourceProperties(DefaultServiceCatalogDataSource scd, String jndiName) {
-        Properties props = new Properties();
-
-        // consult Teiid documents for all the properties; Then map to properties from OpenShift Service
-        props.setProperty("swarm.resource-adapter.resource-adapters." + scd.getName() + ".module=",
-                "org.jboss.teiid.resource-adapter.webservice");
-
-        ds(props, scd, "class-name", "org.teiid.resource.adapter.ws.WSManagedConnectionFactory");
-        ds(props, scd, "jndi-name", jndiName);
-        ds(props, scd, "enabled", "true");
-        ds(props, scd, "use-java-context", "true");
-        return props;
+    public boolean isTypeOf(Map<String, String> properties) {
+        if ((properties != null) && (properties.get("URL") != null)) {
+            return true;
+        }
+        return false;
     }
+    
+    @Override
+    public Properties getDataSourceProperties(DefaultServiceCatalogDataSource source) {
+        Properties props = new Properties();
+        props.setProperty("class-name", "org.teiid.resource.adapter.ws.WSManagedConnectionFactory");
+        props.setProperty("EndPoint", source.getProperty("url"));
+        props.setProperty("AuthUserName", source.getProperty("username"));
+        props.setProperty("AuthPassword", source.getProperty("password"));
+        return props;
+    }    
+    
+    @Override
+    public Properties getWFSDataSourceProperties(DefaultServiceCatalogDataSource scd, String jndiName) {
+        Properties props = setupResourceAdapter(scd.getName(), "org.jboss.teiid.resource-adapter.webservice",
+                "org.teiid.resource.adapter.ws.WSManagedConnectionFactory", jndiName);
+        ds(props, scd, "EndPoint", scd.canonicalEnvKey("url"));
+        ds(props, scd, "AuthUserName", scd.canonicalEnvKey("username"));
+        ds(props, scd, "AuthPassword", scd.canonicalEnvKey("password"));
+        return props;
+    }    
 }

@@ -143,7 +143,17 @@
                 <artifactId>*</artifactId>
               </exclusion>
             </exclusions>      
-        </dependency>    
+        </dependency>   
+        <dependency>
+            <groupId>org.wildfly.swarm</groupId>
+            <artifactId>teiid-salesforce-41</artifactId>
+            <exclusions>
+              <exclusion>
+                <groupId>org.teiid</groupId>
+                <artifactId>*</artifactId>
+              </exclusion>
+            </exclusions>      
+        </dependency>          
 	    <dependency>
 	      <groupId>javax</groupId>
 	      <artifactId>javaee-api</artifactId>

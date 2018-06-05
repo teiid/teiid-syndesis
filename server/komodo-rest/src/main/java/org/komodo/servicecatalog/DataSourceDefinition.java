@@ -93,7 +93,13 @@ public abstract class DataSourceDefinition {
     protected void ds(Properties props, DefaultServiceCatalogDataSource scd, String key, String value) {
         if (scd.getDefinition().isResouceAdapter()) {
             props.setProperty(
-                    "swarm.resource-adapter.resource-adapters." + scd.getName() + ".connection-definitions." + key,
+                "swarm.resource-adapters.resource-adapters." 
+                        + scd.getName() 
+                        + ".connection-definitions." 
+                        + scd.getName() 
+                        + ".config-properties."
+                        + key
+                        + ".value",
                     value);
         } else {
             props.setProperty(
@@ -102,6 +108,21 @@ public abstract class DataSourceDefinition {
         }
     }
 
+    protected Properties setupResourceAdapter(String dsName, String moduleName, String className, String jndiName) {
+        Properties props = new Properties();
+        // consult Teiid documents for all the properties; Then map to properties from
+        // OpenShift Service
+        String raPrefix = "swarm.resource-adapters.resource-adapters." + dsName + ".";
+        String cdPrefix = raPrefix + "connection-definitions." + dsName + ".";
+        props.setProperty(raPrefix + "module", moduleName);
+        props.setProperty(raPrefix + "transaction-support", "NoTransaction");
+        props.setProperty(cdPrefix + "class-name", className);
+        props.setProperty(cdPrefix + "jndi-name", jndiName);
+        props.setProperty(cdPrefix + "enabled", "true");
+        props.setProperty(cdPrefix + "use-java-context", "true");
+        return props;
+    }
+    
     /**
      * If source is provisioned through a service catalog this routine returns true. For sources like file, webserive
      * this will return false.
