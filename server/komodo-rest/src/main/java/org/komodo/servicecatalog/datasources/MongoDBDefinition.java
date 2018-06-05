@@ -98,23 +98,17 @@ public class MongoDBDefinition extends DataSourceDefinition {
 
     @Override
     public Properties getWFSDataSourceProperties(DefaultServiceCatalogDataSource scd, String jndiName) {
-        Properties props = new Properties();
-
-        // consult Teiid documents for all the properties; Then map to properties from OpenShift Service
-        props.setProperty("swarm.resource-adapter.resource-adapters." + scd.getName() + ".module=",
-                "org.jboss.teiid.resource-adapter.mongodb");
-
-        ds(props, scd, "class-name", "org.teiid.resource.adapter.mongodb.MongoDBManagedConnectionFactory");
-        ds(props, scd, "jndi-name", jndiName);
-        ds(props, scd, "enabled", "true");
-        ds(props, scd, "use-java-context", "true");
+        Properties props = setupResourceAdapter(scd.getName(), "org.jboss.teiid.resource-adapter.mongodb",
+                "org.teiid.resource.adapter.mongodb.MongoDBManagedConnectionFactory", jndiName);
         ds(props, scd, "SecurityType", "SCRAM_SHA_1");
         ds(props, scd, "Ssl", "false");
         ds(props, scd, "AuthDatabase", scd.canonicalEnvKey("database_name"));
         ds(props, scd, "RemoteServerList", scd.canonicalEnvKey("DATABASE_SERVICE_NAME")+":27017");
         ds(props, scd, "Database", scd.canonicalEnvKey("database_name"));
-        ds(props, scd, "Username", scd.canonicalEnvKey("database-user"));
-        ds(props, scd, "Password", scd.canonicalEnvKey("database-password"));
+        ds(props, scd, "Username", scd.canonicalEnvKey("username"));
+        ds(props, scd, "Password", scd.canonicalEnvKey("password"));
         return props;
     }
+    
+
 }

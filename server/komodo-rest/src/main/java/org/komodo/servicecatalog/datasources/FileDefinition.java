@@ -21,6 +21,7 @@
  */
 package org.komodo.servicecatalog.datasources;
 
+import java.util.Map;
 import java.util.Properties;
 
 import org.komodo.servicecatalog.DataSourceDefinition;
@@ -57,17 +58,26 @@ public class FileDefinition extends DataSourceDefinition {
     }
 
     @Override
-    public Properties getWFSDataSourceProperties(DefaultServiceCatalogDataSource scd, String jndiName) {
-        Properties props = new Properties();
-
-        // consult Teiid documents for all the properties; Then map to properties from OpenShift Service
-        props.setProperty("swarm.resource-adapter.resource-adapters." + scd.getName() + ".module",
-                "org.jboss.teiid.resource-adapter.file");
-
-        ds(props, scd, "class-name", "org.teiid.resource.adapter.file.FileManagedConnectionFactory");
-        ds(props, scd, "jndi-name", jndiName);
-        ds(props, scd, "enabled", "true");
-        ds(props, scd, "use-java-context", "true");
-        return props;
+    public boolean isTypeOf(Map<String, String> properties) {
+        if ((properties != null) && (properties.get("PARENT_DIRECTORY") != null)) {
+            return true;
+        }
+        return false;
     }
+    
+    @Override
+    public Properties getDataSourceProperties(DefaultServiceCatalogDataSource source) {
+        Properties props = new Properties();
+        props.setProperty("class-name", "org.teiid.resource.adapter.file.FileManagedConnectionFactory");
+        props.setProperty("ParentDirectory", source.getProperty("directory"));
+        return props;
+    } 
+    
+    @Override
+    public Properties getWFSDataSourceProperties(DefaultServiceCatalogDataSource scd, String jndiName) {
+        Properties props = setupResourceAdapter(scd.getName(), "org.jboss.teiid.resource-adapter.file",
+                "org.teiid.resource.adapter.file.FileManagedConnectionFactory", jndiName);
+        ds(props, scd, "ParentDirectory", scd.canonicalEnvKey("directory"));
+        return props;
+    }     
 }
