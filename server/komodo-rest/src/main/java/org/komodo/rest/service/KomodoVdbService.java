@@ -22,6 +22,7 @@
 package org.komodo.rest.service;
 
 import static org.komodo.rest.Messages.General.GET_OPERATION_NAME;
+import static org.komodo.rest.relational.RelationalMessages.Error.DATASERVICE_SERVICE_SET_SERVICE_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.VDB_DATA_SOURCE_NAME_EXISTS;
 import static org.komodo.rest.relational.RelationalMessages.Error.VDB_NAME_EXISTS;
 import static org.komodo.rest.relational.RelationalMessages.Error.VDB_NAME_VALIDATION_ERROR;
@@ -45,6 +46,8 @@ import static org.komodo.rest.relational.RelationalMessages.Error.VDB_SERVICE_GE
 import static org.komodo.rest.relational.RelationalMessages.Error.VDB_SERVICE_GET_TRANSLATOR_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.VDB_SERVICE_GET_VDBS_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.VDB_SERVICE_GET_VDB_ERROR;
+import static org.komodo.rest.relational.RelationalMessages.Error.VDB_SERVICE_GET_VIEWS_ERROR;
+import static org.komodo.rest.relational.RelationalMessages.Error.VDB_SERVICE_DEFINE_VIEWS_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.VIEW_NAME_EXISTS;
 import static org.komodo.rest.relational.RelationalMessages.Error.VIEW_NAME_VALIDATION_ERROR;
 
@@ -54,6 +57,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
+
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -66,12 +71,15 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
+
 import org.komodo.core.KEngine;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.OptionKeys;
+import org.komodo.relational.ViewDdlBuilder;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.importer.vdb.VdbImporter;
 import org.komodo.relational.model.Column;
@@ -98,6 +106,7 @@ import org.komodo.rest.RestProperty;
 import org.komodo.rest.relational.KomodoProperties;
 import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
+import org.komodo.rest.relational.request.KomodoViewsInfo;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.RestVdb;
 import org.komodo.rest.relational.response.RestVdbCondition;
@@ -108,6 +117,7 @@ import org.komodo.rest.relational.response.RestVdbModel;
 import org.komodo.rest.relational.response.RestVdbModelSource;
 import org.komodo.rest.relational.response.RestVdbModelTable;
 import org.komodo.rest.relational.response.RestVdbModelTableColumn;
+import org.komodo.rest.relational.response.RestVdbModelView;
 import org.komodo.rest.relational.response.RestVdbPermission;
 import org.komodo.rest.relational.response.RestVdbTranslator;
 import org.komodo.spi.KException;
@@ -634,6 +644,17 @@ public final class KomodoVdbService extends KomodoService {
         // Set new properties
         for(RestProperty newProp : newProperties) {
             modelSource.setProperty(uow, newProp.getName(), newProp.getValue());
+        }
+    }
+
+    // Sets ModelView properties using the supplied RestVdbModelView object
+    private void setProperties(final UnitOfWork uow, View modelView, RestVdbModelView restVdbModelView) throws KException {
+
+        List<RestProperty> newProperties = restVdbModelView.getProperties();
+
+        // Set new properties
+        for(RestProperty newProp : newProperties) {
+            modelView.setProperty(uow, newProp.getName(), newProp.getValue());
         }
     }
 
@@ -3721,6 +3742,707 @@ public final class KomodoVdbService extends KomodoService {
                                                      e, 
                                                      VIEW_NAME_VALIDATION_ERROR );
         }
+    }
+
+    /**
+     * @param headers
+     *        the request headers (never <code>null</code>)
+     * @param uriInfo
+     *        the request URI information (never <code>null</code>)
+     * @param vdbName
+     *        the id of the VDB (cannot be empty)
+     * @param modelName
+     *        the id of the model whose views are being retrieved (cannot be empty)
+     * @return the JSON representation of the Model views (never <code>null</code>)
+     * @throws KomodoRestException
+     *         if there is a problem finding the specified workspace VDB or constructing the JSON representation
+     */
+    @GET
+    @Path( V1Constants.VDB_PLACEHOLDER + StringConstants.FORWARD_SLASH +
+           V1Constants.MODELS_SEGMENT + StringConstants.FORWARD_SLASH +
+           V1Constants.MODEL_PLACEHOLDER + StringConstants.FORWARD_SLASH +
+           V1Constants.VIEWS_SEGMENT)
+    @Produces( MediaType.APPLICATION_JSON )
+    @ApiOperation(value = "Find all views of the model belonging to the vdb", response = RestVdbModelView[].class)
+    @ApiResponses(value = {
+        @ApiResponse(code = 404, message = "No vdb could be found with name"),
+        @ApiResponse(code = 200, message = "No views could be found but an empty list is returned"),
+        @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
+        @ApiResponse(code = 403, message = "An error has occurred.")
+    })
+    public Response getModelViews( final @Context HttpHeaders headers,
+                                   final @Context UriInfo uriInfo,
+                                   @ApiParam(value = "Name of the Vdb", required = true)
+                                   final @PathParam( "vdbName" ) String vdbName,
+                                   @ApiParam(value = "Name of the Model to get its views", required = true)
+                                   final @PathParam( "modelName" ) String modelName) throws KomodoRestException {
+
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        UnitOfWork uow = null;
+
+        try {
+            uow = createTransaction(principal, "getViews", true ); //$NON-NLS-1$
+
+            Vdb vdb = findVdb(uow, vdbName);
+            if (vdb == null)
+                return commitNoVdbFound(uow, mediaTypes, vdbName);
+
+            Model model = findModel(uow, mediaTypes, modelName, vdb);
+            if (model == null) {
+                return commitNoModelFound(uow, mediaTypes, modelName, vdbName);
+            }
+
+            View[] views = model.getViews(uow);
+            if (views == null)
+            	views = new View[0];
+
+            List<RestVdbModelView> restViews = new ArrayList<>(views.length);
+            for (View view : views) {
+                RestVdbModelView entity = entityFactory.create(view, uriInfo.getBaseUri(), uow);
+                restViews.add(entity);
+                LOGGER.debug("getViews:View from Model '{0}' from VDB '{1}' entity was constructed", modelName, vdbName); //$NON-NLS-1$
+            }
+
+            return commit( uow, mediaTypes, restViews );
+
+        } catch ( final Exception e ) {
+            if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
+                uow.rollback();
+            }
+
+            if ( e instanceof KomodoRestException ) {
+                throw ( KomodoRestException )e;
+            }
+
+            return createErrorResponseWithForbidden(mediaTypes, e, VDB_SERVICE_GET_VIEWS_ERROR, vdbName, modelName);
+        }
+    }
+
+    /**
+     * Create a new model view in the specified vdb model.
+     * @param headers
+     *        the request headers (never <code>null</code>)
+     * @param uriInfo
+     *        the request URI information (never <code>null</code>)
+     * @param vdbName
+     *        the id of the VDB being retrieved (cannot be empty)
+     * @param modelName
+     *        the id of the model being retrieved (cannot be empty)
+     * @param sourceName
+     *        the id of the view being created (cannot be empty)
+     * @param sourceJson
+     *        the View JSON representation (cannot be <code>null</code>)
+     * @return the JSON representation of the Model view (never <code>null</code>)
+     * @throws KomodoRestException
+     *         if there is a problem finding the specified workspace VDB model or constructing the JSON representation
+     */
+    @POST
+    @Path( V1Constants.VDB_PLACEHOLDER + StringConstants.FORWARD_SLASH +
+           V1Constants.MODELS_SEGMENT + StringConstants.FORWARD_SLASH +
+           V1Constants.MODEL_PLACEHOLDER + StringConstants.FORWARD_SLASH +
+           V1Constants.VIEWS_SEGMENT + StringConstants.FORWARD_SLASH +
+           V1Constants.VIEW_PLACEHOLDER)
+    @Produces( MediaType.APPLICATION_JSON )
+    @ApiOperation(value = "Create a View within a Vdb Model", response = RestVdbModelView.class)
+    @ApiResponses(value = {
+        @ApiResponse(code = 404, message = "No vdb could be found with name"),
+        @ApiResponse(code = 404, message = "No model could be found with name"),
+        @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
+        @ApiResponse(code = 403, message = "An error has occurred.")
+    })
+    public Response createModelView( final @Context HttpHeaders headers,
+                                     final @Context UriInfo uriInfo,
+                                     @ApiParam(value = "Name of the Vdb", required = true)
+                                     final @PathParam( "vdbName" ) String vdbName,
+                                     @ApiParam(value = "Name of the Model", required = true)
+                                     final @PathParam( "modelName" ) String modelName,
+                                     @ApiParam(value = "Name of the Model View to be created", required = true)
+                                     final @PathParam( "viewName" ) String viewName,
+                                     @ApiParam(
+                                      value = "" + 
+                                              "JSON of the properties of the View to add:<br>" +
+                                              OPEN_PRE_TAG +
+                                              OPEN_BRACE + BR +
+                                              NBSP + "keng\\_\\_id: \"name of the View\"" + COMMA + BR +
+                                              NBSP + "keng\\_\\_dataPath: \"path of View to create\"" + COMMA + BR +
+                                              NBSP + OPEN_PRE_CMT + "(eg keng\\_\\_dataPath: \"tko:komodo\\tko:workspace\\\\{username\\}\\\\{vdbName\\}\\\\{modelName\\}\\vdb:sources\\\\{viewName\\}\")" + CLOSE_PRE_CMT + BR +
+                                              NBSP + "keng\\_\\_kType: \"VdbModelSource\"" + BR +
+                                              CLOSE_BRACE +
+                                              CLOSE_PRE_TAG,
+                                      required = true
+                                     )
+                                     final String viewJson) throws KomodoRestException {
+
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
+            return notAcceptableMediaTypesBuilder().build();
+
+        // Error if the VDB name is missing
+        if (StringUtils.isBlank( vdbName )) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_CREATE_MISSING_VDB_NAME);
+        }
+
+        // Error if the Model name is missing
+        if (StringUtils.isBlank( modelName )) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_CREATE_MISSING_MODEL_NAME);
+        }
+
+        // Error if the View name is missing
+        if (StringUtils.isBlank( viewName )) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_CREATE_MISSING_VIEW_NAME);
+        }
+
+        final RestVdbModelView restVdbModelView = KomodoJsonMarshaller.unmarshall( viewJson, RestVdbModelView.class );
+        final String jsonModelViewName = restVdbModelView.getId();
+        // Error if the name is missing from the supplied json body
+        if ( StringUtils.isBlank( jsonModelViewName ) ) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_MISSING_JSON_MODEL_VIEW_NAME);
+        }
+
+        // Error if the name parameter is different than JSON name
+        final boolean namesMatch = viewName.equals( jsonModelViewName );
+        if ( !namesMatch ) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_MODEL_VIEW_NAME_DONT_MATCH_ERROR, viewName, jsonModelViewName);
+        }
+
+        UnitOfWork uow = null;
+
+        try {
+            uow = createTransaction(principal, "createModelView", false ); //$NON-NLS-1$
+            
+            // Get the specified VDB parent
+            final WorkspaceManager mgr = getWorkspaceManager(uow);
+            KomodoObject kobject = mgr.getChild(uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE );
+            Vdb vdb = mgr.resolve( uow, kobject, Vdb.class );
+            
+            if (vdb == null)
+                return Response.noContent().build();
+            
+            Model[] models = vdb.getModels(uow, modelName);
+            if (models.length == 0) {
+                return Response.noContent().build();
+            }
+            Model model = models[0];
+            // Error if the VDB model already contains a View with the supplied name.
+            if( model.getViews(uow, viewName).length != 0 ) {
+                return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_VDB_MODEL_VIEW_ALREADY_EXISTS, viewName);
+            }
+            
+            // create a new View in the VDB Model
+            return doAddModelView( uow, uriInfo.getBaseUri(), mediaTypes, model, restVdbModelView );
+            
+        } catch (final Exception e) {
+            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+                uow.rollback();
+            }
+
+            if (e instanceof KomodoRestException) {
+                throw (KomodoRestException)e;
+            }
+
+            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.VDB_SERVICE_CREATE_VDB_MODEL_VIEW_ERROR, vdbName);
+        }
+    }
+    
+    private Response doAddModelView( final UnitOfWork uow,
+                                     final URI baseUri,
+                                     final List<MediaType> mediaTypes,
+                                     Model model,
+                                     final RestVdbModelView restVdbModelView ) throws KomodoRestException {
+        assert( !uow.isRollbackOnly() );
+        assert( uow.getState() == State.NOT_STARTED );
+        assert( model != null );
+        assert( restVdbModelView != null );
+
+        final String viewName = restVdbModelView.getId();
+        try {
+            View newView = model.addView(uow, viewName);
+
+            // Transfers the properties from the rest object to the created model source
+            setProperties(uow, newView, restVdbModelView);
+
+            final RestVdbModelView entity = entityFactory.create(newView, baseUri, uow );
+            final Response response = commit( uow, mediaTypes, entity );
+            return response;
+        } catch ( final Exception e ) {
+            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+                uow.rollback();
+            }
+
+            if (e instanceof KomodoRestException) {
+                throw (KomodoRestException)e;
+            }
+
+            throw new KomodoRestException( RelationalMessages.getString( RelationalMessages.Error.VDB_SERVICE_CREATE_VDB_MODEL_VIEW_ERROR, viewName ), e );
+        }
+    }
+    
+    /**
+     * Update a view in the specified VDB model.
+     * @param headers
+     *        the request headers (never <code>null</code>)
+     * @param uriInfo
+     *        the request URI information (never <code>null</code>)
+     * @param vdbName
+     *        the id of the VDB being retrieved (cannot be empty)
+     * @param modelName
+     *        the id of the model being retrieved (cannot be empty)
+     * @param viewName
+     *        the id of the view being retrieved (cannot be empty)
+     * @param viewJson
+     *        the View JSON representation (cannot be <code>null</code>)
+     * @return the JSON representation of the View (never <code>null</code>)
+     * @throws KomodoRestException
+     *         if there is a problem finding the specified workspace VDB or constructing the JSON representation
+     */
+    @PUT
+    @Path( V1Constants.VDB_PLACEHOLDER + StringConstants.FORWARD_SLASH +
+           V1Constants.MODELS_SEGMENT + StringConstants.FORWARD_SLASH +
+           V1Constants.MODEL_PLACEHOLDER + StringConstants.FORWARD_SLASH +
+           V1Constants.VIEWS_SEGMENT + StringConstants.FORWARD_SLASH +
+           V1Constants.VIEW_PLACEHOLDER)
+    @Produces( MediaType.APPLICATION_JSON )
+    @ApiOperation(value = "Update the View belonging to the Vdb Model", response = RestVdbModelView.class)
+    @ApiResponses(value = {
+        @ApiResponse(code = 404, message = "No vdb could be found with name"),
+        @ApiResponse(code = 404, message = "No model could be found with name"),
+        @ApiResponse(code = 404, message = "No view could be found with name"),
+        @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
+        @ApiResponse(code = 403, message = "An error has occurred.")
+    })
+    public Response updateModelView( final @Context HttpHeaders headers,
+                                     final @Context UriInfo uriInfo,
+                                     @ApiParam(value = "Name of the Vdb", required = true)
+                                     final @PathParam( "vdbName" ) String vdbName,
+                                     @ApiParam(value = "Name of the Model", required = true)
+                                     final @PathParam( "modelName" ) String modelName,
+                                     @ApiParam(value = "Name of the View to be updated", required = true)
+                                     final @PathParam( "viewName" ) String viewName,
+                                     @ApiParam(
+                                                 value = "" + 
+                                                         "JSON of the properties of the View to update:<br>" +
+                                                         OPEN_PRE_TAG +
+                                                         OPEN_BRACE + BR +
+                                                         NBSP + "keng\\_\\_id: \"name of the View\"" + COMMA + BR +
+                                                         NBSP + "keng\\_\\_dataPath: \"path of View to update\"" + COMMA + BR +
+                                                         NBSP + OPEN_PRE_CMT + "(eg keng\\_\\_dataPath: \"tko:komodo\\tko:workspace\\\\{username\\}\\\\{vdbName\\}\\\\{modelName\\}\\\\{viewName\\}\")" + CLOSE_PRE_CMT + BR +
+                                                         NBSP + "keng\\_\\_kType: \"View\"" + BR +
+                                                         CLOSE_BRACE +
+                                                         CLOSE_PRE_TAG,
+                                                 required = true
+                                       )
+                                       final String viewJson) throws KomodoRestException {
+
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
+            return notAcceptableMediaTypesBuilder().build();
+
+        // Error if the vdb name is missing
+        if (StringUtils.isBlank( vdbName )) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_UPDATE_MISSING_VDB_NAME);
+        }
+
+        // Error if the model name is missing
+        if (StringUtils.isBlank( modelName )) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_UPDATE_MISSING_MODEL_NAME);
+        }
+
+        // Error if the view name is missing
+        if (StringUtils.isBlank( viewName )) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_UPDATE_MISSING_MODEL_VIEW_NAME);
+        }
+
+        final RestVdbModelView restVdbModelView = KomodoJsonMarshaller.unmarshall( viewJson, RestVdbModelView.class );
+        final String jsonModelViewName = restVdbModelView.getId();
+        // Error if the name is missing from the supplied json body
+        if ( StringUtils.isBlank( jsonModelViewName ) ) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_MISSING_JSON_MODEL_VIEW_NAME);
+        }
+
+        UnitOfWork uow = null;
+        try {
+            uow = createTransaction(principal, "updateModelView", false ); //$NON-NLS-1$
+
+            // Get the specified VDB parent
+            KomodoObject kobject = getWorkspaceManager(uow).getChild(uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE );
+            Vdb vdb = getWorkspaceManager(uow).resolve( uow, kobject, Vdb.class );
+            
+            if (vdb == null) {
+                return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_UPDATE_VDB_DNE);
+            }
+            
+            // Error if the VDB already contains a Model with the supplied name.
+            Model[] models = vdb.getModels(uow, modelName);
+            if( models.length == 0 ) {
+                return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_UPDATE_VDB_MODEL_DNE);
+            }
+            Model model = models[0];
+
+            // Error if the VDB Model already contains a View with the supplied name.
+            View[] views = model.getViews(uow, viewName);
+            if( views.length == 0 ) {
+                return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_VDB_MODEL_VIEW_ALREADY_EXISTS, modelName);
+            }
+
+            // Transfers the properties from the rest object to the view
+            setProperties(uow, views[0], restVdbModelView);
+
+            KomodoProperties properties = new KomodoProperties();
+            final RestVdbModelSource entity = entityFactory.create(views[0], uriInfo.getBaseUri(), uow, properties);
+            LOGGER.debug("updateVdbModelView: VdbModelView '{0}' entity was updated", views[0].getName(uow)); //$NON-NLS-1$
+            final Response response = commit( uow, headers.getAcceptableMediaTypes(), entity );
+            return response;
+        } catch (final Exception e) {
+            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+                uow.rollback();
+            }
+
+            if (e instanceof KomodoRestException) {
+                throw (KomodoRestException)e;
+            }
+
+            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.VDB_SERVICE_UPDATE_VDB_MODEL_VIEW_ERROR);
+        }
+    }
+    
+    /**
+     * Sets the model views as specified by the supplied inputs
+     * @param headers
+     *        the request headers (never <code>null</code>)
+     * @param uriInfo
+     *        the request URI information (never <code>null</code>)
+     * @param vdbName
+     *        the id of the VDB being retrieved (cannot be empty)
+     * @param modelName
+     *        the id of the model being retrieved (cannot be empty)
+     * @param viewsInfo
+     *        the Views info JSON representation (cannot be <code>null</code>)
+     * @return the JSON representation of the Model view (never <code>null</code>)
+     * @throws KomodoRestException
+     *         if there is a problem finding the specified workspace VDB model or constructing the JSON representation
+     */
+    @POST
+    @Path( V1Constants.VDB_PLACEHOLDER + StringConstants.FORWARD_SLASH +
+           V1Constants.MODELS_SEGMENT + StringConstants.FORWARD_SLASH +
+           V1Constants.MODEL_PLACEHOLDER + StringConstants.FORWARD_SLASH +"defineViews")
+    @Produces( MediaType.APPLICATION_JSON )
+    @ApiOperation(value = "Create the Vdb Model Views", response = RestVdbModelView.class)
+    @ApiResponses(value = {
+        @ApiResponse(code = 404, message = "No vdb could be found with name"),
+        @ApiResponse(code = 404, message = "No model could be found with name"),
+        @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
+        @ApiResponse(code = 403, message = "An error has occurred.")
+    })
+    public Response createModelViews( final @Context HttpHeaders headers,
+                                     final @Context UriInfo uriInfo,
+                                     @ApiParam(value = "Name of the Vdb", required = true)
+                                     final @PathParam( "vdbName" ) String vdbName,
+                                     @ApiParam(value = "Name of the Model", required = true)
+                                     final @PathParam( "modelName" ) String modelName,
+                                     @ApiParam(
+                                             value = "" + 
+                                                     "JSON specifying the views info:<br>" +
+                                                     OPEN_PRE_TAG +
+                                                     OPEN_BRACE + BR +
+                                                     NBSP + "viewNames: [\"vName1\",\"vName2\", ...]" + COMMA + BR +
+                                                     NBSP + "tablePaths: [\"/path/to/table1\",\"/path/to/table2\", ...]" + COMMA + BR +
+                                                     NBSP + "modelSourcePaths: [\"/path/to/modelSource1\", \"/path/to/modelSource2\", ...]" + BR +
+                                                     CLOSE_BRACE +
+                                                     CLOSE_PRE_TAG,
+                                             required = true
+                                     )
+                                     final String vdbViewsInfo) throws KomodoRestException {
+
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
+            return notAcceptableMediaTypesBuilder().build();
+
+        // Error if the VDB name is missing
+        if (StringUtils.isBlank( vdbName )) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_CREATE_MISSING_VDB_NAME);
+        }
+
+        // Error if the Model name is missing
+        if (StringUtils.isBlank( modelName )) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_CREATE_MISSING_MODEL_NAME);
+        }
+
+        // Get the views info for creating the vdb views.
+        KomodoViewsInfo viewsInfo;
+        try {
+        	viewsInfo = KomodoJsonMarshaller.unmarshall(vdbViewsInfo, KomodoViewsInfo.class);
+
+            Response response = checkViewsInfo(viewsInfo, mediaTypes);
+            if (response.getStatus() != Status.OK.getStatusCode())
+                return response;
+
+        } catch (Exception ex) {
+            return createErrorResponseWithForbidden(mediaTypes, ex, RelationalMessages.Error.VDB_SERVICE_REQUEST_PARSING_ERROR);
+        }
+
+        List<String> viewNames = viewsInfo.getViewNames();
+        // Error if viewNames is missing 
+        if ( viewNames == null || viewNames.size() == 0 ) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_DEFINE_VIEWS_MISSING_VIEW_NAMES, vdbName, modelName);
+        }
+
+        List<String> absTablePaths = viewsInfo.getTablePaths();
+        // Error if viewTablePaths is missing 
+        if ( absTablePaths == null || absTablePaths.size() == 0 ) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_DEFINE_VIEWS_MISSING_TABLE_PATHS, vdbName, modelName);
+        }
+        
+        // View and tablePath lists must be same size
+        if ( viewNames.size() != absTablePaths.size() ) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_DEFINE_VIEWS_ARRAY_SIZE_ERROR, vdbName, modelName);
+        }
+        
+        List<String> absModelSourcePaths = viewsInfo.getModelSourcePaths();
+        // Error if the modelSourcePath is missing 
+        if ( absModelSourcePaths == null || absModelSourcePaths.size() == 0 ) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_DEFINE_VIEWS_MISSING_MODELSOURCE_PATHS, vdbName, modelName);
+        }
+
+        UnitOfWork uow = null;
+        try {
+            uow = createTransaction(principal, "createModelViews", false ); //$NON-NLS-1$
+            
+            // Get the specified VDB parent
+            final WorkspaceManager mgr = getWorkspaceManager(uow);
+            KomodoObject kobject = mgr.getChild(uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE );
+            Vdb vdb = mgr.resolve( uow, kobject, Vdb.class );
+            
+            if (vdb == null)
+                return Response.noContent().build();
+            
+            Model[] models = vdb.getModels(uow);
+            if (models.length == 0) {
+                return Response.noContent().build();
+            }
+            // Delete the physical models, since they will be reset.
+            // There will only be one virtual model - the view model
+            Model viewModel = null;
+            for (Model mdl: models) {
+            	if (mdl.getModelType(uow) == Type.PHYSICAL) {
+            		vdb.removeModel(uow, mdl.getName(uow));
+            	} else {
+            		viewModel = mdl;
+            	}
+            }
+
+            // Check for existence of all Tables for the views
+            List<Table> viewTables = new ArrayList<Table>();
+            for(String absTablePath: absTablePaths) {
+                List<KomodoObject> tableObjs = mgr.getRepository().searchByPath(uow, absTablePath);
+                if( tableObjs.isEmpty() || !Table.RESOLVER.resolvable(uow, tableObjs.get(0)) ) {
+                    return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_SOURCE_TABLE_DNE, absTablePath);
+                }
+                Table viewTable = Table.RESOLVER.resolve(uow, tableObjs.get(0));
+                viewTables.add(viewTable);
+            }
+
+            // Check for existence of all ModelSources
+            List<ModelSource> modelSources = new ArrayList<ModelSource>();
+            for(String absModelSourcePath: absModelSourcePaths) {
+                List<KomodoObject> modelObjs = mgr.getRepository().searchByPath(uow, absModelSourcePath);
+                if( modelObjs.isEmpty() || !ModelSource.RESOLVER.resolvable(uow, modelObjs.get(0)) ) {
+                    return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_MODEL_SOURCE_DNE, absModelSourcePath);
+                }
+                ModelSource modelSource = ModelSource.RESOLVER.resolve(uow, modelObjs.get(0));
+                modelSources.add(modelSource);
+            }
+
+            // Generate View DDL using viewInfo
+            StringBuilder sb = new StringBuilder();
+            for(int i=0; i<viewTables.size(); i++) {
+            	String viewName = viewNames.get(i);
+            	Table viewTable = viewTables.get(i);
+            	String tblDdl = ViewDdlBuilder.getODataViewDdl(uow, viewName, viewTable, null);
+            	sb.append(tblDdl);
+            }
+            viewModel.setModelDefinition(uow, sb.toString());
+
+        	// Add a physical models to the VDB for the sources
+        	// physicalModelName ==> sourceVDBName
+        	// physicalModelSourceName ==> sourceModelSourceName
+            for (ModelSource mdlSource: modelSources) {
+            	String physicalModelName = mdlSource.getParent(uow).getParent(uow).getName(uow);
+            	String physicalModelSourceName = mdlSource.getName(uow);
+
+            	Model sourceModel = vdb.addModel(uow, physicalModelName);
+            	sourceModel.setModelType(uow, Type.PHYSICAL);
+
+                // The source model DDL contains the relevant table DDL only.  This limits the source metadata which is loaded on deployment.
+                StringBuilder sourceDdl = new StringBuilder();
+                for(Table viewTable: viewTables) {
+                	byte[] bytes = viewTable.export(uow, new Properties());
+                	String tableDdl = new String(bytes);
+                	sourceDdl.append(tableDdl);
+                }
+                sourceModel.setModelDefinition(uow, sourceDdl.toString());
+
+            	// Add a ModelSource of same name to the physical model and set its Jndi and translator
+                ModelSource modelSource = sourceModel.addSource(uow, physicalModelSourceName);
+                modelSource.setJndiName(uow, mdlSource.getJndiName(uow));
+                modelSource.setTranslatorName(uow, mdlSource.getTranslatorName(uow));
+
+                //
+                // If the svcModelSource has an associated connection (which it should)
+                // then apply its reference to this model source as well
+                //
+                Connection connection = mdlSource.getOriginConnection(uow);
+                if (connection != null) {
+                    modelSource.setAssociatedConnection(uow, connection);
+                }
+            }
+
+            KomodoStatusObject kso = new KomodoStatusObject("Views updated successfully"); //$NON-NLS-1$
+            kso.addAttribute(vdbName, "Successfully updated"); //$NON-NLS-1$
+
+            return commit(uow, mediaTypes, kso);
+        } catch (final Exception e) {
+            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+                uow.rollback();
+            }
+
+            if (e instanceof KomodoRestException) {
+                throw (KomodoRestException)e;
+            }
+
+            return createErrorResponseWithForbidden(mediaTypes, e, VDB_SERVICE_DEFINE_VIEWS_ERROR);
+        }
+    }
+
+    /**
+     * Delete the View in the specified Vdb Model
+     * @param headers
+     *        the request headers (never <code>null</code>)
+     * @param uriInfo
+     *        the request URI information (never <code>null</code>)
+     * @param vdbName
+     *        the id of the VDB being retrieved (cannot be empty)
+     * @param modelName
+     *        the id of the model being retrieved (cannot be empty)
+     * @param viewName
+     *        the id of the view being deleted (cannot be empty)
+     * @return the JSON representation of the VDB (never <code>null</code>)
+     * @throws KomodoRestException
+     *         if there is a problem finding the specified workspace VDB or constructing the JSON representation
+     */
+    @DELETE
+    @Path( V1Constants.VDB_PLACEHOLDER + StringConstants.FORWARD_SLASH +
+           V1Constants.MODELS_SEGMENT + StringConstants.FORWARD_SLASH +
+           V1Constants.MODEL_PLACEHOLDER + StringConstants.FORWARD_SLASH +
+           V1Constants.VIEWS_SEGMENT + StringConstants.FORWARD_SLASH +
+           V1Constants.VIEW_PLACEHOLDER)
+    @Produces( MediaType.APPLICATION_JSON )
+    @ApiOperation(value = "Delete the View in the specified Vdb Model", response = KomodoStatusObject.class)
+    @ApiResponses(value = {
+        @ApiResponse(code = 404, message = "No vdb could be found with name"),
+        @ApiResponse(code = 404, message = "No model could be found with name"),
+        @ApiResponse(code = 404, message = "No source could be found with name"),
+        @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
+        @ApiResponse(code = 403, message = "An error has occurred.")
+    })
+    public Response deleteModelView( final @Context HttpHeaders headers,
+                                     final @Context UriInfo uriInfo,
+                                     @ApiParam(value = "Name of the Vdb", required = true)
+                                     final @PathParam( "vdbName" ) String vdbName,
+                                     @ApiParam(value = "Name of the Model", required = true)
+                                     final @PathParam( "modelName" ) String modelName,
+                                     @ApiParam(value = "Name of the View to be deleted", required = true)
+                                     final @PathParam( "viewName" ) String viewName) throws KomodoRestException {
+
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
+            return notAcceptableMediaTypesBuilder().build();
+
+        // Error if the Vdb name is missing
+        if (StringUtils.isBlank( vdbName )) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_DELETE_MISSING_VDB_NAME);
+        }
+        
+        // Error if the Model name is missing
+        if (StringUtils.isBlank( modelName )) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_DELETE_MISSING_MODEL_NAME);
+        }
+        
+        // Error if the View name is missing
+        if (StringUtils.isBlank( viewName )) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_DELETE_MISSING_VIEW_NAME);
+        }
+        
+        UnitOfWork uow = null;
+        try {
+            uow = createTransaction(principal, "removeViewFromModel", false); //$NON-NLS-1$
+
+            // Get the specified VDB parent
+            final WorkspaceManager mgr = getWorkspaceManager(uow);
+            KomodoObject kobject = mgr.getChild(uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE );
+            Vdb vdb = mgr.resolve( uow, kobject, Vdb.class );
+            
+            if (vdb == null)
+                return Response.noContent().build();
+            
+            Model[] models = vdb.getModels(uow, modelName);
+            if(models.length==0) {
+                return Response.noContent().build();
+            }
+            Model model = models[0];
+            
+            model.removeView(uow, viewName);
+            
+            KomodoStatusObject kso = new KomodoStatusObject("Delete Status"); //$NON-NLS-1$
+            kso.addAttribute(viewName, "Successfully deleted"); //$NON-NLS-1$
+
+            return commit(uow, mediaTypes, kso);
+        } catch (final Exception e) {
+            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+                uow.rollback();
+            }
+
+            if (e instanceof KomodoRestException) {
+                throw (KomodoRestException)e;
+            }
+
+            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.VDB_SERVICE_DELETE_VDB_MODEL_VIEW_ERROR);
+        }
+    }
+    
+    /*
+     * Checks the supplied views info
+     *  - view names, table paths and modelSource paths are required
+     */
+    private Response checkViewsInfo(KomodoViewsInfo viewsInfo,
+                                    List<MediaType> mediaTypes) throws Exception {
+
+        if (viewsInfo == null || viewsInfo.getViewNames() == null || viewsInfo.getViewNames().size() ==0
+	                          || viewsInfo.getTablePaths() == null || viewsInfo.getTablePaths().size() == 0
+                              || viewsInfo.getModelSourcePaths() == null || viewsInfo.getModelSourcePaths().size() == 0 ) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_MISSING_PARAMETER_ERROR);
+        }
+
+        return Response.ok().build();
     }
 
 }

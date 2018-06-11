@@ -70,7 +70,6 @@ import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.request.KomodoConnectionAttributes;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.RestConnectionSummary;
-import org.komodo.rest.relational.response.RestVdbModelTable;
 import org.komodo.rest.relational.response.metadata.RestMetadataConnectionStatus;
 import org.komodo.rest.relational.response.metadata.RestMetadataConnectionStatus.EntityState;
 import org.komodo.servicecatalog.TeiidOpenShiftClient;
