@@ -98,6 +98,11 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
         TABLE_NAME,
 
         /**
+         * Name of the view
+         */
+        VIEW_NAME,
+
+        /**
          * Name of the column
          */
         COLUMN_NAME,
@@ -249,6 +254,10 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
 
     private String tableName(final Properties settings) {
         return setting(settings, SettingNames.TABLE_NAME);
+    }
+
+    private String viewName(final Properties settings) {
+        return setting(settings, SettingNames.VIEW_NAME);
     }
 
     private String columnName(final Properties settings) {
@@ -588,6 +597,40 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
             case SELF:
                 String tableName = tableName(settings);
                 result = UriBuilder.fromUri(modelUri).path(LinkType.TABLES.uriName()).path(tableName).build();
+                break;
+            case PARENT:
+                result = modelUri;
+                break;
+            case REFERENCE:
+                break;
+            default:
+                throw new RuntimeException("LinkType " + linkType + " not handled"); //$NON-NLS-1$ //$NON-NLS-2$
+        }
+
+        assert(result != null);
+        return result;
+    }
+
+    /**
+     * @param linkType
+     *        the type of URI being created (cannot be <code>null</code>)
+     * @param settings
+     *        configuration settings for this uri
+     * @return the VDB model view URI for the specified VDB Model (never <code>null</code>)
+     */
+    public URI vdbModelViewUri(LinkType linkType, final Properties settings) {
+        ArgCheck.isNotNull(linkType, "linkType"); //$NON-NLS-1$
+        ArgCheck.isNotNull(settings, "settings"); //$NON-NLS-1$)
+
+        URI result = null;
+        URI vdbBaseUri = vdbParentUri(settings);
+        String vdbName = vdbName(settings);
+        URI modelUri = vdbChildUri(vdbBaseUri, vdbName, LinkType.MODELS, modelName(settings));
+
+        switch (linkType) {
+            case SELF:
+                String viewName = viewName(settings);
+                result = UriBuilder.fromUri(modelUri).path(LinkType.VIEWS.uriName()).path(viewName).build();
                 break;
             case PARENT:
                 result = modelUri;

@@ -388,6 +388,7 @@ public final class KomodoDataserviceService extends KomodoService
                                                          OPEN_BRACE + BR +
                                                          NBSP + "keng\\_\\_id: \"id of the data service\"" + COMMA + BR +
                                                          NBSP + OPEN_PRE_CMT + "(identical to dataserviceName parameter)" + CLOSE_PRE_CMT + BR + BR +
+                                                         NBSP + "keng\\_\\_dataPath: \"path of dataservice\"" + COMMA + BR +
                                                          NBSP + "tko__description: \"the description\"" + BR +
                                                          CLOSE_BRACE +
                                                          CLOSE_PRE_TAG,
@@ -1578,9 +1579,29 @@ public final class KomodoDataserviceService extends KomodoService
             // Transfers the properties from the rest object to the created komodo service.
             setProperties(uow, dataservice, restDataservice);
 
-            final RestDataservice entity = entityFactory.create(dataservice, baseUri, uow );
-            final Response response = commit( uow, mediaTypes, entity );
-            return response;
+            String serviceVdbName = dataserviceName.toLowerCase() + SERVICE_VDB_SUFFIX;
+            WorkspaceManager wkspMgr = getWorkspaceManager(uow);
+            
+            // Find the service VDB definition for this Dataservice.  If one exists already, it is replaced.
+            dataservice.setServiceVdb(uow,null);
+            if(wkspMgr.hasChild(uow, serviceVdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE)) {
+            	KomodoObject svcVdbObj = wkspMgr.getChild(uow, serviceVdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE);
+            	svcVdbObj.remove(uow);
+            }
+
+            KomodoObject vdbObj = wkspMgr.createVdb(uow, null, serviceVdbName, serviceVdbName);
+            Vdb serviceVdb = Vdb.RESOLVER.resolve(uow, vdbObj);
+            
+            // Add to the ServiceVdb a virtual model for the View
+            Model viewModel = serviceVdb.addModel(uow, SERVICE_VDB_VIEW_MODEL);
+            viewModel.setModelType(uow, Type.VIRTUAL);
+
+            dataservice.setServiceVdb(uow, serviceVdb);
+            
+            KomodoStatusObject kso = new KomodoStatusObject("Create Status"); //$NON-NLS-1$
+            kso.addAttribute(dataserviceName, "Successfully created"); //$NON-NLS-1$
+
+            return commit(uow, mediaTypes, kso);
         } catch ( final Exception e ) {
             if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
                 uow.rollback();

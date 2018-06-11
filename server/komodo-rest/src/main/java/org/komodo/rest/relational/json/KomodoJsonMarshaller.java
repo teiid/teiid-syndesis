@@ -43,7 +43,6 @@ import org.komodo.rest.relational.json.connection.ConnectionSchemaSerializer;
 import org.komodo.rest.relational.json.connection.ConnectionSerializer;
 import org.komodo.rest.relational.json.connection.MetadataConnectionSerializer;
 import org.komodo.rest.relational.request.KomodoConnectionAttributes;
-import org.komodo.rest.relational.request.KomodoDataSourceJdbcTableAttributes;
 import org.komodo.rest.relational.request.KomodoDataserviceSingleSourceAttributes;
 import org.komodo.rest.relational.request.KomodoDataserviceUpdateAttributes;
 import org.komodo.rest.relational.request.KomodoFileAttributes;
@@ -51,6 +50,7 @@ import org.komodo.rest.relational.request.KomodoPathAttribute;
 import org.komodo.rest.relational.request.KomodoQueryAttribute;
 import org.komodo.rest.relational.request.KomodoSearcherAttributes;
 import org.komodo.rest.relational.request.KomodoTeiidAttributes;
+import org.komodo.rest.relational.request.KomodoViewsInfo;
 import org.komodo.rest.relational.response.ImportExportStatus;
 import org.komodo.rest.relational.response.KomodoSavedSearcher;
 import org.komodo.rest.relational.response.KomodoStatusObject;
@@ -72,6 +72,7 @@ import org.komodo.rest.relational.response.RestVdbModel;
 import org.komodo.rest.relational.response.RestVdbModelSource;
 import org.komodo.rest.relational.response.RestVdbModelTable;
 import org.komodo.rest.relational.response.RestVdbModelTableColumn;
+import org.komodo.rest.relational.response.RestVdbModelView;
 import org.komodo.rest.relational.response.RestVdbPermission;
 import org.komodo.rest.relational.response.RestVdbTranslator;
 import org.komodo.rest.relational.response.metadata.RestMetadataConnection;
@@ -119,12 +120,14 @@ public final class KomodoJsonMarshaller {
                                                   .registerTypeAdapter(KomodoTeiidAttributes.class, new TeiidAttributesSerializer())
                                                   .registerTypeAdapter(KomodoDataserviceUpdateAttributes.class, new DataserviceUpdateAttributesSerializer())
                                                   .registerTypeAdapter(KomodoDataserviceSingleSourceAttributes.class, new DataserviceSingleSourceAttributesSerializer())
+                                                  .registerTypeAdapter(KomodoViewsInfo.class, new ViewsInfoSerializer())
                                                   .registerTypeAdapter(RestProperty.class, new RestPropertySerializer())
                                                   .registerTypeAdapter(RestVdb.class, new VdbSerializer())
                                                   .registerTypeAdapter(RestVdbModel.class, new VdbModelSerializer())
                                                   .registerTypeAdapter(RestVdbModelSource.class, new VdbModelSourceSerializer())
                                                   .registerTypeAdapter(RestVdbModelTable.class, new VdbModelTableSerializer())
                                                   .registerTypeAdapter(RestVdbModelTableColumn.class, new VdbModelTableColumnSerializer())
+                                                  .registerTypeAdapter(RestVdbModelView.class, new VdbModelViewSerializer())
                                                   .registerTypeAdapter(RestVdbDataRole.class, new VdbDataRoleSerializer())
                                                   .registerTypeAdapter(RestVdbImport.class, new VdbImportSerializer())
                                                   .registerTypeAdapter(RestVdbPermission.class, new VdbPermissionSerializer())

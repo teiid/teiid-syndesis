@@ -95,7 +95,7 @@ public final class VdbTranslatorSerializerTest extends AbstractSerializerTest {
         "    " + CLOSE_BRACE + COMMA + NEW_LINE +
         "    " + OPEN_BRACE + NEW_LINE +
         "      \"rel\": \"children\"," + NEW_LINE +
-        "      \"href\": \"" + BASE_URI_PREFIX + SEARCH + "parent\\u003d" + URLEncoder.encode(TR_DATA_PATH) + "\"" + NEW_LINE +
+        "      \"href\": \"" + BASE_URI_PREFIX + SEARCH + "parent\\u003d" + TR_DATA_PATH + "\"" + NEW_LINE +
         "    " + CLOSE_BRACE + NEW_LINE +
         "  " + CLOSE_SQUARE_BRACKET + NEW_LINE +
     CLOSE_BRACE;
