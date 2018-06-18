@@ -95,7 +95,7 @@ public final class RestDataservice extends RestBasicEntity {
     /**
      * schema model suffix
      */
-    private final static String SCHEMA_MODEL_SUFFIX = "schemavdb"; //$NON-NLS-1$
+    private final static String SCHEMA_MODEL_SUFFIX = "schemamodel"; //$NON-NLS-1$
     
     /**
      * Constructor for use when deserializing
