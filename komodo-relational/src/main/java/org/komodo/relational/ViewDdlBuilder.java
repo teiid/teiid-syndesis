@@ -144,8 +144,8 @@ public class ViewDdlBuilder {
         }
         sb.append(" \n"); //$NON-NLS-1$
         sb.append("FROM "); //$NON-NLS-1$
-        String vdbName = table.getParent(uow).getParent(uow).getName(uow);
-        sb.append(escapeSQLName(vdbName) + StringConstants.DOT + escapeSQLName(table.getName(uow)));
+        String vdbModelName = table.getParent(uow).getName(uow);
+        sb.append(escapeSQLName(vdbModelName) + StringConstants.DOT + escapeSQLName(table.getName(uow)));
         sb.append(StringConstants.SEMI_COLON);
 
         return sb.toString();
@@ -185,10 +185,10 @@ public class ViewDdlBuilder {
         StringBuilder sb = new StringBuilder();
 
         // Left and Right table names
-        String lhVdbName = lhTable.getParent(uow).getParent(uow).getName(uow);
-        String rhVdbName = rhTable.getParent(uow).getParent(uow).getName(uow);
-        String lhTableNameAliased = lhVdbName+StringConstants.DOT+lhTable.getName(uow)+" AS "+lhTableAlias; //$NON-NLS-1$
-        String rhTableNameAliased = rhVdbName+StringConstants.DOT+rhTable.getName(uow)+" AS "+rhTableAlias; //$NON-NLS-1$
+        String lhVdbModelName = lhTable.getParent(uow).getName(uow);
+        String rhVdbModelName = rhTable.getParent(uow).getName(uow);
+        String lhTableNameAliased = lhVdbModelName+StringConstants.DOT+lhTable.getName(uow)+" AS "+lhTableAlias; //$NON-NLS-1$
+        String rhTableNameAliased = rhVdbModelName+StringConstants.DOT+rhTable.getName(uow)+" AS "+rhTableAlias; //$NON-NLS-1$
         
         List<String> includedLHColumnNames = new ArrayList<String>();
         if( lhColNames!=null && !lhColNames.isEmpty() ) {
