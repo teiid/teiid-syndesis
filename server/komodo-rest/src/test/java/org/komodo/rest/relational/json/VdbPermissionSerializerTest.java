@@ -24,9 +24,7 @@ package org.komodo.rest.relational.json;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-
-import java.net.URLEncoder;
-
+import java.net.URLDecoder;
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.relational.vdb.DataRole;
@@ -116,8 +114,9 @@ public final class VdbPermissionSerializerTest extends AbstractSerializerTest {
     }
 
     @Test
-    public void shouldExportJson() {
+    public void shouldExportJson() throws Exception {
         String json = KomodoJsonMarshaller.marshall( this.permission );
+        json = URLDecoder.decode(json, "UTF-8");
         assertEquals(JSON, json);
     }
 

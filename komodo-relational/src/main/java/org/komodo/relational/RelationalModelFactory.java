@@ -22,6 +22,7 @@
 package org.komodo.relational;
 
 import java.net.URL;
+import java.util.Map;
 import org.komodo.core.KomodoLexicon;
 import org.komodo.core.repository.RepositoryTools;
 import org.komodo.relational.connection.Connection;
@@ -88,7 +89,11 @@ import org.komodo.relational.model.internal.ViewImpl;
 import org.komodo.relational.model.internal.VirtualProcedureImpl;
 import org.komodo.relational.profile.GitRepository;
 import org.komodo.relational.profile.Profile;
+import org.komodo.relational.profile.ViewEditorState;
+import org.komodo.relational.profile.ViewEditorStateCommand;
 import org.komodo.relational.profile.internal.GitRepositoryImpl;
+import org.komodo.relational.profile.internal.ViewEditorStateCommandImpl;
+import org.komodo.relational.profile.internal.ViewEditorStateImpl;
 import org.komodo.relational.resource.DdlFile;
 import org.komodo.relational.resource.Driver;
 import org.komodo.relational.resource.ResourceFile;
@@ -1684,6 +1689,73 @@ public final class RelationalModelFactory {
 
         final View result = new ViewImpl( transaction, repository, kobject.getAbsolutePath() );
         return result;
+    }
+
+    /**
+     *
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+     * @param repository
+     *        the repository where the model object will be created (cannot be <code>null</code>)
+     * @param profile
+     *        the parent profile object
+     * @param stateId
+     *        the id of the view editor state
+     * @return the view editor state object
+     * @throws KException
+     *        if an error occurs
+     */
+    public static ViewEditorState createViewEditorState(UnitOfWork transaction, Repository repository, Profile profile,
+                                                                                                   String stateId) throws KException {
+        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( repository, "repository" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( stateId, "stateId" ); //$NON-NLS-1$
+
+        try {
+            final KomodoObject grouping = RepositoryTools.findOrCreateChild( transaction,
+                                                                             profile,
+                                                                             KomodoLexicon.Profile.VIEW_EDITOR_STATES,
+                                                                             KomodoLexicon.Profile.VIEW_EDITOR_STATES );
+            final KomodoObject kobject = grouping.addChild( transaction, stateId, KomodoLexicon.ViewEditorState.NODE_TYPE );
+            final ViewEditorState result = new ViewEditorStateImpl( transaction, repository, kobject.getAbsolutePath() );
+            return result;
+        } catch ( final Exception e ) {
+            throw handleError( e );
+        }
+    }
+
+    /**
+     *
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+     * @param repository
+     *        the repository where the model object will be created (cannot be <code>null</code>)
+     * @param viewEditorState
+     *        the parent view editor state object
+     * @param commandId
+     *        the id of the command
+     * @return the view editor state command object
+     * @throws KException
+     *        if an error occurs
+     */
+    public static ViewEditorStateCommand createViewEditorStateCommand(UnitOfWork transaction, Repository repository,
+                                                                                                                                           ViewEditorState viewEditorState,
+                                                                                                                                           String commandId, Map<String, String> arguments) throws KException {
+        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( repository, "repository" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( commandId, "commandId" ); //$NON-NLS-1$
+
+        try {
+            final KomodoObject kobject = viewEditorState.addChild( transaction, commandId, KomodoLexicon.ViewEditorStateCommand.NODE_TYPE );
+            final ViewEditorStateCommand result = new ViewEditorStateCommandImpl( transaction, repository, kobject.getAbsolutePath() );
+            result.setArguments(transaction, arguments);
+
+            return result;
+        } catch ( final Exception e ) {
+            throw handleError( e );
+        }
     }
 
     /**

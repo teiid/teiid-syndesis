@@ -922,6 +922,11 @@ public interface KomodoLexicon extends StringConstants {
          * The name of the git repositories child node. Value is {@value} .
          */
         String GIT_REPOSITORIES = Namespace.PREFIX + COLON + "gitRepositories"; //$NON-NLS-1$
+
+        /**
+         * The name of the view editor states child node. Value is {@value} .
+         */
+        String VIEW_EDITOR_STATES = Namespace.PREFIX + COLON + "viewEditorStates"; //$NON-NLS-1$
     }
 
     /**
@@ -968,5 +973,32 @@ public interface KomodoLexicon extends StringConstants {
          * The name of the target directory property. Value is {@value} .
          */
         String TARGET_DIRECTORY = Namespace.PREFIX + COLON + "targetDirectory"; //$NON-NLS-1$
+    }
+
+    /**
+     * The JCR names associated with the view editor state node type.
+     */
+    interface ViewEditorState {
+
+        /**
+         * The name of the view editor state node type. Value is {@value} .
+         */
+        String NODE_TYPE = Namespace.PREFIX + COLON + "viewEditorState"; //$NON-NLS-1$
+    }
+
+    /**
+     * The JCR names associated with the view editor state command node type.
+     */
+    interface ViewEditorStateCommand {
+
+        /**
+         * The name of the view editor state node type. Value is {@value} .
+         */
+        String NODE_TYPE = Namespace.PREFIX + COLON + "viewEditorStateCommand"; //$NON-NLS-1$
+
+        /**
+         * The name of the view editor state command args property. Value is {@value} .
+         */
+        String ARGS = Namespace.PREFIX + COLON + "args"; //$NON-NLS-1$
     }
 }

@@ -141,6 +141,8 @@ public class KomodoTypeRegistry implements StringConstants {
 
         index(KomodoType.FOREIGN_KEY, TeiidDdlLexicon.Constraint.FOREIGN_KEY_CONSTRAINT);
 
+        index(KomodoType.GIT_REPOSITORY, KomodoLexicon.GitRepository.NODE_TYPE);
+
         index(KomodoType.INDEX, TeiidDdlLexicon.Constraint.INDEX_CONSTRAINT);
 
         index(KomodoType.MODEL, VdbLexicon.Vdb.DECLARATIVE_MODEL);
@@ -148,6 +150,8 @@ public class KomodoTypeRegistry implements StringConstants {
         index(KomodoType.PARAMETER, TeiidDdlLexicon.CreateProcedure.PARAMETER);
 
         index(KomodoType.PRIMARY_KEY, TeiidDdlLexicon.Constraint.TABLE_ELEMENT);
+
+        index(KomodoType.PROFILE, KomodoLexicon.Profile.NODE_TYPE);
 
         index(KomodoType.PUSHDOWN_FUNCTION, TeiidDdlLexicon.CreateProcedure.FUNCTION_STATEMENT);
 
@@ -170,6 +174,10 @@ public class KomodoTypeRegistry implements StringConstants {
         index(KomodoType.UNIQUE_CONSTRAINT, TeiidDdlLexicon.Constraint.TABLE_ELEMENT);
 
         index(KomodoType.USER_DEFINED_FUNCTION, TeiidDdlLexicon.CreateProcedure.FUNCTION_STATEMENT);
+
+        index(KomodoType.VIEW_EDITOR_STATE, KomodoLexicon.ViewEditorState.NODE_TYPE);
+
+        index(KomodoType.VIEW_EDITOR_STATE_COMMAND, KomodoLexicon.ViewEditorStateCommand.NODE_TYPE);
 
         index(KomodoType.VIRTUAL_PROCEDURE, TeiidDdlLexicon.CreateProcedure.PROCEDURE_STATEMENT);
 

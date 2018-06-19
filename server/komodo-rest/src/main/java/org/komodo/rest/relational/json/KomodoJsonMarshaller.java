@@ -84,6 +84,8 @@ import org.komodo.rest.relational.response.metadata.RestMetadataVdb;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatus;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatusVdb;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbTranslator;
+import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
+import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorStateCommand;
 import org.komodo.rest.relational.response.virtualization.RestRouteStatus;
 import org.komodo.rest.relational.response.virtualization.RestVirtualizationStatus;
 import org.komodo.rest.schema.json.TeiidXsdReader;
@@ -163,6 +165,8 @@ public final class KomodoJsonMarshaller {
                                                   .registerTypeAdapter(RestQueryRow.class, new QueryRowSerializer())
                                                   .registerTypeAdapter(KomodoConnectionAttributes.class, new ConnectionAttributesSerializer())
                                                   .registerTypeAdapter(RestGitRepository.class, new GitRepositorySerializer())
+                                                  .registerTypeAdapter(RestViewEditorState.class, new ViewEditorStateSerializer())
+                                                  .registerTypeAdapter(RestViewEditorStateCommand.class, new ViewEditorStateCommandSerializer())
                                                   .registerTypeAdapter(RestVirtualizationStatus.class, new VirtualizationStatusSerializer())
                                                   .registerTypeAdapter(RestRouteStatus.class, new RouteStatusSerializer());
 

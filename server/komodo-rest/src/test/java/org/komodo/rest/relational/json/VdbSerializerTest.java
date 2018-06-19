@@ -22,9 +22,7 @@
 package org.komodo.rest.relational.json;
 
 import static org.junit.Assert.assertEquals;
-
-import java.net.URLEncoder;
-
+import java.net.URLDecoder;
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.relational.vdb.Vdb;
@@ -110,8 +108,9 @@ public final class VdbSerializerTest extends AbstractSerializerTest  {
     }
 
     @Test
-    public void shouldExportJson() {
+    public void shouldExportJson() throws Exception {
         String json = KomodoJsonMarshaller.marshall( this.vdb );
+        json = URLDecoder.decode(json, "UTF-8");
         assertEquals(JSON, json);
     }
 

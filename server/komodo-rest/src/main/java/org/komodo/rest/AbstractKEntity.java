@@ -154,7 +154,7 @@ public abstract class AbstractKEntity implements KRestEntity {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        RestBasicEntity other = (RestBasicEntity)obj;
+        AbstractKEntity other = (AbstractKEntity)obj;
         if (this.links == null) {
             if (other.links != null)
                 return false;

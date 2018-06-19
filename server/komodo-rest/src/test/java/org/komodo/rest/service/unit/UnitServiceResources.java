@@ -103,7 +103,7 @@ public class UnitServiceResources extends ExternalResource {
         _server.start();
 
         System.setProperty("org.jboss.resteasy.port", Integer.toString(AbstractServiceTest.TEST_PORT));
-        URI baseUri = URI.create("http://localhost:8080");
+        URI baseUri = URI.create("http://localhost:8080/");
         //
         // Note this lacks the /v1 context since the embedded server does not
         // seem to detect context from the application
