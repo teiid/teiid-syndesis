@@ -215,11 +215,26 @@
   + * (tko:gitRepository) copy
 
 /*
+ * The command that forms part of the view editor state
+ */
+[tko:viewEditorStateCommand] > nt:unstructured
+
+/*
+ * The state of a view editor when saved
+ */
+[tko:viewEditorState] > nt:unstructured
+  + * (tko:viewEditorStateCommand) copy
+
+[tko:viewEditorStates] > nt:unstructured
+  + * (tko:viewEditorState) copy
+
+/*
  * A user profile node, detailing saved options available for each user
  * The name of the node will be the user id of the user.
  */
 [tko:profile] > nt:unstructured
   + tko:gitRepositories (tko:gitRepositories) copy
+  + tko:viewEditorStates (tko:viewEditorStates) copy
 
 /*
  * The grouping node for user profiles

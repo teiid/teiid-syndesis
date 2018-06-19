@@ -311,16 +311,16 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
 
             if (link.getRel().equals(LinkType.SELF)) {
                 linkCounter++;
-                assertTrue(href.startsWith(appUri().toString() + "/workspace/vdbs"));
+                assertTrue(href.startsWith(appUri().toString() + "workspace/vdbs"));
                 assertTrue(href.endsWith(TestUtilities.PORTFOLIO_VDB_NAME));
             } else if (link.getRel().equals(LinkType.PARENT)) {
                 linkCounter++;
-                assertTrue(href.startsWith(appUri().toString() + "/workspace/vdbs"));
+                assertTrue(href.startsWith(appUri().toString() + "workspace/vdbs"));
             } else if (link.getRel().equals(LinkType.CHILDREN)) {
                 linkCounter++;
-                assertTrue(href.startsWith(appUri().toString() + "/workspace/search"));
+                assertTrue(href.startsWith(appUri().toString() + "workspace/search"));
             } else {
-                assertTrue(href.startsWith(appUri().toString() + "/workspace/vdbs"));
+                assertTrue(href.startsWith(appUri().toString() + "workspace/vdbs"));
 
                 String suffixPrefix = TestUtilities.PORTFOLIO_VDB_NAME + FORWARD_SLASH;
 

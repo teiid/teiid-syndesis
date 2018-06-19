@@ -624,6 +624,16 @@ public class KomodoRestV1Application extends Application implements SystemConsta
         String GIT_REPO_PLACEHOLDER = "{gitRepositoryName}"; //$NON-NLS-1$
 
         /**
+         * The view editor state of the user profile
+         */
+        String VIEW_EDITOR_STATE = "viewEditorState";
+
+        /**
+         * View editor state placeholder
+         */
+        String VIEW_EDITOR_STATE_PLACEHOLDER = "{viewEditorStateId}"; //$NON-NLS-1$
+
+        /**
          * Publish VDB
          */
         String PUBLISH = "publish"; //$NON-NLS-1$

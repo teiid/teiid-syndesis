@@ -24,9 +24,7 @@ package org.komodo.rest.relational.json;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-
-import java.net.URLEncoder;
-
+import java.net.URLDecoder;
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.relational.vdb.Vdb;
@@ -86,8 +84,9 @@ public final class VdbImportSerializerTest extends AbstractSerializerTest {
     }
 
     @Test
-    public void shouldExport() {
+    public void shouldExport() throws Exception {
         String importValue = KomodoJsonMarshaller.marshall( this.vdbImport );
+        importValue = URLDecoder.decode(importValue, "UTF-8");
         assertEquals(JSON, importValue);
     }
 

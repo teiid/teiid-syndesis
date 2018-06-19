@@ -33,6 +33,7 @@ import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_USERN
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.core.UriBuilder;
 import org.apache.http.HttpResponse;
@@ -43,6 +44,7 @@ import org.apache.http.client.methods.HttpPut;
 import org.junit.Test;
 import org.komodo.importer.ImportMessages;
 import org.komodo.relational.profile.GitRepository;
+import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
 import org.komodo.rest.cors.CorsHeaders;
@@ -51,6 +53,8 @@ import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.KomodoStorageAttributes;
 import org.komodo.rest.relational.response.RestGitRepository;
+import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
+import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorStateCommand;
 import org.komodo.rest.service.KomodoUtilService;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.test.utils.TestUtilities;
@@ -438,6 +442,173 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
             assertNotNull(message);
 
             assertEquals("Successfully deleted", message);
+        }
+    }
+
+    @Test
+    public void shouldAddUserProfileViewEditorState() throws Exception {
+        // put
+        URI uri = UriBuilder.fromUri(uriBuilder().baseUri())
+                                                    .path(V1Constants.SERVICE_SEGMENT)
+                                                    .path(V1Constants.USER_PROFILE)
+                                                    .path(V1Constants.VIEW_EDITOR_STATE).build();
+
+        String stateId = "myNewViewEditor";
+        String commandId = "set-view-name";
+        RestViewEditorStateCommand command = new RestViewEditorStateCommand();
+        command.setId(commandId);
+        command.addArgument("oldName", "untitled");
+        command.addArgument("newName", stateId);
+        RestViewEditorStateCommand[] content = { command };
+
+        RestViewEditorState restViewEditorState = new RestViewEditorState();
+        restViewEditorState.setBaseUri(uriBuilder().baseUri());
+        restViewEditorState.setId(stateId);
+        restViewEditorState.setContent(content);
+
+        try {
+            HttpPut request = jsonRequest(uri, RequestType.PUT);
+            addHeader(request, CorsHeaders.ORIGIN, "http://localhost:2772");
+            addHeader(request, HttpHeaders.AUTHORIZATION, AUTH_HEADER_VALUE);
+            addBody(request, restViewEditorState);
+            HttpResponse response = executeOk(request);
+            String entity = extractResponse(response);
+
+            RestViewEditorState restState = KomodoJsonMarshaller.unmarshall(entity, RestViewEditorState.class);
+            assertEquals(stateId, restState.getId());
+            assertEquals(restViewEditorState, restState);
+        } finally {
+            serviceTestUtilities.removeViewEditorState(USER_NAME, stateId);
+        }
+    }
+
+    @Test
+    public void shouldRemoveUserProfileViewEditorState() throws Exception {
+        String stateId = "myNewViewEditor";
+        String commandId = "set-view-name";
+        Map<String, String> args = new HashMap<>();
+        args.put("oldName", "untitled");
+        args.put("newName", stateId);
+
+        try {
+            ViewEditorState state = serviceTestUtilities.addViewEditorState(USER_NAME, stateId, commandId, args);
+            assertNotNull(state);
+
+            // delete
+            URI uri = UriBuilder.fromUri(uriBuilder().baseUri())
+                                                    .path(V1Constants.SERVICE_SEGMENT)
+                                                    .path(V1Constants.USER_PROFILE)
+                                                    .path(V1Constants.VIEW_EDITOR_STATE)
+                                                    .path(stateId)
+                                                    .build();
+
+            HttpDelete request = jsonRequest(uri, RequestType.DELETE);
+            addHeader(request, CorsHeaders.ORIGIN, "http://localhost:2772");
+            HttpResponse response = executeOk(request);
+
+            String entity = extractResponse(response);
+//          System.out.println("Response from uri " + uri + ":\n" + entity);
+
+            KomodoStatusObject status = KomodoJsonMarshaller.unmarshall(entity, KomodoStatusObject.class);
+            assertNotNull(status);
+
+            assertEquals("Delete Status", status.getTitle());
+            Map<String, String> attributes = status.getAttributes();
+
+            for (Map.Entry<String, String> entry : attributes.entrySet()) {
+                String message = entry.getValue();
+                assertNotNull(message);
+
+                assertEquals("Successfully deleted", message);
+            }
+
+        } finally {
+            serviceTestUtilities.removeViewEditorState(USER_NAME, stateId);
+        }
+    }
+
+    @Test
+    public void shouldGetUserProfileViewEditorStates() throws Exception {
+        String stateId = "myNewViewEditor";
+        String commandId = "set-view-name";
+        Map<String, String> args = new HashMap<>();
+        args.put("oldName", "untitled");
+        args.put("newName", stateId);
+
+        try {
+            ViewEditorState state = serviceTestUtilities.addViewEditorState(USER_NAME, stateId, commandId, args);
+            assertNotNull(state);
+
+            // get
+            URI uri = UriBuilder.fromUri(uriBuilder().baseUri())
+                                                    .path(V1Constants.SERVICE_SEGMENT)
+                                                    .path(V1Constants.USER_PROFILE)
+                                                    .path(V1Constants.VIEW_EDITOR_STATE)
+                                                    .build();
+
+            HttpGet request = jsonRequest(uri, RequestType.GET);
+            addHeader(request, CorsHeaders.ORIGIN, "http://localhost:2772");
+            HttpResponse response = executeOk(request);
+
+            String entity = extractResponse(response);
+//          System.out.println("Response from uri " + uri + ":\n" + entity);
+
+            RestViewEditorState[] restStates = KomodoJsonMarshaller.unmarshallArray(entity, RestViewEditorState[].class);
+            assertNotNull(restStates);
+            assertTrue(restStates.length == 1);
+
+            RestViewEditorState restState = restStates[0];
+            assertEquals(stateId, restState.getId());
+
+            RestViewEditorStateCommand[] content = restState.getContent();
+            assertNotNull(content);
+            assertTrue(content.length == 1);
+            assertEquals(commandId, content[0].getId());
+            assertEquals(args, content[0].getArguments());
+
+        } finally {
+            serviceTestUtilities.removeViewEditorState(USER_NAME, stateId);
+        }
+    }
+
+    @Test
+    public void shouldGetUserProfileViewEditorState() throws Exception {
+        String stateId = "myNewViewEditor";
+        String commandId = "set-view-name";
+        Map<String, String> args = new HashMap<>();
+        args.put("oldName", "untitled");
+        args.put("newName", stateId);
+
+        try {
+            ViewEditorState state = serviceTestUtilities.addViewEditorState(USER_NAME, stateId, commandId, args);
+            assertNotNull(state);
+
+            // get
+            URI uri = UriBuilder.fromUri(uriBuilder().baseUri())
+                                                    .path(V1Constants.SERVICE_SEGMENT)
+                                                    .path(V1Constants.USER_PROFILE)
+                                                    .path(V1Constants.VIEW_EDITOR_STATE)
+                                                    .path(stateId)
+                                                    .build();
+
+            HttpGet request = jsonRequest(uri, RequestType.GET);
+            addHeader(request, CorsHeaders.ORIGIN, "http://localhost:2772");
+            HttpResponse response = executeOk(request);
+
+            String entity = extractResponse(response);
+//          System.out.println("Response from uri " + uri + ":\n" + entity);
+
+            RestViewEditorState restState = KomodoJsonMarshaller.unmarshall(entity, RestViewEditorState.class);
+            assertEquals(stateId, restState.getId());
+
+            RestViewEditorStateCommand[] content = restState.getContent();
+            assertNotNull(content);
+            assertTrue(content.length == 1);
+            assertEquals(commandId, content[0].getId());
+            assertEquals(args, content[0].getArguments());
+
+        } finally {
+            serviceTestUtilities.removeViewEditorState(USER_NAME, stateId);
         }
     }
 }

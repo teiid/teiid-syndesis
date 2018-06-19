@@ -31,6 +31,7 @@ import org.komodo.relational.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.profile.GitRepository;
 import org.komodo.relational.profile.Profile;
+import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
@@ -47,7 +48,7 @@ public class ProfileImpl extends RelationalObjectImpl implements Profile {
     /**
      * The allowed child types.
      */
-    private static final KomodoType[] CHILD_TYPES = new KomodoType[] {GitRepository.IDENTIFIER};
+    private static final KomodoType[] CHILD_TYPES = new KomodoType[] { GitRepository.IDENTIFIER, ViewEditorState.IDENTIFIER };
 
     /**
      * @param uow
@@ -71,6 +72,27 @@ public class ProfileImpl extends RelationalObjectImpl implements Profile {
     /**
      * {@inheritDoc}
      *
+     * @see org.komodo.relational.internal.RelationalObjectImpl#hasChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     */
+    @Override
+    public boolean hasChild( final UnitOfWork transaction,
+                             final String name ) throws KException {
+        if ( KomodoLexicon.Profile.VIEW_EDITOR_STATES.equals( name ) ) {
+            return false; // use hasRawChild
+        }
+
+        if ( KomodoLexicon.Profile.GIT_REPOSITORIES.equals( name ) ) {
+            return false; // use hasRawChild
+        }
+
+        return ( super.hasChild( transaction, name ) ||
+                            ( getGitRepositories( transaction, name ).length != 0 ) ) ||
+                            ( getViewEditorStates( transaction, name ).length != 0 );
+    }
+
+    /**
+     * {@inheritDoc}
+     *
      * @see org.komodo.relational.internal.RelationalObjectImpl#getChildren(org.komodo.spi.repository.Repository.UnitOfWork,
      *      java.lang.String[])
      */
@@ -80,9 +102,11 @@ public class ProfileImpl extends RelationalObjectImpl implements Profile {
         ArgCheck.isTrue((transaction.getState() == State.NOT_STARTED), "transaction state is not NOT_STARTED"); //$NON-NLS-1$
 
         final KomodoObject[] gitRepositories = getGitRepositories(transaction, namePatterns);
+        final KomodoObject[] viewEditorStates = getViewEditorStates(transaction, namePatterns);
 
-        final KomodoObject[] result = new KomodoObject[gitRepositories.length];
+        final KomodoObject[] result = new KomodoObject[gitRepositories.length + viewEditorStates.length];
         System.arraycopy(gitRepositories, 0, result, 0, gitRepositories.length);
+        System.arraycopy(viewEditorStates, 0, result, gitRepositories.length, viewEditorStates.length);
 
         return result;
     }
@@ -157,5 +181,61 @@ public class ProfileImpl extends RelationalObjectImpl implements Profile {
 
         // remove first occurrence
         gitRepos[0].remove(transaction);
+    }
+
+    @Override
+    public ViewEditorState addViewEditorState(UnitOfWork transaction, String stateId) throws KException {
+        return RelationalModelFactory.createViewEditorState( transaction, getRepository(), this, stateId );
+    }
+
+    private KomodoObject getViewEditorStatesGroupingNode( final UnitOfWork transaction ) {
+        try {
+            final KomodoObject[] groupings = getRawChildren( transaction, KomodoLexicon.Profile.VIEW_EDITOR_STATES );
+
+            if ( groupings.length == 0 ) {
+                return null;
+            }
+
+            return groupings[ 0 ];
+        } catch ( final KException e ) {
+            return null;
+        }
+    }
+
+    @Override
+    public ViewEditorState[] getViewEditorStates(UnitOfWork transaction, String... namePatterns) throws KException {
+        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+
+        final KomodoObject grouping = getViewEditorStatesGroupingNode( transaction);
+
+        if ( grouping != null ) {
+            final List< ViewEditorState > temp = new ArrayList<>();
+
+            for ( final KomodoObject kobject : grouping.getChildren( transaction, namePatterns ) ) {
+                final ViewEditorState gitRepo = new ViewEditorStateImpl( transaction, getRepository(), kobject.getAbsolutePath() );
+                temp.add( gitRepo );
+            }
+
+            return temp.toArray( new ViewEditorState[ temp.size() ] );
+        }
+
+        return ViewEditorState.NO_VIEW_EDITOR_STATES;
+    }
+
+    @Override
+    public void removeViewEditorState(UnitOfWork transaction, String viewEditorStateId) throws KException {
+        ArgCheck.isNotNull(transaction, "transaction"); //$NON-NLS-1$
+        ArgCheck.isTrue((transaction.getState() == State.NOT_STARTED), "transaction state is not NOT_STARTED"); //$NON-NLS-1$
+        ArgCheck.isNotEmpty(viewEditorStateId, "viewEditorStateId"); //$NON-NLS-1$
+
+        final ViewEditorState[] states = getViewEditorStates(transaction, viewEditorStateId);
+
+        if (states.length == 0) {
+            throw new KException(Messages.getString(Relational.VIEW_EDITOR_STATE_NOT_FOUND_TO_REMOVE, viewEditorStateId));
+        }
+
+        // remove first occurrence
+        states[0].remove(transaction);
     }
 }
