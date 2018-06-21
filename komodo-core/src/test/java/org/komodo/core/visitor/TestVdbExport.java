@@ -21,6 +21,8 @@
  */
 package org.komodo.core.visitor;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -29,16 +31,26 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
 import org.junit.Test;
 import org.komodo.core.AbstractLocalRepositoryTest;
 import org.komodo.metadata.DefaultMetadataInstance;
 import org.komodo.metadata.TeiidConnectionProvider;
+import org.komodo.spi.lexicon.LexiconConstants.CoreLexicon;
 import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon;
 import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
+import org.komodo.spi.repository.Property;
 import org.komodo.test.utils.TestUtilities;
 import org.mockito.Mockito;
+import org.w3c.dom.CharacterData;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -225,5 +237,184 @@ public class TestVdbExport extends AbstractLocalRepositoryTest {
         // the document nodes can be in a different order and the documents are
         // still equal.
         TestUtilities.compareDocuments(compareDoc, testDoc);
+    }
+
+    @Test(timeout=3000000)
+    public void testPatientsVdbExport() throws Exception {
+        KomodoObject workspace = _repo.komodoWorkspace(getTransaction());
+        KomodoObject patientsExample = TestUtilities.createPatientsExampleNode(getTransaction(), workspace);
+
+        commit();
+
+        traverse(getTransaction(), patientsExample);
+
+        //
+        // Create node visitor and visit the jcr nodes
+        //
+        StringWriter testWriter = new StringWriter();
+        VdbNodeVisitor visitor = createNodeVisitor(testWriter);
+        visitor.visit(getTransaction(), patientsExample);
+
+        //
+        // Create an XML Document from the filled writer
+        //
+        String testXML = testWriter.toString();
+        System.out.println(testXML);
+        VdbErrorHandler errorHandler = new VdbErrorHandler();
+        Document testDoc = TestUtilities.createDocument(testXML, errorHandler);
+        assertTrue(errorHandler.noExceptions());
+
+        //
+        // Create comparison XML Document from the example xml files
+        //
+        InputStream compareStream = TestUtilities.patientsExample();
+        errorHandler = new VdbErrorHandler();
+        Document compareDoc = TestUtilities.createDocument(compareStream, errorHandler);
+        assertTrue(errorHandler.noExceptions());
+
+        // Compare the XML documents. Unlike Document.isEqualNode(document)
+        // the document nodes can be in a different order and the documents are
+        // still equal.
+        TestUtilities.compareDocuments(compareDoc, testDoc);
+    }
+
+    @Test(timeout=3000000)
+    public void testPatientsVdbAddModelThenExport() throws Exception {
+        KomodoObject workspace = _repo.komodoWorkspace(getTransaction());
+        KomodoObject patientsExample = TestUtilities.createPatientsExampleNode(getTransaction(), workspace);
+
+        commit();
+//        traverse(getTransaction(), patientsExample);
+
+        /*
+         *      FurtherPatients
+         *          @jcr:primaryType=vdb:declarativeModel
+         *          @jcr:uuid={uuid-to-be-created}
+         *          @mmcore:modelType=VIRTUAL
+         *          @description=Further Patients View
+         *          @vdb:metadataType=DDL
+         *          @vdb:visible=true
+         */
+        String furtherPatientsModelName = "FurtherPatients";
+        KomodoObject furtherPatientsModel = patientsExample.addChild(getTransaction(),
+                                                                                    furtherPatientsModelName,
+                                                                                    VdbLexicon.Vdb.DECLARATIVE_MODEL);
+        furtherPatientsModel.setProperty(getTransaction(), CoreLexicon.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
+        furtherPatientsModel.setProperty(getTransaction(),  VdbLexicon.Model.DESCRIPTION, "Further Patients View");
+        furtherPatientsModel.setProperty(getTransaction(), VdbLexicon.Model.VISIBLE, true);
+        furtherPatientsModel.setProperty(getTransaction(), VdbLexicon.Model.METADATA_TYPE, "DDL");
+        StringBuffer patientsModelDefn = new StringBuffer();
+        String createViewTxt = "CREATE VIEW FurtherView (";
+        patientsModelDefn.append(createViewTxt)
+                            .append("id long, ")
+                            .append("FurtherDetail1 clob, ")
+                            .append("FurtherDetail2 clob, ")
+                            .append("FurtherDetail3 clob, ")
+                            .append("PRIMARY KEY(id) ")
+                            .append(") ")
+                            .append("AS ")
+                            .append("SELECT id, furtherDetail1, furtherDetail2, furtherDetail3 FROM vdbwebtest.FURTHER_PATIENT;");
+        furtherPatientsModel.setProperty(getTransaction(), VdbLexicon.Model.MODEL_DEFINITION, patientsModelDefn.toString());
+
+        commit();
+//        traverse(getTransaction(), patientsExample);
+
+        //
+        // Create node visitor and visit the jcr nodes
+        //
+        StringWriter testWriter = new StringWriter();
+        VdbNodeVisitor visitor = createNodeVisitor(testWriter);
+        visitor.visit(getTransaction(), patientsExample);
+
+        //
+        // Create an XML Document from the filled writer
+        //
+        String testXML = testWriter.toString();
+        System.out.println(testXML);
+        VdbErrorHandler errorHandler = new VdbErrorHandler();
+        Document testDoc = TestUtilities.createDocument(testXML, errorHandler);
+        assertTrue(errorHandler.noExceptions());
+
+        Element docElement = testDoc.getDocumentElement();
+        assertEquals("vdb", docElement.getNodeName());
+
+        NodeList vdbNodes = docElement.getChildNodes();
+        assertTrue(vdbNodes.getLength() > 0);
+
+        XPath xPath = XPathFactory.newInstance().newXPath();
+        String expression = "/vdb/model[@name='" + furtherPatientsModelName + "']/metadata[@type='DDL']";
+        Node ddlNode = (Node) xPath.compile(expression).evaluate(testDoc, XPathConstants.NODE);
+        assertNotNull(ddlNode);
+
+        Node cDataNode = ddlNode.getFirstChild();
+        assertNotNull(cDataNode);
+        assertTrue(cDataNode instanceof CharacterData);
+
+        String ddlText = ((CharacterData) cDataNode).getTextContent();
+        assertNotNull(ddlText);
+        assertTrue(ddlText.startsWith(createViewTxt));
+    }
+
+    /**
+     * Test to update the vdb by editing the model definition property of the model
+     * and ensure that once committed the correct model definition is exported to xml
+     *
+     * @throws Exception
+     */
+    @Test(timeout=3000000)
+    public void testPatientsVdbUpdateViewThenExport() throws Exception {
+        KomodoObject workspace = _repo.komodoWorkspace(getTransaction());
+        KomodoObject patientsExample = TestUtilities.createPatientsExampleNode(getTransaction(), workspace);
+
+        commit();
+
+        KomodoObject patientsModel = patientsExample.getChild(getTransaction(), TestUtilities.PATIENTS_MODEL);
+        Property modelDefnProperty = patientsModel.getProperty(getTransaction(), VdbLexicon.Model.MODEL_DEFINITION);
+        String modelDefn = modelDefnProperty.getStringValue(getTransaction());
+        assertNotNull(modelDefn);
+
+        String newViewContent = "CREATE VIEW AnotherServiceView ( id long, furtherDetail clob ) " +
+        "AS " +
+        "SELECT id, furtherDetail FROM vdbwebtest.MORE_PATIENT;";
+
+        modelDefn = modelDefn + newViewContent;
+        patientsModel.setProperty(getTransaction(), VdbLexicon.Model.MODEL_DEFINITION, modelDefn);
+        commit();
+
+        traverse(getTransaction(), patientsExample);
+        //
+        // Create node visitor and visit the jcr nodes
+        //
+        StringWriter testWriter = new StringWriter();
+        VdbNodeVisitor visitor = createNodeVisitor(testWriter);
+        visitor.visit(getTransaction(), patientsExample);
+
+        //
+        // Create an XML Document from the filled writer
+        //
+        String testXML = testWriter.toString();
+        System.out.println(testXML);
+        VdbErrorHandler errorHandler = new VdbErrorHandler();
+        Document testDoc = TestUtilities.createDocument(testXML, errorHandler);
+        assertTrue(errorHandler.noExceptions());
+
+        Element docElement = testDoc.getDocumentElement();
+        assertEquals("vdb", docElement.getNodeName());
+
+        NodeList vdbNodes = docElement.getChildNodes();
+        assertTrue(vdbNodes.getLength() > 0);
+
+        XPath xPath = XPathFactory.newInstance().newXPath();
+        String expression = "/vdb/model[@name='" + TestUtilities.PATIENTS_MODEL + "']/metadata[@type='DDL']";
+        Node ddlNode = (Node) xPath.compile(expression).evaluate(testDoc, XPathConstants.NODE);
+        assertNotNull(ddlNode);
+
+        Node cDataNode = ddlNode.getFirstChild();
+        assertNotNull(cDataNode);
+        assertTrue(cDataNode instanceof CharacterData);
+
+        String ddlText = ((CharacterData) cDataNode).getTextContent();
+        assertNotNull(ddlText);
+        assertTrue(ddlText.contains(newViewContent));
     }
 }

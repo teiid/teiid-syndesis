@@ -147,4 +147,38 @@ public interface Profile extends RelationalObject {
      */
     void removeGitRepository( final UnitOfWork transaction,
                          final String gitRepoToRemove ) throws KException;
+
+    /**
+     *
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+     * @param stateId the id of the view editor state
+     * @return the new view editor state (never <code>null</code>)
+     * @throws KException
+     *          if an error occurs
+     */
+    ViewEditorState addViewEditorState(final UnitOfWork transaction,  String stateId) throws KException;
+
+    /**
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+     * @param namePatterns
+     *        optional name patterns (can be <code>null</code> or empty but cannot have <code>null</code> or empty elements)
+     *
+     * @return the view editor states (never <code>null</code> but can be empty)
+     * @throws KException
+     *         if an error occurs
+     */
+    ViewEditorState[] getViewEditorStates( final UnitOfWork transaction, final String... namePatterns ) throws KException;
+
+    /**
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+     * @param viewEditorStateId
+     *        the id of the viewEditorState being removed (cannot be empty)
+     * @throws KException
+     *         if an error occurs
+     */
+    void removeViewEditorState( final UnitOfWork transaction,
+                         final String viewEditorStateId ) throws KException;
 }

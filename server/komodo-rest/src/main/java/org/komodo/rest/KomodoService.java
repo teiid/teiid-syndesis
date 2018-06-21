@@ -85,6 +85,8 @@ public abstract class KomodoService implements V1Constants {
 
     protected static final StringNameValidator VALIDATOR = new StringNameValidator();
 
+    protected static final int ALL_AVAILABLE = -1;
+
     /**
      * VDB properties for DSB
      */

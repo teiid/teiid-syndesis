@@ -169,6 +169,16 @@ public enum KomodoType {
     GIT_REPOSITORY,
 
     /**
+     * View Editor State
+     */
+    VIEW_EDITOR_STATE,
+
+    /**
+     * View Editor State Command
+     */
+    VIEW_EDITOR_STATE_COMMAND,
+
+    /**
      * Stored Procedure
      */
     STORED_PROCEDURE,

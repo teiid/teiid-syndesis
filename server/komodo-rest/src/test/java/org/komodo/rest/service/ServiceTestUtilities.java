@@ -29,6 +29,7 @@ import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_PASSW
 import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_PATH_PROPERTY;
 import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_USERNAME;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -40,6 +41,7 @@ import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.ExistingNodeOptions;
 import org.komodo.importer.ImportOptions.OptionKeys;
+import org.komodo.relational.RelationalModelFactory;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.internal.DataserviceConveyor;
@@ -49,18 +51,21 @@ import org.komodo.relational.model.Model;
 import org.komodo.relational.model.View;
 import org.komodo.relational.profile.GitRepository;
 import org.komodo.relational.profile.Profile;
+import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.resource.Driver;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.rest.relational.response.KomodoStorageAttributes;
 import org.komodo.spi.KException;
+import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
+import org.komodo.test.utils.TestUtilities;
 
-public final class ServiceTestUtilities {
+public final class ServiceTestUtilities implements StringConstants {
 
     private final Repository repository;
 
@@ -566,5 +571,54 @@ public final class ServiceTestUtilities {
         uow.commit();
 
         return gitRepository;
+    }
+
+    public ViewEditorState addViewEditorState(String user, String stateId, String commandId, Map<String, String> arguments) throws Exception {
+        UnitOfWork uow = repository.createTransaction(user, "Create View Editor State", false, null); //$NON-NLS-1$
+        KomodoObject profileObj = repository.komodoProfile(uow);
+        assertNotNull(profileObj);
+
+        Profile profile = new AdapterFactory().adapt(uow, profileObj, Profile.class);
+        ViewEditorState viewEditorState = profile.addViewEditorState(uow, stateId);
+        RelationalModelFactory.createViewEditorStateCommand(uow, repository, viewEditorState,
+                                                                                                                    commandId, arguments);
+
+        uow.commit();
+        return viewEditorState;
+    }
+
+    public void removeViewEditorState(String user, String stateId) throws Exception {
+        UnitOfWork uow = repository.createTransaction(user, "Remove View Editor State", false, null); //$NON-NLS-1$
+        KomodoObject profileObj = repository.komodoProfile(uow);
+        assertNotNull(profileObj);
+
+        Profile profile = new AdapterFactory().adapt(uow, profileObj, Profile.class);
+        ViewEditorState[] viewEditorStates = profile.getViewEditorStates(uow, stateId);
+        if (viewEditorStates == null || viewEditorStates.length == 0)
+            return;
+
+        profile.removeViewEditorState(uow, stateId);
+        uow.commit();
+    }
+
+    public static String viewEditorCommandContent(String name, URI uri) {
+        String content = EMPTY_STRING +
+            OPEN_SQUARE_BRACKET + SPACE +
+                TAB + OPEN_BRACE + TestUtilities.space(2);
+
+        if (uri != null) {
+            content = content +
+                "\"keng__baseUri\"" + COLON + SPACE + SPEECH_MARK + uri + SPEECH_MARK + COMMA + SPACE;
+        }
+
+        content = content +
+                    TestUtilities.space(2) + "\"id\"" + COLON + SPACE + "\"set-view-name\"" + COMMA + SPACE +
+                    TestUtilities.space(2) + "\"args\"" + COLON + SPACE + OPEN_BRACE + SPACE +
+                            TestUtilities.space(3) + "\"newName\"" + COLON + SPACE + SPEECH_MARK + name + SPEECH_MARK + COMMA + SPACE +
+                            TestUtilities.space(3) + "\"oldName\"" + COLON + SPACE + "\"untitled\"" + SPACE +
+                    TestUtilities.space(2) + CLOSE_BRACE + SPACE +
+                TAB + CLOSE_BRACE + SPACE +
+            CLOSE_SQUARE_BRACKET;
+        return content;
     }
 }

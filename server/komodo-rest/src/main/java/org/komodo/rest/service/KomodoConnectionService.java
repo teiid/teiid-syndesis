@@ -127,8 +127,7 @@ public final class KomodoConnectionService extends KomodoService {
 
     }
 
-	private static final int ALL_AVAILABLE = -1;
-    private TeiidOpenShiftClient openshiftClient;
+	private TeiidOpenShiftClient openshiftClient;
     private static final String CONNECTION_VDB_PATTERN = "{0}btlconn"; //$NON-NLS-1$
 
     private static final String SCHEMA_MODEL_NAME_PATTERN = "{0}schemamodel"; //$NON-NLS-1$
@@ -198,7 +197,7 @@ public final class KomodoConnectionService extends KomodoService {
     			paramType = "query"),
     	@ApiImplicitParam(
     			name = QueryParamKeys.START,
-    			value = "Index of the first dataservice to return",
+    			value = "Index of the first artficact to return",
     			required = false,
     			dataType = "integer",
     			paramType = "query")
@@ -286,7 +285,7 @@ public final class KomodoConnectionService extends KomodoService {
 	                }
 	            }
 	
-	            int size = ALL_AVAILABLE;
+	            int size = KomodoService.ALL_AVAILABLE;
 	
 	            { // size query parameter
 	                final String qparam = uriInfo.getQueryParameters().getFirst( QueryParamKeys.SIZE );
@@ -297,10 +296,10 @@ public final class KomodoConnectionService extends KomodoService {
 	                        size = Integer.parseInt( qparam );
 	
 	                        if ( size <= 0 ) {
-	                            size = ALL_AVAILABLE;
+	                            size = KomodoService.ALL_AVAILABLE;
 	                        }
 	                    } catch ( final Exception e ) {
-	                        size = ALL_AVAILABLE;
+	                        size = KomodoService.ALL_AVAILABLE;
 	                    }
 	                }
 	            }
@@ -313,7 +312,7 @@ public final class KomodoConnectionService extends KomodoService {
 	                	RestConnection restConnection = null;
 	                	RestMetadataConnectionStatus restStatus = null;
 
-	                	if ( ( size == ALL_AVAILABLE ) || ( summaries.size() < size ) ) {                        
+	                	if ( ( size == KomodoService.ALL_AVAILABLE ) || ( summaries.size() < size ) ) {                        
 	                        restConnection = entityFactory.create(connection, uriInfo.getBaseUri(), uow, properties);
 	                        LOGGER.debug("getConnections:Connection '{0}' entity was constructed", connection.getName(uow)); //$NON-NLS-1$
 
