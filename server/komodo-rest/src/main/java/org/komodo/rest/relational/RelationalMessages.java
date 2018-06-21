@@ -1500,6 +1500,26 @@ public final class RelationalMessages {
         PROFILE_GIT_REPO_REMOVE_ERROR,
 
         /**
+         * An error indicating a profile view editor state is missing its id
+         */
+        PROFILE_EDITOR_STATE_MISSING_ID,
+
+        /**
+         * An error indicating a profile view editor state is missing its content
+         */
+        PROFILE_EDITOR_STATE_MISSING_CONTENT,
+
+        /**
+         * An error indicating a problem with creating a view editor state
+         */
+        PROFILE_EDITOR_STATE_CREATE_ERROR,
+
+        /**
+         * An error indicating a problem with removing a view editor state
+         */
+        PROFILE_EDITOR_STATE_REMOVE_ERROR,
+
+        /**
          * A failure to encrypt and secure sensitive data
          */
         ENCRYPT_FAILURE,

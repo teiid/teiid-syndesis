@@ -25,6 +25,8 @@ import static org.komodo.rest.Messages.Error.INCOMPLETE_JSON;
 import static org.komodo.rest.relational.json.KomodoJsonMarshaller.BUILDER;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.net.URI;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Map;
 import org.komodo.rest.AbstractKEntity;
@@ -121,13 +123,25 @@ public abstract class AbstractEntitySerializer< T extends AbstractKEntity > exte
                         break;
                     }
                     case STRING:
-                        entity.addTuple(name, in.nextString());
+                    {
+                        String value = in.nextString();
+
+                        try {
+                            URI uri = new URL(value).toURI();
+                            entity.addTuple(name, uri);
+                        } catch (Exception ex) {
+                            // Cannot parse so add as string
+                            entity.addTuple(name, value);
+                        }
+
                         break;
+                    }
                     case NULL:
                         in.nextNull();
                         entity.addTuple(name, null);
                         break;
                     case BEGIN_ARRAY:
+                    {
                         final Object[] value = BUILDER.fromJson( in, Object[].class );
 
                         //
@@ -142,6 +156,7 @@ public abstract class AbstractEntitySerializer< T extends AbstractKEntity > exte
 
                         entity.addTuple(name, value);
                         break;
+                    }
                     default:
                         throw new IOException(Messages.getString(Messages.Error.UNEXPECTED_JSON_TOKEN, name));
                 }

@@ -26,11 +26,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
-
-import java.net.URLEncoder;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.core.repository.DescriptorImpl;
@@ -128,8 +126,9 @@ public final class VdbTranslatorSerializerTest extends AbstractSerializerTest {
     }
 
     @Test
-    public void shouldExportJson() {
+    public void shouldExportJson() throws Exception {
         String json = KomodoJsonMarshaller.marshall( this.translator );
+        json = URLDecoder.decode(json, "UTF-8");
         assertEquals(JSON, json);
     }
 

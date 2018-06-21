@@ -305,7 +305,13 @@ public class Messages implements StringConstants {
          * An error indicating a git repository object could not be found
          * while trying to remove it
          */
-        GIT_REPO_NOT_FOUND_TO_REMOVE;
+        GIT_REPO_NOT_FOUND_TO_REMOVE,
+
+        /**
+         * An error indicating a view editor state object could not be found
+         * while trying to remove it
+         */
+        VIEW_EDITOR_STATE_NOT_FOUND_TO_REMOVE;
 
         @Override
         public String toString() {

@@ -229,6 +229,26 @@ public class TestUtilities implements StringConstants {
     public static final String JOIN_SAME_TABLE_NAMES_SERVICE_NAME = "JoinServiceSameTableNames";
 
     /**
+     * Patients example file name
+     */
+    public static final String PATIENTS_VDB_FILE = "patients-vdb.xml";
+
+    /**
+     * Patients model name
+     */
+    public static final String PATIENTS_MODEL = "Patients";
+
+    /**
+     * Patients source name
+     */
+    public static final String PATIENTS_SOURCE = "PatientSource";
+
+    /**
+     * Patients connection name
+     */
+    public static final String PATIENTS_CONNECTION = "PatientSourceConnection1";
+
+    /**
      * Patients DDL
      */
     public static final String PATIENTS_DDL_FILE = "patientsDDL.ddl";
@@ -310,6 +330,16 @@ public class TestUtilities implements StringConstants {
         return getResourceAsStream(TestUtilities.class,
                                                                   RESOURCES_DIRECTORY,
                                                                   TEIID_VDB_XSD);
+    }
+
+    /**
+     * @return input stream of patients example xml
+     * @throws Exception if error occurs
+     */
+    public static InputStream patientsExample() throws Exception {
+        return getResourceAsStream(TestUtilities.class,
+                                                                  RESOURCES_DIRECTORY,
+                                                                  PATIENTS_VDB_FILE);
     }
 
     /**
@@ -722,6 +752,122 @@ public class TestUtilities implements StringConstants {
         twitterView.setProperty(uow, VdbLexicon.Model.MODEL_DEFINITION, TWITTER_VIEW_MODEL_DDL);
     
         return tweetExample;
+    }
+
+    /**
+     * Creates the structure of the patient example vdb
+     *
+     * @param uow the transaction
+     * @param parentObject parent to append the new vdb
+     * @return the new vdb node
+     * @throws KException if error occurs
+     */
+    public static KomodoObject createPatientsExampleNode(UnitOfWork uow, KomodoObject parentObject) throws KException {
+
+        /*
+         * patients-vdb.xml
+         *      @jcr:primaryType=vdb:virtualDatabase
+         *      @jcr:mixinTypes=[mode:derived,mix:referenceable]
+         *      @jcr:uuid={uuid-to-be-created}
+         *      @mode:sha1={sha1-to-be-created}
+         *      @vdb:preview=false
+         *      @vdb:version=1
+         *      @vdb:originalFile=/vdbs/patients-vdb.xml
+         *      @vdb:name=patients
+         *      @vdb:description=Sample Dataservice for patient records
+         *      @vdb:connectionType=BY_VERSION
+         */
+        KomodoObject patientsVdb = parentObject.addChild(uow,
+                                                  PATIENTS_VDB_FILE,
+                                                  VdbLexicon.Vdb.VIRTUAL_DATABASE);
+        patientsVdb.addDescriptor(uow, "mode:derived", "mix:referenceable");
+        patientsVdb.setProperty(uow, VdbLexicon.Vdb.NAME, "patients");
+        patientsVdb.setProperty(uow, VdbLexicon.Vdb.DESCRIPTION, "Sample Dataservice for patient records");
+        patientsVdb.setProperty(uow, VdbLexicon.Vdb.CONNECTION_TYPE, "BY_VERSION");
+
+        patientsVdb.setProperty(uow, VdbLexicon.Vdb.ORIGINAL_FILE, "/vdbs/" + PATIENTS_VDB_FILE);
+        patientsVdb.setProperty(uow, VdbLexicon.Vdb.PREVIEW, false);
+        patientsVdb.setProperty(uow, VdbLexicon.Vdb.VERSION, 1);
+
+        /*
+         *      Patients
+         *          @jcr:primaryType=vdb:declarativeModel
+         *          @jcr:uuid={uuid-to-be-created}
+         *          @mmcore:modelType=VIRTUAL
+         *          @description=Example Patient Service
+         *          @vdb:metadataType=DDL
+         *          @vdb:visible=true
+         */
+        KomodoObject patientsModel = patientsVdb.addChild(uow,
+                                                                                    PATIENTS_MODEL,
+                                                                                    VdbLexicon.Vdb.DECLARATIVE_MODEL);
+        patientsModel.setProperty(uow, CoreLexicon.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
+        patientsModel.setProperty(uow,  VdbLexicon.Model.DESCRIPTION, "Example Patient Service");
+        patientsModel.setProperty(uow, VdbLexicon.Model.VISIBLE, true);
+        patientsModel.setProperty(uow, VdbLexicon.Model.METADATA_TYPE, "DDL");
+        StringBuffer patientsModelDefn = new StringBuffer();
+        patientsModelDefn.append("CREATE VIEW TheServiceView (")
+                            .append("id long, ")
+                            .append("firstName clob, ")
+                            .append("lastName clob, ")
+                            .append("gender clob, ")
+                            .append("age long, ")
+                            .append("currentSmoker boolean, ")
+                            .append("lastPrimaryCareVisit timestamp, ")
+                            .append("PRIMARY KEY(id) ")
+                            .append(") ")
+                            .append("AS ")
+                            .append("SELECT id, firstName, lastName, gender, age, currentSmoker, lastPrimaryCareVisit FROM vdbwebtest.PATIENT;");
+        patientsModel.setProperty(uow, VdbLexicon.Model.MODEL_DEFINITION, patientsModelDefn.toString());
+
+        /*
+         * Create patients connection to base the model source on
+         */
+        KomodoObject patientsConnection = parentObject.addChild(uow,
+                                                               PATIENTS_CONNECTION,
+                                                                DataVirtLexicon.Connection.NODE_TYPE);
+
+        /*
+         *      PatientSource
+         *          @jcr:primaryType=vdb:declarativeModel
+         *          @jcr:uuid={uuid-to-be-created}
+         *          @mmcore:modelType=PHYSICAL
+         *          @vdb:sourceTranslator=mysql5
+         *          @vdb:sourceName=PatientSource
+         *          @vdb:metadataType=DDL
+         *          @vdb:visible=true
+         *          @vdb:sourceJndiName=java:/MySqlPatients
+         */
+        KomodoObject patientSourceModel = patientsVdb.addChild(uow,
+                                                                                    PATIENTS_SOURCE,
+                                                                                    VdbLexicon.Vdb.DECLARATIVE_MODEL);
+        patientSourceModel.setProperty(uow, CoreLexicon.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
+        patientSourceModel.setProperty(uow, VdbLexicon.Model.VISIBLE, true);
+        patientSourceModel.setProperty(uow, VdbLexicon.Model.METADATA_TYPE, "DDL");
+
+        /*
+         *          vdb:sources
+         *              @jcr:primaryType=vdb:sources
+         */
+        KomodoObject patientSources = patientSourceModel.addChild(uow,
+                                                                                    VdbLexicon.Vdb.SOURCES,
+                                                                                    VdbLexicon.Vdb.SOURCES);
+
+        /*
+         *              PatientSource
+         *                  @jcr:primaryType=vdb:source
+         *                  @vdb:sourceTranslator=mysql5
+         *                  @vdb:sourceJndiName=java:/MySqlPatients
+         *                  @vdb:associatedConnection={uuid}
+         */
+        KomodoObject patientSource = patientSources.addChild(uow,
+                                                                                               PATIENTS_SOURCE,
+                                                                                               VdbLexicon.Source.SOURCE);
+        patientSource.setProperty(uow, VdbLexicon.Source.TRANSLATOR, "mysql5");
+        patientSource.setProperty(uow, VdbLexicon.Source.JNDI_NAME, "java:/MySqlPatients");
+        setModelSourceOriginConnection(uow, patientSource, patientsConnection);
+
+        return patientsVdb;
     }
 
     /**
@@ -1477,5 +1623,29 @@ public class TestUtilities implements StringConstants {
         Checksum contentCRC = new CRC32();
         contentCRC.update(bytes, 0, bytes.length);
         return contentCRC.getValue();
+    }
+
+    /**
+     * @param num
+     * @return string of tabs
+     */
+    public static String tab(int num) {
+        StringBuffer buf = new StringBuffer();
+        for (int i = 0; i < num; ++i)
+            buf.append(TAB);
+
+        return buf.toString();
+    }
+
+    /**
+     * @param num
+     * @return string of spaces
+     */
+    public static String space(int num) {
+        StringBuffer buf = new StringBuffer();
+        for (int i = 0; i < num; ++i)
+            buf.append(SPACE);
+
+        return buf.toString();
     }
 }

@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.ws.rs.DELETE;
@@ -53,6 +54,7 @@ import org.komodo.importer.ImportOptions.OptionKeys;
 import org.komodo.relational.importer.vdb.VdbImporter;
 import org.komodo.relational.profile.GitRepository;
 import org.komodo.relational.profile.Profile;
+import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.rest.KomodoRestException;
@@ -63,6 +65,8 @@ import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.RestGitRepository;
+import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
+import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorStateCommand;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
@@ -72,6 +76,8 @@ import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.StringUtils;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -485,7 +491,7 @@ public final class KomodoUtilService extends KomodoService {
      */
     @PUT
     @Path(V1Constants.USER_PROFILE + FORWARD_SLASH + V1Constants.GIT_REPOSITORY)
-    @ApiOperation( value = "Store a git repository configuration in the user's profile", response = String.class )
+    @ApiOperation( value = "Store a git repository configuration in the user's profile", response = GitRepository.class )
     @ApiResponses(value = {
         @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
         @ApiResponse(code = 403, message = "An error has occurred.")
@@ -655,6 +661,337 @@ public final class KomodoUtilService extends KomodoService {
             }
 
             return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.PROFILE_GIT_REPO_REMOVE_ERROR);
+        }
+    }
+
+    /**
+     * Get all view editor states from the user's profile
+     * @param headers
+     *        the request headers (never <code>null</code>)
+     * @param uriInfo
+     *        the request URI information (never <code>null</code>)
+     * @return a JSON document representing the view editor states in the user profile (never <code>null</code>)
+     * @throws KomodoRestException
+     *         if there is a problem constructing the Connection JSON document
+     */
+    @GET
+    @Path(V1Constants.USER_PROFILE + FORWARD_SLASH + V1Constants.VIEW_EDITOR_STATE)
+    @Produces( MediaType.APPLICATION_JSON )
+    @ApiOperation(value = "Return the collection of view editor states",
+                  response = RestViewEditorState[].class)
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = QueryParamKeys.PATTERN,
+                value = "A regex expression used when searching. If not present, all objects are returned.",
+                required = false,
+                dataType = "string",
+                paramType = "query"),
+        @ApiImplicitParam(
+                name = QueryParamKeys.SIZE,
+                value = "The number of objects to return. If not present, all objects are returned",
+                required = false,
+                dataType = "integer",
+                paramType = "query"),
+        @ApiImplicitParam(
+                name = QueryParamKeys.START,
+                value = "Index of the first artifact to return",
+                required = false,
+                dataType = "integer",
+                paramType = "query")
+      })
+    @ApiResponses(value = {
+        @ApiResponse(code = 403, message = "An error has occurred.")
+    })
+    public Response getViewEditorStates( final @Context HttpHeaders headers,
+                                    final @Context UriInfo uriInfo ) throws KomodoRestException {
+
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        UnitOfWork uow = null;
+        final List< RestViewEditorState > restViewEditorStates = new ArrayList<>();
+
+        try {
+
+            final String searchPattern = uriInfo.getQueryParameters().getFirst( QueryParamKeys.PATTERN );
+
+            // find view editor states
+            final String txId = "getViewEditorStates"; //$NON-NLS-1$ //$NON-NLS-2$
+            uow = createTransaction(principal, txId, true );
+            Profile profile = getUserProfile(uow);
+            ViewEditorState[] viewEditorStates = null;
+
+            if ( StringUtils.isBlank( searchPattern ) ) {
+                viewEditorStates = profile.getViewEditorStates(uow);
+            } else {
+                viewEditorStates = profile.getViewEditorStates(uow, searchPattern);
+            }
+
+            LOGGER.debug( "getViewEditorStates:found '{0}' ViewEditorStates", viewEditorStates.length ); //$NON-NLS-1$
+
+            int start = 0;
+
+            { // start query parameter
+                final String qparam = uriInfo.getQueryParameters().getFirst( QueryParamKeys.START );
+                if ( qparam != null ) {
+                    try {
+                        start = Integer.parseInt( qparam );
+                        if ( start < 0 ) {
+                            start = 0;
+                        }
+                    } catch ( final Exception e ) {
+                        start = 0;
+                    }
+                }
+            }
+
+            int size = ALL_AVAILABLE;
+
+            { // size query parameter
+                final String qparam = uriInfo.getQueryParameters().getFirst( QueryParamKeys.SIZE );
+
+                if ( qparam != null ) {
+                    try {
+                        size = Integer.parseInt( qparam );
+
+                        if ( size <= 0 ) {
+                            size = ALL_AVAILABLE;
+                        }
+                    } catch ( final Exception e ) {
+                        size = ALL_AVAILABLE;
+                    }
+                }
+            }
+
+            int i = 0;
+            for ( final ViewEditorState viewEditorState : viewEditorStates ) {
+                if (i < start)
+                    continue;
+
+                if (size != ALL_AVAILABLE && restViewEditorStates.size() > size)
+                    continue;
+
+                RestViewEditorState restviewEditorState = new RestViewEditorState(uriInfo.getBaseUri(), viewEditorState, uow);
+                LOGGER.debug("getViewEditorStates:ViewEditorState '{0}' entity was constructed", viewEditorState.getName(uow)); //$NON-NLS-1$
+                restViewEditorStates.add(restviewEditorState);
+                ++i;
+            }
+
+            return commit( uow, mediaTypes, restViewEditorStates );
+        } catch ( final Exception e ) {
+            if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
+                uow.rollback();
+            }
+
+            if ( e instanceof KomodoRestException ) {
+                throw ( KomodoRestException )e;
+            }
+
+            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.CONNECTION_SERVICE_GET_CONNECTIONS_ERROR);
+        }
+    }
+
+    /**
+     * Get the view editor state with the given id from the user's profile
+     * @param headers
+     *        the request headers (never <code>null</code>)
+     * @param uriInfo
+     *        the request URI information (never <code>null</code>)
+     * @return a JSON document representing the view editor state in the user profile (never <code>null</code>)
+     * @throws KomodoRestException
+     *         if there is a problem constructing the Connection JSON document
+     */
+    @GET
+    @Path(V1Constants.USER_PROFILE + FORWARD_SLASH +
+                  V1Constants.VIEW_EDITOR_STATE + FORWARD_SLASH +
+                  V1Constants.VIEW_EDITOR_STATE_PLACEHOLDER)
+    @Produces( MediaType.APPLICATION_JSON )
+    @ApiOperation(value = "Returns the view editor state with the given id",
+                  response = RestViewEditorState.class)
+    @ApiResponses(value = {
+        @ApiResponse(code = 403, message = "An error has occurred.")
+    })
+    public Response getViewEditorState( final @Context HttpHeaders headers,
+                                    final @Context UriInfo uriInfo,
+                                    @ApiParam(value = "Name of the view editor state to fetch", required = true)
+                                    final @PathParam( "viewEditorStateId" ) String viewEditorStateId) throws KomodoRestException {
+
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        UnitOfWork uow = null;
+
+        try {
+
+            final String txId = "getViewEditorStates"; //$NON-NLS-1$ //$NON-NLS-2$
+            uow = createTransaction(principal, txId, true );
+            Profile profile = getUserProfile(uow);
+            ViewEditorState[] viewEditorStates = profile.getViewEditorStates(uow, viewEditorStateId);
+            LOGGER.debug( "getViewEditorState:found '{0}' ViewEditorStates", 
+                              viewEditorStates == null ? 0 : viewEditorStates.length ); //$NON-NLS-1$
+
+            if (viewEditorStates == null || viewEditorStates.length == 0)
+                return Response.noContent().build();
+
+            RestViewEditorState restViewEditorState = new RestViewEditorState(uriInfo.getBaseUri(), viewEditorStates[0], uow);
+            LOGGER.debug("getViewEditorStates:ViewEditorState '{0}' entity was constructed", viewEditorStates[0].getName(uow)); //$NON-NLS-1$
+            return commit( uow, mediaTypes, restViewEditorState );
+
+        } catch ( final Exception e ) {
+            if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
+                uow.rollback();
+            }
+
+            if ( e instanceof KomodoRestException ) {
+                throw ( KomodoRestException )e;
+            }
+
+            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.CONNECTION_SERVICE_GET_CONNECTIONS_ERROR);
+        }
+    }
+
+    /**
+     * @param headers
+     *        the request headers (never <code>null</code>)
+     * @param uriInfo
+     *        the request URI information (never <code>null</code>)
+     * @return stashed view editor state
+     * @throws KomodoRestException if error occurs
+     */
+    @PUT
+    @Path(V1Constants.USER_PROFILE + FORWARD_SLASH + V1Constants.VIEW_EDITOR_STATE)
+    @ApiOperation( value = "Store a view editor state in the user's profile", response = ViewEditorState.class )
+    @ApiResponses(value = {
+        @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
+        @ApiResponse(code = 403, message = "An error has occurred.")
+    })
+    public Response stashViewEditorState(final @Context HttpHeaders headers,
+                                               final @Context UriInfo uriInfo,
+                                               @ApiParam(
+                                                         value = "" +
+                                                                 "JSON of the view editor state:<br>" +
+                                                                 OPEN_PRE_TAG +
+                                                                 OPEN_BRACE + BR +
+                                                                 NBSP + RestViewEditorState.ID_LABEL + ": \"Unqiue name or identifier of the view editor state\"" + BR +
+                                                                 NBSP + RestViewEditorState.CONTENT_LABEL + ": { ... \"The content of the state\" ... }" + BR +
+                                                                 CLOSE_BRACE +
+                                                                 CLOSE_PRE_TAG,
+                                                         required = true
+                                               )
+                                               final String viewEditorStateConfig) throws KomodoRestException {
+
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
+            return notAcceptableMediaTypesBuilder().build();
+
+        RestViewEditorState restViewEditorState = KomodoJsonMarshaller.unmarshall(viewEditorStateConfig, RestViewEditorState.class);
+        String stateId = restViewEditorState.getId();
+        RestViewEditorStateCommand[] stateContent = restViewEditorState.getContent();
+
+        if (StringUtils.isBlank(stateId)) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_ID);
+        }
+
+        if (stateContent == null || stateContent.length == 0) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_CONTENT);
+        }
+
+        UnitOfWork uow = null;
+        try {
+            uow = createTransaction(principal, "addUserProfileViewEditorState", false); //$NON-NLS-1$
+
+            Profile userProfile = getUserProfile(uow);
+            ViewEditorState viewEditorState = userProfile.addViewEditorState(uow, stateId);
+            for (RestViewEditorStateCommand cmd : stateContent)
+                viewEditorState.addCommand(uow, cmd.getId(), cmd.getArguments());
+
+            final RestViewEditorState entity = new RestViewEditorState(uriInfo.getBaseUri(), viewEditorState, uow);
+            return commit(uow, mediaTypes, entity);
+
+        } catch (final Exception e) {
+            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+                uow.rollback();
+            }
+
+            if (e instanceof KomodoRestException) {
+                throw (KomodoRestException)e;
+            }
+
+            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.PROFILE_EDITOR_STATE_CREATE_ERROR);
+        }
+    }
+
+    /**
+     * @param headers
+     *        the request headers (never <code>null</code>)
+     * @param uriInfo
+     *        the request URI information (never <code>null</code>)
+     * @return a JSON document representing the results of the removal
+     * @throws KomodoRestException if error occurs
+     */
+    @DELETE
+    @Path(V1Constants.USER_PROFILE + FORWARD_SLASH +
+                  V1Constants.VIEW_EDITOR_STATE + FORWARD_SLASH +
+                  V1Constants.VIEW_EDITOR_STATE_PLACEHOLDER)
+    @ApiOperation( value = "Remove a view editor state from the user's profile", response = String.class )
+    @ApiResponses(value = {
+        @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
+        @ApiResponse(code = 403, message = "An error has occurred.")
+    })
+    public Response removeViewEditorState(final @Context HttpHeaders headers,
+                                               final @Context UriInfo uriInfo,
+                                               @ApiParam(
+                                                         value = "Id of the view editor state to remove",
+                                                         required = true
+                                               )
+                                               final @PathParam("viewEditorStateId") String viewEditorStateId) throws KomodoRestException {
+
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
+            return notAcceptableMediaTypesBuilder().build();
+
+        if (StringUtils.isBlank(viewEditorStateId)) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_ID);
+        }
+
+        UnitOfWork uow = null;
+        try {
+            uow = createTransaction(principal, "removeUserProfileViewEditorState", false); //$NON-NLS-1$
+
+            Profile userProfile = getUserProfile(uow);
+            ViewEditorState[] states = userProfile.getViewEditorStates(uow,  viewEditorStateId);
+            if (states.length == 0)
+                return Response.noContent().build();
+
+            userProfile.removeViewEditorState(uow, viewEditorStateId);
+
+            KomodoStatusObject kso = new KomodoStatusObject("Delete Status"); //$NON-NLS-1$
+            kso.addAttribute(viewEditorStateId, "Successfully deleted"); //$NON-NLS-1$
+
+            return commit(uow, mediaTypes, kso);
+
+        } catch (final Exception e) {
+            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+                uow.rollback();
+            }
+
+            if (e instanceof KomodoRestException) {
+                throw (KomodoRestException)e;
+            }
+
+            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.PROFILE_EDITOR_STATE_REMOVE_ERROR);
         }
     }
 }
