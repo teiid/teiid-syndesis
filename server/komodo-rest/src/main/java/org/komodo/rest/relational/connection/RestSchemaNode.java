@@ -47,6 +47,11 @@ public class RestSchemaNode implements KRestEntity {
     public static final String TYPE_LABEL = "type";
 
     /**
+     * Label for type
+     */
+    public static final String PATH_LABEL = "path";
+
+    /**
      * Label for queryable
      */
     public static final String QUERYABLE_LABEL = "queryable";
@@ -63,6 +68,8 @@ public class RestSchemaNode implements KRestEntity {
     private String connectionName;
 
     private String type;
+    
+    private String path;
     
     private boolean queryable = false;
 
@@ -111,6 +118,14 @@ public class RestSchemaNode implements KRestEntity {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
     }
 
     public boolean isQueryable() {
