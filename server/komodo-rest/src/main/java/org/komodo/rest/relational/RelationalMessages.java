@@ -1195,6 +1195,16 @@ public final class RelationalMessages {
         METADATA_SERVICE_DEPLOY_VDB_ERROR,
 
         /**
+         * An error indicating a refresh preview Vdb failure
+         */
+        METADATA_SERVICE_REFRESH_PREVIEW_VDB_ERROR,
+
+        /**
+         * An error indicating the vdb name is missing
+         */
+        METADATA_SERVICE_MISSING_VDB_NAME,
+        
+        /**
          * An error indicating a teiid Vdb undeploy failure
          */
         METADATA_SERVICE_UNDEPLOY_VDB_ERROR,

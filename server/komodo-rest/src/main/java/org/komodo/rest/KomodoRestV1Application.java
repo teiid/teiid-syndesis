@@ -214,6 +214,11 @@ public class KomodoRestV1Application extends Application implements SystemConsta
         String CLONE_SEGMENT = "clone"; //$NON-NLS-1$
 
         /**
+         * The name of the URI path segment for refresh of the preview vdb.
+         */
+        String REFRESH_PREVIEW_VDB_SEGMENT = "refreshPreviewVdb"; //$NON-NLS-1$
+
+        /**
          * The name of the URI path segment for creating workspace VDBs from teiid
          */
         String VDBS_FROM_TEIID = "VdbsFromTeiid"; //$NON-NLS-1$

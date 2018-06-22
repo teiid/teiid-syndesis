@@ -39,7 +39,7 @@ public class ViewDdlBuilderTest extends RelationalModelTest {
     public void shouldGeneratedODataViewDDLFromTableWithArrayType() throws Exception {
         String EXPECTED_DDL = "CREATE VIEW MyView (RowId integer PRIMARY KEY, Col1 string, Col2 object[]) AS \n"
         + "SELECT ROW_NUMBER() OVER (ORDER BY Col1), Col1, Col2 \n"
-        + "FROM MyVDB.MyTable;";
+        + "FROM MyModel.MyTable;";
 
         Table aTable = createTable("MyVDB", VDB_PATH, "MyModel", "MyTable");
         Column col1 = aTable.addColumn(getTransaction(), "Col1");
@@ -60,7 +60,7 @@ public class ViewDdlBuilderTest extends RelationalModelTest {
     public void shouldGeneratedODataViewDDLFromTableWithNoPK() throws Exception {
         String EXPECTED_DDL = "CREATE VIEW MyView (RowId integer PRIMARY KEY, Col1 string, Col2 string) AS \n"
         + "SELECT ROW_NUMBER() OVER (ORDER BY Col1), Col1, Col2 \n"
-        + "FROM MyVDB.MyTable;";
+        + "FROM MyModel.MyTable;";
 
         Table aTable = createTable("MyVDB", VDB_PATH, "MyModel", "MyTable");
         Column col1 = aTable.addColumn(getTransaction(), "Col1");
@@ -80,7 +80,7 @@ public class ViewDdlBuilderTest extends RelationalModelTest {
     public void shouldGeneratedODataViewDDLFromTableWithPK() throws Exception {
         String EXPECTED_DDL = "CREATE VIEW MyView ( Col1 string, Col2 string, CONSTRAINT pk PRIMARY KEY (Col1)) AS \n"
         + "SELECT  Col1, Col2 \n"
-        + "FROM MyVDB.MyTable;";
+        + "FROM MyModel.MyTable;";
 
         Table aTable = createTable("MyVDB", VDB_PATH, "MyModel", "MyTable");
         Column col1 = aTable.addColumn(getTransaction(), "Col1");
@@ -103,7 +103,7 @@ public class ViewDdlBuilderTest extends RelationalModelTest {
     public void shouldGeneratedODataViewDDLFromTableWithUC() throws Exception {
         String EXPECTED_DDL = "CREATE VIEW MyView ( Col1 string, Col2 string, CONSTRAINT uc UNIQUE (Col1)) AS \n"
         + "SELECT  Col1, Col2 \n"
-        + "FROM MyVDB.MyTable;";
+        + "FROM MyModel.MyTable;";
 
         Table aTable = createTable("MyVDB", VDB_PATH, "MyModel", "MyTable");
         Column col1 = aTable.addColumn(getTransaction(), "Col1");
@@ -126,7 +126,7 @@ public class ViewDdlBuilderTest extends RelationalModelTest {
     public void shouldGeneratedODataViewDDLFromTableWithMultipleUC() throws Exception {
         String EXPECTED_DDL = "CREATE VIEW MyView ( Col1 string, Col2 string, Col3 long, CONSTRAINT uc1 UNIQUE (Col1),CONSTRAINT uc2 UNIQUE (Col2, Col3)) AS \n"
         + "SELECT  Col1, Col2, Col3 \n"
-        + "FROM MyVDB.MyTable;";
+        + "FROM MyModel.MyTable;";
 
         Table aTable = createTable("MyVDB", VDB_PATH, "MyModel", "MyTable");
         Column col1 = aTable.addColumn(getTransaction(), "Col1");
@@ -156,9 +156,9 @@ public class ViewDdlBuilderTest extends RelationalModelTest {
         String EXPECTED_DDL = "CREATE VIEW MyView (RowId integer PRIMARY KEY,  LHCol1 string, LHCol2 string,  RHCol1 string, RHCol2 string) AS \n"
         + "SELECT ROW_NUMBER() OVER (ORDER BY A.LHCol1), A.LHCol1, A.LHCol2, B.RHCol1, B.RHCol2 \n"
         + "FROM \n"
-        + "MyVDB.lhTable AS A \n"
+        + "MyModel.lhTable AS A \n"
         + "INNER JOIN \n"
-        + "MyVDB.rhTable AS B \n"
+        + "MyModel.rhTable AS B \n"
         + "ON \n"
         + "A.LHCol1 = B.RHCol2;";
 
@@ -206,9 +206,9 @@ public class ViewDdlBuilderTest extends RelationalModelTest {
         String EXPECTED_DDL = "CREATE VIEW MyView (RowId integer PRIMARY KEY,  LHCol1 string, LHCol2 string,  RHCol1 string, RHCol2 string) AS \n"
         + "SELECT ROW_NUMBER() OVER (ORDER BY A.LHCol1), A.LHCol1, A.LHCol2, B.RHCol1, B.RHCol2 \n"
         + "FROM \n"
-        + "MyVDB.lhTable AS A \n"
+        + "MyModel.lhTable AS A \n"
         + "LEFT OUTER JOIN \n"
-        + "MyVDB.rhTable AS B \n"
+        + "MyModel.rhTable AS B \n"
         + "ON \n"
         + "A.LHCol1 > B.RHCol2;";
         
@@ -256,9 +256,9 @@ public class ViewDdlBuilderTest extends RelationalModelTest {
         String EXPECTED_DDL = "CREATE VIEW MyView (RowId integer PRIMARY KEY,  LHCol1 string, LHCol2 string,  RHCol1 string, RHCol2 string) AS \n"
         + "SELECT ROW_NUMBER() OVER (ORDER BY A.LHCol1), A.LHCol1, A.LHCol2, B.RHCol1, B.RHCol2 \n"
         + "FROM \n"
-        + "MyVDB.lhTable AS A \n"
+        + "MyModel.lhTable AS A \n"
         + "RIGHT OUTER JOIN \n"
-        + "MyVDB.rhTable AS B \n"
+        + "MyModel.rhTable AS B \n"
         + "ON \n"
         + "A.LHCol1 < B.RHCol2;";
         
@@ -306,9 +306,9 @@ public class ViewDdlBuilderTest extends RelationalModelTest {
         String EXPECTED_DDL = "CREATE VIEW MyView (RowId integer PRIMARY KEY,  LHCol1 string, LHCol2 string,  RHCol1 string, RHCol2 string) AS \n"
         + "SELECT ROW_NUMBER() OVER (ORDER BY A.LHCol1), A.LHCol1, A.LHCol2, B.RHCol1, B.RHCol2 \n"
         + "FROM \n"
-        + "MyVDB.lhTable AS A \n"
+        + "MyModel.lhTable AS A \n"
         + "FULL OUTER JOIN \n"
-        + "MyVDB.rhTable AS B \n"
+        + "MyModel.rhTable AS B \n"
         + "ON \n"
         + "A.LHCol1 <= B.RHCol2;";
         
@@ -356,9 +356,9 @@ public class ViewDdlBuilderTest extends RelationalModelTest {
         String EXPECTED_DDL = "CREATE VIEW MyView (RowId integer PRIMARY KEY,  LHCol1 string, LHCol2 string,  RHCol1 string, RHCol2 string) AS \n"
         + "SELECT ROW_NUMBER() OVER (ORDER BY A.LHCol1), A.LHCol1, A.LHCol2, B.RHCol1, B.RHCol2 \n"
         + "FROM \n"
-        + "MyVDB.lhTable AS A \n"
+        + "MyModel.lhTable AS A \n"
         + "INNER JOIN \n"
-        + "MyVDB.rhTable AS B ;";
+        + "MyModel.rhTable AS B ;";
 
         String lhTableAlias = "A";
         String rhTableAlias = "B";
@@ -395,9 +395,9 @@ public class ViewDdlBuilderTest extends RelationalModelTest {
         String EXPECTED_DDL = "CREATE VIEW MyView (RowId integer PRIMARY KEY,  LHCol1 string, LHCol2 string,  RHCol1 string, RHCol2 string) AS \n"
         + "SELECT ROW_NUMBER() OVER (ORDER BY A.LHCol1), A.LHCol1, A.LHCol2, B.RHCol1, B.RHCol2 \n"
         + "FROM \n"
-        + "MyVDB.lhTable AS A \n"
+        + "MyModel.lhTable AS A \n"
         + "INNER JOIN \n"
-        + "MyVDB.rhTable AS B \n"
+        + "MyModel.rhTable AS B \n"
         + "ON \n"
         + "A.LHCol1 = B.RHCol2 AND A.LHCol3 > B.RHCol4;";
 
