@@ -22,10 +22,10 @@
 package org.komodo.rest.service;
 
 import static org.komodo.rest.Messages.General.GET_OPERATION_NAME;
-import static org.komodo.rest.relational.RelationalMessages.Error.DATASERVICE_SERVICE_SET_SERVICE_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.VDB_DATA_SOURCE_NAME_EXISTS;
 import static org.komodo.rest.relational.RelationalMessages.Error.VDB_NAME_EXISTS;
 import static org.komodo.rest.relational.RelationalMessages.Error.VDB_NAME_VALIDATION_ERROR;
+import static org.komodo.rest.relational.RelationalMessages.Error.VDB_SERVICE_DEFINE_VIEWS_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.VDB_SERVICE_GET_COLUMNS_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.VDB_SERVICE_GET_CONDITIONS_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.VDB_SERVICE_GET_CONDITION_ERROR;
@@ -47,7 +47,6 @@ import static org.komodo.rest.relational.RelationalMessages.Error.VDB_SERVICE_GE
 import static org.komodo.rest.relational.RelationalMessages.Error.VDB_SERVICE_GET_VDBS_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.VDB_SERVICE_GET_VDB_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.VDB_SERVICE_GET_VIEWS_ERROR;
-import static org.komodo.rest.relational.RelationalMessages.Error.VDB_SERVICE_DEFINE_VIEWS_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.VIEW_NAME_EXISTS;
 import static org.komodo.rest.relational.RelationalMessages.Error.VIEW_NAME_VALIDATION_ERROR;
 
@@ -56,7 +55,9 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.ws.rs.DELETE;
@@ -4257,15 +4258,26 @@ public final class KomodoVdbService extends KomodoService {
                 viewTables.add(viewTable);
             }
 
-            // Check for existence of all ModelSources
-            List<ModelSource> modelSources = new ArrayList<ModelSource>();
-            for(String absModelSourcePath: absModelSourcePaths) {
+            // Check for existence of all ModelSources.  Associate the source tables together
+            Map<ModelSource, List<Table>> sourceToTableMap = new HashMap<ModelSource,List<Table>>();
+            for (int i=0; i<absModelSourcePaths.size(); i++) {
+            	// Get modelSourcePath and corresponding table
+            	String absModelSourcePath = absModelSourcePaths.get(i);
+            	Table table = viewTables.get(i);
+            	
                 List<KomodoObject> modelObjs = mgr.getRepository().searchByPath(uow, absModelSourcePath);
                 if( modelObjs.isEmpty() || !ModelSource.RESOLVER.resolvable(uow, modelObjs.get(0)) ) {
                     return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_MODEL_SOURCE_DNE, absModelSourcePath);
                 }
                 ModelSource modelSource = ModelSource.RESOLVER.resolve(uow, modelObjs.get(0));
-                modelSources.add(modelSource);
+                List<Table> sourceTables = sourceToTableMap.get(modelSource);
+                if (sourceTables == null) {
+                	List<Table> tables = new ArrayList<Table>();
+                	tables.add(table);
+                	sourceToTableMap.put(modelSource, tables);
+                } else {
+                	sourceTables.add(table);
+                }
             }
 
             // Generate View DDL using viewInfo
@@ -4279,10 +4291,10 @@ public final class KomodoVdbService extends KomodoService {
             viewModel.setModelDefinition(uow, sb.toString());
 
         	// Add a physical models to the VDB for the sources
-        	// physicalModelName ==> sourceVDBName
+        	// physicalModelName ==> sourceVDBModelName
         	// physicalModelSourceName ==> sourceModelSourceName
-            for (ModelSource mdlSource: modelSources) {
-            	String physicalModelName = mdlSource.getParent(uow).getParent(uow).getName(uow);
+            for (ModelSource mdlSource: sourceToTableMap.keySet()) {
+            	String physicalModelName = mdlSource.getParent(uow).getName(uow);
             	String physicalModelSourceName = mdlSource.getName(uow);
 
             	Model sourceModel = vdb.addModel(uow, physicalModelName);
@@ -4290,7 +4302,7 @@ public final class KomodoVdbService extends KomodoService {
 
                 // The source model DDL contains the relevant table DDL only.  This limits the source metadata which is loaded on deployment.
                 StringBuilder sourceDdl = new StringBuilder();
-                for(Table viewTable: viewTables) {
+                for(Table viewTable: sourceToTableMap.get(mdlSource)) {
                 	byte[] bytes = viewTable.export(uow, new Properties());
                 	String tableDdl = new String(bytes);
                 	sourceDdl.append(tableDdl);

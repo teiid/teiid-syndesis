@@ -54,6 +54,7 @@ import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.resource.Driver;
 import org.komodo.relational.vdb.Vdb;
+import org.komodo.relational.vdb.VdbImport;
 import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.rest.AuthHandlingFilter.AuthToken;
@@ -88,6 +89,7 @@ import org.komodo.servicecatalog.PublishConfiguration;
 import org.komodo.servicecatalog.TeiidOpenShiftClient;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.query.QSResult;
 import org.komodo.spi.repository.KomodoObject;
@@ -1933,6 +1935,150 @@ public class KomodoMetadataService extends KomodoService {
             }
 
             return createErrorResponse(Status.FORBIDDEN, mediaTypes, e, RelationalMessages.Error.METADATA_SERVICE_DEPLOY_VDB_ERROR);
+        }
+    }
+
+    /**
+     * Refresh the preview Vdb with the supplied name
+     * @param headers
+     *        the request headers (never <code>null</code>)
+     * @param uriInfo
+     *        the request URI information (never <code>null</code>)
+     * @param vdbName
+     *        the vdb name (cannot be empty)
+     * @return a JSON representation of the refresh status (never <code>null</code>)
+     * @throws KomodoRestException
+     *         if there is an error refreshing the preview vdb
+     */
+    @POST
+    @Path( StringConstants.FORWARD_SLASH + V1Constants.REFRESH_PREVIEW_VDB_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.VDB_PLACEHOLDER )
+    @Produces( MediaType.APPLICATION_JSON )
+    @ApiOperation(value = "Refresh the deployed preview vdb")
+    @ApiResponses(value = {
+        @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
+        @ApiResponse(code = 403, message = "An error has occurred.")
+    })
+    public Response refreshPreviewVdb( final @Context HttpHeaders headers,
+                                       final @Context UriInfo uriInfo,
+                                       @ApiParam(
+                                          value = "Name of the Vdb to be refreshed",
+                                          required = true
+                                       )
+                                       final @PathParam( "vdbName" ) String vdbName) throws KomodoRestException {
+
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
+            return notAcceptableMediaTypesBuilder().build();
+
+        // Error if the vdb name is missing
+        if (StringUtils.isBlank( vdbName )) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.METADATA_SERVICE_MISSING_VDB_NAME);
+        }
+
+
+        UnitOfWork uow = null;
+        try {
+            uow = createTransaction(principal, "refreshPreviewVdb", false ); //$NON-NLS-1$
+
+            WorkspaceManager wMgr = getWorkspaceManager(uow);
+
+            // if workspace does not have preview vdb, then create it.
+            if ( !wMgr.hasChild( uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE ) ) {
+            	wMgr.createVdb( uow, null, vdbName, vdbName );
+            }
+
+            // Get the preview VDB.
+            final KomodoObject kobject = wMgr.getChild( uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE );
+            Vdb previewVdb = wMgr.resolve( uow, kobject, Vdb.class );
+
+            // Get the list of current preview VDB import names
+            List<String> currentVdbImportNames = new ArrayList<String>();
+            VdbImport[] currentVdbImports = previewVdb.getImports(uow);
+            for( VdbImport vdbImport: currentVdbImports ) {
+            	currentVdbImportNames.add(vdbImport.getName(uow));
+            }
+            
+            // Get the current workspace connection VDB names
+            List<String> connectionVdbNames = new ArrayList<String>();
+            KomodoObject[] allVdbObjs = wMgr.getChildrenOfType(uow, VdbLexicon.Vdb.VIRTUAL_DATABASE);
+            for( KomodoObject kObj: allVdbObjs) {
+            	if(kObj.getName(uow).endsWith("btlconn")) {
+            		connectionVdbNames.add(kObj.getName(uow));
+            	}
+            }
+            
+            // Add import for connectionVdb if it is missing
+            boolean importAdded = false;
+            for(String connVdbName: connectionVdbNames) {
+            	if(!currentVdbImportNames.contains(connVdbName)) {
+            		previewVdb.addImport(uow, connVdbName);
+            		importAdded = true;
+            	}
+            }
+            
+            // Remove extra imports
+            boolean importRemoved = false;
+            for(String currentVdbImportName: currentVdbImportNames) {
+            	if(!connectionVdbNames.contains(currentVdbImportName)) {
+            		previewVdb.removeImport(uow, currentVdbImportName);
+            		importRemoved = true;
+            	}
+            }
+            
+            // The updated VDB is deployed if imports were added or removed
+            if(importAdded || importRemoved) {
+                //
+                // Deploy the VDB
+                //
+                DeployStatus deployStatus = previewVdb.deploy(uow);
+
+                // Await the deployment to end
+                Thread.sleep(DEPLOYMENT_WAIT_TIME);
+
+                String title = RelationalMessages.getString(RelationalMessages.Info.VDB_DEPLOYMENT_STATUS_TITLE);
+                KomodoStatusObject status = new KomodoStatusObject(title);
+
+                List<String> progressMessages = deployStatus.getProgressMessages();
+                for (int i = 0; i < progressMessages.size(); ++i) {
+                    status.addAttribute("ProgressMessage" + (i + 1), progressMessages.get(i));
+                }
+
+                if (deployStatus.ok()) {
+                    status.addAttribute("deploymentSuccess", Boolean.TRUE.toString());
+                    status.addAttribute(previewVdb.getName(uow),
+                                        RelationalMessages.getString(RelationalMessages.Info.VDB_SUCCESSFULLY_DEPLOYED));
+                } else {
+                    status.addAttribute("deploymentSuccess", Boolean.FALSE.toString());
+                    List<String> errorMessages = deployStatus.getErrorMessages();
+                    for (int i = 0; i < errorMessages.size(); ++i) {
+                        status.addAttribute("ErrorMessage" + (i + 1), errorMessages.get(i));
+                    }
+
+                    status.addAttribute(previewVdb.getName(uow),
+                                        RelationalMessages.getString(RelationalMessages.Info.VDB_DEPLOYED_WITH_ERRORS));
+                }
+
+               return commit(uow, mediaTypes, status);
+            } else {
+            	KomodoStatusObject kso = new KomodoStatusObject("Preview VDB Status"); //$NON-NLS-1$
+            	kso.addAttribute(vdbName, "No refresh required"); //$NON-NLS-1$
+
+            	return commit(uow, mediaTypes, kso);
+            }
+        } catch (final Exception e) {
+            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+                uow.rollback();
+            }
+
+            if (e instanceof KomodoRestException) {
+                throw (KomodoRestException)e;
+            }
+
+            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.METADATA_SERVICE_REFRESH_PREVIEW_VDB_ERROR);
         }
     }
 

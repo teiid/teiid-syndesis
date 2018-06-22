@@ -709,7 +709,7 @@ public class KomodoDataserviceServiceTestInSuite extends AbstractKomodoServiceTe
         assertEquals(RestDataserviceViewInfo.DDL_INFO, viewInfo.getInfoType());
         assertEquals("CREATE VIEW " + dataserviceName + "View"
                      + " ( ROW_ID INTEGER, ACCOUNT_ID INTEGER, PRODUCT_TYPE STRING, PRODUCT_VALUE STRING, "
-                     + "CONSTRAINT PK0 PRIMARY KEY (ROW_ID)) AS \nSELECT  ROW_ID, ACCOUNT_ID, PRODUCT_TYPE, PRODUCT_VALUE \nFROM Portfolio.Sheet1;",
+                     + "CONSTRAINT PK0 PRIMARY KEY (ROW_ID)) AS \nSELECT  ROW_ID, ACCOUNT_ID, PRODUCT_TYPE, PRODUCT_VALUE \nFROM PersonalValuations.Sheet1;",
                      viewInfo.getViewDdl());
         assertEquals(false, viewInfo.isViewEditable());
 
@@ -798,7 +798,7 @@ public class KomodoDataserviceServiceTestInSuite extends AbstractKomodoServiceTe
                      + "View (RowId integer PRIMARY KEY,  A_ROW_ID INTEGER, A_ACCOUNT_ID INTEGER, A_PRODUCT_TYPE STRING, A_PRODUCT_VALUE STRING,  "
                      + "B_ROW_ID INTEGER, B_ACCOUNT_ID INTEGER, B_PRODUCT_TYPE STRING, B_PRODUCT_VALUE STRING) AS \n"
                      + "SELECT ROW_NUMBER() OVER (ORDER BY A.ROW_ID), A.ROW_ID, A.ACCOUNT_ID, A.PRODUCT_TYPE, A.PRODUCT_VALUE, B.ROW_ID, B.ACCOUNT_ID, B.PRODUCT_TYPE, B.PRODUCT_VALUE \n"
-                     + "FROM \nPortfolio.Sheet1 AS A \nINNER JOIN \nPortfolio.Sheet1 AS B ;",
+                     + "FROM \nPersonalValuations.Sheet1 AS A \nINNER JOIN \nPersonalValuations.Sheet1 AS B ;",
                      viewInfo.getViewDdl());
         assertEquals(false, viewInfo.isViewEditable());
 
