@@ -1506,6 +1506,8 @@ public final class KomodoConnectionService extends KomodoService {
                 	String name = getSegmentName(segments[segments.length-1]);
                 	RestSchemaNode node = new RestSchemaNode(connectionName, name, type);
                 	node.setQueryable(true);
+                	String path = createSchemaNodePath(segments.length-1, segments);
+                	node.setPath(path);
                 	parentNode.addChild(node);
                 }
             }
@@ -1540,6 +1542,8 @@ public final class KomodoConnectionService extends KomodoService {
     			// No match - create a new node
     			if(matchNode == null) {
     				matchNode = new RestSchemaNode(connectionName, name, type);
+    				String path = createSchemaNodePath(i,segments);
+    				matchNode.setPath(path);
     				currentNodes.add(matchNode);
     			}
     		    // Set parent for next iteration
@@ -1558,6 +1562,8 @@ public final class KomodoConnectionService extends KomodoService {
     			// No match - create a new node
     			if(matchNode == null) {
     				matchNode = new RestSchemaNode(connectionName, name, type);
+    				String path = createSchemaNodePath(i,segments);
+    				matchNode.setPath(path);
     				parentNode.addChild(matchNode);
     			}
     			// Set next parent if not last level
@@ -1569,6 +1575,27 @@ public final class KomodoConnectionService extends KomodoService {
     	return parentNode;
     }
 
+    /**
+     * Generate the path for the node, given the segments and the position within the segments
+     * @param iPosn the index position within the segments
+     * @param segments the array of segments
+     * @return the node path (segment0/segment1/etc)
+     */
+    private String createSchemaNodePath(int iPosn, String[] segments) {
+    	StringBuilder sb = new StringBuilder();
+    	if(segments!=null && segments.length > 0) {
+        	for (int i = 0; i < segments.length; i++) {
+        		if(i < iPosn) {
+        			sb.append(segments[i]+"/");
+        		} else {
+        			sb.append(segments[i]);
+        			break;
+        		}
+        	}
+    	}
+    	return sb.toString();
+    }
+    
     /**
      * Searches the supplied list for node with matching name and type.  Does NOT search children or parents of supplied nodes.
      * @param connectionName the connection name

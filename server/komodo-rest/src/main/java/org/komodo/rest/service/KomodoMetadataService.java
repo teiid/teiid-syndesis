@@ -2004,11 +2004,9 @@ public class KomodoMetadataService extends KomodoService {
             
             // Get the current workspace connection VDB names
             List<String> connectionVdbNames = new ArrayList<String>();
-            KomodoObject[] allVdbObjs = wMgr.getChildrenOfType(uow, VdbLexicon.Vdb.VIRTUAL_DATABASE);
-            for( KomodoObject kObj: allVdbObjs) {
-            	if(kObj.getName(uow).endsWith("btlconn")) {
-            		connectionVdbNames.add(kObj.getName(uow));
-            	}
+            KomodoObject[] connVdbObjs = wMgr.getChildrenOfType(uow, VdbLexicon.Vdb.VIRTUAL_DATABASE, "*btlconn");
+            for( KomodoObject kObj: connVdbObjs) {
+           		connectionVdbNames.add(kObj.getName(uow));
             }
             
             // Add import for connectionVdb if it is missing
