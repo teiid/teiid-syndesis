@@ -1733,25 +1733,45 @@ public final class RelationalModelFactory {
      *        the repository where the model object will be created (cannot be <code>null</code>)
      * @param viewEditorState
      *        the parent view editor state object
-     * @param commandId
-     *        the id of the command
+     * @param index
+     *        the index of the command
+     * @param undoId
+     *        the id of the undo command
+     * @param undoArguments
+     *        the undo command arguments
+     * @param redoId
+     *        the id of the redo command
+     * @param redoArguments
+     *        the redo command arguments
      * @return the view editor state command object
      * @throws KException
      *        if an error occurs
      */
-    public static ViewEditorStateCommand createViewEditorStateCommand(UnitOfWork transaction, Repository repository,
-                                                                                                                                           ViewEditorState viewEditorState,
-                                                                                                                                           String commandId, Map<String, String> arguments) throws KException {
+    public static ViewEditorStateCommand createViewEditorStateCommand(
+                                                                                                          UnitOfWork transaction, Repository repository,
+                                                                                                          ViewEditorState viewEditorState,
+                                                                                                          String undoId,
+                                                                                                          Map<String, String> undoArguments,
+                                                                                                          String redoId,
+                                                                                                          Map<String, String> redoArguments) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotNull( repository, "repository" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( commandId, "commandId" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( undoId, "undoId" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( redoId, "redoId" ); //$NON-NLS-1$
 
         try {
-            final KomodoObject kobject = viewEditorState.addChild( transaction, commandId, KomodoLexicon.ViewEditorStateCommand.NODE_TYPE );
-            final ViewEditorStateCommand result = new ViewEditorStateCommandImpl( transaction, repository, kobject.getAbsolutePath() );
-            result.setArguments(transaction, arguments);
+            int cmdSize = viewEditorState.getCommands(transaction).length;
+            int index = cmdSize > 0 ? cmdSize - 1 : 0;
+            String commandId = KomodoLexicon.ViewEditorStateCommand.COMMAND_ID_PREFIX + index;
+            final KomodoObject kobject = viewEditorState.addChild(transaction, commandId,
+                                                                  KomodoLexicon.ViewEditorStateCommand.NODE_TYPE);
+            final ViewEditorStateCommand result = new ViewEditorStateCommandImpl(transaction, repository, kobject.getAbsolutePath());
 
+            result.setUndoId(transaction, undoId);
+            result.setUndoArguments(transaction, undoArguments);
+            result.setRedoId(transaction, redoId);
+            result.setRedoArguments(transaction, redoArguments);
             return result;
         } catch ( final Exception e ) {
             throw handleError( e );

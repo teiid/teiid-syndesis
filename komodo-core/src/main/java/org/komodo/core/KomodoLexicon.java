@@ -997,8 +997,28 @@ public interface KomodoLexicon extends StringConstants {
         String NODE_TYPE = Namespace.PREFIX + COLON + "viewEditorStateCommand"; //$NON-NLS-1$
 
         /**
-         * The name of the view editor state command args property. Value is {@value} .
+         * The prefix used to prepend to the id of th command
          */
-        String ARGS = Namespace.PREFIX + COLON + "args"; //$NON-NLS-1$
+        String COMMAND_ID_PREFIX = "INDEX_";
+
+        /**
+         * The name of the undo id property. Value is {@value} .
+         */
+        String UNDO_ID = Namespace.PREFIX + COLON + "undoId";
+
+        /**
+         * The prefix of the view editor state command undo argument properties. Value is {@value} .
+         */
+        String UNDO_ARGS_PREFIX = Namespace.PREFIX + COLON + "UNDO_ARGS_";
+
+        /**
+         * The name of the redo id property. Value is {@value} .
+         */
+        String REDO_ID = Namespace.PREFIX + COLON + "redoId";
+
+        /**
+         * The prefix of the view editor state command redo argument properties. Value is {@value} .
+         */
+        String REDO_ARGS_PREFIX = Namespace.PREFIX + COLON + "REDO_ARGS_";
     }
 }

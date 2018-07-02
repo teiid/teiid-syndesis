@@ -23,25 +23,20 @@ package org.komodo.relational.profile.internal;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.komodo.core.KomodoLexicon;
 import org.komodo.relational.internal.RelationalChildRestrictedObject;
-import org.komodo.relational.profile.Profile;
-import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.profile.ViewEditorStateCommand;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyValueType;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
-import org.komodo.utils.ArgCheck;
 
 /**
  * An implementation of a view editor state object.
  */
 public class ViewEditorStateCommandImpl extends RelationalChildRestrictedObject implements ViewEditorStateCommand {
-
-    private static final String ARGS_PREFIX = "ARGS_";
 
     /**
      * @param uow
@@ -59,22 +54,7 @@ public class ViewEditorStateCommandImpl extends RelationalChildRestrictedObject 
 
     @Override
     public KomodoType getTypeIdentifier(UnitOfWork uow) {
-        return ViewEditorState.IDENTIFIER;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.internal.RelationalObjectImpl#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
-     */
-    @Override
-    public Profile getParent(final UnitOfWork transaction) throws KException {
-        ArgCheck.isNotNull(transaction, "transaction"); //$NON-NLS-1$
-        ArgCheck.isTrue((transaction.getState() == State.NOT_STARTED), "transaction state must be NOT_STARTED"); //$NON-NLS-1$
-
-        final KomodoObject grouping = super.getParent(transaction);
-        final Profile result = Profile.RESOLVER.resolve(transaction, grouping.getParent(transaction));
-        return result;
+        return ViewEditorStateCommand.IDENTIFIER;
     }
 
     /**
@@ -88,7 +68,19 @@ public class ViewEditorStateCommandImpl extends RelationalChildRestrictedObject 
     }
 
     @Override
-    public Map<String, String> getArguments(UnitOfWork transaction) throws KException {
+    public String getUndoId(UnitOfWork transaction) throws KException {
+        return getObjectProperty(transaction, PropertyValueType.STRING, "getUndoId",
+                                                                     KomodoLexicon.ViewEditorStateCommand.UNDO_ID);
+    }
+
+    @Override
+    public void setUndoId(UnitOfWork transaction, String id) throws Exception {
+        setObjectProperty(transaction, "setUndoId",
+                                                                      KomodoLexicon.ViewEditorStateCommand.UNDO_ID, id);
+    }
+
+    @Override
+    public Map<String, String> getUndoArguments(UnitOfWork transaction) throws KException {
         Map<String, String> args = new HashMap<>();
 
         String[] propertyNames = getPropertyNames(transaction);
@@ -96,11 +88,12 @@ public class ViewEditorStateCommandImpl extends RelationalChildRestrictedObject 
             return args;
 
         for (String propertyName : propertyNames) {
-            if (! propertyName.startsWith(ARGS_PREFIX))
+            if (! propertyName.startsWith(KomodoLexicon.ViewEditorStateCommand.UNDO_ARGS_PREFIX))
                 continue;
 
-            String value = getObjectProperty(transaction, PropertyValueType.STRING, "getArgument", propertyName);
-            String name = propertyName.replace(ARGS_PREFIX, EMPTY_STRING);
+            String value = getObjectProperty(transaction, PropertyValueType.STRING, "getUndoArgument", propertyName);
+            String name = propertyName.replace(
+                                                                   KomodoLexicon.ViewEditorStateCommand.UNDO_ARGS_PREFIX, EMPTY_STRING);
             args.put(name,  value);
         }
 
@@ -108,14 +101,59 @@ public class ViewEditorStateCommandImpl extends RelationalChildRestrictedObject 
     }
 
     @Override
-    public void setArguments(UnitOfWork transaction, Map<String, String> arguments) throws KException {
+    public void setUndoArguments(UnitOfWork transaction, Map<String, String> arguments) throws KException {
         if (arguments == null)
             arguments = new HashMap<>();
 
         for (Map.Entry<String, String> entry : arguments.entrySet()) {
-            String name = ARGS_PREFIX + entry.getKey();
+            String name = KomodoLexicon.ViewEditorStateCommand.UNDO_ARGS_PREFIX + entry.getKey();
             String value = entry.getValue();
-            setObjectProperty(transaction, "setArgument", name, value); //$NON-NLS-1$
+            setObjectProperty(transaction, "setUndoArgument", name, value); //$NON-NLS-1$
+        }
+    }
+
+    @Override
+    public String getRedoId(UnitOfWork transaction) throws KException {
+        return getObjectProperty(transaction, PropertyValueType.STRING, "getRedoId",
+                                                                 KomodoLexicon.ViewEditorStateCommand.REDO_ID);
+    }
+
+    @Override
+    public void setRedoId(UnitOfWork transaction, String id) throws Exception {
+        setObjectProperty(transaction, "setRedoId",
+                                                                  KomodoLexicon.ViewEditorStateCommand.REDO_ID, id);
+    }
+
+    @Override
+    public Map<String, String> getRedoArguments(UnitOfWork transaction) throws KException {
+        Map<String, String> args = new HashMap<>();
+
+        String[] propertyNames = getPropertyNames(transaction);
+        if (propertyNames == null)
+            return args;
+
+        for (String propertyName : propertyNames) {
+            if (! propertyName.startsWith(KomodoLexicon.ViewEditorStateCommand.REDO_ARGS_PREFIX))
+                continue;
+
+            String value = getObjectProperty(transaction, PropertyValueType.STRING, "getRedoArgument", propertyName);
+            String name = propertyName.replace(
+                                                                   KomodoLexicon.ViewEditorStateCommand.REDO_ARGS_PREFIX, EMPTY_STRING);
+            args.put(name,  value);
+        }
+
+        return args;
+    }
+
+    @Override
+    public void setRedoArguments(UnitOfWork transaction, Map<String, String> arguments) throws KException {
+        if (arguments == null)
+            arguments = new HashMap<>();
+
+        for (Map.Entry<String, String> entry : arguments.entrySet()) {
+            String name = KomodoLexicon.ViewEditorStateCommand.REDO_ARGS_PREFIX + entry.getKey();
+            String value = entry.getValue();
+            setObjectProperty(transaction, "setUndoArgument", name, value); //$NON-NLS-1$
         }
     }
 }

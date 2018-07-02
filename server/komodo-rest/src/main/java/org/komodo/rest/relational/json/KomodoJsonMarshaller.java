@@ -23,7 +23,6 @@ package org.komodo.rest.relational.json;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.komodo.rest.KRestEntity;
 import org.komodo.rest.RestBasicEntity;
 import org.komodo.rest.RestLink;
@@ -36,6 +35,7 @@ import org.komodo.rest.relational.connection.ConnectionSchemaProperty;
 import org.komodo.rest.relational.connection.RestConnection;
 import org.komodo.rest.relational.dataservice.DataServiceSchema;
 import org.komodo.rest.relational.dataservice.RestDataservice;
+import org.komodo.rest.relational.json.ViewEditorStateCommandSerializer.ViewEditorStateCmdUnitSerializer;
 import org.komodo.rest.relational.json.connection.ConnectionSchemaPropertyListSerializer;
 import org.komodo.rest.relational.json.connection.ConnectionSchemaPropertyPairPropertySerializer;
 import org.komodo.rest.relational.json.connection.ConnectionSchemaPropertySerializer;
@@ -86,13 +86,13 @@ import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatusVdb;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbTranslator;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorStateCommand;
+import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorStateCommand.RestViewEditorStateCmdUnit;
 import org.komodo.rest.relational.response.virtualization.RestRouteStatus;
 import org.komodo.rest.relational.response.virtualization.RestVirtualizationStatus;
 import org.komodo.rest.schema.json.TeiidXsdReader;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -167,6 +167,7 @@ public final class KomodoJsonMarshaller {
                                                   .registerTypeAdapter(RestGitRepository.class, new GitRepositorySerializer())
                                                   .registerTypeAdapter(RestViewEditorState.class, new ViewEditorStateSerializer())
                                                   .registerTypeAdapter(RestViewEditorStateCommand.class, new ViewEditorStateCommandSerializer())
+                                                  .registerTypeAdapter(RestViewEditorStateCmdUnit.class, new ViewEditorStateCmdUnitSerializer())
                                                   .registerTypeAdapter(RestVirtualizationStatus.class, new VirtualizationStatusSerializer())
                                                   .registerTypeAdapter(RestRouteStatus.class, new RouteStatusSerializer());
 

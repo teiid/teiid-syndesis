@@ -110,15 +110,20 @@ public interface ViewEditorState extends RelationalObject, StringConstants {
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param commandId the id of the command
-     * @param arguments the arguments of the command
+     * @param undoId the id of the undo command
+     * @param undoArguments the undo arguments of the command
+     * @param redoId the id of the redo command
+     * @param redoArguments the redo arguments of the command
      *
      * @return the new command
      * @throws KException
      *         if an error occurs
      */
-    ViewEditorStateCommand addCommand(UnitOfWork transaction, String commandId,
-                                                                                  Map<String, String> arguments) throws KException;
+    ViewEditorStateCommand addCommand(UnitOfWork transaction,
+                                                                                  String undoId,
+                                                                                  Map<String, String> undoArguments,
+                                                                                  String redoId,
+                                                                                  Map<String, String> redoArguments) throws KException;
 
     /**
      * @param transaction
