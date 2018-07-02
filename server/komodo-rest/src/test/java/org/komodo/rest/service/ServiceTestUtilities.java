@@ -29,7 +29,6 @@ import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_PASSW
 import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_PATH_PROPERTY;
 import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_USERNAME;
 import java.io.InputStream;
-import java.net.URI;
 import java.net.URL;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -63,7 +62,6 @@ import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.test.utils.TestUtilities;
 
 public final class ServiceTestUtilities implements StringConstants {
 
@@ -573,15 +571,21 @@ public final class ServiceTestUtilities implements StringConstants {
         return gitRepository;
     }
 
-    public ViewEditorState addViewEditorState(String user, String stateId, String commandId, Map<String, String> arguments) throws Exception {
+    public ViewEditorState addViewEditorState(String user, String stateId,
+                                                                                      String undoId,
+                                                                                      Map<String, String> undoArguments,
+                                                                                      String redoId,
+                                                                                      Map<String, String> redoArguments) throws Exception {
         UnitOfWork uow = repository.createTransaction(user, "Create View Editor State", false, null); //$NON-NLS-1$
         KomodoObject profileObj = repository.komodoProfile(uow);
         assertNotNull(profileObj);
 
         Profile profile = new AdapterFactory().adapt(uow, profileObj, Profile.class);
         ViewEditorState viewEditorState = profile.addViewEditorState(uow, stateId);
-        RelationalModelFactory.createViewEditorStateCommand(uow, repository, viewEditorState,
-                                                                                                                    commandId, arguments);
+        RelationalModelFactory.createViewEditorStateCommand(uow, repository,
+                                                                                                                viewEditorState,
+                                                                                                                undoId, undoArguments,
+                                                                                                                redoId, redoArguments);
 
         uow.commit();
         return viewEditorState;
@@ -599,26 +603,5 @@ public final class ServiceTestUtilities implements StringConstants {
 
         profile.removeViewEditorState(uow, stateId);
         uow.commit();
-    }
-
-    public static String viewEditorCommandContent(String name, URI uri) {
-        String content = EMPTY_STRING +
-            OPEN_SQUARE_BRACKET + SPACE +
-                TAB + OPEN_BRACE + TestUtilities.space(2);
-
-        if (uri != null) {
-            content = content +
-                "\"keng__baseUri\"" + COLON + SPACE + SPEECH_MARK + uri + SPEECH_MARK + COMMA + SPACE;
-        }
-
-        content = content +
-                    TestUtilities.space(2) + "\"id\"" + COLON + SPACE + "\"set-view-name\"" + COMMA + SPACE +
-                    TestUtilities.space(2) + "\"args\"" + COLON + SPACE + OPEN_BRACE + SPACE +
-                            TestUtilities.space(3) + "\"newName\"" + COLON + SPACE + SPEECH_MARK + name + SPEECH_MARK + COMMA + SPACE +
-                            TestUtilities.space(3) + "\"oldName\"" + COLON + SPACE + "\"untitled\"" + SPACE +
-                    TestUtilities.space(2) + CLOSE_BRACE + SPACE +
-                TAB + CLOSE_BRACE + SPACE +
-            CLOSE_SQUARE_BRACKET;
-        return content;
     }
 }

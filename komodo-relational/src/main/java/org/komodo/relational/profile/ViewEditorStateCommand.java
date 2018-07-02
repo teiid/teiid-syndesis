@@ -110,19 +110,75 @@ public interface ViewEditorStateCommand extends RelationalObject, StringConstant
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @return the arguments of the command
+     * @return the id of the undo command
+     * @throws KException
+     *          if an error occurs
+     */
+    String getUndoId(final UnitOfWork transaction) throws KException;
+
+    /**
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+     * @param id the id of the undo command
+     * @throws Exception
+     *          if an error occurs
+     */
+    void setUndoId(final UnitOfWork transaction, String id) throws Exception;
+
+    /**
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+     * @return the arguments of the undo command
      * @throws KException
      *         if an error occurs
      */
-    Map<String, String> getArguments(final UnitOfWork transaction) throws KException;
+    Map<String, String> getUndoArguments(final UnitOfWork transaction) throws KException;
 
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param arguments
-     *        the new maps of arguments
+     *        the new map of undo arguments
      * @throws KException
      *         if an error occurs
      */
-    void setArguments(final UnitOfWork transaction, final Map<String, String> arguments) throws KException;
+    void setUndoArguments(final UnitOfWork transaction, final Map<String, String> arguments) throws KException;
+
+    /**
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+     * @return the id of the redo command
+     * @throws KException
+     *          if an error occurs
+     */
+    String getRedoId(final UnitOfWork transaction) throws KException;
+
+    /**
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+     * @param id the id of the redo command
+     * @throws Exception
+     *          if an error occurs
+     */
+    void setRedoId(final UnitOfWork transaction, String id) throws Exception;
+
+    /**
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+     * @return the arguments
+     *         the new map of redo arguments
+     * @throws KException
+     *         if an error occurs
+     */
+    Map<String, String> getRedoArguments(final UnitOfWork transaction) throws KException;
+
+    /**
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+     * @param arguments
+     *        the new map of redo arguments
+     * @throws KException
+     *         if an error occurs
+     */
+    void setRedoArguments(final UnitOfWork transaction, final Map<String, String> arguments) throws KException;
 }

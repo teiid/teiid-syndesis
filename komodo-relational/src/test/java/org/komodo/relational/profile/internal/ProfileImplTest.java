@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
+import org.komodo.core.KomodoLexicon;
 import org.komodo.relational.RelationalModelFactory;
 import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.profile.Profile;
@@ -65,19 +66,32 @@ public final class ProfileImplTest extends RelationalModelTest {
         assertTrue(profile.hasChild(getTransaction(), name));
         assertEquals(name, viewEditorState.getName(getTransaction()));
 
-        String commandId = "updateViewName";
-        Map<String, String> args = new HashMap<>();
-        args.put("oldName", "untitled");
-        args.put("newName", "MyStunningView");
+        String undoId = "removeSourceCommand";
+        String srcName = "myFabSource";
+        Map<String, String> undoArgs = new HashMap<>();
+        undoArgs.put("srcName", srcName);
+
+        String redoId = "addSourceCommand";
+        String srcPath = "connection=conn1/schema=public/table=customer";
+        Map<String, String> redoArgs = new HashMap<>();
+        redoArgs.put("srcName", srcName);
+        redoArgs.put("srcPath", srcPath);
+
         ViewEditorStateCommand viewEditorStateCmd = RelationalModelFactory.createViewEditorStateCommand(
-                                                                                                        getTransaction(), _repo, viewEditorState, commandId, args);
+                                                                                                        getTransaction(), _repo,
+                                                                                                        viewEditorState,
+                                                                                                        undoId, undoArgs,
+                                                                                                        redoId, redoArgs);
 
         ViewEditorStateCommand[] commands = viewEditorState.getCommands(getTransaction());
         assertEquals(1, commands.length);
         assertEquals(viewEditorStateCmd, commands[0]);
 
-        assertEquals(commandId, viewEditorStateCmd.getName(getTransaction()));
-        assertEquals(args, viewEditorStateCmd.getArguments(getTransaction()));
+        assertEquals(KomodoLexicon.ViewEditorStateCommand.COMMAND_ID_PREFIX + 0, viewEditorStateCmd.getName(getTransaction()));
+        assertEquals(undoId, viewEditorStateCmd.getUndoId(getTransaction()));
+        assertEquals(undoArgs, viewEditorStateCmd.getUndoArguments(getTransaction()));
+        assertEquals(redoId, viewEditorStateCmd.getRedoId(getTransaction()));
+        assertEquals(redoArgs, viewEditorStateCmd.getRedoArguments(getTransaction()));
     }
 
     @Test

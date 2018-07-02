@@ -218,6 +218,8 @@
  * The command that forms part of the view editor state
  */
 [tko:viewEditorStateCommand] > nt:unstructured
+  - tko:undoId (string) mandatory
+  - tko:redoId (string) mandatory
 
 /*
  * The state of a view editor when saved

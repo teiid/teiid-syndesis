@@ -109,8 +109,13 @@ public class ViewEditorStateImpl extends RelationalObjectImpl implements ViewEdi
      */
     @Override
     public ViewEditorStateCommand addCommand( final UnitOfWork transaction,
-                                  final String commandId, Map<String, String> arguments ) throws KException {
-        return RelationalModelFactory.createViewEditorStateCommand(transaction, getRepository(), this, commandId, arguments);
+                                                                                              String undoId,
+                                                                                              Map<String, String> undoArguments,
+                                                                                              String redoId,
+                                                                                              Map<String, String> redoArguments) throws KException {
+        return RelationalModelFactory.createViewEditorStateCommand(transaction, getRepository(), this,
+                                                                                                                               undoId, undoArguments,
+                                                                                                                               redoId, redoArguments);
     }
 
     @Override

@@ -40,7 +40,7 @@ public class RestViewEditorState extends AbstractKEntity {
     /**
      * Label used for view editor start content
      */
-    public static final String CONTENT_LABEL = "content";
+    public static final String CONTENT_LABEL = "undoables";
 
     /*
      * The contents of the view editor state

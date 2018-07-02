@@ -911,7 +911,8 @@ public final class KomodoUtilService extends KomodoService {
             Profile userProfile = getUserProfile(uow);
             ViewEditorState viewEditorState = userProfile.addViewEditorState(uow, stateId);
             for (RestViewEditorStateCommand cmd : stateContent)
-                viewEditorState.addCommand(uow, cmd.getId(), cmd.getArguments());
+                viewEditorState.addCommand(uow, cmd.getUndoId(), cmd.getUndoArguments(),
+                                                                                   cmd.getRedoId(), cmd.getRedoArguments());
 
             final RestViewEditorState entity = new RestViewEditorState(uriInfo.getBaseUri(), viewEditorState, uow);
             return commit(uow, mediaTypes, entity);
