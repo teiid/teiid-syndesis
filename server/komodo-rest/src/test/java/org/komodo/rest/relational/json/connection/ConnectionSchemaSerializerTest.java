@@ -69,7 +69,17 @@ public class ConnectionSchemaSerializerTest extends AbstractSerializerTest {
     @Test
     public void testConnectionSchema() {
         ConnectionSchema schema = new ConnectionSchema();
-        String output = KomodoJsonMarshaller.marshall(schema, true);
-        assertEquals(CONNECTION_SCHEMA, output);
+
+        String expected = CONNECTION_SCHEMA
+                                            .replaceAll(NEW_LINE,  SPACE)
+                                            .replaceAll(TAB, SPACE)
+                                            .replaceAll(SPACE, EMPTY_STRING);
+
+        String output = KomodoJsonMarshaller.marshall(schema, true)
+                                            .replaceAll(NEW_LINE,  SPACE)
+                                            .replaceAll(TAB, SPACE)
+                                            .replaceAll(SPACE, EMPTY_STRING);
+
+        assertEquals(expected, output);
     }
 }

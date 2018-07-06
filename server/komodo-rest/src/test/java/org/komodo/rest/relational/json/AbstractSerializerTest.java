@@ -32,6 +32,7 @@ import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.test.utils.TestUtilities;
 import org.komodo.spi.repository.Repository.UnitOfWorkListener;
 import org.mockito.Matchers;
 import org.mockito.Mock;
@@ -59,7 +60,7 @@ public abstract class AbstractSerializerTest implements JsonConstants {
 
     protected Repository repository;
 
-    protected static String q(String value) {
+    protected static String q(Object value) {
         return SPEECH_MARK + value + SPEECH_MARK;
     }
 
@@ -68,11 +69,11 @@ public abstract class AbstractSerializerTest implements JsonConstants {
     }
 
     protected static String tab(int freq) {
-        StringBuffer buf = new StringBuffer();
-        for (int i = 0; i < freq; ++i)
-            buf.append(SPACE + SPACE);
+        return TestUtilities.tab(freq);
+    }
 
-        return buf.toString();
+    protected String pnl(Object value) {
+        return value + NEW_LINE;
     }
 
     public AbstractSerializerTest() {

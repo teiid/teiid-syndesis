@@ -159,6 +159,10 @@ public class KomodoTypeRegistry implements StringConstants {
 
         index(KomodoType.SCHEMA, KomodoLexicon.Schema.NODE_TYPE);
 
+        index(KomodoType.STATE_COMMAND, KomodoLexicon.StateCommand.NODE_TYPE);
+
+        index(KomodoType.STATE_COMMAND_AGGREGATE, KomodoLexicon.StateCommandAggregate.NODE_TYPE);
+
         index(KomodoType.STATEMENT_OPTION, StandardDdlLexicon.TYPE_STATEMENT_OPTION);
 
         index(KomodoType.STORED_PROCEDURE, TeiidDdlLexicon.CreateProcedure.PROCEDURE_STATEMENT);
@@ -176,8 +180,6 @@ public class KomodoTypeRegistry implements StringConstants {
         index(KomodoType.USER_DEFINED_FUNCTION, TeiidDdlLexicon.CreateProcedure.FUNCTION_STATEMENT);
 
         index(KomodoType.VIEW_EDITOR_STATE, KomodoLexicon.ViewEditorState.NODE_TYPE);
-
-        index(KomodoType.VIEW_EDITOR_STATE_COMMAND, KomodoLexicon.ViewEditorStateCommand.NODE_TYPE);
 
         index(KomodoType.VIRTUAL_PROCEDURE, TeiidDdlLexicon.CreateProcedure.PROCEDURE_STATEMENT);
 
