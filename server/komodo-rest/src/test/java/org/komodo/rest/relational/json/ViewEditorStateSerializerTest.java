@@ -29,10 +29,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import org.junit.Test;
 import org.komodo.core.KomodoLexicon;
+import org.komodo.relational.profile.StateCommand;
+import org.komodo.relational.profile.StateCommandAggregate;
 import org.komodo.relational.profile.ViewEditorState;
-import org.komodo.relational.profile.ViewEditorStateCommand;
+import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate;
+import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate.RestStateCommand;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
-import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorStateCommand;
 import org.komodo.spi.KException;
 
 public class ViewEditorStateSerializerTest extends AbstractSerializerTest {
@@ -51,19 +53,19 @@ public class ViewEditorStateSerializerTest extends AbstractSerializerTest {
                 TAB + q(RestViewEditorState.CONTENT_LABEL) + colon() + pnl(OPEN_SQUARE_BRACKET) +
 
                 tab(2) + pnl(OPEN_BRACE) +
-                    tab(3) + q(RestViewEditorStateCommand.UNDO_LABEL) + colon() + pnl(OPEN_BRACE ) +
-                        tab(4) + q(RestViewEditorStateCommand.ID_LABEL) +
+                    tab(3) + q(RestStateCommandAggregate.UNDO_LABEL) + colon() + pnl(OPEN_BRACE ) +
+                        tab(4) + q(RestStateCommand.ID_LABEL) +
                                               colon() + q(undoRedoId) + pnl(COMMA) +
-                        tab(4) + q(RestViewEditorStateCommand.ARGS_LABEL) + colon() + pnl(OPEN_BRACE) +
+                        tab(4) + q(RestStateCommand.ARGS_LABEL) + colon() + pnl(OPEN_BRACE) +
                             tab(5) + q(oldNameKey) + colon() + q(viewName) + pnl(COMMA) +
                             tab(5) + q(newNameKey) + colon() + pnl(q(untitledName)) +
                         tab(4) + pnl(CLOSE_BRACE) +
                     tab(3) + CLOSE_BRACE + pnl(COMMA) +
 
-                    tab(3) + q(RestViewEditorStateCommand.REDO_LABEL) + colon() + pnl(OPEN_BRACE) +
-                        tab(4) + q(RestViewEditorStateCommand.ID_LABEL) +
+                    tab(3) + q(RestStateCommandAggregate.REDO_LABEL) + colon() + pnl(OPEN_BRACE) +
+                        tab(4) + q(RestStateCommand.ID_LABEL) +
                                               colon() + q(undoRedoId) + pnl(COMMA) +
-                        tab(4) + q(RestViewEditorStateCommand.ARGS_LABEL) + colon() + pnl(OPEN_BRACE) +
+                        tab(4) + q(RestStateCommand.ARGS_LABEL) + colon() + pnl(OPEN_BRACE) +
                             tab(5) + q(oldNameKey) + colon() + q(untitledName) + pnl(COMMA) +
                             tab(5) + q(newNameKey) + colon() + pnl(q(viewName)) +
                         tab(4) + pnl(CLOSE_BRACE) +
@@ -85,26 +87,30 @@ public class ViewEditorStateSerializerTest extends AbstractSerializerTest {
         RestViewEditorState viewEditorState = KomodoJsonMarshaller.unmarshall(state, RestViewEditorState.class);
         assertEquals(viewName, viewEditorState.getId());
 
-        RestViewEditorStateCommand[] content = viewEditorState.getContent();
+        RestStateCommandAggregate[] content = viewEditorState.getContent();
         assertNotNull(content);
         assertEquals(1, content.length);
 
-        RestViewEditorStateCommand cmd = content[0];
+        RestStateCommandAggregate cmdAgg = content[0];
+        RestStateCommand undo = cmdAgg.getUndo();
+        assertNotNull(undo);
+
         String undoId = "UpdateViewNameCommand";
-        assertEquals(undoId, cmd.getUndoId());
-        Map<String, String> undoArgs = cmd.getUndoArguments();
+        assertEquals(undoId, undo.getId());
+        Map<String, String> undoArgs = undo.getArguments();
         assertNotNull(undoArgs);
         assertEquals(2, undoArgs.size());
-
         assertEquals(untitledName, undoArgs.get(newNameKey));
         assertEquals(viewName, undoArgs.get(oldNameKey));
 
+        RestStateCommand redo = cmdAgg.getRedo();
+        assertNotNull(redo);
+
         String redoId = undoId;
-        assertEquals(redoId, cmd.getRedoId());
-        Map<String, String> redoArgs = cmd.getRedoArguments();
+        assertEquals(redoId, redo.getId());
+        Map<String, String> redoArgs = redo.getArguments();
         assertNotNull(redoArgs);
         assertEquals(2, redoArgs.size());
-
         assertEquals(untitledName, redoArgs.get(oldNameKey));
         assertEquals(viewName, redoArgs.get(newNameKey));
     }
@@ -121,14 +127,21 @@ public class ViewEditorStateSerializerTest extends AbstractSerializerTest {
         redoArgs.put(oldNameKey, untitledName);
         redoArgs.put(newNameKey, newName);
 
-        ViewEditorStateCommand command = mock(ViewEditorStateCommand.class);
-        when(command.getName(transaction)).thenReturn(KomodoLexicon.ViewEditorStateCommand.COMMAND_ID_PREFIX + 0);
-        when(command.getUndoId(transaction)).thenReturn(undoRedoId);
-        when(command.getUndoArguments(transaction)).thenReturn(undoArgs);
-        when(command.getRedoId(transaction)).thenReturn(undoRedoId);
-        when(command.getRedoArguments(transaction)).thenReturn(redoArgs);
-        ViewEditorStateCommand[] commands = { command };
+        StateCommand undoCommand = mock(StateCommand.class);
+        when(undoCommand.getId(transaction)).thenReturn(undoRedoId);
+        when(undoCommand.getArguments(transaction)).thenReturn(undoArgs);
 
+        StateCommand redoCommand = mock(StateCommand.class);
+        when(redoCommand.getId(transaction)).thenReturn(undoRedoId);
+        when(redoCommand.getArguments(transaction)).thenReturn(redoArgs);
+
+        StateCommandAggregate command = mock(StateCommandAggregate.class);
+        when(command.getName(transaction)).thenReturn(
+                                                      KomodoLexicon.StateCommandAggregate.NAME_PREFIX + 0);
+        when(command.getUndo(transaction)).thenReturn(undoCommand);
+        when(command.getRedo(transaction)).thenReturn(redoCommand);
+
+        StateCommandAggregate[] commands = { command };
         ViewEditorState state = mock(ViewEditorState.class);
         when(state.getName(transaction)).thenReturn(viewName);
         when(state.getCommands(transaction)).thenReturn(commands);

@@ -31,37 +31,37 @@ import java.util.Map.Entry;
 import org.komodo.rest.Messages;
 import org.komodo.rest.json.JsonConstants;
 import org.komodo.rest.relational.response.RestVdbImport;
-import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorStateCommand;
-import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorStateCommand.RestViewEditorStateCmdUnit;
+import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate;
+import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate.RestStateCommand;
 import com.google.gson.TypeAdapter;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
-public class ViewEditorStateCommandSerializer extends TypeAdapter<RestViewEditorStateCommand> implements JsonConstants {
+public class ViewEditorStateCommandSerializer extends TypeAdapter<RestStateCommandAggregate> implements JsonConstants {
 
     private static final Type STRING_MAP_TYPE = new TypeToken< Map< String, String > >() {/* nothing to do */}.getType();
 
-    public static class ViewEditorStateCmdUnitSerializer extends TypeAdapter<RestViewEditorStateCmdUnit> implements JsonConstants {
+    public static class ViewEditorStateCmdUnitSerializer extends TypeAdapter<RestStateCommand> implements JsonConstants {
 
-        private boolean isComplete(RestViewEditorStateCmdUnit entity) {
+        private boolean isComplete(RestStateCommand entity) {
             return entity.getId() != null;
         }
 
         @Override
-        public RestViewEditorStateCmdUnit read(JsonReader in) throws IOException {
-            final RestViewEditorStateCmdUnit unit = new RestViewEditorStateCmdUnit();
+        public RestStateCommand read(JsonReader in) throws IOException {
+            final RestStateCommand unit = new RestStateCommand();
             in.beginObject();
 
             while ( in.hasNext() ) {
                 final String name = in.nextName();
 
                 switch (name) {
-                    case RestViewEditorStateCommand.ID_LABEL:
+                    case RestStateCommand.ID_LABEL:
                         String id = in.nextString();
                         unit.setId(id);
                         break;
-                    case RestViewEditorStateCommand.ARGS_LABEL:
+                    case RestStateCommand.ARGS_LABEL:
                         Map<String, String> args = BUILDER.fromJson(in, STRING_MAP_TYPE);
                         for (Map.Entry<String, String> entry : args.entrySet()) {
                             unit.addArgument(entry.getKey(), entry.getValue());
@@ -82,16 +82,16 @@ public class ViewEditorStateCommandSerializer extends TypeAdapter<RestViewEditor
         }
 
         @Override
-        public void write(JsonWriter out, RestViewEditorStateCmdUnit value) throws IOException {
+        public void write(JsonWriter out, RestStateCommand value) throws IOException {
 
             out.beginObject();
 
-            out.name(RestViewEditorStateCommand.ID_LABEL);
+            out.name(RestStateCommand.ID_LABEL);
             out.value(value.getId());
 
             Map<String, String> args = value.getArguments();
             if (args.size() != 0) {
-                out.name(RestViewEditorStateCommand.ARGS_LABEL);
+                out.name(RestStateCommand.ARGS_LABEL);
                 out.beginObject();
 
                 for (Entry<String, String> arg : args.entrySet()) {
@@ -106,25 +106,33 @@ public class ViewEditorStateCommandSerializer extends TypeAdapter<RestViewEditor
         }
     }
 
-    private boolean isComplete(RestViewEditorStateCommand entity) {
-        return entity.getUndoId() != null && entity.getRedoId() != null;
+    private boolean isComplete(RestStateCommandAggregate agg) {
+        RestStateCommand undo = agg.getUndo();
+        RestStateCommand redo = agg.getRedo();
+        if (undo == null || redo == null)
+            return false;
+
+        if (undo.getId() == null || redo.getId() == null)
+            return false;
+
+        return true;
     }
 
     @Override
-    public RestViewEditorStateCommand read(JsonReader in) throws IOException {
-        final RestViewEditorStateCommand command = new RestViewEditorStateCommand();
+    public RestStateCommandAggregate read(JsonReader in) throws IOException {
+        final RestStateCommandAggregate command = new RestStateCommandAggregate();
 
         in.beginObject();
 
         while (in.hasNext()) {
             final String name = in.nextName();
 
-            if (RestViewEditorStateCommand.UNDO_LABEL.equals(name)) {
-                RestViewEditorStateCmdUnit unit = BUILDER.fromJson(in, RestViewEditorStateCmdUnit.class);
-                command.setUndoUnit(unit);
-            } else if (RestViewEditorStateCommand.REDO_LABEL.equals(name)) {
-                RestViewEditorStateCmdUnit unit = BUILDER.fromJson(in, RestViewEditorStateCmdUnit.class);
-                command.setRedoUnit(unit);
+            if (RestStateCommandAggregate.UNDO_LABEL.equals(name)) {
+                RestStateCommand unit = BUILDER.fromJson(in, RestStateCommand.class);
+                command.setUndo(unit);
+            } else if (RestStateCommandAggregate.REDO_LABEL.equals(name)) {
+                RestStateCommand unit = BUILDER.fromJson(in, RestStateCommand.class);
+                command.setRedo(unit);
             }
         }
 
@@ -138,18 +146,18 @@ public class ViewEditorStateCommandSerializer extends TypeAdapter<RestViewEditor
     }
 
     @Override
-    public void write(JsonWriter out, RestViewEditorStateCommand value) throws IOException {
+    public void write(JsonWriter out, RestStateCommandAggregate value) throws IOException {
         if ( !isComplete( value ) ) {
-            throw new IOException( Messages.getString( INCOMPLETE_JSON, RestViewEditorStateCommand.class.getSimpleName() ) );
+            throw new IOException( Messages.getString( INCOMPLETE_JSON, RestStateCommandAggregate.class.getSimpleName() ) );
         }
 
         out.beginObject();
 
-        out.name(RestViewEditorStateCommand.UNDO_LABEL);
-        BUILDER.toJson(value.getUndoUnit(), RestViewEditorStateCmdUnit.class, out);
+        out.name(RestStateCommandAggregate.UNDO_LABEL);
+        BUILDER.toJson(value.getUndo(), RestStateCommand.class, out);
 
-        out.name(RestViewEditorStateCommand.REDO_LABEL);
-        BUILDER.toJson(value.getRedoUnit(), RestViewEditorStateCmdUnit.class, out);
+        out.name(RestStateCommandAggregate.REDO_LABEL);
+        BUILDER.toJson(value.getRedo(), RestStateCommand.class, out);
 
         out.endObject();
     }

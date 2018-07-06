@@ -24,7 +24,7 @@ package org.komodo.rest.relational.json;
 import static org.komodo.rest.relational.json.KomodoJsonMarshaller.BUILDER;
 import java.io.IOException;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
-import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorStateCommand;
+import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
@@ -43,7 +43,7 @@ public class ViewEditorStateSerializer extends AbstractEntitySerializer<RestView
     @Override
     protected String readExtension(String name, RestViewEditorState state, JsonReader in) {
         if (RestViewEditorState.CONTENT_LABEL.equals(name)) {
-            RestViewEditorStateCommand[] commands = BUILDER.fromJson(in, RestViewEditorStateCommand[].class);
+            RestStateCommandAggregate[] commands = BUILDER.fromJson(in, RestStateCommandAggregate[].class);
             state.setContent(commands);
             return Integer.toString(commands.length);
         }
@@ -53,14 +53,14 @@ public class ViewEditorStateSerializer extends AbstractEntitySerializer<RestView
 
     @Override
     protected void writeExtensions(JsonWriter out, RestViewEditorState state) throws IOException {
-        RestViewEditorStateCommand[] commands = state.getContent();
+        RestStateCommandAggregate[] commands = state.getContent();
 
         if (commands.length != 0) {
             out.name(RestViewEditorState.CONTENT_LABEL);
             out.beginArray();
             
-            for (RestViewEditorStateCommand command : commands) {
-                BUILDER.getAdapter(RestViewEditorStateCommand.class).write(out, command);
+            for (RestStateCommandAggregate command : commands) {
+                BUILDER.getAdapter(RestStateCommandAggregate.class).write(out, command);
             }
             
             out.endArray();

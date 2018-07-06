@@ -54,7 +54,8 @@ import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.KomodoStorageAttributes;
 import org.komodo.rest.relational.response.RestGitRepository;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
-import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorStateCommand;
+import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate;
+import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate.RestStateCommand;
 import org.komodo.rest.service.KomodoUtilService;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.test.utils.TestUtilities;
@@ -459,15 +460,21 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
                                                     .path(V1Constants.USER_PROFILE)
                                                     .path(V1Constants.VIEW_EDITOR_STATE).build();
 
-        RestViewEditorStateCommand command = new RestViewEditorStateCommand();
-        command.setUndoId(undoRedoId);
-        command.addUndoArgument(oldNameKey, viewName);
-        command.addUndoArgument(newNameKey, untitledName);
-        command.setRedoId(undoRedoId);
-        command.addRedoArgument(oldNameKey, untitledName);
-        command.addRedoArgument(newNameKey, viewName);
+        RestStateCommand undo = new RestStateCommand();
+        undo.setId(undoRedoId);
+        undo.addArgument(oldNameKey, viewName);
+        undo.addArgument(newNameKey, untitledName);
 
-        RestViewEditorStateCommand[] content = { command };
+        RestStateCommand redo = new RestStateCommand();
+        redo.setId(undoRedoId);
+        redo.addArgument(oldNameKey, untitledName);
+        redo.addArgument(newNameKey, viewName);
+
+        RestStateCommandAggregate command = new RestStateCommandAggregate();
+        command.setUndo(undo);
+        command.setRedo(redo);
+
+        RestStateCommandAggregate[] content = { command };
 
         RestViewEditorState restViewEditorState = new RestViewEditorState();
         restViewEditorState.setBaseUri(uriBuilder().baseUri());
@@ -580,13 +587,20 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
             RestViewEditorState restState = restStates[0];
             assertEquals(viewName, restState.getId());
 
-            RestViewEditorStateCommand[] content = restState.getContent();
-            assertNotNull(content);
-            assertTrue(content.length == 1);
-            assertEquals(undoRedoId, content[0].getUndoId());
-            assertEquals(undoArgs, content[0].getUndoArguments());
-            assertEquals(undoRedoId, content[0].getRedoId());
-            assertEquals(redoArgs, content[0].getRedoArguments());
+            RestStateCommandAggregate[] aggregates = restState.getContent();
+            assertNotNull(aggregates);
+            assertTrue(aggregates.length == 1);
+
+            RestStateCommandAggregate agg = aggregates[0];
+            RestStateCommand undo = agg.getUndo();
+            assertNotNull(undo);
+            assertEquals(undoRedoId, undo.getId());
+            assertEquals(undoArgs, undo.getArguments());
+
+            RestStateCommand redo = agg.getRedo();
+            assertNotNull(redo);
+            assertEquals(undoRedoId, redo.getId());
+            assertEquals(redoArgs, redo.getArguments());
 
         } finally {
             serviceTestUtilities.removeViewEditorState(USER_NAME, viewName);
@@ -629,14 +643,20 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
             RestViewEditorState restState = KomodoJsonMarshaller.unmarshall(entity, RestViewEditorState.class);
             assertEquals(viewName, restState.getId());
 
-            RestViewEditorStateCommand[] content = restState.getContent();
-            assertNotNull(content);
-            assertTrue(content.length == 1);
-            assertEquals(undoRedoId, content[0].getUndoId());
-            assertEquals(undoArgs, content[0].getUndoArguments());
-            assertEquals(undoRedoId, content[0].getRedoId());
-            assertEquals(redoArgs, content[0].getRedoArguments());
+            RestStateCommandAggregate[] aggregates = restState.getContent();
+            assertNotNull(aggregates);
+            assertTrue(aggregates.length == 1);
 
+            RestStateCommandAggregate agg = aggregates[0];
+            RestStateCommand undo = agg.getUndo();
+            assertNotNull(undo);
+            assertEquals(undoRedoId, undo.getId());
+            assertEquals(undoArgs, undo.getArguments());
+
+            RestStateCommand redo = agg.getRedo();
+            assertNotNull(redo);
+            assertEquals(undoRedoId, redo.getId());
+            assertEquals(redoArgs, redo.getArguments());
         } finally {
             serviceTestUtilities.removeViewEditorState(USER_NAME, viewName);
         }
