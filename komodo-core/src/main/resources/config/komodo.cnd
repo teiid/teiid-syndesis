@@ -217,13 +217,21 @@
 /*
  * The command that forms part of the view editor state
  */
-[tko:viewEditorStateCommand] > nt:unstructured
+[tko:stateCommand] > nt:unstructured
+  - tko:id (string) mandatory
+
+/*
+ * The command aggregate that forms part of the view editor state
+ */
+[tko:stateCommandAggregate] > nt:unstructured
+  + undo (tko:stateCommand)
+  + redo (tko:stateCommand)
 
 /*
  * The state of a view editor when saved
  */
 [tko:viewEditorState] > nt:unstructured
-  + * (tko:viewEditorStateCommand) copy
+  + * (tko:stateCommandAggregate) copy
 
 [tko:viewEditorStates] > nt:unstructured
   + * (tko:viewEditorState) copy

@@ -23,25 +23,20 @@ package org.komodo.relational.profile.internal;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.komodo.core.KomodoLexicon;
 import org.komodo.relational.internal.RelationalChildRestrictedObject;
-import org.komodo.relational.profile.Profile;
-import org.komodo.relational.profile.ViewEditorState;
-import org.komodo.relational.profile.ViewEditorStateCommand;
+import org.komodo.relational.profile.StateCommand;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyValueType;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
-import org.komodo.utils.ArgCheck;
 
 /**
  * An implementation of a view editor state object.
  */
-public class ViewEditorStateCommandImpl extends RelationalChildRestrictedObject implements ViewEditorStateCommand {
-
-    private static final String ARGS_PREFIX = "ARGS_";
+public class StateCommandImpl extends RelationalChildRestrictedObject implements StateCommand {
 
     /**
      * @param uow
@@ -53,28 +48,13 @@ public class ViewEditorStateCommandImpl extends RelationalChildRestrictedObject 
      * @throws KException
      *         if an error occurs
      */
-    public ViewEditorStateCommandImpl(final UnitOfWork uow, final Repository repository, final String path) throws KException {
+    public StateCommandImpl(final UnitOfWork uow, final Repository repository, final String path) throws KException {
         super(uow, repository, path);
     }
 
     @Override
     public KomodoType getTypeIdentifier(UnitOfWork uow) {
-        return ViewEditorState.IDENTIFIER;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.internal.RelationalObjectImpl#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
-     */
-    @Override
-    public Profile getParent(final UnitOfWork transaction) throws KException {
-        ArgCheck.isNotNull(transaction, "transaction"); //$NON-NLS-1$
-        ArgCheck.isTrue((transaction.getState() == State.NOT_STARTED), "transaction state must be NOT_STARTED"); //$NON-NLS-1$
-
-        final KomodoObject grouping = super.getParent(transaction);
-        final Profile result = Profile.RESOLVER.resolve(transaction, grouping.getParent(transaction));
-        return result;
+        return StateCommand.IDENTIFIER;
     }
 
     /**
@@ -88,6 +68,18 @@ public class ViewEditorStateCommandImpl extends RelationalChildRestrictedObject 
     }
 
     @Override
+    public String getId(UnitOfWork transaction) throws KException {
+        return getObjectProperty(transaction, PropertyValueType.STRING, "getId",
+                                                                     KomodoLexicon.StateCommand.ID);
+    }
+
+    @Override
+    public void setId(UnitOfWork transaction, String id) throws Exception {
+        setObjectProperty(transaction, "setId",
+                                                                      KomodoLexicon.StateCommand.ID, id);
+    }
+
+    @Override
     public Map<String, String> getArguments(UnitOfWork transaction) throws KException {
         Map<String, String> args = new HashMap<>();
 
@@ -96,11 +88,12 @@ public class ViewEditorStateCommandImpl extends RelationalChildRestrictedObject 
             return args;
 
         for (String propertyName : propertyNames) {
-            if (! propertyName.startsWith(ARGS_PREFIX))
+            if (! propertyName.startsWith(KomodoLexicon.StateCommand.ARGS_PREFIX))
                 continue;
 
             String value = getObjectProperty(transaction, PropertyValueType.STRING, "getArgument", propertyName);
-            String name = propertyName.replace(ARGS_PREFIX, EMPTY_STRING);
+            String name = propertyName.replace(
+                                                                   KomodoLexicon.StateCommand.ARGS_PREFIX, EMPTY_STRING);
             args.put(name,  value);
         }
 
@@ -113,7 +106,7 @@ public class ViewEditorStateCommandImpl extends RelationalChildRestrictedObject 
             arguments = new HashMap<>();
 
         for (Map.Entry<String, String> entry : arguments.entrySet()) {
-            String name = ARGS_PREFIX + entry.getKey();
+            String name = KomodoLexicon.StateCommand.ARGS_PREFIX + entry.getKey();
             String value = entry.getValue();
             setObjectProperty(transaction, "setArgument", name, value); //$NON-NLS-1$
         }

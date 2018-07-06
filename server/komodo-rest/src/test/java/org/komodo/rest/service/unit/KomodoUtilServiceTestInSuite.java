@@ -54,7 +54,8 @@ import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.KomodoStorageAttributes;
 import org.komodo.rest.relational.response.RestGitRepository;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
-import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorStateCommand;
+import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate;
+import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate.RestStateCommand;
 import org.komodo.rest.service.KomodoUtilService;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.test.utils.TestUtilities;
@@ -64,6 +65,12 @@ import com.google.common.net.HttpHeaders;
 public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
 
     private static final String AUTH_HEADER_VALUE = "Basic YWRtaW48";
+
+    private String viewName = "myNewView";
+    private String undoRedoId = "UpdateViewNameCommand";
+    private String untitledName = "untitled";
+    private String oldNameKey = "oldName";
+    private String newNameKey = "newName";
 
     public KomodoUtilServiceTestInSuite() throws Exception {
         super();
@@ -453,17 +460,25 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
                                                     .path(V1Constants.USER_PROFILE)
                                                     .path(V1Constants.VIEW_EDITOR_STATE).build();
 
-        String stateId = "myNewViewEditor";
-        String commandId = "set-view-name";
-        RestViewEditorStateCommand command = new RestViewEditorStateCommand();
-        command.setId(commandId);
-        command.addArgument("oldName", "untitled");
-        command.addArgument("newName", stateId);
-        RestViewEditorStateCommand[] content = { command };
+        RestStateCommand undo = new RestStateCommand();
+        undo.setId(undoRedoId);
+        undo.addArgument(oldNameKey, viewName);
+        undo.addArgument(newNameKey, untitledName);
+
+        RestStateCommand redo = new RestStateCommand();
+        redo.setId(undoRedoId);
+        redo.addArgument(oldNameKey, untitledName);
+        redo.addArgument(newNameKey, viewName);
+
+        RestStateCommandAggregate command = new RestStateCommandAggregate();
+        command.setUndo(undo);
+        command.setRedo(redo);
+
+        RestStateCommandAggregate[] content = { command };
 
         RestViewEditorState restViewEditorState = new RestViewEditorState();
         restViewEditorState.setBaseUri(uriBuilder().baseUri());
-        restViewEditorState.setId(stateId);
+        restViewEditorState.setId(viewName);
         restViewEditorState.setContent(content);
 
         try {
@@ -475,23 +490,29 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
             String entity = extractResponse(response);
 
             RestViewEditorState restState = KomodoJsonMarshaller.unmarshall(entity, RestViewEditorState.class);
-            assertEquals(stateId, restState.getId());
+            assertEquals(viewName, restState.getId());
             assertEquals(restViewEditorState, restState);
         } finally {
-            serviceTestUtilities.removeViewEditorState(USER_NAME, stateId);
+            serviceTestUtilities.removeViewEditorState(USER_NAME, viewName);
         }
     }
 
     @Test
     public void shouldRemoveUserProfileViewEditorState() throws Exception {
-        String stateId = "myNewViewEditor";
-        String commandId = "set-view-name";
-        Map<String, String> args = new HashMap<>();
-        args.put("oldName", "untitled");
-        args.put("newName", stateId);
+        String undoId = undoRedoId;
+        Map<String, String> undoArgs = new HashMap<>();
+        undoArgs.put(newNameKey, untitledName);
+        undoArgs.put(oldNameKey, viewName);
+
+        String redoId = undoRedoId;
+        Map<String, String> redoArgs = new HashMap<>();
+        undoArgs.put(newNameKey, viewName);
+        undoArgs.put(oldNameKey, untitledName);
 
         try {
-            ViewEditorState state = serviceTestUtilities.addViewEditorState(USER_NAME, stateId, commandId, args);
+            ViewEditorState state = serviceTestUtilities.addViewEditorState(USER_NAME, viewName,
+                                                                                                                                undoId, undoArgs,
+                                                                                                                                redoId, redoArgs);
             assertNotNull(state);
 
             // delete
@@ -499,7 +520,7 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
                                                     .path(V1Constants.SERVICE_SEGMENT)
                                                     .path(V1Constants.USER_PROFILE)
                                                     .path(V1Constants.VIEW_EDITOR_STATE)
-                                                    .path(stateId)
+                                                    .path(viewName)
                                                     .build();
 
             HttpDelete request = jsonRequest(uri, RequestType.DELETE);
@@ -523,20 +544,26 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
             }
 
         } finally {
-            serviceTestUtilities.removeViewEditorState(USER_NAME, stateId);
+            serviceTestUtilities.removeViewEditorState(USER_NAME, viewName);
         }
     }
 
     @Test
     public void shouldGetUserProfileViewEditorStates() throws Exception {
-        String stateId = "myNewViewEditor";
-        String commandId = "set-view-name";
-        Map<String, String> args = new HashMap<>();
-        args.put("oldName", "untitled");
-        args.put("newName", stateId);
+        String undoId = undoRedoId;
+        Map<String, String> undoArgs = new HashMap<>();
+        undoArgs.put(newNameKey, untitledName);
+        undoArgs.put(oldNameKey, viewName);
+
+        String redoId = undoRedoId;
+        Map<String, String> redoArgs = new HashMap<>();
+        undoArgs.put(newNameKey, viewName);
+        undoArgs.put(oldNameKey, untitledName);
 
         try {
-            ViewEditorState state = serviceTestUtilities.addViewEditorState(USER_NAME, stateId, commandId, args);
+            ViewEditorState state = serviceTestUtilities.addViewEditorState(USER_NAME, viewName,
+                                                                                                                                undoId, undoArgs,
+                                                                                                                                redoId, redoArgs);
             assertNotNull(state);
 
             // get
@@ -558,29 +585,44 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
             assertTrue(restStates.length == 1);
 
             RestViewEditorState restState = restStates[0];
-            assertEquals(stateId, restState.getId());
+            assertEquals(viewName, restState.getId());
 
-            RestViewEditorStateCommand[] content = restState.getContent();
-            assertNotNull(content);
-            assertTrue(content.length == 1);
-            assertEquals(commandId, content[0].getId());
-            assertEquals(args, content[0].getArguments());
+            RestStateCommandAggregate[] aggregates = restState.getContent();
+            assertNotNull(aggregates);
+            assertTrue(aggregates.length == 1);
+
+            RestStateCommandAggregate agg = aggregates[0];
+            RestStateCommand undo = agg.getUndo();
+            assertNotNull(undo);
+            assertEquals(undoRedoId, undo.getId());
+            assertEquals(undoArgs, undo.getArguments());
+
+            RestStateCommand redo = agg.getRedo();
+            assertNotNull(redo);
+            assertEquals(undoRedoId, redo.getId());
+            assertEquals(redoArgs, redo.getArguments());
 
         } finally {
-            serviceTestUtilities.removeViewEditorState(USER_NAME, stateId);
+            serviceTestUtilities.removeViewEditorState(USER_NAME, viewName);
         }
     }
 
     @Test
     public void shouldGetUserProfileViewEditorState() throws Exception {
-        String stateId = "myNewViewEditor";
-        String commandId = "set-view-name";
-        Map<String, String> args = new HashMap<>();
-        args.put("oldName", "untitled");
-        args.put("newName", stateId);
+        String undoId = undoRedoId;
+        Map<String, String> undoArgs = new HashMap<>();
+        undoArgs.put(newNameKey, untitledName);
+        undoArgs.put(oldNameKey, viewName);
+
+        String redoId = undoRedoId;
+        Map<String, String> redoArgs = new HashMap<>();
+        undoArgs.put(newNameKey, viewName);
+        undoArgs.put(oldNameKey, untitledName);
 
         try {
-            ViewEditorState state = serviceTestUtilities.addViewEditorState(USER_NAME, stateId, commandId, args);
+            ViewEditorState state = serviceTestUtilities.addViewEditorState(USER_NAME, viewName,
+                                                                                                                                undoId, undoArgs,
+                                                                                                                                redoId, redoArgs);
             assertNotNull(state);
 
             // get
@@ -588,7 +630,7 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
                                                     .path(V1Constants.SERVICE_SEGMENT)
                                                     .path(V1Constants.USER_PROFILE)
                                                     .path(V1Constants.VIEW_EDITOR_STATE)
-                                                    .path(stateId)
+                                                    .path(viewName)
                                                     .build();
 
             HttpGet request = jsonRequest(uri, RequestType.GET);
@@ -599,16 +641,24 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
 //          System.out.println("Response from uri " + uri + ":\n" + entity);
 
             RestViewEditorState restState = KomodoJsonMarshaller.unmarshall(entity, RestViewEditorState.class);
-            assertEquals(stateId, restState.getId());
+            assertEquals(viewName, restState.getId());
 
-            RestViewEditorStateCommand[] content = restState.getContent();
-            assertNotNull(content);
-            assertTrue(content.length == 1);
-            assertEquals(commandId, content[0].getId());
-            assertEquals(args, content[0].getArguments());
+            RestStateCommandAggregate[] aggregates = restState.getContent();
+            assertNotNull(aggregates);
+            assertTrue(aggregates.length == 1);
 
+            RestStateCommandAggregate agg = aggregates[0];
+            RestStateCommand undo = agg.getUndo();
+            assertNotNull(undo);
+            assertEquals(undoRedoId, undo.getId());
+            assertEquals(undoArgs, undo.getArguments());
+
+            RestStateCommand redo = agg.getRedo();
+            assertNotNull(redo);
+            assertEquals(undoRedoId, redo.getId());
+            assertEquals(redoArgs, redo.getArguments());
         } finally {
-            serviceTestUtilities.removeViewEditorState(USER_NAME, stateId);
+            serviceTestUtilities.removeViewEditorState(USER_NAME, viewName);
         }
     }
 }

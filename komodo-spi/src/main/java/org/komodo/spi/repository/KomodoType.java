@@ -174,9 +174,14 @@ public enum KomodoType {
     VIEW_EDITOR_STATE,
 
     /**
+     * View Editor State Command Aggregate
+     */
+    STATE_COMMAND_AGGREGATE,
+
+    /**
      * View Editor State Command
      */
-    VIEW_EDITOR_STATE_COMMAND,
+    STATE_COMMAND,
 
     /**
      * Stored Procedure

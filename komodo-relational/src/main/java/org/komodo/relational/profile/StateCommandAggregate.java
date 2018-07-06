@@ -26,38 +26,37 @@ import org.komodo.core.KomodoLexicon;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.RelationalObject;
 import org.komodo.relational.TypeResolver;
-import org.komodo.relational.profile.internal.ViewEditorStateImpl;
+import org.komodo.relational.profile.internal.StateCommandAggregateImpl;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 
 /**
- * Represents the configuration of a view editor state
+ * Represents the configuration of a view editor state command
  */
-public interface ViewEditorState extends RelationalObject, StringConstants {
+public interface StateCommandAggregate extends RelationalObject {
 
     /**
      * The type identifier.
      */
-    int TYPE_ID = ViewEditorState.class.hashCode();
+    int TYPE_ID = StateCommandAggregate.class.hashCode();
 
     /**
      * Identifier of this object
      */
-    KomodoType IDENTIFIER = KomodoType.VIEW_EDITOR_STATE;
+    KomodoType IDENTIFIER = KomodoType.STATE_COMMAND_AGGREGATE;
 
     /**
-     * An empty array of view editor states.
+     * An empty array of view editor state commands.
      */
-    ViewEditorState[] NO_VIEW_EDITOR_STATES = new ViewEditorState[0];
+    StateCommandAggregate[] NO_STATE_COMMAND_AGGREGATES = new StateCommandAggregate[0];
 
     /**
-     * The resolver of a {@link ViewEditorState}.
+     * The resolver of a {@link StateCommandAggregate}.
      */
-    TypeResolver<ViewEditorState> RESOLVER = new TypeResolver<ViewEditorState>() {
+    TypeResolver<StateCommandAggregate> RESOLVER = new TypeResolver<StateCommandAggregate>() {
 
         /**
          * {@inheritDoc}
@@ -75,8 +74,8 @@ public interface ViewEditorState extends RelationalObject, StringConstants {
          * @see org.komodo.relational.TypeResolver#owningClass()
          */
         @Override
-        public Class<ViewEditorStateImpl> owningClass() {
-            return ViewEditorStateImpl.class;
+        public Class<StateCommandAggregateImpl> owningClass() {
+            return StateCommandAggregateImpl.class;
         }
 
         /**
@@ -87,7 +86,7 @@ public interface ViewEditorState extends RelationalObject, StringConstants {
          */
         @Override
         public boolean resolvable(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
-            return ObjectImpl.validateType(transaction, kobject.getRepository(), kobject, KomodoLexicon.ViewEditorState.NODE_TYPE);
+            return ObjectImpl.validateType(transaction, kobject.getRepository(), kobject, KomodoLexicon.StateCommandAggregate.NODE_TYPE);
         }
 
         /**
@@ -97,12 +96,12 @@ public interface ViewEditorState extends RelationalObject, StringConstants {
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
-        public ViewEditorState resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
-            if (kobject.getTypeId() == ViewEditorState.TYPE_ID) {
-                return (ViewEditorState)kobject;
+        public StateCommandAggregate resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
+            if (kobject.getTypeId() == StateCommandAggregate.TYPE_ID) {
+                return (StateCommandAggregate)kobject;
             }
 
-            return new ViewEditorStateImpl(transaction, kobject.getRepository(), kobject.getAbsolutePath());
+            return new StateCommandAggregateImpl(transaction, kobject.getRepository(), kobject.getAbsolutePath());
         }
 
     };
@@ -110,19 +109,41 @@ public interface ViewEditorState extends RelationalObject, StringConstants {
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     *
-     * @return the new command
+     * @return the undo command
      * @throws KException
-     *         if an error occurs
+     *          if an error occurs
      */
-    StateCommandAggregate addCommand(UnitOfWork transaction) throws KException;
+    StateCommand getUndo(final UnitOfWork transaction) throws KException;
 
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @return the state commands
-     * @throws KException
-     *         if an error occurs
+     * @param commandId the id of the command
+     * @param arguments the map of the arguments
+     * @return the new undo command
+     * @throws Exception
+     *          if an error occurs
      */
-    StateCommandAggregate[] getCommands(final UnitOfWork transaction) throws KException;
+    StateCommand setUndo(final UnitOfWork transaction, String commandId, Map<String, String> arguments) throws Exception;
+
+    /**
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+     * @return the redo command
+     * @throws KException
+     *          if an error occurs
+     */
+    StateCommand getRedo(final UnitOfWork transaction) throws KException;
+
+    /**
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+     * @param commandId the id of the command
+     * @param arguments the map of the arguments
+     * @return the new redo command
+     * @throws Exception
+     *          if an error occurs
+     */
+    StateCommand setRedo(final UnitOfWork transaction, String commandId, Map<String, String> arguments) throws Exception;
+
 }
