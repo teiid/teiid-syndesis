@@ -25,7 +25,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import org.komodo.relational.profile.ViewEditorState;
-import org.komodo.relational.profile.ViewEditorStateCommand;
+import org.komodo.relational.profile.StateCommandAggregate;
 import org.komodo.rest.AbstractKEntity;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.Repository.UnitOfWork;
@@ -45,7 +45,7 @@ public class RestViewEditorState extends AbstractKEntity {
     /*
      * The contents of the view editor state
      */
-    private RestViewEditorStateCommand[] content = new RestViewEditorStateCommand[0];
+    private RestStateCommandAggregate[] content = new RestStateCommandAggregate[0];
 
     /**
      * Constructor for use when deserializing
@@ -66,13 +66,13 @@ public class RestViewEditorState extends AbstractKEntity {
 
         setId(viewEditorState.getName(transaction));
 
-        List<RestViewEditorStateCommand> cmdList = new ArrayList<>();
-        for (ViewEditorStateCommand cmd : viewEditorState.getCommands(transaction)) {
-            RestViewEditorStateCommand restCmd = new RestViewEditorStateCommand(baseUri, cmd, transaction);
+        List<RestStateCommandAggregate> cmdList = new ArrayList<>();
+        for (StateCommandAggregate cmd : viewEditorState.getCommands(transaction)) {
+            RestStateCommandAggregate restCmd = new RestStateCommandAggregate(baseUri, cmd, transaction);
             cmdList.add(restCmd);
         }
 
-        this.content = cmdList.toArray(new RestViewEditorStateCommand[0]);
+        this.content = cmdList.toArray(new RestStateCommandAggregate[0]);
     }
 
     /**
@@ -90,11 +90,11 @@ public class RestViewEditorState extends AbstractKEntity {
     /**
      * @return the content
      */
-    public RestViewEditorStateCommand[] getContent() {
+    public RestStateCommandAggregate[] getContent() {
         return content;
     }
 
-    public void setContent(RestViewEditorStateCommand[] content) {
+    public void setContent(RestStateCommandAggregate[] content) {
         this.content = content;
     }
 }

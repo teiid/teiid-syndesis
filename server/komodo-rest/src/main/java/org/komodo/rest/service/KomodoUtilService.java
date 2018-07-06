@@ -54,6 +54,7 @@ import org.komodo.importer.ImportOptions.OptionKeys;
 import org.komodo.relational.importer.vdb.VdbImporter;
 import org.komodo.relational.profile.GitRepository;
 import org.komodo.relational.profile.Profile;
+import org.komodo.relational.profile.StateCommandAggregate;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
@@ -66,7 +67,8 @@ import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.RestGitRepository;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
-import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorStateCommand;
+import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate;
+import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate.RestStateCommand;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
@@ -894,7 +896,7 @@ public final class KomodoUtilService extends KomodoService {
 
         RestViewEditorState restViewEditorState = KomodoJsonMarshaller.unmarshall(viewEditorStateConfig, RestViewEditorState.class);
         String stateId = restViewEditorState.getId();
-        RestViewEditorStateCommand[] stateContent = restViewEditorState.getContent();
+        RestStateCommandAggregate[] stateContent = restViewEditorState.getContent();
 
         if (StringUtils.isBlank(stateId)) {
             return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_ID);
@@ -910,9 +912,14 @@ public final class KomodoUtilService extends KomodoService {
 
             Profile userProfile = getUserProfile(uow);
             ViewEditorState viewEditorState = userProfile.addViewEditorState(uow, stateId);
-            for (RestViewEditorStateCommand cmd : stateContent)
-                viewEditorState.addCommand(uow, cmd.getUndoId(), cmd.getUndoArguments(),
-                                                                                   cmd.getRedoId(), cmd.getRedoArguments());
+            for (RestStateCommandAggregate restCmd : stateContent) {
+                RestStateCommand restUndo = restCmd.getUndo();
+                RestStateCommand restRedo = restCmd.getRedo();
+
+                StateCommandAggregate stateCmdAgg = viewEditorState.addCommand(uow);
+                stateCmdAgg.setUndo(uow, restUndo.getId(), restUndo.getArguments());
+                stateCmdAgg.setRedo(uow, restRedo.getId(), restRedo.getArguments());
+            }
 
             final RestViewEditorState entity = new RestViewEditorState(uriInfo.getBaseUri(), viewEditorState, uow);
             return commit(uow, mediaTypes, entity);

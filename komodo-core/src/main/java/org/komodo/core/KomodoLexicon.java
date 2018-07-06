@@ -987,38 +987,48 @@ public interface KomodoLexicon extends StringConstants {
     }
 
     /**
+     * The JCR names associated with the view editor state command aggregate node type.
+     */
+    interface StateCommandAggregate {
+        /**
+         * The name of the view editor state node type. Value is {@value} .
+         */
+        String NODE_TYPE = Namespace.PREFIX + COLON + "stateCommandAggregate"; //$NON-NLS-1$
+
+        /**
+         * The prefix used to prepend to the name index
+         */
+        String NAME_PREFIX = "INDEX_";
+
+        /**
+         * The name of the undo child. Value is {@value} .
+         */
+        String UNDO = Namespace.PREFIX + COLON + "undo";
+
+        /**
+         * The name of the redo child. Value is {@value} .
+         */
+        String REDO = Namespace.PREFIX + COLON + "redo";
+    }
+
+    /**
      * The JCR names associated with the view editor state command node type.
      */
-    interface ViewEditorStateCommand {
+    interface StateCommand {
 
         /**
          * The name of the view editor state node type. Value is {@value} .
          */
-        String NODE_TYPE = Namespace.PREFIX + COLON + "viewEditorStateCommand"; //$NON-NLS-1$
+        String NODE_TYPE = Namespace.PREFIX + COLON + "stateCommand"; //$NON-NLS-1$
 
         /**
-         * The prefix used to prepend to the id of th command
+         * The name of the command id property. Value is {@value} .
          */
-        String COMMAND_ID_PREFIX = "INDEX_";
+        String ID = Namespace.PREFIX + COLON + "id";
 
         /**
-         * The name of the undo id property. Value is {@value} .
+         * The prefix of the view editor state command argument properties. Value is {@value} .
          */
-        String UNDO_ID = Namespace.PREFIX + COLON + "undoId";
-
-        /**
-         * The prefix of the view editor state command undo argument properties. Value is {@value} .
-         */
-        String UNDO_ARGS_PREFIX = Namespace.PREFIX + COLON + "UNDO_ARGS_";
-
-        /**
-         * The name of the redo id property. Value is {@value} .
-         */
-        String REDO_ID = Namespace.PREFIX + COLON + "redoId";
-
-        /**
-         * The prefix of the view editor state command redo argument properties. Value is {@value} .
-         */
-        String REDO_ARGS_PREFIX = Namespace.PREFIX + COLON + "REDO_ARGS_";
+        String ARGS_PREFIX = Namespace.PREFIX + COLON + "ARGS_";
     }
 }

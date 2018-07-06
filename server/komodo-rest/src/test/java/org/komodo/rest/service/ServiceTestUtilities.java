@@ -40,7 +40,6 @@ import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.ExistingNodeOptions;
 import org.komodo.importer.ImportOptions.OptionKeys;
-import org.komodo.relational.RelationalModelFactory;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.internal.DataserviceConveyor;
@@ -50,6 +49,7 @@ import org.komodo.relational.model.Model;
 import org.komodo.relational.model.View;
 import org.komodo.relational.profile.GitRepository;
 import org.komodo.relational.profile.Profile;
+import org.komodo.relational.profile.StateCommandAggregate;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.resource.Driver;
 import org.komodo.relational.vdb.Vdb;
@@ -582,10 +582,9 @@ public final class ServiceTestUtilities implements StringConstants {
 
         Profile profile = new AdapterFactory().adapt(uow, profileObj, Profile.class);
         ViewEditorState viewEditorState = profile.addViewEditorState(uow, stateId);
-        RelationalModelFactory.createViewEditorStateCommand(uow, repository,
-                                                                                                                viewEditorState,
-                                                                                                                undoId, undoArguments,
-                                                                                                                redoId, redoArguments);
+        StateCommandAggregate stateCmdAgg = viewEditorState.addCommand(uow);
+        stateCmdAgg.setUndo(uow, undoId, undoArguments);
+        stateCmdAgg.setRedo(uow, redoId, redoArguments);
 
         uow.commit();
         return viewEditorState;

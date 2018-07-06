@@ -26,9 +26,8 @@ import org.komodo.core.KomodoLexicon;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.RelationalObject;
 import org.komodo.relational.TypeResolver;
-import org.komodo.relational.profile.internal.ViewEditorStateCommandImpl;
+import org.komodo.relational.profile.internal.StateCommandImpl;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
@@ -37,27 +36,27 @@ import org.komodo.spi.repository.Repository.UnitOfWork.State;
 /**
  * Represents the configuration of a view editor state command
  */
-public interface ViewEditorStateCommand extends RelationalObject, StringConstants {
+public interface StateCommand extends RelationalObject {
 
     /**
      * The type identifier.
      */
-    int TYPE_ID = ViewEditorStateCommand.class.hashCode();
+    int TYPE_ID = StateCommand.class.hashCode();
 
     /**
      * Identifier of this object
      */
-    KomodoType IDENTIFIER = KomodoType.VIEW_EDITOR_STATE_COMMAND;
+    KomodoType IDENTIFIER = KomodoType.STATE_COMMAND;
 
     /**
      * An empty array of view editor state commands.
      */
-    ViewEditorStateCommand[] NO_VIEW_EDITOR_STATE_COMMANDS = new ViewEditorStateCommand[0];
+    StateCommand[] NO_STATE_COMMANDS = new StateCommand[0];
 
     /**
-     * The resolver of a {@link ViewEditorStateCommand}.
+     * The resolver of a {@link StateCommand}.
      */
-    TypeResolver<ViewEditorStateCommand> RESOLVER = new TypeResolver<ViewEditorStateCommand>() {
+    TypeResolver<StateCommand> RESOLVER = new TypeResolver<StateCommand>() {
 
         /**
          * {@inheritDoc}
@@ -75,8 +74,8 @@ public interface ViewEditorStateCommand extends RelationalObject, StringConstant
          * @see org.komodo.relational.TypeResolver#owningClass()
          */
         @Override
-        public Class<ViewEditorStateCommandImpl> owningClass() {
-            return ViewEditorStateCommandImpl.class;
+        public Class<StateCommandImpl> owningClass() {
+            return StateCommandImpl.class;
         }
 
         /**
@@ -87,7 +86,7 @@ public interface ViewEditorStateCommand extends RelationalObject, StringConstant
          */
         @Override
         public boolean resolvable(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
-            return ObjectImpl.validateType(transaction, kobject.getRepository(), kobject, KomodoLexicon.ViewEditorStateCommand.NODE_TYPE);
+            return ObjectImpl.validateType(transaction, kobject.getRepository(), kobject, KomodoLexicon.StateCommand.NODE_TYPE);
         }
 
         /**
@@ -97,12 +96,12 @@ public interface ViewEditorStateCommand extends RelationalObject, StringConstant
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
-        public ViewEditorStateCommand resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
-            if (kobject.getTypeId() == ViewEditorStateCommand.TYPE_ID) {
-                return (ViewEditorStateCommand)kobject;
+        public StateCommand resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
+            if (kobject.getTypeId() == StateCommand.TYPE_ID) {
+                return (StateCommand)kobject;
             }
 
-            return new ViewEditorStateCommandImpl(transaction, kobject.getRepository(), kobject.getAbsolutePath());
+            return new StateCommandImpl(transaction, kobject.getRepository(), kobject.getAbsolutePath());
         }
 
     };
@@ -110,75 +109,37 @@ public interface ViewEditorStateCommand extends RelationalObject, StringConstant
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @return the id of the undo command
+     * @return the id of the command
      * @throws KException
      *          if an error occurs
      */
-    String getUndoId(final UnitOfWork transaction) throws KException;
+    String getId(final UnitOfWork transaction) throws KException;
 
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param id the id of the undo command
+     * @param id the id of the command
      * @throws Exception
      *          if an error occurs
      */
-    void setUndoId(final UnitOfWork transaction, String id) throws Exception;
+    void setId(final UnitOfWork transaction, String id) throws Exception;
 
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @return the arguments of the undo command
+     * @return the arguments of the command
      * @throws KException
      *         if an error occurs
      */
-    Map<String, String> getUndoArguments(final UnitOfWork transaction) throws KException;
+    Map<String, String> getArguments(final UnitOfWork transaction) throws KException;
 
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param arguments
-     *        the new map of undo arguments
+     *        the new map of arguments
      * @throws KException
      *         if an error occurs
      */
-    void setUndoArguments(final UnitOfWork transaction, final Map<String, String> arguments) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @return the id of the redo command
-     * @throws KException
-     *          if an error occurs
-     */
-    String getRedoId(final UnitOfWork transaction) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param id the id of the redo command
-     * @throws Exception
-     *          if an error occurs
-     */
-    void setRedoId(final UnitOfWork transaction, String id) throws Exception;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @return the arguments
-     *         the new map of redo arguments
-     * @throws KException
-     *         if an error occurs
-     */
-    Map<String, String> getRedoArguments(final UnitOfWork transaction) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param arguments
-     *        the new map of redo arguments
-     * @throws KException
-     *         if an error occurs
-     */
-    void setRedoArguments(final UnitOfWork transaction, final Map<String, String> arguments) throws KException;
+    void setArguments(final UnitOfWork transaction, final Map<String, String> arguments) throws KException;
 }

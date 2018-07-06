@@ -89,10 +89,11 @@ import org.komodo.relational.model.internal.ViewImpl;
 import org.komodo.relational.model.internal.VirtualProcedureImpl;
 import org.komodo.relational.profile.GitRepository;
 import org.komodo.relational.profile.Profile;
+import org.komodo.relational.profile.StateCommand;
 import org.komodo.relational.profile.ViewEditorState;
-import org.komodo.relational.profile.ViewEditorStateCommand;
+import org.komodo.relational.profile.StateCommandAggregate;
 import org.komodo.relational.profile.internal.GitRepositoryImpl;
-import org.komodo.relational.profile.internal.ViewEditorStateCommandImpl;
+import org.komodo.relational.profile.internal.StateCommandAggregateImpl;
 import org.komodo.relational.profile.internal.ViewEditorStateImpl;
 import org.komodo.relational.resource.DdlFile;
 import org.komodo.relational.resource.Driver;
@@ -1733,50 +1734,74 @@ public final class RelationalModelFactory {
      *        the repository where the model object will be created (cannot be <code>null</code>)
      * @param viewEditorState
      *        the parent view editor state object
-     * @param index
-     *        the index of the command
-     * @param undoId
-     *        the id of the undo command
-     * @param undoArguments
-     *        the undo command arguments
-     * @param redoId
-     *        the id of the redo command
-     * @param redoArguments
-     *        the redo command arguments
      * @return the view editor state command object
      * @throws KException
      *        if an error occurs
      */
-    public static ViewEditorStateCommand createViewEditorStateCommand(
+    public static StateCommandAggregate createStateCommandAggregate (
                                                                                                           UnitOfWork transaction, Repository repository,
-                                                                                                          ViewEditorState viewEditorState,
-                                                                                                          String undoId,
-                                                                                                          Map<String, String> undoArguments,
-                                                                                                          String redoId,
-                                                                                                          Map<String, String> redoArguments) throws KException {
+                                                                                                          ViewEditorState viewEditorState) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotNull( repository, "repository" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( undoId, "undoId" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( redoId, "redoId" ); //$NON-NLS-1$
 
         try {
             int cmdSize = viewEditorState.getCommands(transaction).length;
             int index = cmdSize > 0 ? cmdSize - 1 : 0;
-            String commandId = KomodoLexicon.ViewEditorStateCommand.COMMAND_ID_PREFIX + index;
-            final KomodoObject kobject = viewEditorState.addChild(transaction, commandId,
-                                                                  KomodoLexicon.ViewEditorStateCommand.NODE_TYPE);
-            final ViewEditorStateCommand result = new ViewEditorStateCommandImpl(transaction, repository, kobject.getAbsolutePath());
-
-            result.setUndoId(transaction, undoId);
-            result.setUndoArguments(transaction, undoArguments);
-            result.setRedoId(transaction, redoId);
-            result.setRedoArguments(transaction, redoArguments);
+            String aggName = KomodoLexicon.StateCommandAggregate.NAME_PREFIX + index;
+            final KomodoObject kobject = viewEditorState.addChild(transaction, aggName,
+                                                                  KomodoLexicon.StateCommandAggregate.NODE_TYPE);
+            final StateCommandAggregate result = new StateCommandAggregateImpl(transaction, repository, kobject.getAbsolutePath());
             return result;
         } catch ( final Exception e ) {
             throw handleError( e );
         }
     }
+
+    /**
+    *
+    * @param transaction
+    *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+    * @param repository
+    *        the repository where the model object will be created (cannot be <code>null</code>)
+    * @param stateCommandAgg
+    *        the parent state command aggregate
+    * @param stateCommandType
+    *        the state command type (either 'undo' or 'redo')
+    * @param commandId
+    *        the id of the command
+    * @param arguments
+    *        the command arguments
+    * @return the view editor state command object
+    * @throws KException
+    *        if an error occurs
+    */
+   public static StateCommand createStateCommand(UnitOfWork transaction, Repository repository,
+                                                                                                 StateCommandAggregate stateCommandAgg,
+                                                                                                 String stateCommandType,
+                                                                                                 String commandId,
+                                                                                                 Map<String, String> arguments) throws KException {
+       ArgCheck.isNotNull(transaction, "transaction"); //$NON-NLS-1$
+       ArgCheck.isTrue((transaction.getState() == State.NOT_STARTED), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+       ArgCheck.isNotNull(repository, "repository"); //$NON-NLS-1$
+       ArgCheck.isNotNull(commandId, "commandId"); //$NON-NLS-1$
+       ArgCheck.isNotNull(arguments, "arguments"); //$NON-NLS-1$
+
+       
+       try {
+           if (stateCommandAgg.hasChild(transaction, stateCommandType))
+               stateCommandAgg.removeChild(transaction, stateCommandType);
+
+           KomodoObject stateCmdObject = stateCommandAgg.addChild(transaction, stateCommandType,
+                                                                              KomodoLexicon.StateCommand.NODE_TYPE);
+           StateCommand stateCmd = StateCommand.RESOLVER.resolve(transaction, stateCmdObject);
+           stateCmd.setId(transaction, commandId);
+           stateCmd.setArguments(transaction, arguments);
+           return stateCmd;
+       } catch ( final Exception e ) {
+           throw handleError( e );
+       }
+   }
 
     /**
      * This is Teiid's <code>Create Virtual Procedure</code> command.

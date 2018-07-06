@@ -23,13 +23,12 @@ package org.komodo.relational.profile.internal;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import org.komodo.core.KomodoLexicon;
 import org.komodo.relational.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.profile.Profile;
+import org.komodo.relational.profile.StateCommandAggregate;
 import org.komodo.relational.profile.ViewEditorState;
-import org.komodo.relational.profile.ViewEditorStateCommand;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
@@ -46,7 +45,7 @@ public class ViewEditorStateImpl extends RelationalObjectImpl implements ViewEdi
     /**
      * The allowed child types.
      */
-    private static final KomodoType[] CHILD_TYPES = new KomodoType[] { ViewEditorStateCommand.IDENTIFIER };
+    private static final KomodoType[] CHILD_TYPES = new KomodoType[] { StateCommandAggregate.IDENTIFIER };
 
     /**
      * @param uow
@@ -108,27 +107,22 @@ public class ViewEditorStateImpl extends RelationalObjectImpl implements ViewEdi
      * @see org.komodo.relational.model.Model#addSource(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
-    public ViewEditorStateCommand addCommand( final UnitOfWork transaction,
-                                                                                              String undoId,
-                                                                                              Map<String, String> undoArguments,
-                                                                                              String redoId,
-                                                                                              Map<String, String> redoArguments) throws KException {
-        return RelationalModelFactory.createViewEditorStateCommand(transaction, getRepository(), this,
-                                                                                                                               undoId, undoArguments,
-                                                                                                                               redoId, redoArguments);
+    public StateCommandAggregate addCommand( final UnitOfWork transaction) throws KException {
+        return RelationalModelFactory.createStateCommandAggregate(transaction, getRepository(), this);
     }
 
     @Override
-    public ViewEditorStateCommand[] getCommands(UnitOfWork transaction) throws KException {
-        KomodoObject[] commands = getChildrenOfType(transaction, KomodoLexicon.ViewEditorStateCommand.NODE_TYPE);
+    public StateCommandAggregate[] getCommands(UnitOfWork transaction) throws KException {
+        KomodoObject[] commands = getChildrenOfType(transaction,
+                                                                                                        KomodoLexicon.StateCommandAggregate.NODE_TYPE);
         if (commands == null)
-            return ViewEditorStateCommand.NO_VIEW_EDITOR_STATE_COMMANDS;
+            return StateCommandAggregate.NO_STATE_COMMAND_AGGREGATES;
 
-        List<ViewEditorStateCommand> cmdList = new ArrayList<>();
+        List<StateCommandAggregate> cmdList = new ArrayList<>();
         for (KomodoObject cmd : commands) {
-            cmdList.add(new ViewEditorStateCommandImpl(transaction, getRepository(), cmd.getAbsolutePath()));
+            cmdList.add(new StateCommandAggregateImpl(transaction, getRepository(), cmd.getAbsolutePath()));
         }
 
-        return cmdList.toArray(new ViewEditorStateCommand[0]);
+        return cmdList.toArray(new StateCommandAggregate[0]);
     }
 }

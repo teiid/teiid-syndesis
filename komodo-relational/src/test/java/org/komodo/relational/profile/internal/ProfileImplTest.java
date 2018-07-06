@@ -34,8 +34,9 @@ import org.komodo.core.KomodoLexicon;
 import org.komodo.relational.RelationalModelFactory;
 import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.profile.Profile;
+import org.komodo.relational.profile.StateCommand;
 import org.komodo.relational.profile.ViewEditorState;
-import org.komodo.relational.profile.ViewEditorStateCommand;
+import org.komodo.relational.profile.StateCommandAggregate;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.spi.repository.KomodoObject;
 
@@ -77,21 +78,20 @@ public final class ProfileImplTest extends RelationalModelTest {
         redoArgs.put("srcName", srcName);
         redoArgs.put("srcPath", srcPath);
 
-        ViewEditorStateCommand viewEditorStateCmd = RelationalModelFactory.createViewEditorStateCommand(
-                                                                                                        getTransaction(), _repo,
-                                                                                                        viewEditorState,
-                                                                                                        undoId, undoArgs,
-                                                                                                        redoId, redoArgs);
+        StateCommandAggregate stateCmdAgg = viewEditorState.addCommand(getTransaction());
+        StateCommand undoCommand = stateCmdAgg.setUndo(getTransaction(), undoId, undoArgs);
+        StateCommand redoCommand = stateCmdAgg.setRedo(getTransaction(), redoId, redoArgs);
 
-        ViewEditorStateCommand[] commands = viewEditorState.getCommands(getTransaction());
+        StateCommandAggregate[] commands = viewEditorState.getCommands(getTransaction());
         assertEquals(1, commands.length);
-        assertEquals(viewEditorStateCmd, commands[0]);
+        assertEquals(stateCmdAgg, commands[0]);
+        assertEquals(KomodoLexicon.StateCommandAggregate.NAME_PREFIX + 0,
+                                     stateCmdAgg.getName(getTransaction()));
 
-        assertEquals(KomodoLexicon.ViewEditorStateCommand.COMMAND_ID_PREFIX + 0, viewEditorStateCmd.getName(getTransaction()));
-        assertEquals(undoId, viewEditorStateCmd.getUndoId(getTransaction()));
-        assertEquals(undoArgs, viewEditorStateCmd.getUndoArguments(getTransaction()));
-        assertEquals(redoId, viewEditorStateCmd.getRedoId(getTransaction()));
-        assertEquals(redoArgs, viewEditorStateCmd.getRedoArguments(getTransaction()));
+        assertEquals(undoId, undoCommand.getId(getTransaction()));
+        assertEquals(undoArgs, undoCommand.getArguments(getTransaction()));
+        assertEquals(redoId, redoCommand.getId(getTransaction()));
+        assertEquals(redoArgs, redoCommand.getArguments(getTransaction()));
     }
 
     @Test
