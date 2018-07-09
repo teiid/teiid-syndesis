@@ -49,6 +49,7 @@ import org.komodo.core.repository.SynchronousCallback;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.profile.Profile;
+import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
@@ -163,6 +164,20 @@ public abstract class KomodoService implements V1Constants {
         }
     }
 
+    /**
+     * <strong>*** The result ID needs to match the format that Beetle Studio uses. ***</strong>
+     *
+     * @param vdbName the VDB the view is contained in (cannot be empty)
+     * @param viewName the view name (cannot be empty)
+     * @return the ID of the editor state of the specified view (never empty)
+     */
+    public static String getViewEditorStateId( final String vdbName,
+                                               final String viewName ) {
+        assert( !StringUtils.isBlank( vdbName ) );
+        assert( !StringUtils.isBlank( viewName ) );
+        return vdbName + '.' + viewName;
+    }
+
     protected final static SecurityPrincipal SYSTEM_USER = new SecurityPrincipal(RepositoryImpl.SYSTEM_USER, null);
     
     protected final KEngine kengine;
@@ -265,6 +280,24 @@ public abstract class KomodoService implements V1Constants {
         }
 
         return userProfile;
+    }
+
+    /**
+     * @param uow the transaction
+     * @param viewEditorStateId the editor state identifier
+     * @return <code>true</code> if editor state was deleted; <code>false</code> if not found
+     * @throws Exception if an error occurs
+     */
+    protected boolean removeEditorState(UnitOfWork uow, String viewEditorStateId) throws Exception {
+        Profile userProfile = getUserProfile(uow);
+        ViewEditorState[] states = userProfile.getViewEditorStates(uow,  viewEditorStateId);
+
+        if (states.length != 0) {
+            userProfile.removeViewEditorState(uow, viewEditorStateId);
+            return true;
+        }
+
+        return false;
     }
 
     protected String encryptSensitiveData(final HttpHeaders headers, String user, String plainText) {
