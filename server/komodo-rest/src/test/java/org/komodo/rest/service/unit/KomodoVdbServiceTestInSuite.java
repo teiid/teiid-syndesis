@@ -349,6 +349,42 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
     }
 
     @Test
+    public void shouldDeleteViewEditorState() throws Exception {
+        final String vdbName = "MyVdb";
+        final String modelName = "MyModel";
+        final String viewName = "MyView";
+        final String editorStateId = KomodoVdbService.getViewEditorStateId( vdbName, viewName );
+        final String newName = "theNewName";
+        final String oldName = "theOldName";
+
+        final String undoId = "UpdateViewNameCommand";
+        final Map< String, String > undoArgs = new HashMap<>();
+        undoArgs.put( "newNameKey", newName );
+        undoArgs.put( "oldNameKey", oldName );
+
+        final String redoId = "UpdateViewNameCommand";
+        final Map< String, String > redoArgs = new HashMap<>();
+        undoArgs.put( "newNameKey", oldName );
+        undoArgs.put( "oldNameKey", newName );
+
+        // setup test by creating view and view editor state
+        this.serviceTestUtilities.createVdbModelView( vdbName, modelName, viewName, USER_NAME );
+        this.serviceTestUtilities.addViewEditorState(USER_NAME, editorStateId, undoId, undoArgs, redoId, redoArgs );
+        assertThat( this.serviceTestUtilities.viewEditorStateExists( USER_NAME, editorStateId ), is( true ) );
+
+        // now test by deleting the view
+        final Properties settings = uriBuilder().createSettings( SettingNames.VDB_NAME, vdbName );
+        uriBuilder().addSetting( settings, SettingNames.VDB_PARENT_PATH, uriBuilder().workspaceVdbsUri() );
+        uriBuilder().addSetting( settings, SettingNames.MODEL_NAME, modelName );
+        uriBuilder().addSetting( settings, SettingNames.VIEW_NAME, viewName );
+
+        final URI uri = uriBuilder().vdbModelViewUri( LinkType.SELF, settings );
+        final HttpDelete request = jsonRequest( uri, RequestType.DELETE );
+        executeOk( request );
+        assertThat( this.serviceTestUtilities.viewEditorStateExists( USER_NAME, editorStateId ), is( false ) );
+    }
+
+    @Test
     public void shouldCreateVdb() throws Exception {
         String vdbName = "shouldCreateVdb";
         String description = vdbName + " VDB description";

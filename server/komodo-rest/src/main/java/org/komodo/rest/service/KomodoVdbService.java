@@ -4427,6 +4427,14 @@ public final class KomodoVdbService extends KomodoService {
             KomodoStatusObject kso = new KomodoStatusObject("Delete Status"); //$NON-NLS-1$
             kso.addAttribute(viewName, "Successfully deleted"); //$NON-NLS-1$
 
+            // now delete the editor state
+            String viewEditorStateId = KomodoService.getViewEditorStateId( vdb.getName( uow ), viewName );
+
+            // if this returns false there was no editor state to delete
+            if ( removeEditorState( uow, viewEditorStateId ) ) {
+                kso.addAttribute( viewName, "Successfully deleted saved editor state" ); //$NON-NLS-1$
+            }
+
             return commit(uow, mediaTypes, kso);
         } catch (final Exception e) {
             if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {

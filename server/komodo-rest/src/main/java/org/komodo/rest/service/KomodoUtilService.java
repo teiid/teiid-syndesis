@@ -978,12 +978,9 @@ public final class KomodoUtilService extends KomodoService {
         try {
             uow = createTransaction(principal, "removeUserProfileViewEditorState", false); //$NON-NLS-1$
 
-            Profile userProfile = getUserProfile(uow);
-            ViewEditorState[] states = userProfile.getViewEditorStates(uow,  viewEditorStateId);
-            if (states.length == 0)
+            if (!removeEditorState(uow, viewEditorStateId)) {
                 return Response.noContent().build();
-
-            userProfile.removeViewEditorState(uow, viewEditorStateId);
+            }
 
             KomodoStatusObject kso = new KomodoStatusObject("Delete Status"); //$NON-NLS-1$
             kso.addAttribute(viewEditorStateId, "Successfully deleted"); //$NON-NLS-1$
