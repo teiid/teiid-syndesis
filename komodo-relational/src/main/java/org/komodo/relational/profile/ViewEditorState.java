@@ -21,7 +21,6 @@
  */
 package org.komodo.relational.profile;
 
-import java.util.Map;
 import org.komodo.core.KomodoLexicon;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.RelationalObject;

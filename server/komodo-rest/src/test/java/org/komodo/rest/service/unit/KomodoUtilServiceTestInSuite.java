@@ -21,9 +21,11 @@
  */
 package org.komodo.rest.service.unit;
 
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.komodo.spi.storage.git.GitStorageConnectorConstants.AUTHOR_EMAIL_PROPERTY;
 import static org.komodo.spi.storage.git.GitStorageConnectorConstants.AUTHOR_NAME_PROPERTY;
@@ -44,6 +46,7 @@ import org.apache.http.client.methods.HttpPut;
 import org.junit.Test;
 import org.komodo.importer.ImportMessages;
 import org.komodo.relational.profile.GitRepository;
+import org.komodo.relational.profile.StateCommandAggregate;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
@@ -53,11 +56,13 @@ import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.KomodoStorageAttributes;
 import org.komodo.rest.relational.response.RestGitRepository;
-import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
 import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate;
 import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate.RestStateCommand;
+import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
 import org.komodo.rest.service.KomodoUtilService;
+import org.komodo.rest.service.KomodoVdbService;
 import org.komodo.spi.repository.KomodoType;
+import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.test.utils.TestUtilities;
 import com.google.common.net.HttpHeaders;
 
@@ -494,6 +499,100 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
             assertEquals(restViewEditorState, restState);
         } finally {
             serviceTestUtilities.removeViewEditorState(USER_NAME, viewName);
+        }
+    }
+
+    @Test
+    public void shouldReplaceEditorStateIfExists() throws Exception {
+        final String vdbName = "MyVdb";
+        final String modelName = "MyModel";
+        final String viewName = "MyView";
+        final String editorStateId = KomodoVdbService.getViewEditorStateId( vdbName, viewName );
+
+        { // first add an existing state
+            final String newDescription = "theNewDescription";
+            final String oldDescription = "theOldDescription";
+    
+            final String undoId = "UpdateViewDescriptionCommand";
+            final Map< String, String > undoArgs = new HashMap<>();
+            undoArgs.put( "newDescription", newDescription );
+            undoArgs.put( "oldDescription", oldDescription );
+    
+            final String redoId = "UpdateViewDescriptionCommand";
+            final Map< String, String > redoArgs = new HashMap<>();
+            undoArgs.put( "newDescription", oldDescription );
+            undoArgs.put( "oldDescription", newDescription );
+    
+            // setup test by creating view and initial view editor state
+            this.serviceTestUtilities.createVdbModelView( vdbName, modelName, viewName, USER_NAME );
+            this.serviceTestUtilities.addViewEditorState( USER_NAME, editorStateId, undoId, undoArgs, redoId, redoArgs );
+            assertThat( this.serviceTestUtilities.viewEditorStateExists( USER_NAME, editorStateId ), is( true ) );
+
+            // verify initial editor state
+            final ViewEditorState editorState = this.serviceTestUtilities.getViewEditorState( USER_NAME, editorStateId );
+            final UnitOfWork uow = this.serviceTestUtilities.createReadTransaction( USER_NAME );
+            final StateCommandAggregate[] commands = editorState.getCommands( uow );
+            assertThat( commands.length, is( 1 ) );
+
+            final StateCommandAggregate undoable = commands[ 0 ];
+            assertThat( undoable.getUndo( uow ).getId( uow ), is( undoId ) );
+            assertThat( undoable.getRedo( uow ).getId( uow ), is( redoId ) );
+            uow.commit();
+        }
+
+        // add new editor state
+        final RestStateCommand undo = new RestStateCommand();
+        undo.setId( undoRedoId );
+        undo.addArgument( oldNameKey, viewName );
+        undo.addArgument( newNameKey, untitledName );
+
+        final RestStateCommand redo = new RestStateCommand();
+        redo.setId( undoRedoId );
+        redo.addArgument( oldNameKey, untitledName );
+        redo.addArgument( newNameKey, viewName );
+
+        final RestStateCommandAggregate command = new RestStateCommandAggregate();
+        command.setUndo( undo );
+        command.setRedo( redo );
+
+        final RestStateCommandAggregate[] content = { command };
+
+        final RestViewEditorState restViewEditorState = new RestViewEditorState();
+        restViewEditorState.setBaseUri( uriBuilder().baseUri() );
+        restViewEditorState.setId( editorStateId );
+        restViewEditorState.setContent( content );
+
+        final URI uri = UriBuilder.fromUri( uriBuilder().baseUri() )
+                                  .path( V1Constants.SERVICE_SEGMENT )
+                                  .path( V1Constants.USER_PROFILE )
+                                  .path( V1Constants.VIEW_EDITOR_STATE ).build();
+
+        try {
+            final HttpPut request = jsonRequest( uri, RequestType.PUT );
+            addHeader( request, CorsHeaders.ORIGIN, "http://localhost:2772" );
+            addHeader( request, HttpHeaders.AUTHORIZATION, AUTH_HEADER_VALUE );
+            addBody( request, restViewEditorState );
+
+            final HttpResponse response = executeOk( request );
+            final String entity = extractResponse( response );
+
+            final RestViewEditorState restState = KomodoJsonMarshaller.unmarshall( entity, RestViewEditorState.class );
+            assertEquals( editorStateId, restState.getId() );
+            assertEquals( restViewEditorState, restState );
+            assertThat( this.serviceTestUtilities.viewEditorStateExists( USER_NAME, editorStateId ), is( true ) );
+
+            // verify new editor state
+            final ViewEditorState editorState = this.serviceTestUtilities.getViewEditorState( USER_NAME, editorStateId );
+            final UnitOfWork uow = this.serviceTestUtilities.createReadTransaction( USER_NAME );
+            final StateCommandAggregate[] commands = editorState.getCommands( uow );
+            assertThat( commands.length, is( 1 ) );
+
+            final StateCommandAggregate undoable = commands[ 0 ];
+            assertThat( undoable.getUndo( uow ).getId( uow ), is( this.undoRedoId ) );
+            assertThat( undoable.getRedo( uow ).getId( uow ), is( this.undoRedoId ) );
+            uow.commit();
+        } finally {
+            serviceTestUtilities.removeViewEditorState(USER_NAME, editorStateId);
         }
     }
 

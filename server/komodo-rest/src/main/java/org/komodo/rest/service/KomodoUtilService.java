@@ -722,15 +722,8 @@ public final class KomodoUtilService extends KomodoService {
             // find view editor states
             final String txId = "getViewEditorStates"; //$NON-NLS-1$ //$NON-NLS-2$
             uow = createTransaction(principal, txId, true );
-            Profile profile = getUserProfile(uow);
-            ViewEditorState[] viewEditorStates = null;
 
-            if ( StringUtils.isBlank( searchPattern ) ) {
-                viewEditorStates = profile.getViewEditorStates(uow);
-            } else {
-                viewEditorStates = profile.getViewEditorStates(uow, searchPattern);
-            }
-
+            final ViewEditorState[] viewEditorStates = getViewEditorStates(uow, searchPattern);
             LOGGER.debug( "getViewEditorStates:found '{0}' ViewEditorStates", viewEditorStates.length ); //$NON-NLS-1$
 
             int start = 0;

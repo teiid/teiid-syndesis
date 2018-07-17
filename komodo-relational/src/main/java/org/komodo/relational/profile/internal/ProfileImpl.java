@@ -185,6 +185,11 @@ public class ProfileImpl extends RelationalObjectImpl implements Profile {
 
     @Override
     public ViewEditorState addViewEditorState(UnitOfWork transaction, String stateId) throws KException {
+        // first delete if already exists
+        if ( getViewEditorStates( transaction, stateId ).length != 0 ) {
+            removeViewEditorState( transaction, stateId );
+        }
+
         return RelationalModelFactory.createViewEditorState( transaction, getRepository(), this, stateId );
     }
 

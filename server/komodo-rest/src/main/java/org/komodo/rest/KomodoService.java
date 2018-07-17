@@ -52,8 +52,8 @@ import org.komodo.relational.profile.Profile;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
-import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.AuthHandlingFilter.AuthToken;
+import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.RestBasicEntity.ResourceNotFound;
 import org.komodo.rest.relational.RelationalMessages;
@@ -175,7 +175,18 @@ public abstract class KomodoService implements V1Constants {
                                                final String viewName ) {
         assert( !StringUtils.isBlank( vdbName ) );
         assert( !StringUtils.isBlank( viewName ) );
-        return vdbName + '.' + viewName;
+        return KomodoService.getViewEditorStateIdPrefix( vdbName ) + viewName;
+    }
+
+    /**
+     * <strong>*** The prefix needs to match the format that Beetle Studio uses. ***</strong>
+     *
+     * @param vdbName the VDB the view is contained in (cannot be empty)
+     * @return the prefix of the view editor state ID (never empty)
+     */
+    public static String getViewEditorStateIdPrefix( final String vdbName ) {
+        assert( !StringUtils.isBlank( vdbName ) );
+        return vdbName + '.';
     }
 
     protected final static SecurityPrincipal SYSTEM_USER = new SecurityPrincipal(RepositoryImpl.SYSTEM_USER, null);
@@ -298,6 +309,38 @@ public abstract class KomodoService implements V1Constants {
         }
 
         return false;
+    }
+
+    /**
+     * @param uow the transaction to use
+     * @param editorState the editor state being deleted
+     * @return <code>true</code> if successfully deleted
+     * @throws Exception if an error occurs
+     */
+    protected boolean removeEditorState( final UnitOfWork uow,
+                                         final ViewEditorState editorState ) throws Exception {
+        return removeEditorState( uow, editorState.getName( uow ) );
+    }
+
+     /**
+     * 
+     * @param uow the transaction to use
+     * @param searchPattern the optional search pattern
+     * @return the view editor states (never <code>null</code> but can be empty)
+     * @throws Exception if an error occurs
+     */
+    protected ViewEditorState[] getViewEditorStates( final UnitOfWork uow,
+                                                     final String searchPattern ) throws Exception {
+        final Profile profile = getUserProfile( uow );
+        ViewEditorState[] viewEditorStates = null;
+
+        if ( StringUtils.isBlank( searchPattern ) ) {
+            viewEditorStates = profile.getViewEditorStates( uow );
+        } else {
+            viewEditorStates = profile.getViewEditorStates( uow, searchPattern );
+        }
+
+        return viewEditorStates;
     }
 
     protected String encryptSensitiveData(final HttpHeaders headers, String user, String plainText) {
