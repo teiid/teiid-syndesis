@@ -30,6 +30,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,8 +39,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpDelete;
@@ -64,6 +67,7 @@ import org.komodo.rest.relational.response.RestVdbModel;
 import org.komodo.rest.relational.response.RestVdbModelSource;
 import org.komodo.rest.relational.response.RestVdbModelTable;
 import org.komodo.rest.relational.response.RestVdbModelTableColumn;
+import org.komodo.rest.relational.response.RestVdbModelView;
 import org.komodo.rest.relational.response.RestVdbPermission;
 import org.komodo.rest.relational.response.RestVdbTranslator;
 import org.komodo.rest.service.KomodoVdbService;
@@ -1415,6 +1419,43 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
 
         Collection<RestLink> links = mask.getLinks();
         assertEquals(3, links.size());
+    }
+    
+    @Test
+    public void shouldGetVdbModelViews() throws Exception {
+        Properties settings = uriBuilder().createSettings(SettingNames.VDB_NAME, TestUtilities.ALL_ELEMENTS_EXAMPLE_VDB_NAME);
+        uriBuilder().addSetting( settings, SettingNames.VDB_PARENT_PATH, uriBuilder().workspaceVdbsUri() );
+        uriBuilder().addSetting( settings, SettingNames.MODEL_NAME, "model-two" );
+
+        URI modelUri = uriBuilder().vdbModelUri(LinkType.SELF, settings);
+        URI uri = UriBuilder.fromUri(modelUri).path(LinkType.VIEWS.uriName()).build();
+        final HttpGet request = jsonRequest( uri, RequestType.GET );
+        HttpResponse response = executeOk(request);
+
+        String entity = extractResponse(response);
+
+        RestVdbModelView[] views = KomodoJsonMarshaller.unmarshallArray(entity, RestVdbModelView[].class);
+        assertNotNull(views);
+        assertEquals(1, views.length);
+    }
+
+    @Test
+    public void shouldGetVdbModelView() throws Exception {
+        Properties settings = uriBuilder().createSettings(SettingNames.VDB_NAME, TestUtilities.ALL_ELEMENTS_EXAMPLE_VDB_NAME);
+        uriBuilder().addSetting( settings, SettingNames.VDB_PARENT_PATH, uriBuilder().workspaceVdbsUri() );
+        uriBuilder().addSetting( settings, SettingNames.MODEL_NAME, "model-two" );
+        uriBuilder().addSetting( settings, SettingNames.VIEW_NAME, "Test" );
+
+        final URI uri = uriBuilder().vdbModelViewUri( LinkType.SELF, settings );
+        final HttpGet request = jsonRequest( uri, RequestType.GET );
+        HttpResponse response = executeOk(request);
+
+        String entity = extractResponse(response);
+
+        RestVdbModelView view = KomodoJsonMarshaller.unmarshall(entity, RestVdbModelView.class);
+        assertNotNull(view);
+
+        assertEquals("Test", view.getId());
     }
 
     @Test
