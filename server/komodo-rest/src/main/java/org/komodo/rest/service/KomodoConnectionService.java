@@ -53,6 +53,7 @@ import org.komodo.core.KEngine;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.DeployStatus;
 import org.komodo.relational.connection.Connection;
+import org.komodo.relational.model.Column;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.internal.OptionContainerUtils;
@@ -70,6 +71,7 @@ import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.request.KomodoConnectionAttributes;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.RestConnectionSummary;
+import org.komodo.rest.relational.response.RestVdbModelTableColumn;
 import org.komodo.rest.relational.response.metadata.RestMetadataConnectionStatus;
 import org.komodo.rest.relational.response.metadata.RestMetadataConnectionStatus.EntityState;
 import org.komodo.servicecatalog.TeiidOpenShiftClient;
@@ -569,6 +571,104 @@ public final class KomodoConnectionService extends KomodoService {
             }
 
             return commit( uow, mediaTypes, schemaNodes ); 
+        } catch ( final Exception e ) {
+            if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
+                uow.rollback();
+            }
+
+            if ( e instanceof KomodoRestException ) {
+                throw ( KomodoRestException )e;
+            }
+
+            return createErrorResponseWithForbidden( mediaTypes, e, RelationalMessages.Error.CONNECTION_SERVICE_GET_TABLES_ERROR );
+        }
+    }
+
+    /**
+     * @param headers
+     *        the request headers (never <code>null</code>)
+     * @param uriInfo
+     *        the request URI information (never <code>null</code>)
+     * @param connectionName
+     *        the name of the connection whose schemaColumns are being requested (cannot be empty)
+     * @return the JSON representation of the columns collection (never <code>null</code>)
+     * @throws KomodoRestException
+     *         if there is a problem finding the specified workspace connection or constructing the JSON representation
+     */
+    @GET
+    @Path( "{connectionName}/schema-columns" )
+    @Produces( MediaType.APPLICATION_JSON )
+    @ApiOperation( value = "Get the native schema for the connection",
+                   response = RestVdbModelTableColumn[].class )
+    @ApiResponses( value = {
+        @ApiResponse( code = 403, message = "An error has occurred." ),
+        @ApiResponse( code = 404, message = "No connection could be found with the specified name" ),
+        @ApiResponse( code = 406, message = "Only JSON is returned by this operation" )
+    } )
+    @ApiImplicitParams({
+      	@ApiImplicitParam(
+      			name = "tableOption",
+      			value = "tableOption of the table to get columns.",
+      			required = true,
+      			dataType = "string",
+      			paramType = "query")
+        })
+    public Response getSchemaColumns( @Context final HttpHeaders headers,
+                                      final @Context UriInfo uriInfo,
+                                      @ApiParam( value = "Name of the connection",
+                                                 required = true )
+                                      @PathParam( "connectionName" )
+                                      final String connectionName)  throws KomodoRestException {
+        final SecurityPrincipal principal = checkSecurityContext( headers );
+
+        if ( principal.hasErrorResponse() ) {
+            return principal.getErrorResponse();
+        }
+
+        final List< MediaType > mediaTypes = headers.getAcceptableMediaTypes();
+        UnitOfWork uow = null;
+
+        try {
+            final String tableOption = uriInfo.getQueryParameters().getFirst( "tableOption" );
+            
+            uow = createTransaction( principal, "getSchemaColumns?connectionName=" + connectionName, true ); //$NON-NLS-1$
+            final Connection connection = findConnection( uow, connectionName );
+
+            // connection not found so return 404 error response
+            if ( connection == null ) {
+                return commitNoConnectionFound( uow, mediaTypes, connectionName );
+            }
+
+            final Model schemaModel = findSchemaModel( uow, connection );
+
+            // Get the columns for the table with the supplied tableOption path
+            Column[] columns = null;
+            if ( schemaModel != null ) {
+            	Table resultTable = null;
+                final Table[] tables = schemaModel.getTables( uow );
+                for (Table table: tables) {
+                    final String option = OptionContainerUtils.getOption( uow, table, TABLE_OPTION_FQN );
+                    if( option != null && option.equals(tableOption)) {
+                    	resultTable = table;
+                    }                	
+                }
+                if( resultTable != null ) {
+                	columns = resultTable.getColumns(uow);
+                }
+            }
+
+            // No columns found - set to empty array
+            if (columns == null)
+            	columns = new Column[0];
+
+            List<RestVdbModelTableColumn> restColumns = new ArrayList<>(columns.length);
+            for (Column column : columns) {
+                RestVdbModelTableColumn entity = entityFactory.create(column, uriInfo.getBaseUri(), uow);
+                restColumns.add(entity);
+                LOGGER.debug("getSchemaColumns: columns were constructed"); //$NON-NLS-1$
+            }
+
+            return commit( uow, mediaTypes, restColumns );
         } catch ( final Exception e ) {
             if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
                 uow.rollback();
