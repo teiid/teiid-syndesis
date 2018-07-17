@@ -34,7 +34,9 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.ws.rs.core.MediaType;
@@ -42,6 +44,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.junit.Rule;
@@ -61,6 +64,7 @@ import org.komodo.rest.relational.request.KomodoDataserviceUpdateAttributes;
 import org.komodo.rest.relational.response.RestConnectionDriver;
 import org.komodo.rest.relational.response.RestDataserviceViewInfo;
 import org.komodo.rest.relational.response.RestVdb;
+import org.komodo.rest.service.KomodoVdbService;
 import org.komodo.test.utils.TestUtilities;
 
 @SuppressWarnings( {"javadoc", "nls"} )
@@ -1079,4 +1083,50 @@ public class KomodoDataserviceServiceTestInSuite extends AbstractKomodoServiceTe
         assertTrue(entity.contains("cannot be the same"));
     }
 
+    @Test
+    public void shouldDeleteViewEditorStatesWhenDeletingVirtualization() throws Exception {
+        // create virtualization
+        final String virtualizationName = "MyVirtualization";
+        this.serviceTestUtilities.createDataservice( virtualizationName, false, USER_NAME );
+
+        // verify virtualization exists
+        final Properties settings = uriBuilder().createSettings(SettingNames.DATA_SERVICE_NAME, virtualizationName );
+        uriBuilder().addSetting( settings, SettingNames.DATA_SERVICE_PARENT_PATH, uriBuilder().workspaceDataservicesUri() );
+        final URI uri = uriBuilder().dataserviceUri( LinkType.SELF, settings );
+        final HttpGet request = jsonRequest( uri, RequestType.GET );
+        final HttpResponse response = execute( request );
+        okResponse( response );
+
+        final String entities = extractResponse( response );
+        assertThat( entities, is( notNullValue() ) );
+
+        // create editor state
+        final String vdbName = "Northwind";
+        final String viewName = "MyView";
+
+        final String editorStateId = KomodoVdbService.getViewEditorStateId( vdbName, viewName );
+        final String newName = "theNewName";
+        final String oldName = "theOldName";
+
+        final String undoId = "UpdateViewNameCommand";
+        final Map< String, String > undoArgs = new HashMap<>();
+        undoArgs.put( "newNameKey", newName );
+        undoArgs.put( "oldNameKey", oldName );
+
+        final String redoId = "UpdateViewNameCommand";
+        final Map< String, String > redoArgs = new HashMap<>();
+        undoArgs.put( "newNameKey", oldName );
+        undoArgs.put( "oldNameKey", newName );
+
+        // setup test by creating view and view editor state
+        final String modelName = "MyModel";
+        this.serviceTestUtilities.createVdbModelView( vdbName, modelName, viewName, USER_NAME );
+        this.serviceTestUtilities.addViewEditorState( USER_NAME, editorStateId, undoId, undoArgs, redoId, redoArgs );
+        assertThat( this.serviceTestUtilities.viewEditorStateExists( USER_NAME, editorStateId ), is( true ) );
+
+        // delete virtualization and make sure editor state is deleted
+        final HttpDelete deleteRequest = jsonRequest( uri, RequestType.DELETE );
+        executeOk( deleteRequest );
+        assertThat( this.serviceTestUtilities.viewEditorStateExists( USER_NAME, editorStateId ), is( false ) );
+    }
 }

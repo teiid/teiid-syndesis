@@ -590,8 +590,9 @@ public final class ServiceTestUtilities implements StringConstants {
         return viewEditorState;
     }
 
-    public boolean viewEditorStateExists(String user, String stateId) throws Exception {
-        UnitOfWork uow = repository.createTransaction(user, "viewEditorStateExists", true, null); //$NON-NLS-1$
+    public ViewEditorState getViewEditorState( final String user,
+                                               final String stateId ) throws Exception {
+        UnitOfWork uow = repository.createTransaction(user, "getViewEditorState", true, null); //$NON-NLS-1$
 
         try {
             KomodoObject profileObj = repository.komodoProfile(uow);
@@ -601,18 +602,22 @@ public final class ServiceTestUtilities implements StringConstants {
             ViewEditorState[] viewEditorStates = profile.getViewEditorStates(uow, stateId);
     
             if (viewEditorStates == null || viewEditorStates.length == 0)
-                return false;
+                return null;
     
             for (ViewEditorState editorState : viewEditorStates) {
                 if (editorState.getName(uow).equals(stateId)) {
-                    return true;
+                    return editorState;
                 }
             }
     
-            return false;
+            return null;
         } finally {
             uow.commit();
         }
+    }
+
+    public boolean viewEditorStateExists(String user, String stateId) throws Exception {
+        return getViewEditorState(user, stateId) != null;
     }
 
     public void removeViewEditorState(String user, String stateId) throws Exception {

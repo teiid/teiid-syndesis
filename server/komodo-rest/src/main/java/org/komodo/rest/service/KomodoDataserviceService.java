@@ -74,6 +74,7 @@ import org.komodo.relational.model.Model.Type;
 import org.komodo.relational.model.PrimaryKey;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.View;
+import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.resource.Driver;
 import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
@@ -1678,6 +1679,8 @@ public final class KomodoDataserviceService extends KomodoService
 
             // Delete the Dataservice serviceVDB if found
             Vdb serviceVdb = dataservice.getServiceVdb(uow);
+            String vdbName = serviceVdb.getName(uow);
+
             if(serviceVdb!=null) {
                 wkspMgr.delete(uow, serviceVdb);
             }
@@ -1687,6 +1690,18 @@ public final class KomodoDataserviceService extends KomodoService
             
             KomodoStatusObject kso = new KomodoStatusObject("Delete Status"); //$NON-NLS-1$
             kso.addAttribute(dataserviceName, "Successfully deleted"); //$NON-NLS-1$
+
+            // delete any view editor states of that virtualization
+            final String viewEditorIdPrefix = KomodoService.getViewEditorStateIdPrefix( vdbName ) + "*";
+            final ViewEditorState[] editorStates = getViewEditorStates(uow, viewEditorIdPrefix);
+
+            if ( editorStates.length != 0 ) {
+                for ( final ViewEditorState editorState : editorStates ) {
+                    removeEditorState( uow, editorState );
+                }
+
+                kso.addAttribute( vdbName, "Successfully deleted " + editorStates.length + " saved editor states" ); //$NON-NLS-1$  //$NON-NLS-2$
+            }
 
             return commit(uow, mediaTypes, kso);
         } catch (final Exception e) {
