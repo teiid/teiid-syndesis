@@ -3824,6 +3824,107 @@ public final class KomodoVdbService extends KomodoService {
     }
 
     /**
+     * @param headers
+     *        the request headers (never <code>null</code>)
+     * @param uriInfo
+     *        the request URI information (never <code>null</code>)
+     * @param vdbName
+     *        the id of the VDB (cannot be empty)
+     * @param modelName
+     *        the id of the model whose views are being retrieved (cannot be empty)
+     * @param viewName
+     *        the id of the view to be retrieved (cannot be empty)
+     * @return the JSON representation of the Model views (never <code>null</code>)
+     * @throws KomodoRestException
+     *         if there is a problem finding the specified workspace VDB or constructing the JSON representation
+     */
+    @GET
+    @Path( V1Constants.VDB_PLACEHOLDER + StringConstants.FORWARD_SLASH +
+           V1Constants.MODELS_SEGMENT + StringConstants.FORWARD_SLASH +
+           V1Constants.MODEL_PLACEHOLDER + StringConstants.FORWARD_SLASH +
+           V1Constants.VIEWS_SEGMENT + StringConstants.FORWARD_SLASH +
+           V1Constants.VIEW_PLACEHOLDER )
+    @Produces( MediaType.APPLICATION_JSON )
+    @ApiOperation(value = "Find the specified view of the model belonging to the vdb", response = RestVdbModelView.class)
+    @ApiResponses(value = {
+        @ApiResponse(code = 404, message = "No vdb could be found with name"),
+        @ApiResponse(code = 200, message = "No view could be found"),
+        @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
+        @ApiResponse(code = 403, message = "An error has occurred.")
+    })
+    public Response getModelView( final @Context HttpHeaders headers,
+                                  final @Context UriInfo uriInfo,
+                                  @ApiParam(value = "Name of the Vdb", required = true)
+                                  final @PathParam( "vdbName" ) String vdbName,
+                                  @ApiParam(value = "Name of the Model to get its views", required = true)
+                                  final @PathParam( "modelName" ) String modelName,
+                                  @ApiParam(value = "Name of the View to be fetched", required = true)
+                                  final @PathParam( "viewName" ) String viewName) throws KomodoRestException {
+
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        UnitOfWork uow = null;
+
+        try {
+            uow = createTransaction(principal, "getView", true ); //$NON-NLS-1$
+
+            Vdb vdb = findVdb(uow, vdbName);
+            if (vdb == null)
+                return commitNoVdbFound(uow, mediaTypes, vdbName);
+
+            Model model = findModel(uow, mediaTypes, modelName, vdb);
+            if (model == null) {
+                return commitNoModelFound(uow, mediaTypes, modelName, vdbName);
+            }
+
+            View[] views = model.getViews(uow);
+            if (views == null || views.length == 0) {
+                LOGGER.debug("getView:No Views found for model '{0}' for vdb '{1}'", modelName, vdbName); //$NON-NLS-1$
+                String resourceName = uri(vdbName, MODELS_SEGMENT,
+                		                  modelName, VIEWS_SEGMENT,
+                		                  viewName);
+                return commit(uow, mediaTypes, new ResourceNotFound(resourceName, Messages.getString(GET_OPERATION_NAME)));
+            }
+
+            View view = null;
+            for (View vw : views) {
+                if (viewName.equals(vw.getName(uow))) {
+                    view = vw;
+                    break;
+                }
+            }
+
+            if (view == null) {
+                LOGGER.debug("No view '{0}' for model '{1}' found for vdb '{2}'", //$NON-NLS-1$
+                             viewName, modelName, vdbName);
+                String resourceName = uri(vdbName, MODELS_SEGMENT,
+		                                  modelName, VIEWS_SEGMENT,
+		                                  viewName);
+                return commit(uow, mediaTypes, new ResourceNotFound(resourceName, Messages.getString(GET_OPERATION_NAME)));
+            }
+
+            RestVdbModelView restModelView = entityFactory.create(view, uriInfo.getBaseUri(), uow);
+            LOGGER.debug("getView:View '{0}' from model '{1}' from VDB '{2}' entity was constructed", viewName, modelName, vdbName); //$NON-NLS-1$
+
+            return commit( uow, mediaTypes, restModelView);
+
+        } catch ( final Exception e ) {
+            if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
+                uow.rollback();
+            }
+
+            if ( e instanceof KomodoRestException ) {
+                throw ( KomodoRestException )e;
+            }
+
+            return createErrorResponseWithForbidden(mediaTypes, e, VDB_SERVICE_GET_VIEWS_ERROR, vdbName, modelName);
+        }
+    }
+
+    /**
      * Create a new model view in the specified vdb model.
      * @param headers
      *        the request headers (never <code>null</code>)
