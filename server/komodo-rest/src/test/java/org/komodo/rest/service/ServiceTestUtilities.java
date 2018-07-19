@@ -377,7 +377,7 @@ public final class ServiceTestUtilities implements StringConstants {
         KomodoObject kobj = wsMgr.getChild(uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE);
         Vdb vdb = Vdb.RESOLVER.resolve(uow, kobj);
         
-        if(!vdb.hasChild(uow, modelName, VdbLexicon.Vdb.MODEL)) {
+        if(!vdb.hasChild(uow, modelName, VdbLexicon.Vdb.DECLARATIVE_MODEL)) {
         	vdb.addModel(uow, modelName);
         }
         
