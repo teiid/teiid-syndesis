@@ -33,8 +33,6 @@ import org.komodo.spi.repository.Repository.UnitOfWork;
 
 public class RestViewDefinition extends RestBasicEntity {
 	
-//	private boolean isComplete;
-	
     /*
      * The contents of the view editor state
      */

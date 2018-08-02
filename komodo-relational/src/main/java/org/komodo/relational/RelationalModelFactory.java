@@ -1754,7 +1754,7 @@ public final class RelationalModelFactory {
                                                                             viewEditorState,
                                                                             KomodoLexicon.ViewEditorState.VIEW_DEFINITION,
                                                                             KomodoLexicon.ViewEditorState.VIEW_DEFINITION );
-           final KomodoObject kobject = grouping.addChild( transaction, "view-definitin", KomodoLexicon.ViewDefinition.NODE_TYPE );
+           final KomodoObject kobject = grouping.addChild( transaction, "viewDefinition", KomodoLexicon.ViewDefinition.NODE_TYPE );
            final ViewDefinition result = new ViewDefinitionImpl( transaction, repository, kobject.getAbsolutePath() );
            return result;
        } catch ( final Exception e ) {
