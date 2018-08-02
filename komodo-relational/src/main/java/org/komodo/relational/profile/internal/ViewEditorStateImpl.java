@@ -28,6 +28,7 @@ import org.komodo.relational.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.profile.Profile;
 import org.komodo.relational.profile.StateCommandAggregate;
+import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
@@ -125,4 +126,23 @@ public class ViewEditorStateImpl extends RelationalObjectImpl implements ViewEdi
 
         return cmdList.toArray(new StateCommandAggregate[0]);
     }
+    
+
+	@Override
+	public ViewDefinition setViewDefinition(UnitOfWork transaction, ViewDefinition viewDefinition) throws KException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ViewDefinition getViewDefinition(UnitOfWork transaction) throws KException {
+        KomodoObject[] viewDefs = getChildrenOfType(transaction,
+                KomodoLexicon.ViewDefinition.NODE_TYPE);
+			if (viewDefs == null || viewDefs.length == 0)
+				return null;
+			
+			KomodoObject ko = viewDefs[0];
+			return new ViewDefinitionImpl(transaction, getRepository(), ko.getAbsolutePath());
+	}
+
 }
