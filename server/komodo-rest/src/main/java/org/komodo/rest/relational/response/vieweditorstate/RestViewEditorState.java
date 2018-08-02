@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.profile.StateCommandAggregate;
+import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.rest.AbstractKEntity;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.Repository.UnitOfWork;
@@ -38,14 +39,78 @@ public class RestViewEditorState extends AbstractKEntity {
     public static final String ID_LABEL = "id";
 
     /**
+     * Label used for view definition start content
+     */
+    public static final String VIEW_DEFINITION_LABEL = "viewDefinition";
+    
+    /**
+     * Label used for view definition name
+     */
+    public static final String ID_NAME = "name";
+    
+    /**
+     * Label used for view definition name
+     */
+    public static final String ID_VIEW_NAME = "viewName";
+    
+    /**
+     * Label used for view definition description
+     */
+    public static final String ID_DESCRIPTION = "description";
+    
+    /**
+     * isComplete property
+     */
+    public static final String IS_COMPLETE = "isComplete"; //$NON-NLS-1$
+    
+    /**
+     * Label used for view definition source table paths array
+     */
+    public static final String SOURCE_PATHS = "sourcePaths";
+    
+    /**
+     * Label used for view definition compositions array
+     */
+    public static final String COMPOSITIONS_LABEL = "compositions";
+    /**
+     * label used for sql composition left source path value
+     */
+    public static final String LEFT_SOURCE_PATH_LABEL = "leftSourcePath";
+    /**
+     * label used for sql composition right source path value
+     */
+    public static final String RIGHT_SOURCE_PATH_LABEL = "rightSourcePath";
+    /**
+     * label used for sql composition left criteria column value
+     */
+    public static final String LEFT_CRITERIA_COLUMN_LABEL = "leftCriteriaColumn";
+    /**
+     * label used for sql composition right criteria column value
+     */
+    public static final String RIGHT_CRITERIA_COLUMN_LABEL = "rightCriteriaColumn";
+    /**
+     * label used for sql composition type value
+     */
+    public static final String TYPE_LABEL = "type";
+    /**
+     * label used for sql composition operator value
+     */
+    public static final String OPERATOR_LABEL = "operator";
+    
+    /**
      * Label used for view editor start content
      */
     public static final String CONTENT_LABEL = "undoables";
 
     /*
+     * the view definition
+     */
+    private RestViewDefinition viewDefinition;
+    
+    /*
      * The contents of the view editor state
      */
-    private RestStateCommandAggregate[] content = new RestStateCommandAggregate[0];
+    private RestStateCommandAggregate[] commands = new RestStateCommandAggregate[0];
 
     /**
      * Constructor for use when deserializing
@@ -65,6 +130,11 @@ public class RestViewEditorState extends AbstractKEntity {
         super(baseUri);
 
         setId(viewEditorState.getName(transaction));
+        
+        ViewDefinition viewDef = viewEditorState.getViewDefinition(transaction);
+        if( viewDef != null ) {
+        	viewDefinition = new RestViewDefinition(baseUri, viewDef, transaction);
+        }
 
         List<RestStateCommandAggregate> cmdList = new ArrayList<>();
         for (StateCommandAggregate cmd : viewEditorState.getCommands(transaction)) {
@@ -72,7 +142,7 @@ public class RestViewEditorState extends AbstractKEntity {
             cmdList.add(restCmd);
         }
 
-        this.content = cmdList.toArray(new RestStateCommandAggregate[0]);
+        this.commands = cmdList.toArray(new RestStateCommandAggregate[0]);
     }
 
     /**
@@ -86,15 +156,26 @@ public class RestViewEditorState extends AbstractKEntity {
     public void setId(String name) {
         tuples.put(ID_LABEL, name);
     }
+    
+    /**
+     * @return the viewDefinition
+     */
+    public RestViewDefinition getViewDefinition() {
+        return viewDefinition;
+    }
+
+    public void setViewDefinition(RestViewDefinition viewDefinition) {
+        this.viewDefinition = viewDefinition;
+    }
 
     /**
      * @return the content
      */
-    public RestStateCommandAggregate[] getContent() {
-        return content;
+    public RestStateCommandAggregate[] getCommands() {
+        return commands;
     }
 
-    public void setContent(RestStateCommandAggregate[] content) {
-        this.content = content;
+    public void setCommands(RestStateCommandAggregate[] commands) {
+        this.commands = commands;
     }
 }

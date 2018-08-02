@@ -174,6 +174,21 @@ public enum KomodoType {
     VIEW_EDITOR_STATE,
 
     /**
+     * View Definition
+     */
+    VIEW_DEFINITION,
+    
+    /**
+     * Sql Composition
+     */
+    SQL_COMPOSITION,
+    
+    /**
+     * Sql Compositions
+     */
+    SQL_COMPOSITIONS,
+    
+    /**
      * View Editor State Command Aggregate
      */
     STATE_COMMAND_AGGREGATE,

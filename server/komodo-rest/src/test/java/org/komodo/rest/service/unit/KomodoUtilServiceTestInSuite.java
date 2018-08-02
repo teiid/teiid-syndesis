@@ -56,8 +56,10 @@ import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.KomodoStorageAttributes;
 import org.komodo.rest.relational.response.RestGitRepository;
+import org.komodo.rest.relational.response.vieweditorstate.RestSqlComposition;
 import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate;
 import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate.RestStateCommand;
+import org.komodo.rest.relational.response.vieweditorstate.RestViewDefinition;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
 import org.komodo.rest.service.KomodoUtilService;
 import org.komodo.rest.service.KomodoVdbService;
@@ -484,7 +486,7 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
         RestViewEditorState restViewEditorState = new RestViewEditorState();
         restViewEditorState.setBaseUri(uriBuilder().baseUri());
         restViewEditorState.setId(viewName);
-        restViewEditorState.setContent(content);
+        restViewEditorState.setCommands(content);
 
         try {
             HttpPut request = jsonRequest(uri, RequestType.PUT);
@@ -502,12 +504,95 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
         }
     }
 
+    /*
+    @Test
+    public void shouldEditViewDefinitionViewEditorState() throws Exception {
+    	final URI baseUri = new URI("baseUri");
+        final String viewDefName = "testView";
+        final String desc = "test view description text";
+        final boolean isComplete = true;
+        final String sourcePath1 = "path/to/source1";
+        final String sourcePath2 = "path/to/source2";
+        final String[] sourcePaths = {sourcePath1, sourcePath2};
+        final String compName = "sqlComp";
+        final String compDesc = "description for comp1";
+        final String leftSrc = "path/to/source1";
+        final String rightSrc = "path/to/source2";
+        final String leftCol = "column1";
+        final String rightCol = "column2";
+        final String type = "INNER_JOIN";
+        final String operator = "EQ";
+
+        // put
+        URI uri = UriBuilder.fromUri(uriBuilder().baseUri())
+                                                    .path(V1Constants.SERVICE_SEGMENT)
+                                                    .path(V1Constants.USER_PROFILE)
+                                                    .path(V1Constants.VIEW_EDITOR_STATE).build();
+
+        RestStateCommand undo = new RestStateCommand();
+        undo.setId(undoRedoId);
+        undo.addArgument(oldNameKey, viewName);
+        undo.addArgument(newNameKey, untitledName);
+
+        RestStateCommand redo = new RestStateCommand();
+        redo.setId(undoRedoId);
+        redo.addArgument(oldNameKey, untitledName);
+        redo.addArgument(newNameKey, viewName);
+
+        RestStateCommandAggregate command = new RestStateCommandAggregate();
+        command.setUndo(undo);
+        command.setRedo(redo);
+
+        RestStateCommandAggregate[] content = { command };
+
+        RestViewEditorState restViewEditorState = new RestViewEditorState();
+        restViewEditorState.setBaseUri(uriBuilder().baseUri());
+        restViewEditorState.setId(viewName);
+        restViewEditorState.setCommands(content);
+        
+        RestViewDefinition def = new RestViewDefinition();
+        def.setBaseUri(baseUri);
+        def.setViewName(viewDefName);
+        def.setDescription(desc);
+        def.setComplete(isComplete);
+        def.setSourcePaths(sourcePaths);
+        RestSqlComposition sqlComp = 
+        		new RestSqlComposition(compName, compDesc, leftSrc, rightSrc, leftCol, rightCol, type, operator);
+        RestSqlComposition[] comps = {sqlComp};
+        
+        def.setSqlCompositions(comps);
+        
+        restViewEditorState.setViewDefinition(def);
+
+        try {
+            HttpPut request = jsonRequest(uri, RequestType.PUT);
+            addHeader(request, CorsHeaders.ORIGIN, "http://localhost:2772");
+            addHeader(request, HttpHeaders.AUTHORIZATION, AUTH_HEADER_VALUE);
+            addBody(request, restViewEditorState);
+            HttpResponse response = executeOk(request);
+            String entity = extractResponse(response);
+
+            RestViewEditorState restState = KomodoJsonMarshaller.unmarshall(entity, RestViewEditorState.class);
+            assertEquals(viewName, restState.getId());
+            assertEquals(restViewEditorState, restState);
+            
+            assertEquals(sourcePaths, restState.getViewDefinition().getSourcePaths());
+            assertEquals(isComplete, restState.getViewDefinition().isComplete());
+        } finally {
+            serviceTestUtilities.removeViewEditorState(USER_NAME, viewName);
+        }
+    }
+*/
     @Test
     public void shouldReplaceEditorStateIfExists() throws Exception {
         final String vdbName = "MyVdb";
         final String modelName = "MyModel";
         final String viewName = "MyView";
         final String editorStateId = KomodoVdbService.getViewEditorStateId( vdbName, viewName );
+        
+        { // Add view definition info
+        	
+        }
 
         { // first add an existing state
             final String newDescription = "theNewDescription";
@@ -560,7 +645,7 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
         final RestViewEditorState restViewEditorState = new RestViewEditorState();
         restViewEditorState.setBaseUri( uriBuilder().baseUri() );
         restViewEditorState.setId( editorStateId );
-        restViewEditorState.setContent( content );
+        restViewEditorState.setCommands( content );
 
         final URI uri = UriBuilder.fromUri( uriBuilder().baseUri() )
                                   .path( V1Constants.SERVICE_SEGMENT )
@@ -686,7 +771,7 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
             RestViewEditorState restState = restStates[0];
             assertEquals(viewName, restState.getId());
 
-            RestStateCommandAggregate[] aggregates = restState.getContent();
+            RestStateCommandAggregate[] aggregates = restState.getCommands();
             assertNotNull(aggregates);
             assertTrue(aggregates.length == 1);
 
@@ -742,7 +827,7 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
             RestViewEditorState restState = KomodoJsonMarshaller.unmarshall(entity, RestViewEditorState.class);
             assertEquals(viewName, restState.getId());
 
-            RestStateCommandAggregate[] aggregates = restState.getContent();
+            RestStateCommandAggregate[] aggregates = restState.getCommands();
             assertNotNull(aggregates);
             assertTrue(aggregates.length == 1);
 
