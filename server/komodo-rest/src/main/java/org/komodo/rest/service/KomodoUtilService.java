@@ -51,10 +51,12 @@ import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.ExistingNodeOptions;
 import org.komodo.importer.ImportOptions.OptionKeys;
+import org.komodo.relational.RelationalModelFactory;
 import org.komodo.relational.importer.vdb.VdbImporter;
 import org.komodo.relational.profile.GitRepository;
 import org.komodo.relational.profile.Profile;
 import org.komodo.relational.profile.StateCommandAggregate;
+import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
@@ -67,7 +69,9 @@ import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.RestGitRepository;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
+import org.komodo.rest.relational.response.vieweditorstate.RestSqlComposition;
 import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate;
+import org.komodo.rest.relational.response.vieweditorstate.RestViewDefinition;
 import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate.RestStateCommand;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.KomodoObject;
@@ -889,7 +893,9 @@ public final class KomodoUtilService extends KomodoService {
 
         RestViewEditorState restViewEditorState = KomodoJsonMarshaller.unmarshall(viewEditorStateConfig, RestViewEditorState.class);
         String stateId = restViewEditorState.getId();
-        RestStateCommandAggregate[] stateContent = restViewEditorState.getContent();
+        RestStateCommandAggregate[] stateContent = restViewEditorState.getCommands();
+        
+//        RestViewDefinition viewDef = restViewEditorState.getViewDefinition();
 
         if (StringUtils.isBlank(stateId)) {
             return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_ID);
@@ -913,7 +919,22 @@ public final class KomodoUtilService extends KomodoService {
                 stateCmdAgg.setUndo(uow, restUndo.getId(), restUndo.getArguments());
                 stateCmdAgg.setRedo(uow, restRedo.getId(), restRedo.getArguments());
             }
+//            
+//            Repository repo = this.kengine.getDefaultRepository();
+//            ViewDefinition newViewDef = RelationalModelFactory.createViewDefinition(uow, repo, viewEditorState);
+//            newViewDef.setViewName(uow, viewDef.getViewName());
+//            newViewDef.setDescription(uow, viewDef.getDescription());
+//            for( String path : viewDef.getSourcePaths() ) {
+//            	newViewDef.addSourcePath(uow, path);
+//            }
+//            for( RestSqlComposition comp : viewDef.getSqlCompositions()) {
+//            	newViewDef.addSqlComposition(uow, "compName", viewDef.getDescription(), 
+//            			comp.getLeftSourcePath(), comp.getRightSourcePath(), comp.getLeftCriteriaColumn(), comp.getRightCriteriaColumn(), 
+//            			comp.getType(), comp.getOperator());
+//            }
 
+//            viewEditorState.setViewDefinition(uow, newViewDef);
+            
             final RestViewEditorState entity = new RestViewEditorState(uriInfo.getBaseUri(), viewEditorState, uow);
             return commit(uow, mediaTypes, entity);
 
