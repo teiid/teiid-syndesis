@@ -22,9 +22,13 @@
 package org.komodo.rest.relational.json;
 
 import static org.komodo.rest.relational.json.KomodoJsonMarshaller.BUILDER;
+
 import java.io.IOException;
-import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
+
 import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate;
+import org.komodo.rest.relational.response.vieweditorstate.RestViewDefinition;
+import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
+
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
@@ -37,14 +41,18 @@ public class ViewEditorStateSerializer extends AbstractEntitySerializer<RestView
 
     @Override
     protected boolean isComplete(RestViewEditorState entity) {
-        return entity.getId() != null && entity.getContent() != null;
+        return entity.getId() != null && entity.getCommands() != null;
     }
 
     @Override
     protected String readExtension(String name, RestViewEditorState state, JsonReader in) {
-        if (RestViewEditorState.CONTENT_LABEL.equals(name)) {
+    	if( RestViewEditorState.VIEW_DEFINITION_LABEL.equals(name) ) {
+    		RestViewDefinition viewDef = BUILDER.fromJson(in, RestViewDefinition.class);
+            state.setViewDefinition(viewDef);
+    		return name;
+    	} else if (RestViewEditorState.CONTENT_LABEL.equals(name)) {
             RestStateCommandAggregate[] commands = BUILDER.fromJson(in, RestStateCommandAggregate[].class);
-            state.setContent(commands);
+            state.setCommands(commands);
             return Integer.toString(commands.length);
         }
 
@@ -53,7 +61,14 @@ public class ViewEditorStateSerializer extends AbstractEntitySerializer<RestView
 
     @Override
     protected void writeExtensions(JsonWriter out, RestViewEditorState state) throws IOException {
-        RestStateCommandAggregate[] commands = state.getContent();
+        RestViewDefinition viewDef = state.getViewDefinition();
+    	
+        if( viewDef != null ) {
+        	out.name(RestViewEditorState.VIEW_DEFINITION_LABEL);
+    		BUILDER.getAdapter( RestViewDefinition.class ).write( out, state.getViewDefinition());
+        }
+    	
+    	RestStateCommandAggregate[] commands = state.getCommands();
 
         if (commands.length != 0) {
             out.name(RestViewEditorState.CONTENT_LABEL);

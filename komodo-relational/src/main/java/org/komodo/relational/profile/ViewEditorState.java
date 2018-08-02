@@ -124,4 +124,22 @@ public interface ViewEditorState extends RelationalObject, StringConstants {
      *         if an error occurs
      */
     StateCommandAggregate[] getCommands(final UnitOfWork transaction) throws KException;
+    
+    /**
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+     * @return the view definition
+     * @throws KException
+     *         if an error occurs
+     */
+    ViewDefinition setViewDefinition(final UnitOfWork transaction, ViewDefinition viewDefinition) throws KException;
+    
+    /**
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+     * @return the view definition
+     * @throws KException
+     *         if an error occurs
+     */
+    ViewDefinition getViewDefinition(final UnitOfWork transaction) throws KException;
 }
