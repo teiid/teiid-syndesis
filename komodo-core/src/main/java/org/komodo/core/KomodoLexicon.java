@@ -984,6 +984,93 @@ public interface KomodoLexicon extends StringConstants {
          * The name of the view editor state node type. Value is {@value} .
          */
         String NODE_TYPE = Namespace.PREFIX + COLON + "viewEditorState"; //$NON-NLS-1$
+        
+        /**
+         * The name of the view definition child node. Value is {@value} .
+         */
+        String VIEW_DEFINITION = Namespace.PREFIX + COLON + "viewDefinition"; //$NON-NLS-1$
+    }
+    
+    /**
+     * The JCR names associated with the view definition node type.
+     */
+    interface ViewDefinition {
+
+        /**
+         * The name of the view definition node type. Value is {@value} .
+         */
+        String NODE_TYPE = Namespace.PREFIX + COLON + "viewDefinition"; //$NON-NLS-1$
+        
+        /**
+         * The name of the view definition description property. Value is {@value} .
+         */
+        String VIEW_NAME = Namespace.PREFIX + COLON + "viewName"; //$NON-NLS-1$        
+
+        /**
+         * The name of the view definition description property. Value is {@value} .
+         */
+        String DESCRIPTION = Namespace.PREFIX + COLON + "description"; //$NON-NLS-1$
+        
+        /**
+         * The name of the view definition isComplete property. Value is {@value} .
+         */
+        String IS_COMPLETE = Namespace.PREFIX + COLON + "isComplete"; //$NON-NLS-1$
+        
+        /**
+         * The name of the view definition source paths container property. Value is {@value} .
+         */
+        String SOURCE_PATHS = Namespace.PREFIX + COLON + "sourcePaths"; //$NON-NLS-1$
+        
+        /**
+         * The name of the sql compositions child node. Value is {@value} .
+         */
+        String SQL_COMPOSITIONS = Namespace.PREFIX + COLON + "sqlCompositions"; //$NON-NLS-1$
+    }
+    
+    /**
+     * The JCR names associated with the view definition node type.
+     */
+    interface SqlComposition {
+
+        /**
+         * The name of the view definition node type. Value is {@value} .
+         */
+        String NODE_TYPE = Namespace.PREFIX + COLON + "sqlComposition"; //$NON-NLS-1$
+        
+        /**
+         * The name of the view definition description property. Value is {@value} .
+         */
+        String DESCRIPTION = Namespace.PREFIX + COLON + "description"; //$NON-NLS-1$
+
+        /**
+         * The name of the view definition leftSource property. Value is {@value} .
+         */
+        String LEFT_SOURCE_PATH = Namespace.PREFIX + COLON + "leftSourcePath"; //$NON-NLS-1$
+
+        /**
+         * The name of the view definition rightSource property. Value is {@value} .
+         */
+        String RIGHT_SOURCE_PATH = Namespace.PREFIX + COLON + "rightSourcePath"; //$NON-NLS-1$
+
+        /**
+         * The name of the view definition leftSource property. Value is {@value} .
+         */
+        String LEFT_CRITERIA_COLUMN = Namespace.PREFIX + COLON + "leftCriteriaColumn"; //$NON-NLS-1$
+
+        /**
+         * The name of the view definition rightSource property. Value is {@value} .
+         */
+        String RIGHT_CRITERIA_COLUMN = Namespace.PREFIX + COLON + "rightCriteriaColumn"; //$NON-NLS-1$
+        
+        /**
+         * The name of the view definition type property. Value is {@value} .
+         */
+        String TYPE = Namespace.PREFIX + COLON + "type"; //$NON-NLS-1$
+
+        /**
+         * The name of the view definition operator property. Value is {@value} .
+         */
+        String OPERATOR = Namespace.PREFIX + COLON + "operator"; //$NON-NLS-1$
     }
 
     /**

@@ -89,12 +89,16 @@ import org.komodo.relational.model.internal.ViewImpl;
 import org.komodo.relational.model.internal.VirtualProcedureImpl;
 import org.komodo.relational.profile.GitRepository;
 import org.komodo.relational.profile.Profile;
+import org.komodo.relational.profile.SqlComposition;
 import org.komodo.relational.profile.StateCommand;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.profile.StateCommandAggregate;
+import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.relational.profile.internal.GitRepositoryImpl;
+import org.komodo.relational.profile.internal.SqlCompositionImpl;
 import org.komodo.relational.profile.internal.StateCommandAggregateImpl;
 import org.komodo.relational.profile.internal.ViewEditorStateImpl;
+import org.komodo.relational.profile.internal.ViewDefinitionImpl;
 import org.komodo.relational.resource.DdlFile;
 import org.komodo.relational.resource.Driver;
 import org.komodo.relational.resource.ResourceFile;
@@ -1725,6 +1729,84 @@ public final class RelationalModelFactory {
             throw handleError( e );
         }
     }
+    
+    /**
+    *
+    * @param transaction
+    *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+    * @param repository
+    *        the repository where the model object will be created (cannot be <code>null</code>)
+    * @param profile
+    *        the parent profile object
+    * @param stateId
+    *        the id of the view definition
+    * @return the view definition object
+    * @throws KException
+    *        if an error occurs
+    */
+   public static ViewDefinition createViewDefinition(UnitOfWork transaction, Repository repository, ViewEditorState viewEditorState) throws KException {
+       ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
+       ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+       ArgCheck.isNotNull( repository, "repository" ); //$NON-NLS-1$
+
+       try {
+           final KomodoObject grouping = RepositoryTools.findOrCreateChild( transaction,
+                                                                            viewEditorState,
+                                                                            KomodoLexicon.ViewEditorState.VIEW_DEFINITION,
+                                                                            KomodoLexicon.ViewEditorState.VIEW_DEFINITION );
+           final KomodoObject kobject = grouping.addChild( transaction, "viewDefinition", KomodoLexicon.ViewDefinition.NODE_TYPE );
+           final ViewDefinition result = new ViewDefinitionImpl( transaction, repository, kobject.getAbsolutePath() );
+           return result;
+       } catch ( final Exception e ) {
+           throw handleError( e );
+       }
+   }
+   
+   /**
+   *
+   * @param transaction
+   *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+   * @param repository
+   *        the repository where the model object will be created (cannot be <code>null</code>)
+   * @param viewDefinitionImpl
+   *        the parent profile object
+   * @param compositionName
+   *        the sql composition name
+   * @param description
+   *        the description
+   * @param leftSourcePath
+   *        the path to the left source table
+   * @param rightSourcePath
+   *        the path to the right source table
+   * @param type
+   *        the composition type
+   * @param operator
+   *        the operator for the criteria
+   * @return the sql composition object
+   * @throws KException
+   *        if an error occurs
+   */
+	public static SqlComposition createSqlComposition(UnitOfWork transaction, Repository repository,
+			ViewDefinition viewDefinition, String compositionName, String description, String leftSourcePath,
+			String rightSourcePath, String type, String operator) throws KException {
+		
+	       ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
+	       ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+	       ArgCheck.isNotNull( repository, "repository" ); //$NON-NLS-1$
+	       ArgCheck.isNotNull( compositionName, "compositionName" ); //$NON-NLS-1$
+	       
+	       try {
+	           final KomodoObject grouping = RepositoryTools.findOrCreateChild( transaction,
+	        		   viewDefinition,
+	                                                                            KomodoLexicon.ViewDefinition.SQL_COMPOSITIONS,
+	                                                                            KomodoLexicon.ViewDefinition.SQL_COMPOSITIONS );
+	           final KomodoObject kobject = grouping.addChild( transaction, compositionName, KomodoLexicon.SqlComposition.NODE_TYPE );
+	           final SqlComposition result = new SqlCompositionImpl( transaction, repository, kobject.getAbsolutePath() );
+	           return result;
+	       } catch ( final Exception e ) {
+	           throw handleError( e );
+	       }
+	}
 
     /**
      *

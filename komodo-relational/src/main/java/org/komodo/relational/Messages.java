@@ -311,7 +311,26 @@ public class Messages implements StringConstants {
          * An error indicating a view editor state object could not be found
          * while trying to remove it
          */
-        VIEW_EDITOR_STATE_NOT_FOUND_TO_REMOVE;
+        VIEW_EDITOR_STATE_NOT_FOUND_TO_REMOVE,
+    	
+        /**
+         * An error indicating a sql composition object could not be found
+         * while trying to remove it
+         */
+    	SQL_COMPOSITION_NOT_FOUND_TO_REMOVE,
+    	
+    	
+        /**
+         * An error indicating a source path already exists in the list
+         * while trying to add it
+         */
+    	DUPLICATE_SOURCE_PATH,
+    	
+        /**
+         * An error indicating a source path could not be found
+         * while trying to remove it
+         */
+    	SOURCE_PATH_NOT_FOUND_TO_REMOVE;
 
         @Override
         public String toString() {

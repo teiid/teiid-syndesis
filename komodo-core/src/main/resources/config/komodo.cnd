@@ -228,6 +228,31 @@
   + redo (tko:stateCommand)
 
 /*
+ * a SQL composition
+ */
+[tko:sqlComposition] > nt:unstructured
+  - tko:description (string)
+  - tko:leftNodePath (string)
+  - tko:rightNodePath (string)
+  - tko:leftCriteriaColumn (string)
+  - tko:rightCriteriaColumn (string)
+  - tko:type (string) < 'INNER_JOIN', 'LEFT_JOIN', 'RIGHT_JOIN', 'FULL_OUTER_JOIN', 'UNION'
+  - tko:operator (string) < 'EQ', 'NE', 'LT', 'GT', 'LE', 'GE' 
+
+[tko:sqlCompositions] > nt:unstructured
+  + * (tko:sqlComposition) copy
+
+/*
+ * the view definition containing properties and command for a view
+ */
+[tko:viewDefinition] > nt:unstructured
+  - tko:viewName (string)
+  - tko:description (string)
+  - tko:isComplete (boolean) = 'false' mandatory
+  - tko:sourcePaths (string) multiple
+  + tko:sqlCompositions (tko:sqlCompositions)
+
+/*
  * The state of a view editor when saved
  */
 [tko:viewEditorState] > nt:unstructured
