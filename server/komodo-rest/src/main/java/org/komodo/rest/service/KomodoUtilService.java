@@ -889,7 +889,7 @@ public final class KomodoUtilService extends KomodoService {
 
         RestViewEditorState restViewEditorState = KomodoJsonMarshaller.unmarshall(viewEditorStateConfig, RestViewEditorState.class);
         String stateId = restViewEditorState.getId();
-        RestStateCommandAggregate[] stateContent = restViewEditorState.getContent();
+        RestStateCommandAggregate[] stateContent = restViewEditorState.getCommands();
 
         if (StringUtils.isBlank(stateId)) {
             return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_ID);
