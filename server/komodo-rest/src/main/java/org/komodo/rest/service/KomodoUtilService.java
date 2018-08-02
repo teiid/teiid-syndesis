@@ -935,6 +935,7 @@ public final class KomodoUtilService extends KomodoService {
 
 //            viewEditorState.setViewDefinition(uow, newViewDef);
             
+            
             final RestViewEditorState entity = new RestViewEditorState(uriInfo.getBaseUri(), viewEditorState, uow);
             return commit(uow, mediaTypes, entity);
 
