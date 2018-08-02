@@ -107,28 +107,11 @@ public interface ViewDefinition  extends RelationalObject, StringConstants {
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param compositionName
      *        the name of the sql composition being added (cannot be empty)
-     * @param description
-     *        the description of this sql composition
-     * @param leftSourcePath
-     *        the path to the left source table
-     * @param rightSourcePath
-     *        the path to the right source table
-     * @param leftColumnCriteria
-     *        the path to the left column criteria
-     * @param rightColumnCriteria
-     *        the path to the right column criteria
-     * @param type
-     *        the composition type (i.e 'INNER_JOIN', 'LEFT_JOIN', 'RIGHT_JOIN', 'FULL_OUTER_JOIN', 'UNION')
-     * @param operator
-     *        the criteria operator type (i.e 'EQ', 'NE', 'LT', 'GT', 'LE', 'GE' )
      * @return the new sql composition (never <code>null</code>)
      * @throws KException
      *         if an error occurs
      */
-    SqlComposition addSqlComposition( final UnitOfWork transaction, String compositionName, String description, 
-                                    String leftSourcePath, String rightSourcePath, 
-                                    String leftColumnCriteria, String rightColumnCriteria, 
-                                    String type, String operator ) throws KException;
+    SqlComposition addSqlComposition( final UnitOfWork transaction, String compositionName ) throws KException;
     
     /**
      * @param transaction

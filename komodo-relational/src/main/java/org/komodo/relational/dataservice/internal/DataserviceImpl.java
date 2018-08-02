@@ -26,6 +26,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
+
 import org.komodo.core.repository.RepositoryTools;
 import org.komodo.relational.DeployStatus;
 import org.komodo.relational.Messages;
@@ -44,15 +45,20 @@ import org.komodo.relational.dataservice.VdbEntry;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Model.Type;
-import org.komodo.relational.model.View;
+import org.komodo.relational.profile.Profile;
+import org.komodo.relational.profile.ViewDefinition;
+import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.resource.DdlFile;
 import org.komodo.relational.resource.Driver;
 import org.komodo.relational.resource.ResourceFile;
 import org.komodo.relational.resource.UdfFile;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.internal.VdbImpl;
+import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
+import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.KomodoObject;
@@ -62,8 +68,6 @@ import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
-import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
-import org.komodo.spi.metadata.MetadataInstance;
 
 /**
  * Implementation of data service instance model.
@@ -485,27 +489,11 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
     }
 
     /* (non-Javadoc)
-     * @see org.komodo.relational.dataservice.Dataservice#getDataserviceView(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.relational.dataservice.Dataservice#getViewDefinitionNames(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public String[] getServiceViewNames(UnitOfWork uow) throws KException {
-        List<String> viewNames = new ArrayList<String>();
-        // Only ONE virtual model should exist in the dataservice vdb.
-        // The returned view name is the first view in the first virtual model found - or null if none found.
-        Vdb serviceVdb = getServiceVdb(uow);
-        if( serviceVdb != null ) {
-            Model[] models = serviceVdb.getModels(uow);
-            for(Model model : models) {
-                Model.Type modelType = model.getModelType(uow);
-                if(modelType == Type.VIRTUAL) {
-                    View[] views = model.getViews(uow);
-                    for(View view : views) {
-                        viewNames.add(view.getName(uow));
-                    }
-                }
-            }
-        }
-        return viewNames.toArray(new String[0]);
+    public String[] getViewDefinitionNames(UnitOfWork uow) throws KException {
+    	return this.getViewDefnNames(uow);
     }
 
     /* (non-Javadoc)
@@ -1325,6 +1313,33 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
                                                                                     dataservice,
                                                                                     serviceVdbEntry.getName(transaction));
         RepositoryTools.copyProperties(transaction, serviceVdbEntry, entry);
+    }
+
+    /**
+     *  get the ViewDefinition names for the dataservice
+     */
+    private String[] getViewDefnNames( final UnitOfWork uow ) throws KException {
+        ArgCheck.isNotNull( uow, "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( uow.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+
+        KomodoObject userProfileObj = getRepository().komodoProfile(uow);
+        WorkspaceManager wkspMgr = WorkspaceManager.getInstance(getRepository(), uow);
+        
+        Profile userProfile = wkspMgr.resolve(uow, userProfileObj, Profile.class);
+        ViewEditorState[] editorStates = null;
+        if (userProfile != null) {
+        	String svcVdbName = this.getServiceVdb(uow).getName(uow).toLowerCase();
+        	String pattern = svcVdbName + "*";
+            editorStates = userProfile.getViewEditorStates(uow, pattern);
+        }
+
+        List<String> viewNames = new ArrayList<String>();
+        for (ViewEditorState editorState: editorStates) {
+        	ViewDefinition viewDefn = editorState.getViewDefinition(uow);
+        	viewNames.add(viewDefn.getViewName(uow));
+        }
+        
+        return viewNames.toArray(new String[0]);
     }
 
 }

@@ -60,7 +60,7 @@ public final class RestDataservice extends RestBasicEntity {
     /**
      * Label used to describe dataservice viewNames
      */
-    public static final String DATASERVICE_VIEWS_LABEL = "serviceViews"; //$NON-NLS-1$
+    public static final String DATASERVICE_VIEW_DEFINITIONS_LABEL = "serviceViewDefinitions"; //$NON-NLS-1$
 
     /**
      * Label used to describe dataservice vdbName
@@ -81,11 +81,6 @@ public final class RestDataservice extends RestBasicEntity {
      * Label used to describe dataservice connection total
      */
     public static final String DATASERVICE_CONNECTION_TOTAL_LABEL = "connections"; //$NON-NLS-1$
-
-    /**
-     * Label used to describe service view table names
-     */
-    public static final String DATASERVICE_VIEW_TABLES_LABEL = "serviceViewTables"; //$NON-NLS-1$
 
     /**
      * fqn table option key
@@ -130,29 +125,7 @@ public final class RestDataservice extends RestBasicEntity {
             setServiceVdbName(serviceVdb.getVdbName( uow ));
             setServiceVdbVersion(Integer.toString(serviceVdb.getVersion( uow )));
             setServiceViewModel(dataService.getServiceViewModelName(uow));
-            setServiceViewNames(dataService.getServiceViewNames(uow));
-            
-            // Get the current tables from source models
-            List<String> tableNames = new ArrayList<String>();
-            Model[] models = serviceVdb.getModels(uow);
-            if(models!=null) {
-                for(Model model : models) {
-                    if(model.getModelType(uow) == Model.Type.PHYSICAL) {
-                        Table[] tables = model.getTables(uow);
-                        for(Table table : tables) {
-                    		// 'tableNames' are generated using the fqn table option, if available.
-                            final String tableFqn = OptionContainerUtils.getOption( uow, table, TABLE_OPTION_FQN );
-                            if (tableFqn != null && tableFqn.length()>0) {
-                                final String mdlName = model.getName(uow);
-                                final int endIndex = mdlName.indexOf(SCHEMA_MODEL_SUFFIX);
-                                final String connName = mdlName.substring(0, endIndex);
-                                tableNames.add("connection="+connName+"/"+tableFqn); //$NON-NLS-1$
-                            }
-                        }
-                    }
-                }
-            }
-            setServiceViewTables(tableNames.toArray(new String[0]));
+            setViewDefinitionNames(dataService.getViewDefinitionNames(uow));
         }
 
         Connection[] connections = dataService.getConnections(uow);
@@ -199,17 +172,17 @@ public final class RestDataservice extends RestBasicEntity {
     }
 
     /**
-     * @return the service view name (can be empty)
+     * @return the service ViewDefinition names (can be empty)
      */
-    public String[] getServiceViewNames() {
-        return (String[])tuples.get(DATASERVICE_VIEWS_LABEL);
+    public String[] getViewDefinitionNames() {
+        return (String[])tuples.get(DATASERVICE_VIEW_DEFINITIONS_LABEL);
     }
 
     /**
-     * @param viewNames the service view names to set
+     * @param viewDefinitionNames the service view names to set
      */
-    public void setServiceViewNames(final String[] viewNames) {
-        tuples.put(DATASERVICE_VIEWS_LABEL, viewNames);
+    public void setViewDefinitionNames(final String[] viewDefinitionNames) {
+        tuples.put(DATASERVICE_VIEW_DEFINITIONS_LABEL, viewDefinitionNames);
     }
 
     /**
@@ -270,21 +243,6 @@ public final class RestDataservice extends RestBasicEntity {
      */
     public void setDriverTotal(int total) {
         tuples.put(DATASERVICE_DRIVER_TOTAL_LABEL, total);
-    }
-    
-    /**
-     * @return the view table names (can be <code>null</code>)
-     */
-    public String[] getServiceViewTables( ) {
-        return (String[])tuples.get(DATASERVICE_VIEW_TABLES_LABEL);
-    }
-    
-    /**
-     * @param tableNames
-     *        the view table names (can be <code>null</code>)
-     */
-    public void setServiceViewTables( final String[] tableNames ) {
-        tuples.put(DATASERVICE_VIEW_TABLES_LABEL, tableNames);
     }
     
 }

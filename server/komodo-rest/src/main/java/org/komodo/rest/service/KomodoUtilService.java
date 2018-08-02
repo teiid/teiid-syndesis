@@ -22,6 +22,7 @@
 package org.komodo.rest.service;
 
 import static org.komodo.rest.relational.RelationalMessages.Error.SCHEMA_SERVICE_GET_SCHEMA_ERROR;
+
 import java.io.File;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -29,6 +30,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -45,6 +47,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
+
 import org.komodo.core.KEngine;
 import org.komodo.core.repository.SynchronousCallback;
 import org.komodo.importer.ImportMessages;
@@ -54,7 +57,9 @@ import org.komodo.importer.ImportOptions.OptionKeys;
 import org.komodo.relational.importer.vdb.VdbImporter;
 import org.komodo.relational.profile.GitRepository;
 import org.komodo.relational.profile.Profile;
+import org.komodo.relational.profile.SqlComposition;
 import org.komodo.relational.profile.StateCommandAggregate;
+import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
@@ -66,9 +71,11 @@ import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.RestGitRepository;
-import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
+import org.komodo.rest.relational.response.vieweditorstate.RestSqlComposition;
 import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate;
 import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate.RestStateCommand;
+import org.komodo.rest.relational.response.vieweditorstate.RestViewDefinition;
+import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
@@ -77,6 +84,7 @@ import org.komodo.spi.repository.Repository.Id;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.StringUtils;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -784,7 +792,7 @@ public final class KomodoUtilService extends KomodoService {
                 throw ( KomodoRestException )e;
             }
 
-            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.CONNECTION_SERVICE_GET_CONNECTIONS_ERROR);
+            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.PROFILE_EDITOR_STATES_GET_ERROR);
         }
     }
 
@@ -845,7 +853,7 @@ public final class KomodoUtilService extends KomodoService {
                 throw ( KomodoRestException )e;
             }
 
-            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.CONNECTION_SERVICE_GET_CONNECTIONS_ERROR);
+            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.PROFILE_EDITOR_STATES_GET_ERROR);
         }
     }
 
@@ -889,14 +897,19 @@ public final class KomodoUtilService extends KomodoService {
 
         RestViewEditorState restViewEditorState = KomodoJsonMarshaller.unmarshall(viewEditorStateConfig, RestViewEditorState.class);
         String stateId = restViewEditorState.getId();
-        RestStateCommandAggregate[] stateContent = restViewEditorState.getCommands();
+        RestStateCommandAggregate[] commands = restViewEditorState.getCommands();
+        RestViewDefinition restViewDefn = restViewEditorState.getViewDefinition();
 
         if (StringUtils.isBlank(stateId)) {
             return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_ID);
         }
 
-        if (stateContent == null || stateContent.length == 0) {
-            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_CONTENT);
+        if (commands == null || commands.length == 0) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_COMMANDS);
+        }
+
+        if (restViewDefn == null) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_VIEW_DEFINITION);
         }
 
         UnitOfWork uow = null;
@@ -905,13 +918,31 @@ public final class KomodoUtilService extends KomodoService {
 
             Profile userProfile = getUserProfile(uow);
             ViewEditorState viewEditorState = userProfile.addViewEditorState(uow, stateId);
-            for (RestStateCommandAggregate restCmd : stateContent) {
+            // Add commands
+            for (RestStateCommandAggregate restCmd : commands) {
                 RestStateCommand restUndo = restCmd.getUndo();
                 RestStateCommand restRedo = restCmd.getRedo();
 
                 StateCommandAggregate stateCmdAgg = viewEditorState.addCommand(uow);
                 stateCmdAgg.setUndo(uow, restUndo.getId(), restUndo.getArguments());
                 stateCmdAgg.setRedo(uow, restRedo.getId(), restRedo.getArguments());
+            }
+            // Set ViewDefinition
+            ViewDefinition viewDefn = viewEditorState.setViewDefinition(uow);
+            viewDefn.setViewName(uow, restViewDefn.getViewName());
+            viewDefn.setDescription(uow, restViewDefn.getDescription());
+            for (String restSourcePath: restViewDefn.getSourcePaths()) {
+                viewDefn.addSourcePath(uow, restSourcePath);
+            }
+            for (RestSqlComposition restComp: restViewDefn.getSqlCompositions()) {
+            	SqlComposition sqlComp = viewDefn.addSqlComposition(uow, restComp.getId());
+            	sqlComp.setDescription(uow, restComp.getDescription());
+            	sqlComp.setLeftSourcePath(uow, restComp.getLeftSourcePath());
+            	sqlComp.setRightSourcePath(uow, restComp.getRightSourcePath());
+            	sqlComp.setLeftCriteriaColumn(uow, restComp.getLeftCriteriaColumn());
+            	sqlComp.setRightCriteriaColumn(uow, restComp.getRightCriteriaColumn());
+            	sqlComp.setType(uow, restComp.getType());
+            	sqlComp.setOperator(uow, restComp.getOperator());
             }
 
             final RestViewEditorState entity = new RestViewEditorState(uriInfo.getBaseUri(), viewEditorState, uow);

@@ -132,7 +132,7 @@ public interface ViewEditorState extends RelationalObject, StringConstants {
      * @throws KException
      *         if an error occurs
      */
-    ViewDefinition setViewDefinition(final UnitOfWork transaction, ViewDefinition viewDefinition) throws KException;
+    ViewDefinition setViewDefinition(final UnitOfWork transaction) throws KException;
     
     /**
      * @param transaction
