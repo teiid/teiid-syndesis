@@ -133,7 +133,7 @@ public class RestViewEditorState extends AbstractKEntity {
         
         ViewDefinition viewDef = viewEditorState.getViewDefinition(transaction);
         if( viewDef != null ) {
-        	viewDefinition = new RestViewDefinition(baseUri, viewDef, transaction);
+        	this.viewDefinition = new RestViewDefinition(baseUri, viewDef, transaction);
         }
 
         List<RestStateCommandAggregate> cmdList = new ArrayList<>();

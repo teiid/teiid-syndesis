@@ -47,7 +47,6 @@ public final class DataserviceSerializerTest extends AbstractSerializerTest  {
         "  \"keng__hasChildren\": true," + NEW_LINE +
         "  \"tko__description\": \"my description\"," + NEW_LINE +
         "  \"serviceVdbVersion\": \"1\"," + NEW_LINE +
-        "  \"serviceViewTables\": []," + NEW_LINE +
         "  \"connections\": 0," + NEW_LINE +
         "  \"drivers\": 0," + NEW_LINE +
         "  \"keng___links\": [" + NEW_LINE +

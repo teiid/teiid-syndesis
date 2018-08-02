@@ -169,6 +169,30 @@ public class RestSqlComposition extends RestBasicEntity {
     
     
     /**
+     * @param name value
+     *        the new name (can be empty)
+     */
+    public void setName(final String name) {
+        tuples.put(RestViewEditorState.ID, name);
+    }
+
+    /**
+     * @return the name (can be empty)
+     */
+    public String getName() {
+        Object value = tuples.get(RestViewEditorState.ID);
+        return value != null ? value.toString() : null;
+    }
+    
+    /**
+     * @param descr value
+     *        the new description (can be empty)
+     */
+    public void setDescription(final String descr) {
+        tuples.put(RestViewEditorState.DESCRIPTION, descr);
+    }
+
+    /**
      * @return the left node path (can be empty)
      */
     public String getDescription() {
@@ -176,6 +200,14 @@ public class RestSqlComposition extends RestBasicEntity {
         return value != null ? value.toString() : null;
     }
     
+    /**
+     * @param path value
+     *        the new left source path (can be empty)
+     */
+    public void setLeftSourcePath(final String path) {
+        tuples.put(RestViewEditorState.LEFT_SOURCE_PATH_LABEL, path);
+    }
+
     /**
      * @return the left source path (can be empty)
      */
@@ -185,11 +217,27 @@ public class RestSqlComposition extends RestBasicEntity {
     }
     
     /**
+     * @param path value
+     *        the new right source path (can be empty)
+     */
+    public void setRightSourcePath(final String path) {
+        tuples.put(RestViewEditorState.RIGHT_SOURCE_PATH_LABEL, path);
+    }
+
+    /**
      * @return the right source path (can be empty)
      */
     public String getRightSourcePath() {
         Object value = tuples.get(RestViewEditorState.RIGHT_SOURCE_PATH_LABEL);
         return value != null ? value.toString() : null;
+    }
+
+    /**
+     * @param column value
+     *        the new right criteria column (can be empty)
+     */
+    public void setRightCriteriaColumn(final String column) {
+        tuples.put(RestViewEditorState.RIGHT_CRITERIA_COLUMN_LABEL, column);
     }
 
     /**
@@ -201,6 +249,14 @@ public class RestSqlComposition extends RestBasicEntity {
     }
     
     /**
+     * @param column value
+     *        the new left criteria column (can be empty)
+     */
+    public void setLeftCriteriaColumn(final String column) {
+        tuples.put(RestViewEditorState.LEFT_CRITERIA_COLUMN_LABEL, column);
+    }
+
+    /**
      * @return the left node path (can be empty)
      */
     public String getLeftCriteriaColumn() {
@@ -209,11 +265,27 @@ public class RestSqlComposition extends RestBasicEntity {
     }
 
     /**
+     * @param type value
+     *        the new type (can be empty)
+     */
+    public void setType(final String type) {
+        tuples.put(RestViewEditorState.TYPE_LABEL, type);
+    }
+
+    /**
      * @return the composition type (can be empty)
      */
     public String getType() {
         Object value = tuples.get(RestViewEditorState.TYPE_LABEL);
         return value != null ? value.toString() : null;
+    }
+
+    /**
+     * @param operator value
+     *        the new operator (can be empty)
+     */
+    public void setOperator(final String operator) {
+        tuples.put(RestViewEditorState.OPERATOR_LABEL, operator);
     }
 
     /**

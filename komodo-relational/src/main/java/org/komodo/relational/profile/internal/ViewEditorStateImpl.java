@@ -24,7 +24,9 @@ package org.komodo.relational.profile.internal;
 import java.util.ArrayList;
 import java.util.List;
 import org.komodo.core.KomodoLexicon;
+import org.komodo.relational.Messages;
 import org.komodo.relational.RelationalModelFactory;
+import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.profile.Profile;
 import org.komodo.relational.profile.StateCommandAggregate;
@@ -115,7 +117,7 @@ public class ViewEditorStateImpl extends RelationalObjectImpl implements ViewEdi
     @Override
     public StateCommandAggregate[] getCommands(UnitOfWork transaction) throws KException {
         KomodoObject[] commands = getChildrenOfType(transaction,
-                                                                                                        KomodoLexicon.StateCommandAggregate.NODE_TYPE);
+                                                    KomodoLexicon.StateCommandAggregate.NODE_TYPE);
         if (commands == null)
             return StateCommandAggregate.NO_STATE_COMMAND_AGGREGATES;
 
@@ -129,20 +131,19 @@ public class ViewEditorStateImpl extends RelationalObjectImpl implements ViewEdi
     
 
 	@Override
-	public ViewDefinition setViewDefinition(UnitOfWork transaction, ViewDefinition viewDefinition) throws KException {
-		// TODO Auto-generated method stub
-		return null;
+	public ViewDefinition setViewDefinition(UnitOfWork transaction) throws KException {
+        // Create the a new ViewDefinition
+        return RelationalModelFactory.createViewDefinition(transaction, getRepository(), this);
 	}
 
 	@Override
 	public ViewDefinition getViewDefinition(UnitOfWork transaction) throws KException {
-        KomodoObject[] viewDefs = getChildrenOfType(transaction,
-                KomodoLexicon.ViewDefinition.NODE_TYPE);
-			if (viewDefs == null || viewDefs.length == 0)
-				return null;
-			
-			KomodoObject ko = viewDefs[0];
-			return new ViewDefinitionImpl(transaction, getRepository(), ko.getAbsolutePath());
+		KomodoObject[] viewDefs = getChildrenOfType(transaction, KomodoLexicon.ViewDefinition.NODE_TYPE);
+		if (viewDefs == null || viewDefs.length == 0) {
+			return null;
+		}
+
+		return new ViewDefinitionImpl(transaction, getRepository(), viewDefs[0].getAbsolutePath());
 	}
 
 }
