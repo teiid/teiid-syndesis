@@ -99,7 +99,7 @@ public class SqlCompositionImpl  extends RelationalObjectImpl implements SqlComp
 
 	@Override
 	public void setDescription(UnitOfWork transaction, String description) throws KException {
-		setObjectProperty(transaction, "setDescription", KomodoLexicon.SqlComposition.OPERATOR, description); //$NON-NLS-1$
+		setObjectProperty(transaction, "setDescription", KomodoLexicon.SqlComposition.DESCRIPTION, description); //$NON-NLS-1$
 	}
 
 	@Override
@@ -112,7 +112,7 @@ public class SqlCompositionImpl  extends RelationalObjectImpl implements SqlComp
 
 	@Override
 	public void setLeftSourcePath(UnitOfWork transaction, String leftSourcePath) throws KException {
-		setObjectProperty(transaction, "setLeftSourcePath", KomodoLexicon.SqlComposition.OPERATOR, leftSourcePath); //$NON-NLS-1$
+		setObjectProperty(transaction, "setLeftSourcePath", KomodoLexicon.SqlComposition.LEFT_SOURCE_PATH, leftSourcePath); //$NON-NLS-1$
 	}
 
 	@Override
@@ -125,7 +125,7 @@ public class SqlCompositionImpl  extends RelationalObjectImpl implements SqlComp
 
 	@Override
 	public void setRightSourcePath(UnitOfWork transaction, String rightSourcePath) throws KException {
-		setObjectProperty(transaction, "setRightSourcePath", KomodoLexicon.SqlComposition.OPERATOR, rightSourcePath); //$NON-NLS-1$
+		setObjectProperty(transaction, "setRightSourcePath", KomodoLexicon.SqlComposition.RIGHT_SOURCE_PATH, rightSourcePath); //$NON-NLS-1$
 	}
 
 	@Override
@@ -138,7 +138,7 @@ public class SqlCompositionImpl  extends RelationalObjectImpl implements SqlComp
 
 	@Override
 	public void setType(UnitOfWork transaction, String type) throws KException {
-		setObjectProperty(transaction, "setType", KomodoLexicon.SqlComposition.OPERATOR, type); //$NON-NLS-1$
+		setObjectProperty(transaction, "setType", KomodoLexicon.SqlComposition.TYPE, type); //$NON-NLS-1$
 	}
 
 	@Override
@@ -164,7 +164,7 @@ public class SqlCompositionImpl  extends RelationalObjectImpl implements SqlComp
 
 	@Override
 	public void setLeftCriteriaColumn(UnitOfWork transaction, String leftCriteriaColumn) throws KException {
-		setObjectProperty(transaction, "setLeftCriteriaColumn", KomodoLexicon.SqlComposition.OPERATOR, leftCriteriaColumn); //$NON-NLS-1$
+		setObjectProperty(transaction, "setLeftCriteriaColumn", KomodoLexicon.SqlComposition.LEFT_CRITERIA_COLUMN, leftCriteriaColumn); //$NON-NLS-1$
 	}
 
 	@Override
@@ -177,7 +177,7 @@ public class SqlCompositionImpl  extends RelationalObjectImpl implements SqlComp
 
 	@Override
 	public void setRightCriteriaColumn(UnitOfWork transaction, String rightCriteriaColumn) throws KException {
-		setObjectProperty(transaction, "setRightCriteriaColumn", KomodoLexicon.SqlComposition.OPERATOR, rightCriteriaColumn); //$NON-NLS-1$
+		setObjectProperty(transaction, "setRightCriteriaColumn", KomodoLexicon.SqlComposition.RIGHT_CRITERIA_COLUMN, rightCriteriaColumn); //$NON-NLS-1$
 	}
 
 	@Override

@@ -32,12 +32,15 @@ import static org.komodo.spi.storage.git.GitStorageConnectorConstants.AUTHOR_NAM
 import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_PASSWORD;
 import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_PATH_PROPERTY;
 import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_USERNAME;
+
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.ws.rs.core.UriBuilder;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -47,6 +50,7 @@ import org.junit.Test;
 import org.komodo.importer.ImportMessages;
 import org.komodo.relational.profile.GitRepository;
 import org.komodo.relational.profile.StateCommandAggregate;
+import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
@@ -66,6 +70,7 @@ import org.komodo.rest.service.KomodoVdbService;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.test.utils.TestUtilities;
+
 import com.google.common.net.HttpHeaders;
 
 @SuppressWarnings( {"javadoc", "nls"} )
@@ -488,6 +493,34 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
         restViewEditorState.setId(viewName);
         restViewEditorState.setCommands(content);
 
+        // View Defn properties
+        final String viewDescr = "viewName description";
+        final String[] sourcePaths = new String[2];
+        sourcePaths[0] = "connection=conn1/schema=public/table=customer";
+        sourcePaths[1] = "connection=conn1/schema=public/table=account";
+        final String compName = "left-right";
+        final String compDescr = "composition description";
+        final String compLeftSource = "connection=conn1/schema=public/table=customer";
+        final String compRightSource = "connection=conn1/schema=public/table=account";
+        final String leftColumn = "leftCol";
+        final String rightColumn = "rightCol";
+        final String type = "INNER_JOIN";
+        final String operator = "EQ";
+        
+        RestSqlComposition restComposition = new RestSqlComposition(compName,compDescr,compLeftSource,compRightSource,
+        		                                                    leftColumn,rightColumn,type,operator);
+
+        RestSqlComposition[] compositionArray = new RestSqlComposition[1];
+        compositionArray[0] = restComposition;
+        
+        RestViewDefinition restViewDefn = new RestViewDefinition();
+        restViewDefn.setViewName(viewName);
+        restViewDefn.setDescription(viewDescr);
+        restViewDefn.setSourcePaths(sourcePaths);
+        restViewDefn.setSqlCompositions(compositionArray);
+        
+        restViewEditorState.setViewDefinition(restViewDefn);
+        
         try {
             HttpPut request = jsonRequest(uri, RequestType.PUT);
             addHeader(request, CorsHeaders.ORIGIN, "http://localhost:2772");
@@ -610,9 +643,29 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
             undoArgs.put( "newDescription", oldDescription );
             undoArgs.put( "oldDescription", newDescription );
     
+            // View Defn properties
+            final String viewDescr = "viewName description";
+            final String[] sourcePaths = new String[2];
+            sourcePaths[0] = "connection=conn1/schema=public/table=customer";
+            sourcePaths[1] = "connection=conn1/schema=public/table=account";
+            final String compName = "left-right";
+            final String compDescr = "composition description";
+            final String compLeftSource = "connection=conn1/schema=public/table=customer";
+            final String compRightSource = "connection=conn1/schema=public/table=account";
+            final String leftColumn = "leftCol";
+            final String rightColumn = "rightCol";
+            final String type = "INNER_JOIN";
+            final String operator = "EQ";
+            
             // setup test by creating view and initial view editor state
             this.serviceTestUtilities.createVdbModelView( vdbName, modelName, viewName, USER_NAME );
-            this.serviceTestUtilities.addViewEditorState( USER_NAME, editorStateId, undoId, undoArgs, redoId, redoArgs );
+
+            this.serviceTestUtilities.addViewEditorState( USER_NAME, editorStateId, 
+                    undoId, undoArgs, redoId, redoArgs,
+                    viewName, viewDescr, sourcePaths,
+                    compName, compDescr, compLeftSource, compRightSource,
+                    leftColumn, rightColumn, type, operator);
+            
             assertThat( this.serviceTestUtilities.viewEditorStateExists( USER_NAME, editorStateId ), is( true ) );
 
             // verify initial editor state
@@ -624,6 +677,12 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
             final StateCommandAggregate undoable = commands[ 0 ];
             assertThat( undoable.getUndo( uow ).getId( uow ), is( undoId ) );
             assertThat( undoable.getRedo( uow ).getId( uow ), is( redoId ) );
+            
+            ViewDefinition viewDefn = editorState.getViewDefinition(uow);
+            assertNotNull( viewDefn );
+            assertThat( viewDefn.getName(uow), is( "tko:viewDefinition" ) ); 
+            assertThat( viewDefn.getDescription(uow), is( viewDescr ) ); 
+            assertThat( viewDefn.getSourcePaths(uow).length, is( 2 ) ); 
             uow.commit();
         }
 
@@ -648,7 +707,15 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
         restViewEditorState.setBaseUri( uriBuilder().baseUri() );
         restViewEditorState.setId( editorStateId );
         restViewEditorState.setCommands( content );
-
+        
+        RestViewDefinition viewDefn2 = new RestViewDefinition();
+        viewDefn2.setId("test");
+        viewDefn2.setDescription("descr");
+        String[] srcPaths = new String[1];
+        srcPaths[0] = "path";
+        viewDefn2.setSourcePaths(srcPaths);
+        restViewEditorState.setViewDefinition( viewDefn2 );
+        
         final URI uri = UriBuilder.fromUri( uriBuilder().baseUri() )
                                   .path( V1Constants.SERVICE_SEGMENT )
                                   .path( V1Constants.USER_PROFILE )
@@ -677,6 +744,12 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
             final StateCommandAggregate undoable = commands[ 0 ];
             assertThat( undoable.getUndo( uow ).getId( uow ), is( this.undoRedoId ) );
             assertThat( undoable.getRedo( uow ).getId( uow ), is( this.undoRedoId ) );
+
+            final ViewDefinition newViewDefn = editorState.getViewDefinition(uow);
+            assertNotNull( newViewDefn );
+            assertThat( newViewDefn.getName(uow), is( "tko:viewDefinition" ) ); 
+            assertThat( newViewDefn.getDescription(uow), is( "descr" ) ); 
+            assertThat( newViewDefn.getSourcePaths(uow).length, is( 1 ) ); 
             uow.commit();
         } finally {
             serviceTestUtilities.removeViewEditorState(USER_NAME, editorStateId);
@@ -695,10 +768,26 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
         undoArgs.put(newNameKey, viewName);
         undoArgs.put(oldNameKey, untitledName);
 
+        // View Defn properties
+        final String viewDescr = "viewName description";
+        final String[] sourcePaths = new String[2];
+        sourcePaths[0] = "connection=conn1/schema=public/table=customer";
+        sourcePaths[1] = "connection=conn1/schema=public/table=account";
+        final String compName = "left-right";
+        final String compDescr = "composition description";
+        final String compLeftSource = "connection=conn1/schema=public/table=customer";
+        final String compRightSource = "connection=conn1/schema=public/table=account";
+        final String leftColumn = "leftCol";
+        final String rightColumn = "rightCol";
+        final String type = "INNER_JOIN";
+        final String operator = "EQ";
+        
         try {
             ViewEditorState state = serviceTestUtilities.addViewEditorState(USER_NAME, viewName,
-                                                                                                                                undoId, undoArgs,
-                                                                                                                                redoId, redoArgs);
+                                                                                       undoId, undoArgs, redoId, redoArgs,
+                                                                                       viewName, viewDescr, sourcePaths,
+                                                                                       compName, compDescr, compLeftSource, compRightSource,
+                                                                                       leftColumn, rightColumn, type, operator);
             assertNotNull(state);
 
             // delete
@@ -746,10 +835,26 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
         undoArgs.put(newNameKey, viewName);
         undoArgs.put(oldNameKey, untitledName);
 
+        // View Defn properties
+        final String viewDescr = "viewName description";
+        final String[] sourcePaths = new String[2];
+        sourcePaths[0] = "connection=conn1/schema=public/table=customer";
+        sourcePaths[1] = "connection=conn1/schema=public/table=account";
+        final String compName = "left-right";
+        final String compDescr = "composition description";
+        final String compLeftSource = "connection=conn1/schema=public/table=customer";
+        final String compRightSource = "connection=conn1/schema=public/table=account";
+        final String leftColumn = "leftCol";
+        final String rightColumn = "rightCol";
+        final String type = "INNER_JOIN";
+        final String operator = "EQ";
+        
         try {
             ViewEditorState state = serviceTestUtilities.addViewEditorState(USER_NAME, viewName,
-                                                                                                                                undoId, undoArgs,
-                                                                                                                                redoId, redoArgs);
+                                                                                       undoId, undoArgs, redoId, redoArgs,
+                                                                                       viewName, viewDescr, sourcePaths,
+                                                                                       compName, compDescr, compLeftSource, compRightSource,
+                                                                                       leftColumn, rightColumn, type, operator);
             assertNotNull(state);
 
             // get
@@ -805,10 +910,26 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
         undoArgs.put(newNameKey, viewName);
         undoArgs.put(oldNameKey, untitledName);
 
+        // View Defn properties
+        final String viewDescr = "viewName description";
+        final String[] sourcePaths = new String[2];
+        sourcePaths[0] = "connection=conn1/schema=public/table=customer";
+        sourcePaths[1] = "connection=conn1/schema=public/table=account";
+        final String compName = "left-right";
+        final String compDescr = "composition description";
+        final String compLeftSource = "connection=conn1/schema=public/table=customer";
+        final String compRightSource = "connection=conn1/schema=public/table=account";
+        final String leftColumn = "leftCol";
+        final String rightColumn = "rightCol";
+        final String type = "INNER_JOIN";
+        final String operator = "EQ";
+        
         try {
             ViewEditorState state = serviceTestUtilities.addViewEditorState(USER_NAME, viewName,
-                                                                                                                                undoId, undoArgs,
-                                                                                                                                redoId, redoArgs);
+                                                                                       undoId, undoArgs, redoId, redoArgs,
+                                                                                       viewName, viewDescr, sourcePaths,
+                                                                                       compName, compDescr, compLeftSource, compRightSource,
+                                                                                       leftColumn, rightColumn, type, operator);
             assertNotNull(state);
 
             // get

@@ -82,7 +82,7 @@ public class ViewEditorStateSerializerTest extends AbstractSerializerTest {
                 	tab(2) + q(RestViewEditorState.BASE_URI) + colon() + q(MY_BASE_URI) + pnl(COMMA) +
                 	tab(2) + q(RestViewEditorState.ID_VIEW_NAME) + colon() + q(viewDefinitionName) + pnl(COMMA) +
                 	tab(2) + q(RestViewEditorState.DESCRIPTION) + colon() + q(description) + pnl(COMMA) +
-                	tab(2) + q(RestViewEditorState.IS_COMPLETE) + colon() + q(isComplete) + pnl(COMMA) +
+                	tab(2) + q(RestViewEditorState.IS_COMPLETE) + colon() + isComplete + pnl(COMMA) +
                 	tab(2) + q(RestViewEditorState.SOURCE_PATHS) + colon() + pnl(OPEN_SQUARE_BRACKET) +
                 		tab(3) + q(sourceTablePath1) + pnl(COMMA) +
                 		tab(3) + q(sourceTablePath2) + pnl(COMMA) +
