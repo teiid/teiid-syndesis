@@ -35,6 +35,7 @@ import static org.komodo.rest.relational.RelationalMessages.Error.DATASERVICE_SE
 import static org.komodo.rest.relational.RelationalMessages.Error.DATASERVICE_SERVICE_SERVICE_NAME_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.DATASERVICE_SERVICE_SET_SERVICE_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.DATASERVICE_SERVICE_UPDATE_DATASERVICE_ERROR;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,6 +47,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -60,11 +62,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
+
 import org.komodo.core.KEngine;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.SynchronousCallback;
 import org.komodo.relational.ViewBuilderCriteriaPredicate;
 import org.komodo.relational.ViewDdlBuilder;
+import org.komodo.relational.ViewDefinitionHelper;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.model.Column;
@@ -74,6 +78,7 @@ import org.komodo.relational.model.Model.Type;
 import org.komodo.relational.model.PrimaryKey;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.View;
+import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.resource.Driver;
 import org.komodo.relational.vdb.ModelSource;
@@ -106,6 +111,7 @@ import org.komodo.spi.runtime.ConnectionDriver;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
 import org.teiid.language.SQLConstants;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -2691,4 +2697,104 @@ public final class KomodoDataserviceService extends KomodoService
                                                      DATASERVICE_SERVICE_NAME_VALIDATION_ERROR );
         }
     }
+    
+
+	/**
+	 * Refresh the dataservice views, using the userProfile ViewDefinitions
+	 * 
+	 * @param headers         the request headers (never <code>null</code>)
+	 * @param uriInfo         the request URI information (never <code>null</code>)
+	 * @param dataserviceName the dataservice name (cannot be empty)
+	 * @return a JSON representation of the new connection (never <code>null</code>)
+	 * @throws KomodoRestException if there is an error creating the Connection
+	 */
+	@POST
+	@Path(StringConstants.FORWARD_SLASH + V1Constants.REFRESH_DATASERVICE_VIEWS + StringConstants.FORWARD_SLASH
+			+ V1Constants.DATA_SERVICE_PLACEHOLDER)
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "Refresh the dataservice views from user profile states")
+	@ApiResponses(value = { @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
+			@ApiResponse(code = 403, message = "An error has occurred.") })
+	public Response refreshViews(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
+			@ApiParam(value = "Name of the dataservice", required = true) final @PathParam("dataserviceName") String dataserviceName)
+			throws KomodoRestException {
+
+		SecurityPrincipal principal = checkSecurityContext(headers);
+		if (principal.hasErrorResponse())
+			return principal.getErrorResponse();
+
+		List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+		if (!isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
+			return notAcceptableMediaTypesBuilder().build();
+
+// Error if the dataservice name is missing
+		if (StringUtils.isBlank(dataserviceName)) {
+			return createErrorResponseWithForbidden(mediaTypes,
+					RelationalMessages.Error.DATASERVICE_SERVICE_CLONE_MISSING_NAME);
+		}
+
+		UnitOfWork uow = null;
+
+		try {
+			uow = createTransaction(principal, "refreshDataserviceViews", false); //$NON-NLS-1$
+
+			Dataservice dataservice = findDataservice(uow, dataserviceName);
+			if (dataservice == null)
+				return commitNoDataserviceFound(uow, mediaTypes, dataserviceName);
+
+// 1)
+// Get the ViewDefinitions for the dataservice Vdb from the userProfile
+// Can supply an id 'pattern' like 'serviceVdbName*' to get only the editorStates associated with the service vdb
+
+            Vdb serviceVdb = dataservice.getServiceVdb(uow);
+            String vdbName = serviceVdb.getName(uow);
+            
+// 2)
+// Iterate thru the ViewDefinitions.  Generate DDL for each view(only the 'complete' views), appending them all together.
+// There is example of this process in setServiceVdbForSingleSourceTables
+// The ViewDdlBuilder will need to be modified to input a ViewDefinition.  The ViewDdlBuilder will then generate the
+// DDL for the view.
+
+            final String viewEditorIdPrefix = KomodoService.getViewEditorStateIdPrefix( vdbName ) + "*";
+            final ViewEditorState[] editorStates = getViewEditorStates(uow, viewEditorIdPrefix);
+        	
+            if ( editorStates.length != 0 ) {
+            	ViewDefinitionHelper helper = new ViewDefinitionHelper(getWorkspaceManager(uow));
+            	StringBuilder sb = new StringBuilder();
+
+                for ( final ViewEditorState editorState : editorStates ) {
+                	ViewDefinition viewDef = editorState.getViewDefinition(uow);
+                	if( viewDef.isComplete(uow) ) {
+	                	// Now generate the view DDL give the source tables and view definition
+	            		String viewDdl = helper.getODataViewDdl(uow, viewDef);
+	            		
+	            		sb.append(viewDdl).append("\n"); //$NON-NLS-1$
+                	}
+            	}
+                Model viewModel = ViewDefinitionHelper.getViewModel(uow, serviceVdb);
+                String viewDdl = sb.toString();
+
+                // 3)
+                // Get the serviceVdbModel.  Do a 'setModelDefinition' using the generated DDL
+                viewModel.setModelDefinition(uow, viewDdl);
+            }
+
+
+			KomodoStatusObject kso = new KomodoStatusObject("Refresh Status"); //$NON-NLS-1$
+			kso.addAttribute(dataserviceName, "View Successfully refreshed"); //$NON-NLS-1$
+
+			return commit(uow, mediaTypes, kso);
+		} catch (final Exception e) {
+			if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+				uow.rollback();
+			}
+
+			if (e instanceof KomodoRestException) {
+				throw (KomodoRestException) e;
+			}
+
+			return createErrorResponseWithForbidden(mediaTypes, e,
+					RelationalMessages.Error.DATASERVICE_SERVICE_CLONE_DATASERVICE_ERROR, dataserviceName);
+		}
+	}
 }
