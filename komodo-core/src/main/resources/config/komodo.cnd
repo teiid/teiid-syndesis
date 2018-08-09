@@ -248,7 +248,7 @@
 [tko:viewDefinition] > nt:unstructured
   - tko:viewName (string)
   - tko:description (string)
-  - tko:isComplete (boolean) = 'false' mandatory
+  - tko:isComplete (boolean) = 'false' mandatory autocreated
   - tko:sourcePaths (string) multiple
   + tko:sqlCompositions (tko:sqlCompositions)
 
@@ -257,6 +257,7 @@
  */
 [tko:viewEditorState] > nt:unstructured
   + * (tko:stateCommandAggregate) copy
+  + tko:viewDefinition (tko:viewDefinition)
 
 [tko:viewEditorStates] > nt:unstructured
   + * (tko:viewEditorState) copy

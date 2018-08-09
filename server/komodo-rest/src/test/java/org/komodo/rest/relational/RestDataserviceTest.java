@@ -75,8 +75,7 @@ public final class RestDataserviceTest {
         copy.setServiceVdbName(this.dataservice.getServiceVdbName());
         copy.setServiceVdbVersion(this.dataservice.getServiceVdbVersion());
         copy.setServiceViewModel(this.dataservice.getServiceViewModel());
-        copy.setServiceViewNames(this.dataservice.getServiceViewNames());
-        copy.setServiceViewTables(this.dataservice.getServiceViewTables());
+        copy.setViewDefinitionNames(this.dataservice.getViewDefinitionNames());
         copy.setDriverTotal(this.dataservice.getDriverTotal());
         copy.setConnectionTotal(this.dataservice.getConnectionTotal());
 
@@ -119,11 +118,7 @@ public final class RestDataserviceTest {
         String[] viewNames = new String[2];
         viewNames[0] = SERVICE_VIEW1;
         viewNames[1] = SERVICE_VIEW2;
-        this.dataservice.setServiceViewNames(viewNames);
-        String[] viewTables = new String[2];
-        viewTables[0] = SERVICE_VIEW_SRCTABLE1;
-        viewTables[1] = SERVICE_VIEW_SRCTABLE2;
-        this.dataservice.setServiceViewTables(viewTables);
+        this.dataservice.setViewDefinitionNames(viewNames);
     }
 
     @Test
@@ -207,8 +202,8 @@ public final class RestDataserviceTest {
     	final String[] views = new String[2];
     	views[0] = "blah1";
     	views[1] = "blah2";
-        this.dataservice.setServiceViewNames(views);
-        assertEquals(this.dataservice.getServiceViewNames(), views);
+        this.dataservice.setViewDefinitionNames(views);
+        assertEquals(this.dataservice.getViewDefinitionNames(), views);
     }
 
 

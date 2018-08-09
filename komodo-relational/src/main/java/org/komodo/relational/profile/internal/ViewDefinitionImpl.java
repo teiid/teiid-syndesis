@@ -110,16 +110,12 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.profile.ViewDefinition#addSqlComposition(UnitOfWork, String, String, String, String, String, String, String, String)
+     * @see org.komodo.relational.profile.ViewDefinition#addSqlComposition(UnitOfWork, String)
      */
 	@Override
-	public SqlComposition addSqlComposition(UnitOfWork transaction, String compositionName, String description,
-			String leftSourcePath, String rightSourcePath, 
-            String leftColumnCriteria, String rightColumnCriteria, 
-            String type, String operator) throws KException {
-		// TODO Auto-generated method stub
-		return RelationalModelFactory.createSqlComposition( transaction, getRepository(), this, 
-				compositionName, description, leftSourcePath, rightSourcePath, type, operator);
+	public SqlComposition addSqlComposition(UnitOfWork transaction, 
+			                                String compositionName) throws KException {
+		return RelationalModelFactory.createSqlComposition( transaction, getRepository(), this, compositionName);
 	}
     
     private KomodoObject getSqlCompositionsGroupingNode( final UnitOfWork transaction ) {
@@ -315,7 +311,7 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
 
 	@Override
 	public void setComplete(UnitOfWork transaction, boolean complete) throws KException {
-		setObjectProperty( transaction, "setDescription", KomodoLexicon.ViewDefinition.DESCRIPTION, complete ); //$NON-NLS-1$
+		setObjectProperty( transaction, "setComplete", KomodoLexicon.ViewDefinition.IS_COMPLETE, complete ); //$NON-NLS-1$
 	}
 
 	@Override
@@ -323,8 +319,9 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         
-        String value = getObjectProperty(transaction, PropertyValueType.BOOLEAN, "isComplete", //$NON-NLS-1$
-                KomodoLexicon.ViewDefinition.IS_COMPLETE );
-		return Boolean.getBoolean(value);
+        final Boolean value = getObjectProperty(transaction, PropertyValueType.BOOLEAN, "isComplete", //$NON-NLS-1$
+                                                             KomodoLexicon.ViewDefinition.IS_COMPLETE );
+		return value;
 	}
+
 }

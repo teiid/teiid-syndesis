@@ -1520,9 +1520,24 @@ public final class RelationalMessages {
         PROFILE_EDITOR_STATE_MISSING_ID,
 
         /**
-         * An error indicating a profile view editor state is missing its content
+         * An error indicating a profile view editor state is missing commands
          */
-        PROFILE_EDITOR_STATE_MISSING_CONTENT,
+        PROFILE_EDITOR_STATE_MISSING_COMMANDS,
+
+        /**
+         * An error indicating a profile view editor state is missing its view definition
+         */
+        PROFILE_EDITOR_STATE_MISSING_VIEW_DEFINITION,
+
+        /**
+         * An error indicating a problem with getting a view editor state
+         */
+        PROFILE_EDITOR_STATE_GET_ERROR,
+        
+        /**
+         * An error indicating a problem with getting view editor states
+         */
+        PROFILE_EDITOR_STATES_GET_ERROR,
 
         /**
          * An error indicating a problem with creating a view editor state

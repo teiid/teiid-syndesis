@@ -169,6 +169,7 @@ public final class KomodoJsonMarshaller {
                                                   .registerTypeAdapter(RestGitRepository.class, new GitRepositorySerializer())
                                                   .registerTypeAdapter(RestViewEditorState.class, new ViewEditorStateSerializer())
                                                   .registerTypeAdapter(RestViewDefinition.class, new ViewDefinitionSerializer())
+                                                  .registerTypeAdapter(RestSqlComposition.class, new SqlCompositionSerializer())
                                                   .registerTypeAdapter(RestStateCommandAggregate.class, new ViewEditorStateCommandSerializer())
                                                   .registerTypeAdapter(RestStateCommand.class, new ViewEditorStateCmdUnitSerializer())
                                                   .registerTypeAdapter(RestVirtualizationStatus.class, new VirtualizationStatusSerializer())

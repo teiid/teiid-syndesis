@@ -28,12 +28,14 @@ import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_BRANC
 import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_PASSWORD;
 import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_PATH_PROPERTY;
 import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_USERNAME;
+
 import java.io.InputStream;
 import java.net.URL;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
 import org.komodo.core.KEngine;
 import org.komodo.core.repository.SynchronousCallback;
 import org.komodo.importer.ImportMessages;
@@ -49,7 +51,9 @@ import org.komodo.relational.model.Model;
 import org.komodo.relational.model.View;
 import org.komodo.relational.profile.GitRepository;
 import org.komodo.relational.profile.Profile;
+import org.komodo.relational.profile.SqlComposition;
 import org.komodo.relational.profile.StateCommandAggregate;
+import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.resource.Driver;
 import org.komodo.relational.vdb.Vdb;
@@ -572,20 +576,48 @@ public final class ServiceTestUtilities implements StringConstants {
     }
 
     public ViewEditorState addViewEditorState(String user, String stateId,
-                                                                                      String undoId,
-                                                                                      Map<String, String> undoArguments,
-                                                                                      String redoId,
-                                                                                      Map<String, String> redoArguments) throws Exception {
+                                                           String undoId,
+                                                           Map<String, String> undoArguments,
+                                                           String redoId,
+                                                           Map<String, String> redoArguments,
+                                                           String viewDefnName,
+                                                           String viewDefnDescription,
+                                                           String[] sourcePaths,
+                                                           String compName,
+                                                           String compDescr,
+                                                           String compLeftSource,
+                                                           String compRightSource,
+                                                           String leftColumn,
+                                                           String rightColumn,
+                                                           String type,
+                                                           String operator) throws Exception {
         UnitOfWork uow = repository.createTransaction(user, "Create View Editor State", false, null); //$NON-NLS-1$
         KomodoObject profileObj = repository.komodoProfile(uow);
         assertNotNull(profileObj);
 
         Profile profile = new AdapterFactory().adapt(uow, profileObj, Profile.class);
         ViewEditorState viewEditorState = profile.addViewEditorState(uow, stateId);
+        
+        // Add the Undo-Redo commands
         StateCommandAggregate stateCmdAgg = viewEditorState.addCommand(uow);
         stateCmdAgg.setUndo(uow, undoId, undoArguments);
         stateCmdAgg.setRedo(uow, redoId, redoArguments);
-
+        
+        // Add the ViewDefinition
+        ViewDefinition viewDefn = viewEditorState.setViewDefinition(uow);
+        viewDefn.setViewName(uow, viewDefnName);
+        viewDefn.setDescription(uow, viewDefnDescription);
+        for(String sourcePath: sourcePaths) {
+            viewDefn.addSourcePath(uow, sourcePath);
+        }
+        SqlComposition comp = viewDefn.addSqlComposition(uow, compName);
+        comp.setDescription(uow, compDescr);
+        comp.setLeftSourcePath(uow, compLeftSource);
+        comp.setRightSourcePath(uow, compRightSource);
+        comp.setLeftCriteriaColumn(uow, leftColumn);
+        comp.setRightCriteriaColumn(uow, rightColumn);
+        comp.setType(uow, type);
+        comp.setOperator(uow, operator);
         uow.commit();
         return viewEditorState;
     }

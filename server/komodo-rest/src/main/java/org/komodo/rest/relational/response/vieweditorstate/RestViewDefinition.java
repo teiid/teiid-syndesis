@@ -141,8 +141,8 @@ public class RestViewDefinition extends RestBasicEntity {
      * @return the view definition isComplete value (can be empty)
      */
     public boolean isComplete() {
-        Object result = tuples.get(RestViewEditorState.IS_COMPLETE);
-        return result != null ? Boolean.parseBoolean(result.toString()) : null;
+        Object hasIsComplete = tuples.get(RestViewEditorState.IS_COMPLETE);
+        return hasIsComplete != null ? Boolean.parseBoolean(hasIsComplete.toString()) : false;
     }
 
     /**
@@ -150,7 +150,7 @@ public class RestViewDefinition extends RestBasicEntity {
      *        the new description (can be empty)
      */
     public void setComplete(final boolean complete) {
-        tuples.put(RestViewEditorState.IS_COMPLETE, Boolean.toString(complete));
+        tuples.put(RestViewEditorState.IS_COMPLETE, complete);
     }
     
     /**
@@ -158,10 +158,13 @@ public class RestViewDefinition extends RestBasicEntity {
      */
     public String[] getSourcePaths() {
     	Object[] pathsRaw = (Object[])tuples.get(RestViewEditorState.SOURCE_PATHS);
-    	String[] pathsString = new String[pathsRaw.length];
-    	int i = 0;
-    	for( Object obj : pathsRaw ) {
-    		pathsString[i++] = (String)obj;
+    	int pathsLength = (pathsRaw != null) ? pathsRaw.length : 0;
+    	String[] pathsString = new String[pathsLength];
+    	if (pathsLength > 0) {
+        	int i = 0;
+        	for( Object obj : pathsRaw ) {
+        		pathsString[i++] = (String)obj;
+        	}
     	}
         return pathsString;
     }

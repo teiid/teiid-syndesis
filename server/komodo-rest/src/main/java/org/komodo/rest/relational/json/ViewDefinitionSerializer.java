@@ -43,8 +43,10 @@ public class ViewDefinitionSerializer extends TypeAdapter<RestViewDefinition> {
 	public void write(JsonWriter out, RestViewDefinition restViewDef) throws IOException {
 		out.beginObject();
 		
-		out.name(RestViewEditorState.BASE_URI);
-		out.value(restViewDef.getBaseUri().toString());
+		if( restViewDef.getBaseUri() != null) {
+			out.name(RestViewEditorState.BASE_URI);
+			out.value(restViewDef.getBaseUri().toString());
+		}
 		
 		out.name(RestViewEditorState.ID_VIEW_NAME);
 		out.value(restViewDef.getViewName());
@@ -54,7 +56,7 @@ public class ViewDefinitionSerializer extends TypeAdapter<RestViewDefinition> {
 		}
 		
 		out.name(RestViewEditorState.IS_COMPLETE);
-		out.value(Boolean.toString(restViewDef.isComplete()));
+		out.value(restViewDef.isComplete());
 		
 		if( restViewDef.getSourcePaths() != null ) {
 			out.name(RestViewEditorState.SOURCE_PATHS);
@@ -71,27 +73,7 @@ public class ViewDefinitionSerializer extends TypeAdapter<RestViewDefinition> {
         	out.name(RestViewEditorState.COMPOSITIONS_LABEL);
         	out.beginArray();
         	for( RestSqlComposition comp : comps) {
-//        		BUILDER.getAdapter(RestSqlComposition.class).write(out, comp);
-                out.beginObject();
-
-                out.name(RestViewEditorState.ID_NAME);
-                out.value((String)comp.getTuples().get(RestViewEditorState.ID_NAME));
-                out.name(RestViewEditorState.ID_DESCRIPTION);
-                out.value((String)comp.getTuples().get(RestViewEditorState.DESCRIPTION));
-                out.name(RestViewEditorState.LEFT_SOURCE_PATH_LABEL);
-                out.value(comp.getLeftSourcePath());
-                out.name(RestViewEditorState.RIGHT_SOURCE_PATH_LABEL);
-                out.value(comp.getRightSourcePath());
-                out.name(RestViewEditorState.LEFT_CRITERIA_COLUMN_LABEL);
-                out.value(comp.getLeftCriteriaColumn());
-                out.name(RestViewEditorState.RIGHT_CRITERIA_COLUMN_LABEL);
-                out.value(comp.getRightCriteriaColumn());
-                out.name(RestViewEditorState.TYPE_LABEL);
-                out.value(comp.getType());
-                out.name(RestViewEditorState.OPERATOR_LABEL);
-                out.value(comp.getOperator());
-
-                out.endObject();
+        		BUILDER.getAdapter(RestSqlComposition.class).write(out, comp);
         	}
         	out.endArray();
         }
@@ -120,8 +102,7 @@ public class ViewDefinitionSerializer extends TypeAdapter<RestViewDefinition> {
                     viewDef.setSourcePaths(sourcePaths);
                     break;
                 case RestViewEditorState.IS_COMPLETE:
-                    String strValue = in.nextString();
-                    viewDef.setComplete(Boolean.parseBoolean(strValue));
+                    viewDef.setComplete(in.nextBoolean());
                     break;
                 case RestViewEditorState.COMPOSITIONS_LABEL:
                     RestSqlComposition[] comps = BUILDER.fromJson(in, RestSqlComposition[].class);

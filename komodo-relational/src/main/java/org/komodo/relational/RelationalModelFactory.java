@@ -1750,11 +1750,13 @@ public final class RelationalModelFactory {
        ArgCheck.isNotNull( repository, "repository" ); //$NON-NLS-1$
 
        try {
-           final KomodoObject grouping = RepositoryTools.findOrCreateChild( transaction,
-                                                                            viewEditorState,
-                                                                            KomodoLexicon.ViewEditorState.VIEW_DEFINITION,
-                                                                            KomodoLexicon.ViewEditorState.VIEW_DEFINITION );
-           final KomodoObject kobject = grouping.addChild( transaction, "viewDefinition", KomodoLexicon.ViewDefinition.NODE_TYPE );
+   		   // If a ViewDefinition already exists, remove it first
+           final ViewDefinition viewDefn = viewEditorState.getViewDefinition(transaction);
+           if (viewDefn != null) {
+           	viewDefn.remove(transaction);
+           }
+
+    	   final KomodoObject kobject = viewEditorState.addChild(transaction, KomodoLexicon.ViewEditorState.VIEW_DEFINITION, KomodoLexicon.ViewEditorState.VIEW_DEFINITION);
            final ViewDefinition result = new ViewDefinitionImpl( transaction, repository, kobject.getAbsolutePath() );
            return result;
        } catch ( final Exception e ) {
@@ -1786,9 +1788,10 @@ public final class RelationalModelFactory {
    * @throws KException
    *        if an error occurs
    */
-	public static SqlComposition createSqlComposition(UnitOfWork transaction, Repository repository,
-			ViewDefinition viewDefinition, String compositionName, String description, String leftSourcePath,
-			String rightSourcePath, String type, String operator) throws KException {
+	public static SqlComposition createSqlComposition(UnitOfWork transaction, 
+			                                          Repository repository, 
+			                                          ViewDefinition viewDefinition, 
+			                                          String compositionName) throws KException {
 		
 	       ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
 	       ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
@@ -1796,10 +1799,8 @@ public final class RelationalModelFactory {
 	       ArgCheck.isNotNull( compositionName, "compositionName" ); //$NON-NLS-1$
 	       
 	       try {
-	           final KomodoObject grouping = RepositoryTools.findOrCreateChild( transaction,
-	        		   viewDefinition,
-	                                                                            KomodoLexicon.ViewDefinition.SQL_COMPOSITIONS,
-	                                                                            KomodoLexicon.ViewDefinition.SQL_COMPOSITIONS );
+	           final KomodoObject grouping = RepositoryTools.findOrCreateChild( transaction, viewDefinition, KomodoLexicon.ViewDefinition.SQL_COMPOSITIONS,
+	                                                                                                         KomodoLexicon.ViewDefinition.SQL_COMPOSITIONS );
 	           final KomodoObject kobject = grouping.addChild( transaction, compositionName, KomodoLexicon.SqlComposition.NODE_TYPE );
 	           final SqlComposition result = new SqlCompositionImpl( transaction, repository, kobject.getAbsolutePath() );
 	           return result;

@@ -371,9 +371,28 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
         undoArgs.put( "newNameKey", oldName );
         undoArgs.put( "oldNameKey", newName );
 
+        // View Defn properties
+        final String viewDescr = "viewName description";
+        final String[] sourcePaths = new String[2];
+        sourcePaths[0] = "connection=conn1/schema=public/table=customer";
+        sourcePaths[1] = "connection=conn1/schema=public/table=account";
+        final String compName = "left-right";
+        final String compDescr = "composition description";
+        final String compLeftSource = "connection=conn1/schema=public/table=customer";
+        final String compRightSource = "connection=conn1/schema=public/table=account";
+        final String leftColumn = "leftCol";
+        final String rightColumn = "rightCol";
+        final String type = "INNER_JOIN";
+        final String operator = "EQ";
+        
         // setup test by creating view and view editor state
         this.serviceTestUtilities.createVdbModelView( vdbName, modelName, viewName, USER_NAME );
-        this.serviceTestUtilities.addViewEditorState(USER_NAME, editorStateId, undoId, undoArgs, redoId, redoArgs );
+        this.serviceTestUtilities.addViewEditorState(USER_NAME, editorStateId, 
+        		                                                undoId, undoArgs, redoId, redoArgs,
+                                                                viewName, viewDescr, sourcePaths,
+                                                                compName, compDescr, compLeftSource, compRightSource,
+                                                                leftColumn, rightColumn, type, operator);
+
         assertThat( this.serviceTestUtilities.viewEditorStateExists( USER_NAME, editorStateId ), is( true ) );
 
         // now test by deleting the view
