@@ -1148,4 +1148,71 @@ public class KomodoDataserviceServiceTestInSuite extends AbstractKomodoServiceTe
         executeOk( deleteRequest );
         assertThat( this.serviceTestUtilities.viewEditorStateExists( USER_NAME, editorStateId ), is( false ) );
     }
+    
+    @Test
+    public void shouldRefreshViewsForViewEditorState() throws Exception {
+        // create virtualization
+        final String virtualizationName = "MyVirtualization";
+        this.serviceTestUtilities.createDataservice( virtualizationName, false, USER_NAME );
+
+        // verify virtualization exists
+        final Properties settings = uriBuilder().createSettings(SettingNames.DATA_SERVICE_NAME, virtualizationName );
+        uriBuilder().addSetting( settings, SettingNames.DATA_SERVICE_PARENT_PATH, uriBuilder().workspaceDataservicesUri() );
+        final URI uri = uriBuilder().dataserviceUri( LinkType.SELF, settings );
+        final HttpGet request = jsonRequest( uri, RequestType.GET );
+        final HttpResponse response = execute( request );
+        okResponse( response );
+
+        final String entities = extractResponse( response );
+        assertThat( entities, is( notNullValue() ) );
+
+        // create editor state
+        final String vdbName = "Northwind";
+        final String viewName = "MyView";
+
+        final String editorStateId = KomodoVdbService.getViewEditorStateId( vdbName, viewName );
+        final String newName = "theNewName";
+        final String oldName = "theOldName";
+
+        final String undoId = "UpdateViewNameCommand";
+        final Map< String, String > undoArgs = new HashMap<>();
+        undoArgs.put( "newNameKey", newName );
+        undoArgs.put( "oldNameKey", oldName );
+
+        final String redoId = "UpdateViewNameCommand";
+        final Map< String, String > redoArgs = new HashMap<>();
+        undoArgs.put( "newNameKey", oldName );
+        undoArgs.put( "oldNameKey", newName );
+
+        // View Defn properties
+        final String viewDescr = "viewName description";
+        final String[] sourcePaths = new String[2];
+        sourcePaths[0] = "connection=conn1/schema=public/table=customer";
+        sourcePaths[1] = "connection=conn1/schema=public/table=account";
+        final String compName = "left-right";
+        final String compDescr = "composition description";
+        final String compLeftSource = "connection=conn1/schema=public/table=customer";
+        final String compRightSource = "connection=conn1/schema=public/table=account";
+        final String leftColumn = "leftCol";
+        final String rightColumn = "rightCol";
+        final String type = "INNER_JOIN";
+        final String operator = "EQ";
+        
+        // setup test by creating view and view editor state
+        final String modelName = "MyModel";
+        this.serviceTestUtilities.createVdbModelView( vdbName, modelName, viewName, USER_NAME );
+        this.serviceTestUtilities.addViewEditorState( USER_NAME, editorStateId, 
+        		                                                 undoId, undoArgs, redoId, redoArgs,
+        		                                                 viewName, viewDescr, sourcePaths,
+        		                                                 compName, compDescr, compLeftSource, compRightSource,
+        		                                                 leftColumn, rightColumn, type, operator);
+        assertThat( this.serviceTestUtilities.viewEditorStateExists( USER_NAME, editorStateId ), is( true ) );
+        
+        // TODO: MARK.. I'm stuck now.. cu Monday
+        
+        // Execute a REFRESH virtualization and make sure editor state is deleted
+        final HttpDelete putRequest = jsonRequest( uri, RequestType.PUT );
+        executeOk( putRequest );
+        assertThat( this.serviceTestUtilities.viewEditorStateExists( USER_NAME, editorStateId ), is( false ) );
+    }
 }
