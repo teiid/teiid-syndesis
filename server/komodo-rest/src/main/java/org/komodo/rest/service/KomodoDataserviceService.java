@@ -78,7 +78,6 @@ import org.komodo.relational.model.Model.Type;
 import org.komodo.relational.model.PrimaryKey;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.View;
-import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.resource.Driver;
 import org.komodo.relational.vdb.ModelSource;
@@ -2701,23 +2700,31 @@ public final class KomodoDataserviceService extends KomodoService
 
 	/**
 	 * Refresh the dataservice views, using the userProfile ViewDefinitions
-	 * 
-	 * @param headers         the request headers (never <code>null</code>)
-	 * @param uriInfo         the request URI information (never <code>null</code>)
-	 * @param dataserviceName the dataservice name (cannot be empty)
+	 * @param headers         
+	 *        the request headers (never <code>null</code>)
+	 * @param uriInfo         
+	 *        the request URI information (never <code>null</code>)
+	 * @param dataserviceName 
+	 *        the dataservice name (cannot be empty)
 	 * @return a JSON representation of the new connection (never <code>null</code>)
-	 * @throws KomodoRestException if there is an error creating the Connection
+	 * @throws KomodoRestException 
+	 *         if there is an error creating the Connection
 	 */
 	@POST
 	@Path(StringConstants.FORWARD_SLASH + V1Constants.REFRESH_DATASERVICE_VIEWS + StringConstants.FORWARD_SLASH
-			+ V1Constants.DATA_SERVICE_PLACEHOLDER)
+			                            + V1Constants.DATA_SERVICE_PLACEHOLDER)
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "Refresh the dataservice views from user profile states")
-	@ApiResponses(value = { @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
-			@ApiResponse(code = 403, message = "An error has occurred.") })
-	public Response refreshViews(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
-			@ApiParam(value = "Name of the dataservice", required = true) final @PathParam("dataserviceName") String dataserviceName)
-			throws KomodoRestException {
+	@ApiResponses(value = { 
+		@ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
+		@ApiResponse(code = 403, message = "An error has occurred.") 
+	})
+	public Response refreshViews(final @Context HttpHeaders headers, 
+			                     final @Context UriInfo uriInfo,
+			                     @ApiParam(
+			                    		 value = "Name of the dataservice", 
+			                    		 required = true) 
+	                             final @PathParam("dataserviceName") String dataserviceName) throws KomodoRestException {
 
 		SecurityPrincipal principal = checkSecurityContext(headers);
 		if (principal.hasErrorResponse())
@@ -2727,10 +2734,10 @@ public final class KomodoDataserviceService extends KomodoService
 		if (!isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
 			return notAcceptableMediaTypesBuilder().build();
 
-// Error if the dataservice name is missing
+        // Error if the dataservice name is missing
 		if (StringUtils.isBlank(dataserviceName)) {
 			return createErrorResponseWithForbidden(mediaTypes,
-					RelationalMessages.Error.DATASERVICE_SERVICE_CLONE_MISSING_NAME);
+					RelationalMessages.Error.DATASERVICE_SERVICE_REFRESH_VIEWS_MISSING_NAME);
 		}
 
 		UnitOfWork uow = null;
@@ -2742,43 +2749,17 @@ public final class KomodoDataserviceService extends KomodoService
 			if (dataservice == null)
 				return commitNoDataserviceFound(uow, mediaTypes, dataserviceName);
 
-// 1)
-// Get the ViewDefinitions for the dataservice Vdb from the userProfile
-// Can supply an id 'pattern' like 'serviceVdbName*' to get only the editorStates associated with the service vdb
-
             Vdb serviceVdb = dataservice.getServiceVdb(uow);
             String vdbName = serviceVdb.getName(uow);
-            
-// 2)
-// Iterate thru the ViewDefinitions.  Generate DDL for each view(only the 'complete' views), appending them all together.
-// There is example of this process in setServiceVdbForSingleSourceTables
-// The ViewDdlBuilder will need to be modified to input a ViewDefinition.  The ViewDdlBuilder will then generate the
-// DDL for the view.
+           
+            ViewDefinitionHelper helper = new ViewDefinitionHelper(getWorkspaceManager(uow));
 
+            // Get all of the editor states from the user profile
+            // They are stored under ids of form "serviceVdbName.viewName"
             final String viewEditorIdPrefix = KomodoService.getViewEditorStateIdPrefix( vdbName ) + "*";
             final ViewEditorState[] editorStates = getViewEditorStates(uow, viewEditorIdPrefix);
         	
-            if ( editorStates.length != 0 ) {
-            	ViewDefinitionHelper helper = new ViewDefinitionHelper(getWorkspaceManager(uow));
-            	StringBuilder sb = new StringBuilder();
-
-                for ( final ViewEditorState editorState : editorStates ) {
-                	ViewDefinition viewDef = editorState.getViewDefinition(uow);
-                	if( viewDef.isComplete(uow) ) {
-	                	// Now generate the view DDL give the source tables and view definition
-	            		String viewDdl = helper.getODataViewDdl(uow, viewDef);
-	            		
-	            		sb.append(viewDdl).append("\n"); //$NON-NLS-1$
-                	}
-            	}
-                Model viewModel = ViewDefinitionHelper.getViewModel(uow, serviceVdb);
-                String viewDdl = sb.toString();
-
-                // 3)
-                // Get the serviceVdbModel.  Do a 'setModelDefinition' using the generated DDL
-                viewModel.setModelDefinition(uow, viewDdl);
-            }
-
+            helper.refreshServiceVdb(uow, serviceVdb, editorStates);
 
 			KomodoStatusObject kso = new KomodoStatusObject("Refresh Status"); //$NON-NLS-1$
 			kso.addAttribute(dataserviceName, "View Successfully refreshed"); //$NON-NLS-1$
@@ -2794,7 +2775,8 @@ public final class KomodoDataserviceService extends KomodoService
 			}
 
 			return createErrorResponseWithForbidden(mediaTypes, e,
-					RelationalMessages.Error.DATASERVICE_SERVICE_CLONE_DATASERVICE_ERROR, dataserviceName);
+					RelationalMessages.Error.DATASERVICE_SERVICE_REFRESH_VIEWS_ERROR, dataserviceName);
 		}
 	}
+
 }

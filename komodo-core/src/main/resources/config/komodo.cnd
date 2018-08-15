@@ -236,7 +236,7 @@
   - tko:rightNodePath (string)
   - tko:leftCriteriaColumn (string)
   - tko:rightCriteriaColumn (string)
-  - tko:type (string) < 'INNER_JOIN', 'LEFT_JOIN', 'RIGHT_JOIN', 'FULL_OUTER_JOIN', 'UNION'
+  - tko:type (string) < 'INNER_JOIN', 'LEFT_OUTER_JOIN', 'RIGHT_OUTER_JOIN', 'FULL_OUTER_JOIN', 'UNION'
   - tko:operator (string) < 'EQ', 'NE', 'LT', 'GT', 'LE', 'GE' 
 
 [tko:sqlCompositions] > nt:unstructured

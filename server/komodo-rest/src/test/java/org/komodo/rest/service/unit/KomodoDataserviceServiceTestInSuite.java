@@ -51,7 +51,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.komodo.relational.ViewBuilderCriteriaPredicate;
-import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.RestLink;
@@ -1151,12 +1150,13 @@ public class KomodoDataserviceServiceTestInSuite extends AbstractKomodoServiceTe
     
     @Test
     public void shouldRefreshViewsForViewEditorState() throws Exception {
-        // create virtualization
-        final String virtualizationName = "MyVirtualization";
-        this.serviceTestUtilities.createDataservice( virtualizationName, false, USER_NAME );
+        loadStatesServiceSourceVdb();
+        loadStatesDataService();
+
+        String dsName = TestUtilities.US_STATES_DATA_SERVICE_NAME;
 
         // verify virtualization exists
-        final Properties settings = uriBuilder().createSettings(SettingNames.DATA_SERVICE_NAME, virtualizationName );
+        final Properties settings = uriBuilder().createSettings(SettingNames.DATA_SERVICE_NAME, dsName );
         uriBuilder().addSetting( settings, SettingNames.DATA_SERVICE_PARENT_PATH, uriBuilder().workspaceDataservicesUri() );
         final URI uri = uriBuilder().dataserviceUri( LinkType.SELF, settings );
         final HttpGet request = jsonRequest( uri, RequestType.GET );
@@ -1167,7 +1167,7 @@ public class KomodoDataserviceServiceTestInSuite extends AbstractKomodoServiceTe
         assertThat( entities, is( notNullValue() ) );
 
         // create editor state
-        final String vdbName = "Northwind";
+        final String vdbName = "usstates";
         final String viewName = "MyView";
 
         final String editorStateId = KomodoVdbService.getViewEditorStateId( vdbName, viewName );
@@ -1200,19 +1200,35 @@ public class KomodoDataserviceServiceTestInSuite extends AbstractKomodoServiceTe
         
         // setup test by creating view and view editor state
         final String modelName = "MyModel";
-        this.serviceTestUtilities.createVdbModelView( vdbName, modelName, viewName, USER_NAME );
-        this.serviceTestUtilities.addViewEditorState( USER_NAME, editorStateId, 
-        		                                                 undoId, undoArgs, redoId, redoArgs,
-        		                                                 viewName, viewDescr, sourcePaths,
-        		                                                 compName, compDescr, compLeftSource, compRightSource,
-        		                                                 leftColumn, rightColumn, type, operator);
-        assertThat( this.serviceTestUtilities.viewEditorStateExists( USER_NAME, editorStateId ), is( true ) );
-        
-        // TODO: MARK.. I'm stuck now.. cu Monday
-        
-        // Execute a REFRESH virtualization and make sure editor state is deleted
-        final HttpDelete putRequest = jsonRequest( uri, RequestType.PUT );
-        executeOk( putRequest );
-        assertThat( this.serviceTestUtilities.viewEditorStateExists( USER_NAME, editorStateId ), is( false ) );
+        try {
+        	this.serviceTestUtilities.createVdbModelView( vdbName, modelName, viewName, USER_NAME );
+        	this.serviceTestUtilities.addViewEditorState( USER_NAME, editorStateId, 
+        			undoId, undoArgs, redoId, redoArgs,
+        			viewName, viewDescr, sourcePaths,
+        			compName, compDescr, compLeftSource, compRightSource,
+        			leftColumn, rightColumn, type, operator);
+        	assertThat( this.serviceTestUtilities.viewEditorStateExists( USER_NAME, editorStateId ), is( true ) );
+
+        	// Execute refreshViews
+        	URI dsUri = uriBuilder().workspaceDataservicesUri();
+        	URI refreshViewsUri = UriBuilder.fromUri(dsUri).path(V1Constants.REFRESH_DATASERVICE_VIEWS).path(dsName).build();
+
+        	// Currently this test fails.  The DDL generator throws an exception
+        	final HttpPost postRequest = jsonRequest( refreshViewsUri, RequestType.POST );
+        	HttpResponse refreshViewsResponse = execute(postRequest);
+
+        	//assertResponse(refreshViewsResponse, HttpStatus.SC_FORBIDDEN);
+        	//String entity = extractResponse(refreshViewsResponse);
+        	//assertTrue(entity.contains("An error occurred while refreshing views"));
+
+        	      okResponse(refreshViewsResponse);
+        	      String entity = extractResponse(refreshViewsResponse);
+        	      assertTrue(entity.contains("Successfully updated"));
+
+        } finally {
+        	// remove editor state when complete
+        	serviceTestUtilities.removeViewEditorState(USER_NAME, editorStateId);
+        }
     }
+    
 }

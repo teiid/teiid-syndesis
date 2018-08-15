@@ -23,6 +23,7 @@ package org.komodo.relational;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+
 import org.komodo.core.AbstractLocalRepositoryTest;
 import org.komodo.core.KomodoLexicon;
 import org.komodo.relational.connection.Connection;
@@ -34,9 +35,9 @@ import org.komodo.relational.model.Table;
 import org.komodo.relational.resource.Driver;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
+import org.komodo.spi.repository.KomodoObject;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public class RelationalModelTest extends AbstractLocalRepositoryTest {
@@ -217,6 +218,10 @@ public class RelationalModelTest extends AbstractLocalRepositoryTest {
 
     protected String getDefaultFolderName() {
         return ( this.name.getMethodName() + "-Folder" );
+    }
+    
+    protected String getDefaultViewEditorStateName() {
+        return ( this.name.getMethodName() + "-ViewEditorState" );
     }
 
 }

@@ -904,7 +904,7 @@ public final class KomodoUtilService extends KomodoService {
             return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_ID);
         }
 
-        if (commands == null || commands.length == 0) {
+        if (commands == null) {
             return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_COMMANDS);
         }
 

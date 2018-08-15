@@ -610,6 +610,7 @@ public final class ServiceTestUtilities implements StringConstants {
         for(String sourcePath: sourcePaths) {
             viewDefn.addSourcePath(uow, sourcePath);
         }
+        viewDefn.setComplete(uow, true);
         SqlComposition comp = viewDefn.addSqlComposition(uow, compName);
         comp.setDescription(uow, compDescr);
         comp.setLeftSourcePath(uow, compLeftSource);
