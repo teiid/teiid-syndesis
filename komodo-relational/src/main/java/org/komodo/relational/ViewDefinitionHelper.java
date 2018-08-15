@@ -23,20 +23,21 @@ package org.komodo.relational;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Properties;
 
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.model.Column;
 import org.komodo.relational.model.Model;
-import org.komodo.relational.model.Table;
 import org.komodo.relational.model.Model.Type;
+import org.komodo.relational.model.Table;
 import org.komodo.relational.model.internal.OptionContainerUtils;
 import org.komodo.relational.profile.Profile;
 import org.komodo.relational.profile.SqlComposition;
 import org.komodo.relational.profile.ViewDefinition;
+import org.komodo.relational.profile.ViewEditorState;
+import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.spi.KException;
@@ -52,12 +53,22 @@ import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.utils.KLog;
 import org.komodo.utils.PathUtils;
 
+/**
+ * This class provides methods to create data service vdbs containing a view model
+ * and one or more source models
+ * 
+ * Each model is created via generating DDL and calling setModelDefinition() method that 
+ * relies on komodo/modeshape framework to parse the DDL and construct the corresponding 
+ * PHYSICAL and VIRTUAL relational models
+ *
+ */
 public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
 	
 	protected static final KLog LOGGER = KLog.getLogger();
     protected static final String SCHEMA_MODEL_NAME_PATTERN = "{0}schemamodel"; //$NON-NLS-1$
     protected static final String SCHEMA_VDB_NAME_PATTERN = "{0}schemavdb"; //$NON-NLS-1$
     private static final char SQL_ESCAPE_CHAR = '\"'; //$NON-NLS-1$
+    private static final char NEW_LINE = '\n'; //$NON-NLS-1$
     private static final String OPEN_SQUARE_BRACKET = "["; //$NON-NLS-1$
     private static final String CLOSE_SQUARE_BRACKET = "]"; //$NON-NLS-1$
     
@@ -71,45 +82,172 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
     /**
      * Inner Join Type
      */
-    public static final String JOIN_INNER = "INNER"; //$NON-NLS-1$
+    public static final String JOIN_INNER = "INNER_JOIN"; //$NON-NLS-1$
     /**
      * Left Outer Join type
      */
-    public static final String JOIN_LEFT_OUTER = "LEFT_OUTER"; //$NON-NLS-1$
+    public static final String JOIN_LEFT_OUTER = "LEFT_OUTER_JOIN"; //$NON-NLS-1$
     /**
      * Right Outer Join type
      */
-    public static final String JOIN_RIGHT_OUTER = "RIGHT_OUTER"; //$NON-NLS-1$
+    public static final String JOIN_RIGHT_OUTER = "RIGHT_OUTER_JOIN"; //$NON-NLS-1$
     /**
      * Full Outer Join type
      */
-    public static final String JOIN_FULL_OUTER = "FULL_OUTER"; //$NON-NLS-1$
+    public static final String JOIN_FULL_OUTER = "FULL_OUTER_JOIN"; //$NON-NLS-1$
     
     /**
      * fqn table option key
      */
-    String TABLE_OPTION_FQN = "teiid_relfqn"; //$NON-NLS-1$l
+    String TABLE_OPTION_FQN = "teiid_rel:fqn"; //$NON-NLS-1$l "teiid_relfqn"; //
     
     protected final WorkspaceManager wsManager;
     
     /**
      * Constructs a Komodo service.
      *
-     * @param engine
-     *        the Komodo Engine (cannot be <code>null</code> and must be started)
+     * @param wsManager
+     *        the WorkspaceManager (cannot be <code>null</code> and must be started)
      */
     public ViewDefinitionHelper( final WorkspaceManager wsManager ) {
         this.wsManager = wsManager;
     }
     
-    public String getODataViewDdl(UnitOfWork uow, ViewDefinition viewDef) throws KException {
+    /**
+     * This method creates a new service VDB given a list of editor states each containing a view definition.
+     * 
+     * All views will end up in a new view model added to the vdb
+     * 1 or more source models will be generated and added to the vdb
+     * 
+     * @param uow
+     * 		the transaction
+     * @param editorStates
+     * 		the array of view editor states
+     * @return
+     * 		nothing
+     * @throws KException
+     * 		if problem occurs
+     */
+    public void refreshServiceVdb(UnitOfWork uow, Vdb serviceVdb, ViewEditorState[] editorStates) throws KException {
+        // Reset the viewModel using the valid ViewDefinition
+        Model viewModel = getViewModel(uow, serviceVdb);
+    	List<TableInfo> allSourceTableInfos = new ArrayList<TableInfo>();
+    	
+        if ( editorStates.length > 0 ) {
+        	// Generate new model DDL by appending all view DDLs
+        	StringBuilder allViewDdl = new StringBuilder();
+
+            for ( final ViewEditorState editorState : editorStates ) {
+            	ViewDefinition viewDef = editorState.getViewDefinition(uow);
+            	
+            	// If the ViewDefinition is complete, generate view DDL from it and append
+            	if( viewDef.isComplete(uow) ) {
+                	TableInfo[] tableInfos = getSourceTableInfos(uow, viewDef);
+
+            		String viewDdl = getODataViewDdl(uow, viewDef, tableInfos);
+            		allViewDdl.append(viewDdl).append(NEW_LINE); //$NON-NLS-1$
+            		
+            		// Load the running copy/leftover list
+            		for( TableInfo info : tableInfos) {
+            			allSourceTableInfos.add(info);
+            		}
+            		
+            		// Check the table info objects and compile a list of all source table infos
+            		for( TableInfo info : tableInfos) {
+            			boolean exists = false;
+            			for( TableInfo nextSrcTableInfo : allSourceTableInfos) {
+            				if( nextSrcTableInfo.getTable().equals(info.getTable()) )  {
+            					exists = true;
+            					break;
+            				}
+            			}
+            			
+            			if(!exists) {
+            				allSourceTableInfos.add(info);
+            			}
+            		}
+            	}
+        	}
+            // Set the generated DDL on the service VDB view model
+            viewModel.setModelDefinition(uow, allViewDdl.toString());
+        } else { 
+        	viewModel.setModelDefinition(uow, "");
+        }
+        
+        // remove all source models from VDB
+        clearSourceModels(uow, serviceVdb);
+
+        // Now that we have all source TableInfo objects
+        // find TableInfo's that share a common parent (schema)
+        // Each TableInfo will have a Table KomodoObject. the table.getParent() will be the schema model, and hence schema model name
+        
+        List<TableInfo> remainingTableInfos = new ArrayList<TableInfo>();
+        remainingTableInfos.addAll(allSourceTableInfos);
+        
+        // Starting with all table infos, process each one and process table info's for common schema source models
+        // After each schema model, re-set remaining table infos and repeat until no remaining table infos
+        
+        while( !remainingTableInfos.isEmpty() ) {
+        	boolean first = true;
+        	StringBuilder sb = new StringBuilder();
+        	Model currentSchemaModel = null;
+        	List<TableInfo> leftOvers = new ArrayList<TableInfo>();
+        	
+        	// For each source model, generate DDL via Table.export() method and store in StingBuilder
+        	
+        	for( TableInfo nextTableInfo : remainingTableInfos ) {
+        		if( first ) {
+        			currentSchemaModel = nextTableInfo.getTable().getParent(uow);
+        			byte[] ddlBytes = nextTableInfo.getTable().export(uow, new Properties());
+        			sb.append(new String(ddlBytes));
+        			first = false;
+        		} else {
+        			if( nextTableInfo.getTable().getParent(uow).equals(currentSchemaModel) ) {
+        				byte[] ddlBytes = nextTableInfo.getTable().export(uow, new Properties());
+        				sb.append(NEW_LINE).append(new String(ddlBytes));
+        			} else {
+        				leftOvers.add(nextTableInfo);
+        			}
+        		}
+        	}
+        	
+        	// Create a source model and set the DDL string via setModelDeinition(DDL)
+        	
+            Model srcModel = serviceVdb.addModel(uow, currentSchemaModel.getName(uow));
+            srcModel.setModelType(uow, Type.PHYSICAL);
+            srcModel.setModelDefinition(uow, sb.toString());
+            
+            // Add ModelSource based on currentSchemaModel ModelSource info
+            
+            ModelSource[] schemaModelSources = currentSchemaModel.getSources(uow);
+            for( ModelSource srcModelSource : schemaModelSources) {
+            	// create the ModelSource
+	            ModelSource tgtModelSource = srcModel.addSource(uow, srcModelSource.getName(uow));
+	            // set the jndi name and translator name
+	            tgtModelSource.setJndiName(uow, srcModelSource.getJndiName(uow));
+	            tgtModelSource.setTranslatorName(uow, srcModelSource.getTranslatorName(uow));
+            }
+
+            // Clear the remaining table infos and reset with any leftovers
+            
+        	remainingTableInfos.clear();
+        	remainingTableInfos.addAll(leftOvers);
+        }
+        
+    }
+    
+    /*
+     * Generates DDL for a view definition based on properties and supplied array of TableInfo from one or more sources
+     */
+    private String getODataViewDdl(UnitOfWork uow, ViewDefinition viewDef, TableInfo[] sourceTableInfos) throws KException {
+
     	// Need to construct DDL based on
     	//   * 1 or 2 source tables
     	//   * Join criteria in the form of left and right critieria column names
         
     	String viewName = viewDef.getViewName(uow);
     	
-        SourceTableConnection[] tableConns = findSourceTables(uow, viewDef);
+    	if (sourceTableInfos.length < 1) throw new KException("Error getting the ViewDefinition sources");
     	
         StringBuilder sb = new StringBuilder();
         
@@ -118,18 +256,16 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
         sb.append(viewName);
         sb.append(StringConstants.SPACE+StringConstants.OPEN_BRACKET);
         sb.append("RowId integer PRIMARY KEY, "); //$NON-NLS-1$
-        
-//        List<String> fullyQualifiedColNames = new ArrayList<String>();
-        
+
         // Check for join and single or 2 source join
-        boolean isJoin = tableConns.length > 1;
-        boolean singleSource = false;
+        boolean isJoin = sourceTableInfos.length > 1;
+        boolean singleSource = true;
         
-        SourceTableConnection lhTableConnection = tableConns[0];
-        SourceTableConnection rhTableConnection = null;
+        TableInfo lhTableInfo = sourceTableInfos[0];
+        TableInfo rhTableInfo = null;
         if( isJoin ) {
-        	rhTableConnection = tableConns[1];
-        	singleSource =  lhTableConnection.getConnection().equals(rhTableConnection.getConnection());
+        	rhTableInfo = sourceTableInfos[1];
+        	singleSource =  lhTableInfo.getConnectionName().equals(rhTableInfo.getConnectionName());
         }
         
         // Need to create 2 lists of column info
@@ -144,40 +280,30 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
         List<String> fqnColNames = new ArrayList<String>();
         
         // Need to loop through actual columns to maintain order
-        for( Column column : lhTableConnection.getSourceTable().getColumns(uow) ) {
-        	ColumnInfo info = lhTableConnection.getColumnInfoMap().get(column);
-        	
-        	// Column info may not exist ???
-        	if( info != null ) {
-	        	if( !colNames.contains(info.getName())) {
-	        		colNames.add(info.getName());
-	        		projSymbols.add(info.getNameAndType());
-	        		if(singleSource) {
-	        			fqnColNames.add(info.getName());
-	        		} else {
-	        			fqnColNames.add(info.getAliasedName());
-	        		}
-	        	}
+        for( ColumnInfo info : lhTableInfo.getColumnInfos() ) {
+        	if( !colNames.contains(info.getName())) {
+        		colNames.add(info.getName());
+        		projSymbols.add(info.getNameAndType());
+        		if(singleSource) {
+        			fqnColNames.add(info.getName());
+        		} else {
+        			fqnColNames.add(info.getAliasedName());
+        		}
         	}
         }
         
-        if( rhTableConnection != null ) {
-            for( Column column : rhTableConnection.getSourceTable().getColumns(uow) ) {
-            	ColumnInfo info = rhTableConnection.getColumnInfoMap().get(column);
-            	
-            	// Column info may not exist ???
-            	if( info != null ) {
-    	        	if( !colNames.contains(info.getName())) {
-    	        		colNames.add(info.getName());
-    	        		projSymbols.add(info.getNameAndType());
-    	        		if(singleSource) {
-    	        			fqnColNames.add(info.getName());
-    	        		} else {
-    	        			fqnColNames.add(info.getAliasedName());
-    	        		}
-    	        	}
-            	}
-            }
+        if( rhTableInfo != null ) {
+        	for( ColumnInfo info : rhTableInfo.getColumnInfos() ) {
+        		if( !colNames.contains(info.getName())) {
+        			colNames.add(info.getName());
+        			projSymbols.add(info.getNameAndType());
+        			if(singleSource) {
+        				fqnColNames.add(info.getName());
+        			} else {
+        				fqnColNames.add(info.getAliasedName());
+        			}
+        		}
+        	}
         }
         
         for (int i = 0; i < projSymbols.size(); i++) {
@@ -203,12 +329,13 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
         sb.append("\n"); //$NON-NLS-1$
         sb.append("FROM "); //$NON-NLS-1$
         
+        // --------- JOIN ---------
         if( isJoin ) {
-        	String lhTableName = lhTableConnection.getFQName() + " AS " + lhTableConnection.getAlias();
-	        String rhTableName = rhTableConnection.getFQName() + " AS " + rhTableConnection.getAlias();
+        	String lhTableName = lhTableInfo.getFQName() + " AS " + lhTableInfo.getAlias();
+	        String rhTableName = rhTableInfo.getFQName() + " AS " + rhTableInfo.getAlias();
         	if( singleSource ) {
-        		lhTableName = lhTableConnection.getName();
-    	        rhTableName = rhTableConnection.getName();
+        		lhTableName = lhTableInfo.getFQName();
+    	        rhTableName = rhTableInfo.getFQName();
         	} 
         	sb.append(lhTableName+StringConstants.SPACE);
         	
@@ -231,84 +358,111 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
 	        
 	        sb.append("\nON \n"); //$NON-NLS-1$
 	        
-	        ViewBuilderCriteriaPredicate predicate = new ViewBuilderCriteriaPredicate();
-	        
-	        predicate.setLhColumn(comp1.getLeftCriteriaColumn(uow));
-	        predicate.setRhColumn(comp1.getRightCriteriaColumn(uow));
-	        predicate.setOperator(getOperator(uow, comp1));
+            String lhColumn = comp1.getLeftCriteriaColumn(uow);
+            String rhColumn = comp1.getRightCriteriaColumn(uow);
+            String operator = getOperator(uow, comp1);
             
-	        if( singleSource ) {
-	        	 sb.append(lhTableName+StringConstants.DOT).append(predicate.getLhColumn())
-	             .append(StringConstants.SPACE+predicate.getOperator()+StringConstants.SPACE)
-	             .append(rhTableName+StringConstants.DOT).append(predicate.getRhColumn());
-	        } else {
-	            sb.append(lhTableConnection.getAlias()+StringConstants.DOT).append(predicate.getLhColumn())
-	            .append(StringConstants.SPACE+predicate.getOperator()+StringConstants.SPACE)
-	            .append(rhTableConnection.getAlias()+StringConstants.DOT).append(predicate.getRhColumn());
-	        }
-	                
+            // single source = dont use table alias, otherwise alias the table
+            String lhTblName = singleSource ? lhTableName : lhTableInfo.getAlias();
+            String rhTblName = singleSource ? rhTableName : rhTableInfo.getAlias();
+        	sb.append(lhTblName+StringConstants.DOT).append(lhColumn)
+              .append(StringConstants.SPACE+operator+StringConstants.SPACE)
+              .append(rhTblName+StringConstants.DOT).append(rhColumn);
+        	
+        	sb.append(StringConstants.SEMI_COLON);
+        // --------- Single Source ---------
         } else {
-            sb.append(lhTableConnection.getName()).append("\n");
+            sb.append(lhTableInfo.getFQName()).append(StringConstants.SEMI_COLON);
         }
-        
-        sb.append(StringConstants.SEMI_COLON);
 
         return sb.toString();
     }
-
+    
     /**
-     * Find and resolve source {@link Table}s for a {@link ViewDefinition} object
+     * 
+     * @param uow
+     * 		the transaction
+     * @param viewDef 
+     * 		the view definition
+     * @return the View DDL
+     * @throws KException
+     * 		if problem occurs
+     */
+    public String getODataViewDdl(UnitOfWork uow, ViewDefinition viewDef) throws KException {
+    	TableInfo[] tableInfos = getSourceTableInfos(uow, viewDef);
+    	if (tableInfos.length < 1) throw new KException("Error getting the ViewDefinition sources");
+    	
+    	return getODataViewDdl(uow, viewDef, tableInfos);
+    }
+
+    /*
+     * Find and resolve source {@link TableInfo}s for a {@link ViewDefinition} object
      * @param uow
      * @param viewDefinition
-     * @return {@link Table} array
+     * @return {@link TableInfo} array
      * @throws KException
      */
-	public SourceTableConnection[] findSourceTables(UnitOfWork uow, ViewDefinition viewDefinition) throws KException {
-    	if( viewDefinition.isComplete(uow) ) {
+	private TableInfo[] getSourceTableInfos(UnitOfWork uow, ViewDefinition viewDefinition) throws KException {
+		if ( !viewDefinition.isComplete(uow) ) {
+			return new TableInfo[0];
+		}
+		String[] sourceTablePaths = viewDefinition.getSourcePaths(uow);
+		ArrayList<TableInfo> sourceTableInfos = new ArrayList<TableInfo>(sourceTablePaths.length);
 
-        	String[] sourceTablePaths = viewDefinition.getSourcePaths(uow);
-        	
-        	ArrayList<Table> sourceTables = new ArrayList<Table>(sourceTablePaths.length);
-        	ArrayList<SourceTableConnection> sourceTableConnections = new ArrayList<SourceTableConnection>(sourceTablePaths.length);
-        	
-        	// Find and create Table for each source Path
-        	for(String path : sourceTablePaths) {
-        		String connectionName = PathUtils.getOption(path, "connection");
-        		Connection connection = findConnection(uow, this.wsManager, connectionName);
-        	
-            	// Find Table objects in Komodo based on the connection name (i.e.    connection=pgConn
-                final Model schemaModel = findSchemaModel( uow, this.wsManager, connection );
+		// Find and create TableInfo for each source Path
+		int iTable = 0;
+		for(String path : sourceTablePaths) {
+			String connectionName = PathUtils.getOption(path, "connection");
+			Connection connection = findConnection(uow, this.wsManager, connectionName);
 
-                // Get the tables from the schema and match them with the table name
-                if ( schemaModel != null ) {
-                    final Table[] tables = schemaModel.getTables( uow );
-                    String tableOption = PathUtils.getTableOption(path);
-                    
-                    for (Table table: tables) {
-                    	final String option = OptionContainerUtils.getOption( uow, table, TABLE_OPTION_FQN );
-                    	if( option != null ) {
-	                    	if( option.equals(tableOption) && !sourceTables.contains(table)) {
-	                    		// Add the table to a temp list to prevent duplicates?
-	                    		sourceTables.add(table);
-	                    		String alias = "A";
-	                    		if( sourceTables.size() == 2 ) alias = "B";
-	                    		// create a new table connection object to maintain reference/info to 
-	                    		sourceTableConnections.add(new SourceTableConnection(uow, path, table, alias, connection));
-	                    	}
-                    	}            	
-                    }
+			if (connection != null) {
+				// Find Table objects in Komodo based on the connection name (i.e.    connection=pgConn
+				final Model schemaModel = findSchemaModel( uow, this.wsManager, connection );
 
-                }
-        	}
+				// Get the tables from the schema and match them with the table name
+				if ( schemaModel != null ) {
+					final Table[] tables = schemaModel.getTables( uow );
+					String tableOption = PathUtils.getTableOption(path);
 
-        	SourceTableConnection[] results = new SourceTableConnection[sourceTableConnections.size()];
-        	return sourceTableConnections.toArray(results);
-    	} else {
-    		// TODO: throw exception/log message that view definition is incomplete
-    		return new SourceTableConnection[0];
-    	}
+					// Look thru schema tables for table with matching option.
+					for (Table table: tables) {
+						final String option = OptionContainerUtils.getOption( uow, table, TABLE_OPTION_FQN );
+						if( option != null ) {
+							// If table found, create the TableInfo and break
+							if( option.equals(tableOption) ) {
+								String alias = (iTable == 0) ? "A" : "B";
+								// create a new TableInfo object
+								sourceTableInfos.add(new TableInfo(uow, path, table, alias));
+								iTable++;
+								break;
+							}
+						}            	
+					}
+				}
+			}
+		}
+
+		return sourceTableInfos.toArray(new TableInfo[0]);
 	}
 	
+    
+	/*
+	 * Simple method that removes all source models from a VDB
+	 */
+    private void clearSourceModels(final UnitOfWork uow, Vdb serviceVdb) throws KException {
+    	List<Model> modelsToRemove = new ArrayList<Model>();
+    	
+    	for( Model model : serviceVdb.getModels(uow) ) {
+    		if( model.getModelType(uow) == Type.PHYSICAL ) {
+    			modelsToRemove.add(model);
+    		}
+    	}
+    	
+    	for( Model model : modelsToRemove) {
+    		model.remove(uow);
+    	}
+    }
+
     private static String getColumnDatatypeString(UnitOfWork uow, Column col) throws KException {
     	String typeName = col.getDatatypeName(uow);
     	
@@ -324,40 +478,7 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
     
         return typeName;
     }
-    
-    /*
-     * Generates comma separated string of the supplied column names
-     * Will be of form: "column1, column2, column3"
-     */
-//    private static String getColString(List<String> columnNames) {
-//        StringBuilder sb = new StringBuilder();
-//        for (int i = 0; i < columnNames.size(); i++) {
-//            if (i != 0) {
-//                sb.append(StringConstants.COMMA);
-//            }
-//            sb.append(StringConstants.SPACE + escapeSQLName(columnNames.get(i)));
-//        }
-//        return sb.toString();
-//    }
 
-    /*
-     * Generates comma separated string of the supplied column name with corresponding type
-     * Will be of form: "column1 string, column2 string, column3 long"
-     */
-//    private static String getColWithTypeString(List<String> columnNames,
-//                                               List<String> typeNames) {
-//        StringBuilder sb = new StringBuilder();
-//        for (int i = 0; i < columnNames.size(); i++) {
-//            if (i != 0) {
-//                sb.append(StringConstants.COMMA);
-//            }
-//            sb.append(StringConstants.SPACE + escapeSQLName(columnNames.get(i)));
-//            sb.append(StringConstants.SPACE);
-//            sb.append(typeNames.get(i));
-//        }
-//        return sb.toString();
-//    }
-    
     private String getOperator(UnitOfWork uow, SqlComposition sqlComposition) throws KException {
     	String type = sqlComposition.getOperator(uow);
         if( EQ_STR.equals(type)) {
@@ -411,32 +532,6 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
     private static boolean isBasicLatinDigit(char c) {
         return c >= '0' && c <= '9';
     }
-
-    /*
-     * Generates comma separated string of the supplied column names with their corresponding type.
-     * If columns are in the duplicateNames list, then prefix them with the supplied alias.
-     * Will be of form: "alias_column1 string, alias_column2 string, column3 long"
-     */
-//    private static String getAliasedColWithTypeString(List<String> columnNames,
-//                                                      List<String> typeNames, String alias, List<String> duplicateNames) {
-//        StringBuilder sb = new StringBuilder();
-//        for (int i = 0; i < columnNames.size(); i++) {
-//            if (i != 0) {
-//                sb.append(StringConstants.COMMA);
-//            }
-//
-//            // If the columnName is a duplicate, prefix it with "alias_"
-//            String colName = columnNames.get(i);
-//            if(duplicateNames.contains(colName.toLowerCase())) {
-//                sb.append(StringConstants.SPACE + alias + StringConstants.UNDERSCORE + escapeSQLName(colName));
-//            } else {
-//                sb.append(StringConstants.SPACE + escapeSQLName(colName));
-//            }
-//            sb.append(StringConstants.SPACE);
-//            sb.append(typeNames.get(i));
-//        }
-//        return sb.toString();
-//    }
 	
     protected static Dataservice findDataservice(UnitOfWork uow, final WorkspaceManager wkspMgr, String dataserviceName) throws KException {
         if (! wkspMgr.hasChild( uow, dataserviceName, DataVirtLexicon.DataService.NODE_TYPE ) ) {
@@ -499,7 +594,7 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
 		return MessageFormat.format(SCHEMA_MODEL_NAME_PATTERN, connectionName.toLowerCase());
 	}
     
-    public static Model getViewModel(final UnitOfWork uow, Vdb serviceVdb ) throws KException {
+    public static Model getViewModel(final UnitOfWork uow, Vdb serviceVdb) throws KException {
     	for( Model model : serviceVdb.getModels(uow) ) {
     		if( model.getModelType(uow) == Type.VIRTUAL ) {
     			return model;
@@ -520,61 +615,49 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
         return userProfile;
     }
     
-    class SourceTableConnection {
-
-		final private String sourceTablePath;
-    	final private Table sourceTable;
-    	final private Model schemaModel;
-    	final private Connection connection;
+    class TableInfo {
+		final private String path;
     	final private String alias;
+    	final private Table table;
 
     	private String name;
     	private String fqname;
 
-		private Map<Column, ColumnInfo> columnInfoMap;
+		private List<ColumnInfo> columnInfos = new ArrayList<ColumnInfo>();
     	
-    	protected SourceTableConnection(UnitOfWork uow, String path, Table table, String alias, Connection conn) throws KException {
-    		this.sourceTablePath = path;
-    		this.sourceTable = table;
+    	protected TableInfo(UnitOfWork uow, String path, Table table, String alias) throws KException {
+    		this.path = path;
     		this.alias = alias;
-    		this.schemaModel = table.getParent(uow);
-    		this.connection = conn;
-    		init(uow);
+    		this.table = table;
+    		this.name = table.getName(uow);
+    		Model schemaModel = table.getParent(uow);
+    		this.fqname = schemaModel.getName(uow) + DOT + this.name;
+    		createColumnInfos(uow, table);
     	}
     	
-    	private void init(UnitOfWork uow) throws KException {
-    		this.name = this.sourceTable.getName(uow);
-    		this.fqname = this.schemaModel.getName(uow) + DOT + this.name;
+    	private void createColumnInfos(UnitOfWork uow, Table table) throws KException {
     		// Walk through the columns and create an array of column + datatype strings
-    		Column[] cols = this.sourceTable.getColumns(uow);
-    		
-    		int nCols = cols.length;
-    		
-    		this.columnInfoMap = new HashMap<Column, ColumnInfo>(nCols);
+    		Column[] cols = table.getColumns(uow);
     		
     		for( Column col : cols) {
-    			this.columnInfoMap.put(col, new ColumnInfo(uow, col, getFQName(), this.alias));
+    			this.columnInfos.add(new ColumnInfo(uow, col, getFQName(), this.alias));
     		}
     	}
     	
+    	public String getConnectionName() {
+			return PathUtils.getOption(this.path, "connection");
+		}
+
     	public String getSourceTablePath() {
-			return this.sourceTablePath;
+			return this.path;
 		}
 
-		public Table getSourceTable() {
-			return this.sourceTable;
-		}
-
-		public Model getSchemaModel() {
-			return this.schemaModel;
-		}
-
-		public Connection getConnection() {
-			return this.connection;
-		}
-		
 		public String getName() {
 			return this.name;
+		}
+		
+		public Table getTable() {
+			return this.table;
 		}
 		
 		public String getAlias() {
@@ -585,38 +668,27 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
 			return fqname;
 		}
 
-		public Map<Column, ColumnInfo> getColumnInfoMap() {
-			return columnInfoMap;
+		public List<ColumnInfo> getColumnInfos() {
+			return columnInfos;
 		}
     }
     
     class ColumnInfo {
-    	final private Column column;
-    	
     	private String name;
     	private String fqname;
     	private String aliasedName;
     	private String nameAndType;
     	
     	protected ColumnInfo(UnitOfWork uow, Column column, String tableFqn, String tblAlias) throws KException {
-    		this.column = column;
-    		init(uow, tableFqn, tblAlias);
-    	}
-    	
-    	private void init(UnitOfWork uow, String tableFqn, String tblAlias) throws KException {
-			this.name = this.column.getName(uow);
-			this.nameAndType =  escapeSQLName(name) + SPACE + getColumnDatatypeString(uow, this.column);
+			this.name = column.getName(uow);
+			this.nameAndType =  escapeSQLName(name) + SPACE + getColumnDatatypeString(uow, column);
 			this.aliasedName = name;
 			if( tblAlias != null ) {
 				this.aliasedName = tblAlias + DOT + name;
 			}
 			this.fqname = tableFqn + DOT + escapeSQLName(name);
     	}
-
-		public Column getColumn() {
-			return this.column;
-		}
-
+    	
 		public String getName() {
 			return this.name;
 		}
