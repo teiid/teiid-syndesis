@@ -651,7 +651,7 @@ public class KomodoRestV1Application extends Application implements SystemConsta
         /**
          * Refresh views referenced in a view editor state object
          */
-        String REFRESH_DATASERVICE_VIEWS = "refreshViewsForViewEditorState";
+        String REFRESH_DATASERVICE_VIEWS = "refreshViews";
     }
 
     private static final int TIMEOUT = 1;
