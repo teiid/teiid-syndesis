@@ -104,12 +104,12 @@ public class ViewDefinitionHelperTest extends RelationalModelTest {
     
     private final static String EXPECTED_JOIN_SQL_SINGE_SOURCE_START =
             "CREATE VIEW orderInfoView (RowId integer PRIMARY KEY, ID LONG, orderDate TIMESTAMP, name STRING) AS \n"
-          + "SELECT ROW_NUMBER() OVER (ORDER BY ID), ID, orderDate, name\n"
-          + "FROM pgconnection1schemamodel.orders \n";
+          + "SELECT ROW_NUMBER() OVER (ORDER BY A.ID), A.ID, A.orderDate, B.name\n"
+          + "FROM pgconnection1schemamodel.orders AS A \n";
     
-    private final static String  EXPECTED_JOIN_SQL_SINGLE_SOURCE_END = "pgconnection1schemamodel.customers \n"
+    private final static String  EXPECTED_JOIN_SQL_SINGLE_SOURCE_END = "pgconnection1schemamodel.customers AS B \n"
           + "ON \n"
-          + "pgconnection1schemamodel.orders.ID = pgconnection1schemamodel.customers.ID;";
+          + "A.ID = B.ID;";
     
     private final static String EXPECTED_NO_JOIN_SQL_SINGE_SOURCE =
             "CREATE VIEW orderInfoView (RowId integer PRIMARY KEY, ID LONG, orderDate TIMESTAMP) AS \n"
@@ -156,27 +156,29 @@ public class ViewDefinitionHelperTest extends RelationalModelTest {
         ModelSource modelSource = sourceModel.addSource(getTransaction(), DS_NAME);
         modelSource.setJndiName(getTransaction(), DS_JNDI_NAME);
         modelSource.setTranslatorName(getTransaction(), TRANSLATOR_JDBC);
-        
+        modelSource.setAssociatedConnection(getTransaction(), connection);
+
         commit();
         
-        connection = createConnection( DS_NAME_2 );
-        connection.setDescription(getTransaction(), description);
+        Connection connection2 = createConnection( DS_NAME_2 );
+        connection2.setDescription(getTransaction(), description);
         
-        connection.setExternalLocation(getTransaction(), extLoc );
+        connection2.setExternalLocation(getTransaction(), extLoc );
         
-        connection.setJdbc(getTransaction(), false);
-        connection.setJndiName(getTransaction(), "DS_JNDI_NAME2");
-        connection.setDriverName(getTransaction(), "dsDriver");
-        connection.setClassName(getTransaction(), "dsClassname2");
-        connection.setProperty(getTransaction(), "prop1", "prop1Value");
-        connection.setProperty(getTransaction(), "prop2", "prop2Value");
+        connection2.setJdbc(getTransaction(), false);
+        connection2.setJndiName(getTransaction(), "DS_JNDI_NAME2");
+        connection2.setDriverName(getTransaction(), "dsDriver");
+        connection2.setClassName(getTransaction(), "dsClassname2");
+        connection2.setProperty(getTransaction(), "prop1", "prop1Value");
+        connection2.setProperty(getTransaction(), "prop2", "prop2Value");
 
         // Create a VDB for this connection
-        sourceVdb = createVdb(VDB_NAME_2, connection, "originalFilePath");
+        sourceVdb = createVdb(VDB_NAME_2, connection2, "originalFilePath");
         sourceModel = sourceVdb.addModel(getTransaction(), MODEL_NAME_2);
-        sourceModel.addSource(getTransaction(), DS_NAME_2);
-        modelSource.setJndiName(getTransaction(), DS_JNDI_NAME2);
-        modelSource.setTranslatorName(getTransaction(), TRANSLATOR_JDBC);
+        ModelSource modelSource2 = sourceModel.addSource(getTransaction(), DS_NAME_2);
+        modelSource2.setJndiName(getTransaction(), DS_JNDI_NAME2);
+        modelSource2.setTranslatorName(getTransaction(), TRANSLATOR_JDBC);
+        modelSource2.setAssociatedConnection(getTransaction(), connection2);
         
         // Rather than creating model objects piecemeal, it's easier to have komodo & modeshape do it via
         // setting the model definition via Teiid DDL statements
@@ -378,6 +380,16 @@ public class ViewDefinitionHelperTest extends RelationalModelTest {
     	View view = viewModel.getViews(getTransaction())[0];
     	assertNotNull(view);
     	assertThat(view.getColumns(getTransaction()).length, is(4));
+    	
+    	for( Model model : models ) {
+    		if( model.getModelType(getTransaction()) == Type.PHYSICAL) {
+    			ModelSource[] modelSources = model.getSources(getTransaction());
+    			assertNotNull(modelSources);
+    			for( ModelSource ms : modelSources ) {
+    				assertNotNull(ms.getOriginConnection(getTransaction()));
+    			}
+    		}
+    	}
     }
     
     @Test
@@ -408,5 +420,16 @@ public class ViewDefinitionHelperTest extends RelationalModelTest {
     	View view = viewModel.getViews(getTransaction())[0];
     	assertNotNull(view);
     	assertThat(view.getColumns(getTransaction()).length, is(4));
+    	
+    	
+    	for( Model model : models ) {
+    		if( model.getModelType(getTransaction()) == Type.PHYSICAL) {
+    			ModelSource[] modelSources = model.getSources(getTransaction());
+    			assertNotNull(modelSources);
+    			for( ModelSource ms : modelSources ) {
+    				assertNotNull(ms.getOriginConnection(getTransaction()));
+    			}
+    		}
+    	}
     }
 }

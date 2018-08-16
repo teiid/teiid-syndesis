@@ -23,7 +23,9 @@ package org.komodo.relational;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.komodo.relational.connection.Connection;
@@ -131,7 +133,8 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
     public void refreshServiceVdb(UnitOfWork uow, Vdb serviceVdb, ViewEditorState[] editorStates) throws KException {
         // Reset the viewModel using the valid ViewDefinition
         Model viewModel = getViewModel(uow, serviceVdb);
-    	List<TableInfo> allSourceTableInfos = new ArrayList<TableInfo>();
+        // Keep track of unique list of sources needed
+    	List<Table> allSourceTables = new ArrayList<Table>();
     	
         if ( editorStates.length > 0 ) {
         	// Generate new model DDL by appending all view DDLs
@@ -142,28 +145,16 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
             	
             	// If the ViewDefinition is complete, generate view DDL from it and append
             	if( viewDef.isComplete(uow) ) {
-                	TableInfo[] tableInfos = getSourceTableInfos(uow, viewDef);
+            		TableInfo[] tableInfos = getSourceTableInfos(uow, viewDef);
 
             		String viewDdl = getODataViewDdl(uow, viewDef, tableInfos);
             		allViewDdl.append(viewDdl).append(NEW_LINE); //$NON-NLS-1$
-            		
-            		// Load the running copy/leftover list
+   
+            		// Add sources to list if not already present
             		for( TableInfo info : tableInfos) {
-            			allSourceTableInfos.add(info);
-            		}
-            		
-            		// Check the table info objects and compile a list of all source table infos
-            		for( TableInfo info : tableInfos) {
-            			boolean exists = false;
-            			for( TableInfo nextSrcTableInfo : allSourceTableInfos) {
-            				if( nextSrcTableInfo.getTable().equals(info.getTable()) )  {
-            					exists = true;
-            					break;
-            				}
-            			}
-            			
-            			if(!exists) {
-            				allSourceTableInfos.add(info);
+            			Table table = info.getTable();
+            			if( !allSourceTables.contains(table) ) {
+            				allSourceTables.add(table);
             			}
             		}
             	}
@@ -173,52 +164,44 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
         } else { 
         	viewModel.setModelDefinition(uow, "");
         }
-        
-        // remove all source models from VDB
+
+        // remove all source models from current service VDB
         clearSourceModels(uow, serviceVdb);
 
-        // Now that we have all source TableInfo objects
-        // find TableInfo's that share a common parent (schema)
-        // Each TableInfo will have a Table KomodoObject. the table.getParent() will be the schema model, and hence schema model name
+        // Build a Mapping of the unique schemaModel to it's tables
+        Map< Model, List<Table> > schemaTableMap = new HashMap<Model, List<Table>>();
+        for ( Table tbl : allSourceTables ) {
+        	Model schemaModel = tbl.getParent(uow);
+        	// Map key doesnt yet exist for the model - add a new tables list
+        	if (!schemaTableMap.containsKey(schemaModel)) {
+        		List<Table> tbls = new ArrayList<Table>();
+        		tbls.add(tbl);
+        		schemaTableMap.put(schemaModel, tbls);
+        	// Map key exists for the model - add table to existing list
+        	} else {
+        		schemaTableMap.get(schemaModel).add(tbl);
+        	}
+        }
         
-        List<TableInfo> remainingTableInfos = new ArrayList<TableInfo>();
-        remainingTableInfos.addAll(allSourceTableInfos);
-        
-        // Starting with all table infos, process each one and process table info's for common schema source models
-        // After each schema model, re-set remaining table infos and repeat until no remaining table infos
-        
-        while( !remainingTableInfos.isEmpty() ) {
-        	boolean first = true;
+        // Iterate each schemaModel, generating a source for it.
+        for ( Model currentSchemaModel: schemaTableMap.keySet() ) {
+        	// Iterate tables for this schema, generating DDL
         	StringBuilder sb = new StringBuilder();
-        	Model currentSchemaModel = null;
-        	List<TableInfo> leftOvers = new ArrayList<TableInfo>();
-        	
-        	// For each source model, generate DDL via Table.export() method and store in StingBuilder
-        	
-        	for( TableInfo nextTableInfo : remainingTableInfos ) {
-        		if( first ) {
-        			currentSchemaModel = nextTableInfo.getTable().getParent(uow);
-        			byte[] ddlBytes = nextTableInfo.getTable().export(uow, new Properties());
-        			sb.append(new String(ddlBytes));
-        			first = false;
-        		} else {
-        			if( nextTableInfo.getTable().getParent(uow).equals(currentSchemaModel) ) {
-        				byte[] ddlBytes = nextTableInfo.getTable().export(uow, new Properties());
-        				sb.append(NEW_LINE).append(new String(ddlBytes));
-        			} else {
-        				leftOvers.add(nextTableInfo);
-        			}
-        		}
+        	int iTbls = 0;
+        	for ( Table table: schemaTableMap.get(currentSchemaModel) ) {
+    			byte[] ddlBytes = table.export(uow, new Properties());
+    			
+    			if (iTbls != 0) sb.append(NEW_LINE);
+    			sb.append(new String(ddlBytes));
+    			iTbls++;
         	}
         	
         	// Create a source model and set the DDL string via setModelDeinition(DDL)
-        	
             Model srcModel = serviceVdb.addModel(uow, currentSchemaModel.getName(uow));
             srcModel.setModelType(uow, Type.PHYSICAL);
             srcModel.setModelDefinition(uow, sb.toString());
-            
+        	
             // Add ModelSource based on currentSchemaModel ModelSource info
-            
             ModelSource[] schemaModelSources = currentSchemaModel.getSources(uow);
             for( ModelSource srcModelSource : schemaModelSources) {
             	// create the ModelSource
@@ -226,14 +209,12 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
 	            // set the jndi name and translator name
 	            tgtModelSource.setJndiName(uow, srcModelSource.getJndiName(uow));
 	            tgtModelSource.setTranslatorName(uow, srcModelSource.getTranslatorName(uow));
+	            Connection connection = srcModelSource.getOriginConnection(uow);
+	            if (connection != null) {
+	            	tgtModelSource.setAssociatedConnection(uow, connection);
+	            }
             }
-
-            // Clear the remaining table infos and reset with any leftovers
-            
-        	remainingTableInfos.clear();
-        	remainingTableInfos.addAll(leftOvers);
         }
-        
     }
     
     /*
@@ -259,15 +240,13 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
 
         // Check for join and single or 2 source join
         boolean isJoin = sourceTableInfos.length > 1;
-        boolean singleSource = true;
+        boolean singleTable = sourceTableInfos.length == 1;
         
         TableInfo lhTableInfo = sourceTableInfos[0];
         TableInfo rhTableInfo = null;
         if( isJoin ) {
         	rhTableInfo = sourceTableInfos[1];
-        	singleSource =  lhTableInfo.getConnectionName().equals(rhTableInfo.getConnectionName());
         }
-        
         // Need to create 2 lists of column info
         // 1) Projected symbol list including name + type
         // 2) FQN list for (SELECT xx, xxx, xxx ) clause
@@ -284,7 +263,7 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
         	if( !colNames.contains(info.getName())) {
         		colNames.add(info.getName());
         		projSymbols.add(info.getNameAndType());
-        		if(singleSource) {
+        		if(singleTable) {
         			fqnColNames.add(info.getName());
         		} else {
         			fqnColNames.add(info.getAliasedName());
@@ -297,11 +276,7 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
         		if( !colNames.contains(info.getName())) {
         			colNames.add(info.getName());
         			projSymbols.add(info.getNameAndType());
-        			if(singleSource) {
-        				fqnColNames.add(info.getName());
-        			} else {
-        				fqnColNames.add(info.getAliasedName());
-        			}
+        			fqnColNames.add(info.getAliasedName());
         		}
         	}
         }
@@ -333,10 +308,7 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
         if( isJoin ) {
         	String lhTableName = lhTableInfo.getFQName() + " AS " + lhTableInfo.getAlias();
 	        String rhTableName = rhTableInfo.getFQName() + " AS " + rhTableInfo.getAlias();
-        	if( singleSource ) {
-        		lhTableName = lhTableInfo.getFQName();
-    	        rhTableName = rhTableInfo.getFQName();
-        	} 
+
         	sb.append(lhTableName+StringConstants.SPACE);
         	
 	        SqlComposition comp1 = viewDef.getSqlCompositions(uow)[0];
@@ -361,13 +333,10 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
             String lhColumn = comp1.getLeftCriteriaColumn(uow);
             String rhColumn = comp1.getRightCriteriaColumn(uow);
             String operator = getOperator(uow, comp1);
-            
-            // single source = dont use table alias, otherwise alias the table
-            String lhTblName = singleSource ? lhTableName : lhTableInfo.getAlias();
-            String rhTblName = singleSource ? rhTableName : rhTableInfo.getAlias();
-        	sb.append(lhTblName+StringConstants.DOT).append(lhColumn)
+
+        	sb.append(lhTableInfo.getAlias()+StringConstants.DOT).append(lhColumn)
               .append(StringConstants.SPACE+operator+StringConstants.SPACE)
-              .append(rhTblName+StringConstants.DOT).append(rhColumn);
+              .append(rhTableInfo.getAlias()+StringConstants.DOT).append(rhColumn);
         	
         	sb.append(StringConstants.SEMI_COLON);
         // --------- Single Source ---------
