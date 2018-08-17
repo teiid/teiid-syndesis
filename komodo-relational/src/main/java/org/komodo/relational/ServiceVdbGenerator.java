@@ -29,13 +29,11 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.komodo.relational.connection.Connection;
-import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.model.Column;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Model.Type;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.internal.OptionContainerUtils;
-import org.komodo.relational.profile.Profile;
 import org.komodo.relational.profile.SqlComposition;
 import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.relational.profile.ViewEditorState;
@@ -50,13 +48,13 @@ import org.komodo.spi.lexicon.sql.teiid.TeiidSqlConstants;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
-import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.utils.KLog;
 import org.komodo.utils.PathUtils;
+import org.komodo.utils.StringUtils;
 
 /**
- * This class provides methods to create data service vdbs containing a view model
+ * This class provides methods to generate data service vdbs containing a view model
  * and one or more source models
  * 
  * Each model is created via generating DDL and calling setModelDefinition() method that 
@@ -64,11 +62,11 @@ import org.komodo.utils.PathUtils;
  * PHYSICAL and VIRTUAL relational models
  *
  */
-public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
+public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
 	
-	protected static final KLog LOGGER = KLog.getLogger();
-    protected static final String SCHEMA_MODEL_NAME_PATTERN = "{0}schemamodel"; //$NON-NLS-1$
-    protected static final String SCHEMA_VDB_NAME_PATTERN = "{0}schemavdb"; //$NON-NLS-1$
+	private static final KLog LOGGER = KLog.getLogger();
+    private static final String SCHEMA_MODEL_NAME_PATTERN = "{0}schemamodel"; //$NON-NLS-1$
+    private static final String SCHEMA_VDB_NAME_PATTERN = "{0}schemavdb"; //$NON-NLS-1$
     private static final char SQL_ESCAPE_CHAR = '\"'; //$NON-NLS-1$
     private static final char NEW_LINE = '\n'; //$NON-NLS-1$
     private static final String OPEN_SQUARE_BRACKET = "["; //$NON-NLS-1$
@@ -101,17 +99,17 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
     /**
      * fqn table option key
      */
-    String TABLE_OPTION_FQN = "teiid_rel:fqn"; //$NON-NLS-1$l "teiid_relfqn"; //
+    String TABLE_OPTION_FQN = "teiid_rel:fqn"; //$NON-NLS-1$l
     
-    protected final WorkspaceManager wsManager;
+    private final WorkspaceManager wsManager;
     
     /**
-     * Constructs a Komodo service.
+     * Constructs a ServiceVdbGenerator instance
      *
      * @param wsManager
      *        the WorkspaceManager (cannot be <code>null</code> and must be started)
      */
-    public ViewDefinitionHelper( final WorkspaceManager wsManager ) {
+    public ServiceVdbGenerator( final WorkspaceManager wsManager ) {
         this.wsManager = wsManager;
     }
     
@@ -348,6 +346,7 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
     }
     
     /**
+     * Public method to generate the view DDL for a view definition
      * 
      * @param uow
      * 		the transaction
@@ -362,6 +361,26 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
     	if (tableInfos.length < 1) throw new KException("Error getting the ViewDefinition sources");
     	
     	return getODataViewDdl(uow, viewDef, tableInfos);
+    }
+
+    /**
+     * Method returns the view model for a service VDB
+     * 
+     * @param uow
+     * 		the transaction
+     * @param serviceVdb
+     *		the service VDB
+     * @return the view model
+     * @throws KException
+     *  	if problem occurs
+     */
+    public static Model getViewModel(final UnitOfWork uow, Vdb serviceVdb) throws KException {
+    	for( Model model : serviceVdb.getModels(uow) ) {
+    		if( model.getModelType(uow) == Type.VIRTUAL ) {
+    			return model;
+    		}
+    	}
+    	return null;
     }
 
     /*
@@ -382,11 +401,11 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
 		int iTable = 0;
 		for(String path : sourceTablePaths) {
 			String connectionName = PathUtils.getOption(path, "connection");
-			Connection connection = findConnection(uow, this.wsManager, connectionName);
+			Connection connection = findConnection(uow, connectionName);
 
 			if (connection != null) {
 				// Find Table objects in Komodo based on the connection name (i.e.    connection=pgConn
-				final Model schemaModel = findSchemaModel( uow, this.wsManager, connection );
+				final Model schemaModel = findSchemaModel( uow, connection );
 
 				// Get the tables from the schema and match them with the table name
 				if ( schemaModel != null ) {
@@ -432,7 +451,12 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
     	}
     }
 
-    private static String getColumnDatatypeString(UnitOfWork uow, Column col) throws KException {
+    /*
+     * constructs a simple column string for a view definition
+     * 
+     * i.e. "CUSTOMER_ID integer"
+     */
+    private String getColumnDatatypeString(UnitOfWork uow, Column col) throws KException {
     	String typeName = col.getDatatypeName(uow);
     	
     	// Determine if array type
@@ -448,6 +472,9 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
         return typeName;
     }
 
+    /*
+     * returns the string value for the operator key from a SqlComposition object
+     */
     private String getOperator(UnitOfWork uow, SqlComposition sqlComposition) throws KException {
     	String type = sqlComposition.getOperator(uow);
         if( EQ_STR.equals(type)) {
@@ -467,17 +494,21 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
         return null;
     }
     
-    private static String escapeSQLName(String part) {
+    /*
+     * checks a sql statement word or segment and escapes the string if neccessary based
+     * on included special characters
+     */
+    private String escapeSQLName(String part) {
         if (TeiidSqlConstants.isReservedWord(part)) {
             return SQL_ESCAPE_CHAR + part + SQL_ESCAPE_CHAR;
         }
         boolean escape = true;
         char start = part.charAt(0);
-        if (start == '#' || start == '@' || isLetter(start)) {
+        if (start == '#' || start == '@' || StringUtils.isLetter(start)) {
             escape = false;
             for (int i = 1; !escape && i < part.length(); i++) {
                 char c = part.charAt(i);
-                escape = !isLetterOrDigit(c) && c != '_';
+                escape = !StringUtils.isLetterOrDigit(c) && c != '_';
             }
         }
         if (escape) {
@@ -486,48 +517,26 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
         return part;
     }
 
-    private static boolean isLetter(char c) {
-        return isBasicLatinLetter(c) || Character.isLetter(c);
-    }
-
-    private static boolean isLetterOrDigit(char c) {
-        return isBasicLatinLetter(c) || isBasicLatinDigit(c) || Character.isLetterOrDigit(c);
-    }
-
-    private static boolean isBasicLatinLetter(char c) {
-        return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
-    }
-
-    private static boolean isBasicLatinDigit(char c) {
-        return c >= '0' && c <= '9';
-    }
-	
-    protected static Dataservice findDataservice(UnitOfWork uow, final WorkspaceManager wkspMgr, String dataserviceName) throws KException {
-        if (! wkspMgr.hasChild( uow, dataserviceName, DataVirtLexicon.DataService.NODE_TYPE ) ) {
+    /*
+     * Finds a connection object from the workspace manager using connection name
+     */
+    private Connection findConnection(UnitOfWork uow, String connectionName) throws KException {
+        if (! this.wsManager.hasChild( uow, connectionName, DataVirtLexicon.Connection.NODE_TYPE ) ) {
             return null;
         }
 
-        final KomodoObject kobject = wkspMgr.getChild( uow, dataserviceName, DataVirtLexicon.DataService.NODE_TYPE );
-        final Dataservice dataservice = wkspMgr.resolve( uow, kobject, Dataservice.class );
-
-        LOGGER.debug( "Dataservice '{0}' was found", dataserviceName ); //$NON-NLS-1$
-        return dataservice;
-    }
-
-    protected static Connection findConnection(UnitOfWork uow, final WorkspaceManager wkspMgr, String connectionName) throws KException {
-        if (! wkspMgr.hasChild( uow, connectionName, DataVirtLexicon.Connection.NODE_TYPE ) ) {
-            return null;
-        }
-
-        final KomodoObject kobject = wkspMgr.getChild( uow, connectionName, DataVirtLexicon.Connection.NODE_TYPE );
-        final Connection connection = wkspMgr.resolve( uow, kobject, Connection.class );
+        final KomodoObject kobject = this.wsManager.getChild( uow, connectionName, DataVirtLexicon.Connection.NODE_TYPE );
+        final Connection connection = this.wsManager.resolve( uow, kobject, Connection.class );
 
         LOGGER.debug( "Connection '{0}' was found", connectionName ); //$NON-NLS-1$
         return connection;
     }
     
-    protected static Model findSchemaModel(final UnitOfWork uow, final WorkspaceManager manager, final Connection connection) throws KException {
-		final Vdb vdb = findSchemaVdb(uow, manager, connection);
+    /*
+     * Finds a schema model for a given connection from the workspace manager
+     */
+    private Model findSchemaModel(final UnitOfWork uow, final Connection connection) throws KException {
+		final Vdb vdb = findSchemaVdb(uow, connection);
 
 		if (vdb != null) {
 			final String connectionName = connection.getName(uow);
@@ -541,8 +550,11 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
 
 		return null;
 	}
-
-    protected static Vdb findSchemaVdb(final UnitOfWork uow, final WorkspaceManager wkspMgr, final Connection connection) throws KException {
+    
+    /*
+     * Finds a schema VDB for a given connection from the workspace manager
+     */
+    private Vdb findSchemaVdb(final UnitOfWork uow, final Connection connection) throws KException {
 		final String connectionName = connection.getName(uow);
 
 		final String schemaVdbName = getSchemaVdbName(connectionName);
@@ -552,38 +564,20 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
 			return null;
 		}
 
-		return wkspMgr.resolve(uow, vdbs[0], Vdb.class);
+		return this.wsManager.resolve(uow, vdbs[0], Vdb.class);
 	}
 
-    protected static String getSchemaVdbName(final String connectionName) {
+    private static String getSchemaVdbName(final String connectionName) {
 		return MessageFormat.format(SCHEMA_VDB_NAME_PATTERN, connectionName.toLowerCase());
 	}
 
-    protected static String getSchemaModelName(final String connectionName) {
+    private static String getSchemaModelName(final String connectionName) {
 		return MessageFormat.format(SCHEMA_MODEL_NAME_PATTERN, connectionName.toLowerCase());
 	}
-    
-    public static Model getViewModel(final UnitOfWork uow, Vdb serviceVdb) throws KException {
-    	for( Model model : serviceVdb.getModels(uow) ) {
-    		if( model.getModelType(uow) == Type.VIRTUAL ) {
-    			return model;
-    		}
-    	}
-    	return null;
-    }
 
-    protected static Profile getUserProfile(final UnitOfWork transaction, final WorkspaceManager wkspMgr) throws KException {
-    	Repository repo = wkspMgr.getRepository();
-        KomodoObject userProfileObj = repo.komodoProfile(transaction);
-        Profile userProfile = wkspMgr.resolve(transaction, userProfileObj, Profile.class);
-        if (userProfile == null) {
-            String msg = Messages.getString(Messages.Relational.NO_USER_PROFILE, transaction.getUserName());
-            throw new KException(msg);
-        }
-
-        return userProfile;
-    }
-    
+    /*
+     * Inner class to hold state for source table information and simplifies the DDL generating process
+     */
     class TableInfo {
 		final private String path;
     	final private String alias;
@@ -594,7 +588,7 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
 
 		private List<ColumnInfo> columnInfos = new ArrayList<ColumnInfo>();
     	
-    	protected TableInfo(UnitOfWork uow, String path, Table table, String alias) throws KException {
+    	private TableInfo(UnitOfWork uow, String path, Table table, String alias) throws KException {
     		this.path = path;
     		this.alias = alias;
     		this.table = table;
@@ -642,13 +636,16 @@ public final class ViewDefinitionHelper implements TeiidSqlConstants.Tokens {
 		}
     }
     
+    /*
+     * Inner class to hold state for table column information and simplifies the DDL generating process
+     */
     class ColumnInfo {
     	private String name;
     	private String fqname;
     	private String aliasedName;
     	private String nameAndType;
     	
-    	protected ColumnInfo(UnitOfWork uow, Column column, String tableFqn, String tblAlias) throws KException {
+    	private ColumnInfo(UnitOfWork uow, Column column, String tableFqn, String tblAlias) throws KException {
 			this.name = column.getName(uow);
 			this.nameAndType =  escapeSQLName(name) + SPACE + getColumnDatatypeString(uow, column);
 			this.aliasedName = name;

@@ -68,7 +68,7 @@ import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.SynchronousCallback;
 import org.komodo.relational.ViewBuilderCriteriaPredicate;
 import org.komodo.relational.ViewDdlBuilder;
-import org.komodo.relational.ViewDefinitionHelper;
+import org.komodo.relational.ServiceVdbGenerator;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.model.Column;
@@ -2752,14 +2752,14 @@ public final class KomodoDataserviceService extends KomodoService
             Vdb serviceVdb = dataservice.getServiceVdb(uow);
             String vdbName = serviceVdb.getName(uow);
            
-            ViewDefinitionHelper helper = new ViewDefinitionHelper(getWorkspaceManager(uow));
+            ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(getWorkspaceManager(uow));
 
             // Get all of the editor states from the user profile
             // They are stored under ids of form "serviceVdbName.viewName"
             final String viewEditorIdPrefix = KomodoService.getViewEditorStateIdPrefix( vdbName ) + "*";
             final ViewEditorState[] editorStates = getViewEditorStates(uow, viewEditorIdPrefix);
         	
-            helper.refreshServiceVdb(uow, serviceVdb, editorStates);
+            vdbGenerator.refreshServiceVdb(uow, serviceVdb, editorStates);
 
 			KomodoStatusObject kso = new KomodoStatusObject("Refresh Status"); //$NON-NLS-1$
 			kso.addAttribute(dataserviceName, "View Successfully refreshed"); //$NON-NLS-1$
