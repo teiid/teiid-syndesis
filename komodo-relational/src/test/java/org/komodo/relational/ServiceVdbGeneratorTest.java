@@ -42,7 +42,7 @@ import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.spi.KException;
 
 @SuppressWarnings({ "javadoc", "nls" })
-public class ViewDefinitionHelperTest extends RelationalModelTest {
+public class ServiceVdbGeneratorTest extends RelationalModelTest {
 	
     private static String viewDefinitionName = "orderInfoView";
     private static String description = "test view description text";
@@ -190,7 +190,7 @@ public class ViewDefinitionHelperTest extends RelationalModelTest {
     
     private String helpGenerateDdlForWithJoinType(String secondSourceTablePath, String joinType) throws KException {
     	
-        ViewDefinitionHelper helper = new ViewDefinitionHelper(WorkspaceManager.getInstance(_repo, getTransaction()));
+        ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(WorkspaceManager.getInstance(_repo, getTransaction()));
 
         String[] sourceTablePaths = { sourceTablePath1, secondSourceTablePath };
         ViewDefinition viewDef = mock(ViewDefinition.class);
@@ -214,7 +214,7 @@ public class ViewDefinitionHelperTest extends RelationalModelTest {
         sqlComps[0] = sqlComp1;
         when(viewDef.getSqlCompositions(getTransaction())).thenReturn(sqlComps);
 
-        return helper.getODataViewDdl(getTransaction(), viewDef);
+        return vdbGenerator.getODataViewDdl(getTransaction(), viewDef);
     }
     
     private ViewEditorState[] helpCreateViewEditorState(int numSources) throws KException {
@@ -252,7 +252,7 @@ public class ViewDefinitionHelperTest extends RelationalModelTest {
         when(sqlComp1.getRightSourcePath(getTransaction())).thenReturn(comp1RightSource);
         when(sqlComp1.getLeftCriteriaColumn(getTransaction())).thenReturn(comp1LeftColumn);
         when(sqlComp1.getRightCriteriaColumn(getTransaction())).thenReturn(comp1RightColumn);
-        when(sqlComp1.getType(getTransaction())).thenReturn(ViewDefinitionHelper.JOIN_INNER);
+        when(sqlComp1.getType(getTransaction())).thenReturn(ServiceVdbGenerator.JOIN_INNER);
         when(sqlComp1.getOperator(getTransaction())).thenReturn(comp1Operator);
         
         SqlComposition[] sqlComps = new SqlComposition[1];
@@ -264,8 +264,8 @@ public class ViewDefinitionHelperTest extends RelationalModelTest {
     
     private void printResults(String expected, String generated) {
     	if( doPrint ) {
-    		System.out.println("\nViewDefinitionHelperTest\n\tEXPECTED DDL = \n" + expected);
-    		System.out.println("\nViewDefinitionHelperTest\n\tGENERATED DDL = \n" + generated);
+    		System.out.println("\nServiceVdbGeneratorTest\n\tEXPECTED DDL = \n" + expected);
+    		System.out.println("\nServiceVdbGeneratorTest\n\tGENERATED DDL = \n" + generated);
     	}
     }
     
@@ -273,7 +273,7 @@ public class ViewDefinitionHelperTest extends RelationalModelTest {
     public void shouldGenerateOdataViewDDL_WithSingleSourceViewDefinition_NoJoinOneTable() throws Exception {
     	String EXPECTED_DDL = EXPECTED_NO_JOIN_SQL_SINGE_SOURCE;
     	
-    	ViewDefinitionHelper helper = new ViewDefinitionHelper(WorkspaceManager.getInstance(_repo, getTransaction()));
+    	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(WorkspaceManager.getInstance(_repo, getTransaction()));
 
         String[] sourceTablePaths = { sourceTablePath1 };
         ViewDefinition viewDef = mock(ViewDefinition.class);
@@ -283,7 +283,7 @@ public class ViewDefinitionHelperTest extends RelationalModelTest {
         when(viewDef.isComplete(getTransaction())).thenReturn(isComplete);
         when(viewDef.getSourcePaths(getTransaction())).thenReturn(sourceTablePaths);
 
-        String viewDdl = helper.getODataViewDdl(getTransaction(), viewDef);
+        String viewDdl = vdbGenerator.getODataViewDdl(getTransaction(), viewDef);
         printResults(EXPECTED_DDL, viewDdl);
         assertThat(viewDdl, is(EXPECTED_DDL));
     }
@@ -291,7 +291,7 @@ public class ViewDefinitionHelperTest extends RelationalModelTest {
     @Test
     public void shouldGenerateOdataViewDDL_WithSingleSourceViewDefinition_InnerJoin() throws Exception {
     	String EXPECTED_DDL = EXPECTED_JOIN_SQL_SINGE_SOURCE_START + INNER_JOIN_STR + EXPECTED_JOIN_SQL_SINGLE_SOURCE_END;
-        String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath2, ViewDefinitionHelper.JOIN_INNER);
+        String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath2, ServiceVdbGenerator.JOIN_INNER);
         printResults(EXPECTED_DDL, viewDdl);
         assertThat(viewDdl, is(EXPECTED_DDL));
     }
@@ -299,7 +299,7 @@ public class ViewDefinitionHelperTest extends RelationalModelTest {
     @Test
     public void shouldGenerateOdataViewDDL_WithSingleSourceViewDefinition_LeftOuterJoin() throws Exception {
     	String EXPECTED_DDL = EXPECTED_JOIN_SQL_SINGE_SOURCE_START + LEFT_OUTER_JOIN_STR + EXPECTED_JOIN_SQL_SINGLE_SOURCE_END;
-        String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath2, ViewDefinitionHelper.JOIN_LEFT_OUTER);
+        String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath2, ServiceVdbGenerator.JOIN_LEFT_OUTER);
         printResults(EXPECTED_DDL, viewDdl);
         assertThat(viewDdl, is(EXPECTED_DDL));
     }
@@ -307,7 +307,7 @@ public class ViewDefinitionHelperTest extends RelationalModelTest {
     @Test
     public void shouldGenerateOdataViewDDL_WithSingleSourceViewDefinition_RightOuterJoin() throws Exception {
     	String EXPECTED_DDL = EXPECTED_JOIN_SQL_SINGE_SOURCE_START + RIGHT_OUTER_JOIN_STR + EXPECTED_JOIN_SQL_SINGLE_SOURCE_END;
-        String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath2, ViewDefinitionHelper.JOIN_RIGHT_OUTER);
+        String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath2, ServiceVdbGenerator.JOIN_RIGHT_OUTER);
         printResults(EXPECTED_DDL, viewDdl);
         assertThat(viewDdl, is(EXPECTED_DDL));
     }
@@ -315,7 +315,7 @@ public class ViewDefinitionHelperTest extends RelationalModelTest {
     @Test
     public void shouldGenerateOdataViewDDL_WithSingleSourceViewDefinition_FullOuterJoin() throws Exception {
     	String EXPECTED_DDL = EXPECTED_JOIN_SQL_SINGE_SOURCE_START + FULL_OUTER_JOIN_STR + EXPECTED_JOIN_SQL_SINGLE_SOURCE_END;
-        String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath2, ViewDefinitionHelper.JOIN_FULL_OUTER);
+        String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath2, ServiceVdbGenerator.JOIN_FULL_OUTER);
         printResults(EXPECTED_DDL, viewDdl);
         assertThat(viewDdl, is(EXPECTED_DDL));
     }
@@ -323,7 +323,7 @@ public class ViewDefinitionHelperTest extends RelationalModelTest {
     @Test
     public void shouldGenerateOdataViewDDL_WithTwoSourcesViewDefinition_InnerJoin() throws Exception {
     	String EXPECTED_DDL = EXPECTED_JOIN_SQL_TWO_SOURCES_START + INNER_JOIN_STR + EXPECTED_JOIN_SQL_TWO_SOURCES_END;
-        String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath3, ViewDefinitionHelper.JOIN_INNER);
+        String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath3, ServiceVdbGenerator.JOIN_INNER);
         printResults(EXPECTED_DDL, viewDdl);
         assertThat(viewDdl, is(EXPECTED_DDL));
     }
@@ -331,7 +331,7 @@ public class ViewDefinitionHelperTest extends RelationalModelTest {
     @Test
     public void shouldGenerateOdataViewDDL_WithTwoSourcesViewDefinition_LeftOuterJoin() throws Exception {
     	String EXPECTED_DDL = EXPECTED_JOIN_SQL_TWO_SOURCES_START + LEFT_OUTER_JOIN_STR + EXPECTED_JOIN_SQL_TWO_SOURCES_END;
-        String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath3, ViewDefinitionHelper.JOIN_LEFT_OUTER);
+        String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath3, ServiceVdbGenerator.JOIN_LEFT_OUTER);
         printResults(EXPECTED_DDL, viewDdl);
         assertThat(viewDdl, is(EXPECTED_DDL));
     }
@@ -339,7 +339,7 @@ public class ViewDefinitionHelperTest extends RelationalModelTest {
     @Test
     public void shouldGenerateOdataViewDDL_WithTwoSourcesViewDefinition_RightOuterJoin() throws Exception {
     	String EXPECTED_DDL = EXPECTED_JOIN_SQL_TWO_SOURCES_START + RIGHT_OUTER_JOIN_STR + EXPECTED_JOIN_SQL_TWO_SOURCES_END;
-        String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath3, ViewDefinitionHelper.JOIN_RIGHT_OUTER);
+        String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath3, ServiceVdbGenerator.JOIN_RIGHT_OUTER);
         printResults(EXPECTED_DDL, viewDdl);
         assertThat(viewDdl, is(EXPECTED_DDL));
     }
@@ -347,7 +347,7 @@ public class ViewDefinitionHelperTest extends RelationalModelTest {
     @Test
     public void shouldGenerateOdataViewDDL_WithTwoSourcesViewDefinition_FullOuterJoin() throws Exception {
     	String EXPECTED_DDL = EXPECTED_JOIN_SQL_TWO_SOURCES_START + FULL_OUTER_JOIN_STR + EXPECTED_JOIN_SQL_TWO_SOURCES_END;
-        String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath3, ViewDefinitionHelper.JOIN_FULL_OUTER);
+        String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath3, ServiceVdbGenerator.JOIN_FULL_OUTER);
         printResults(EXPECTED_DDL, viewDdl);
         assertThat(viewDdl, is(EXPECTED_DDL));
     }
@@ -365,16 +365,16 @@ public class ViewDefinitionHelperTest extends RelationalModelTest {
     		}
     	}
     	
-    	ViewDefinitionHelper helper = new ViewDefinitionHelper(WorkspaceManager.getInstance(_repo, getTransaction()));
+    	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(WorkspaceManager.getInstance(_repo, getTransaction()));
     	
-    	helper.refreshServiceVdb(getTransaction(), serviceVdb, states);
+    	vdbGenerator.refreshServiceVdb(getTransaction(), serviceVdb, states);
     	
     	commit();
     	
     	Model[] models = serviceVdb.getModels(getTransaction());
     	
         assertThat(models.length, is(2));
-        Model viewModel = ViewDefinitionHelper.getViewModel(getTransaction(), serviceVdb);
+        Model viewModel = ServiceVdbGenerator.getViewModel(getTransaction(), serviceVdb);
         assertNotNull(viewModel);
         assertThat(viewModel.getViews(getTransaction()).length, is(1));
     	View view = viewModel.getViews(getTransaction())[0];
@@ -405,16 +405,16 @@ public class ViewDefinitionHelperTest extends RelationalModelTest {
     		}
     	}
     	
-    	ViewDefinitionHelper helper = new ViewDefinitionHelper(WorkspaceManager.getInstance(_repo, getTransaction()));
+    	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(WorkspaceManager.getInstance(_repo, getTransaction()));
     	
-    	helper.refreshServiceVdb(getTransaction(), serviceVdb, states);
+    	vdbGenerator.refreshServiceVdb(getTransaction(), serviceVdb, states);
     	
     	commit();
     	
     	Model[] models = serviceVdb.getModels(getTransaction());
     	
         assertThat(models.length, is(3));
-        Model viewModel = ViewDefinitionHelper.getViewModel(getTransaction(), serviceVdb);
+        Model viewModel = ServiceVdbGenerator.getViewModel(getTransaction(), serviceVdb);
         assertNotNull(viewModel);
         assertThat(viewModel.getViews(getTransaction()).length, is(1));
     	View view = viewModel.getViews(getTransaction())[0];
