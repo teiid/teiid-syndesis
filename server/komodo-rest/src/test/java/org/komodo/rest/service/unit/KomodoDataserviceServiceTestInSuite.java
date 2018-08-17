@@ -51,7 +51,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.komodo.relational.ViewBuilderCriteriaPredicate;
-import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.RestLink;
@@ -1148,4 +1147,5 @@ public class KomodoDataserviceServiceTestInSuite extends AbstractKomodoServiceTe
         executeOk( deleteRequest );
         assertThat( this.serviceTestUtilities.viewEditorStateExists( USER_NAME, editorStateId ), is( false ) );
     }
+    
 }
