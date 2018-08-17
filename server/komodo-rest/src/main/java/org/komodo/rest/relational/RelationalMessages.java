@@ -299,6 +299,11 @@ public final class RelationalMessages {
         DATASERVICE_SERVICE_UPDATE_DATASERVICE_ERROR,
 
         /**
+         * An error indicating a request to refresh dataservice views failed
+         */
+        DATASERVICE_SERVICE_REFRESH_VIEWS_ERROR,
+
+        /**
          * An error indicating create attempt was missing a name
          */
         DATASERVICE_SERVICE_CREATE_MISSING_NAME,
@@ -307,6 +312,11 @@ public final class RelationalMessages {
          * An error indicating clone attempt was missing a name
          */
         DATASERVICE_SERVICE_CLONE_MISSING_NAME,
+ 
+        /**
+         * An error indicating refresh views attempt was missing a name
+         */
+        DATASERVICE_SERVICE_REFRESH_VIEWS_MISSING_NAME,
  
         /**
          * An error indicating clone attempt was missing a new service name

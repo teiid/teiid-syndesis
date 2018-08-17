@@ -330,7 +330,17 @@ public class Messages implements StringConstants {
          * An error indicating a source path could not be found
          * while trying to remove it
          */
-    	SOURCE_PATH_NOT_FOUND_TO_REMOVE;
+    	SOURCE_PATH_NOT_FOUND_TO_REMOVE,
+    	
+    	/**
+        * An error indicating the user profile service method failed
+        */
+       USER_PROFILE_SERVICE_ERROR,
+
+       /**
+        * An error indicating no user profile can be found
+        */
+       NO_USER_PROFILE;
 
         @Override
         public String toString() {
