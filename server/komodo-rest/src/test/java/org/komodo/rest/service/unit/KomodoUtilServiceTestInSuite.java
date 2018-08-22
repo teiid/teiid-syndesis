@@ -518,6 +518,7 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
         restViewDefn.setDescription(viewDescr);
         restViewDefn.setSourcePaths(sourcePaths);
         restViewDefn.setSqlCompositions(compositionArray);
+        restViewDefn.setComplete(true);
         
         restViewEditorState.setViewDefinition(restViewDefn);
         
