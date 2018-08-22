@@ -934,6 +934,7 @@ public final class KomodoUtilService extends KomodoService {
             for (String restSourcePath: restViewDefn.getSourcePaths()) {
                 viewDefn.addSourcePath(uow, restSourcePath);
             }
+            viewDefn.setComplete(uow, restViewDefn.isComplete());
             for (RestSqlComposition restComp: restViewDefn.getSqlCompositions()) {
             	SqlComposition sqlComp = viewDefn.addSqlComposition(uow, restComp.getId());
             	sqlComp.setDescription(uow, restComp.getDescription());
