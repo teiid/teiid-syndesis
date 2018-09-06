@@ -41,7 +41,7 @@ public class ViewEditorStateSerializer extends AbstractEntitySerializer<RestView
 
     @Override
     protected boolean isComplete(RestViewEditorState entity) {
-        return entity.getId() != null && entity.getCommands() != null;
+        return entity.getId() != null;
     }
 
     @Override
