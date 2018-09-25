@@ -858,6 +858,7 @@ public final class KomodoUtilService extends KomodoService {
     }
 
     /**
+     * Stash an array of ViewEditorStates
      * @param headers
      *        the request headers (never <code>null</code>)
      * @param uriInfo
@@ -866,21 +867,23 @@ public final class KomodoUtilService extends KomodoService {
      * @throws KomodoRestException if error occurs
      */
     @PUT
-    @Path(V1Constants.USER_PROFILE + FORWARD_SLASH + V1Constants.VIEW_EDITOR_STATE)
-    @ApiOperation( value = "Store a view editor state in the user's profile", response = ViewEditorState.class )
+    @Path(V1Constants.USER_PROFILE + FORWARD_SLASH + V1Constants.VIEW_EDITOR_STATES)
+    @ApiOperation( value = "Store multiple view editor states in the user's profile", response = ViewEditorState.class )
     @ApiResponses(value = {
         @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
-    public Response stashViewEditorState(final @Context HttpHeaders headers,
+    public Response stashViewEditorStates(final @Context HttpHeaders headers,
                                                final @Context UriInfo uriInfo,
                                                @ApiParam(
                                                          value = "" +
                                                                  "JSON of the view editor state:<br>" +
-                                                                 OPEN_PRE_TAG +
+                                                                 OPEN_PRE_TAG + OPEN_BRACKET + BR +
                                                                  OPEN_BRACE + BR +
                                                                  NBSP + RestViewEditorState.ID_LABEL + ": \"Unqiue name or identifier of the view editor state\"" + BR +
                                                                  NBSP + RestViewEditorState.CONTENT_LABEL + ": { ... \"The content of the state\" ... }" + BR +
+                                                                 NBSP + RestViewEditorState.VIEW_DEFINITION_LABEL + ": { ... \"The view definition content\" ... }" + BR +
+                                                                 CLOSE_BRACE + BR +
                                                                  CLOSE_BRACE +
                                                                  CLOSE_PRE_TAG,
                                                          required = true
@@ -895,59 +898,27 @@ public final class KomodoUtilService extends KomodoService {
         if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
             return notAcceptableMediaTypesBuilder().build();
 
-        RestViewEditorState restViewEditorState = KomodoJsonMarshaller.unmarshall(viewEditorStateConfig, RestViewEditorState.class);
-        String stateId = restViewEditorState.getId();
-        RestStateCommandAggregate[] commands = restViewEditorState.getCommands();
-        RestViewDefinition restViewDefn = restViewEditorState.getViewDefinition();
-
-        if (StringUtils.isBlank(stateId)) {
-            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_ID);
+        RestViewEditorState[] restViewEditorStates = KomodoJsonMarshaller.unmarshallArray(viewEditorStateConfig, RestViewEditorState[].class);
+        
+        // Validate the RestViewEditorStates, return if any errors found
+        for (RestViewEditorState restViewEditorState : restViewEditorStates) {
+            Response resp = this.checkRestEditorState(mediaTypes, restViewEditorState);
+            if (resp != null) return resp;
         }
-
-        if (commands == null) {
-            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_COMMANDS);
-        }
-
-        if (restViewDefn == null) {
-            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_VIEW_DEFINITION);
-        }
-
+        
         UnitOfWork uow = null;
         try {
             uow = createTransaction(principal, "addUserProfileViewEditorState", false); //$NON-NLS-1$
 
-            Profile userProfile = getUserProfile(uow);
-            ViewEditorState viewEditorState = userProfile.addViewEditorState(uow, stateId);
-            // Add commands
-            for (RestStateCommandAggregate restCmd : commands) {
-                RestStateCommand restUndo = restCmd.getUndo();
-                RestStateCommand restRedo = restCmd.getRedo();
-
-                StateCommandAggregate stateCmdAgg = viewEditorState.addCommand(uow);
-                stateCmdAgg.setUndo(uow, restUndo.getId(), restUndo.getArguments());
-                stateCmdAgg.setRedo(uow, restRedo.getId(), restRedo.getArguments());
-            }
-            // Set ViewDefinition
-            ViewDefinition viewDefn = viewEditorState.setViewDefinition(uow);
-            viewDefn.setViewName(uow, restViewDefn.getViewName());
-            viewDefn.setDescription(uow, restViewDefn.getDescription());
-            for (String restSourcePath: restViewDefn.getSourcePaths()) {
-                viewDefn.addSourcePath(uow, restSourcePath);
-            }
-            viewDefn.setComplete(uow, restViewDefn.isComplete());
-            for (RestSqlComposition restComp: restViewDefn.getSqlCompositions()) {
-            	SqlComposition sqlComp = viewDefn.addSqlComposition(uow, restComp.getId());
-            	sqlComp.setDescription(uow, restComp.getDescription());
-            	sqlComp.setLeftSourcePath(uow, restComp.getLeftSourcePath());
-            	sqlComp.setRightSourcePath(uow, restComp.getRightSourcePath());
-            	sqlComp.setLeftCriteriaColumn(uow, restComp.getLeftCriteriaColumn());
-            	sqlComp.setRightCriteriaColumn(uow, restComp.getRightCriteriaColumn());
-            	sqlComp.setType(uow, restComp.getType());
-            	sqlComp.setOperator(uow, restComp.getOperator());
+            // Create the ViewEditorState objects
+            for (RestViewEditorState restViewEditorState : restViewEditorStates) {
+                createViewEditorState(restViewEditorState, uow);
             }
 
-            final RestViewEditorState entity = new RestViewEditorState(uriInfo.getBaseUri(), viewEditorState, uow);
-            return commit(uow, mediaTypes, entity);
+            KomodoStatusObject kso = new KomodoStatusObject("Stash Status"); //$NON-NLS-1$
+            kso.addAttribute("Stash Status", "Successfully stashed"); //$NON-NLS-1$
+
+            return commit(uow, mediaTypes, kso);
 
         } catch (final Exception e) {
             if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
@@ -962,6 +933,78 @@ public final class KomodoUtilService extends KomodoService {
         }
     }
 
+    /**
+     * Check the RestViewEditorState for correctness before proceeding.  If no errors are found, the return value is null
+     * @param mediaTypes the media types
+     * @param restEditorState the editor state
+     * @return the error response; null if no error found
+     */
+    private Response checkRestEditorState(final List<MediaType> mediaTypes, final RestViewEditorState restEditorState) {
+        String stateId = restEditorState.getId();
+        RestStateCommandAggregate[] commands = restEditorState.getCommands();
+        RestViewDefinition restViewDefn = restEditorState.getViewDefinition();
+
+        if (StringUtils.isBlank(stateId)) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_ID);
+        }
+
+        if (commands == null) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_COMMANDS);
+        }
+
+        if (restViewDefn == null) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_VIEW_DEFINITION);
+        }
+        return null;
+    }
+    
+    /**
+     * Creates the view editor state from the RestViewEditorState
+     * @param editorState the state
+     * @param uow the transaction
+     * @return the ViewEditorState repo object
+     * @throws Exception exception if a problem is encountered
+     */
+    private ViewEditorState createViewEditorState(final RestViewEditorState editorState, UnitOfWork uow) throws Exception {
+        String stateId = editorState.getId();
+        RestStateCommandAggregate[] commands = editorState.getCommands();
+        RestViewDefinition restViewDefn = editorState.getViewDefinition();
+
+        // Add a new ViewEditorState to the userProfile
+        Profile userProfile = getUserProfile(uow);
+        ViewEditorState viewEditorState = userProfile.addViewEditorState(uow, stateId);
+        
+        // Add commands to the ViewEditorState
+        for (RestStateCommandAggregate restCmd : commands) {
+            RestStateCommand restUndo = restCmd.getUndo();
+            RestStateCommand restRedo = restCmd.getRedo();
+
+            StateCommandAggregate stateCmdAgg = viewEditorState.addCommand(uow);
+            stateCmdAgg.setUndo(uow, restUndo.getId(), restUndo.getArguments());
+            stateCmdAgg.setRedo(uow, restRedo.getId(), restRedo.getArguments());
+        }
+        
+        // Set ViewDefinition of the ViewEditorState
+        ViewDefinition viewDefn = viewEditorState.setViewDefinition(uow);
+        viewDefn.setViewName(uow, restViewDefn.getViewName());
+        viewDefn.setDescription(uow, restViewDefn.getDescription());
+        for (String restSourcePath: restViewDefn.getSourcePaths()) {
+            viewDefn.addSourcePath(uow, restSourcePath);
+        }
+        viewDefn.setComplete(uow, restViewDefn.isComplete());
+        for (RestSqlComposition restComp: restViewDefn.getSqlCompositions()) {
+        	SqlComposition sqlComp = viewDefn.addSqlComposition(uow, restComp.getId());
+        	sqlComp.setDescription(uow, restComp.getDescription());
+        	sqlComp.setLeftSourcePath(uow, restComp.getLeftSourcePath());
+        	sqlComp.setRightSourcePath(uow, restComp.getRightSourcePath());
+        	sqlComp.setLeftCriteriaColumn(uow, restComp.getLeftCriteriaColumn());
+        	sqlComp.setRightCriteriaColumn(uow, restComp.getRightCriteriaColumn());
+        	sqlComp.setType(uow, restComp.getType());
+        	sqlComp.setOperator(uow, restComp.getOperator());
+        }
+        return viewEditorState;
+    }
+    
     /**
      * @param headers
      *        the request headers (never <code>null</code>)
