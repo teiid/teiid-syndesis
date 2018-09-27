@@ -631,7 +631,12 @@ public class KomodoRestV1Application extends Application implements SystemConsta
         /**
          * The view editor state of the user profile
          */
-        String VIEW_EDITOR_STATE = "viewEditorState";
+        String VIEW_EDITOR_STATE = "viewEditorState"; //$NON-NLS-1$
+
+        /**
+         * The view editor state of the user profile
+         */
+        String VIEW_EDITOR_STATES = "viewEditorStates"; //$NON-NLS-1$
 
         /**
          * View editor state placeholder
