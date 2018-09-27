@@ -79,6 +79,7 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
     private static final String AUTH_HEADER_VALUE = "Basic YWRtaW48";
 
     private String viewName = "myNewView";
+    private String view2Name = "myNewViewS";
     private String undoRedoId = "UpdateViewNameCommand";
     private String untitledName = "untitled";
     private String oldNameKey = "oldName";
@@ -470,7 +471,7 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
         URI uri = UriBuilder.fromUri(uriBuilder().baseUri())
                                                     .path(V1Constants.SERVICE_SEGMENT)
                                                     .path(V1Constants.USER_PROFILE)
-                                                    .path(V1Constants.VIEW_EDITOR_STATE).build();
+                                                    .path(V1Constants.VIEW_EDITOR_STATES).build();
 
         RestStateCommand undo = new RestStateCommand();
         undo.setId(undoRedoId);
@@ -487,6 +488,8 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
         command.setRedo(redo);
 
         RestStateCommandAggregate[] content = { command };
+
+        RestViewEditorState[] restViewEditorStates = new RestViewEditorState[1];
 
         RestViewEditorState restViewEditorState = new RestViewEditorState();
         restViewEditorState.setBaseUri(uriBuilder().baseUri());
@@ -522,19 +525,123 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
         
         restViewEditorState.setViewDefinition(restViewDefn);
         
+        restViewEditorStates[0] = restViewEditorState;
+        
         try {
             HttpPut request = jsonRequest(uri, RequestType.PUT);
             addHeader(request, CorsHeaders.ORIGIN, "http://localhost:2772");
             addHeader(request, HttpHeaders.AUTHORIZATION, AUTH_HEADER_VALUE);
-            addBody(request, restViewEditorState);
+            addBody(request, restViewEditorStates);
+
             HttpResponse response = executeOk(request);
             String entity = extractResponse(response);
+            
+            KomodoStatusObject status = KomodoJsonMarshaller.unmarshall(entity, KomodoStatusObject.class);
+            assertNotNull(status);
 
-            RestViewEditorState restState = KomodoJsonMarshaller.unmarshall(entity, RestViewEditorState.class);
-            assertEquals(viewName, restState.getId());
-            assertEquals(restViewEditorState, restState);
+            assertEquals("Stash Status", status.getTitle());
+            Map<String, String> attributes = status.getAttributes();
+
+            for (Map.Entry<String, String> entry : attributes.entrySet()) {
+                String message = entry.getValue();
+                assertNotNull(message);
+
+                assertEquals("Successfully stashed", message);
+            }
         } finally {
             serviceTestUtilities.removeViewEditorState(USER_NAME, viewName);
+        }
+    }
+
+    @Test
+    public void shouldAddUserProfileViewEditorStates() throws Exception {
+        // put
+        URI uri = UriBuilder.fromUri(uriBuilder().baseUri())
+                                                    .path(V1Constants.SERVICE_SEGMENT)
+                                                    .path(V1Constants.USER_PROFILE)
+                                                    .path(V1Constants.VIEW_EDITOR_STATES).build();
+
+        RestStateCommand undo = new RestStateCommand();
+        undo.setId(undoRedoId);
+        undo.addArgument(oldNameKey, viewName);
+        undo.addArgument(newNameKey, untitledName);
+
+        RestStateCommand redo = new RestStateCommand();
+        redo.setId(undoRedoId);
+        redo.addArgument(oldNameKey, untitledName);
+        redo.addArgument(newNameKey, viewName);
+
+        RestStateCommandAggregate command = new RestStateCommandAggregate();
+        command.setUndo(undo);
+        command.setRedo(redo);
+
+        RestStateCommandAggregate[] content = { command };
+
+        // Create 2 RestViewEditorStates, for testing bulk create
+        RestViewEditorState[] restViewEditorStates = new RestViewEditorState[2];
+        for(int i=0; i<2; i++) {
+        	String vName = (i == 0) ? viewName : view2Name;
+            RestViewEditorState restViewEditorState = new RestViewEditorState();
+            restViewEditorState.setBaseUri(uriBuilder().baseUri());
+            restViewEditorState.setId(vName);
+            restViewEditorState.setCommands(content);
+
+            // View Defn properties
+            final String viewDescr = "viewName description";
+            final String[] sourcePaths = new String[2];
+            sourcePaths[0] = "connection=conn1/schema=public/table=customer";
+            sourcePaths[1] = "connection=conn1/schema=public/table=account";
+            final String compName = "left-right";
+            final String compDescr = "composition description";
+            final String compLeftSource = "connection=conn1/schema=public/table=customer";
+            final String compRightSource = "connection=conn1/schema=public/table=account";
+            final String leftColumn = "leftCol";
+            final String rightColumn = "rightCol";
+            final String type = "INNER_JOIN";
+            final String operator = "EQ";
+            
+            RestSqlComposition restComposition = new RestSqlComposition(compName,compDescr,compLeftSource,compRightSource,
+            		                                                    leftColumn,rightColumn,type,operator);
+
+            RestSqlComposition[] compositionArray = new RestSqlComposition[1];
+            compositionArray[0] = restComposition;
+            
+            RestViewDefinition restViewDefn = new RestViewDefinition();
+            restViewDefn.setViewName(vName);
+            restViewDefn.setDescription(viewDescr);
+            restViewDefn.setSourcePaths(sourcePaths);
+            restViewDefn.setSqlCompositions(compositionArray);
+            restViewDefn.setComplete(true);
+            
+            restViewEditorState.setViewDefinition(restViewDefn);
+            
+            restViewEditorStates[i] = restViewEditorState;
+        }
+        
+        try {
+            HttpPut request = jsonRequest(uri, RequestType.PUT);
+            addHeader(request, CorsHeaders.ORIGIN, "http://localhost:2772");
+            addHeader(request, HttpHeaders.AUTHORIZATION, AUTH_HEADER_VALUE);
+            addBody(request, restViewEditorStates);
+            
+            HttpResponse response = executeOk(request);
+            String entity = extractResponse(response);
+            
+            KomodoStatusObject status = KomodoJsonMarshaller.unmarshall(entity, KomodoStatusObject.class);
+            assertNotNull(status);
+
+            assertEquals("Stash Status", status.getTitle());
+            Map<String, String> attributes = status.getAttributes();
+
+            for (Map.Entry<String, String> entry : attributes.entrySet()) {
+                String message = entry.getValue();
+                assertNotNull(message);
+
+                assertEquals("Successfully stashed", message);
+            }
+        } finally {
+            serviceTestUtilities.removeViewEditorState(USER_NAME, viewName);
+            serviceTestUtilities.removeViewEditorState(USER_NAME, view2Name);
         }
     }
 
@@ -704,6 +811,7 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
 
         final RestStateCommandAggregate[] content = { command };
 
+        RestViewEditorState[] restViewEditorStates = new RestViewEditorState[1];
         final RestViewEditorState restViewEditorState = new RestViewEditorState();
         restViewEditorState.setBaseUri( uriBuilder().baseUri() );
         restViewEditorState.setId( editorStateId );
@@ -716,24 +824,35 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
         srcPaths[0] = "path";
         viewDefn2.setSourcePaths(srcPaths);
         restViewEditorState.setViewDefinition( viewDefn2 );
+        restViewEditorStates[0] = restViewEditorState;
         
         final URI uri = UriBuilder.fromUri( uriBuilder().baseUri() )
                                   .path( V1Constants.SERVICE_SEGMENT )
                                   .path( V1Constants.USER_PROFILE )
-                                  .path( V1Constants.VIEW_EDITOR_STATE ).build();
+                                  .path( V1Constants.VIEW_EDITOR_STATES ).build();
 
         try {
             final HttpPut request = jsonRequest( uri, RequestType.PUT );
             addHeader( request, CorsHeaders.ORIGIN, "http://localhost:2772" );
             addHeader( request, HttpHeaders.AUTHORIZATION, AUTH_HEADER_VALUE );
-            addBody( request, restViewEditorState );
+            addBody( request, restViewEditorStates );
 
             final HttpResponse response = executeOk( request );
-            final String entity = extractResponse( response );
+            final String entity = extractResponse(response);
+            
+            KomodoStatusObject status = KomodoJsonMarshaller.unmarshall(entity, KomodoStatusObject.class);
+            assertNotNull(status);
 
-            final RestViewEditorState restState = KomodoJsonMarshaller.unmarshall( entity, RestViewEditorState.class );
-            assertEquals( editorStateId, restState.getId() );
-            assertEquals( restViewEditorState, restState );
+            assertEquals("Stash Status", status.getTitle());
+            Map<String, String> attributes = status.getAttributes();
+
+            for (Map.Entry<String, String> entry : attributes.entrySet()) {
+                String message = entry.getValue();
+                assertNotNull(message);
+
+                assertEquals("Successfully stashed", message);
+            }
+
             assertThat( this.serviceTestUtilities.viewEditorStateExists( USER_NAME, editorStateId ), is( true ) );
 
             // verify new editor state
