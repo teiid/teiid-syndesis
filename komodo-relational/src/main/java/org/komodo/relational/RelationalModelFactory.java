@@ -90,15 +90,17 @@ import org.komodo.relational.model.internal.VirtualProcedureImpl;
 import org.komodo.relational.profile.GitRepository;
 import org.komodo.relational.profile.Profile;
 import org.komodo.relational.profile.SqlComposition;
+import org.komodo.relational.profile.SqlProjectedColumn;
 import org.komodo.relational.profile.StateCommand;
-import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.profile.StateCommandAggregate;
 import org.komodo.relational.profile.ViewDefinition;
+import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.profile.internal.GitRepositoryImpl;
 import org.komodo.relational.profile.internal.SqlCompositionImpl;
+import org.komodo.relational.profile.internal.SqlProjectedColumnImpl;
 import org.komodo.relational.profile.internal.StateCommandAggregateImpl;
-import org.komodo.relational.profile.internal.ViewEditorStateImpl;
 import org.komodo.relational.profile.internal.ViewDefinitionImpl;
+import org.komodo.relational.profile.internal.ViewEditorStateImpl;
 import org.komodo.relational.resource.DdlFile;
 import org.komodo.relational.resource.Driver;
 import org.komodo.relational.resource.ResourceFile;
@@ -1770,20 +1772,10 @@ public final class RelationalModelFactory {
    *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
    * @param repository
    *        the repository where the model object will be created (cannot be <code>null</code>)
-   * @param viewDefinitionImpl
-   *        the parent profile object
+   * @param viewDefinition
+   *        the parent view definition
    * @param compositionName
    *        the sql composition name
-   * @param description
-   *        the description
-   * @param leftSourcePath
-   *        the path to the left source table
-   * @param rightSourcePath
-   *        the path to the right source table
-   * @param type
-   *        the composition type
-   * @param operator
-   *        the operator for the criteria
    * @return the sql composition object
    * @throws KException
    *        if an error occurs
@@ -1809,6 +1801,41 @@ public final class RelationalModelFactory {
 	       }
 	}
 
+	/**
+	 *
+	 * @param transaction
+	 *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+	 * @param repository
+	 *        the repository where the model object will be created (cannot be <code>null</code>)
+	 * @param viewDefinition
+	 *        the parent view definition
+	 * @param columnName
+	 *        the sql projected column name
+	 * @return the sql projected column object
+	 * @throws KException
+	 *        if an error occurs
+	 */
+	public static SqlProjectedColumn createSqlProjectedColumn(UnitOfWork transaction, 
+	                                                          Repository repository, 
+	                                                          ViewDefinition viewDefinition, 
+	                                                          String columnName) throws KException {
+
+	    ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
+	    ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+	    ArgCheck.isNotNull( repository, "repository" ); //$NON-NLS-1$
+	    ArgCheck.isNotNull( columnName, "columnName" ); //$NON-NLS-1$
+
+	    try {
+	        final KomodoObject grouping = RepositoryTools.findOrCreateChild( transaction, viewDefinition, KomodoLexicon.ViewDefinition.SQL_PROJECTED_COLUMNS,
+	                                                                         KomodoLexicon.ViewDefinition.SQL_PROJECTED_COLUMNS );
+	        final KomodoObject kobject = grouping.addChild( transaction, columnName, KomodoLexicon.SqlProjectedColumn.NODE_TYPE );
+	        final SqlProjectedColumn result = new SqlProjectedColumnImpl( transaction, repository, kobject.getAbsolutePath() );
+	        return result;
+	    } catch ( final Exception e ) {
+	        throw handleError( e );
+	    }
+	}
+
     /**
      *
      * @param transaction
@@ -1821,9 +1848,8 @@ public final class RelationalModelFactory {
      * @throws KException
      *        if an error occurs
      */
-    public static StateCommandAggregate createStateCommandAggregate (
-                                                                                                          UnitOfWork transaction, Repository repository,
-                                                                                                          ViewEditorState viewEditorState) throws KException {
+    public static StateCommandAggregate createStateCommandAggregate (UnitOfWork transaction, Repository repository,
+                                                                     ViewEditorState viewEditorState) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotNull( repository, "repository" ); //$NON-NLS-1$
@@ -1860,10 +1886,10 @@ public final class RelationalModelFactory {
     *        if an error occurs
     */
    public static StateCommand createStateCommand(UnitOfWork transaction, Repository repository,
-                                                                                                 StateCommandAggregate stateCommandAgg,
-                                                                                                 String stateCommandType,
-                                                                                                 String commandId,
-                                                                                                 Map<String, String> arguments) throws KException {
+                                                 StateCommandAggregate stateCommandAgg,
+                                                 String stateCommandType,
+                                                 String commandId,
+                                                 Map<String, String> arguments) throws KException {
        ArgCheck.isNotNull(transaction, "transaction"); //$NON-NLS-1$
        ArgCheck.isTrue((transaction.getState() == State.NOT_STARTED), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
        ArgCheck.isNotNull(repository, "repository"); //$NON-NLS-1$

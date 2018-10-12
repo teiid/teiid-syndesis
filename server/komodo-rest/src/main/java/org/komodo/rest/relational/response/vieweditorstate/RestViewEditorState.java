@@ -98,6 +98,11 @@ public class RestViewEditorState extends AbstractKEntity {
     public static final String OPERATOR_LABEL = "operator";
     
     /**
+     * Label used for view definition projected columns array
+     */
+    public static final String PROJECTED_COLUMNS_LABEL = "projectedColumns";
+
+    /**
      * Label used for view editor start content
      */
     public static final String CONTENT_LABEL = "undoables";

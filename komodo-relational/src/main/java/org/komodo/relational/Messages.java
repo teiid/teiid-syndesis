@@ -317,9 +317,14 @@ public class Messages implements StringConstants {
          * An error indicating a sql composition object could not be found
          * while trying to remove it
          */
-    	SQL_COMPOSITION_NOT_FOUND_TO_REMOVE,
-    	
-    	
+        SQL_COMPOSITION_NOT_FOUND_TO_REMOVE,
+        
+        /**
+         * An error indicating a projected column object could not be found
+         * while trying to remove it
+         */
+        PROJECTED_COLUMN_NOT_FOUND_TO_REMOVE,
+        
         /**
          * An error indicating a source path already exists in the list
          * while trying to add it

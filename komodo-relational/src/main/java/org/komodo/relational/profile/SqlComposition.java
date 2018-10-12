@@ -33,6 +33,9 @@ import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 
+/**
+ * Interface for SqlComposition
+ */
 public interface SqlComposition  extends RelationalObject, StringConstants {
 
     /**
