@@ -23,13 +23,13 @@ package org.komodo.relational.profile.internal;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.komodo.core.KomodoLexicon;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.profile.SqlComposition;
+import org.komodo.relational.profile.SqlProjectedColumn;
 import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.spi.KException;
@@ -112,15 +112,29 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
      *
      * @see org.komodo.relational.profile.ViewDefinition#addSqlComposition(UnitOfWork, String)
      */
-	@Override
-	public SqlComposition addSqlComposition(UnitOfWork transaction, 
-			                                String compositionName) throws KException {
-		return RelationalModelFactory.createSqlComposition( transaction, getRepository(), this, compositionName);
-	}
-    
+    @Override
+    public SqlComposition addSqlComposition(UnitOfWork transaction, 
+                                            String compositionName) throws KException {
+        return RelationalModelFactory.createSqlComposition( transaction, getRepository(), this, compositionName);
+    }
+
     private KomodoObject getSqlCompositionsGroupingNode( final UnitOfWork transaction ) {
         try {
             final KomodoObject[] groupings = getRawChildren( transaction, KomodoLexicon.ViewDefinition.SQL_COMPOSITIONS );
+
+            if ( groupings.length == 0 ) {
+                return null;
+            }
+
+            return groupings[ 0 ];
+        } catch ( final KException e ) {
+            return null;
+        }
+    }
+
+    private KomodoObject getSqlProjectedColumnsGroupingNode( final UnitOfWork transaction ) {
+        try {
+            final KomodoObject[] groupings = getRawChildren( transaction, KomodoLexicon.ViewDefinition.SQL_PROJECTED_COLUMNS );
 
             if ( groupings.length == 0 ) {
                 return null;
@@ -323,5 +337,62 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
                                                              KomodoLexicon.ViewDefinition.IS_COMPLETE );
 		return value;
 	}
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see org.komodo.relational.profile.ViewDefinition#addSqlComposition(UnitOfWork, String)
+     */
+    @Override
+    public SqlProjectedColumn addProjectedColumn(UnitOfWork transaction, 
+                                                 String columnName) throws KException {
+        return RelationalModelFactory.createSqlProjectedColumn( transaction, getRepository(), this, columnName);
+    }
+    
+    /**
+     * {@inheritDoc}
+     *
+     * @see org.komodo.relational.profile.ViewDefinition#removeProjectedColumn(UnitOfWork, String...)
+     */
+    @Override
+    public void removeProjectedColumn(UnitOfWork transaction, String columnToRemove) throws KException {
+        ArgCheck.isNotNull(transaction, "transaction"); //$NON-NLS-1$
+        ArgCheck.isTrue((transaction.getState() == State.NOT_STARTED), "transaction state is not NOT_STARTED"); //$NON-NLS-1$
+        ArgCheck.isNotEmpty(columnToRemove, "columnToRemove"); //$NON-NLS-1$
+
+        final SqlProjectedColumn[] columns = getProjectedColumns(transaction, columnToRemove);
+
+        if (columns.length == 0) {
+            throw new KException(Messages.getString(Relational.PROJECTED_COLUMN_NOT_FOUND_TO_REMOVE, columnToRemove));
+        }
+
+        // remove first occurrence
+        columns[0].remove(transaction);
+    }
+
+    /* (non-Javadoc)
+     * @see org.komodo.relational.profile.ViewDefinition#getProjectedColumns(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
+     */
+    @Override
+    public SqlProjectedColumn[] getProjectedColumns(UnitOfWork transaction,
+                                                    String... namePatterns) throws KException {
+        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+
+        final KomodoObject grouping = getSqlProjectedColumnsGroupingNode( transaction);
+
+        if ( grouping != null ) {
+            final List< SqlProjectedColumn > temp = new ArrayList<>();
+
+            for ( final KomodoObject kobject : grouping.getChildren( transaction, namePatterns ) ) {
+                final SqlProjectedColumn gitRepo = new SqlProjectedColumnImpl( transaction, getRepository(), kobject.getAbsolutePath() );
+                temp.add( gitRepo );
+            }
+
+            return temp.toArray( new SqlProjectedColumn[ temp.size() ] );
+        }
+
+        return SqlProjectedColumn.NO_SQL_PROJECTED_COLUMNS;
+    }
 
 }

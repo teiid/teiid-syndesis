@@ -23,14 +23,12 @@ package org.komodo.rest.relational.json;
 
 import static org.komodo.rest.Messages.Error.UNEXPECTED_JSON_TOKEN;
 import static org.komodo.rest.relational.json.KomodoJsonMarshaller.BUILDER;
-
 import java.io.IOException;
-
 import org.komodo.rest.Messages;
 import org.komodo.rest.relational.response.vieweditorstate.RestSqlComposition;
+import org.komodo.rest.relational.response.vieweditorstate.RestSqlProjectedColumn;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewDefinition;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
-
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
@@ -68,14 +66,24 @@ public class ViewDefinitionSerializer extends TypeAdapter<RestViewDefinition> {
 			out.endArray();
 		}
 		
-		RestSqlComposition[] comps = restViewDef.getSqlCompositions();
-		if( comps.length != 0 ) {
-        	out.name(RestViewEditorState.COMPOSITIONS_LABEL);
-        	out.beginArray();
-        	for( RestSqlComposition comp : comps) {
-        		BUILDER.getAdapter(RestSqlComposition.class).write(out, comp);
-        	}
-        	out.endArray();
+        RestSqlComposition[] comps = restViewDef.getSqlCompositions();
+        if( comps.length != 0 ) {
+            out.name(RestViewEditorState.COMPOSITIONS_LABEL);
+            out.beginArray();
+            for( RestSqlComposition comp : comps) {
+                BUILDER.getAdapter(RestSqlComposition.class).write(out, comp);
+            }
+            out.endArray();
+        }
+
+        RestSqlProjectedColumn[] cols = restViewDef.getProjectedColumns();
+        if( cols.length != 0 ) {
+            out.name(RestViewEditorState.PROJECTED_COLUMNS_LABEL);
+            out.beginArray();
+            for( RestSqlProjectedColumn col : cols) {
+                BUILDER.getAdapter(RestSqlProjectedColumn.class).write(out, col);
+            }
+            out.endArray();
         }
 		out.endObject();
 	}
@@ -107,6 +115,10 @@ public class ViewDefinitionSerializer extends TypeAdapter<RestViewDefinition> {
                 case RestViewEditorState.COMPOSITIONS_LABEL:
                     RestSqlComposition[] comps = BUILDER.fromJson(in, RestSqlComposition[].class);
                     viewDef.setSqlCompositions(comps);
+                    break;
+                case RestViewEditorState.PROJECTED_COLUMNS_LABEL:
+                    RestSqlProjectedColumn[] cols = BUILDER.fromJson(in, RestSqlProjectedColumn[].class);
+                    viewDef.setProjectedColumns(cols);
                     break;
                 case RestViewEditorState.BASE_URI:
                 	in.nextString();

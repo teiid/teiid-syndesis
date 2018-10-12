@@ -30,15 +30,17 @@ import java.util.Map;
 import org.junit.Test;
 import org.komodo.core.KomodoLexicon;
 import org.komodo.relational.profile.SqlComposition;
+import org.komodo.relational.profile.SqlProjectedColumn;
 import org.komodo.relational.profile.StateCommand;
 import org.komodo.relational.profile.StateCommandAggregate;
 import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.rest.relational.response.vieweditorstate.RestSqlComposition;
+import org.komodo.rest.relational.response.vieweditorstate.RestSqlProjectedColumn;
 import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate;
 import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate.RestStateCommand;
-import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewDefinition;
+import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
 import org.komodo.spi.KException;
 
 public class ViewEditorStateSerializerTest extends AbstractSerializerTest {
@@ -71,6 +73,12 @@ public class ViewEditorStateSerializerTest extends AbstractSerializerTest {
     private String comp2RightColumn = "column4";
     private String comp2Type = "LEFT_OUTER_JOIN";
     private String comp2Operator = "EQ";
+    private String column1Name = "col1";
+    private String column1Type = "string";
+    private boolean column1Selected = false;
+    private String column2Name = "col2";
+    private String column2Type = "integer";
+    private boolean column2Selected = true;
  
     private String createViewEditorState() {
         String state = EMPTY_STRING +
@@ -90,29 +98,43 @@ public class ViewEditorStateSerializerTest extends AbstractSerializerTest {
                 		tab(3) + q(sourceTablePath4) + NEW_LINE +
                 		tab(2) + pnl(CLOSE_SQUARE_BRACKET + COMMA) +
                 
-                // compositions array
-                	tab(2) + q(RestViewEditorState.COMPOSITIONS_LABEL) + colon() + pnl(OPEN_SQUARE_BRACKET) + 
-                		tab(3) + OPEN_BRACE + NEW_LINE +
-                			tab(4) + q(RestViewEditorState.ID_NAME) + colon() + q(comp1Name) + pnl(COMMA) +
-                			tab(4) + q(RestViewEditorState.ID_DESCRIPTION) + colon() + q(comp1Desc) + pnl(COMMA) +
-                			tab(4) + q(RestViewEditorState.LEFT_SOURCE_PATH_LABEL) + colon() + q(comp1LeftSource) + pnl(COMMA) +
-                			tab(4) + q(RestViewEditorState.RIGHT_SOURCE_PATH_LABEL) + colon() + q(comp1RightSource) + pnl(COMMA) +
-                			tab(4) + q(RestViewEditorState.LEFT_CRITERIA_COLUMN_LABEL) + colon() + q(comp1LeftColumn) + pnl(COMMA) +
-                			tab(4) + q(RestViewEditorState.RIGHT_CRITERIA_COLUMN_LABEL) + colon() + q(comp1RightColumn) + pnl(COMMA) +
-                			tab(4) + q(RestViewEditorState.TYPE_LABEL) + colon() + q(comp1Type) + pnl(COMMA) +
-                			tab(4) + q(RestViewEditorState.OPERATOR_LABEL) + colon() + q(comp1Operator) +
-                		tab(3) + CLOSE_BRACE + pnl(COMMA) +
-                		tab(3) + OPEN_BRACE + NEW_LINE +
-            				tab(4) + q(RestViewEditorState.ID_NAME) + colon() + q(comp2Name) + pnl(COMMA) +
-            				tab(4) + q(RestViewEditorState.ID_DESCRIPTION) + colon() + q(comp2Desc) + pnl(COMMA) +
-            				tab(4) + q(RestViewEditorState.LEFT_SOURCE_PATH_LABEL) + colon() + q(comp2LeftSource) + pnl(COMMA) +
-            				tab(4) + q(RestViewEditorState.RIGHT_SOURCE_PATH_LABEL) + colon() + q(comp2RightSource) + pnl(COMMA) +
-                			tab(4) + q(RestViewEditorState.LEFT_CRITERIA_COLUMN_LABEL) + colon() + q(comp2LeftColumn) + pnl(COMMA) +
-                			tab(4) + q(RestViewEditorState.RIGHT_CRITERIA_COLUMN_LABEL) + colon() + q(comp2RightColumn) + pnl(COMMA) +
-            				tab(4) + q(RestViewEditorState.TYPE_LABEL) + colon() + q(comp2Type) + pnl(COMMA) +
-            				tab(4) + q(RestViewEditorState.OPERATOR_LABEL) + colon() + q(comp2Operator) + NEW_LINE +
-            			tab(3) + CLOSE_BRACE + NEW_LINE +
-            		tab(2) + pnl(CLOSE_SQUARE_BRACKET) +   
+                        // compositions array
+                        tab(2) + q(RestViewEditorState.COMPOSITIONS_LABEL) + colon() + pnl(OPEN_SQUARE_BRACKET) + 
+                            tab(3) + OPEN_BRACE + NEW_LINE +
+                                tab(4) + q(RestViewEditorState.ID_NAME) + colon() + q(comp1Name) + pnl(COMMA) +
+                                tab(4) + q(RestViewEditorState.ID_DESCRIPTION) + colon() + q(comp1Desc) + pnl(COMMA) +
+                                tab(4) + q(RestViewEditorState.LEFT_SOURCE_PATH_LABEL) + colon() + q(comp1LeftSource) + pnl(COMMA) +
+                                tab(4) + q(RestViewEditorState.RIGHT_SOURCE_PATH_LABEL) + colon() + q(comp1RightSource) + pnl(COMMA) +
+                                tab(4) + q(RestViewEditorState.LEFT_CRITERIA_COLUMN_LABEL) + colon() + q(comp1LeftColumn) + pnl(COMMA) +
+                                tab(4) + q(RestViewEditorState.RIGHT_CRITERIA_COLUMN_LABEL) + colon() + q(comp1RightColumn) + pnl(COMMA) +
+                                tab(4) + q(RestViewEditorState.TYPE_LABEL) + colon() + q(comp1Type) + pnl(COMMA) +
+                                tab(4) + q(RestViewEditorState.OPERATOR_LABEL) + colon() + q(comp1Operator) +
+                            tab(3) + CLOSE_BRACE + pnl(COMMA) +
+                            tab(3) + OPEN_BRACE + NEW_LINE +
+                                tab(4) + q(RestViewEditorState.ID_NAME) + colon() + q(comp2Name) + pnl(COMMA) +
+                                tab(4) + q(RestViewEditorState.ID_DESCRIPTION) + colon() + q(comp2Desc) + pnl(COMMA) +
+                                tab(4) + q(RestViewEditorState.LEFT_SOURCE_PATH_LABEL) + colon() + q(comp2LeftSource) + pnl(COMMA) +
+                                tab(4) + q(RestViewEditorState.RIGHT_SOURCE_PATH_LABEL) + colon() + q(comp2RightSource) + pnl(COMMA) +
+                                tab(4) + q(RestViewEditorState.LEFT_CRITERIA_COLUMN_LABEL) + colon() + q(comp2LeftColumn) + pnl(COMMA) +
+                                tab(4) + q(RestViewEditorState.RIGHT_CRITERIA_COLUMN_LABEL) + colon() + q(comp2RightColumn) + pnl(COMMA) +
+                                tab(4) + q(RestViewEditorState.TYPE_LABEL) + colon() + q(comp2Type) + pnl(COMMA) +
+                                tab(4) + q(RestViewEditorState.OPERATOR_LABEL) + colon() + q(comp2Operator) + NEW_LINE +
+                            tab(3) + CLOSE_BRACE + NEW_LINE +
+                        tab(2) + pnl(CLOSE_SQUARE_BRACKET + COMMA) +   
+
+                        // projected columns array
+                        tab(2) + q(RestViewEditorState.PROJECTED_COLUMNS_LABEL) + colon() + pnl(OPEN_SQUARE_BRACKET) + 
+                            tab(3) + OPEN_BRACE + NEW_LINE +
+                                tab(4) + q(RestSqlProjectedColumn.NAME_LABEL) + colon() + q(column1Name) + pnl(COMMA) +
+                                tab(4) + q(RestSqlProjectedColumn.TYPE_LABEL) + colon() + q(column1Type) + pnl(COMMA) +
+                                tab(4) + q(RestSqlProjectedColumn.SELECTED_LABEL) + colon() + column1Selected +
+                            tab(3) + CLOSE_BRACE + pnl(COMMA) +
+                            tab(3) + OPEN_BRACE + NEW_LINE +
+                                tab(4) + q(RestSqlProjectedColumn.NAME_LABEL) + colon() + q(column2Name) + pnl(COMMA) +
+                                tab(4) + q(RestSqlProjectedColumn.TYPE_LABEL) + colon() + q(column2Type) + pnl(COMMA) +
+                                tab(4) + q(RestSqlProjectedColumn.SELECTED_LABEL) + colon() + column2Selected + NEW_LINE +
+                            tab(3) + CLOSE_BRACE + NEW_LINE +
+                        tab(2) + pnl(CLOSE_SQUARE_BRACKET) +   
             	TAB + CLOSE_BRACE + pnl(COMMA) +
             	
                 // undoables child
@@ -233,6 +255,7 @@ public class ViewEditorStateSerializerTest extends AbstractSerializerTest {
         when(viewDef.isComplete(transaction)).thenReturn(isComplete);
         when(viewDef.getSourcePaths(transaction)).thenReturn(sourceTablePaths);
         
+        // Mocks for Compositions
         SqlComposition sqlComp1 = mock(SqlComposition.class);
         when(sqlComp1.getName(transaction)).thenReturn(comp1Name);
         when(sqlComp1.getDescription(transaction)).thenReturn(comp1Desc);
@@ -254,9 +277,22 @@ public class ViewEditorStateSerializerTest extends AbstractSerializerTest {
         when(sqlComp2.getOperator(transaction)).thenReturn(comp2Operator);
         
         SqlComposition[] sqlComps = { sqlComp1, sqlComp2 };
-        
         when(viewDef.getSqlCompositions(transaction)).thenReturn(sqlComps);
+
+        // Mocks for projected columns
+        SqlProjectedColumn sqlCol1 = mock(SqlProjectedColumn.class);
+        when(sqlCol1.getName(transaction)).thenReturn(column1Name);
+        when(sqlCol1.getType(transaction)).thenReturn(column1Type);
+        when(sqlCol1.isSelected(transaction)).thenReturn(column1Selected);
+
+        SqlProjectedColumn sqlCol2 = mock(SqlProjectedColumn.class);
+        when(sqlCol2.getName(transaction)).thenReturn(column2Name);
+        when(sqlCol2.getType(transaction)).thenReturn(column2Type);
+        when(sqlCol2.isSelected(transaction)).thenReturn(column2Selected);
         
+        SqlProjectedColumn[] sqlCols = { sqlCol1, sqlCol2 };
+        when(viewDef.getProjectedColumns(transaction)).thenReturn(sqlCols);
+
         when(state.getViewDefinition(transaction)).thenReturn(viewDef);
 
         RestViewEditorState restState = new RestViewEditorState(MY_BASE_URI, state, transaction);

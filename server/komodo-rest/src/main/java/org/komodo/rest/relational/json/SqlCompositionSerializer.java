@@ -35,6 +35,9 @@ import com.google.gson.stream.JsonWriter;
 
 
 
+/**
+ * Serializer for Sql Composition
+ */
 public class SqlCompositionSerializer extends TypeAdapter<RestSqlComposition> {
 
 	@Override

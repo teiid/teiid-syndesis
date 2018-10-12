@@ -22,7 +22,6 @@
 package org.komodo.rest.service;
 
 import static org.komodo.rest.relational.RelationalMessages.Error.SCHEMA_SERVICE_GET_SCHEMA_ERROR;
-
 import java.io.File;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -30,7 +29,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -47,7 +45,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
-
 import org.komodo.core.KEngine;
 import org.komodo.core.repository.SynchronousCallback;
 import org.komodo.importer.ImportMessages;
@@ -58,6 +55,7 @@ import org.komodo.relational.importer.vdb.VdbImporter;
 import org.komodo.relational.profile.GitRepository;
 import org.komodo.relational.profile.Profile;
 import org.komodo.relational.profile.SqlComposition;
+import org.komodo.relational.profile.SqlProjectedColumn;
 import org.komodo.relational.profile.StateCommandAggregate;
 import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.relational.profile.ViewEditorState;
@@ -72,6 +70,7 @@ import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.RestGitRepository;
 import org.komodo.rest.relational.response.vieweditorstate.RestSqlComposition;
+import org.komodo.rest.relational.response.vieweditorstate.RestSqlProjectedColumn;
 import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate;
 import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate.RestStateCommand;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewDefinition;
@@ -84,7 +83,6 @@ import org.komodo.spi.repository.Repository.Id;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.StringUtils;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -992,15 +990,23 @@ public final class KomodoUtilService extends KomodoService {
             viewDefn.addSourcePath(uow, restSourcePath);
         }
         viewDefn.setComplete(uow, restViewDefn.isComplete());
+        // Compositions
         for (RestSqlComposition restComp: restViewDefn.getSqlCompositions()) {
-        	SqlComposition sqlComp = viewDefn.addSqlComposition(uow, restComp.getId());
-        	sqlComp.setDescription(uow, restComp.getDescription());
-        	sqlComp.setLeftSourcePath(uow, restComp.getLeftSourcePath());
-        	sqlComp.setRightSourcePath(uow, restComp.getRightSourcePath());
-        	sqlComp.setLeftCriteriaColumn(uow, restComp.getLeftCriteriaColumn());
-        	sqlComp.setRightCriteriaColumn(uow, restComp.getRightCriteriaColumn());
-        	sqlComp.setType(uow, restComp.getType());
-        	sqlComp.setOperator(uow, restComp.getOperator());
+            SqlComposition sqlComp = viewDefn.addSqlComposition(uow, restComp.getId());
+            sqlComp.setDescription(uow, restComp.getDescription());
+            sqlComp.setLeftSourcePath(uow, restComp.getLeftSourcePath());
+            sqlComp.setRightSourcePath(uow, restComp.getRightSourcePath());
+            sqlComp.setLeftCriteriaColumn(uow, restComp.getLeftCriteriaColumn());
+            sqlComp.setRightCriteriaColumn(uow, restComp.getRightCriteriaColumn());
+            sqlComp.setType(uow, restComp.getType());
+            sqlComp.setOperator(uow, restComp.getOperator());
+        }
+        // Projected Columns
+        for (RestSqlProjectedColumn restCol: restViewDefn.getProjectedColumns()) {
+            SqlProjectedColumn sqlProjectedCol = viewDefn.addProjectedColumn(uow, restCol.getName());
+            sqlProjectedCol.setName(uow, restCol.getName());
+            sqlProjectedCol.setType(uow, restCol.getType());
+            sqlProjectedCol.setSelected(uow, restCol.isSelected());
         }
         return viewEditorState;
     }
