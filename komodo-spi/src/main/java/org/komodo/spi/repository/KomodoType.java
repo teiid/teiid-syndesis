@@ -189,6 +189,11 @@ public enum KomodoType {
     SQL_COMPOSITIONS,
     
     /**
+     * Sql ProjectedColumn
+     */
+    SQL_PROJECTED_COLUMN,
+
+    /**
      * View Editor State Command Aggregate
      */
     STATE_COMMAND_AGGREGATE,

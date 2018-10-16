@@ -243,6 +243,17 @@
   + * (tko:sqlComposition) copy
 
 /*
+ * a projected column
+ */
+[tko:projectedColumn] > nt:unstructured
+  - tko:name (string)
+  - tko:type (string)
+  - tko:selected (boolean) = 'true' mandatory autocreated
+
+[tko:projectedColumns] > nt:unstructured
+  + * (tko:projectedColumn) copy
+
+/*
  * the view definition containing properties and command for a view
  */
 [tko:viewDefinition] > nt:unstructured
@@ -251,6 +262,7 @@
   - tko:isComplete (boolean) = 'false' mandatory autocreated
   - tko:sourcePaths (string) multiple
   + tko:sqlCompositions (tko:sqlCompositions)
+  + tko:projectedColumns (tko:projectedColumns)
 
 /*
  * The state of a view editor when saved

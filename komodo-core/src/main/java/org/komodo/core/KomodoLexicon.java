@@ -1025,10 +1025,15 @@ public interface KomodoLexicon extends StringConstants {
          * The name of the sql compositions child node. Value is {@value} .
          */
         String SQL_COMPOSITIONS = Namespace.PREFIX + COLON + "sqlCompositions"; //$NON-NLS-1$
+
+        /**
+         * The name of the sql projected columns child node. Value is {@value} .
+         */
+        String SQL_PROJECTED_COLUMNS = Namespace.PREFIX + COLON + "projectedColumns"; //$NON-NLS-1$
     }
     
     /**
-     * The JCR names associated with the view definition node type.
+     * The JCR names associated with the sql composition node type.
      */
     interface SqlComposition {
 
@@ -1071,6 +1076,32 @@ public interface KomodoLexicon extends StringConstants {
          * The name of the view definition operator property. Value is {@value} .
          */
         String OPERATOR = Namespace.PREFIX + COLON + "operator"; //$NON-NLS-1$
+    }
+
+    /**
+     * The JCR names associated with the sql projected column node type.
+     */
+    interface SqlProjectedColumn {
+
+        /**
+         * The name of the view definition node type. Value is {@value} .
+         */
+        String NODE_TYPE = Namespace.PREFIX + COLON + "projectedColumn"; //$NON-NLS-1$
+        
+        /**
+         * The name of the projected column name property. Value is {@value} .
+         */
+        String NAME = Namespace.PREFIX + COLON + "name"; //$NON-NLS-1$
+
+        /**
+         * The name of the projected column type property. Value is {@value} .
+         */
+        String TYPE = Namespace.PREFIX + COLON + "type"; //$NON-NLS-1$
+
+        /**
+         * The name of the projected column selected property. Value is {@value} .
+         */
+        String IS_SELECTED = Namespace.PREFIX + COLON + "selected"; //$NON-NLS-1$
     }
 
     /**

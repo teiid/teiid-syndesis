@@ -148,7 +148,7 @@ public interface ViewDefinition  extends RelationalObject, StringConstants {
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @return the view name
+     * @param name the view name
      * @throws KException
      *         if an error occurs
      */
@@ -166,7 +166,7 @@ public interface ViewDefinition  extends RelationalObject, StringConstants {
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param string value of description
+     * @param description value of description
      * @throws KException
      *         if an error occurs         
      */
@@ -175,7 +175,7 @@ public interface ViewDefinition  extends RelationalObject, StringConstants {
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param boolean value for isComplete
+     * @param complete value for isComplete
      * @throws KException
      *         if an error occurs         
      */
@@ -204,21 +204,57 @@ public interface ViewDefinition  extends RelationalObject, StringConstants {
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param sqlCompositionToRemove
-     *        the name of the sql composition being removed (cannot be empty)       
+     * @param sourcePathToRemove
+     *        the source path being removed (cannot be empty)       
+     * @return the source paths
      * @throws KException
      *         if an error occurs
      */
-    String[]  removeSourcePath( final UnitOfWork transaction,
-                         final String sourcePathToRemove ) throws KException;
+    String[] removeSourcePath( final UnitOfWork transaction,
+                                final String sourcePathToRemove ) throws KException;
     
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param sourceTablePath
+     * @param sourcePath 
      *        the name of the source path (cannot be empty)
+     * @return the source paths
      * @throws KException
      *         if an error occurs
      */
     String[] addSourcePath( final UnitOfWork transaction, String sourcePath ) throws KException;
+
+    /**
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+     * @param columnName
+     *        the name of the projected column being added (cannot be empty)
+     * @return the new projected column (never <code>null</code>)
+     * @throws KException
+     *         if an error occurs
+     */
+    SqlProjectedColumn addProjectedColumn( final UnitOfWork transaction, String columnName ) throws KException;
+    
+    /**
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+     * @param projectedColumnToRemove
+     *        the name of the projected column being removed (cannot be empty)       
+     * @throws KException
+     *         if an error occurs
+     */
+    void removeProjectedColumn( final UnitOfWork transaction,
+                                final String projectedColumnToRemove ) throws KException;
+
+    /**
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+     * @param namePatterns
+     *        optional name patterns (can be <code>null</code> or empty but cannot have <code>null</code> or empty elements)
+     * @return the sql projected columns (never <code>null</code> but can be empty)
+     * @throws KException
+     *         if an error occurs
+     */
+    SqlProjectedColumn[] getProjectedColumns( final UnitOfWork transaction, final String... namePatterns ) throws KException;
+
 }
