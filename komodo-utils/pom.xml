@@ -13,10 +13,6 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.teiid.komodo</groupId>
-			<artifactId>komodo-utils-logger</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.teiid.komodo</groupId>
 			<artifactId>komodo-spi</artifactId>
 		</dependency>
 
@@ -24,5 +20,11 @@
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 		</dependency>
+    
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <scope>compile</scope>
+        </dependency>    
 	</dependencies>
 </project>

@@ -5,7 +5,6 @@
 		<groupId>org.teiid.komodo</groupId>
 		<artifactId>komodo-parent</artifactId>
 		<version>0.0.4-SNAPSHOT</version>
-		<relativePath>../komodo-parent/pom.xml</relativePath>
 	</parent>
 	<artifactId>komodo-metadata-instance</artifactId>
 	<name>Komodo Metadata Instance</name>
