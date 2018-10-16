@@ -84,11 +84,12 @@ import org.komodo.rest.relational.response.metadata.RestMetadataVdb;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatus;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatusVdb;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbTranslator;
-import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
 import org.komodo.rest.relational.response.vieweditorstate.RestSqlComposition;
+import org.komodo.rest.relational.response.vieweditorstate.RestSqlProjectedColumn;
 import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate;
 import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate.RestStateCommand;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewDefinition;
+import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
 import org.komodo.rest.relational.response.virtualization.RestRouteStatus;
 import org.komodo.rest.relational.response.virtualization.RestVirtualizationStatus;
 import org.komodo.rest.schema.json.TeiidXsdReader;
@@ -170,6 +171,7 @@ public final class KomodoJsonMarshaller {
                                                   .registerTypeAdapter(RestViewEditorState.class, new ViewEditorStateSerializer())
                                                   .registerTypeAdapter(RestViewDefinition.class, new ViewDefinitionSerializer())
                                                   .registerTypeAdapter(RestSqlComposition.class, new SqlCompositionSerializer())
+                                                  .registerTypeAdapter(RestSqlProjectedColumn.class, new SqlProjectedColumnSerializer())
                                                   .registerTypeAdapter(RestStateCommandAggregate.class, new ViewEditorStateCommandSerializer())
                                                   .registerTypeAdapter(RestStateCommand.class, new ViewEditorStateCmdUnitSerializer())
                                                   .registerTypeAdapter(RestVirtualizationStatus.class, new VirtualizationStatusSerializer())

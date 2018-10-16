@@ -24,19 +24,26 @@ package org.komodo.rest.relational.response.vieweditorstate;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.komodo.relational.profile.SqlComposition;
+import org.komodo.relational.profile.SqlProjectedColumn;
 import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.rest.RestBasicEntity;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 
+/**
+ * Rest ViewDefinition
+ */
 public class RestViewDefinition extends RestBasicEntity {
 	
     /*
-     * The contents of the view editor state
+     * The view compositions
      */
     private RestSqlComposition[] compositions = new RestSqlComposition[0];
+    /*
+     * The view projected columns
+     */
+    private RestSqlProjectedColumn[] projectedColumns = new RestSqlProjectedColumn[0];
     
     /**
      * Constructor for use <strong>only</strong> when deserializing.
@@ -45,6 +52,11 @@ public class RestViewDefinition extends RestBasicEntity {
         // nothing to do
     }
     
+    /**
+     * Constructor
+     * @param viewDef the view definition
+     * @throws KException the exception
+     */
     public RestViewDefinition(final RestViewDefinition viewDef) throws KException {
     	super(viewDef.getBaseUri());
     	
@@ -69,6 +81,13 @@ public class RestViewDefinition extends RestBasicEntity {
         	compList.add(restComp);
         }
         this.compositions = compList.toArray(new RestSqlComposition[0]);
+        
+        List<RestSqlProjectedColumn> columnList = new ArrayList<>();
+        for (RestSqlProjectedColumn col : viewDef.getProjectedColumns()) {
+            RestSqlProjectedColumn restCol = new RestSqlProjectedColumn(col);
+            columnList.add(restCol);
+        }
+        this.projectedColumns = columnList.toArray(new RestSqlProjectedColumn[0]);
     }
 
     /**
@@ -103,6 +122,13 @@ public class RestViewDefinition extends RestBasicEntity {
         	compList.add(restComp);
         }
         this.compositions = compList.toArray(new RestSqlComposition[0]);
+        
+        List<RestSqlProjectedColumn> columnList = new ArrayList<>();
+        for (SqlProjectedColumn col : viewDef.getProjectedColumns(transaction)) {
+            RestSqlProjectedColumn restCol = new RestSqlProjectedColumn(baseUri, col, transaction);
+            columnList.add(restCol);
+        }
+        this.projectedColumns = columnList.toArray(new RestSqlProjectedColumn[0]);
     }
 
     /**
@@ -138,7 +164,7 @@ public class RestViewDefinition extends RestBasicEntity {
     }
     
     /**
-     * @return the view definition isComplete value (can be empty)
+     * @return the view definition isComplete status
      */
     public boolean isComplete() {
         Object hasIsComplete = tuples.get(RestViewEditorState.IS_COMPLETE);
@@ -146,8 +172,8 @@ public class RestViewDefinition extends RestBasicEntity {
     }
 
     /**
-     * @param isComplete value
-     *        the new description (can be empty)
+     * @param complete 
+     *        the complete status
      */
     public void setComplete(final boolean complete) {
         tuples.put(RestViewEditorState.IS_COMPLETE, complete);
@@ -185,10 +211,29 @@ public class RestViewDefinition extends RestBasicEntity {
      * @return the string array of sql compositions(can be empty)
      */
     public RestSqlComposition[] getSqlCompositions() {
-    	return compositions;
+        return compositions;
     }
     
+    /**
+     * Set the compositions
+     * @param compositions the compositions
+     */
     public void setSqlCompositions(RestSqlComposition[] compositions) {
         this.compositions = compositions;
+    }
+
+    /**
+     * @return the projected columns
+     */
+    public RestSqlProjectedColumn[] getProjectedColumns() {
+        return projectedColumns;
+    }
+    
+    /**
+     * Set the projected columns
+     * @param projCols the projected columns
+     */
+    public void setProjectedColumns(RestSqlProjectedColumn[] projCols) {
+        this.projectedColumns = projCols;
     }
 }
