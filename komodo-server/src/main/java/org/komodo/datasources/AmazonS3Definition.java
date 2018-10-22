@@ -19,12 +19,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.servicecatalog.datasources;
+package org.komodo.datasources;
 
 import java.util.Map;
 import java.util.Properties;
-
-import org.komodo.servicecatalog.DataSourceDefinition;
 
 public class AmazonS3Definition extends DataSourceDefinition {
 
@@ -61,7 +59,7 @@ public class AmazonS3Definition extends DataSourceDefinition {
     }
     
     @Override
-    public Properties getDataSourceProperties(DefaultServiceCatalogDataSource source) {
+    public Properties getDataSourceProperties(DefaultSyndesisDataSource source) {
         Properties props = new Properties();
         props.setProperty("class-name", "org.teiid.resource.adapter.ws.WSManagedConnectionFactory");
         props.setProperty("EndPoint", source.getProperty("url"));
@@ -71,7 +69,7 @@ public class AmazonS3Definition extends DataSourceDefinition {
     } 
     
     @Override
-    public Properties getWFSDataSourceProperties(DefaultServiceCatalogDataSource scd, String jndiName) {
+    public Properties getWFSDataSourceProperties(DefaultSyndesisDataSource scd, String jndiName) {
         Properties props = setupResourceAdapter(scd.getName(), "org.jboss.teiid.resource-adapter.webservice",
                 "org.teiid.resource.adapter.ws.WSManagedConnectionFactory", jndiName);
         ds(props, scd, "EndPoint", scd.canonicalEnvKey("url"));

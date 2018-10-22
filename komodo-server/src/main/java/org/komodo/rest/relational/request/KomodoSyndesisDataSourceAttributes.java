@@ -37,7 +37,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  */
 @JsonSerialize
 @JsonInclude(value=Include.NON_NULL)
-public class KomodoServiceCatalogDataSourceAttributes implements KRestEntity {
+public class KomodoSyndesisDataSourceAttributes implements KRestEntity {
 
 	/**
      * Label for the name
@@ -51,7 +51,7 @@ public class KomodoServiceCatalogDataSourceAttributes implements KRestEntity {
     /**
      * Default constructor for deserialization
      */
-    public KomodoServiceCatalogDataSourceAttributes() {
+    public KomodoSyndesisDataSourceAttributes() {
         // do nothing
     }
 
@@ -97,7 +97,7 @@ public class KomodoServiceCatalogDataSourceAttributes implements KRestEntity {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		KomodoServiceCatalogDataSourceAttributes other = (KomodoServiceCatalogDataSourceAttributes) obj;
+		KomodoSyndesisDataSourceAttributes other = (KomodoSyndesisDataSourceAttributes) obj;
 		if (name == null) {
 			if (other.name != null)
 				return false;

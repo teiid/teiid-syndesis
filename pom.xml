@@ -188,6 +188,7 @@
     <version.org.yaml>1.17</version.org.yaml>
     <version.io.fabric8.openshift-client>3.0.3</version.io.fabric8.openshift-client>
     <version.io.fabric8.kubernetes-api>3.0.8</version.io.fabric8.kubernetes-api>
+    <fabric8.maven.plugin.version>3.5.38</fabric8.maven.plugin.version>
 
     <!-- DO NOT CHANGE VERSION PROPETY NAMES, THESE ARE USED IN CODE At komodo-rest/template-pom.xml -->
     <version.mysql>5.1.40</version.mysql>
@@ -666,6 +667,11 @@
             </lifecycleMappingMetadata>
           </configuration>
         </plugin>
+        <plugin>
+          <groupId>io.fabric8</groupId>
+          <artifactId>fabric8-maven-plugin</artifactId>
+          <version>${fabric8.maven.plugin.version}</version>
+        </plugin>        
       </plugins>
     </pluginManagement>
     <plugins>

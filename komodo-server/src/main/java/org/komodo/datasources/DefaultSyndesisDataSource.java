@@ -19,20 +19,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.servicecatalog.datasources;
+package org.komodo.datasources;
 
+import java.util.Map;
 import java.util.Properties;
 
-import org.komodo.servicecatalog.DataSourceDefinition;
-import org.komodo.servicecatalog.DecodedSecret;
-import org.komodo.spi.runtime.ServiceCatalogDataSource;
+import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.runtime.SyndesisDataSource;
 
-public class DefaultServiceCatalogDataSource implements ServiceCatalogDataSource {
+public class DefaultSyndesisDataSource implements SyndesisDataSource {
     private String name;
     private boolean bound;
     private String translator;
-    private DecodedSecret parameters;
-    private DecodedSecret credentials;
+    private Map<String, String> properties;
     private DataSourceDefinition definition;
 
     @Override
@@ -67,22 +66,6 @@ public class DefaultServiceCatalogDataSource implements ServiceCatalogDataSource
         this.translator = translator;
     }
 
-    public DecodedSecret getParameters() {
-        return parameters;
-    }
-
-    public void setParameters(DecodedSecret parameters) {
-        this.parameters = parameters;
-    }
-
-    public DecodedSecret getCredentials() {
-        return credentials;
-    }
-
-    public void setCredentials(DecodedSecret credentials) {
-        this.credentials = credentials;
-    }
-
     public DataSourceDefinition getDefinition() {
         return definition;
     }
@@ -90,27 +73,25 @@ public class DefaultServiceCatalogDataSource implements ServiceCatalogDataSource
     public void setDefinition(DataSourceDefinition definition) {
         this.definition = definition;
     }
+    
+    public Map<String, String> getProperties() {
+        return properties;
+    }
 
+    public void setProperties(Map<String, String> properties) {
+        this.properties = properties;
+    }
+    
     public String getProperty(String key) {
-        String value = null;
-        if (parameters != null) {
-            value = parameters.getData().get(key);
-        }
-        if (value == null && credentials != null) {
-            value = credentials.getData().get(key);
-        }
-        return value;
+        return this.properties.get(key);
     }
 
-    protected String canonicalKey(String key) {
-        if (getParameters() != null) {
-            if (getParameters().getData().containsKey(key)) {
-                return getParameters().canonicalKey(key);
-            }
-        }
-        return getCredentials().canonicalKey(key);
-    }
-
+    public String canonicalKey(String key) {
+        return this.name.replace(StringConstants.HYPHEN, StringConstants.UNDERSCORE).toUpperCase()
+                + StringConstants.UNDERSCORE
+                + key.replace(StringConstants.HYPHEN, StringConstants.UNDERSCORE).toUpperCase();
+    }    
+    
     protected String canonicalEnvKey(String key) {
         return "$(" + canonicalKey(key) + ")";
     }

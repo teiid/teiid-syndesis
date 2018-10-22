@@ -30,42 +30,42 @@ import org.komodo.rest.RestLink;
 import org.komodo.rest.RestLink.LinkType;
 import org.komodo.rest.relational.KomodoRestUriBuilder.SettingNames;
 import org.komodo.spi.KException;
-import org.komodo.spi.lexicon.servicecatalog.ServiceCatalogLexicon;
+import org.komodo.spi.lexicon.syndesis.SyndesisLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.runtime.ServiceCatalogDataSource;
+import org.komodo.spi.runtime.SyndesisDataSource;
 import org.komodo.utils.ArgCheck;
 
-public class RestServiceCatalogDataSource extends RestBasicEntity implements ServiceCatalogDataSource {
+public class RestSyndesisDataSource extends RestBasicEntity implements SyndesisDataSource {
     /**
      * Label used to describe name
      */
-    public static final String NAME_LABEL = KomodoService.protectPrefix(ServiceCatalogLexicon.DataService.NAME);
+    public static final String NAME_LABEL = KomodoService.protectPrefix(SyndesisLexicon.DataService.NAME);
 
     /**
      * Label used to describe type
      */
-    public static final String TYPE_LABEL = KomodoService.protectPrefix(ServiceCatalogLexicon.DataService.TYPE);
+    public static final String TYPE_LABEL = KomodoService.protectPrefix(SyndesisLexicon.DataService.TYPE);
 
     /**
      * Label used to describe bound 
      */
-    public static final String BOUND_LABEL = KomodoService.protectPrefix(ServiceCatalogLexicon.DataService.BOUND);
+    public static final String BOUND_LABEL = KomodoService.protectPrefix(SyndesisLexicon.DataService.BOUND);
 
     /**
      * Label used to describe bound
      */
-    public static final String TRANSLATOR_LABEL = KomodoService.protectPrefix(ServiceCatalogLexicon.DataService.TRANSLATOR);
+    public static final String TRANSLATOR_LABEL = KomodoService.protectPrefix(SyndesisLexicon.DataService.TRANSLATOR);
 
     /**
      * Constructor for use when deserializing
      */
-    public RestServiceCatalogDataSource() {
+    public RestSyndesisDataSource() {
         super();
     }
     
-	public RestServiceCatalogDataSource(URI baseUri, KomodoObject parent, ServiceCatalogDataSource datasource,
+	public RestSyndesisDataSource(URI baseUri, KomodoObject parent, SyndesisDataSource datasource,
 			UnitOfWork uow) throws KException {
 		super(baseUri, parent, uow);
 		
@@ -73,7 +73,7 @@ public class RestServiceCatalogDataSource extends RestBasicEntity implements Ser
         ArgCheck.isNotNull(uow, "uow"); //$NON-NLS-1$
 
         setId(datasource.getName());
-        setkType(KomodoType.SERVICE_CATALOG_DATA_SOURCE);
+        setkType(KomodoType.SYNDESIS_DATA_SOURCE);
         setHasChildren(false);
         
         setName(datasource.getName());

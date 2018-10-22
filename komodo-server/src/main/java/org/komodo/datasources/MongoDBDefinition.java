@@ -19,12 +19,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.servicecatalog.datasources;
+package org.komodo.datasources;
 
 import java.util.Map;
 import java.util.Properties;
-
-import org.komodo.servicecatalog.DataSourceDefinition;
 
 public class MongoDBDefinition extends DataSourceDefinition {
 
@@ -65,7 +63,7 @@ public class MongoDBDefinition extends DataSourceDefinition {
     }
 
     @Override
-    public Properties getDataSourceProperties(DefaultServiceCatalogDataSource source) {
+    public Properties getDataSourceProperties(DefaultSyndesisDataSource source) {
         /*
         {
               "DATABASE_SERVICE_NAME":"mongodb",
@@ -97,7 +95,7 @@ public class MongoDBDefinition extends DataSourceDefinition {
     }
 
     @Override
-    public Properties getWFSDataSourceProperties(DefaultServiceCatalogDataSource scd, String jndiName) {
+    public Properties getWFSDataSourceProperties(DefaultSyndesisDataSource scd, String jndiName) {
         Properties props = setupResourceAdapter(scd.getName(), "org.jboss.teiid.resource-adapter.mongodb",
                 "org.teiid.resource.adapter.mongodb.MongoDBManagedConnectionFactory", jndiName);
         ds(props, scd, "SecurityType", "SCRAM_SHA_1");

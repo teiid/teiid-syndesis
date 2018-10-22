@@ -27,9 +27,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+
+import org.komodo.openshift.BuildStatus;
+import org.komodo.openshift.BuildStatus.RouteStatus;
 import org.komodo.rest.AbstractKEntity;
-import org.komodo.servicecatalog.BuildStatus;
-import org.komodo.servicecatalog.BuildStatus.RouteStatus;
 import org.komodo.spi.KException;
 import org.komodo.utils.ArgCheck;
 

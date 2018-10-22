@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import org.komodo.openshift.BuildStatus;
 import org.komodo.relational.RelationalModelFactory;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
@@ -52,7 +53,7 @@ import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.RestBasicEntity;
 import org.komodo.rest.relational.connection.RestConnection;
 import org.komodo.rest.relational.dataservice.RestDataservice;
-import org.komodo.rest.relational.response.RestServiceCatalogDataSource;
+import org.komodo.rest.relational.response.RestSyndesisDataSource;
 import org.komodo.rest.relational.response.RestVdb;
 import org.komodo.rest.relational.response.RestVdbCondition;
 import org.komodo.rest.relational.response.RestVdbDataRole;
@@ -71,7 +72,6 @@ import org.komodo.rest.relational.response.metadata.RestMetadataTemplateEntry;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdb;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbTranslator;
 import org.komodo.rest.relational.response.virtualization.RestVirtualizationStatus;
-import org.komodo.servicecatalog.BuildStatus;
 import org.komodo.spi.KException;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
@@ -79,7 +79,7 @@ import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
-import org.komodo.spi.runtime.ServiceCatalogDataSource;
+import org.komodo.spi.runtime.SyndesisDataSource;
 import org.komodo.spi.runtime.TeiidDataSource;
 import org.komodo.spi.runtime.TeiidPropertyDefinition;
 import org.komodo.spi.runtime.TeiidTranslator;
@@ -357,14 +357,14 @@ public class RestEntityFactory implements V1Constants {
         return restEntries;
     }
     
-	public RestServiceCatalogDataSource createServiceCatalogDataSource(UnitOfWork transaction, Repository repository,
-			ServiceCatalogDataSource datasource, URI baseUri) throws Exception {
+	public RestSyndesisDataSource createServiceCatalogDataSource(UnitOfWork transaction, Repository repository,
+			SyndesisDataSource datasource, URI baseUri) throws Exception {
         checkTransaction(transaction);
         ArgCheck.isTrue(transaction.isRollbackOnly(), "transaction should be rollback-only");
         
         // TODO:  phantomjinx what needs to be done here?
         KomodoObject parent = createTemporaryParent(transaction, repository, null);
-        return new RestServiceCatalogDataSource(baseUri, parent, datasource, transaction);
+        return new RestSyndesisDataSource(baseUri, parent, datasource, transaction);
 	}
 
     public RestVirtualizationStatus createBuildStatus(BuildStatus status, URI baseUri) throws Exception {

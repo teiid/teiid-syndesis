@@ -19,69 +19,65 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.servicecatalog.datasources;
+package org.komodo.datasources;
 
 import java.util.Map;
 import java.util.Properties;
 
-import org.komodo.servicecatalog.DataSourceDefinition;
-
-public class WebServiceDefinition extends DataSourceDefinition {
+public class PostgreSQLDefinition extends DataSourceDefinition {
 
     @Override
     public String getType() {
-        return "webservice";
+        return "postgresql";
     }
 
     @Override
     public String getPomDendencies() {
-        return
+        return "<dependency>" +
+            "  <groupId>org.postgresql</groupId>" +
+            "  <artifactId>postgresql</artifactId>" +
+            "  <version>${version.postgresql}</version>" +
+            "</dependency>\n" +
             "<dependency>" +
             "  <groupId>org.wildfly.swarm</groupId>" +
-            "  <artifactId>teiid-ws</artifactId>" +
+            "   <artifactId>teiid-jdbc</artifactId>" +
             "</dependency>";
     }
 
     @Override
     public String getTranslatorName() {
-        return "ws";
-    }
-
-    @Override
-    public boolean isServiceCatalogSource() {
-        return false;
-    }
-    
-    @Override
-    public boolean isResouceAdapter() {
-        return true;
+        return "postgresql";
     }
 
     @Override
     public boolean isTypeOf(Map<String, String> properties) {
-        if ((properties != null) && (properties.get("URL") != null)) {
+        if ((properties != null) && (properties.get("url") != null)
+                && properties.get("url").startsWith("jdbc:postgresql:")) {
             return true;
         }
         return false;
     }
-    
+
     @Override
-    public Properties getDataSourceProperties(DefaultServiceCatalogDataSource source) {
+    public Properties getDataSourceProperties(DefaultSyndesisDataSource source) {
         Properties props = new Properties();
-        props.setProperty("class-name", "org.teiid.resource.adapter.ws.WSManagedConnectionFactory");
-        props.setProperty("EndPoint", source.getProperty("url"));
-        props.setProperty("AuthUserName", source.getProperty("username"));
-        props.setProperty("AuthPassword", source.getProperty("password"));
+        props.setProperty("connection-url", source.getProperty("url"));
+        props.setProperty("user-name", source.getProperty("user"));
+        props.setProperty("password", source.getProperty("password"));
         return props;
-    }    
-    
+        
+        
+    }
+
     @Override
-    public Properties getWFSDataSourceProperties(DefaultServiceCatalogDataSource scd, String jndiName) {
-        Properties props = setupResourceAdapter(scd.getName(), "org.jboss.teiid.resource-adapter.webservice",
-                "org.teiid.resource.adapter.ws.WSManagedConnectionFactory", jndiName);
-        ds(props, scd, "EndPoint", scd.canonicalEnvKey("url"));
-        ds(props, scd, "AuthUserName", scd.canonicalEnvKey("username"));
-        ds(props, scd, "AuthPassword", scd.canonicalEnvKey("password"));
+    public Properties getWFSDataSourceProperties(DefaultSyndesisDataSource scd, String jndiName) {
+        Properties props = new Properties();
+        ds(props, scd, "driver-name", scd.getType());
+        ds(props, scd, "jndi-name", jndiName);
+        
+        ds(props, scd, "connection-url", scd.canonicalEnvKey("url"));
+        ds(props, scd, "user-name", scd.canonicalEnvKey("user"));
+        ds(props, scd, "password", scd.canonicalEnvKey("password"));
         return props;
-    }    
+    }
 }

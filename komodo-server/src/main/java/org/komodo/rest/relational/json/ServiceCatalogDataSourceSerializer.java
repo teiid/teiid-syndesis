@@ -21,21 +21,21 @@
  */
 package org.komodo.rest.relational.json;
 
-import org.komodo.rest.relational.response.RestServiceCatalogDataSource;
+import org.komodo.rest.relational.response.RestSyndesisDataSource;
 import org.komodo.utils.StringUtils;
 
 /**
  * A GSON serializer/deserializer for {@link RestServiceCatalogSource}s.
  */
-public final class ServiceCatalogDataSourceSerializer extends BasicEntitySerializer<RestServiceCatalogDataSource> {
+public final class ServiceCatalogDataSourceSerializer extends BasicEntitySerializer<RestSyndesisDataSource> {
 
     @Override
-    protected boolean isComplete(final RestServiceCatalogDataSource catalogSource) {
+    protected boolean isComplete(final RestSyndesisDataSource catalogSource) {
         return super.isComplete(catalogSource) && !StringUtils.isBlank(catalogSource.getId());
     }
 
     @Override
-    protected RestServiceCatalogDataSource createEntity() {
-        return new RestServiceCatalogDataSource();
+    protected RestSyndesisDataSource createEntity() {
+        return new RestSyndesisDataSource();
     }
 }

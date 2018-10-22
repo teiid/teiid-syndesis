@@ -19,12 +19,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.servicecatalog;
+package org.komodo.datasources;
 
 import java.util.Map;
 import java.util.Properties;
-
-import org.komodo.servicecatalog.datasources.DefaultServiceCatalogDataSource;
 
 /**
  * Service catalog based Data Services that are available
@@ -62,16 +60,7 @@ public abstract class DataSourceDefinition {
      * @param properties
      * @return return the modified property set to make the connection in the given environment
      */
-    public Properties getDataSourceProperties(DefaultServiceCatalogDataSource source) {
-        Properties props = new Properties();
-        if (source.getParameters() != null && source.getParameters().getData() != null) {
-            props.putAll(source.getParameters().getData());
-        }
-        if (source.getCredentials() != null && source.getCredentials().getData() != null) {
-            props.putAll(source.getCredentials().getData());
-        }
-        return props;
-    }
+    public abstract Properties getDataSourceProperties(DefaultSyndesisDataSource source);
 
     /**
      * Given the connection properties from the Service Catalog secrets generate WildFly Swarm's
@@ -80,7 +69,7 @@ public abstract class DataSourceDefinition {
      * @param jndiName JNDI Name of the source
      * @return properties properties required to create a connection in target environment
      */
-    public abstract Properties getWFSDataSourceProperties(DefaultServiceCatalogDataSource datasource, String jndiName);
+    public abstract Properties getWFSDataSourceProperties(DefaultSyndesisDataSource datasource, String jndiName);
 
     /**
      * Returns true if the data source type is a resource adapter, otherwise false.
@@ -90,7 +79,7 @@ public abstract class DataSourceDefinition {
         return false;
     }
 
-    protected void ds(Properties props, DefaultServiceCatalogDataSource scd, String key, String value) {
+    protected void ds(Properties props, DefaultSyndesisDataSource scd, String key, String value) {
         if (scd.getDefinition().isResouceAdapter()) {
             props.setProperty(
                 "swarm.resource-adapters.resource-adapters." 
@@ -121,14 +110,5 @@ public abstract class DataSourceDefinition {
         props.setProperty(cdPrefix + "enabled", "true");
         props.setProperty(cdPrefix + "use-java-context", "true");
         return props;
-    }
-    
-    /**
-     * If source is provisioned through a service catalog this routine returns true. For sources like file, webserive
-     * this will return false.
-     * @return
-     */
-    public boolean isServiceCatalogSource() {
-        return true;
     }
 }

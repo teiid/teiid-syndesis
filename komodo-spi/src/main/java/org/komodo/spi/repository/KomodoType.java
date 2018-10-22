@@ -324,9 +324,9 @@ public enum KomodoType {
     UDF_ENTRY,
 
     /**
-     * Data Source from Service Catalog
+     * Data Source from Syndesis
      */
-    SERVICE_CATALOG_DATA_SOURCE,
+    SYNDESIS_DATA_SOURCE,
 
     /**
      * Build Status

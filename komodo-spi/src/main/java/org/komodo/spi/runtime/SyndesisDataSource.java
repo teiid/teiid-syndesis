@@ -22,10 +22,10 @@
 package org.komodo.spi.runtime;
 
 /**
- * Service catalog based Data Services that are available
+ * Syndesis based Data source that are available
  *
  */
-public interface ServiceCatalogDataSource {
+public interface SyndesisDataSource {
     /**
      * @return real name of data source, maybe different from display name
      */

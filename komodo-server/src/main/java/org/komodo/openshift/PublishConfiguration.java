@@ -19,19 +19,21 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.servicecatalog;
+package org.komodo.openshift;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
 import org.komodo.relational.vdb.Vdb;
-import org.komodo.rest.AuthHandlingFilter.AuthToken;
+import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.ApplicationProperties;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.utils.KLog;
+
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.ObjectReference;
 import io.fabric8.kubernetes.api.model.ObjectReferenceBuilder;
@@ -45,7 +47,7 @@ public class PublishConfiguration implements StringConstants {
 
     private static final String BASE_OPENSHIFT_IMAGE = "redhat-openjdk18-openshift";
 
-    protected AuthToken authToken;
+    protected OAuthCredentials oauthCreds;
     protected UnitOfWork uow;
     protected Vdb vdb;
     protected boolean enableOdata = true;
@@ -135,8 +137,8 @@ public class PublishConfiguration implements StringConstants {
         return Math.max(cpuUnits/1000, 1);
     }
 
-    public void setAuthenticationToken(AuthToken authToken) {
-        this.authToken = authToken;
+    public void setOAuthCredentials(OAuthCredentials creds) {
+        this.oauthCreds = creds;
     }
 
     public void setTransaction(UnitOfWork uow) {

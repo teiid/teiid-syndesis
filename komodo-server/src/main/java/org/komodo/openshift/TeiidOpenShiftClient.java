@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.servicecatalog;
+package org.komodo.openshift;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -28,8 +28,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
@@ -39,7 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -49,46 +50,65 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import javax.net.ssl.SSLContext;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.impl.client.AbstractResponseHandler;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.jboss.shrinkwrap.api.GenericArchive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.TarExporter;
+import org.komodo.datasources.AmazonS3Definition;
+import org.komodo.datasources.DataSourceDefinition;
+import org.komodo.datasources.DefaultSyndesisDataSource;
+import org.komodo.datasources.ExcelDefinition;
+import org.komodo.datasources.FileDefinition;
+import org.komodo.datasources.MongoDBDefinition;
+import org.komodo.datasources.MySQLDefinition;
+import org.komodo.datasources.ODataV4Definition;
+import org.komodo.datasources.PostgreSQLDefinition;
+import org.komodo.datasources.SalesforceDefinition;
+import org.komodo.datasources.WebServiceDefinition;
+import org.komodo.openshift.BuildStatus.RouteStatus;
+import org.komodo.openshift.BuildStatus.Status;
+import org.komodo.openshift.TeiidOpenShiftClient.MonitorState;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
-import org.komodo.rest.AuthHandlingFilter.AuthToken;
+import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.TeiidSwarmMetadataInstance;
-import org.komodo.servicecatalog.BuildStatus.RouteStatus;
-import org.komodo.servicecatalog.BuildStatus.Status;
-import org.komodo.servicecatalog.datasources.AmazonS3Definition;
-import org.komodo.servicecatalog.datasources.DefaultServiceCatalogDataSource;
-import org.komodo.servicecatalog.datasources.ExcelDefinition;
-import org.komodo.servicecatalog.datasources.FileDefinition;
-import org.komodo.servicecatalog.datasources.MongoDBDefinition;
-import org.komodo.servicecatalog.datasources.MySQLDefinition;
-import org.komodo.servicecatalog.datasources.ODataV4Definition;
-import org.komodo.servicecatalog.datasources.PostgreSQLDefinition;
-import org.komodo.servicecatalog.datasources.SalesforceDefinition;
-import org.komodo.servicecatalog.datasources.WebServiceDefinition;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.logging.KLogger;
 import org.komodo.spi.logging.KLogger.Level;
 import org.komodo.spi.repository.ApplicationProperties;
 import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.runtime.ServiceCatalogDataSource;
+import org.komodo.spi.runtime.SyndesisDataSource;
 import org.komodo.utils.FileUtils;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
 import org.teiid.adminapi.AdminException;
 import org.teiid.core.util.ObjectConverterUtil;
+
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.fabric8.kubernetes.api.KubernetesHelper;
 import io.fabric8.kubernetes.api.builds.Builds;
+import io.fabric8.kubernetes.api.model.ConfigMapKeySelectorBuilder;
 import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
+import io.fabric8.kubernetes.api.model.EnvVarSourceBuilder;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.ObjectReference;
 import io.fabric8.kubernetes.api.model.Pod;
@@ -113,14 +133,6 @@ import io.fabric8.openshift.api.model.RouteSpec;
 import io.fabric8.openshift.api.model.TLSConfigBuilder;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftConfig;
-import io.kubernetes.client.LocalObjectReference;
-import io.kubernetes.client.ModelServiceCatalogClient;
-import io.kubernetes.client.ParametersFromSource;
-import io.kubernetes.client.Secret;
-import io.kubernetes.client.ServiceBinding;
-import io.kubernetes.client.ServiceBindingList;
-import io.kubernetes.client.ServiceInstance;
-import io.kubernetes.client.ServiceInstanceList;
 
 public class TeiidOpenShiftClient implements StringConstants {
 
@@ -367,11 +379,9 @@ public class TeiidOpenShiftClient implements StringConstants {
 
     private static final KLogger logger = KLog.getLogger();
 
-    private static final String DAS = "das";
+    private static final String SYSDESIS = "syndesis";
     private static final String MANAGED_BY = "managed-by";
-    private static final String OSURL = "https://openshift.default.svc";
-    private static final String SC_VERSION = "v1beta1";
-
+    private static final String SYNDESISURL = "http://syndesis-server/api/v1";
     private static final long MONITOR_SERVICE_INITIAL_DELAY = 3;
     private static final long MONITOR_SERVICE_POLLING_DELAY = 5;
     
@@ -382,7 +392,6 @@ public class TeiidOpenShiftClient implements StringConstants {
 
     private TeiidSwarmMetadataInstance metadata;
     private HashMap<String, DataSourceDefinition> sources = new HashMap<>();
-    private ModelServiceCatalogClient scClient;
 
     /**
      * Dedicated to monitoring the work queue
@@ -401,10 +410,10 @@ public class TeiidOpenShiftClient implements StringConstants {
     private ExecutorService configureService = Executors.newFixedThreadPool(3);
 
     private Map<String, PrintWriter> logBuffers = new HashMap<>();
+    private EncryptionComponent encryptionComponent = new EncryptionComponent();
 
     public TeiidOpenShiftClient(TeiidSwarmMetadataInstance metadata) {
         this.metadata = metadata;
-        this.scClient = new ModelServiceCatalogClient(ApplicationProperties.getProperty("OSURL", OSURL), SC_VERSION);
 
         // data source definitions
         add(new PostgreSQLDefinition());
@@ -518,51 +527,63 @@ public class TeiidOpenShiftClient implements StringConstants {
         }
         return null;
     }
+    
+    private static CloseableHttpClient buildHttpClient()
+            throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException {
+        // no verification of host for now.
+        SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial(null, (certificate, authType) -> true)
+                .build();
 
-    /**
-     * Returns DataSourceDefinition based on property sniffing
-     * @param translatorName - Name of Translator
-     * @return DataSourceDefinition
-     */
-    private DataSourceDefinition getSourceDefinitionThatMatchesTranslator(String translatorName) {
-        for (DataSourceDefinition dsd : this.sources.values()) {
-            if (dsd.getTranslatorName().equalsIgnoreCase(translatorName)) {
-                return dsd;
-            }
-        }
-        return null;
+        CloseableHttpClient client = HttpClients.custom().setSSLContext(sslContext)
+                .setSSLHostnameVerifier(new NoopHostnameVerifier()).build();
+        return client;
     }
-
-    public Set<ServiceCatalogDataSource> getServiceCatalogSources(AuthToken authToken) throws KException {
-        this.scClient.setAuthHeader(authToken.toString());
-        Set<ServiceCatalogDataSource> sources = new HashSet<>();
+    
+    private static String bearer(String auth) {
+        return "Bearer " + auth;
+    }
+    
+    private static InputStream executeGET(String url, OAuthCredentials oauthCreds) {
         try {
-            ServiceInstanceList serviceList = this.scClient.getServiceInstances(ApplicationProperties.getNamespace());
-            if (serviceList != null) {
-                List<ServiceInstance> services = serviceList.getItems();
-                if( (services != null) && !services.isEmpty()) {
-                    for (ServiceInstance svc : services) {
-                        if (svc.getStatus().isReady()) {
-                            DecodedSecret parameters = getParameters(svc);
-                            if (parameters != null) {
-                                DataSourceDefinition def = getSourceDefinitionThatMatches(parameters.getData());
-                                if (def != null) {
-                                    DefaultServiceCatalogDataSource scd = new DefaultServiceCatalogDataSource();
-                                    scd.setName(svc.getMetadata().getName());
-                                    scd.setTranslatorName(def.getTranslatorName());
-                                    ServiceBinding binding = getServiceBinding(scd.getName());
-                                    if (binding != null) {
-                                        scd.setBound(true);
-                                    }
-                                    sources.add(scd);
-                                    scd.setDefinition(def);
-                                }
-                            } else {
-                                info(svc.getMetadata().getName(), "Parameters not found for source");
-                            }
-                        }
-                    }
+            CloseableHttpClient client = buildHttpClient();
+            HttpGet request = new HttpGet(url);
+            if (oauthCreds != null) {
+                request.addHeader("X-Forwarded-Access-Token", oauthCreds.getToken().toString());
+                request.addHeader("X-Forwarded-User", oauthCreds.getUser());
+                request.addHeader("Authorization", bearer(oauthCreds.getToken().toString()));
+            }
+            HttpResponse response = client.execute(request);
+            ResponseHandler<InputStream> handler = new AbstractResponseHandler<InputStream>(){
+                @Override
+                public InputStream handleEntity(final HttpEntity entity) throws IOException {
+                    return entity.getContent();
+                }                
+            };
+            InputStream result = handler.handleResponse(response);
+            return result;
+        } catch (UnsupportedOperationException | IOException | KeyManagementException | NoSuchAlgorithmException
+                | KeyStoreException e) {
+            throw new RuntimeException(e);
+        }
+    }    
+
+    public Set<SyndesisDataSource> getSyndesisSources(OAuthCredentials oauthCreds) throws KException {
+        Set<SyndesisDataSource> sources = new HashSet<>();
+        try {
+            Collection<String> dsNames = this.metadata.admin().getDataSourceNames();
+            String url = SYNDESISURL+"/connections";
+            InputStream response = executeGET(url, oauthCreds);
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(response);
+            
+            for (JsonNode item: root.get("items")) {
+                String connectorType = item.get("connectorId").asText();
+                if (!connectorType.equals("sql")) {
+                    continue;
                 }
+                String id = item.get("id").asText();
+                String name = item.get("name").asText();
+                sources.add(buildSyndesisDataSource(id+"-"+name, dsNames, item));
             }
         } catch (Exception e) {
             throw handleError(e);
@@ -570,36 +591,10 @@ public class TeiidOpenShiftClient implements StringConstants {
         return sources;
     }
 
-    public void bindToServiceCatalogSource(AuthToken authToken, String dsName) throws KException {
+    public void bindToSyndesisSource(OAuthCredentials oauthCreds, String dsName) throws KException {
         info(dsName, "Bind to Service: " + dsName);
-        this.scClient.setAuthHeader(authToken.toString());
         try {
-            ServiceInstance svc = this.scClient.getServiceInstance(ApplicationProperties.getNamespace(), dsName);
-            if (svc == null) {
-                throw new KException("No Service Catalog Service found with name " + dsName);
-            }
-
-            ServiceBinding binding = getServiceBinding(svc.getMetadata().getName());
-            if (binding != null) {
-                debug(dsName, "Found existing Binding = " + binding);
-            }
-            if (binding == null) {
-                binding = this.scClient.createServiceBinding(svc);
-                debug(dsName, "Created new Binding = " + binding);
-            }
-
-            //TODO: need to come up async based operation
-            int i = 0;
-            while(!binding.getStatus().isReady()) {
-                Thread.sleep(5000);
-                i++;
-                binding = getServiceBinding(svc.getMetadata().getName());
-                if ((i > 3) || (binding == null)) {
-                    throw new KException("Created Service Binding is not Ready");
-                }
-            }
-            
-            DefaultServiceCatalogDataSource scd = buildServiceCatalogDataSource(svc, binding);
+            DefaultSyndesisDataSource scd = getServiceCatalogDataSource(oauthCreds, dsName);
             Collection<String> dsNames = this.metadata.admin().getDataSourceNames();
             if (!dsNames.contains(dsName)) {
                 createDataSource(dsName, scd);
@@ -608,111 +603,46 @@ public class TeiidOpenShiftClient implements StringConstants {
             throw handleError(e);
         }
     }
-    
-    private DecodedSecret getBindingSecrets(String secretName) throws IOException {
-        Map<String, String> map = new TreeMap<>();
-        Secret secret = this.scClient.getSecret(ApplicationProperties.getNamespace(), secretName);
-        if (secret == null) {
-            return null;
-        }
-        map = secret.getData();
-        Map<String, String> decodedMap = new TreeMap<>();
-        if ((map != null) && !map.isEmpty()) {
-            for (Map.Entry<String, String> entry:map.entrySet()) {
-                String key = entry.getKey();
-                String encodedValue = entry.getValue();
-                decodedMap.put(key, new String(Base64.getDecoder().decode(encodedValue)));
-            }
-        }
-        map = decodedMap;
-        return new DecodedSecret(secretName, map);
-    }
 
-    public DefaultServiceCatalogDataSource getServiceCatalogDataSource(AuthToken authToken, String dsName) throws KException {
-        this.scClient.setAuthHeader(authToken.toString());
+    public DefaultSyndesisDataSource getServiceCatalogDataSource(OAuthCredentials oauthCreds, String dsName)
+            throws KException {
         try {
-            ServiceInstance svc = this.scClient.getServiceInstance(ApplicationProperties.getNamespace(), dsName);
-            if (svc == null) {
-                return null;
-            }
-            ServiceBinding binding = getServiceBinding(svc.getMetadata().getName());
-            if ((binding == null) || !binding.getStatus().isReady()) {
-                return null;
-            }
-            return buildServiceCatalogDataSource(svc, binding);
+            Collection<String> dsNames = this.metadata.admin().getDataSourceNames();
+            String id = dsName.substring(0, dsName.indexOf("-"));
+            String url = SYNDESISURL+"/connections/"+id;
+            InputStream response = executeGET(url, oauthCreds);
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode item = mapper.readTree(response);
+            return buildSyndesisDataSource(dsName, dsNames, item);            
         } catch (Exception e) {
             throw handleError(e);
         }
     }
-    
-    private DefaultServiceCatalogDataSource buildServiceCatalogDataSource(ServiceInstance svc, ServiceBinding binding)
-            throws IOException {
-        assert svc != null;
-        assert binding != null;
-        DecodedSecret parameters = getParameters(svc);
-        DecodedSecret bindSecret = getBindingSecrets(binding.getSpec().getSecretName());
-        Map<String, String> allProperties = new HashMap<>();
-        if (parameters != null) {
-            allProperties.putAll(parameters.getData());
-        }
-        if (bindSecret != null) {
-            allProperties.putAll(bindSecret.getData());
-        }
-        DataSourceDefinition def = getSourceDefinitionThatMatches(allProperties);
-        DefaultServiceCatalogDataSource scd = new DefaultServiceCatalogDataSource();
-        scd.setName(svc.getMetadata().getName());
-        scd.setTranslatorName(def.getTranslatorName());
-        scd.setBound(true);
-        scd.setParameters(parameters);
-        scd.setCredentials(bindSecret);
-        scd.setDefinition(def);
-        return scd;
-    }    
-    
-    private ServiceBinding getServiceBinding(String serviceName) throws IOException {
-        ServiceBindingList bindingList = this.scClient.getServiceBindings(ApplicationProperties.getNamespace());
-        if (bindingList != null) {
-            List<ServiceBinding> bindings = bindingList.getItems();
-            if( (bindings != null) && !bindings.isEmpty()) {
-                for (ServiceBinding sb : bindings) {
-                    LocalObjectReference ref = sb.getSpec().getServiceInstanceRef();
-                    if (ref.getName().equals(serviceName)) {
-                        return sb;
-                    }
-                }
-            }
-        }
-        return null;
-    }
 
-    private DecodedSecret getParameters(ServiceInstance svc) throws IOException {
-        Map<String, String> map = new TreeMap<>();
-
-        // data source is there.
-        ParametersFromSource parameters = null;
-        for (int i = 0; i < svc.getSpec().getParametersFrom().size(); i++) {
-            parameters = svc.getSpec().getParametersFrom().get(i);
-            if(parameters.getSecretKeyRef().getKey().equalsIgnoreCase("parameters")) {
-                break;
+    private DefaultSyndesisDataSource buildSyndesisDataSource(String dsName, Collection<String> dsNames, JsonNode item)
+            throws KException {
+        Map<String, String> p = new HashMap<>();
+        JsonNode configuredProperties = item.get("configuredProperties");
+        configuredProperties.fieldNames()
+                .forEachRemaining(key -> p.put(key, configuredProperties.get(key).asText()));
+        
+        DataSourceDefinition def = getSourceDefinitionThatMatches(p); 
+        if (def != null) {
+            DefaultSyndesisDataSource dsd = new DefaultSyndesisDataSource();
+            dsd.setName(dsName);
+            dsd.setTranslatorName(def.getTranslatorName());
+            if (dsNames.contains(dsName)) {
+                dsd.setBound(true);
             }
-        }
-        if (parameters != null) {
-            String secretName = parameters.getSecretKeyRef().getName();
-            String key = parameters.getSecretKeyRef().getKey();
-            Secret secret = this.scClient.getSecret(ApplicationProperties.getNamespace(),
-                    secretName);
-            if (secret != null) {
-                String json = secret.getData().get(key);
-                map = new ObjectMapper().readerFor(Map.class).readValue(Base64.getDecoder().decode(json));
-            }
-            return new DecodedSecret(secretName, map);
+            dsd.setProperties(p);
+            dsd.setDefinition(def);
+            return dsd;
         } else {
-            debug(svc.getMetadata().getName(), "No Parameters Secret found");
+            throw new KException("Could not find datasource that matches to the configuration");
         }
-        return null;
     }
-
-    private void createDataSource(String name, DefaultServiceCatalogDataSource scd)
+        
+    private void createDataSource(String name, DefaultSyndesisDataSource scd)
             throws AdminException, KException {
         
         debug(name, "Creating the Datasource of Type " + scd.getType());
@@ -734,7 +664,8 @@ public class TeiidOpenShiftClient implements StringConstants {
         }
 
         Properties properties = scd.convertToDataSourceProperties();
-        this.metadata.admin().createDataSource(name, driverName, properties);
+        
+        this.metadata.admin().createDataSource(name, driverName, encryptionComponent.decrypt(properties));
     }
 
 
@@ -761,7 +692,7 @@ public class TeiidOpenShiftClient implements StringConstants {
         BuildConfig bc = client.buildConfigs().inNamespace(namespace).createOrReplaceWithNew()
             .withNewMetadata().withName(getBuildConfigName(vdbName))
                 .addToLabels("application", vdbName)
-                .addToLabels(MANAGED_BY, DAS)
+                .addToLabels(MANAGED_BY, SYSDESIS)
                 .endMetadata()
             .withNewSpec()
                 .withRunPolicy("SerialLatestOnly")
@@ -1066,7 +997,7 @@ public class TeiidOpenShiftClient implements StringConstants {
                 PublishConfiguration publishConfig = work.publishConfiguration();
                 Vdb vdb = publishConfig.vdb;
                 UnitOfWork uow = publishConfig.uow;
-                AuthToken authToken = publishConfig.authToken;
+                OAuthCredentials oauthCreds = publishConfig.oauthCreds;
                 KubernetesClient kubernetesClient = null;
 
                 String vdbName = work.vdbName();
@@ -1083,7 +1014,7 @@ public class TeiidOpenShiftClient implements StringConstants {
 
                     info(vdbName, "Publishing - Creating zip archive");
                     GenericArchive archive = ShrinkWrap.create(GenericArchive.class, "contents.tar");
-                    String pomFile = generatePomXml(authToken, uow, vdb, publishConfig.enableOdata);
+                    String pomFile = generatePomXml(oauthCreds, uow, vdb, publishConfig.enableOdata);
 
                     debug(vdbName, "Publishing - Generated pom file: " + NEW_LINE + pomFile);
                     archive.add(new StringAsset(pomFile), "pom.xml");
@@ -1117,7 +1048,7 @@ public class TeiidOpenShiftClient implements StringConstants {
                     waitUntilPodIsReady(vdbName, client, buildName + "-build", 20);
 
                     info(vdbName, "Publishing - Fetching environment variables for vdb data sources");
-                    Collection<EnvVar> envs = getEnvironmentVariablesForVDBDataSources(authToken, uow, vdb, publishConfig);
+                    Collection<EnvVar> envs = getEnvironmentVariablesForVDBDataSources(oauthCreds, uow, vdb, publishConfig);
 
                     publishConfig.addEnvironmentVariables(envs);
                     work.setBuildName(buildName);
@@ -1181,7 +1112,7 @@ public class TeiidOpenShiftClient implements StringConstants {
         }
     }
 
-    Collection<EnvVar> getEnvironmentVariablesForVDBDataSources(AuthToken authToken, UnitOfWork uow, Vdb vdb,
+    Collection<EnvVar> getEnvironmentVariablesForVDBDataSources(OAuthCredentials oauthCreds, UnitOfWork uow, Vdb vdb,
             PublishConfiguration publishConfig) throws KException {
         List<EnvVar> envs = new ArrayList<>();
         StringBuilder javaOptions = new StringBuilder();
@@ -1190,30 +1121,20 @@ public class TeiidOpenShiftClient implements StringConstants {
             ModelSource[] sources = model.getSources(uow);
             for (ModelSource source : sources) {
                 String name = source.getName(uow);
-                String translatorName = source.getTranslatorName(uow);
-                DataSourceDefinition def = getSourceDefinitionThatMatchesTranslator(translatorName);
-                DefaultServiceCatalogDataSource ds = null;
-                if (def.isServiceCatalogSource()) {
-                    ds = getServiceCatalogDataSource(authToken, name);
-                    if (ds == null) {
-                        throw new KException("Datasource "+name+" not found service catalog");
-                    }
-    
-                    // if null this is either file, ws, kind of source where service catalog source does not exist
-                    def = ds.getDefinition();
-                    if (def == null) {
-                        throw new KException("Failed to determine the source type for "
-                                + name + " in VDB " + vdb.getName(uow));
-                    }
-                } else {
-                    ds = new DefaultServiceCatalogDataSource();
-                    ds.setName(name);
-                    ds.setTranslatorName(translatorName);
-                    ds.setDefinition(def);
+                DefaultSyndesisDataSource ds = getServiceCatalogDataSource(oauthCreds, name);
+                if (ds == null) {
+                    throw new KException("Datasource "+name+" not found in Syndesis");
                 }
 
-                //  build properties to create data source in WF-SWARM
-                convertSecretsToEnvironmentVariables(ds, envs);
+                // if null this is either file, ws, kind of source where service catalog source does not exist
+                DataSourceDefinition def = ds.getDefinition();
+                if (def == null) {
+                    throw new KException("Failed to determine the source type for "
+                            + name + " in VDB " + vdb.getName(uow));
+                }
+
+                //  build properties to create data source in Throntail
+                convertToEnvironmentVariables(ds, envs);
 
                 Properties config = def.getWFSDataSourceProperties(ds, source.getJndiName(uow));
                 if (config != null) {
@@ -1229,6 +1150,9 @@ public class TeiidOpenShiftClient implements StringConstants {
         for (Map.Entry<String, String> entry : publishConfig.getUserEnvironmentVariables().entrySet()) {
             envs.add(env(entry.getKey(), entry.getValue()));
         }
+        envs.add(new EnvVarBuilder().withName(EncryptionComponent.SYNDESIS_ENC_KEY)
+                .withValueFrom(new EnvVarSourceBuilder().withConfigMapKeyRef(new ConfigMapKeySelectorBuilder()
+                        .withName("syndesis-server-config").withKey("encrypt.key").build()).build()).build());
         return envs;
     }
 
@@ -1237,26 +1161,16 @@ public class TeiidOpenShiftClient implements StringConstants {
      * @param datasource data source
      * @return YML fragment depicting the ENV variables
      */
-    private List<EnvVar> convertSecretsToEnvironmentVariables(DefaultServiceCatalogDataSource datasource,
+    private List<EnvVar> convertToEnvironmentVariables(DefaultSyndesisDataSource datasource,
             List<EnvVar> envs) {
-        if (datasource.getParameters() != null) {
-            for (String key : datasource.getParameters().getData().keySet()) {
-                String instanceKey = datasource.getParameters().canonicalKey(key);
-                envs.add(env(instanceKey, datasource.getParameters().getData().get(key)));
-            }
-        }
-        if (datasource.getCredentials() != null) {
-            for (String key : datasource.getCredentials().getData().keySet()) {
-                String instanceKey = datasource.getCredentials().canonicalKey(key);
-                envs.add(env(instanceKey, datasource.getCredentials().getSecretName(), key));
-            }
+        for (String key : datasource.getProperties().keySet()) {
+            String instanceKey = datasource.canonicalKey(key);
+            //envs.add(env(instanceKey, datasource.getProperties().get(key)));
+            //TODO: Passwords in clean text, should either create secret or figure out a way decode on server side.
+            envs.add(env(instanceKey, encryptionComponent.decrypt(datasource.getProperties().get(key))));
+            
         }
         return envs;
-    }
-
-    protected EnvVar env(String name, String secretName, String key) {
-        return new EnvVarBuilder().withName(name).withNewValueFrom().withNewSecretKeyRef().withName(secretName)
-                .withKey(key).endSecretKeyRef().endValueFrom().build();
     }
 
     protected EnvVar env(String name, String value) {
@@ -1359,7 +1273,7 @@ public class TeiidOpenShiftClient implements StringConstants {
         final OpenShiftClient client = kubernetesClient.adapt(OpenShiftClient.class);
         Map<String, BuildStatus> services = new HashMap<>();
         try {
-            BuildList bl = client.builds().inNamespace(namespace).withLabel(MANAGED_BY, DAS).list();
+            BuildList bl = client.builds().inNamespace(namespace).withLabel(MANAGED_BY, SYSDESIS).list();
             for (Build b : bl.getItems()) {
                 String vdbName = b.getMetadata().getLabels().get("application");
                 services.put(vdbName, getVDBService(vdbName, namespace, client));
@@ -1473,7 +1387,7 @@ public class TeiidOpenShiftClient implements StringConstants {
      * @return pom.xml contents
      * @throws KException
      */
-    protected String generatePomXml(AuthToken authToken, UnitOfWork uow, Vdb vdb, boolean enableOdata) throws KException {
+    protected String generatePomXml(OAuthCredentials oauthCreds, UnitOfWork uow, Vdb vdb, boolean enableOdata) throws KException {
         try {
             StringBuilder builder = new StringBuilder();
             InputStream is = this.getClass().getClassLoader().getResourceAsStream("s2i/template-pom.xml");
@@ -1488,14 +1402,14 @@ public class TeiidOpenShiftClient implements StringConstants {
                 ModelSource[] sources = model.getSources(uow);
                 for (ModelSource source : sources) {
                     String name = source.getName(uow);
-                    String translatorName = source.getTranslatorName(uow);
-                    DefaultServiceCatalogDataSource ds = getServiceCatalogDataSource(authToken, name);
+                    DefaultSyndesisDataSource ds = getServiceCatalogDataSource(oauthCreds, name);
                     if (ds == null) {
-                        throw new KException("Datasource " + name + " not found in the service catalog");
+                        throw new KException("Datasource " + name + " not found");
                     }
                     DataSourceDefinition def = ds.getDefinition(); 
                     if (def == null) {
-                        def = getSourceDefinitionThatMatchesTranslator(translatorName);
+                        throw new KException("Failed to determine the source type for "
+                                + name + " in VDB " + vdb.getName(uow));
                     }
                     
                     vdbSourceNames.append(name).append(StringConstants.SPACE); // this used as label

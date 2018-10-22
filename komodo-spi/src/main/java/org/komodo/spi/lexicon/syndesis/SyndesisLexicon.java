@@ -19,24 +19,24 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.spi.lexicon.servicecatalog;
+package org.komodo.spi.lexicon.syndesis;
 
 /**
  * Constants associated with the DataVirtualization namespace
  */
-public interface ServiceCatalogLexicon {
+public interface SyndesisLexicon {
 
     /**
      * The URI and prefix constants of the DV namespace.
      */
     interface Namespace {
         /**
-         * The service catalog namespace prefix. Value is {@value}.
+         * The syndesis namespace prefix. Value is {@value}.
          */
         String PREFIX = "sc";
 
         /**
-         * The service catalog namespace URI. Value is {@value}.
+         * The syndesis namespace URI. Value is {@value}.
          */
         String URI = "http://www.jboss.org/sc/1.0";
     }

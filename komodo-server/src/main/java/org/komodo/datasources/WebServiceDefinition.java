@@ -19,18 +19,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.servicecatalog.datasources;
+package org.komodo.datasources;
 
 import java.util.Map;
 import java.util.Properties;
 
-import org.komodo.servicecatalog.DataSourceDefinition;
-
-public class SalesforceDefinition extends DataSourceDefinition {
+public class WebServiceDefinition extends DataSourceDefinition {
 
     @Override
     public String getType() {
-        return "salesforce";
+        return "webservice";
     }
 
     @Override
@@ -38,45 +36,45 @@ public class SalesforceDefinition extends DataSourceDefinition {
         return
             "<dependency>" +
             "  <groupId>org.wildfly.swarm</groupId>" +
-            "  <artifactId>teiid-salesforce-41</artifactId>" +
+            "  <artifactId>teiid-ws</artifactId>" +
             "</dependency>";
     }
 
     @Override
     public String getTranslatorName() {
-        return "salesforce-41";
+        return "ws";
     }
-
+    
     @Override
     public boolean isResouceAdapter() {
         return true;
     }
-    
+
     @Override
     public boolean isTypeOf(Map<String, String> properties) {
-        if ((properties != null) && (properties.get("SALESFORCE_URL") != null)) {
+        if ((properties != null) && (properties.get("URL") != null)) {
             return true;
         }
         return false;
     }
     
     @Override
-    public Properties getDataSourceProperties(DefaultServiceCatalogDataSource source) {
+    public Properties getDataSourceProperties(DefaultSyndesisDataSource source) {
         Properties props = new Properties();
-        props.setProperty("class-name", "org.teiid.resource.adapter.salesforce.SalesForceManagedConnectionFactory");
-        props.setProperty("URL", source.getProperty("url"));
-        props.setProperty("username", source.getProperty("username"));
-        props.setProperty("password", source.getProperty("password"));
+        props.setProperty("class-name", "org.teiid.resource.adapter.ws.WSManagedConnectionFactory");
+        props.setProperty("EndPoint", source.getProperty("url"));
+        props.setProperty("AuthUserName", source.getProperty("username"));
+        props.setProperty("AuthPassword", source.getProperty("password"));
         return props;
     }    
-
+    
     @Override
-    public Properties getWFSDataSourceProperties(DefaultServiceCatalogDataSource scd, String jndiName) {
-        Properties props = setupResourceAdapter(scd.getName(), "org.jboss.teiid.resource-adapter.salesforce-41",
-                "org.teiid.resource.adapter.salesforce.SalesForceManagedConnectionFactory", jndiName);
-        ds(props, scd, "URL", scd.canonicalEnvKey("url"));
-        ds(props, scd, "username", scd.canonicalEnvKey("username"));
-        ds(props, scd, "password", scd.canonicalEnvKey("password"));
+    public Properties getWFSDataSourceProperties(DefaultSyndesisDataSource scd, String jndiName) {
+        Properties props = setupResourceAdapter(scd.getName(), "org.jboss.teiid.resource-adapter.webservice",
+                "org.teiid.resource.adapter.ws.WSManagedConnectionFactory", jndiName);
+        ds(props, scd, "EndPoint", scd.canonicalEnvKey("url"));
+        ds(props, scd, "AuthUserName", scd.canonicalEnvKey("username"));
+        ds(props, scd, "AuthPassword", scd.canonicalEnvKey("password"));
         return props;
-    }
+    }    
 }

@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.servicecatalog;
+package org.komodo.openshift;
 
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.core.Is.is;
@@ -37,6 +37,9 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.core.AbstractLocalRepositoryTest;
+import org.komodo.datasources.DefaultSyndesisDataSource;
+import org.komodo.datasources.MySQLDefinition;
+import org.komodo.datasources.PostgreSQLDefinition;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.OptionKeys;
@@ -45,20 +48,17 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.rest.AuthHandlingFilter;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
-import org.komodo.rest.AuthHandlingFilter.AuthToken;
 import org.komodo.rest.TeiidSwarmMetadataInstance;
-import org.komodo.servicecatalog.datasources.DefaultServiceCatalogDataSource;
-import org.komodo.servicecatalog.datasources.MySQLDefinition;
-import org.komodo.servicecatalog.datasources.PostgreSQLDefinition;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.runtime.ServiceCatalogDataSource;
+import org.komodo.spi.runtime.SyndesisDataSource;
 import org.mockito.Mockito;
 import org.teiid.core.util.ObjectConverterUtil;
 
+import io.fabric8.kubernetes.api.model.ConfigMapKeySelectorBuilder;
 import io.fabric8.kubernetes.api.model.EnvVar;
-import io.fabric8.kubernetes.api.model.EnvVarSource;
-import io.fabric8.kubernetes.api.model.SecretKeySelector;
+import io.fabric8.kubernetes.api.model.EnvVarBuilder;
+import io.fabric8.kubernetes.api.model.EnvVarSourceBuilder;
 
 public class TestVDBPublisher extends AbstractLocalRepositoryTest {
 
@@ -81,17 +81,17 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
         AuthHandlingFilter.threadOAuthCredentials.set(new OAuthCredentials("token", "user"));
         TeiidSwarmMetadataInstance metadata = Mockito.mock(TeiidSwarmMetadataInstance.class);
 
-        HashSet<ServiceCatalogDataSource> sources = new HashSet<>();
+        HashSet<SyndesisDataSource> sources = new HashSet<>();
         sources.add(getMySQLDS());
         sources.add(getPostgreSQL());
 
         TeiidOpenShiftClient client = new TeiidOpenShiftClient(metadata) {
             @Override
-            public Set<ServiceCatalogDataSource> getServiceCatalogSources(AuthToken authToken) throws KException {
+            public Set<SyndesisDataSource> getSyndesisSources(OAuthCredentials authToken) throws KException {
                 return sources;
             }
             @Override
-            public DefaultServiceCatalogDataSource getServiceCatalogDataSource(AuthToken authToken, String dsName) throws KException {
+            public DefaultSyndesisDataSource getServiceCatalogDataSource(OAuthCredentials authToken, String dsName) throws KException {
                 if (dsName.equals("accounts-xyz")) {
                     return getPostgreSQL();
                 } else {
@@ -102,51 +102,35 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
         return client;
     }
 
-    private DefaultServiceCatalogDataSource getMySQLDS() {
-        DefaultServiceCatalogDataSource ds1 = new DefaultServiceCatalogDataSource();
+    private DefaultSyndesisDataSource getMySQLDS() {
+        DefaultSyndesisDataSource ds1 = new DefaultSyndesisDataSource();
         ds1.setName("inventory-abc");
         ds1.setBound(true);
         ds1.setTranslatorName("mysql5");
         ds1.setDefinition(new MySQLDefinition());
 
-        HashMap<String, String> parameterData = new HashMap<>();
-        parameterData.put("DATABASE_SERVICE_NAME", "mariadb");
-        parameterData.put("MEMORY_LIMIT", "512Mi");
-        parameterData.put("MYSQL_DATABASE", "sampledb");
-        parameterData.put("NAMESPACE", "openshift");
-        parameterData.put("VOLUME_CAPACITY", "1Gi");
-        ds1.setParameters(new DecodedSecret("parameters-mysql", parameterData));
-
         HashMap<String, String> credentialData = new HashMap<>();
-        credentialData.put("database-password", "my-pass");
-        credentialData.put("database-name", "sampledb");
-        credentialData.put("database-root-password", "root");
-        credentialData.put("database-user", "johnny");
-        ds1.setCredentials(new DecodedSecret("mysecrect-mysql", credentialData));
+        credentialData.put("password", "my-pass");
+        credentialData.put("schema", "sampledb");
+        credentialData.put("url", "jdbc:mysql://localhost:1521/sampledb");
+        credentialData.put("user", "johnny");
+        ds1.setProperties(credentialData);
         return ds1;
     }
 
-    private DefaultServiceCatalogDataSource getPostgreSQL() {
-        DefaultServiceCatalogDataSource ds2 = new DefaultServiceCatalogDataSource();
+    private DefaultSyndesisDataSource getPostgreSQL() {
+        DefaultSyndesisDataSource ds2 = new DefaultSyndesisDataSource();
         ds2.setName("accounts-xyz");
         ds2.setBound(true);
         ds2.setTranslatorName("postgresql");
         ds2.setDefinition(new PostgreSQLDefinition());
 
-        HashMap<String, String> parameterData2 = new HashMap<>();
-        parameterData2.put("DATABASE_SERVICE_NAME", "postgresql");
-        parameterData2.put("MEMORY_LIMIT", "512Mi");
-        parameterData2.put("POSTGRESQL_DATABASE", "sampledb");
-        parameterData2.put("NAMESPACE", "openshift");
-        parameterData2.put("VOLUME_CAPACITY", "1Gi");
-        parameterData2.put("VERSION", "9.5");
-        ds2.setParameters(new DecodedSecret("parameters-pg", parameterData2));
-
-        HashMap<String, String> credentialData2 = new HashMap<>();
-        credentialData2.put("database-password", "my-pass");
-        credentialData2.put("database-name", "sampledb");
-        credentialData2.put("database-user", "johnny");
-        ds2.setCredentials(new DecodedSecret("mysecrect-pg", credentialData2));
+        HashMap<String, String> credentialData = new HashMap<>();
+        credentialData.put("password", "my-pass");
+        credentialData.put("schema", "sampledb");
+        credentialData.put("url", "jdbc:mysql://localhost:1521/sampledb");
+        credentialData.put("user", "johnny");
+        ds2.setProperties(credentialData);
         return ds2;
     }
 
@@ -157,7 +141,7 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
         final Vdb[] vdbs = WorkspaceManager.getInstance( _repo, getTransaction() ).findVdbs( getTransaction() );
         assertThat( vdbs.length, is(1));
 
-        final AuthToken authToken = AuthHandlingFilter.threadOAuthCredentials.get().getToken();
+        final OAuthCredentials authToken = AuthHandlingFilter.threadOAuthCredentials.get();
         String pom = generator.generatePomXml(authToken, getTransaction(), vdbs[0], false);
         assertEquals(ObjectConverterUtil.convertFileToString(new File("src/test/resources/generated-pom.xml")), pom);
     }
@@ -169,41 +153,35 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
         final Vdb[] vdbs = WorkspaceManager.getInstance( _repo, getTransaction() ).findVdbs( getTransaction() );
         assertThat( vdbs.length, is(1));
 
-        final AuthToken authToken = AuthHandlingFilter.threadOAuthCredentials.get().getToken();
+        final OAuthCredentials authToken = AuthHandlingFilter.threadOAuthCredentials.get();
         PublishConfiguration config = new PublishConfiguration();
         Collection<EnvVar> variables = generator
                 .getEnvironmentVariablesForVDBDataSources(authToken, getTransaction(), vdbs[0], config);
-        assertThat( variables.size(), is(13));
-        String javaOptions= " -Dswarm.datasources.data-sources.accounts-xyz.driver-name=postgresql "
-                + "-Dswarm.datasources.data-sources.accounts-xyz.user-name=$(MYSECRECT_PG_USERNAME) "
-                + "-Dswarm.datasources.data-sources.accounts-xyz.jndi-name=java:/accountsDS "
-                + "-Dswarm.datasources.data-sources.accounts-xyz.password=$(MYSECRECT_PG_PASSWORD) "
-                + "-Dswarm.datasources.data-sources.accounts-xyz.connection-url="
-                + "jdbc:postgresql://$(PARAMETERS_PG_DATABASE_SERVICE_NAME):5432/$(MYSECRECT_PG_DATABASE_NAME)"
+        assertThat( variables.size(), is(9));
+        String javaOptions= " -Dswarm.datasources.data-sources.accounts-xyz.driver-name=postgresql"
+                + " -Dswarm.datasources.data-sources.accounts-xyz.user-name=$(ACCOUNTS_XYZ_USER)"
+                + " -Dswarm.datasources.data-sources.accounts-xyz.jndi-name=java:/accountsDS"
+                + " -Dswarm.datasources.data-sources.accounts-xyz.password=$(ACCOUNTS_XYZ_PASSWORD)"
+                + " -Dswarm.datasources.data-sources.accounts-xyz.connection-url=$(ACCOUNTS_XYZ_URL)"
                 + " -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
                 + " -Djava.net.preferIPv4Addresses=true -Djava.net.preferIPv4Stack=true"
                 + " -XX:ParallelGCThreads=1 -XX:ConcGCThreads=1"
                 + " -Djava.util.concurrent.ForkJoinPool.common.parallelism=1"
                 + " -Dio.netty.eventLoopThreads=2";
 
-        assertThat(variables, hasItem(new EnvVar("PARAMETERS_PG_NAMESPACE", "openshift", null)));
-        assertThat(variables, hasItem(new EnvVar("PARAMETERS_PG_VOLUME_CAPACITY", "1Gi", null)));
-        assertThat(variables, hasItem(new EnvVar("PARAMETERS_PG_DATABASE_SERVICE_NAME", "postgresql", null)));
-        assertThat(variables, hasItem(new EnvVar("PARAMETERS_PG_VERSION", "9.5", null)));
-        assertThat(variables, hasItem(new EnvVar("PARAMETERS_PG_POSTGRESQL_DATABASE", "sampledb", null)));
-        assertThat(variables, hasItem(new EnvVar("PARAMETERS_PG_MEMORY_LIMIT", "512Mi", null)));
-        
-        assertThat(variables, hasItem(new EnvVar("MYSECRECT_PG_DATABASE_USER", null,
-                new EnvVarSource(null, null, null, new SecretKeySelector("database-user", "mysecrect-pg", null)))));
-        assertThat(variables, hasItem(new EnvVar("MYSECRECT_PG_DATABASE_NAME", null,
-                new EnvVarSource(null, null, null, new SecretKeySelector("database-name", "mysecrect-pg", null)))));
-        assertThat(variables, hasItem(new EnvVar("MYSECRECT_PG_DATABASE_PASSWORD", null,
-                new EnvVarSource(null, null, null, new SecretKeySelector("database-password", "mysecrect-pg", null)))));
+        assertThat(variables, hasItem(new EnvVar("ACCOUNTS_XYZ_USER", "johnny", null)));
+        assertThat(variables, hasItem(new EnvVar("ACCOUNTS_XYZ_URL", "jdbc:mysql://localhost:1521/sampledb", null)));
+        assertThat(variables, hasItem(new EnvVar("ACCOUNTS_XYZ_PASSWORD", "my-pass", null)));
 
-        assertThat(variables, hasItem(new EnvVar("JAVA_OPTIONS", javaOptions, null)));
-        
+        assertThat(variables, hasItem(new EnvVarBuilder().withName(EncryptionComponent.SYNDESIS_ENC_KEY)
+                .withValueFrom(new EnvVarSourceBuilder().withConfigMapKeyRef(new ConfigMapKeySelectorBuilder()
+                        .withName("syndesis-server-config").withKey("encrypt.key").build()).build()).build()));
+
         assertThat(variables, hasItem(new EnvVar("AB_JOLOKIA_OFF", "true", null)));
         assertThat(variables, hasItem(new EnvVar("AB_OFF", "true", null)));
         assertThat(variables, hasItem(new EnvVar("GC_MAX_METASPACE_SIZE", "256", null)));
+
+        assertThat(variables, hasItem(new EnvVar("JAVA_OPTIONS", javaOptions, null)));
+        
     }
 }

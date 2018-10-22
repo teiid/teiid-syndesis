@@ -1457,22 +1457,22 @@ public final class RelationalMessages {
         /**
          * An error indicating the failed status of to get a data services from service catalog
          */
-        METADATA_SERVICE_CATALOG_GET_DATA_SOURCES_ERROR,
+        METADATA_GET_DATA_SOURCES_ERROR,
         
         /**
          * An error indicating a name of data service missing from bind operation on service catalog service 
          */
-        METADATA_SERVICE_CATALOG_DATA_SERVICE_BIND_MISSING_NAME,
+        METADATA_DATA_SERVICE_BIND_MISSING_NAME,
         
         /**
          * An error indicating payload parse error from bind operation on service catalog service 
          */
-        METADATA_SERVICE_CATALOG_DATA_SERVICE_BIND_PARSE_ERROR,
+        METADATA_DATA_SERVICE_BIND_PARSE_ERROR,
         
         /**
          * An error indicating from bind operation on service catalog service
          */
-        METADATA_SERVICE_CATALOG_DATA_SERVIVE_BIND_ERROR,
+        METADATA_DATA_SERVIVE_BIND_ERROR,
 
         /**
          * An error indicating the about service failed

@@ -51,6 +51,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.komodo.core.KEngine;
 import org.komodo.core.repository.ObjectImpl;
+import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.relational.DeployStatus;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.model.Column;
@@ -74,7 +75,6 @@ import org.komodo.rest.relational.response.RestConnectionSummary;
 import org.komodo.rest.relational.response.RestVdbModelTableColumn;
 import org.komodo.rest.relational.response.metadata.RestMetadataConnectionStatus;
 import org.komodo.rest.relational.response.metadata.RestMetadataConnectionStatus.EntityState;
-import org.komodo.servicecatalog.TeiidOpenShiftClient;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
@@ -84,7 +84,7 @@ import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
-import org.komodo.spi.runtime.ServiceCatalogDataSource;
+import org.komodo.spi.runtime.SyndesisDataSource;
 import org.komodo.spi.runtime.TeiidDataSource;
 import org.komodo.spi.runtime.TeiidVdb;
 import org.komodo.utils.StringUtils;
@@ -855,7 +855,7 @@ public final class KomodoConnectionService extends KomodoService {
             return createErrorResponseWithForbidden(mediaTypes, ex, RelationalMessages.Error.CONNECTION_SERVICE_REQUEST_PARSING_ERROR);
         }
         
-        ServiceCatalogDataSource serviceCatalogSource = null;
+        SyndesisDataSource serviceCatalogSource = null;
         
         RestConnection restConnection = new RestConnection();
         restConnection.setId(connectionName);
@@ -863,13 +863,13 @@ public final class KomodoConnectionService extends KomodoService {
         try {
             // Add properties for the description and serviceCatalogSource
             restConnection.addProperty("description", rcAttr.getDescription());
-            restConnection.addProperty(DataVirtLexicon.Connection.SERVICE_CATALOG_SOURCE, rcAttr.getServiceCatalogSource());
+            restConnection.addProperty(DataVirtLexicon.Connection.SERVICE_CATALOG_SOURCE, rcAttr.getDataSource());
             restConnection.setJdbc(true);
             
             // Get the specified ServiceCatalogDataSource from the metadata instance
-            Collection<ServiceCatalogDataSource> dataSources = openshiftClient.getServiceCatalogSources(getAuthenticationToken());
-			for(ServiceCatalogDataSource ds: dataSources) {
-				if(ds.getName().equals(rcAttr.getServiceCatalogSource())) {
+            Collection<SyndesisDataSource> dataSources = openshiftClient.getSyndesisSources(getAuthenticationToken());
+			for(SyndesisDataSource ds: dataSources) {
+				if(ds.getName().equals(rcAttr.getDataSource())) {
 					serviceCatalogSource = ds;
 					break;
 				}
@@ -893,7 +893,7 @@ public final class KomodoConnectionService extends KomodoService {
             }
 
 			// Ensures service catalog is bound, and creates the corresponding datasource in wildfly
-			openshiftClient.bindToServiceCatalogSource(getAuthenticationToken(), serviceCatalogSource.getName());
+			openshiftClient.bindToSyndesisSource(getAuthenticationToken(), serviceCatalogSource.getName());
 			
 			// Get the connection from the wildfly instance (should be available after binding)
             TeiidDataSource dataSource = getMetadataInstance().getDataSource(serviceCatalogSource.getName());
@@ -1083,7 +1083,7 @@ public final class KomodoConnectionService extends KomodoService {
             return createErrorResponseWithForbidden(mediaTypes, ex, RelationalMessages.Error.CONNECTION_SERVICE_REQUEST_PARSING_ERROR);
         }
 
-        ServiceCatalogDataSource serviceCatalogSource = null;
+        SyndesisDataSource serviceCatalogSource = null;
 
         RestConnection restConnection = new RestConnection();
         restConnection.setId(connectionName);
@@ -1091,13 +1091,13 @@ public final class KomodoConnectionService extends KomodoService {
         try {
             // Add properties for the description and serviceCatalogSource
             restConnection.addProperty("description", rcAttr.getDescription());
-            restConnection.addProperty(DataVirtLexicon.Connection.SERVICE_CATALOG_SOURCE, rcAttr.getServiceCatalogSource());
+            restConnection.addProperty(DataVirtLexicon.Connection.SERVICE_CATALOG_SOURCE, rcAttr.getDataSource());
             restConnection.setJdbc(true);
             
             // Get the specified ServiceCatalogDataSource from the metadata instance
-            Collection<ServiceCatalogDataSource> dataSources = openshiftClient.getServiceCatalogSources(getAuthenticationToken());
-			for(ServiceCatalogDataSource ds: dataSources) {
-				if(ds.getName().equals(rcAttr.getServiceCatalogSource())) {
+            Collection<SyndesisDataSource> dataSources = openshiftClient.getSyndesisSources(getAuthenticationToken());
+			for(SyndesisDataSource ds: dataSources) {
+				if(ds.getName().equals(rcAttr.getDataSource())) {
 					serviceCatalogSource = ds;
 					break;
 				}
@@ -1125,7 +1125,7 @@ public final class KomodoConnectionService extends KomodoService {
             getWorkspaceManager(uow).delete(uow, kobject);
 
 			// Ensures service catalog is bound, and creates the corresponding datasource in wildfly
-			openshiftClient.bindToServiceCatalogSource(getAuthenticationToken(), serviceCatalogSource.getName());
+			openshiftClient.bindToSyndesisSource(getAuthenticationToken(), serviceCatalogSource.getName());
 			
 			// Get the connection from the wildfly instance (should be available after binding)
             TeiidDataSource dataSource = getMetadataInstance().getDataSource(serviceCatalogSource.getName());
@@ -1573,7 +1573,7 @@ public final class KomodoConnectionService extends KomodoService {
     private Response checkConnectionAttributes(KomodoConnectionAttributes attr,
                                                List<MediaType> mediaTypes) throws Exception {
 
-        if ( attr == null || attr.getServiceCatalogSource() == null ) {
+        if ( attr == null || attr.getDataSource() == null ) {
             return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.CONNECTION_SERVICE_MISSING_PARAMETER_ERROR);
         }
 

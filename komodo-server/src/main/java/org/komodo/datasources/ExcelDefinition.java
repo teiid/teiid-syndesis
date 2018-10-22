@@ -19,18 +19,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.komodo.servicecatalog.datasources;
+package org.komodo.datasources;
 
 import java.util.Map;
 import java.util.Properties;
 
-import org.komodo.servicecatalog.DataSourceDefinition;
-
-public class FileDefinition extends DataSourceDefinition {
+public class ExcelDefinition extends DataSourceDefinition {
 
     @Override
     public String getType() {
-        return "file";
+        return "excel";
     }
 
     @Override
@@ -38,18 +36,13 @@ public class FileDefinition extends DataSourceDefinition {
         return
             "<dependency>" +
             "  <groupId>org.wildfly.swarm</groupId>" +
-            "  <artifactId>teiid-file</artifactId>" +
+            "  <artifactId>teiid-excel</artifactId>" +
             "</dependency>";
     }
 
     @Override
     public String getTranslatorName() {
-        return "file";
-    }
-
-    @Override
-    public boolean isServiceCatalogSource() {
-        return false;
+        return "excel";
     }
     
     @Override
@@ -66,7 +59,7 @@ public class FileDefinition extends DataSourceDefinition {
     }
     
     @Override
-    public Properties getDataSourceProperties(DefaultServiceCatalogDataSource source) {
+    public Properties getDataSourceProperties(DefaultSyndesisDataSource source) {
         Properties props = new Properties();
         props.setProperty("class-name", "org.teiid.resource.adapter.file.FileManagedConnectionFactory");
         props.setProperty("ParentDirectory", source.getProperty("directory"));
@@ -74,10 +67,10 @@ public class FileDefinition extends DataSourceDefinition {
     } 
     
     @Override
-    public Properties getWFSDataSourceProperties(DefaultServiceCatalogDataSource scd, String jndiName) {
+    public Properties getWFSDataSourceProperties(DefaultSyndesisDataSource scd, String jndiName) {
         Properties props = setupResourceAdapter(scd.getName(), "org.jboss.teiid.resource-adapter.file",
                 "org.teiid.resource.adapter.file.FileManagedConnectionFactory", jndiName);
         ds(props, scd, "ParentDirectory", scd.canonicalEnvKey("directory"));
         return props;
-    }     
+    }  
 }

@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -48,7 +49,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
+
 import org.komodo.core.KEngine;
+import org.komodo.openshift.BuildStatus;
+import org.komodo.openshift.PublishConfiguration;
+import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.relational.DeployStatus;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
@@ -57,7 +62,7 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.VdbImport;
 import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.relational.workspace.WorkspaceManager;
-import org.komodo.rest.AuthHandlingFilter.AuthToken;
+import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.CallbackTimeoutException;
 import org.komodo.rest.KomodoRestException;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
@@ -69,11 +74,11 @@ import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.request.KomodoFileAttributes;
 import org.komodo.rest.relational.request.KomodoPathAttribute;
 import org.komodo.rest.relational.request.KomodoQueryAttribute;
-import org.komodo.rest.relational.request.KomodoServiceCatalogDataSourceAttributes;
+import org.komodo.rest.relational.request.KomodoSyndesisDataSourceAttributes;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.RestConnectionDriver;
 import org.komodo.rest.relational.response.RestQueryResult;
-import org.komodo.rest.relational.response.RestServiceCatalogDataSource;
+import org.komodo.rest.relational.response.RestSyndesisDataSource;
 import org.komodo.rest.relational.response.RestVdb;
 import org.komodo.rest.relational.response.RestVdbTranslator;
 import org.komodo.rest.relational.response.metadata.RestMetadataConnection;
@@ -84,9 +89,6 @@ import org.komodo.rest.relational.response.metadata.RestMetadataVdb;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatus;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbTranslator;
 import org.komodo.rest.relational.response.virtualization.RestVirtualizationStatus;
-import org.komodo.servicecatalog.BuildStatus;
-import org.komodo.servicecatalog.PublishConfiguration;
-import org.komodo.servicecatalog.TeiidOpenShiftClient;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
@@ -97,7 +99,7 @@ import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.spi.runtime.ConnectionDriver;
-import org.komodo.spi.runtime.ServiceCatalogDataSource;
+import org.komodo.spi.runtime.SyndesisDataSource;
 import org.komodo.spi.runtime.TeiidDataSource;
 import org.komodo.spi.runtime.TeiidPropertyDefinition;
 import org.komodo.spi.runtime.TeiidTranslator;
@@ -108,6 +110,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -2495,7 +2498,7 @@ public class KomodoMetadataService extends KomodoService {
 	@GET
 	@Path(V1Constants.SERVICE_CATALOG_SOURCES)
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "Display the collection of a", response = RestServiceCatalogDataSource[].class)
+	@ApiOperation(value = "Display the collection of a", response = RestSyndesisDataSource[].class)
 	@ApiResponses(value = { @ApiResponse(code = 403, message = "An error has occurred.") })
 	public Response getServiceCatalogSources(final @Context HttpHeaders headers, final @Context UriInfo uriInfo)
 			throws KomodoRestException {
@@ -2512,13 +2515,13 @@ public class KomodoMetadataService extends KomodoService {
 			uow = createTransaction(principal, "availableSources", true); //$NON-NLS-1$
 
 			// Get OpenShift based available data services
-			Collection<ServiceCatalogDataSource> dataSources = this.openshiftClient.getServiceCatalogSources(getAuthenticationToken());
+			Collection<SyndesisDataSource> dataSources = this.openshiftClient.getSyndesisSources(getAuthenticationToken());
 			LOGGER.info("serviceCatalogSources '{0}' DataSources", dataSources.size()); //$NON-NLS-1$
 
-			final List<RestServiceCatalogDataSource> entities = new ArrayList<>();
+			final List<RestSyndesisDataSource> entities = new ArrayList<>();
 
-			for (ServiceCatalogDataSource dataSource : dataSources) {
-				RestServiceCatalogDataSource entity = entityFactory.createServiceCatalogDataSource(uow, repo,
+			for (SyndesisDataSource dataSource : dataSources) {
+				RestSyndesisDataSource entity = entityFactory.createServiceCatalogDataSource(uow, repo,
 						dataSource, uriInfo.getBaseUri());
 				entities.add(entity);
 				LOGGER.info("serviceCatalogSources:Data Source '{0}' entity was constructed", dataSource.getName()); //$NON-NLS-1$
@@ -2535,12 +2538,12 @@ public class KomodoMetadataService extends KomodoService {
 				throw (KomodoRestException) e;
 			}
 			return createErrorResponseWithForbidden(mediaTypes, e,
-					RelationalMessages.Error.METADATA_SERVICE_CATALOG_GET_DATA_SOURCES_ERROR);
+					RelationalMessages.Error.METADATA_GET_DATA_SOURCES_ERROR);
 		}
 	}
 	
 	/**
-	 * Binds a Service Catalog Data Service
+	 * Binds a Syndesis Data Service
 	 * 
 	 * @param headers
 	 *            the request headers (never <code>null</code>)
@@ -2558,12 +2561,12 @@ public class KomodoMetadataService extends KomodoService {
 	@Path(V1Constants.SERVICE_CATALOG_SOURCES)
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes({ MediaType.APPLICATION_JSON })
-	@ApiOperation(value = "Bind the Service Catalog Data Service and Create connection based on it for Teiid Engine")
+	@ApiOperation(value = "Create connection Teiid Engine based on Syndesis connection configuration")
 	@ApiResponses(value = { @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
 			@ApiResponse(code = 403, message = "An error has occurred.") })
-	public Response bindServiceCatalogSource(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
+	public Response bindSyndesisSource(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
 			@ApiParam(value = "JSON of the properties of the connection:<br>" + OPEN_PRE_TAG + OPEN_BRACE + BR + NBSP
-					+ "name: \"Name of the Service Catalog Data Service\"" + BR + CLOSE_BRACE
+					+ "name: \"Name of the Syndesis Data Service\"" + BR + CLOSE_BRACE
 					+ CLOSE_PRE_TAG, required = true) final String payload)
 			throws KomodoRestException {
 
@@ -2578,23 +2581,23 @@ public class KomodoMetadataService extends KomodoService {
 		//
 		// Error if there is no name attribute defined
 		//
-		KomodoServiceCatalogDataSourceAttributes attributes;
+		KomodoSyndesisDataSourceAttributes attributes;
 		try {
-			attributes = KomodoJsonMarshaller.unmarshall(payload, KomodoServiceCatalogDataSourceAttributes.class);
+			attributes = KomodoJsonMarshaller.unmarshall(payload, KomodoSyndesisDataSourceAttributes.class);
 			if (attributes.getName() == null) {
 				return createErrorResponseWithForbidden(mediaTypes,
-						RelationalMessages.Error.METADATA_SERVICE_CATALOG_DATA_SERVICE_BIND_MISSING_NAME);
+						RelationalMessages.Error.METADATA_DATA_SERVICE_BIND_MISSING_NAME);
 			}
 		} catch (Exception ex) {
 			return createErrorResponseWithForbidden(mediaTypes, ex,
-					RelationalMessages.Error.METADATA_SERVICE_CATALOG_DATA_SERVICE_BIND_PARSE_ERROR);
+					RelationalMessages.Error.METADATA_DATA_SERVICE_BIND_PARSE_ERROR);
 		}
 
 		UnitOfWork uow = null;
 
 		try {
 			uow = createTransaction(principal, "bindServiceCatalogService", false); //$NON-NLS-1$
-			this.openshiftClient.bindToServiceCatalogSource(getAuthenticationToken(), attributes.getName());
+			this.openshiftClient.bindToSyndesisSource(getAuthenticationToken(), attributes.getName());
 			String title = RelationalMessages.getString(
 					RelationalMessages.Info.METADATA_SERVICE_CATALOG_DATA_SERVIVE_BIND_TITLE, attributes.getName());
 			KomodoStatusObject status = new KomodoStatusObject(title);
@@ -2607,7 +2610,7 @@ public class KomodoMetadataService extends KomodoService {
 				throw (KomodoRestException) e;
 			}
 			return createErrorResponse(Status.FORBIDDEN, mediaTypes, e,
-					RelationalMessages.Error.METADATA_SERVICE_CATALOG_DATA_SERVIVE_BIND_ERROR, e, attributes.getName());
+					RelationalMessages.Error.METADATA_DATA_SERVIVE_BIND_ERROR, e, attributes.getName());
 		   }
     }
 
@@ -2793,9 +2796,9 @@ public class KomodoMetadataService extends KomodoService {
         //
         // Error if there is no name attribute defined
         //
-        KomodoServiceCatalogDataSourceAttributes attributes;
+        KomodoSyndesisDataSourceAttributes attributes;
         try {
-            attributes = KomodoJsonMarshaller.unmarshall(payload, KomodoServiceCatalogDataSourceAttributes.class);
+            attributes = KomodoJsonMarshaller.unmarshall(payload, KomodoSyndesisDataSourceAttributes.class);
             if (attributes.getName() == null) {
                 return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_NAME_NOT_PROVIDED);
             }
@@ -2827,7 +2830,7 @@ public class KomodoMetadataService extends KomodoService {
             status.addAttribute("Publishing", "Operation initiated");
 
             final String vdbPath = vdb.getAbsolutePath();
-            final AuthToken token = getAuthenticationToken();
+            final OAuthCredentials creds = getAuthenticationToken();
 
             UnitOfWork publishUow = createTransaction(principal, "publish", true); //$NON-NLS-1$
             Vdb theVdb = new VdbImpl(publishUow, kengine.getDefaultRepository(), vdbPath);
@@ -2835,7 +2838,7 @@ public class KomodoMetadataService extends KomodoService {
             // the properties in this class can be exposed for user input
             PublishConfiguration config = new PublishConfiguration();
             config.setVDB(theVdb);
-            config.setAuthenticationToken(new AuthToken(token.toString()));
+            config.setOAuthCredentials(creds);
             config.setTransaction(publishUow);
             BuildStatus buildStatus = openshiftClient.publishVirtualization(config);
 

@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.teiid.komodo</groupId>
-		<artifactId>komodo</artifactId>
+		<artifactId>komodo-parent</artifactId>
 		<version>0.0.4-SNAPSHOT</version>
 	</parent>
 	<artifactId>komodo-core</artifactId>

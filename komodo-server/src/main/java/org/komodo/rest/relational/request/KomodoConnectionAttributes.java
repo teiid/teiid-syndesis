@@ -47,13 +47,13 @@ public class KomodoConnectionAttributes implements KRestEntity {
     /**
      * Label for the serviceCatalogSource
      */
-    public static final String SERVICE_CATALOG_SOURCE_LABEL = "serviceCatalogSource"; //$NON-NLS-1$
+    public static final String DATA_SOURCE_LABEL = "dataSource"; //$NON-NLS-1$
 
     @JsonProperty(DESCRIPTION_LABEL)
     private String description;
 
-    @JsonProperty(SERVICE_CATALOG_SOURCE_LABEL)
-    private String serviceCatalogSource;
+    @JsonProperty(DATA_SOURCE_LABEL)
+    private String dataSource;
 
     /**
      * Default constructor for deserialization
@@ -89,24 +89,24 @@ public class KomodoConnectionAttributes implements KRestEntity {
     }
 
     /**
-     * @return the ServiceCatalogSource
+     * @return the DataSource
      */
-    public String getServiceCatalogSource() {
-        return this.serviceCatalogSource;
+    public String getDataSource() {
+        return this.dataSource;
     }
 
     /**
-     * @param serviceCatalogSource the ServiceCatalogSource to set
+     * @param DataSource to set
      */
-    public void setServiceCatalogSource(String serviceCatalogSource) {
-        this.serviceCatalogSource = serviceCatalogSource;
+    public void setDataSource(String source) {
+        this.dataSource = source;
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((serviceCatalogSource == null) ? 0 : serviceCatalogSource.hashCode());
+        result = prime * result + ((dataSource == null) ? 0 : dataSource.hashCode());
         result = prime * result + ((description == null) ? 0 : description.hashCode());
         return result;
     }
@@ -120,10 +120,10 @@ public class KomodoConnectionAttributes implements KRestEntity {
         if (getClass() != obj.getClass())
             return false;
         KomodoConnectionAttributes other = (KomodoConnectionAttributes)obj;
-        if (serviceCatalogSource == null) {
-            if (other.serviceCatalogSource != null)
+        if (dataSource == null) {
+            if (other.dataSource != null)
                 return false;
-        } else if (!serviceCatalogSource.equals(other.serviceCatalogSource))
+        } else if (!dataSource.equals(other.dataSource))
             return false;
         if (description == null) {
             if (other.description != null)
@@ -135,6 +135,6 @@ public class KomodoConnectionAttributes implements KRestEntity {
 
     @Override
     public String toString() {
-        return "KomodoConnectionAttributes [description=" + this.description + ", ServiceCatalogSource=" + this.serviceCatalogSource + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        return "KomodoConnectionAttributes [description=" + this.description + ", ServiceCatalogSource=" + this.dataSource + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 }

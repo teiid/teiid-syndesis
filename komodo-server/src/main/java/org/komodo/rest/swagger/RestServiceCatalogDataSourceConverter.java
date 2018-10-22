@@ -22,7 +22,7 @@
 package org.komodo.rest.swagger;
 
 import org.komodo.rest.relational.dataservice.RestDataservice;
-import org.komodo.rest.relational.response.RestServiceCatalogDataSource;
+import org.komodo.rest.relational.response.RestSyndesisDataSource;
 import org.komodo.spi.repository.KomodoType;
 
 import io.swagger.converter.ModelConverterContext;
@@ -31,23 +31,23 @@ import io.swagger.models.ModelImpl;
 /**
  * Converter to display properties of {@link RestDataservice} class in swagger
  */
-public class RestServiceCatalogDataSourceConverter extends RestEntityConverter<RestServiceCatalogDataSource> {
+public class RestServiceCatalogDataSourceConverter extends RestEntityConverter<RestSyndesisDataSource> {
 
     @Override
-    protected Class<RestServiceCatalogDataSource> getEntityClass() {
-        return RestServiceCatalogDataSource.class;
+    protected Class<RestSyndesisDataSource> getEntityClass() {
+        return RestSyndesisDataSource.class;
     }
 
     @Override
     protected KomodoType getKomodoType() {
-        return KomodoType.SERVICE_CATALOG_DATA_SOURCE;
+        return KomodoType.SYNDESIS_DATA_SOURCE;
     }
 
     @Override
     protected void addProperties(ModelImpl model, ModelConverterContext context) throws Exception {
-        model.property(RestServiceCatalogDataSource.NAME_LABEL, requiredProperty(String.class));
-        model.property(RestServiceCatalogDataSource.TYPE_LABEL, property(String.class));
-        model.property(RestServiceCatalogDataSource.BOUND_LABEL, property(Boolean.class));
-        model.property(RestServiceCatalogDataSource.TRANSLATOR_LABEL, property(String.class));
+        model.property(RestSyndesisDataSource.NAME_LABEL, requiredProperty(String.class));
+        model.property(RestSyndesisDataSource.TYPE_LABEL, property(String.class));
+        model.property(RestSyndesisDataSource.BOUND_LABEL, property(Boolean.class));
+        model.property(RestSyndesisDataSource.TRANSLATOR_LABEL, property(String.class));
     }
 }

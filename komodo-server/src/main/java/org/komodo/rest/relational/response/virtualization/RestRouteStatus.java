@@ -21,8 +21,8 @@
  */
 package org.komodo.rest.relational.response.virtualization;
 
+import org.komodo.openshift.BuildStatus.RouteStatus;
 import org.komodo.rest.AbstractKEntity;
-import org.komodo.servicecatalog.BuildStatus.RouteStatus;
 
 public class RestRouteStatus extends AbstractKEntity {
 

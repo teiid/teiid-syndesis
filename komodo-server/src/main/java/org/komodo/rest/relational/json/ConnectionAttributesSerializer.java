@@ -58,8 +58,8 @@ public final class ConnectionAttributesSerializer extends TypeAdapter<KomodoConn
                 case KomodoConnectionAttributes.DESCRIPTION_LABEL:
                 	connectionAttr.setDescription(in.nextString());
                     break;
-                case KomodoConnectionAttributes.SERVICE_CATALOG_SOURCE_LABEL:
-                	connectionAttr.setServiceCatalogSource(in.nextString());
+                case KomodoConnectionAttributes.DATA_SOURCE_LABEL:
+                	connectionAttr.setDataSource(in.nextString());
                     break;
                 default:
                     throw new IOException( Messages.getString( UNEXPECTED_JSON_TOKEN, name ) );
@@ -85,8 +85,8 @@ public final class ConnectionAttributesSerializer extends TypeAdapter<KomodoConn
         out.name(KomodoConnectionAttributes.DESCRIPTION_LABEL);
         out.value(value.getDescription());
 
-        out.name(KomodoConnectionAttributes.SERVICE_CATALOG_SOURCE_LABEL);
-        out.value(value.getServiceCatalogSource());
+        out.name(KomodoConnectionAttributes.DATA_SOURCE_LABEL);
+        out.value(value.getDataSource());
 
         out.endObject();
     }

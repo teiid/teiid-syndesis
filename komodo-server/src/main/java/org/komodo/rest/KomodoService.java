@@ -24,10 +24,12 @@ package org.komodo.rest;
 import static org.komodo.rest.Messages.Error.COMMIT_TIMEOUT;
 import static org.komodo.rest.Messages.Error.RESOURCE_NOT_FOUND;
 import static org.komodo.rest.Messages.General.GET_OPERATION_NAME;
+
 import java.io.StringWriter;
 import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import javax.ws.rs.core.Context;
@@ -43,6 +45,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
 import javax.xml.namespace.QName;
+
 import org.komodo.core.KEngine;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.core.repository.SynchronousCallback;
@@ -52,7 +55,6 @@ import org.komodo.relational.profile.Profile;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
-import org.komodo.rest.AuthHandlingFilter.AuthToken;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.RestBasicEntity.ResourceNotFound;
@@ -71,6 +73,7 @@ import org.komodo.spi.repository.Repository.UnitOfWorkListener;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
+
 import com.google.gson.Gson;
 
 /**
@@ -232,8 +235,8 @@ public abstract class KomodoService implements V1Constants {
         return value;
     }
 
-    protected AuthToken getAuthenticationToken() {
-        return AuthHandlingFilter.threadOAuthCredentials.get().getToken();
+    protected OAuthCredentials getAuthenticationToken() {
+        return AuthHandlingFilter.threadOAuthCredentials.get();
     }
 
     protected SecurityPrincipal checkSecurityContext(HttpHeaders headers) {
