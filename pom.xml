@@ -211,7 +211,6 @@
     <module>komodo-importer</module>
     <module>komodo-relational</module>
     <module>komodo-server</module>
-    <module>komodo-openshift</module>
   </modules>
 
   <!-- This section defines the default dependency settings inherited by child projects. Note that this section does not 
