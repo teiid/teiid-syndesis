@@ -35,6 +35,7 @@ import org.komodo.relational.model.Model.Type;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.internal.OptionContainerUtils;
 import org.komodo.relational.profile.SqlComposition;
+import org.komodo.relational.profile.SqlProjectedColumn;
 import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.vdb.ModelSource;
@@ -279,13 +280,24 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
         	}
         }
         
-        for (int i = 0; i < projSymbols.size(); i++) {
-            sb.append(projSymbols.get(i));
-            if (i < projSymbols.size()-1) {
-                sb.append(StringConstants.COMMA).append(StringConstants.SPACE);
+        // Need to use the new View Def project columns
+        SqlProjectedColumn[] projectedColumns = viewDef.getProjectedColumns(uow);
+        if( projectedColumns.length == 1 && projectedColumns[0].getName(uow).equalsIgnoreCase("ALL")  ) {
+            for (int i = 0; i < projSymbols.size(); i++) {
+                sb.append(projSymbols.get(i));
+                if (i < projSymbols.size()-1) {
+                    sb.append(StringConstants.COMMA).append(StringConstants.SPACE);
+                }
+            }
+        } else {
+            for (int i = 0; i < projectedColumns.length; i++) {
+                sb.append(projectedColumns[i].getName(uow)).append(StringConstants.SPACE).append(projectedColumns[i].getType(uow));
+                if (i < projectedColumns.length-1) {
+                    sb.append(StringConstants.COMMA).append(StringConstants.SPACE);
+                }
             }
         }
-        
+
         sb.append(") AS \n"); //$NON-NLS-1$
         sb.append("SELECT "); //$NON-NLS-1$
         sb.append("ROW_NUMBER() OVER (ORDER BY "); //$NON-NLS-1$
