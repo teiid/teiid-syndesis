@@ -22,15 +22,11 @@
 package org.komodo.rest.relational.dataservice;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
+
 import org.komodo.core.KomodoLexicon;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.model.Model;
-import org.komodo.relational.model.Table;
-import org.komodo.relational.model.internal.OptionContainerUtils;
 import org.komodo.relational.resource.Driver;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.KomodoService;

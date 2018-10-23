@@ -68,7 +68,6 @@ import org.komodo.spi.runtime.ConnectionDriver;
 import org.komodo.spi.runtime.TeiidDataSource;
 import org.komodo.spi.storage.StorageConnector;
 import org.komodo.test.utils.TestUtilities;
-import org.komodo.test.utils.UsStatesTestDB;
 import org.komodo.utils.FileUtils;
 
 @SuppressWarnings( {"javadoc", "nls"} )
@@ -82,8 +81,6 @@ public abstract class AbstractKomodoMetadataServiceTest extends AbstractServiceT
 
     private TeiidSwarmMetadataInstance instance;
 
-    private static UsStatesTestDB testDB;
-
     @Deployment( testable = false )
     public static WebArchive createRestDeployment() {
         return ShrinkWrap.createFromZipFile(WebArchive.class, new File("target/vdb-builder.war"));
@@ -95,16 +92,11 @@ public abstract class AbstractKomodoMetadataServiceTest extends AbstractServiceT
         URI baseUri = URI.create("http://localhost" + COLON + TEST_PORT);
         baseUri = UriBuilder.fromUri(baseUri).scheme("http").path("/vdb-builder/v1").build();
         _uriBuilder = new KomodoRestUriBuilder(baseUri);
-
-        testDB = new UsStatesTestDB();
     }
 
     @AfterClass
     public static void afterAllTests() throws Exception {
-        if (testDB == null)
-            return;
 
-        testDB.dispose();
     }
 
     protected void assertNoMysqlDriver() throws Exception {

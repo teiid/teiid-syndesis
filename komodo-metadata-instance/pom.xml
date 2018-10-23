@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.teiid.komodo</groupId>
 		<artifactId>komodo-parent</artifactId>
-		<version>0.0.4-SNAPSHOT</version>
+		<version>0.0.5-SNAPSHOT</version>
 	</parent>
 	<artifactId>komodo-metadata-instance</artifactId>
 	<name>Komodo Metadata Instance</name>
@@ -32,11 +32,5 @@
 			<artifactId>teiid-admin</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>org.teiid.komodo</groupId>
-			<artifactId>komodo-utils</artifactId>
-			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
 </project>

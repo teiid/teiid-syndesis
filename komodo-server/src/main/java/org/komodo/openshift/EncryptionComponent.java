@@ -97,7 +97,7 @@ public class EncryptionComponent {
             return null;
         }
         Properties result = new Properties();
-        result.forEach((k,v)->result.setProperty((String)k, decrypt((String)v)));
+        props.forEach((k,v)->result.setProperty((String)k, decrypt((String)v)));
         return result;
     }
     
@@ -109,7 +109,10 @@ public class EncryptionComponent {
                 // this is syndesis-server's configuration file. When we need more than encryption key
                 // will need to pull out as configuration.
                 JsonNode config = mapper.readTree(new File("./config/application.yml"));
-                encryptKey = config.get("encrypt/key").asText();
+                JsonNode encrypt = config.get("encrypt");
+                if (encrypt != null) {
+                    encryptKey = encrypt.get("key").asText();
+                }
             }
             return encryptKey;
         } catch (JsonProcessingException e) {

@@ -25,8 +25,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
+
 import java.net.URI;
+
 import javax.ws.rs.core.UriBuilder;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.relational.connection.Connection;
@@ -56,8 +59,6 @@ public final class RestDataserviceTest {
     private static final String SERVICE_VIEW_MODEL = "serviceViewModel";
     private static final String SERVICE_VIEW1 = "serviceView1";
     private static final String SERVICE_VIEW2 = "serviceView2";
-    private static final String SERVICE_VIEW_SRCTABLE1 = "sourceTable1";
-    private static final String SERVICE_VIEW_SRCTABLE2 = "sourceTable2";
 
     private RestDataservice dataservice;
 

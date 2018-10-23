@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.teiid.komodo</groupId>
 		<artifactId>komodo-parent</artifactId>
-		<version>0.0.4-SNAPSHOT</version>
+		<version>0.0.5-SNAPSHOT</version>
 	</parent>
 	<artifactId>komodo-relational</artifactId>
 	<name>Komodo Relational</name>
@@ -23,7 +23,7 @@
 
 		<dependency>
 			<groupId>org.teiid.komodo</groupId>
-			<artifactId>komodo-storage-service</artifactId>
+			<artifactId>komodo-storage</artifactId>
 		</dependency>
 
 		<dependency>

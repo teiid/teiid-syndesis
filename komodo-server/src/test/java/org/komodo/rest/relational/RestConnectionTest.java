@@ -27,11 +27,8 @@ import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.ws.rs.core.UriBuilder;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -53,12 +50,6 @@ public final class RestConnectionTest implements V1Constants {
     private static final String DRIVER_NAME = "MySql";
 
     private static final String JNDI_NAME = "MyConnectionJndiName";
-
-    private static final String BASE_URI_PREFIX = "http://localhost:8081/v1";
-
-    private static final URI MY_BASE_URI = UriBuilder.fromUri(BASE_URI_PREFIX).build();
-
-    private static final String TEIID_SERVER = "DefaultServer";
 
     private UnitOfWork transaction;
 

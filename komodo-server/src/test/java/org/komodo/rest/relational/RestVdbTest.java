@@ -26,26 +26,28 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
+
 import java.net.URI;
+
 import javax.ws.rs.core.UriBuilder;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.relational.response.RestVdb;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyDescriptor;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.mockito.Mockito;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
 
 @SuppressWarnings( {"javadoc", "nls"} )
 public final class RestVdbTest implements StringConstants {
 
     private static final URI BASE_URI = UriBuilder.fromUri("http://localhost:8081/v1/").build();
-    private static final URI BASE_TEIID_URI = UriBuilder.fromUri("http://localhost:8081/v1/teiid").build();
     private static final String WORKSPACE_DATA_PATH = "/workspace";
     private static final String VDB_NAME = "MyVdb";
     private static final String VDB_DATA_PATH = "/workspace/vdbs/vdb1";

@@ -23,6 +23,7 @@ package org.komodo.relational.importer.ddl;
 
 import java.io.File;
 import java.io.InputStream;
+
 import org.komodo.importer.AbstractImporter;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
@@ -32,7 +33,6 @@ import org.komodo.importer.Messages;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Schema;
 import org.komodo.spi.KException;
-import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository;

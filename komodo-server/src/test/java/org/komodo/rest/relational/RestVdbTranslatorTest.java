@@ -28,11 +28,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
 import javax.ws.rs.core.UriBuilder;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.core.repository.DescriptorImpl;
@@ -43,6 +46,7 @@ import org.komodo.rest.RestLink;
 import org.komodo.rest.RestLink.LinkType;
 import org.komodo.rest.RestProperty;
 import org.komodo.rest.relational.response.RestVdbTranslator;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyDescriptor;
@@ -52,7 +56,6 @@ import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.spi.repository.Repository.UnitOfWorkListener;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public final class RestVdbTranslatorTest implements V1Constants {
@@ -75,8 +78,6 @@ public final class RestVdbTranslatorTest implements V1Constants {
     private static final String VDB_NAME = "vdb1";
 
     private static final String WKSP_VDB_DATA_PATH = "/workspace/vdbs/" + VDB_NAME;
-
-    private static final String TEIID_SERVER = "DefaultServer";
 
     private UnitOfWork transaction;
 

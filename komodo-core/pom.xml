@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.teiid.komodo</groupId>
 		<artifactId>komodo-parent</artifactId>
-		<version>0.0.4-SNAPSHOT</version>
+		<version>0.0.5-SNAPSHOT</version>
 	</parent>
 	<artifactId>komodo-core</artifactId>
 	<name>Komodo Core</name>
