@@ -1,66 +1,66 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>org.teiid.komodo</groupId>
-		<artifactId>komodo-parent</artifactId>
-		<version>0.0.5-SNAPSHOT</version>
-	</parent>
-	<artifactId>komodo-core</artifactId>
-	<name>Komodo Core</name>
-	<description>Komodo Core</description>
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.teiid</groupId>
+    <artifactId>komodo-parent</artifactId>
+    <version>0.0.5-SNAPSHOT</version>
+  </parent>
+  <artifactId>komodo-core</artifactId>
+  <name>Komodo Core</name>
+  <description>Komodo Core</description>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.teiid.komodo</groupId>
-			<artifactId>komodo-spi</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.teiid.komodo</groupId>
-			<artifactId>komodo-utils</artifactId>
-		</dependency>
+  <dependencies>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>komodo-spi</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>komodo-utils</artifactId>
+    </dependency>
 
-		<dependency>
-			<groupId>org.teiid.komodo</groupId>
-			<artifactId>komodo-metadata-instance</artifactId>
-		</dependency>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>komodo-metadata</artifactId>
+    </dependency>
 
-		<dependency>
-			<groupId>org.modeshape</groupId>
-			<artifactId>modeshape-jcr</artifactId>
-		</dependency>
+    <dependency>
+      <groupId>org.modeshape</groupId>
+      <artifactId>modeshape-jcr</artifactId>
+    </dependency>
 
-		<dependency>
-			<groupId>org.teiid.modeshape</groupId>
-			<artifactId>teiid-modeshape-sequencer-vdb</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.teiid.modeshape</groupId>
-			<artifactId>teiid-modeshape-sequencer-ddl</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.teiid.modeshape</groupId>
-			<artifactId>teiid-modeshape-sequencer-dataservice</artifactId>
-		</dependency>
+    <dependency>
+      <groupId>org.teiid.modeshape</groupId>
+      <artifactId>teiid-modeshape-sequencer-vdb</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.teiid.modeshape</groupId>
+      <artifactId>teiid-modeshape-sequencer-ddl</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.teiid.modeshape</groupId>
+      <artifactId>teiid-modeshape-sequencer-dataservice</artifactId>
+    </dependency>
 
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-		</dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+    </dependency>
 
-		<!-- Needed to get at modeshape's underlying logging system - see JcrLogConfigurator for details -->
-		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<scope>compile</scope>
-		</dependency>
+    <!-- Needed to get at modeshape's underlying logging system - see JcrLogConfigurator for details -->
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <scope>compile</scope>
+    </dependency>
 
-		<dependency>
-			<groupId>org.teiid.komodo</groupId>
-			<artifactId>komodo-utils</artifactId>
-			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>komodo-utils</artifactId>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
 
-	</dependencies>
+  </dependencies>
 </project>

@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>org.teiid.komodo</groupId>
+		<groupId>org.teiid</groupId>
 		<artifactId>komodo-parent</artifactId>
 		<version>0.0.5-SNAPSHOT</version>
 	</parent>
@@ -12,7 +12,7 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.teiid.komodo</groupId>
+			<groupId>org.teiid</groupId>
 			<artifactId>komodo-spi</artifactId>
 		</dependency>
 

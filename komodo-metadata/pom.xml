@@ -2,23 +2,23 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>org.teiid.komodo</groupId>
+		<groupId>org.teiid</groupId>
 		<artifactId>komodo-parent</artifactId>
 		<version>0.0.5-SNAPSHOT</version>
 	</parent>
-	<artifactId>komodo-metadata-instance</artifactId>
-	<name>Komodo Metadata Instance</name>
-	<description>Komodo Metadata Instance</description>
+	<artifactId>komodo-metadata</artifactId>
+	<name>Komodo Metadata</name>
+	<description>Komodo Metadata</description>
 
 	<dependencies>
 
 		<dependency>
-			<groupId>org.teiid.komodo</groupId>
+			<groupId>org.teiid</groupId>
 			<artifactId>komodo-spi</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.teiid.komodo</groupId>
+			<groupId>org.teiid</groupId>
 			<artifactId>komodo-utils</artifactId>
 		</dependency>
 

@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.teiid.komodo</groupId>
+    <groupId>org.teiid</groupId>
     <artifactId>komodo-parent</artifactId>
     <version>0.0.5-SNAPSHOT</version>
   </parent>
@@ -32,7 +32,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.teiid.komodo</groupId>
+      <groupId>org.teiid</groupId>
       <artifactId>komodo-relational</artifactId>
       <exclusions>
         <exclusion>
@@ -41,6 +41,66 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>komodo-importer</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.teiid</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>komodo-utils</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.teiid</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>komodo-storage</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.teiid</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>komodo-spi</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.teiid</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>komodo-core</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.teiid</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>komodo-metadata</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.teiid</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>         
     <dependency>
       <groupId>org.wildfly.swarm</groupId>
       <artifactId>undertow</artifactId>
@@ -217,10 +277,10 @@
       </exclusions>
     </dependency>
     <dependency>
-        <groupId>org.springframework.security</groupId>
-        <artifactId>spring-security-core</artifactId>
-        <version>4.2.6.RELEASE</version>
-    </dependency>    
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-core</artifactId>
+      <version>4.2.6.RELEASE</version>
+    </dependency>
     <!-- data source driver dependencies -->
     <dependency>
       <groupId>mysql</groupId>
@@ -240,13 +300,13 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.teiid.komodo</groupId>
+      <groupId>org.teiid</groupId>
       <artifactId>komodo-utils</artifactId>
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.teiid.komodo</groupId>
+      <groupId>org.teiid</groupId>
       <artifactId>komodo-core</artifactId>
       <type>test-jar</type>
       <scope>test</scope>
@@ -476,6 +536,6 @@
           </plugin>
         </plugins>
       </build>
-    </profile>    
+    </profile>
   </profiles>
 </project>

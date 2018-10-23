@@ -8,7 +8,7 @@
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.teiid.komodo</groupId>
+  <groupId>org.teiid</groupId>
   <artifactId>komodo-parent</artifactId>
   <version>0.0.5-SNAPSHOT</version>
   <name>Komodo Parent</name>
@@ -203,7 +203,7 @@
     <!-- First these -->
     <module>komodo-spi</module>
     <module>komodo-utils</module>
-    <module>komodo-metadata-instance</module>
+    <module>komodo-metadata</module>
     <module>komodo-core</module>
     <module>komodo-storage</module>
 
@@ -275,54 +275,54 @@
       </dependency>
       <!-- Komodo subprojects -->
       <dependency>
-        <groupId>org.teiid.komodo</groupId>
+        <groupId>org.teiid</groupId>
         <artifactId>komodo-spi</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.teiid.komodo</groupId>
+        <groupId>org.teiid</groupId>
         <artifactId>komodo-utils</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.teiid.komodo</groupId>
-        <artifactId>komodo-metadata-instance</artifactId>
+        <groupId>org.teiid</groupId>
+        <artifactId>komodo-metadata</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.teiid.komodo</groupId>
+        <groupId>org.teiid</groupId>
         <artifactId>komodo-core</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.teiid.komodo</groupId>
+        <groupId>org.teiid</groupId>
         <artifactId>komodo-storage</artifactId>
         <version>${project.version}</version>
       </dependency>      
       <dependency>
-        <groupId>org.teiid.komodo</groupId>
+        <groupId>org.teiid</groupId>
         <artifactId>komodo-importer</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.teiid.komodo</groupId>
+        <groupId>org.teiid</groupId>
         <artifactId>komodo-relational</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.teiid.komodo</groupId>
+        <groupId>org.teiid</groupId>
         <artifactId>komodo-rest</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.teiid.komodo</groupId>
+        <groupId>org.teiid</groupId>
         <artifactId>komodo-utils</artifactId>
         <version>${project.version}</version>
         <type>test-jar</type>
         <scope>test</scope>
       </dependency>
       <dependency>
-        <groupId>org.teiid.komodo</groupId>
+        <groupId>org.teiid</groupId>
         <artifactId>komodo-core</artifactId>
         <version>${project.version}</version>
         <type>test-jar</type>
@@ -593,7 +593,7 @@
           <extensions>true</extensions>
           <configuration>
             <instructions>
-              <Export-Package>org.teiid.komodo.*</Export-Package>
+              <Export-Package>org.teiid.*</Export-Package>
             </instructions>
           </configuration>
         </plugin>
