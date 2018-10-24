@@ -25,15 +25,19 @@ package org.komodo.core.internal;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.concurrent.Future;
+
 import javax.jcr.ImportUUIDBehavior;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.jcr.Workspace;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -48,7 +52,6 @@ import org.modeshape.jcr.JcrRepository;
 import org.modeshape.jcr.JcrSession;
 import org.modeshape.jcr.ModeShapeEngine;
 import org.modeshape.jcr.RepositoryConfiguration;
-import javax.jcr.Session;
 import org.modeshape.jcr.api.nodetype.NodeTypeManager;
 
 /**
@@ -124,7 +127,7 @@ public abstract class MultiUseAbstractTest extends AbstractLoggingTest {
         if (configuration == null) {
             throw new RuntimeException("Modeshape test configuration location path not defined");
         }
-
+        
         return getClass().getResourceAsStream(configuration);
     }
 

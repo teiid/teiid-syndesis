@@ -33,7 +33,7 @@ public class AbstractMetadataInstanceTests {
     	if (METADATA_INSTANCE == null) {
 		    Admin admin = Mockito.mock(Admin.class);
 		    TeiidConnectionProvider provider = Mockito.mock(TeiidConnectionProvider.class);
-		    Mockito.stub(provider.getAdmin()).toReturn(admin);
+		    Mockito.when(provider.getAdmin()).thenReturn(admin);
 		    METADATA_INSTANCE = new DefaultMetadataInstance(provider);
     	}
         return METADATA_INSTANCE;

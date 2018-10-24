@@ -46,7 +46,7 @@ public class TeiidPropertyDefinition {
 
         public static RestartType findRestartType(String name) {
             for (RestartType restartType : values()) {
-                if (restartType.equals(name))
+                if (restartType.name().equalsIgnoreCase(name))
                     return restartType;
             }
 
