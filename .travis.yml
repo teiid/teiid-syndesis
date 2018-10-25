@@ -15,7 +15,7 @@ install: true
 before_script:
   - rm -rf $HOME/.m2/repository/org/teiid/komodo
 
-script: "mvn clean install -B -s settings.xml -Pimage -Parquillian"
+script: "mvn clean install -B -s settings.xml -Pimage"
 
 after_success:
   - if [[ ( "$TRAVIS_BRANCH" == "master" ) && ( "$TRAVIS_PULL_REQUEST" == "false" ) ]]; then
