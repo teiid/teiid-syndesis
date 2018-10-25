@@ -68,8 +68,8 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
 	private static final KLog LOGGER = KLog.getLogger();
     private static final String SCHEMA_MODEL_NAME_PATTERN = "{0}schemamodel"; //$NON-NLS-1$
     private static final String SCHEMA_VDB_NAME_PATTERN = "{0}schemavdb"; //$NON-NLS-1$
-    private static final char SQL_ESCAPE_CHAR = '\"'; //$NON-NLS-1$
-    private static final char NEW_LINE = '\n'; //$NON-NLS-1$
+    private static final char SQL_ESCAPE_CHAR = '\"';
+    private static final char NEW_LINE = '\n';
     private static final String OPEN_SQUARE_BRACKET = "["; //$NON-NLS-1$
     private static final String CLOSE_SQUARE_BRACKET = "]"; //$NON-NLS-1$
     
@@ -122,10 +122,9 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
      * 
      * @param uow
      * 		the transaction
+     * @param serviceVdb the vdb
      * @param editorStates
      * 		the array of view editor states
-     * @return
-     * 		nothing
      * @throws KException
      * 		if problem occurs
      */
@@ -147,7 +146,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
             		TableInfo[] tableInfos = getSourceTableInfos(uow, viewDef);
 
             		String viewDdl = getODataViewDdl(uow, viewDef, tableInfos);
-            		allViewDdl.append(viewDdl).append(NEW_LINE); //$NON-NLS-1$
+            		allViewDdl.append(viewDdl).append(NEW_LINE);
    
             		// Add sources to list if not already present
             		for( TableInfo info : tableInfos) {
@@ -161,7 +160,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
             // Set the generated DDL on the service VDB view model
             viewModel.setModelDefinition(uow, allViewDdl.toString());
         } else { 
-        	viewModel.setModelDefinition(uow, "");
+        	viewModel.setModelDefinition(uow, ""); //$NON-NLS-1$
         }
 
         // remove all source models from current service VDB
@@ -227,7 +226,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
         
     	String viewName = viewDef.getViewName(uow);
     	
-    	if (sourceTableInfos.length < 1) throw new KException("Error getting the ViewDefinition sources");
+    	if (sourceTableInfos.length < 1) throw new KException("Error getting the ViewDefinition sources"); //$NON-NLS-1$
     	
         StringBuilder sb = new StringBuilder();
         
@@ -251,48 +250,73 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
         // 2) FQN list for (SELECT xx, xxx, xxx ) clause
         // Note: need to filter out duplicate names from 2nd table (if join) 
         
-        // So for the INNER JOIN we need to get create an ordered list of projected columns and types based on the 1 or 2 source tables
+        // So for the INNER JOIN we need to get create an ordered list of source table columns and types based on the 1 or 2 source tables
 
-        List<String> projSymbols = new ArrayList<String>();
-        List<String> colNames = new ArrayList<String>();
-        List<String> fqnColNames = new ArrayList<String>();
+        List<String> srcTableColumnNameTypes = new ArrayList<String>();
+        List<String> srcTableColumnNames = new ArrayList<String>();
+        List<String> srcTableFqnColumnNames = new ArrayList<String>();
         
-        // Need to loop through actual columns to maintain order
+        // ------------------------------------------------------------------
+        // Assemble all left and right source table columns, in order
+        // Duplicate column names are omitted if found in right table
+        // ------------------------------------------------------------------
         for( ColumnInfo info : lhTableInfo.getColumnInfos() ) {
-        	if( !colNames.contains(info.getName())) {
-        		colNames.add(info.getName());
-        		projSymbols.add(info.getNameAndType());
+        	if( !srcTableColumnNames.contains(info.getName())) {
+        		srcTableColumnNames.add(info.getName());
+        		srcTableColumnNameTypes.add(info.getNameAndType());
         		if(singleTable) {
-        			fqnColNames.add(info.getName());
+        			srcTableFqnColumnNames.add(info.getName());
         		} else {
-        			fqnColNames.add(info.getAliasedName());
+        			srcTableFqnColumnNames.add(info.getAliasedName());
         		}
         	}
         }
         
+        // Add right table columns, if right table exists
         if( rhTableInfo != null ) {
         	for( ColumnInfo info : rhTableInfo.getColumnInfos() ) {
-        		if( !colNames.contains(info.getName())) {
-        			colNames.add(info.getName());
-        			projSymbols.add(info.getNameAndType());
-        			fqnColNames.add(info.getAliasedName());
+        		if( !srcTableColumnNames.contains(info.getName())) {
+        			srcTableColumnNames.add(info.getName());
+        			srcTableColumnNameTypes.add(info.getNameAndType());
+        			srcTableFqnColumnNames.add(info.getAliasedName());
         		}
         	}
         }
         
-        // Need to use the new View Def project columns
+        // ---------------------------------------------
+        // Generate the View projected columns
+        // ---------------------------------------------
         SqlProjectedColumn[] projectedColumns = viewDef.getProjectedColumns(uow);
-        if( projectedColumns.length == 1 && projectedColumns[0].getName(uow).equalsIgnoreCase("ALL")  ) {
-            for (int i = 0; i < projSymbols.size(); i++) {
-                sb.append(projSymbols.get(i));
-                if (i < projSymbols.size()-1) {
+        List<String> selectedProjColumnNames = new ArrayList<String>();
+        
+        // If "SELECT ALL" then include all of the source table columns
+        if( projectedColumns.length == 1 && projectedColumns[0].getName(uow).equalsIgnoreCase("ALL")  ) { //$NON-NLS-1$
+            for (int i = 0; i < srcTableColumnNameTypes.size(); i++) {
+                // keep track of projected column names
+                String colName = srcTableColumnNames.get(i);
+                selectedProjColumnNames.add(colName);
+                // append name and type
+                sb.append(srcTableColumnNameTypes.get(i));
+                if (i < srcTableColumnNameTypes.size()-1) {
                     sb.append(StringConstants.COMMA).append(StringConstants.SPACE);
                 }
             }
+            
+        // Not "SELECT ALL" - utilize the selected projected columns    
         } else {
-            for (int i = 0; i < projectedColumns.length; i++) {
-                sb.append(projectedColumns[i].getName(uow)).append(StringConstants.SPACE).append(projectedColumns[i].getType(uow));
-                if (i < projectedColumns.length-1) {
+            // Make list of only the selected columns
+            List<SqlProjectedColumn> selectedProjColumns = new ArrayList<SqlProjectedColumn>();
+            for (SqlProjectedColumn projCol: projectedColumns) {
+                if(projCol.isSelected(uow)) {
+                    selectedProjColumns.add(projCol);
+                    // keep track of projected column names
+                    selectedProjColumnNames.add(projCol.getName(uow));
+                }
+            }
+            // generate selected column projection
+            for (int i = 0; i < selectedProjColumns.size(); i++) {
+                sb.append(selectedProjColumns.get(i).getName(uow)).append(StringConstants.SPACE).append(selectedProjColumns.get(i).getType(uow));
+                if (i < selectedProjColumns.size()-1) {
                     sb.append(StringConstants.COMMA).append(StringConstants.SPACE);
                 }
             }
@@ -301,12 +325,21 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
         sb.append(") AS \n"); //$NON-NLS-1$
         sb.append("SELECT "); //$NON-NLS-1$
         sb.append("ROW_NUMBER() OVER (ORDER BY "); //$NON-NLS-1$
-        sb.append(fqnColNames.get(0));
+        sb.append(srcTableFqnColumnNames.get(0));
         sb.append("), "); //$NON-NLS-1$
-        
-        for (int i = 0; i < fqnColNames.size(); i++) {
-            sb.append(fqnColNames.get(i));
-            if (i < fqnColNames.size()-1) {
+
+        // Assemble list of source column names that should be included
+        List<String> includedFqnColNames = new ArrayList<String>();
+        for (int i = 0; i < srcTableFqnColumnNames.size(); i++) {
+            String srcTableColName = srcTableColumnNames.get(i);
+            if (selectedProjColumnNames.contains(srcTableColName)) {
+                includedFqnColNames.add(srcTableFqnColumnNames.get(i));
+            }
+        }
+        // Append column names
+        for (int i = 0; i < includedFqnColNames.size(); i++) {
+            sb.append(includedFqnColNames.get(i));
+            if (i < includedFqnColNames.size()-1) {
                 sb.append(StringConstants.COMMA).append(StringConstants.SPACE);
             }
         }
@@ -316,8 +349,8 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
         
         // --------- JOIN ---------
         if( isJoin ) {
-        	String lhTableName = lhTableInfo.getFQName() + " AS " + lhTableInfo.getAlias();
-	        String rhTableName = rhTableInfo.getFQName() + " AS " + rhTableInfo.getAlias();
+        	String lhTableName = lhTableInfo.getFQName() + " AS " + lhTableInfo.getAlias(); //$NON-NLS-1$
+	        String rhTableName = rhTableInfo.getFQName() + " AS " + rhTableInfo.getAlias(); //$NON-NLS-1$
 
         	sb.append(lhTableName+StringConstants.SPACE);
         	
@@ -370,7 +403,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
      */
     public String getODataViewDdl(UnitOfWork uow, ViewDefinition viewDef) throws KException {
     	TableInfo[] tableInfos = getSourceTableInfos(uow, viewDef);
-    	if (tableInfos.length < 1) throw new KException("Error getting the ViewDefinition sources");
+    	if (tableInfos.length < 1) throw new KException("Error getting the ViewDefinition sources"); //$NON-NLS-1$
     	
     	return getODataViewDdl(uow, viewDef, tableInfos);
     }
@@ -412,7 +445,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
 		// Find and create TableInfo for each source Path
 		int iTable = 0;
 		for(String path : sourceTablePaths) {
-			String connectionName = PathUtils.getOption(path, "connection");
+			String connectionName = PathUtils.getOption(path, "connection"); //$NON-NLS-1$
 			Connection connection = findConnection(uow, connectionName);
 
 			if (connection != null) {
@@ -430,7 +463,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
 						if( option != null ) {
 							// If table found, create the TableInfo and break
 							if( option.equals(tableOption) ) {
-								String alias = (iTable == 0) ? "A" : "B";
+								String alias = (iTable == 0) ? "A" : "B"; //$NON-NLS-1$ //$NON-NLS-2$
 								// create a new TableInfo object
 								sourceTableInfos.add(new TableInfo(uow, path, table, alias));
 								iTable++;
@@ -620,7 +653,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
     	}
     	
     	public String getConnectionName() {
-			return PathUtils.getOption(this.path, "connection");
+			return PathUtils.getOption(this.path, "connection"); //$NON-NLS-1$
 		}
 
     	public String getSourceTablePath() {
