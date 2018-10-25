@@ -75,14 +75,11 @@ irc_notify_on_failure: &irc_notify_on_failure
     when: on_fail
 
 jobs:
-  build:
+  server:
     branches:
       only:
         - teiid-syndesis
-        - syndesis
-    steps:
-      - run: echo running build
-  server:
+        - syndesis  
     <<: *job_defaults
     environment:
       DOCKER_IMAGES: komodo-server
@@ -108,10 +105,4 @@ jobs:
           key: komodo-mvn-server-{{ checksum "pom.xml" }}
           paths:
           - ~/.m2
-      - <<: *irc_notify_on_failure
-workflows:
-   version: 2
-   build_test:
-     jobs:
-       - build
-       - server      
+      - <<: *irc_notify_on_failure     
