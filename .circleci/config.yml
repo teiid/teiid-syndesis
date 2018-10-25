@@ -79,6 +79,9 @@ jobs:
     branches:
       only:
         - teiid-syndesis
+        - syndesis
+    steps:
+      - run: echo running build
   server:
     <<: *job_defaults
     environment:
@@ -106,3 +109,11 @@ jobs:
           paths:
           - ~/.m2
       - <<: *irc_notify_on_failure
+workflows:
+   version: 2
+     jobs:
+       - build
+       - server
+           requires:
+             - build
+      
