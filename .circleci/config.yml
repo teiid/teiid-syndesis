@@ -27,10 +27,6 @@ job_default: &job_defaults
 push_images: &push_images
   deploy:
     command: |
-      if [ "${CIRCLE_PROJECT_USERNAME}" != "teiid-komodo" ]; then
-        exit 0
-      fi
-
       if [ ! -x /usr/bin/docker ]; then
         curl -fsSL https://get.docker.com/builds/Linux/x86_64/docker-${DOCKER_VERSION}.tgz | tar xz -C /usr/bin --strip-components 1
       fi
