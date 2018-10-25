@@ -25,6 +25,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -44,6 +45,7 @@ import java.util.zip.Checksum;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
+
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -56,6 +58,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
+
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.LexiconConstants.CoreLexicon;
@@ -182,11 +185,6 @@ public class TestUtilities implements StringConstants {
      * DSB Join With same table names Dataservice Zip
      */
     public static final String JOIN_SAME_TABLE_NAMES_FILE = "JoinServiceSameTableNames.zip";
-
-    /**
-     * US States Dataservice Example Zip
-     */
-    public static final String US_STATES_SQL_FILE = "usstates.sql";
 
     /**
      * US States Dataservice Example Zip
@@ -1033,16 +1031,6 @@ public class TestUtilities implements StringConstants {
         return getResourceAsStream(TestUtilities.class,
                                    RESOURCES_DIRECTORY,
                                    SAMPLE_DATASERVICE_FILE);
-    }
-
-    /**
-     * @return input stream of us-states sql schema
-     * @throws Exception if error occurs
-     */
-    public static InputStream usStatesSql() throws Exception {
-            return getResourceAsStream(TestUtilities.class,
-                                       RESOURCES_DIRECTORY,
-                                       US_STATES_SQL_FILE);
     }
 
     /**

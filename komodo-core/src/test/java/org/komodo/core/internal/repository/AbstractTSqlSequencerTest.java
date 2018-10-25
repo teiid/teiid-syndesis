@@ -25,11 +25,13 @@ package org.komodo.core.internal.repository;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
+
 import org.komodo.core.internal.sequencer.AbstractSequencerTest;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.visitor.TeiidSqlNodeVisitor;
