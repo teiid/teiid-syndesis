@@ -22,7 +22,7 @@ common_env: &common_env
 job_default: &job_defaults
   working_directory: /workspace
   docker:
-    - image: openjdk:8-jdk
+    - image: circleci/openjdk:8-jdk
 
 push_images: &push_images
   deploy:
