@@ -25,7 +25,8 @@
     <basepom.check.skip-dependency-versions-check>true</basepom.check.skip-dependency-versions-check>
     <basepom.check.skip-dependency-management>true</basepom.check.skip-dependency-management>  
     <basepom.check.skip-duplicate-finder>true</basepom.check.skip-duplicate-finder>
-  
+    <basepom.test.fork-count>1</basepom.test.fork-count>
+    
     <version.resteasy>3.0.19.Final</version.resteasy>
     <webapp-dir>${project.artifactId}-${project.version}</webapp-dir>
     <webapp-outdir>${basedir}/target/${webapp-dir}</webapp-outdir>

@@ -25,9 +25,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
 import java.net.URI;
 import java.util.List;
+
 import javax.ws.rs.core.UriBuilder;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpDelete;
@@ -48,14 +51,16 @@ import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 @SuppressWarnings( {"javadoc", "nls"} )
-public class KomodoSearchServiceTestInSuite extends AbstractKomodoServiceTest {
+@net.jcip.annotations.NotThreadSafe
+public class TestKomodoSearchService extends AbstractKomodoServiceTest {
 
-    public KomodoSearchServiceTestInSuite() throws Exception {
+    public TestKomodoSearchService() throws Exception {
         super();
     }
 

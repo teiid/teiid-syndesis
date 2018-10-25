@@ -30,9 +30,10 @@ import static org.komodo.spi.storage.StorageConnectorConstants.FILE_PATH_PROPERT
 import static org.komodo.spi.storage.git.GitStorageConnectorConstants.AUTHOR_EMAIL_PROPERTY;
 import static org.komodo.spi.storage.git.GitStorageConnectorConstants.AUTHOR_NAME_PROPERTY;
 import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_DEST_PROPERTY;
+import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_PASSWORD;
 import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_PATH_PROPERTY;
 import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_USERNAME;
-import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_PASSWORD;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -40,7 +41,9 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
+
 import javax.ws.rs.core.UriBuilder;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -77,10 +80,10 @@ import org.komodo.spi.storage.StorageConnector;
 import org.komodo.test.utils.TestUtilities;
 import org.komodo.utils.FileUtils;
 import org.komodo.utils.StringUtils;
+@net.jcip.annotations.NotThreadSafe
+public class TestKomodoImportExportService extends AbstractKomodoServiceTest {
 
-public class KomodoImportExportServiceTestInSuite extends AbstractKomodoServiceTest {
-
-    public KomodoImportExportServiceTestInSuite() throws Exception {
+    public TestKomodoImportExportService() throws Exception {
         super();
     }
 

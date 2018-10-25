@@ -76,12 +76,13 @@ import org.komodo.spi.repository.KomodoType;
 import org.komodo.test.utils.TestUtilities;
 
 @SuppressWarnings( {"javadoc", "nls"} )
-public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
+@net.jcip.annotations.NotThreadSafe
+public class TestKomodoVdbService extends AbstractKomodoServiceTest {
 
     @Rule
     public TestName testName = new TestName();
 
-    public KomodoVdbServiceTestInSuite() throws Exception {
+    public TestKomodoVdbService() throws Exception {
         super();
     }
 

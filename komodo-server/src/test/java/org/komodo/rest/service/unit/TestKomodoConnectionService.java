@@ -47,12 +47,13 @@ import org.komodo.rest.relational.request.KomodoConnectionAttributes;
 import org.komodo.rest.relational.response.RestConnectionSummary;
 
 @SuppressWarnings( {"javadoc", "nls"} )
-public class KomodoConnectionServiceTestInSuite extends AbstractKomodoServiceTest {
+@net.jcip.annotations.NotThreadSafe
+public class TestKomodoConnectionService extends AbstractKomodoServiceTest {
 
     @Rule
     public TestName testName = new TestName();
 
-    public KomodoConnectionServiceTestInSuite() throws Exception {
+    public TestKomodoConnectionService() throws Exception {
         super();
     }
 

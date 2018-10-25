@@ -74,7 +74,8 @@ import org.komodo.test.utils.TestUtilities;
 import com.google.common.net.HttpHeaders;
 
 @SuppressWarnings( {"javadoc", "nls"} )
-public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
+@net.jcip.annotations.NotThreadSafe
+public class TestKomodoUtilService extends AbstractKomodoServiceTest {
 
     private static final String AUTH_HEADER_VALUE = "Basic YWRtaW48";
 
@@ -85,7 +86,7 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
     private String oldNameKey = "oldName";
     private String newNameKey = "newName";
 
-    public KomodoUtilServiceTestInSuite() throws Exception {
+    public TestKomodoUtilService() throws Exception {
         super();
     }
 

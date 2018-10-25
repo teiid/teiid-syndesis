@@ -27,7 +27,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+
 import java.net.URI;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.junit.Ignore;
@@ -38,9 +40,10 @@ import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.response.RestConnectionDriver;
 
 @SuppressWarnings( {"javadoc", "nls"} )
-public class KomodoDriverServiceTestInSuite extends AbstractKomodoServiceTest {
+@net.jcip.annotations.NotThreadSafe
+public class TestKomodoDriverService extends AbstractKomodoServiceTest {
 
-    public KomodoDriverServiceTestInSuite() throws Exception {
+    public TestKomodoDriverService() throws Exception {
         super();
     }
 
