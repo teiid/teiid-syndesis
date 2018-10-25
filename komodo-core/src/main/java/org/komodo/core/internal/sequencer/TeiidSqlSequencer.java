@@ -23,14 +23,14 @@ package org.komodo.core.internal.sequencer;
 
 import java.io.IOException;
 import java.io.InputStream;
+
 import javax.jcr.Binary;
 import javax.jcr.NamespaceRegistry;
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
-import org.komodo.core.KEngine;
+
 import org.komodo.metadata.DefaultMetadataInstance;
-import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.utils.KLog;
 import org.modeshape.common.annotation.NotThreadSafe;
 import org.modeshape.common.text.ParsingException;
@@ -81,7 +81,7 @@ public class TeiidSqlSequencer extends Sequencer {
         if (sql == null)
             return;
         LanguageObject command = QueryParser.getQueryParser().parseDesignerCommand(sql);
-        NodeGenerator generator = new NodeGenerator((Node) parent,
+        NodeGenerator generator = new NodeGenerator(parent,
                                                     DefaultMetadataInstance.dataTypeService(),
                                                     DefaultMetadataInstance.metadataVersion());
         generator.visitObject(command);

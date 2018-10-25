@@ -1,101 +1,733 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (C) 2016 Red Hat, Inc. Licensed under the Apache License, Version 2.0 (the "License"); you may not use this 
+  file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 
+  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS 
+  IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language 
+  governing permissions and limitations under the License. -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
-    <groupId>org.teiid.komodo</groupId>
-    <artifactId>komodo-parent</artifactId>
-    <version>0.0.4-SNAPSHOT</version>
-    <relativePath>komodo-parent/pom.xml</relativePath>
+    <groupId>org.basepom</groupId>
+    <artifactId>basepom-oss</artifactId>
+    <version>25</version>
   </parent>
 
-	<artifactId>komodo</artifactId>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.teiid</groupId>
+  <artifactId>komodo-parent</artifactId>
+  <version>0.0.5-SNAPSHOT</version>
+  <name>Komodo Parent</name>
 
-	<packaging>pom</packaging>
-	<name>Komodo</name>
-	<description>Builds the entire Komodo distribution.</description>
+  <url>http://teiid.io</url>
+  <packaging>pom</packaging>
+  <description>Tool that allows creating, editing and managing dynamic VDBs for the Teiid OpenShift Deployment.</description>
+  <inceptionYear>2013</inceptionYear>
 
-	<modules>
-        <!-- Order is important -->
+  <organization>
+    <name>Red Hat</name>
+    <url>http://www.jboss.org/teiid</url>
+  </organization>
 
-        <!-- First these -->
-        <module>komodo-parent</module>
+  <licenses>
+    <license>
+      <name>GNU Lesser General Public License</name>
+      <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
+      <distribution>repo</distribution>
+      <comments>A business-friendly OSS license</comments>
+    </license>
+  </licenses>
 
-        <module>komodo-spi</module>
-        <module>komodo-utils-logger</module>
-        <module>komodo-utils</module>
-        
-        <module>komodo-metadata-instance</module>
+  <scm>
+    <connection>scm:git:git://github.com/teiid/teiid-komodo.git</connection>
+    <developerConnection>scm:git:git@github.com:teiid/teiid-komodo.git</developerConnection>
+    <url>http://github.com/teiid/teiid-komodo</url>
+  </scm>
 
-        <module>komodo-core</module>
+  <issueManagement>
+    <system>jira</system>
+    <url>http://issues.jboss.org/browse/TEIIDTOOLS</url>
+  </issueManagement>
 
-        <module>storage</module>
+  <developers>
+    <developer>
+      <name>Barry Lafond</name>
+      <id>blafond</id>
+      <email>blafond@redhat.com</email>
+      <organization>Red Hat</organization>
+      <roles>
+        <role>Project Lead</role>
+        <role>Developer</role>
+      </roles>
+      <timezone>-6</timezone>
+    </developer>
+    <developer>
+      <name>Steve Hawkins</name>
+      <id>shawkins</id>
+      <email>shawkins@redhat.com</email>
+      <organization>Red Hat</organization>
+      <roles>
+        <role>Project Lead</role>
+        <role>Developer</role>
+      </roles>
+      <timezone>-6</timezone>
+    </developer>
+    <developer>
+      <name>Ramesh Reddy</name>
+      <id>rareddy</id>
+      <email>rareddy@redhat.com</email>
+      <organization>Red Hat</organization>
+      <roles>
+        <role>Project Lead</role>
+        <role>Developer</role>
+      </roles>
+      <timezone>-6</timezone>
+    </developer>
+    <developer>
+      <name>Dan Florian</name>
+      <id>danflo</id>
+      <email>dflorian@redhat.com</email>
+      <organization>Red Hat</organization>
+      <roles>
+        <role>Developer</role>
+      </roles>
+      <timezone>-6</timezone>
+    </developer>
+    <developer>
+      <name>Paul Richardson</name>
+      <id>phantomjinx</id>
+      <email>p.g.richardson@redhat.com</email>
+      <organization>Red Hat</organization>
+      <roles>
+        <role>Developer</role>
+      </roles>
+      <timezone>0</timezone>
+    </developer>
+    <developer>
+      <name>Mark Drilling</name>
+      <id>mdrilling</id>
+      <email>mdrillin@redhat.com</email>
+      <organization>Red Hat</organization>
+      <roles>
+        <role>Developer</role>
+      </roles>
+      <timezone>-6</timezone>
+    </developer>
+    <developer>
+      <name>Ted Jones</name>
+      <id>tejones</id>
+      <email>tejones@redhat.com</email>
+      <organization>Red Hat</organization>
+      <roles>
+        <role>Developer</role>
+      </roles>
+      <timezone>-6</timezone>
+    </developer>
+  </developers>
 
-        <!-- For Testing only -->
-        <module>komodo-integration-utils</module>
+  <contributors>
+  </contributors>
 
-        <module>komodo-importer</module>
-        <module>komodo-relational</module>
-        <module>server</module>
+  <properties>
+    <basepom.check.skip-findbugs>true</basepom.check.skip-findbugs>
+    <basepom.check.skip-checkstyle>true</basepom.check.skip-checkstyle>
+    <basepom.check.skip-license>true</basepom.check.skip-license>
+    <basepom.test.timeout>600</basepom.test.timeout>
 
-        <module>komodo-openshift</module>
-	</modules>
+    <!-- dependencies from IP-BOM -->
+    <version.log4j>1.2.17</version.log4j>
+    <version.junit>4.12</version.junit>
+    <version.org.slf4j>1.7.22</version.org.slf4j>
+    <version.com.jcraft>0.1.54</version.com.jcraft>
+    <!-- dependencies from IP-BOM -->
 
-	<properties>
-		<rootDir>${project.basedir}</rootDir>
-		<version.javax.servlet>3.1.0</version.javax.servlet>
-		<version.javax.jacc>1.0.0.Final</version.javax.jacc>
-		<version.joda.time>2.7</version.joda.time>
-		<version.mapdb>1.0.6</version.mapdb>
-		<version.apache.commons.compress>1.12</version.apache.commons.compress>
-		<version.log4j>1.2.16</version.log4j>
-		<version.slf4j.log4j>1.7.2</version.slf4j.log4j>
-		<version.h2>1.4.196</version.h2>
-	</properties>
+    <rootDir>${project.basedir}</rootDir>
+    <version.javax.servlet>3.1.0</version.javax.servlet>
+    <version.javax.jacc>1.0.0.Final</version.javax.jacc>
+    <version.joda.time>2.7</version.joda.time>
+    <version.mapdb>1.0.6</version.mapdb>
+    <version.apache.commons.compress>1.12</version.apache.commons.compress>
+    <version.log4j>1.2.16</version.log4j>
+    <version.slf4j.log4j>1.7.2</version.slf4j.log4j>
+    <version.h2>1.4.196</version.h2>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.apache.commons</groupId>
-				<artifactId>commons-compress</artifactId>
-				<version>${version.apache.commons.compress}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.h2database</groupId>
-				<artifactId>h2</artifactId>
-				<version>${version.h2}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.h2database</groupId>
-				<artifactId>h2-mvstore</artifactId>
-				<version>${version.h2}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+    <version.commons.io>2.5</version.commons.io>
+    <version.org.teiid>10.2.0</version.org.teiid>
 
-	<dependencies>
-		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-		</dependency>
-	</dependencies>
+    <!-- Instruct the build to use only UTF-8 encoding for source code -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-	<repositories>	
-		<repository>
-			<id>redhat-product-repository</id>
-			<name>Red Hat Product Repository</name>
-			<!--<url>http://maven.repository.redhat.com/ga</url>-->
-			<url>http://origin-maven.repository.redhat.com/ga</url>
-			<layout>default</layout>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
+    <debug.argline />
+
+    <!-- overriding the BOM 1.6 source/target -->
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>1.8</maven.compiler.source>
+
+    <!--Skip long running tests by default -->
+    <skipLongRunningTests>true</skipLongRunningTests>
+
+    <!-- PLUGIN BUG: Test dependencies not correctly checked -->
+    <managed-deps.checkProfiles>false</managed-deps.checkProfiles>
+
+    <!-- The version of jgit -->
+    <version.jgit>4.4.1.201607150455-r</version.jgit>
+
+    <version.aesh>0.33.12.redhat-1</version.aesh>
+    <version.org.jboss.dmr>1.3.0.Final</version.org.jboss.dmr>
+
+    <version.org.jboss.spec.jboss-javaee-7.0>1.0.4.Final</version.org.jboss.spec.jboss-javaee-7.0>
+    <version.org.jboss.xnio>3.5.4.Final</version.org.jboss.xnio>
+
+    <version.modeshape>5.4.1.Final</version.modeshape>
+    <version.teiid.modeshape>1.0.1.Final</version.teiid.modeshape>
+    <version.postgresql>42.1.4</version.postgresql>
+    <version.xerces>2.11.0</version.xerces>
+    <version.wildfly.swarm>2018.4.1</version.wildfly.swarm>
+    <version.gson>2.2.4</version.gson>
+    <version.apache.commons.codec>1.10</version.apache.commons.codec>
+    <version.guava>20.0</version.guava>
+    <version.swagger>1.5.16</version.swagger>
+    <version.jaxrs>2.13</version.jaxrs>
+    <version.xsom>20130531</version.xsom>
+    <version.relaxngDatatype>20020414</version.relaxngDatatype>
+    <version.resteasy>3.0.19.Final</version.resteasy>
+    <version.jboss.logging>3.3.0.Final</version.jboss.logging>
+    <version.org.mockito>2.21.0</version.org.mockito>
+    <version.com.fasterxml.jackson>2.8.9</version.com.fasterxml.jackson>
+    <org.apache.httpcomponents.version>4.5.3</org.apache.httpcomponents.version>
+    <version.org.yaml>1.17</version.org.yaml>
+    <version.io.fabric8.openshift-client>3.0.3</version.io.fabric8.openshift-client>
+    <version.io.fabric8.kubernetes-api>3.0.8</version.io.fabric8.kubernetes-api>
+    <fabric8.maven.plugin.version>3.5.39</fabric8.maven.plugin.version> <!-- above 3.5.39 see THORN-1859 -->
+    <version.javax.jcr>2.0</version.javax.jcr>
+    <version.org.jboss.spec.javax.transaction>1.0.1.Final</version.org.jboss.spec.javax.transaction>
+    <version.xml-apis>1.4.01</version.xml-apis>
+    <version.org.hamcrest>1.3</version.org.hamcrest> <!-- tesing only -->
+
+    <!-- DO NOT CHANGE VERSION PROPETY NAMES, THESE ARE USED IN CODE At komodo-rest/template-pom.xml -->
+    <version.mysql>5.1.40</version.mysql>
+    <version.org.mongodb>3.6.3</version.org.mongodb>
+    <version.postgresql>42.1.4</version.postgresql>
+    <!-- DO NOT CHANGE VERSION PROPETY NAMES, THESE ARE USED IN CODE -->
+  </properties>
+
+
+  <modules>
+    <!-- Order is important -->
+
+    <!-- First these -->
+    <module>komodo-spi</module>
+    <module>komodo-utils</module>
+    <module>komodo-metadata</module>
+    <module>komodo-core</module>
+    <module>komodo-storage</module>
+
+    <!-- For Testing only -->
+    <module>komodo-importer</module>
+    <module>komodo-relational</module>
+    <module>komodo-server</module>
+  </modules>
+
+  <!-- This section defines the default dependency settings inherited by child projects. Note that this section does not 
+    add dependencies, but rather provide default settings. -->
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.hamcrest</groupId>
+        <artifactId>hamcrest-core</artifactId>
+        <scope>test</scope>
+        <version>${version.org.hamcrest}</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.jcr</groupId>
+        <artifactId>jcr</artifactId>
+        <version>${version.javax.jcr}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.spec.javax.transaction</groupId>
+        <artifactId>jboss-transaction-api_1.2_spec</artifactId>
+        <version>${version.org.jboss.spec.javax.transaction}</version>
+      </dependency>
+      <dependency>
+        <groupId>xml-apis</groupId>
+        <artifactId>xml-apis</artifactId>
+        <version>${version.xml-apis}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.jcraft</groupId>
+        <artifactId>jsch</artifactId>
+        <version>${version.com.jcraft}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-log4j12</artifactId>
+        <version>${version.org.slf4j}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>log4j</groupId>
+        <artifactId>log4j</artifactId>
+        <version>${version.log4j}</version>
+        <scope>test</scope>
+        <exclusions>
+          <exclusion>
+            <artifactId>ant-nodeps</artifactId>
+            <groupId>ant</groupId>
+          </exclusion>
+          <exclusion>
+            <artifactId>ant-contrib</artifactId>
+            <groupId>ant-contrib</groupId>
+          </exclusion>
+          <exclusion>
+            <artifactId>ant-junit</artifactId>
+            <groupId>ant</groupId>
+          </exclusion>
+          <exclusion>
+            <artifactId>tools</artifactId>
+            <groupId>sun.jdk</groupId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${version.org.slf4j}</version>
+      </dependency>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>${version.junit}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>${version.org.mockito}</version>
+      </dependency>
+      <!-- Komodo subprojects -->
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>komodo-spi</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>komodo-utils</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>komodo-metadata</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>komodo-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>komodo-storage</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>komodo-importer</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>komodo-relational</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>komodo-rest</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>komodo-utils</artifactId>
+        <version>${project.version}</version>
+        <type>test-jar</type>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>komodo-core</artifactId>
+        <version>${project.version}</version>
+        <type>test-jar</type>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>teiid-common-core</artifactId>
+        <version>${version.org.teiid}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>teiid-api</artifactId>
+        <version>${version.org.teiid}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>teiid-engine</artifactId>
+        <version>${version.org.teiid}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.wololo</groupId>
+            <artifactId>jts2geojson</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>teiid-runtime</artifactId>
+        <version>${version.org.teiid}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>teiid-admin</artifactId>
+        <version>${version.org.teiid}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>teiid-jboss-admin</artifactId>
+        <version>${version.org.teiid}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>teiid-client</artifactId>
+        <version>${version.org.teiid}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.wildfly.swarm</groupId>
+        <artifactId>teiid-jdbc</artifactId>
+        <version>${version.wildfly.swarm}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpclient</artifactId>
+        <version>${org.apache.httpcomponents.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.fabric8</groupId>
+        <artifactId>openshift-client</artifactId>
+        <version>${version.io.fabric8.openshift-client}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.fabric8</groupId>
+        <artifactId>kubernetes-api</artifactId>
+        <version>${version.io.fabric8.kubernetes-api}</version>
+      </dependency>
+
+      <!--Inherited from BOM, but changes the default scope to "test" -->
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>${version.commons.io}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jboss.xnio</groupId>
+        <artifactId>xnio-api</artifactId>
+        <version>${version.org.jboss.xnio}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.xnio</groupId>
+        <artifactId>xnio-nio</artifactId>
+        <version>${version.org.jboss.xnio}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jboss.spec</groupId>
+        <artifactId>jboss-javaee-7.0</artifactId>
+        <version>${version.org.jboss.spec.jboss-javaee-7.0}</version>
+        <type>pom</type>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.modeshape</groupId>
+        <artifactId>modeshape-common</artifactId>
+        <version>${version.modeshape}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.modeshape</groupId>
+        <artifactId>modeshape-jcr-api</artifactId>
+        <version>${version.modeshape}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.modeshape</groupId>
+        <artifactId>modeshape-jcr</artifactId>
+        <version>${version.modeshape}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>${version.postgresql}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid.modeshape</groupId>
+        <artifactId>teiid-modeshape-sequencer-vdb</artifactId>
+        <version>${version.teiid.modeshape}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid.modeshape</groupId>
+        <artifactId>teiid-modeshape-sequencer-ddl</artifactId>
+        <version>${version.teiid.modeshape}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid.modeshape</groupId>
+        <artifactId>teiid-modeshape-sequencer-dataservice</artifactId>
+        <version>${version.teiid.modeshape}</version>
+      </dependency>
+      <dependency>
+        <groupId>xerces</groupId>
+        <artifactId>xercesImpl</artifactId>
+        <version>${version.xerces}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.wildfly.swarm</groupId>
+        <artifactId>bom-all</artifactId>
+        <version>${version.wildfly.swarm}</version>
+        <scope>import</scope>
+        <type>pom</type>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.arquillian</groupId>
+        <artifactId>arquillian-bom</artifactId>
+        <version>1.1.15.Final</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>${version.apache.commons.codec}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.sun.xsom</groupId>
+        <artifactId>xsom</artifactId>
+        <version>${version.xsom}</version>
+      </dependency>
+      <dependency>
+        <groupId>relaxngDatatype</groupId>
+        <artifactId>relaxngDatatype</artifactId>
+        <version>${version.relaxngDatatype}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.code.gson</groupId>
+        <artifactId>gson</artifactId>
+        <version>${version.gson}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>${version.guava}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.swagger</groupId>
+        <artifactId>swagger-annotations</artifactId>
+        <version>${version.swagger}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.swagger</groupId>
+        <artifactId>swagger-core</artifactId>
+        <version>${version.swagger}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.swagger</groupId>
+        <artifactId>swagger-models</artifactId>
+        <version>${version.swagger}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.swagger</groupId>
+        <artifactId>swagger-jaxrs</artifactId>
+        <version>${version.swagger}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jgit</groupId>
+        <artifactId>org.eclipse.jgit</artifactId>
+        <version>${version.jgit}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-core</artifactId>
+        <version>${version.com.fasterxml.jackson}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>${version.com.fasterxml.jackson}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.dataformat</groupId>
+        <artifactId>jackson-dataformat-yaml</artifactId>
+        <version>${version.com.fasterxml.jackson}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-annotations</artifactId>
+        <version>${version.com.fasterxml.jackson}</version>
+      </dependency>
+      <dependency>
+        <groupId>mysql</groupId>
+        <artifactId>mysql-connector-java</artifactId>
+        <version>${version.mysql}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.mongodb</groupId>
+        <artifactId>mongo-java-driver</artifactId>
+        <version>${version.org.mongodb}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.yaml</groupId>
+        <artifactId>snakeyaml</artifactId>
+        <version>${version.org.yaml}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <!-- This section defines the default plugin settings inherited by child projects. -->
+    <pluginManagement>
+      <plugins>
+
+        <!-- Specify the compiler options and settings -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <configuration>
+            <showDeprecation>false</showDeprecation>
+            <showWarnings>false</showWarnings>
+            <source>${maven.compiler.source}</source>
+            <target>${maven.compiler.target}</target>
+            <encoding>${project.build.sourceEncoding}</encoding>
+          </configuration>
+        </plugin>
+        <!-- Fixes how test resources of a project can be used in projects dependent on it -->
+        <plugin>
+          <groupId>org.apache.felix</groupId>
+          <artifactId>maven-bundle-plugin</artifactId>
+          <extensions>true</extensions>
+          <configuration>
+            <instructions>
+              <Export-Package>org.teiid.*</Export-Package>
+            </instructions>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>io.fabric8</groupId>
+          <artifactId>fabric8-maven-plugin</artifactId>
+          <version>${fabric8.maven.plugin.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <!-- Manually specify the JUnit provider -->
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.maven.surefire</groupId>
+            <artifactId>surefire-junit4</artifactId>
+            <version>${dep.plugin.surefire.version}</version>
+          </dependency>
+        </dependencies>
+        <configuration>
+          <systemProperties combine.children="append">
+            <property>
+              <name>java.io.tmpdir</name>
+              <value>${basedir}/target</value>
+            </property>
+            <property>
+              <name>skipLongRunningTests</name>
+              <value>${skipLongRunningTests}</value>
+            </property>
+          </systemProperties>
+          <includes>
+            <include>**/*TestCase.java</include>
+            <include>**/*Test.java</include>
+            <include>**/Test*.java</include>
+          </includes>
+          <excludes>
+            <exclude>**/Abstract*TestCase.java</exclude>
+            <exclude>**/Abstract*Test.java</exclude>
+            <exclude>**/IT_*.java</exclude>
+            <!-- hack to prevent anonymous inner classes in Tests from being run as tests -->
+            <include>**/Test*$*.java</include>
+          </excludes>
+          <argLine>-Xmx1524M ${debug.argline} -Djava.awt.headless=true</argLine>
+          <useFile>false</useFile>
+          <enableAssertions>true</enableAssertions>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>cobertura-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </reporting>
+
+  <profiles>
+    <profile>
+      <id>my-local-repository</id>
+      <activation>
+        <property>
+          <name>local-repo</name>
+        </property>
+      </activation>
+      <repositories>
+        <repository>
+          <!-- To be removed on release of wildfly-swarm 2017.12 -->
+          <id>local-user-repository</id>
+          <name>Local User Repository</name>
+          <url>${local-repo}</url>
+          <layout>default</layout>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>true</enabled>
+            <updatePolicy>daily</updatePolicy>
+          </snapshots>
+        </repository>
+      </repositories>
+      <pluginRepositories>
+        <pluginRepository>
+          <!-- To be removed on release of wildfly-swarm 2017.12 -->
+          <id>local-user-repository</id>
+          <name>Local User Repository</name>
+          <url>${local-repo}</url>
+          <layout>default</layout>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>true</enabled>
+            <updatePolicy>daily</updatePolicy>
+          </snapshots>
+        </pluginRepository>
+      </pluginRepositories>
+    </profile>
+  </profiles>
 </project>

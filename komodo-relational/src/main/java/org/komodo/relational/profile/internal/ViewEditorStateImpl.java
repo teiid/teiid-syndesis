@@ -23,10 +23,9 @@ package org.komodo.relational.profile.internal;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.komodo.core.KomodoLexicon;
-import org.komodo.relational.Messages;
 import org.komodo.relational.RelationalModelFactory;
-import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.profile.Profile;
 import org.komodo.relational.profile.StateCommandAggregate;

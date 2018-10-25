@@ -1,66 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   Copyright (C) 2016 Red Hat, Inc.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>org.teiid.komodo</groupId>
-		<artifactId>komodo</artifactId>
-		<version>0.0.4-SNAPSHOT</version>
-	</parent>
-	<artifactId>komodo-core</artifactId>
-	<name>Komodo Core</name>
-	<description>Komodo Core</description>
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.teiid</groupId>
+    <artifactId>komodo-parent</artifactId>
+    <version>0.0.5-SNAPSHOT</version>
+  </parent>
+  <artifactId>komodo-core</artifactId>
+  <name>Komodo Core</name>
+  <description>Komodo Core</description>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.teiid.komodo</groupId>
-			<artifactId>komodo-spi</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.teiid.komodo</groupId>
-			<artifactId>komodo-utils</artifactId>
-		</dependency>
+  <dependencies>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>teiid-common-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>teiid-api</artifactId>
+    </dependency>      
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>teiid-engine</artifactId>
+    </dependency>  
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>komodo-spi</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>komodo-utils</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>komodo-metadata</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.modeshape</groupId>
+      <artifactId>modeshape-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.modeshape</groupId>
+      <artifactId>modeshape-jcr-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.modeshape</groupId>
+      <artifactId>modeshape-jcr</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.teiid.modeshape</groupId>
+      <artifactId>teiid-modeshape-sequencer-vdb</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.teiid.modeshape</groupId>
+      <artifactId>teiid-modeshape-sequencer-ddl</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.teiid.modeshape</groupId>
+      <artifactId>teiid-modeshape-sequencer-dataservice</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.jboss.spec.javax.transaction</groupId>
+        <artifactId>jboss-transaction-api_1.2_spec</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>javax.jcr</groupId>
+        <artifactId>jcr</artifactId>          
+    </dependency>
+    <dependency>
+        <groupId>xml-apis</groupId>
+        <artifactId>xml-apis</artifactId>
+    </dependency>      
+    <!-- Needed to get at modeshape's underlying logging system - see JcrLogConfigurator for details -->
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <scope>compile</scope>
+    </dependency>
 
-		<dependency>
-			<groupId>org.teiid.komodo</groupId>
-			<artifactId>komodo-metadata-instance</artifactId>
-		</dependency>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>komodo-utils</artifactId>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.hamcrest</groupId>
+        <artifactId>hamcrest-core</artifactId>        
+        <scope>test</scope>
+    </dependency>    
 
-		<dependency>
-			<groupId>org.modeshape</groupId>
-			<artifactId>modeshape-jcr</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.teiid.modeshape</groupId>
-			<artifactId>teiid-modeshape-sequencer-vdb</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.teiid.modeshape</groupId>
-			<artifactId>teiid-modeshape-sequencer-ddl</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.teiid.modeshape</groupId>
-			<artifactId>teiid-modeshape-sequencer-dataservice</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-		</dependency>
-
-		<!-- Needed to get at modeshape's underlying logging system - see JcrLogConfigurator for details -->
-		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<scope>compile</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.teiid.komodo</groupId>
-			<artifactId>komodo-utils</artifactId>
-			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
-
-	</dependencies>
+  </dependencies>
 </project>

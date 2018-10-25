@@ -27,6 +27,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -38,17 +39,20 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.Workspace;
 import javax.jcr.observation.EventIterator;
 import javax.jcr.observation.EventListener;
 import javax.jcr.observation.EventListenerIterator;
 import javax.jcr.observation.ObservationManager;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -67,11 +71,8 @@ import org.komodo.spi.runtime.version.MetadataVersion;
 import org.komodo.spi.type.DataTypeService;
 import org.komodo.utils.KLog;
 import org.mockito.Mockito;
-
-import javax.jcr.Session;
 import org.modeshape.jcr.api.observation.Event;
 import org.modeshape.jcr.api.observation.Event.Sequencing;
-import org.teiid.adminapi.Admin;
 
 /**
  * Class which serves as base for various sequencer unit tests. In addition to this, it uses the sequencing events fired by
