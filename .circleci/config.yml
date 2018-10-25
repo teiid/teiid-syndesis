@@ -75,7 +75,7 @@ irc_notify_on_failure: &irc_notify_on_failure
     when: on_fail
 
 jobs:
-  server:
+  build:
     branches:
       only:
         - teiid-syndesis
