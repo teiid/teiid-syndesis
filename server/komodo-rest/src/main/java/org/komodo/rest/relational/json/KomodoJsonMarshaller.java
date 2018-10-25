@@ -43,8 +43,6 @@ import org.komodo.rest.relational.json.connection.ConnectionSchemaSerializer;
 import org.komodo.rest.relational.json.connection.ConnectionSerializer;
 import org.komodo.rest.relational.json.connection.MetadataConnectionSerializer;
 import org.komodo.rest.relational.request.KomodoConnectionAttributes;
-import org.komodo.rest.relational.request.KomodoDataserviceSingleSourceAttributes;
-import org.komodo.rest.relational.request.KomodoDataserviceUpdateAttributes;
 import org.komodo.rest.relational.request.KomodoFileAttributes;
 import org.komodo.rest.relational.request.KomodoPathAttribute;
 import org.komodo.rest.relational.request.KomodoQueryAttribute;
@@ -123,8 +121,6 @@ public final class KomodoJsonMarshaller {
                                                   .registerTypeAdapter(KomodoPathAttribute.class, new PathAttributeSerializer<KomodoPathAttribute>())
                                                   .registerTypeAdapter(KomodoSearcherAttributes.class, new SearcherAttributesSerializer())
                                                   .registerTypeAdapter(KomodoTeiidAttributes.class, new TeiidAttributesSerializer())
-                                                  .registerTypeAdapter(KomodoDataserviceUpdateAttributes.class, new DataserviceUpdateAttributesSerializer())
-                                                  .registerTypeAdapter(KomodoDataserviceSingleSourceAttributes.class, new DataserviceSingleSourceAttributesSerializer())
                                                   .registerTypeAdapter(KomodoViewsInfo.class, new ViewsInfoSerializer())
                                                   .registerTypeAdapter(RestProperty.class, new RestPropertySerializer())
                                                   .registerTypeAdapter(RestVdb.class, new VdbSerializer())
