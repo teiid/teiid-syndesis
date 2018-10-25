@@ -111,9 +111,7 @@ jobs:
       - <<: *irc_notify_on_failure
 workflows:
    version: 2
+   build_test:
      jobs:
        - build
-       - server
-           requires:
-             - build
-      
+       - server      
