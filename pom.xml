@@ -141,7 +141,7 @@
     <basepom.check.skip-findbugs>true</basepom.check.skip-findbugs>
     <basepom.check.skip-checkstyle>true</basepom.check.skip-checkstyle>
     <basepom.check.skip-license>true</basepom.check.skip-license>
-    <basepom.test.timeout>300</basepom.test.timeout>
+    <basepom.test.timeout>600</basepom.test.timeout>
 
     <!-- dependencies from IP-BOM -->
     <version.log4j>1.2.17</version.log4j>

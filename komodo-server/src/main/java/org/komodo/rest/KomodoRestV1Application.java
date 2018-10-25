@@ -25,6 +25,7 @@ import static org.komodo.rest.Messages.Error.KOMODO_ENGINE_CLEAR_TIMEOUT;
 import static org.komodo.rest.Messages.Error.KOMODO_ENGINE_SHUTDOWN_ERROR;
 import static org.komodo.rest.Messages.Error.KOMODO_ENGINE_SHUTDOWN_TIMEOUT;
 import static org.komodo.rest.Messages.Error.KOMODO_ENGINE_STARTUP_TIMEOUT;
+
 import java.io.File;
 import java.io.InputStream;
 import java.sql.DriverManager;
@@ -34,12 +35,14 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
 import javax.annotation.PreDestroy;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+
 import org.komodo.core.KEngine;
 import org.komodo.core.repository.LocalRepository;
 import org.komodo.core.repository.SynchronousCallback;
@@ -83,6 +86,7 @@ import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.RepositoryClientEvent;
 import org.komodo.utils.KLog;
 import org.komodo.utils.observer.KLatchObserver;
+
 import io.swagger.converter.ModelConverters;
 
 /**
@@ -146,16 +150,6 @@ public class KomodoRestV1Application extends Application implements SystemConsta
                 return properties.getProperty("app.version");
             }
         }
-
-        /**
-         * Jboss server base directory
-         */
-        String JBOSS_SERVER_BASE_DIR = "jboss.server.base.dir"; //$NON-NLS-1$
-
-        /**
-         * Location for the log file passed to {@link KLog} logger
-         */
-        String LOG_FILE_PATH = "log/vdb-builder.log"; //$NON-NLS-1$
 
         /**
          * The URI path segment for the Komodo REST application. It is included in the base URI. <strong>DO NOT INCLUDE THIS IN
@@ -674,18 +668,15 @@ public class KomodoRestV1Application extends Application implements SystemConsta
     public KomodoRestV1Application() throws WebApplicationException {
         KCorsHandler corsHandler;
         try {
-            // Set the log path to something relative to the deployment location of this application
-            // Try to use the base directory in jboss. If not in jboss this would probably be empty so
-            // otherwise use "." relative to the working directory
-            String baseDir = System.getProperty(V1Constants.JBOSS_SERVER_BASE_DIR, DOT) + File.separator;
-
+            String workingDir = System.getProperty("user.dir");
+            if (new File(workingDir+"/target").exists()) {
+                workingDir = workingDir+"/target";
+            }
             // Set the komodo data directory prior to starting the engine
-            String komodoDataDir = System.getProperty(ENGINE_DATA_DIR);
-            if (komodoDataDir == null)
-                System.setProperty(ENGINE_DATA_DIR, baseDir + "data"); //$NON-NLS-1$
+            System.setProperty(ENGINE_DATA_DIR, workingDir+"/komodo/data"); //$NON-NLS-1$
 
             // Set the log file path
-            KLog.getLogger().setLogPath(baseDir + V1Constants.LOG_FILE_PATH);
+            KLog.getLogger().setLogPath(workingDir+"/komodo/log/vdb-builder.log");
 
             // Ensure server logging level is reduced to something sane!
             KLog.getLogger().setLevel(ApplicationProperties.getLogLevel());

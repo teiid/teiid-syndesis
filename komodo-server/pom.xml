@@ -37,8 +37,6 @@
     <app.rest.version>${project.version}</app.rest.version>
     <app.rest.description>A tool that allows creating, editing and managing dynamic VDBs and their contents</app.rest.description>
     <!-- Must remain all on one line. Otherwise, VFSUtils.readManifest complains of invalid header -->
-    <docker.username>teiid</docker.username>
-    <docker.imagename>komodo</docker.imagename>
     <manifest.dependencies>org.jboss.logging,org.jboss.teiid.api,org.jboss.teiid.admin,org.jboss.teiid.common-core,org.jboss.teiid,org.jboss.teiid.client,io.swagger,com.fasterxml.jackson.core.jackson-core,com.fasterxml.jackson.core.jackson-databind,com.fasterxml.jackson.core.jackson-annotations,com.fasterxml.jackson.dataformat,org.jboss.as.cli,org.jboss.as.controller,org.jboss.dmr</manifest.dependencies>
   </properties>
 
@@ -463,53 +461,6 @@
                   <forkCount>1</forkCount>
                   <reuseForks>false</reuseForks>
                 </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>docker</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>io.fabric8</groupId>
-            <artifactId>docker-maven-plugin</artifactId>
-            <version>0.23.0</version>
-            <configuration>
-              <registry>registry.hub.docker.com</registry>
-              <images>
-                <image>
-                  <name>${docker.username}/${docker.imagename}:${project.version}</name>
-                  <alias>komodo</alias>
-                  <build>
-                    <filter>@</filter>
-                    <dockerFileDir>${project.basedir}/docker</dockerFileDir>
-                    <assembly>
-                      <inline>
-                        <fileSets>
-                          <fileSet>
-                            <directory>${project.build.directory}</directory>
-                            <outputDirectory>/</outputDirectory>
-                            <includes>
-                              <include>**/*-swarm.jar</include>
-                            </includes>
-                          </fileSet>
-                        </fileSets>
-                      </inline>
-                    </assembly>
-                  </build>
-                </image>
-              </images>
-            </configuration>
-            <executions>
-              <execution>
-                <id>docker-build</id>
-                <goals>
-                  <goal>build</goal>
-                  <goal>push</goal>
-                </goals>
               </execution>
             </executions>
           </plugin>
