@@ -216,12 +216,14 @@
 	</profiles>
 	<activeProfiles>
 		<activeProfile>central-nexus</activeProfile>
-		<!--<activeProfile>jboss-deprecated</activeProfile> -->
-		<activeProfile>redhat-techpreview-all-repository</activeProfile>
 		<activeProfile>jboss-public-repository</activeProfile>
+		<!--
+                <activeProfile>jboss-deprecated</activeProfile> 
+		<activeProfile>redhat-techpreview-all-repository</activeProfile>
 		<activeProfile>jboss-developer-repository</activeProfile>
 		<activeProfile>jboss-earlyaccess</activeProfile>
 		<activeProfile>jboss-snapshots-repository</activeProfile>
 		<activeProfile>eclipse</activeProfile>
+                -->
 	</activeProfiles>
 </settings>
