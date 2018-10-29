@@ -307,10 +307,11 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
             // Make list of only the selected columns
             List<SqlProjectedColumn> selectedProjColumns = new ArrayList<SqlProjectedColumn>();
             for (SqlProjectedColumn projCol: projectedColumns) {
-                if(projCol.isSelected(uow)) {
+                String colName = projCol.getName(uow);
+                if(projCol.isSelected(uow) && !selectedProjColumnNames.contains(colName)) {
                     selectedProjColumns.add(projCol);
                     // keep track of projected column names
-                    selectedProjColumnNames.add(projCol.getName(uow));
+                    selectedProjColumnNames.add(colName);
                 }
             }
             // generate selected column projection
