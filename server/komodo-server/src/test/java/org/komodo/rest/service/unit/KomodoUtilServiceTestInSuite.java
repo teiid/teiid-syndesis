@@ -75,7 +75,7 @@ import com.google.common.net.HttpHeaders;
 
 @SuppressWarnings( {"javadoc", "nls"} )
 @net.jcip.annotations.NotThreadSafe
-public class TestKomodoUtilService extends AbstractKomodoServiceTest {
+public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
 
     private static final String AUTH_HEADER_VALUE = "Basic YWRtaW48";
 
@@ -86,7 +86,7 @@ public class TestKomodoUtilService extends AbstractKomodoServiceTest {
     private String oldNameKey = "oldName";
     private String newNameKey = "newName";
 
-    public TestKomodoUtilService() throws Exception {
+    public KomodoUtilServiceTestInSuite() throws Exception {
         super();
     }
 
@@ -191,7 +191,7 @@ public class TestKomodoUtilService extends AbstractKomodoServiceTest {
             //
             // Restore the sample vdbs
             //
-            unitServiceResources.loadVdbs();            
+            UnitServiceResources.getInstance().loadVdbs();            
         }
     }
 

@@ -41,9 +41,9 @@ import org.komodo.rest.relational.response.RestConnectionDriver;
 
 @SuppressWarnings( {"javadoc", "nls"} )
 @net.jcip.annotations.NotThreadSafe
-public class TestKomodoDriverService extends AbstractKomodoServiceTest {
+public class KomodoDriverServiceTestInSuite extends AbstractKomodoServiceTest {
 
-    public TestKomodoDriverService() throws Exception {
+    public KomodoDriverServiceTestInSuite() throws Exception {
         super();
     }
 

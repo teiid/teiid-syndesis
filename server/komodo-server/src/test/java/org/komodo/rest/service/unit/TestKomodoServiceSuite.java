@@ -22,26 +22,22 @@
 package org.komodo.rest.service.unit;
 
 import org.junit.ClassRule;
-import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
-import org.komodo.rest.service.ServiceResources;
 
 @RunWith(Suite.class)
 @SuiteClasses({
-    TestKomodoConnectionService.class,
-    TestKomodoDataserviceService.class,
-    TestKomodoDriverService.class,
-    TestKomodoImportExportService.class,
-    TestKomodoSearchService.class,
-    TestKomodoUtilService.class,
-    TestKomodoVdbService.class
+    KomodoConnectionServiceTestInSuite.class,
+    KomodoDataserviceServiceTestInSuite.class,
+    KomodoDriverServiceTestInSuite.class,
+    KomodoImportExportServiceTestInSuite.class,
+    KomodoSearchServiceTestInSuite.class,
+    KomodoUtilServiceTestInSuite.class,
+    KomodoVdbServiceTestInSuite.class
     })
 public class TestKomodoServiceSuite {
 
     @ClassRule
-    public static RuleChain chain = RuleChain
-                           .outerRule(ServiceResources.getInstance())
-                           .around(UnitServiceResources.getInstance());
+    public static UnitServiceResources unitServiceResources = UnitServiceResources.getInstance();
 }

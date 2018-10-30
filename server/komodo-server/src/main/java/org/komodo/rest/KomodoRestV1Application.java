@@ -672,7 +672,7 @@ public class KomodoRestV1Application extends Application implements SystemConsta
             String workingDir = System.getProperty("user.dir");
             if (new File(workingDir+"/target").exists()) {
                 Random r = new Random();
-                workingDir = workingDir+"/target/"+r.nextLong();
+                workingDir = workingDir+"/target/"+Math.abs(r.nextLong());
             }
             // Set the komodo data directory prior to starting the engine
             System.setProperty(ENGINE_DATA_DIR, workingDir+"/komodo/data"); //$NON-NLS-1$

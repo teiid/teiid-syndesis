@@ -48,12 +48,12 @@ import org.komodo.rest.relational.response.RestConnectionSummary;
 
 @SuppressWarnings( {"javadoc", "nls"} )
 @net.jcip.annotations.NotThreadSafe
-public class TestKomodoConnectionService extends AbstractKomodoServiceTest {
+public class KomodoConnectionServiceTestInSuite extends AbstractKomodoServiceTest {
 
     @Rule
     public TestName testName = new TestName();
 
-    public TestKomodoConnectionService() throws Exception {
+    public KomodoConnectionServiceTestInSuite() throws Exception {
         super();
     }
 
