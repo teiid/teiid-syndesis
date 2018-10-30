@@ -12,7 +12,7 @@ tmp
 */gen/org/teiid/query/parser/v7/**/*.java
 */gen/org/teiid/query/parser/v8/**/*.java
 */gen/org/teiid/query/sql/lang/**/*.java
-
+**/*.log
 **/commandOutput.txt
 
 **/_remote.repositories
