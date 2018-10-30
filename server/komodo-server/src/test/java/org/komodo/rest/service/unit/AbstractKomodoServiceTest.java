@@ -24,14 +24,15 @@ package org.komodo.rest.service.unit;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.ClassRule;
 import org.komodo.core.internal.repository.search.ComparisonOperator;
 import org.komodo.core.internal.repository.search.ObjectSearcher;
 import org.komodo.core.repository.SynchronousCallback;
@@ -65,15 +66,12 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
     // With this rule placed here and in the suite ensures that UnitServiceResources
     // will be correctly instantiated whether running in the suite or as a single test class
     //
-    @ClassRule
-    public static UnitServiceResources unitServiceResources = UnitServiceResources.getInstance();
-
     protected final ServiceTestUtilities serviceTestUtilities;
 
     protected final String PORTFOLIO_DATA_PATH;
 
     protected static KomodoRestV1Application restApp() {
-        return unitServiceResources.restApp();
+        return UnitServiceResources.getInstance().restApp();
     }
 
     @After
@@ -82,11 +80,11 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
     }
 
     protected static URI appUri() {
-        return unitServiceResources.appUri();
+        return UnitServiceResources.getInstance().appUri();
     }
 
     protected static KomodoRestUriBuilder uriBuilder() {
-        return unitServiceResources.uriBuilder();
+        return UnitServiceResources.getInstance().uriBuilder();
     }
 
     public AbstractKomodoServiceTest() throws Exception {

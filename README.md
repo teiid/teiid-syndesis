@@ -5,16 +5,17 @@ teiid-komodo
 Teiid Komodo is now part of the [Syndesis](https://syndesis.io) project. This works a component inside Syndesis to provide data integration capabilities. This document is for developers who like to setup a workspace locally for testing or for development purposes.
 
 ## Prerquisites for Developers
-- Install JDK 1.8 or higher;
-- Install [maven 3.2+](http://maven.apache.org/download.html);
+- Install JDK 1.8 or higher
+- Install [maven 3.2+](http://maven.apache.org/download.html)
+- Install [Go Lang](https://developer.fedoraproject.org/tech/languages/go/go-installation.html) These instructions are for Linux, find similar for your platform.
 - Install [minishift 3.9+](https://www.okd.io/minishift/); which is available for all the major operating systems (Linux, OS X and Windows). The following examples assume that you have Minishift installed and can be called with minishift from the command line. So, minishift is supposed to be available in your search path, i.e. located in a directory contained in your $PATH environment variable (Linux, macOS) or in a directory from your system path (Windows)
 - Clone the Syndesis libraries. (Note this is Ramesh's branch, until code is merged into Syndesis repo, we would need to use this. Once the code is merged we can use Syndesis repo directly
 ```
 git clone --branch=teiid-syndesis git@github.com:rareddy/syndesis.git
 ```
-- Clone Teiid Komodo Repository or get branch "teiid-syndesis"
+- Clone Teiid Komodo Repository 
 ```
-git clone --branch=teiid-syndesis git@github.com:teiid/teiid-komodo.git
+git clone git@github.com:teiid/teiid-komodo.git
 ```
 - Now follow below script
 ```

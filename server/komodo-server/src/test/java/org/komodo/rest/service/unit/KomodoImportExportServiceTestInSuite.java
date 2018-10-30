@@ -81,9 +81,9 @@ import org.komodo.test.utils.TestUtilities;
 import org.komodo.utils.FileUtils;
 import org.komodo.utils.StringUtils;
 @net.jcip.annotations.NotThreadSafe
-public class TestKomodoImportExportService extends AbstractKomodoServiceTest {
+public class KomodoImportExportServiceTestInSuite extends AbstractKomodoServiceTest {
 
-    public TestKomodoImportExportService() throws Exception {
+    public KomodoImportExportServiceTestInSuite() throws Exception {
         super();
     }
 
@@ -360,7 +360,7 @@ public class TestKomodoImportExportService extends AbstractKomodoServiceTest {
             //
             // Restore core test vdbs
             //
-            unitServiceResources.loadVdbs();
+            UnitServiceResources.getInstance().loadVdbs();
         }
     }
 

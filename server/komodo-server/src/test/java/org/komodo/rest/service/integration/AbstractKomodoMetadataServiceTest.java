@@ -88,7 +88,7 @@ public abstract class AbstractKomodoMetadataServiceTest extends AbstractServiceT
 
     @BeforeClass
     public static void beforeAllSetupBaseUri() throws Exception {
-        System.setProperty("org.jboss.resteasy.port", Integer.toString(TEST_PORT));
+        //System.setProperty("org.jboss.resteasy.port", Integer.toString(TEST_PORT));
         URI baseUri = URI.create("http://localhost" + COLON + TEST_PORT);
         baseUri = UriBuilder.fromUri(baseUri).scheme("http").path("/vdb-builder/v1").build();
         _uriBuilder = new KomodoRestUriBuilder(baseUri);

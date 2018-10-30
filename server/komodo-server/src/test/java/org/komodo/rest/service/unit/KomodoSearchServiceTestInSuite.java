@@ -58,9 +58,9 @@ import com.google.gson.JsonParser;
 
 @SuppressWarnings( {"javadoc", "nls"} )
 @net.jcip.annotations.NotThreadSafe
-public class TestKomodoSearchService extends AbstractKomodoServiceTest {
+public class KomodoSearchServiceTestInSuite extends AbstractKomodoServiceTest {
 
-    public TestKomodoSearchService() throws Exception {
+    public KomodoSearchServiceTestInSuite() throws Exception {
         super();
     }
 

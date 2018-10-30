@@ -77,12 +77,12 @@ import org.komodo.test.utils.TestUtilities;
 
 @SuppressWarnings( {"javadoc", "nls"} )
 @net.jcip.annotations.NotThreadSafe
-public class TestKomodoVdbService extends AbstractKomodoServiceTest {
+public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
 
     @Rule
     public TestName testName = new TestName();
 
-    public TestKomodoVdbService() throws Exception {
+    public KomodoVdbServiceTestInSuite() throws Exception {
         super();
     }
 
@@ -617,7 +617,7 @@ public class TestKomodoVdbService extends AbstractKomodoServiceTest {
             //
             // Restore the sample vdbs
             //
-            unitServiceResources.loadVdbs();
+            UnitServiceResources.getInstance().loadVdbs();
         }
     }
 

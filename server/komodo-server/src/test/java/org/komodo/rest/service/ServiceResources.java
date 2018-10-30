@@ -24,6 +24,8 @@ package org.komodo.rest.service;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.rules.ExternalResource;
 import org.komodo.spi.repository.ApplicationProperties;
 import org.komodo.spi.repository.PersistenceType;
@@ -32,12 +34,12 @@ import org.komodo.utils.TestKLog;
 
 public class ServiceResources extends ExternalResource {
 
-    private static int refCount = 0;
+    private static AtomicInteger refCount = new AtomicInteger(0);
 
     private static ServiceResources instance;
 
     public static ExternalResource getInstance() {
-        if (refCount == 0)
+        if (refCount.get() == 0)
             instance = new ServiceResources();
 
         return instance;
@@ -46,7 +48,7 @@ public class ServiceResources extends ExternalResource {
     @Override
     protected void before() throws Throwable {
         try {
-            if (refCount > 0)
+            if (refCount.get() > 0)
                 return;
     
             initResources();
@@ -57,15 +59,15 @@ public class ServiceResources extends ExternalResource {
             // a) test class is running on its own
             // b) test suite is running and all classes share this instance
             //
-            refCount++;
+            refCount.getAndIncrement();
         }
     }
 
     @Override
     protected void after() {
-        refCount--;
+        refCount.getAndDecrement();
     
-        if (refCount > 0)
+        if (refCount.get() > 0)
             return; // Still other classes using it so don't tear down yet
     
         destroyResources();
