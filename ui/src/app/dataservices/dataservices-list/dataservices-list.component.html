@@ -1,0 +1,185 @@
+<div class="padding-15">
+  <div class="row">
+    <div class="col-sm-12">
+      <div class="form-group">
+        <pfng-list
+          class="object-list"
+          [actionTemplate]="actionTemplate"
+          [config]="listConfig"
+          [expandTemplate]="expandTemplate"
+          [items]="dataservices"
+          [itemTemplate]="itemTemplate"
+          (onActionSelect)="handleAction($event, null)"
+          (onSelectionChange)="onSelect($event)">
+          <ng-template #itemTemplate
+                       let-item="item"
+                       let-index="index">
+            <div class="list-pf-left">
+              <span class="fa fa-lg fa-table object-inline-icon"></span>
+            </div>
+            <div class="list-pf-content-wrapper">
+              <div class="list-pf-main-content">
+                <span class="pull-left fa fa-circle"
+                      style="color:green"
+                      *ngIf="item.serviceDeploymentActive">
+                </span>
+                <span class="pull-left fa fa-circle"
+                      style="color:red"
+                      *ngIf="item.serviceDeploymentFailed">
+                </span>
+                <span class="pull-left fa fa-circle"
+                      style="color:orange"
+                      *ngIf="item.serviceDeploymentInactive">
+                </span>
+                <span class="pull-left fa fa-circle"
+                      style="color:grey"
+                      *ngIf="item.serviceDeploymentNotDeployed">
+                </span>
+                <span class="pull-left fa fa-spinner fa-pulse"
+                      *ngIf="item.serviceDeploymentLoading">
+                </span>
+
+                <div id="publishing-list-icons">
+                  <slide-in openedWidth='45%'
+                            (onBeforeOpen)="initPublishLogs(item)"
+                            (onAfterOpen)="refreshEditor()"
+                            (onAfterClose)="disposePublishLogs()">
+                    <div slide-in-button>
+                      <span class="pull-left fa fa-cogs fa-2x"
+                            style="color:grey;"
+                            *ngIf="item.serviceNotPublished"
+                            placement="right"
+                            [tooltip]="virtNotPubTooltip">
+                      </span>
+                      <span class="pull-left fa fa-cogs fa-2x"
+                            style="color:red;"
+                            *ngIf="item.servicePublishFailed"
+                            placement="right"
+                            [tooltip]="virtPubFailTooltip">
+                      </span>
+                      <span class="pull-left fa fa-clipboard fa-2x"
+                            style="color:midnightblue;"
+                            *ngIf="item.serviceSubmitted"
+                            placement="right"
+                            [tooltip]="virtSubTooltip">
+                      </span>
+                      <span class="pull-left fa fa-wrench fa-spin fa-2x"
+                            style="color:purple;"
+                            *ngIf="item.serviceConfiguring"
+                            placement="right"
+                            [tooltip]="virtConfTooltip">
+                      </span>
+                      <span class="pull-left fa fa-cog fa-spin fa-2x"
+                            style="color:blue;"
+                            *ngIf="item.serviceBuilding"
+                            placement="right"
+                            [tooltip]="virtBuildTooltip">
+                      </span>
+                      <span class="pull-left fa fa-refresh fa-spin fa-2x"
+                            style="color:teal;"
+                            *ngIf="item.serviceDeploying"
+                            placement="right"
+                            [tooltip]="virtDepTooltip">
+                      </span>
+                      <span class="pull-left fa fa-cogs fa-2x"
+                            style="color:green;"
+                            *ngIf="item.servicePublished"
+                            placement="right"
+                            [tooltip]="virtPubTooltip">
+                      </span>
+                    </div>
+                    <div slide-in-content>
+                      <div>
+                        <h3>Publishing Logs for '{{item.getId()}}'</h3>
+                        <codemirror #publishLogsEditor [(ngModel)]="publishLogs" [config]="publishLogsEditorConfig"></codemirror>
+                      </div>
+                    </div>
+                  </slide-in>
+                </div>
+                <a class="object-name-link" [routerLink]="[item.getId()]" (click)="onEditDataservice(item.getId())">{{ item.getId() }}</a>
+                <div class="list-pf-description">
+                  <span class="fa fa-edit pull-left dataservice-card-edit-icon" (click)="onEditDescription(item.getId())"></span>
+                  <span>{{ getDescription( item ) }}</span>
+                </div>
+              </div>
+              <div class="list-pf-additional-content">
+                <pfng-list-expand-toggle [expandId]="'views'" [item]="item" [template]="viewsTemplate">
+                  <ng-template #viewsTemplate>
+                    <span class="fa fa-table object-inline-icon"></span>
+                    <span class="list-pf-title">Views</span>
+                  </ng-template>
+                </pfng-list-expand-toggle>
+              </div>
+            </div>
+          </ng-template>
+
+          <ng-template #virtNotPubTooltip>
+            Virtualization Not Published <br/> <i>(Click to view log)</i>
+          </ng-template>
+          <ng-template #virtPubFailTooltip>
+            Virtualization Publishing Failed <br/> <i>(Click to view log)</i>
+          </ng-template>
+          <ng-template #virtSubTooltip>
+            Virtualization Submitted <br/> <i>(Click to view log)</i>
+          </ng-template>
+          <ng-template #virtConfTooltip>
+            Virtualization Configuring <br/> <i>(Click to view log)</i>
+          </ng-template>
+          <ng-template #virtBuildTooltip>
+            Virtualization Building <br/> <i>(Click to view log)</i>
+          </ng-template>
+          <ng-template #virtDepTooltip>
+            Virtualization Deploying <br/> <i>(Click to view log)</i>
+          </ng-template>
+          <ng-template #virtPubTooltip>
+            Virtualization Published <br/> <i>(Click to view log)</i>
+          </ng-template>
+
+          <ng-template #actionTemplate let-item="item" let-index="index">
+            <pfng-action class="list-pf-actions"
+                         [config]="getActionConfig( item, editActionTemplate,
+                                                          testActionTemplate,
+                                                          quickLookActionTemplate,
+                                                          activateActionTemplate,
+                                                          publishActionTemplate,
+                                                          downloadActionTemplate,
+                                                          deleteActionTemplate,
+                                                          odataLookActionTemplate )"
+                         (onActionSelect)="handleAction($event, item)">
+              <ng-template #editActionTemplate let-action="action">
+                <span class="fa fa-edit">&nbsp;</span>{{ action.title }}
+              </ng-template>
+              <ng-template #testActionTemplate let-action="action">
+                <span class="fa fa-list-alt">&nbsp;</span>{{ action.title }}
+              </ng-template>
+              <ng-template #quickLookActionTemplate let-action="action">
+                <span class="fa fa-search">&nbsp;</span>{{ action.title }}
+              </ng-template>
+              <ng-template #activateActionTemplate let-action="action">
+                <span class="fa fa-wifi">&nbsp;</span>{{ action.title }}
+              </ng-template>
+              <ng-template #publishActionTemplate let-action="action">
+                <span class="fa fa-external-link-alt">&nbsp;</span>{{ action.title }}
+              </ng-template>
+              <ng-template #downloadActionTemplate let-action="action">
+                <span class="fa fa-download">&nbsp;</span>{{ action.title }}
+              </ng-template>
+              <ng-template #deleteActionTemplate let-action="action">
+                <span class="fa fa-trash-o">&nbsp;</span>{{ action.title }}
+              </ng-template>
+              <ng-template #odataLookActionTemplate let-action="action">
+                <span class="odata-list-icon">&nbsp;</span>
+              </ng-template>
+            </pfng-action>
+          </ng-template>
+          <ng-template #expandTemplate let-item="item" let-index="index">
+            <app-dataservices-details class="dataservices-details-properties"
+                                      [virtualization]="item"
+                                      *ngIf="item.expandId === undefined"></app-dataservices-details>
+            <app-views-content [virtualization]="item" (editDataservice)="onEditView($event)" *ngIf="item.expandId === 'views'"></app-views-content>
+          </ng-template>
+        </pfng-list>
+      </div>
+    </div>
+  </div>
+</div>
