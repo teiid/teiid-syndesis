@@ -1,0 +1,97 @@
+.card-toolbar .secondary-action[title="Activate"]:before {
+  color: var(--card-action-icon-color);
+  content: "\f1eb";
+  font-family: "FontAwesome";
+}
+
+.card-toolbar .secondary-action[title="Publish"]:before {
+  color: var(--card-action-icon-color);
+  content: "\f085";
+  font-family: "FontAwesome";
+}
+
+.card-toolbar .secondary-action[title="Refresh"]:before {
+  color: var(--card-action-icon-color);
+  content: "\f021";
+  font-family: "FontAwesome";
+}
+
+.card-toolbar .secondary-action[title="Download"]:before {
+  color: var(--card-action-icon-color);
+  content: "\f019";
+  font-family: "FontAwesome";
+}
+
+.object-card .list-pf,
+.object-card-selected .list-pf {
+  border: none;
+}
+
+.object-card .list-pf-item,
+.object-card-selected .list-pf-item {
+  border: none;
+}
+
+.object-card .list-pf-item:hover {
+  background-color: transparent;
+}
+
+.object-card-selected .list-pf-item:hover {
+  background-color: transparent;
+}
+
+a.list-pf-title.view-name {
+  cursor: pointer;
+  color: var(--card-body-color);
+  margin-left: 10px !important;
+}
+
+.list-pf-container {
+  -ms-flex-align: start;
+  align-items: flex-start;
+  display: -ms-flexbox;
+  display: flex;
+  padding: 3px;
+}
+
+.odata-card-icon {
+  width: 16px;
+  height: 16px;
+  padding-left: 4px;
+  padding-right: 4px;
+  background-size: 16px 16px;
+  background-repeat: no-repeat;
+  background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAALlJREFUeNpi/N/D4MDAwLCfgQLAAmc5TmBgEDPAVHFlAYTWScCUe3UBaH0BkiEgA2TsMRU+PgChsclBAeOod4aUd0CGsQtAbPn5gUTvgIAH0Ona8RD2z48MDDuAXrizgYHBqoGBwbIeU/eTgwwMKx3QvAMzAATY+SHhBDLk4wOIBmxhguISkBfQAZ88hL66AIJxACY4C2QbNucSARCGfAIasiMREhZg/kNw9BEDqJbYQKHjSIkhAAEGAHmtTMAm);
+}
+
+#publishing-card-icons div[slide-in-content] h3 {
+  color: #3f88ce;
+}
+
+#publishing-card-icons .CodeMirror {
+  height: 80vh;
+}
+
+.views-details {
+  background-color: transparent;
+}
+.views-details:hover {
+  background-color: transparent;
+}
+
+.views-details .blank-slate-pf {
+  background-color: transparent;
+  min-width: 200px;
+  border: none;
+  padding: 0;
+}
+
+.views-details h1, .h1 {
+  font-size: 14px;
+}
+
+.dataservice-card-edit-icon {
+  color: var(--card-action-icon-color);
+  cursor: pointer;
+  margin-left: 7px;
+}

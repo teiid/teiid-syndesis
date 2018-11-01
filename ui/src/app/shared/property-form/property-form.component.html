@@ -1,0 +1,7 @@
+<div>
+  <form class="form-horizontal" [formGroup]="form">
+    <div *ngFor="let property of formProperties">
+      <app-form-property [property]="property" [form]="form"></app-form-property>
+    </div>
+  </form>
+</div>

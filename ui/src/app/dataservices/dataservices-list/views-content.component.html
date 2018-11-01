@@ -1,0 +1,25 @@
+<div class="row">
+  <div class="col-sm-12">
+    <div class="form-group">
+      <pfng-list
+        [config]="listConfig"
+        [itemTemplate]="itemTemplate"
+        [expandTemplate]="expandTemplate"
+        [items]="getViews( virtualization )">
+        <ng-template #itemTemplate let-item="item">
+          <div class="list-pf-main-content">
+            <span class="fa fa-table object-inline-icon"></span>
+            <a class="list-pf-title view-name" (click)="onEditView(item)">{{ item }}</a>
+          </div>
+        </ng-template>
+        <ng-template #expandTemplate let-item="item" let-index="index">
+          <div class="row" *ngFor="let connection of getConnections( item )">
+            <div class="col-sm-9 list-view-pf-icon-sm">
+              {{ connection.getId() }}
+            </div>
+          </div>
+        </ng-template>
+      </pfng-list>
+    </div>
+  </div>
+</div>

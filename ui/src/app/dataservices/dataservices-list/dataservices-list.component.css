@@ -1,0 +1,59 @@
+/* Adds an icon to the left of the delete action item in dropdown of kebab. */
+.object-list .secondary-action[title*="Activate"]:before {
+  color: var(--card-action-icon-color);
+  content: "\f1eb";
+  font-family: "FontAwesome";
+}
+
+/* Adds an icon to the left of the download action item in dropdown of kebab. */
+.object-list .secondary-action[title*="Download"]:before {
+  color: var(--card-action-icon-color);
+  content: "\f019";
+  font-family: "FontAwesome";
+}
+
+/* Adds an icon to the left of the publish action item in dropdown of kebab. */
+.object-list .secondary-action[title*="Publish"]:before {
+  color: var(--card-action-icon-color);
+  content: "\f085";
+  font-family: "FontAwesome";
+}
+
+/* Adds an icon to the left of the refresh action item in dropdown of kebab. */
+.object-list .secondary-action[title*="Refresh"]:before {
+  color: var(--card-action-icon-color);
+  content: "\f021";
+  font-family: "FontAwesome";
+}
+
+a.list-pf-title.view-name {
+  cursor: pointer;
+  color: var(--card-body-color);
+  margin-left: 10px !important;
+}
+
+.dataservices-details-properties {
+  padding-left: 40px;
+}
+
+.list-pf:not(.list-pf-stacked) .list-pf-main-content > * + * {
+  margin-left: 10px;
+}
+
+.odata-list-icon {
+  width: 16px;
+  height: 16px;
+  padding-left: 8px;
+  padding-right: 8px;
+  background-size: 16px 16px;
+  background-repeat: no-repeat;
+  background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAALlJREFUeNpi/N/D4MDAwLCfgQLAAmc5TmBgEDPAVHFlAYTWScCUe3UBaH0BkiEgA2TsMRU+PgChsclBAeOod4aUd0CGsQtAbPn5gUTvgIAH0Ona8RD2z48MDDuAXrizgYHBqoGBwbIeU/eTgwwMKx3QvAMzAATY+SHhBDLk4wOIBmxhguISkBfQAZ88hL66AIJxACY4C2QbNucSARCGfAIasiMREhZg/kNw9BEDqJbYQKHjSIkhAAEGAHmtTMAm);
+}
+
+#publishing-list-icons div[slide-in-content] h3 {
+  color: #3f88ce;
+}
+
+#publishing-list-icons .CodeMirror {
+  height: 80vh;
+}
