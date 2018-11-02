@@ -64,3 +64,6 @@ yarn-error.log
 Thumbs.db
 
 target/
+ui/dist/
+ui/node/
+ui/node_modules/
