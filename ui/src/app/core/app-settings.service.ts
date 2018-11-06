@@ -173,9 +173,9 @@ export class AppSettingsService {
     this.svcPageLayout = layout;
   }
 
-  private handleError(error: Response): ErrorObservable {
+  private handleError(error: Response): ErrorObservable<string> {
     this.logger.error( this.constructor.name + "::handleError" );
-    return Observable.throw(error);
+    return Observable.throw(error.toString, null);
   }
 
 }

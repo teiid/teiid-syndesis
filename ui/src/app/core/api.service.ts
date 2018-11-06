@@ -159,9 +159,9 @@ export abstract class ApiService {
     return msg;
   }
 
-  protected handleError(error: Response): ErrorObservable {
+  protected handleError(error: Response): ErrorObservable<string> {
     this.logger.error( this.constructor.name + "::handleError => " + this.msgFromResponse(error));
-    return Observable.throw(error);
+    return ErrorObservable.create(this.msgFromResponse(error));
   }
 
 }

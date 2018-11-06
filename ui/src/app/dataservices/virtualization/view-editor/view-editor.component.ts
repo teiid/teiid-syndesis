@@ -41,6 +41,8 @@ import { SchemaNode } from "@connections/shared/schema-node.model";
 import { Composition } from "@dataservices/shared/composition.model";
 import { Router } from "@angular/router";
 import { NavigationStart } from "@angular/router";
+import 'rxjs/add/operator/pairwise';
+
 
 @Component({
   encapsulation: ViewEncapsulation.None,

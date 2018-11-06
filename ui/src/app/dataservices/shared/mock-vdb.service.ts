@@ -32,6 +32,7 @@ import "rxjs/add/observable/throw";
 import "rxjs/add/operator/catch";
 import "rxjs/add/operator/map";
 import { Observable } from "rxjs/Observable";
+import { timer } from 'rxjs';
 
 @Injectable()
 export class MockVdbService extends VdbService {
@@ -150,8 +151,7 @@ export class MockVdbService extends VdbService {
    */
   public pollForActiveVdb(vdbName: string, pollDurationSec: number, pollIntervalSec: number): void {
     const pollIntervalMillis = pollIntervalSec * 1000;
-    const timer = Observable.timer(1000, pollIntervalMillis);
-    this.deploymentSubscription = timer.subscribe(( t: any ) => {
+    this.deploymentSubscription = timer(1000, pollIntervalMillis).subscribe(( t: any ) => {
       const vdbStatus = new VdbStatus();
       vdbStatus.setName( vdbName );
       vdbStatus.setActive( true );

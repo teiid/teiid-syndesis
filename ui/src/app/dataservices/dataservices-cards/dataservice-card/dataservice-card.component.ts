@@ -27,6 +27,7 @@ import { Dataservice } from "@dataservices/shared/dataservice.model";
 import { DataserviceService } from "@dataservices/shared/dataservice.service";
 import { Connection } from "@connections/shared/connection.model";
 import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
+import { interval } from 'rxjs';
 
 @Component({
   encapsulation: ViewEncapsulation.None,
@@ -314,7 +315,7 @@ export class DataserviceCardComponent implements DoCheck, OnInit {
     //
     // Refresh them every 10 seconds
     //
-    this.logMonitor = Observable.interval(10000).subscribe(
+    this.logMonitor = interval(10000).subscribe(
       (val) => {
         this.fetchPublishLogs();
       }

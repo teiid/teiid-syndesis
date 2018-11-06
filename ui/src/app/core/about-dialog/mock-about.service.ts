@@ -5,6 +5,7 @@ import { AboutService } from "@core/about-dialog/about.service";
 import { AppSettingsService } from "@core/app-settings.service";
 import { LoggerService } from "@core/logger.service";
 import { Observable } from "rxjs/Observable";
+import "rxjs/add/observable/of";
 
 @Injectable()
 export class MockAboutService extends AboutService {

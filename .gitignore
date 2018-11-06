@@ -1,4 +1,5 @@
 target
+ui/.vscode/
 .settings
 .project
 .classpath

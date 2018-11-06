@@ -113,8 +113,8 @@ export class MockDataserviceService extends DataserviceService {
     return Observable.of(this.queryResults);
   }
 
-  protected handleError(error: Response): ErrorObservable {
-    return Observable.throw(error);
+  protected handleError(error: Response): ErrorObservable<string> {
+    return Observable.throw(error.toString, null);
   }
 
   public createReadonlyDataRole( dataserviceName: string,

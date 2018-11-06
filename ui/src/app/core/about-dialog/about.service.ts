@@ -38,7 +38,7 @@ export class AboutService extends ApiService {
     this.http = http;
   }
 
-  public getAboutInformation(): Observable<About> {
+  public getAboutInformation(): Observable<any> {
     return this.http.get( AboutService.aboutUrl, this.getAuthRequestOptions() )
       .map( ( response ) => {
         const aboutInfo = response.json();

@@ -32,6 +32,7 @@ import * as _ from "lodash";
 import { DataserviceService } from "@dataservices/shared/dataservice.service";
 import { Dataservice } from "@dataservices/shared/dataservice.model";
 import { NameValue } from "@dataservices/shared/name-value.model";
+import { interval } from 'rxjs';
 
 @Component({
   encapsulation: ViewEncapsulation.None,
@@ -337,7 +338,7 @@ export class DataservicesListComponent implements OnInit {
     //
     // Refresh them every 10 seconds
     //
-    this.logMonitor = Observable.interval(10000).subscribe(
+    this.logMonitor = interval(10000).subscribe(
       (val) => {
         this.fetchPublishLogs(dataservice);
       }

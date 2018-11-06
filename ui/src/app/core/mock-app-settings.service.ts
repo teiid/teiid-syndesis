@@ -4,6 +4,7 @@ import { AppSettingsService } from "@core/app-settings.service";
 import { LoggerService } from "@core/logger.service";
 import { environment } from "@environments/environment";
 import { Observable } from "rxjs/Observable";
+import 'rxjs/add/observable/of';
 
 @Injectable()
 export class MockAppSettingsService extends AppSettingsService implements OnInit {
