@@ -37,15 +37,15 @@ export class CanvasNode implements cola.Node {
   private _root = false;
 
   public static encodeId(id: string): string {
-    // TODO: fix this
-    return "";
-    // return id.replace(/\//g, '5X5').replace(/=/g, '6X6');
+    const regex1 = /\//g;
+    const regex2 = /=/g;
+    return id.replace(regex1, '5X5').replace(regex2, '6X6');
   }
 
   public static decodeId(id: string): string {
-    // TODO: fix this
-    return "";
-    // return id.replace(/5X5/g, '/').replace(/6X6/g, '=');
+    const regex1 = /5X5/g;
+    const regex2 = /6X6/g;
+    return id.replace(regex1, '/').replace(regex2, '=');
   }
 
   constructor(id: string, payload: string, type: string, label: string, root?: boolean) {
