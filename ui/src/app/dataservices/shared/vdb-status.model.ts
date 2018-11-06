@@ -29,8 +29,8 @@ export class VdbStatus {
   private errors: string[] = [];
 
   /**
-   * @param {Object} json the JSON representation of a VdbStatus
-   * @returns {VdbStatus} the new VdbStatus (never null)
+   * @param json the JSON representation of a VdbStatus
+   * @returns the new VdbStatus (never null)
    */
   public static create( json: object = {} ): VdbStatus {
     const vdbStatus = new VdbStatus();
@@ -43,98 +43,98 @@ export class VdbStatus {
   }
 
   /**
-   * @returns {string} the vdbStatus name
+   * @returns the vdbStatus name
    */
   public getName(): string {
     return this.name;
   }
 
   /**
-   * @returns {string} the vdbStatus deployedName
+   * @returns the vdbStatus deployedName
    */
   public getDeployedName(): string {
     return this.deployedName;
   }
 
   /**
-   * @returns {string} the vdbStatus version (can be null)
+   * @returns the vdbStatus version (can be null)
    */
   public getVersion(): string {
     return this.version;
   }
 
   /**
-   * @returns {boolean} the vdbStatus active state
+   * @returns the vdbStatus active state
    */
   public isActive(): boolean {
     return this.active;
   }
 
   /**
-   * @returns {boolean} the vdbStatus loading state
+   * @returns the vdbStatus loading state
    */
   public isLoading(): boolean {
     return this.loading;
   }
 
   /**
-   * @returns {boolean} the vdbStatus failed state
+   * @returns the vdbStatus failed state
    */
   public isFailed(): boolean {
     return this.failed;
   }
 
   /**
-   * @returns {string[]} the errors (never null)
+   * @returns the errors (never null)
    */
   public getErrors(): string[] {
     return this.errors;
   }
 
   /**
-   * @param {string} name the vdbStatus name
+   * @param name the vdbStatus name
    */
   public setName( name: string ): void {
     this.name = name;
   }
 
   /**
-   * @param {string} deployedName the vdbStatus deployedName
+   * @param deployedName the vdbStatus deployedName
    */
   public setDeployedName( deployedName: string ): void {
     this.deployedName = deployedName;
   }
 
   /**
-   * @param {string} version the vdbStatus version (optional)
+   * @param version the vdbStatus version (optional)
    */
   public setVersion( version?: string ): void {
     this.version = version ? version : "1";
   }
 
   /**
-   * @param {boolean} active the active state
+   * @param active the active state
    */
   public setActive( active: boolean ): void {
     this.active = active;
   }
 
   /**
-   * @param {boolean} loading the loading state
+   * @param loading the loading state
    */
   public setLoading( loading: boolean ): void {
     this.loading = loading;
   }
 
   /**
-   * @param {boolean} failed the failed state
+   * @param failed the failed state
    */
   public setFailed( failed: boolean ): void {
     this.failed = failed;
   }
 
   /**
-   * @param {[string]} errors the status errors
+   * @param errors the status errors
    */
   public setErrors( errors: string[] ): void {
     this.errors = errors;
@@ -142,7 +142,7 @@ export class VdbStatus {
 
   /**
    * Set all object values using the supplied VdbStatus json
-   * @param {Object} values
+   * @param values
    */
   public setValues(values: object = {}): void {
     Object.assign(this, values);

@@ -1,9 +1,9 @@
 import { Injectable } from "@angular/core";
 import { Http } from "@angular/http";
-import { About } from "@core/about-dialog/about.model";
-import { AboutService } from "@core/about-dialog/about.service";
-import { AppSettingsService } from "@core/app-settings.service";
-import { LoggerService } from "@core/logger.service";
+import { About } from "../../core/about-dialog/about.model";
+import { AboutService } from "../../core/about-dialog/about.service";
+import { AppSettingsService } from "../../core/app-settings.service";
+import { LoggerService } from "../../core/logger.service";
 import { Observable } from "rxjs/Observable";
 
 @Injectable()

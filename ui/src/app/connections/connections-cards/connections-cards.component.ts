@@ -16,9 +16,9 @@
  */
 
 import { Component, EventEmitter, Input, Output } from "@angular/core";
-import { ConnectionCardComponent } from "@connections/connections-cards/connection-card/connection-card.component";
-import { Connection } from "@connections/shared/connection.model";
-import { LoggerService } from "@core/logger.service";
+import { ConnectionCardComponent } from "../../connections/connections-cards/connection-card/connection-card.component";
+import { Connection } from "../../connections/shared/connection.model";
+import { LoggerService } from "../../core/logger.service";
 
 @Component({
   moduleId: module.id,
@@ -40,7 +40,7 @@ export class ConnectionsCardsComponent {
   public logger: LoggerService;
 
   /**
-   * @param {LoggerService} logger the logging service
+   * @param logger the logging service
    */
   constructor( logger: LoggerService ) {
     this.logger = logger;

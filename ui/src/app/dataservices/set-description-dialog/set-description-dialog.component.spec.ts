@@ -7,8 +7,8 @@ import {
   ActionModule
 } from "patternfly-ng";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
-import { AppSettingsService } from "@core/app-settings.service";
-import { LoggerService } from "@core/logger.service";
+import { AppSettingsService } from "../../core/app-settings.service";
+import { LoggerService } from "../../core/logger.service";
 
 describe('SetDescriptionDialogComponent', () => {
   let component: SetDescriptionDialogComponent;

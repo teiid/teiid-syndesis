@@ -29,42 +29,42 @@ export class NewConnection {
   }
 
   /**
-   * @returns {string} the connection name (can be null)
+   * @returns the connection name (can be null)
    */
   public getName(): string {
     return this.name;
   }
 
   /**
-   * @returns {string} the connection description (can be null)
+   * @returns the connection description (can be null)
    */
   public getDescription(): string {
     return this.description;
   }
 
   /**
-   * @returns {string} the connection serviceCatalog source name (can be null)
+   * @returns the connection serviceCatalog source name (can be null)
    */
   public getServiceCatalogSource(): string {
     return this.serviceCatalogSource;
   }
 
   /**
-   * @param {string} name the connection name (optional)
+   * @param name the connection name (optional)
    */
   public setName( name?: string ): void {
     this.name = name ? name : null;
   }
 
   /**
-   * @param {string} description the connection description (optional)
+   * @param description the connection description (optional)
    */
   public setDescription( description?: string ): void {
     this.description = description ? description : "";
   }
 
   /**
-   * @param {string} serviceCatalogSource the serviceCatalogSource
+   * @param serviceCatalogSource the serviceCatalogSource
    */
   public setServiceCatalogSource( serviceCatalogSource?: string ): void {
     this.serviceCatalogSource = serviceCatalogSource ? serviceCatalogSource : null;

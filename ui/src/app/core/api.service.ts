@@ -16,8 +16,8 @@
  */
 
 import { RequestOptions, Response } from "@angular/http";
-import { AppSettingsService } from "@core/app-settings.service";
-import { LoggerService } from "@core/logger.service";
+import { AppSettingsService } from "../core/app-settings.service";
+import { LoggerService } from "../core/logger.service";
 import "rxjs/add/observable/throw";
 import "rxjs/add/operator/catch";
 import "rxjs/add/operator/map";
@@ -46,7 +46,7 @@ export abstract class ApiService {
    * Get the Auth RequestOptions if any
    * Note: Since usage of the oauth-proxy no additional auth request options are necessary
    *
-   * @returns {RequestOptions}
+   * @returns
    */
   protected getAuthRequestOptions(): RequestOptions {
     return this.appSettings.getAuthRequestOptions();
@@ -54,7 +54,7 @@ export abstract class ApiService {
 
   /**
    * Get the current user workspace path
-   * @returns {string} the current user workspace path
+   * @returns  the current user workspace path
    */
   protected getKomodoUserWorkspacePath(): string {
     return this.appSettings.getKomodoUserWorkspacePath();

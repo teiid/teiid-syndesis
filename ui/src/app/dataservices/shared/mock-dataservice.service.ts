@@ -17,22 +17,22 @@
 
 import { Injectable, ReflectiveInjector } from "@angular/core";
 import { Http, Response } from "@angular/http";
-import { AppSettingsService } from "@core/app-settings.service";
-import { LoggerService } from "@core/logger.service";
-import { Dataservice } from "@dataservices/shared/dataservice.model";
-import { DataserviceService } from "@dataservices/shared/dataservice.service";
-import { NewDataservice } from "@dataservices/shared/new-dataservice.model";
-import { NotifierService } from "@dataservices/shared/notifier.service";
-import { QueryResults } from "@dataservices/shared/query-results.model";
-import { VdbService } from "@dataservices/shared/vdb.service";
-import { TestDataService } from "@shared/test-data.service";
+import { AppSettingsService } from "../../core/app-settings.service";
+import { LoggerService } from "../../core/logger.service";
+import { Dataservice } from "../../dataservices/shared/dataservice.model";
+import { DataserviceService } from "../../dataservices/shared/dataservice.service";
+import { NewDataservice } from "../../dataservices/shared/new-dataservice.model";
+import { NotifierService } from "../../dataservices/shared/notifier.service";
+import { QueryResults } from "../../dataservices/shared/query-results.model";
+import { VdbService } from "../../dataservices/shared/vdb.service";
+import { TestDataService } from "../../shared/test-data.service";
 import "rxjs/add/observable/of";
 import "rxjs/add/observable/throw";
 import "rxjs/add/operator/catch";
 import "rxjs/add/operator/map";
 import { Observable } from "rxjs/Observable";
 import { ErrorObservable } from "rxjs/observable/ErrorObservable";
-import { ViewEditorState } from "@dataservices/shared/view-editor-state.model";
+import { ViewEditorState } from "../../dataservices/shared/view-editor-state.model";
 
 @Injectable()
 export class MockDataserviceService extends DataserviceService {
@@ -58,7 +58,6 @@ export class MockDataserviceService extends DataserviceService {
 
   /**
    * Get the dataservices from the komodo rest interface
-   * @returns {Observable<Dataservice[]>}
    */
   public getAllDataservices(): Observable<Dataservice[]> {
     return Observable.of(this.services);
@@ -66,8 +65,7 @@ export class MockDataserviceService extends DataserviceService {
 
   /**
    * Create a dataservice via the komodo rest interface
-   * @param {NewDataservice} dataservice
-   * @returns {Observable<boolean>}
+   * @param  dataservice
    */
   public createDataservice(dataservice: NewDataservice): Observable<boolean> {
     const ds = new Dataservice();
@@ -80,8 +78,7 @@ export class MockDataserviceService extends DataserviceService {
 
   /**
    * Update a dataservice via the komodo rest interface
-   * @param {NewDataservice} dataservice
-   * @returns {Observable<boolean>}
+   * @param  dataservice
    */
   public updateDataservice(dataservice: NewDataservice): Observable<boolean> {
     return Observable.of(true);
@@ -89,8 +86,7 @@ export class MockDataserviceService extends DataserviceService {
 
   /**
    * Delete a dataservice via the komodo rest interface
-   * @param {string} dataserviceId
-   * @returns {Observable<boolean>}
+   * @param  dataserviceId
    */
   public deleteDataservice(dataserviceId: string): Observable<boolean> {
     return Observable.of(true);
@@ -103,11 +99,10 @@ export class MockDataserviceService extends DataserviceService {
 
   /**
    * Query a Dataservice via the komodo rest interface
-   * @param {string} query the SQL query
-   * @param {string} dataserviceName the dataservice name
-   * @param {number} limit the limit for the number of result rows
-   * @param {number} offset the offset for the result rows
-   * @returns {Observable<boolean>}
+   * @param  query the SQL query
+   * @param  dataserviceName the dataservice name
+   * @param  limit the limit for the number of result rows
+   * @param  offset the offset for the result rows
    */
   public queryDataservice(query: string, dataserviceName: string, limit: number, offset: number): Observable<any> {
     return Observable.of(this.queryResults);
@@ -149,24 +144,21 @@ export class MockDataserviceService extends DataserviceService {
   }
 
   /**
-   * @param {ViewEditorState[]} editorStates the view editor state array
-   * @returns {Observable<boolean>} `true` if the editor state was successfully saved
+   * @param  editorStates the view editor state array
    */
   public saveViewEditorStates( editorStates: ViewEditorState[] ): Observable< boolean > {
     return Observable.of(true);
   }
 
   /**
-   * @param {string} editorId the ID of the editor state being requested
-   * @returns {Observable<ViewEditorState>} the view editor state or empty object if not found
+   * @param  editorId the ID of the editor state being requested
    */
   public getViewEditorState( editorId: string ): Observable< ViewEditorState > {
     return Observable.of(this.editorViewStateMap.get(editorId));
   }
 
   /**
-   * @param {string} editorStatePattern the editorState name pattern
-   * @returns {Observable<ViewEditorState[]>} the view editor state array
+   * @param  editorStatePattern the editorState name pattern
    */
   public getViewEditorStates( editorStatePattern?: string ): Observable< ViewEditorState[] > {
     const editorStates = [];
@@ -189,26 +181,23 @@ export class MockDataserviceService extends DataserviceService {
   }
 
   /**
-   * @param {string} editorId the ID of the editor state being deleted
-   * @returns {Observable<boolean>} `true` if the editor state was successfully deleted
+   * @param  editorId the ID of the editor state being deleted
    */
   public deleteViewEditorState( editorId: string ): Observable< boolean > {
     return Observable.of(true);
   }
 
   /**
-   * @param {ViewEditorState[]} editorStates the view editor state array
-   * @param {string} dataserviceName the name of the dataservice
-   * @returns {Observable<boolean>} `true` if the editor state was successfully saved
+   * @param  editorStates the view editor state array
+   * @param  dataserviceName the name of the dataservice
    */
   public saveViewEditorStatesRefreshViews( editorStates: ViewEditorState[], dataserviceName: string ): Observable< boolean > {
     return Observable.of(true);
   }
 
   /**
-   * @param {string} editorId the ID of the editor state being deleted
-   * @param {string} dataserviceName the name of the dataservice
-   * @returns {Observable<boolean>} `true` if the editor state was successfully saved
+   * @param  editorId the ID of the editor state being deleted
+   * @param  dataserviceName the name of the dataservice
    */
   public deleteViewEditorStateRefreshViews( editorId: string, dataserviceName: string ): Observable< boolean > {
     return Observable.of(true);
@@ -216,8 +205,7 @@ export class MockDataserviceService extends DataserviceService {
 
   /**
    * Query a Dataservice's published virtualization using odata protocol
-   * @param {string} url the odata url string
-   * @returns {Observable<any>}
+   * @param  url the odata url string
    */
   public odataGet(url: string): Observable<any> {
     const result = this.getMetadata();

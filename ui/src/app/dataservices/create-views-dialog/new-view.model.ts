@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { SchemaNode } from "@connections/shared/schema-node.model";
+import { SchemaNode } from "../../connections/shared/schema-node.model";
 
 /**
  * NewView model - to hold the NewView objects
@@ -33,63 +33,63 @@ export class NewView {
   }
 
   /**
-   * @returns {string} the connection name
+   * @returns  the connection name
    */
   public getConnectionName(): string {
     return this.connection;
   }
 
   /**
-   * @param {string} name the connection name
+   * @param  name the connection name
    */
   public setConnectionName( name?: string ): void {
     this.connection = name ? name : null;
   }
 
   /**
-   * @returns {string} the view name
+   * @returns  the view name
    */
   public getViewName(): string {
     return this.view;
   }
 
   /**
-   * @param {string} name the view name
+   * @param  name the view name
    */
   public setViewName( name?: string ): void {
     this.view = name ? name : null;
   }
 
   /**
-   * @returns {string} the view description
+   * @returns  the view description
    */
   public getViewDescription(): string {
     return this.viewDescription;
   }
 
   /**
-   * @param {string} description the view description
+   * @param  description the view description
    */
   public setViewDescription( description?: string ): void {
     this.viewDescription = description ? description : "";
   }
 
   /**
-   * @returns {SchemaNode} the view source node
+   * @returns  the view source node
    */
   public getViewSourceNode(): SchemaNode {
     return this.viewSourceNode;
   }
 
   /**
-   * @param {SchemaNode} node the view source node
+   * @param  node the view source node
    */
   public setViewSourceNode( node: SchemaNode ): void {
     this.viewSourceNode = node;
   }
 
   /**
-   * @returns {string} the stringified node path
+   * @returns  the stringified node path
    */
   public get path(): string {
     let path = "";
@@ -108,7 +108,7 @@ export class NewView {
   }
 
   /**
-   * @param {string[]} path the node path
+   * @param  path the node path
    */
   public setNodePath( path: string[] ): void {
     this.nodePath = [];

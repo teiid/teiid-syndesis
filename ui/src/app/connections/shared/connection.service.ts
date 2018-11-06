@@ -17,23 +17,23 @@
 
 import { Injectable } from "@angular/core";
 import { Http, RequestOptions } from "@angular/http";
-import { ConnectionStatus } from "@connections/shared/connection-status";
-import { ConnectionType } from "@connections/shared/connection-type.model";
-import { ConnectionsConstants } from "@connections/shared/connections-constants";
-import { NewConnection } from "@connections/shared/new-connection.model";
-import { SchemaNode } from "@connections/shared/schema-node.model";
-import { ServiceCatalogSource } from "@connections/shared/service-catalog-source.model";
-import { ApiService } from "@core/api.service";
-import { AppSettingsService } from "@core/app-settings.service";
-import { LoggerService } from "@core/logger.service";
-import { ConnectionSummary } from "@dataservices/shared/connection-summary.model";
-import { NotifierService } from "@dataservices/shared/notifier.service";
-import { VdbService } from "@dataservices/shared/vdb.service";
-import { environment } from "@environments/environment";
+import { ConnectionStatus } from "../../connections/shared/connection-status";
+import { ConnectionType } from "../../connections/shared/connection-type.model";
+import { ConnectionsConstants } from "../../connections/shared/connections-constants";
+import { NewConnection } from "../../connections/shared/new-connection.model";
+import { SchemaNode } from "../../connections/shared/schema-node.model";
+import { ServiceCatalogSource } from "../../connections/shared/service-catalog-source.model";
+import { ApiService } from "../../core/api.service";
+import { AppSettingsService } from "../../core/app-settings.service";
+import { LoggerService } from "../../core/logger.service";
+import { ConnectionSummary } from "../../dataservices/shared/connection-summary.model";
+import { NotifierService } from "../../dataservices/shared/notifier.service";
+import { VdbService } from "../../dataservices/shared/vdb.service";
+import { environment } from "../../../environments/environment";
 import { Observable } from "rxjs/Observable";
 import { Subscription } from "rxjs/Subscription";
-import { VdbsConstants } from "@dataservices/shared/vdbs-constants";
-import { Column } from "@dataservices/shared/column.model";
+import { VdbsConstants } from "../../dataservices/shared/vdbs-constants";
+import { Column } from "../../dataservices/shared/column.model";
 
 @Injectable()
 export class ConnectionService extends ApiService {
@@ -65,8 +65,7 @@ export class ConnectionService extends ApiService {
    * Validates the specified connection name. If the name contains valid characters and the name is unique, the
    * service returns 'null'. Otherwise, a 'string' containing an error message is returned.
    *
-   * @param {string} name the connection name
-   * @returns {Observable<String>}
+   * @param name the connection name
    */
   public isValidName( name: string ): Observable< string > {
     if ( !name || name.length === 0 ) {
@@ -92,9 +91,8 @@ export class ConnectionService extends ApiService {
    * of the ConnectionSummary are returned.
    *   - include-connection=true (include connection [default=true])
    *   - include-schema-status=true (include schema vdb status [default=false])
-   * @param {boolean} includeConnection 'true' to include connection
-   * @param {boolean} includeSchemaStatus 'true' to include connection schema status
-   * @returns {Observable<ConnectionSummary[]>}
+   * @param includeConnection 'true' to include connection
+   * @param includeSchemaStatus 'true' to include connection schema status
    */
   public getConnections(includeConnection: boolean, includeSchemaStatus: boolean): Observable<ConnectionSummary[]> {
     // Build the url with parameters
@@ -112,10 +110,9 @@ export class ConnectionService extends ApiService {
   /**
    * Deployes the connection server VDB if one does not already exists. If a server VDB has already been deployed, one
    * can be redeployed. A schema can only be generated if it doesn't exist and there is already a deployed server VDB.
-   * @param {string} connectionName the name of the connection being refreshed
-   * @param {boolean} redeployServerVdb `true` if the server VDB should be deployed if one exists (defaults to `false`)
-   * @param {boolean} generateSchema `true` if the schema should be generated if one does not exist (defaults to `true`)
-   * @returns {Observable<boolean>}
+   * @param connectionName the name of the connection being refreshed
+   * @param redeployServerVdb `true` if the server VDB should be deployed if one exists (defaults to `false`)
+   * @param generateSchema `true` if the schema should be generated if one does not exist (defaults to `true`)
    */
   public refreshConnectionSchema(connectionName: string,
                                  redeployServerVdb = false,
@@ -145,8 +142,7 @@ export class ConnectionService extends ApiService {
 
   /**
    * Bind a service catalog source via the komodo rest interface
-   * @param {string} serviceCatalogSourceName
-   * @returns {Observable<boolean>}
+   * @param serviceCatalogSourceName
    */
   public bindServiceCatalogSource(serviceCatalogSourceName: string): Observable<boolean> {
     return this.http
@@ -160,8 +156,7 @@ export class ConnectionService extends ApiService {
 
   /**
    * Delete a connection via the komodo rest interface
-   * @param {string} connectionId
-   * @returns {Observable<boolean>}
+   * @param connectionId
    */
   public deleteConnection(connectionId: string): Observable<boolean> {
     return this.http
@@ -175,7 +170,6 @@ export class ConnectionService extends ApiService {
 
   /**
    * Get the connection types from the komodo rest interface
-   * @returns {ConnectionType[]}
    */
   public getConnectionTypes(): ConnectionType[] {
     const connectionTypes: ConnectionType[] = [];
@@ -206,7 +200,6 @@ export class ConnectionService extends ApiService {
 
   /**
    * Get the available ServiceCatalogSources from the komodo rest interface
-   * @returns {Observable<ServiceCatalogSource[]>}
    */
   public getAllServiceCatalogSources(): Observable<ServiceCatalogSource[]> {
     return this.http
@@ -221,8 +214,7 @@ export class ConnectionService extends ApiService {
   /**
    * Get the schema for the specified connection.  The connection must be ACTIVE, otherwise the schema
    * will be empty.
-   * @param {string} connectionId the connection id
-   * @returns {Observable<SchemaNode[]>}
+   * @param connectionId the connection id
    */
   public getConnectionSchema(connectionId: string): Observable<SchemaNode[]> {
     return this.http
@@ -238,9 +230,8 @@ export class ConnectionService extends ApiService {
   /**
    * Get the columns for the specified connection and table.  The connection must be ACTIVE, otherwise the schema
    * will be empty.
-   * @param {string} connectionId the connection id
-   * @param {string} tableOption the table option (eg. schema=public/table=customer)
-   * @returns {Observable<Column[]>}
+   * @param connectionId the connection id
+   * @param tableOption the table option (eg. schema=public/table=customer)
    */
   public getConnectionSchemaColumns(connectionId: string, tableOption: string): Observable<Column[]> {
     // setup query parameters
@@ -263,8 +254,7 @@ export class ConnectionService extends ApiService {
 
   /**
    * Create a connection in the Komodo repo - also binds the specified serviceCatalogSource
-   * @param {NewConnection} connection the connection object
-   * @returns {Observable<boolean>}
+   * @param connection the connection object
    */
   public createAndBindConnection(connection: NewConnection): Observable<boolean> {
     return this.http
@@ -278,8 +268,7 @@ export class ConnectionService extends ApiService {
 
   /**
    * Update a connection in the Komodo repo - also binds the specified serviceCatalogSource.
-   * @param {NewConnection} connection the connection object
-   * @returns {Observable<boolean>}
+   * @param connection the connection object
    */
   public updateAndBindConnection(connection: NewConnection): Observable<boolean> {
     return this.http
@@ -294,8 +283,7 @@ export class ConnectionService extends ApiService {
   /**
    * Creates a workspace Connection, binds it to the specified serviceCatalogSource, and initiates
    * a refresh of the connection schema.
-   * @param {NewConnection} connection the connection object
-   * @returns {Observable<boolean>}
+   * @param connection the connection object
    */
   public createDeployConnection(connection: NewConnection): Observable<boolean> {
     return this.createAndBindConnection(connection)
@@ -306,8 +294,7 @@ export class ConnectionService extends ApiService {
   /**
    * Updates a workspace Connection, binds it to the specified serviceCatalogSource, and initiates
    * a refresh of the connection schema.
-   * @param {NewConnection} connection the connection object
-   * @returns {Observable<boolean>}
+   * @param connection the connection object
    */
   public updateDeployConnection(connection: NewConnection): Observable<boolean> {
     return this.updateAndBindConnection(connection)
@@ -318,8 +305,7 @@ export class ConnectionService extends ApiService {
   /**
    * Delete the repo Connection VDB (if it exists) and undeploy the Connection VDB
    * (if exists)
-   * @param {string} connectionId
-   * @returns {Observable<boolean>}
+   * @param connectionId
    */
   public deleteUndeployConnectionVdb(connectionId: string): Observable<boolean> {
     const vdbName = connectionId + "BtlConn";
@@ -330,8 +316,7 @@ export class ConnectionService extends ApiService {
 
   /**
    * Update the preview VDB and re-deploy it if needed.
-   * @param {string} vdbName
-   * @returns {Observable<boolean>}
+   * @param vdbName
    */
   public refreshPreviewVdb(vdbName: string): Observable<boolean> {
     const url = environment.komodoTeiidUrl + "/refreshPreviewVdb/" + vdbName;
@@ -363,7 +348,7 @@ export class ConnectionService extends ApiService {
 
   /**
    * Polls the server and sends Connection schema state updates at the specified interval
-   * @param {number} pollIntervalSec the interval (sec) between polling attempts
+   * @param pollIntervalSec the interval (sec) between polling attempts
    */
   public pollConnectionSchemaStatus(pollIntervalSec: number): void {
     const pollIntervalMillis = pollIntervalSec * 1000;
@@ -378,8 +363,8 @@ export class ConnectionService extends ApiService {
 
   /**
    * Build the getConnection Url based on the supplied parameters.
-   * @param {boolean} includeConnection 'true' to include connection, 'false' to omit
-   * @param {boolean} includeSchemaStatus 'true' to include connection schema status, 'false' to omit
+   * @param includeConnection 'true' to include connection, 'false' to omit
+   * @param includeSchemaStatus 'true' to include connection schema status, 'false' to omit
    */
   private buildGetConnectionsUrl(includeConnection: boolean, includeSchemaStatus: boolean): string {
     // Base getConnections service url
@@ -394,8 +379,7 @@ export class ConnectionService extends ApiService {
 
   /*
    * Creates a Map of connection name to ConnectionStatus
-   * @param {ConnectionSummary[]} connectionSummaries the array of ConnectionSummary objects
-   * @returns {Map<string,ConnectionStatus>} the map of connection name to ConnectionStatus
+   * @param connectionSummaries the array of ConnectionSummary objects
    */
   private createConnectionStatusMap(connectionSummaries: ConnectionSummary[]): Map<string, ConnectionStatus> {
     const connStatusMap: Map<string, ConnectionStatus> = new Map<string, ConnectionStatus>();

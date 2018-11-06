@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-import { DeploymentState } from "@dataservices/shared/deployment-state.enum";
-import { PublishState } from "@dataservices/shared/publish-state.enum";
-import { Virtualization } from "@dataservices/shared/virtualization.model";
-import { VirtRoute } from "@dataservices/shared/virt-route.model";
-import { Identifiable } from "@shared/identifiable";
-import { SortDirection } from "@shared/sort-direction.enum";
-import { DataservicesConstants } from "@dataservices/shared/dataservices-constants";
+import { DeploymentState } from "../../dataservices/shared/deployment-state.enum";
+import { PublishState } from "../../dataservices/shared/publish-state.enum";
+import { Virtualization } from "../../dataservices/shared/virtualization.model";
+import { VirtRoute } from "../../dataservices/shared/virt-route.model";
+import { Identifiable } from "../../shared/identifiable";
+import { SortDirection } from "../../shared/sort-direction.enum";
+import { DataservicesConstants } from "../../dataservices/shared/dataservices-constants";
 
 export class Dataservice implements Identifiable< string > {
 
@@ -35,8 +35,8 @@ export class Dataservice implements Identifiable< string > {
   private virtualization: Virtualization = null;
 
   /**
-   * @param {Object} json the JSON representation of a Dataservice
-   * @returns {Dataservice} the new Dataservice (never null)
+   * @param  json the JSON representation of a Dataservice
+   * @returns  the new Dataservice (never null)
    */
   public static create( json: object = {} ): Dataservice {
     const svc = new Dataservice();
@@ -45,8 +45,8 @@ export class Dataservice implements Identifiable< string > {
   }
 
   /**
-   * @param {Dataservice[]} dataservices the dataservices being sorted
-   * @param {SortDirection} sortDirection the sort direction
+   * @param  dataservices the dataservices being sorted
+   * @param  sortDirection the sort direction
    */
   public static sort( dataservices: Dataservice[],
                       sortDirection: SortDirection ): void {
@@ -88,35 +88,35 @@ export class Dataservice implements Identifiable< string > {
   }
 
   /**
-   * @returns {string} the dataservice identifier (can be null)
+   * @returns  the dataservice identifier (can be null)
    */
   public getId(): string {
     return this.keng__id;
   }
 
   /**
-   * @returns {string} the dataservice description (can be null)
+   * @returns  the dataservice description (can be null)
    */
   public getDescription(): string {
     return this.tko__description;
   }
 
   /**
-   * @returns {string} the dataservice Vdb name (can be null)
+   * @returns  the dataservice Vdb name (can be null)
    */
   public getServiceVdbName(): string {
     return this.serviceVdbName;
   }
 
   /**
-   * @returns {string} the dataservice Vdb version (can be null)
+   * @returns  the dataservice Vdb version (can be null)
    */
   public getServiceVdbVersion(): string {
     return this.serviceVdbVersion;
   }
 
   /**
-   * @returns {string[]} the dataservice view names (never null or undefined)
+   * @returns  the dataservice view names (never null or undefined)
    */
   public getServiceViewNames(): string[] {
     if ( this.serviceViewDefinitions ) {
@@ -128,7 +128,7 @@ export class Dataservice implements Identifiable< string > {
 
   /**
    * Remove the specified view name, if it exists
-   * @param {string} viewNameToRemove the view name to remove
+   * @param  viewNameToRemove the view name to remove
    */
   public removeServiceViewName( viewNameToRemove: string ): void {
     const index = this.serviceViewDefinitions.findIndex( ( viewName ) =>
@@ -140,21 +140,21 @@ export class Dataservice implements Identifiable< string > {
   }
 
   /**
-   * @returns {string} the dataservice view model name (can be null)
+   * @returns  the dataservice view model name (can be null)
    */
   public getServiceViewModel(): string {
     return this.serviceViewModel;
   }
 
   /**
-   * @returns {string} the dataservice type name (can be null)
+   * @returns  the dataservice type name (can be null)
    */
   public getType(): string {
     return "Dataservice";
   }
 
   /**
-   * @returns {DeploymentState} the dataservice Deployment state
+   * @returns  the dataservice Deployment state
    */
   public getServiceDeploymentState(): DeploymentState {
     return this.deploymentState;
@@ -162,7 +162,7 @@ export class Dataservice implements Identifiable< string > {
 
   /**
    * Accessor to determine if service deployment is active
-   * @returns {boolean} the dataservice service deployment active state
+   * @returns  the dataservice service deployment active state
    */
   public get serviceDeploymentActive(): boolean {
     return this.deploymentState === DeploymentState.ACTIVE;
@@ -170,7 +170,7 @@ export class Dataservice implements Identifiable< string > {
 
   /**
    * Accessor to determine if service deployment is inactive
-   * @returns {boolean} the dataservice service deployment inactive state
+   * @returns  the dataservice service deployment inactive state
    */
   public get serviceDeploymentInactive(): boolean {
     return this.deploymentState === DeploymentState.INACTIVE;
@@ -178,7 +178,7 @@ export class Dataservice implements Identifiable< string > {
 
   /**
    * Accessor to determine if service deployment is loading
-   * @returns {boolean} the dataservice service deployment loading state
+   * @returns  the dataservice service deployment loading state
    */
   public get serviceDeploymentLoading(): boolean {
     return this.deploymentState === DeploymentState.LOADING;
@@ -186,7 +186,7 @@ export class Dataservice implements Identifiable< string > {
 
   /**
    * Accessor to determine if service deployment is failed
-   * @returns {boolean} the dataservice service deployment failed state
+   * @returns  the dataservice service deployment failed state
    */
   public get serviceDeploymentFailed(): boolean {
     return this.deploymentState === DeploymentState.FAILED;
@@ -194,14 +194,14 @@ export class Dataservice implements Identifiable< string > {
 
   /**
    * Accessor to determine if service is not deployed
-   * @returns {boolean} the dataservice service not deployed state
+   * @returns  the dataservice service not deployed state
    */
   public get serviceDeploymentNotDeployed(): boolean {
     return this.deploymentState === DeploymentState.NOT_DEPLOYED;
   }
 
   /**
-   * @returns {DeploymentState} the dataservice Deployment state
+   * @returns  the dataservice Deployment state
    */
   public getServicePublishState(): PublishState {
     return this.virtualization ? this.virtualization.getPublishState() : PublishState.NOT_PUBLISHED;
@@ -209,7 +209,7 @@ export class Dataservice implements Identifiable< string > {
 
   /**
    * Accessor to determine if service has not been published
-   * @returns {boolean} the dataservice service not published state
+   * @returns  the dataservice service not published state
    */
   public get serviceNotPublished(): boolean {
     return this.getServicePublishState() === PublishState.NOT_PUBLISHED;
@@ -217,7 +217,7 @@ export class Dataservice implements Identifiable< string > {
 
   /**
    * Accessor to determine if service submission is active
-   * @returns {boolean} the dataservice service submitted active state
+   * @returns  the dataservice service submitted active state
    */
   public get serviceSubmitted(): boolean {
     return this.getServicePublishState() === PublishState.SUBMITTED;
@@ -225,7 +225,7 @@ export class Dataservice implements Identifiable< string > {
 
   /**
    * Accessor to determine if service configuring is active
-   * @returns {boolean} the dataservice service configuring active state
+   * @returns  the dataservice service configuring active state
    */
   public get serviceConfiguring(): boolean {
     return this.getServicePublishState() === PublishState.CONFIGURING;
@@ -233,7 +233,7 @@ export class Dataservice implements Identifiable< string > {
 
   /**
    * Accessor to determine if service building is active
-   * @returns {boolean} the dataservice service building active state
+   * @returns  the dataservice service building active state
    */
   public get serviceBuilding(): boolean {
     return this.getServicePublishState() === PublishState.BUILDING;
@@ -241,7 +241,7 @@ export class Dataservice implements Identifiable< string > {
 
   /**
    * Accessor to determine if service deploying is active
-   * @returns {boolean} the dataservice service deploying active state
+   * @returns  the dataservice service deploying active state
    */
   public get serviceDeploying(): boolean {
     return this.getServicePublishState() === PublishState.DEPLOYING;
@@ -249,7 +249,7 @@ export class Dataservice implements Identifiable< string > {
 
   /**
    * Accessor to determine if service has been published
-   * @returns {boolean} the dataservice service published state
+   * @returns  the dataservice service published state
    */
   public get servicePublished(): boolean {
     return this.getServicePublishState() === PublishState.PUBLISHED;
@@ -257,7 +257,7 @@ export class Dataservice implements Identifiable< string > {
 
   /**
    * Accessor to determine if service has failed publishing
-   * @returns {boolean} the dataservice service publishing failed state
+   * @returns  the dataservice service publishing failed state
    */
   public get servicePublishFailed(): boolean {
     return this.getServicePublishState() === PublishState.FAILED;
@@ -267,7 +267,7 @@ export class Dataservice implements Identifiable< string > {
    * Accessor to return the root of the odata url, ie.
    * http://HOST/odata4/vdbName/
    *
-   * @returns {string} the odata url for this dataaservice
+   * @returns  the odata url for this dataaservice
    */
   public getOdataRootUrl(): string {
     if (! this.servicePublished || ! this.virtualization) {
@@ -287,49 +287,49 @@ export class Dataservice implements Identifiable< string > {
   }
 
   /**
-   * @param {string} id the dataservice identifier (optional)
+   * @param  id the dataservice identifier (optional)
    */
   public setId( id?: string ): void {
     this.keng__id = id ? id : null;
   }
 
   /**
-   * @param {string} description the dataservice description (optional)
+   * @param  description the dataservice description (optional)
    */
   public setDescription( description?: string ): void {
     this.tko__description = description ? description : null;
   }
 
   /**
-   * @param {string} name the dataservice service vdb name
+   * @param  name the dataservice service vdb name
    */
   public setServiceVdbName( name: string ): void {
     this.serviceVdbName = name;
   }
 
   /**
-   * @param {string} version the dataservice service vdb version
+   * @param  version the dataservice service vdb version
    */
   public setServiceVdbVersion( version: string ): void {
     this.serviceVdbVersion = version;
   }
 
   /**
-   * @param {string} viewModel the dataservice view model
+   * @param  viewModel the dataservice view model
    */
   public setServiceViewModel( viewModel: string ): void {
     this.serviceViewModel = viewModel;
   }
 
   /**
-   * @param {DeploymentState} state the dataservice deployment state
+   * @param  state the dataservice deployment state
    */
   public setServiceDeploymentState( state: DeploymentState ): void {
     this.deploymentState = state;
   }
 
   /**
-   * @param {Virtualization} state the dataservice virtualization
+   * @param  state the dataservice virtualization
    */
   public setServiceVirtualization( state: Virtualization ): void {
     this.virtualization = state ? state : null;
@@ -349,7 +349,7 @@ export class Dataservice implements Identifiable< string > {
 
   /**
    * Set all object values using the supplied Dataservice json
-   * @param {Object} values
+   * @param  values
    */
   public setValues(values: object = {}): void {
     Object.assign(this, values);

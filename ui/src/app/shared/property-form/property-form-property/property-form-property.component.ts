@@ -18,8 +18,8 @@
 import { Component, Input } from "@angular/core";
 import { AbstractControl, FormGroup } from "@angular/forms";
 
-import { PropertyControlType } from "@shared/property-form/property-control-type.enum";
-import { PropertyDefinition } from "@shared/property-form/property-definition.model";
+import { PropertyControlType } from "../../../shared/property-form/property-control-type.enum";
+import { PropertyDefinition } from "../../../shared/property-form/property-definition.model";
 
 @Component({
   selector: "app-form-property",
@@ -65,5 +65,22 @@ export class PropertyFormPropertyComponent {
       }
     }
     return "";
+  }
+
+  public getControlType( propDefn: PropertyDefinition< any > ): PropertyControlType {
+    if ( propDefn.isConstrainedToAllowedValues() ) {
+      return PropertyControlType.DROPDOWN;
+    }
+
+    if ( propDefn.getTypeClassName() === "java.lang.Boolean" ) {
+      return PropertyControlType.CHECKBOX;
+    }
+
+    if ( propDefn.isMasked() || propDefn.getId() === "password" ) {
+      return PropertyControlType.PASSWORD;
+    }
+
+    // defaults to a text control
+    return PropertyControlType.TEXT;
   }
 }

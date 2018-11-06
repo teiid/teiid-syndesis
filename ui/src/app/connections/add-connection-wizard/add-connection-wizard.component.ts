@@ -25,12 +25,12 @@ import {
 import { FormControl, FormGroup } from "@angular/forms";
 import { AbstractControl } from "@angular/forms";
 import { Router } from "@angular/router";
-import { ConnectionType } from "@connections/shared/connection-type.model";
-import { ConnectionService } from "@connections/shared/connection.service";
-import { ConnectionsConstants } from "@connections/shared/connections-constants";
-import { NewConnection } from "@connections/shared/new-connection.model";
-import { ServiceCatalogSource } from "@connections/shared/service-catalog-source.model";
-import { LoggerService } from "@core/logger.service";
+import { ConnectionType } from "../../connections/shared/connection-type.model";
+import { ConnectionService } from "../../connections/shared/connection.service";
+import { ConnectionsConstants } from "../../connections/shared/connections-constants";
+import { NewConnection } from "../../connections/shared/new-connection.model";
+import { ServiceCatalogSource } from "../../connections/shared/service-catalog-source.model";
+import { LoggerService } from "../../core/logger.service";
 import { NotificationType, WizardEvent } from "patternfly-ng";
 import { WizardStepConfig } from "patternfly-ng";
 import { WizardConfig } from "patternfly-ng";
@@ -192,7 +192,7 @@ export class AddConnectionWizardComponent implements OnInit {
 
   /**
    * Handles service catalog source change
-   * @param {string} newValue the new serviceCatalog source
+   * @param newValue the new serviceCatalog source
    */
   public selectedServiceCatalogSourceChanged( newValue ): void {
     this.selectedServiceCatalogSource = this.serviceCatSources.find((src) => src.getId() === newValue);
@@ -210,14 +210,14 @@ export class AddConnectionWizardComponent implements OnInit {
   }
 
   /**
-   * @returns {boolean} `true` if a service catalog source has been selected
+   * @returns `true` if a service catalog source has been selected
    */
   public get hasSelectedServiceCatalogSource(): boolean {
     return ( this.selectedServiceCatalogSource != null ) && ( this.selectedServiceCatalogSource !== this.emptyServiceCatalogSource );
   }
 
   /**
-   * @returns {boolean} `true` if the serviceCatalogSource is selected, but type is different than
+   * @returns `true` if the serviceCatalogSource is selected, but type is different than
    * the selected connection type.
    */
   public get serviceCatalogSelectedWrongType(): boolean {
@@ -247,7 +247,7 @@ export class AddConnectionWizardComponent implements OnInit {
   }
 
   /**
-   * @returns {string} the error details message
+   * @returns the error details message
    */
   public get errorDetails(): string {
     return this.errorDetailMessage;
@@ -309,7 +309,7 @@ export class AddConnectionWizardComponent implements OnInit {
 
   /**
    * Handles connection type selection
-   * @param {ConnectionType} connectionType the connection type
+   * @param connectionType the connection type
    */
   public onConnectionTypeSelected(connectionType: ConnectionType): void {
     // Only allow one item to be selected
@@ -322,7 +322,7 @@ export class AddConnectionWizardComponent implements OnInit {
 
   /**
    * Handles connection type de-selection
-   * @param {ConnectionType} connectionType the connection type
+   * @param connectionType the connection type
    */
   public onConnectionTypeDeselected(connectionType: ConnectionType): void {
     // Only one item is selected at a time
@@ -393,14 +393,14 @@ export class AddConnectionWizardComponent implements OnInit {
   }
 
   /**
-   * @returns {string} the name of the connection
+   * @returns the name of the connection
    */
   public get connectionName(): string {
     return this.connectionBasicPropertyForm.controls["name"].value;
   }
 
   /**
-   * @returns {string} the description of the connection
+   * @returns the description of the connection
    */
   public get connectionDescription(): string {
     return this.connectionBasicPropertyForm.controls["description"].value;
@@ -438,7 +438,7 @@ export class AddConnectionWizardComponent implements OnInit {
 
   /**
    * Load the available service catalog sources for the supplied connection type
-   * @param {ConnectionType} connType the connection type
+   * @param connType the connection type
    */
   private loadServiceCatalogSources(connType: ConnectionType): void {
     // Load the available service catalog sources for the second step
@@ -516,7 +516,7 @@ export class AddConnectionWizardComponent implements OnInit {
   /**
    * Creates the workspace connection, binds to serviceCatalogSource,
    * and deploys a corresponding connection VDB to teiid.
-   * @param {Connection} connection the new connection
+   * @param connection the new connection
    */
   private createDeployConnection(connection: NewConnection): void {
     const self = this;
@@ -539,7 +539,7 @@ export class AddConnectionWizardComponent implements OnInit {
   /**
    * Updates the workspace connection, binds to serviceCatalogSource,
    * and re-deploys the corresponding connection VDB to teiid.
-   * @param {Connection} connection the new connection
+   * @param connection the new connection
    */
   private updateDeployConnection(connection: NewConnection): void {
     const self = this;
@@ -576,7 +576,7 @@ export class AddConnectionWizardComponent implements OnInit {
 
   /**
    * Sets the final page completion status
-   * @param {boolean} wasSuccessful 'true' if the create or update was successful
+   * @param wasSuccessful 'true' if the create or update was successful
    */
   private setFinalPageComplete(wasSuccessful: boolean): void {
     this.createComplete = true;

@@ -16,9 +16,9 @@
  */
 
 import { Component, DoCheck, EventEmitter, Input, OnInit, Output, ViewEncapsulation } from "@angular/core";
-import { Connection } from "@connections/shared/connection.model";
-import { ConnectionsConstants } from "@connections/shared/connections-constants";
-import { LoggerService } from "@core/logger.service";
+import { Connection } from "../../../connections/shared/connection.model";
+import { ConnectionsConstants } from "../../../connections/shared/connections-constants";
+import { LoggerService } from "../../../core/logger.service";
 import { Action, ActionConfig, CardAction, CardConfig, ListConfig } from "patternfly-ng";
 
 @Component({
@@ -63,7 +63,7 @@ export class ConnectionCardComponent implements DoCheck, OnInit {
 
   /**
    * Event handler for when a toolbar kebab action is clicked.
-   * @param {Action} action the action that was selected.
+   * @param action the action that was selected.
    */
   public handleAction( action: Action ): void {
     if ( action.id === this.activateActionId ) {
@@ -76,7 +76,7 @@ export class ConnectionCardComponent implements DoCheck, OnInit {
   }
 
   /**
-   * @returns {boolean} `true` if the connection represented by this card is selected
+   * @returns `true` if the connection represented by this card is selected
    */
   public isSelected(): boolean {
     return this.selectedConnections.indexOf( this.connection ) !== -1;
@@ -137,7 +137,7 @@ export class ConnectionCardComponent implements DoCheck, OnInit {
 
   /**
    * An event handler for when a toolbar action is invoked.
-   * @param {string} type the type of event being processed
+   * @param type the type of event being processed
    */
   public onClick( type: string ): void {
     this.cardEvent.emit( { eventType: type, connectionName: this.connection.getId() } );
@@ -152,7 +152,7 @@ export class ConnectionCardComponent implements DoCheck, OnInit {
 
   /**
    * An event handler for footer action link.
-   * @param {CardAction} $event the event being processed
+   * @param $event the event being processed
    */
   public onShowDetails( $event: CardAction ): void {
     this.showDetails = !this.showDetails;
@@ -160,7 +160,7 @@ export class ConnectionCardComponent implements DoCheck, OnInit {
   }
 
   /**
-   * @returns {string[][]} the properties of a connection
+   * @returns the properties of a connection
    */
   public get properties(): string[][] {
     const props = [
@@ -173,7 +173,7 @@ export class ConnectionCardComponent implements DoCheck, OnInit {
   }
 
   /**
-   * @returns {string} the footer details action text
+   * @returns the footer details action text
    */
   public get showDetailsTitle(): string {
     return this.showDetails ? "Less" : "More";

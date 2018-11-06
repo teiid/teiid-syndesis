@@ -25,8 +25,8 @@ export class ProjectedColumn {
   public selected = false;
 
   /**
-   * @param {Object} json the JSON representation of ProjectedColumn
-   * @returns {ProjectedColumn} the new ProjectedColumn (never null)
+   * @param  json the JSON representation of ProjectedColumn
+   * @returns  the new ProjectedColumn (never null)
    */
   public static create( json: object = {} ): ProjectedColumn {
     const projCol = new ProjectedColumn();
@@ -47,28 +47,28 @@ export class ProjectedColumn {
   }
 
   /**
-   * @returns {string} the column name
+   * @returns  the column name
    */
   public getName(): string {
     return this.name;
   }
 
   /**
-   * @param {string} name the column name
+   * @param  name the column name
    */
   public setName( name?: string ): void {
     this.name = name ? name : null;
   }
 
   /**
-   * @returns {string} the column type
+   * @returns  the column type
    */
   public getType(): string {
     return this.type;
   }
 
   /**
-   * @param {string} type the column type
+   * @param  type the column type
    */
   public setType( type?: string ): void {
     this.type = type ? type : "";
@@ -76,7 +76,7 @@ export class ProjectedColumn {
 
   /**
    * Determine if the supplied ProjectedColumn is equal to this
-   * @param {ProjectedColumn} otherCol the other column
+   * @param  otherCol the other column
    */
   public isEqual( otherCol: ProjectedColumn ): boolean {
     let equal = false;

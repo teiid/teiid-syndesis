@@ -20,7 +20,7 @@ export class ArrayUtils {
   /**
    * @param a the array being searched
    * @param item the item being searched for
-   * @return {boolean} true if the given item is contained in the given array
+   * @return  true if the given item is contained in the given array
    */
   public static contains( a: any[], item: any ): boolean {
     for ( const aitem of a ) {
@@ -32,9 +32,9 @@ export class ArrayUtils {
   }
 
   /**
-   * @param {any[]} a1 the first array
-   * @param {any[]} a2 the second array
-   * @returns {any[]} the intersection of two arrays
+   * @param a1 the first array
+   * @param a2 the second array
+   * @returns the intersection of two arrays
    */
   public static intersect( a1: any[], a2: any[] ): any[] {
     const rval: any[] = [];

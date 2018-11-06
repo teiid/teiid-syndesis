@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 import { Injectable, EventEmitter, ChangeDetectorRef, Output } from '@angular/core';
-import { CanvasConstants } from '@dataservices/virtualization/view-editor/view-canvas/canvas-constants';
-import { CanvasNode, CanvasLink, CanvasGraph } from '@dataservices/virtualization/view-editor/view-canvas/models';
-import { ViewCanvasEvent } from "@dataservices/virtualization/view-editor/view-canvas/event/view-canvas-event";
-import { ViewCanvasEventType } from "@dataservices/virtualization/view-editor/view-canvas/event/view-canvas-event-type.enum";
-import { Command } from "@dataservices/virtualization/view-editor/command/command";
+import { CanvasConstants } from '../../../../dataservices/virtualization/view-editor/view-canvas/canvas-constants';
+import { CanvasNode, CanvasLink, CanvasGraph } from '../../../../dataservices/virtualization/view-editor/view-canvas/models';
+import { ViewCanvasEvent } from "../../../../dataservices/virtualization/view-editor/view-canvas/event/view-canvas-event";
+import { ViewCanvasEventType } from "../../../../dataservices/virtualization/view-editor/view-canvas/event/view-canvas-event-type.enum";
+import { Command } from "../../../../dataservices/virtualization/view-editor/command/command";
 import * as d3 from 'd3';
 import * as _ from "lodash";
 
@@ -28,8 +28,6 @@ export class CanvasService {
 
   /**
    * An event fired when the state of the canvas has changed.
-   *
-   * @type {EventEmitter<ViewCanvasEvent>}
    */
   @Output() public canvasEvent: EventEmitter< ViewCanvasEvent > = new EventEmitter();
 

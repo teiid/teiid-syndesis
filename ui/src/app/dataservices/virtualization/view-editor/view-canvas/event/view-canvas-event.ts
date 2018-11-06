@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { ViewCanvasEventType } from "@dataservices/virtualization/view-editor/view-canvas/event/view-canvas-event-type.enum";
+import { ViewCanvasEventType } from "../../../../../dataservices/virtualization/view-editor/view-canvas/event/view-canvas-event-type.enum";
 
 export class ViewCanvasEvent {
 
@@ -25,9 +25,9 @@ export class ViewCanvasEvent {
   /**
    * Factory method to create an event.
    *
-   * @param {ViewCanvasEventType} type the type of event
-   * @param {object[]} args the optional args
-   * @returns {ViewCanvasEvent} the created event
+   * @param  type the type of event
+   * @param args the optional args
+   * @returns  the created event
    */
   public static create( type: ViewCanvasEventType,
                         args?: any[] ): ViewCanvasEvent {
@@ -43,15 +43,12 @@ export class ViewCanvasEvent {
     }
   }
 
-  /**
-   * @returns {any[]} the optional args to the event (never `null` but can be empty)
-   */
   public get args(): any[] {
     return this._args;
   }
 
   /**
-   * @returns {string} a string representation of the event
+   * @returns  a string representation of the event
    */
   public toString(): string {
     let text = `event type: ${this.type}, args: `;
@@ -73,14 +70,14 @@ export class ViewCanvasEvent {
   }
 
   /**
-   * @returns {ViewCanvasEventType} the event type
+   * @returns  the event type
    */
   public get type(): ViewCanvasEventType {
     return this._type;
   }
 
   /**
-   * @returns {boolean} `true` if the type is `ViewCanvasEventType.CANVAS_SELECTION_CHANGED`
+   * @returns  `true` if the type is `ViewCanvasEventType.CANVAS_SELECTION_CHANGED`
    */
   public typeIsCanvasSelectionChanged(): boolean {
     return this.type === ViewCanvasEventType.CANVAS_SELECTION_CHANGED;

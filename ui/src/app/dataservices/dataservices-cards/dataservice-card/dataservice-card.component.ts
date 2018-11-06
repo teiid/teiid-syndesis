@@ -19,14 +19,14 @@ import {
   Component, DoCheck, EventEmitter, Input, OnInit, Output, ViewEncapsulation, ViewChild
 } from "@angular/core";
 import * as _ from "lodash";
-import { LoggerService } from "@core/logger.service";
+import { LoggerService } from "../../../core/logger.service";
 import { Action, ActionConfig, CardAction, CardConfig, EmptyStateConfig, ListConfig } from "patternfly-ng";
 import { Observable } from "rxjs/Observable";
 import { Subscription } from "rxjs/Subscription";
-import { Dataservice } from "@dataservices/shared/dataservice.model";
-import { DataserviceService } from "@dataservices/shared/dataservice.service";
-import { Connection } from "@connections/shared/connection.model";
-import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
+import { Dataservice } from "../../../dataservices/shared/dataservice.model";
+import { DataserviceService } from "../../../dataservices/shared/dataservice.service";
+import { Connection } from "../../../connections/shared/connection.model";
+import { ViewEditorI18n } from "../../../dataservices/virtualization/view-editor/view-editor-i18n";
 
 @Component({
   encapsulation: ViewEncapsulation.None,
@@ -99,7 +99,7 @@ export class DataserviceCardComponent implements DoCheck, OnInit {
   }
 
   /**
-   * @returns {string} the dataservice description
+   * @returns  the dataservice description
    */
   public get description(): string {
     return this.dataservice.getDescription();
@@ -110,8 +110,8 @@ export class DataserviceCardComponent implements DoCheck, OnInit {
   }
 
   /**
-   * @param {string} view the view whose connections are being requested
-   * @returns {Connection[]} the connections of the dataservice represented by this card
+   * @param  view the view whose connections are being requested
+   * @returns  the connections of the dataservice represented by this card
    */
   public getConnections( view: string ): Connection[] {
     // TODO rewrite when REST functionality has been implemented
@@ -133,7 +133,7 @@ export class DataserviceCardComponent implements DoCheck, OnInit {
   }
 
   /**
-   * @returns {string[]} the names of the views
+   * @returns  the names of the views
    */
   public getViews(): string[] {
     return this.dataservice.getServiceViewNames();
@@ -141,7 +141,7 @@ export class DataserviceCardComponent implements DoCheck, OnInit {
 
   /**
    * Event handler for when a toolbar kebab action is clicked.
-   * @param {Action} action the action that was selected.
+   * @param  action the action that was selected.
    */
   public handleAction( action: Action ): void {
     if ( action.id === this.activateActionId ) {
@@ -158,7 +158,7 @@ export class DataserviceCardComponent implements DoCheck, OnInit {
   }
 
   /**
-   * @returns {boolean} `true` if the dataservice represented by this card is selected
+   * @returns  `true` if the dataservice represented by this card is selected
    */
   public isSelected(): boolean {
     return this.selectedDataservices.indexOf( this.dataservice ) !== -1;
@@ -237,7 +237,7 @@ export class DataserviceCardComponent implements DoCheck, OnInit {
 
   /**
    * An event handler for when a toolbar action is invoked.
-   * @param {string} type the type of event being processed
+   * @param  type the type of event being processed
    */
   public onClick( type: string ): void {
     this.cardEvent.emit( { eventType: type, dataserviceName: this.dataservice.getId() } );
@@ -245,7 +245,7 @@ export class DataserviceCardComponent implements DoCheck, OnInit {
 
   /**
    * An event handler for when edit view is invoked.
-   * @param {string} vName the name of the view in the selected dataservice
+   * @param  vName the name of the view in the selected dataservice
    */
   public onEditView( vName: string ): void {
     this.cardEvent.emit( {
@@ -264,7 +264,7 @@ export class DataserviceCardComponent implements DoCheck, OnInit {
 
   /**
    * An event handler for footer action link.
-   * @param {CardAction} $event the event being processed
+   * @param $event the event being processed
    */
   public onShowDetails( $event: CardAction ): void {
     this.showDetails = !this.showDetails;
@@ -272,7 +272,7 @@ export class DataserviceCardComponent implements DoCheck, OnInit {
   }
 
   /**
-   * @returns {string} the footer details action text
+   * @returns  the footer details action text
    */
   public get showDetailsTitle(): string {
     return this.showDetails ? "Less" : "More";

@@ -19,8 +19,8 @@ export class PathUtils {
 
   /**
    * Return the path, without the leading connection info
-   * @param {string} sourcePath
-   * @returns {string} the connection name
+   * @param  sourcePath
+   * @returns  the connection name
    */
   public static getPathWithoutConnection(sourcePath: string): string {
     if (!sourcePath || sourcePath === null || sourcePath.length === 0) {
@@ -32,8 +32,8 @@ export class PathUtils {
 
   /**
    * Get the connection name from the supplied source path
-   * @param {string} sourcePath
-   * @returns {string} the connection name
+   * @param  sourcePath
+   * @returns  the connection name
    */
   public static getConnectionName(sourcePath: string): string {
     if (!sourcePath || sourcePath === null || sourcePath.length === 0) {
@@ -50,8 +50,8 @@ export class PathUtils {
 
   /**
    * Get the source name from the supplied source path
-   * @param {string} sourcePath
-   * @returns {string} the source name
+   * @param  sourcePath
+   * @returns  the source name
    */
   public static getSourceName(sourcePath: string): string {
     if (!sourcePath || sourcePath === null || sourcePath.length === 0) {
@@ -69,8 +69,8 @@ export class PathUtils {
 
   /**
    * Get the source type from the supplied source path
-   * @param {string} sourcePath
-   * @returns {string} the source type
+   * @param  sourcePath
+   * @returns  the source type
    */
   public static getSourceType(sourcePath: string): string {
     if (!sourcePath || sourcePath === null || sourcePath.length === 0) {

@@ -19,12 +19,12 @@ import { Component, OnInit } from "@angular/core";
 import { Output } from "@angular/core";
 import { EventEmitter } from "@angular/core";
 import { BsModalRef } from "ngx-bootstrap";
-import { LoggerService } from "@core/logger.service";
-import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
+import { LoggerService } from "../../../../core/logger.service";
+import { ViewEditorI18n } from "../../../../dataservices/virtualization/view-editor/view-editor-i18n";
 import { AbstractControl, FormControl, FormGroup } from "@angular/forms";
-import { VdbService } from "@dataservices/shared/vdb.service";
-import { ViewDefinition } from "@dataservices/shared/view-definition.model";
-import { SelectionService } from "@core/selection.service";
+import { VdbService } from "../../../../dataservices/shared/vdb.service";
+import { ViewDefinition } from "../../../../dataservices/shared/view-definition.model";
+import { SelectionService } from "../../../../core/selection.service";
 
 @Component({
   selector: "app-create-view-dialog",
@@ -98,7 +98,7 @@ export class CreateViewDialogComponent implements OnInit {
 
   /**
    * Handler for view name changes.
-   * @param {AbstractControl} input
+   * @param  input
    */
   public handleNameChanged( input: AbstractControl ): void {
     const self = this;

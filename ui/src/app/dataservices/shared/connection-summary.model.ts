@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-import { ConnectionStatus } from "@connections/shared/connection-status";
-import { Connection } from "@connections/shared/connection.model";
+import { ConnectionStatus } from "../../connections/shared/connection-status";
+import { Connection } from "../../connections/shared/connection.model";
 
 /**
  * ConnectionSummary model.
@@ -27,8 +27,8 @@ export class ConnectionSummary {
   private status: ConnectionStatus;
 
   /**
-   * @param {Object} json the JSON representation of a ConnectionSummary
-   * @returns {ConnectionSummary} the new ConnectionSummary (never null)
+   * @param  json the JSON representation of a ConnectionSummary
+   * @returns  the new ConnectionSummary (never null)
    */
   public static create( json: object = {} ): ConnectionSummary {
     const connSummary = new ConnectionSummary();
@@ -53,35 +53,35 @@ export class ConnectionSummary {
   }
 
   /**
-   * @returns {Connection} the connection
+   * @returns  the connection
    */
   public getConnection(): Connection {
     return this.connection;
   }
 
   /**
-   * @returns {boolean} 'true' if a status exists
+   * @returns  'true' if a status exists
    */
   public hasStatus(): boolean {
     return (this.status && this.status !== null);
   }
 
   /**
-   * @returns {ConnectionStatus} the status
+   * @returns  the status
    */
   public getStatus(): ConnectionStatus {
     return this.status;
   }
 
   /**
-   * @param {Connection} connection the named connection
+   * @param  connection the named connection
    */
   public setConnection( connection: Connection ): void {
     this.connection = connection;
   }
 
   /**
-   * @param {ConnectionStatus} status the named vdbStatus
+   * @param  status the named vdbStatus
    */
   public setStatus( status: ConnectionStatus ): void {
     this.status = status;
@@ -89,7 +89,7 @@ export class ConnectionSummary {
 
   /**
    * Set all object values using the supplied ConnectionSummary json
-   * @param {Object} values
+   * @param  values
    */
   public setValues(values: object = {}): void {
     Object.assign(this, values);

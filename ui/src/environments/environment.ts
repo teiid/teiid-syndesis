@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { DataservicesConstants } from "@dataservices/shared/dataservices-constants";
+import { DataservicesConstants } from "../app/dataservices/shared/dataservices-constants";
 
 // The file contents for the current environment will overwrite these during build.
 // The build system defaults to the dev environment which uses `environment.ts`, but if you do

@@ -15,36 +15,30 @@
  * limitations under the License.
  */
 
-import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
-import { Command } from "@dataservices/virtualization/view-editor/command/command";
-import { CommandType } from "@dataservices/virtualization/view-editor/command/command-type.enum";
+import { ViewEditorI18n } from "../../../../dataservices/virtualization/view-editor/view-editor-i18n";
+import { Command } from "../../../../dataservices/virtualization/view-editor/command/command";
+import { CommandType } from "../../../../dataservices/virtualization/view-editor/command/command-type.enum";
 
 export class UpdateViewNameCommand extends Command {
 
   /**
    * The command identifier.
-   *
-   * @type {string}
    */
   public static readonly id = CommandType.UPDATE_VIEW_NAME_COMMAND;
 
   /**
    * The name of the command argument whose value is the new name of the view.
-   *
-   * @type {string}
    */
   public static readonly newName = "newName";
 
   /**
    * The name of the command argument whose value is the replaced name of the view.
-   *
-   * @type {string}
    */
   public static readonly oldName = "oldName";
 
   /**
-   * @param {string} newViewName the new view name (can be `null` or empty)
-   * @param {string} oldViewName the view name being replaced (can be `null` or empty)
+   * @param  newViewName the new view name (can be `null` or empty)
+   * @param  oldViewName the view name being replaced (can be `null` or empty)
    */
   public constructor( newViewName: string,
                       oldViewName: string ) {

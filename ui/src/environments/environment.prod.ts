@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { DataservicesConstants } from "@dataservices/shared/dataservices-constants";
+import { DataservicesConstants } from "../app/dataservices/shared/dataservices-constants";
 
 export const komodoEngine = "vdb-builder";
 

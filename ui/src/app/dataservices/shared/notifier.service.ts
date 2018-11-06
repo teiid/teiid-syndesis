@@ -1,8 +1,8 @@
 import { Injectable } from "@angular/core";
-import { ConnectionStatus } from "@connections/shared/connection-status";
-import { DeploymentState } from "@dataservices/shared/deployment-state.enum";
-import { VdbStatus } from "@dataservices/shared/vdb-status.model";
-import { Virtualization } from "@dataservices/shared/virtualization.model";
+import { ConnectionStatus } from "../../connections/shared/connection-status";
+import { DeploymentState } from "../../dataservices/shared/deployment-state.enum";
+import { VdbStatus } from "../../dataservices/shared/vdb-status.model";
+import { Virtualization } from "../../dataservices/shared/virtualization.model";
 import { Observable } from "rxjs/Observable";
 import { ReplaySubject } from "rxjs/ReplaySubject";
 import { Subject } from "rxjs/Subject";
@@ -25,7 +25,7 @@ export class NotifierService {
 
   /**
    * Sends VdbStatus
-   * @param {VdbStatus} status the VDB deployment Status
+   * @param  status the VDB deployment Status
    */
   public sendVdbDeploymentStatus(status: VdbStatus): void {
     this.deploymentStatusSubject.next(status);
@@ -33,7 +33,6 @@ export class NotifierService {
 
   /**
    * Get the VdbStatus Observable
-   * @returns {Observable<VdbStatus>}
    */
   public getVdbDeploymentStatus(): Observable<VdbStatus> {
     return this.deploymentStatusSubject.asObservable();
@@ -48,7 +47,7 @@ export class NotifierService {
 
   /**
    * Sends map of dataservice DeploymentState
-   * @param {Map<string, DeploymentState>} stateMap
+   * @param stateMap
    */
   public sendDataserviceDeployStateMap(stateMap: Map<string, DeploymentState>): void {
     this.dataserviceDeployStateSubject.next(stateMap);
@@ -56,7 +55,6 @@ export class NotifierService {
 
   /**
    * Get the map of dataservice DeploymentState
-   * @returns {Observable<Map<string, DeploymentState>>}
    */
   public getDataserviceDeployStateMap(): Observable<Map<string, DeploymentState>> {
     return this.dataserviceDeployStateSubject.asObservable();
@@ -71,7 +69,7 @@ export class NotifierService {
 
   /**
    * Sends map of dataservice virtualizations
-   * @param {Map<string, Virtualization>} stateMap
+   * @param stateMap
    */
   public sendDataserviceVirtualizationMap(stateMap: Map<string, Virtualization>): void {
     this.dataserviceVirtualizationSubject.next(stateMap);
@@ -79,7 +77,6 @@ export class NotifierService {
 
   /**
    * Get the map of dataservice Virtualization
-   * @returns {Observable<Map<string, Virtualization>>}
    */
   public getDataserviceVirtualizationMap(): Observable<Map<string, Virtualization>> {
     return this.dataserviceVirtualizationSubject.asObservable();
@@ -94,7 +91,7 @@ export class NotifierService {
 
   /**
    * Sends map of Connection Status
-   * @param {Map<string, ConnectionStatus>} statusMap
+   * @param statusMap
    */
   public sendConnectionStatusMap(statusMap: Map<string, ConnectionStatus>): void {
     this.connectionStatusSubject.next(statusMap);
@@ -102,7 +99,6 @@ export class NotifierService {
 
   /**
    * Get the map of Connection Status
-   * @returns {Observable<Map<string, ConnectionStatus>>}
    */
   public getConnectionStatusMap(): Observable<Map<string, ConnectionStatus>> {
     return this.connectionStatusSubject.asObservable();

@@ -17,18 +17,18 @@
 
 import { Input, ViewChild, ViewEncapsulation } from "@angular/core";
 import { Component, OnChanges, SimpleChanges } from "@angular/core";
-import { LoggerService } from "@core/logger.service";
+import { LoggerService } from "../../core/logger.service";
 import * as _ from "lodash";
 import "codemirror/mode/javascript/javascript.js";
 import "codemirror/mode/xml/xml.js";
-import { DataserviceService } from "@dataservices/shared/dataservice.service";
-import { Dataservice } from "@dataservices/shared/dataservice.model";
-import { OdataConstants } from "@dataservices/odata-control/odata-constants";
-import { Odata } from "@dataservices/odata-control/odata.model";
-import { OdataEntity } from "@dataservices/odata-control/odata-entity.model";
-import { OdataColumn } from "@dataservices/odata-control/odata-column.model";
-import { OdataWhere } from "@dataservices/odata-control/odata-where.model";
-import { SelectionService } from "@core/selection.service";
+import { DataserviceService } from "../../dataservices/shared/dataservice.service";
+import { Dataservice } from "../../dataservices/shared/dataservice.model";
+import { OdataConstants } from "../../dataservices/odata-control/odata-constants";
+import { Odata } from "../../dataservices/odata-control/odata.model";
+import { OdataEntity } from "../../dataservices/odata-control/odata-entity.model";
+import { OdataColumn } from "../../dataservices/odata-control/odata-column.model";
+import { OdataWhere } from "../../dataservices/odata-control/odata-where.model";
+import { SelectionService } from "../../core/selection.service";
 
 @Component({
   encapsulation: ViewEncapsulation.None,
@@ -221,7 +221,7 @@ export class OdataControlComponent implements OnChanges {
 
   /**
    * Can the query be enacted
-   * @returns {boolean} true if good to go, false otherwise
+   * @returns  true if good to go, false otherwise
    */
   public get canQuery(): boolean {
     return !_.isEmpty(this.odata.metadata) &&
@@ -230,9 +230,6 @@ export class OdataControlComponent implements OnChanges {
 
   }
 
-  /**
-   * @returns {OdataEntity[]} the available entities
-   */
   public get entities(): OdataEntity[] {
     if (_.isEmpty(this.odata.entities))
       return [];
@@ -240,9 +237,6 @@ export class OdataControlComponent implements OnChanges {
     return this.odata.entities;
   }
 
-  /**
-   * @returns {OdataEntity} the selected entitie
-   */
   public get entity(): OdataEntity {
     if (_.isEmpty(this.odata.entity))
       return null;
@@ -258,14 +252,14 @@ export class OdataControlComponent implements OnChanges {
   }
 
   /**
-   * @returns {string[]} the available limit options
+   * @returns  the available limit options
    */
   public get limits(): string[] {
     return Odata.LIMITS;
   }
 
   /**
-   * @returns {string} the selected limit
+   * @returns  the selected limit
    */
   public get limit(): string {
     if (_.isEmpty(this.odata.limit))

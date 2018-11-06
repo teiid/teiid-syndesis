@@ -17,11 +17,11 @@
 
 import { Injectable } from "@angular/core";
 import { Http } from "@angular/http";
-import { About } from "@core/about-dialog/about.model";
-import { ApiService } from "@core/api.service";
-import { AppSettingsService } from "@core/app-settings.service";
-import { LoggerService } from "@core/logger.service";
-import { environment } from "@environments/environment";
+import { About } from "../../core/about-dialog/about.model";
+import { ApiService } from "../../core/api.service";
+import { AppSettingsService } from "../../core/app-settings.service";
+import { LoggerService } from "../../core/logger.service";
+import { environment } from "../../../environments/environment";
 import { Observable } from "rxjs/Observable";
 
 @Injectable()

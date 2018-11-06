@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-import { Identifiable } from "@shared/identifiable";
-import { SortDirection } from "@shared/sort-direction.enum";
+import { Identifiable } from "../../shared/identifiable";
+import { SortDirection } from "../../shared/sort-direction.enum";
 
 /**
  * Vdb model
@@ -33,8 +33,8 @@ export class Vdb implements Identifiable< string > {
   private vdb__version: string;
 
   /**
-   * @param {Object} json the JSON representation of a Vdb
-   * @returns {Vdb} the new Vdb (never null)
+   * @param  json the JSON representation of a Vdb
+   * @returns  the new Vdb (never null)
    */
   public static create( json: object = {} ): Vdb {
     const vdb = new Vdb();
@@ -43,8 +43,8 @@ export class Vdb implements Identifiable< string > {
   }
 
   /**
-   * @param {Vdb[]} vdbs the vdbs being sorted
-   * @param {SortDirection} sortDirection the sort direction
+   * @param vdbs the vdbs being sorted
+   * @param sortDirection the sort direction
    */
   public static sort( vdbs: Vdb[],
                       sortDirection: SortDirection ): void {
@@ -86,105 +86,105 @@ export class Vdb implements Identifiable< string > {
   }
 
   /**
-   * @returns {string} the vdb identifier (can be null)
+   * @returns  the vdb identifier (can be null)
    */
   public getId(): string {
     return this.keng__id;
   }
 
   /**
-   * @returns {string} the vdb name (can be null)
+   * @returns  the vdb name (can be null)
    */
   public getName(): string {
     return this.vdb__name;
   }
 
   /**
-   * @returns {string} the vdb description (can be null)
+   * @returns  the vdb description (can be null)
    */
   public getDescription(): string {
     return this.vdb__description;
   }
 
   /**
-   * @returns {string} the vdb dataPath (can be null)
+   * @returns  the vdb dataPath (can be null)
    */
   public getDataPath(): string {
     return this.keng__dataPath;
   }
 
   /**
-   * @returns {string} the vdb originalFile (can be null)
+   * @returns  the vdb originalFile (can be null)
    */
   public getOriginalFile(): string {
     return this.vdb__originalFile;
   }
 
   /**
-   * @returns {string} the vdb type name (can be null)
+   * @returns  the vdb type name (can be null)
    */
   public getType(): string {
     return this.keng__kType;
   }
 
   /**
-   * @returns {boolean} the vdb preview status
+   * @returns  the vdb preview status
    */
   public isPreview(): boolean {
     return this.vdb__preview;
   }
 
   /**
-   * @returns {string} the vdb type name (can be null)
+   * @returns  the vdb type name (can be null)
    */
   public getVersion(): string {
     return this.vdb__version;
   }
 
   /**
-   * @param {string} id the vdb identifier (optional)
+   * @param  id the vdb identifier (optional)
    */
   public setId( id?: string ): void {
     this.keng__id = id ? id : null;
   }
 
   /**
-   * @param {string} name the vdb name (optional)
+   * @param  name the vdb name (optional)
    */
   public setName( name?: string ): void {
     this.vdb__name = name ? name : null;
   }
 
   /**
-   * @param {string} description the vdb description (optional)
+   * @param  description the vdb description (optional)
    */
   public setDescription( description?: string ): void {
     this.vdb__description = description ? description : null;
   }
 
   /**
-   * @param {string} dataPath the vdb dataPath (optional)
+   * @param  dataPath the vdb dataPath (optional)
    */
   public setDataPath( dataPath?: string ): void {
     this.keng__dataPath = dataPath ? dataPath : null;
   }
 
   /**
-   * @param {string} originalFile the vdb originalFile (optional)
+   * @param  originalFile the vdb originalFile (optional)
    */
   public setOriginalFile( originalFile?: string ): void {
     this.vdb__originalFile = originalFile ? originalFile : null;
   }
 
   /**
-   * @param {boolean} preview the vdb preview status
+   * @param  preview the vdb preview status
    */
   public setPreview( preview: boolean ): void {
     this.vdb__preview = preview;
   }
 
   /**
-   * @param {string} version the vdb version
+   * @param  version the vdb version
    */
   public setVersion( version?: string ): void {
     this.vdb__version = version;
@@ -192,7 +192,7 @@ export class Vdb implements Identifiable< string > {
 
   /**
    * Set all object values using the supplied Vdb json
-   * @param {Object} values
+   * @param  values
    */
   public setValues(values: object = {}): void {
     Object.assign(this, values);

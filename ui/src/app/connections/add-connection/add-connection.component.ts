@@ -16,7 +16,7 @@
  */
 
 import { Component, OnInit } from "@angular/core";
-import { ConnectionsConstants } from "@connections/shared/connections-constants";
+import { ConnectionsConstants } from "../../connections/shared/connections-constants";
 
 @Component({
   selector: "app-add-connection-page",

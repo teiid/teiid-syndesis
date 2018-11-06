@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { OdataColumn } from "@dataservices/odata-control/odata-column.model";
+import { OdataColumn } from "../../dataservices/odata-control/odata-column.model";
 
 export class OdataEntity {
 

@@ -7,20 +7,20 @@ import {
   WizardEvent,
   WizardStepConfig
 } from "patternfly-ng";
-import { LoggerService } from "@core/logger.service";
-import { Composition } from "@dataservices/shared/composition.model";
-import { SchemaNode } from "@connections/shared/schema-node.model";
-import { LoadingState } from "@shared/loading-state.enum";
-import { ConnectionsConstants } from "@connections/shared/connections-constants";
-import { ConnectionService } from "@connections/shared/connection.service";
-import { ConnectionTreeSelectorComponent } from "@dataservices/virtualization/view-editor/connection-table-dialog/connection-tree-selector/connection-tree-selector.component";
-import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
-import { Column } from "@dataservices/shared/column.model";
-import { CompositionType } from "@dataservices/shared/composition-type.enum";
-import { CompositionOperator } from "@dataservices/shared/composition-operator.enum";
-import { PathUtils } from "@dataservices/shared/path-utils";
-import { Command } from "@dataservices/virtualization/view-editor/command/command";
-import { ViewEditorService } from "@dataservices/virtualization/view-editor/view-editor.service";
+import { LoggerService } from "../../../../core/logger.service";
+import { Composition } from "../../../../dataservices/shared/composition.model";
+import { SchemaNode } from "../../../../connections/shared/schema-node.model";
+import { LoadingState } from "../../../../shared/loading-state.enum";
+import { ConnectionsConstants } from "../../../../connections/shared/connections-constants";
+import { ConnectionService } from "../../../../connections/shared/connection.service";
+import { ConnectionTreeSelectorComponent } from "../../../../dataservices/virtualization/view-editor/connection-table-dialog/connection-tree-selector/connection-tree-selector.component";
+import { ViewEditorI18n } from "../../../../dataservices/virtualization/view-editor/view-editor-i18n";
+import { Column } from "../../../../dataservices/shared/column.model";
+import { CompositionType } from "../../../../dataservices/shared/composition-type.enum";
+import { CompositionOperator } from "../../../../dataservices/shared/composition-operator.enum";
+import { PathUtils } from "../../../../dataservices/shared/path-utils";
+import { Command } from "../../../../dataservices/virtualization/view-editor/command/command";
+import { ViewEditorService } from "../../../../dataservices/virtualization/view-editor/view-editor.service";
 
 enum CompositeSide {
   LEFT = 0,
@@ -222,8 +222,8 @@ export class AddCompositionWizardComponent implements OnInit {
 
   /**
    * Load the columns for the specified CompositeSide
-   * @param {CompositeSide} side the side (left or right)
-   * @param {boolean} initSelected if 'true' will attempt init the column selections
+   * @param  side the side (left or right)
+   * @param  initSelected if 'true' will attempt init the column selections
    */
   private loadColumns(side: CompositeSide, initSelected = false): void {
     const fullPath = this.getSourcePath(side);
@@ -264,8 +264,8 @@ export class AddCompositionWizardComponent implements OnInit {
 
   /**
    * Get the path for the specified source
-   * @param {CompositeSide} side the side (left or right)
-   * @return {string} the source path
+   * @param  side the side (left or right)
+   * @return  the source path
    */
   private getSourcePath( side: CompositeSide ): string {
     if ( side === CompositeSide.LEFT ) {
@@ -276,8 +276,8 @@ export class AddCompositionWizardComponent implements OnInit {
 
   /**
    * Set the specified columns loading state for the side
-   * @param {CompositeSide} side the side (left or right)
-   * @param {LoadingState} state the loading state
+   * @param  side the side (left or right)
+   * @param  state the loading state
    */
   private setColumnLoadingState( side: CompositeSide, state: LoadingState): void {
     if ( side === CompositeSide.LEFT ) {
@@ -289,8 +289,8 @@ export class AddCompositionWizardComponent implements OnInit {
 
   /**
    * Set the specified columns for the side
-   * @param {CompositeSide} side the side (left or right)
-   * @param {Column[]} cols the array of Columns
+   * @param  side the side (left or right)
+   * @param cols the array of Columns
    */
   private setColumns( side: CompositeSide, cols: Column[] ): void {
     if ( !cols ) cols = [];
@@ -303,7 +303,7 @@ export class AddCompositionWizardComponent implements OnInit {
 
   /**
    * Get a title for the Left Composition table
-   * @returns {string} the left title
+   * @returns  the left title
    */
   public get leftCompositionTableTitle(): string {
     return this.generateTableTitle(CompositeSide.LEFT);
@@ -311,7 +311,7 @@ export class AddCompositionWizardComponent implements OnInit {
 
   /**
    * Get a title for the Right Composition table
-   * @returns {string} the right title
+   * @returns  the right title
    */
   public get rightCompositionTableTitle(): string {
     return this.generateTableTitle(CompositeSide.RIGHT);
@@ -319,8 +319,8 @@ export class AddCompositionWizardComponent implements OnInit {
 
   /**
    * Generate a table title for the specified side of the composite
-   * @param {CompositeSide} side the side (left or right)
-   * @return {string} the title
+   * @param  side the side (left or right)
+   * @return  the title
    */
   private generateTableTitle(side: CompositeSide): string {
     let title = "";
@@ -410,7 +410,6 @@ export class AddCompositionWizardComponent implements OnInit {
 
   /**
    * Determine if schema node tree is loading
-   * @returns {boolean}
    */
   public get treeLoading( ): boolean {
     return ( this.compositionTablesLoadingState === LoadingState.LOADING );
@@ -418,7 +417,6 @@ export class AddCompositionWizardComponent implements OnInit {
 
   /**
    * Determine if schema node tree loading completed, and was successful
-   * @returns {boolean}
    */
   public get treeLoadedSuccess( ): boolean {
     return ( this.compositionTablesLoadingState === LoadingState.LOADED_VALID );
@@ -426,7 +424,6 @@ export class AddCompositionWizardComponent implements OnInit {
 
   /**
    * Determine if schema node tree loading completed, but failed
-   * @returns {boolean}
    */
   public get treeLoadedFailed( ): boolean {
     return ( this.compositionTablesLoadingState === LoadingState.LOADED_INVALID );
@@ -434,7 +431,6 @@ export class AddCompositionWizardComponent implements OnInit {
 
   /**
    * Determine if left columns are loading
-   * @returns {boolean}
    */
   public get lhColumnsLoading( ): boolean {
     return ( this.compositionLHColumnsLoadingState === LoadingState.LOADING );
@@ -442,7 +438,6 @@ export class AddCompositionWizardComponent implements OnInit {
 
   /**
    * Determine if left columns loading completed, and was successful
-   * @returns {boolean}
    */
   public get lhColumnsLoadedSuccess( ): boolean {
     return ( this.compositionLHColumnsLoadingState === LoadingState.LOADED_VALID );
@@ -450,7 +445,6 @@ export class AddCompositionWizardComponent implements OnInit {
 
   /**
    * Determine if left columns loading completed, but failed
-   * @returns {boolean}
    */
   public get lhColumnsLoadedFailed( ): boolean {
     return ( this.compositionLHColumnsLoadingState === LoadingState.LOADED_INVALID );
@@ -458,7 +452,6 @@ export class AddCompositionWizardComponent implements OnInit {
 
   /**
    * Determine if right columns are loading
-   * @returns {boolean}
    */
   public get rhColumnsLoading( ): boolean {
     return ( this.compositionRHColumnsLoadingState === LoadingState.LOADING );
@@ -466,7 +459,6 @@ export class AddCompositionWizardComponent implements OnInit {
 
   /**
    * Determine if right columns loading completed, and was successful
-   * @returns {boolean}
    */
   public get rhColumnsLoadedSuccess( ): boolean {
     return ( this.compositionRHColumnsLoadingState === LoadingState.LOADED_VALID );
@@ -474,7 +466,6 @@ export class AddCompositionWizardComponent implements OnInit {
 
   /**
    * Determine if right columns loading completed, but failed
-   * @returns {boolean}
    */
   public get rhColumnsLoadedFailed( ): boolean {
     return ( this.compositionRHColumnsLoadingState === LoadingState.LOADED_INVALID );
@@ -532,7 +523,7 @@ export class AddCompositionWizardComponent implements OnInit {
 
   /**
    * Handles tree node selection
-   * @param {SchemaNode} $event
+   * @param  $event
    */
   public onTreeNodeSelected( $event: SchemaNode ): void {
     const selectedNode = $event;
@@ -552,7 +543,7 @@ export class AddCompositionWizardComponent implements OnInit {
 
   /**
    * Handles tree node de-selection
-   * @param {SchemaNode} $event
+   * @param  $event
    */
   public onTreeNodeDeselected( $event: SchemaNode ): void {
     this.selectedTreeNodePath = null;
@@ -644,7 +635,7 @@ export class AddCompositionWizardComponent implements OnInit {
 
   /**
    * Generate the composition name using the left and right node names
-   * @return {string} the composition name
+   * @return  the composition name
    */
   private generateCompositionName(): string {
     const leftPath = this.composition.getLeftSourcePath();

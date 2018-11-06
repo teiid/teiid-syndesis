@@ -17,23 +17,23 @@
 
 import { Injectable, ReflectiveInjector } from "@angular/core";
 import { Http } from "@angular/http";
-import { Connection } from "@connections/shared/connection.model";
-import { ConnectionService } from "@connections/shared/connection.service";
-import { NewConnection } from "@connections/shared/new-connection.model";
-import { SchemaNode } from "@connections/shared/schema-node.model";
-import { ServiceCatalogSource } from "@connections/shared/service-catalog-source.model";
-import { AppSettingsService } from "@core/app-settings.service";
-import { LoggerService } from "@core/logger.service";
-import { ConnectionSummary } from "@dataservices/shared/connection-summary.model";
-import { NotifierService } from "@dataservices/shared/notifier.service";
-import { VdbService } from "@dataservices/shared/vdb.service";
-import { TestDataService } from "@shared/test-data.service";
+import { Connection } from "../../connections/shared/connection.model";
+import { ConnectionService } from "../../connections/shared/connection.service";
+import { NewConnection } from "../../connections/shared/new-connection.model";
+import { SchemaNode } from "../../connections/shared/schema-node.model";
+import { ServiceCatalogSource } from "../../connections/shared/service-catalog-source.model";
+import { AppSettingsService } from "../../core/app-settings.service";
+import { LoggerService } from "../../core/logger.service";
+import { ConnectionSummary } from "../../dataservices/shared/connection-summary.model";
+import { NotifierService } from "../../dataservices/shared/notifier.service";
+import { VdbService } from "../../dataservices/shared/vdb.service";
+import { TestDataService } from "../../shared/test-data.service";
 import "rxjs/add/observable/of";
 import "rxjs/add/observable/throw";
 import "rxjs/add/operator/catch";
 import "rxjs/add/operator/map";
 import { Observable } from "rxjs/Observable";
-import { Column } from "@dataservices/shared/column.model";
+import { Column } from "../../dataservices/shared/column.model";
 
 @Injectable()
 export class MockConnectionService extends ConnectionService {
@@ -95,9 +95,9 @@ export class MockConnectionService extends ConnectionService {
    * of the ConnectionSummary are returned.
    *   - include-connection=true (include connection [default=true])
    *   - include-schema-status=true (include schema vdb status [default=false])
-   * @param {boolean} includeConnection 'true' to include connection
-   * @param {boolean} includeSchemaStatus 'true' to include connection schema status
-   * @returns {Observable<ConnectionSummary[]>}
+   * @param includeConnection 'true' to include connection
+   * @param includeSchemaStatus 'true' to include connection schema status
+   * @returns connections
    */
   public getConnections(includeConnection: boolean, includeSchemaStatus: boolean): Observable<ConnectionSummary[]> {
     return Observable.of(this.testDataService.getConnectionSummaries(includeConnection, includeSchemaStatus));
@@ -105,8 +105,8 @@ export class MockConnectionService extends ConnectionService {
 
   /**
    * Delete a connection via the komodo rest interface
-   * @param {string} connectionId
-   * @returns {Observable<boolean>}
+   * @param connectionId
+   * @returns success
    */
   public deleteConnection(connectionId: string): Observable<boolean> {
     const size = this.connections.length;
@@ -116,7 +116,7 @@ export class MockConnectionService extends ConnectionService {
 
   /**
    * Get the available ServiceCatalogSources from the komodo rest interface
-   * @returns {Observable<ServiceCatalogSource[]>}
+   * @returns catalog sources
    */
   public getAllServiceCatalogSources(): Observable<ServiceCatalogSource[]> {
     return Observable.of(this.serviceCatalogSources);
@@ -124,8 +124,8 @@ export class MockConnectionService extends ConnectionService {
 
   /**
    * Get the root SchemaNodes for the specified Connection
-   * @param {string} connectionName the connection name
-   * @returns {Observable<SchemaNode[]>}
+   * @param connectionName the connection name
+   * @returns schema nodes
    */
   public getConnectionSchema( connectionName: string ): Observable< SchemaNode[] > {
     return Observable.of( this.connectionSchemaMap.get( connectionName ) );
@@ -134,9 +134,8 @@ export class MockConnectionService extends ConnectionService {
   /**
    * Get the columns for the specified connection and table.  The connection must be ACTIVE, otherwise the schema
    * will be empty.
-   * @param {string} connectionName the connection id
-   * @param {string} tableOption the table option (eg. schema=public/table=customer)
-   * @returns {Observable<Column[]>}
+   * @param connectionName the connection id
+   * @param tableOption the table option (eg. schema=public/table=customer)
    */
   public getConnectionSchemaColumns(connectionName: string, tableOption: string): Observable<Column[]> {
     return Observable.of( this.connectionSchemaColumnsMap.get( connectionName + ":" + tableOption ));
@@ -144,8 +143,7 @@ export class MockConnectionService extends ConnectionService {
 
   /**
    * Create a connection in the Komodo repo - also binds the specified serviceCatalogSource
-   * @param {NewConnection} connection the connection object
-   * @returns {Observable<boolean>}
+   * @param connection the connection object
    */
   public createAndBindConnection(connection: NewConnection): Observable<boolean> {
     return Observable.of(true);
@@ -153,8 +151,7 @@ export class MockConnectionService extends ConnectionService {
 
   /**
    * Update a connection in the Komodo repo - also binds the specified serviceCatalogSource.
-   * @param {NewConnection} connection the connection object
-   * @returns {Observable<boolean>}
+   * @param connection the connection object
    */
   public updateAndBindConnection(connection: NewConnection): Observable<boolean> {
     return Observable.of(true);
@@ -162,8 +159,7 @@ export class MockConnectionService extends ConnectionService {
 
   /**
    * Update the preview VDB and re-deploy it if needed.
-   * @param {string} vdbName
-   * @returns {Observable<boolean>}
+   * @param vdbName
    */
   public refreshPreviewVdb(vdbName: string): Observable<boolean> {
     return Observable.of(true);
@@ -171,8 +167,7 @@ export class MockConnectionService extends ConnectionService {
 
   /**
    * Initiates a refresh of the connection schema via the komodo rest interface
-   * @param {string} connectionName
-   * @returns {Observable<boolean>}
+   * @param connectionName
    */
   public refreshConnectionSchema(connectionName: string): Observable<boolean> {
     if ( !connectionName || connectionName.length === 0 ) {
@@ -191,7 +186,7 @@ export class MockConnectionService extends ConnectionService {
 
   /**
    * Polls the server and sends Connection state updates at the specified interval
-   * @param {number} pollIntervalSec the interval (sec) between polling attempts
+   * @param pollIntervalSec the interval (sec) between polling attempts
    */
   public pollConnectionSchemaStatus(pollIntervalSec: number): void {
     // Nothing to do

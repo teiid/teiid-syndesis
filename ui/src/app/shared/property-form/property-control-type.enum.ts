@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { PropertyDefinition } from "@shared/property-form/property-definition.model";
+import { PropertyDefinition } from "../../shared/property-form/property-definition.model";
 
 /**
  * An enumeration of control types for a property.
@@ -48,27 +48,27 @@ export enum PropertyControlType {
 /**
  * Namespace to allow methods on the enum.
  */
-export namespace PropertyControlType {
-
-  /**
-   * @param {PropertyDefinition<any>} propDefn the property whose control type is being requested
-   * @returns {PropertyControlType} the control type to render the property value
-   */
-  export function toControlType( propDefn: PropertyDefinition< any > ): PropertyControlType {
-    if ( propDefn.isConstrainedToAllowedValues() ) {
-      return PropertyControlType.DROPDOWN;
-    }
-
-    if ( propDefn.getTypeClassName() === "java.lang.Boolean" ) {
-      return PropertyControlType.CHECKBOX;
-    }
-
-    if ( propDefn.isMasked() || propDefn.getId() === "password" ) {
-      return PropertyControlType.PASSWORD;
-    }
-
-    // defaults to a text control
-    return PropertyControlType.TEXT;
-  }
-
-}
+// export namespace PropertyControlType {
+//
+//   /**
+//    * @param propDefn the property whose control type is being requested
+//    * @returns the control type to render the property value
+//    */
+//   export function toControlType( propDefn: PropertyDefinition< any > ): PropertyControlType {
+//     if ( propDefn.isConstrainedToAllowedValues() ) {
+//       return PropertyControlType.DROPDOWN;
+//     }
+//
+//     if ( propDefn.getTypeClassName() === "java.lang.Boolean" ) {
+//       return PropertyControlType.CHECKBOX;
+//     }
+//
+//     if ( propDefn.isMasked() || propDefn.getId() === "password" ) {
+//       return PropertyControlType.PASSWORD;
+//     }
+//
+//     // defaults to a text control
+//     return PropertyControlType.TEXT;
+//   }
+//
+// }

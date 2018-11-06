@@ -16,10 +16,10 @@
  */
 
 import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
-import { LoggerService } from "@core/logger.service";
-import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
-import { ViewEditorService } from "@dataservices/virtualization/view-editor/view-editor.service";
-import { ViewEditorEvent } from "@dataservices/virtualization/view-editor/event/view-editor-event";
+import { LoggerService } from "../../../../core/logger.service";
+import { ViewEditorI18n } from "../../../../dataservices/virtualization/view-editor/view-editor-i18n";
+import { ViewEditorService } from "../../../../dataservices/virtualization/view-editor/view-editor.service";
+import { ViewEditorEvent } from "../../../../dataservices/virtualization/view-editor/event/view-editor-event";
 import { Subscription } from "rxjs/Subscription";
 import 'dragula/dist/dragula.css';
 
@@ -62,7 +62,7 @@ export class ViewPropertyEditorsComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * @param {ViewEditorEvent} event the event being processed
+   * @param  event the event being processed
    */
   public handleEditorEvent( event: ViewEditorEvent ): void {
     this.logger.debug( "ViewPropertyEditorsComponent received event: " + event.toString() );

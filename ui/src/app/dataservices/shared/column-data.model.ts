@@ -26,7 +26,7 @@ export class ColumnData {
 
   /**
    * Constructor
-   * @param {Object} json the JSON representation of ColumnData
+   * @param  json the JSON representation of ColumnData
    */
   constructor(json: object = {}) {
     for (const field of Object.keys(json)) {
@@ -35,21 +35,21 @@ export class ColumnData {
   }
 
   /**
-   * @returns {string} the column name
+   * @returns  the column name
    */
   public getName( ): string {
     return this.name;
   }
 
   /**
-   * @returns {string} the column label
+   * @returns  the column label
    */
   public getLabel( ): string {
     return this.label;
   }
 
   /**
-   * @returns {string} the column type
+   * @returns  the column type
    */
   public getType( ): string {
     return this.type;

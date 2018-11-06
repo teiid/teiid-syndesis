@@ -15,24 +15,20 @@
  * limitations under the License.
  */
 
-import { SchemaNode } from "@connections/shared/schema-node.model";
-import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
-import { Command } from "@dataservices/virtualization/view-editor/command/command";
-import { CommandType } from "@dataservices/virtualization/view-editor/command/command-type.enum";
+import { SchemaNode } from "../../../../connections/shared/schema-node.model";
+import { ViewEditorI18n } from "../../../../dataservices/virtualization/view-editor/view-editor-i18n";
+import { Command } from "../../../../dataservices/virtualization/view-editor/command/command";
+import { CommandType } from "../../../../dataservices/virtualization/view-editor/command/command-type.enum";
 
 export class RemoveSourcesCommand extends Command {
 
   /**
    * The command identifier.
-   *
-   * @type {string}
    */
   public static readonly id = CommandType.REMOVE_SOURCES_COMMAND;
 
   /**
    * The name of the command argument whose value is the paths of the sources being removed.
-   *
-   * @type {string}
    */
   public static readonly removedSourcePaths = "removedSourcePaths";
 
@@ -43,9 +39,9 @@ export class RemoveSourcesCommand extends Command {
    * 'removedSources' must be an array of SchemaNodes -OR-
    * string of the source paths (comma delimited) - path form: "connection=aConn/schema=aSchema/table=aTable"
    *
-   * @param {string | SchemaNode} removedSources the string representation of the sources or the schema nodes of the sources
+   * @param  removedSources the string representation of the sources or the schema nodes of the sources
    *                              being removed (cannot be `null` or empty)
-   * @param {string} id the command id (cannot be 'null' or empty)
+   * @param  id the command id (cannot be 'null' or empty)
    */
   public constructor( removedSources: string | SchemaNode[], id: string ) {
     super( RemoveSourcesCommand.id, ViewEditorI18n.removeSourcesCommandName );
@@ -76,7 +72,7 @@ export class RemoveSourcesCommand extends Command {
   }
 
   /**
-   * @returns {string[]} an array of the paths of the sources being added
+   * @returns  an array of the paths of the sources being added
    */
   public getSourcePaths(): string[] {
     const argValue = this.getArg( RemoveSourcesCommand.removedSourcePaths ) as string;
@@ -84,7 +80,7 @@ export class RemoveSourcesCommand extends Command {
   }
 
   /**
-   * @returns {string} the json payload for this command
+   * @returns  the json payload for this command
    */
   public getPayload(sourcePath?: string): string {
     if (sourcePath)
@@ -93,7 +89,7 @@ export class RemoveSourcesCommand extends Command {
   }
 
   /**
-   * @returns {string} a unique identifier of this command
+   * @returns  a unique identifier of this command
    */
   public getId( ): string {
     return this.getArg( Command.identArg ) as string;

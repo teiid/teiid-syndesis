@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-import { Composition } from "@dataservices/shared/composition.model";
-import { PathUtils } from "@dataservices/shared/path-utils";
-import { VdbsConstants } from "@dataservices/shared/vdbs-constants";
-import { CompositionOperator } from "@dataservices/shared/composition-operator.enum";
-import { CompositionType } from "@dataservices/shared/composition-type.enum";
-import { ProjectedColumn } from "@dataservices/shared/projected-column.model";
+import { Composition } from "../../dataservices/shared/composition.model";
+import { PathUtils } from "../../dataservices/shared/path-utils";
+import { VdbsConstants } from "../../dataservices/shared/vdbs-constants";
+import { CompositionOperator } from "../../dataservices/shared/composition-operator.enum";
+import { CompositionType } from "../../dataservices/shared/composition-type.enum";
+import { ProjectedColumn } from "../../dataservices/shared/projected-column.model";
 
 /**
  * ViewDefinition model
@@ -36,8 +36,8 @@ export class ViewDefinition {
   private defaultProjectedColumns: ProjectedColumn[] = [];
 
   /**
-   * @param {Object} json the JSON representation of a ViewDefinition
-   * @returns {ViewDefinition} the new ViewDefinition (never null)
+   * @param  json the JSON representation of a ViewDefinition
+   * @returns  the new ViewDefinition (never null)
    */
   public static create( json: object = {} ): ViewDefinition {
     const viewDefn = new ViewDefinition();
@@ -94,42 +94,42 @@ export class ViewDefinition {
   }
 
   /**
-   * @returns {string} the view definition name
+   * @returns  the view definition name
    */
   public getName(): string {
     return this.viewName;
   }
 
   /**
-   * @param {string} name the view definition name
+   * @param  name the view definition name
    */
   public setName( name?: string ): void {
     this.viewName = name ? name : null;
   }
 
   /**
-   * @returns {string} the view description
+   * @returns  the view description
    */
   public getDescription(): string {
     return this.keng__description;
   }
 
   /**
-   * @param {string} description the view description
+   * @param  description the view description
    */
   public setDescription( description?: string ): void {
     this.keng__description = description ? description : "";
   }
 
   /**
-   * @returns {string[]} the view source paths
+   * @returns  the view source paths
    */
   public getSourcePaths(): string[] {
     return this.sourcePaths;
   }
 
   /**
-   * @param {string[]} sourcePaths the view source paths
+   * @param  sourcePaths the view source paths
    */
   public setSourcePaths( sourcePaths: string[] = [] ): void {
     this.sourcePaths = sourcePaths;
@@ -138,14 +138,14 @@ export class ViewDefinition {
   }
 
   /**
-   * @returns {Composition[]} the view compositions
+   * @returns  the view compositions
    */
   public getCompositions(): Composition[] {
     return this.compositions;
   }
 
   /**
-   * @param {Composition[]} compositions the view compositions
+   * @param  compositions the view compositions
    */
   public setCompositions( compositions: Composition[] = [] ): void {
     this.compositions = compositions;
@@ -154,14 +154,14 @@ export class ViewDefinition {
   }
 
   /**
-   * @returns {ProjectedColumn[]} the view projected columns
+   * @returns the view projected columns
    */
   public getProjectedColumns(): ProjectedColumn[] {
     return this.projectedColumns;
   }
 
   /**
-   * @param {ProjectedColumns} projColumns the projected columns
+   * @param projColumns the projected columns
    */
   public setProjectedColumns( projColumns: ProjectedColumn[] ): void {
     this.projectedColumns = projColumns;
@@ -169,7 +169,7 @@ export class ViewDefinition {
 
   /**
    * Get the projected columns that are currently selected
-   * @returns {ProjectedColumn[]} the view selected projected columns
+   * @returns the view selected projected columns
    */
   public getSelectedProjectedColumns(): ProjectedColumn[] {
     const selectedProjCols: ProjectedColumn[] = [];
@@ -184,7 +184,7 @@ export class ViewDefinition {
   /**
    * Add Composition to the View
    *
-   * @param {Composition} compositionToAdd the composition to add
+   * @param  compositionToAdd the composition to add
    */
   public addComposition( compositionToAdd: Composition ): void {
     const index = this.compositions.findIndex( ( comp ) => comp.getName() === compositionToAdd.getName() );
@@ -197,7 +197,7 @@ export class ViewDefinition {
   }
 
   /**
-   * @param {string} compositionToRemove the composition name to remove
+   * @param  compositionToRemove the composition name to remove
    */
   public removeComposition( compositionToRemove: string ): void {
     const index = this.compositions.findIndex( ( comp ) => comp.getName() === compositionToRemove );
@@ -212,7 +212,7 @@ export class ViewDefinition {
   /**
    * Add source path to the list of source paths
    *
-   * @param {string} sourcePathToAdd the source path to add
+   * @param  sourcePathToAdd the source path to add
    */
   public addSourcePath( sourcePathToAdd: string ): void {
     const index = this.sourcePaths.findIndex( ( sPath ) =>
@@ -229,7 +229,7 @@ export class ViewDefinition {
   /**
    * Add source paths to the list of source paths.
    *
-   * @param {string[]} sourcePathsToAdd the source paths being added
+   * @param  sourcePathsToAdd the source paths being added
    */
   public addSourcePaths( sourcePathsToAdd: string[] = [] ): void {
     const self = this;
@@ -240,7 +240,7 @@ export class ViewDefinition {
   }
 
   /**
-   * @param {string} sourcePathToRemove the source path to remove
+   * @param  sourcePathToRemove the source path to remove
    */
   public removeSourcePath( sourcePathToRemove: string ): void {
     const index = this.sourcePaths.findIndex( ( sourcePath ) =>
@@ -254,7 +254,7 @@ export class ViewDefinition {
   }
 
   /**
-   * @param {string[]} sourcePathsToRemove the source paths to remove
+   * @param  sourcePathsToRemove the source paths to remove
    */
   public removeSourcePaths( sourcePathsToRemove: string[] ): void {
     const self = this;
@@ -266,7 +266,7 @@ export class ViewDefinition {
 
   /**
    * Determine if this view definition currenly has the specified source path
-   * @param {string} sourcePathToTest the source path
+   * @param  sourcePathToTest the source path
    */
   public hasSourcePath( sourcePathToTest: string ): boolean {
     const index = this.sourcePaths.findIndex( ( sourcePath ) =>
@@ -280,7 +280,7 @@ export class ViewDefinition {
 
   /**
    * Determine whether the view definition is in a complete state
-   * @returns {boolean} true if complete
+   * @returns  true if complete
    */
   public get complete(): boolean {
     // Checks to determine whether the viewDefinition is complete.
@@ -331,7 +331,7 @@ export class ViewDefinition {
 
   /**
    * Determine whether the view definition is editable
-   * @returns {boolean} true if editable
+   * @returns  true if editable
    */
   public get editable(): boolean {
     return this.isEditable;
@@ -339,7 +339,7 @@ export class ViewDefinition {
 
   /**
    * Set the ViewDefinition editable status
-   * @param {boolean} editable true if editable
+   * @param  editable true if editable
    */
   public setEditable(editable: boolean): void {
     this.isEditable = editable;
@@ -347,7 +347,7 @@ export class ViewDefinition {
 
   /**
    * Get the preview SQL for the view, given the current selections
-   * @returns {string} the view SQL
+   * @returns  the view SQL
    */
   public getPreviewSql( sourcePath?: string ): string {
 
@@ -369,8 +369,8 @@ export class ViewDefinition {
         const rightTable = this.getPreviewTableName(composition.getRightSourcePath());
         const leftCriteriaColName = composition.getLeftCriteriaColumn();
         const rightCriteriaColName = composition.getRightCriteriaColumn();
-        const criteriaOperator = CompositionOperator.toSql(composition.getOperator());
-        const joinType = CompositionType.toSql(composition.getType());
+        const criteriaOperator = this.getCompositionOperatorSql(composition.getOperator());
+        const joinType = this.getCompositionTypeSql(composition.getType());
         const projColsSql = this.getProjectedColumnsSql();
         return "SELECT " + projColsSql + " FROM " + leftTable + " AS A " + joinType + " " +
                                         rightTable + " AS B ON " +
@@ -387,9 +387,41 @@ export class ViewDefinition {
     return "";
   }
 
+  private getCompositionTypeSql( type: CompositionType ): string {
+    if ( type === CompositionType.INNER_JOIN ) {
+      return "INNER JOIN";
+    } else if ( type === CompositionType.LEFT_OUTER_JOIN ) {
+      return "LEFT OUTER JOIN";
+    } else if ( type === CompositionType.RIGHT_OUTER_JOIN ) {
+      return "RIGHT OUTER JOIN";
+    } else if ( type === CompositionType.FULL_OUTER_JOIN ) {
+      return "FULL OUTER JOIN";
+    } else if ( type === CompositionType.UNION ) {
+      return "UNION";
+    }
+    return "INNER JOIN";
+  }
+
+  private getCompositionOperatorSql( oper: CompositionOperator ): string {
+    if (oper === CompositionOperator.EQ) {
+      return "=";
+    } else if (oper === CompositionOperator.LT) {
+      return "<";
+    } else if (oper === CompositionOperator.GT) {
+      return ">";
+    } else if (oper === CompositionOperator.LE) {
+      return "<=";
+    } else if (oper === CompositionOperator.GE) {
+      return ">=";
+    } else if (oper === CompositionOperator.NE) {
+      return "<>";
+    }
+    return "=";
+  }
+
   /**
    * Determine if the current projected columns is '*'
-   * @return {boolean} 'true' if select all
+   * @return  'true' if select all
    */
   public isProjectAllColumns(): boolean {
     return this.getProjectedColumns().length === 1 && this.getProjectedColumns()[0].getName() === "ALL" && this.getProjectedColumns()[0].getType() === "ALL";
@@ -404,7 +436,7 @@ export class ViewDefinition {
 
   /**
    * Get the SQL string for the current projected columns
-   * @return {string} the projected columns SQL
+   * @return  the projected columns SQL
    */
   private getProjectedColumnsSql(): string {
     // TODO: This function will need more work as the ViewDefinition is refined (addition of aliases, etc)
@@ -452,7 +484,7 @@ export class ViewDefinition {
   /**
    * Get the name of the supplied column
    * @param col the column
-   * @return {string} the column sql name
+   * @return  the column sql name
    */
   private getSqlColumnName(col: ProjectedColumn): string {
     if (col && col !== null) {
@@ -467,7 +499,7 @@ export class ViewDefinition {
 
   /**
    * Generates the table name for the preview query, given the source path
-   * @param {string} sourcePath the path for the view source
+   * @param  sourcePath the path for the view source
    */
   private getPreviewTableName( sourcePath: string ): string {
     let sourceNodeName = "unknownSource";
@@ -482,14 +514,14 @@ export class ViewDefinition {
   }
 
   /**
-   * @returns {boolean} 'true' if ViewDefinition isSelected
+   * @returns  'true' if ViewDefinition isSelected
    */
   public get selected(): boolean {
     return this.isSelected;
   }
 
   /**
-   * @param {boolean} selected the ViewDefinition isSelected state
+   * @param  selected the ViewDefinition isSelected state
    */
   public setSelected( selected: boolean ): void {
     this.isSelected = selected;
@@ -497,7 +529,7 @@ export class ViewDefinition {
 
   /**
    * Determine if the supplied ViewDefinition is equal to this
-   * @param {Object} values
+   * @param  values
    */
   public isEqual( otherView: ViewDefinition ): boolean {
     let equal = false;
@@ -552,15 +584,12 @@ export class ViewDefinition {
 
   /**
    * Set all object values using the supplied ViewDefinition json
-   * @param {Object} values
+   * @param  values
    */
   public setValues(values: object = {}): void {
     Object.assign(this, values);
   }
 
-  /**
-   * @returns {{}} a JSON representation of the view definition
-   */
   public toJSON(): {} {
     return {
       viewName: this.viewName,
@@ -573,7 +602,7 @@ export class ViewDefinition {
   }
 
   /**
-   * @returns {string} a string representation of the event
+   * @returns  a string representation of the event
    */
   public toString(): string {
     let text = `viewName: ${this.viewName}, keng__description: ${this.keng__description}, isComplete: ${this.complete}`;

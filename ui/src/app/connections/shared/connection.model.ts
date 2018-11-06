@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-import { ConnectionStatus } from "@connections/shared/connection-status";
-import { VdbsConstants } from "@dataservices/shared/vdbs-constants";
-import { Identifiable } from "@shared/identifiable";
-import { SortDirection } from "@shared/sort-direction.enum";
+import { ConnectionStatus } from "../../connections/shared/connection-status";
+import { VdbsConstants } from "../../dataservices/shared/vdbs-constants";
+import { Identifiable } from "../../shared/identifiable";
+import { SortDirection } from "../../shared/sort-direction.enum";
 
 export class Connection implements Identifiable< string > {
 
@@ -34,8 +34,8 @@ export class Connection implements Identifiable< string > {
   private status: ConnectionStatus;
 
   /**
-   * @param {Object} json the JSON representation of a Connection
-   * @returns {Connection} the new Connection (never null)
+   * @param json the JSON representation of a Connection
+   * @returns the new Connection (never null)
    */
   public static create( json: object = {} ): Connection {
     const conn = new Connection();
@@ -44,8 +44,8 @@ export class Connection implements Identifiable< string > {
   }
 
   /**
-   * @param {Connection[]} connections the connections being sorted
-   * @param {SortDirection} sortDirection the sort direction
+   * @param connections the connections being sorted
+   * @param sortDirection the sort direction
    */
   public static sort( connections: Connection[],
                       sortDirection: SortDirection ): void {
@@ -87,14 +87,14 @@ export class Connection implements Identifiable< string > {
   }
 
   /**
-   * @returns {string} the connection name
+   * @returns the connection name
    */
   public get name(): string {
     return this.keng__id;
   }
 
   /**
-   * @returns {string} the connection description
+   * @returns the connection description
    */
   public getDescription(): string {
     let description: string = null;
@@ -108,42 +108,42 @@ export class Connection implements Identifiable< string > {
   }
 
   /**
-   * @returns {string} the connection driver name (can be null)
+   * @returns the connection driver name (can be null)
    */
   public getDriverName(): string {
     return this.dv__driverName;
   }
 
   /**
-   * @returns {string} the connection identifier (can be null)
+   * @returns the connection identifier (can be null)
    */
   public getId(): string {
     return this.keng__id;
   }
 
   /**
-   * @returns {string} the connection data path (can be null)
+   * @returns the connection data path (can be null)
    */
   public getDataPath(): string {
     return this.keng__dataPath;
   }
 
   /**
-   * @returns {string} the connection JNDI name (can be null)
+   * @returns the connection JNDI name (can be null)
    */
   public getJndiName(): string {
     return this.dv__jndiName;
   }
 
   /**
-   * @returns {boolean} the jdbc status (true == jdbc)
+   * @returns the jdbc status (true == jdbc)
    */
   public isJdbc(): boolean {
     return this.dv__type;
   }
 
   /**
-   * @returns {string} the service catalog source name
+   * @returns the service catalog source name
    */
   public getServiceCatalogSourceName(): string {
     let serviceCatalogName: string = null;
@@ -158,7 +158,7 @@ export class Connection implements Identifiable< string > {
 
   /**
    * Accessor to determine if connection overall status is active
-   * @returns {boolean} `true` if the overall status is active
+   * @returns `true` if the overall status is active
    */
   public get isActive(): boolean {
     // vdb and schema status must both be active
@@ -167,7 +167,7 @@ export class Connection implements Identifiable< string > {
 
   /**
    * Accessor to determine if connection overall status is inactive
-   * @returns {boolean} `true` if the overall status is inactive
+   * @returns `true` if the overall status is inactive
    */
   public get isInactive(): boolean {
     // If vdb is missing or vdb active and schema missing - overall status is inactive
@@ -176,7 +176,7 @@ export class Connection implements Identifiable< string > {
 
   /**
    * Accessor to determine if connection overall status is loading
-   * @returns {boolean} `true` if the overall status is loading
+   * @returns `true` if the overall status is loading
    */
   public get isLoading(): boolean {
     // If either the vdb or schema are loading - overall status is loading
@@ -185,7 +185,7 @@ export class Connection implements Identifiable< string > {
 
   /**
    * Accessor to determine if connection overall status is failed
-   * @returns {boolean} `true` if the overall status is failed
+   * @returns `true` if the overall status is failed
    */
   public get isFailed(): boolean {
     return (this.serverVdbFailed || (this.serverVdbActive && this.schemaFailed));
@@ -193,7 +193,7 @@ export class Connection implements Identifiable< string > {
 
   /**
    * Accessor to determine if connection schema is active
-   * @returns {boolean} `true` if the schema is active
+   * @returns `true` if the schema is active
    */
   public get schemaActive(): boolean {
     return this.status.isSchemaAvailable();
@@ -201,7 +201,7 @@ export class Connection implements Identifiable< string > {
 
   /**
    * Accessor to determine if connection schema is missing
-   * @returns {boolean} `true` if the connection schema is missing
+   * @returns `true` if the connection schema is missing
    */
   public get schemaMissing(): boolean {
     return this.status.isSchemaMissing();
@@ -209,7 +209,7 @@ export class Connection implements Identifiable< string > {
 
   /**
    * Accessor to determine if connection schema is loading
-   * @returns {boolean} `true` if the connection schema is loading
+   * @returns `true` if the connection schema is loading
    */
   public get schemaLoading(): boolean {
     return this.status.isSchemaLoading();
@@ -217,42 +217,42 @@ export class Connection implements Identifiable< string > {
 
   /**
    * Accessor to determine if connection schema is failed
-   * @returns {boolean} `true` if the connection schema is in a failed state
+   * @returns `true` if the connection schema is in a failed state
    */
   public get schemaFailed(): boolean {
     return this.status.isSchemaFailed();
   }
 
   /**
-   * @returns {boolean} `true` if the connection server VDB is in an active state
+   * @returns `true` if the connection server VDB is in an active state
    */
   public get serverVdbActive(): boolean {
     return this.status.isServerVdbActive();
   }
 
   /**
-   * @returns {boolean} `true` if the connection server VDB is in a failed state
+   * @returns `true` if the connection server VDB is in a failed state
    */
   public get serverVdbFailed(): boolean {
     return this.status.isServerVdbFailed();
   }
 
   /**
-   * @returns {boolean} `true` if the connection server VDB is loading
+   * @returns `true` if the connection server VDB is loading
    */
   public get serverVdbLoading(): boolean {
     return this.status.isServerVdbLoading();
   }
 
   /**
-   * @returns {boolean} `true` if the server VDB is missing
+   * @returns `true` if the server VDB is missing
    */
   public get serverVdbMissing(): boolean {
     return this.status.isServerVdbMissing();
   }
 
   /**
-   * @returns {string} the connection schema vdb name
+   * @returns the connection schema vdb name
    */
   public get schemaVdbName(): string {
     if (this.status && !(this.status == null)) {
@@ -262,7 +262,7 @@ export class Connection implements Identifiable< string > {
   }
 
   /**
-   * @returns {string} the connection schema vdb model name
+   * @returns the connection schema vdb model name
    */
   public get schemaVdbModelName(): string {
     if (this.status && !(this.status == null)) {
@@ -272,42 +272,42 @@ export class Connection implements Identifiable< string > {
   }
 
   /**
-   * @returns {string} the connection schema vdb model source name
+   * @returns the connection schema vdb model source name
    */
   public get schemaVdbModelSourceName(): string {
     return this.deriveSchemaVdbModelSourceName();
   }
 
   /**
-   * @param {string} driverName the connection driver name (optional)
+   * @param driverName the connection driver name (optional)
    */
   public setDriverName( driverName?: string ): void {
     this.dv__driverName = driverName ? driverName : null;
   }
 
   /**
-   * @param {string} id the connection identifier (optional)
+   * @param id the connection identifier (optional)
    */
   public setId( id?: string ): void {
     this.keng__id = id ? id : null;
   }
 
   /**
-   * @param {string} jndiName the connection JNDI name (optional)
+   * @param jndiName the connection JNDI name (optional)
    */
   public setJndiName( jndiName?: string ): void {
     this.dv__jndiName = jndiName ? jndiName : null;
   }
 
   /**
-   * @param {boolean} jdbc the jdbc state
+   * @param jdbc the jdbc state
    */
   public setJdbc( jdbc: boolean ): void {
     this.dv__type = jdbc;
   }
 
   /**
-   * @param {string} serviceCatalog the service catalog source name
+   * @param erviceCatalog the service catalog source name
    */
   public setServiceCatalogSourceName( serviceCatalog: string ): void {
     interface IProp {
@@ -322,7 +322,7 @@ export class Connection implements Identifiable< string > {
   }
 
   /**
-   * @param {ConnectionStatus} status the connection status
+   * @param status the connection status
    */
   public setStatus( status: ConnectionStatus ): void {
     this.status = status;
@@ -330,7 +330,7 @@ export class Connection implements Identifiable< string > {
 
   /**
    * Set all object values using the supplied Connection json
-   * @param {Object} values
+   * @param values
    */
   public setValues(values: object = {}): void {
     Object.assign(this, values);
@@ -338,7 +338,7 @@ export class Connection implements Identifiable< string > {
 
   /**
    * Derive the schema VDB name for this connection
-   * @returns {string} the default schema VDB name
+   * @returns the default schema VDB name
    */
   private deriveSchemaVdbName( ): string {
     const name = this.getId() + VdbsConstants.SCHEMA_VDB_SUFFIX;
@@ -347,7 +347,7 @@ export class Connection implements Identifiable< string > {
 
   /**
    * Derive the schema VDB model name for this connection
-   * @returns {string} the default schema VDB model name
+   * @returns the default schema VDB model name
    */
   private deriveSchemaVdbModelName( ): string {
     const name = this.getId() + VdbsConstants.SCHEMA_MODEL_SUFFIX;
@@ -356,7 +356,7 @@ export class Connection implements Identifiable< string > {
 
   /**
    * Derive the schema VDB model source name for this connection
-   * @returns {string}
+   * @returns name
    */
   private deriveSchemaVdbModelSourceName( ): string {
     return this.getServiceCatalogSourceName() ?

@@ -16,10 +16,10 @@
  */
 
 import { Injectable } from "@angular/core";
-import { Dataservice } from "@dataservices/shared/dataservice.model";
-import { Connection } from "@connections/shared/connection.model";
-import { ViewDefinition } from "@dataservices/shared/view-definition.model";
-import { SqlView } from "@dataservices/shared/sql-view.model";
+import { Dataservice } from "../dataservices/shared/dataservice.model";
+import { Connection } from "../connections/shared/connection.model";
+import { ViewDefinition } from "../dataservices/shared/view-definition.model";
+import { SqlView } from "../dataservices/shared/sql-view.model";
 
 @Injectable()
 export class SelectionService {
@@ -35,7 +35,7 @@ export class SelectionService {
 
   /**
    * Gets the selected virtualization
-   * @returns {Dataservice} the selected virtualization
+   * @returns the selected virtualization
    */
   public getSelectedVirtualization(): Dataservice {
     return this.selectedVirtualization;
@@ -43,7 +43,7 @@ export class SelectionService {
 
   /**
    * Sets the selected dataservice
-   * @param {Dataservice} virtualization the selected virtualization
+   * @param virtualization the selected virtualization
    */
   public setSelectedVirtualization(virtualization: Dataservice): void {
     this.selectedVirtualization = virtualization;
@@ -51,7 +51,7 @@ export class SelectionService {
 
   /**
    * Determine if there is a selected virtualization
-   * @returns {boolean} 'true' if a virtualization is selected
+   * @returns 'true' if a virtualization is selected
    */
   public get hasSelectedVirtualization(): boolean {
     return this.selectedVirtualization && this.selectedVirtualization !== null;
@@ -60,7 +60,7 @@ export class SelectionService {
   /**
    * Get the current Virtualization selection's views.View
    * The ViewDefinition name is currently set to the full "modelName"."viewName" of the view.
-   * @returns {SqlView[]} the selected Dataservice view definitions
+   * @returns the selected Dataservice view definitions
    */
   public getSelectedVirtualizationViewNames( ): SqlView[] {
     if ( !this.hasSelectedVirtualization ) {
@@ -80,7 +80,7 @@ export class SelectionService {
 
   /**
    * Gets the selected connection
-   * @returns {Connection} the selected connection
+   * @returns the selected connection
    */
   public getSelectedConnection(): Connection {
     return this.selectedConnection;
@@ -88,7 +88,7 @@ export class SelectionService {
 
   /**
    * Sets the selected connection
-   * @param {Connection} connection the selected connection
+   * @param connection the selected connection
    */
   public setSelectedConnection(connection: Connection): void {
     this.selectedConnection = connection;
@@ -96,7 +96,7 @@ export class SelectionService {
 
   /**
    * Determine if there is a selected connection
-   * @returns {boolean} 'true' if a connection is selected
+   * @returns 'true' if a connection is selected
    */
   public get hasSelectedConnection(): boolean {
     return this.selectedConnection && this.selectedConnection !== null;
@@ -104,7 +104,7 @@ export class SelectionService {
 
   /**
    * Gets the selected view definition
-   * @returns {ViewDefinition} the selected view definition
+   * @returns the selected view definition
    */
   public getSelectedViewDefinition(): ViewDefinition {
     return this.selectedViewDefinition;
@@ -112,7 +112,7 @@ export class SelectionService {
 
   /**
    * Sets the selected view definition
-   * @param {ViewDefinition} view the selected view definition
+   * @param view the selected view definition
    */
   public setSelectedViewDefinition(virtualization: Dataservice, viewDefn: ViewDefinition): void {
     this.selectedVirtualization = virtualization;
@@ -121,7 +121,7 @@ export class SelectionService {
 
   /**
    * Determine if there is a selected view definition
-   * @returns {boolean} 'true' if a view definition is selected
+   * @returns 'true' if a view definition is selected
    */
   public get hasSelectedViewDefinition(): boolean {
     return this.selectedViewDefinition && this.selectedViewDefinition !== null;
@@ -129,7 +129,7 @@ export class SelectionService {
 
   /**
    * Determine if has a connection which needs its schema regenerated
-   * @returns {boolean} 'true' if there is a connection needing schema regen
+   * @returns 'true' if there is a connection needing schema regen
    */
   public get hasConnectionForSchemaRegen(): boolean {
     return this.connectionForSchemaRegen && this.connectionForSchemaRegen.length > 0;
@@ -137,7 +137,7 @@ export class SelectionService {
 
   /**
    * Gets the connection id which needs its schema regenerated
-   * @returns {string} the connection id needing schema regen
+   * @returns the connection id needing schema regen
    */
   public getConnectionIdForSchemaRegen(): string {
     return this.connectionForSchemaRegen;
@@ -145,7 +145,7 @@ export class SelectionService {
 
   /**
    * Sets the connection id which needs its schema regenerated
-   * @param {string} connectionName the connection id which needs its schema regenerated
+   * @param connectionName the connection id which needs its schema regenerated
    */
   public setConnectionIdForSchemaRegen(connectionName: string): void {
     this.connectionForSchemaRegen = connectionName !== null ? connectionName : "";

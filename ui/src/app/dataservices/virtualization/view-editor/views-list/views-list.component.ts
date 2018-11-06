@@ -14,27 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {AfterViewInit, Component, OnDestroy, OnInit, ViewEncapsulation} from '@angular/core';
-import {LoadingState} from "@shared/loading-state.enum";
-import {ViewDefinition} from "@dataservices/shared/view-definition.model";
-import {ViewEditorPart} from "@dataservices/virtualization/view-editor/view-editor-part.enum";
-import {EmptyStateConfig, NgxDataTableConfig, TableConfig} from "patternfly-ng";
-import {ViewEditorI18n} from "@dataservices/virtualization/view-editor/view-editor-i18n";
-import {ViewEditorProgressChangeId} from "@dataservices/virtualization/view-editor/event/view-editor-save-progress-change-id.enum";
-import {ViewEditorState} from "@dataservices/shared/view-editor-state.model";
-import {ViewEditorService} from "@dataservices/virtualization/view-editor/view-editor.service";
-import {Dataservice} from "@dataservices/shared/dataservice.model";
-import {LoggerService} from "@core/logger.service";
-import {ViewEditorEvent} from "@dataservices/virtualization/view-editor/event/view-editor-event";
-import {Subscription} from "rxjs/Subscription";
-import {BsModalService} from "ngx-bootstrap";
-import {DataserviceService} from "@dataservices/shared/dataservice.service";
-import {SelectionService} from "@core/selection.service";
-import {ConfirmDialogComponent} from "@shared/confirm-dialog/confirm-dialog.component";
-import {CommandFactory} from "@dataservices/virtualization/view-editor/command/command-factory";
-import {Command} from "@dataservices/virtualization/view-editor/command/command";
-import {CreateViewDialogComponent} from "@dataservices/virtualization/view-editor/create-view-dialog/create-view-dialog.component";
-import {ChangeDetectorRef} from "@angular/core";
+import { AfterViewInit, Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
+import { LoadingState } from "../../../../shared/loading-state.enum";
+import { ViewDefinition } from "../../../../dataservices/shared/view-definition.model";
+import { ViewEditorPart } from "../../../../dataservices/virtualization/view-editor/view-editor-part.enum";
+import { EmptyStateConfig, NgxDataTableConfig, TableConfig } from "patternfly-ng";
+import { ViewEditorI18n } from "../../../../dataservices/virtualization/view-editor/view-editor-i18n";
+import { ViewEditorProgressChangeId } from "../../../../dataservices/virtualization/view-editor/event/view-editor-save-progress-change-id.enum";
+import { ViewEditorState } from "../../../../dataservices/shared/view-editor-state.model";
+import { ViewEditorService } from "../../../../dataservices/virtualization/view-editor/view-editor.service";
+import { Dataservice } from "../../../../dataservices/shared/dataservice.model";
+import { LoggerService } from "../../../../core/logger.service";
+import { ViewEditorEvent } from "../../../../dataservices/virtualization/view-editor/event/view-editor-event";
+import { Subscription } from "rxjs/Subscription";
+import { BsModalService } from "ngx-bootstrap";
+import { DataserviceService } from "../../../../dataservices/shared/dataservice.service";
+import { SelectionService } from "../../../../core/selection.service";
+import { ConfirmDialogComponent } from "../../../../shared/confirm-dialog/confirm-dialog.component";
+import { CommandFactory } from "../../../../dataservices/virtualization/view-editor/command/command-factory";
+import { Command } from "../../../../dataservices/virtualization/view-editor/command/command";
+import { CreateViewDialogComponent } from "../../../../dataservices/virtualization/view-editor/create-view-dialog/create-view-dialog.component";
+import { ChangeDetectorRef } from "@angular/core";
 
 @Component({
   encapsulation: ViewEncapsulation.None,
@@ -80,7 +80,7 @@ export class ViewsListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   /**
-   * @param {ViewEditorEvent} event the event being processed
+   * @param  event the event being processed
    */
   public handleEditorEvent( event: ViewEditorEvent ): void {
     this.logger.debug( "ViewsListComponent received event: " + event.toString() );
@@ -188,7 +188,7 @@ export class ViewsListComponent implements OnInit, OnDestroy, AfterViewInit {
             initialView =  self.tableRows.find((x) => x.getName() === selectedView.getName());
           }
           self.viewsLoadingState = LoadingState.LOADED_VALID;
-          if( initialView !== null) {
+          if ( initialView !== null) {
             self.selectView(initialView);
           }
         },
@@ -201,14 +201,14 @@ export class ViewsListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   /**
-   * @returns {boolean} `true` if view being edited is readonly
+   * @returns  `true` if view being edited is readonly
    */
   public get readOnly(): boolean {
     return !this.editorService.getEditorView() || this.editorService.isReadOnly();
   }
 
   /**
-   * @returns {boolean} `true` if views are being loaded
+   * @returns  `true` if views are being loaded
    */
   public get viewsLoading(): boolean {
     return this.viewsLoadingState === LoadingState.LOADING;
@@ -292,9 +292,9 @@ export class ViewsListComponent implements OnInit, OnDestroy, AfterViewInit {
 
   /**
    * Construct id for the editor state
-   * @param {Dataservice} dataservice the dataservice
-   * @param {ViewDefinition} viewDefn the view definition
-   * @returns {string} the ID used to persist the editor state
+   * @param  dataservice the dataservice
+   * @param  viewDefn the view definition
+   * @returns  the ID used to persist the editor state
    */
   private getEditorStateId(dataservice: Dataservice, viewDefn: ViewDefinition): string {
     return dataservice.getServiceVdbName().toLowerCase() + "." + viewDefn.getName();
@@ -302,7 +302,7 @@ export class ViewsListComponent implements OnInit, OnDestroy, AfterViewInit {
 
   /**
    * Handle Delete of the selected View
-   * @param {string} viewName
+   * @param  viewName
    */
   public onDeleteView( ): void {
     const viewName = this.getSelectedView().getName();
@@ -325,7 +325,7 @@ export class ViewsListComponent implements OnInit, OnDestroy, AfterViewInit {
 
   /**
    * Deletes the specified ViewEditorState from the userProfile, and removes ViewDefinition from the current list.
-   * @param {string} viewDefnName the name of the view
+   * @param  viewDefnName the name of the view
    */
   private doDeleteView(viewDefnName: string): void {
     const selectedViewDefn =  this.tableRows.find((x) => x.getName() === viewDefnName);
@@ -356,7 +356,7 @@ export class ViewsListComponent implements OnInit, OnDestroy, AfterViewInit {
 
   /*
    * Add the specified ViewDefinition to the view definitions table
-   * @param {ViewDefinition} viewDefn the view definition to add
+   * @param  viewDefn the view definition to add
    */
   private addViewDefinitionToList(viewDefn: ViewDefinition): void {
     const newRows: ViewDefinition[] = [];
@@ -376,7 +376,7 @@ export class ViewsListComponent implements OnInit, OnDestroy, AfterViewInit {
 
   /*
    * Remove the specified ViewDefinition from the view definitions table
-   * @param {ViewDefinition} viewDefn the view definition to remove
+   * @param  viewDefn the view definition to remove
    */
   private removeViewDefinitionFromList(viewDefn: ViewDefinition): void {
     const origIndex = this.tableRows.findIndex( ( defn ) => defn.getName() === viewDefn.getName() );
@@ -429,7 +429,7 @@ export class ViewsListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   /**
-   * @returns {string} the view description
+   * @returns  the view description
    */
   public get viewDescription(): string {
     if ( this.editorService.getEditorView() ) {
@@ -440,7 +440,7 @@ export class ViewsListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   /**
-   * @param {string} newDescription the new description
+   * @param  newDescription the new description
    */
   public set viewDescription( newDescription: string ) {
     if ( this.editorService.getEditorView() ) {
@@ -464,7 +464,7 @@ export class ViewsListComponent implements OnInit, OnDestroy, AfterViewInit {
   /**
    * Called when text in the view description textarea changes.
    *
-   * @param {string} newDescription the new description of the view
+   * @param  newDescription the new description of the view
    */
   public viewDescriptionChanged( newDescription: string ): void {
     this.viewDescription = newDescription;

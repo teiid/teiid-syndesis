@@ -15,24 +15,24 @@
  * limitations under the License.
  */
 
-import { Command } from "@dataservices/virtualization/view-editor/command/command";
-import { AddCompositionCommand } from "@dataservices/virtualization/view-editor/command/add-composition-command";
-import { AddSourcesCommand } from "@dataservices/virtualization/view-editor/command/add-sources-command";
-import { UpdateViewDescriptionCommand } from "@dataservices/virtualization/view-editor/command/update-view-description-command";
-import { UpdateViewNameCommand } from "@dataservices/virtualization/view-editor/command/update-view-name-command";
-import { RemoveSourcesCommand } from "@dataservices/virtualization/view-editor/command/remove-sources-command";
-import { SchemaNode } from "@connections/shared/schema-node.model";
-import { NoOpCommand } from "@dataservices/virtualization/view-editor/command/no-op-command";
-import { Undoable } from "@dataservices/virtualization/view-editor/command/undo-redo/undoable";
-import { Composition } from "@dataservices/shared/composition.model";
-import { RemoveCompositionCommand } from "@dataservices/virtualization/view-editor/command/remove-composition-command";
-import { UpdateProjectedColumnsCommand } from "@dataservices/virtualization/view-editor/command/update-projected-columns-command";
+import { Command } from "../../../../dataservices/virtualization/view-editor/command/command";
+import { AddCompositionCommand } from "../../../../dataservices/virtualization/view-editor/command/add-composition-command";
+import { AddSourcesCommand } from "../../../../dataservices/virtualization/view-editor/command/add-sources-command";
+import { UpdateViewDescriptionCommand } from "../../../../dataservices/virtualization/view-editor/command/update-view-description-command";
+import { UpdateViewNameCommand } from "../../../../dataservices/virtualization/view-editor/command/update-view-name-command";
+import { RemoveSourcesCommand } from "../../../../dataservices/virtualization/view-editor/command/remove-sources-command";
+import { SchemaNode } from "../../../../connections/shared/schema-node.model";
+import { NoOpCommand } from "../../../../dataservices/virtualization/view-editor/command/no-op-command";
+import { Undoable } from "../../../../dataservices/virtualization/view-editor/command/undo-redo/undoable";
+import { Composition } from "../../../../dataservices/shared/composition.model";
+import { RemoveCompositionCommand } from "../../../../dataservices/virtualization/view-editor/command/remove-composition-command";
+import { UpdateProjectedColumnsCommand } from "../../../../dataservices/virtualization/view-editor/command/update-projected-columns-command";
 
 export class CommandFactory {
 
   /**
-   * @param {string | SchemaNode[]} addedSources the JSON representation of or the schema nodes of the sources being added
-   * @returns {Command} the add sources command or a no op command if sources are empty
+   * @param  addedSources the JSON representation of or the schema nodes of the sources being added
+   * @returns  the add sources command or a no op command if sources are empty
    */
   public static createAddSourcesCommand( addedSources: string | SchemaNode[], id?: string ): Command {
     if ( !addedSources || addedSources.length === 0 ) {
@@ -43,8 +43,7 @@ export class CommandFactory {
   }
 
   /**
-   * @param {string | Composition} addedSources the JSON representation of or the composition being added
-   * @returns {Command} the add composition command or a no op command if composition is null
+   * @param  addedSources the JSON representation of or the composition being added
    */
   public static createAddCompositionCommand( addedComposition: string | Composition, id?: string ): Command {
     if ( !addedComposition || addedComposition === null ) {
@@ -54,16 +53,12 @@ export class CommandFactory {
     return new AddCompositionCommand( addedComposition, id );
   }
 
-  /**
-   * @returns {Command} a no op command (never `null`)
-   */
   public static createNoOpCommand(): Command {
     return NoOpCommand.NO_OP;
   }
 
   /**
-   * @param {string | SchemaNode[]} removedSources the JSON representation of or the schema nodes of the sources being removed
-   * @returns {Command} the remove sources command or a no op command if sources are `undefined` or `null`
+   * @param  removedSources the JSON representation of or the schema nodes of the sources being removed
    */
   public static createRemoveSourcesCommand( removedSources: string | SchemaNode[], id: string ): Command {
     if ( !removedSources || removedSources.length === 0 ) {
@@ -74,8 +69,7 @@ export class CommandFactory {
   }
 
   /**
-   * @param {string | SchemaNode[]} removedSources the JSON representation of or the schema nodes of the sources being removed
-   * @returns {Command} the remove sources command or a no op command if sources are `undefined` or `null`
+   * @param  removedSources the JSON representation of or the schema nodes of the sources being removed
    */
   public static createRemoveCompositionCommand( removedComposition: string | Composition, id: string ): Command {
     if ( !removedComposition || removedComposition === null ) {
@@ -87,8 +81,7 @@ export class CommandFactory {
 
   /**
    *
-   * @param {Command} cmd the command whose undoable is being requested
-   * @returns {Undoable | Error} the undoable or an error if an undoable cannot be created
+   * @param  cmd the command whose undoable is being requested
    */
   public static createUndoable( cmd: Command ): Undoable | Error {
     if ( cmd.isUndoable() ) {
@@ -105,8 +98,7 @@ export class CommandFactory {
   }
 
   /**
-   * @param {Command} cmd the command whose undo command is being requested
-   * @returns {Command | Error} the undo command or an error if an undo command cannot be created
+   * @param  cmd the command whose undo command is being requested
    */
   public static createUndoCommand( cmd: Command ): Command | Error {
     switch ( cmd.id ) {
@@ -147,9 +139,8 @@ export class CommandFactory {
   }
 
   /**
-   * @param {string} newDescription the new view description (can be `null` or empty if old description has a value)
-   * @param {string} oldDescription the view description being replaced (can be `null` or empty if new description has a value)
-   * @returns {Command | Error} the update view description command or an error if both the new an old description is missing
+   * @param  newDescription the new view description (can be `null` or empty if old description has a value)
+   * @param  oldDescription the view description being replaced (can be `null` or empty if new description has a value)
    */
   public static createUpdateViewDescriptionCommand( newDescription: string,
                                                     oldDescription: string ): Command | Error {
@@ -165,9 +156,8 @@ export class CommandFactory {
   }
 
   /**
-   * @param {string} newName the new view name (can be `null` or empty if the old name has a value)
-   * @param {string} oldName the view name being replaced (can be `null` or empty if the new name has a value)
-   * @returns {Command | Error} the update view name command or an error if both the new and old name is missing
+   * @param  newName the new view name (can be `null` or empty if the old name has a value)
+   * @param  oldName the view name being replaced (can be `null` or empty if the new name has a value)
    */
   public static createUpdateViewNameCommand( newName: string,
                                              oldName: string ): Command | Error {
@@ -183,9 +173,9 @@ export class CommandFactory {
   }
 
   /**
-   * @param {string | ProjectedColumns} newProjColumns the stringified representation of or the new projected columns
-   * @param {string | ProjectedColumns} oldProjColumns the stringified representation of or the old projected columns
-   * @returns {Command} the update projected columns command or a no op command if args are not supplied
+   * @param  newProjColumns the stringified representation of or the new projected columns
+   * @param  oldProjColumns the stringified representation of or the old projected columns
+   * @returns  the update projected columns command or a no op command if args are not supplied
    */
   public static createUpdateProjectedColumnsCommand( newProjColumns: string,
                                                      oldProjColumns: string ): Command {
@@ -199,8 +189,8 @@ export class CommandFactory {
   /**
    * Constructs a command object from JSON.
    *
-   * @param {object} json the JSON being converted to a command
-   * @returns {Command | Error} the decoded command or an error if one could not be constructed
+   * @param  json the JSON being converted to a command
+   * @returns  the decoded command or an error if one could not be constructed
    */
   public static decode( json: object = {} ): Command | Error {
     const cmdId = json[ Command.idPropJson ];
@@ -282,8 +272,7 @@ export class CommandFactory {
   }
 
   /**
-   * @param {Object} json the JSON representation of a Undoable
-   * @returns {Undoable | Error} the new Undoable or an error if the undoable could not be created
+   * @param  json the JSON representation of a Undoable
    */
   public static decodeUndoable( json: object = {} ): Undoable | Error {
     let undo: Command = null;

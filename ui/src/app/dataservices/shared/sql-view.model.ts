@@ -25,14 +25,14 @@ export class SqlView {
   }
 
   /**
-   * @returns {string} the view name
+   * @returns the view name
    */
   public get name(): string {
     return this.viewName;
   }
 
   /**
-   * @param {string} name the view name
+   * @param name the view name
    */
   public set name( name: string ) {
     this.viewName = name;

@@ -28,8 +28,8 @@ export class VdbModelSource {
   private vdb__originConnection: string;
 
   /**
-   * @param {Object} json the JSON representation of a VdbModelSource
-   * @returns {VdbModelSource} the new VdbModelSource (never null)
+   * @param json the JSON representation of a VdbModelSource
+   * @returns the new VdbModelSource (never null)
    */
   public static create( json: object = {} ): VdbModelSource {
     const vdbModelSource = new VdbModelSource();
@@ -42,77 +42,77 @@ export class VdbModelSource {
   }
 
   /**
-   * @returns {string} the vdbModelSource identifier (can be null)
+   * @returns the vdbModelSource identifier (can be null)
    */
   public getId(): string {
     return this.keng__id;
   }
 
   /**
-   * @returns {string} the vdbModelSource dataPath (can be null)
+   * @returns the vdbModelSource dataPath (can be null)
    */
   public getDataPath(): string {
     return this.keng__dataPath;
   }
 
   /**
-   * @returns {string} the vdbModelSource type name (can be null)
+   * @returns the vdbModelSource type name (can be null)
    */
   public getType(): string {
     return this.keng__kType;
   }
 
   /**
-   * @returns {string} the jndi name (can be null)
+   * @returns the jndi name (can be null)
    */
   public getJndiName(): string {
     return this.vdb__sourceJndiName;
   }
 
   /**
-   * @returns {string} the translator name (can be null)
+   * @returns the translator name (can be null)
    */
   public getTranslatorName(): string {
     return this.vdb__sourceTranslator;
   }
 
   /**
-   * @returns {string} the associated connection path (can be null)
+   * @returns the associated connection path (can be null)
    */
   public getOriginConnection(): string {
     return this.vdb__originConnection;
   }
 
   /**
-   * @param {string} id the vdbModelSource identifier (optional)
+   * @param id the vdbModelSource identifier (optional)
    */
   public setId( id?: string ): void {
     this.keng__id = id ? id : null;
   }
 
   /**
-   * @param {string} dataPath the vdbModelSource dataPath (optional)
+   * @param dataPath the vdbModelSource dataPath (optional)
    */
   public setDataPath( dataPath?: string ): void {
     this.keng__dataPath = dataPath ? dataPath : null;
   }
 
   /**
-   * @param {string} jndiName the jndi name (optional)
+   * @param jndiName the jndi name (optional)
    */
   public setJndiName( jndiName?: string ): void {
     this.vdb__sourceJndiName = jndiName ? jndiName : null;
   }
 
   /**
-   * @param {string} translator the translator name (optional)
+   * @param translator the translator name (optional)
    */
   public setTranslatorName( translator?: string ): void {
     this.vdb__sourceTranslator = translator ? translator : null;
   }
 
   /**
-   * @param {string} connectionPath the path to the associated connection (optional)
+   * @param connectionPath the path to the associated connection (optional)
    */
   public setOriginConnection( connectionPath?: string ): void {
     this.vdb__originConnection = connectionPath ? connectionPath : null;
@@ -120,7 +120,7 @@ export class VdbModelSource {
 
   /**
    * Set all object values using the supplied VdbModelSource json
-   * @param {Object} values
+   * @param values
    */
   public setValues(values: object = {}): void {
     Object.assign(this, values);

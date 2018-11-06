@@ -32,21 +32,21 @@ export class NewDataservice {
   }
 
   /**
-   * @returns {string} the dataservice name (can be null)
+   * @returns  the dataservice name (can be null)
    */
   public getId(): string {
     return this.keng__id;
   }
 
   /**
-   * @returns {string} the dataservice description (can be null)
+   * @returns the dataservice description (can be null)
    */
   public getDescription(): string {
     return this.tko__description;
   }
 
   /**
-   * @param {string} name the dataservice name
+   * @param name the dataservice name
    */
   public setId( name: string ): void {
     this.keng__id = name;
@@ -54,7 +54,7 @@ export class NewDataservice {
   }
 
   /**
-   * @param {string} description the dataservice description (optional)
+   * @param description the dataservice description (optional)
    */
   public setDescription( description?: string ): void {
     this.tko__description = description ? description : null;

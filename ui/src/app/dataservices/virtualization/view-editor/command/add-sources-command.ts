@@ -15,24 +15,20 @@
  * limitations under the License.
  */
 
-import { SchemaNode } from "@connections/shared/schema-node.model";
-import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
-import { Command } from "@dataservices/virtualization/view-editor/command/command";
-import { CommandType } from "@dataservices/virtualization/view-editor/command/command-type.enum";
+import { SchemaNode } from "../../../../connections/shared/schema-node.model";
+import { ViewEditorI18n } from "../../../../dataservices/virtualization/view-editor/view-editor-i18n";
+import { Command } from "../../../../dataservices/virtualization/view-editor/command/command";
+import { CommandType } from "../../../../dataservices/virtualization/view-editor/command/command-type.enum";
 
 export class AddSourcesCommand extends Command {
 
   /**
    * The command identifier.
-   *
-   * @type {string}
    */
   public static readonly id = CommandType.ADD_SOURCES_COMMAND;
 
   /**
    * The name of the command argument whose value is the paths of the sources being added.
-   *
-   * @type {string}
    */
   public static readonly addedSourcePaths = "addedSourcePaths";
 
@@ -43,9 +39,9 @@ export class AddSourcesCommand extends Command {
    * 'addedSources' must be an array of SchemaNodes -OR-
    * string of the source paths (comma delimited) - path form: "connection=aConn/schema=aSchema/table=aTable"
    *
-   * @param {string | SchemaNode} addedSources the string representation of the sources or the schema nodes of the sources
+   * @param  addedSources the string representation of the sources or the schema nodes of the sources
    *                              being added (cannot be `null` or empty)
-   * @param {string} id the command id.  If not supplied, an id is generated.
+   * @param  id the command id.  If not supplied, an id is generated.
    */
   public constructor( addedSources: string | SchemaNode[], id?: string ) {
     super( AddSourcesCommand.id, ViewEditorI18n.addSourcesCommandName );
@@ -83,26 +79,17 @@ export class AddSourcesCommand extends Command {
     this._args.set( Command.identArg, id);
   }
 
-  /**
-   * @returns {string[]} an array of the paths of the sources being added
-   */
   public getSourcePaths(): string[] {
     const argValue = this.getArg( AddSourcesCommand.addedSourcePaths ) as string;
     return argValue.split( AddSourcesCommand.delim );
   }
 
-  /**
-   * @returns {string} the json payload for this command
-   */
   public getPayload(sourcePath?: string): string {
     if (sourcePath)
       return sourcePath;
     return this.getArg( Command.identArg ) as string;
   }
 
-  /**
-   * @returns {string} a unique short identifier of this command
-   */
   public getId( ): string {
     return this.getArg( Command.identArg ) as string;
   }

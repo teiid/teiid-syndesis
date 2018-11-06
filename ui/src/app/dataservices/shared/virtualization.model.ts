@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-import { PublishState } from "@dataservices/shared/publish-state.enum";
-import { VirtRoute } from "@dataservices/shared/virt-route.model";
+import { PublishState } from "../../dataservices/shared/publish-state.enum";
+import { VirtRoute } from "../../dataservices/shared/virt-route.model";
 
 /**
  * Virtualization model
@@ -34,8 +34,8 @@ export class Virtualization {
   private virtRoutes: Array<VirtRoute>;
 
   /**
-   * @param {Object} json the JSON representation of a Virtualization
-   * @returns {Virtualization} the new Virtualization (never null)
+   * @param json the JSON representation of a Virtualization
+   * @returns the new Virtualization (never null)
    */
   public static create( json: object = {} ): Virtualization {
     const virtual = new Virtualization();
@@ -51,56 +51,56 @@ export class Virtualization {
   }
 
   /**
-   * @returns {string} the virtualization name (can be null)
+   * @returns the virtualization name (can be null)
    */
   public getVdbName(): string {
     return this.vdb_name;
   }
 
   /**
-   * @returns {string} the virtualization build_name (can be null)
+   * @returns the virtualization build_name (can be null)
    */
   public getBuildName(): string {
     return this.build_name;
   }
 
   /**
-   * @returns {string} the virtualization deployment name (can be null)
+   * @returns the virtualization deployment name (can be null)
    */
   public getDeploymentName(): string {
     return this.deployment_name;
   }
 
   /**
-   * @returns {string} the virtualization build status (can be null)
+   * @returns the virtualization build status (can be null)
    */
   public getBuildStatus(): string {
     return this.build_status;
   }
 
   /**
-   * @returns {string} the virtualization build status message (can be null)
+   * @returns the virtualization build status message (can be null)
    */
   public getBuildStatusMsg(): string {
     return this.build_status_message;
   }
 
   /**
-   * @returns {string} the virtualization namespace (can be null)
+   * @returns the virtualization namespace (can be null)
    */
   public getNamespace(): string {
     return this.namespace;
   }
 
   /**
-   * @returns {string} the virtualization last updated date and time (can be null)
+   * @returns the virtualization last updated date and time (can be null)
    */
   public getLastUpdated(): string {
     return this.last_updated;
   }
 
   /**
-   * @returns {PublishState} the published state of this virtualization (derived from build state)
+   * @returns the published state of this virtualization (derived from build state)
    */
   public getPublishState(): PublishState {
     return this.publishState;
@@ -121,7 +121,7 @@ export class Virtualization {
 
   /**
    * Set all object values using the supplied Virtualization json
-   * @param {Object} values
+   * @param values
    */
   public setValues(values: object = {}): void {
     Object.assign(this, values);

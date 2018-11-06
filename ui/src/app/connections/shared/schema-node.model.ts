@@ -26,8 +26,8 @@ export class SchemaNode {
   private children: SchemaNode[];
 
   /**
-   * @param {Object} json the JSON representation of a SchemaNode
-   * @returns {SchemaNode} the new SchemaNode (never null)
+   * @param json the JSON representation of a SchemaNode
+   * @returns the new SchemaNode (never null)
    */
   public static create( json: object = {} ): SchemaNode {
     const schemaNode = new SchemaNode();
@@ -60,14 +60,14 @@ export class SchemaNode {
   }
 
   /**
-   * @returns {string} the node name
+   * @returns the node name
    */
   public getName(): string {
     return this.name;
   }
 
   /**
-   * @returns {string} the node type
+   * @returns the node type
    */
   public getType(): string {
     return this.type;
@@ -76,28 +76,28 @@ export class SchemaNode {
   /**
    * Get the path, for example: ( schema=public/table=customer ).  It is assumed that the path here does NOT include
    * the connection.
-   * @returns {string} the node path
+   * @returns the node path
    */
   public getPath(): string {
     return this.path;
   }
 
   /**
-   * @returns {string} the nodes connection
+   * @returns the nodes connection
    */
   public getConnectionName(): string {
     return this.connectionName;
   }
 
   /**
-   * @param {string} name the node name
+   * @param name the node name
    */
   public setName( name?: string ): void {
     this.name = name ? name : null;
   }
 
   /**
-   * @param {string} type the node type
+   * @param type the node type
    */
   public setType( type?: string ): void {
     this.type = type ? type : null;
@@ -106,49 +106,49 @@ export class SchemaNode {
   /**
    * Set the path, for example: ( schema=public/table=customer ).  It is assumed that the path here does NOT include
    * the connection.
-   * @param {string} path the node path
+   * @param path the node path
    */
   public setPath( path?: string ): void {
     this.path = path ? path : null;
   }
 
   /**
-   * @param {string} connectionName the nodes connection name
+   * @param connectionName the nodes connection name
    */
   public setConnectionName( connectionName?: string ): void {
     this.connectionName = connectionName ? connectionName : null;
   }
 
   /**
-   * @returns {boolean} true if queryable
+   * @returns true if queryable
    */
   public isQueryable(): boolean {
     return this.queryable;
   }
 
   /**
-   * @param {boolean} queryable 'true' if queryable
+   * @param queryable 'true' if queryable
    */
   public setQueryable(queryable: boolean ): void {
     this.queryable = queryable;
   }
 
   /**
-   * @param {boolean} hasChildren 'true' if has children
+   * @param hasChildren 'true' if has children
    */
   public setHasChildren(hasChildren: boolean ): void {
     this.hasChildren = hasChildren;
   }
 
   /**
-   * @returns {SchemaNode[]} the child SchemaNode array
+   * @returns the child SchemaNode array
    */
   public getChildren(): SchemaNode[] {
     return this.children;
   }
 
   /**
-   * @param {SchemaNode[]} children SchemaNode children
+   * @param children SchemaNode children
    */
   public setChildren( children: SchemaNode[] ): void {
     this.children = children;
@@ -156,7 +156,7 @@ export class SchemaNode {
 
   /**
    * Get selected state
-   * @returns {boolean} the selected state
+   * @returns the selected state
    */
   public get selected( ): boolean {
     return this.isSelected;
@@ -164,7 +164,7 @@ export class SchemaNode {
 
   /**
    * Set selected status
-   * @param {boolean} isSelected the selected state
+   * @param isSelected the selected state
    */
   public set selected( isSelected: boolean ) {
     this.isSelected = isSelected;
@@ -172,7 +172,7 @@ export class SchemaNode {
 
   /**
    * Determine the max number of levels in the tree structure, including this node.
-   * @returns {number} the max number of levels, including this node
+   * @returns the max number of levels, including this node
    */
   public getMaxLevels(): number {
     let maxChildLevel = 0;
@@ -186,7 +186,7 @@ export class SchemaNode {
 
   /**
    * Set all object values using the supplied View json
-   * @param {Object} values
+   * @param values
    */
   public setValues(values: object = {}): void {
     Object.assign(this, values);

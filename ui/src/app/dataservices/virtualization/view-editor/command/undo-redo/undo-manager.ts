@@ -14,17 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { UndoNode } from "@dataservices/virtualization/view-editor/command/undo-redo/undo-node";
-import { Undoable } from "@dataservices/virtualization/view-editor/command/undo-redo/undoable";
-import { Command } from "@dataservices/virtualization/view-editor/command/command";
-import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
+import { UndoNode } from "../../../../../dataservices/virtualization/view-editor/command/undo-redo/undo-node";
+import { Undoable } from "../../../../../dataservices/virtualization/view-editor/command/undo-redo/undoable";
+import { Command } from "../../../../../dataservices/virtualization/view-editor/command/command";
+import { ViewEditorI18n } from "../../../../../dataservices/virtualization/view-editor/view-editor-i18n";
 
 export class UndoManager {
 
   /**
    * The name of the JSON property whose value is the array of {@link Undoable}s.
-   *
-   * @type {string}
    */
   public static readonly undoables = "undoables";
 
@@ -37,7 +35,7 @@ export class UndoManager {
   }
 
   /**
-   * @param {Undoable} undoable the undoable being added (cannot be `null`)
+   * @param  undoable the undoable being added (cannot be `null`)
    */
   public add( undoable: Undoable ): void {
     const node = new UndoNode( undoable );
@@ -54,14 +52,14 @@ export class UndoManager {
   }
 
   /**
-   * @returns {boolean} `true` if there is a redo command can be executed
+   * @returns  `true` if there is a redo command can be executed
    */
   public canRedo(): boolean {
     return this.currentIndex.right !== null;
   }
 
   /**
-   * @returns {boolean} `true` if there is an undo command can be executed
+   * @returns  `true` if there is an undo command can be executed
    */
   public canUndo(): boolean {
     return this.currentIndex !== this.rootNode;
@@ -87,7 +85,7 @@ export class UndoManager {
    * Calling this method does not affect the undo manager command stack. If the redo method will be executed call
    * the `popRedoCommand` method instead.
    *
-   * @returns {Command} the current redo command to execute (never `null`)
+   * @returns  the current redo command to execute (never `null`)
    * @throws {RangeError} if there is not an available redo command
    */
   public peekRedoCommand(): Command {
@@ -102,7 +100,7 @@ export class UndoManager {
    * Calling this method does not affect the undo manager command stack. If the undo method will be executed call
    * the `popUndoCommand` method instead.
    *
-   * @returns {Command} the available undo command
+   * @returns  the available undo command
    * @throws {RangeError} if there is not an undo command
    */
   public peekUndoCommand(): Command {
@@ -116,7 +114,7 @@ export class UndoManager {
   /**
    * Removes the current redo command from the redo command stack.
    *
-   * @returns {Command} the current redo command to execute (never `null`)
+   * @returns  the current redo command to execute (never `null`)
    * @throws {RangeError} if there is not an available redo command
    */
   public popRedoCommand(): Command {
@@ -131,7 +129,7 @@ export class UndoManager {
   /**
    * Removes the current undo command from the undo command stack.
    *
-   * @returns {Command} the current undo command to execute (never `null`)
+   * @returns  the current undo command to execute (never `null`)
    * @throws {RangeError} if there is not an undo command
    */
   public popUndoCommand(): Command {
@@ -145,7 +143,7 @@ export class UndoManager {
   }
 
   /**
-   * @returns {string} a short description, suitable for use in tooltips, of the next available redo command
+   * @returns  a short description, suitable for use in tooltips, of the next available redo command
    */
   public redoLabel(): string {
     let label = ViewEditorI18n.redoActionTooltip;
@@ -158,8 +156,8 @@ export class UndoManager {
   }
 
   /**
-   * @param {boolean} includeAll if `false` will include from the first up to the current node
-   * @returns {Undoable[]} a collection of undoables in order from the first to the last (can be empty)
+   * @param  includeAll if `false` will include from the first up to the current node
+   * @returns  a collection of undoables in order from the first to the last (can be empty)
    */
   public toArray( includeAll: boolean = false ): Undoable[] {
     const result: Undoable[] = [];
@@ -189,7 +187,7 @@ export class UndoManager {
   }
 
   /**
-   * @returns {string} a string representation of this undo manager
+   * @returns  a string representation of this undo manager
    */
   public toString(): string {
     let result = "";
@@ -209,7 +207,7 @@ export class UndoManager {
   }
 
   /**
-   * @returns {string} a short description, suitable for use in tooltips, of the next available undo command
+   * @returns  a short description, suitable for use in tooltips, of the next available undo command
    */
   public undoLabel(): string {
     let label = ViewEditorI18n.undoActionTooltip;

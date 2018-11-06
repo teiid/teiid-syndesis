@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-import { ViewDefinition } from "@dataservices/shared/view-definition.model";
-import { CommandFactory } from "@dataservices/virtualization/view-editor/command/command-factory";
-import { Undoable } from "@dataservices/virtualization/view-editor/command/undo-redo/undoable";
+import { ViewDefinition } from "../../dataservices/shared/view-definition.model";
+import { CommandFactory } from "../../dataservices/virtualization/view-editor/command/command-factory";
+import { Undoable } from "../../dataservices/virtualization/view-editor/command/undo-redo/undoable";
 
 /**
  * ViewEditorState model
@@ -28,8 +28,8 @@ export class ViewEditorState {
   private viewDefinition: ViewDefinition;
 
   /**
-   * @param {Object} json the JSON representation of a ViewEditorState
-   * @returns {ViewEditorState} the new ViewEditorState (never null)
+   * @param  json the JSON representation of a ViewEditorState
+   * @returns  the new ViewEditorState (never null)
    */
   public static create( json: object = {} ): ViewEditorState {
     const editorState = new ViewEditorState();
@@ -57,50 +57,47 @@ export class ViewEditorState {
   }
 
   /**
-   * @returns {string} the editor state id
+   * @returns  the editor state id
    */
   public getId(): string {
     return this.id;
   }
 
   /**
-   * @param {string} id the editor state id
+   * @param  id the editor state id
    */
   public setId( id?: string ): void {
     this.id = id ? id : null;
   }
 
   /**
-   * @returns {ViewDefinition} the editor state view definition
+   * @returns  the editor state view definition
    */
   public getViewDefinition(): ViewDefinition {
     return this.viewDefinition;
   }
 
   /**
-   * @param {ViewDefinition} viewDefn the editor state view definition
+   * @param  viewDefn the editor state view definition
    */
   public setViewDefinition( viewDefn?: ViewDefinition ): void {
     this.viewDefinition = viewDefn ? viewDefn : null;
   }
 
   /**
-   * @returns {Undoable[]} the editor state undoables array
+   * @returns  the editor state undoables array
    */
   public getUndoables(): Undoable[] {
     return this.undoables;
   }
 
   /**
-   * @param {Undoable[]} undoables the editor state undoables array
+   * @param  undoables the editor state undoables array
    */
   public setUndoables( undoables: Undoable[] ): void {
     this.undoables = undoables;
   }
 
-  /**
-   * @returns {{}} a JSON representation of the ViewEditorState
-   */
   public toJSON(): {} {
     const undoablesJson = [];
     this.undoables.forEach( ( undoable ) => undoablesJson.push( undoable.toJSON() ) );
@@ -113,7 +110,7 @@ export class ViewEditorState {
   }
 
   /**
-   * @returns {string} a string representation of the event
+   * @returns  a string representation of the event
    */
   public toString(): string {
     const text = `id: ${this.id}`;

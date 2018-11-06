@@ -1,5 +1,5 @@
-import { PublishState } from "@dataservices/shared/publish-state.enum";
-import { Virtualization } from "@dataservices/shared/virtualization.model";
+import { PublishState } from "../../dataservices/shared/publish-state.enum";
+import { Virtualization } from "../../dataservices/shared/virtualization.model";
 
 describe("Virtualization", () => {
   let virtualization: Virtualization;

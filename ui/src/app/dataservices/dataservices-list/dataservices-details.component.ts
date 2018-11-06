@@ -16,7 +16,7 @@
  */
 
 import { Component, Input, OnInit, ViewEncapsulation } from "@angular/core";
-import { Dataservice } from "@dataservices/shared/dataservice.model";
+import { Dataservice } from "../../dataservices/shared/dataservice.model";
 import { ListConfig } from "patternfly-ng";
 import { DataservicesConstants } from "../shared/dataservices-constants";
 
@@ -45,7 +45,7 @@ export class DataservicesDetailsComponent implements OnInit {
   }
 
   /**
-   * @returns {string[][]} the properties of a dataservice
+   * @returns the properties of a dataservice
    */
   public get properties(): string[][] {
     const props = [

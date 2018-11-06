@@ -17,16 +17,16 @@
 
 import { Injectable, ReflectiveInjector } from "@angular/core";
 import { Http } from "@angular/http";
-import { AppSettingsService } from "@core/app-settings.service";
-import { LoggerService } from "@core/logger.service";
-import { NotifierService } from "@dataservices/shared/notifier.service";
-import { VdbModelSource } from "@dataservices/shared/vdb-model-source.model";
-import { VdbModel } from "@dataservices/shared/vdb-model.model";
-import { VdbStatus } from "@dataservices/shared/vdb-status.model";
-import { Vdb } from "@dataservices/shared/vdb.model";
-import { VdbService } from "@dataservices/shared/vdb.service";
-import { Virtualization } from "@dataservices/shared/virtualization.model";
-import { TestDataService } from "@shared/test-data.service";
+import { AppSettingsService } from "../../core/app-settings.service";
+import { LoggerService } from "../../core/logger.service";
+import { NotifierService } from "../../dataservices/shared/notifier.service";
+import { VdbModelSource } from "../../dataservices/shared/vdb-model-source.model";
+import { VdbModel } from "../../dataservices/shared/vdb-model.model";
+import { VdbStatus } from "../../dataservices/shared/vdb-status.model";
+import { Vdb } from "../../dataservices/shared/vdb.model";
+import { VdbService } from "../../dataservices/shared/vdb.service";
+import { Virtualization } from "../../dataservices/shared/virtualization.model";
+import { TestDataService } from "../../shared/test-data.service";
 import "rxjs/add/observable/of";
 import "rxjs/add/observable/throw";
 import "rxjs/add/operator/catch";
@@ -50,7 +50,6 @@ export class MockVdbService extends VdbService {
 
   /**
    * Get the vdbs from the komodo rest interface
-   * @returns {Observable<Vdb[]>}
    */
   public getVdbs(): Observable<Vdb[]> {
     return Observable.of(this.testDataService.getVdbs());
@@ -58,7 +57,6 @@ export class MockVdbService extends VdbService {
 
   /**
    * Get the vdbs from the komodo rest interface
-   * @returns {Observable<Vdb[]>}
    */
   public getTeiidVdbStatuses(): Observable<VdbStatus[]> {
     return Observable.of(this.testDataService.getVdbStatuses());
@@ -66,8 +64,7 @@ export class MockVdbService extends VdbService {
 
   /**
    * Create a vdb via the komodo rest interface
-   * @param {Vdb} vdb
-   * @returns {Observable<boolean>}
+   * @param  vdb
    */
   public createVdb(vdb: Vdb): Observable<boolean> {
     return Observable.of(true);
@@ -75,9 +72,8 @@ export class MockVdbService extends VdbService {
 
   /**
    * Create a vdb via the komodo rest interface
-   * @param {string} vdbName
-   * @param {VdbModel} vdbModel
-   * @returns {Observable<boolean>}
+   * @param  vdbName
+   * @param  vdbModel
    */
   public createVdbModel(vdbName: string, vdbModel: VdbModel): Observable<boolean> {
     return Observable.of(true);
@@ -85,10 +81,9 @@ export class MockVdbService extends VdbService {
 
   /**
    * Create a vdbModelSource via the komodo rest interface
-   * @param {string} vdbName the vdb name
-   * @param {string} modelName the model name
-   * @param {VdbModelSource} vdbModelSource the modelsource name
-   * @returns {Observable<boolean>}
+   * @param  vdbName the vdb name
+   * @param  modelName the model name
+   * @param  vdbModelSource the modelsource name
    */
   public createVdbModelSource(vdbName: string, modelName: string, vdbModelSource: VdbModelSource): Observable<boolean> {
     return Observable.of(true);
@@ -96,8 +91,7 @@ export class MockVdbService extends VdbService {
 
   /**
    * Determine if the workspace has a vdb with the supplied name
-   * @param {string} vdbName the name of the VDB
-   * @returns {Observable<boolean>}
+   * @param  vdbName the name of the VDB
    */
   public hasWorkspaceVdb(vdbName: string): Observable<boolean> {
     return Observable.of(true);
@@ -105,8 +99,7 @@ export class MockVdbService extends VdbService {
 
   /**
    * Delete a vdb via the komodo rest interface
-   * @param {string} vdbId
-   * @returns {Observable<boolean>}
+   * @param  vdbId
    */
   public deleteVdb(vdbId: string): Observable<boolean> {
     return Observable.of(true);
@@ -114,8 +107,7 @@ export class MockVdbService extends VdbService {
 
   /**
    * Delete a vdb if found via the komodo rest interface
-   * @param {string} vdbId
-   * @returns {Observable<boolean>}
+   * @param  vdbId
    */
   public deleteVdbIfFound(vdbId: string): Observable<boolean> {
     return Observable.of(true);
@@ -123,8 +115,7 @@ export class MockVdbService extends VdbService {
 
   /**
    * Deploys the workspace VDB with the provided name
-   * @param {string} vdbName
-   * @returns {Observable<boolean>}
+   * @param  vdbName
    */
   public deployVdb(vdbName: string): Observable<boolean> {
     return Observable.of(true);
@@ -132,8 +123,7 @@ export class MockVdbService extends VdbService {
 
   /**
    * Undeploy a vdb from the teiid server
-   * @param {string} vdbId
-   * @returns {Observable<boolean>}
+   * @param  vdbId
    */
   public undeployVdb(vdbId: string): Observable<boolean> {
     return Observable.of(true);
@@ -144,9 +134,9 @@ export class MockVdbService extends VdbService {
    * (1) The VDB is active
    * (2) The VDB is in a failed state
    * (3) The polling duration has lapsed
-   * @param {string} vdbName the name of the VDB
-   * @param {number} pollDurationSec the duration (sec) to poll the server
-   * @param {number} pollIntervalSec the interval (sec) between polling attempts
+   * @param  vdbName the name of the VDB
+   * @param  pollDurationSec the duration (sec) to poll the server
+   * @param  pollIntervalSec the interval (sec) between polling attempts
    */
   public pollForActiveVdb(vdbName: string, pollDurationSec: number, pollIntervalSec: number): void {
     const pollIntervalMillis = pollIntervalSec * 1000;
@@ -174,11 +164,10 @@ export class MockVdbService extends VdbService {
 
   /**
    * Query the vdb via the komodo rest interface
-   * @param {string} query the SQL query
-   * @param {string} vdbName the vdb name
-   * @param {number} limit the limit for the number of result rows
-   * @param {number} offset the offset for the result rows
-   * @returns {Observable<boolean>}
+   * @param  query the SQL query
+   * @param  vdbName the vdb name
+   * @param  limit the limit for the number of result rows
+   * @param  offset the offset for the result rows
    */
   public queryVdb(query: string, vdbName: string, limit: number, offset: number): Observable<any> {
     return Observable.of(this.testDataService.getQueryResults());
@@ -187,10 +176,9 @@ export class MockVdbService extends VdbService {
   /**
    * Create the workspace VDB Model View if specified view is not found.
    * If specified VDB Model View is found, the create attempt is skipped.
-   * @param {string} vdbName the name of the vdb
-   * @param {string} modelName the name of the model
-   * @param {string} viewName the name of the view
-   * @returns {Observable<boolean>}
+   * @param  vdbName the name of the vdb
+   * @param  modelName the name of the model
+   * @param  viewName the name of the view
    */
   public createVdbModelViewIfNotFound(vdbName: string, modelName: string, viewName: string): Observable<boolean> {
     return Observable.of(true);
@@ -200,10 +188,9 @@ export class MockVdbService extends VdbService {
    * Validates the specified view name within the specified vdb model. If the name contains valid characters
    * and the name is unique, the service returns 'null'. Otherwise, a 'string' containing an error message is returned.
    *
-   * @param {string} vdbName the vdb name
-   * @param {string} modelName the model name
-   * @param {string} viewName the view name
-   * @returns {Observable<String>}
+   * @param  vdbName the vdb name
+   * @param  modelName the model name
+   * @param  viewName the view name
    */
   public isValidViewName( vdbName: string, modelName: string, viewName: string ): Observable< string > {
     // Check that valid names were supplied

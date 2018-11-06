@@ -16,44 +16,42 @@
  */
 
 import { EventEmitter, Injectable, Output } from "@angular/core";
-import { LoggerService } from "@core/logger.service";
-import { Dataservice } from "@dataservices/shared/dataservice.model";
-import { QueryResults } from "@dataservices/shared/query-results.model";
-import { VdbService } from "@dataservices/shared/vdb.service";
-import { ViewValidator } from "@dataservices/virtualization/view-editor/view-validator";
-import { ViewEditorPart } from "@dataservices/virtualization/view-editor/view-editor-part.enum";
-import { Message } from "@dataservices/virtualization/view-editor/editor-views/message-log/message";
-import { ViewEditorEvent } from "@dataservices/virtualization/view-editor/event/view-editor-event";
-import { ViewEditorEventType } from "@dataservices/virtualization/view-editor/event/view-editor-event-type.enum";
-import { ViewEditorProgressChangeId } from "@dataservices/virtualization/view-editor/event/view-editor-save-progress-change-id.enum";
-import { VdbsConstants } from "@dataservices/shared/vdbs-constants";
-import { Command } from "@dataservices/virtualization/view-editor/command/command";
-import { UpdateViewDescriptionCommand } from "@dataservices/virtualization/view-editor/command/update-view-description-command";
-import { UpdateViewNameCommand } from "@dataservices/virtualization/view-editor/command/update-view-name-command";
-import { AddSourcesCommand } from "@dataservices/virtualization/view-editor/command/add-sources-command";
-import { RemoveSourcesCommand } from "@dataservices/virtualization/view-editor/command/remove-sources-command";
-import { UndoManager } from "@dataservices/virtualization/view-editor/command/undo-redo/undo-manager";
-import { CommandFactory } from "@dataservices/virtualization/view-editor/command/command-factory";
-import { Undoable } from "@dataservices/virtualization/view-editor/command/undo-redo/undoable";
-import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
-import { AddCompositionCommand } from "@dataservices/virtualization/view-editor/command/add-composition-command";
-import { RemoveCompositionCommand } from "@dataservices/virtualization/view-editor/command/remove-composition-command";
-import { ViewDefinition } from "@dataservices/shared/view-definition.model";
-import { ViewEditorState } from "@dataservices/shared/view-editor-state.model";
-import { DataserviceService } from "@dataservices/shared/dataservice.service";
-import { SelectionService } from "@core/selection.service";
-import { CommandType } from "@dataservices/virtualization/view-editor/command/command-type.enum";
-import { NoOpCommand } from "@dataservices/virtualization/view-editor/command/no-op-command";
-import { UpdateProjectedColumnsCommand } from "@dataservices/virtualization/view-editor/command/update-projected-columns-command";
-import { ProjectedColumn } from "@dataservices/shared/projected-column.model";
+import { LoggerService } from "../../../core/logger.service";
+import { Dataservice } from "../../../dataservices/shared/dataservice.model";
+import { QueryResults } from "../../../dataservices/shared/query-results.model";
+import { VdbService } from "../../../dataservices/shared/vdb.service";
+import { ViewValidator } from "../../../dataservices/virtualization/view-editor/view-validator";
+import { ViewEditorPart } from "../../../dataservices/virtualization/view-editor/view-editor-part.enum";
+import { Message } from "../../../dataservices/virtualization/view-editor/editor-views/message-log/message";
+import { ViewEditorEvent } from "../../../dataservices/virtualization/view-editor/event/view-editor-event";
+import { ViewEditorEventType } from "../../../dataservices/virtualization/view-editor/event/view-editor-event-type.enum";
+import { ViewEditorProgressChangeId } from "../../../dataservices/virtualization/view-editor/event/view-editor-save-progress-change-id.enum";
+import { VdbsConstants } from "../../../dataservices/shared/vdbs-constants";
+import { Command } from "../../../dataservices/virtualization/view-editor/command/command";
+import { UpdateViewDescriptionCommand } from "../../../dataservices/virtualization/view-editor/command/update-view-description-command";
+import { UpdateViewNameCommand } from "../../../dataservices/virtualization/view-editor/command/update-view-name-command";
+import { AddSourcesCommand } from "../../../dataservices/virtualization/view-editor/command/add-sources-command";
+import { RemoveSourcesCommand } from "../../../dataservices/virtualization/view-editor/command/remove-sources-command";
+import { UndoManager } from "../../../dataservices/virtualization/view-editor/command/undo-redo/undo-manager";
+import { CommandFactory } from "../../../dataservices/virtualization/view-editor/command/command-factory";
+import { Undoable } from "../../../dataservices/virtualization/view-editor/command/undo-redo/undoable";
+import { ViewEditorI18n } from "../../../dataservices/virtualization/view-editor/view-editor-i18n";
+import { AddCompositionCommand } from "../../../dataservices/virtualization/view-editor/command/add-composition-command";
+import { RemoveCompositionCommand } from "../../../dataservices/virtualization/view-editor/command/remove-composition-command";
+import { ViewDefinition } from "../../../dataservices/shared/view-definition.model";
+import { ViewEditorState } from "../../../dataservices/shared/view-editor-state.model";
+import { DataserviceService } from "../../../dataservices/shared/dataservice.service";
+import { SelectionService } from "../../../core/selection.service";
+import { CommandType } from "../../../dataservices/virtualization/view-editor/command/command-type.enum";
+import { NoOpCommand } from "../../../dataservices/virtualization/view-editor/command/no-op-command";
+import { UpdateProjectedColumnsCommand } from "../../../dataservices/virtualization/view-editor/command/update-projected-columns-command";
+import { ProjectedColumn } from "../../../dataservices/shared/projected-column.model";
 
 @Injectable()
 export class ViewEditorService {
 
   /**
    * An event fired when the state of the service has changed.
-   *
-   * @type {EventEmitter<ViewEditorEvent>}
    */
   @Output() public editorEvent: EventEmitter< ViewEditorEvent > = new EventEmitter();
 
@@ -88,8 +86,8 @@ export class ViewEditorService {
   }
 
   /**
-   * @param {Message} msg the message being added
-   * @param {ViewEditorPart} source the source that is adding the message
+   * @param  msg the message being added
+   * @param  source the source that is adding the message
    */
   public addMessage( msg: Message,
                      source: ViewEditorPart ): void {
@@ -109,14 +107,14 @@ export class ViewEditorService {
   }
 
   /**
-   * @returns {boolean} `true` if there is an available undo action
+   * @returns  `true` if there is an available undo action
    */
   public canRedo(): boolean {
     return !this.isReadOnly() && this._undoMgr.canRedo();
   }
 
   /**
-   * @returns {boolean} `true` if there is an available redo action
+   * @returns  `true` if there is an available redo action
    */
   public canUndo(): boolean {
     return !this.isReadOnly() && this._undoMgr.canUndo();
@@ -125,8 +123,8 @@ export class ViewEditorService {
   /**
    * Clears all log messages.
    *
-   * @param {ViewEditorPart} source the source that is deleting the message
-   * @param {string} context an optional context
+   * @param  source the source that is deleting the message
+   * @param  context an optional context
    */
   public clearMessages( source: ViewEditorPart,
                         context?: string ): void {
@@ -143,8 +141,8 @@ export class ViewEditorService {
   }
 
   /**
-   * @param {string} msgId the ID of the message being deleted
-   * @param {ViewEditorPart} source the source that is deleting the message
+   * @param  msgId the ID of the message being deleted
+   * @param  source the source that is deleting the message
    */
   public deleteMessage( msgId: string,
                         source: ViewEditorPart ): void {
@@ -168,7 +166,7 @@ export class ViewEditorService {
   }
 
   /**
-   * @param {ViewEditorEvent} event the event to broadcast
+   * @param  event the event to broadcast
    */
   public fire( event: ViewEditorEvent ): void {
     this._logger.debug( "[ViewEditorService.fire] firing event: " + event );
@@ -186,8 +184,8 @@ export class ViewEditorService {
   /**
    * Fires a `ViewEditorEventType.VIEW_STATE_CHANGED`.
    *
-   * @param {ViewEditorPart} source the source of the event
-   * @param {Command} command the command that was executed on the view being edited
+   * @param  source the source of the event
+   * @param  command the command that was executed on the view being edited
    */
   public fireViewStateHasChanged( source: ViewEditorPart,
                                   command: Command ): void {
@@ -207,15 +205,15 @@ export class ViewEditorService {
   }
 
   /**
-   * @returns {string} the editor's CSS class
+   * @returns  the editor's CSS class
    */
   public getEditorConfig(): string {
     return this._editorConfig;
   }
 
   /**
-   * @param {string} viewName the view name
-   * @returns {string} the ID used to persist the editor state
+   * @param  viewName the view name
+   * @returns  the ID used to persist the editor state
    */
   private getEditorStateId(viewName: string): string {
     const serviceVdbName = this._editorVirtualization.getServiceVdbName().toLowerCase();
@@ -223,70 +221,70 @@ export class ViewEditorService {
   }
 
   /**
-   * @returns {ViewDefinition} the view being edited or `null` if not set
+   * @returns  the view being edited or `null` if not set
    */
   public getEditorView(): ViewDefinition {
     return this._editorView;
   }
 
   /**
-   * @returns {Dataservice} the virtualization of the view being edited or `null` if not set
+   * @returns  the virtualization of the view being edited or `null` if not set
    */
   public getEditorVirtualization(): Dataservice {
     return this._editorVirtualization;
   }
 
   /**
-   * @returns {number} the number of error messages
+   * @returns  the number of error messages
    */
   public getErrorMessageCount(): number {
     return this._errorMsgCount;
   }
 
   /**
-   * @returns {Message[]} the error messages
+   * @returns  the error messages
    */
   public getErrorMessages(): Message[] {
     return this._messages.filter( ( msg ) => msg.isError() );
   }
 
   /**
-   * @returns {number} the number of informational messages
+   * @returns  the number of informational messages
    */
   public getInfoMessageCount(): number {
     return this._infoMsgCount;
   }
 
   /**
-   * @returns {Message[]} the informational messages
+   * @returns  the informational messages
    */
   public getInfoMessages(): Message[] {
     return this._messages.filter( ( msg ) => msg.isInfo() );
   }
 
   /**
-   * @returns {number} the message count (includes error, warning, and info messages)
+   * @returns  the message count (includes error, warning, and info messages)
    */
   public getMessageCount(): number {
     return this.getMessages().length;
   }
 
   /**
-   * @returns {Message[]} the log messages (error, warning, and info)
+   * @returns  the log messages (error, warning, and info)
    */
   public getMessages(): Message[] {
     return this._messages;
   }
 
   /**
-   * @returns {string} the preview sql
+   * @returns  the preview sql
    */
   public getPreviewSql(): string {
     return this._previewSql;
   }
 
   /**
-   * @returns {QueryResults} the preview results or `null` if not set
+   * @returns  the preview results or `null` if not set
    */
   public getPreviewResults(): QueryResults {
     return this._previewResults;
@@ -295,7 +293,7 @@ export class ViewEditorService {
   /**
    * A label that changes dynamically based on the next available redo command.
    *
-   * @returns {string} a short description suitable for use in a redo action
+   * @returns  a short description suitable for use in a redo action
    */
   public getRedoActionTooltip(): string {
     return this._undoMgr.redoLabel();
@@ -304,28 +302,28 @@ export class ViewEditorService {
   /**
    * A label that changes dynamically based on the next available undo command.
    *
-   * @returns {string} a short description suitable for use in an undo action
+   * @returns  a short description suitable for use in an undo action
    */
   public getUndoActionTooltip(): string {
     return this._undoMgr.undoLabel();
   }
 
   /**
-   * @returns {number} the number of warning messages
+   * @returns  the number of warning messages
    */
   public getWarningMessageCount(): number {
     return this._warningMsgCount;
   }
 
   /**
-   * @returns {Message[]} the warning messages
+   * @returns  the warning messages
    */
   public getWarningMessages(): Message[] {
     return this._messages.filter( ( msg ) => msg.isWarning() );
   }
 
   /**
-   * @returns {boolean} `true` if the editor has unsaved changes
+   * @returns  `true` if the editor has unsaved changes
    */
   public hasChanges(): boolean {
     let hasChanged = false;
@@ -336,14 +334,14 @@ export class ViewEditorService {
   }
 
   /**
-   * @returns {boolean} `true` if the editor view can be saved
+   * @returns  `true` if the editor view can be saved
    */
   public canSaveView(): boolean {
     return this._editorView && this._editorView.getName() && this._editorView.getName().length > 0;
   }
 
   /**
-   * @returns {boolean} `true` if editor is readonly or has not been set
+   * @returns  `true` if editor is readonly or has not been set
    */
   public isReadOnly(): boolean {
     return this._readOnly;
@@ -480,7 +478,7 @@ export class ViewEditorService {
    * Sets the view being edited. This is called when the editor is first constructed and can only be called once.
    * Subsequent calls are ignored.
    *
-   * @param {string} newCssClass the editor's CSS class
+   * @param  newCssClass the editor's CSS class
    */
   public setEditorConfig( newCssClass: string ): void {
     if ( this._editorConfig !== newCssClass ) {
@@ -493,8 +491,8 @@ export class ViewEditorService {
    * Sets the view being edited. This should only be called once. Subsequent calls are ignored. Fires a
    * `ViewEditorEventType.VIEW_CHANGED` event having the view definition as an argument.
    *
-   * @param {ViewDefinition} viewDefn the view definition being edited
-   * @param {ViewEditorPart} source the source making the update
+   * @param  viewDefn the view definition being edited
+   * @param  source the source making the update
    */
   public setEditorView( viewDefn: ViewDefinition,
                         source: ViewEditorPart ): void {
@@ -516,7 +514,7 @@ export class ViewEditorService {
    * Sets the virtualization whose view is being edited. This is called when the editor is first constructed and can
    * only be called once. Subsequent calls are ignored.
    *
-   * @param {Dataservice} virtualization the virtualization of the view being edited
+   * @param  virtualization the virtualization of the view being edited
    */
   public setEditorVirtualization( virtualization: Dataservice ): void {
     if ( !this._editorVirtualization ) {
@@ -593,9 +591,9 @@ export class ViewEditorService {
    * Sets the preview results. Fires a `ViewEditorEventType.PREVIEW_RESULTS_CHANGED` event having the results as an
    * argument.
    *
-   * @param {string} sql the preview query
-   * @param {QueryResults} results the new preview results
-   * @param {ViewEditorPart} source the source making the update
+   * @param  sql the preview query
+   * @param  results the new preview results
+   * @param  source the source making the update
    */
   public setPreviewResults( sql: string,
                             results: QueryResults,
@@ -609,8 +607,8 @@ export class ViewEditorService {
    * Sets the readonly property of the editor. Fires a `ViewEditorEventType.READONLY_CHANGED` event having the
    * readonly property as an argument.
    *
-   * @param {boolean} newReadOnly the new readonly value
-   * @param {ViewEditorPart} source the source making the update
+   * @param  newReadOnly the new readonly value
+   * @param  source the source making the update
    */
   public setReadOnly( newReadOnly: boolean,
                       source: ViewEditorPart ): void {
@@ -762,7 +760,6 @@ export class ViewEditorService {
   /**
    * Get the Command type from the selection string
    * @param selection the selection
-   * @return {CommandType} the command type
    */
   public getSelectionCommandType(selection?: string): CommandType {
     let argStr = null;
@@ -796,7 +793,7 @@ export class ViewEditorService {
   /**
    * Get the payload from the selection string
    * @param selection the selection
-   * @return {string} the command id
+   * @return  the command id
    */
   public getSelectionPayload(selection?: string): string {
     if (selection !== null) {

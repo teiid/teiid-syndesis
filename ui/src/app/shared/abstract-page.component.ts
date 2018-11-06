@@ -18,7 +18,7 @@
 import { OnInit } from "@angular/core";
 import { Response } from "@angular/http";
 import { ActivatedRoute } from "@angular/router";
-import { LoggerService } from "@core/logger.service";
+import { LoggerService } from "../core/logger.service";
 import "rxjs/add/observable/combineLatest";
 import { Observable } from "rxjs/Observable";
 
@@ -31,8 +31,8 @@ export abstract class AbstractPageComponent implements OnInit {
 
   /**
    * C'tor.
-   * @param {ActivatedRoute} route
-   * @param {LoggerService} logger the logging service
+   * @param route
+   * @param logger the logging service
    */
   protected constructor(route: ActivatedRoute, logger: LoggerService) {
     this.route = route;
@@ -91,7 +91,6 @@ export abstract class AbstractPageComponent implements OnInit {
   /**
    * Called to determine whether some page data has been loaded yet.
    * @param key
-   * @return {boolean}
    */
   public isLoaded(key: string): boolean {
     return !!this.dataLoaded[ key ];

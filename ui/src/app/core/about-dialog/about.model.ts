@@ -82,7 +82,7 @@ export class About {
 
   /**
    * Set all object values using the supplied JSON.
-   * @param {Object} values
+   * @param values
    */
   public setValues( values: object = {} ): void {
     Object.assign( this, values );

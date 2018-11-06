@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-import { Identifiable } from "@shared/identifiable";
-import { SortDirection } from "@shared/sort-direction.enum";
+import { Identifiable } from "../../shared/identifiable";
+import { SortDirection } from "../../shared/sort-direction.enum";
 
 export class ServiceCatalogSource implements Identifiable< string > {
 
@@ -27,8 +27,8 @@ export class ServiceCatalogSource implements Identifiable< string > {
 
   /**
    * Create a ServiceCatalogSource from its json representation
-   * @param {Object} json the JSON representation of a ServiceCatalogSource
-   * @returns {ServiceCatalogSource} the new ServiceCatalogSource (never null)
+   * @param json the JSON representation of a ServiceCatalogSource
+   * @returns the new ServiceCatalogSource (never null)
    */
   public static create( json: object = {} ): ServiceCatalogSource {
     const conn = new ServiceCatalogSource();
@@ -38,8 +38,8 @@ export class ServiceCatalogSource implements Identifiable< string > {
 
   /**
    * Sorts the provided catalog sources in the specified sort direction
-   * @param {ServiceCatalogSource[]} catalogSources the catalog sources being sorted
-   * @param {SortDirection} sortDirection the sort direction
+   * @param catalogSources the catalog sources being sorted
+   * @param sortDirection the sort direction
    */
   public static sort( catalogSources: ServiceCatalogSource[],
                       sortDirection: SortDirection ): void {
@@ -82,7 +82,7 @@ export class ServiceCatalogSource implements Identifiable< string > {
 
   /**
    * Get the catalog source type
-   * @returns {string} the catalog source type name (can be null)
+   * @returns the catalog source type name (can be null)
    */
   public getType(): string {
     return this.sc__type;
@@ -90,7 +90,7 @@ export class ServiceCatalogSource implements Identifiable< string > {
 
   /**
    * Get the catalog source id
-   * @returns {string} the catalog source identifier (can be null)
+   * @returns the catalog source identifier (can be null)
    */
   public getId(): string {
     return this.keng__id;
@@ -98,7 +98,7 @@ export class ServiceCatalogSource implements Identifiable< string > {
 
   /**
    * Get the catalog source name
-   * @returns {string} the catalog source name (can be null)
+   * @returns the catalog source name (can be null)
    */
   public getName(): string {
     return this.sc__name;
@@ -106,7 +106,7 @@ export class ServiceCatalogSource implements Identifiable< string > {
 
   /**
    * Get the bound status of the catalog source
-   * @returns {boolean} the bound status (true == bound)
+   * @returns the bound status (true == bound)
    */
   public isBound(): boolean {
     return this.sc__bound;
@@ -114,7 +114,7 @@ export class ServiceCatalogSource implements Identifiable< string > {
 
   /**
    * Set the catalog source type
-   * @param {string} typeName the catalog source type (optional)
+   * @param typeName the catalog source type (optional)
    */
   public setType( typeName?: string ): void {
     this.sc__type = typeName ? typeName : null;
@@ -122,7 +122,7 @@ export class ServiceCatalogSource implements Identifiable< string > {
 
   /**
    * Set the catalog source id
-   * @param {string} id the catalog source identifier (optional)
+   * @param id the catalog source identifier (optional)
    */
   public setId( id?: string ): void {
     this.keng__id = id ? id : null;
@@ -130,7 +130,7 @@ export class ServiceCatalogSource implements Identifiable< string > {
 
   /**
    * Set the catalog source name
-   * @param {string} name the catalog source name (optional)
+   * @param name the catalog source name (optional)
    */
   public setName( name?: string ): void {
     this.sc__name = name ? name : null;
@@ -138,7 +138,7 @@ export class ServiceCatalogSource implements Identifiable< string > {
 
   /**
    * Set the bound state of the catalog source
-   * @param {boolean} bound the bound state
+   * @param bound the bound state
    */
   public setBound( bound: boolean ): void {
     this.sc__bound = bound;
@@ -146,7 +146,7 @@ export class ServiceCatalogSource implements Identifiable< string > {
 
   /**
    * Set all object values using the supplied catalog source json
-   * @param {Object} values
+   * @param values
    */
   public setValues(values: object = {}): void {
     Object.assign(this, values);

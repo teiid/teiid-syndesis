@@ -31,8 +31,8 @@ export class ConnectionStatus {
   private vdbState: string;
 
   /**
-   * @param {Object} json the JSON representation of a connection status
-   * @returns {ConnectionStatus} the new connection status (never null)
+   * @param json the JSON representation of a connection status
+   * @returns the new connection status (never null)
    */
   public static create( json: object = {} ): ConnectionStatus {
     const status = new ConnectionStatus();
@@ -42,8 +42,8 @@ export class ConnectionStatus {
 
   /**
    * Creates a Loading status
-   * @param {string} connName the connection name
-   * @returns {ConnectionStatus} the new connection status (never null)
+   * @param connName the connection name
+   * @returns the new connection status (never null)
    */
   public static createLoadingStatus( connName: string ): ConnectionStatus {
     const status = new ConnectionStatus();
@@ -58,91 +58,91 @@ export class ConnectionStatus {
   }
 
   /**
-   * @returns {string} the connection name or `null` if not set
+   * @returns the connection name or `null` if not set
    */
   public getConnectionName(): string {
     return this.connectionName;
   }
 
   /**
-   * @returns {string[]} the errors or `null` if not set
+   * @returns the errors or `null` if not set
    */
   public getErrors(): string[] {
     return this.errors;
   }
 
   /**
-   * @returns {string} the schema model name or `null` if not set
+   * @returns the schema model name or `null` if not set
    */
   public getSchemaModelName(): string {
     return this.schemaModelName;
   }
 
   /**
-   * @returns {string} the schema VDB name or `null` if not set
+   * @returns the schema VDB name or `null` if not set
    */
   public getSchemaVdbName(): string {
     return this.schemaVdbName;
   }
 
   /**
-   * @returns {string} the deployed VDB name or `null` if not set
+   * @returns the deployed VDB name or `null` if not set
    */
   public getServerVdbName(): string {
     return this.vdbName;
   }
 
   /**
-   * @returns {boolean} `true` if the workspace schema is available
+   * @returns `true` if the workspace schema is available
    */
   public isSchemaAvailable(): boolean {
     return this.schemaState && this.schemaState.toUpperCase() === this.activeState;
   }
 
   /**
-   * @returns {boolean} `true` if the workspace schema is in a failed state
+   * @returns `true` if the workspace schema is in a failed state
    */
   public isSchemaFailed(): boolean {
     return this.schemaState && this.schemaState.toUpperCase() === this.failedState;
   }
 
   /**
-   * @returns {boolean} `true` if the workspace schema is loading
+   * @returns `true` if the workspace schema is loading
    */
   public isSchemaLoading(): boolean {
     return this.schemaState && this.schemaState.toUpperCase() === this.loadingState;
   }
 
   /**
-   * @returns {boolean} `true` if the workspace schema is missing
+   * @returns `true` if the workspace schema is missing
    */
   public isSchemaMissing(): boolean {
     return this.schemaState && this.schemaState.toUpperCase() === this.missingState;
   }
 
   /**
-   * @returns {boolean} `true` if the server VDB is active
+   * @returns `true` if the server VDB is active
    */
   public isServerVdbActive(): boolean {
     return this.vdbState && this.vdbState.toUpperCase() === this.activeState;
   }
 
   /**
-   * @returns {boolean} `true` if the server VDB is in a failed state
+   * @returns `true` if the server VDB is in a failed state
    */
   public isServerVdbFailed(): boolean {
     return this.vdbState && this.vdbState.toUpperCase() === this.failedState;
   }
 
   /**
-   * @returns {boolean} `true` if the server VDB is loading
+   * @returns `true` if the server VDB is loading
    */
   public isServerVdbLoading(): boolean {
     return this.vdbState && this.vdbState.toUpperCase() === this.loadingState;
   }
 
   /**
-   * @returns {boolean} `true` if the server VDB is missing
+   * @returns `true` if the server VDB is missing
    */
   public isServerVdbMissing(): boolean {
     return this.vdbState && this.vdbState.toUpperCase() === this.missingState;
@@ -150,7 +150,7 @@ export class ConnectionStatus {
 
   /**
    * Set all object values using the supplied connection status JSON.
-   * @param {Object} json the JSON
+   * @param json the JSON
    */
   public setValues( json: object = {} ): void {
     Object.assign( this, json );

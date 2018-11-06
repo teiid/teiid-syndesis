@@ -24,7 +24,7 @@ export class RowData {
 
   /**
    * Constructor
-   * @param {object} json the representation of the RowData
+   * @param json the representation of the RowData
    */
   constructor(json: object = {}) {
     for (const field of Object.keys(json)) {
@@ -33,7 +33,7 @@ export class RowData {
   }
 
   /**
-   * @returns {string[]} the row data array
+   * @returns the row data array
    */
   public getData( ): string[] {
     return this.row;

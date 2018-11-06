@@ -16,11 +16,11 @@
  */
 
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
-import { LoggerService } from "@core/logger.service";
-import { ViewEditorService } from "@dataservices/virtualization/view-editor/view-editor.service";
+import { LoggerService } from "../../../../../core/logger.service";
+import { ViewEditorService } from "../../../../../dataservices/virtualization/view-editor/view-editor.service";
 import { EmptyStateConfig, NgxDataTableConfig, TableConfig } from "patternfly-ng";
-import { Message } from "@dataservices/virtualization/view-editor/editor-views/message-log/message";
-import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
+import { Message } from "../../../../../dataservices/virtualization/view-editor/editor-views/message-log/message";
+import { ViewEditorI18n } from "../../../../../dataservices/virtualization/view-editor/view-editor-i18n";
 
 @Component({
   encapsulation: ViewEncapsulation.None,
@@ -84,7 +84,7 @@ export class MessageLogComponent implements OnInit {
   }
 
   /**
-   * @returns {Message[]} the log messages
+   * @returns  the log messages
    */
   public get rows(): Message[] {
     return this.editorService.getMessages();

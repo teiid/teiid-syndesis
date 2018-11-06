@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { ViewEditorService } from "@dataservices/virtualization/view-editor/view-editor.service";
-import { SelectionService } from "@core/selection.service";
-import { SelectionItem } from "@dataservices/virtualization/view-editor/view-property-editors/property-editor/selection-item.model";
-import { SelectionType } from "@dataservices/virtualization/view-editor/view-property-editors/property-editor/selection-type.enum";
+import { ViewEditorService } from "../../../../../dataservices/virtualization/view-editor/view-editor.service";
+import { SelectionService } from "../../../../../core/selection.service";
+import { SelectionItem } from "../../../../../dataservices/virtualization/view-editor/view-property-editors/property-editor/selection-item.model";
+import { SelectionType } from "../../../../../dataservices/virtualization/view-editor/view-property-editors/property-editor/selection-type.enum";
 
 @Component({
   selector: 'app-property-editor',
@@ -32,8 +32,7 @@ export class PropertyEditorComponent implements OnInit {
 
   /**
    * Determine whether the editor has a view currently selected
-   *
-   * @return {boolean} 'true' if has a view selection
+   * @return  'true' if has a view selection
    */
   public get hasSelectedView(): boolean {
     const selView = this.editorService.getEditorView();
@@ -42,7 +41,7 @@ export class PropertyEditorComponent implements OnInit {
 
   /**
    * Determine if the first selection item is Source type
-   * @return {boolean} 'true' if the first item in the list is a 'Source'
+   * @return  'true' if the first item in the list is a 'Source'
    */
   public get firstSelectionIsSource(): boolean {
     const selectedItem = this.getFirstSelection();
@@ -51,7 +50,7 @@ export class PropertyEditorComponent implements OnInit {
 
   /**
    * Determine if the first selection item is Composition type
-   * @return {boolean} 'true' if the first item in the list is a 'Composition'
+   * @return  'true' if the first item in the list is a 'Composition'
    */
   public get firstSelectionIsComposition(): boolean {
     const selectedItem = this.getFirstSelection();
@@ -60,7 +59,7 @@ export class PropertyEditorComponent implements OnInit {
 
   /**
    * Get the number of selected items
-   * @return {number} the number of selected items
+   * @return  the number of selected items
    */
   public get numberSelectedItems(): number {
     const selections = this.editorService.getSelection();
@@ -72,7 +71,7 @@ export class PropertyEditorComponent implements OnInit {
 
   /**
    * Get the first item in the selections
-   * @return {SelectionItem} the first item in the selection list
+   * @return the first item in the selection list
    */
   public getFirstSelection(): SelectionItem {
     const selectedObj = new SelectionItem(this.editorService);

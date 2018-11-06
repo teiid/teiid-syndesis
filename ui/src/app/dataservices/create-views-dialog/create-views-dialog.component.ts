@@ -1,11 +1,11 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
+import { ViewEditorI18n } from "../../dataservices/virtualization/view-editor/view-editor-i18n";
 import { BsModalRef } from "ngx-bootstrap";
-import { ConnectionService } from "@connections/shared/connection.service";
-import { LoggerService } from "@core/logger.service";
-import { LoadingState } from "@shared/loading-state.enum";
-import { ConnectionsConstants } from "@connections/shared/connections-constants";
-import { SchemaNode } from "@connections/shared/schema-node.model";
+import { ConnectionService } from "../../connections/shared/connection.service";
+import { LoggerService } from "../../core/logger.service";
+import { LoadingState } from "../../shared/loading-state.enum";
+import { ConnectionsConstants } from "../../connections/shared/connections-constants";
+import { SchemaNode } from "../../connections/shared/schema-node.model";
 import {
   EmptyStateConfig,
   ListConfig,
@@ -13,11 +13,11 @@ import {
   NotificationType,
   TableConfig
 } from "patternfly-ng";
-import { NewView } from "@dataservices/create-views-dialog/new-view.model";
+import { NewView } from "../../dataservices/create-views-dialog/new-view.model";
 import { TableEvent } from "patternfly-ng";
 import { AbstractControl, FormControl, FormGroup } from "@angular/forms";
-import { DataserviceService } from "@dataservices/shared/dataservice.service";
-import { CreateViewsResult } from "@dataservices/create-views-dialog/create-views-result.model";
+import { DataserviceService } from "../../dataservices/shared/dataservice.service";
+import { CreateViewsResult } from "../../dataservices/create-views-dialog/create-views-result.model";
 
 @Component({
   selector: 'app-create-views-dialog',
@@ -177,7 +177,7 @@ export class CreateViewsDialogComponent implements OnInit {
 
   /**
    * Handler for virtualization name changes.
-   * @param {AbstractControl} input
+   * @param  input
    */
   public handleVirtNameChanged( input: AbstractControl ): void {
     const self = this;
@@ -210,7 +210,7 @@ export class CreateViewsDialogComponent implements OnInit {
 
   /**
    * Handles change in connection selection
-   * @param {ListEvent} $event the list selection event
+   * @param $event the list selection event
    */
   public handleConnectionSelectionChange($event: ListEvent): void {
     const newSelections = $event.selectedItems;
@@ -240,7 +240,7 @@ export class CreateViewsDialogComponent implements OnInit {
 
   /**
    * Handler for connection selection
-   * @param {SchemaNode} conn the connection node
+   * @param  conn the connection node
    */
   private onConnectionSelected(conn: SchemaNode): void {
     this.generateConnectionViewInfos(conn.getName());
@@ -248,7 +248,7 @@ export class CreateViewsDialogComponent implements OnInit {
 
   /**
    * Handler for connection deselection
-   * @param {SchemaNode} conn the connection node
+   * @param  conn the connection node
    */
   private onConnectionDeselected(conn: SchemaNode): void {
     let i = this.allViews.length;
@@ -262,7 +262,7 @@ export class CreateViewsDialogComponent implements OnInit {
 
   /**
    * Handles change in View selections
-   * @param {TableEvent} $event the table selection event
+   * @param  $event the table selection event
    */
   public handleViewSelectionChange($event: TableEvent): void {
     this.selectedViews = $event.selectedRows;
@@ -271,7 +271,6 @@ export class CreateViewsDialogComponent implements OnInit {
 
   /**
    * Determine if connections are loading
-   * @returns {boolean}
    */
   public get connectionsLoading( ): boolean {
     return ( this.connectionsLoadingState === LoadingState.LOADING );
@@ -279,7 +278,6 @@ export class CreateViewsDialogComponent implements OnInit {
 
   /**
    * Determine if connections loading completed, and was successful
-   * @returns {boolean}
    */
   public get connectionsLoadedSuccess( ): boolean {
     return ( this.connectionsLoadingState === LoadingState.LOADED_VALID );
@@ -287,7 +285,6 @@ export class CreateViewsDialogComponent implements OnInit {
 
   /**
    * Determine if connections loading completed, but failed
-   * @returns {boolean}
    */
   public get connectionsLoadedFailed( ): boolean {
     return ( this.connectionsLoadingState === LoadingState.LOADED_INVALID );
@@ -295,7 +292,6 @@ export class CreateViewsDialogComponent implements OnInit {
 
   /**
    * Determine if views are loading
-   * @returns {boolean}
    */
   public get viewsLoading( ): boolean {
     return ( this.viewsLoadingState === LoadingState.LOADING );
@@ -303,7 +299,6 @@ export class CreateViewsDialogComponent implements OnInit {
 
   /**
    * Determine if views loading completed, and was successful
-   * @returns {boolean}
    */
   public get viewsLoadedSuccess( ): boolean {
     return ( this.viewsLoadingState === LoadingState.LOADED_VALID );
@@ -311,7 +306,6 @@ export class CreateViewsDialogComponent implements OnInit {
 
   /**
    * Determine if views loading completed, but failed
-   * @returns {boolean}
    */
   public get viewsLoadedFailed( ): boolean {
     return ( this.viewsLoadingState === LoadingState.LOADED_INVALID );
@@ -352,7 +346,7 @@ export class CreateViewsDialogComponent implements OnInit {
 
   /**
    * Generate the view infos for the supplied connection name
-   * @param {string} connName the connection name
+   * @param  connName the connection name
    */
   public generateConnectionViewInfos(connName: string): void {
     // Load the connections
@@ -382,7 +376,7 @@ export class CreateViewsDialogComponent implements OnInit {
 
   /**
    * Recursively generate the view infos for this node and its children
-   * @param {SchemaNode} schemaNode the schema node
+   * @param  schemaNode the schema node
    */
   private generateViewInfos(connName: string, schemaNode: SchemaNode, nodePath: string[], viewInfos: NewView[]): void {
     const sourcePath: string[] = [];

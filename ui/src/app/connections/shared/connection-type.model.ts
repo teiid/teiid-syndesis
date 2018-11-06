@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ConnectionsConstants } from "@connections/shared/connections-constants";
+import { ConnectionsConstants } from "../../connections/shared/connections-constants";
 
 export class ConnectionType {
   private name: string;
@@ -25,21 +25,21 @@ export class ConnectionType {
   }
 
   /**
-   * @returns {string} the ConnectionType name
+   * @returns  the ConnectionType name
    */
   public getName(): string {
     return this.name;
   }
 
   /**
-   * @returns {string} the ConnectionType description
+   * @returns  the ConnectionType description
    */
   public getDescription(): string {
     return this.description;
   }
 
   /**
-   * @returns {string} the alternate image text for the ConnectionType
+   * @returns  the alternate image text for the ConnectionType
    */
   public getImageAlt(): string {
     const name = this.getName();
@@ -58,7 +58,7 @@ export class ConnectionType {
   }
 
   /**
-   * @returns {string} the image location for the ConnectionType
+   * @returns the image location for the ConnectionType
    */
   public getImageSrc(): string {
     const name = this.getName();
@@ -77,14 +77,14 @@ export class ConnectionType {
   }
 
   /**
-   * @param {string} name the ConnectionType name
+   * @param name the ConnectionType name
    */
   public setName( name?: string ): void {
     this.name = name ? name : null;
   }
 
   /**
-   * @param {string} description the ConnectionType description
+   * @param description the ConnectionType description
    */
   public setDescription( description?: string ): void {
     this.description = description ? description : null;

@@ -2,15 +2,15 @@ import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 
 import { FormsModule } from "@angular/forms";
 import { HttpModule } from "@angular/http";
-import { AppSettingsService } from "@core/app-settings.service";
-import { LoggerService } from "@core/logger.service";
-import { MockAppSettingsService } from "@core/mock-app-settings.service";
-import { Dataservice } from "@dataservices/shared/dataservice.model";
-import { DataserviceService } from "@dataservices/shared/dataservice.service";
-import { MockVdbService } from "@dataservices/shared/mock-vdb.service";
-import { NotifierService } from "@dataservices/shared/notifier.service";
-import { SelectionService } from "@core/selection.service";
-import { VdbService } from "@dataservices/shared/vdb.service";
+import { AppSettingsService } from "../../core/app-settings.service";
+import { LoggerService } from "../../core/logger.service";
+import { MockAppSettingsService } from "../../core/mock-app-settings.service";
+import { Dataservice } from "../../dataservices/shared/dataservice.model";
+import { DataserviceService } from "../../dataservices/shared/dataservice.service";
+import { MockVdbService } from "../../dataservices/shared/mock-vdb.service";
+import { NotifierService } from "../../dataservices/shared/notifier.service";
+import { SelectionService } from "../../core/selection.service";
+import { VdbService } from "../../dataservices/shared/vdb.service";
 import { CodemirrorModule } from "ng2-codemirror";
 import {
   ActionModule,
@@ -24,8 +24,8 @@ import {
   WizardModule
 } from "patternfly-ng";
 import { SqlControlComponent } from "./sql-control.component";
-import { SqlView } from "@dataservices/shared/sql-view.model";
-import { MockDataserviceService } from "@dataservices/shared/mock-dataservice.service";
+import { SqlView } from "../../dataservices/shared/sql-view.model";
+import { MockDataserviceService } from "../../dataservices/shared/mock-dataservice.service";
 
 describe("SqlControlComponent", () => {
   let component: SqlControlComponent;

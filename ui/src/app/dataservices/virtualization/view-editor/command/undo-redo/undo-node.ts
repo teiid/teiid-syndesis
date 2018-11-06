@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Undoable } from "@dataservices/virtualization/view-editor/command/undo-redo/undoable";
+import { Undoable } from "../../../../../dataservices/virtualization/view-editor/command/undo-redo/undoable";
 
 export class UndoNode {
 
@@ -30,35 +30,35 @@ export class UndoNode {
   }
 
   /**
-   * @returns {UndoNode} the node to the left or `null`
+   * @returns  the node to the left or `null`
    */
   public get left(): UndoNode {
     return this._left;
   }
 
   /**
-   * @param {UndoNode} node the new left node
+   * @param  node the new left node
    */
   public set left( node: UndoNode ) {
     this._left = node;
   }
 
   /**
-   * @returns {UndoNode} the node to the right or `null`
+   * @returns  the node to the right or `null`
    */
   public get right(): UndoNode {
     return this._right;
   }
 
   /**
-   * @param {UndoNode} node the new right node
+   * @param  node the new right node
    */
   public set right( node: UndoNode ) {
     this._right = node;
   }
 
   /**
-   * @returns {Undoable} the undoable associated with this node (never `null`)
+   * @returns  the undoable associated with this node (never `null`)
    */
   public get undoable(): Undoable {
     return this._undoable;

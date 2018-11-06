@@ -16,29 +16,29 @@
  */
 
 import { Component, OnDestroy, OnInit, AfterViewInit, ViewEncapsulation } from "@angular/core";
-import { AddSourcesCommand } from "@dataservices/virtualization/view-editor/command/add-sources-command";
-import { RemoveSourcesCommand } from "@dataservices/virtualization/view-editor/command/remove-sources-command";
-import { LoggerService } from "@core/logger.service";
-import { ViewEditorEvent } from "@dataservices/virtualization/view-editor/event/view-editor-event";
-import { ViewEditorEventType } from "@dataservices/virtualization/view-editor/event/view-editor-event-type.enum";
-import { ViewEditorService } from "@dataservices/virtualization/view-editor/view-editor.service";
-import { ViewEditorPart } from "@dataservices/virtualization/view-editor/view-editor-part.enum";
-import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
-import { ViewEditorProgressChangeId } from "@dataservices/virtualization/view-editor/event/view-editor-save-progress-change-id.enum";
-import { PathUtils } from "@dataservices/shared/path-utils";
+import { AddSourcesCommand } from "../../../../dataservices/virtualization/view-editor/command/add-sources-command";
+import { RemoveSourcesCommand } from "../../../../dataservices/virtualization/view-editor/command/remove-sources-command";
+import { LoggerService } from "../../../../core/logger.service";
+import { ViewEditorEvent } from "../../../../dataservices/virtualization/view-editor/event/view-editor-event";
+import { ViewEditorEventType } from "../../../../dataservices/virtualization/view-editor/event/view-editor-event-type.enum";
+import { ViewEditorService } from "../../../../dataservices/virtualization/view-editor/view-editor.service";
+import { ViewEditorPart } from "../../../../dataservices/virtualization/view-editor/view-editor-part.enum";
+import { ViewEditorI18n } from "../../../../dataservices/virtualization/view-editor/view-editor-i18n";
+import { ViewEditorProgressChangeId } from "../../../../dataservices/virtualization/view-editor/event/view-editor-save-progress-change-id.enum";
+import { PathUtils } from "../../../../dataservices/shared/path-utils";
 import { NotificationType } from "patternfly-ng";
 import { Subscription } from "rxjs/Subscription";
-import { CanvasNode, CanvasLink } from '@dataservices/virtualization/view-editor/view-canvas/models';
-import { CanvasConstants } from '@dataservices/virtualization/view-editor/view-canvas/canvas-constants';
-import { CanvasService } from '@dataservices/virtualization/view-editor/view-canvas/canvas.service';
-import { ViewCanvasEvent } from "@dataservices/virtualization/view-editor/view-canvas/event/view-canvas-event";
-import { ViewCanvasEventType } from "@dataservices/virtualization/view-editor/view-canvas/event/view-canvas-event-type.enum";
+import { CanvasNode, CanvasLink } from '../../../../dataservices/virtualization/view-editor/view-canvas/models';
+import { CanvasConstants } from '../../../../dataservices/virtualization/view-editor/view-canvas/canvas-constants';
+import { CanvasService } from '../../../../dataservices/virtualization/view-editor/view-canvas/canvas.service';
+import { ViewCanvasEvent } from "../../../../dataservices/virtualization/view-editor/view-canvas/event/view-canvas-event";
+import { ViewCanvasEventType } from "../../../../dataservices/virtualization/view-editor/view-canvas/event/view-canvas-event-type.enum";
 import * as _ from "lodash";
-import { AddCompositionCommand } from "@dataservices/virtualization/view-editor/command/add-composition-command";
-import { RemoveCompositionCommand } from "@dataservices/virtualization/view-editor/command/remove-composition-command";
-import { CommandFactory } from "@dataservices/virtualization/view-editor/command/command-factory";
-import { ViewDefinition } from "@dataservices/shared/view-definition.model";
-import { Composition } from "@dataservices/shared/composition.model";
+import { AddCompositionCommand } from "../../../../dataservices/virtualization/view-editor/command/add-composition-command";
+import { RemoveCompositionCommand } from "../../../../dataservices/virtualization/view-editor/command/remove-composition-command";
+import { CommandFactory } from "../../../../dataservices/virtualization/view-editor/command/command-factory";
+import { ViewDefinition } from "../../../../dataservices/shared/view-definition.model";
+import { Composition } from "../../../../dataservices/shared/composition.model";
 
 @Component({
   encapsulation: ViewEncapsulation.None,
@@ -95,7 +95,7 @@ export class ViewCanvasComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * @param {ViewEditorEvent} event the event being processed
+   * @param  event the event being processed
    */
   public handleEditorEvent( event: ViewEditorEvent ): void {
     this.logger.debug( "ViewCanvasComponent received event: " + event.toString() );
@@ -142,8 +142,8 @@ export class ViewCanvasComponent implements OnInit, OnDestroy {
 
   /**
    * Generates a view notification message based on the progress type and viewName
-   * @param {ViewEditorProgressChangeId} viewProgressId the progress type
-   * @param {string} viewName the view name
+   * @param  viewProgressId the progress type
+   * @param  viewName the view name
    */
   private getViewNotificationMessage(viewProgressId: ViewEditorProgressChangeId, viewName: string): string {
     let msg = "";
@@ -198,14 +198,14 @@ export class ViewCanvasComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * @returns {boolean} `true` if view being edited is readonly
+   * @returns  `true` if view being edited is readonly
    */
   public get readOnly(): boolean {
     return this.editorService.isReadOnly();
   }
 
   /**
-   * @returns {boolean} true if save view notification is to be shown
+   * @returns  true if save view notification is to be shown
    */
   public get showSaveViewNotification(): boolean {
     return this.saveViewNotificationVisible;
@@ -213,7 +213,7 @@ export class ViewCanvasComponent implements OnInit, OnDestroy {
 
   /**
    * Initialize the canvas with the provided ViewDefinition
-   * @param {ViewDefinition} viewDefn the ViewDefinition
+   * @param  viewDefn the ViewDefinition
    */
   private initCanvas( viewDefn: ViewDefinition ): void {
     // Make sure canvas is cleared
@@ -250,7 +250,7 @@ export class ViewCanvasComponent implements OnInit, OnDestroy {
 
   /**
    * Create canvas nodes using the provided AddSourcesCommand
-   * @param {AddSourcesCommand} command the AddSourcesCommand
+   * @param  command the AddSourcesCommand
    */
   private createSourceNode(command: AddSourcesCommand): void {
     const sourcePaths: string[] = command.getSourcePaths();
@@ -272,7 +272,7 @@ export class ViewCanvasComponent implements OnInit, OnDestroy {
 
   /**
    * Remove canvas nodes using the provided RemoveSourcesCommand
-   * @param {RemoveSourcesCommand} command the RemoveSourcesCommand
+   * @param  command the RemoveSourcesCommand
    */
   private removeSourceNodes(command: RemoveSourcesCommand): void {
     const srcPaths = command.getSourcePaths();
@@ -286,7 +286,7 @@ export class ViewCanvasComponent implements OnInit, OnDestroy {
 
   /**
    * Create canvas nodes using the provided AddCompositionCommand
-   * @param {AddCompositionCommand} command the AddCompositionCommand
+   * @param  command the AddCompositionCommand
    */
   private createComposition(command: AddCompositionCommand): void {
     const composition = command.getComposition();
@@ -298,7 +298,7 @@ export class ViewCanvasComponent implements OnInit, OnDestroy {
 
   /**
    * Remove canvas nodes using the provided RemoveCompositionCommand
-   * @param {RemoveCompositionCommand} command the RemoveCompositionCommand
+   * @param  command the RemoveCompositionCommand
    */
   private removeComposition(command: RemoveCompositionCommand): void {
     const composition = command.getComposition();
@@ -312,8 +312,8 @@ export class ViewCanvasComponent implements OnInit, OnDestroy {
 
   /**
    * Generate a links between the compositionNode and CanvasNode for the supplied path, if not found
-   * @param {string} compositionNodeId
-   * @param {string} sourcePath
+   * @param  compositionNodeId
+   * @param  sourcePath
    */
   private createLink(compositionNodeId: string, sourcePath: string): void {
     const sourceNode = this.getCanvasNodeForSourcePath(sourcePath);
