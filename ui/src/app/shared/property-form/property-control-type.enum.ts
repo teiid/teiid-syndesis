@@ -44,31 +44,3 @@ export enum PropertyControlType {
   TEXT
 
 }
-
-/**
- * Namespace to allow methods on the enum.
- */
-// export namespace PropertyControlType {
-//
-//   /**
-//    * @param propDefn the property whose control type is being requested
-//    * @returns the control type to render the property value
-//    */
-//   export function toControlType( propDefn: PropertyDefinition< any > ): PropertyControlType {
-//     if ( propDefn.isConstrainedToAllowedValues() ) {
-//       return PropertyControlType.DROPDOWN;
-//     }
-//
-//     if ( propDefn.getTypeClassName() === "java.lang.Boolean" ) {
-//       return PropertyControlType.CHECKBOX;
-//     }
-//
-//     if ( propDefn.isMasked() || propDefn.getId() === "password" ) {
-//       return PropertyControlType.PASSWORD;
-//     }
-//
-//     // defaults to a text control
-//     return PropertyControlType.TEXT;
-//   }
-//
-// }
