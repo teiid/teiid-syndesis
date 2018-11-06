@@ -17,20 +17,20 @@
 
 import { Injectable } from "@angular/core";
 import { Http } from "@angular/http";
-import { ApiService } from "@core/api.service";
-import { AppSettingsService } from "@core/app-settings.service";
-import { LoggerService } from "@core/logger.service";
-import { NotifierService } from "@dataservices/shared/notifier.service";
-import { VdbModelSource } from "@dataservices/shared/vdb-model-source.model";
-import { VdbModel } from "@dataservices/shared/vdb-model.model";
-import { VdbStatus } from "@dataservices/shared/vdb-status.model";
-import { Vdb } from "@dataservices/shared/vdb.model";
-import { VdbsConstants } from "@dataservices/shared/vdbs-constants";
-import { Virtualization } from "@dataservices/shared/virtualization.model";
-import { environment } from "@environments/environment";
+import { ApiService } from "../../core/api.service";
+import { AppSettingsService } from "../../core/app-settings.service";
+import { LoggerService } from "../../core/logger.service";
+import { NotifierService } from "../../dataservices/shared/notifier.service";
+import { VdbModelSource } from "../../dataservices/shared/vdb-model-source.model";
+import { VdbModel } from "../../dataservices/shared/vdb-model.model";
+import { VdbStatus } from "../../dataservices/shared/vdb-status.model";
+import { Vdb } from "../../dataservices/shared/vdb.model";
+import { VdbsConstants } from "../../dataservices/shared/vdbs-constants";
+import { Virtualization } from "../../dataservices/shared/virtualization.model";
+import { environment } from "../../../environments/environment";
 import { Observable } from "rxjs/Rx";
 import { Subscription } from "rxjs/Subscription";
-import { QueryResults } from "@dataservices/shared/query-results.model";
+import { QueryResults } from "../../dataservices/shared/query-results.model";
 
 @Injectable()
 /**
@@ -51,7 +51,6 @@ export class VdbService extends ApiService {
 
   /**
    * Get the vdbs from the komodo rest interface
-   * @returns {Observable<Vdb[]>}
    */
   public getVdbs(): Observable<Vdb[]> {
     return this.http
@@ -65,8 +64,7 @@ export class VdbService extends ApiService {
 
   /**
    * Determine if the workspace has a vdb with the supplied name
-   * @param {string} vdbName the name of the VDB
-   * @returns {Observable<boolean>}
+   * @param  vdbName the name of the VDB
    */
   public hasWorkspaceVdb(vdbName: string): Observable<boolean> {
     return this.http
@@ -85,10 +83,9 @@ export class VdbService extends ApiService {
 
   /**
    * Determine if the workspace has the specified vdb model view
-   * @param {string} vdbName the name of the VDB
-   * @param {string} modelName the name of the Model
-   * @param {string} viewName the name of the View
-   * @returns {Observable<boolean>}
+   * @param  vdbName the name of the VDB
+   * @param  modelName the name of the Model
+   * @param  viewName the name of the View
    */
   public hasWorkspaceVdbModelView(vdbName: string, modelName: string, viewName: string): Observable<boolean> {
     const url = environment.komodoWorkspaceUrl + VdbsConstants.vdbsRootPath + "/" + vdbName
@@ -110,7 +107,6 @@ export class VdbService extends ApiService {
 
   /**
    * Get the status of any deployed vdbs
-   * @returns {Observable<Vdb[]>}
    */
   public getTeiidVdbStatuses(): Observable<VdbStatus[]> {
     return this.http
@@ -124,7 +120,6 @@ export class VdbService extends ApiService {
 
   /**
    * Get the status of all published vdbs (virtualizations)
-   * @returns {Observable<Vdb[]>}
    */
   public getVirtualizations(): Observable<Virtualization[]> {
     return this.http
@@ -140,10 +135,9 @@ export class VdbService extends ApiService {
    * Validates the specified view name within the specified vdb model. If the name contains valid characters
    * and the name is unique, the service returns 'null'. Otherwise, a 'string' containing an error message is returned.
    *
-   * @param {string} vdbName the vdb name
-   * @param {string} modelName the model name
-   * @param {string} viewName the view name
-   * @returns {Observable<String>}
+   * @param  vdbName the vdb name
+   * @param  modelName the model name
+   * @param  viewName the view name
    */
   public isValidViewName( vdbName: string, modelName: string, viewName: string ): Observable< string > {
     // Check that valid names were supplied
@@ -174,11 +168,10 @@ export class VdbService extends ApiService {
 
   /**
    * Query the vdb via the komodo rest interface
-   * @param {string} query the SQL query
-   * @param {string} vdbName the vdb name
-   * @param {number} limit the limit for the number of result rows
-   * @param {number} offset the offset for the result rows
-   * @returns {Observable<boolean>}
+   * @param  query the SQL query
+   * @param  vdbName the vdb name
+   * @param  limit the limit for the number of result rows
+   * @param  offset the offset for the result rows
    */
   public queryVdb(query: string, vdbName: string, limit: number, offset: number): Observable<any> {
     // The payload for the rest call
@@ -202,8 +195,7 @@ export class VdbService extends ApiService {
 
   /**
    * Create a vdb via the komodo rest interface
-   * @param {Vdb} vdb
-   * @returns {Observable<boolean>}
+   * @param  vdb
    */
   public createVdb(vdb: Vdb): Observable<boolean> {
     return this.http
@@ -217,9 +209,8 @@ export class VdbService extends ApiService {
 
   /**
    * Create a vdb via the komodo rest interface
-   * @param {string} vdbName
-   * @param {VdbModel} vdbModel
-   * @returns {Observable<boolean>}
+   * @param  vdbName
+   * @param  vdbModel
    */
   public createVdbModel(vdbName: string, vdbModel: VdbModel): Observable<boolean> {
     const str = JSON.stringify(vdbModel);
@@ -235,10 +226,9 @@ export class VdbService extends ApiService {
 
   /**
    * Create a vdbModelSource via the komodo rest interface
-   * @param {string} vdbName the vdb name
-   * @param {string} modelName the model name
-   * @param {VdbModelSource} vdbModelSource the modelsource name
-   * @returns {Observable<boolean>}
+   * @param  vdbName the vdb name
+   * @param  modelName the model name
+   * @param  vdbModelSource the modelsource name
    */
   public createVdbModelSource(vdbName: string, modelName: string, vdbModelSource: VdbModelSource): Observable<boolean> {
     return this.http
@@ -254,10 +244,9 @@ export class VdbService extends ApiService {
 
   /**
    * Create a vdb model view via the komodo rest interface
-   * @param {string} vdbName
-   * @param {string} modelName
-   * @param {string} viewName
-   * @returns {Observable<boolean>}
+   * @param  vdbName
+   * @param  modelName
+   * @param  viewName
    */
   public createVdbModelView(vdbName: string, modelName: string, viewName: string): Observable<boolean> {
     // The payload for the rest call
@@ -282,8 +271,7 @@ export class VdbService extends ApiService {
 
   /**
    * Delete a vdb via the komodo rest interface
-   * @param {string} vdbId
-   * @returns {Observable<boolean>}
+   * @param  vdbId
    */
   public deleteVdb(vdbId: string): Observable<boolean> {
     return this.http
@@ -297,8 +285,7 @@ export class VdbService extends ApiService {
 
   /**
    * Deploys the workspace VDB with the provided name
-   * @param {string} vdbName
-   * @returns {Observable<boolean>}
+   * @param  vdbName
    */
   public deployVdb(vdbName: string): Observable<boolean> {
     const vdbPath = this.getKomodoUserWorkspacePath() + "/" + vdbName;
@@ -318,8 +305,7 @@ export class VdbService extends ApiService {
 
   /**
    * Undeploy a vdb from the teiid server
-   * @param {string} vdbId
-   * @returns {Observable<boolean>}
+   * @param  vdbId
    */
   public undeployVdb(vdbId: string): Observable<boolean> {
     return this.http
@@ -336,9 +322,9 @@ export class VdbService extends ApiService {
    * (1) The VDB is active
    * (2) The VDB is in a failed state
    * (3) The polling duration has lapsed
-   * @param {string} vdbName the name of the VDB
-   * @param {number} pollDurationSec the duration (sec) to poll the server
-   * @param {number} pollIntervalSec the interval (sec) between polling attempts
+   * @param  vdbName the name of the VDB
+   * @param  pollDurationSec the duration (sec) to poll the server
+   * @param  pollIntervalSec the interval (sec) between polling attempts
    */
   public pollForActiveVdb(vdbName: string, pollDurationSec: number, pollIntervalSec: number): void {
     const pollIntervalMillis = pollIntervalSec * 1000;
@@ -401,8 +387,7 @@ export class VdbService extends ApiService {
   /**
    * Deletes the workspace VDB if found.  Checks the workspace first, before attempting the delete.
    * If the VDB is not found the delete attempt is skipped.
-   * @param {string} vdbName the name of the vdb
-   * @returns {Observable<boolean>}
+   * @param  vdbName the name of the vdb
    */
   public deleteVdbIfFound(vdbName: string): Observable<boolean> {
     return this.hasWorkspaceVdb(vdbName)
@@ -417,10 +402,9 @@ export class VdbService extends ApiService {
 
   /**
    * Delete a view within a vdb model via the komodo rest interface
-   * @param {string} vdbName the vdb name
-   * @param {string} modelName the model name
-   * @param {string} viewName the view name
-   * @returns {Observable<boolean>} 'true' if successful
+   * @param  vdbName the vdb name
+   * @param  modelName the model name
+   * @param  viewName the view name
    */
   public deleteView(vdbName: string, modelName: string, viewName: string): Observable<boolean> {
     return this.http
@@ -436,10 +420,9 @@ export class VdbService extends ApiService {
   /**
    * Deletes the workspace VDB model view if found.  Checks the workspace first, before attempting the delete.
    * If the View is not found the delete attempt is skipped.
-   * @param {string} vdbName the name of the vdb
-   * @param {string} modelName the name of the model
-   * @param {string} viewName the name of the view
-   * @returns {Observable<boolean>}
+   * @param  vdbName the name of the vdb
+   * @param  modelName the name of the model
+   * @param  viewName the name of the view
    */
   public deleteViewIfFound(vdbName: string, modelName: string, viewName: string): Observable<boolean> {
     return this.hasWorkspaceVdbModelView(vdbName, modelName, viewName)

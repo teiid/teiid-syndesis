@@ -16,8 +16,8 @@
  */
 
 import { Component, EventEmitter, Input, OnInit, Output, ViewEncapsulation } from "@angular/core";
-import { SchemaNode } from "@connections/shared/schema-node.model";
-import { Column } from "@dataservices/shared/column.model";
+import { SchemaNode } from "../../connections/shared/schema-node.model";
+import { Column } from "../../dataservices/shared/column.model";
 import { CardAction, CardConfig, TableConfig, TableEvent } from "patternfly-ng";
 
 @Component({

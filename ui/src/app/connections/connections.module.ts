@@ -20,24 +20,24 @@ import { NgModule } from "@angular/core";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { Http } from "@angular/http";
 import { RouterModule } from "@angular/router";
-import { AddConnectionWizardComponent } from "@connections/add-connection-wizard/add-connection-wizard.component";
-import { AddConnectionComponent } from "@connections/add-connection/add-connection.component";
-import { ConnectionCardComponent } from "@connections/connections-cards/connection-card/connection-card.component";
-import { ConnectionsCardsComponent } from "@connections/connections-cards/connections-cards.component";
-import { ConnectionDetailsComponent } from "@connections/connections-list/connection-details.component";
-import { ConnectionsListComponent } from "@connections/connections-list/connections-list.component";
-import { ConnectionsRoutingModule } from "@connections/connections-routing.module";
-import { ConnectionsComponent } from "@connections/connections.component";
-import { ConnectionService } from "@connections/shared/connection.service";
-import { MockConnectionService } from "@connections/shared/mock-connection.service";
-import { AppSettingsService } from "@core/app-settings.service";
-import { CoreModule } from "@core/core.module";
-import { LoggerService } from "@core/logger.service";
-import { NotifierService } from "@dataservices/shared/notifier.service";
-import { VdbService } from "@dataservices/shared/vdb.service";
-import { environment } from "@environments/environment";
-import { ConfirmDialogComponent } from "@shared/confirm-dialog/confirm-dialog.component";
-import { SharedModule } from "@shared/shared.module";
+import { AddConnectionWizardComponent } from "../connections/add-connection-wizard/add-connection-wizard.component";
+import { AddConnectionComponent } from "../connections/add-connection/add-connection.component";
+import { ConnectionCardComponent } from "../connections/connections-cards/connection-card/connection-card.component";
+import { ConnectionsCardsComponent } from "../connections/connections-cards/connections-cards.component";
+import { ConnectionDetailsComponent } from "../connections/connections-list/connection-details.component";
+import { ConnectionsListComponent } from "../connections/connections-list/connections-list.component";
+import { ConnectionsRoutingModule } from "../connections/connections-routing.module";
+import { ConnectionsComponent } from "../connections/connections.component";
+import { ConnectionService } from "../connections/shared/connection.service";
+import { MockConnectionService } from "../connections/shared/mock-connection.service";
+import { AppSettingsService } from "../core/app-settings.service";
+import { CoreModule } from "../core/core.module";
+import { LoggerService } from "../core/logger.service";
+import { NotifierService } from "../dataservices/shared/notifier.service";
+import { VdbService } from "../dataservices/shared/vdb.service";
+import { environment } from "../../environments/environment";
+import { ConfirmDialogComponent } from "../shared/confirm-dialog/confirm-dialog.component";
+import { SharedModule } from "../shared/shared.module";
 import {
   ActionModule,
   CardModule,
@@ -100,12 +100,12 @@ export class ConnectionsModule { }
 /**
  * A factory that produces the appropriate instande of the service based on current environment settings.
  *
- * @param {Http} http the HTTP service
- * @param {VdbService} vdbService the vdb service
- * @param {NotifierService} notifierService the notifier service
- * @param {AppSettingsService} appSettings the app settings service
- * @param {LoggerService} logger the logger
- * @returns {ConnectionService} the requested service
+ * @param http the HTTP service
+ * @param vdbService the vdb service
+ * @param notifierService the notifier service
+ * @param appSettings the app settings service
+ * @param logger the logger
+ * @returns the requested service
  */
 export function connectionServiceFactory( http: Http,
                                           vdbService: VdbService,

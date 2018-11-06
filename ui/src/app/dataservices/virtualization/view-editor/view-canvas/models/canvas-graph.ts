@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 import { EventEmitter } from '@angular/core';
-import { CanvasService } from '@dataservices/virtualization/view-editor/view-canvas/canvas.service';
-import { CanvasNode } from '@dataservices/virtualization/view-editor/view-canvas/models/canvas-node';
-import { CanvasLink } from '@dataservices/virtualization/view-editor/view-canvas/models/canvas-link';
+import { CanvasService } from '../../../../../dataservices/virtualization/view-editor/view-canvas/canvas.service';
+import { CanvasNode } from '../../../../../dataservices/virtualization/view-editor/view-canvas/models/canvas-node';
+import { CanvasLink } from '../../../../../dataservices/virtualization/view-editor/view-canvas/models/canvas-link';
 import * as d3 from 'd3';
 import * as cola from 'webcola';
 import * as _ from "lodash";

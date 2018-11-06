@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Command } from "@dataservices/virtualization/view-editor/command/command";
+import { Command } from "../../../../../dataservices/virtualization/view-editor/command/command";
 
 export class Undoable {
 
@@ -23,8 +23,8 @@ export class Undoable {
 
   /**
    * Constructs an undoable. !! ** The undo and redo commands should not be `null` *** !!
-   * @param {Command} undoCmd the undo command (should not be `null`)
-   * @param {Command} redoCmd the redo command (should not be `null`)
+   * @param  undoCmd the undo command (should not be `null`)
+   * @param  redoCmd the redo command (should not be `null`)
    */
   public constructor( undoCmd: Command,
                       redoCmd: Command ) {
@@ -33,14 +33,14 @@ export class Undoable {
   }
 
   /**
-   * @returns {Command} the redo command (never `null`)
+   * @returns  the redo command (never `null`)
    */
   public get redoCommand(): Command {
     return this._redoCmd;
   }
 
   /**
-   * @returns {{}} a JSON representation of this undoable
+   * @returns JSON representation of this undoable
    */
   public toJSON(): {} {
     return {
@@ -50,14 +50,14 @@ export class Undoable {
   }
 
   /**
-   * @returns {string} a string representation of this undoable
+   * @returns  a string representation of this undoable
    */
   public toString(): string {
     return "undo: " + this.undoCommand.toString() + ", redo: " + this.redoCommand.toString();
   }
 
   /**
-   * @returns {Command} the undo command (never `null`)
+   * @returns  the undo command (never `null`)
    */
   public get undoCommand(): Command {
     return this._undoCmd;

@@ -16,7 +16,7 @@
  */
 
 import { Component, OnDestroy, OnInit, ViewEncapsulation } from "@angular/core";
-import { ViewEditorService } from "@dataservices/virtualization/view-editor/view-editor.service";
+import { ViewEditorService } from "../../../../dataservices/virtualization/view-editor/view-editor.service";
 
 @Component({
   encapsulation: ViewEncapsulation.None,
@@ -46,14 +46,14 @@ export class ViewEditorHeaderComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * @returns {boolean} `true` if view being edited is readonly
+   * @returns  `true` if view being edited is readonly
    */
   public get readOnly(): boolean {
     return !this.editorService.getEditorView() || this.editorService.isReadOnly();
   }
 
   /**
-   * @returns {string} the name of the dataservice of the view being edited
+   * @returns  the name of the dataservice of the view being edited
    */
   public get virtualizationName(): string {
     const virtualization = this.editorService.getEditorVirtualization();

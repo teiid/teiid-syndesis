@@ -16,7 +16,7 @@
  */
 
 import { Injectable } from "@angular/core";
-import { environment } from "@environments/environment";
+import { environment } from "../../environments/environment";
 
 @Injectable()
 export class LoggerService {
@@ -28,7 +28,7 @@ export class LoggerService {
   /**
    * Logs a debug console message only if not in production mode.
    *
-   * @param {string} msg the message being logged
+   * @param msg the message being logged
    * @param optional any optional parameters
    */
   public debug( msg: string, ...optional: any[] ): void {
@@ -38,7 +38,7 @@ export class LoggerService {
   }
 
   /**
-   * @param {string} msg the error message being logged
+   * @param msg the error message being logged
    * @param optional any optional parameters
    */
   public error( msg: string, ...optional: any[] ): void {
@@ -48,7 +48,7 @@ export class LoggerService {
   /**
    * Same as log method.
    *
-   * @param {string} msg the info message being logged
+   * @param msg the info message being logged
    * @param optional any optional parameters
    */
   public info( msg: string, ...optional: any[] ): void {
@@ -56,7 +56,7 @@ export class LoggerService {
   }
 
   /**
-   * @param {string} msg the message being logged
+   * @param msg the message being logged
    * @param optional any optional parameters
    */
   public log( msg: string, ...optional: any[] ): void {
@@ -64,7 +64,7 @@ export class LoggerService {
   }
 
   /**
-   * @param {string} msg the warning message being logged
+   * @param msg the warning message being logged
    * @param optional any optional parameters
    */
   public warn( msg: string, ...optional: any[] ): void {

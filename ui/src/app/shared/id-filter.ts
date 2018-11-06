@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Identifiable } from "@shared/identifiable";
+import { Identifiable } from "../shared/identifiable";
 
 const emptyPattern = "";
 
@@ -32,8 +32,8 @@ export class IdFilter {
   }
 
   /**
-   * @param {Identifiable<string>} obj the object whose ID is being compared to the filter
-   * @returns {boolean} true if the ID matches the filter
+   * @param obj the object whose ID is being compared to the filter
+   * @returns true if the ID matches the filter
    */
   public accepts( obj: Identifiable< string > ): boolean {
     if ( this.pattern === emptyPattern ) {
@@ -45,7 +45,7 @@ export class IdFilter {
   }
 
   /**
-   * @returns {string} the pattern being matched to
+   * @returns the pattern being matched to
    */
   public getPattern(): string {
     return this.pattern;
@@ -60,7 +60,7 @@ export class IdFilter {
   }
 
   /**
-   * @param {string} pattern the pattern to match IDs with (can be empty or null)
+   * @param pattern the pattern to match IDs with (can be empty or null)
    */
   public setFilter( pattern?: string ): void {
     if ( pattern ) {

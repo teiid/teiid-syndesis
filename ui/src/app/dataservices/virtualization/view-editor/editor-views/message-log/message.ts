@@ -14,8 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { MessageType } from "@dataservices/virtualization/view-editor/editor-views/message-log/message-type.enum";
-import { Problem } from "@dataservices/virtualization/view-editor/editor-views/message-log/problem";
+import { MessageType } from "../../../../../dataservices/virtualization/view-editor/editor-views/message-log/message-type.enum";
+import { Problem } from "../../../../../dataservices/virtualization/view-editor/editor-views/message-log/problem";
 
 export class Message {
 
@@ -33,8 +33,8 @@ export class Message {
   /**
    * Factory method to create a message using a problem.
    *
-   * @param {Problem} problem the unique message identifier
-   * @param {string} context the object context or path that generated the message (optional)
+   * @param  problem the unique message identifier
+   * @param  context the object context or path that generated the message (optional)
    */
   public static create( problem: Problem,
                         context?: string ): Message {
@@ -44,10 +44,10 @@ export class Message {
   /**
    * Factory method to create a message.
    *
-   * @param {string} id the unique message identifier
-   * @param {MessageType} type the message type
-   * @param {string} description the message description
-   * @param {string} context the object context or path that generated the message (optional)
+   * @param  id the unique message identifier
+   * @param  type the message type
+   * @param  description the message description
+   * @param  context the object context or path that generated the message (optional)
    */
   private static doCreate( id: string,
                            type: MessageType,
@@ -72,49 +72,49 @@ export class Message {
   }
 
   /**
-   * @returns {string} the object context or path (can be `null`)
+   * @returns  the object context or path (can be `null`)
    */
   public get context(): string {
     return this._context;
   }
 
   /**
-   * @returns {string} the message description
+   * @returns  the message description
    */
   public get description(): string {
     return this._description;
   }
 
   /**
-   * @returns {string} the unique message identifier
+   * @returns  the unique message identifier
    */
   public get id(): string {
     return this._id;
   }
 
   /**
-   * @returns {boolean} `true` if an error message
+   * @returns  `true` if an error message
    */
   public isError(): boolean {
     return this._type === MessageType.ERROR;
   }
 
   /**
-   * @returns {boolean} `true` if an informational message
+   * @returns  `true` if an informational message
    */
   public isInfo(): boolean {
     return this._type === MessageType.INFO;
   }
 
   /**
-   * @returns {boolean} `true` if a warning message
+   * @returns  `true` if a warning message
    */
   public isWarning(): boolean {
     return this._type === MessageType.WARNING;
   }
 
   /**
-   * @returns {string} a string representation of the event
+   * @returns  a string representation of the event
    */
   public toString(): string {
     let result = `message id: ${this.id}, type: ${this.type}, description: ${this.description}`;
@@ -127,7 +127,7 @@ export class Message {
   }
 
   /**
-   * @returns {string} the message type
+   * @returns  the message type
    */
   public get type(): MessageType {
     return this._type;

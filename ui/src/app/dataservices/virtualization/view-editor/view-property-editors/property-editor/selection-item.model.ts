@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-import { CommandType } from "@dataservices/virtualization/view-editor/command/command-type.enum";
-import { ViewEditorService } from "@dataservices/virtualization/view-editor/view-editor.service";
-import { Composition } from "@dataservices/shared/composition.model";
-import { PathUtils } from "@dataservices/shared/path-utils";
-import { SelectionType } from "@dataservices/virtualization/view-editor/view-property-editors/property-editor/selection-type.enum";
+import { CommandType } from "../../../../../dataservices/virtualization/view-editor/command/command-type.enum";
+import { ViewEditorService } from "../../../../../dataservices/virtualization/view-editor/view-editor.service";
+import { Composition } from "../../../../../dataservices/shared/composition.model";
+import { PathUtils } from "../../../../../dataservices/shared/path-utils";
+import { SelectionType } from "../../../../../dataservices/virtualization/view-editor/view-property-editors/property-editor/selection-type.enum";
 
 /**
  * SelectionItem model - interprets the selection string and provides the payload in object form
@@ -37,7 +37,7 @@ export class SelectionItem {
 
   /**
    * Set the selection string
-   * @param {string} selection the selection
+   * @param  selection the selection
    */
   public setSelection( selection: string ): void {
     if ( !selection || selection === null ) return;
@@ -58,7 +58,7 @@ export class SelectionItem {
 
   /**
    * Get the type of selection
-   * @return {SelectionType} the selection type
+   * @return the selection type
    */
   public getSelectionType(): SelectionType {
     return this.selectionType;
@@ -66,7 +66,7 @@ export class SelectionItem {
 
   /**
    * Get the source connection name
-   * @return {string} the source connection name
+   * @return  the source connection name
    */
   public getSourceConnectionName(): string {
     return PathUtils.getConnectionName(this.srcPath);
@@ -74,7 +74,7 @@ export class SelectionItem {
 
   /**
    * Get the source name
-   * @return {string} the source name
+   * @return  the source name
    */
   public getSourceName(): string {
     return PathUtils.getSourceName(this.srcPath);
@@ -82,7 +82,7 @@ export class SelectionItem {
 
   /**
    * Get the composition
-   * @return {Composition} the composition
+   * @return  the composition
    */
   public getComposition(): Composition {
     return this.comp;

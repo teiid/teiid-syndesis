@@ -15,24 +15,20 @@
  * limitations under the License.
  */
 
-import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
-import { Command } from "@dataservices/virtualization/view-editor/command/command";
-import { Composition } from "@dataservices/shared/composition.model";
-import { CommandType } from "@dataservices/virtualization/view-editor/command/command-type.enum";
+import { ViewEditorI18n } from "../../../../dataservices/virtualization/view-editor/view-editor-i18n";
+import { Command } from "../../../../dataservices/virtualization/view-editor/command/command";
+import { Composition } from "../../../../dataservices/shared/composition.model";
+import { CommandType } from "../../../../dataservices/virtualization/view-editor/command/command-type.enum";
 
 export class AddCompositionCommand extends Command {
 
   /**
    * The command identifier.
-   *
-   * @type {string}
    */
   public static readonly id = CommandType.ADD_COMPOSITION_COMMAND;
 
   /**
    * The name of the command argument whose value is the stringified composition
-   *
-   * @type {string}
    */
   public static readonly addedComposition = "addedComposition";
 
@@ -40,9 +36,9 @@ export class AddCompositionCommand extends Command {
    * Constructor
    * 'addedComposition' must be Composition object -OR- stringified composition
    *
-   * @param {string | Composition} addedComposition the Composition object, or the stringified composition being
+   * @param  addedComposition the Composition object, or the stringified composition being
    *                               added (cannot be `null` or empty)
-   * @param {string} id the command id.  If not supplied, an id is generated.
+   * @param  id the command id.  If not supplied, an id is generated.
    */
   public constructor( addedComposition: string | Composition, id?: string ) {
     super( AddCompositionCommand.id, ViewEditorI18n.addCompositionCommandName );
@@ -67,25 +63,16 @@ export class AddCompositionCommand extends Command {
     this._args.set( Command.identArg, id);
   }
 
-  /**
-   * @returns {string} the composition name
-   */
   public getComposition(): Composition {
     const compStr = this.getArg( AddCompositionCommand.addedComposition ) as string;
     const comp = Composition.create(JSON.parse(compStr));
     return comp;
   }
 
-  /**
-   * @returns {string} json payload for this command
-   */
   public getPayload( ): string {
     return this.getArg( AddCompositionCommand.addedComposition ) as string;
   }
 
-  /**
-   * @returns {string} a unique short identifier of this command
-   */
   public getId( ): string {
     return this.getArg( Command.identArg ) as string;
   }

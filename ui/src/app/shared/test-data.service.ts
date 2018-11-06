@@ -16,19 +16,19 @@
  */
 
 import { Injectable } from "@angular/core";
-import { ConnectionStatus } from "@connections/shared/connection-status";
-import { Connection } from "@connections/shared/connection.model";
-import { SchemaNode } from "@connections/shared/schema-node.model";
-import { ServiceCatalogSource } from "@connections/shared/service-catalog-source.model";
-import { ConnectionSummary } from "@dataservices/shared/connection-summary.model";
-import { Dataservice } from "@dataservices/shared/dataservice.model";
-import { PublishState } from "@dataservices/shared/publish-state.enum";
-import { QueryResults } from "@dataservices/shared/query-results.model";
-import { VdbStatus } from "@dataservices/shared/vdb-status.model";
-import { Vdb } from "@dataservices/shared/vdb.model";
-import { Virtualization } from "@dataservices/shared/virtualization.model";
-import { Column } from "@dataservices/shared/column.model";
-import { ViewEditorState } from "@dataservices/shared/view-editor-state.model";
+import { ConnectionStatus } from "../connections/shared/connection-status";
+import { Connection } from "../connections/shared/connection.model";
+import { SchemaNode } from "../connections/shared/schema-node.model";
+import { ServiceCatalogSource } from "../connections/shared/service-catalog-source.model";
+import { ConnectionSummary } from "../dataservices/shared/connection-summary.model";
+import { Dataservice } from "../dataservices/shared/dataservice.model";
+import { PublishState } from "../dataservices/shared/publish-state.enum";
+import { QueryResults } from "../dataservices/shared/query-results.model";
+import { VdbStatus } from "../dataservices/shared/vdb-status.model";
+import { Vdb } from "../dataservices/shared/vdb.model";
+import { Virtualization } from "../dataservices/shared/virtualization.model";
+import { Column } from "../dataservices/shared/column.model";
+import { ViewEditorState } from "../dataservices/shared/view-editor-state.model";
 
 @Injectable()
 export class TestDataService {
@@ -1905,11 +1905,11 @@ export class TestDataService {
 
   /**
    * Create a ServiceCatalogSource using the specified info
-   * @param {string} id the id
-   * @param {string} name the name
-   * @param {string} type the type
-   * @param {boolean} bound 'true' if bound
-   * @returns {ServiceCatalogSource}
+   * @param id the id
+   * @param name the name
+   * @param type the type
+   * @param bound 'true' if bound
+   * @returns the service catalog source
    */
   private static createServiceCatalogSource( id: string, name: string, type: string, bound: boolean ): ServiceCatalogSource {
     const catalogSource = new ServiceCatalogSource();
@@ -1922,9 +1922,9 @@ export class TestDataService {
 
   /**
    * Create a ConnectionSummary using the specified info
-   * @param {Connection} conn the connection
-   * @param {ConnectionStatus} status the connection status
-   * @returns {ConnectionSummary}
+   * @param conn the connection
+   * @param status the connection status
+   * @returns the connection summary
    */
   private static createConnectionSummary( conn: Connection, status: ConnectionStatus ): ConnectionSummary {
     const connectionSummary = new ConnectionSummary();
@@ -1952,9 +1952,9 @@ export class TestDataService {
 
   /**
    * Get connection summaries based on supplied parameters
-   * @param {boolean} includeConnection include connection in the summary
-   * @param {boolean} includeSchemaStatus include schema status in the summary
-   * @returns {Connection[]} the array of test connections
+   * @param includeConnection include connection in the summary
+   * @param includeSchemaStatus include schema status in the summary
+   * @returns the array of test connections
    */
   public getConnectionSummaries(includeConnection: boolean, includeSchemaStatus: boolean): ConnectionSummary[] {
     if (includeConnection && includeSchemaStatus) {
@@ -1967,21 +1967,21 @@ export class TestDataService {
   }
 
   /**
-   * @returns {ServiceCatalogSource[]} the array of test Service Catalog datasources
+   * @returns the array of test Service Catalog datasources
    */
   public getServiceCatalogSources(): ServiceCatalogSource[] {
     return this.catalogSources;
   }
 
   /**
-   * @returns {Dataservice[]} the array of test dataservices
+   * @returns the array of test dataservices
    */
   public getDataservices(): Dataservice[] {
     return this.dataServices;
   }
 
   /**
-   * @returns {QueryResults} test query results
+   * @returns test query results
    */
   public getQueryResults(): QueryResults {
 
@@ -1989,7 +1989,7 @@ export class TestDataService {
   }
 
   /**
-   * @returns {Map<string, SchemaNode[]>} the array of SchemaNodes for connection
+   * @returns the array of SchemaNodes for connection
    */
   public getConnectionSchemaMap(): Map<string, SchemaNode[]> {
     const nodesMap = new Map<string, SchemaNode[]>();
@@ -2018,7 +2018,7 @@ export class TestDataService {
   }
 
   /**
-   * @returns {Map<string, Column[]>} the array of Columns for connection:tableOption
+   * @returns the array of Columns for connection:tableOption
    */
   public getConnectionSchemaColumnsMap(): Map<string, Column[]> {
     const columnsMap = new Map<string, Column[]>();
@@ -2088,28 +2088,28 @@ export class TestDataService {
   }
 
   /**
-   * @returns {Vdb[]} the VDB collection
+   * @returns the VDB collection
    */
   public getVdbs(): Vdb[] {
     return this.vdbs;
   }
 
   /**
-   * @returns {VdbStatus[]} the VDB status collection
+   * @returns the VDB status collection
    */
   public getVdbStatuses(): VdbStatus[] {
     return this.vdbStatuses;
   }
 
   /**
-   * @returns {Virtualization[]} the virtualization collection
+   * @returns the virtualization collection
    */
   public getVirtualizations(): Virtualization[] {
     return this.virtualizations;
   }
 
   /**
-   * @returns {Map<string, ViewEditorState>} the ViewEditorState by id map
+   * @returns the ViewEditorState by id map
    */
   public getViewEditorStateMap(): Map<string, ViewEditorState> {
     const stateMap = new Map<string, ViewEditorState>();

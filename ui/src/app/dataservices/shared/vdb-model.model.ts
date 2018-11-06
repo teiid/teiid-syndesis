@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { NameValue } from "@dataservices/shared/name-value.model";
+import { NameValue } from "../../dataservices/shared/name-value.model";
 
 /**
  * VdbModel model
@@ -30,8 +30,8 @@ export class VdbModel {
   private keng__properties: NameValue[] = [];
 
   /**
-   * @param {Object} json the JSON representation of a VdbModel
-   * @returns {VdbModel} the new VdbModel (never null)
+   * @param json the JSON representation of a VdbModel
+   * @returns the new VdbModel (never null)
    */
   public static create( json: object = {} ): VdbModel {
     const vdbModel = new VdbModel();
@@ -44,56 +44,56 @@ export class VdbModel {
   }
 
   /**
-   * @returns {string} the vdbModel identifier (can be null)
+   * @returns the vdbModel identifier (can be null)
    */
   public getId(): string {
     return this.keng__id;
   }
 
   /**
-   * @returns {string} the vdbModel dataPath (can be null)
+   * @returns the vdbModel dataPath (can be null)
    */
   public getDataPath(): string {
     return this.keng__dataPath;
   }
 
   /**
-   * @returns {string} the vdbModel type name (can be null)
+   * @returns the vdbModel type name (can be null)
    */
   public getType(): string {
     return this.keng__kType;
   }
 
   /**
-   * @returns {string} the vdbModel model type
+   * @returns the vdbModel model type
    */
   public getModelType(): string {
     return this.mmcore__modelType;
   }
 
   /**
-   * @param {string} id the vdbModel identifier (optional)
+   * @param id the vdbModel identifier (optional)
    */
   public setId( id?: string ): void {
     this.keng__id = id ? id : null;
   }
 
   /**
-   * @param {string} dataPath the vdbModel dataPath (optional)
+   * @param dataPath the vdbModel dataPath (optional)
    */
   public setDataPath( dataPath?: string ): void {
     this.keng__dataPath = dataPath ? dataPath : null;
   }
 
   /**
-   * @param {string} modelType the vdbModel type
+   * @param modelType the vdbModel type
    */
   public setModelType( modelType: string ): void {
     this.mmcore__modelType = modelType;
   }
 
   /**
-   * @param {NameValue[]} props the model properties (optional)
+   * @param props the model properties (optional)
    */
   public setProperties( props?: NameValue[] ): void {
     this.keng__properties = props ? props : null;
@@ -101,7 +101,7 @@ export class VdbModel {
 
   /**
    * Set all object values using the supplied VdbModel json
-   * @param {Object} values
+   * @param values
    */
   public setValues(values: object = {}): void {
     Object.assign(this, values);

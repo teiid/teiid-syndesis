@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-import { CompositionType } from "@dataservices/shared/composition-type.enum";
-import { CompositionOperator } from "@dataservices/shared/composition-operator.enum";
-import { PathUtils } from "@dataservices/shared/path-utils";
+import { CompositionType } from "../../dataservices/shared/composition-type.enum";
+import { CompositionOperator } from "../../dataservices/shared/composition-operator.enum";
+import { PathUtils } from "../../dataservices/shared/path-utils";
 
 /**
  * Composition model
@@ -34,8 +34,8 @@ export class Composition {
   private operator: CompositionOperator = CompositionOperator.EQ;
 
   /**
-   * @param {Object} json the JSON representation of a Composition
-   * @returns {Composition} the new Composition (never null)
+   * @param  json the JSON representation of a Composition
+   * @returns  the new Composition (never null)
    */
   public static create( json: object = {} ): Composition {
     const composition = new Composition();
@@ -48,70 +48,70 @@ export class Composition {
   }
 
   /**
-   * @returns {string} the composition name
+   * @returns  the composition name
    */
   public getName(): string {
     return this.name;
   }
 
   /**
-   * @param {string} name the composition name
+   * @param  name the composition name
    */
   public setName( name?: string ): void {
     this.name = name ? name : null;
   }
 
   /**
-   * @returns {string} the composition type
+   * @returns  the composition type
    */
   public getType(): CompositionType {
     return this.type;
   }
 
   /**
-   * @param {string} type the composition type
+   * @param  type the composition type
    */
   public setType( type: CompositionType ): void {
     this.type = type;
   }
 
   /**
-   * @returns {CompositionOperator} the composition operator
+   * @returns  the composition operator
    */
   public getOperator(): CompositionOperator {
     return this.operator;
   }
 
   /**
-   * @param {CompositionOperator} operator the composition operator
+   * @param  operator the composition operator
    */
   public setOperator(operator: CompositionOperator ): void {
     this.operator = operator;
   }
 
   /**
-   * @return {boolean} 'true' if initial source is set and on the left
+   * @return  'true' if initial source is set and on the left
    */
   public get initialSourceOnLeft(): boolean {
     return this.initialSourcePath !== null && this.leftSourcePath !== null && this.initialSourcePath === this.leftSourcePath;
   }
 
   /**
-   * @return {boolean} 'true' if initial source is set and on the right
+   * @return  'true' if initial source is set and on the right
    */
   public get initialSourceOnRight(): boolean {
     return this.initialSourcePath !== null && this.rightSourcePath !== null && this.initialSourcePath === this.rightSourcePath;
   }
 
   /**
-   * @returns {string} the left source path of the composition
+   * @returns  the left source path of the composition
    */
   public getLeftSourcePath(): string {
     return this.leftSourcePath;
   }
 
   /**
-   * @param {string} sourcePath the left source path of the composition
+   * @param  sourcePath the left source path of the composition
    */
   public setLeftSourcePath(sourcePath: string, isInitialSource = false ): void {
     this.leftSourcePath = sourcePath;
@@ -121,14 +121,14 @@ export class Composition {
   }
 
   /**
-   * @returns {string} the right source source of the composition
+   * @returns  the right source source of the composition
    */
   public getRightSourcePath(): string {
     return this.rightSourcePath;
   }
 
   /**
-   * @param {string} sourcePath the right source of the composition
+   * @param  sourcePath the right source of the composition
    */
   public setRightSourcePath(sourcePath: string, isInitialSource = false ): void {
     this.rightSourcePath = sourcePath;
@@ -138,28 +138,28 @@ export class Composition {
   }
 
   /**
-   * @returns {string} the left criteria column
+   * @returns  the left criteria column
    */
   public getLeftCriteriaColumn(): string {
     return this.leftCriteriaColumn;
   }
 
   /**
-   * @param {string} column the left criteria column
+   * @param  column the left criteria column
    */
   public setLeftCriteriaColumn(column: string ): void {
     this.leftCriteriaColumn = column;
   }
 
   /**
-   * @returns {string} the right criteria column
+   * @returns  the right criteria column
    */
   public getRightCriteriaColumn(): string {
     return this.rightCriteriaColumn;
   }
 
   /**
-   * @param {string} column the right criteria column
+   * @param  column the right criteria column
    */
   public setRightCriteriaColumn(column: string ): void {
     this.rightCriteriaColumn = column;
@@ -184,7 +184,7 @@ export class Composition {
 
   /**
    * Determine whether the composition is in a complete state
-   * @returns {boolean} true if complete
+   * @returns  true if complete
    */
   public get complete(): boolean {
     if ( this.name !== null &&
@@ -202,7 +202,7 @@ export class Composition {
 
   /**
    * Determine if the supplied Composition is equal to this
-   * @param {Object} values
+   * @param  values
    */
   public isEqual( otherComp: Composition ): boolean {
     let equal = false;
@@ -220,15 +220,12 @@ export class Composition {
 
   /**
    * Set all object values using the supplied View json
-   * @param {Object} values
+   * @param  values
    */
   public setValues(values: object = {}): void {
     Object.assign(this, values);
   }
 
-  /**
-   * @returns {{}} a JSON representation of the composition
-   */
   public toJSON(): {} {
     return {
       name: this.name,
@@ -262,7 +259,8 @@ export class Composition {
   public getCriteriaDisplay(): string {
     const leftColumn = this.getLeftCriteriaColumn();
     const rightColumn = this.getRightCriteriaColumn();
-    return leftColumn + " " + CompositionOperator.toSql(this.getOperator()) + " " + rightColumn;
+    return leftColumn + " " + "=" + " " + rightColumn;
+    // return leftColumn + " " + CompositionOperator.toSql(this.getOperator()) + " " + rightColumn;
   }
 
 }

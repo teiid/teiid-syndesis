@@ -14,8 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { MessageType } from "@dataservices/virtualization/view-editor/editor-views/message-log/message-type.enum";
-import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
+import { MessageType } from "../../../../../dataservices/virtualization/view-editor/editor-views/message-log/message-type.enum";
+import { ViewEditorI18n } from "../../../../../dataservices/virtualization/view-editor/view-editor-i18n";
 
 export class Problem {
 
@@ -39,21 +39,21 @@ export class Problem {
   }
 
   /**
-   * @returns {string} the description
+   * @returns  the description
    */
   public get description(): string {
     return this._description;
   }
 
   /**
-   * @returns {string} the identifier
+   * @returns  the identifier
    */
   public get id(): string {
     return this._id;
   }
 
   /**
-   * @returns {string} the type
+   * @returns  the type
    */
   public get type(): MessageType {
     return this._type;

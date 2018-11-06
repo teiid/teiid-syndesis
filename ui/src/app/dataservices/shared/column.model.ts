@@ -24,8 +24,8 @@ export class Column {
   private size: number;
 
   /**
-   * @param {Object} json the JSON representation of a Column
-   * @returns {Column} the new Column (never null)
+   * @param  json the JSON representation of a Column
+   * @returns the new Column (never null)
    */
   public static create( json: object = {} ): Column {
     const column = new Column();
@@ -38,56 +38,56 @@ export class Column {
   }
 
   /**
-   * @returns {string} the column name
+   * @returns  the column name
    */
   public getName(): string {
     return this.keng__id;
   }
 
   /**
-   * @param {string} name the column name
+   * @param  name the column name
    */
   public setName( name?: string ): void {
     this.keng__id = name ? name : null;
   }
 
   /**
-   * @returns {string} the column type
+   * @returns  the column type
    */
   public getDatatype(): string {
     return this.Datatype;
   }
 
   /**
-   * @param {string} name the column type
+   * @param  name the column type
    */
   public setDatatype( type: string ): void {
     this.Datatype = type;
   }
 
   /**
-   * @returns {number} the column size
+   * @returns  the column size
    */
   public getSize(): number {
     return this.size;
   }
 
   /**
-   * @param {number} size the column size
+   * @param  size the column size
    */
   public setSize( size: number ): void {
     this.size = size;
   }
 
   /**
-   * @returns {boolean} 'true' if column isSelected
+   * @returns  'true' if column isSelected
    */
   public get selected(): boolean {
     return this.isSelected;
   }
 
   /**
-   * @param {boolean} selected the column isSelected state
+   * @param  selected the column isSelected state
    */
   public setSelected( selected: boolean ): void {
     this.isSelected = selected;
@@ -95,7 +95,7 @@ export class Column {
 
   /**
    * Set all object values using the supplied View json
-   * @param {Object} values
+   * @param  values
    */
   public setValues(values: object = {}): void {
     Object.assign(this, values);

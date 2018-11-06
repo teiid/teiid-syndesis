@@ -31,8 +31,8 @@ export class PropertyDefinition<T> {
   private allowedValues: string[];
 
   /**
-   * @param {Object} json the JSON representation of a Property
-   * @returns {PropertyDefinition} the new PropertyDefinition (never null)
+   * @param json the JSON representation of a Property
+   * @returns the new PropertyDefinition (never null)
    */
   public static create( json: object = {} ): PropertyDefinition<any> {
     const property = new PropertyDefinition();
@@ -45,184 +45,182 @@ export class PropertyDefinition<T> {
   }
 
    /**
-    * @typedef { object } T the type of the property being queried
-    * @returns {T} the property value (can be null)
+    * @returns the property value (can be null)
     */
   public getValue(): T {
      return this.value;
    }
 
   /**
-   * @returns {string} the property id
+   * @returns the property id
    */
   public getId(): string {
     return this.keng__id;
   }
 
   /**
-   * @returns {string} the property displayName (can be null)
+   * @returns the property displayName (can be null)
    */
   public getDisplayName(): string {
     return this.displayName;
   }
 
   /**
-   * @returns {string} the property default value (can be null)
+   * @returns the property default value (can be null)
    */
   public get theDefaultValue(): string {
     return this.defaultValue;
   }
 
   /**
-   * @returns {string} the property description (can be null)
+   * @returns the property description (can be null)
    */
   public getDescription(): string {
     return this.description;
   }
 
   /**
-   * @returns {string} the property category (can be null)
+   * @returns the property category (can be null)
    */
   public getCategory(): string {
     return this.category;
   }
 
   /**
-   * @returns {string} the property typeClassName (can be null)
+   * @returns the property typeClassName (can be null)
    */
   public getTypeClassName(): string {
     return this.typeClassName;
   }
 
   /**
-   * @returns {boolean} 'true' if required
+   * @returns 'true' if required
    */
   public isRequired(): boolean {
     return this.required;
   }
 
   /**
-   * @returns {boolean} 'true' if advanced
+   * @returns 'true' if advanced
    */
   public isAdvanced(): boolean {
     return this.advanced;
   }
 
   /**
-   * @returns {boolean} 'true' if masked
+   * @returns 'true' if masked
    */
   public isMasked(): boolean {
     return this.masked;
   }
 
   /**
-   * @returns {boolean} 'true' if modifiable
+   * @returns 'true' if modifiable
    */
   public isModifiable(): boolean {
     return this.modifiable;
   }
 
   /**
-   * @returns {boolean} 'true' if constrainedToAllowedValues
+   * @returns 'true' if constrainedToAllowedValues
    */
   public isConstrainedToAllowedValues(): boolean {
     return this.constrainedToAllowedValues;
   }
 
   /**
-   * @returns {string[]} the array of allowed values
+   * @returns the array of allowed values
    */
   public getAllowedValues(): string[] {
     return this.allowedValues;
   }
 
   /**
-   * @typedef { object } T the type of the property being set
-   * @param {T} value the property value
+   * @param value the property value
    */
   public setValue( value?: T ): void {
     this.value = value ? value : null;
   }
 
   /**
-   * @param {string} id the property id
+   * @param id the property id
    */
   public setId( id?: string ): void {
     this.keng__id = id ? id : null;
   }
 
   /**
-   * @param {string} displayName the property displayName
+   * @param displayName the property displayName
    */
   public setDisplayName( displayName?: string ): void {
     this.displayName = displayName ? displayName : null;
   }
 
   /**
-   * @param {string} defaultValue the property default value
+   * @param defaultValue the property default value
    */
   public setDefaultValue(defaultValue: string): void {
     this.defaultValue = defaultValue;
   }
 
   /**
-   * @param {string} description the property description
+   * @param description the property description
    */
   public setDescription(description: string): void {
     this.description = description;
   }
 
   /**
-   * @param {string} category the property category
+   * @param category the property category
    */
   public setCategory(category: string): void {
     this.category = category;
   }
 
   /**
-   * @param {string} typeClassName the property typeClassName
+   * @param typeClassName the property typeClassName
    */
   public setTypeClassName(typeClassName: string): void {
     this.typeClassName = typeClassName;
   }
 
   /**
-   * @param {boolean} required 'true' if property is required
+   * @param required 'true' if property is required
    */
   public setRequired( required?: boolean ): void {
     this.required = required ? required : null;
   }
 
   /**
-   * @param {boolean} advanced 'true' if property is advanced
+   * @param advanced 'true' if property is advanced
    */
   public setAdvanced( advanced?: boolean ): void {
     this.advanced = advanced ? advanced : null;
   }
 
   /**
-   * @param {boolean} masked 'true' if property is masked
+   * @param masked 'true' if property is masked
    */
   public setMasked( masked?: boolean ): void {
     this.masked = masked ? masked : null;
   }
 
   /**
-   * @param {boolean} modifiable 'true' if property is modifiable
+   * @param modifiable 'true' if property is modifiable
    */
   public setModifiable( modifiable?: boolean ): void {
     this.modifiable = modifiable ? modifiable : null;
   }
 
   /**
-   * @param {boolean} constrained 'true' if property is constrained
+   * @param constrained 'true' if property is constrained
    */
   public setConstraintedToAllowedValues( constrained?: boolean ): void {
     this.constrainedToAllowedValues = constrained ? constrained : null;
   }
 
   /**
-   * @param {string[]} allowedValues the array of allowed values
+   * @param allowedValues the array of allowed values
    */
   public setAllowedValues( allowedValues?: string[] ): void {
     this.allowedValues = allowedValues ? allowedValues : null;
@@ -230,7 +228,7 @@ export class PropertyDefinition<T> {
 
   /**
    * Set all object values using the supplied Connection json
-   * @param {Object} values
+   * @param values
    */
   public setValues(values: object = {}): void {
     Object.assign(this, values);

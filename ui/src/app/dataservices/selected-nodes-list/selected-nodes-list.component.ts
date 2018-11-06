@@ -1,5 +1,5 @@
 import { Component, EventEmitter, OnInit, Output } from "@angular/core";
-import { SchemaNode } from "@connections/shared/schema-node.model";
+import { SchemaNode } from "../../connections/shared/schema-node.model";
 
 @Component({
   selector: "app-selected-nodes-list",
@@ -34,8 +34,7 @@ export class SelectedNodesListComponent implements OnInit {
 
   /**
    * Determine if the list already has the specified node
-   * @param {SchemaNode} node
-   * @returns {boolean}
+   * @param  node
    */
   public hasNode( node: SchemaNode ): boolean {
     let hasIt = false;

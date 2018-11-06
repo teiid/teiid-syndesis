@@ -1,13 +1,13 @@
 import { Component } from "@angular/core";
 import { Router } from "@angular/router";
 import { ActivatedRoute } from "@angular/router";
-import { LoggerService } from "@core/logger.service";
-import { Dataservice } from "@dataservices/shared/dataservice.model";
-import { DataservicesConstants } from "@dataservices/shared/dataservices-constants";
-import { AbstractPageComponent } from "@shared/abstract-page.component";
-import { LoadingState } from "@shared/loading-state.enum";
-import { SqlView } from "@dataservices/shared/sql-view.model";
-import { SelectionService } from "@core/selection.service";
+import { LoggerService } from "../../core/logger.service";
+import { Dataservice } from "../../dataservices/shared/dataservice.model";
+import { DataservicesConstants } from "../../dataservices/shared/dataservices-constants";
+import { AbstractPageComponent } from "../../shared/abstract-page.component";
+import { LoadingState } from "../../shared/loading-state.enum";
+import { SqlView } from "../../dataservices/shared/sql-view.model";
+import { SelectionService } from "../../core/selection.service";
 
 @Component({
   selector: "app-test-dataservice",
@@ -70,7 +70,7 @@ export class TestDataserviceComponent extends AbstractPageComponent {
   }
 
   /**
-   * @returns {string} the quick look service name
+   * @returns  the quick look service name
    */
   public get quickLookSql(): string {
     return this.quickLookQueryText;

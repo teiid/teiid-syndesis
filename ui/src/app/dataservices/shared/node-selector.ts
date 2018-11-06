@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { SchemaNode } from "@connections/shared/schema-node.model";
+import { SchemaNode } from "../../connections/shared/schema-node.model";
 
 /**
  * The node selector interface
@@ -24,7 +24,7 @@ export interface NodeSelector {
 
   /**
    * Determine if any nodes are currently selected
-   * @returns {boolean} true if one or more nodes are selected
+   * @returns  true if one or more nodes are selected
    */
   hasSelectedNodes( ): boolean;
 
@@ -36,7 +36,7 @@ export interface NodeSelector {
 
   /**
    * Deselect the node if a node with the same name is currently selected.
-   * @param {SchemaNode} node the table to deselect
+   * @param  node the table to deselect
    */
   deselectNode(node: SchemaNode): void;
 

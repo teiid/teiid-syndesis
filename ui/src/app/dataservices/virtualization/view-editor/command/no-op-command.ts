@@ -14,23 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Command } from "@dataservices/virtualization/view-editor/command/command";
-import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
-import { CommandType } from "@dataservices/virtualization/view-editor/command/command-type.enum";
+import { Command } from "../../../../dataservices/virtualization/view-editor/command/command";
+import { ViewEditorI18n } from "../../../../dataservices/virtualization/view-editor/view-editor-i18n";
+import { CommandType } from "../../../../dataservices/virtualization/view-editor/command/command-type.enum";
 
 export class NoOpCommand extends Command {
 
   /**
    * The command identifier.
-   *
-   * @type {string}
    */
   public static readonly id = CommandType.NO_OP_COMMAND;
 
   /**
    * The shared instance of the no op command.
-   *
-   * @type {NoOpCommand}
    */
   public static readonly NO_OP = new NoOpCommand();
 
@@ -40,8 +36,6 @@ export class NoOpCommand extends Command {
 
   /**
    * Overridden to ensure an empty map is always returned.
-   *
-   * @returns {Map<string, any>} an empty map
    */
   public get args(): Map< string, any > {
     return new Map< string, any >();
@@ -50,15 +44,14 @@ export class NoOpCommand extends Command {
   /**
    * Overridden to ensure `undefined` is always returned.
    *
-   * @param {string} argName the name of the arg being requested
-   * @returns {string} undefined always
+   * @param  argName the name of the arg being requested
    */
   public getArg( argName: string ): any {
     return undefined;
   }
 
   /**
-   * @returns {boolean} `false`
+   * @returns  `false`
    */
   public isUndoable(): boolean {
     return false;

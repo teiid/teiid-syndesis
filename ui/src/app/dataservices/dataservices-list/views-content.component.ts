@@ -16,10 +16,10 @@
  */
 
 import { Component, EventEmitter, Input, OnInit, Output, ViewEncapsulation } from "@angular/core";
-import { Connection } from "@connections/shared/connection.model";
-import { Dataservice } from "@dataservices/shared/dataservice.model";
+import { Connection } from "../../connections/shared/connection.model";
+import { Dataservice } from "../../dataservices/shared/dataservice.model";
 import { ListConfig } from "patternfly-ng";
-import { NameValue } from "@dataservices/shared/name-value.model";
+import { NameValue } from "../../dataservices/shared/name-value.model";
 
 @Component({
   encapsulation: ViewEncapsulation.None,
@@ -38,8 +38,8 @@ export class ViewsContentComponent implements OnInit {
   }
 
   /**
-   * @param {string} view the view whose connections are being requested
-   * @returns {Connection[]} the connections of the dataservice represented by this card
+   * @param  view the view whose connections are being requested
+   * @returns  the connections of the dataservice represented by this card
    */
   public getConnections( view: string ): Connection[] {
     // TODO rewrite when REST functionality has been implemented
@@ -61,8 +61,8 @@ export class ViewsContentComponent implements OnInit {
   }
 
   /**
-   * @param {Dataservice} ds the dataservice whose views are being requested
-   * @returns {string[]} the names of the views
+   * @param  ds the dataservice whose views are being requested
+   * @returns  the names of the views
    */
   public getViews( ds: Dataservice ): string[] {
     const result: string[] = [];
@@ -86,7 +86,7 @@ export class ViewsContentComponent implements OnInit {
 
   /**
    * An event handler for when edit view is invoked.
-   * @param {string} vName the name of the view in the selected dataservice
+   * @param  vName the name of the view in the selected dataservice
    */
   public onEditView( vName: string ): void {
     const nameVal = new NameValue(this.virtualization.getId(), vName);

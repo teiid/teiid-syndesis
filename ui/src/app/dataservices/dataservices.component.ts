@@ -17,24 +17,24 @@
 
 import { Component, OnInit, ViewChild } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
-import { ConnectionService } from "@connections/shared/connection.service";
-import { ConnectionsConstants } from "@connections/shared/connections-constants";
-import { AppSettingsService } from "@core/app-settings.service";
-import { LoggerService } from "@core/logger.service";
-import { SelectionService } from "@core/selection.service";
-import { Dataservice } from "@dataservices/shared/dataservice.model";
-import { DataserviceService } from "@dataservices/shared/dataservice.service";
-import { DataservicesConstants } from "@dataservices/shared/dataservices-constants";
-import { DeploymentState } from "@dataservices/shared/deployment-state.enum";
-import { NotifierService } from "@dataservices/shared/notifier.service";
-import { PublishState } from "@dataservices/shared/publish-state.enum";
-import { VdbService } from "@dataservices/shared/vdb.service";
-import { Virtualization } from "@dataservices/shared/virtualization.model";
-import { SqlControlComponent } from "@dataservices/sql-control/sql-control.component";
-import { AbstractPageComponent } from "@shared/abstract-page.component";
-import { ConfirmDialogComponent } from "@shared/confirm-dialog/confirm-dialog.component";
-import { LayoutType } from "@shared/layout-type.enum";
-import { SortDirection } from "@shared/sort-direction.enum";
+import { ConnectionService } from "../connections/shared/connection.service";
+import { ConnectionsConstants } from "../connections/shared/connections-constants";
+import { AppSettingsService } from "../core/app-settings.service";
+import { LoggerService } from "../core/logger.service";
+import { SelectionService } from "../core/selection.service";
+import { Dataservice } from "../dataservices/shared/dataservice.model";
+import { DataserviceService } from "../dataservices/shared/dataservice.service";
+import { DataservicesConstants } from "../dataservices/shared/dataservices-constants";
+import { DeploymentState } from "../dataservices/shared/deployment-state.enum";
+import { NotifierService } from "../dataservices/shared/notifier.service";
+import { PublishState } from "../dataservices/shared/publish-state.enum";
+import { VdbService } from "../dataservices/shared/vdb.service";
+import { Virtualization } from "../dataservices/shared/virtualization.model";
+import { SqlControlComponent } from "../dataservices/sql-control/sql-control.component";
+import { AbstractPageComponent } from "../shared/abstract-page.component";
+import { ConfirmDialogComponent } from "../shared/confirm-dialog/confirm-dialog.component";
+import { LayoutType } from "../shared/layout-type.enum";
+import { SortDirection } from "../shared/sort-direction.enum";
 import { BsModalService } from "ngx-bootstrap";
 import {
   ActionConfig,
@@ -50,13 +50,13 @@ import {
   SortField
 } from "patternfly-ng";
 import { Subscription } from "rxjs/Subscription";
-import { SqlView } from "@dataservices/shared/sql-view.model";
-import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
-import { ViewDefinition } from "@dataservices/shared/view-definition.model";
-import { ViewEditorState } from "@dataservices/shared/view-editor-state.model";
-import { NameValue } from "@dataservices/shared/name-value.model";
-import { CreateViewsDialogComponent } from "@dataservices/create-views-dialog/create-views-dialog.component";
-import { SetDescriptionDialogComponent } from "@dataservices/set-description-dialog/set-description-dialog.component";
+import { SqlView } from "../dataservices/shared/sql-view.model";
+import { ViewEditorI18n } from "../dataservices/virtualization/view-editor/view-editor-i18n";
+import { ViewDefinition } from "../dataservices/shared/view-definition.model";
+import { ViewEditorState } from "../dataservices/shared/view-editor-state.model";
+import { NameValue } from "../dataservices/shared/name-value.model";
+import { CreateViewsDialogComponent } from "../dataservices/create-views-dialog/create-views-dialog.component";
+import { SetDescriptionDialogComponent } from "../dataservices/set-description-dialog/set-description-dialog.component";
 
 @Component({
   moduleId: module.id,
@@ -280,7 +280,7 @@ export class DataservicesComponent extends AbstractPageComponent implements OnIn
 
   /**
    * Sets the open state of the quick look panel
-   * @param {boolean} openState true if quick look panel is to be shown
+   * @param openState true if quick look panel is to be shown
    */
   public setQuickLookPanelOpenState(openState: boolean): void {
     if (openState) {
@@ -309,77 +309,77 @@ export class DataservicesComponent extends AbstractPageComponent implements OnIn
   }
 
   /**
-   * @returns {boolean} true if dataservice results panel is to be shown
+   * @returns true if dataservice results panel is to be shown
    */
   public get showResults(): boolean {
     return this.resultsShowing;
   }
 
   /**
-   * @returns {boolean} true if dataservice odate editor panel is to be shown
+   * @returns true if dataservice odate editor panel is to be shown
    */
   public get showOdataEditor(): boolean {
     return this.odataEditorShowing;
   }
 
   /**
-   * @returns {boolean} true if dataservice toast notification is to be shown
+   * @returns true if dataservice toast notification is to be shown
    */
   public get showToastNotification(): boolean {
     return this.toastNotificationVisible;
   }
 
   /**
-   * @returns {boolean} true if dataservices are being represented by cards
+   * @returns true if dataservices are being represented by cards
    */
   public get isCardLayout(): boolean {
     return this.appSettingsService.dataservicesPageLayout === LayoutType.CARD;
   }
 
   /**
-   * @returns {boolean} true if dataservices are being represented by items in a list
+   * @returns true if dataservices are being represented by items in a list
    */
   public get isListLayout(): boolean {
     return this.appSettingsService.dataservicesPageLayout === LayoutType.LIST;
   }
 
   /**
-   * @returns {boolean} true if sorting dataservice names in ascending order
+   * @returns true if sorting dataservice names in ascending order
    */
   public get isSortAscending(): boolean {
     return this.sortDirection === SortDirection.ASC;
   }
 
   /**
-   * @returns {boolean} true if sorting dataservice names in descending order
+   * @returns true if sorting dataservice names in descending order
    */
   public get isSortDescending(): boolean {
     return this.sortDirection === SortDirection.DESC;
   }
 
   /**
-   * @returns {Dataservice[]} the array of all dataservices
+   * @returns the array of all dataservices
    */
   public get allDataservices(): Dataservice[] {
     return this.allServices;
   }
 
   /**
-   * @returns {boolean} 'true' if any dataservices are available
+   * @returns 'true' if any dataservices are available
    */
   public get hasDataservices(): boolean {
     return this.allServices.length > 0;
   }
 
   /**
-   * @returns {Dataservice[]} the array of filtered dataservices
+   * @returns the array of filtered dataservices
    */
   public get filteredDataservices(): Dataservice[] {
     return this.filteredServices;
   }
 
   /**
-   * @returns {Dataservice[]} the array of selected dataservices
+   * @returns the array of selected dataservices
    */
   public get selectedDataservices(): Dataservice[] {
     return this.selectedServices;
@@ -400,21 +400,21 @@ export class DataservicesComponent extends AbstractPageComponent implements OnIn
   }
 
   /**
-   * @returns {string} the odata service name
+   * @returns  the odata service name
    */
   public get odataServiceName(): string {
     return this.odataSvcName;
   }
 
   /**
-   * @returns {string} the quick look service name
+   * @returns the quick look service name
    */
   public get quickLookServiceName(): string {
     return this.quickLookSvcName;
   }
 
   /**
-   * @returns {string} the quick look service name
+   * @returns the quick look service name
    */
   public get quickLookSql(): string {
     return this.quickLookQueryText;
@@ -470,7 +470,7 @@ export class DataservicesComponent extends AbstractPageComponent implements OnIn
 
   /**
    * Handle Download of the specified Dataservice
-   * @param {string} svcName
+   * @param svcName
    */
   public onDownload(svcName: string): void {
       this.closeLookPanels();
@@ -499,9 +499,9 @@ export class DataservicesComponent extends AbstractPageComponent implements OnIn
 
   /**
    * Set the toast notification details based on state and type.
-   * @param {Toast.Type} type the type of toast message (Toast.Type.xyz)
-   * @param {Toast.State} state the state of the progress (Toast.State.xyz)
-   * @param {string} virtualizationName the name of the virtualization
+   * @param  type the type of toast message (Toast.Type.xyz)
+   * @param  state the state of the progress (Toast.State.xyz)
+   * @param virtualizationName the name of the virtualization
    */
   private setToastNotification( type: Toast.Type, state: Toast.State, virtualizationName: string ): void {
     // Set InProgress Toast details
@@ -576,7 +576,7 @@ export class DataservicesComponent extends AbstractPageComponent implements OnIn
 
   /**
    * Handle Delete of the specified Dataservice
-   * @param {string} svcName
+   * @param svcName
    */
   public onDelete(svcName: string): void {
     this.closeLookPanels();
@@ -660,8 +660,8 @@ export class DataservicesComponent extends AbstractPageComponent implements OnIn
 
   /*
    * Select the specified Dataservice.  create views under it
-   * @param {string} dsName the name of the dataservice
-   * @param {ViewDefinition[]} viewDefns the array of view definitions to create
+   * @param dsName the name of the dataservice
+   * @param viewDefns the array of view definitions to create
    */
   private selectVirtualizationCreateViews(virtName: string, viewDefns: ViewDefinition[]): void {
     const self = this;
@@ -732,9 +732,9 @@ export class DataservicesComponent extends AbstractPageComponent implements OnIn
 
   /**
    * Construct id for the editor state
-   * @param {Dataservice} dataservice the dataservice
-   * @param {ViewDefinition} viewDefn the view definition
-   * @returns {string} the ID used to persist the editor state
+   * @param dataservice the dataservice
+   * @param viewDefn the view definition
+   * @returns the ID used to persist the editor state
    */
   private getEditorStateId(dataservice: Dataservice, viewDefn: ViewDefinition): string {
     return dataservice.getServiceVdbName().toLowerCase() + "." + viewDefn.getName();
@@ -742,7 +742,7 @@ export class DataservicesComponent extends AbstractPageComponent implements OnIn
 
   /**
    * Handle Edit of the specified Dataservice and View
-   * @param {string} svcName
+   * @param svcName
    */
   public onEdit(svcNameView: NameValue): void {
     const virtName = svcNameView.getName();
@@ -965,7 +965,7 @@ export class DataservicesComponent extends AbstractPageComponent implements OnIn
 
   /*
    * Undeploy the Vdb with the specified name
-   * @param {string} vdbName the name of the Vdb
+   * @param vdbName the name of the Vdb
    */
   private undeployVdb(vdbName: string): void {
     this.vdbService
@@ -1015,7 +1015,7 @@ export class DataservicesComponent extends AbstractPageComponent implements OnIn
 
   /*
    * Update quick look results using the supplied dataservice
-   * @param {string} svcName the dataservice name
+   * @param svcName the dataservice name
    */
   private setQuickLookResults(svcName): void {
      this.quickLookSvcName = svcName;
@@ -1023,7 +1023,7 @@ export class DataservicesComponent extends AbstractPageComponent implements OnIn
 
   /*
    * Update odata editor using the supplied dataservice
-   * @param {string} svcName the dataservice name
+   * @param svcName the dataservice name
    */
   private setOdataServiceName(svcName): void {
      this.odataSvcName = svcName;

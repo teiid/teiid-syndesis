@@ -1,4 +1,4 @@
-import { ProjectedColumn } from "@dataservices/shared/projected-column.model";
+import { ProjectedColumn } from "../../dataservices/shared/projected-column.model";
 
 describe("ProjectedColumn", () => {
   let projCol1: ProjectedColumn;

@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Message } from "@dataservices/virtualization/view-editor/editor-views/message-log/message";
-import { Problem } from "@dataservices/virtualization/view-editor/editor-views/message-log/problem";
-import { ViewDefinition } from "@dataservices/shared/view-definition.model";
-import { Composition } from "@dataservices/shared/composition.model";
+import { Message } from "../../../dataservices/virtualization/view-editor/editor-views/message-log/message";
+import { Problem } from "../../../dataservices/virtualization/view-editor/editor-views/message-log/problem";
+import { ViewDefinition } from "../../../dataservices/shared/view-definition.model";
+import { Composition } from "../../../dataservices/shared/composition.model";
 
 export class ViewValidator {
 
   /**
    * Validates the stated of the specified view definition.
    *
-   * @param {ViewDefinition} viewDefn the view definition whose state is being validated.
-   * @returns {Message[]} the validation messages (never `null` but can be empty)
+   * @param  viewDefn the view definition whose state is being validated.
+   * @returns  the validation messages (never `null` but can be empty)
    */
   public static validate( viewDefn: ViewDefinition ): Message[] {
     const messages: Message[] = [];

@@ -30,35 +30,35 @@ export class ConnectionTypeCardComponent implements OnInit {
   }
 
   /**
-   * @returns {string} the ConnectionType name
+   * @returns  the ConnectionType name
    */
   public get name(): string {
     return this.connectionType.getName();
   }
 
   /**
-   * @returns {string} the ConnectionType description
+   * @returns  the ConnectionType description
    */
   public get description(): string {
     return this.connectionType.getDescription();
   }
 
   /**
-   * @returns {string} the ConnectionType image source
+   * @returns  the ConnectionType image source
    */
   public get imageSrc(): string {
     return this.connectionType.getImageSrc();
   }
 
   /**
-   * @returns {string} the ConnectionType image alt text
+   * @returns  the ConnectionType image alt text
    */
   public get imageAlt(): string {
     return this.connectionType.getImageAlt();
   }
 
   /**
-   * @returns {boolean} `true` if the ConnectionType represented by this card is selected
+   * @returns  `true` if the ConnectionType represented by this card is selected
    */
   public isSelected(): boolean {
     return this.selectedConnectionTypes.indexOf( this.connectionType ) !== -1;

@@ -1,20 +1,20 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ViewEditorService } from "@dataservices/virtualization/view-editor/view-editor.service";
-import { SelectionService } from "@core/selection.service";
+import { ViewEditorService } from "../../../../../dataservices/virtualization/view-editor/view-editor.service";
+import { SelectionService } from "../../../../../core/selection.service";
 import { EmptyStateConfig, TableConfig, TableEvent } from "patternfly-ng";
-import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
-import { ProjectedColumn } from "@dataservices/shared/projected-column.model";
-import { CommandFactory } from "@dataservices/virtualization/view-editor/command/command-factory";
-import { Command } from "@dataservices/virtualization/view-editor/command/command";
-import { ViewEditorPart } from "@dataservices/virtualization/view-editor/view-editor-part.enum";
-import { LoggerService } from "@core/logger.service";
-import { ViewEditorEvent } from "@dataservices/virtualization/view-editor/event/view-editor-event";
+import { ViewEditorI18n } from "../../../../../dataservices/virtualization/view-editor/view-editor-i18n";
+import { ProjectedColumn } from "../../../../../dataservices/shared/projected-column.model";
+import { CommandFactory } from "../../../../../dataservices/virtualization/view-editor/command/command-factory";
+import { Command } from "../../../../../dataservices/virtualization/view-editor/command/command";
+import { ViewEditorPart } from "../../../../../dataservices/virtualization/view-editor/view-editor-part.enum";
+import { LoggerService } from "../../../../../core/logger.service";
+import { ViewEditorEvent } from "../../../../../dataservices/virtualization/view-editor/event/view-editor-event";
 import { Subscription } from "rxjs/Subscription";
-import { UpdateProjectedColumnsCommand } from "@dataservices/virtualization/view-editor/command/update-projected-columns-command";
-import { AddSourcesCommand } from "@dataservices/virtualization/view-editor/command/add-sources-command";
-import { RemoveSourcesCommand } from "@dataservices/virtualization/view-editor/command/remove-sources-command";
-import { AddCompositionCommand } from "@dataservices/virtualization/view-editor/command/add-composition-command";
-import { RemoveCompositionCommand } from "@dataservices/virtualization/view-editor/command/remove-composition-command";
+import { UpdateProjectedColumnsCommand } from "../../../../../dataservices/virtualization/view-editor/command/update-projected-columns-command";
+import { AddSourcesCommand } from "../../../../../dataservices/virtualization/view-editor/command/add-sources-command";
+import { RemoveSourcesCommand } from "../../../../../dataservices/virtualization/view-editor/command/remove-sources-command";
+import { AddCompositionCommand } from "../../../../../dataservices/virtualization/view-editor/command/add-composition-command";
+import { RemoveCompositionCommand } from "../../../../../dataservices/virtualization/view-editor/command/remove-composition-command";
 
 @Component({
   selector: 'app-projected-columns-editor',
@@ -88,7 +88,7 @@ export class ProjectedColumnsEditorComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * @param {ViewEditorEvent} event the event being processed
+   * @param  event the event being processed
    */
   public handleEditorEvent( event: ViewEditorEvent ): void {
     this.logger.debug( "ProjectedColumnsEditor received event: " + event.toString() );
@@ -124,7 +124,7 @@ export class ProjectedColumnsEditorComponent implements OnInit, OnDestroy {
 
   /**
    * Initializes the projected columns
-   * @param {ProjectedColumn[]} prjCols the projected columns
+   * @param  prjCols the projected columns
    */
   private initProjectedColumns(prjCols: ProjectedColumn[]): void {
     this.projectedColumns = [];
@@ -147,7 +147,7 @@ export class ProjectedColumnsEditorComponent implements OnInit, OnDestroy {
 
   /**
    * Updates the projected columns
-   * @param {ProjectedColumn[]} prjCols the projected columns
+   * @param  prjCols the projected columns
    */
   private updateProjectedColumns(prjCols: ProjectedColumn[]): void {
     const copyPrjCols: ProjectedColumn[] = [];
@@ -189,7 +189,7 @@ export class ProjectedColumnsEditorComponent implements OnInit, OnDestroy {
   /**
    * Determine if a view has select all projected columns
    *
-   * @return {boolean} 'true' if view has select all projected columns
+   * @return  'true' if view has select all projected columns
    */
   public get hasSelectAllProjectedColumns(): boolean {
     return this.isSelectStar(this.projectedColumns);
@@ -202,7 +202,7 @@ export class ProjectedColumnsEditorComponent implements OnInit, OnDestroy {
   /**
    * Determine whether the editor has a view currently selected
    *
-   * @return {boolean} 'true' if has a view selection
+   * @return  'true' if has a view selection
    */
   public get hasSelectedView(): boolean {
     const selView = this.editorService.getEditorView();
@@ -211,7 +211,7 @@ export class ProjectedColumnsEditorComponent implements OnInit, OnDestroy {
 
   /**
    * Handles change in Column selections
-   * @param {TableEvent} $event the column selection event
+   * @param  $event the column selection event
    */
   public handleColumnSelectionChange($event: TableEvent): void {
     // Change in projected column selections fire change event

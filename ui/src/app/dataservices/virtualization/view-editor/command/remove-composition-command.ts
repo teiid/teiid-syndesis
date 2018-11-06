@@ -15,24 +15,20 @@
  * limitations under the License.
  */
 
-import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
-import { Command } from "@dataservices/virtualization/view-editor/command/command";
-import { Composition } from "@dataservices/shared/composition.model";
-import { CommandType } from "@dataservices/virtualization/view-editor/command/command-type.enum";
+import { ViewEditorI18n } from "../../../../dataservices/virtualization/view-editor/view-editor-i18n";
+import { Command } from "../../../../dataservices/virtualization/view-editor/command/command";
+import { Composition } from "../../../../dataservices/shared/composition.model";
+import { CommandType } from "../../../../dataservices/virtualization/view-editor/command/command-type.enum";
 
 export class RemoveCompositionCommand extends Command {
 
   /**
    * The command identifier.
-   *
-   * @type {string}
    */
   public static readonly id = CommandType.REMOVE_COMPOSITION_COMMAND;
 
   /**
    * The name of the command argument whose value is the compositions being removed.
-   *
-   * @type {string}
    */
   public static readonly removedComposition = "removedComposition";
 
@@ -40,9 +36,9 @@ export class RemoveCompositionCommand extends Command {
    * Constructor
    * 'removedCompositionName' must be an array of Compositions -OR- stringified composition
    *
-   * @param {string | Composition} removedComposition the Composition object, or the stringified composition being
+   * @param  removedComposition the Composition object, or the stringified composition being
    *                               removed (cannot be `null` or empty)
-   * @param {string} id the command id.  If not supplied, an id is generated.
+   * @param  id the command id.  If not supplied, an id is generated.
    */
   public constructor( removedComposition: string | Composition, id: string ) {
     super( RemoveCompositionCommand.id, ViewEditorI18n.removeCompositionCommandName );
@@ -60,7 +56,7 @@ export class RemoveCompositionCommand extends Command {
   }
 
   /**
-   * @returns {string} the composition
+   * @returns  the composition
    */
   public getComposition(): Composition {
     const compStr = this.getArg( RemoveCompositionCommand.removedComposition ) as string;
@@ -68,15 +64,15 @@ export class RemoveCompositionCommand extends Command {
   }
 
   /**
-   * @param {Composition} composition the Composition to use in generating the id
-   * @returns {string} the json payload for this command
+   * @param  composition the Composition to use in generating the id
+   * @returns  the json payload for this command
    */
   public getPayload(composition?: Composition): string {
     return JSON.stringify(composition);
   }
 
   /**
-   * @returns {string} a unique short identifier of this command
+   * @returns  a unique short identifier of this command
    */
   public getId( ): string {
     return this.getArg( Command.identArg ) as string;

@@ -16,10 +16,10 @@
  */
 
 import { Component, EventEmitter, Input, OnInit, Output, ViewEncapsulation } from "@angular/core";
-import { AboutService } from "@core/about-dialog/about.service";
-import { LoggerService } from "@core/logger.service";
-import { AboutEvent } from "app/core/about-dialog/about-event";
-import { About } from "app/core/about-dialog/about.model";
+import { AboutService } from "../../core/about-dialog/about.service";
+import { LoggerService } from "../../core/logger.service";
+import { AboutEvent } from "./about-event";
+import { About } from "./about.model";
 import { AboutModalConfig } from "patternfly-ng/modal";
 
 @Component({

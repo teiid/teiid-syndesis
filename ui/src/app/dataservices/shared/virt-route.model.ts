@@ -33,8 +33,8 @@ export class VirtRoute {
   private secure: boolean;
 
   /**
-   * @param {Object} json the JSON representation of a VirtRoute
-   * @returns {VirtRoute} the new VirtRoute (never null)
+   * @param  json the JSON representation of a VirtRoute
+   * @returns the new VirtRoute (never null)
    */
   public static create( json: object = {} ): VirtRoute {
     const route = new VirtRoute();
@@ -48,49 +48,49 @@ export class VirtRoute {
   }
 
   /**
-   * @returns {string} the route name (can be null)
+   * @returns  the route name (can be null)
    */
   public getName(): string {
     return this.name;
   }
 
   /**
-   * @returns {string} the route protocol (can be null)
+   * @returns  the route protocol (can be null)
    */
   public getProtocol(): string {
     return this.protocol;
   }
 
   /**
-   * @returns {string} the route host (can be null)
+   * @returns  the route host (can be null)
    */
   public getHost(): string {
     return this.host;
   }
 
   /**
-   * @returns {string} the route port (can be null)
+   * @returns  the route port (can be null)
    */
   public getPort(): string {
     return this.port;
   }
 
   /**
-   * @returns {string} the route path (can be null)
+   * @returns  the route path (can be null)
    */
   public getPath(): string {
     return this.path;
   }
 
   /**
-   * @returns {string} the route target (can be null)
+   * @returns  the route target (can be null)
    */
   public getTarget(): string {
     return this.target;
   }
 
   /**
-   * @returns {boolean} whether the route is secure
+   * @returns  whether the route is secure
    */
   public isSecure(): boolean {
     return this.secure;
@@ -98,7 +98,7 @@ export class VirtRoute {
 
   /**
    * Set all object values using the supplied VirtRoute json
-   * @param {Object} values
+   * @param  values
    */
   public setValues(values: object = {}): void {
     Object.assign(this, values);

@@ -16,21 +16,21 @@
  */
 
 import { Component, OnDestroy, OnInit, ViewEncapsulation } from "@angular/core";
-import { LoggerService } from "@core/logger.service";
-import { ViewEditorEvent } from "@dataservices/virtualization/view-editor/event/view-editor-event";
-import { ViewEditorService } from "@dataservices/virtualization/view-editor/view-editor.service";
-import { QueryResults } from "@dataservices/shared/query-results.model";
-import { ColumnData } from "@dataservices/shared/column-data.model";
-import { RowData } from "@dataservices/shared/row-data.model";
+import { LoggerService } from "../../../../../core/logger.service";
+import { ViewEditorEvent } from "../../../../../dataservices/virtualization/view-editor/event/view-editor-event";
+import { ViewEditorService } from "../../../../../dataservices/virtualization/view-editor/view-editor.service";
+import { QueryResults } from "../../../../../dataservices/shared/query-results.model";
+import { ColumnData } from "../../../../../dataservices/shared/column-data.model";
+import { RowData } from "../../../../../dataservices/shared/row-data.model";
 import { EmptyStateConfig, NgxDataTableConfig, TableConfig } from "patternfly-ng";
 import { Subscription } from "rxjs/Subscription";
-import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
-import { ViewEditorProgressChangeId } from "@dataservices/virtualization/view-editor/event/view-editor-save-progress-change-id.enum";
-import { Command } from "@dataservices/virtualization/view-editor/command/command";
-import { AddSourcesCommand } from "@dataservices/virtualization/view-editor/command/add-sources-command";
-import { RemoveSourcesCommand } from "@dataservices/virtualization/view-editor/command/remove-sources-command";
-import { AddCompositionCommand } from "@dataservices/virtualization/view-editor/command/add-composition-command";
-import { RemoveCompositionCommand } from "@dataservices/virtualization/view-editor/command/remove-composition-command";
+import { ViewEditorI18n } from "../../../../../dataservices/virtualization/view-editor/view-editor-i18n";
+import { ViewEditorProgressChangeId } from "../../../../../dataservices/virtualization/view-editor/event/view-editor-save-progress-change-id.enum";
+import { Command } from "../../../../../dataservices/virtualization/view-editor/command/command";
+import { AddSourcesCommand } from "../../../../../dataservices/virtualization/view-editor/command/add-sources-command";
+import { RemoveSourcesCommand } from "../../../../../dataservices/virtualization/view-editor/command/remove-sources-command";
+import { AddCompositionCommand } from "../../../../../dataservices/virtualization/view-editor/command/add-composition-command";
+import { RemoveCompositionCommand } from "../../../../../dataservices/virtualization/view-editor/command/remove-composition-command";
 
 @Component({
   encapsulation: ViewEncapsulation.None,
@@ -53,8 +53,8 @@ export class ViewPreviewComponent implements OnInit, OnDestroy {
   private _previewSql = null;
 
   /**
-   * @param {ViewEditorService} editorService the editor service
-   * @param {LoggerService} logger the logger
+   * @param  editorService the editor service
+   * @param  logger the logger
    */
   constructor( editorService: ViewEditorService,
                logger: LoggerService ) {
@@ -76,7 +76,7 @@ export class ViewPreviewComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * @param {ViewEditorEvent} event the event being processed
+   * @param  event the event being processed
    */
   public handleEditorEvent( event: ViewEditorEvent ): void {
     this.logger.debug( "ViewPreviewComponent received event: " + event.toString() );

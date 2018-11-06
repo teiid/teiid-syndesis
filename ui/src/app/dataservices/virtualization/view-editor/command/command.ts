@@ -19,14 +19,12 @@ export abstract class Command {
 
   /**
    * The name of the JSON key used to store the arguments.
-   * @type {string}
    */
   public static readonly argsPropJson = "args";
 
   /**
    * The name of the JSON key used to store the command identifier.
    *
-   * @type {string}
    */
   public static readonly idPropJson = "id";
 
@@ -50,9 +48,6 @@ export abstract class Command {
     this._name = name;
   }
 
-  /**
-   * @returns {Map<string, any>} a copy of the arguments to the command (never `null` but can be empty)
-   */
   public get args(): Map< string, any > {
     const copy = new Map< string, any >();
 
@@ -76,24 +71,19 @@ export abstract class Command {
   }
 
   /**
-   * @param {string} argName the name of the arg whose value is being requested
-   * @returns {any} the arg value or `undefined` if not found
+   * @param  argName the name of the arg whose value is being requested
    */
   public getArg( argName: string ): any {
     return this._args.get( argName );
   }
 
-  /**
-   * @returns {string} the unique identifier of the command (never `null` or empty)
-   */
   public get id(): string {
     return this._id;
   }
 
   // noinspection JSMethodCanBeStatic
   /**
-   * @param {string} argName the name of the argument being checked
-   * @returns {boolean} `true` if the argument should not be serialized
+   * @param  argName the name of the argument being checked
    */
   protected isTransient( argName: string ): boolean {
     return false;
@@ -101,30 +91,19 @@ export abstract class Command {
 
   /**
    * Subclasses need to override if they do not have an associated undo command.
-   *
-   * @returns {boolean} `true` if the command is undoable
    */
   public isUndoable(): boolean {
     return true;
   }
 
-  /**
-   * @returns {string} a short name of the command (never `null` or empty)
-   */
   public get name(): string {
     return this._name;
   }
 
-  /**
-   * @returns {string} a unique 9 digit number preceeded with an underscore '_'
-   */
   public get idGen(): string {
     return '_' + Math.random().toString(36).substr(2, 9);
   }
 
-  /**
-   * @returns {{}} a JSON representation of the command
-   */
   public toJSON(): {} {
     return {
       id: this.id,
@@ -132,9 +111,6 @@ export abstract class Command {
     };
   }
 
-  /**
-   * @returns {string} a string representation of the command
-   */
   public toString(): string {
     let text = `${this.id}`;
     let firstTime = true;

@@ -16,29 +16,29 @@
  */
 
 import { Component, DoCheck, OnDestroy, OnInit, TemplateRef, ViewEncapsulation } from "@angular/core";
-import { LoggerService } from "@core/logger.service";
-import { SelectionService } from "@core/selection.service";
-import { Connection } from "@connections/shared/connection.model";
-import { ConnectionService } from "@connections/shared/connection.service";
-import { DataservicesConstants } from "@dataservices/shared/dataservices-constants";
-import { ViewEditorService } from "@dataservices/virtualization/view-editor/view-editor.service";
-import { ViewEditorPart } from "@dataservices/virtualization/view-editor/view-editor-part.enum";
-import { ViewEditorEvent } from "@dataservices/virtualization/view-editor/event/view-editor-event";
-import { ViewEditorEventType } from "@dataservices/virtualization/view-editor/event/view-editor-event-type.enum";
-import { ConnectionTableDialogComponent } from "@dataservices/virtualization/view-editor/connection-table-dialog/connection-table-dialog.component";
-import { ViewEditorProgressChangeId } from "@dataservices/virtualization/view-editor/event/view-editor-save-progress-change-id.enum";
-import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
-import { CommandFactory } from "@dataservices/virtualization/view-editor/command/command-factory";
+import { LoggerService } from "../../../core/logger.service";
+import { SelectionService } from "../../../core/selection.service";
+import { Connection } from "../../../connections/shared/connection.model";
+import { ConnectionService } from "../../../connections/shared/connection.service";
+import { DataservicesConstants } from "../../../dataservices/shared/dataservices-constants";
+import { ViewEditorService } from "../../../dataservices/virtualization/view-editor/view-editor.service";
+import { ViewEditorPart } from "../../../dataservices/virtualization/view-editor/view-editor-part.enum";
+import { ViewEditorEvent } from "../../../dataservices/virtualization/view-editor/event/view-editor-event";
+import { ViewEditorEventType } from "../../../dataservices/virtualization/view-editor/event/view-editor-event-type.enum";
+import { ConnectionTableDialogComponent } from "../../../dataservices/virtualization/view-editor/connection-table-dialog/connection-table-dialog.component";
+import { ViewEditorProgressChangeId } from "../../../dataservices/virtualization/view-editor/event/view-editor-save-progress-change-id.enum";
+import { ViewEditorI18n } from "../../../dataservices/virtualization/view-editor/view-editor-i18n";
+import { CommandFactory } from "../../../dataservices/virtualization/view-editor/command/command-factory";
 import { BsModalService } from "ngx-bootstrap";
 import { Action, ActionConfig, ToolbarConfig, ToolbarView } from "patternfly-ng";
 import { Subscription } from "rxjs/Subscription";
-import { Command } from "@dataservices/virtualization/view-editor/command/command";
-import { ConfirmDialogComponent } from "@shared/confirm-dialog/confirm-dialog.component";
-import { AddCompositionWizardComponent } from "@dataservices/virtualization/view-editor/add-composition-wizard/add-composition-wizard.component";
-import { AddSourcesCommand } from "@dataservices/virtualization/view-editor/command/add-sources-command";
-import { AddCompositionCommand } from "@dataservices/virtualization/view-editor/command/add-composition-command";
-import { SchemaNode } from "@connections/shared/schema-node.model";
-import { Composition } from "@dataservices/shared/composition.model";
+import { Command } from "../../../dataservices/virtualization/view-editor/command/command";
+import { ConfirmDialogComponent } from "../../../shared/confirm-dialog/confirm-dialog.component";
+import { AddCompositionWizardComponent } from "../../../dataservices/virtualization/view-editor/add-composition-wizard/add-composition-wizard.component";
+import { AddSourcesCommand } from "../../../dataservices/virtualization/view-editor/command/add-sources-command";
+import { AddCompositionCommand } from "../../../dataservices/virtualization/view-editor/command/add-composition-command";
+import { SchemaNode } from "../../../connections/shared/schema-node.model";
+import { Composition } from "../../../dataservices/shared/composition.model";
 import { Router } from "@angular/router";
 import { NavigationStart } from "@angular/router";
 
@@ -193,7 +193,7 @@ export class ViewEditorComponent implements DoCheck, OnDestroy, OnInit {
   }
 
   /**
-   * @param {ViewEditorEvent} event the event being processed
+   * @param  event the event being processed
    */
   public handleEditorEvent( event: ViewEditorEvent ): void {
     this.logger.debug( "ViewEditorComponent received event: " + event.toString() );
@@ -347,7 +347,7 @@ export class ViewEditorComponent implements DoCheck, OnDestroy, OnInit {
    * 'addedSources' must be an array of SchemaNodes -OR-
    * string of the source paths (comma delimited) - path form: "connection=aConn/schema=aSchema/table=aTable"
    *
-   * @param {string | SchemaNode} addedSources the string representation of the sources or the schema nodes of the sources
+   * @param  addedSources the string representation of the sources or the schema nodes of the sources
    *                              being added (cannot be `null` or empty)
    */
   private fireAddSourcesCommand(addedSources: string | SchemaNode[]): void {
@@ -364,7 +364,7 @@ export class ViewEditorComponent implements DoCheck, OnDestroy, OnInit {
   /**
    * Generates the AddCompositionCommand for the supplied composition, and fires the viewEditor state change with the command.
    *
-   * @param {Composition} addedComposition the Composition being added (cannot be `null` or empty)
+   * @param  addedComposition the Composition being added (cannot be `null` or empty)
    */
   private fireAddCompositionCommand(addedComposition: Composition): void {
     const tempCmd = CommandFactory.createAddCompositionCommand( addedComposition );
@@ -492,9 +492,6 @@ export class ViewEditorComponent implements DoCheck, OnDestroy, OnInit {
     this.editorService.undo();
   }
 
-  /**
-   * @returns {string} argument array from the selection string
-   */
   private getArgs(selection?: string): string[] {
     if ( selection !== null ) {
       return selection.split(Command.identDivider);
@@ -505,7 +502,7 @@ export class ViewEditorComponent implements DoCheck, OnDestroy, OnInit {
   /**
    * Callback for when a view icon is clicked on the toolbar.
    *
-   * @param {ToolbarView} toolbarView the toolbar view representing the editor configuration to display
+   * @param  toolbarView the toolbar view representing the editor configuration to display
    */
   public editorConfigChange( toolbarView: ToolbarView ): void {
     if ( toolbarView.id !== this.editorService.getEditorConfig() ) {
@@ -514,7 +511,7 @@ export class ViewEditorComponent implements DoCheck, OnDestroy, OnInit {
   }
 
   /**
-   * @returns {string} the current CSS type of the editor
+   * @returns  the current CSS type of the editor
    */
   public get editorCssType(): string {
     return this.editorService.getEditorConfig();
@@ -523,17 +520,16 @@ export class ViewEditorComponent implements DoCheck, OnDestroy, OnInit {
   /**
    * Callback for when the toolbar is configured.
    *
-   * @param {TemplateRef<any>} addSourceTemplate the template for the add source toolbar button
-   * @param {TemplateRef<any>} addCompositionTemplate the template for the add composition toolbar button
-   * @param {TemplateRef<any>} sampleDataTemplate the template for the sample data toolbar button
-   * @param {TemplateRef<any>} undoTemplate the template for the undo toolbar button
-   * @param {TemplateRef<any>} redoTemplate the template for the redo toolbar button
-   * @param {TemplateRef<any>} saveTemplate the template for the save toolbar button
-   * @param {TemplateRef<any>} deleteTemplate the template for the delete toolbar button
-   * @param {TemplateRef<any>} errorsTemplate the template for the show errors toolbar button
-   * @param {TemplateRef<any>} warningsTemplate the template for the show warnings toolbar button
-   * @param {TemplateRef<any>} infosTemplate the template for the show infos toolbar button
-   * @returns {ActionConfig}
+   * @param addSourceTemplate the template for the add source toolbar button
+   * @param addCompositionTemplate the template for the add composition toolbar button
+   * @param sampleDataTemplate the template for the sample data toolbar button
+   * @param undoTemplate the template for the undo toolbar button
+   * @param redoTemplate the template for the redo toolbar button
+   * @param saveTemplate the template for the save toolbar button
+   * @param deleteTemplate the template for the delete toolbar button
+   * @param errorsTemplate the template for the show errors toolbar button
+   * @param warningsTemplate the template for the show warnings toolbar button
+   * @param infosTemplate the template for the show infos toolbar button
    */
   public getActionConfig( addSourceTemplate: TemplateRef< any >,
                           addCompositionTemplate: TemplateRef< any >,
@@ -632,7 +628,7 @@ export class ViewEditorComponent implements DoCheck, OnDestroy, OnInit {
   /**
    * Callback for when a toolbar button is clicked.
    *
-   * @param {Action} action the toolbar action that was clicked
+   * @param  action the toolbar action that was clicked
    */
   public handleAction( action: Action ): void {
     switch ( action.id ) {
@@ -686,21 +682,21 @@ export class ViewEditorComponent implements DoCheck, OnDestroy, OnInit {
   }
 
   /**
-   * @returns {number} the number of error messages
+   * @returns  the number of error messages
    */
   public get errorMsgCount(): number {
     return this.editorService.getErrorMessageCount();
   }
 
   /**
-   * @returns {number} the number of warning messages
+   * @returns  the number of warning messages
    */
   public get warningMsgCount(): number {
     return this.editorService.getWarningMessageCount();
   }
 
   /**
-   * @returns {number} the number of informational messages
+   * @returns  the number of informational messages
    */
   public get infoMsgCount(): number {
     return this.editorService.getInfoMessageCount();
@@ -709,7 +705,7 @@ export class ViewEditorComponent implements DoCheck, OnDestroy, OnInit {
   /**
    * Indicates if the results area should be shown.
    *
-   * @returns {boolean} `true` if area should be shown
+   * @returns  `true` if area should be shown
    */
   public get isShowingAdditionalViews(): boolean {
     return this.editorCssType === this.viewsOnlyCssType || this.editorCssType === this.fullEditorCssType;
@@ -718,7 +714,7 @@ export class ViewEditorComponent implements DoCheck, OnDestroy, OnInit {
   /**
    * Indicates if the canvas and properties areas should be shown.
    *
-   * @returns {boolean} `true` if areas should be shown
+   * @returns  `true` if areas should be shown
    */
   public get isShowingCanvas(): boolean {
     return this.editorCssType === this.canvasOnlyCssType || this.editorCssType === this.fullEditorCssType;
@@ -727,7 +723,7 @@ export class ViewEditorComponent implements DoCheck, OnDestroy, OnInit {
   /**
    * Indicates if the canvas has a single source selected
    *
-   * @returns {boolean} `true` if canvas has single source selection
+   * @returns  `true` if canvas has single source selection
    */
   public get canvasSingleSourceSelected(): boolean {
     const selections = this.editorService.getSelection();

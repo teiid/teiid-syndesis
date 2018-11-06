@@ -17,21 +17,21 @@
 
 import { Injectable } from "@angular/core";
 import { Http, RequestOptions } from "@angular/http";
-import { ApiService } from "@core/api.service";
-import { AppSettingsService } from "@core/app-settings.service";
-import { LoggerService } from "@core/logger.service";
-import { Dataservice } from "@dataservices/shared/dataservice.model";
-import { DataservicesConstants } from "@dataservices/shared/dataservices-constants";
-import { DeploymentState } from "@dataservices/shared/deployment-state.enum";
-import { NewDataservice } from "@dataservices/shared/new-dataservice.model";
-import { NotifierService } from "@dataservices/shared/notifier.service";
-import { PublishState } from "@dataservices/shared/publish-state.enum";
-import { QueryResults } from "@dataservices/shared/query-results.model";
-import { VdbStatus } from "@dataservices/shared/vdb-status.model";
-import { VdbService } from "@dataservices/shared/vdb.service";
-import { VdbsConstants } from "@dataservices/shared/vdbs-constants";
-import { Virtualization } from "@dataservices/shared/virtualization.model";
-import { environment } from "@environments/environment";
+import { ApiService } from "../../core/api.service";
+import { AppSettingsService } from "../../core/app-settings.service";
+import { LoggerService } from "../../core/logger.service";
+import { Dataservice } from "../../dataservices/shared/dataservice.model";
+import { DataservicesConstants } from "../../dataservices/shared/dataservices-constants";
+import { DeploymentState } from "../../dataservices/shared/deployment-state.enum";
+import { NewDataservice } from "../../dataservices/shared/new-dataservice.model";
+import { NotifierService } from "../../dataservices/shared/notifier.service";
+import { PublishState } from "../../dataservices/shared/publish-state.enum";
+import { QueryResults } from "../../dataservices/shared/query-results.model";
+import { VdbStatus } from "../../dataservices/shared/vdb-status.model";
+import { VdbService } from "../../dataservices/shared/vdb.service";
+import { VdbsConstants } from "../../dataservices/shared/vdbs-constants";
+import { Virtualization } from "../../dataservices/shared/virtualization.model";
+import { environment } from "../../../environments/environment";
 import { saveAs } from "file-saver/FileSaver";
 import { Observable } from "rxjs/Observable";
 import { ReplaySubject } from "rxjs/ReplaySubject";
@@ -39,7 +39,7 @@ import { Subject } from "rxjs/Subject";
 import { Subscription } from "rxjs/Subscription";
 import * as _ from "lodash";
 import * as vkbeautify from 'vkbeautify';
-import { ViewEditorState } from "@dataservices/shared/view-editor-state.model";
+import { ViewEditorState } from "../../dataservices/shared/view-editor-state.model";
 
 @Injectable()
 export class DataserviceService extends ApiService {
@@ -73,9 +73,8 @@ export class DataserviceService extends ApiService {
 
   /**
    * Create and return a NewDataservice instance
-   * @param {string} name the dataservice name
-   * @param {string} description the dataservice description
-   * @returns {NewDataservice} the NewDataservice object
+   * @param  name the dataservice name
+   * @param  description the dataservice description
    */
   public newDataserviceInstance(name: string, description: string ): NewDataservice {
     const ds: NewDataservice = new NewDataservice(this.appSettingsService.getKomodoUserWorkspacePath());
@@ -91,8 +90,7 @@ export class DataserviceService extends ApiService {
    * Validates the specified data service name. If the name contains valid characters and the name is unique, the
    * service returns 'null'. Otherwise, a 'string' containing an error message is returned.
    *
-   * @param {string} name the dataservice name
-   * @returns {Observable<String>}
+   * @param  name the dataservice name
    */
   public isValidName( name: string ): Observable< string > {
     if ( !name || name.length === 0 ) {
@@ -115,7 +113,6 @@ export class DataserviceService extends ApiService {
 
   /**
    * Get the dataservices from the komodo rest interface
-   * @returns {Observable<Dataservice[]>}
    */
   public getAllDataservices(): Observable<Dataservice[]> {
     return this.http
@@ -129,8 +126,7 @@ export class DataserviceService extends ApiService {
 
   /**
    * Create a dataservice via the komodo rest interface
-   * @param {NewDataservice} dataservice
-   * @returns {Observable<boolean>}
+   * @param  dataservice
    */
   public createDataservice(dataservice: NewDataservice): Observable<boolean> {
     return this.http
@@ -144,8 +140,7 @@ export class DataserviceService extends ApiService {
 
   /**
    * Update a dataservice via the komodo rest interface
-   * @param {NewDataservice} dataservice
-   * @returns {Observable<boolean>}
+   * @param  dataservice
    */
   public updateDataservice(dataservice: NewDataservice): Observable<boolean> {
     return this.http
@@ -159,8 +154,7 @@ export class DataserviceService extends ApiService {
 
   /**
    * Deploy a dataservice via the komodo rest interface
-   * @param {string} dataserviceName
-   * @returns {Observable<boolean>}
+   * @param  dataserviceName
    */
   public deployDataservice(dataserviceName: string): Observable<boolean> {
     const servicePath = this.getKomodoUserWorkspacePath() + "/" + dataserviceName;
@@ -175,9 +169,8 @@ export class DataserviceService extends ApiService {
 
   /**
    * Create a readonly datarole for the dataservice
-   * @param {string} serviceVdbName,
-   * @param {string} model1Name,
-   * @returns {Observable<boolean>}
+   * @param  serviceVdbName,
+   * @param  model1Name,
    */
   public createReadonlyDataRole(serviceVdbName: string, model1Name: string): Observable<boolean> {
     const READ_ONLY_DATA_ROLE_NAME = VdbsConstants.DEFAULT_READONLY_DATA_ROLE;
@@ -237,8 +230,7 @@ export class DataserviceService extends ApiService {
 
   /**
    * Delete a dataservice via the komodo rest interface
-   * @param {string} dataserviceId
-   * @returns {Observable<boolean>}
+   * @param  dataserviceId
    */
   public deleteDataservice(dataserviceId: string): Observable<boolean> {
     return this.http
@@ -252,8 +244,7 @@ export class DataserviceService extends ApiService {
 
   /**
    * Refresh the views for a dataservice via the komodo rest interface
-   * @param {string} dataserviceName
-   * @returns {Observable<boolean>}
+   * @param  dataserviceName
    */
   public refreshDataserviceViews(dataserviceName: string): Observable<boolean> {
     const refreshViewsUrl = environment.komodoWorkspaceUrl
@@ -270,8 +261,7 @@ export class DataserviceService extends ApiService {
 
   /**
    * Download a dataservice as a jar archive
-   * @param {string} dataserviceName the dataservice name
-   * @returns {Observable<boolean>}
+   * @param  dataserviceName the dataservice name
    */
   public downloadDataservice(dataserviceName: string): Observable<boolean> {
     // The payload for the rest call
@@ -314,8 +304,7 @@ export class DataserviceService extends ApiService {
 
   /**
    * Publish a dataservice
-   * @param {string} dataserviceName the dataservice name
-   * @returns {Observable<boolean>}
+   * @param  dataserviceName the dataservice name
    */
   public publishDataservice(dataserviceName: string): Observable<boolean> {
 
@@ -342,8 +331,7 @@ export class DataserviceService extends ApiService {
 
   /**
    * Retrieve the publishing logs for the given dataservice
-   * @param {Dataservice} dataservice the dataservice
-   * @returns {Observable<any>}
+   * @param  dataservice the dataservice
    */
   public publishLogsGet(dataservice: Dataservice): Observable<any> {
     const url = environment.komodoTeiidUrl + "/" +
@@ -360,11 +348,10 @@ export class DataserviceService extends ApiService {
 
   /**
    * Query a Dataservice via the komodo rest interface
-   * @param {string} query the SQL query
-   * @param {string} dataserviceName the dataservice name
-   * @param {number} limit the limit for the number of result rows
-   * @param {number} offset the offset for the result rows
-   * @returns {Observable<boolean>}
+   * @param  query the SQL query
+   * @param  dataserviceName the dataservice name
+   * @param  limit the limit for the number of result rows
+   * @param  offset the offset for the result rows
    */
   public queryDataservice(query: string, dataserviceName: string, limit: number, offset: number): Observable<any> {
     // The payload for the rest call
@@ -388,8 +375,7 @@ export class DataserviceService extends ApiService {
 
   /**
    * Query a Dataservice's published virtualization using odata protocol
-   * @param {string} url the odata url string
-   * @returns {Observable<any>}
+   * @param  url the odata url string
    */
   public odataGet(url: string): Observable<any> {
     return this.http
@@ -460,7 +446,7 @@ export class DataserviceService extends ApiService {
 
   /**
    * Polls the server and sends Dataservice state updates at the specified interval
-   * @param {number} pollIntervalSec the interval (sec) between polling attempts
+   * @param  pollIntervalSec the interval (sec) between polling attempts
    */
   public pollDataserviceStatus(pollIntervalSec: number): void {
     const pollIntervalMillis = pollIntervalSec * 1000;
@@ -474,9 +460,8 @@ export class DataserviceService extends ApiService {
   }
 
   /**
-   * @param {string} editorStatePattern the name pattern to use for returning the array of viewEditorStates.
+   * @param  editorStatePattern the name pattern to use for returning the array of viewEditorStates.
    *                                    If no pattern is supplied, all states are returned
-   * @returns {Observable<ViewEditorState[]>} the view editor states or empty array if none found
    */
   public getViewEditorStates( editorStatePattern?: string ): Observable< ViewEditorState[] > {
     // pattern is added to the request options
@@ -505,8 +490,7 @@ export class DataserviceService extends ApiService {
   }
 
   /**
-   * @param {string} editorId the ID of the editor state being requested
-   * @returns {Observable<ViewEditorState>} the view editor state or empty object if not found
+   * @param  editorId the ID of the editor state being requested
    */
   public getViewEditorState( editorId: string ): Observable< ViewEditorState > {
     return this.http.get(environment.viewEditorState + "/" + editorId, this.getAuthRequestOptions() )
@@ -525,8 +509,7 @@ export class DataserviceService extends ApiService {
   }
 
   /**
-   * @param {ViewEditorState[]} editorStates the view editor state array
-   * @returns {Observable<boolean>} `true` if the editor state was successfully saved
+   * @param  editorStates the view editor state array
    */
   public saveViewEditorStates( editorStates: ViewEditorState[] ): Observable< boolean > {
 
@@ -540,8 +523,7 @@ export class DataserviceService extends ApiService {
   }
 
   /**
-   * @param {string} editorId the ID of the editor state being deleted
-   * @returns {Observable<boolean>} `true` if the editor state was successfully deleted
+   * @param  editorId the ID of the editor state being deleted
    */
   public deleteViewEditorState( editorId: string ): Observable< boolean > {
     return this.http.delete(environment.viewEditorState + "/" + editorId, this.getAuthRequestOptions() )
@@ -554,9 +536,8 @@ export class DataserviceService extends ApiService {
   }
 
   /**
-   * @param {ViewEditorState[]} editorStates the view editor state array
-   * @param {string} dataserviceName the name of the dataservice
-   * @returns {Observable<boolean>} `true` if the editor state was successfully saved
+   * @param  editorStates the view editor state array
+   * @param  dataserviceName the name of the dataservice
    */
   public saveViewEditorStatesRefreshViews( editorStates: ViewEditorState[], dataserviceName: string ): Observable< boolean > {
     return this.saveViewEditorStates(editorStates)
@@ -564,9 +545,8 @@ export class DataserviceService extends ApiService {
   }
 
   /**
-   * @param {string} editorId the ID of the editor state being deleted
-   * @param {string} dataserviceName the name of the dataservice
-   * @returns {Observable<boolean>} `true` if the editor state was successfully saved
+   * @param  editorId the ID of the editor state being deleted
+   * @param  dataserviceName the name of the dataservice
    */
   public deleteViewEditorStateRefreshViews( editorId: string, dataserviceName: string ): Observable< boolean > {
     return this.deleteViewEditorState(editorId)
@@ -625,7 +605,7 @@ export class DataserviceService extends ApiService {
 
   /*
    * Get updates for the provided array of Dataservices and broadcast the map of states
-   * @param {Dataservice[]} services the array of Dataservices
+   * @param  services the array of Dataservices
    */
   private updateServiceStateMaps(services: Dataservice[]): void {
     const self = this;
@@ -655,9 +635,8 @@ export class DataserviceService extends ApiService {
 
   /*
    * Creates a Map of dataservice name to DeploymentState, given the list of dataservices and vdbStatuses
-   * @param {Dataservice[]} dataservices the Dataservice array
-   * @param {VdbStatus[]} vdbStatuses the VdbStatus array
-   * @returns {Map<string,DeploymentState>} the map of dataservice name to DeploymentState
+   * @param  dataservices the Dataservice array
+   * @param vdbStatuses the VdbStatus array
    */
   private createDeploymentStateMap(dataservices: Dataservice[], vdbStatuses: VdbStatus[]): Map<string, DeploymentState> {
     const dsStateMap: Map<string, DeploymentState> = new Map<string, DeploymentState>();
@@ -691,9 +670,8 @@ export class DataserviceService extends ApiService {
 
   /*
    * Creates a Map of dataservice name to PublishState, given the list of dataservices and virtualizations
-   * @param {Dataservice[]} dataservices the Dataservice array
-   * @param {virtualization[]} virtualizations the Virtualization array
-   * @returns {Map<string,PublishState>} the map of dataservice name to PublishState
+   * @param  dataservices the Dataservice array
+   * @param virtualizations the Virtualization array
    */
   private createPublishStateMap(dataservices: Dataservice[], virtualizations: Virtualization[]): Map<string, Virtualization> {
     const dsStateMap: Map<string, Virtualization> = new Map<string, Virtualization>();

@@ -20,38 +20,38 @@ import { NgModule } from "@angular/core";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { Http } from "@angular/http";
 import { RouterModule } from "@angular/router";
-import { AppSettingsService } from "@core/app-settings.service";
-import { CoreModule } from "@core/core.module";
-import { LoggerService } from "@core/logger.service";
-import { DataserviceCardComponent } from "@dataservices/dataservices-cards/dataservice-card/dataservice-card.component";
-import { SelectionService } from "@core/selection.service";
-import { DataservicesCardsComponent } from "@dataservices/dataservices-cards/dataservices-cards.component";
-import { DataservicesDetailsComponent } from "@dataservices/dataservices-list/dataservices-details.component";
-import { DataservicesListComponent } from "@dataservices/dataservices-list/dataservices-list.component";
-import { ViewsContentComponent } from "@dataservices/dataservices-list/views-content.component";
-import { DataservicesRoutingModule } from "@dataservices/dataservices-routing.module";
-import { DataservicesComponent } from "@dataservices/dataservices.component";
-import { SelectedNodeComponent } from "@dataservices/selected-node/selected-node.component";
-import { SelectedNodesListComponent } from "@dataservices/selected-nodes-list/selected-nodes-list.component";
-import { DataserviceService } from "@dataservices/shared/dataservice.service";
-import { MockDataserviceService } from "@dataservices/shared/mock-dataservice.service";
-import { MockVdbService } from "@dataservices/shared/mock-vdb.service";
-import { NotifierService } from "@dataservices/shared/notifier.service";
-import { VdbService } from "@dataservices/shared/vdb.service";
-import { SqlControlComponent } from "@dataservices/sql-control/sql-control.component";
-import { TestDataserviceComponent } from "@dataservices/test-dataservice/test-dataservice.component";
-import { ViewCanvasComponent } from "@dataservices/virtualization/view-editor/view-canvas/view-canvas.component";
-import { ViewEditorHeaderComponent } from "@dataservices/virtualization/view-editor/view-editor-header/view-editor-header.component";
-import { ViewEditorComponent } from "@dataservices/virtualization/view-editor/view-editor.component";
-import { ViewPreviewComponent } from "@dataservices/virtualization/view-editor/editor-views/view-preview/view-preview.component";
-import { EditorViewsComponent } from '@dataservices/virtualization/view-editor/editor-views/editor-views.component';
-import { MessageLogComponent } from '@dataservices/virtualization/view-editor/editor-views/message-log/message-log.component';
-import { CanvasService } from '@dataservices/virtualization/view-editor/view-canvas/canvas.service';
-import { GraphVisualComponent, NodeVisualComponent, LinkVisualComponent } from '@dataservices/virtualization/view-editor/view-canvas/visuals';
+import { AppSettingsService } from "../core/app-settings.service";
+import { CoreModule } from "../core/core.module";
+import { LoggerService } from "../core/logger.service";
+import { DataserviceCardComponent } from "../dataservices/dataservices-cards/dataservice-card/dataservice-card.component";
+import { SelectionService } from "../core/selection.service";
+import { DataservicesCardsComponent } from "../dataservices/dataservices-cards/dataservices-cards.component";
+import { DataservicesDetailsComponent } from "../dataservices/dataservices-list/dataservices-details.component";
+import { DataservicesListComponent } from "../dataservices/dataservices-list/dataservices-list.component";
+import { ViewsContentComponent } from "../dataservices/dataservices-list/views-content.component";
+import { DataservicesRoutingModule } from "../dataservices/dataservices-routing.module";
+import { DataservicesComponent } from "../dataservices/dataservices.component";
+import { SelectedNodeComponent } from "../dataservices/selected-node/selected-node.component";
+import { SelectedNodesListComponent } from "../dataservices/selected-nodes-list/selected-nodes-list.component";
+import { DataserviceService } from "../dataservices/shared/dataservice.service";
+import { MockDataserviceService } from "../dataservices/shared/mock-dataservice.service";
+import { MockVdbService } from "../dataservices/shared/mock-vdb.service";
+import { NotifierService } from "../dataservices/shared/notifier.service";
+import { VdbService } from "../dataservices/shared/vdb.service";
+import { SqlControlComponent } from "../dataservices/sql-control/sql-control.component";
+import { TestDataserviceComponent } from "../dataservices/test-dataservice/test-dataservice.component";
+import { ViewCanvasComponent } from "../dataservices/virtualization/view-editor/view-canvas/view-canvas.component";
+import { ViewEditorHeaderComponent } from "../dataservices/virtualization/view-editor/view-editor-header/view-editor-header.component";
+import { ViewEditorComponent } from "../dataservices/virtualization/view-editor/view-editor.component";
+import { ViewPreviewComponent } from "../dataservices/virtualization/view-editor/editor-views/view-preview/view-preview.component";
+import { EditorViewsComponent } from '../dataservices/virtualization/view-editor/editor-views/editor-views.component';
+import { MessageLogComponent } from '../dataservices/virtualization/view-editor/editor-views/message-log/message-log.component';
+import { CanvasService } from '../dataservices/virtualization/view-editor/view-canvas/canvas.service';
+import { GraphVisualComponent, NodeVisualComponent, LinkVisualComponent } from '../dataservices/virtualization/view-editor/view-canvas/visuals';
 
-import { environment } from "@environments/environment";
-import { ConfirmDialogComponent } from "@shared/confirm-dialog/confirm-dialog.component";
-import { SharedModule } from "@shared/shared.module";
+import { environment } from "../../environments/environment";
+import { ConfirmDialogComponent } from "../shared/confirm-dialog/confirm-dialog.component";
+import { SharedModule } from "../shared/shared.module";
 import { TreeModule } from "angular-tree-component";
 import { CodemirrorModule } from "ng2-codemirror";
 import {
@@ -69,12 +69,12 @@ import { OdataControlComponent } from "./odata-control/odata-control.component";
 import { AccordionModule, BsDropdownModule, TabsModule, TooltipModule } from 'ngx-bootstrap';
 import { ConnectionTreeSelectorComponent } from './virtualization/view-editor/connection-table-dialog/connection-tree-selector/connection-tree-selector.component';
 import { ConnectionTableDialogComponent } from './virtualization/view-editor/connection-table-dialog/connection-table-dialog.component';
-import { ProgressDialogComponent } from "@shared/progress-dialog/progress-dialog.component";
+import { ProgressDialogComponent } from "../shared/progress-dialog/progress-dialog.component";
 import { ViewPropertyEditorsComponent } from './virtualization/view-editor/view-property-editors/view-property-editors.component';
 import { AddCompositionWizardComponent } from './virtualization/view-editor/add-composition-wizard/add-composition-wizard.component';
 import { CreateViewDialogComponent } from './virtualization/view-editor/create-view-dialog/create-view-dialog.component';
 import { CreateViewsDialogComponent } from './create-views-dialog/create-views-dialog.component';
-import { SetDescriptionDialogComponent } from "@dataservices/set-description-dialog/set-description-dialog.component";
+import { SetDescriptionDialogComponent } from "../dataservices/set-description-dialog/set-description-dialog.component";
 import { PropertyEditorComponent } from './virtualization/view-editor/view-property-editors/property-editor/property-editor.component';
 import { ProjectedColumnsEditorComponent } from './virtualization/view-editor/view-property-editors/projected-columns-editor/projected-columns-editor.component';
 import { ViewsListComponent} from './virtualization/view-editor/views-list/views-list.component';
@@ -165,12 +165,12 @@ export class DataservicesModule { }
 /**
  * A factory that produces the appropriate instance of the service based on current environment settings.
  *
- * @param {Http} http the HTTP service
- * @param {VdbService} vdbService the VDB service
- * @param {AppSettingsService} appSettings the app settings service
- * @param {NotifierService} notifierService the notifier service
- * @param {LoggerService} logger the logger
- * @returns {DataserviceService} the requested service
+ * @param http the HTTP service
+ * @param vdbService the VDB service
+ * @param appSettings the app settings service
+ * @param notifierService the notifier service
+ * @param ogger the logger
+ * @returns the requested service
  */
 export function dataserviceServiceFactory( http: Http,
                                            vdbService: VdbService,
@@ -192,11 +192,11 @@ export function dataserviceServiceFactory( http: Http,
 /**
  * A factory that produces the appropriate instance of the service based on current environment settings.
  *
- * @param {Http} http the HTTP service
- * @param {AppSettingsService} appSettings the app settings service
- * @param {NotifierService} notifierService the notifier service
- * @param {LoggerService} logger the logger
- * @returns {VdbService} the requested service
+ * @param http the HTTP service
+ * @param appSettings the app settings service
+ * @param notifierService the notifier service
+ * @param logger the logger
+ * @returns the requested service
  */
 export function vdbServiceFactory( http: Http,
                                    appSettings: AppSettingsService,

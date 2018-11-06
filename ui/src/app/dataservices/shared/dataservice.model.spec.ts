@@ -1,6 +1,6 @@
-import { Dataservice } from "@dataservices/shared/dataservice.model";
-import { DeploymentState } from "@dataservices/shared/deployment-state.enum";
-import { PublishState } from "@dataservices/shared/publish-state.enum";
+import { Dataservice } from "../../dataservices/shared/dataservice.model";
+import { DeploymentState } from "../../dataservices/shared/deployment-state.enum";
+import { PublishState } from "../../dataservices/shared/publish-state.enum";
 
 describe("Dataservice", () => {
   let dataservice: Dataservice;

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { NewView } from "@dataservices/create-views-dialog/new-view.model";
+import { NewView } from "../../dataservices/create-views-dialog/new-view.model";
 
 /**
  * CreateViewsResult model - to hold the results of the CreateViewsDialog entry
@@ -31,42 +31,42 @@ export class CreateViewsResult {
   }
 
   /**
-   * @returns {string} the virtualization name
+   * @returns  the virtualization name
    */
   public getVirtualizationName(): string {
     return this.virtName;
   }
 
   /**
-   * @param {string} name the virtualization name
+   * @param  name the virtualization name
    */
   public setVirtualizationName( name?: string ): void {
     this.virtName = name ? name : null;
   }
 
   /**
-   * @returns {string} the virtualization description
+   * @returns  the virtualization description
    */
   public getVirtualizationDescription(): string {
     return this.virtDescription;
   }
 
   /**
-   * @param {string} description the virtualization description
+   * @param  description the virtualization description
    */
   public setVirtualizationDescription( description?: string ): void {
     this.virtDescription = description ? description : "";
   }
 
   /**
-   * @returns {NewView[]} the views
+   * @returns  the views
    */
   public getViews(): NewView[] {
     return this.views;
   }
 
   /**
-   * @param {NewView[]} views the views to create
+   * @param  views the views to create
    */
   public setViews( views: NewView[] ): void {
     this.views = views;

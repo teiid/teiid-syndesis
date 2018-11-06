@@ -17,7 +17,7 @@
 
 import { Component, EventEmitter, Input, OnInit, Output, TemplateRef, ViewEncapsulation } from "@angular/core";
 import { Router } from "@angular/router";
-import { Connection } from "@connections/shared/connection.model";
+import { Connection } from "../../connections/shared/connection.model";
 import { Action, ActionConfig, ListConfig } from "patternfly-ng";
 
 @Component({
@@ -74,7 +74,7 @@ export class ConnectionsListComponent implements OnInit {
    * @param editActionTemplate {TemplateRef} the edit action template
    * @param activateActionTemplate {TemplateRef} the activate action template
    * @param deleteActionTemplate {TemplateRef} the delete action template
-   * @returns {ActionConfig} the actions configuration
+   * @returns  the actions configuration
    */
   public getActionConfig( connection: Connection,
                           editActionTemplate: TemplateRef< any >,
@@ -125,7 +125,7 @@ export class ConnectionsListComponent implements OnInit {
 
   /**
    * Event handler for when a toolbar icon or kebab action is clicked.
-   * @param {Action} action the action that was selected.
+   * @param action the action that was selected.
    * @param item this parameter is not used
    */
   public handleAction( action: Action,
@@ -144,28 +144,28 @@ export class ConnectionsListComponent implements OnInit {
   }
 
   /**
-   * @returns {boolean} `true` if the connection row is selected in the list
+   * @returns `true` if the connection row is selected in the list
    */
   public isSelected( connection: Connection ): boolean {
     return this.selectedConnections.indexOf( connection ) !== -1;
   }
 
   /**
-   * @param {string} connectionName the name of the connection to activate
+   * @param connectionName the name of the connection to activate
    */
   public onActivateConnection(connectionName: string): void {
     this.activateConnection.emit(connectionName);
   }
 
   /**
-   * @param {string} connectionName the name of the connection to delete
+   * @param connectionName the name of the connection to delete
    */
   public onDeleteConnection(connectionName: string): void {
     this.deleteConnection.emit(connectionName);
   }
 
   /**
-   * @param {string} connectionName the name of the connection to edit
+   * @param connectionName the name of the connection to edit
    */
   public onEditConnection( connectionName: string ): void {
     this.editConnection.emit( connectionName );

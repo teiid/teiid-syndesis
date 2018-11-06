@@ -1,6 +1,6 @@
-import { Undoable } from "@dataservices/virtualization/view-editor/command/undo-redo/undoable";
-import { UpdateViewNameCommand } from "@dataservices/virtualization/view-editor/command/update-view-name-command";
-import { CommandFactory } from "@dataservices/virtualization/view-editor/command/command-factory";
+import { Undoable } from "../../../../../dataservices/virtualization/view-editor/command/undo-redo/undoable";
+import { UpdateViewNameCommand } from "../../../../../dataservices/virtualization/view-editor/command/update-view-name-command";
+import { CommandFactory } from "../../../../../dataservices/virtualization/view-editor/command/command-factory";
 
 describe("Undoable", () => {
   let result: Undoable | Error;

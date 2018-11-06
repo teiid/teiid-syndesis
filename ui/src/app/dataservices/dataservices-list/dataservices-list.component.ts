@@ -24,14 +24,14 @@ import {
   ViewEncapsulation,
   ViewChild
 } from "@angular/core";
-import { LoggerService } from "@core/logger.service";
+import { LoggerService } from "../../core/logger.service";
 import { Action, ActionConfig, ListConfig } from "patternfly-ng";
 import { Observable } from "rxjs/Observable";
 import { Subscription } from "rxjs/Subscription";
 import * as _ from "lodash";
-import { DataserviceService } from "@dataservices/shared/dataservice.service";
-import { Dataservice } from "@dataservices/shared/dataservice.model";
-import { NameValue } from "@dataservices/shared/name-value.model";
+import { DataserviceService } from "../../dataservices/shared/dataservice.service";
+import { Dataservice } from "../../dataservices/shared/dataservice.model";
+import { NameValue } from "../../dataservices/shared/name-value.model";
 
 @Component({
   encapsulation: ViewEncapsulation.None,
@@ -90,7 +90,7 @@ export class DataservicesListComponent implements OnInit {
   private logMonitor: Subscription = null;
 
   /**
-   * @param {LoggerService} logger the logging service
+   * @param  logger the logging service
    */
   constructor( logger: LoggerService, dataserviceService: DataserviceService ) {
     this.logger = logger;
@@ -110,7 +110,7 @@ export class DataservicesListComponent implements OnInit {
    * @param downloadActionTemplate {TemplateRef} the download action template
    * @param deleteActionTemplate {TemplateRef} the delete action template
    * @param odataLookActionTemplate {TemplateRef} the odata preview action template
-   * @returns {ActionConfig} the actions configuration
+   * @returns  the actions configuration
    */
   public getActionConfig( ds: Dataservice,
                           editActionTemplate: TemplateRef< any >,
@@ -188,8 +188,8 @@ export class DataservicesListComponent implements OnInit {
   }
 
   /**
-   * @param {Dataservice} dataservice the dataservice whose description is being requested
-   * @returns {string} the description (truncated to 120 characters if needed)
+   * @param  dataservice the dataservice whose description is being requested
+   * @returns  the description (truncated to 120 characters if needed)
    */
   public getDescription( dataservice: Dataservice ): string {
     const description = dataservice.getDescription();

@@ -17,16 +17,16 @@
 
 import { Component, OnInit } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
-import { ConnectionStatus } from "@connections/shared/connection-status";
-import { Connection } from "@connections/shared/connection.model";
-import { ConnectionService } from "@connections/shared/connection.service";
-import { ConnectionsConstants } from "@connections/shared/connections-constants";
-import { AppSettingsService } from "@core/app-settings.service";
-import { LoggerService } from "@core/logger.service";
-import { NotifierService } from "@dataservices/shared/notifier.service";
-import { AbstractPageComponent } from "@shared/abstract-page.component";
-import { ConfirmDialogComponent } from "@shared/confirm-dialog/confirm-dialog.component";
-import { LayoutType } from "@shared/layout-type.enum";
+import { ConnectionStatus } from "../connections/shared/connection-status";
+import { Connection } from "../connections/shared/connection.model";
+import { ConnectionService } from "../connections/shared/connection.service";
+import { ConnectionsConstants } from "../connections/shared/connections-constants";
+import { AppSettingsService } from "../core/app-settings.service";
+import { LoggerService } from "../core/logger.service";
+import { NotifierService } from "../dataservices/shared/notifier.service";
+import { AbstractPageComponent } from "../shared/abstract-page.component";
+import { ConfirmDialogComponent } from "../shared/confirm-dialog/confirm-dialog.component";
+import { LayoutType } from "../shared/layout-type.enum";
 import { BsModalService } from "ngx-bootstrap";
 import { SortField } from "patternfly-ng";
 import { SortEvent } from "patternfly-ng";
@@ -37,7 +37,7 @@ import { FilterField } from "patternfly-ng";
 import { FilterConfig } from "patternfly-ng";
 import { ActionConfig, EmptyStateConfig, Filter } from "patternfly-ng";
 import { Subscription } from "rxjs/Subscription";
-import { SelectionService } from "@core/selection.service";
+import { SelectionService } from "../core/selection.service";
 
 @Component({
   moduleId: module.id,
@@ -173,42 +173,42 @@ export class ConnectionsComponent extends AbstractPageComponent implements OnIni
   }
 
   /**
-   * @returns {boolean} true if connections are being represented by cards
+   * @returns  true if connections are being represented by cards
    */
   public get isCardLayout(): boolean {
     return this.appSettingsService.connectionsPageLayout === LayoutType.CARD;
   }
 
   /**
-   * @returns {boolean} true if connections are being represented by items in a list
+   * @returns  true if connections are being represented by items in a list
    */
   public get isListLayout(): boolean {
     return this.appSettingsService.connectionsPageLayout === LayoutType.LIST;
   }
 
   /**
-   * @returns {Connection[]} the array of all connections
+   * @returns  the array of all connections
    */
   public get allConnections(): Connection[] {
     return this.allConns;
   }
 
   /**
-   * @returns {boolean} 'true' if any connections are available
+   * @returns  'true' if any connections are available
    */
   public get hasConnections(): boolean {
     return this.allConns.length > 0;
   }
 
   /**
-   * @returns {Connection[]} the array of filtered connections
+   * @returns  the array of filtered connections
    */
   public get filteredConnections(): Connection[] {
     return this.filteredConns;
   }
 
   /**
-   * @returns {Connection[]} the array of selected connections
+   * @returns  the array of selected connections
    */
   public get selectedConnections(): Connection[] {
     return this.selectedConns;
@@ -268,7 +268,7 @@ export class ConnectionsComponent extends AbstractPageComponent implements OnIni
 
   /**
    * Handle Edit of the specified Connection
-   * @param {string} connName
+   * @param connName
    */
   public onEdit(connName: string): void {
     const selectedConnection =  this.filteredConnections.find((x) => x.getId() === connName);
@@ -286,7 +286,7 @@ export class ConnectionsComponent extends AbstractPageComponent implements OnIni
   /**
    * Handle Activation of the specified Connection.  The activate actions taken depend on the vdb
    * and schema states.
-   * @param {string} connName
+   * @param connName
    */
   public onActivate(connName: string): void {
     const selectedConnection =  this.filteredConnections.find((x) => x.getId() === connName);
@@ -418,7 +418,7 @@ export class ConnectionsComponent extends AbstractPageComponent implements OnIni
 
   /**
    * Delete the specified connection's VDB from the repo (if it exists) and undeploy it from teiid (if it exists)
-   * @param {string} connectionId
+   * @param connectionId
    */
   private deleteUndeployConnectionVdb(connectionId: string): void {
     const self = this;
@@ -436,7 +436,7 @@ export class ConnectionsComponent extends AbstractPageComponent implements OnIni
 
   /**
    * Remove the specified connection from the connections list
-   * @param {Connection} connection
+   * @param connection
    */
   private removeConnectionFromList(connection: Connection): void {
     this.allConns.splice(this.allConns.indexOf(connection), 1);
@@ -490,8 +490,8 @@ export class ConnectionsComponent extends AbstractPageComponent implements OnIni
 
   /**
    * Determine if a connection with the supplied name exists in the current connections
-   * @param {string} connName the connection name
-   * @returns {boolean} 'true' if connection exists
+   * @param connName the connection name
+   * @returns 'true' if connection exists
    */
   private connectionExists(connName: string): boolean {
     let connFound = false;

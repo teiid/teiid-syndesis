@@ -1,4 +1,4 @@
-import { QueryResults } from "@dataservices/shared/query-results.model";
+import { QueryResults } from "../../dataservices/shared/query-results.model";
 
 describe("QueryResults", () => {
   let queryResults: QueryResults;

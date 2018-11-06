@@ -17,9 +17,9 @@
 
 import { Injectable } from "@angular/core";
 import { Headers, Http, RequestOptions, Response } from "@angular/http";
-import { LoggerService } from "@core/logger.service";
-import { environment } from "@environments/environment";
-import { LayoutType } from "@shared/layout-type.enum";
+import { LoggerService } from "../core/logger.service";
+import { environment } from "../../environments/environment";
+import { LayoutType } from "../shared/layout-type.enum";
 import { Observable } from "rxjs/Observable";
 import { ErrorObservable } from "rxjs/observable/ErrorObservable";
 
@@ -92,7 +92,7 @@ export class AppSettingsService {
    * Get the Auth RequestOptions if any
    * Note: Since usage of the oauth-proxy no additional auth request options are necessary
    *
-   * @returns {RequestOptions}
+   * @returns
    */
   public getAuthRequestOptions(): RequestOptions {
     const headers = new Headers({});
@@ -101,7 +101,7 @@ export class AppSettingsService {
 
   /*
    * Get the logged in komodo user
-   * @returns {string} the komodo user
+   * @returns  the komodo user
    */
   public getKomodoUser(): string {
     if (! this.userProfile) {
@@ -118,7 +118,7 @@ export class AppSettingsService {
 
   /*
    * Get the komodo workspace path for the current user
-   * @returns {string} the komodo workspace path
+   * @returns  the komodo workspace path
    */
   public getKomodoUserWorkspacePath(): string {
     if (! this.userProfile) {
@@ -135,7 +135,7 @@ export class AppSettingsService {
 
   /*
    * Get the git repository property for the supplied property key
-   * @returns {string} the git repository property
+   * @returns  the git repository property
    */
   public getGitRepoProperty(propertyKey: string): string {
     return this.gitRepoProperties.get(propertyKey);
@@ -151,7 +151,7 @@ export class AppSettingsService {
 
   /*
    * Sets the LayoutType for the connections summary page
-   * @param {LayoutType} layout the connections page layout
+   * @param layout the connections page layout
    */
   public set connectionsPageLayout( layout: LayoutType ) {
     this.connPageLayout = layout;
@@ -159,7 +159,7 @@ export class AppSettingsService {
 
   /*
    * Get the LayoutType for the dataservices summary page
-   * @returns {LayoutType} the dataservices page layout
+   * @returns the dataservices page layout
    */
   public get dataservicesPageLayout( ): LayoutType {
     return this.svcPageLayout;
@@ -167,7 +167,7 @@ export class AppSettingsService {
 
   /*
    * Sets the LayoutType for the dataservices summary page
-   * @param {LayoutType} layout the dataservices page layout
+   * @param layout the dataservices page layout
    */
   public set dataservicesPageLayout( layout: LayoutType ) {
     this.svcPageLayout = layout;

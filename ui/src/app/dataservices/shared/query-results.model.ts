@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-import { ColumnData } from "@dataservices/shared/column-data.model";
-import { RowData } from "@dataservices/shared/row-data.model";
+import { ColumnData } from "../../dataservices/shared/column-data.model";
+import { RowData } from "../../dataservices/shared/row-data.model";
 
 /**
  * QueryResults model
@@ -28,7 +28,7 @@ export class QueryResults {
 
   /**
    * Constructor
-   * @param {object} json the representation of the QueryResults
+   * @param  json the representation of the QueryResults
    */
   constructor(json: object = {}) {
     for (const field of Object.keys(json)) {
@@ -52,29 +52,23 @@ export class QueryResults {
     }
   }
 
-  /**
-   * @returns {ColumnData[]} the column data
-   */
   public getColumns(): ColumnData[] {
     return this.columns;
   }
 
-  /**
-   * @param {ColumnData[]} columns the column data (optional)
-   */
   public setColumns( columns?: ColumnData[] ): void {
     this.columns = columns ? columns : null;
   }
 
   /**
-   * @returns {RowData[]} the row data
+   * @returns  the row data
    */
   public getRows(): RowData[] {
     return this.rows;
   }
 
   /**
-   * @param {RowData[]} rows the row data (optional)
+   * @param  rows the row data (optional)
    */
   public setRows( rows?: RowData[] ): void {
     this.rows = rows ? rows : null;

@@ -18,10 +18,10 @@
 import { NgModule } from "@angular/core";
 import { RouterModule } from "@angular/router";
 import { Routes } from "@angular/router";
-import { DataservicesComponent } from "@dataservices/dataservices.component";
-import { DataservicesConstants } from "@dataservices/shared/dataservices-constants";
-import { TestDataserviceComponent } from "@dataservices/test-dataservice/test-dataservice.component";
-import { ViewEditorComponent } from "@dataservices/virtualization/view-editor/view-editor.component";
+import { DataservicesComponent } from "../dataservices/dataservices.component";
+import { DataservicesConstants } from "../dataservices/shared/dataservices-constants";
+import { TestDataserviceComponent } from "../dataservices/test-dataservice/test-dataservice.component";
+import { ViewEditorComponent } from "../dataservices/virtualization/view-editor/view-editor.component";
 
 const dataservicesRoutes: Routes = [
   { path: DataservicesConstants.dataservicesRootRoute, component: DataservicesComponent },
