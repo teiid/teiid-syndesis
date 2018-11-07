@@ -36,13 +36,14 @@ export class ViewEditorHeaderComponent implements OnInit, OnDestroy {
    * Cleanup code when destroying the view editor header.
    */
   public ngOnDestroy(): void {
-
+    // Nothing to do
   }
 
   /**
    * Initialization code run after construction.
    */
   public ngOnInit(): void {
+    // Nothing to do
   }
 
   /**

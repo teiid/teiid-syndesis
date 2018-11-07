@@ -32,7 +32,7 @@ import "rxjs/add/observable/throw";
 import "rxjs/add/operator/catch";
 import "rxjs/add/operator/map";
 import { Observable } from "rxjs/Observable";
-import { timer } from 'rxjs';
+import { timer } from "rxjs/observable/timer";
 
 @Injectable()
 export class MockVdbService extends VdbService {

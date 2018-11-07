@@ -30,8 +30,8 @@ import { ConnectionSummary } from "@dataservices/shared/connection-summary.model
 import { NotifierService } from "@dataservices/shared/notifier.service";
 import { VdbService } from "@dataservices/shared/vdb.service";
 import { environment } from "@environments/environment";
-import { Observable } from "rxjs";
-import { Subscription } from "rxjs";
+import { Observable } from "rxjs/Observable";
+import { Subscription } from "rxjs/Subscription";
 import { VdbsConstants } from "@dataservices/shared/vdbs-constants";
 import { Column } from "@dataservices/shared/column.model";
 import "rxjs/add/operator/map";
