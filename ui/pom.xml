@@ -126,7 +126,33 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>            
+            </plugin>
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>node_modules</directory>
+                            <includes>
+                                <include>**</include>
+                            </includes>
+                        </fileset>
+                        <fileset>
+                            <directory>node</directory>
+                            <includes>
+                                <include>**</include>
+                            </includes>
+                        </fileset>
+                        <fileset>
+                            <directory>dist</directory>
+                            <includes>
+                                <include>**</include>
+                            </includes>
+                        </fileset>                        
+                    </filesets>
+                    <followSymlinks>false</followSymlinks>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
