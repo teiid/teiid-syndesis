@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Component, Input, ChangeDetectorRef, HostListener, ChangeDetectionStrategy, OnInit } from '@angular/core';
+import { Component, ChangeDetectorRef, HostListener, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { CanvasService } from '@dataservices/virtualization/view-editor/view-canvas/canvas.service';
 import { CanvasGraph, CanvasNode, CanvasLink } from '@dataservices/virtualization/view-editor/view-canvas/models';
 import * as d3 from 'd3';

@@ -25,6 +25,9 @@ import {
 import { TooltipModule } from 'ngx-bootstrap';
 import { CodemirrorModule } from "ng2-codemirror";
 import { HttpModule } from "@angular/http";
+import { ModuleWithProviders } from "@angular/core";
+
+export const tooltipModule: ModuleWithProviders<any> = TooltipModule.forRoot();
 
 describe("DataserviceCardComponent", () => {
   let component: DataserviceCardComponent;
@@ -47,6 +50,7 @@ describe("DataserviceCardComponent", () => {
         NotificationModule,
         SortModule,
         TableModule,
+        tooltipModule,
         WizardModule
       ],
       declarations: [ DataserviceCardComponent ],

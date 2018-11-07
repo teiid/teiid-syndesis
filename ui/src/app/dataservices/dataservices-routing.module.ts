@@ -17,7 +17,6 @@
 
 import { NgModule, ModuleWithProviders } from "@angular/core";
 import { RouterModule } from "@angular/router";
-import { Routes } from "@angular/router";
 import { DataservicesComponent } from "@dataservices/dataservices.component";
 import { DataservicesConstants } from "@dataservices/shared/dataservices-constants";
 import { TestDataserviceComponent } from "@dataservices/test-dataservice/test-dataservice.component";
@@ -28,7 +27,6 @@ export const dataservicesRoutes: ModuleWithProviders<RouterModule> = RouterModul
   { path: DataservicesConstants.viewRoute, component: ViewEditorComponent },
   { path: DataservicesConstants.testDataserviceRoute, component: TestDataserviceComponent }
 ]);
-
 
 @NgModule({
   imports: [

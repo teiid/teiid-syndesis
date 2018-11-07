@@ -21,13 +21,12 @@ import {
 import * as _ from "lodash";
 import { LoggerService } from "@core/logger.service";
 import { Action, ActionConfig, CardAction, CardConfig, EmptyStateConfig, ListConfig } from "patternfly-ng";
-import { Observable } from "rxjs/Observable";
 import { Subscription } from "rxjs/Subscription";
 import { Dataservice } from "@dataservices/shared/dataservice.model";
 import { DataserviceService } from "@dataservices/shared/dataservice.service";
 import { Connection } from "@connections/shared/connection.model";
 import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
-import { interval } from 'rxjs';
+import { interval } from 'rxjs/observable/interval';
 
 @Component({
   encapsulation: ViewEncapsulation.None,

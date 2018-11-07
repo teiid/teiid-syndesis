@@ -77,13 +77,12 @@ import { CreateViewsDialogComponent } from './create-views-dialog/create-views-d
 import { SetDescriptionDialogComponent } from "@dataservices/set-description-dialog/set-description-dialog.component";
 import { PropertyEditorComponent } from './virtualization/view-editor/view-property-editors/property-editor/property-editor.component';
 import { ProjectedColumnsEditorComponent } from './virtualization/view-editor/view-property-editors/projected-columns-editor/projected-columns-editor.component';
-import { ViewsListComponent} from './virtualization/view-editor/views-list/views-list.component';
+import { ViewsListComponent } from './virtualization/view-editor/views-list/views-list.component';
 
 export const bsDropdownModule: ModuleWithProviders<any> = BsDropdownModule.forRoot();
 export const accordionModule: ModuleWithProviders<any> = AccordionModule.forRoot();
 export const tooltipModule: ModuleWithProviders<any> = TooltipModule.forRoot();
 export const tabsModule: ModuleWithProviders<any> = TabsModule.forRoot();
-
 
 @NgModule({
   imports: [

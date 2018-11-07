@@ -2,6 +2,7 @@ import { ModuleWithProviders } from "@angular/core";
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpModule } from "@angular/http";
 import { LoggerService } from "@core/logger.service";
+import { ModalModule } from "ngx-bootstrap";
 import { MockAppSettingsService } from "@core/mock-app-settings.service";
 import { AppSettingsService } from "@core/app-settings.service";
 import { ViewCanvasComponent } from '@dataservices/virtualization/view-editor/view-canvas/view-canvas.component';
@@ -22,7 +23,7 @@ import { VdbService } from "@dataservices/shared/vdb.service";
 import { MockVdbService } from "@dataservices/shared/mock-vdb.service";
 import { NotifierService } from "@dataservices/shared/notifier.service";
 import { ViewPropertyEditorsComponent } from "@dataservices/virtualization/view-editor/view-property-editors/view-property-editors.component";
-import { TabsModule} from "ngx-bootstrap";
+import { TabsModule } from "ngx-bootstrap";
 import { GraphVisualComponent, LinkVisualComponent, NodeVisualComponent } from "@dataservices/virtualization/view-editor/view-canvas/visuals";
 import { CanvasService } from "@dataservices/virtualization/view-editor/view-canvas/canvas.service";
 import { SelectionService } from "@core/selection.service";
@@ -33,6 +34,7 @@ import { BsModalService } from "ngx-bootstrap";
 import { Dataservice } from "@dataservices/shared/dataservice.model";
 
 export const tabsModule: ModuleWithProviders<any> = TabsModule.forRoot();
+export const modalModule: ModuleWithProviders<any> = ModalModule.forRoot();
 
 describe('ViewCanvasComponent', () => {
   let component: ViewCanvasComponent;
@@ -51,6 +53,7 @@ describe('ViewCanvasComponent', () => {
         TableModule,
         WizardModule,
         HttpModule,
+        modalModule,
         tabsModule
       ],
       declarations: [

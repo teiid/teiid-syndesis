@@ -43,7 +43,6 @@ import { Router } from "@angular/router";
 import { NavigationStart } from "@angular/router";
 import 'rxjs/add/operator/pairwise';
 
-
 @Component({
   encapsulation: ViewEncapsulation.None,
   selector: "app-view-editor",
