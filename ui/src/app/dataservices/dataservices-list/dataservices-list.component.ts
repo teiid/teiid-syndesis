@@ -36,7 +36,6 @@ import { interval } from 'rxjs';
 
 @Component({
   encapsulation: ViewEncapsulation.None,
-  moduleId: module.id,
   selector: "app-dataservices-list",
   templateUrl: "dataservices-list.component.html",
   styleUrls: ["dataservices-list.component.css"]

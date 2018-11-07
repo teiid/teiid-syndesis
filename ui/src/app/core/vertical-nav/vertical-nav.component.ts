@@ -27,7 +27,6 @@ import { BsModalRef } from "ngx-bootstrap/modal/bs-modal-ref.service";
 import { NavigationItemConfig } from "patternfly-ng";
 
 @Component({
-  moduleId: module.id,
   encapsulation: ViewEncapsulation.None,
   selector: "app-vertical-nav",
   templateUrl: "./vertical-nav.component.html",

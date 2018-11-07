@@ -1,3 +1,4 @@
+import { ModuleWithProviders } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { FormsModule } from "@angular/forms";
 import { HttpModule } from "@angular/http";
@@ -38,6 +39,10 @@ import { AccordionModule } from 'ngx-bootstrap';
 import { TooltipModule } from 'ngx-bootstrap';
 import { SelectionService } from "@core/selection.service";
 
+export const moduleRoot: ModuleWithProviders<any> = ModalModule.forRoot();
+export const accordionModule: ModuleWithProviders<any> = AccordionModule.forRoot();
+export const tooltipModule: ModuleWithProviders<any> = TooltipModule.forRoot();
+
 describe("DataservicesComponent", () => {
   let component: DataservicesComponent;
   let fixture: ComponentFixture<DataservicesComponent>;
@@ -48,12 +53,12 @@ describe("DataservicesComponent", () => {
         CoreModule,
         FormsModule,
         HttpModule,
-        ModalModule.forRoot(),
+        moduleRoot,
         RouterTestingModule,
         SharedModule,
         CodemirrorModule,
-        AccordionModule.forRoot(),
-        TooltipModule.forRoot(),
+        accordionModule,
+        tooltipModule,
         ActionModule,
         CardModule,
         EmptyStateModule,

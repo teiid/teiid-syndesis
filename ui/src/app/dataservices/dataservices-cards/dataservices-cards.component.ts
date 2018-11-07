@@ -22,7 +22,6 @@ import { Dataservice } from "@dataservices/shared/dataservice.model";
 import { NameValue } from "@dataservices/shared/name-value.model";
 
 @Component({
-  moduleId: module.id,
   encapsulation: ViewEncapsulation.None,
   selector: "app-dataservices-cards",
   templateUrl: "dataservices-cards.component.html",

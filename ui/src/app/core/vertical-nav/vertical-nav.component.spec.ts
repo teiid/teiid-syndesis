@@ -1,3 +1,4 @@
+import { ModuleWithProviders } from "@angular/core";
 import { async, ComponentFixture, inject, TestBed } from "@angular/core/testing";
 import { HttpModule } from "@angular/http";
 import { RouterTestingModule } from "@angular/router/testing";
@@ -10,6 +11,8 @@ import { VerticalNavComponent } from "@core/vertical-nav/vertical-nav.component"
 import { BsModalService, ModalModule } from "ngx-bootstrap";
 import { ModalModule as PfngModalModule, NavigationModule as PfngNavigationModule } from "patternfly-ng";
 
+export const moduleRoot: ModuleWithProviders<any> = ModalModule.forRoot();
+
 describe("VerticalNavComponent", () => {
   let component: VerticalNavComponent;
   let fixture: ComponentFixture<VerticalNavComponent>;
@@ -18,7 +21,7 @@ describe("VerticalNavComponent", () => {
     TestBed.configureTestingModule({
       imports: [
         HttpModule,
-        ModalModule.forRoot(),
+        moduleRoot,
         RouterTestingModule,
         PfngModalModule,
         PfngNavigationModule

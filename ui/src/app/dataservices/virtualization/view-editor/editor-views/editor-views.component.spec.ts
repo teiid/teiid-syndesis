@@ -1,3 +1,4 @@
+import { ModuleWithProviders } from "@angular/core";
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpModule } from "@angular/http";
 import { LoggerService } from "@core/logger.service";
@@ -25,6 +26,8 @@ import {
   WizardModule } from "patternfly-ng";
 import { SelectionService } from "@core/selection.service";
 
+export const tabsModule: ModuleWithProviders<any> = TabsModule.forRoot();
+
 describe('EditorViewsComponent', () => {
   let component: EditorViewsComponent;
   let fixture: ComponentFixture<EditorViewsComponent>;
@@ -42,7 +45,7 @@ describe('EditorViewsComponent', () => {
         TableModule,
         WizardModule,
         HttpModule,
-        TabsModule.forRoot()
+        tabsModule
       ],
       declarations: [
         EditorViewsComponent,

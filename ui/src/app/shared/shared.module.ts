@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { ModuleWithProviders } from "@angular/core";
 
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
@@ -29,10 +30,12 @@ import { PropertyFormComponent } from "./property-form/property-form.component";
 import { SlideInComponent } from "./slide-in/slide-in.component";
 import { ProgressDialogComponent } from './progress-dialog/progress-dialog.component';
 
+export const moduleRoot: ModuleWithProviders<any> = ModalModule.forRoot();
+
 @NgModule({
   imports: [
     CommonModule,
-    ModalModule.forRoot(),
+    moduleRoot,
     ReactiveFormsModule
   ],
   declarations: [

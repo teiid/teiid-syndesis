@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { NgModule } from "@angular/core";
+import { NgModule, ModuleWithProviders } from "@angular/core";
 import { RouterModule } from "@angular/router";
 import { Routes } from "@angular/router";
 import { DataservicesComponent } from "@dataservices/dataservices.component";
@@ -23,15 +23,16 @@ import { DataservicesConstants } from "@dataservices/shared/dataservices-constan
 import { TestDataserviceComponent } from "@dataservices/test-dataservice/test-dataservice.component";
 import { ViewEditorComponent } from "@dataservices/virtualization/view-editor/view-editor.component";
 
-const dataservicesRoutes: Routes = [
+export const dataservicesRoutes: ModuleWithProviders<RouterModule> = RouterModule.forChild([
   { path: DataservicesConstants.dataservicesRootRoute, component: DataservicesComponent },
   { path: DataservicesConstants.viewRoute, component: ViewEditorComponent },
   { path: DataservicesConstants.testDataserviceRoute, component: TestDataserviceComponent }
-];
+]);
+
 
 @NgModule({
   imports: [
-    RouterModule.forChild( dataservicesRoutes )
+    dataservicesRoutes
   ],
   exports: [
     RouterModule

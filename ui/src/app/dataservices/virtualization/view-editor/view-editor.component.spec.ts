@@ -1,3 +1,4 @@
+import { ModuleWithProviders } from "@angular/core";
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from "@angular/forms";
 import { RouterTestingModule } from "@angular/router/testing";
@@ -39,6 +40,8 @@ import {
 } from "@dataservices/virtualization/view-editor/view-canvas/visuals";
 import { CanvasService } from "@dataservices/virtualization/view-editor/view-canvas/canvas.service";
 
+export const tabsModule: ModuleWithProviders<any> = TabsModule.forRoot();
+
 describe('ViewEditorComponent', () => {
   let component: ViewEditorComponent;
   let fixture: ComponentFixture<ViewEditorComponent>;
@@ -59,7 +62,7 @@ describe('ViewEditorComponent', () => {
         ToolbarModule,
         WizardModule,
         RouterTestingModule,
-        TabsModule.forRoot(),
+        tabsModule,
         TreeModule
       ],
       declarations: [

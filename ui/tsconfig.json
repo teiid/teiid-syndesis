@@ -3,14 +3,14 @@
   "compilerOptions": {
     "baseUrl": "src",
     "paths": {
-      "@app/*": ["app/*"],
-      "@connections/*": ["app/connections/*"],
-      "@core/*": ["app/core/*"],
-      "@dataservices/*": ["app/dataservices/*"],
-      "@environments/*": ["environments/*"],
-      "@shared/*": ["app/shared/*"],
-      "@angular/*": ["node_modules/@angular/*"],
-      "rxjs/*": ["node_modules/rxjs/*"]      
+      "@app/*": ["./app/*"],
+      "@connections/*": ["./app/connections/*"],
+      "@core/*": ["./app/core/*"],
+      "@dataservices/*": ["./app/dataservices/*"],
+      "@environments/*": ["./environments/*"],
+      "@shared/*": ["./app/shared/*"],
+      "@angular/*": ["./node_modules/@angular/*"],
+      "rxjs/*": ["./node_modules/rxjs/*"]      
     },
     "outDir": "./dist/out-tsc",
     "sourceMap": true,

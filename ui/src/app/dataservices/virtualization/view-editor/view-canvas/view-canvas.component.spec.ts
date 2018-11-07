@@ -1,3 +1,4 @@
+import { ModuleWithProviders } from "@angular/core";
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpModule } from "@angular/http";
 import { LoggerService } from "@core/logger.service";
@@ -31,6 +32,8 @@ import { ViewsListComponent } from "@dataservices/virtualization/view-editor/vie
 import { BsModalService } from "ngx-bootstrap";
 import { Dataservice } from "@dataservices/shared/dataservice.model";
 
+export const tabsModule: ModuleWithProviders<any> = TabsModule.forRoot();
+
 describe('ViewCanvasComponent', () => {
   let component: ViewCanvasComponent;
   let fixture: ComponentFixture<ViewCanvasComponent>;
@@ -48,7 +51,7 @@ describe('ViewCanvasComponent', () => {
         TableModule,
         WizardModule,
         HttpModule,
-        TabsModule.forRoot()
+        tabsModule
       ],
       declarations: [
         GraphVisualComponent,

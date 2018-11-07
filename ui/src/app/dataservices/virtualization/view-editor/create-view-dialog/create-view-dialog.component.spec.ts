@@ -1,4 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ModuleWithProviders } from "@angular/core";
 
 import { CreateViewDialogComponent } from './create-view-dialog.component';
 import { HttpModule } from "@angular/http";
@@ -15,6 +16,8 @@ import { LoggerService } from "@core/logger.service";
 import { NotifierService } from "@dataservices/shared/notifier.service";
 import { SelectionService } from "@core/selection.service";
 
+export const moduleRoot: ModuleWithProviders<any> = ModalModule.forRoot();
+
 describe('CreateViewDialogComponent', () => {
   let component: CreateViewDialogComponent;
   let fixture: ComponentFixture<CreateViewDialogComponent>;
@@ -25,7 +28,7 @@ describe('CreateViewDialogComponent', () => {
         HttpModule,
         FormsModule,
         ReactiveFormsModule,
-        ModalModule.forRoot(),
+        moduleRoot,
         ActionModule,
         NotificationModule
       ],

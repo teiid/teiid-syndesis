@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import { ModuleWithProviders } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
@@ -79,6 +79,12 @@ import { PropertyEditorComponent } from './virtualization/view-editor/view-prope
 import { ProjectedColumnsEditorComponent } from './virtualization/view-editor/view-property-editors/projected-columns-editor/projected-columns-editor.component';
 import { ViewsListComponent} from './virtualization/view-editor/views-list/views-list.component';
 
+export const bsDropdownModule: ModuleWithProviders<any> = BsDropdownModule.forRoot();
+export const accordionModule: ModuleWithProviders<any> = AccordionModule.forRoot();
+export const tooltipModule: ModuleWithProviders<any> = TooltipModule.forRoot();
+export const tabsModule: ModuleWithProviders<any> = TabsModule.forRoot();
+
+
 @NgModule({
   imports: [
     DataservicesRoutingModule,
@@ -90,9 +96,9 @@ import { ViewsListComponent} from './virtualization/view-editor/views-list/views
     RouterModule,
     CodemirrorModule,
     TreeModule,
-    BsDropdownModule.forRoot(),
-    AccordionModule.forRoot(),
-    TooltipModule.forRoot(),
+    bsDropdownModule,
+    accordionModule,
+    tooltipModule,
     ActionModule,
     CardModule,
     EmptyStateModule,
@@ -103,7 +109,7 @@ import { ViewsListComponent} from './virtualization/view-editor/views-list/views
     TableModule,
     ToolbarModule,
     WizardModule,
-    TabsModule.forRoot()
+    tabsModule
   ],
   declarations: [
     DataservicesDetailsComponent,

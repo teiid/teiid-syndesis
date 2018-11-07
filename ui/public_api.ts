@@ -1,5 +1,1 @@
-import { ViewEditorComponent } from "./src/app/dataservices/virtualization/view-editor/view-editor.component";
-import { AppModule } from "./src/app/app.module";
-
-export { ViewEditorComponent };
-export { AppModule };
+export * from "./src/app/dataservices/dataservices.module";

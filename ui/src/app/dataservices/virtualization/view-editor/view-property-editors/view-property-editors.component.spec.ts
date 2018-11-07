@@ -1,5 +1,5 @@
+import { ModuleWithProviders } from "@angular/core";
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { ViewPropertyEditorsComponent } from './view-property-editors.component';
 import { TabsModule } from "ngx-bootstrap";
 import { ViewEditorService } from "@dataservices/virtualization/view-editor/view-editor.service";
@@ -17,6 +17,8 @@ import { PropertyEditorComponent } from "@dataservices/virtualization/view-edito
 import { ProjectedColumnsEditorComponent } from "@dataservices/virtualization/view-editor/view-property-editors/projected-columns-editor/projected-columns-editor.component";
 import { TableModule } from "patternfly-ng";
 
+export const tabsModule: ModuleWithProviders<any> = TabsModule.forRoot();
+
 describe('ViewPropertyEditorsComponent', () => {
   let component: ViewPropertyEditorsComponent;
   let fixture: ComponentFixture<ViewPropertyEditorsComponent>;
@@ -26,7 +28,7 @@ describe('ViewPropertyEditorsComponent', () => {
       imports: [
         HttpModule,
         TableModule,
-        TabsModule.forRoot()
+        tabsModule
       ],
       declarations: [ ProjectedColumnsEditorComponent, PropertyEditorComponent, ViewPropertyEditorsComponent ],
       providers: [

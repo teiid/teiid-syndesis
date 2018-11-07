@@ -1,3 +1,4 @@
+import { ModuleWithProviders } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { FormsModule } from "@angular/forms";
 import { HttpModule } from "@angular/http";
@@ -30,6 +31,8 @@ import {
 } from "patternfly-ng";
 import { SelectionService } from "@core/selection.service";
 
+export const moduleRoot: ModuleWithProviders<any> = ModalModule.forRoot();
+
 describe("ConnectionsComponent", () => {
   let component: ConnectionsComponent;
   let fixture: ComponentFixture<ConnectionsComponent>;
@@ -40,7 +43,7 @@ describe("ConnectionsComponent", () => {
         CoreModule,
         FormsModule,
         HttpModule,
-        ModalModule.forRoot(),
+        moduleRoot,
         RouterTestingModule,
         SharedModule,
         ActionModule,

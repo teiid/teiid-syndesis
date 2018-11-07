@@ -59,7 +59,6 @@ import { CreateViewsDialogComponent } from "@dataservices/create-views-dialog/cr
 import { SetDescriptionDialogComponent } from "@dataservices/set-description-dialog/set-description-dialog.component";
 
 @Component({
-  moduleId: module.id,
   selector: "app-dataservices",
   templateUrl: "./dataservices.component.html",
   styleUrls: ["./dataservices.component.css"]

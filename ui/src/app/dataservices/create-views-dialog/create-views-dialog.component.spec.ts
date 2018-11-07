@@ -1,4 +1,5 @@
 import { async, ComponentFixture, TestBed } from "@angular/core/testing";
+import { ModuleWithProviders } from "@angular/core";
 
 import { CreateViewsDialogComponent } from "./create-views-dialog.component";
 import { HttpModule } from "@angular/http";
@@ -24,6 +25,8 @@ import { MockDataserviceService } from "@dataservices/shared/mock-dataservice.se
 import { VdbService } from "@dataservices/shared/vdb.service";
 import { MockVdbService } from "@dataservices/shared/mock-vdb.service";
 
+export const moduleRoot: ModuleWithProviders<any> = ModalModule.forRoot();
+
 describe("CreateViewsDialogComponent", () => {
   let component: CreateViewsDialogComponent;
   let fixture: ComponentFixture<CreateViewsDialogComponent>;
@@ -34,7 +37,7 @@ describe("CreateViewsDialogComponent", () => {
         HttpModule,
         FormsModule,
         ReactiveFormsModule,
-        ModalModule.forRoot(),
+        moduleRoot,
         ActionModule,
         CardModule,
         EmptyStateModule,

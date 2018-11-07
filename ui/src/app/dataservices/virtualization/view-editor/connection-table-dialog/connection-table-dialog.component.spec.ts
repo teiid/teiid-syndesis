@@ -1,4 +1,5 @@
 import { async, ComponentFixture, TestBed } from "@angular/core/testing";
+import { ModuleWithProviders } from "@angular/core";
 
 import { ConnectionTableDialogComponent } from "./connection-table-dialog.component";
 import { ConnectionTreeSelectorComponent } from "@dataservices/virtualization/view-editor/connection-table-dialog/connection-tree-selector/connection-tree-selector.component";
@@ -23,6 +24,8 @@ import { AppSettingsService } from "@core/app-settings.service";
 import { LoggerService } from "@core/logger.service";
 import { NotifierService } from "@dataservices/shared/notifier.service";
 
+export const moduleRoot: ModuleWithProviders<any> = ModalModule.forRoot();
+
 describe("ConnectionTableDialogComponent", () => {
   let component: ConnectionTableDialogComponent;
   let fixture: ComponentFixture<ConnectionTableDialogComponent>;
@@ -32,7 +35,7 @@ describe("ConnectionTableDialogComponent", () => {
       imports: [
         HttpModule,
         TreeModule,
-        ModalModule.forRoot(),
+        moduleRoot,
         ActionModule,
         CardModule,
         EmptyStateModule,
