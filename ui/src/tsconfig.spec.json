@@ -10,11 +10,12 @@
       "node"
     ]
   },
-  "files": [
+  "files": [    
     "test.ts"
   ],
   "include": [
     "**/*.spec.ts",
+    "./polyfills.ts",
     "**/*.d.ts"
   ]
 }

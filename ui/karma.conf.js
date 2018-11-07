@@ -13,7 +13,7 @@ module.exports = function (config) {
     ],
     junitReporter : {
       // .../beetle-studio/target/karma-reports/*.xml
-      outputDir : '../../target/karma-reports/'
+      outputDir : './target/karma-reports/'
     },
     angularCli: {
       environment: 'dev'

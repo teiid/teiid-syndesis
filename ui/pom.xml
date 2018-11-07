@@ -1,13 +1,10 @@
-<project
-    xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
->
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-      <groupId>org.teiid</groupId>
-      <artifactId>komodo-parent</artifactId>
-      <version>0.0.5-SNAPSHOT</version>
-      <relativePath>../pom.xml</relativePath>
+        <groupId>org.teiid</groupId>
+        <artifactId>komodo-parent</artifactId>
+        <version>0.0.5-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <!-- ================================================================== -->
     <!-- Self -->
@@ -60,16 +57,9 @@
     <!-- Properties -->
     <!-- ================================================================== -->
     <properties>
-        <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <timestamp>${maven.build.timestamp}</timestamp>
-        <version.exec-maven-plugin>1.5.0</version.exec-maven-plugin>
-        <version.maven-antrun-plugin>1.8</version.maven-antrun-plugin>
-        <version.maven-clean-plugin>3.0.0</version.maven-clean-plugin>
-        <version.maven-compiler-plugin>3.5.1</version.maven-compiler-plugin>
-        <version.maven-resources-plugin>2.7</version.maven-resources-plugin>
-        <version.maven-war-plugin>2.6</version.maven-war-plugin>
         <finalName>beetle-studio</finalName>
+        <version.exec-maven-plugin>1.5.0</version.exec-maven-plugin>
     </properties>
 
     <!-- ================================================================== -->
@@ -77,47 +67,10 @@
     <!-- ================================================================== -->
     <build>
         <finalName>${finalName}</finalName>
-
-        <plugins>       
-            <!-- Copy the Angular UI sources to target to build. 
-            <plugin>
-                <artifactId>maven-resources-plugin</artifactId>
-                <groupId>org.apache.maven.plugins</groupId>
-                <version>${version.maven-resources-plugin}</version>
-                <executions>
-                    <execution>
-                        <id>copy-angular-sources</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>target</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${basedir}</directory>
-                                    <includes>
-                                        <include>**/*</include>
-                                    </includes>
-                                    <excludes>
-                                        <exclude>**/node_modules/**</exclude>
-                                    </excludes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            -->
+        <plugins>
             <plugin>
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
-                <!--
-                <configuration>
-                    <installDirectory>target</installDirectory>
-                    <workingDirectory>target</workingDirectory>
-                </configuration>
-                -->                
                 <executions>
                     <!-- Install Node and Yarn -->
                     <execution>
@@ -151,15 +104,69 @@
                             <arguments>build</arguments>
                         </configuration>
                     </execution>
+                </executions>
+            </plugin>
+            <!-- Call npm install to resolve the dependencies of the Angular UI in package.json. -->
+            <plugin>
+                <artifactId>exec-maven-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <version>${version.exec-maven-plugin}</version>
+                <executions>
                     <execution>
-                        <id>javascript tests</id>
+                        <id>karmaTest</id>
                         <goals>
-                            <goal>karma</goal>
+                            <goal>exec</goal>
                         </goals>
                         <phase>test</phase>
-                    </execution>                    
+                        <configuration>
+                            <executable>ng</executable>
+                            <arguments>
+                                <argument>test</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
                 </executions>
-            </plugin>             
+            </plugin>            
         </plugins>
-    </build> 
+    </build>
+
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-release-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
