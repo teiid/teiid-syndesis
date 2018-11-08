@@ -1,8 +1,8 @@
 import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 import { RouterTestingModule } from "@angular/router/testing";
-import { ConnectionStatus } from "@connections/shared/connection-status";
-import { Connection } from "@connections/shared/connection.model";
-import { LoggerService } from "@core/logger.service";
+import { ConnectionStatus } from "../../../connections/shared/connection-status";
+import { Connection } from "../../../connections/shared/connection.model";
+import { LoggerService } from "../../../core/logger.service";
 import {
   ActionModule,
   CardModule,

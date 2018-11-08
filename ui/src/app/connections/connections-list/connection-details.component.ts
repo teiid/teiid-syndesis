@@ -16,8 +16,8 @@
  */
 
 import { Component, Input, OnInit, ViewEncapsulation } from "@angular/core";
-import { Connection } from "@connections/shared/connection.model";
-import { ConnectionsConstants } from "@connections/shared/connections-constants";
+import { Connection } from "../../connections/shared/connection.model";
+import { ConnectionsConstants } from "../../connections/shared/connections-constants";
 import { ListConfig } from "patternfly-ng";
 
 @Component({

@@ -2,18 +2,18 @@ import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { RouterTestingModule } from "@angular/router/testing";
-import { AddConnectionWizardComponent } from "@connections/add-connection-wizard/add-connection-wizard.component";
-import { ConnectionTypeCardComponent } from "@connections/connection-type-cards/connection-type-card/connection-type-card.component";
-import { ConnectionTypeCardsComponent } from "@connections/connection-type-cards/connection-type-cards.component";
-import { ConnectionService } from "@connections/shared/connection.service";
-import { MockConnectionService } from "@connections/shared/mock-connection.service";
-import { AppSettingsService } from "@core/app-settings.service";
-import { CoreModule } from "@core/core.module";
-import { MockAppSettingsService } from "@core/mock-app-settings.service";
-import { MockVdbService } from "@dataservices/shared/mock-vdb.service";
-import { NotifierService } from "@dataservices/shared/notifier.service";
-import { VdbService } from "@dataservices/shared/vdb.service";
-import { SharedModule } from "@shared/shared.module";
+import { AddConnectionWizardComponent } from "../../connections/add-connection-wizard/add-connection-wizard.component";
+import { ConnectionTypeCardComponent } from "../../connections/connection-type-cards/connection-type-card/connection-type-card.component";
+import { ConnectionTypeCardsComponent } from "../../connections/connection-type-cards/connection-type-cards.component";
+import { ConnectionService } from "../../connections/shared/connection.service";
+import { MockConnectionService } from "../../connections/shared/mock-connection.service";
+import { AppSettingsService } from "../../core/app-settings.service";
+import { CoreModule } from "../../core/core.module";
+import { MockAppSettingsService } from "../../core/mock-app-settings.service";
+import { MockVdbService } from "../../dataservices/shared/mock-vdb.service";
+import { NotifierService } from "../../dataservices/shared/notifier.service";
+import { VdbService } from "../../dataservices/shared/vdb.service";
+import { SharedModule } from "../../shared/shared.module";
 import {
   ActionModule,
   CardModule,
@@ -24,7 +24,7 @@ import {
   SortModule,
   WizardModule } from "patternfly-ng";
 import { AddConnectionComponent } from "./add-connection.component";
-import { SelectionService } from "@core/selection.service";
+import { SelectionService } from "../../core/selection.service";
 
 describe("AddConnectionComponent", () => {
   let component: AddConnectionComponent;
