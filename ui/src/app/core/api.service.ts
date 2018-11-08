@@ -16,8 +16,8 @@
  */
 
 import { RequestOptions, Response } from "@angular/http";
-import { AppSettingsService } from "@core/app-settings.service";
-import { LoggerService } from "@core/logger.service";
+import { AppSettingsService } from "../core/app-settings.service";
+import { LoggerService } from "../core/logger.service";
 import "rxjs/add/observable/throw";
 import "rxjs/add/operator/catch";
 import "rxjs/add/operator/map";

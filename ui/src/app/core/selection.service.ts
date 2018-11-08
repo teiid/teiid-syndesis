@@ -16,9 +16,9 @@
  */
 
 import { Injectable } from "@angular/core";
-import { Dataservice } from "@dataservices/shared/dataservice.model";
-import { Connection } from "@connections/shared/connection.model";
-import { ViewDefinition } from "@dataservices/shared/view-definition.model";
+import { Dataservice } from "../dataservices/shared/dataservice.model";
+import { Connection } from "../connections/shared/connection.model";
+import { ViewDefinition } from "../dataservices/shared/view-definition.model";
 import { SqlView } from "@dataservices/shared/sql-view.model";
 
 @Injectable()
