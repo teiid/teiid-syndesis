@@ -1,11 +1,11 @@
 import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 import { HttpModule } from "@angular/http";
-import { About } from "@core/about-dialog/about.model";
-import { AboutService } from "@core/about-dialog/about.service";
-import { MockAboutService } from "@core/about-dialog/mock-about.service";
-import { AppSettingsService } from "@core/app-settings.service";
-import { LoggerService } from "@core/logger.service";
-import { MockAppSettingsService } from "@core/mock-app-settings.service";
+import { About } from "../about-dialog/about.model";
+import { AboutService } from "../about-dialog/about.service";
+import { MockAboutService } from "../about-dialog/mock-about.service";
+import { AppSettingsService } from "../app-settings.service";
+import { LoggerService } from "../logger.service";
+import { MockAppSettingsService } from "../mock-app-settings.service";
 import { ModalModule } from "patternfly-ng";
 import { AboutDialogComponent } from "./about-dialog.component";
 

@@ -17,21 +17,21 @@
 
 import { Injectable } from "@angular/core";
 import { Http, RequestOptions } from "@angular/http";
-import { ApiService } from "@core/api.service";
-import { AppSettingsService } from "@core/app-settings.service";
-import { LoggerService } from "@core/logger.service";
-import { Dataservice } from "@dataservices/shared/dataservice.model";
-import { DataservicesConstants } from "@dataservices/shared/dataservices-constants";
-import { DeploymentState } from "@dataservices/shared/deployment-state.enum";
-import { NewDataservice } from "@dataservices/shared/new-dataservice.model";
-import { NotifierService } from "@dataservices/shared/notifier.service";
-import { PublishState } from "@dataservices/shared/publish-state.enum";
-import { QueryResults } from "@dataservices/shared/query-results.model";
-import { VdbStatus } from "@dataservices/shared/vdb-status.model";
-import { VdbService } from "@dataservices/shared/vdb.service";
-import { VdbsConstants } from "@dataservices/shared/vdbs-constants";
-import { Virtualization } from "@dataservices/shared/virtualization.model";
-import { environment } from "@environments/environment";
+import { ApiService } from "../../core/api.service";
+import { AppSettingsService } from "../../core/app-settings.service";
+import { LoggerService } from "../../core/logger.service";
+import { Dataservice } from "./dataservice.model";
+import { DataservicesConstants } from "./dataservices-constants";
+import { DeploymentState } from "./deployment-state.enum";
+import { NewDataservice } from "./new-dataservice.model";
+import { NotifierService } from "./notifier.service";
+import { PublishState } from "./publish-state.enum";
+import { QueryResults } from "./query-results.model";
+import { VdbStatus } from "./vdb-status.model";
+import { VdbService } from "./vdb.service";
+import { VdbsConstants } from "./vdbs-constants";
+import { Virtualization } from "./virtualization.model";
+import { environment } from "environments/environment";
 import { saveAs } from "file-saver/FileSaver";
 import { Observable } from "rxjs/Observable";
 import { ReplaySubject } from "rxjs/ReplaySubject";
@@ -39,7 +39,10 @@ import { Subject } from "rxjs/Subject";
 import { Subscription } from "rxjs/Subscription";
 import * as _ from "lodash";
 import * as vkbeautify from 'vkbeautify';
-import { ViewEditorState } from "@dataservices/shared/view-editor-state.model";
+import { ViewEditorState } from "../shared/view-editor-state.model";
+import "rxjs/add/operator/mergeMap";
+import { timer } from "rxjs/observable/timer";
+import "rxjs/add/observable/of";
 
 @Injectable()
 export class DataserviceService extends ApiService {
@@ -94,7 +97,7 @@ export class DataserviceService extends ApiService {
    * @param {string} name the dataservice name
    * @returns {Observable<String>}
    */
-  public isValidName( name: string ): Observable< string > {
+  public isValidName( name: string ): Observable< any > {
     if ( !name || name.length === 0 ) {
       return Observable.of( "Data virtualization name cannot be empty" );
     }
@@ -132,7 +135,7 @@ export class DataserviceService extends ApiService {
    * @param {NewDataservice} dataservice
    * @returns {Observable<boolean>}
    */
-  public createDataservice(dataservice: NewDataservice): Observable<boolean> {
+  public createDataservice(dataservice: NewDataservice): Observable<any> {
     return this.http
       .post(environment.komodoWorkspaceUrl + DataservicesConstants.dataservicesRestPath + "/" + dataservice.getId(),
         dataservice, this.getAuthRequestOptions())
@@ -147,7 +150,7 @@ export class DataserviceService extends ApiService {
    * @param {NewDataservice} dataservice
    * @returns {Observable<boolean>}
    */
-  public updateDataservice(dataservice: NewDataservice): Observable<boolean> {
+  public updateDataservice(dataservice: NewDataservice): Observable<any> {
     return this.http
       .put(environment.komodoWorkspaceUrl + DataservicesConstants.dataservicesRestPath + "/" + dataservice.getId(),
         dataservice, this.getAuthRequestOptions())
@@ -162,7 +165,7 @@ export class DataserviceService extends ApiService {
    * @param {string} dataserviceName
    * @returns {Observable<boolean>}
    */
-  public deployDataservice(dataserviceName: string): Observable<boolean> {
+  public deployDataservice(dataserviceName: string): Observable<any> {
     const servicePath = this.getKomodoUserWorkspacePath() + "/" + dataserviceName;
     return this.http
       .post(environment.komodoTeiidUrl + DataservicesConstants.dataserviceRestPath,
@@ -179,7 +182,7 @@ export class DataserviceService extends ApiService {
    * @param {string} model1Name,
    * @returns {Observable<boolean>}
    */
-  public createReadonlyDataRole(serviceVdbName: string, model1Name: string): Observable<boolean> {
+  public createReadonlyDataRole(serviceVdbName: string, model1Name: string): Observable<any> {
     const READ_ONLY_DATA_ROLE_NAME = VdbsConstants.DEFAULT_READONLY_DATA_ROLE;
     const VIEW_MODEL = VdbsConstants.SERVICE_VIEW_MODEL_NAME;
     const userWorkspacePath = this.getKomodoUserWorkspacePath();
@@ -240,7 +243,7 @@ export class DataserviceService extends ApiService {
    * @param {string} dataserviceId
    * @returns {Observable<boolean>}
    */
-  public deleteDataservice(dataserviceId: string): Observable<boolean> {
+  public deleteDataservice(dataserviceId: string): Observable<any> {
     return this.http
       .delete(environment.komodoWorkspaceUrl + DataservicesConstants.dataservicesRestPath + "/" + dataserviceId,
                this.getAuthRequestOptions())
@@ -255,7 +258,7 @@ export class DataserviceService extends ApiService {
    * @param {string} dataserviceName
    * @returns {Observable<boolean>}
    */
-  public refreshDataserviceViews(dataserviceName: string): Observable<boolean> {
+  public refreshDataserviceViews(dataserviceName: string): Observable<any> {
     const refreshViewsUrl = environment.komodoWorkspaceUrl
                             + DataservicesConstants.dataservicesRestPath
                             + "/refreshViews/" + encodeURIComponent(dataserviceName);
@@ -273,7 +276,7 @@ export class DataserviceService extends ApiService {
    * @param {string} dataserviceName the dataservice name
    * @returns {Observable<boolean>}
    */
-  public downloadDataservice(dataserviceName: string): Observable<boolean> {
+  public downloadDataservice(dataserviceName: string): Observable<any> {
     // The payload for the rest call
     const payload = {
       "storageType": "file",
@@ -317,7 +320,7 @@ export class DataserviceService extends ApiService {
    * @param {string} dataserviceName the dataservice name
    * @returns {Observable<boolean>}
    */
-  public publishDataservice(dataserviceName: string): Observable<boolean> {
+  public publishDataservice(dataserviceName: string): Observable<any> {
 
     // The payload for the rest call
     const payload = {
@@ -467,8 +470,8 @@ export class DataserviceService extends ApiService {
 
     const self = this;
     // start the timer
-    const timer = Observable.timer(500, pollIntervalMillis);
-    this.updatesSubscription = timer.subscribe((t: any) => {
+    const stopWatch = timer(500, pollIntervalMillis);
+    this.updatesSubscription = stopWatch.subscribe((t: any) => {
       self.updateDataserviceStates();
     });
   }
@@ -508,7 +511,7 @@ export class DataserviceService extends ApiService {
    * @param {string} editorId the ID of the editor state being requested
    * @returns {Observable<ViewEditorState>} the view editor state or empty object if not found
    */
-  public getViewEditorState( editorId: string ): Observable< ViewEditorState > {
+  public getViewEditorState( editorId: string ): Observable< any > {
     return this.http.get(environment.viewEditorState + "/" + editorId, this.getAuthRequestOptions() )
       .map( ( response ) => {
         const editorState = response.json();
@@ -528,7 +531,7 @@ export class DataserviceService extends ApiService {
    * @param {ViewEditorState[]} editorStates the view editor state array
    * @returns {Observable<boolean>} `true` if the editor state was successfully saved
    */
-  public saveViewEditorStates( editorStates: ViewEditorState[] ): Observable< boolean > {
+  public saveViewEditorStates( editorStates: ViewEditorState[] ): Observable< any > {
 
     return this.http.put( environment.viewEditorStates, JSON.stringify(editorStates), this.getAuthRequestOptions() )
       .map( ( response ) => {
@@ -543,7 +546,7 @@ export class DataserviceService extends ApiService {
    * @param {string} editorId the ID of the editor state being deleted
    * @returns {Observable<boolean>} `true` if the editor state was successfully deleted
    */
-  public deleteViewEditorState( editorId: string ): Observable< boolean > {
+  public deleteViewEditorState( editorId: string ): Observable< any > {
     return this.http.delete(environment.viewEditorState + "/" + editorId, this.getAuthRequestOptions() )
       .map( ( response ) => {
         return response.ok;

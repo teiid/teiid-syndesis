@@ -19,14 +19,14 @@ import {
   Component, DoCheck, EventEmitter, Input, OnInit, Output, ViewEncapsulation, ViewChild
 } from "@angular/core";
 import * as _ from "lodash";
-import { LoggerService } from "@core/logger.service";
+import { LoggerService } from "../../../core/logger.service";
 import { Action, ActionConfig, CardAction, CardConfig, EmptyStateConfig, ListConfig } from "patternfly-ng";
-import { Observable } from "rxjs/Observable";
 import { Subscription } from "rxjs/Subscription";
-import { Dataservice } from "@dataservices/shared/dataservice.model";
-import { DataserviceService } from "@dataservices/shared/dataservice.service";
-import { Connection } from "@connections/shared/connection.model";
-import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
+import { Dataservice } from "../../shared/dataservice.model";
+import { DataserviceService } from "../../shared/dataservice.service";
+import { Connection } from "../../../connections/shared/connection.model";
+import { ViewEditorI18n } from "../../virtualization/view-editor/view-editor-i18n";
+import { interval } from 'rxjs/observable/interval';
 
 @Component({
   encapsulation: ViewEncapsulation.None,
@@ -314,7 +314,7 @@ export class DataserviceCardComponent implements DoCheck, OnInit {
     //
     // Refresh them every 10 seconds
     //
-    this.logMonitor = Observable.interval(10000).subscribe(
+    this.logMonitor = interval(10000).subscribe(
       (val) => {
         this.fetchPublishLogs();
       }

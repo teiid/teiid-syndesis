@@ -1,11 +1,11 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
+import { ViewEditorI18n } from "../virtualization/view-editor/view-editor-i18n";
 import { BsModalRef } from "ngx-bootstrap";
-import { ConnectionService } from "@connections/shared/connection.service";
-import { LoggerService } from "@core/logger.service";
-import { LoadingState } from "@shared/loading-state.enum";
-import { ConnectionsConstants } from "@connections/shared/connections-constants";
-import { SchemaNode } from "@connections/shared/schema-node.model";
+import { ConnectionService } from "../../connections/shared/connection.service";
+import { LoggerService } from "../../core/logger.service";
+import { LoadingState } from "../../shared/loading-state.enum";
+import { ConnectionsConstants } from "../../connections/shared/connections-constants";
+import { SchemaNode } from "../../connections/shared/schema-node.model";
 import {
   EmptyStateConfig,
   ListConfig,
@@ -13,11 +13,11 @@ import {
   NotificationType,
   TableConfig
 } from "patternfly-ng";
-import { NewView } from "@dataservices/create-views-dialog/new-view.model";
+import { NewView } from "../create-views-dialog/new-view.model";
 import { TableEvent } from "patternfly-ng";
 import { AbstractControl, FormControl, FormGroup } from "@angular/forms";
-import { DataserviceService } from "@dataservices/shared/dataservice.service";
-import { CreateViewsResult } from "@dataservices/create-views-dialog/create-views-result.model";
+import { DataserviceService } from "../shared/dataservice.service";
+import { CreateViewsResult } from "../create-views-dialog/create-views-result.model";
 
 @Component({
   selector: 'app-create-views-dialog',

@@ -17,23 +17,23 @@
 
 import { Injectable, ReflectiveInjector } from "@angular/core";
 import { Http } from "@angular/http";
-import { Connection } from "@connections/shared/connection.model";
-import { ConnectionService } from "@connections/shared/connection.service";
-import { NewConnection } from "@connections/shared/new-connection.model";
-import { SchemaNode } from "@connections/shared/schema-node.model";
-import { ServiceCatalogSource } from "@connections/shared/service-catalog-source.model";
-import { AppSettingsService } from "@core/app-settings.service";
-import { LoggerService } from "@core/logger.service";
-import { ConnectionSummary } from "@dataservices/shared/connection-summary.model";
-import { NotifierService } from "@dataservices/shared/notifier.service";
-import { VdbService } from "@dataservices/shared/vdb.service";
-import { TestDataService } from "@shared/test-data.service";
+import { Connection } from "../../connections/shared/connection.model";
+import { ConnectionService } from "../../connections/shared/connection.service";
+import { NewConnection } from "../../connections/shared/new-connection.model";
+import { SchemaNode } from "../../connections/shared/schema-node.model";
+import { ServiceCatalogSource } from "../../connections/shared/service-catalog-source.model";
+import { AppSettingsService } from "../../core/app-settings.service";
+import { LoggerService } from "../../core/logger.service";
+import { ConnectionSummary } from "../../dataservices/shared/connection-summary.model";
+import { NotifierService } from "../../dataservices/shared/notifier.service";
+import { VdbService } from "../../dataservices/shared/vdb.service";
+import { TestDataService } from "../../shared/test-data.service";
 import "rxjs/add/observable/of";
 import "rxjs/add/observable/throw";
 import "rxjs/add/operator/catch";
 import "rxjs/add/operator/map";
 import { Observable } from "rxjs/Observable";
-import { Column } from "@dataservices/shared/column.model";
+import { Column } from "../../dataservices/shared/column.model";
 
 @Injectable()
 export class MockConnectionService extends ConnectionService {

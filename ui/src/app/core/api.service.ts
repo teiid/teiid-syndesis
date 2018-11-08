@@ -16,12 +16,11 @@
  */
 
 import { RequestOptions, Response } from "@angular/http";
-import { AppSettingsService } from "@core/app-settings.service";
-import { LoggerService } from "@core/logger.service";
+import { AppSettingsService } from "../core/app-settings.service";
+import { LoggerService } from "../core/logger.service";
 import "rxjs/add/observable/throw";
 import "rxjs/add/operator/catch";
 import "rxjs/add/operator/map";
-import { Observable } from "rxjs/Observable";
 import { ErrorObservable } from "rxjs/observable/ErrorObservable";
 import * as X2JS from 'x2js';
 
@@ -159,9 +158,9 @@ export abstract class ApiService {
     return msg;
   }
 
-  protected handleError(error: Response): ErrorObservable {
+  protected handleError(error: Response): ErrorObservable<string> {
     this.logger.error( this.constructor.name + "::handleError => " + this.msgFromResponse(error));
-    return Observable.throw(error);
+    return ErrorObservable.create(this.msgFromResponse(error));
   }
 
 }

@@ -1,4 +1,5 @@
 import { async, ComponentFixture, TestBed } from "@angular/core/testing";
+import { ModuleWithProviders } from "@angular/core";
 
 import { CreateViewsDialogComponent } from "./create-views-dialog.component";
 import { HttpModule } from "@angular/http";
@@ -13,16 +14,18 @@ import {
   TableModule,
   WizardModule } from "patternfly-ng";
 import { BsModalRef, ModalModule } from "ngx-bootstrap";
-import { ConnectionService } from "@connections/shared/connection.service";
-import { MockConnectionService } from "@connections/shared/mock-connection.service";
-import { AppSettingsService } from "@core/app-settings.service";
-import { LoggerService } from "@core/logger.service";
-import { NotifierService } from "@dataservices/shared/notifier.service";
+import { ConnectionService } from "../../connections/shared/connection.service";
+import { MockConnectionService } from "../../connections/shared/mock-connection.service";
+import { AppSettingsService } from "../../core/app-settings.service";
+import { LoggerService } from "../../core/logger.service";
+import { NotifierService } from "../shared/notifier.service";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
-import { DataserviceService } from "@dataservices/shared/dataservice.service";
-import { MockDataserviceService } from "@dataservices/shared/mock-dataservice.service";
-import { VdbService } from "@dataservices/shared/vdb.service";
-import { MockVdbService } from "@dataservices/shared/mock-vdb.service";
+import { DataserviceService } from "../shared/dataservice.service";
+import { MockDataserviceService } from "../shared/mock-dataservice.service";
+import { VdbService } from "../shared/vdb.service";
+import { MockVdbService } from "../shared/mock-vdb.service";
+
+export const moduleRoot: ModuleWithProviders<any> = ModalModule.forRoot();
 
 describe("CreateViewsDialogComponent", () => {
   let component: CreateViewsDialogComponent;
@@ -34,7 +37,7 @@ describe("CreateViewsDialogComponent", () => {
         HttpModule,
         FormsModule,
         ReactiveFormsModule,
-        ModalModule.forRoot(),
+        moduleRoot,
         ActionModule,
         CardModule,
         EmptyStateModule,

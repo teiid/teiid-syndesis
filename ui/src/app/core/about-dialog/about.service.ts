@@ -17,11 +17,11 @@
 
 import { Injectable } from "@angular/core";
 import { Http } from "@angular/http";
-import { About } from "@core/about-dialog/about.model";
-import { ApiService } from "@core/api.service";
-import { AppSettingsService } from "@core/app-settings.service";
-import { LoggerService } from "@core/logger.service";
-import { environment } from "@environments/environment";
+import { About } from "./about.model";
+import { ApiService } from "../api.service";
+import { AppSettingsService } from "../app-settings.service";
+import { LoggerService } from "../logger.service";
+import { environment } from "environments/environment";
 import { Observable } from "rxjs/Observable";
 
 @Injectable()
@@ -38,7 +38,7 @@ export class AboutService extends ApiService {
     this.http = http;
   }
 
-  public getAboutInformation(): Observable<About> {
+  public getAboutInformation(): Observable<any> {
     return this.http.get( AboutService.aboutUrl, this.getAuthRequestOptions() )
       .map( ( response ) => {
         const aboutInfo = response.json();

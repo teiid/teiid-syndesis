@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-import { QueryResults } from "@dataservices/shared/query-results.model";
-import { ViewEditorPart } from "@dataservices/virtualization/view-editor/view-editor-part.enum";
-import { Command } from "@dataservices/virtualization/view-editor/command/command";
-import { Message } from "@dataservices/virtualization/view-editor/editor-views/message-log/message";
-import { ViewEditorProgressChangeId } from "@dataservices/virtualization/view-editor/event/view-editor-save-progress-change-id.enum";
+import { QueryResults } from "../../../shared/query-results.model";
+import { ViewEditorPart } from "../../../virtualization/view-editor/view-editor-part.enum";
+import { Command } from "../../../virtualization/view-editor/command/command";
+import { Message } from "../../../virtualization/view-editor/editor-views/message-log/message";
+import { ViewEditorProgressChangeId } from "../../../virtualization/view-editor/event/view-editor-save-progress-change-id.enum";
 
 export enum ViewEditorEventType {
 

@@ -1,18 +1,9 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "baseUrl": "src",
-    "paths": {
-      "@app/*": ["app/*"],
-      "@connections/*": ["app/connections/*"],
-      "@core/*": ["app/core/*"],
-      "@dataservices/*": ["app/dataservices/*"],
-      "@environments/*": ["environments/*"],
-      "@shared/*": ["app/shared/*"]
-    },
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
-    "declaration": false,
+    "declaration": true,
     "moduleResolution": "node",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,

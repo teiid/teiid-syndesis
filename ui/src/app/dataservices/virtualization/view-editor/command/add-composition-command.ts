@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
-import { Command } from "@dataservices/virtualization/view-editor/command/command";
-import { Composition } from "@dataservices/shared/composition.model";
-import { CommandType } from "@dataservices/virtualization/view-editor/command/command-type.enum";
+import { ViewEditorI18n } from "../../../virtualization/view-editor/view-editor-i18n";
+import { Command } from "../../../virtualization/view-editor/command/command";
+import { Composition } from "../../../shared/composition.model";
+import { CommandType } from "../../../virtualization/view-editor/command/command-type.enum";
 
 export class AddCompositionCommand extends Command {
 

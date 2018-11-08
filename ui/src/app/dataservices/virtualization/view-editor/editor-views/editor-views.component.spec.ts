@@ -1,17 +1,18 @@
+import { ModuleWithProviders } from "@angular/core";
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpModule } from "@angular/http";
-import { LoggerService } from "@core/logger.service";
-import { MockAppSettingsService } from "@core/mock-app-settings.service";
-import { AppSettingsService } from "@core/app-settings.service";
-import { VdbService } from "@dataservices/shared/vdb.service";
-import { MockVdbService } from "@dataservices/shared/mock-vdb.service";
-import { DataserviceService } from "@dataservices/shared/dataservice.service";
-import { MockDataserviceService } from "@dataservices/shared/mock-dataservice.service";
-import { NotifierService } from "@dataservices/shared/notifier.service";
-import { ViewEditorService } from "@dataservices/virtualization/view-editor/view-editor.service";
-import { EditorViewsComponent } from '@dataservices/virtualization/view-editor/editor-views/editor-views.component';
-import { MessageLogComponent } from "@dataservices/virtualization/view-editor/editor-views/message-log/message-log.component";
-import { ViewPreviewComponent } from "@dataservices/virtualization/view-editor/editor-views/view-preview/view-preview.component";
+import { LoggerService } from "../../../../core/logger.service";
+import { MockAppSettingsService } from "../../../../core/mock-app-settings.service";
+import { AppSettingsService } from "../../../../core/app-settings.service";
+import { VdbService } from "../../../shared/vdb.service";
+import { MockVdbService } from "../../../shared/mock-vdb.service";
+import { DataserviceService } from "../../../shared/dataservice.service";
+import { MockDataserviceService } from "../../../shared/mock-dataservice.service";
+import { NotifierService } from "../../../shared/notifier.service";
+import { ViewEditorService } from "../../../virtualization/view-editor/view-editor.service";
+import { EditorViewsComponent } from '../../../virtualization/view-editor/editor-views/editor-views.component';
+import { MessageLogComponent } from "../../../virtualization/view-editor/editor-views/message-log/message-log.component";
+import { ViewPreviewComponent } from "../../../virtualization/view-editor/editor-views/view-preview/view-preview.component";
 import { TabsModule } from "ngx-bootstrap";
 import {
   ActionModule,
@@ -23,7 +24,9 @@ import {
   SortModule,
   TableModule,
   WizardModule } from "patternfly-ng";
-import { SelectionService } from "@core/selection.service";
+import { SelectionService } from "../../../../core/selection.service";
+
+export const tabsModule: ModuleWithProviders<any> = TabsModule.forRoot();
 
 describe('EditorViewsComponent', () => {
   let component: EditorViewsComponent;
@@ -42,7 +45,7 @@ describe('EditorViewsComponent', () => {
         TableModule,
         WizardModule,
         HttpModule,
-        TabsModule.forRoot()
+        tabsModule
       ],
       declarations: [
         EditorViewsComponent,

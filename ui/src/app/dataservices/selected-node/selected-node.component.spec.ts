@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from "@angular/core/testing";
-import { SchemaNode } from "@connections/shared/schema-node.model";
+import { SchemaNode } from "../../connections/shared/schema-node.model";
 import {
   ActionModule,
   CardModule,

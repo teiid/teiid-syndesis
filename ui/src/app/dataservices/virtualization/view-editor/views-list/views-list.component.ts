@@ -14,27 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {AfterViewInit, Component, OnDestroy, OnInit, ViewEncapsulation} from '@angular/core';
-import {LoadingState} from "@shared/loading-state.enum";
-import {ViewDefinition} from "@dataservices/shared/view-definition.model";
-import {ViewEditorPart} from "@dataservices/virtualization/view-editor/view-editor-part.enum";
-import {EmptyStateConfig, NgxDataTableConfig, TableConfig} from "patternfly-ng";
-import {ViewEditorI18n} from "@dataservices/virtualization/view-editor/view-editor-i18n";
-import {ViewEditorProgressChangeId} from "@dataservices/virtualization/view-editor/event/view-editor-save-progress-change-id.enum";
-import {ViewEditorState} from "@dataservices/shared/view-editor-state.model";
-import {ViewEditorService} from "@dataservices/virtualization/view-editor/view-editor.service";
-import {Dataservice} from "@dataservices/shared/dataservice.model";
-import {LoggerService} from "@core/logger.service";
-import {ViewEditorEvent} from "@dataservices/virtualization/view-editor/event/view-editor-event";
-import {Subscription} from "rxjs/Subscription";
-import {BsModalService} from "ngx-bootstrap";
-import {DataserviceService} from "@dataservices/shared/dataservice.service";
-import {SelectionService} from "@core/selection.service";
-import {ConfirmDialogComponent} from "@shared/confirm-dialog/confirm-dialog.component";
-import {CommandFactory} from "@dataservices/virtualization/view-editor/command/command-factory";
-import {Command} from "@dataservices/virtualization/view-editor/command/command";
-import {CreateViewDialogComponent} from "@dataservices/virtualization/view-editor/create-view-dialog/create-view-dialog.component";
-import {ChangeDetectorRef} from "@angular/core";
+import { AfterViewInit, Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
+import { LoadingState } from "../../../../shared/loading-state.enum";
+import { ViewDefinition } from "../../../shared/view-definition.model";
+import { ViewEditorPart } from "../../../virtualization/view-editor/view-editor-part.enum";
+import { EmptyStateConfig, NgxDataTableConfig, TableConfig } from "patternfly-ng";
+import { ViewEditorI18n } from "../../../virtualization/view-editor/view-editor-i18n";
+import { ViewEditorProgressChangeId } from "../../../virtualization/view-editor/event/view-editor-save-progress-change-id.enum";
+import { ViewEditorState } from "../../../shared/view-editor-state.model";
+import { ViewEditorService } from "../../../virtualization/view-editor/view-editor.service";
+import { Dataservice } from "../../../shared/dataservice.model";
+import { LoggerService } from "../../../../core/logger.service";
+import { ViewEditorEvent } from "../../../virtualization/view-editor/event/view-editor-event";
+import { Subscription } from "rxjs/Subscription";
+import { BsModalService } from "ngx-bootstrap";
+import { DataserviceService } from "../../../shared/dataservice.service";
+import { SelectionService } from "../../../../core/selection.service";
+import { ConfirmDialogComponent } from "../../../../shared/confirm-dialog/confirm-dialog.component";
+import { CommandFactory } from "../../../virtualization/view-editor/command/command-factory";
+import { Command } from "../../../virtualization/view-editor/command/command";
+import { CreateViewDialogComponent } from "../../../virtualization/view-editor/create-view-dialog/create-view-dialog.component";
+import { ChangeDetectorRef } from "@angular/core";
 
 @Component({
   encapsulation: ViewEncapsulation.None,
@@ -188,7 +188,7 @@ export class ViewsListComponent implements OnInit, OnDestroy, AfterViewInit {
             initialView =  self.tableRows.find((x) => x.getName() === selectedView.getName());
           }
           self.viewsLoadingState = LoadingState.LOADED_VALID;
-          if( initialView !== null) {
+          if ( initialView !== null) {
             self.selectView(initialView);
           }
         },

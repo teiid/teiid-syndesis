@@ -1,7 +1,7 @@
 import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 
 import { RouterTestingModule } from "@angular/router/testing";
-import { ConnectionType } from "@connections/shared/connection-type.model";
+import { ConnectionType } from "../../../connections/shared/connection-type.model";
 import {
   ActionModule,
   CardModule,

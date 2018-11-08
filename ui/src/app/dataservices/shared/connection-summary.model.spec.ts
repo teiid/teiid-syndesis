@@ -1,4 +1,4 @@
-import { ConnectionSummary } from "@dataservices/shared/connection-summary.model";
+import { ConnectionSummary } from "../shared/connection-summary.model";
 
 describe("ConnectionSummary", () => {
   let connectionSummary: ConnectionSummary;

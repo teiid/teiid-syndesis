@@ -16,9 +16,9 @@
  */
 
 import { Component, EventEmitter, OnInit, Output } from "@angular/core";
-import { ConnectionService } from "@connections/shared/connection.service";
-import { SchemaNode } from "@connections/shared/schema-node.model";
-import { LoggerService } from "@core/logger.service";
+import { ConnectionService } from "../../../../../connections/shared/connection.service";
+import { SchemaNode } from "../../../../../connections/shared/schema-node.model";
+import { LoggerService } from "../../../../../core/logger.service";
 import { TreeNode } from "angular-tree-component/dist/defs/api";
 
 @Component({

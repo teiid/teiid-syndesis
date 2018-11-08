@@ -1,4 +1,4 @@
-import { CanvasNode } from "@dataservices/virtualization/view-editor/view-canvas/models/canvas-node";
+import { CanvasNode } from "../../../../virtualization/view-editor/view-canvas/models/canvas-node";
 
 describe("CanvasNode", () => {
   let canvasNode: CanvasNode;

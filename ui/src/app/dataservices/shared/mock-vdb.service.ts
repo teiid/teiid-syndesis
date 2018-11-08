@@ -17,21 +17,22 @@
 
 import { Injectable, ReflectiveInjector } from "@angular/core";
 import { Http } from "@angular/http";
-import { AppSettingsService } from "@core/app-settings.service";
-import { LoggerService } from "@core/logger.service";
-import { NotifierService } from "@dataservices/shared/notifier.service";
-import { VdbModelSource } from "@dataservices/shared/vdb-model-source.model";
-import { VdbModel } from "@dataservices/shared/vdb-model.model";
-import { VdbStatus } from "@dataservices/shared/vdb-status.model";
-import { Vdb } from "@dataservices/shared/vdb.model";
-import { VdbService } from "@dataservices/shared/vdb.service";
-import { Virtualization } from "@dataservices/shared/virtualization.model";
-import { TestDataService } from "@shared/test-data.service";
+import { AppSettingsService } from "../../core/app-settings.service";
+import { LoggerService } from "../../core/logger.service";
+import { NotifierService } from "../shared/notifier.service";
+import { VdbModelSource } from "../shared/vdb-model-source.model";
+import { VdbModel } from "../shared/vdb-model.model";
+import { VdbStatus } from "../shared/vdb-status.model";
+import { Vdb } from "../shared/vdb.model";
+import { VdbService } from "../shared/vdb.service";
+import { Virtualization } from "../shared/virtualization.model";
+import { TestDataService } from "../../shared/test-data.service";
 import "rxjs/add/observable/of";
 import "rxjs/add/observable/throw";
 import "rxjs/add/operator/catch";
 import "rxjs/add/operator/map";
 import { Observable } from "rxjs/Observable";
+import { timer } from "rxjs/observable/timer";
 
 @Injectable()
 export class MockVdbService extends VdbService {
@@ -150,8 +151,7 @@ export class MockVdbService extends VdbService {
    */
   public pollForActiveVdb(vdbName: string, pollDurationSec: number, pollIntervalSec: number): void {
     const pollIntervalMillis = pollIntervalSec * 1000;
-    const timer = Observable.timer(1000, pollIntervalMillis);
-    this.deploymentSubscription = timer.subscribe(( t: any ) => {
+    this.deploymentSubscription = timer(1000, pollIntervalMillis).subscribe(( t: any ) => {
       const vdbStatus = new VdbStatus();
       vdbStatus.setName( vdbName );
       vdbStatus.setActive( true );

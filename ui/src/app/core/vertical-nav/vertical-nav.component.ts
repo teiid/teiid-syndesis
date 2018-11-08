@@ -17,17 +17,16 @@
 
 import { Component, Input, OnInit, TemplateRef, ViewEncapsulation } from "@angular/core";
 import { Router } from "@angular/router";
-import { ConnectionsConstants } from "@connections/shared/connections-constants";
-import { AboutEvent } from "@core/about-dialog/about-event";
-import { About } from "@core/about-dialog/about.model";
-import { LoggerService } from "@core/logger.service";
-import { DataservicesConstants } from "@dataservices/shared/dataservices-constants";
+import { ConnectionsConstants } from "../../connections/shared/connections-constants";
+import { AboutEvent } from "../about-dialog/about-event";
+import { About } from "../about-dialog/about.model";
+import { LoggerService } from "../logger.service";
+import { DataservicesConstants } from "../../dataservices/shared/dataservices-constants";
 import { BsModalService } from "ngx-bootstrap/modal";
 import { BsModalRef } from "ngx-bootstrap/modal/bs-modal-ref.service";
 import { NavigationItemConfig } from "patternfly-ng";
 
 @Component({
-  moduleId: module.id,
   encapsulation: ViewEncapsulation.None,
   selector: "app-vertical-nav",
   templateUrl: "./vertical-nav.component.html",

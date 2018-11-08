@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-import { Identifiable } from "@shared/identifiable";
-import { SortDirection } from "@shared/sort-direction.enum";
+import { Identifiable } from "../../shared/identifiable";
+import { SortDirection } from "../../shared/sort-direction.enum";
 
 /**
  * Vdb model

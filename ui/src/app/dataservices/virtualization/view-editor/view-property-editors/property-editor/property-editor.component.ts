@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { ViewEditorService } from "@dataservices/virtualization/view-editor/view-editor.service";
-import { SelectionService } from "@core/selection.service";
-import { SelectionItem } from "@dataservices/virtualization/view-editor/view-property-editors/property-editor/selection-item.model";
-import { SelectionType } from "@dataservices/virtualization/view-editor/view-property-editors/property-editor/selection-type.enum";
+import { ViewEditorService } from "../../../../virtualization/view-editor/view-editor.service";
+import { SelectionService } from "../../../../../core/selection.service";
+import { SelectionItem } from "../../../../virtualization/view-editor/view-property-editors/property-editor/selection-item.model";
+import { SelectionType } from "../../../../virtualization/view-editor/view-property-editors/property-editor/selection-type.enum";
 
 @Component({
   selector: 'app-property-editor',

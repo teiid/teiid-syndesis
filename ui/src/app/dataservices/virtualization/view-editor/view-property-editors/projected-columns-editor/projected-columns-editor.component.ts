@@ -1,20 +1,20 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ViewEditorService } from "@dataservices/virtualization/view-editor/view-editor.service";
-import { SelectionService } from "@core/selection.service";
+import { ViewEditorService } from "../../../../virtualization/view-editor/view-editor.service";
+import { SelectionService } from "../../../../../core/selection.service";
 import { EmptyStateConfig, TableConfig, TableEvent } from "patternfly-ng";
-import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
-import { ProjectedColumn } from "@dataservices/shared/projected-column.model";
-import { CommandFactory } from "@dataservices/virtualization/view-editor/command/command-factory";
-import { Command } from "@dataservices/virtualization/view-editor/command/command";
-import { ViewEditorPart } from "@dataservices/virtualization/view-editor/view-editor-part.enum";
-import { LoggerService } from "@core/logger.service";
-import { ViewEditorEvent } from "@dataservices/virtualization/view-editor/event/view-editor-event";
+import { ViewEditorI18n } from "../../../../virtualization/view-editor/view-editor-i18n";
+import { ProjectedColumn } from "../../../../shared/projected-column.model";
+import { CommandFactory } from "../../../../virtualization/view-editor/command/command-factory";
+import { Command } from "../../../../virtualization/view-editor/command/command";
+import { ViewEditorPart } from "../../../../virtualization/view-editor/view-editor-part.enum";
+import { LoggerService } from "../../../../../core/logger.service";
+import { ViewEditorEvent } from "../../../../virtualization/view-editor/event/view-editor-event";
 import { Subscription } from "rxjs/Subscription";
-import { UpdateProjectedColumnsCommand } from "@dataservices/virtualization/view-editor/command/update-projected-columns-command";
-import { AddSourcesCommand } from "@dataservices/virtualization/view-editor/command/add-sources-command";
-import { RemoveSourcesCommand } from "@dataservices/virtualization/view-editor/command/remove-sources-command";
-import { AddCompositionCommand } from "@dataservices/virtualization/view-editor/command/add-composition-command";
-import { RemoveCompositionCommand } from "@dataservices/virtualization/view-editor/command/remove-composition-command";
+import { UpdateProjectedColumnsCommand } from "../../../../virtualization/view-editor/command/update-projected-columns-command";
+import { AddSourcesCommand } from "../../../../virtualization/view-editor/command/add-sources-command";
+import { RemoveSourcesCommand } from "../../../../virtualization/view-editor/command/remove-sources-command";
+import { AddCompositionCommand } from "../../../../virtualization/view-editor/command/add-composition-command";
+import { RemoveCompositionCommand } from "../../../../virtualization/view-editor/command/remove-composition-command";
 
 @Component({
   selector: 'app-projected-columns-editor',

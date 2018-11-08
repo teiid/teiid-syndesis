@@ -1,15 +1,18 @@
+import { ModuleWithProviders } from "@angular/core";
 import { async, TestBed } from "@angular/core/testing";
 import { RouterTestingModule } from "@angular/router/testing";
-import { AppSettingsService } from "@core/app-settings.service";
-import { CoreModule } from "@core/core.module";
-import { MockAppSettingsService } from "@core/mock-app-settings.service";
+import { AppSettingsService } from "./core/app-settings.service";
+import { CoreModule } from "./core/core.module";
+import { MockAppSettingsService } from "./core/mock-app-settings.service";
 import { ModalModule } from "ngx-bootstrap";
 import { AppComponent } from "./app.component";
+
+export const moduleRoot: ModuleWithProviders<any> = ModalModule.forRoot();
 
 describe("AppComponent", () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [ CoreModule, RouterTestingModule, ModalModule.forRoot() ],
+      imports: [ CoreModule, RouterTestingModule, moduleRoot ],
       declarations: [
         AppComponent
       ],

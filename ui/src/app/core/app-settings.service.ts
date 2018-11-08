@@ -17,9 +17,9 @@
 
 import { Injectable } from "@angular/core";
 import { Headers, Http, RequestOptions, Response } from "@angular/http";
-import { LoggerService } from "@core/logger.service";
-import { environment } from "@environments/environment";
-import { LayoutType } from "@shared/layout-type.enum";
+import { LoggerService } from "../core/logger.service";
+import { environment } from "environments/environment";
+import { LayoutType } from "../shared/layout-type.enum";
 import { Observable } from "rxjs/Observable";
 import { ErrorObservable } from "rxjs/observable/ErrorObservable";
 
@@ -173,9 +173,9 @@ export class AppSettingsService {
     this.svcPageLayout = layout;
   }
 
-  private handleError(error: Response): ErrorObservable {
+  private handleError(error: Response): ErrorObservable<string> {
     this.logger.error( this.constructor.name + "::handleError" );
-    return Observable.throw(error);
+    return Observable.throw(error.toString, null);
   }
 
 }

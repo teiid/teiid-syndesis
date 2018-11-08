@@ -6,17 +6,17 @@ import {
   TableModule,
   WizardModule
 } from "patternfly-ng";
-import { ConnectionTreeSelectorComponent } from "@dataservices/virtualization/view-editor/connection-table-dialog/connection-tree-selector/connection-tree-selector.component";
+import { ConnectionTreeSelectorComponent } from "../../../virtualization/view-editor/connection-table-dialog/connection-tree-selector/connection-tree-selector.component";
 import { TreeModule } from "angular-tree-component";
 import { FormsModule } from "@angular/forms";
-import { MockConnectionService } from "@connections/shared/mock-connection.service";
-import { ConnectionService } from "@connections/shared/connection.service";
+import { MockConnectionService } from "../../../../connections/shared/mock-connection.service";
+import { ConnectionService } from "../../../../connections/shared/connection.service";
 import { HttpModule } from "@angular/http";
-import { MockVdbService } from "@dataservices/shared/mock-vdb.service";
-import { VdbService } from "@dataservices/shared/vdb.service";
-import { AppSettingsService } from "@core/app-settings.service";
-import { LoggerService } from "@core/logger.service";
-import { NotifierService } from "@dataservices/shared/notifier.service";
+import { MockVdbService } from "../../../shared/mock-vdb.service";
+import { VdbService } from "../../../shared/vdb.service";
+import { AppSettingsService } from "../../../../core/app-settings.service";
+import { LoggerService } from "../../../../core/logger.service";
+import { NotifierService } from "../../../shared/notifier.service";
 
 describe('AddCompositionWizardComponent', () => {
   let component: AddCompositionWizardComponent;

@@ -1,4 +1,4 @@
-import { Column } from "@dataservices/shared/column.model";
+import { Column } from "../shared/column.model";
 
 describe("Column", () => {
   let column: Column;
