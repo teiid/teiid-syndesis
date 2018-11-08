@@ -1,10 +1,10 @@
-import { SchemaNode } from "@connections/shared/schema-node.model";
-import { CommandFactory } from "@dataservices/virtualization/view-editor/command/command-factory";
-import { AddSourcesCommand } from "@dataservices/virtualization/view-editor/command/add-sources-command";
-import { RemoveSourcesCommand } from "@dataservices/virtualization/view-editor/command/remove-sources-command";
-import { NoOpCommand } from "@dataservices/virtualization/view-editor/command/no-op-command";
-import { UpdateViewNameCommand } from "@dataservices/virtualization/view-editor/command/update-view-name-command";
-import { UpdateViewDescriptionCommand } from "@dataservices/virtualization/view-editor/command/update-view-description-command";
+import { SchemaNode } from "../../../../connections/shared/schema-node.model";
+import { CommandFactory } from "../../../virtualization/view-editor/command/command-factory";
+import { AddSourcesCommand } from "../../../virtualization/view-editor/command/add-sources-command";
+import { RemoveSourcesCommand } from "../../../virtualization/view-editor/command/remove-sources-command";
+import { NoOpCommand } from "../../../virtualization/view-editor/command/no-op-command";
+import { UpdateViewNameCommand } from "../../../virtualization/view-editor/command/update-view-name-command";
+import { UpdateViewDescriptionCommand } from "../../../virtualization/view-editor/command/update-view-description-command";
 
 describe( "Command Factory Tests", () => {
 

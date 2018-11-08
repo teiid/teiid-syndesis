@@ -17,16 +17,16 @@
 
 import { Injectable, ReflectiveInjector } from "@angular/core";
 import { Http } from "@angular/http";
-import { AppSettingsService } from "@core/app-settings.service";
-import { LoggerService } from "@core/logger.service";
-import { NotifierService } from "@dataservices/shared/notifier.service";
-import { VdbModelSource } from "@dataservices/shared/vdb-model-source.model";
-import { VdbModel } from "@dataservices/shared/vdb-model.model";
-import { VdbStatus } from "@dataservices/shared/vdb-status.model";
-import { Vdb } from "@dataservices/shared/vdb.model";
-import { VdbService } from "@dataservices/shared/vdb.service";
-import { Virtualization } from "@dataservices/shared/virtualization.model";
-import { TestDataService } from "@shared/test-data.service";
+import { AppSettingsService } from "../../core/app-settings.service";
+import { LoggerService } from "../../core/logger.service";
+import { NotifierService } from "../shared/notifier.service";
+import { VdbModelSource } from "../shared/vdb-model-source.model";
+import { VdbModel } from "../shared/vdb-model.model";
+import { VdbStatus } from "../shared/vdb-status.model";
+import { Vdb } from "../shared/vdb.model";
+import { VdbService } from "../shared/vdb.service";
+import { Virtualization } from "../shared/virtualization.model";
+import { TestDataService } from "../../shared/test-data.service";
 import "rxjs/add/observable/of";
 import "rxjs/add/observable/throw";
 import "rxjs/add/operator/catch";

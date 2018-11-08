@@ -1,11 +1,11 @@
 import { HttpModule } from "@angular/http";
 import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 import { RouterTestingModule } from "@angular/router/testing";
-import { LoggerService } from "@core/logger.service";
-import { MockAppSettingsService } from "@core/mock-app-settings.service";
-import { AppSettingsService } from "@core/app-settings.service";
-import { ViewEditorService } from "@dataservices/virtualization/view-editor/view-editor.service";
-import { ViewPreviewComponent } from "@dataservices/virtualization/view-editor/editor-views/view-preview/view-preview.component";
+import { LoggerService } from "../../../../../core/logger.service";
+import { MockAppSettingsService } from "../../../../../core/mock-app-settings.service";
+import { AppSettingsService } from "../../../../../core/app-settings.service";
+import { ViewEditorService } from "../../../../virtualization/view-editor/view-editor.service";
+import { ViewPreviewComponent } from "../../../../virtualization/view-editor/editor-views/view-preview/view-preview.component";
 import {
   ActionModule,
   CardModule,
@@ -16,12 +16,12 @@ import {
   SortModule,
   TableModule,
   WizardModule } from "patternfly-ng";
-import { DataserviceService } from "@dataservices/shared/dataservice.service";
-import { MockDataserviceService } from "@dataservices/shared/mock-dataservice.service";
-import { VdbService } from "@dataservices/shared/vdb.service";
-import { MockVdbService } from "@dataservices/shared/mock-vdb.service";
-import { NotifierService } from "@dataservices/shared/notifier.service";
-import { SelectionService } from "@core/selection.service";
+import { DataserviceService } from "../../../../shared/dataservice.service";
+import { MockDataserviceService } from "../../../../shared/mock-dataservice.service";
+import { VdbService } from "../../../../shared/vdb.service";
+import { MockVdbService } from "../../../../shared/mock-vdb.service";
+import { NotifierService } from "../../../../shared/notifier.service";
+import { SelectionService } from "../../../../../core/selection.service";
 
 describe("ViewPreviewComponent", () => {
   let component: ViewPreviewComponent;

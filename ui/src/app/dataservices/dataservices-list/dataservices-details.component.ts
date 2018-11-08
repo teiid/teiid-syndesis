@@ -16,7 +16,7 @@
  */
 
 import { Component, Input, OnInit, ViewEncapsulation } from "@angular/core";
-import { Dataservice } from "@dataservices/shared/dataservice.model";
+import { Dataservice } from "../shared/dataservice.model";
 import { ListConfig } from "patternfly-ng";
 import { DataservicesConstants } from "../shared/dataservices-constants";
 

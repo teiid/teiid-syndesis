@@ -1,16 +1,16 @@
 import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 
 import { ConnectionTreeSelectorComponent } from "./connection-tree-selector.component";
-import { LoggerService } from "@core/logger.service";
-import { MockConnectionService } from "@connections/shared/mock-connection.service";
-import { ConnectionService } from "@connections/shared/connection.service";
+import { LoggerService } from "../../../../../core/logger.service";
+import { MockConnectionService } from "../../../../../connections/shared/mock-connection.service";
+import { ConnectionService } from "../../../../../connections/shared/connection.service";
 import { TreeModule } from "angular-tree-component";
 import { HttpModule } from "@angular/http";
-import { VdbService } from "@dataservices/shared/vdb.service";
-import { MockVdbService } from "@dataservices/shared/mock-vdb.service";
-import { AppSettingsService } from "@core/app-settings.service";
-import { NotifierService } from "@dataservices/shared/notifier.service";
-import { MockAppSettingsService } from "@core/mock-app-settings.service";
+import { VdbService } from "../../../../shared/vdb.service";
+import { MockVdbService } from "../../../../shared/mock-vdb.service";
+import { AppSettingsService } from "../../../../../core/app-settings.service";
+import { NotifierService } from "../../../../shared/notifier.service";
+import { MockAppSettingsService } from "../../../../../core/mock-app-settings.service";
 
 describe("ConnectionTreeSelectorComponent", () => {
   let component: ConnectionTreeSelectorComponent;

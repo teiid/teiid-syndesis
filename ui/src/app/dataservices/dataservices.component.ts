@@ -17,24 +17,24 @@
 
 import { Component, OnInit, ViewChild } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
-import { ConnectionService } from "@connections/shared/connection.service";
-import { ConnectionsConstants } from "@connections/shared/connections-constants";
+import { ConnectionService } from "../connections/shared/connection.service";
+import { ConnectionsConstants } from "../connections/shared/connections-constants";
 import { AppSettingsService } from "@core/app-settings.service";
 import { LoggerService } from "@core/logger.service";
 import { SelectionService } from "@core/selection.service";
-import { Dataservice } from "@dataservices/shared/dataservice.model";
-import { DataserviceService } from "@dataservices/shared/dataservice.service";
-import { DataservicesConstants } from "@dataservices/shared/dataservices-constants";
-import { DeploymentState } from "@dataservices/shared/deployment-state.enum";
-import { NotifierService } from "@dataservices/shared/notifier.service";
-import { PublishState } from "@dataservices/shared/publish-state.enum";
-import { VdbService } from "@dataservices/shared/vdb.service";
-import { Virtualization } from "@dataservices/shared/virtualization.model";
-import { SqlControlComponent } from "@dataservices/sql-control/sql-control.component";
-import { AbstractPageComponent } from "@shared/abstract-page.component";
-import { ConfirmDialogComponent } from "@shared/confirm-dialog/confirm-dialog.component";
-import { LayoutType } from "@shared/layout-type.enum";
-import { SortDirection } from "@shared/sort-direction.enum";
+import { Dataservice } from "./dataservices/shared/dataservice.model";
+import { DataserviceService } from "./dataservices/shared/dataservice.service";
+import { DataservicesConstants } from "./dataservices/shared/dataservices-constants";
+import { DeploymentState } from "./dataservices/shared/deployment-state.enum";
+import { NotifierService } from "./dataservices/shared/notifier.service";
+import { PublishState } from "./dataservices/shared/publish-state.enum";
+import { VdbService } from "./dataservices/shared/vdb.service";
+import { Virtualization } from "./dataservices/shared/virtualization.model";
+import { SqlControlComponent } from "./dataservices/sql-control/sql-control.component";
+import { AbstractPageComponent } from "../shared/abstract-page.component";
+import { ConfirmDialogComponent } from "../shared/confirm-dialog/confirm-dialog.component";
+import { LayoutType } from "../shared/layout-type.enum";
+import { SortDirection } from "../shared/sort-direction.enum";
 import { BsModalService } from "ngx-bootstrap";
 import {
   ActionConfig,
@@ -50,13 +50,13 @@ import {
   SortField
 } from "patternfly-ng";
 import { Subscription } from "rxjs/Subscription";
-import { SqlView } from "@dataservices/shared/sql-view.model";
-import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
-import { ViewDefinition } from "@dataservices/shared/view-definition.model";
-import { ViewEditorState } from "@dataservices/shared/view-editor-state.model";
-import { NameValue } from "@dataservices/shared/name-value.model";
-import { CreateViewsDialogComponent } from "@dataservices/create-views-dialog/create-views-dialog.component";
-import { SetDescriptionDialogComponent } from "@dataservices/set-description-dialog/set-description-dialog.component";
+import { SqlView } from "../dataservices/shared/sql-view.model";
+import { ViewEditorI18n } from "../dataservices/virtualization/view-editor/view-editor-i18n";
+import { ViewDefinition } from "../dataservices/shared/view-definition.model";
+import { ViewEditorState } from "../dataservices/shared/view-editor-state.model";
+import { NameValue } from "../dataservices/shared/name-value.model";
+import { CreateViewsDialogComponent } from "../dataservices/create-views-dialog/create-views-dialog.component";
+import { SetDescriptionDialogComponent } from "../dataservices/set-description-dialog/set-description-dialog.component";
 
 @Component({
   selector: "app-dataservices",

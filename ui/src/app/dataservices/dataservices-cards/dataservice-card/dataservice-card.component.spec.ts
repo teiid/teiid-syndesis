@@ -1,16 +1,16 @@
 import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 import { FormsModule } from "@angular/forms";
 import { RouterTestingModule } from "@angular/router/testing";
-import { LoggerService } from "@core/logger.service";
-import { DataserviceService } from "@dataservices/shared/dataservice.service";
-import { DataserviceCardComponent } from "@dataservices/dataservices-cards/dataservice-card/dataservice-card.component";
-import { Dataservice } from "@dataservices/shared/dataservice.model";
-import { SharedModule } from "@shared/shared.module";
-import { MockVdbService } from "@dataservices/shared/mock-vdb.service";
-import { VdbService } from "@dataservices/shared/vdb.service";
-import { AppSettingsService } from "@core/app-settings.service";
-import { MockAppSettingsService } from "@core/mock-app-settings.service";
-import { NotifierService } from "@dataservices/shared/notifier.service";
+import { LoggerService } from "../../../core/logger.service";
+import { DataserviceService } from "../../shared/dataservice.service";
+import { DataserviceCardComponent } from "../../dataservices-cards/dataservice-card/dataservice-card.component";
+import { Dataservice } from "../../shared/dataservice.model";
+import { SharedModule } from "../../../shared/shared.module";
+import { MockVdbService } from "../../shared/mock-vdb.service";
+import { VdbService } from "../../shared/vdb.service";
+import { AppSettingsService } from "../../../core/app-settings.service";
+import { MockAppSettingsService } from "../../../core/mock-app-settings.service";
+import { NotifierService } from "../../shared/notifier.service";
 import {
   ActionModule,
   CardModule,

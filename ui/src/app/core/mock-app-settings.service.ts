@@ -1,8 +1,8 @@
 import { Injectable, OnInit } from "@angular/core";
 import { Http } from "@angular/http";
-import { AppSettingsService } from "@core/app-settings.service";
-import { LoggerService } from "@core/logger.service";
-import { environment } from "@environments/environment";
+import { AppSettingsService } from "./app-settings.service";
+import { LoggerService } from "./logger.service";
+import { environment } from "environments/environment";
 import { Observable } from "rxjs/Observable";
 import 'rxjs/add/observable/of';
 

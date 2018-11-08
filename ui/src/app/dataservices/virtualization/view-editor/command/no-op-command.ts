@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Command } from "@dataservices/virtualization/view-editor/command/command";
-import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
-import { CommandType } from "@dataservices/virtualization/view-editor/command/command-type.enum";
+import { Command } from "../../../virtualization/view-editor/command/command";
+import { ViewEditorI18n } from "../../../virtualization/view-editor/view-editor-i18n";
+import { CommandType } from "../../../virtualization/view-editor/command/command-type.enum";
 
 export class NoOpCommand extends Command {
 

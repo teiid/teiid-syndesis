@@ -14,8 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { MessageType } from "@dataservices/virtualization/view-editor/editor-views/message-log/message-type.enum";
-import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
+import { MessageType } from "../../../../virtualization/view-editor/editor-views/message-log/message-type.enum";
+import { ViewEditorI18n } from "../../../../virtualization/view-editor/view-editor-i18n";
 
 export class Problem {
 

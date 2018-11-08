@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-import { Composition } from "@dataservices/shared/composition.model";
-import { PathUtils } from "@dataservices/shared/path-utils";
-import { VdbsConstants } from "@dataservices/shared/vdbs-constants";
-import { CompositionOperator } from "@dataservices/shared/composition-operator.enum";
-import { CompositionType } from "@dataservices/shared/composition-type.enum";
-import { ProjectedColumn } from "@dataservices/shared/projected-column.model";
+import { Composition } from "../shared/composition.model";
+import { PathUtils } from "../shared/path-utils";
+import { VdbsConstants } from "../shared/vdbs-constants";
+import { CompositionOperator } from "../shared/composition-operator.enum";
+import { CompositionType } from "../shared/composition-type.enum";
+import { ProjectedColumn } from "../shared/projected-column.model";
 
 /**
  * ViewDefinition model

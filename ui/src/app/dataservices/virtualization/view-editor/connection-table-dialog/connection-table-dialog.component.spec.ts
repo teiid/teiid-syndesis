@@ -16,13 +16,13 @@ import {
   TableModule,
   WizardModule } from "patternfly-ng";
 import { BsModalRef, ModalModule } from "ngx-bootstrap";
-import { ConnectionService } from "@connections/shared/connection.service";
-import { MockConnectionService } from "@connections/shared/mock-connection.service";
-import { VdbService } from "@dataservices/shared/vdb.service";
-import { MockVdbService } from "@dataservices/shared/mock-vdb.service";
-import { AppSettingsService } from "@core/app-settings.service";
-import { LoggerService } from "@core/logger.service";
-import { NotifierService } from "@dataservices/shared/notifier.service";
+import { ConnectionService } from "../../../../connections/shared/connection.service";
+import { MockConnectionService } from "../../../../connections/shared/mock-connection.service";
+import { VdbService } from "../../../shared/vdb.service";
+import { MockVdbService } from "../../../shared/mock-vdb.service";
+import { AppSettingsService } from "../../../../core/app-settings.service";
+import { LoggerService } from "../../../../core/logger.service";
+import { NotifierService } from "../../../shared/notifier.service";
 
 export const moduleRoot: ModuleWithProviders<any> = ModalModule.forRoot();
 

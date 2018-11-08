@@ -17,18 +17,18 @@
 
 import { Input, ViewEncapsulation } from "@angular/core";
 import { Component, OnInit } from "@angular/core";
-import { LoggerService } from "@core/logger.service";
-import { ColumnData } from "@dataservices/shared/column-data.model";
-import { DataserviceService } from "@dataservices/shared/dataservice.service";
-import { QueryResults } from "@dataservices/shared/query-results.model";
-import { RowData } from "@dataservices/shared/row-data.model";
-import { LoadingState } from "@shared/loading-state.enum";
+import { LoggerService } from "../../core/logger.service";
+import { ColumnData } from "../shared/column-data.model";
+import { DataserviceService } from "../shared/dataservice.service";
+import { QueryResults } from "../shared/query-results.model";
+import { RowData } from "../shared/row-data.model";
+import { LoadingState } from "../../shared/loading-state.enum";
 import "codemirror/addon/display/placeholder.js";
 import "codemirror/addon/selection/active-line.js";
 import "codemirror/mode/sql/sql.js";
 import { NgxDataTableConfig, TableConfig } from "patternfly-ng";
-import { SqlView } from "@dataservices/shared/sql-view.model";
-import { SelectionService } from "@core/selection.service";
+import { SqlView } from "../shared/sql-view.model";
+import { SelectionService } from "../../core/selection.service";
 
 @Component({
   encapsulation: ViewEncapsulation.None,

@@ -16,7 +16,7 @@
  */
 import * as d3 from 'd3';
 import * as cola from 'webcola';
-import { CanvasNode } from '@dataservices/virtualization/view-editor/view-canvas/models/canvas-node';
+import { CanvasNode } from '../../../../virtualization/view-editor/view-canvas/models/canvas-node';
 
 export class CanvasLink implements cola.Link<CanvasNode> {
   // optional - defining optional implementation properties - required for relevant typing assistance

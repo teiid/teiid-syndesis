@@ -16,10 +16,10 @@
  */
 
 import { Component, EventEmitter, Input, Output, ViewEncapsulation } from "@angular/core";
-import { LoggerService } from "@core/logger.service";
-import { DataserviceCardComponent } from "@dataservices/dataservices-cards/dataservice-card/dataservice-card.component";
-import { Dataservice } from "@dataservices/shared/dataservice.model";
-import { NameValue } from "@dataservices/shared/name-value.model";
+import { LoggerService } from "../../core/logger.service";
+import { DataserviceCardComponent } from "../dataservices-cards/dataservice-card/dataservice-card.component";
+import { Dataservice } from "../shared/dataservice.model";
+import { NameValue } from "../shared/name-value.model";
 
 @Component({
   encapsulation: ViewEncapsulation.None,

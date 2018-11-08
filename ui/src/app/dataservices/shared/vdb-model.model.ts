@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { NameValue } from "@dataservices/shared/name-value.model";
+import { NameValue } from "../shared/name-value.model";
 
 /**
  * VdbModel model

@@ -24,13 +24,13 @@ import {
   ViewEncapsulation,
   ViewChild
 } from "@angular/core";
-import { LoggerService } from "@core/logger.service";
+import { LoggerService } from "../../core/logger.service";
 import { Action, ActionConfig, ListConfig } from "patternfly-ng";
 import { Subscription } from "rxjs/Subscription";
 import * as _ from "lodash";
-import { DataserviceService } from "@dataservices/shared/dataservice.service";
-import { Dataservice } from "@dataservices/shared/dataservice.model";
-import { NameValue } from "@dataservices/shared/name-value.model";
+import { DataserviceService } from "../shared/dataservice.service";
+import { Dataservice } from "../shared/dataservice.model";
+import { NameValue } from "../shared/name-value.model";
 import { interval } from "rxjs/observable/interval";
 
 @Component({

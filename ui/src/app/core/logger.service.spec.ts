@@ -1,5 +1,5 @@
 import { inject, TestBed } from "@angular/core/testing";
-import { LoggerService } from "@core/logger.service";
+import { LoggerService } from "./logger.service";
 
 describe("LoggerService", () => {
   beforeEach(() => {

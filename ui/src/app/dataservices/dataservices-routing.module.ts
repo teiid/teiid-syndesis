@@ -17,10 +17,10 @@
 
 import { NgModule, ModuleWithProviders } from "@angular/core";
 import { RouterModule } from "@angular/router";
-import { DataservicesComponent } from "@dataservices/dataservices.component";
-import { DataservicesConstants } from "@dataservices/shared/dataservices-constants";
-import { TestDataserviceComponent } from "@dataservices/test-dataservice/test-dataservice.component";
-import { ViewEditorComponent } from "@dataservices/virtualization/view-editor/view-editor.component";
+import { DataservicesComponent } from "../dataservices/dataservices.component";
+import { DataservicesConstants } from "../dataservices/shared/dataservices-constants";
+import { TestDataserviceComponent } from "../dataservices/test-dataservice/test-dataservice.component";
+import { ViewEditorComponent } from "../dataservices/virtualization/view-editor/view-editor.component";
 
 export const dataservicesRoutes: ModuleWithProviders<RouterModule> = RouterModule.forChild([
   { path: DataservicesConstants.dataservicesRootRoute, component: DataservicesComponent },

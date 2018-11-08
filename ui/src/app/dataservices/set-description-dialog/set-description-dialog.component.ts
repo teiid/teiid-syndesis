@@ -19,8 +19,8 @@ import { Component, OnInit } from "@angular/core";
 import { Output } from "@angular/core";
 import { EventEmitter } from "@angular/core";
 import { BsModalRef } from "ngx-bootstrap";
-import { LoggerService } from "@core/logger.service";
-import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
+import { LoggerService } from "../../core/logger.service";
+import { ViewEditorI18n } from "../virtualization/view-editor/view-editor-i18n";
 import { FormControl, FormGroup } from "@angular/forms";
 
 @Component({

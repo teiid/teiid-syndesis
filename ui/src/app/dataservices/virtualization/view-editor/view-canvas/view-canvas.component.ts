@@ -16,29 +16,29 @@
  */
 
 import { Component, OnDestroy, OnInit, AfterViewInit, ViewEncapsulation } from "@angular/core";
-import { AddSourcesCommand } from "@dataservices/virtualization/view-editor/command/add-sources-command";
-import { RemoveSourcesCommand } from "@dataservices/virtualization/view-editor/command/remove-sources-command";
-import { LoggerService } from "@core/logger.service";
-import { ViewEditorEvent } from "@dataservices/virtualization/view-editor/event/view-editor-event";
-import { ViewEditorEventType } from "@dataservices/virtualization/view-editor/event/view-editor-event-type.enum";
-import { ViewEditorService } from "@dataservices/virtualization/view-editor/view-editor.service";
-import { ViewEditorPart } from "@dataservices/virtualization/view-editor/view-editor-part.enum";
-import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
-import { ViewEditorProgressChangeId } from "@dataservices/virtualization/view-editor/event/view-editor-save-progress-change-id.enum";
-import { PathUtils } from "@dataservices/shared/path-utils";
+import { AddSourcesCommand } from "../../../virtualization/view-editor/command/add-sources-command";
+import { RemoveSourcesCommand } from "../../../virtualization/view-editor/command/remove-sources-command";
+import { LoggerService } from "../../../../core/logger.service";
+import { ViewEditorEvent } from "../../../virtualization/view-editor/event/view-editor-event";
+import { ViewEditorEventType } from "../../../virtualization/view-editor/event/view-editor-event-type.enum";
+import { ViewEditorService } from "../../../virtualization/view-editor/view-editor.service";
+import { ViewEditorPart } from "../../../virtualization/view-editor/view-editor-part.enum";
+import { ViewEditorI18n } from "../../../virtualization/view-editor/view-editor-i18n";
+import { ViewEditorProgressChangeId } from "../../../virtualization/view-editor/event/view-editor-save-progress-change-id.enum";
+import { PathUtils } from "../../../shared/path-utils";
 import { NotificationType } from "patternfly-ng";
 import { Subscription } from "rxjs/Subscription";
-import { CanvasNode, CanvasLink } from '@dataservices/virtualization/view-editor/view-canvas/models';
-import { CanvasConstants } from '@dataservices/virtualization/view-editor/view-canvas/canvas-constants';
-import { CanvasService } from '@dataservices/virtualization/view-editor/view-canvas/canvas.service';
-import { ViewCanvasEvent } from "@dataservices/virtualization/view-editor/view-canvas/event/view-canvas-event";
-import { ViewCanvasEventType } from "@dataservices/virtualization/view-editor/view-canvas/event/view-canvas-event-type.enum";
+import { CanvasNode, CanvasLink } from '../../../virtualization/view-editor/view-canvas/models';
+import { CanvasConstants } from '../../../virtualization/view-editor/view-canvas/canvas-constants';
+import { CanvasService } from '../../../virtualization/view-editor/view-canvas/canvas.service';
+import { ViewCanvasEvent } from "../../../virtualization/view-editor/view-canvas/event/view-canvas-event";
+import { ViewCanvasEventType } from "../../../virtualization/view-editor/view-canvas/event/view-canvas-event-type.enum";
 import * as _ from "lodash";
-import { AddCompositionCommand } from "@dataservices/virtualization/view-editor/command/add-composition-command";
-import { RemoveCompositionCommand } from "@dataservices/virtualization/view-editor/command/remove-composition-command";
-import { CommandFactory } from "@dataservices/virtualization/view-editor/command/command-factory";
-import { ViewDefinition } from "@dataservices/shared/view-definition.model";
-import { Composition } from "@dataservices/shared/composition.model";
+import { AddCompositionCommand } from "../../../virtualization/view-editor/command/add-composition-command";
+import { RemoveCompositionCommand } from "../../../virtualization/view-editor/command/remove-composition-command";
+import { CommandFactory } from "../../../virtualization/view-editor/command/command-factory";
+import { ViewDefinition } from "../../../shared/view-definition.model";
+import { Composition } from "../../../shared/composition.model";
 
 @Component({
   encapsulation: ViewEncapsulation.None,

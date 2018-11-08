@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
-import { Command } from "@dataservices/virtualization/view-editor/command/command";
-import { CommandType } from "@dataservices/virtualization/view-editor/command/command-type.enum";
+import { ViewEditorI18n } from "../../../virtualization/view-editor/view-editor-i18n";
+import { Command } from "../../../virtualization/view-editor/command/command";
+import { CommandType } from "../../../virtualization/view-editor/command/command-type.enum";
 
 export class UpdateViewNameCommand extends Command {
 

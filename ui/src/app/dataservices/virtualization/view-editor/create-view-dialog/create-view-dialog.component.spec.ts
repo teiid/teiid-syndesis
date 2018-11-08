@@ -9,12 +9,12 @@ import {
   NotificationModule
 } from "patternfly-ng";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
-import { VdbService } from "@dataservices/shared/vdb.service";
-import { MockVdbService } from "@dataservices/shared/mock-vdb.service";
-import { AppSettingsService } from "@core/app-settings.service";
-import { LoggerService } from "@core/logger.service";
-import { NotifierService } from "@dataservices/shared/notifier.service";
-import { SelectionService } from "@core/selection.service";
+import { VdbService } from "../../../shared/vdb.service";
+import { MockVdbService } from "../../../shared/mock-vdb.service";
+import { AppSettingsService } from "../../../../core/app-settings.service";
+import { LoggerService } from "../../../../core/logger.service";
+import { NotifierService } from "../../../shared/notifier.service";
+import { SelectionService } from "../../../../core/selection.service";
 
 export const moduleRoot: ModuleWithProviders<any> = ModalModule.forRoot();
 
