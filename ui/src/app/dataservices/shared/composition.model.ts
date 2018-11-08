@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-import { CompositionType } from "../shared/composition-type.enum";
-import { CompositionOperator } from "../shared/composition-operator.enum";
-import { PathUtils } from "../shared/path-utils";
+import { CompositionType } from "@dataservices/shared/composition-type.enum";
+import { CompositionOperator } from "@dataservices/shared/composition-operator.enum";
+import { PathUtils } from "@dataservices/shared/path-utils";
 
 /**
  * Composition model

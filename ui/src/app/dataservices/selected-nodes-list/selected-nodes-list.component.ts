@@ -1,5 +1,5 @@
 import { Component, EventEmitter, OnInit, Output } from "@angular/core";
-import { SchemaNode } from "../../connections/shared/schema-node.model";
+import { SchemaNode } from "@connections/shared/schema-node.model";
 
 @Component({
   selector: "app-selected-nodes-list",

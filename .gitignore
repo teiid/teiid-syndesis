@@ -1,5 +1,4 @@
 target
-ui/.vscode/
 .settings
 .project
 .classpath
@@ -65,7 +64,3 @@ yarn-error.log
 Thumbs.db
 
 target/
-ui/.idea
-ui/dist/
-ui/node/
-ui/node_modules/

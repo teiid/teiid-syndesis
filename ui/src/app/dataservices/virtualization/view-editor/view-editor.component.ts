@@ -16,32 +16,31 @@
  */
 
 import { Component, DoCheck, OnDestroy, OnInit, TemplateRef, ViewEncapsulation } from "@angular/core";
-import { LoggerService } from "../../../core/logger.service";
-import { SelectionService } from "../../../core/selection.service";
-import { Connection } from "../../../connections/shared/connection.model";
-import { ConnectionService } from "../../../connections/shared/connection.service";
-import { DataservicesConstants } from "../../shared/dataservices-constants";
-import { ViewEditorService } from "../../virtualization/view-editor/view-editor.service";
-import { ViewEditorPart } from "../../virtualization/view-editor/view-editor-part.enum";
-import { ViewEditorEvent } from "../../virtualization/view-editor/event/view-editor-event";
-import { ViewEditorEventType } from "../../virtualization/view-editor/event/view-editor-event-type.enum";
-import { ConnectionTableDialogComponent } from "../../virtualization/view-editor/connection-table-dialog/connection-table-dialog.component";
-import { ViewEditorProgressChangeId } from "../../virtualization/view-editor/event/view-editor-save-progress-change-id.enum";
-import { ViewEditorI18n } from "../../virtualization/view-editor/view-editor-i18n";
-import { CommandFactory } from "../../virtualization/view-editor/command/command-factory";
+import { LoggerService } from "@core/logger.service";
+import { SelectionService } from "@core/selection.service";
+import { Connection } from "@connections/shared/connection.model";
+import { ConnectionService } from "@connections/shared/connection.service";
+import { DataservicesConstants } from "@dataservices/shared/dataservices-constants";
+import { ViewEditorService } from "@dataservices/virtualization/view-editor/view-editor.service";
+import { ViewEditorPart } from "@dataservices/virtualization/view-editor/view-editor-part.enum";
+import { ViewEditorEvent } from "@dataservices/virtualization/view-editor/event/view-editor-event";
+import { ViewEditorEventType } from "@dataservices/virtualization/view-editor/event/view-editor-event-type.enum";
+import { ConnectionTableDialogComponent } from "@dataservices/virtualization/view-editor/connection-table-dialog/connection-table-dialog.component";
+import { ViewEditorProgressChangeId } from "@dataservices/virtualization/view-editor/event/view-editor-save-progress-change-id.enum";
+import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
+import { CommandFactory } from "@dataservices/virtualization/view-editor/command/command-factory";
 import { BsModalService } from "ngx-bootstrap";
 import { Action, ActionConfig, ToolbarConfig, ToolbarView } from "patternfly-ng";
 import { Subscription } from "rxjs/Subscription";
-import { Command } from "../../virtualization/view-editor/command/command";
-import { ConfirmDialogComponent } from "../../../shared/confirm-dialog/confirm-dialog.component";
-import { AddCompositionWizardComponent } from "../../virtualization/view-editor/add-composition-wizard/add-composition-wizard.component";
-import { AddSourcesCommand } from "../../virtualization/view-editor/command/add-sources-command";
-import { AddCompositionCommand } from "../../virtualization/view-editor/command/add-composition-command";
-import { SchemaNode } from "../../../connections/shared/schema-node.model";
-import { Composition } from "../../shared/composition.model";
+import { Command } from "@dataservices/virtualization/view-editor/command/command";
+import { ConfirmDialogComponent } from "@shared/confirm-dialog/confirm-dialog.component";
+import { AddCompositionWizardComponent } from "@dataservices/virtualization/view-editor/add-composition-wizard/add-composition-wizard.component";
+import { AddSourcesCommand } from "@dataservices/virtualization/view-editor/command/add-sources-command";
+import { AddCompositionCommand } from "@dataservices/virtualization/view-editor/command/add-composition-command";
+import { SchemaNode } from "@connections/shared/schema-node.model";
+import { Composition } from "@dataservices/shared/composition.model";
 import { Router } from "@angular/router";
 import { NavigationStart } from "@angular/router";
-import 'rxjs/add/operator/pairwise';
 
 @Component({
   encapsulation: ViewEncapsulation.None,

@@ -7,20 +7,20 @@ import {
   WizardEvent,
   WizardStepConfig
 } from "patternfly-ng";
-import { LoggerService } from "../../../../core/logger.service";
-import { Composition } from "../../../shared/composition.model";
-import { SchemaNode } from "../../../../connections/shared/schema-node.model";
-import { LoadingState } from "../../../../shared/loading-state.enum";
-import { ConnectionsConstants } from "../../../../connections/shared/connections-constants";
-import { ConnectionService } from "../../../../connections/shared/connection.service";
-import { ConnectionTreeSelectorComponent } from "../../../virtualization/view-editor/connection-table-dialog/connection-tree-selector/connection-tree-selector.component";
-import { ViewEditorI18n } from "../../../virtualization/view-editor/view-editor-i18n";
-import { Column } from "../../../shared/column.model";
-import { CompositionType } from "../../../shared/composition-type.enum";
-import { CompositionOperator } from "../../../shared/composition-operator.enum";
-import { PathUtils } from "../../../shared/path-utils";
-import { Command } from "../../../virtualization/view-editor/command/command";
-import { ViewEditorService } from "../../../virtualization/view-editor/view-editor.service";
+import { LoggerService } from "@core/logger.service";
+import { Composition } from "@dataservices/shared/composition.model";
+import { SchemaNode } from "@connections/shared/schema-node.model";
+import { LoadingState } from "@shared/loading-state.enum";
+import { ConnectionsConstants } from "@connections/shared/connections-constants";
+import { ConnectionService } from "@connections/shared/connection.service";
+import { ConnectionTreeSelectorComponent } from "@dataservices/virtualization/view-editor/connection-table-dialog/connection-tree-selector/connection-tree-selector.component";
+import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
+import { Column } from "@dataservices/shared/column.model";
+import { CompositionType } from "@dataservices/shared/composition-type.enum";
+import { CompositionOperator } from "@dataservices/shared/composition-operator.enum";
+import { PathUtils } from "@dataservices/shared/path-utils";
+import { Command } from "@dataservices/virtualization/view-editor/command/command";
+import { ViewEditorService } from "@dataservices/virtualization/view-editor/view-editor.service";
 
 enum CompositeSide {
   LEFT = 0,

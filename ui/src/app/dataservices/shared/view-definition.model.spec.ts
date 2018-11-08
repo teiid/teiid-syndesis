@@ -1,6 +1,6 @@
-import { ViewDefinition } from "../shared/view-definition.model";
-import { CompositionOperator } from "../shared/composition-operator.enum";
-import { CompositionType } from "../shared/composition-type.enum";
+import { ViewDefinition } from "@dataservices/shared/view-definition.model";
+import { CompositionOperator } from "@dataservices/shared/composition-operator.enum";
+import { CompositionType } from "@dataservices/shared/composition-type.enum";
 
 describe("ViewDefinition", () => {
   let viewDefn1: ViewDefinition;

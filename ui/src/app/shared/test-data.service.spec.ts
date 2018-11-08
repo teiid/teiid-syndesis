@@ -1,5 +1,5 @@
 import { inject, TestBed } from "@angular/core/testing";
-import { TestDataService } from "../shared/test-data.service";
+import { TestDataService } from "@shared/test-data.service";
 
 describe("TestDataService", () => {
   beforeEach(() => {

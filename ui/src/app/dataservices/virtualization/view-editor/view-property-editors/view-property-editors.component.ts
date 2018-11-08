@@ -16,10 +16,10 @@
  */
 
 import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
-import { LoggerService } from "../../../../core/logger.service";
-import { ViewEditorI18n } from "../../../virtualization/view-editor/view-editor-i18n";
-import { ViewEditorService } from "../../../virtualization/view-editor/view-editor.service";
-import { ViewEditorEvent } from "../../../virtualization/view-editor/event/view-editor-event";
+import { LoggerService } from "@core/logger.service";
+import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
+import { ViewEditorService } from "@dataservices/virtualization/view-editor/view-editor.service";
+import { ViewEditorEvent } from "@dataservices/virtualization/view-editor/event/view-editor-event";
 import { Subscription } from "rxjs/Subscription";
 import 'dragula/dist/dragula.css';
 

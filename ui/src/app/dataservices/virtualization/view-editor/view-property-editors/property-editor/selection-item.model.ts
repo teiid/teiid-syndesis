@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-import { CommandType } from "../../../../virtualization/view-editor/command/command-type.enum";
-import { ViewEditorService } from "../../../../virtualization/view-editor/view-editor.service";
-import { Composition } from "../../../../shared/composition.model";
-import { PathUtils } from "../../../../shared/path-utils";
-import { SelectionType } from "../../../../virtualization/view-editor/view-property-editors/property-editor/selection-type.enum";
+import { CommandType } from "@dataservices/virtualization/view-editor/command/command-type.enum";
+import { ViewEditorService } from "@dataservices/virtualization/view-editor/view-editor.service";
+import { Composition } from "@dataservices/shared/composition.model";
+import { PathUtils } from "@dataservices/shared/path-utils";
+import { SelectionType } from "@dataservices/virtualization/view-editor/view-property-editors/property-editor/selection-type.enum";
 
 /**
  * SelectionItem model - interprets the selection string and provides the payload in object form

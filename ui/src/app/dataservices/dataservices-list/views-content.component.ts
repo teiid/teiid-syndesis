@@ -16,10 +16,10 @@
  */
 
 import { Component, EventEmitter, Input, OnInit, Output, ViewEncapsulation } from "@angular/core";
-import { Connection } from "../../connections/shared/connection.model";
-import { Dataservice } from "../shared/dataservice.model";
+import { Connection } from "@connections/shared/connection.model";
+import { Dataservice } from "@dataservices/shared/dataservice.model";
 import { ListConfig } from "patternfly-ng";
-import { NameValue } from "../shared/name-value.model";
+import { NameValue } from "@dataservices/shared/name-value.model";
 
 @Component({
   encapsulation: ViewEncapsulation.None,

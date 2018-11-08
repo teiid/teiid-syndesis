@@ -1,5 +1,4 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { ModuleWithProviders } from "@angular/core";
 
 import { SetDescriptionDialogComponent } from './set-description-dialog.component';
 import { HttpModule } from "@angular/http";
@@ -8,10 +7,8 @@ import {
   ActionModule
 } from "patternfly-ng";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
-import { AppSettingsService } from "../../core/app-settings.service";
-import { LoggerService } from "../../core/logger.service";
-
-export const moduleRoot: ModuleWithProviders<any> = ModalModule.forRoot();
+import { AppSettingsService } from "@core/app-settings.service";
+import { LoggerService } from "@core/logger.service";
 
 describe('SetDescriptionDialogComponent', () => {
   let component: SetDescriptionDialogComponent;
@@ -23,7 +20,7 @@ describe('SetDescriptionDialogComponent', () => {
         HttpModule,
         FormsModule,
         ReactiveFormsModule,
-        moduleRoot,
+        ModalModule.forRoot(),
         ActionModule
       ],
       declarations: [ SetDescriptionDialogComponent ],

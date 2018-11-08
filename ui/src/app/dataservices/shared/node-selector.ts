@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { SchemaNode } from "../../connections/shared/schema-node.model";
+import { SchemaNode } from "@connections/shared/schema-node.model";
 
 /**
  * The node selector interface

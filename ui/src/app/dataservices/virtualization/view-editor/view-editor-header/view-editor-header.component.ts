@@ -16,7 +16,7 @@
  */
 
 import { Component, OnDestroy, OnInit, ViewEncapsulation } from "@angular/core";
-import { ViewEditorService } from "../../../virtualization/view-editor/view-editor.service";
+import { ViewEditorService } from "@dataservices/virtualization/view-editor/view-editor.service";
 
 @Component({
   encapsulation: ViewEncapsulation.None,
@@ -36,14 +36,13 @@ export class ViewEditorHeaderComponent implements OnInit, OnDestroy {
    * Cleanup code when destroying the view editor header.
    */
   public ngOnDestroy(): void {
-    // Nothing to do
+
   }
 
   /**
    * Initialization code run after construction.
    */
   public ngOnInit(): void {
-    // Nothing to do
   }
 
   /**

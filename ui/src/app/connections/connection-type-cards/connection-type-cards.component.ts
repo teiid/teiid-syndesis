@@ -16,9 +16,10 @@
  */
 
 import { Component, EventEmitter, Input, Output, ViewEncapsulation } from "@angular/core";
-import { ConnectionType } from "../../connections/shared/connection-type.model";
+import { ConnectionType } from "@connections/shared/connection-type.model";
 
 @Component({
+  moduleId: module.id,
   encapsulation: ViewEncapsulation.None,
   selector: "app-connection-type-cards",
   templateUrl: "./connection-type-cards.component.html",

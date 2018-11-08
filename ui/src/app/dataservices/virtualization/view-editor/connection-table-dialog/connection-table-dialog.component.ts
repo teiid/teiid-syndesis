@@ -19,13 +19,13 @@ import { Component, OnInit, ViewChild } from "@angular/core";
 import { Output } from "@angular/core";
 import { EventEmitter } from "@angular/core";
 import { BsModalRef } from "ngx-bootstrap";
-import { ConnectionTreeSelectorComponent } from "../../../virtualization/view-editor/connection-table-dialog/connection-tree-selector/connection-tree-selector.component";
-import { SchemaNode } from "../../../../connections/shared/schema-node.model";
-import { ConnectionsConstants } from "../../../../connections/shared/connections-constants";
-import { LoadingState } from "../../../../shared/loading-state.enum";
-import { ConnectionService } from "../../../../connections/shared/connection.service";
-import { LoggerService } from "../../../../core/logger.service";
-import { ViewEditorI18n } from "../../../virtualization/view-editor/view-editor-i18n";
+import { ConnectionTreeSelectorComponent } from "@dataservices/virtualization/view-editor/connection-table-dialog/connection-tree-selector/connection-tree-selector.component";
+import { SchemaNode } from "@connections/shared/schema-node.model";
+import { ConnectionsConstants } from "@connections/shared/connections-constants";
+import { LoadingState } from "@shared/loading-state.enum";
+import { ConnectionService } from "@connections/shared/connection.service";
+import { LoggerService } from "@core/logger.service";
+import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
 
 @Component({
   selector: "app-connection-table-dialog",

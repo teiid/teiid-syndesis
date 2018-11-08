@@ -1,4 +1,4 @@
-import { ServiceCatalogSource } from "../../connections/shared/service-catalog-source.model";
+import { ServiceCatalogSource } from "@connections/shared/service-catalog-source.model";
 
 describe("ServiceCatalogSource", () => {
   let serviceCatSrc: ServiceCatalogSource;

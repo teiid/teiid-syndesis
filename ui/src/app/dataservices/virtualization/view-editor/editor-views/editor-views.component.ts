@@ -16,12 +16,12 @@
  */
 
 import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
-import { LoggerService } from "../../../../core/logger.service";
-import { ViewEditorService } from "../../../virtualization/view-editor/view-editor.service";
-import { ViewEditorPart } from "../../../virtualization/view-editor/view-editor-part.enum";
-import { ViewEditorEvent } from "../../../virtualization/view-editor/event/view-editor-event";
+import { LoggerService } from "@core/logger.service";
+import { ViewEditorService } from "@dataservices/virtualization/view-editor/view-editor.service";
+import { ViewEditorPart } from "@dataservices/virtualization/view-editor/view-editor-part.enum";
+import { ViewEditorEvent } from "@dataservices/virtualization/view-editor/event/view-editor-event";
 import { Subscription } from "rxjs/Subscription";
-import { ViewEditorI18n } from "../../../virtualization/view-editor/view-editor-i18n";
+import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
 
 @Component({
   encapsulation: ViewEncapsulation.None,

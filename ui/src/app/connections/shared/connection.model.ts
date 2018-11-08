@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-import { ConnectionStatus } from "../../connections/shared/connection-status";
-import { VdbsConstants } from "../../dataservices/shared/vdbs-constants";
-import { Identifiable } from "../../shared/identifiable";
-import { SortDirection } from "../../shared/sort-direction.enum";
+import { ConnectionStatus } from "@connections/shared/connection-status";
+import { VdbsConstants } from "@dataservices/shared/vdbs-constants";
+import { Identifiable } from "@shared/identifiable";
+import { SortDirection } from "@shared/sort-direction.enum";
 
 export class Connection implements Identifiable< string > {
 

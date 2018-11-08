@@ -17,26 +17,23 @@
 
 import { Injectable } from "@angular/core";
 import { Http, RequestOptions } from "@angular/http";
-import { ConnectionStatus } from "../../connections/shared/connection-status";
-import { ConnectionType } from "../../connections/shared/connection-type.model";
-import { ConnectionsConstants } from "../../connections/shared/connections-constants";
-import { NewConnection } from "../../connections/shared/new-connection.model";
-import { SchemaNode } from "../../connections/shared/schema-node.model";
-import { ServiceCatalogSource } from "../../connections/shared/service-catalog-source.model";
-import { ApiService } from "../../core/api.service";
-import { AppSettingsService } from "../../core/app-settings.service";
-import { LoggerService } from "../../core/logger.service";
-import { ConnectionSummary } from "../../dataservices/shared/connection-summary.model";
-import { NotifierService } from "../../dataservices/shared/notifier.service";
-import { VdbService } from "../../dataservices/shared/vdb.service";
-import { environment } from "../../../environments/environment";
+import { ConnectionStatus } from "@connections/shared/connection-status";
+import { ConnectionType } from "@connections/shared/connection-type.model";
+import { ConnectionsConstants } from "@connections/shared/connections-constants";
+import { NewConnection } from "@connections/shared/new-connection.model";
+import { SchemaNode } from "@connections/shared/schema-node.model";
+import { ServiceCatalogSource } from "@connections/shared/service-catalog-source.model";
+import { ApiService } from "@core/api.service";
+import { AppSettingsService } from "@core/app-settings.service";
+import { LoggerService } from "@core/logger.service";
+import { ConnectionSummary } from "@dataservices/shared/connection-summary.model";
+import { NotifierService } from "@dataservices/shared/notifier.service";
+import { VdbService } from "@dataservices/shared/vdb.service";
+import { environment } from "@environments/environment";
 import { Observable } from "rxjs/Observable";
 import { Subscription } from "rxjs/Subscription";
-import { VdbsConstants } from "../../dataservices/shared/vdbs-constants";
-import { Column } from "../../dataservices/shared/column.model";
-import "rxjs/add/operator/map";
-import { timer } from "rxjs/observable/timer";
-import "rxjs/add/observable/of";
+import { VdbsConstants } from "@dataservices/shared/vdbs-constants";
+import { Column } from "@dataservices/shared/column.model";
 
 @Injectable()
 export class ConnectionService extends ApiService {
@@ -71,7 +68,7 @@ export class ConnectionService extends ApiService {
    * @param {string} name the connection name
    * @returns {Observable<String>}
    */
-  public isValidName( name: string ): Observable< any > {
+  public isValidName( name: string ): Observable< string > {
     if ( !name || name.length === 0 ) {
       return Observable.of( "Connection name cannot be empty" );
     }
@@ -79,7 +76,7 @@ export class ConnectionService extends ApiService {
     const url = ConnectionService.nameValidationUrl + encodeURIComponent( name );
 
     return this.http.get( url, this.getAuthRequestOptions() )
-      .map(( response ) => {
+      .map( ( response ) => {
         if ( response.ok ) {
           if ( response.text() ) {
             return response.text();
@@ -122,7 +119,7 @@ export class ConnectionService extends ApiService {
    */
   public refreshConnectionSchema(connectionName: string,
                                  redeployServerVdb = false,
-                                 generateSchema = true): Observable<any> {
+                                 generateSchema = true): Observable<boolean> {
     if ( !connectionName || connectionName.length === 0 ) {
       return Observable.of( false );
     }
@@ -151,7 +148,7 @@ export class ConnectionService extends ApiService {
    * @param {string} serviceCatalogSourceName
    * @returns {Observable<boolean>}
    */
-  public bindServiceCatalogSource(serviceCatalogSourceName: string): Observable<any> {
+  public bindServiceCatalogSource(serviceCatalogSourceName: string): Observable<boolean> {
     return this.http
       .post(environment.komodoTeiidUrl + ConnectionsConstants.serviceCatalogSourcesRootPath,
         { name: serviceCatalogSourceName}, this.getAuthRequestOptions())
@@ -166,7 +163,7 @@ export class ConnectionService extends ApiService {
    * @param {string} connectionId
    * @returns {Observable<boolean>}
    */
-  public deleteConnection(connectionId: string): Observable<any> {
+  public deleteConnection(connectionId: string): Observable<boolean> {
     return this.http
       .delete(environment.komodoWorkspaceUrl + ConnectionsConstants.connectionsRootPath + "/" + connectionId,
                this.getAuthRequestOptions())
@@ -269,7 +266,7 @@ export class ConnectionService extends ApiService {
    * @param {NewConnection} connection the connection object
    * @returns {Observable<boolean>}
    */
-  public createAndBindConnection(connection: NewConnection): Observable<any> {
+  public createAndBindConnection(connection: NewConnection): Observable<boolean> {
     return this.http
       .post(environment.komodoWorkspaceUrl + ConnectionsConstants.connectionsRootPath  + "/" + connection.getName(),
         connection, this.getAuthRequestOptions())
@@ -284,7 +281,7 @@ export class ConnectionService extends ApiService {
    * @param {NewConnection} connection the connection object
    * @returns {Observable<boolean>}
    */
-  public updateAndBindConnection(connection: NewConnection): Observable<any> {
+  public updateAndBindConnection(connection: NewConnection): Observable<boolean> {
     return this.http
       .put(environment.komodoWorkspaceUrl + ConnectionsConstants.connectionsRootPath  + "/" + connection.getName(),
         connection, this.getAuthRequestOptions())
@@ -336,7 +333,7 @@ export class ConnectionService extends ApiService {
    * @param {string} vdbName
    * @returns {Observable<boolean>}
    */
-  public refreshPreviewVdb(vdbName: string): Observable<any> {
+  public refreshPreviewVdb(vdbName: string): Observable<boolean> {
     const url = environment.komodoTeiidUrl + "/refreshPreviewVdb/" + vdbName;
     return this.http
       .post(url, this.getAuthRequestOptions())
@@ -373,8 +370,8 @@ export class ConnectionService extends ApiService {
 
     const self = this;
     // start the timer
-    const stopWatch = timer(500, pollIntervalMillis);
-    this.updatesSubscription = stopWatch.subscribe((t: any) => {
+    const timer = Observable.timer(500, pollIntervalMillis);
+    this.updatesSubscription = timer.subscribe((t: any) => {
       self.updateConnectionSchemaStates();
     });
   }

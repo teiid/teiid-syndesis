@@ -17,10 +17,11 @@
 
 import { Component, EventEmitter, Input, OnInit, Output, TemplateRef, ViewEncapsulation } from "@angular/core";
 import { Router } from "@angular/router";
-import { Connection } from "../../connections/shared/connection.model";
+import { Connection } from "@connections/shared/connection.model";
 import { Action, ActionConfig, ListConfig } from "patternfly-ng";
 
 @Component({
+  moduleId: module.id,
   encapsulation: ViewEncapsulation.None,
   selector: "app-connections-list",
   templateUrl: "connections-list.component.html",
