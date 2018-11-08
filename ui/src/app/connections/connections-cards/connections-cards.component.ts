@@ -16,11 +16,12 @@
  */
 
 import { Component, EventEmitter, Input, Output } from "@angular/core";
-import { ConnectionCardComponent } from "../../connections/connections-cards/connection-card/connection-card.component";
-import { Connection } from "../../connections/shared/connection.model";
-import { LoggerService } from "../../core/logger.service";
+import { ConnectionCardComponent } from "@connections/connections-cards/connection-card/connection-card.component";
+import { Connection } from "@connections/shared/connection.model";
+import { LoggerService } from "@core/logger.service";
 
 @Component({
+  moduleId: module.id,
   selector: "app-connections-cards",
   templateUrl: "connections-cards.component.html",
   styleUrls: ["connections-cards.component.css"]

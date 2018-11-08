@@ -1,23 +1,22 @@
-import { ModuleWithProviders } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { FormsModule } from "@angular/forms";
 import { HttpModule } from "@angular/http";
 import { By } from "@angular/platform-browser";
 import { RouterTestingModule } from "@angular/router/testing";
-import { ConnectionCardComponent } from "../connections/connections-cards/connection-card/connection-card.component";
-import { ConnectionsCardsComponent } from "../connections/connections-cards/connections-cards.component";
-import { ConnectionDetailsComponent } from "../connections/connections-list/connection-details.component";
-import { ConnectionsListComponent } from "../connections/connections-list/connections-list.component";
-import { ConnectionsComponent } from "../connections/connections.component";
-import { ConnectionService } from "../connections/shared/connection.service";
-import { MockConnectionService } from "../connections/shared/mock-connection.service";
-import { AppSettingsService } from "../core/app-settings.service";
-import { CoreModule } from "../core/core.module";
-import { MockAppSettingsService } from "../core/mock-app-settings.service";
-import { MockVdbService } from "../dataservices/shared/mock-vdb.service";
-import { NotifierService } from "../dataservices/shared/notifier.service";
-import { VdbService } from "../dataservices/shared/vdb.service";
-import { SharedModule } from "../shared/shared.module";
+import { ConnectionCardComponent } from "@connections/connections-cards/connection-card/connection-card.component";
+import { ConnectionsCardsComponent } from "@connections/connections-cards/connections-cards.component";
+import { ConnectionDetailsComponent } from "@connections/connections-list/connection-details.component";
+import { ConnectionsListComponent } from "@connections/connections-list/connections-list.component";
+import { ConnectionsComponent } from "@connections/connections.component";
+import { ConnectionService } from "@connections/shared/connection.service";
+import { MockConnectionService } from "@connections/shared/mock-connection.service";
+import { AppSettingsService } from "@core/app-settings.service";
+import { CoreModule } from "@core/core.module";
+import { MockAppSettingsService } from "@core/mock-app-settings.service";
+import { MockVdbService } from "@dataservices/shared/mock-vdb.service";
+import { NotifierService } from "@dataservices/shared/notifier.service";
+import { VdbService } from "@dataservices/shared/vdb.service";
+import { SharedModule } from "@shared/shared.module";
 import { ModalModule } from "ngx-bootstrap";
 import {
   ActionModule,
@@ -31,8 +30,6 @@ import {
 } from "patternfly-ng";
 import { SelectionService } from "@core/selection.service";
 
-export const moduleRoot: ModuleWithProviders<any> = ModalModule.forRoot();
-
 describe("ConnectionsComponent", () => {
   let component: ConnectionsComponent;
   let fixture: ComponentFixture<ConnectionsComponent>;
@@ -43,7 +40,7 @@ describe("ConnectionsComponent", () => {
         CoreModule,
         FormsModule,
         HttpModule,
-        moduleRoot,
+        ModalModule.forRoot(),
         RouterTestingModule,
         SharedModule,
         ActionModule,

@@ -17,18 +17,18 @@
 
 import { Input, ViewChild, ViewEncapsulation } from "@angular/core";
 import { Component, OnChanges, SimpleChanges } from "@angular/core";
-import { LoggerService } from "../../core/logger.service";
+import { LoggerService } from "@core/logger.service";
 import * as _ from "lodash";
 import "codemirror/mode/javascript/javascript.js";
 import "codemirror/mode/xml/xml.js";
-import { DataserviceService } from "../shared/dataservice.service";
-import { Dataservice } from "../shared/dataservice.model";
-import { OdataConstants } from "../odata-control/odata-constants";
-import { Odata } from "../odata-control/odata.model";
-import { OdataEntity } from "../odata-control/odata-entity.model";
-import { OdataColumn } from "../odata-control/odata-column.model";
-import { OdataWhere } from "../odata-control/odata-where.model";
-import { SelectionService } from "../../core/selection.service";
+import { DataserviceService } from "@dataservices/shared/dataservice.service";
+import { Dataservice } from "@dataservices/shared/dataservice.model";
+import { OdataConstants } from "@dataservices/odata-control/odata-constants";
+import { Odata } from "@dataservices/odata-control/odata.model";
+import { OdataEntity } from "@dataservices/odata-control/odata-entity.model";
+import { OdataColumn } from "@dataservices/odata-control/odata-column.model";
+import { OdataWhere } from "@dataservices/odata-control/odata-where.model";
+import { SelectionService } from "@core/selection.service";
 
 @Component({
   encapsulation: ViewEncapsulation.None,

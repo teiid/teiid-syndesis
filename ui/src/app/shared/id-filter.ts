@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Identifiable } from "../shared/identifiable";
+import { Identifiable } from "@shared/identifiable";
 
 const emptyPattern = "";
 

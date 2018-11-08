@@ -16,19 +16,19 @@
  */
 
 import { Injectable } from "@angular/core";
-import { ConnectionStatus } from "../connections/shared/connection-status";
-import { Connection } from "../connections/shared/connection.model";
-import { SchemaNode } from "../connections/shared/schema-node.model";
-import { ServiceCatalogSource } from "../connections/shared/service-catalog-source.model";
-import { ConnectionSummary } from "../dataservices/shared/connection-summary.model";
-import { Dataservice } from "../dataservices/shared/dataservice.model";
-import { PublishState } from "../dataservices/shared/publish-state.enum";
-import { QueryResults } from "../dataservices/shared/query-results.model";
-import { VdbStatus } from "../dataservices/shared/vdb-status.model";
-import { Vdb } from "../dataservices/shared/vdb.model";
-import { Virtualization } from "../dataservices/shared/virtualization.model";
-import { Column } from "../dataservices/shared/column.model";
-import { ViewEditorState } from "../dataservices/shared/view-editor-state.model";
+import { ConnectionStatus } from "@connections/shared/connection-status";
+import { Connection } from "@connections/shared/connection.model";
+import { SchemaNode } from "@connections/shared/schema-node.model";
+import { ServiceCatalogSource } from "@connections/shared/service-catalog-source.model";
+import { ConnectionSummary } from "@dataservices/shared/connection-summary.model";
+import { Dataservice } from "@dataservices/shared/dataservice.model";
+import { PublishState } from "@dataservices/shared/publish-state.enum";
+import { QueryResults } from "@dataservices/shared/query-results.model";
+import { VdbStatus } from "@dataservices/shared/vdb-status.model";
+import { Vdb } from "@dataservices/shared/vdb.model";
+import { Virtualization } from "@dataservices/shared/virtualization.model";
+import { Column } from "@dataservices/shared/column.model";
+import { ViewEditorState } from "@dataservices/shared/view-editor-state.model";
 
 @Injectable()
 export class TestDataService {

@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-import { ViewDefinition } from "../shared/view-definition.model";
-import { CommandFactory } from "../virtualization/view-editor/command/command-factory";
-import { Undoable } from "../virtualization/view-editor/command/undo-redo/undoable";
+import { ViewDefinition } from "@dataservices/shared/view-definition.model";
+import { CommandFactory } from "@dataservices/virtualization/view-editor/command/command-factory";
+import { Undoable } from "@dataservices/virtualization/view-editor/command/undo-redo/undoable";
 
 /**
  * ViewEditorState model

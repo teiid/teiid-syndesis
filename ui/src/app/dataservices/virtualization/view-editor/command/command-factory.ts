@@ -15,18 +15,18 @@
  * limitations under the License.
  */
 
-import { Command } from "../../../virtualization/view-editor/command/command";
-import { AddCompositionCommand } from "../../../virtualization/view-editor/command/add-composition-command";
-import { AddSourcesCommand } from "../../../virtualization/view-editor/command/add-sources-command";
-import { UpdateViewDescriptionCommand } from "../../../virtualization/view-editor/command/update-view-description-command";
-import { UpdateViewNameCommand } from "../../../virtualization/view-editor/command/update-view-name-command";
-import { RemoveSourcesCommand } from "../../../virtualization/view-editor/command/remove-sources-command";
-import { SchemaNode } from "../../../../connections/shared/schema-node.model";
-import { NoOpCommand } from "../../../virtualization/view-editor/command/no-op-command";
-import { Undoable } from "../../../virtualization/view-editor/command/undo-redo/undoable";
-import { Composition } from "../../../shared/composition.model";
-import { RemoveCompositionCommand } from "../../../virtualization/view-editor/command/remove-composition-command";
-import { UpdateProjectedColumnsCommand } from "../../../virtualization/view-editor/command/update-projected-columns-command";
+import { Command } from "@dataservices/virtualization/view-editor/command/command";
+import { AddCompositionCommand } from "@dataservices/virtualization/view-editor/command/add-composition-command";
+import { AddSourcesCommand } from "@dataservices/virtualization/view-editor/command/add-sources-command";
+import { UpdateViewDescriptionCommand } from "@dataservices/virtualization/view-editor/command/update-view-description-command";
+import { UpdateViewNameCommand } from "@dataservices/virtualization/view-editor/command/update-view-name-command";
+import { RemoveSourcesCommand } from "@dataservices/virtualization/view-editor/command/remove-sources-command";
+import { SchemaNode } from "@connections/shared/schema-node.model";
+import { NoOpCommand } from "@dataservices/virtualization/view-editor/command/no-op-command";
+import { Undoable } from "@dataservices/virtualization/view-editor/command/undo-redo/undoable";
+import { Composition } from "@dataservices/shared/composition.model";
+import { RemoveCompositionCommand } from "@dataservices/virtualization/view-editor/command/remove-composition-command";
+import { UpdateProjectedColumnsCommand } from "@dataservices/virtualization/view-editor/command/update-projected-columns-command";
 
 export class CommandFactory {
 

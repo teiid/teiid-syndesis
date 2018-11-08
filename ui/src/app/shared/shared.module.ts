@@ -14,14 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ModuleWithProviders } from "@angular/core";
 
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
 import { ReactiveFormsModule } from "@angular/forms";
 
-import { PageErrorComponent } from "../shared/page-error/page-error.component";
-import { TestDataService } from "../shared/test-data.service";
+import { PageErrorComponent } from "@shared/page-error/page-error.component";
+import { TestDataService } from "@shared/test-data.service";
 import { ModalModule } from "ngx-bootstrap";
 import { ConfirmDialogComponent } from "./confirm-dialog/confirm-dialog.component";
 import { PageNotFoundComponent } from "./page-not-found/page-not-found.component";
@@ -30,12 +29,10 @@ import { PropertyFormComponent } from "./property-form/property-form.component";
 import { SlideInComponent } from "./slide-in/slide-in.component";
 import { ProgressDialogComponent } from './progress-dialog/progress-dialog.component';
 
-export const moduleRoot: ModuleWithProviders<any> = ModalModule.forRoot();
-
 @NgModule({
   imports: [
     CommonModule,
-    moduleRoot,
+    ModalModule.forRoot(),
     ReactiveFormsModule
   ],
   declarations: [

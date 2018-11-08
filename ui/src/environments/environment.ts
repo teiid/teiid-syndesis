@@ -34,7 +34,7 @@ export const openshiftKomodoPrefix = "/";
 //   - openshiftKomodoPrefix (openshift deployment)
 //   - localKomodoPrefix (development on local teiid-komodo)
 // -----------------------------------------------------------
-export const komodoUrlPrefix = localKomodoPrefix;
+export const komodoUrlPrefix = openshiftKomodoPrefix;
 
 export const environment = {
   production: false,
@@ -59,7 +59,7 @@ export const environment = {
   komodoServiceUrl: komodoUrlPrefix + komodoEngine + "/" + komodoRestVersion + "/service",
 
   // Indicates if in UI development mode where OpenShift will not be used.
-  uiDevMode: true,
+  uiDevMode: false,
 
   userProfileUrl: komodoUrlPrefix + komodoEngine + "/" + komodoRestVersion + "/service/userProfile",
 

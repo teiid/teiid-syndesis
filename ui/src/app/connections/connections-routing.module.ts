@@ -15,21 +15,21 @@
  * limitations under the License.
  */
 
-import { ModuleWithProviders, NgModule } from "@angular/core";
+import { NgModule } from "@angular/core";
 import { RouterModule } from "@angular/router";
 import { Routes } from "@angular/router";
-import { AddConnectionComponent } from "../connections/add-connection/add-connection.component";
-import { ConnectionsComponent } from "../connections/connections.component";
-import { ConnectionsConstants } from "../connections/shared/connections-constants";
+import { AddConnectionComponent } from "@connections/add-connection/add-connection.component";
+import { ConnectionsComponent } from "@connections/connections.component";
+import { ConnectionsConstants } from "@connections/shared/connections-constants";
 
-export const connectionsRoutes: ModuleWithProviders<RouterModule> = RouterModule.forChild([
+const connectionsRoutes: Routes = [
   { path: ConnectionsConstants.connectionsRootRoute, component: ConnectionsComponent },
   { path: ConnectionsConstants.addConnectionRoute, component: AddConnectionComponent }
-]);
+];
 
 @NgModule({
   imports: [
-    connectionsRoutes
+    RouterModule.forChild( connectionsRoutes )
   ],
   exports: [
     RouterModule

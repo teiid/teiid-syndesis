@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Message } from "../../virtualization/view-editor/editor-views/message-log/message";
-import { Problem } from "../../virtualization/view-editor/editor-views/message-log/problem";
-import { ViewDefinition } from "../../shared/view-definition.model";
-import { Composition } from "../../shared/composition.model";
+import { Message } from "@dataservices/virtualization/view-editor/editor-views/message-log/message";
+import { Problem } from "@dataservices/virtualization/view-editor/editor-views/message-log/problem";
+import { ViewDefinition } from "@dataservices/shared/view-definition.model";
+import { Composition } from "@dataservices/shared/composition.model";
 
 export class ViewValidator {
 

@@ -16,36 +16,36 @@
  */
 
 import { EventEmitter, Injectable, Output } from "@angular/core";
-import { LoggerService } from "../../../core/logger.service";
-import { Dataservice } from "../../shared/dataservice.model";
-import { QueryResults } from "../../shared/query-results.model";
-import { VdbService } from "../../shared/vdb.service";
-import { ViewValidator } from "../../virtualization/view-editor/view-validator";
-import { ViewEditorPart } from "../../virtualization/view-editor/view-editor-part.enum";
-import { Message } from "../../virtualization/view-editor/editor-views/message-log/message";
-import { ViewEditorEvent } from "../../virtualization/view-editor/event/view-editor-event";
-import { ViewEditorEventType } from "../../virtualization/view-editor/event/view-editor-event-type.enum";
-import { ViewEditorProgressChangeId } from "../../virtualization/view-editor/event/view-editor-save-progress-change-id.enum";
-import { VdbsConstants } from "../../shared/vdbs-constants";
-import { Command } from "../../virtualization/view-editor/command/command";
-import { UpdateViewDescriptionCommand } from "../../virtualization/view-editor/command/update-view-description-command";
-import { UpdateViewNameCommand } from "../../virtualization/view-editor/command/update-view-name-command";
-import { AddSourcesCommand } from "../../virtualization/view-editor/command/add-sources-command";
-import { RemoveSourcesCommand } from "../../virtualization/view-editor/command/remove-sources-command";
-import { UndoManager } from "../../virtualization/view-editor/command/undo-redo/undo-manager";
-import { CommandFactory } from "../../virtualization/view-editor/command/command-factory";
-import { Undoable } from "../../virtualization/view-editor/command/undo-redo/undoable";
-import { ViewEditorI18n } from "../../virtualization/view-editor/view-editor-i18n";
-import { AddCompositionCommand } from "../../virtualization/view-editor/command/add-composition-command";
-import { RemoveCompositionCommand } from "../../virtualization/view-editor/command/remove-composition-command";
-import { ViewDefinition } from "../../shared/view-definition.model";
-import { ViewEditorState } from "../../shared/view-editor-state.model";
-import { DataserviceService } from "../../shared/dataservice.service";
-import { SelectionService } from "../../../core/selection.service";
-import { CommandType } from "../../virtualization/view-editor/command/command-type.enum";
-import { NoOpCommand } from "../../virtualization/view-editor/command/no-op-command";
-import { UpdateProjectedColumnsCommand } from "../../virtualization/view-editor/command/update-projected-columns-command";
-import { ProjectedColumn } from "../../shared/projected-column.model";
+import { LoggerService } from "@core/logger.service";
+import { Dataservice } from "@dataservices/shared/dataservice.model";
+import { QueryResults } from "@dataservices/shared/query-results.model";
+import { VdbService } from "@dataservices/shared/vdb.service";
+import { ViewValidator } from "@dataservices/virtualization/view-editor/view-validator";
+import { ViewEditorPart } from "@dataservices/virtualization/view-editor/view-editor-part.enum";
+import { Message } from "@dataservices/virtualization/view-editor/editor-views/message-log/message";
+import { ViewEditorEvent } from "@dataservices/virtualization/view-editor/event/view-editor-event";
+import { ViewEditorEventType } from "@dataservices/virtualization/view-editor/event/view-editor-event-type.enum";
+import { ViewEditorProgressChangeId } from "@dataservices/virtualization/view-editor/event/view-editor-save-progress-change-id.enum";
+import { VdbsConstants } from "@dataservices/shared/vdbs-constants";
+import { Command } from "@dataservices/virtualization/view-editor/command/command";
+import { UpdateViewDescriptionCommand } from "@dataservices/virtualization/view-editor/command/update-view-description-command";
+import { UpdateViewNameCommand } from "@dataservices/virtualization/view-editor/command/update-view-name-command";
+import { AddSourcesCommand } from "@dataservices/virtualization/view-editor/command/add-sources-command";
+import { RemoveSourcesCommand } from "@dataservices/virtualization/view-editor/command/remove-sources-command";
+import { UndoManager } from "@dataservices/virtualization/view-editor/command/undo-redo/undo-manager";
+import { CommandFactory } from "@dataservices/virtualization/view-editor/command/command-factory";
+import { Undoable } from "@dataservices/virtualization/view-editor/command/undo-redo/undoable";
+import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
+import { AddCompositionCommand } from "@dataservices/virtualization/view-editor/command/add-composition-command";
+import { RemoveCompositionCommand } from "@dataservices/virtualization/view-editor/command/remove-composition-command";
+import { ViewDefinition } from "@dataservices/shared/view-definition.model";
+import { ViewEditorState } from "@dataservices/shared/view-editor-state.model";
+import { DataserviceService } from "@dataservices/shared/dataservice.service";
+import { SelectionService } from "@core/selection.service";
+import { CommandType } from "@dataservices/virtualization/view-editor/command/command-type.enum";
+import { NoOpCommand } from "@dataservices/virtualization/view-editor/command/no-op-command";
+import { UpdateProjectedColumnsCommand } from "@dataservices/virtualization/view-editor/command/update-projected-columns-command";
+import { ProjectedColumn } from "@dataservices/shared/projected-column.model";
 
 @Injectable()
 export class ViewEditorService {

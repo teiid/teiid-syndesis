@@ -1,4 +1,4 @@
-  /**
+/**
  * @license
  * Copyright 2017 JBoss Inc
  *
@@ -17,22 +17,22 @@
 
 import { Injectable, ReflectiveInjector } from "@angular/core";
 import { Http, Response } from "@angular/http";
-import { AppSettingsService } from "../../core/app-settings.service";
-import { LoggerService } from "../../core/logger.service";
-import { Dataservice } from "../shared/dataservice.model";
-import { DataserviceService } from "../shared/dataservice.service";
-import { NewDataservice } from "../shared/new-dataservice.model";
-import { NotifierService } from "../shared/notifier.service";
-import { QueryResults } from "../shared/query-results.model";
-import { VdbService } from "../shared/vdb.service";
-import { TestDataService } from "../../shared/test-data.service";
+import { AppSettingsService } from "@core/app-settings.service";
+import { LoggerService } from "@core/logger.service";
+import { Dataservice } from "@dataservices/shared/dataservice.model";
+import { DataserviceService } from "@dataservices/shared/dataservice.service";
+import { NewDataservice } from "@dataservices/shared/new-dataservice.model";
+import { NotifierService } from "@dataservices/shared/notifier.service";
+import { QueryResults } from "@dataservices/shared/query-results.model";
+import { VdbService } from "@dataservices/shared/vdb.service";
+import { TestDataService } from "@shared/test-data.service";
 import "rxjs/add/observable/of";
 import "rxjs/add/observable/throw";
 import "rxjs/add/operator/catch";
 import "rxjs/add/operator/map";
 import { Observable } from "rxjs/Observable";
 import { ErrorObservable } from "rxjs/observable/ErrorObservable";
-import { ViewEditorState } from "../shared/view-editor-state.model";
+import { ViewEditorState } from "@dataservices/shared/view-editor-state.model";
 
 @Injectable()
 export class MockDataserviceService extends DataserviceService {
@@ -113,8 +113,8 @@ export class MockDataserviceService extends DataserviceService {
     return Observable.of(this.queryResults);
   }
 
-  protected handleError(error: Response): ErrorObservable<string> {
-    return Observable.throw(error.toString, null);
+  protected handleError(error: Response): ErrorObservable {
+    return Observable.throw(error);
   }
 
   public createReadonlyDataRole( dataserviceName: string,

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ConnectionsConstants } from "../../connections/shared/connections-constants";
+import { ConnectionsConstants } from "@connections/shared/connections-constants";
 
 export class ConnectionType {
   private name: string;

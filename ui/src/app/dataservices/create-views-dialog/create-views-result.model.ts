@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { NewView } from "./new-view.model";
+import { NewView } from "@dataservices/create-views-dialog/new-view.model";
 
 /**
  * CreateViewsResult model - to hold the results of the CreateViewsDialog entry

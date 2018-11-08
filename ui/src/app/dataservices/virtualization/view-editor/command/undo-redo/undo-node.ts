@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Undoable } from "../../../../virtualization/view-editor/command/undo-redo/undoable";
+import { Undoable } from "@dataservices/virtualization/view-editor/command/undo-redo/undoable";
 
 export class UndoNode {
 

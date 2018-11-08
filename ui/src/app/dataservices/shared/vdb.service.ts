@@ -17,24 +17,20 @@
 
 import { Injectable } from "@angular/core";
 import { Http } from "@angular/http";
-import { ApiService } from "../../core/api.service";
-import { AppSettingsService } from "../../core/app-settings.service";
-import { LoggerService } from "../../core/logger.service";
-import { NotifierService } from "../shared/notifier.service";
-import { VdbModelSource } from "../shared/vdb-model-source.model";
-import { VdbModel } from "../shared/vdb-model.model";
-import { VdbStatus } from "../shared/vdb-status.model";
-import { Vdb } from "../shared/vdb.model";
-import { VdbsConstants } from "../shared/vdbs-constants";
-import { Virtualization } from "../shared/virtualization.model";
-import { environment } from "environments/environment";
-import { Observable } from "rxjs/Observable";
+import { ApiService } from "@core/api.service";
+import { AppSettingsService } from "@core/app-settings.service";
+import { LoggerService } from "@core/logger.service";
+import { NotifierService } from "@dataservices/shared/notifier.service";
+import { VdbModelSource } from "@dataservices/shared/vdb-model-source.model";
+import { VdbModel } from "@dataservices/shared/vdb-model.model";
+import { VdbStatus } from "@dataservices/shared/vdb-status.model";
+import { Vdb } from "@dataservices/shared/vdb.model";
+import { VdbsConstants } from "@dataservices/shared/vdbs-constants";
+import { Virtualization } from "@dataservices/shared/virtualization.model";
+import { environment } from "@environments/environment";
+import { Observable } from "rxjs/Rx";
 import { Subscription } from "rxjs/Subscription";
-import { QueryResults } from "../shared/query-results.model";
-import "rxjs/add/operator/map";
-import "rxjs/add/operator/switchMap";
-import { timer } from "rxjs/observable/timer";
-import "rxjs/add/observable/of";
+import { QueryResults } from "@dataservices/shared/query-results.model";
 
 @Injectable()
 /**
@@ -149,7 +145,7 @@ export class VdbService extends ApiService {
    * @param {string} viewName the view name
    * @returns {Observable<String>}
    */
-  public isValidViewName( vdbName: string, modelName: string, viewName: string ): Observable< any > {
+  public isValidViewName( vdbName: string, modelName: string, viewName: string ): Observable< string > {
     // Check that valid names were supplied
     if ( !vdbName || vdbName.length === 0 ) {
       return Observable.of( "VDB name cannot be empty" );
@@ -209,7 +205,7 @@ export class VdbService extends ApiService {
    * @param {Vdb} vdb
    * @returns {Observable<boolean>}
    */
-  public createVdb(vdb: Vdb): Observable<any> {
+  public createVdb(vdb: Vdb): Observable<boolean> {
     return this.http
       .post(environment.komodoWorkspaceUrl + VdbsConstants.vdbsRootPath + "/" + vdb.getId(),
         vdb, this.getAuthRequestOptions())
@@ -225,7 +221,7 @@ export class VdbService extends ApiService {
    * @param {VdbModel} vdbModel
    * @returns {Observable<boolean>}
    */
-  public createVdbModel(vdbName: string, vdbModel: VdbModel): Observable<any> {
+  public createVdbModel(vdbName: string, vdbModel: VdbModel): Observable<boolean> {
     const str = JSON.stringify(vdbModel);
     return this.http
       .post(environment.komodoWorkspaceUrl + VdbsConstants.vdbsRootPath + "/" + vdbName
@@ -244,7 +240,7 @@ export class VdbService extends ApiService {
    * @param {VdbModelSource} vdbModelSource the modelsource name
    * @returns {Observable<boolean>}
    */
-  public createVdbModelSource(vdbName: string, modelName: string, vdbModelSource: VdbModelSource): Observable<any> {
+  public createVdbModelSource(vdbName: string, modelName: string, vdbModelSource: VdbModelSource): Observable<boolean> {
     return this.http
       .post(environment.komodoWorkspaceUrl + VdbsConstants.vdbsRootPath + "/" + vdbName
         + VdbsConstants.vdbModelsRootPath + "/" + modelName
@@ -263,7 +259,7 @@ export class VdbService extends ApiService {
    * @param {string} viewName
    * @returns {Observable<boolean>}
    */
-  public createVdbModelView(vdbName: string, modelName: string, viewName: string): Observable<any> {
+  public createVdbModelView(vdbName: string, modelName: string, viewName: string): Observable<boolean> {
     // The payload for the rest call
     const userWorkspacePath = this.getKomodoUserWorkspacePath();
     const payload = {
@@ -289,7 +285,7 @@ export class VdbService extends ApiService {
    * @param {string} vdbId
    * @returns {Observable<boolean>}
    */
-  public deleteVdb(vdbId: string): Observable<any> {
+  public deleteVdb(vdbId: string): Observable<boolean> {
     return this.http
       .delete(environment.komodoWorkspaceUrl + VdbsConstants.vdbsRootPath + "/" + vdbId,
                this.getAuthRequestOptions())
@@ -304,7 +300,7 @@ export class VdbService extends ApiService {
    * @param {string} vdbName
    * @returns {Observable<boolean>}
    */
-  public deployVdb(vdbName: string): Observable<any> {
+  public deployVdb(vdbName: string): Observable<boolean> {
     const vdbPath = this.getKomodoUserWorkspacePath() + "/" + vdbName;
     return this.http
       .post(environment.komodoTeiidUrl + VdbsConstants.vdbRootPath,
@@ -325,7 +321,7 @@ export class VdbService extends ApiService {
    * @param {string} vdbId
    * @returns {Observable<boolean>}
    */
-  public undeployVdb(vdbId: string): Observable<any> {
+  public undeployVdb(vdbId: string): Observable<boolean> {
     return this.http
       .delete(environment.komodoTeiidUrl + VdbsConstants.vdbsRootPath + "/" + vdbId,
         this.getAuthRequestOptions())
@@ -351,7 +347,8 @@ export class VdbService extends ApiService {
     let pollCount = 0;
     const self = this;
     // start a timer after one second
-    this.deploymentSubscription = timer(1000, pollIntervalMillis).subscribe((t: any) => {
+    const timer = Observable.timer(1000, pollIntervalMillis);
+    this.deploymentSubscription = timer.subscribe((t: any) => {
       this.getTeiidVdbStatuses()
         .subscribe(
           (resp) => {
@@ -425,7 +422,7 @@ export class VdbService extends ApiService {
    * @param {string} viewName the view name
    * @returns {Observable<boolean>} 'true' if successful
    */
-  public deleteView(vdbName: string, modelName: string, viewName: string): Observable<any> {
+  public deleteView(vdbName: string, modelName: string, viewName: string): Observable<boolean> {
     return this.http
       .delete(environment.komodoWorkspaceUrl + VdbsConstants.vdbsRootPath + "/" + vdbName
                                                  + "/Models/" + modelName + "/Views/" + viewName,

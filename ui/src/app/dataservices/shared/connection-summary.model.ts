@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-import { ConnectionStatus } from "../../connections/shared/connection-status";
-import { Connection } from "../../connections/shared/connection.model";
+import { ConnectionStatus } from "@connections/shared/connection-status";
+import { Connection } from "@connections/shared/connection.model";
 
 /**
  * ConnectionSummary model.

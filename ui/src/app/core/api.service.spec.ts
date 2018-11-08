@@ -1,9 +1,9 @@
 import { inject, TestBed } from "@angular/core/testing";
 import { HttpModule } from "@angular/http";
-import { ApiService } from "./api.service";
-import { AppSettingsService } from "./app-settings.service";
-import { LoggerService } from "./logger.service";
-import { MockAppSettingsService } from "./mock-app-settings.service";
+import { ApiService } from "@core/api.service";
+import { AppSettingsService } from "@core/app-settings.service";
+import { LoggerService } from "@core/logger.service";
+import { MockAppSettingsService } from "@core/mock-app-settings.service";
 
 describe("ApiService", () => {
   beforeEach(() => {

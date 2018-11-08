@@ -1,8 +1,8 @@
-import { UndoManager } from "../../../../virtualization/view-editor/command/undo-redo/undo-manager";
-import { ViewEditorI18n } from "../../../../virtualization/view-editor/view-editor-i18n";
-import { CommandFactory } from "../../../../virtualization/view-editor/command/command-factory";
-import { Command } from "../../../../virtualization/view-editor/command/command";
-import { Undoable } from "../../../../virtualization/view-editor/command/undo-redo/undoable";
+import { UndoManager } from "@dataservices/virtualization/view-editor/command/undo-redo/undo-manager";
+import { ViewEditorI18n } from "@dataservices/virtualization/view-editor/view-editor-i18n";
+import { CommandFactory } from "@dataservices/virtualization/view-editor/command/command-factory";
+import { Command } from "@dataservices/virtualization/view-editor/command/command";
+import { Undoable } from "@dataservices/virtualization/view-editor/command/undo-redo/undoable";
 
 describe( "UndoManager Tests", () => {
 
