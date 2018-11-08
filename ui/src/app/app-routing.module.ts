@@ -25,8 +25,8 @@ import { PageNotFoundComponent } from "./shared/page-not-found/page-not-found.co
 
 const appRoutes: Routes = [
   { path: "", redirectTo: environment.homePagePath, pathMatch: "full" },
-  { path: ConnectionsConstants.connectionsRootRoute, loadChildren: "@connections/connections.module#ConnectionsModule" },
-  { path: DataservicesConstants.dataservicesRootRoute, loadChildren: "@dataservices/dataservices.module#DataservicesModule" },
+  { path: ConnectionsConstants.connectionsRootRoute, loadChildren: "./connections/connections.module#ConnectionsModule" },
+  { path: DataservicesConstants.dataservicesRootRoute, loadChildren: "./dataservices/dataservices.module#DataservicesModule" },
   { path: "**", component: PageNotFoundComponent }, // always last
 ];
 
