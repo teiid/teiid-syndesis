@@ -1,4 +1,4 @@
-import { Connection } from "@connections/shared/connection.model";
+import { Connection } from "../../connections/shared/connection.model";
 
 describe("Connection", () => {
   let connection: Connection;

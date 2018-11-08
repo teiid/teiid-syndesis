@@ -18,7 +18,7 @@
 import { OnInit } from "@angular/core";
 import { Response } from "@angular/http";
 import { ActivatedRoute } from "@angular/router";
-import { LoggerService } from "@core/logger.service";
+import { LoggerService } from "../core/logger.service";
 import "rxjs/add/observable/combineLatest";
 import { Observable } from "rxjs/Observable";
 

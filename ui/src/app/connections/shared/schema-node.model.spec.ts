@@ -1,4 +1,4 @@
-import { SchemaNode } from "@connections/shared/schema-node.model";
+import { SchemaNode } from "../../connections/shared/schema-node.model";
 
 describe("SchemaNode", () => {
   let schemaNode: SchemaNode;

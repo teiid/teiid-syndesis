@@ -17,8 +17,8 @@
 
 import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 import { ReactiveFormsModule } from "@angular/forms";
-import { PropertyFormPropertyComponent } from "@shared/property-form/property-form-property/property-form-property.component";
-import { PropertyFormComponent } from "@shared/property-form/property-form.component";
+import { PropertyFormPropertyComponent } from "../../shared/property-form/property-form-property/property-form-property.component";
+import { PropertyFormComponent } from "../../shared/property-form/property-form.component";
 
 describe("PropertyFormComponent", () => {
   let component: PropertyFormComponent;
