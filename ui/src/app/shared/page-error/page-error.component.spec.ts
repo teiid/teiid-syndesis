@@ -1,6 +1,6 @@
 import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 import { HttpModule, Response, ResponseOptions } from "@angular/http";
-import { PageErrorComponent } from "@shared/page-error/page-error.component";
+import { PageErrorComponent } from "../../shared/page-error/page-error.component";
 
 describe("PageErrorComponent", () => {
   let component: PageErrorComponent;

@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from "@angular/core/testing";
-import { PageNotFoundComponent } from "@shared/page-not-found/page-not-found.component";
+import { PageNotFoundComponent } from "../../shared/page-not-found/page-not-found.component";
 
 describe("PageNotFoundComponent", () => {
   let component: PageNotFoundComponent;

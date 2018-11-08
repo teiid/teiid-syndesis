@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { PropertyDefinition } from "@shared/property-form/property-definition.model";
+import { PropertyDefinition } from "../../shared/property-form/property-definition.model";
 
 /**
  * An enumeration of control types for a property.

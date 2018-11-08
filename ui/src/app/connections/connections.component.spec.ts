@@ -29,7 +29,7 @@ import {
   SortModule,
   WizardModule
 } from "patternfly-ng";
-import { SelectionService } from "@core/selection.service";
+import { SelectionService } from "../core/selection.service";
 
 export const moduleRoot: ModuleWithProviders<any> = ModalModule.forRoot();
 
