@@ -28,7 +28,7 @@ import { BreadcrumbsComponent } from "./breadcrumbs/breadcrumbs.component";
 import { LoggerService } from "./logger.service";
 import { MockAppSettingsService } from "./mock-app-settings.service";
 import { VerticalNavComponent } from "./vertical-nav/vertical-nav.component";
-import { environment } from "environments/environment";
+import { environment } from "../../environments/environment";
 import { ModalModule } from "ngx-bootstrap/modal";
 import { BsModalService } from "ngx-bootstrap/modal";
 import { ModalModule as PfngModalModule, NavigationModule as PfngNavigationModule } from "patternfly-ng";

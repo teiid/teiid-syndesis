@@ -49,7 +49,7 @@ import { MessageLogComponent } from './virtualization/view-editor/editor-views/m
 import { CanvasService } from './virtualization/view-editor/view-canvas/canvas.service';
 import { GraphVisualComponent, NodeVisualComponent, LinkVisualComponent } from './virtualization/view-editor/view-canvas/visuals';
 
-import { environment } from "environments/environment";
+import { environment } from "../../environments/environment";
 import { ConfirmDialogComponent } from "../shared/confirm-dialog/confirm-dialog.component";
 import { SharedModule } from "../shared/shared.module";
 import { TreeModule } from "angular-tree-component";
@@ -165,6 +165,7 @@ export { CanvasService } from './virtualization/view-editor/view-canvas/canvas.s
     CanvasService
   ],
   exports: [
+    ViewEditorComponent
   ],
   entryComponents: [AddCompositionWizardComponent, ConfirmDialogComponent, ConnectionTableDialogComponent,
                     CreateViewDialogComponent, CreateViewsDialogComponent, ProgressDialogComponent, SetDescriptionDialogComponent]

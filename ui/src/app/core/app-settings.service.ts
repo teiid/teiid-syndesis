@@ -18,7 +18,7 @@
 import { Injectable } from "@angular/core";
 import { Headers, Http, RequestOptions, Response } from "@angular/http";
 import { LoggerService } from "../core/logger.service";
-import { environment } from "environments/environment";
+import { environment } from "../../environments/environment";
 import { LayoutType } from "../shared/layout-type.enum";
 import { Observable } from "rxjs/Observable";
 import { ErrorObservable } from "rxjs/observable/ErrorObservable";

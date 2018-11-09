@@ -27,7 +27,7 @@ import { VdbStatus } from "../shared/vdb-status.model";
 import { Vdb } from "../shared/vdb.model";
 import { VdbsConstants } from "../shared/vdbs-constants";
 import { Virtualization } from "../shared/virtualization.model";
-import { environment } from "environments/environment";
+import { environment } from "../../../environments/environment";
 import { Observable } from "rxjs/Observable";
 import { Subscription } from "rxjs/Subscription";
 import { QueryResults } from "../shared/query-results.model";

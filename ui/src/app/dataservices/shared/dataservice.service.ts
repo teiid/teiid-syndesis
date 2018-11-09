@@ -31,7 +31,7 @@ import { VdbStatus } from "./vdb-status.model";
 import { VdbService } from "./vdb.service";
 import { VdbsConstants } from "./vdbs-constants";
 import { Virtualization } from "./virtualization.model";
-import { environment } from "environments/environment";
+import { environment } from "../../../environments/environment";
 import { saveAs } from "file-saver/FileSaver";
 import { Observable } from "rxjs/Observable";
 import { ReplaySubject } from "rxjs/ReplaySubject";
