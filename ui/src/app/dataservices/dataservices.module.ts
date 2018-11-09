@@ -87,6 +87,8 @@ export { LoggerService } from '../core/logger.service';
 export { NotifierService } from './shared/notifier.service';
 export { SelectionService } from '../core/selection.service';
 export { CanvasService } from './virtualization/view-editor/view-canvas/canvas.service';
+export { ViewEditorComponent } from "./virtualization/view-editor/view-editor.component";
+
 
 @NgModule({
   imports: [
