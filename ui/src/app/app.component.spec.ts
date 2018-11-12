@@ -1,31 +1,31 @@
-import { async, TestBed } from "@angular/core/testing";
-import { RouterTestingModule } from "@angular/router/testing";
-import { AppSettingsService } from "@core/app-settings.service";
-import { CoreModule } from "@core/core.module";
-import { MockAppSettingsService } from "@core/mock-app-settings.service";
-import { ModalModule } from "ngx-bootstrap";
-import { AppComponent } from "./app.component";
+import { TestBed, async } from '@angular/core/testing';
+import { AppComponent } from './app.component';
 
-describe("AppComponent", () => {
+describe('AppComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [ CoreModule, RouterTestingModule, ModalModule.forRoot() ],
       declarations: [
         AppComponent
       ],
-      providers: [
-        { provide: AppSettingsService, useClass: MockAppSettingsService }
-      ]
-    }).compileComponents().then(() => {
-      // nothing to do
-    });
+    }).compileComponents();
   }));
 
-  it("should create the app", async(() => {
-    console.log("========== [AppComponent] should be created");
+  it('should create the app', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.debugElement.componentInstance;
     expect(app).toBeTruthy();
-  }));
+  });
 
+  it(`should have as title 'ui'`, () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.debugElement.componentInstance;
+    expect(app.title).toEqual('ui');
+  });
+
+  it('should render title in a h1 tag', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    const compiled = fixture.debugElement.nativeElement;
+    expect(compiled.querySelector('h1').textContent).toContain('Welcome to ui!');
+  });
 });

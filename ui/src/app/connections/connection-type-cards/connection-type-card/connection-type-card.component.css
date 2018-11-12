@@ -1,5 +1,0 @@
-/* Since no body on card get rid of margin */
-.object-card-selected .card-pf .card-pf-body,
-.object-card .card-pf .card-pf-body {
-  margin: 0;
-}
