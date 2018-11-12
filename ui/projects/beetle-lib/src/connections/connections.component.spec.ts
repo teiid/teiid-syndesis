@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { BeetleLibComponent } from './beetle-lib.component';
+import { ConnectionsComponent } from './connections.component';
 
-describe('BeetleLibComponent', () => {
-  let component: BeetleLibComponent;
-  let fixture: ComponentFixture<BeetleLibComponent>;
+describe('ConnectionsComponent', () => {
+  let component: ConnectionsComponent;
+  let fixture: ComponentFixture<ConnectionsComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ BeetleLibComponent ]
+      declarations: [ ConnectionsComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(BeetleLibComponent);
+    fixture = TestBed.createComponent(ConnectionsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

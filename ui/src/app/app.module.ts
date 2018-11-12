@@ -2,7 +2,8 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
-import { BeetleLibModule } from '../../projects/beetle-lib/src/lib/beetle-lib.module';
+import { ConnectionsModule} from '../../projects/beetle-lib/src/connections/connections.module';
+import { VirtualizationsModule } from '../../projects/beetle-lib/src/virtualizations/virtualizations.module';
 
 @NgModule({
   declarations: [
@@ -10,7 +11,8 @@ import { BeetleLibModule } from '../../projects/beetle-lib/src/lib/beetle-lib.mo
   ],
   imports: [
     BrowserModule,
-    BeetleLibModule
+    ConnectionsModule,
+    VirtualizationsModule
   ],
   providers: [],
   bootstrap: [AppComponent]
