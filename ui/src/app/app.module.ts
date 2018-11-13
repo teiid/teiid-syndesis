@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
 import { ConnectionsModule} from '../../projects/beetle-lib/src/connections/connections.module';
-import { VirtualizationsModule } from '../../projects/beetle-lib/src/virtualizations/virtualizations.module';
+import { DataservicesModule } from '../../projects/beetle-lib/src/dataservices/dataservices.module';
 
 @NgModule({
   declarations: [
@@ -12,7 +12,7 @@ import { VirtualizationsModule } from '../../projects/beetle-lib/src/virtualizat
   imports: [
     BrowserModule,
     ConnectionsModule,
-    VirtualizationsModule
+    DataservicesModule
   ],
   providers: [],
   bootstrap: [AppComponent]

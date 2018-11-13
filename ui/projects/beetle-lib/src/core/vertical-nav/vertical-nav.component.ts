@@ -28,7 +28,7 @@ import { NavigationItemConfig } from "patternfly-ng";
 
 @Component({
   encapsulation: ViewEncapsulation.None,
-  selector: "app-vertical-nav",
+  selector: "btl-vertical-nav",
   templateUrl: "./vertical-nav.component.html",
   styleUrls: ["./vertical-nav.component.css"]
 })

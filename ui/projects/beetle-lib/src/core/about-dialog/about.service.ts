@@ -21,7 +21,7 @@ import { About } from "./about.model";
 import { ApiService } from "../api.service";
 import { AppSettingsService } from "../app-settings.service";
 import { LoggerService } from "../logger.service";
-import { environment } from "../../../environments/environment";
+import { environment } from "../../environments/environment";
 import { Observable } from "rxjs/Observable";
 
 @Injectable()
