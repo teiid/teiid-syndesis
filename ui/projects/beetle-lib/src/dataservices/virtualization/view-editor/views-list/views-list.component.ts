@@ -38,7 +38,7 @@ import { ChangeDetectorRef } from "@angular/core";
 
 @Component({
   encapsulation: ViewEncapsulation.None,
-  selector: 'app-views-list',
+  selector: 'btl-views-list',
   templateUrl: './views-list.component.html',
   styleUrls: ['./views-list.component.css']
 })

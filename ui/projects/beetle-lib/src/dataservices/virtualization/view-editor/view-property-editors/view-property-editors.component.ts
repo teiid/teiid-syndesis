@@ -25,7 +25,7 @@ import 'dragula/dist/dragula.css';
 
 @Component({
   encapsulation: ViewEncapsulation.None,
-  selector: 'app-view-property-editors',
+  selector: 'btl-view-property-editors',
   templateUrl: './view-property-editors.component.html',
   styleUrls: ['./view-property-editors.component.css']
 })

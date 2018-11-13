@@ -5,7 +5,7 @@ import { SelectionItem } from "../../../../virtualization/view-editor/view-prope
 import { SelectionType } from "../../../../virtualization/view-editor/view-property-editors/property-editor/selection-type.enum";
 
 @Component({
-  selector: 'app-property-editor',
+  selector: 'btl-property-editor',
   templateUrl: './property-editor.component.html',
   styleUrls: ['./property-editor.component.css']
 })

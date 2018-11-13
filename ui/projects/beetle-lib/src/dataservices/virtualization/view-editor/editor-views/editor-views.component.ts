@@ -25,7 +25,7 @@ import { ViewEditorI18n } from "../../../virtualization/view-editor/view-editor-
 
 @Component({
   encapsulation: ViewEncapsulation.None,
-  selector: 'app-editor-views',
+  selector: 'btl-editor-views',
   templateUrl: './editor-views.component.html',
   styleUrls: ['./editor-views.component.css']
 })
