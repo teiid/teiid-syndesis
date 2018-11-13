@@ -1,0 +1,8 @@
+<div class="object-card-container connections-container">
+  <div *ngFor="let connection of connections">
+    <btl-connection-card [connection]="connection"
+                         [selectedConnections]="selectedConnections"
+                         (cardEvent)="onCardEvent($event)"
+                         (selectEvent)="onSelectEvent($event)"></btl-connection-card>
+  </div>
+</div>

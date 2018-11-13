@@ -1,3 +1,88 @@
-<p>
-  This represents the connections list!
-</p>
+<div>
+
+  <div id="connections-breadcrumb-bar">
+    <btl-breadcrumbs>
+      <li i18n="@@connections.connections" btl-breadcrumb label="Connections" icon="plug" class="active"></li>
+    </btl-breadcrumbs>
+  </div>
+
+  <btl-page-error [error]="pageError" *ngIf="pageError"></btl-page-error>
+
+  <div class="container-fluid connection-list-connections" *ngIf="!pageError">
+    <div class="col-sm-12">
+      <h2 class="btl-feature-title" i18n="@@connections.connections">Connections</h2>
+    </div>
+    <div class="row toolbar-pf">
+      <div class="col-sm-12">
+        <div class="toolbar-pf-actions" >
+          <div class="form-group toolbar-pf-filter">
+            <pfng-filter [config]="filterConfig"
+                         (onChange)="filterChanged($event)"></pfng-filter>
+          </div>
+          <div class="form-group">
+            <pfng-sort [config]="sortConfig" (onChange)="sortChange($event)"></pfng-sort>
+          </div>
+          <div class="form-group">
+            <a i18n="@@connections.addConnection" class="btn btn-primary" (click)="onNew()">Add Connection</a>
+          </div>
+          <div class="form-group toolbar-pf-view-selector">
+            <ul class="list-inline">
+              <li *ngIf="isListLayout"><a (click)="setCardLayout()"><i class="fa fa-th"></i></a></li>
+              <li *ngIf="isCardLayout"><a (click)="setListLayout()"><i class="fa fa-th-list"></i></a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- List of Connections -->
+    <div class="row object-collection-page">
+      <div class="row" *ngIf="isLoaded('connections') && allConnections.length === 0">
+        <div class="col-sm-12">
+          <div class="form-group">
+            <pfng-empty-state
+                [config]="noConnectionsEmptyConfig"
+                (onActionSelect)="onNew()"></pfng-empty-state>
+          </div>
+        </div>
+      </div>
+
+      <!-- The 'loading Connections' card -->
+      <div class="col-md-12" *ngIf="!isLoaded('connections')">
+        <div class="container-fluid container-cards-pf">
+          <div class="row row-cards-pf">
+            <div class="card-pf card-pf-accented">
+              <div class="card-pf-heading">
+                <h1 class="card-pf-title">
+                  <span i18n="@@connections.loadingConnections" class="spinner spinner-xs spinner-inline"></span> Loading Connections...
+                </h1>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- The list or card view -->
+      <div class="col-md-12" *ngIf="isLoaded('connections')">
+        <btl-connections-list *ngIf="isListLayout && hasConnections"
+                              [connections]="filteredConnections"
+                              [selectedConnections]="selectedConnections"
+                              (activateConnection)="onActivate($event)"
+                              (editConnection)="onEdit($event)"
+                              (deleteConnection)="onDelete($event)"
+                              (connectionSelected)="onSelected($event)"
+                              (connectionDeselected)="onDeselected($event)"></btl-connections-list>
+        <btl-connections-cards *ngIf="isCardLayout && hasConnections"
+                               [connections]="filteredConnections"
+                               [selectedConnections]="selectedConnections"
+                               (activateConnection)="onActivate($event)"
+                               (editConnection)="onEdit($event)"
+                               (deleteConnection)="onDelete($event)"
+                               (connectionSelected)="onSelected($event)"
+                               (connectionDeselected)="onDeselected($event)"></btl-connections-cards>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

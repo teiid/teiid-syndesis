@@ -20,8 +20,8 @@
           <a class="dropdown-toggle nav-item-iconic" (click)="openAbout(aboutTemplate)">
             <span title="About" class="fa pficon-help navbar-help-icon"></span>
             <ng-template #aboutTemplate>
-              <app-about-dialog [(info)]="aboutInfo" (onCancel)="closeAbout($event)">
-              </app-about-dialog>
+              <btl-about-dialog [(info)]="aboutInfo" (onCancel)="closeAbout($event)">
+              </btl-about-dialog>
             </ng-template>
           </a>
         </li>
@@ -29,7 +29,7 @@
     </div>
     <!--<div class=""></div>-->
   </pfng-vertical-navigation>
-  <div #contentContainer class="app-feature-content container-fluid container-pf-nav-pf-vertical">
+  <div #contentContainer class="btl-feature-content container-fluid container-pf-nav-pf-vertical">
     <div class="row">
       <div class="col-sm-12">
         <router-outlet></router-outlet>

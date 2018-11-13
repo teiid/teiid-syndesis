@@ -24,7 +24,7 @@ import { AboutModalConfig } from "patternfly-ng/modal";
 
 @Component({
   encapsulation: ViewEncapsulation.None,
-  selector: "app-about-dialog",
+  selector: "btl-about-dialog",
   templateUrl: "./about-dialog.component.html",
   styleUrls: ["./about-dialog.component.css"]
 })
