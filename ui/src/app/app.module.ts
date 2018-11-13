@@ -4,6 +4,7 @@ import { NgModule } from '@angular/core';
 import { AppComponent } from './app.component';
 import { ConnectionsModule} from '../../projects/beetle-lib/src/connections/connections.module';
 import { DataservicesModule } from '../../projects/beetle-lib/src/dataservices/dataservices.module';
+import { AppRoutingModule } from './app-routing.module';
 
 @NgModule({
   declarations: [
@@ -12,7 +13,8 @@ import { DataservicesModule } from '../../projects/beetle-lib/src/dataservices/d
   imports: [
     BrowserModule,
     ConnectionsModule,
-    DataservicesModule
+    DataservicesModule,
+    AppRoutingModule
   ],
   providers: [],
   bootstrap: [AppComponent]

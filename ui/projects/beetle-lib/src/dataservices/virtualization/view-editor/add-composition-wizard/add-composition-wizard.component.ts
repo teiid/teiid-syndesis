@@ -29,7 +29,7 @@ enum CompositeSide {
 
 @Component({
   encapsulation: ViewEncapsulation.None,
-  selector: 'app-add-composition-wizard',
+  selector: 'btl-add-composition-wizard',
   templateUrl: './add-composition-wizard.component.html',
   styleUrls: ['./add-composition-wizard.component.css']
 })

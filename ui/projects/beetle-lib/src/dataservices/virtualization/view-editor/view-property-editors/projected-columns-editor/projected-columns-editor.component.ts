@@ -17,7 +17,7 @@ import { AddCompositionCommand } from "../../../../virtualization/view-editor/co
 import { RemoveCompositionCommand } from "../../../../virtualization/view-editor/command/remove-composition-command";
 
 @Component({
-  selector: 'app-projected-columns-editor',
+  selector: 'btl-projected-columns-editor',
   templateUrl: './projected-columns-editor.component.html',
   styleUrls: ['./projected-columns-editor.component.css']
 })

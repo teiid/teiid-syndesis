@@ -20,7 +20,7 @@ import { DataserviceService } from "../shared/dataservice.service";
 import { CreateViewsResult } from "../create-views-dialog/create-views-result.model";
 
 @Component({
-  selector: 'app-create-views-dialog',
+  selector: 'btl-create-views-dialog',
   templateUrl: './create-views-dialog.component.html',
   styleUrls: ['./create-views-dialog.component.css']
 })

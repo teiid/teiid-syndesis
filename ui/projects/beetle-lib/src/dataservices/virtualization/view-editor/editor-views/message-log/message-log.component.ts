@@ -24,7 +24,7 @@ import { ViewEditorI18n } from "../../../../virtualization/view-editor/view-edit
 
 @Component({
   encapsulation: ViewEncapsulation.None,
-  selector: 'app-message-log',
+  selector: 'btl-message-log',
   templateUrl: './message-log.component.html',
   styleUrls: ['./message-log.component.css']
 })

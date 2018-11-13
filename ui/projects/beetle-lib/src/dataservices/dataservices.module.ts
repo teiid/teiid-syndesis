@@ -166,7 +166,7 @@ export { ViewEditorComponent } from "./virtualization/view-editor/view-editor.co
     CanvasService
   ],
   exports: [
-    DataservicesComponent
+    DataservicesComponent, EditorViewsComponent
   ],
   entryComponents: [AddCompositionWizardComponent, ConfirmDialogComponent, ConnectionTableDialogComponent,
                     CreateViewDialogComponent, CreateViewsDialogComponent, ProgressDialogComponent, SetDescriptionDialogComponent]

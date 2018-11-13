@@ -25,5 +25,12 @@
         "dist/beetle-lib/*"
       ]
     }
+  },
+  "angularCompilerOptions": {
+    "annotateForClosureCompiler": false,
+    "skipTemplateCodegen": true,
+    "strictMetadataEmit": true,
+    "strictInjectionParameters": true,
+    "enableResourceInlining": true
   }
 }
