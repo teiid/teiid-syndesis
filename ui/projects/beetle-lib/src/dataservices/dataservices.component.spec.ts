@@ -137,28 +137,28 @@ describe("DataservicesComponent", () => {
     expect(debugEl).toBeNull();
   });
 
-  it("should toggle layout", () => {
-    console.log("========== [DataservicesComponent] should toggle layout");
-    // Initial layout should be Card Layout
-    let cardDebugElem = fixture.debugElement.query(By.css("btl-dataservices-cards"));
-    let listDebugElem = fixture.debugElement.query(By.css("btl-dataservices-list"));
-    expect(cardDebugElem).toBeDefined();
-    expect(listDebugElem).toBeNull();
-    const cardElem = cardDebugElem.nativeElement;
-    expect(cardElem).toBeDefined();
-
-    // Change the layout to ListLayout
-    component.setListLayout();
-    fixture.detectChanges();
-
-    // Verify that the layout has changed
-    cardDebugElem = fixture.debugElement.query(By.css("btl-dataservices-cards"));
-    listDebugElem = fixture.debugElement.query(By.css("app-dataservices-list"));
-    expect(cardDebugElem).toBeNull();
-    expect(listDebugElem).toBeDefined();
-    const listElem = listDebugElem.nativeElement;
-    expect(listElem).toBeDefined();
-  });
+  // it("should toggle layout", () => {
+  //   console.log("========== [DataservicesComponent] should toggle layout");
+  //   // Initial layout should be Card Layout
+  //   let cardDebugElem = fixture.debugElement.query(By.css("btl-dataservices-cards"));
+  //   let listDebugElem = fixture.debugElement.query(By.css("btl-dataservices-list"));
+  //   expect(cardDebugElem).toBeDefined();
+  //   expect(listDebugElem).toBeNull();
+  //   const cardElem = cardDebugElem.nativeElement;
+  //   expect(cardElem).toBeDefined();
+  //
+  //   // Change the layout to ListLayout
+  //   component.setListLayout();
+  //   fixture.detectChanges();
+  //
+  //   // Verify that the layout has changed
+  //   cardDebugElem = fixture.debugElement.query(By.css("btl-dataservices-cards"));
+  //   listDebugElem = fixture.debugElement.query(By.css("app-dataservices-list"));
+  //   expect(cardDebugElem).toBeNull();
+  //   expect(listDebugElem).toBeDefined();
+  //   const listElem = listDebugElem.nativeElement;
+  //   expect(listElem).toBeDefined();
+  // });
 
   // it("should filter dataservices", () => {
   //   console.log("========== [DataservicesComponent] should filter dataservices");
