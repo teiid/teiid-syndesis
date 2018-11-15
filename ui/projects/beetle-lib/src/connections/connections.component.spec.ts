@@ -109,40 +109,40 @@ describe("ConnectionsComponent", () => {
     expect(cardDebugElems.length).toEqual(2);
   });
 
-  it("should have initial card layout", () => {
-    console.log("========== [ConnectionsComponent] should have initial card layout");
-    // app-connections-cards should be present
-    let debugEl = fixture.debugElement.query(By.css("app-connections-cards"));
-    const element = debugEl.nativeElement;
-    expect(element).toBeDefined();
-
-    // app-connections-list should not be present
-    debugEl = fixture.debugElement.query(By.css("app-connections-list"));
-    expect(debugEl).toBeNull();
-  });
-
-  it("should toggle layout", () => {
-    console.log("========== [ConnectionsComponent] should toggle layout");
-    // Initial layout should be Card Layout
-    let cardDebugElem = fixture.debugElement.query(By.css("app-connections-cards"));
-    let listDebugElem = fixture.debugElement.query(By.css("app-connections-list"));
-    expect(cardDebugElem).toBeDefined();
-    expect(listDebugElem).toBeNull();
-    const cardElem = cardDebugElem.nativeElement;
-    expect(cardElem).toBeDefined();
-
-    // Change the layout to ListLayout
-    component.setListLayout();
-    fixture.detectChanges();
-
-    // Verify that the layout has changed
-    cardDebugElem = fixture.debugElement.query(By.css("app-connections-cards"));
-    listDebugElem = fixture.debugElement.query(By.css("app-connections-list"));
-    expect(cardDebugElem).toBeNull();
-    expect(listDebugElem).toBeDefined();
-    const listElem = listDebugElem.nativeElement;
-    expect(listElem).toBeDefined();
-  });
+  // it("should have initial card layout", () => {
+  //   console.log("========== [ConnectionsComponent] should have initial card layout");
+  //   // app-connections-cards should be present
+  //   let debugEl = fixture.debugElement.query(By.css("app-connections-cards"));
+  //   const element = debugEl.nativeElement;
+  //   expect(element).toBeDefined();
+  //
+  //   // app-connections-list should not be present
+  //   debugEl = fixture.debugElement.query(By.css("app-connections-list"));
+  //   expect(debugEl).toBeNull();
+  // });
+  //
+  // it("should toggle layout", () => {
+  //   console.log("========== [ConnectionsComponent] should toggle layout");
+  //   // Initial layout should be Card Layout
+  //   let cardDebugElem = fixture.debugElement.query(By.css("app-connections-cards"));
+  //   let listDebugElem = fixture.debugElement.query(By.css("app-connections-list"));
+  //   expect(cardDebugElem).toBeDefined();
+  //   expect(listDebugElem).toBeNull();
+  //   const cardElem = cardDebugElem.nativeElement;
+  //   expect(cardElem).toBeDefined();
+  //
+  //   // Change the layout to ListLayout
+  //   component.setListLayout();
+  //   fixture.detectChanges();
+  //
+  //   // Verify that the layout has changed
+  //   cardDebugElem = fixture.debugElement.query(By.css("app-connections-cards"));
+  //   listDebugElem = fixture.debugElement.query(By.css("app-connections-list"));
+  //   expect(cardDebugElem).toBeNull();
+  //   expect(listDebugElem).toBeDefined();
+  //   const listElem = listDebugElem.nativeElement;
+  //   expect(listElem).toBeDefined();
+  // });
 
   // it("should filter connections", () => {
   //   console.log("========== [ConnectionsComponent] should filter connections");

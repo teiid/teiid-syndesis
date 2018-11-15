@@ -9,23 +9,30 @@ module.exports = function (config) {
       require('karma-jasmine'),
       require('karma-chrome-launcher'),
       require('karma-jasmine-html-reporter'),
+      require('karma-junit-reporter'),
       require('karma-coverage-istanbul-reporter'),
       require('@angular-devkit/build-angular/plugins/karma')
     ],
-    client: {
-      clearContext: false // leave Jasmine Spec Runner output visible in browser
+    junitReporter : {
+      // .../beetle-studio/target/karma-reports/*.xml
+      outputDir : './target/karma-reports/'
     },
-    coverageIstanbulReporter: {
-      dir: require('path').join(__dirname, '../coverage'),
-      reports: ['html', 'lcovonly'],
-      fixWebpackSourcePaths: true
+    angularCli: {
+      environment: 'dev'
     },
-    reporters: ['progress', 'kjhtml'],
-    port: 9876,
-    colors: true,
-    logLevel: config.LOG_INFO,
-    autoWatch: true,
-    browsers: ['Chrome'],
-    singleRun: false
+    customLaunchers: {
+      ChromeHeadless: {
+        base: 'Chrome',
+        flags: [
+          '--headless',
+          '--disable-gpu',
+          '--remote-debugging-port=9222',
+        ]
+      }
+    },
+    reporters: ['junit', 'progress'],
+    autoWatch: false,
+    browsers: [ 'ChromeHeadless' ],
+    singleRun: true
   });
 };

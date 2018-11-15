@@ -1,0 +1,200 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>org.teiid</groupId>
+        <artifactId>komodo-parent</artifactId>
+        <version>0.0.5-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <!-- ================================================================== -->
+    <!-- Self -->
+    <!-- ================================================================== -->
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>beetle-studio</artifactId>
+    <description>Web tooling supporting the Teiid project.</description>
+    <name>BeETLe Studio</name>
+    <packaging>pom</packaging>
+    <version>0.0.5-SNAPSHOT</version>
+
+    <!-- ================================================================== -->
+    <!-- Developers -->
+    <!-- ================================================================== -->
+    <developers>
+        <developer>
+            <name>Mark Drilling</name>
+            <id>mdrillin</id>
+            <email>mdrillin@redhat.com</email>
+            <organization>Red Hat</organization>
+            <roles>
+                <role>Project Lead</role>
+                <role>Developer</role>
+            </roles>
+            <timezone>-6</timezone>
+        </developer>
+        <developer>
+            <name>Dan Florian</name>
+            <id>elvisisking</id>
+            <email>dflorian@redhat.com</email>
+            <organization>Red Hat</organization>
+            <roles>
+                <role>Developer</role>
+            </roles>
+            <timezone>-6</timezone>
+        </developer>
+        <developer>
+            <name>Ted Jones</name>
+            <id>tejones</id>
+            <email>tejones@redhat.com</email>
+            <organization>Red Hat</organization>
+            <roles>
+                <role>Developer</role>
+            </roles>
+            <timezone>-6</timezone>
+        </developer>
+    </developers>
+
+    <!-- ================================================================== -->
+    <!-- Properties -->
+    <!-- ================================================================== -->
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <finalName>beetle-studio</finalName>
+        <version.exec-maven-plugin>1.5.0</version.exec-maven-plugin>
+    </properties>
+
+    <!-- ================================================================== -->
+    <!-- Build -->
+    <!-- ================================================================== -->
+    <build>
+        <finalName>${finalName}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <executions>
+                    <!-- Install Node and Yarn -->
+                    <execution>
+                        <id>install node and yarn</id>
+                        <goals>
+                            <goal>install-node-and-yarn</goal>
+                        </goals>
+                        <configuration>
+                            <nodeVersion>v8.12.0</nodeVersion>
+                            <yarnVersion>v1.12.1</yarnVersion>
+                        </configuration>
+                    </execution>
+                    <!-- Install npm/yarn dependencies -->
+                    <execution>
+                        <id>yarn install</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>install</arguments>
+                        </configuration>
+                    </execution>
+                    <!-- Build the app -->
+                    <execution>
+                        <id>ng build</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <arguments>build</arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Call npm install to resolve the dependencies of the Angular UI in package.json. -->
+            <plugin>
+                <artifactId>exec-maven-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <version>${version.exec-maven-plugin}</version>
+                <executions>
+                    <execution>
+                        <id>karmaTest</id>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <phase>test</phase>
+                        <configuration>
+                            <executable>ng</executable>
+                            <arguments>
+                              <argument>test</argument>
+                              <argument>beetle-lib</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>node_modules</directory>
+                            <includes>
+                                <include>**</include>
+                            </includes>
+                        </fileset>
+                        <fileset>
+                            <directory>node</directory>
+                            <includes>
+                                <include>**</include>
+                            </includes>
+                        </fileset>
+                        <fileset>
+                            <directory>dist</directory>
+                            <includes>
+                                <include>**</include>
+                            </includes>
+                        </fileset>                        
+                    </filesets>
+                    <followSymlinks>false</followSymlinks>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-release-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
+
