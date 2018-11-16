@@ -17,12 +17,12 @@
 
 import { Injectable } from "@angular/core";
 import { Http, RequestOptions } from "@angular/http";
-import { ConnectionStatus } from "../../connections/shared/connection-status";
-import { ConnectionType } from "../../connections/shared/connection-type.model";
-import { ConnectionsConstants } from "../../connections/shared/connections-constants";
-import { NewConnection } from "../../connections/shared/new-connection.model";
-import { SchemaNode } from "../../connections/shared/schema-node.model";
-import { ServiceCatalogSource } from "../../connections/shared/service-catalog-source.model";
+import { ConnectionStatus } from "./connection-status";
+import { ConnectionType } from "./connection-type.model";
+import { ConnectionsConstants } from "./connections-constants";
+import { NewConnection } from "./new-connection.model";
+import { SchemaNode } from "./schema-node.model";
+import { ServiceCatalogSource } from "./service-catalog-source.model";
 import { ApiService } from "../../core/api.service";
 import { AppSettingsService } from "../../core/app-settings.service";
 import { LoggerService } from "../../core/logger.service";

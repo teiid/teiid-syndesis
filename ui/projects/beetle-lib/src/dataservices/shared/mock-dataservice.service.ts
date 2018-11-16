@@ -1,30 +1,30 @@
   /**
- * @license
- * Copyright 2017 JBoss Inc
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+   * @license
+   * Copyright 2017 JBoss Inc
+   *
+   * Licensed under the Apache License, Version 2.0 (the "License");
+   * you may not use this file except in compliance with the License.
+   * You may obtain a copy of the License at
+   *
+   *      http://www.apache.org/licenses/LICENSE-2.0
+   *
+   * Unless required by applicable law or agreed to in writing, software
+   * distributed under the License is distributed on an "AS IS" BASIS,
+   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   * See the License for the specific language governing permissions and
+   * limitations under the License.
+   */
 
 import { Injectable, ReflectiveInjector } from "@angular/core";
 import { Http, Response } from "@angular/http";
 import { AppSettingsService } from "../../core/app-settings.service";
 import { LoggerService } from "../../core/logger.service";
-import { Dataservice } from "../shared/dataservice.model";
-import { DataserviceService } from "../shared/dataservice.service";
-import { NewDataservice } from "../shared/new-dataservice.model";
-import { NotifierService } from "../shared/notifier.service";
-import { QueryResults } from "../shared/query-results.model";
-import { VdbService } from "../shared/vdb.service";
+import { Dataservice } from "./dataservice.model";
+import { DataserviceService } from "./dataservice.service";
+import { NewDataservice } from "./new-dataservice.model";
+import { NotifierService } from "./notifier.service";
+import { QueryResults } from "./query-results.model";
+import { VdbService } from "./vdb.service";
 import { TestDataService } from "../../shared/test-data.service";
 import "rxjs/add/observable/of";
 import "rxjs/add/observable/throw";
@@ -32,7 +32,7 @@ import "rxjs/add/operator/catch";
 import "rxjs/add/operator/map";
 import { Observable } from "rxjs/Observable";
 import { ErrorObservable } from "rxjs/observable/ErrorObservable";
-import { ViewEditorState } from "../shared/view-editor-state.model";
+import { ViewEditorState } from "./view-editor-state.model";
 
 @Injectable()
 export class MockDataserviceService extends DataserviceService {

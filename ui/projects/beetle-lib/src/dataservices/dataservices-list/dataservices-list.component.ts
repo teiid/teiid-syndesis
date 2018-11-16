@@ -90,6 +90,7 @@ export class DataservicesListComponent implements OnInit {
 
   /**
    * @param {LoggerService} logger the logging service
+   * @param {DataserviceService} dataserviceService the dataservice service
    */
   constructor( logger: LoggerService, dataserviceService: DataserviceService ) {
     this.logger = logger;

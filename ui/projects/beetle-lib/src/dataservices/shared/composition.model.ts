@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-import { CompositionType } from "../shared/composition-type.enum";
-import { CompositionOperator } from "../shared/composition-operator.enum";
-import { PathUtils } from "../shared/path-utils";
+import { CompositionType } from "./composition-type.enum";
+import { CompositionOperator } from "./composition-operator.enum";
+import { PathUtils } from "./path-utils";
 
 /**
  * Composition model
@@ -112,6 +112,7 @@ export class Composition {
 
   /**
    * @param {string} sourcePath the left source path of the composition
+   * @param {boolean} isInitialSource true if initial source
    */
   public setLeftSourcePath(sourcePath: string, isInitialSource = false ): void {
     this.leftSourcePath = sourcePath;
@@ -202,7 +203,7 @@ export class Composition {
 
   /**
    * Determine if the supplied Composition is equal to this
-   * @param {Object} values
+   * @param {Composition} otherComp
    */
   public isEqual( otherComp: Composition ): boolean {
     let equal = false;

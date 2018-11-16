@@ -21,22 +21,22 @@ import { SelectionService } from "../../../core/selection.service";
 import { Connection } from "../../../connections/shared/connection.model";
 import { ConnectionService } from "../../../connections/shared/connection.service";
 import { DataservicesConstants } from "../../shared/dataservices-constants";
-import { ViewEditorService } from "../../virtualization/view-editor/view-editor.service";
-import { ViewEditorPart } from "../../virtualization/view-editor/view-editor-part.enum";
-import { ViewEditorEvent } from "../../virtualization/view-editor/event/view-editor-event";
-import { ViewEditorEventType } from "../../virtualization/view-editor/event/view-editor-event-type.enum";
-import { ConnectionTableDialogComponent } from "../../virtualization/view-editor/connection-table-dialog/connection-table-dialog.component";
-import { ViewEditorProgressChangeId } from "../../virtualization/view-editor/event/view-editor-save-progress-change-id.enum";
-import { ViewEditorI18n } from "../../virtualization/view-editor/view-editor-i18n";
-import { CommandFactory } from "../../virtualization/view-editor/command/command-factory";
+import { ViewEditorService } from "./view-editor.service";
+import { ViewEditorPart } from "./view-editor-part.enum";
+import { ViewEditorEvent } from "./event/view-editor-event";
+import { ViewEditorEventType } from "./event/view-editor-event-type.enum";
+import { ConnectionTableDialogComponent } from "./connection-table-dialog/connection-table-dialog.component";
+import { ViewEditorProgressChangeId } from "./event/view-editor-save-progress-change-id.enum";
+import { ViewEditorI18n } from "./view-editor-i18n";
+import { CommandFactory } from "./command/command-factory";
 import { BsModalService } from "ngx-bootstrap";
 import { Action, ActionConfig, ToolbarConfig, ToolbarView } from "patternfly-ng";
 import { Subscription } from "rxjs/Subscription";
-import { Command } from "../../virtualization/view-editor/command/command";
+import { Command } from "./command/command";
 import { ConfirmDialogComponent } from "../../../shared/confirm-dialog/confirm-dialog.component";
-import { AddCompositionWizardComponent } from "../../virtualization/view-editor/add-composition-wizard/add-composition-wizard.component";
-import { AddSourcesCommand } from "../../virtualization/view-editor/command/add-sources-command";
-import { AddCompositionCommand } from "../../virtualization/view-editor/command/add-composition-command";
+import { AddCompositionWizardComponent } from "./add-composition-wizard/add-composition-wizard.component";
+import { AddSourcesCommand } from "./command/add-sources-command";
+import { AddCompositionCommand } from "./command/add-composition-command";
 import { SchemaNode } from "../../../connections/shared/schema-node.model";
 import { Composition } from "../../shared/composition.model";
 import { Router } from "@angular/router";
@@ -302,7 +302,7 @@ export class ViewEditorComponent implements DoCheck, OnDestroy, OnInit {
       Object.assign({}, modalConfig, { class: 'modal-lg', initialState }));
 
     // Acts upon finish button click
-    addCompositionModalRef.content.finishAction.take(1).subscribe((composition) => {
+    (addCompositionModalRef.content as AddCompositionWizardComponent).finishAction.subscribe((composition) => {
       // Check the composition and add any missing view sources
       const leftSourcePath = composition.getLeftSourcePath();
       const rightSourcePath = composition.getRightSourcePath();
@@ -322,7 +322,7 @@ export class ViewEditorComponent implements DoCheck, OnDestroy, OnInit {
     });
 
     // Acts upon cancel button click (closes wizard)
-    addCompositionModalRef.content.cancelAction.take(1).subscribe((composition) => {
+    (addCompositionModalRef.content as AddCompositionWizardComponent).cancelAction.subscribe((composition) => {
       addCompositionModalRef.hide();
     });
   }
@@ -338,7 +338,7 @@ export class ViewEditorComponent implements DoCheck, OnDestroy, OnInit {
     // Show Dialog, act upon confirmation click
     const self = this;
     const modalRef = this.modalService.show(ConnectionTableDialogComponent, {initialState});
-    modalRef.content.okAction.take(1).subscribe((selectedNodes) => {
+    (modalRef.content as ConnectionTableDialogComponent).okAction.subscribe((selectedNodes) => {
       self.fireAddSourcesCommand(selectedNodes);
     });
   }
@@ -401,7 +401,7 @@ export class ViewEditorComponent implements DoCheck, OnDestroy, OnInit {
 
     // Show Dialog, act upon confirmation click
     const modalRef = this.modalService.show(ConfirmDialogComponent, {initialState});
-    modalRef.content.confirmAction.take(1).subscribe((value) => {
+    (modalRef.content as ConfirmDialogComponent).confirmAction.subscribe((value) => {
       // ------------------
       // the selection arguments contain the command object arg[0] and the metadata object arg[1]
       // 1) need to loop through each selection

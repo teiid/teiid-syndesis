@@ -16,12 +16,11 @@
  */
 
 import { Component, OnInit } from "@angular/core";
-import { Output } from "@angular/core";
-import { EventEmitter } from "@angular/core";
 import { BsModalRef } from "ngx-bootstrap";
 import { LoggerService } from "../../core/logger.service";
 import { ViewEditorI18n } from "../virtualization/view-editor/view-editor-i18n";
 import { FormControl, FormGroup } from "@angular/forms";
+import { Subject } from "rxjs/Subject";
 
 @Component({
   selector: "btl-create-view-dialog",
@@ -45,8 +44,7 @@ import { FormControl, FormGroup } from "@angular/forms";
  */
 export class SetDescriptionDialogComponent implements OnInit {
 
-  @Output() public okAction: EventEmitter<string> = new EventEmitter<string>();
-
+  public okAction: Subject<string>;
   public readonly title = ViewEditorI18n.setDescriptionDialogTitle;
   public readonly message = ViewEditorI18n.setDescriptionDialogMessage;
   public readonly cancelButtonText = ViewEditorI18n.cancelButtonText;
@@ -66,6 +64,7 @@ export class SetDescriptionDialogComponent implements OnInit {
   }
 
   public ngOnInit(): void {
+    this.okAction = new Subject();
     this.originalDescription = this.description;
     this.viewPropertyForm.controls["description"].setValue(this.description);
   }
@@ -85,7 +84,7 @@ export class SetDescriptionDialogComponent implements OnInit {
   public onOkSelected(): void {
     const theDescr = this.viewPropertyForm.controls["description"].value;
 
-    this.okAction.emit(theDescr);
+    this.okAction.next(theDescr);
     this.bsModalRef.hide();
   }
 

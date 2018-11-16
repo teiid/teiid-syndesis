@@ -3,10 +3,10 @@ import { HttpModule } from "@angular/http";
 import { AppSettingsService } from "../../core/app-settings.service";
 import { LoggerService } from "../../core/logger.service";
 import { MockAppSettingsService } from "../../core/mock-app-settings.service";
-import { DataserviceService } from "../shared/dataservice.service";
-import { MockVdbService } from "../shared/mock-vdb.service";
-import { NotifierService } from "../shared/notifier.service";
-import { VdbService } from "../shared/vdb.service";
+import { DataserviceService } from "./dataservice.service";
+import { MockVdbService } from "./mock-vdb.service";
+import { NotifierService } from "./notifier.service";
+import { VdbService } from "./vdb.service";
 
 describe("DataserviceService", () => {
   beforeEach(() => {

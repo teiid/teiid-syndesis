@@ -4,8 +4,8 @@ import { RouterTestingModule } from "@angular/router/testing";
 import { LoggerService } from "../../../../../core/logger.service";
 import { MockAppSettingsService } from "../../../../../core/mock-app-settings.service";
 import { AppSettingsService } from "../../../../../core/app-settings.service";
-import { ViewEditorService } from "../../../../virtualization/view-editor/view-editor.service";
-import { ViewPreviewComponent } from "../../../../virtualization/view-editor/editor-views/view-preview/view-preview.component";
+import { ViewEditorService } from "../../view-editor.service";
+import { ViewPreviewComponent } from "./view-preview.component";
 import {
   ActionModule,
   CardModule,

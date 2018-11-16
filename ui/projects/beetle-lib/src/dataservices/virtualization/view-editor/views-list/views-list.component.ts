@@ -17,23 +17,23 @@
 import { AfterViewInit, Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { LoadingState } from "../../../../shared/loading-state.enum";
 import { ViewDefinition } from "../../../shared/view-definition.model";
-import { ViewEditorPart } from "../../../virtualization/view-editor/view-editor-part.enum";
+import { ViewEditorPart } from "../view-editor-part.enum";
 import { EmptyStateConfig, NgxDataTableConfig, TableConfig } from "patternfly-ng";
-import { ViewEditorI18n } from "../../../virtualization/view-editor/view-editor-i18n";
-import { ViewEditorProgressChangeId } from "../../../virtualization/view-editor/event/view-editor-save-progress-change-id.enum";
+import { ViewEditorI18n } from "../view-editor-i18n";
+import { ViewEditorProgressChangeId } from "../event/view-editor-save-progress-change-id.enum";
 import { ViewEditorState } from "../../../shared/view-editor-state.model";
-import { ViewEditorService } from "../../../virtualization/view-editor/view-editor.service";
+import { ViewEditorService } from "../view-editor.service";
 import { Dataservice } from "../../../shared/dataservice.model";
 import { LoggerService } from "../../../../core/logger.service";
-import { ViewEditorEvent } from "../../../virtualization/view-editor/event/view-editor-event";
+import { ViewEditorEvent } from "../event/view-editor-event";
 import { Subscription } from "rxjs/Subscription";
 import { BsModalService } from "ngx-bootstrap";
 import { DataserviceService } from "../../../shared/dataservice.service";
 import { SelectionService } from "../../../../core/selection.service";
 import { ConfirmDialogComponent } from "../../../../shared/confirm-dialog/confirm-dialog.component";
-import { CommandFactory } from "../../../virtualization/view-editor/command/command-factory";
-import { Command } from "../../../virtualization/view-editor/command/command";
-import { CreateViewDialogComponent } from "../../../virtualization/view-editor/create-view-dialog/create-view-dialog.component";
+import { CommandFactory } from "../command/command-factory";
+import { Command } from "../command/command";
+import { CreateViewDialogComponent } from "../create-view-dialog/create-view-dialog.component";
 import { ChangeDetectorRef } from "@angular/core";
 
 @Component({
@@ -277,7 +277,7 @@ export class ViewsListComponent implements OnInit, OnDestroy, AfterViewInit {
 
     // Show Dialog, act upon confirmation click
     const modalRef = this.modalService.show(CreateViewDialogComponent, {initialState});
-    modalRef.content.okAction.take(1).subscribe((viewDefn) => {
+    (modalRef.content as CreateViewDialogComponent).okAction.subscribe((viewDefn) => {
       // If the current view has pending changes, save them first
       if ( this.editorService.hasChanges() ) {
         this.viewSavedUponCompletion = viewDefn;
@@ -302,7 +302,6 @@ export class ViewsListComponent implements OnInit, OnDestroy, AfterViewInit {
 
   /**
    * Handle Delete of the selected View
-   * @param {string} viewName
    */
   public onDeleteView( ): void {
     const viewName = this.getSelectedView().getName();
@@ -318,7 +317,7 @@ export class ViewsListComponent implements OnInit, OnDestroy, AfterViewInit {
 
     // Show Dialog, act upon confirmation click
     const modalRef = this.modalService.show(ConfirmDialogComponent, {initialState});
-    modalRef.content.confirmAction.take(1).subscribe((value) => {
+    (modalRef.content as ConfirmDialogComponent).confirmAction.subscribe((value) => {
       this.doDeleteView(viewName);
     });
   }

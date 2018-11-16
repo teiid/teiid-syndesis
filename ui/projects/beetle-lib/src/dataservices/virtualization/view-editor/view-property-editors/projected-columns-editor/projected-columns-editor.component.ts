@@ -1,20 +1,20 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ViewEditorService } from "../../../../virtualization/view-editor/view-editor.service";
+import { ViewEditorService } from "../../view-editor.service";
 import { SelectionService } from "../../../../../core/selection.service";
 import { EmptyStateConfig, TableConfig, TableEvent } from "patternfly-ng";
-import { ViewEditorI18n } from "../../../../virtualization/view-editor/view-editor-i18n";
+import { ViewEditorI18n } from "../../view-editor-i18n";
 import { ProjectedColumn } from "../../../../shared/projected-column.model";
-import { CommandFactory } from "../../../../virtualization/view-editor/command/command-factory";
-import { Command } from "../../../../virtualization/view-editor/command/command";
-import { ViewEditorPart } from "../../../../virtualization/view-editor/view-editor-part.enum";
+import { CommandFactory } from "../../command/command-factory";
+import { Command } from "../../command/command";
+import { ViewEditorPart } from "../../view-editor-part.enum";
 import { LoggerService } from "../../../../../core/logger.service";
-import { ViewEditorEvent } from "../../../../virtualization/view-editor/event/view-editor-event";
+import { ViewEditorEvent } from "../../event/view-editor-event";
 import { Subscription } from "rxjs/Subscription";
-import { UpdateProjectedColumnsCommand } from "../../../../virtualization/view-editor/command/update-projected-columns-command";
-import { AddSourcesCommand } from "../../../../virtualization/view-editor/command/add-sources-command";
-import { RemoveSourcesCommand } from "../../../../virtualization/view-editor/command/remove-sources-command";
-import { AddCompositionCommand } from "../../../../virtualization/view-editor/command/add-composition-command";
-import { RemoveCompositionCommand } from "../../../../virtualization/view-editor/command/remove-composition-command";
+import { UpdateProjectedColumnsCommand } from "../../command/update-projected-columns-command";
+import { AddSourcesCommand } from "../../command/add-sources-command";
+import { RemoveSourcesCommand } from "../../command/remove-sources-command";
+import { AddCompositionCommand } from "../../command/add-composition-command";
+import { RemoveCompositionCommand } from "../../command/remove-composition-command";
 
 @Component({
   selector: 'btl-projected-columns-editor',

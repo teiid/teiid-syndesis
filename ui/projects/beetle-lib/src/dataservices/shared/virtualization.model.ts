@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-import { PublishState } from "../shared/publish-state.enum";
-import { VirtRoute } from "../shared/virt-route.model";
+import { PublishState } from "./publish-state.enum";
+import { VirtRoute } from "./virt-route.model";
 
 /**
  * Virtualization model

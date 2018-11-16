@@ -2,7 +2,7 @@ import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 import { ModuleWithProviders } from "@angular/core";
 
 import { ConnectionTableDialogComponent } from "./connection-table-dialog.component";
-import { ConnectionTreeSelectorComponent } from "../../../../dataservices/virtualization/view-editor/connection-table-dialog/connection-tree-selector/connection-tree-selector.component";
+import { ConnectionTreeSelectorComponent } from "./connection-tree-selector/connection-tree-selector.component";
 import { TreeModule } from "angular-tree-component";
 import { HttpModule } from "@angular/http";
 import {

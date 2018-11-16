@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-import { ColumnData } from "../shared/column-data.model";
-import { RowData } from "../shared/row-data.model";
+import { ColumnData } from "./column-data.model";
+import { RowData } from "./row-data.model";
 
 /**
  * QueryResults model

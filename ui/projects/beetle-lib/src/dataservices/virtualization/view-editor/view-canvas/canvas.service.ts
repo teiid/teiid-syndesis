@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Injectable, EventEmitter, ChangeDetectorRef, Output } from '@angular/core';
-import { CanvasConstants } from '../../../virtualization/view-editor/view-canvas/canvas-constants';
-import { CanvasNode, CanvasLink, CanvasGraph } from '../../../virtualization/view-editor/view-canvas/models';
-import { ViewCanvasEvent } from "../../../virtualization/view-editor/view-canvas/event/view-canvas-event";
-import { ViewCanvasEventType } from "../../../virtualization/view-editor/view-canvas/event/view-canvas-event-type.enum";
-import { Command } from "../../../virtualization/view-editor/command/command";
-import * as d3 from 'd3';
+import { Injectable, EventEmitter, ChangeDetectorRef, Output } from "@angular/core";
+import { CanvasConstants } from "./canvas-constants";
+import { CanvasNode, CanvasLink, CanvasGraph } from "./models";
+import { ViewCanvasEvent } from "./event/view-canvas-event";
+import { ViewCanvasEventType } from "./event/view-canvas-event-type.enum";
+import { Command } from "../command/command";
+import * as d3 from "d3";
 import * as _ from "lodash";
 
 @Injectable()

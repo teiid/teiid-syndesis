@@ -1,7 +1,6 @@
 import { Component, OnInit } from "@angular/core";
-import { Output } from "@angular/core";
-import { EventEmitter } from "@angular/core";
 import { BsModalRef } from "ngx-bootstrap";
+import { Subject } from "rxjs/Subject";
 
 @Component({
   selector: "btl-confirm-dialog",
@@ -26,8 +25,8 @@ import { BsModalRef } from "ngx-bootstrap";
  */
 export class ConfirmDialogComponent implements OnInit {
 
-  @Output() public confirmAction = new EventEmitter();
-  @Output() public cancelAction = new EventEmitter();
+  public confirmAction: Subject<boolean>;
+  public cancelAction: Subject<boolean>;
 
   public title = "Title";
   public bodyContent = "Confirmation Message";
@@ -40,16 +39,17 @@ export class ConfirmDialogComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    // Nothing to do
+    this.confirmAction = new Subject();
+    this.cancelAction = new Subject();
   }
 
   public onConfirmSelected(): void {
-    this.confirmAction.emit(true);
+    this.confirmAction.next(true);
     this.bsModalRef.hide();
   }
 
   public onCancelSelected(): void {
-    this.cancelAction.emit(true);
+    this.cancelAction.next(true);
     this.bsModalRef.hide();
   }
 

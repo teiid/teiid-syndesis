@@ -25,11 +25,11 @@ import {
 import { FormControl, FormGroup } from "@angular/forms";
 import { AbstractControl } from "@angular/forms";
 import { Router } from "@angular/router";
-import { ConnectionType } from "../../connections/shared/connection-type.model";
-import { ConnectionService } from "../../connections/shared/connection.service";
-import { ConnectionsConstants } from "../../connections/shared/connections-constants";
-import { NewConnection } from "../../connections/shared/new-connection.model";
-import { ServiceCatalogSource } from "../../connections/shared/service-catalog-source.model";
+import { ConnectionType } from "../shared/connection-type.model";
+import { ConnectionService } from "../shared/connection.service";
+import { ConnectionsConstants } from "../shared/connections-constants";
+import { NewConnection } from "../shared/new-connection.model";
+import { ServiceCatalogSource } from "../shared/service-catalog-source.model";
 import { LoggerService } from "../../core/logger.service";
 import { NotificationType, WizardEvent } from "patternfly-ng";
 import { WizardStepConfig } from "patternfly-ng";

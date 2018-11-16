@@ -112,6 +112,7 @@ export class SelectionService {
 
   /**
    * Sets the selected view definition
+   * @param {Dataservice} virtualization the virtualization
    * @param {ViewDefinition} view the selected view definition
    */
   public setSelectedViewDefinition(virtualization: Dataservice, viewDefn: ViewDefinition): void {

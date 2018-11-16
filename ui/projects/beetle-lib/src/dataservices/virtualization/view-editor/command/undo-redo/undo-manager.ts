@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { UndoNode } from "../../../../virtualization/view-editor/command/undo-redo/undo-node";
-import { Undoable } from "../../../../virtualization/view-editor/command/undo-redo/undoable";
-import { Command } from "../../../../virtualization/view-editor/command/command";
-import { ViewEditorI18n } from "../../../../virtualization/view-editor/view-editor-i18n";
+import { UndoNode } from "./undo-node";
+import { Undoable } from "./undoable";
+import { Command } from "../command";
+import { ViewEditorI18n } from "../../view-editor-i18n";
 
 export class UndoManager {
 

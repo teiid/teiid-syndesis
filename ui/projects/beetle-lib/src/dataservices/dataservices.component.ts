@@ -22,20 +22,20 @@ import { ConnectionsConstants } from "../connections/shared/connections-constant
 import { AppSettingsService } from "../core/app-settings.service";
 import { LoggerService } from "../core/logger.service";
 import { SelectionService } from "../core/selection.service";
-import { Dataservice } from "../dataservices/shared/dataservice.model";
-import { DataserviceService } from "../dataservices/shared/dataservice.service";
-import { DataservicesConstants } from "../dataservices/shared/dataservices-constants";
-import { DeploymentState } from "../dataservices/shared/deployment-state.enum";
-import { NotifierService } from "../dataservices/shared/notifier.service";
-import { PublishState } from "../dataservices/shared/publish-state.enum";
-import { VdbService } from "../dataservices/shared/vdb.service";
-import { Virtualization } from "../dataservices/shared/virtualization.model";
-import { SqlControlComponent } from "../dataservices/sql-control/sql-control.component";
+import { Dataservice } from "./shared/dataservice.model";
+import { DataserviceService } from "./shared/dataservice.service";
+import { DataservicesConstants } from "./shared/dataservices-constants";
+import { DeploymentState } from "./shared/deployment-state.enum";
+import { NotifierService } from "./shared/notifier.service";
+import { PublishState } from "./shared/publish-state.enum";
+import { VdbService } from "./shared/vdb.service";
+import { Virtualization } from "./shared/virtualization.model";
+import { SqlControlComponent } from "./sql-control/sql-control.component";
 import { AbstractPageComponent } from "../shared/abstract-page.component";
 import { ConfirmDialogComponent } from "../shared/confirm-dialog/confirm-dialog.component";
 import { LayoutType } from "../shared/layout-type.enum";
 import { SortDirection } from "../shared/sort-direction.enum";
-import { BsModalService } from "ngx-bootstrap";
+import { BsModalRef, BsModalService } from "ngx-bootstrap";
 import {
   ActionConfig,
   EmptyStateConfig,
@@ -50,13 +50,13 @@ import {
   SortField
 } from "patternfly-ng";
 import { Subscription } from "rxjs/Subscription";
-import { SqlView } from "../dataservices/shared/sql-view.model";
-import { ViewEditorI18n } from "../dataservices/virtualization/view-editor/view-editor-i18n";
-import { ViewDefinition } from "../dataservices/shared/view-definition.model";
-import { ViewEditorState } from "../dataservices/shared/view-editor-state.model";
-import { NameValue } from "../dataservices/shared/name-value.model";
-import { CreateViewsDialogComponent } from "../dataservices/create-views-dialog/create-views-dialog.component";
-import { SetDescriptionDialogComponent } from "../dataservices/set-description-dialog/set-description-dialog.component";
+import { SqlView } from "./shared/sql-view.model";
+import { ViewEditorI18n } from "./virtualization/view-editor/view-editor-i18n";
+import { ViewDefinition } from "./shared/view-definition.model";
+import { ViewEditorState } from "./shared/view-editor-state.model";
+import { NameValue } from "./shared/name-value.model";
+import { CreateViewsDialogComponent } from "./create-views-dialog/create-views-dialog.component";
+import { SetDescriptionDialogComponent } from "./set-description-dialog/set-description-dialog.component";
 
 @Component({
   selector: "btl-dataservices",
@@ -593,7 +593,7 @@ export class DataservicesComponent extends AbstractPageComponent implements OnIn
 
     // Show Dialog, act upon confirmation click
     const modalRef = this.modalService.show(ConfirmDialogComponent, {initialState});
-    modalRef.content.confirmAction.take(1).subscribe((value) => {
+    (modalRef.content as ConfirmDialogComponent).confirmAction.subscribe((value) => {
       this.onDeleteDataservice();
     });
   }
@@ -610,8 +610,8 @@ export class DataservicesComponent extends AbstractPageComponent implements OnIn
     };
 
     // Show Dialog, act upon confirmation click
-    const modalRef = this.modalService.show(CreateViewsDialogComponent, {initialState, class: 'modal-lg'});
-    modalRef.content.okAction.take(1).subscribe((dialogResult) => {
+    const modalRef: BsModalRef = this.modalService.show(CreateViewsDialogComponent, {initialState, class: 'modal-lg'});
+    (modalRef.content as CreateViewsDialogComponent).okAction.subscribe((dialogResult) => {
 
       // Create the new virtualization and view.
       const virtName  = dialogResult.getVirtualizationName();
@@ -741,7 +741,7 @@ export class DataservicesComponent extends AbstractPageComponent implements OnIn
 
   /**
    * Handle Edit of the specified Dataservice and View
-   * @param {string} svcName
+   * @param {NameValue} svcNameView
    */
   public onEdit(svcNameView: NameValue): void {
     const virtName = svcNameView.getName();
@@ -821,10 +821,9 @@ export class DataservicesComponent extends AbstractPageComponent implements OnIn
       okButtonText: ViewEditorI18n.okButtonText,
       description: descr
     };
-
     // Show Dialog, act upon confirmation click
     const modalRef = this.modalService.show(SetDescriptionDialogComponent, {initialState});
-    modalRef.content.okAction.take(1).subscribe((newDesc) => {
+    (modalRef.content as SetDescriptionDialogComponent).okAction.subscribe((newDesc) => {
       if (newDesc !== descr) {
         selectedService.setDescription(newDesc);
         // update the repo virtualization description

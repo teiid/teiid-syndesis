@@ -14,8 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as d3 from 'd3';
-import * as cola from 'webcola';
+import * as d3 from "d3";
+import * as cola from "webcola";
 
 export class CanvasNode implements cola.Node {
 

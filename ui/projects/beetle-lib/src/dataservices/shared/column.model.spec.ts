@@ -1,4 +1,4 @@
-import { Column } from "../shared/column.model";
+import { Column } from "./column.model";
 
 describe("Column", () => {
   let column: Column;

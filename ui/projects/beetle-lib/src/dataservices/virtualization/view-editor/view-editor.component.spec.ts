@@ -11,15 +11,15 @@ import { SelectionService } from "../../../core/selection.service";
 import { MockVdbService } from "../../shared/mock-vdb.service";
 import { NotifierService } from "../../shared/notifier.service";
 import { VdbService } from "../../shared/vdb.service";
-import { ViewEditorComponent } from '../../virtualization/view-editor/view-editor.component';
-import { ViewCanvasComponent } from "../../virtualization/view-editor/view-canvas/view-canvas.component";
-import { ConnectionTableDialogComponent } from "../../virtualization/view-editor/connection-table-dialog/connection-table-dialog.component";
-import { ConnectionTreeSelectorComponent } from "../../virtualization/view-editor/connection-table-dialog/connection-tree-selector/connection-tree-selector.component";
-import { EditorViewsComponent } from "../../virtualization/view-editor/editor-views/editor-views.component";
-import { MessageLogComponent } from "../../virtualization/view-editor/editor-views/message-log/message-log.component";
-import { ViewPreviewComponent } from "../../virtualization/view-editor/editor-views/view-preview/view-preview.component";
-import { ViewEditorHeaderComponent } from "../../virtualization/view-editor/view-editor-header/view-editor-header.component";
-import { ViewPropertyEditorsComponent } from "../../virtualization/view-editor/view-property-editors/view-property-editors.component";
+import { ViewEditorComponent } from "./view-editor.component";
+import { ViewCanvasComponent } from "./view-canvas/view-canvas.component";
+import { ConnectionTableDialogComponent } from "./connection-table-dialog/connection-table-dialog.component";
+import { ConnectionTreeSelectorComponent } from "./connection-table-dialog/connection-tree-selector/connection-tree-selector.component";
+import { EditorViewsComponent } from "./editor-views/editor-views.component";
+import { MessageLogComponent } from "./editor-views/message-log/message-log.component";
+import { ViewPreviewComponent } from "./editor-views/view-preview/view-preview.component";
+import { ViewEditorHeaderComponent } from "./view-editor-header/view-editor-header.component";
+import { ViewPropertyEditorsComponent } from "./view-property-editors/view-property-editors.component";
 import { TreeModule } from "angular-tree-component";
 import { TabsModule } from "ngx-bootstrap";
 import {
@@ -37,8 +37,8 @@ import {
   GraphVisualComponent,
   LinkVisualComponent,
   NodeVisualComponent
-} from "../../virtualization/view-editor/view-canvas/visuals";
-import { CanvasService } from "../../virtualization/view-editor/view-canvas/canvas.service";
+} from "./view-canvas/visuals";
+import { CanvasService } from "./view-canvas/canvas.service";
 
 export const tabsModule: ModuleWithProviders<any> = TabsModule.forRoot();
 

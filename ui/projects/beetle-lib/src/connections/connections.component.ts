@@ -17,10 +17,10 @@
 
 import { Component, OnInit } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
-import { ConnectionStatus } from "../connections/shared/connection-status";
-import { Connection } from "../connections/shared/connection.model";
-import { ConnectionService } from "../connections/shared/connection.service";
-import { ConnectionsConstants } from "../connections/shared/connections-constants";
+import { ConnectionStatus } from "./shared/connection-status";
+import { Connection } from "./shared/connection.model";
+import { ConnectionService } from "./shared/connection.service";
+import { ConnectionsConstants } from "./shared/connections-constants";
 import { AppSettingsService } from "../core/app-settings.service";
 import { LoggerService } from "../core/logger.service";
 import { NotifierService } from "../dataservices/shared/notifier.service";
@@ -239,7 +239,7 @@ export class ConnectionsComponent extends AbstractPageComponent implements OnIni
 
     // Show Dialog, act upon confirmation click
     const modalRef = this.modalService.show(ConfirmDialogComponent, {initialState});
-    modalRef.content.confirmAction.take(1).subscribe((value) => {
+    (modalRef.content as ConfirmDialogComponent).confirmAction.subscribe((value) => {
       this.onDeleteConnection();
     });
   }

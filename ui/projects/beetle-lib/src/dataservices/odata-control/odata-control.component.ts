@@ -23,11 +23,11 @@ import "codemirror/mode/javascript/javascript.js";
 import "codemirror/mode/xml/xml.js";
 import { DataserviceService } from "../shared/dataservice.service";
 import { Dataservice } from "../shared/dataservice.model";
-import { OdataConstants } from "../odata-control/odata-constants";
-import { Odata } from "../odata-control/odata.model";
-import { OdataEntity } from "../odata-control/odata-entity.model";
-import { OdataColumn } from "../odata-control/odata-column.model";
-import { OdataWhere } from "../odata-control/odata-where.model";
+import { OdataConstants } from "./odata-constants";
+import { Odata } from "./odata.model";
+import { OdataEntity } from "./odata-entity.model";
+import { OdataColumn } from "./odata-column.model";
+import { OdataWhere } from "./odata-where.model";
 import { SelectionService } from "../../core/selection.service";
 
 @Component({

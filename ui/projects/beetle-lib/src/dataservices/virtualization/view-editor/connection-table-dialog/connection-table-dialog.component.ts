@@ -16,16 +16,15 @@
  */
 
 import { Component, OnInit, ViewChild } from "@angular/core";
-import { Output } from "@angular/core";
-import { EventEmitter } from "@angular/core";
 import { BsModalRef } from "ngx-bootstrap";
-import { ConnectionTreeSelectorComponent } from "../../../virtualization/view-editor/connection-table-dialog/connection-tree-selector/connection-tree-selector.component";
+import { ConnectionTreeSelectorComponent } from "./connection-tree-selector/connection-tree-selector.component";
 import { SchemaNode } from "../../../../connections/shared/schema-node.model";
 import { ConnectionsConstants } from "../../../../connections/shared/connections-constants";
 import { LoadingState } from "../../../../shared/loading-state.enum";
 import { ConnectionService } from "../../../../connections/shared/connection.service";
 import { LoggerService } from "../../../../core/logger.service";
-import { ViewEditorI18n } from "../../../virtualization/view-editor/view-editor-i18n";
+import { ViewEditorI18n } from "../view-editor-i18n";
+import { Subject } from "rxjs/Subject";
 
 @Component({
   selector: "btl-connection-table-dialog",
@@ -51,8 +50,7 @@ export class ConnectionTableDialogComponent implements OnInit {
 
   @ViewChild(ConnectionTreeSelectorComponent) public connectionTree: ConnectionTreeSelectorComponent;
 
-  @Output() public okAction = new EventEmitter();
-
+  public okAction: Subject<SchemaNode[]>;
   public readonly title = ViewEditorI18n.connectionTableSelectionDialogTitle;
   public readonly message = ViewEditorI18n.connectionTableSelectionDialogMessage;
   public readonly cancelButtonText = ViewEditorI18n.cancelButtonText;
@@ -74,6 +72,7 @@ export class ConnectionTableDialogComponent implements OnInit {
   }
 
   public ngOnInit(): void {
+    this.okAction = new Subject();
     // Load the connections
     this.connectionLoadingState = LoadingState.LOADING;
     const self = this;
@@ -136,7 +135,7 @@ export class ConnectionTableDialogComponent implements OnInit {
    * OK selected.  The array of selected SchemaNodes is emiited, then modal is closed
    */
   public onOkSelected(): void {
-    this.okAction.emit(this.selectedTreeNodes);
+    this.okAction.next(this.selectedTreeNodes);
     this.bsModalRef.hide();
   }
 

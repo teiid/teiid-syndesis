@@ -17,10 +17,10 @@
 
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { LoggerService } from "../../../../../core/logger.service";
-import { ViewEditorService } from "../../../../virtualization/view-editor/view-editor.service";
+import { ViewEditorService } from "../../view-editor.service";
 import { EmptyStateConfig, NgxDataTableConfig, TableConfig } from "patternfly-ng";
-import { Message } from "../../../../virtualization/view-editor/editor-views/message-log/message";
-import { ViewEditorI18n } from "../../../../virtualization/view-editor/view-editor-i18n";
+import { Message } from "./message";
+import { ViewEditorI18n } from "../../view-editor-i18n";
 
 @Component({
   encapsulation: ViewEncapsulation.None,

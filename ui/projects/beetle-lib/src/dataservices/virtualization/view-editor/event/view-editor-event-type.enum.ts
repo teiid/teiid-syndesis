@@ -16,10 +16,10 @@
  */
 
 import { QueryResults } from "../../../shared/query-results.model";
-import { ViewEditorPart } from "../../../virtualization/view-editor/view-editor-part.enum";
-import { Command } from "../../../virtualization/view-editor/command/command";
-import { Message } from "../../../virtualization/view-editor/editor-views/message-log/message";
-import { ViewEditorProgressChangeId } from "../../../virtualization/view-editor/event/view-editor-save-progress-change-id.enum";
+import { ViewEditorPart } from "../view-editor-part.enum";
+import { Command } from "../command/command";
+import { Message } from "../editor-views/message-log/message";
+import { ViewEditorProgressChangeId } from "./view-editor-save-progress-change-id.enum";
 
 export enum ViewEditorEventType {
 

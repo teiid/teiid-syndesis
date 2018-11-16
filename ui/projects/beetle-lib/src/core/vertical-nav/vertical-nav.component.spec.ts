@@ -7,7 +7,7 @@ import { AboutService } from "../about-dialog/about.service";
 import { AppSettingsService } from "../app-settings.service";
 import { LoggerService } from "../logger.service";
 import { MockAppSettingsService } from "../mock-app-settings.service";
-import { VerticalNavComponent } from "../vertical-nav/vertical-nav.component";
+import { VerticalNavComponent } from "./vertical-nav.component";
 import { BsModalService, ModalModule } from "ngx-bootstrap";
 import { ModalModule as PfngModalModule, NavigationModule as PfngNavigationModule } from "patternfly-ng";
 

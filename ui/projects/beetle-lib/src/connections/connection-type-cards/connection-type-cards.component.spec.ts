@@ -1,7 +1,7 @@
 import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 
 import { RouterTestingModule } from "@angular/router/testing";
-import { ConnectionTypeCardComponent } from "../../connections/connection-type-cards/connection-type-card/connection-type-card.component";
+import { ConnectionTypeCardComponent } from "./connection-type-card/connection-type-card.component";
 import {
   ActionModule,
   CardModule,

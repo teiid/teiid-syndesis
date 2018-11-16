@@ -18,8 +18,8 @@
 import { Component, Input } from "@angular/core";
 import { AbstractControl, FormGroup } from "@angular/forms";
 
-import { PropertyControlType } from "../../../shared/property-form/property-control-type.enum";
-import { PropertyDefinition } from "../../../shared/property-form/property-definition.model";
+import { PropertyControlType } from "../property-control-type.enum";
+import { PropertyDefinition } from "../property-definition.model";
 
 @Component({
   selector: "btl-form-property",

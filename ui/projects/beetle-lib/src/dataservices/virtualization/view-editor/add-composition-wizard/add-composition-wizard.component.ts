@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, Input, OnInit, ViewChild, ViewEncapsulation } from "@angular/core";
 import {
   NgxDataTableConfig, NotificationType,
   TableConfig,
@@ -13,14 +13,15 @@ import { SchemaNode } from "../../../../connections/shared/schema-node.model";
 import { LoadingState } from "../../../../shared/loading-state.enum";
 import { ConnectionsConstants } from "../../../../connections/shared/connections-constants";
 import { ConnectionService } from "../../../../connections/shared/connection.service";
-import { ConnectionTreeSelectorComponent } from "../../../virtualization/view-editor/connection-table-dialog/connection-tree-selector/connection-tree-selector.component";
-import { ViewEditorI18n } from "../../../virtualization/view-editor/view-editor-i18n";
+import { ConnectionTreeSelectorComponent } from "../connection-table-dialog/connection-tree-selector/connection-tree-selector.component";
+import { ViewEditorI18n } from "../view-editor-i18n";
 import { Column } from "../../../shared/column.model";
 import { CompositionType } from "../../../shared/composition-type.enum";
 import { CompositionOperator } from "../../../shared/composition-operator.enum";
 import { PathUtils } from "../../../shared/path-utils";
-import { Command } from "../../../virtualization/view-editor/command/command";
-import { ViewEditorService } from "../../../virtualization/view-editor/view-editor.service";
+import { Command } from "../command/command";
+import { ViewEditorService } from "../view-editor.service";
+import { Subject } from "rxjs/Subject";
 
 enum CompositeSide {
   LEFT = 0,
@@ -37,10 +38,11 @@ export class AddCompositionWizardComponent implements OnInit {
 
   @Input() public initialSourcePath: string;
   @Input() public editorService: ViewEditorService;
-  @Output() public finishAction = new EventEmitter();
-  @Output() public cancelAction = new EventEmitter();
   @ViewChild("wizard") public wizard: WizardComponent;
   @ViewChild("connTree") public connectionTree: ConnectionTreeSelectorComponent;
+
+  public finishAction: Subject<Composition>;
+  public cancelAction: Subject<boolean>;
 
   // Wizard Config
   public wizardConfig: WizardConfig;
@@ -88,6 +90,9 @@ export class AddCompositionWizardComponent implements OnInit {
    * Initialization
    */
   public ngOnInit(): void {
+    this.finishAction = new Subject<Composition>();
+    this.cancelAction = new Subject();
+
     // Step 1 - Basic Properties
     this.step1Config = {
       id: this.step1Id,
@@ -400,12 +405,12 @@ export class AddCompositionWizardComponent implements OnInit {
       // Set the selected composition type and operator
       this.composition.setType(this.selectedCompositionType);
       this.composition.setOperator(this.selectedCompositionCondition);
-      this.finishAction.emit(this.composition);
+      this.finishAction.next(this.composition);
     }
   }
 
   public cancelClicked( ): void {
-    this.cancelAction.emit();
+    this.cancelAction.next();
   }
 
   /**

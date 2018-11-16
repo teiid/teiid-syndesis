@@ -1,6 +1,6 @@
 import { inject, TestBed } from "@angular/core/testing";
 import { HttpModule } from "@angular/http";
-import { ConnectionService } from "../../connections/shared/connection.service";
+import { ConnectionService } from "./connection.service";
 import { AppSettingsService } from "../../core/app-settings.service";
 import { LoggerService } from "../../core/logger.service";
 import { NotifierService } from "../../dataservices/shared/notifier.service";

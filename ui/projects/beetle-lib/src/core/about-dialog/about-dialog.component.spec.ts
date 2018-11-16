@@ -1,8 +1,8 @@
 import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 import { HttpModule } from "@angular/http";
-import { About } from "../about-dialog/about.model";
-import { AboutService } from "../about-dialog/about.service";
-import { MockAboutService } from "../about-dialog/mock-about.service";
+import { About } from "./about.model";
+import { AboutService } from "./about.service";
+import { MockAboutService } from "./mock-about.service";
 import { AppSettingsService } from "../app-settings.service";
 import { LoggerService } from "../logger.service";
 import { MockAppSettingsService } from "../mock-app-settings.service";

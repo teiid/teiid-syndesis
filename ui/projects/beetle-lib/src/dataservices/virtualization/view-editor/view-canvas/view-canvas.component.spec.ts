@@ -5,8 +5,8 @@ import { LoggerService } from "../../../../core/logger.service";
 import { ModalModule } from "ngx-bootstrap";
 import { MockAppSettingsService } from "../../../../core/mock-app-settings.service";
 import { AppSettingsService } from "../../../../core/app-settings.service";
-import { ViewCanvasComponent } from '../../../virtualization/view-editor/view-canvas/view-canvas.component';
-import { ViewEditorService } from "../../../virtualization/view-editor/view-editor.service";
+import { ViewCanvasComponent } from "./view-canvas.component";
+import { ViewEditorService } from "../view-editor.service";
 import {
   ActionModule,
   CardModule,
@@ -22,14 +22,14 @@ import { MockDataserviceService } from "../../../shared/mock-dataservice.service
 import { VdbService } from "../../../shared/vdb.service";
 import { MockVdbService } from "../../../shared/mock-vdb.service";
 import { NotifierService } from "../../../shared/notifier.service";
-import { ViewPropertyEditorsComponent } from "../../../virtualization/view-editor/view-property-editors/view-property-editors.component";
+import { ViewPropertyEditorsComponent } from "../view-property-editors/view-property-editors.component";
 import { TabsModule } from "ngx-bootstrap";
-import { GraphVisualComponent, LinkVisualComponent, NodeVisualComponent } from "../../../virtualization/view-editor/view-canvas/visuals";
-import { CanvasService } from "../../../virtualization/view-editor/view-canvas/canvas.service";
+import { GraphVisualComponent, LinkVisualComponent, NodeVisualComponent } from "./visuals";
+import { CanvasService } from "./canvas.service";
 import { SelectionService } from "../../../../core/selection.service";
-import { PropertyEditorComponent } from "../../../virtualization/view-editor/view-property-editors/property-editor/property-editor.component";
-import { ProjectedColumnsEditorComponent } from "../../../virtualization/view-editor/view-property-editors/projected-columns-editor/projected-columns-editor.component";
-import { ViewsListComponent } from "../../../virtualization/view-editor/views-list/views-list.component";
+import { PropertyEditorComponent } from "../view-property-editors/property-editor/property-editor.component";
+import { ProjectedColumnsEditorComponent } from "../view-property-editors/projected-columns-editor/projected-columns-editor.component";
+import { ViewsListComponent } from "../views-list/views-list.component";
 import { BsModalService } from "ngx-bootstrap";
 import { Dataservice } from "../../../shared/dataservice.model";
 

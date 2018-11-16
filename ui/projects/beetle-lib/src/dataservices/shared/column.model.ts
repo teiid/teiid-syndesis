@@ -59,7 +59,7 @@ export class Column {
   }
 
   /**
-   * @param {string} name the column type
+   * @param {string} type the column type
    */
   public setDatatype( type: string ): void {
     this.Datatype = type;
