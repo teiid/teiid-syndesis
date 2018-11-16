@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-import { ViewEditorI18n } from "../../../virtualization/view-editor/view-editor-i18n";
-import { Command } from "../../../virtualization/view-editor/command/command";
-import { CommandType } from "../../../virtualization/view-editor/command/command-type.enum";
+import { ViewEditorI18n } from "../view-editor-i18n";
+import { Command } from "./command";
+import { CommandType } from "./command-type.enum";
 import { ProjectedColumn } from "../../../shared/projected-column.model";
 
 export class UpdateProjectedColumnsCommand extends Command {
@@ -83,7 +83,7 @@ export class UpdateProjectedColumnsCommand extends Command {
   }
 
   /**
-   * @returns {ProjectedColumns} the new projected columns
+   * @returns {ProjectedColumn[]} the new projected columns
    */
   public getNewProjectedColumns(): ProjectedColumn[] {
     const newColsStr = this.getArg( UpdateProjectedColumnsCommand.newProjectedColumns ) as string;

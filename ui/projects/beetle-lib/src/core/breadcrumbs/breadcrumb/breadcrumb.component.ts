@@ -18,7 +18,7 @@
 import { Component, Input } from "@angular/core";
 
 @Component({
-  selector: "[app-breadcrumb]",
+  selector: "[btl-breadcrumb]",
   templateUrl: "breadcrumb.component.html",
   styleUrls: ["breadcrumb.component.css"]
 })

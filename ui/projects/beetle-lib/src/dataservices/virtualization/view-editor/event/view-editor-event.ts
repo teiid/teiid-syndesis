@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-import { ViewEditorPart } from "../../../virtualization/view-editor/view-editor-part.enum";
-import { ViewEditorEventType } from "../../../virtualization/view-editor/event/view-editor-event-type.enum";
+import { ViewEditorPart } from "../view-editor-part.enum";
+import { ViewEditorEventType } from "./view-editor-event-type.enum";
 
 export class ViewEditorEvent {
 

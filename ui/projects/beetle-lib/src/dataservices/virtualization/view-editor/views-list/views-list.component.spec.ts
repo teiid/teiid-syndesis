@@ -3,7 +3,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ViewsListComponent } from './views-list.component';
 import { SelectionService } from "../../../../core/selection.service";
 import { Dataservice } from "../../../shared/dataservice.model";
-import { ViewEditorService } from "../../../virtualization/view-editor/view-editor.service";
+import { ViewEditorService } from "../view-editor.service";
 import { MockAppSettingsService } from "../../../../core/mock-app-settings.service";
 import { LoggerService } from "../../../../core/logger.service";
 import { AppSettingsService } from "../../../../core/app-settings.service";

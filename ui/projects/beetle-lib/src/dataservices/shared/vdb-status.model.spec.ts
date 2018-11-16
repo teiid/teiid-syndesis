@@ -1,4 +1,4 @@
-import { VdbStatus } from "../shared/vdb-status.model";
+import { VdbStatus } from "./vdb-status.model";
 
 describe("VdbStatus", () => {
   let vdbStatus: VdbStatus;

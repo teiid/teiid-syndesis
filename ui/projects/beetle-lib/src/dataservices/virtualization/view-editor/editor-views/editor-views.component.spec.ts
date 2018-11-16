@@ -9,10 +9,10 @@ import { MockVdbService } from "../../../shared/mock-vdb.service";
 import { DataserviceService } from "../../../shared/dataservice.service";
 import { MockDataserviceService } from "../../../shared/mock-dataservice.service";
 import { NotifierService } from "../../../shared/notifier.service";
-import { ViewEditorService } from "../../../virtualization/view-editor/view-editor.service";
-import { EditorViewsComponent } from '../../../virtualization/view-editor/editor-views/editor-views.component';
-import { MessageLogComponent } from "../../../virtualization/view-editor/editor-views/message-log/message-log.component";
-import { ViewPreviewComponent } from "../../../virtualization/view-editor/editor-views/view-preview/view-preview.component";
+import { ViewEditorService } from "../view-editor.service";
+import { EditorViewsComponent } from "./editor-views.component";
+import { MessageLogComponent } from "./message-log/message-log.component";
+import { ViewPreviewComponent } from "./view-preview/view-preview.component";
 import { TabsModule } from "ngx-bootstrap";
 import {
   ActionModule,

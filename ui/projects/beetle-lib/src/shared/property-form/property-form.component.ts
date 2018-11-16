@@ -19,7 +19,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
 import { FormControl, FormGroup, Validators } from "@angular/forms";
 
 import { ObjectUtils } from "../../core/utils/object-utils";
-import { PropertyDefinition } from "../../shared/property-form/property-definition.model";
+import { PropertyDefinition } from "./property-definition.model";
 
 @Component({
   selector: "btl-property-form",

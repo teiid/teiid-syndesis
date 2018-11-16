@@ -17,7 +17,7 @@
 
 import { Component, EventEmitter, Input, Output, ViewEncapsulation } from "@angular/core";
 import { LoggerService } from "../../core/logger.service";
-import { DataserviceCardComponent } from "../dataservices-cards/dataservice-card/dataservice-card.component";
+import { DataserviceCardComponent } from "./dataservice-card/dataservice-card.component";
 import { Dataservice } from "../shared/dataservice.model";
 import { NameValue } from "../shared/name-value.model";
 

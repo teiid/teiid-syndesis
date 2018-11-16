@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 import { Component, Input } from '@angular/core';
-import { CanvasLink } from '../../../../../virtualization/view-editor/view-canvas/models';
+import { CanvasLink } from "../../models";
 
 @Component({
   selector: '[link-visual]',

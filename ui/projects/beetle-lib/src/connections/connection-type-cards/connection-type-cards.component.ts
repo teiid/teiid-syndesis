@@ -16,7 +16,7 @@
  */
 
 import { Component, EventEmitter, Input, Output, ViewEncapsulation } from "@angular/core";
-import { ConnectionType } from "../../connections/shared/connection-type.model";
+import { ConnectionType } from "../shared/connection-type.model";
 
 @Component({
   encapsulation: ViewEncapsulation.None,

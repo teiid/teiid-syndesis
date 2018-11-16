@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 import { Component, Input } from '@angular/core';
-import { CanvasNode } from '../../../../../virtualization/view-editor/view-canvas/models';
-import { CanvasService } from '../../../../../virtualization/view-editor/view-canvas/canvas.service';
-import { CanvasConstants } from '../../../../../virtualization/view-editor/view-canvas/canvas-constants';
+import { CanvasNode } from "../../models";
+import { CanvasService } from "../../canvas.service";
+import { CanvasConstants } from "../../canvas-constants";
 import * as _ from "lodash";
 
 @Component({

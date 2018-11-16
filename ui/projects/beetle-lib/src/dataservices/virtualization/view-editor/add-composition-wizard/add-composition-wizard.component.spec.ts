@@ -6,7 +6,7 @@ import {
   TableModule,
   WizardModule
 } from "patternfly-ng";
-import { ConnectionTreeSelectorComponent } from "../../../virtualization/view-editor/connection-table-dialog/connection-tree-selector/connection-tree-selector.component";
+import { ConnectionTreeSelectorComponent } from "../connection-table-dialog/connection-tree-selector/connection-tree-selector.component";
 import { TreeModule } from "angular-tree-component";
 import { FormsModule } from "@angular/forms";
 import { MockConnectionService } from "../../../../connections/shared/mock-connection.service";

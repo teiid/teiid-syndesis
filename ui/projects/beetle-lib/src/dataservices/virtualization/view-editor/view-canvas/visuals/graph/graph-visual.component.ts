@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 import { Component, ChangeDetectorRef, HostListener, ChangeDetectionStrategy, OnInit } from '@angular/core';
-import { CanvasService } from '../../../../../virtualization/view-editor/view-canvas/canvas.service';
-import { CanvasGraph, CanvasNode, CanvasLink } from '../../../../../virtualization/view-editor/view-canvas/models';
+import { CanvasService } from "../../canvas.service";
+import { CanvasGraph, CanvasNode, CanvasLink } from "../../models";
 import * as d3 from 'd3';
 import * as _ from "lodash";
 

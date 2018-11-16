@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { EventEmitter } from '@angular/core';
-import { CanvasService } from '../../../../virtualization/view-editor/view-canvas/canvas.service';
-import { CanvasNode } from '../../../../virtualization/view-editor/view-canvas/models/canvas-node';
-import { CanvasLink } from '../../../../virtualization/view-editor/view-canvas/models/canvas-link';
-import * as d3 from 'd3';
-import * as cola from 'webcola';
+import { EventEmitter } from "@angular/core";
+import { CanvasService } from "../canvas.service";
+import { CanvasNode } from "./canvas-node";
+import { CanvasLink } from "./canvas-link";
+import * as d3 from "d3";
+import * as cola from "webcola";
 import * as _ from "lodash";
 
 const FORCES = {

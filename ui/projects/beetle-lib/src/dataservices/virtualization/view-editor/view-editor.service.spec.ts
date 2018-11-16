@@ -6,7 +6,7 @@ import { MockAppSettingsService } from "../../../core/mock-app-settings.service"
 import { VdbService } from "../../shared/vdb.service";
 import { MockVdbService } from "../../shared/mock-vdb.service";
 import { NotifierService } from "../../shared/notifier.service";
-import { ViewEditorService } from '../../virtualization/view-editor/view-editor.service';
+import { ViewEditorService } from "./view-editor.service";
 import { DataserviceService } from "../../shared/dataservice.service";
 import { MockDataserviceService } from "../../shared/mock-dataservice.service";
 import { SelectionService } from "../../../core/selection.service";

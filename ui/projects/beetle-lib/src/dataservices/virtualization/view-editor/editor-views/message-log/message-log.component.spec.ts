@@ -18,8 +18,8 @@ import { MockDataserviceService } from "../../../../shared/mock-dataservice.serv
 import { VdbService } from "../../../../shared/vdb.service";
 import { MockVdbService } from "../../../../shared/mock-vdb.service";
 import { NotifierService } from "../../../../shared/notifier.service";
-import { ViewEditorService } from "../../../../virtualization/view-editor/view-editor.service";
-import { MessageLogComponent } from '../../../../virtualization/view-editor/editor-views/message-log/message-log.component';
+import { ViewEditorService } from "../../view-editor.service";
+import { MessageLogComponent } from "./message-log.component";
 import { SelectionService } from "../../../../../core/selection.service";
 
 describe('MessageLogComponent', () => {

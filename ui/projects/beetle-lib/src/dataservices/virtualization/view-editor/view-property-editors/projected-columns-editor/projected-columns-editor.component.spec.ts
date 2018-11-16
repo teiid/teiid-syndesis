@@ -11,7 +11,7 @@ import { MockDataserviceService } from "../../../../shared/mock-dataservice.serv
 import { NotifierService } from "../../../../shared/notifier.service";
 import { VdbService } from "../../../../shared/vdb.service";
 import { MockVdbService } from "../../../../shared/mock-vdb.service";
-import { ViewEditorService } from "../../../../virtualization/view-editor/view-editor.service";
+import { ViewEditorService } from "../../view-editor.service";
 import { HttpModule } from "@angular/http";
 
 describe('ProjectedColumnsEditorComponent', () => {

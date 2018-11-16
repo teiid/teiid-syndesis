@@ -1,6 +1,6 @@
-import { Composition } from "../shared/composition.model";
-import { CompositionType } from "../shared/composition-type.enum";
-import { CompositionOperator } from "../shared/composition-operator.enum";
+import { Composition } from "./composition.model";
+import { CompositionType } from "./composition-type.enum";
+import { CompositionOperator } from "./composition-operator.enum";
 
 describe("Composition", () => {
   let composition: Composition;

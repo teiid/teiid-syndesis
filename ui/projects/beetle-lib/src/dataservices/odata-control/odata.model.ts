@@ -16,9 +16,9 @@
  */
 
 import * as _ from "lodash";
-import { OdataEntity } from "../odata-control/odata-entity.model";
-import { OdataColumn } from "../odata-control/odata-column.model";
-import { OdataWhere } from "../odata-control/odata-where.model";
+import { OdataEntity } from "./odata-entity.model";
+import { OdataColumn } from "./odata-column.model";
+import { OdataWhere } from "./odata-where.model";
 
 export class Odata {
 

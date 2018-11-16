@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-import { DeploymentState } from "../shared/deployment-state.enum";
-import { PublishState } from "../shared/publish-state.enum";
-import { Virtualization } from "../shared/virtualization.model";
-import { VirtRoute } from "../shared/virt-route.model";
+import { DeploymentState } from "./deployment-state.enum";
+import { PublishState } from "./publish-state.enum";
+import { Virtualization } from "./virtualization.model";
+import { VirtRoute } from "./virt-route.model";
 import { Identifiable } from "../../shared/identifiable";
 import { SortDirection } from "../../shared/sort-direction.enum";
-import { DataservicesConstants } from "../shared/dataservices-constants";
+import { DataservicesConstants } from "./dataservices-constants";
 
 export class Dataservice implements Identifiable< string > {
 

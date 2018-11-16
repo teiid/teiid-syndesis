@@ -17,7 +17,7 @@
 
 import { Component, EventEmitter, Input, OnInit, Output, TemplateRef, ViewEncapsulation } from "@angular/core";
 import { Router } from "@angular/router";
-import { Connection } from "../../connections/shared/connection.model";
+import { Connection } from "../shared/connection.model";
 import { Action, ActionConfig, ListConfig } from "patternfly-ng";
 
 @Component({

@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-import { Composition } from "../shared/composition.model";
-import { PathUtils } from "../shared/path-utils";
-import { VdbsConstants } from "../shared/vdbs-constants";
-import { CompositionOperator } from "../shared/composition-operator.enum";
-import { CompositionType } from "../shared/composition-type.enum";
-import { ProjectedColumn } from "../shared/projected-column.model";
+import { Composition } from "./composition.model";
+import { PathUtils } from "./path-utils";
+import { VdbsConstants } from "./vdbs-constants";
+import { CompositionOperator } from "./composition-operator.enum";
+import { CompositionType } from "./composition-type.enum";
+import { ProjectedColumn } from "./projected-column.model";
 
 /**
  * ViewDefinition model
@@ -161,7 +161,7 @@ export class ViewDefinition {
   }
 
   /**
-   * @param {ProjectedColumns} projColumns the projected columns
+   * @param {ProjectedColumn[]} projColumns the projected columns
    */
   public setProjectedColumns( projColumns: ProjectedColumn[] ): void {
     this.projectedColumns = projColumns;
@@ -497,7 +497,7 @@ export class ViewDefinition {
 
   /**
    * Determine if the supplied ViewDefinition is equal to this
-   * @param {Object} values
+   * @param {ViewDefinition} otherView
    */
   public isEqual( otherView: ViewDefinition ): boolean {
     let equal = false;

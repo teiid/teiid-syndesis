@@ -14,8 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Message } from "../../virtualization/view-editor/editor-views/message-log/message";
-import { Problem } from "../../virtualization/view-editor/editor-views/message-log/problem";
+import { Message } from "./editor-views/message-log/message";
+import { Problem } from "./editor-views/message-log/problem";
 import { ViewDefinition } from "../../shared/view-definition.model";
 import { Composition } from "../../shared/composition.model";
 

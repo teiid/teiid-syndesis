@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, OnInit } from "@angular/core";
 import { ViewEditorI18n } from "../virtualization/view-editor/view-editor-i18n";
 import { BsModalRef } from "ngx-bootstrap";
 import { ConnectionService } from "../../connections/shared/connection.service";
@@ -13,11 +13,12 @@ import {
   NotificationType,
   TableConfig
 } from "patternfly-ng";
-import { NewView } from "../create-views-dialog/new-view.model";
+import { NewView } from "./new-view.model";
 import { TableEvent } from "patternfly-ng";
 import { AbstractControl, FormControl, FormGroup } from "@angular/forms";
 import { DataserviceService } from "../shared/dataservice.service";
-import { CreateViewsResult } from "../create-views-dialog/create-views-result.model";
+import { CreateViewsResult } from "./create-views-result.model";
+import { Subject } from "rxjs/Subject";
 
 @Component({
   selector: 'btl-create-views-dialog',
@@ -41,8 +42,7 @@ import { CreateViewsResult } from "../create-views-dialog/create-views-result.mo
  */
 export class CreateViewsDialogComponent implements OnInit {
 
-  @Output() public okAction: EventEmitter<CreateViewsResult> = new EventEmitter<CreateViewsResult>();
-
+  public okAction: Subject<CreateViewsResult>;
   public readonly title = ViewEditorI18n.createViewsDialogNewVirtualizationTitle;
   public readonly message = ViewEditorI18n.createViewsDialogMessage;
   public readonly cancelButtonText = ViewEditorI18n.cancelButtonText;
@@ -82,6 +82,8 @@ export class CreateViewsDialogComponent implements OnInit {
   }
 
   public ngOnInit(): void {
+    this.okAction = new Subject();
+
     // List configuration
     this.listConfig = {
       dblClick: false,
@@ -329,7 +331,7 @@ export class CreateViewsDialogComponent implements OnInit {
     result.setViews(this.selectedViews);
 
     this.bsModalRef.hide();
-    this.okAction.emit(result);
+    this.okAction.next(result);
   }
 
   /**
@@ -382,7 +384,9 @@ export class CreateViewsDialogComponent implements OnInit {
 
   /**
    * Recursively generate the view infos for this node and its children
+   * @param {string} connName the connection name
    * @param {SchemaNode} schemaNode the schema node
+   * @param {string[]} nodePath the node path array
    */
   private generateViewInfos(connName: string, schemaNode: SchemaNode, nodePath: string[], viewInfos: NewView[]): void {
     const sourcePath: string[] = [];

@@ -1,6 +1,6 @@
-import { ViewEditorState } from "../shared/view-editor-state.model";
-import { CompositionType } from "../shared/composition-type.enum";
-import { CompositionOperator } from "../shared/composition-operator.enum";
+import { ViewEditorState } from "./view-editor-state.model";
+import { CompositionType } from "./composition-type.enum";
+import { CompositionOperator } from "./composition-operator.enum";
 
 describe("ViewEditorState", () => {
   let viewEditorState: ViewEditorState;

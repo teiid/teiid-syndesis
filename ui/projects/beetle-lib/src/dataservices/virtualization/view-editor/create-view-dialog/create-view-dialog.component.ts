@@ -16,15 +16,14 @@
  */
 
 import { Component, OnInit } from "@angular/core";
-import { Output } from "@angular/core";
-import { EventEmitter } from "@angular/core";
 import { BsModalRef } from "ngx-bootstrap";
 import { LoggerService } from "../../../../core/logger.service";
-import { ViewEditorI18n } from "../../../virtualization/view-editor/view-editor-i18n";
+import { ViewEditorI18n } from "../view-editor-i18n";
 import { AbstractControl, FormControl, FormGroup } from "@angular/forms";
 import { VdbService } from "../../../shared/vdb.service";
 import { ViewDefinition } from "../../../shared/view-definition.model";
 import { SelectionService } from "../../../../core/selection.service";
+import { Subject } from "rxjs/Subject";
 
 @Component({
   selector: "btl-create-view-dialog",
@@ -48,8 +47,7 @@ import { SelectionService } from "../../../../core/selection.service";
  */
 export class CreateViewDialogComponent implements OnInit {
 
-  @Output() public okAction: EventEmitter<ViewDefinition> = new EventEmitter<ViewDefinition>();
-
+  public okAction: Subject<ViewDefinition>;
   public readonly title = ViewEditorI18n.createViewDialogTitle;
   public readonly message = ViewEditorI18n.createViewDialogMessage;
   public readonly cancelButtonText = ViewEditorI18n.cancelButtonText;
@@ -78,6 +76,7 @@ export class CreateViewDialogComponent implements OnInit {
   }
 
   public ngOnInit(): void {
+    this.okAction = new Subject();
     this.viewPropertyForm.controls["name"].setValue("");
     this.viewPropertyForm.controls["description"].setValue("");
   }
@@ -132,7 +131,7 @@ export class CreateViewDialogComponent implements OnInit {
     const viewDefn = new ViewDefinition();
     viewDefn.setName(theName);
     viewDefn.setDescription(theDescr);
-    this.okAction.emit(viewDefn);
+    this.okAction.next(viewDefn);
     this.bsModalRef.hide();
   }
 

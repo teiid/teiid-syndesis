@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { ViewCanvasEventType } from "../../../../virtualization/view-editor/view-canvas/event/view-canvas-event-type.enum";
+import { ViewCanvasEventType } from "./view-canvas-event-type.enum";
 
 export class ViewCanvasEvent {
 

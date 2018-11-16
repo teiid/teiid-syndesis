@@ -11,7 +11,7 @@ import { MockVdbService } from "../shared/mock-vdb.service";
 import { NotifierService } from "../shared/notifier.service";
 import { VdbService } from "../shared/vdb.service";
 import { SqlControlComponent } from "../sql-control/sql-control.component";
-import { TestDataserviceComponent } from "../test-dataservice/test-dataservice.component";
+import { TestDataserviceComponent } from "./test-dataservice.component";
 import { CodemirrorModule } from "ng2-codemirror";
 import {
   ActionModule,

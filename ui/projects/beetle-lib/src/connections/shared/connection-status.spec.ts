@@ -1,4 +1,4 @@
-import { ConnectionStatus } from "../../connections/shared/connection-status";
+import { ConnectionStatus } from "./connection-status";
 
 describe("ConnectionStatus", () => {
   let connectionStatus: ConnectionStatus;

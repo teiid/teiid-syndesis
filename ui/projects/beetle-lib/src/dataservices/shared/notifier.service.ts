@@ -1,8 +1,8 @@
 import { Injectable } from "@angular/core";
 import { ConnectionStatus } from "../../connections/shared/connection-status";
-import { DeploymentState } from "../shared/deployment-state.enum";
-import { VdbStatus } from "../shared/vdb-status.model";
-import { Virtualization } from "../shared/virtualization.model";
+import { DeploymentState } from "./deployment-state.enum";
+import { VdbStatus } from "./vdb-status.model";
+import { Virtualization } from "./virtualization.model";
 import { Observable } from "rxjs/Observable";
 import { ReplaySubject } from "rxjs/ReplaySubject";
 import { Subject } from "rxjs/Subject";

@@ -39,7 +39,7 @@ import { Subject } from "rxjs/Subject";
 import { Subscription } from "rxjs/Subscription";
 import * as _ from "lodash";
 import * as vkbeautify from 'vkbeautify';
-import { ViewEditorState } from "../shared/view-editor-state.model";
+import { ViewEditorState } from "./view-editor-state.model";
 import "rxjs/add/operator/mergeMap";
 import { timer } from "rxjs/observable/timer";
 import "rxjs/add/observable/of";

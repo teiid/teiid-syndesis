@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as d3 from 'd3';
-import * as cola from 'webcola';
-import { CanvasNode } from '../../../../virtualization/view-editor/view-canvas/models/canvas-node';
+import * as d3 from "d3";
+import * as cola from "webcola";
+import { CanvasNode } from "./canvas-node";
 
 export class CanvasLink implements cola.Link<CanvasNode> {
   // optional - defining optional implementation properties - required for relevant typing assistance

@@ -3,8 +3,8 @@ import { HttpModule } from "@angular/http";
 import { AppSettingsService } from "../../core/app-settings.service";
 import { LoggerService } from "../../core/logger.service";
 import { MockAppSettingsService } from "../../core/mock-app-settings.service";
-import { NotifierService } from "../shared/notifier.service";
-import { VdbService } from "../shared/vdb.service";
+import { NotifierService } from "./notifier.service";
+import { VdbService } from "./vdb.service";
 
 describe("VdbService", () => {
   beforeEach(() => {

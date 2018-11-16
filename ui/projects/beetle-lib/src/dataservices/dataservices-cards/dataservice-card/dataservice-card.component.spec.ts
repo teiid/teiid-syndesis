@@ -3,7 +3,7 @@ import { FormsModule } from "@angular/forms";
 import { RouterTestingModule } from "@angular/router/testing";
 import { LoggerService } from "../../../core/logger.service";
 import { DataserviceService } from "../../shared/dataservice.service";
-import { DataserviceCardComponent } from "../../dataservices-cards/dataservice-card/dataservice-card.component";
+import { DataserviceCardComponent } from "./dataservice-card.component";
 import { Dataservice } from "../../shared/dataservice.model";
 import { SharedModule } from "../../../shared/shared.module";
 import { MockVdbService } from "../../shared/mock-vdb.service";

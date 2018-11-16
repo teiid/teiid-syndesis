@@ -1,4 +1,4 @@
-import { ConnectionSummary } from "../shared/connection-summary.model";
+import { ConnectionSummary } from "./connection-summary.model";
 
 describe("ConnectionSummary", () => {
   let connectionSummary: ConnectionSummary;

@@ -14,6 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './canvas-node';
-export * from './canvas-link';
-export * from './canvas-graph';
+export * from "./canvas-node";
+export * from "./canvas-link";
+export * from "./canvas-graph";

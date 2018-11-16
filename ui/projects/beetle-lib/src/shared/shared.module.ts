@@ -20,8 +20,8 @@ import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
 import { ReactiveFormsModule } from "@angular/forms";
 
-import { PageErrorComponent } from "../shared/page-error/page-error.component";
-import { TestDataService } from "../shared/test-data.service";
+import { PageErrorComponent } from "./page-error/page-error.component";
+import { TestDataService } from "./test-data.service";
 import { ModalModule } from "ngx-bootstrap";
 import { ConfirmDialogComponent } from "./confirm-dialog/confirm-dialog.component";
 import { PageNotFoundComponent } from "./page-not-found/page-not-found.component";

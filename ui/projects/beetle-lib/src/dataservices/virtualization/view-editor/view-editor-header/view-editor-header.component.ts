@@ -16,7 +16,7 @@
  */
 
 import { Component, OnDestroy, OnInit, ViewEncapsulation } from "@angular/core";
-import { ViewEditorService } from "../../../virtualization/view-editor/view-editor.service";
+import { ViewEditorService } from "../view-editor.service";
 
 @Component({
   encapsulation: ViewEncapsulation.None,

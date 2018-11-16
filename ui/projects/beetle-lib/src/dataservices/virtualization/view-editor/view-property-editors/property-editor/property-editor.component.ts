@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { ViewEditorService } from "../../../../virtualization/view-editor/view-editor.service";
+import { ViewEditorService } from "../../view-editor.service";
 import { SelectionService } from "../../../../../core/selection.service";
-import { SelectionItem } from "../../../../virtualization/view-editor/view-property-editors/property-editor/selection-item.model";
-import { SelectionType } from "../../../../virtualization/view-editor/view-property-editors/property-editor/selection-type.enum";
+import { SelectionItem } from "./selection-item.model";
+import { SelectionType } from "./selection-type.enum";
 
 @Component({
   selector: 'btl-property-editor',

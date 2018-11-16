@@ -17,20 +17,20 @@
 
 import { Component, OnDestroy, OnInit, ViewEncapsulation } from "@angular/core";
 import { LoggerService } from "../../../../../core/logger.service";
-import { ViewEditorEvent } from "../../../../virtualization/view-editor/event/view-editor-event";
-import { ViewEditorService } from "../../../../virtualization/view-editor/view-editor.service";
+import { ViewEditorEvent } from "../../event/view-editor-event";
+import { ViewEditorService } from "../../view-editor.service";
 import { QueryResults } from "../../../../shared/query-results.model";
 import { ColumnData } from "../../../../shared/column-data.model";
 import { RowData } from "../../../../shared/row-data.model";
 import { EmptyStateConfig, NgxDataTableConfig, TableConfig } from "patternfly-ng";
 import { Subscription } from "rxjs/Subscription";
-import { ViewEditorI18n } from "../../../../virtualization/view-editor/view-editor-i18n";
-import { ViewEditorProgressChangeId } from "../../../../virtualization/view-editor/event/view-editor-save-progress-change-id.enum";
-import { Command } from "../../../../virtualization/view-editor/command/command";
-import { AddSourcesCommand } from "../../../../virtualization/view-editor/command/add-sources-command";
-import { RemoveSourcesCommand } from "../../../../virtualization/view-editor/command/remove-sources-command";
-import { AddCompositionCommand } from "../../../../virtualization/view-editor/command/add-composition-command";
-import { RemoveCompositionCommand } from "../../../../virtualization/view-editor/command/remove-composition-command";
+import { ViewEditorI18n } from "../../view-editor-i18n";
+import { ViewEditorProgressChangeId } from "../../event/view-editor-save-progress-change-id.enum";
+import { Command } from "../../command/command";
+import { AddSourcesCommand } from "../../command/add-sources-command";
+import { RemoveSourcesCommand } from "../../command/remove-sources-command";
+import { AddCompositionCommand } from "../../command/add-composition-command";
+import { RemoveCompositionCommand } from "../../command/remove-composition-command";
 
 @Component({
   encapsulation: ViewEncapsulation.None,

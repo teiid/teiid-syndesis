@@ -16,8 +16,8 @@
  */
 
 import { Component, DoCheck, EventEmitter, Input, OnInit, Output, ViewEncapsulation } from "@angular/core";
-import { Connection } from "../../../connections/shared/connection.model";
-import { ConnectionsConstants } from "../../../connections/shared/connections-constants";
+import { Connection } from "../../shared/connection.model";
+import { ConnectionsConstants } from "../../shared/connections-constants";
 import { LoggerService } from "../../../core/logger.service";
 import { Action, ActionConfig, CardAction, CardConfig, ListConfig } from "patternfly-ng";
 

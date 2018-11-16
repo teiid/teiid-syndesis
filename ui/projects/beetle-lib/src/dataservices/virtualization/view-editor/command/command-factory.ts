@@ -15,18 +15,18 @@
  * limitations under the License.
  */
 
-import { Command } from "../../../virtualization/view-editor/command/command";
-import { AddCompositionCommand } from "../../../virtualization/view-editor/command/add-composition-command";
-import { AddSourcesCommand } from "../../../virtualization/view-editor/command/add-sources-command";
-import { UpdateViewDescriptionCommand } from "../../../virtualization/view-editor/command/update-view-description-command";
-import { UpdateViewNameCommand } from "../../../virtualization/view-editor/command/update-view-name-command";
-import { RemoveSourcesCommand } from "../../../virtualization/view-editor/command/remove-sources-command";
+import { Command } from "./command";
+import { AddCompositionCommand } from "./add-composition-command";
+import { AddSourcesCommand } from "./add-sources-command";
+import { UpdateViewDescriptionCommand } from "./update-view-description-command";
+import { UpdateViewNameCommand } from "./update-view-name-command";
+import { RemoveSourcesCommand } from "./remove-sources-command";
 import { SchemaNode } from "../../../../connections/shared/schema-node.model";
-import { NoOpCommand } from "../../../virtualization/view-editor/command/no-op-command";
-import { Undoable } from "../../../virtualization/view-editor/command/undo-redo/undoable";
+import { NoOpCommand } from "./no-op-command";
+import { Undoable } from "./undo-redo/undoable";
 import { Composition } from "../../../shared/composition.model";
-import { RemoveCompositionCommand } from "../../../virtualization/view-editor/command/remove-composition-command";
-import { UpdateProjectedColumnsCommand } from "../../../virtualization/view-editor/command/update-projected-columns-command";
+import { RemoveCompositionCommand } from "./remove-composition-command";
+import { UpdateProjectedColumnsCommand } from "./update-projected-columns-command";
 
 export class CommandFactory {
 
@@ -43,7 +43,7 @@ export class CommandFactory {
   }
 
   /**
-   * @param {string | Composition} addedSources the JSON representation of or the composition being added
+   * @param {string | Composition} addedComposition the JSON representation of or the composition being added
    * @returns {Command} the add composition command or a no op command if composition is null
    */
   public static createAddCompositionCommand( addedComposition: string | Composition, id?: string ): Command {
@@ -74,8 +74,8 @@ export class CommandFactory {
   }
 
   /**
-   * @param {string | SchemaNode[]} removedSources the JSON representation of or the schema nodes of the sources being removed
-   * @returns {Command} the remove sources command or a no op command if sources are `undefined` or `null`
+   * @param {string | Composition} removedComposition the JSON representation of or the composition being removed
+   * @returns {Command} the remove composition command or a no op command if composition is `undefined` or `null`
    */
   public static createRemoveCompositionCommand( removedComposition: string | Composition, id: string ): Command {
     if ( !removedComposition || removedComposition === null ) {
@@ -183,8 +183,8 @@ export class CommandFactory {
   }
 
   /**
-   * @param {string | ProjectedColumns} newProjColumns the stringified representation of or the new projected columns
-   * @param {string | ProjectedColumns} oldProjColumns the stringified representation of or the old projected columns
+   * @param {string} newProjColumns the stringified representation of or the new projected columns
+   * @param {string} oldProjColumns the stringified representation of or the old projected columns
    * @returns {Command} the update projected columns command or a no op command if args are not supplied
    */
   public static createUpdateProjectedColumnsCommand( newProjColumns: string,
