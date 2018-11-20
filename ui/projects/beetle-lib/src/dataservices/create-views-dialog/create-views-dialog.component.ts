@@ -387,6 +387,7 @@ export class CreateViewsDialogComponent implements OnInit {
    * @param {string} connName the connection name
    * @param {SchemaNode} schemaNode the schema node
    * @param {string[]} nodePath the node path array
+   * @param {NewView[]} viewInfos the view infos
    */
   private generateViewInfos(connName: string, schemaNode: SchemaNode, nodePath: string[], viewInfos: NewView[]): void {
     const sourcePath: string[] = [];

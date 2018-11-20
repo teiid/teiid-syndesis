@@ -5,6 +5,7 @@ import { AppComponent } from "./app.component";
 import { ConnectionsModule } from "../../projects/beetle-lib/src/connections/connections.module";
 import { DataservicesModule } from "../../projects/beetle-lib/src/dataservices/dataservices.module";
 import { AppRoutingModule } from "./app-routing.module";
+import { CoreModule } from "../../projects/beetle-lib/src/core/core.module";
 
 @NgModule({
   declarations: [
@@ -12,6 +13,7 @@ import { AppRoutingModule } from "./app-routing.module";
   ],
   imports: [
     BrowserModule,
+    CoreModule,
     ConnectionsModule,
     DataservicesModule,
     AppRoutingModule
