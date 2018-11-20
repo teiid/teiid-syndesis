@@ -33,6 +33,7 @@ import { ModalModule } from "ngx-bootstrap/modal";
 import { BsModalService } from "ngx-bootstrap/modal";
 import { ModalModule as PfngModalModule, NavigationModule as PfngNavigationModule } from "patternfly-ng";
 import { StyleLibComponent } from "./style-lib/style-lib.component";
+import { LibContentComponent } from "./lib-content/lib-content.component";
 
 @NgModule({
   imports: [
@@ -47,12 +48,14 @@ import { StyleLibComponent } from "./style-lib/style-lib.component";
     AboutDialogComponent,
     BreadcrumbComponent,
     BreadcrumbsComponent,
+    LibContentComponent,
     StyleLibComponent,
     VerticalNavComponent
   ],
   exports: [
     BreadcrumbComponent,
     BreadcrumbsComponent,
+    LibContentComponent,
     StyleLibComponent,
     VerticalNavComponent
   ],

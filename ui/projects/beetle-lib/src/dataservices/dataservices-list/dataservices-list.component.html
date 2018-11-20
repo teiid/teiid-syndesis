@@ -40,7 +40,7 @@
                 </span>
 
                 <div id="publishing-list-icons">
-                  <slide-in openedWidth='45%'
+                  <btl-slide-in openedWidth='45%'
                             (onBeforeOpen)="initPublishLogs(item)"
                             (onAfterOpen)="refreshEditor()"
                             (onAfterClose)="disposePublishLogs()">
@@ -94,7 +94,7 @@
                         <codemirror #publishLogsEditor [(ngModel)]="publishLogs" [config]="publishLogsEditorConfig"></codemirror>
                       </div>
                     </div>
-                  </slide-in>
+                  </btl-slide-in>
                 </div>
                 <a class="object-name-link" [routerLink]="[item.getId()]" (click)="onEditDataservice(item.getId())">{{ item.getId() }}</a>
                 <div class="list-pf-description">

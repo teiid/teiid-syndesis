@@ -10,6 +10,7 @@ import { MockAppSettingsService } from "../mock-app-settings.service";
 import { VerticalNavComponent } from "./vertical-nav.component";
 import { BsModalService, ModalModule } from "ngx-bootstrap";
 import { ModalModule as PfngModalModule, NavigationModule as PfngNavigationModule } from "patternfly-ng";
+import { LibContentComponent } from "../lib-content/lib-content.component";
 
 export const moduleRoot: ModuleWithProviders<any> = ModalModule.forRoot();
 
@@ -26,7 +27,7 @@ describe("VerticalNavComponent", () => {
         PfngModalModule,
         PfngNavigationModule
       ],
-      declarations: [ VerticalNavComponent, AboutDialogComponent ],
+      declarations: [ LibContentComponent, VerticalNavComponent, AboutDialogComponent ],
       providers: [
         AboutService,
         { provide: AppSettingsService, useClass: MockAppSettingsService },

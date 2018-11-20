@@ -130,6 +130,7 @@ export class Composition {
 
   /**
    * @param {string} sourcePath the right source of the composition
+   * @param {boolean} isInitialSource true if initial source; default to false
    */
   public setRightSourcePath(sourcePath: string, isInitialSource = false ): void {
     this.rightSourcePath = sourcePath;

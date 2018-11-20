@@ -18,14 +18,14 @@
 import { Component, ElementRef, Input, Output, EventEmitter } from "@angular/core";
 
 @Component({
-  selector: "slide-in",
+  selector: "btl-slide-in",
   templateUrl: "./slide-in.component.html",
   styleUrls: ["./slide-in.component.css"]
 })
 /**
  * Slide In.  Invoke this from another component as follows:
  *
- * <slide-in openedWidth='{40%/300px/50em/.../...}'
+ * <btl-slide-in openedWidth='{40%/300px/50em/.../...}'
  *           (onBeforeOpen)='doSomethingBeforeOpening()'
  *           (onAfterOpen)='doSomethingAfterOpening()'
  *           (onBeforeClose)='doSomethingBeforeClosing()'
@@ -45,7 +45,7 @@ import { Component, ElementRef, Input, Output, EventEmitter } from "@angular/cor
  *   <div slide-in-content>
  *     <!-- Content of the slide-in -->
  *   </div>
- * </slide-in>
+ * </btl-slide-in>
  */
 export class SlideInComponent {
 
