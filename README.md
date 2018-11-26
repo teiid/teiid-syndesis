@@ -12,9 +12,9 @@ Teiid Komodo is now part of the [Syndesis](https://syndesis.io) project. This wo
 ```
 git clone --branch=teiid-syndesis git@github.com:rareddy/syndesis.git
 ```
-- Clone Teiid Komodo Repository or get branch "teiid-syndesis"
+- Clone Teiid Komodo Repository 
 ```
-git clone --branch=teiid-syndesis git@github.com:teiid/teiid-komodo.git
+git clone git@github.com:teiid/teiid-komodo.git
 ```
 - Now follow below script
 ```
@@ -33,6 +33,20 @@ tools/bin/syndesis build -m operator -i
 # invoke the operator with new template, replace will replace previous duplicate ones
 oc replace -f install/operator/deploy/syndesis.yml
 
+```
+
+Note: if after running above script the screen is showing "sleeping 10s ..." for long time then, CTRL+C the process and do the following
+```
+# Build syndesis templates with Komodo images
+install/generator/run.sh
+
+# build the Syndesis operrator project to pick up the new template with Komodo Image
+tools/bin/syndesis build -m operator -i
+
+oc replace -f install/operator/deploy/syndesis-operator.yml
+
+# invoke the operator with new template, replace will replace previous duplicate ones
+oc replace -f install/operator/deploy/syndesis.yml
 ```
 
 At this point Syndesis should be running with `komodo-server` in it, now if you are working on any changes for development in komodo, make you code edits, once done execute below
