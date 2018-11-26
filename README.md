@@ -73,3 +73,12 @@ By default, Minishift starts with 2GB of memory and 20GB of storage. This can qu
 > minishift config set disk-size 60GB
 
 > minishift config set memory 6GB
+
+Licenses
+-------
+
+The default license is the [Apache Software License (ASL) v2.0][1]
+
+Where applicable individual modules or javascript libraries will provide other copyright and license information.
+
+[1]: view-source:https://www.apache.org/licenses/LICENSE-2.0
