@@ -21,7 +21,7 @@ git clone git@github.com:teiid/teiid-komodo.git
 ```
 cd syndesis
 # install syndesis in minishift
-tools/bin/syndesis minishift --install --project syndesis --vm-driver virtualbox
+tools/bin/syndesis minishift --install --project syndesis --vm-driver virtualbox [--memory 6144 --disk-size 40GB]
 
 # wait until the Minishift is started and you logged using oc login, then proceed with next step
 
@@ -73,6 +73,9 @@ By default, Minishift starts with 2GB of memory and 20GB of storage. This can qu
 > minishift config set disk-size 60GB
 
 > minishift config set memory 6GB
+
+See also the optional parameters you can supply on the "syndesis minishift" command to achieve the same.
+
 
 Licenses
 -------
