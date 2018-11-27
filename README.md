@@ -20,7 +20,7 @@ git clone git@github.com:teiid/teiid-komodo.git
 ```
 cd syndesis
 # install syndesis in minishift
-tools/bin/syndesis minishift --install --project syndesis --vm-driver virtualbox
+tools/bin/syndesis minishift --install --project syndesis --vm-driver virtualbox [--memory 6144 --disk-size 40GB]
 
 # wait until the Minishift is started and you logged using oc login, then proceed with next step
 
@@ -33,20 +33,6 @@ tools/bin/syndesis build -m operator -i
 # invoke the operator with new template, replace will replace previous duplicate ones
 oc replace -f install/operator/deploy/syndesis.yml
 
-```
-
-Note: if after running above script the screen is showing "sleeping 10s ..." for long time then, CTRL+C the process and do the following
-```
-# Build syndesis templates with Komodo images
-install/generator/run.sh
-
-# build the Syndesis operrator project to pick up the new template with Komodo Image
-tools/bin/syndesis build -m operator -i
-
-oc replace -f install/operator/deploy/syndesis-operator.yml
-
-# invoke the operator with new template, replace will replace previous duplicate ones
-oc replace -f install/operator/deploy/syndesis.yml
 ```
 
 At this point Syndesis should be running with `komodo-server` in it, now if you are working on any changes for development in komodo, make you code edits, once done execute below
@@ -86,3 +72,5 @@ By default, Minishift starts with 2GB of memory and 20GB of storage. This can qu
 > minishift config set disk-size 60GB
 
 > minishift config set memory 6GB
+
+See also the optional parameters you can supply on the "syndesis minishift" command to achieve the same.
