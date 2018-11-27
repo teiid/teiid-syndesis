@@ -17,46 +17,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
-    <groupId>org.basepom</groupId>
-    <artifactId>basepom-oss</artifactId>
-    <version>25</version>
+    <groupId>org.teiid</groupId>
+    <artifactId>komodo-parent</artifactId>
+    <version>0.0.5-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.teiid</groupId>
-  <artifactId>komodo-parent</artifactId>
-  <version>0.0.5-SNAPSHOT</version>
-  <name>Komodo Parent</name>
+  <artifactId>komodo-server-parent</artifactId>
+  <name>Komodo Server Parent</name>
 
-  <url>http://teiid.io</url>
   <packaging>pom</packaging>
   <description>Tool that allows creating, editing and managing dynamic VDBs for the Teiid OpenShift Deployment.</description>
-  <inceptionYear>2013</inceptionYear>
-
-  <organization>
-    <name>Red Hat</name>
-    <url>http://www.jboss.org/teiid</url>
-  </organization>
-
-  <licenses>
-    <license>
-      <name>GNU Lesser General Public License</name>
-      <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
-      <distribution>repo</distribution>
-      <comments>A business-friendly OSS license</comments>
-    </license>
-  </licenses>
-
-  <scm>
-    <connection>scm:git:git://github.com/teiid/teiid-komodo.git</connection>
-    <developerConnection>scm:git:git@github.com:teiid/teiid-komodo.git</developerConnection>
-    <url>http://github.com/teiid/teiid-komodo</url>
-  </scm>
-
-  <issueManagement>
-    <system>jira</system>
-    <url>http://issues.jboss.org/browse/TEIIDTOOLS</url>
-  </issueManagement>
 
   <developers>
     <developer>
@@ -138,22 +110,8 @@
   </contributors>
 
   <properties>
-    <basepom.check.skip-findbugs>true</basepom.check.skip-findbugs>
-    <basepom.check.skip-checkstyle>true</basepom.check.skip-checkstyle>
-    <basepom.check.skip-license>true</basepom.check.skip-license>
-    <basepom.test.timeout>600</basepom.test.timeout>
-    <basepom.git-id.skip>true</basepom.git-id.skip>
-
-    <!-- originally these were in komodo-server only but travis is getting struck -->
-    <basepom.check.skip-dependency>true</basepom.check.skip-dependency>
-    <basepom.check.skip-dependency-versions-check>true</basepom.check.skip-dependency-versions-check>
-    <basepom.check.skip-dependency-management>true</basepom.check.skip-dependency-management>  
-    <basepom.check.skip-duplicate-finder>true</basepom.check.skip-duplicate-finder>
-
-
     <!-- dependencies from IP-BOM -->
     <version.log4j>1.2.17</version.log4j>
-    <version.junit>4.12</version.junit>
     <version.org.slf4j>1.7.22</version.org.slf4j>
     <version.com.jcraft>0.1.54</version.com.jcraft>
     <!-- dependencies from IP-BOM -->
@@ -215,7 +173,6 @@
     <version.org.yaml>1.17</version.org.yaml>
     <version.io.fabric8.openshift-client>3.0.3</version.io.fabric8.openshift-client>
     <version.io.fabric8.kubernetes-api>3.0.8</version.io.fabric8.kubernetes-api>
-    <fabric8.maven.plugin.version>3.5.39</fabric8.maven.plugin.version> <!-- above 3.5.39 see THORN-1859 -->
     <version.javax.jcr>2.0</version.javax.jcr>
     <version.org.jboss.spec.javax.transaction>1.0.1.Final</version.org.jboss.spec.javax.transaction>
     <version.xml-apis>1.4.01</version.xml-apis>
@@ -230,16 +187,11 @@
 
 
   <modules>
-    <!-- Order is important -->
-
-    <!-- First these -->
     <module>komodo-spi</module>
     <module>komodo-utils</module>
     <module>komodo-metadata</module>
     <module>komodo-core</module>
     <module>komodo-storage</module>
-
-    <!-- For Testing only -->
     <module>komodo-importer</module>
     <module>komodo-relational</module>
     <module>komodo-server</module>
@@ -313,7 +265,7 @@
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>${version.junit}</version>
+        <version>${junit.version}</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -620,83 +572,6 @@
     </dependency>
   </dependencies>
 
-  <build>
-    <!-- This section defines the default plugin settings inherited by child projects. -->
-    <pluginManagement>
-      <plugins>
-
-        <!-- Specify the compiler options and settings -->
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <configuration>
-            <showDeprecation>false</showDeprecation>
-            <showWarnings>false</showWarnings>
-            <source>${maven.compiler.source}</source>
-            <target>${maven.compiler.target}</target>
-            <encoding>${project.build.sourceEncoding}</encoding>
-          </configuration>
-        </plugin>
-        <!-- Fixes how test resources of a project can be used in projects dependent on it -->
-        <plugin>
-          <groupId>org.apache.felix</groupId>
-          <artifactId>maven-bundle-plugin</artifactId>
-          <extensions>true</extensions>
-          <configuration>
-            <instructions>
-              <Export-Package>org.teiid.*</Export-Package>
-            </instructions>
-          </configuration>
-        </plugin>
-        <plugin>
-          <groupId>io.fabric8</groupId>
-          <artifactId>fabric8-maven-plugin</artifactId>
-          <version>${fabric8.maven.plugin.version}</version>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-    <plugins>
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <!-- Manually specify the JUnit provider -->
-        <dependencies>
-          <dependency>
-            <groupId>org.apache.maven.surefire</groupId>
-            <artifactId>surefire-junit4</artifactId>
-            <version>${dep.plugin.surefire.version}</version>
-          </dependency>
-        </dependencies>
-        <configuration>
-          <systemProperties combine.children="append">
-            <property>
-              <name>java.io.tmpdir</name>
-              <value>${basedir}/target</value>
-            </property>
-            <property>
-              <name>skipLongRunningTests</name>
-              <value>${skipLongRunningTests}</value>
-            </property>
-          </systemProperties>
-          <includes>
-            <include>**/*TestCase.java</include>
-            <include>**/*Test.java</include>
-            <include>**/Test*.java</include>
-          </includes>
-          <excludes>
-            <exclude>**/Abstract*TestCase.java</exclude>
-            <exclude>**/Abstract*Test.java</exclude>
-            <exclude>**/IT_*.java</exclude>
-            <!-- hack to prevent anonymous inner classes in Tests from being run as tests -->
-            <include>**/Test*$*.java</include>
-          </excludes>
-          <argLine>-Xmx1524M ${debug.argline} -Djava.awt.headless=true</argLine>
-          <useFile>false</useFile>
-          <enableAssertions>true</enableAssertions>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-
   <reporting>
     <plugins>
       <plugin>
@@ -706,46 +581,4 @@
     </plugins>
   </reporting>
 
-  <profiles>
-    <profile>
-      <id>my-local-repository</id>
-      <activation>
-        <property>
-          <name>local-repo</name>
-        </property>
-      </activation>
-      <repositories>
-        <repository>
-          <!-- To be removed on release of wildfly-swarm 2017.12 -->
-          <id>local-user-repository</id>
-          <name>Local User Repository</name>
-          <url>${local-repo}</url>
-          <layout>default</layout>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
-          <snapshots>
-            <enabled>true</enabled>
-            <updatePolicy>daily</updatePolicy>
-          </snapshots>
-        </repository>
-      </repositories>
-      <pluginRepositories>
-        <pluginRepository>
-          <!-- To be removed on release of wildfly-swarm 2017.12 -->
-          <id>local-user-repository</id>
-          <name>Local User Repository</name>
-          <url>${local-repo}</url>
-          <layout>default</layout>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
-          <snapshots>
-            <enabled>true</enabled>
-            <updatePolicy>daily</updatePolicy>
-          </snapshots>
-        </pluginRepository>
-      </pluginRepositories>
-    </profile>
-  </profiles>
 </project>

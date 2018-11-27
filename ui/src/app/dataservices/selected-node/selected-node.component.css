@@ -1,0 +1,20 @@
+.selected-table-card .card-pf {
+  background-color: var(--card-hover-color);
+}
+
+.selected-table-column-selection {
+  background-color: var(--card-body-color);
+  color: white;
+  margin: 4px 0;
+  text-align: center;
+}
+
+.selected-table-columns {
+  height: 10vh;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+
+.selected-tables-container {
+  background-color: var(--page-background-color);
+}

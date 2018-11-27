@@ -1,37 +1,34 @@
 /*
- * JBoss, Home of Professional Open Source.
- * See the COPYRIGHT.txt file distributed with this work for information
- * regarding copyright ownership.  Some portions may be licensed
- * to Red Hat, Inc. under one or more contributor license agreements.
+ * Copyright Red Hat, Inc. and/or its affiliates
+ * and other contributors as indicated by the @author tags and
+ * the COPYRIGHT.txt file distributed with this work.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
- * 02110-1301 USA.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.komodo.rest.service.unit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.ClassRule;
 import org.komodo.core.internal.repository.search.ComparisonOperator;
 import org.komodo.core.internal.repository.search.ObjectSearcher;
 import org.komodo.core.repository.SynchronousCallback;
@@ -65,15 +62,12 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
     // With this rule placed here and in the suite ensures that UnitServiceResources
     // will be correctly instantiated whether running in the suite or as a single test class
     //
-    @ClassRule
-    public static UnitServiceResources unitServiceResources = UnitServiceResources.getInstance();
-
     protected final ServiceTestUtilities serviceTestUtilities;
 
     protected final String PORTFOLIO_DATA_PATH;
 
     protected static KomodoRestV1Application restApp() {
-        return unitServiceResources.restApp();
+        return UnitServiceResources.getInstance().restApp();
     }
 
     @After
@@ -82,11 +76,11 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
     }
 
     protected static URI appUri() {
-        return unitServiceResources.appUri();
+        return UnitServiceResources.getInstance().appUri();
     }
 
     protected static KomodoRestUriBuilder uriBuilder() {
-        return unitServiceResources.uriBuilder();
+        return UnitServiceResources.getInstance().uriBuilder();
     }
 
     public AbstractKomodoServiceTest() throws Exception {

@@ -1,0 +1,864 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   Copyright (C) 2016 Red Hat, Inc.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.basepom</groupId>
+    <artifactId>basepom-oss</artifactId>
+    <version>25</version>
+  </parent>
+
+  <groupId>org.teiid</groupId>
+  <artifactId>komodo-parent</artifactId>
+  <version>0.0.5-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>Komodo Parent</name>
+  <description>Tool that allows creating, editing and managing dynamic VDBs for the Teiid OpenShift Deployment.</description>
+
+  <properties>
+    <!-- Global Syndesis version -->
+    <syndesis.version>1.4</syndesis.version>
+
+
+    <!-- Image names -->
+    <image.server>komodo/komodo-server:%l</image.server>
+
+    <fabric8.maven.plugin.version>3.5.39</fabric8.maven.plugin.version> <!-- or above 3.5.39 see THORN-1859 -->
+    <maven.exec.plugin.version>1.2.1</maven.exec.plugin.version>
+    <clean-maven-plugin-version>2.4.1</clean-maven-plugin-version>
+    <frontend-maven-plugin-version>1.6</frontend-maven-plugin-version>
+    <node.version>v8.11.2</node.version>
+    <yarn.version>v1.2.1</yarn.version>
+
+    <hibernate.validator.version>5.3.5.Final</hibernate.validator.version>
+
+    <jackson.version>2.8.11</jackson.version>
+    <json-patch.version>1.9</json-patch.version>
+    <kubernetes.client.version>3.1.4.fuse-710001</kubernetes.client.version>
+
+    <spring.version>4.3.12.RELEASE</spring.version>
+    <spring-boot.version>1.5.13.RELEASE</spring-boot.version>
+    <spring-cloud.version>Dalston.SR5</spring-cloud.version>
+
+    <swagger.version>1.5.19</swagger.version>
+
+    <activemq.version>5.15.4</activemq.version>
+
+    <arquillian.version>1.4.0.Final</arquillian.version>
+    <arquillian.cube.version>1.15.2</arquillian.cube.version>
+
+    <maven.version>3.5.4</maven.version>
+
+    <errorprone.version>2.3.1</errorprone.version>
+
+    <!-- Global camel version used everywhere -->
+    <camel.version>2.21.0.fuse-720028</camel.version>
+
+    <dep.plugin.dependency.version>3.0.2</dep.plugin.dependency.version>
+    <dep.plugin.surefire.version>2.21.0</dep.plugin.surefire.version> <!-- SUREFIRE-1422 -->
+    <dep.plugin.failsafe.version>2.21.0</dep.plugin.failsafe.version> <!-- SUREFIRE-1422 -->
+
+    <!-- Don't fork based on cores, doesn't work nicely in the cloud -->
+    <basepom.check.skip-pmd>true</basepom.check.skip-pmd>
+    <basepom.check.skip-findbugs>true</basepom.check.skip-findbugs>
+    <basepom.check.skip-checkstyle>true</basepom.check.skip-checkstyle>
+    <basepom.check.skip-license>true</basepom.check.skip-license>
+    <basepom.test.timeout>600</basepom.test.timeout>
+    <basepom.git-id.skip>true</basepom.git-id.skip>
+
+    <!-- originally these were in komodo-server only but travis is getting struck -->
+    <basepom.check.skip-dependency>true</basepom.check.skip-dependency>
+    <basepom.check.skip-dependency-versions-check>true</basepom.check.skip-dependency-versions-check>
+    <basepom.check.skip-dependency-management>true</basepom.check.skip-dependency-management>  
+    <basepom.check.skip-duplicate-finder>true</basepom.check.skip-duplicate-finder>
+    <basepom.it.memory>1024m</basepom.it.memory>
+
+    <!-- Plugin versions -->
+    <exec-maven-plugin.version>1.6.0</exec-maven-plugin.version>
+    <docker.maven.plugin.version>0.23.0</docker.maven.plugin.version>
+
+    <!-- Maven versions -->
+    <maven-archetype-packaging.version>2.0</maven-archetype-packaging.version>
+    <archetype-packaging.version>2.2</archetype-packaging.version>
+    <maven-archetype-plugin.version>2.2</maven-archetype-plugin.version>
+    <maven-resolver-api.version>1.1.1</maven-resolver-api.version>
+
+    <maven-common-artifact-filters.version>1.4</maven-common-artifact-filters.version>
+    <maven-shared-utils.version>3.1.0</maven-shared-utils.version>
+
+    <!-- Common dependencies -->
+    <assertj-core.version>3.11.1</assertj-core.version>
+    <shrinkwrap.version>2.2.6</shrinkwrap.version>
+
+    <mailapi.version>1.4.3</mailapi.version>
+    <json-schema-core.version>1.2.8</json-schema-core.version>
+    <json-schema-validator.version>2.2.8</json-schema-validator.version>
+    <junit.version>4.12</junit.version>
+    <spotbugs.version>3.1.5</spotbugs.version>
+
+    <spring-security.version>4.2.6.RELEASE</spring-security.version>
+    <resteasy.version>3.6.1.Final</resteasy.version>
+    <resteasy-spring-boot-starter.version>1.0.1.Final</resteasy-spring-boot-starter.version>
+
+    <immutables.version>2.5.6</immutables.version>
+
+    <jdbi.version>2.78</jdbi.version>
+    <postgresql.version>9.1-901-1.jdbc4</postgresql.version>
+    <logback.version>1.2.3</logback.version>
+  </properties>
+
+  <modules>
+    <module>server</module>
+    <module>ui</module>
+  </modules>
+
+  <profiles>
+
+    <!--
+    =========================================================================
+    Profiles (which can and should be combined)
+    =========================================================================
+    -->
+
+    <!-- Profile for building Docker images -->
+    <profile>
+      <id>image</id>
+      <activation>
+        <property>
+          <name>::image</name>
+        </property>
+      </activation>
+
+      <modules>
+        <module>server</module>
+      </modules>
+
+      <build>
+        <defaultGoal>install</defaultGoal>
+      </build>
+    </profile>
+
+    <!-- Release profile -->
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-deploy-plugin</artifactId>
+            <configuration>
+              <skip>true</skip>
+            </configuration>
+          </plugin>
+
+          <plugin>
+            <groupId>org.sonatype.plugins</groupId>
+            <artifactId>nexus-staging-maven-plugin</artifactId>
+            <version>1.6.8</version>
+            <executions>
+              <execution>
+                <id>default-deploy</id>
+                <phase>deploy</phase>
+                <goals>
+                  <goal>deploy</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+              <serverId>oss-sonatype-staging</serverId>
+            </configuration>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.6</version>
+            <configuration>
+              <skip>false</skip>
+            </configuration>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <configuration>
+              <skipSource>false</skipSource>
+            </configuration>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <configuration>
+              <skip>false</skip>
+              <additionalparam>-Xdoclint:none</additionalparam>
+            </configuration>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- Like 'no-checks' but even more aggresive (like even no tests)  -->
+    <profile>
+      <id>flash</id>
+      <activation>
+        <property>
+          <name>deploy</name>
+        </property>
+      </activation>
+      <properties>
+        <basepom.check.skip-all>true</basepom.check.skip-all>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-resources-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>default-testResources</id>
+                <phase />
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>default-testCompile</id>
+                <phase />
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.basepom.maven</groupId>
+            <artifactId>property-helper-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>get-build-id</id>
+                <phase />
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-enforcer-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>default</id>
+                <phase />
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>default</id>
+                <phase />
+              </execution>
+              <execution>
+                <id>default-it</id>
+                <phase />
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-jar-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-tests</id>
+                <phase />
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <phase />
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-source-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <phase />
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>default</id>
+                <phase />
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>com.ning.maven.plugins</groupId>
+            <artifactId>maven-dependency-versions-check-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>default</id>
+                <phase />
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>com.hubspot.maven.plugins</groupId>
+            <artifactId>dependency-management-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>default</id>
+                <phase />
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.basepom.maven</groupId>
+            <artifactId>duplicate-finder-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>default</id>
+                <phase />
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>com.mycila</groupId>
+            <artifactId>license-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>default</id>
+                <phase />
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>default-test</id>
+                <phase />
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>default</id>
+                <phase />
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>${exec-maven-plugin.version}</version>
+            <executions>
+              <execution>
+                <phase />
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>default</id>
+                <phase />
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>com.mycila</groupId>
+          <artifactId>license-maven-plugin</artifactId>
+          <inherited>false</inherited>
+          <configuration>
+            <header>license/syndesis-license.txt</header>
+            <skipExistingHeaders>false</skipExistingHeaders>
+            <!-- Reduce this even further. Vote for https://github.com/mycila/license-maven-plugin/pull/133
+                 to make this a fixed thread number value -->
+            <concurrencyFactor>1</concurrencyFactor>
+            <mapping combine.children="append">
+              <provides>SCRIPT_STYLE</provides>
+              <assemble>SCRIPT_STYLE</assemble>
+            </mapping>
+            <includes>
+              <include>**/src/**</include>
+              <include>**/pom.xml</include>
+            </includes>
+            <excludes>
+              <exclude>**/node_modules/**</exclude>
+              <exclude>.editorconfig</exclude>
+              <exclude>license.txt</exclude>
+              <exclude>.mention-bot</exclude>
+              <exclude>.mvn/wrapper/maven-wrapper.properties</exclude>
+              <exclude>mvnw*</exclude>
+              <exclude>**/resources/**/test-*</exclude>
+              <exclude>**/*.mustache</exclude>
+              <exclude>**/test/resources/**</exclude>
+              <exclude>**/spring.factories</exclude>
+              <exclude>**/*.adoc</exclude>
+              <exclude>**/archetypes/**/src/main/resources/archetype-resources/**</exclude>
+              <exclude>**/s2i/src/main/docker/project/**</exclude>
+              <exclude>**/Dockerfile</exclude>
+              <exclude>**/*.ts</exclude>
+              <exclude>**/*.scss</exclude>
+              <exclude>**/*.html</exclude>
+              <exclude>**/config.json*</exclude>
+              <exclude>**/.gitkeep</exclude>
+              <exclude>**/*.webapp</exclude>
+              <exclude>**/browserconfig.xml</exclude>
+              <exclude>connector/**/META-INF/syndesis/connector/verifier/*</exclude>
+              <exclude>connector/**/springboot/*Configuration.java</exclude><!-- auto generated without headers -->
+              <exclude>connector/**/springboot/*Common.java </exclude><!-- auto generated without headers -->
+              <exclude>meta/**/run-env.sh</exclude>
+              <exclude>server/syndesis-builder-image-generator/image/**</exclude><!-- auto generated without headers -->
+              <exclude>**/src/main/resources/banner.txt</exclude>
+              <!-- excludes as it is copied from upstream camel component and nneds to be moved back to caml -->
+              <exclude>connector/servicenow/src/main/java/io/syndesis/connector/servicenow/ServiceNowMetaDataExtension.java</exclude>
+            </excludes>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>com.github.spotbugs</groupId>
+          <artifactId>spotbugs-maven-plugin</artifactId>
+          <version>${spotbugs.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.basepom.maven</groupId>
+          <artifactId>duplicate-finder-maven-plugin</artifactId>
+          <version>1.3.0</version>
+          <configuration>
+            <ignoredResourcePatterns combine.children="append">
+              <ignoredResourcePattern>resources/catalog.cat</ignoredResourcePattern>
+              <ignoredResourcePattern>mozilla/public-suffix-list.txt</ignoredResourcePattern>
+              <ignoredResourcePattern>draftv3/schema</ignoredResourcePattern>
+              <ignoredResourcePattern>draftv4/schema</ignoredResourcePattern>
+              <ignoredResourcePattern>git.properties</ignoredResourcePattern>
+            </ignoredResourcePatterns>
+            <exceptions>
+              <!-- TODO: Comeup with komodo list
+              <exception>               
+                <conflictingDependencies>
+                  <dependency>
+                    <groupId>org.apache.camel</groupId>
+                    <artifactId>camel-core</artifactId>
+                  </dependency>
+                  <dependency>
+                    <groupId>org.apache.camel</groupId>
+                    <artifactId>camel-catalog</artifactId>
+                  </dependency>
+                </conflictingDependencies>
+                <packages>
+                  <package>org.apache.camel.json.simple</package>
+                </packages>
+              </exception>
+              -->
+            </exceptions>
+            <ignoredDependencies>
+              <!-- spring-cloud-starter BOM excludes all wiremock dependencies, so we bring in
+                   wiremock-standalone, which packages duplicate classes/resources already
+                   present in other dependencies. It's used only in tests so let's ignore it
+                   completely -->
+              <dependency>
+                <groupId>com.github.tomakehurst</groupId>
+                <artifactId>wiremock-standalone</artifactId>
+              </dependency>
+            </ignoredDependencies>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>io.fabric8</groupId>
+          <artifactId>fabric8-maven-plugin</artifactId>
+          <version>${fabric8.maven.plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>2.10.4</version>
+          <executions>
+            <execution>
+              <id>attach-javadocs</id>
+              <goals>
+                <goal>jar</goal>
+              </goals>
+              <configuration>
+                <additionalparam>-Xdoclint:none</additionalparam>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <configuration>
+             <!-- Fix "There was a timeout or other error in the fork" errors -->
+            <forkedProcessTimeoutInSeconds>${basepom.test.timeout}</forkedProcessTimeoutInSeconds>
+            <systemProperties combine.children="append">
+              <property>
+                <name>java.io.tmpdir</name>
+                <value>${basedir}/target</value>
+              </property>
+              <property>
+                <name>skipLongRunningTests</name>
+                <value>${skipLongRunningTests}</value>
+              </property>
+            </systemProperties>
+            <includes>
+              <include>**/*TestCase.java</include>
+              <include>**/*Test.java</include>
+              <include>**/Test*.java</include>              
+            </includes>
+            <excludes>
+              <exclude>**/Abstract*TestCase.java</exclude>
+              <exclude>**/Abstract*Test.java</exclude>
+              <exclude>**/IT_*.java</exclude>
+              <!-- hack to prevent anonymous inner classes in Tests from being run as tests -->
+              <include>**/Test*$*.java</include>
+            </excludes>
+            <argLine>-Xmx1524M ${debug.argline} -Djava.awt.headless=true</argLine>
+            <useFile>false</useFile>
+            <enableAssertions>true</enableAssertions>            
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <version>${spring-boot.version}</version>
+        </plugin>
+
+        <plugin>
+          <artifactId>maven-plugin-plugin</artifactId>
+          <version>3.5</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>templating-maven-plugin</artifactId>
+          <version>1.0.0</version>
+        </plugin>
+
+        <plugin>
+          <groupId>io.syndesis.connector</groupId>
+          <artifactId>connector-support-maven-plugin</artifactId>
+          <version>${project.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.camel</groupId>
+          <artifactId>camel-connector-maven-plugin</artifactId>
+          <version>${camel.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.camel</groupId>
+          <artifactId>camel-package-maven-plugin</artifactId>
+          <version>${camel.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>io.github.swagger2markup</groupId>
+          <artifactId>swagger2markup-maven-plugin</artifactId>
+          <version>1.1.0</version>
+        </plugin>
+
+        <plugin>
+          <groupId>com.github.kongchen</groupId>
+          <artifactId>swagger-maven-plugin</artifactId>
+          <version>3.1.6</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.asciidoctor</groupId>
+          <artifactId>asciidoctor-maven-plugin</artifactId>
+          <version>1.5.3</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>truezip-maven-plugin</artifactId>
+          <version>1.2</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>1.5.0</version>
+        </plugin>
+
+        <plugin>
+          <groupId>com.github.eirslett</groupId>
+          <artifactId>frontend-maven-plugin</artifactId>
+          <version>1.6</version>
+        </plugin>
+
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <configuration>
+          <rules combine.children="append">
+            <evaluateBeanshell>
+              <message>Your JVM has limited cryptography, please upgrade
+                to 1.8.0_162 or newer or install Unlimited Strength
+                Jurisdiction Policy Files to this
+                JVM.</message>
+              <condition>javax.crypto.Cipher.getMaxAllowedKeyLength("AES")
+                > 128</condition>
+            </evaluateBeanshell>
+          </rules>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>default</id>
+            <phase />
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-maven-plugin</artifactId>
+      </plugin>
+
+    </plugins>
+
+
+  </build>
+
+  <!-- Common dependencies -->
+  <dependencyManagement>
+
+    <dependencies>
+
+      <!-- BOMs -->
+      <dependency>
+        <groupId>org.apache.camel</groupId>
+        <artifactId>camel-spring-boot-dependencies</artifactId>
+        <version>${camel.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring-boot.version}</version>
+        <scope>import</scope>
+        <type>pom</type>
+      </dependency>
+
+      <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-dependencies</artifactId>
+        <version>${spring-cloud.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>com.fasterxml.jackson</groupId>
+        <artifactId>jackson-bom</artifactId>
+        <version>2.8.11.20180608</version>
+        <scope>import</scope>
+        <type>pom</type>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jboss.resteasy</groupId>
+        <artifactId>resteasy-bom</artifactId>
+        <version>${resteasy.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>io.fabric8</groupId>
+        <artifactId>kubernetes-client-bom-with-deps</artifactId>
+        <version>${kubernetes.client.version}</version>
+        <scope>import</scope>
+        <type>pom</type>
+      </dependency>
+
+      <dependency>
+        <groupId>io.fabric8</groupId>
+        <artifactId>kubernetes-model</artifactId>
+        <version>2.0.10</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jboss.shrinkwrap.resolver</groupId>
+        <artifactId>shrinkwrap-resolver-bom</artifactId>
+        <version>${shrinkwrap.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jboss.arquillian</groupId>
+        <artifactId>arquillian-bom</artifactId>
+        <version>${arquillian.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>${junit.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <!-- ============================================================== -->
+      <!-- === Internal Dependencies -->
+
+      <!-- ============================================== -->
+
+
+    </dependencies>
+  </dependencyManagement>
+
+  <!-- Metadata need to publish to central -->
+  <url>https://teiid.io/</url>
+  <inceptionYear>2013</inceptionYear>
+
+  <organization>
+    <name>Red Hat</name>
+    <url>https://redhat.com</url>
+  </organization>
+
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <name>Teiid committers</name>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:git://github.com/teiid/teiid-komodo.git</connection>
+    <developerConnection>scm:git:git@github.com:teiid/teiid-komodo.git</developerConnection>
+    <url>http://github.com/teiid/teiid-komodo</url>
+  </scm>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>oss-sonatype-staging</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+    <repository>
+      <id>oss-sonatype-staging</id>
+      <name>Sonatype Staging Repository</name>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+    </repository>
+  </distributionManagement>
+
+  <issueManagement>
+    <system>jira</system>
+    <url>http://issues.jboss.org/browse/TEIIDTOOLS</url>
+  </issueManagement>
+
+  <repositories>
+    <repository>
+      <id>jboss-fuse</id>
+      <url>https://origin-repository.jboss.org/nexus/content/groups/ea</url>
+    </repository>
+    <repository>
+      <id>mrrc-redhat</id>
+      <url>https://maven.repository.redhat.com/ga</url>
+    </repository>
+  </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <releases />
+      <snapshots />
+      <id>jboss_origin</id>
+      <name>jboss_origin</name>
+      <url>https://origin-repository.jboss.org/nexus/content/groups/ea</url>
+    </pluginRepository>
+    <pluginRepository>
+      <id>redhat.ga</id>
+      <name>Red Hat General Availability Repository</name>
+      <url>https://maven.repository.redhat.com/ga</url>
+    </pluginRepository>
+  </pluginRepositories>
+
+</project>

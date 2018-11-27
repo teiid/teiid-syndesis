@@ -1,0 +1,18 @@
+<div>
+  <div id="connections-breadcrumb-bar">
+    <app-breadcrumbs>
+      <li i18n="@@connectionsCards.connections" app-breadcrumb label="Connections" icon="plug" [route]="[ connectionsLink ]"></li>
+      <li i18n="@@connectionsCards.addConnection" app-breadcrumb label="Add Connection" icon="plus" class="active"></li>
+    </app-breadcrumbs>
+  </div>
+  <div class="container-fluid" *ngIf="!pageError">
+    <div class="col-sm-12">
+      <h2 class="app-feature-title" i18n="@@add-connection.addConnection">Add Connection</h2>
+    </div>
+    <!-- Add Connection Wizard -->
+    <div class="row">
+      <app-add-connection-wizard></app-add-connection-wizard>
+    </div>
+  </div>
+</div>
+

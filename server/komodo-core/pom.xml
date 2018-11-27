@@ -20,8 +20,9 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.teiid</groupId>
-    <artifactId>komodo-parent</artifactId>
+    <artifactId>komodo-server-parent</artifactId>
     <version>0.0.5-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>komodo-core</artifactId>
   <name>Komodo Core</name>
