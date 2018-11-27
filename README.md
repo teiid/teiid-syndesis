@@ -11,7 +11,7 @@ Teiid Komodo is now part of the [Syndesis](https://syndesis.io) project. This wo
 - Install [minishift 3.9+](https://www.okd.io/minishift/); which is available for all the major operating systems (Linux, OS X and Windows). The following examples assume that you have Minishift installed and can be called with minishift from the command line. So, minishift is supposed to be available in your search path, i.e. located in a directory contained in your $PATH environment variable (Linux, macOS) or in a directory from your system path (Windows)
 - Clone the Syndesis libraries. (Note this is Ramesh's branch, until code is merged into Syndesis repo, we would need to use this. Once the code is merged we can use Syndesis repo directly
 ```
-git clone --branch=teiid-syndesis git@github.com:rareddy/syndesis.git
+git clone git@github.com:rareddy/syndesis.git
 ```
 - Clone Teiid Komodo Repository 
 ```
