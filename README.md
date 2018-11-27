@@ -42,20 +42,6 @@ tools/bin/syndesis -m ui --image
 
 ```
 
-Note: if after running above script the screen is showing "sleeping 10s ..." for long time then, CTRL+C the process and do the following
-```
-# Build syndesis templates with Komodo images
-install/generator/run.sh
-
-# build the Syndesis operrator project to pick up the new template with Komodo Image
-tools/bin/syndesis build -m operator -i
-
-oc replace -f install/operator/deploy/syndesis-operator.yml
-
-# invoke the operator with new template, replace will replace previous duplicate ones
-oc replace -f install/operator/deploy/syndesis.yml
-```
-
 At this point Syndesis should be running with `komodo-server` in it, now if you are working on any changes for development in komodo, make you code edits, once done execute below
 ```
 cd teiid-komodo
@@ -105,3 +91,4 @@ The default license is the [Apache Software License (ASL) v2.0][1]
 Where applicable individual modules or javascript libraries will provide other copyright and license information.
 
 [1]: view-source:https://www.apache.org/licenses/LICENSE-2.0
+=======
