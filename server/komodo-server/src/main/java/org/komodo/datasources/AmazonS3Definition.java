@@ -31,8 +31,8 @@ public class AmazonS3Definition extends DataSourceDefinition {
     public String getPomDendencies() {
         return
             "<dependency>" +
-            "  <groupId>org.wildfly.swarm</groupId>" +
-            "  <artifactId>teiid-amazon-s3</artifactId>" +
+            "  <groupId>org.teiid</groupId>" +
+            "  <artifactId>thorntail-amazon-s3</artifactId>" +
             "</dependency>";
     }
 

@@ -157,7 +157,8 @@
     <version.teiid.modeshape>1.0.1.Final</version.teiid.modeshape>
     <version.postgresql>42.1.4</version.postgresql>
     <version.xerces>2.11.0</version.xerces>
-    <version.wildfly.swarm>2018.4.1</version.wildfly.swarm>
+    <version.thorntail.teiid>1.0.3</version.thorntail.teiid>
+    <version.thorntail>2.2.0.Final</version.thorntail>
     <version.gson>2.2.4</version.gson>
     <version.apache.commons.codec>1.10</version.apache.commons.codec>
     <version.guava>20.0</version.guava>
@@ -311,7 +312,7 @@
       </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
-        <artifactId>komodo-rest</artifactId>
+        <artifactId>komodo-server</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
@@ -370,9 +371,9 @@
         <version>${version.org.teiid}</version>
       </dependency>
       <dependency>
-        <groupId>org.wildfly.swarm</groupId>
-        <artifactId>teiid-jdbc</artifactId>
-        <version>${version.wildfly.swarm}</version>
+        <groupId>org.teiid</groupId>
+        <artifactId>thorntail-jdbc</artifactId>
+        <version>${version.thorntail.teiid}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.httpcomponents</groupId>
@@ -456,12 +457,12 @@
         <version>${version.xerces}</version>
       </dependency>
       <dependency>
-        <groupId>org.wildfly.swarm</groupId>
-        <artifactId>bom-all</artifactId>
-        <version>${version.wildfly.swarm}</version>
+        <groupId>org.teiid</groupId>
+        <artifactId>thorntail-bom</artifactId>
+        <version>${version.thorntail.teiid}</version>
         <scope>import</scope>
         <type>pom</type>
-      </dependency>
+      </dependency>     
       <dependency>
         <groupId>org.jboss.arquillian</groupId>
         <artifactId>arquillian-bom</artifactId>

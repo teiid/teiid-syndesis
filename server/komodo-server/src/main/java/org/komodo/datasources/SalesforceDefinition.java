@@ -31,8 +31,8 @@ public class SalesforceDefinition extends DataSourceDefinition {
     public String getPomDendencies() {
         return
             "<dependency>" +
-            "  <groupId>org.wildfly.swarm</groupId>" +
-            "  <artifactId>teiid-salesforce-41</artifactId>" +
+            "  <groupId>org.teiid</groupId>" +
+            "  <artifactId>thorntail-salesforce-41</artifactId>" +
             "</dependency>";
     }
 

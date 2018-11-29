@@ -35,8 +35,8 @@ public class MySQLDefinition extends DataSourceDefinition {
           "  <version>${version.mysql}</version>" +
           "</dependency>\n" +
           "<dependency>" +
-          "  <groupId>org.wildfly.swarm</groupId>" +
-          "   <artifactId>teiid-jdbc</artifactId>" +
+          "  <groupId>org.teiid</groupId>" +
+          "   <artifactId>thorntail-jdbc</artifactId>" +
           "</dependency>";
 
     }

@@ -26,7 +26,11 @@ public class ApplicationProperties implements SystemConstants {
      * Gets the namespace
      */
     public static String getNamespace() {
-        return System.getProperty("NAMESPACE");
+        String namespace = System.getenv("NAMESPACE");
+        if (namespace == null) {
+            namespace = System.getProperty("NAMESPACE");
+        }
+        return namespace;
     }
 
     /**

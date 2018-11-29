@@ -129,15 +129,15 @@
         <artifactId>xml-apis</artifactId>
     </dependency>     
     <dependency>
-      <groupId>org.wildfly.swarm</groupId>
+      <groupId>io.thorntail</groupId>
       <artifactId>undertow</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.wildfly.swarm</groupId>
+      <groupId>io.thorntail</groupId>
       <artifactId>management</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.wildfly.swarm</groupId>
+      <groupId>io.thorntail</groupId>
       <artifactId>swagger</artifactId>
     </dependency>
     <dependency>
@@ -208,12 +208,12 @@
       <artifactId>gson</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.wildfly.swarm</groupId>
-      <artifactId>teiid</artifactId>
+      <groupId>org.teiid</groupId>
+      <artifactId>thorntail-runtime</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.wildfly.swarm</groupId>
-      <artifactId>teiid-jdbc</artifactId>
+      <groupId>org.teiid</groupId>
+      <artifactId>thorntail-jdbc</artifactId>
       <exclusions>
         <exclusion>
           <groupId>org.teiid</groupId>
@@ -222,8 +222,8 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.wildfly.swarm</groupId>
-      <artifactId>teiid-mongodb</artifactId>
+      <groupId>org.teiid</groupId>
+      <artifactId>thorntail-mongodb</artifactId>
       <exclusions>
         <exclusion>
           <groupId>org.teiid</groupId>
@@ -232,8 +232,8 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.wildfly.swarm</groupId>
-      <artifactId>teiid-salesforce-41</artifactId>
+      <groupId>org.teiid</groupId>
+      <artifactId>thorntail-salesforce-41</artifactId>
       <exclusions>
         <exclusion>
           <groupId>org.teiid</groupId>
@@ -242,7 +242,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.wildfly.swarm</groupId>
+      <groupId>io.thorntail</groupId>
       <artifactId>logging</artifactId>
     </dependency>
     <dependency>
@@ -352,7 +352,7 @@
       <scope>test</scope>
     </dependency> -->
     <dependency>
-      <groupId>org.wildfly.swarm</groupId>
+      <groupId>io.thorntail</groupId>
       <artifactId>arquillian</artifactId>
       <scope>test</scope>
     </dependency>
@@ -424,9 +424,9 @@
       </plugin>
 
       <plugin>
-        <groupId>org.wildfly.swarm</groupId>
-        <artifactId>wildfly-swarm-plugin</artifactId>
-        <version>${version.wildfly.swarm}</version>
+        <groupId>io.thorntail</groupId>
+        <artifactId>thorntail-maven-plugin</artifactId>
+        <version>${version.thorntail}</version>
         <executions>
           <execution>
             <goals>
@@ -483,7 +483,7 @@
         </property>
       </activation>
       <properties>
-        <fabric8.generator.name>teiid/komodo:%l</fabric8.generator.name>
+        <fabric8.generator.name>teiid/komodo-server:%l</fabric8.generator.name>
       </properties>
       <build>
         <plugins>

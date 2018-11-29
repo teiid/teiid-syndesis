@@ -51,10 +51,7 @@ import org.komodo.spi.runtime.SyndesisDataSource;
 import org.mockito.Mockito;
 import org.teiid.core.util.ObjectConverterUtil;
 
-import io.fabric8.kubernetes.api.model.ConfigMapKeySelectorBuilder;
 import io.fabric8.kubernetes.api.model.EnvVar;
-import io.fabric8.kubernetes.api.model.EnvVarBuilder;
-import io.fabric8.kubernetes.api.model.EnvVarSourceBuilder;
 
 public class TestVDBPublisher extends AbstractLocalRepositoryTest {
 
@@ -87,7 +84,7 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
                 return sources;
             }
             @Override
-            public DefaultSyndesisDataSource getServiceCatalogDataSource(OAuthCredentials authToken, String dsName) throws KException {
+            public DefaultSyndesisDataSource getSyndesisDataSource(OAuthCredentials authToken, String dsName) throws KException {
                 if (dsName.equals("accounts-xyz")) {
                     return getPostgreSQL();
                 } else {
@@ -169,9 +166,9 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
         assertThat(variables, hasItem(new EnvVar("ACCOUNTS_XYZ_URL", "jdbc:mysql://localhost:1521/sampledb", null)));
         assertThat(variables, hasItem(new EnvVar("ACCOUNTS_XYZ_PASSWORD", "my-pass", null)));
 
-        assertThat(variables, hasItem(new EnvVarBuilder().withName(EncryptionComponent.SYNDESIS_ENC_KEY)
-                .withValueFrom(new EnvVarSourceBuilder().withConfigMapKeyRef(new ConfigMapKeySelectorBuilder()
-                        .withName("syndesis-server-config").withKey("encrypt.key").build()).build()).build()));
+//        assertThat(variables, hasItem(new EnvVarBuilder().withName(EncryptionComponent.SYNDESIS_ENC_KEY)
+//                .withValueFrom(new EnvVarSourceBuilder().withConfigMapKeyRef(new ConfigMapKeySelectorBuilder()
+//                        .withName("syndesis-server-config").withKey("encrypt.key").build()).build()).build()));
 
         assertThat(variables, hasItem(new EnvVar("AB_JOLOKIA_OFF", "true", null)));
         assertThat(variables, hasItem(new EnvVar("AB_OFF", "true", null)));
