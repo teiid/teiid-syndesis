@@ -23,6 +23,7 @@ package org.komodo.openshift;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -42,28 +43,38 @@ public class PublishConfiguration implements StringConstants {
     protected boolean enableOdata = true;
     protected String containerMemorySize = "1024Mi";
     protected List<EnvVar> allEnvironmentVariables = new ArrayList<>();
-    
+    protected HashMap<String, String> buildNodeSelector = new HashMap<>();
+    private String buildImageStream = "syndesis-s2i:latest";
+
     // cpu units
     private int cpuUnits = 500; //100m is 0.1 of CPU, at 500m we have 1/2 CPU as default
-    
+
+    public String getBuildImageStream() {
+        String stream = System.getenv("BUILD_IMAGE_STREAM");
+        if (stream != null) {
+            buildImageStream = stream;
+        }
+        return buildImageStream;
+    }
+
     public void setVDB(Vdb vdb) {
         this.vdb = vdb;
     }
-    
+
     public void setEnableOData(boolean flag) {
         this.enableOdata = flag;
     }
-    
+
     public void setContainerMemorySize(String size) {
         this.containerMemorySize = size;
     }
-    
+
     public void addEnvironmentVariables(Collection<EnvVar> envs) {
         if (envs != null && !envs.isEmpty()) {
             this.allEnvironmentVariables.addAll(envs);
         }
-    }     
-    
+    }
+
     protected String getUserJavaOptions() {
         StringBuilder sb = new StringBuilder();
         sb.append(" -XX:+UnlockExperimentalVMOptions");
@@ -78,8 +89,8 @@ public class PublishConfiguration implements StringConstants {
         sb.append(" -Dio.netty.eventLoopThreads="+(2*cpuLimit()));
         return sb.toString();
     }
-    
-    
+
+
     protected Map<String, String> getUserEnvironmentVariables() {
         Map<String, String> envs = new TreeMap<>();
         envs.put("AB_JOLOKIA_OFF", "true");
@@ -87,12 +98,18 @@ public class PublishConfiguration implements StringConstants {
         envs.put("GC_MAX_METASPACE_SIZE", "256");
         envs.put("AB_PROMETHEUS_OFF", "true");
         return envs;
-    }    
-    
+    }
+
+    protected List<EnvVar> getUserEnvVars() {
+        ArrayList<EnvVar> envs = new ArrayList<>();
+        getUserEnvironmentVariables().forEach((k, v) -> envs.add(new EnvVar(k, v, null)));
+        return envs;
+    }
+
     protected String cpuUnits() {
         return Integer.toString(cpuUnits)+"m";
     }
-    
+
     private int cpuLimit() {
         return Math.max(cpuUnits/1000, 1);
     }
@@ -111,4 +128,9 @@ public class PublishConfiguration implements StringConstants {
 
         this.uow.rollback();
     }
+
+    public HashMap<String, String> getBuildNodeSelector() {
+        return buildNodeSelector;
+    }
+
 }
