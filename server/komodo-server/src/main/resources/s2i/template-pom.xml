@@ -87,6 +87,10 @@
     <dependency>
         <groupId>io.thorntail</groupId>
         <artifactId>management</artifactId>
-    </dependency>    
+    </dependency>
+    <dependency>
+      <groupId>io.thorntail</groupId>
+      <artifactId>jaeger</artifactId>
+    </dependency>
   </dependencies>
 </project>
