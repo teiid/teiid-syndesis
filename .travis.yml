@@ -20,11 +20,13 @@ script: "mvn clean install -B -s settings.xml -Pimage -Dfabric8.mode=kubernetes"
 
 after_success:
   - if [[ ( "$TRAVIS_BRANCH" == "master" ) && ( "$TRAVIS_PULL_REQUEST" == "false" ) ]]; then
+      echo "pushing te image to docker";
       docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD ;
       docker push teiid/komodo-server:latest ;
     fi
 
   - if [[ "$TRAVIS_BRANCH" =~ ^[0-9]+(\.[0-9]+){2} ]]; then
+      echo "pushing te image to docker";
       docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD ;
       docker push teiid/komodo-server:$TRAVIS_BRANCH ; 
       docker tag teiid/komodo-server:$TRAVIS_BRANCH teiid/komodo:$(echo $TRAVIS_BRANCH | sed -e 's/\.[0-9][0-9]*$//') ;

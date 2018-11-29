@@ -35,8 +35,8 @@ public class ODataV4Definition extends DataSourceDefinition {
     public String getPomDendencies() {
         return
             "<dependency>" +
-            "  <groupId>org.wildfly.swarm</groupId>" +
-            "  <artifactId>teiid-odata-v4</artifactId>" +
+            "  <groupId>org.teiid</groupId>" +
+            "  <artifactId>thorntail-odata-v4</artifactId>" +
             "</dependency>";
     }
 

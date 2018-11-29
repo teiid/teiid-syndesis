@@ -35,8 +35,8 @@ public class FileDefinition extends DataSourceDefinition {
     public String getPomDendencies() {
         return
             "<dependency>" +
-            "  <groupId>org.wildfly.swarm</groupId>" +
-            "  <artifactId>teiid-file</artifactId>" +
+            "  <groupId>org.teiid</groupId>" +
+            "  <artifactId>thorntail-file</artifactId>" +
             "</dependency>";
     }
 

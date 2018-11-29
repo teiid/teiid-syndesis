@@ -39,8 +39,8 @@ public class MongoDBDefinition extends DataSourceDefinition {
             "  <version>${version.org.mongodb}</version>" +
             "</dependency>" +
             "<dependency>" +
-            "  <groupId>org.wildfly.swarm</groupId>" +
-            "  <artifactId>teiid-mongodb</artifactId>" +
+            "  <groupId>org.teiid</groupId>" +
+            "  <artifactId>thorntail-mongodb</artifactId>" +
             "</dependency>";
     }
 

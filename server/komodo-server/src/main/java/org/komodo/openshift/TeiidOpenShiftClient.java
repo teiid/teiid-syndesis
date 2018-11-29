@@ -80,7 +80,6 @@ import org.komodo.datasources.SalesforceDefinition;
 import org.komodo.datasources.WebServiceDefinition;
 import org.komodo.openshift.BuildStatus.RouteStatus;
 import org.komodo.openshift.BuildStatus.Status;
-import org.komodo.openshift.TeiidOpenShiftClient.MonitorState;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
@@ -104,20 +103,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.fabric8.kubernetes.api.KubernetesHelper;
 import io.fabric8.kubernetes.api.builds.Builds;
-import io.fabric8.kubernetes.api.model.ConfigMapKeySelectorBuilder;
 import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
-import io.fabric8.kubernetes.api.model.EnvVarSourceBuilder;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
-import io.fabric8.kubernetes.api.model.ObjectReference;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.Service;
-import io.fabric8.kubernetes.client.Config;
-import io.fabric8.kubernetes.client.ConfigBuilder;
-import io.fabric8.kubernetes.client.DefaultKubernetesClient;
-import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
@@ -131,17 +123,30 @@ import io.fabric8.openshift.api.model.Route;
 import io.fabric8.openshift.api.model.RouteList;
 import io.fabric8.openshift.api.model.RouteSpec;
 import io.fabric8.openshift.api.model.TLSConfigBuilder;
+import io.fabric8.openshift.client.DefaultOpenShiftClient;
+import io.fabric8.openshift.client.NamespacedOpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftConfig;
+import io.fabric8.openshift.client.OpenShiftConfigBuilder;
 
 public class TeiidOpenShiftClient implements StringConstants {
 
-    public enum MonitorState {
+    public static final String SERVICE_CA_CERT_FILE = "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt";
+    private String openShiftHost = "https://openshift.default.svc";
+    private long buildTimeoutInSeconds = 2 * 60 * 1000L;
+    private final OpenShiftConfig openShiftClientConfig = new OpenShiftConfigBuilder().withMasterUrl(openShiftHost)
+            .withCaCertFile(SERVICE_CA_CERT_FILE).withBuildTimeout(buildTimeoutInSeconds).build();
+    
+    private enum MonitorState {
         STOPPED,
         INITIATED,
         RUNNING
     }
 
+    private NamespacedOpenShiftClient openshiftClient() {
+        return new DefaultOpenShiftClient(openShiftClientConfig);
+    }
+    
     /**
      * Thread for monitoring the work queue and openshift builds.
      * Responsible for sending SUBMITTED work to be configured
@@ -158,13 +163,9 @@ public class TeiidOpenShiftClient implements StringConstants {
 
         @Override
         public void run() {
-            KubernetesClient kubernetesClient = null;
+            final OpenShiftClient client = openshiftClient();
             try {
                 setMonitorState(MonitorState.RUNNING);
-
-                Config config = new ConfigBuilder().build();
-                kubernetesClient = new DefaultKubernetesClient(config);
-                final OpenShiftClient client = kubernetesClient.adapt(OpenShiftClient.class);
 
                 while (!workQueue.isEmpty()) {
                     BuildStatus work = workQueue.peek();
@@ -295,7 +296,7 @@ public class TeiidOpenShiftClient implements StringConstants {
                 //
                 error(null, "Monitor thread exception", ex);
             } finally {
-                kubernetesClient.close();
+                client.close();
             }
         }
     }
@@ -583,7 +584,7 @@ public class TeiidOpenShiftClient implements StringConstants {
                 }
                 String id = item.get("id").asText();
                 String name = item.get("name").asText();
-                sources.add(buildSyndesisDataSource(id+"-"+name, dsNames, item));
+                sources.add(buildSyndesisDataSource(name+"_"+id, dsNames, item));
             }
         } catch (Exception e) {
             throw handleError(e);
@@ -594,7 +595,7 @@ public class TeiidOpenShiftClient implements StringConstants {
     public void bindToSyndesisSource(OAuthCredentials oauthCreds, String dsName) throws KException {
         info(dsName, "Bind to Service: " + dsName);
         try {
-            DefaultSyndesisDataSource scd = getServiceCatalogDataSource(oauthCreds, dsName);
+            DefaultSyndesisDataSource scd = getSyndesisDataSource(oauthCreds, dsName);
             Collection<String> dsNames = this.metadata.admin().getDataSourceNames();
             if (!dsNames.contains(dsName)) {
                 createDataSource(dsName, scd);
@@ -604,11 +605,11 @@ public class TeiidOpenShiftClient implements StringConstants {
         }
     }
 
-    public DefaultSyndesisDataSource getServiceCatalogDataSource(OAuthCredentials oauthCreds, String dsName)
+    public DefaultSyndesisDataSource getSyndesisDataSource(OAuthCredentials oauthCreds, String dsName)
             throws KException {
         try {
             Collection<String> dsNames = this.metadata.admin().getDataSourceNames();
-            String id = dsName.substring(0, dsName.indexOf("-"));
+            String id = dsName.substring(dsName.lastIndexOf("_")+1);
             String url = SYNDESISURL+"/connections/"+id;
             InputStream response = executeGET(url, oauthCreds);
             ObjectMapper mapper = new ObjectMapper();
@@ -676,19 +677,9 @@ public class TeiidOpenShiftClient implements StringConstants {
         return is;
     }
 
-    private ObjectReference baseImage(OpenShiftClient client, PublishConfiguration publishConfiguration) throws KException {
-        ObjectReference fromImage = publishConfiguration.getBaseJDKImage(client);
-        if (fromImage == null) {
-            throw new KException("Build can not be started as there are no JDK base images availble. "
-                    + "Make sure 'redhat-openjdk18-openshift' image stream is available");
-        }
-        return fromImage;
-    }
-
     private BuildConfig createBuildConfig(OpenShiftClient client, String namespace, String vdbName, ImageStream is,
             PublishConfiguration publishConfiguration) throws KException {
         String imageStreamName = is.getMetadata().getName()+":latest";
-        ObjectReference fromImage = baseImage(client, publishConfiguration);
         BuildConfig bc = client.buildConfigs().inNamespace(namespace).createOrReplaceWithNew()
             .withNewMetadata().withName(getBuildConfigName(vdbName))
                 .addToLabels("application", vdbName)
@@ -699,8 +690,14 @@ public class TeiidOpenShiftClient implements StringConstants {
                 .withNewSource().withType("Binary").endSource()
                 .withNewStrategy()
                 .withType("Source").withNewSourceStrategy()
-                .withFrom(fromImage)
+                //.withFrom(fromImage)
+                .withNewFrom()
+                    .withKind("ImageStreamTag")
+                    .withName("syndesis-s2i:latest")
+                    .withNamespace(namespace)
+                .endFrom()                
                 .withIncremental(false)
+                .withEnv(new EnvVar("AB_PROMETHEUS_OFF", "true", null))
                 .withEnv(new EnvVar("AB_JOLOKIA_OFF", "true", null), new EnvVar("AB_OFF", "true", null))
                 .endSourceStrategy()
                 .endStrategy()
@@ -992,26 +989,19 @@ public class TeiidOpenShiftClient implements StringConstants {
             @Override
             public void run() {
                 info(work.vdbName(), "Publishing  - Configuring ...");
-
+                
+                final OpenShiftClient client = openshiftClient();
                 String namespace = work.namespace();
                 PublishConfiguration publishConfig = work.publishConfiguration();
                 Vdb vdb = publishConfig.vdb;
                 UnitOfWork uow = publishConfig.uow;
                 OAuthCredentials oauthCreds = publishConfig.oauthCreds;
-                KubernetesClient kubernetesClient = null;
 
                 String vdbName = work.vdbName();
                 try {
-                    Config config = new ConfigBuilder().build();
-                    OpenShiftConfig.wrap(config).setBuildTimeout(publishConfig.buildTimeoutInSeconds);
-                    kubernetesClient = new DefaultKubernetesClient(config);
-                    final OpenShiftClient client = kubernetesClient.adapt(OpenShiftClient.class);
-
                     info(vdbName, "Publishing - Checking for base image");
-                    baseImage(client, publishConfig);
 
                     // create build contents as tar file
-
                     info(vdbName, "Publishing - Creating zip archive");
                     GenericArchive archive = ShrinkWrap.create(GenericArchive.class, "contents.tar");
                     String pomFile = generatePomXml(oauthCreds, uow, vdb, publishConfig.enableOdata);
@@ -1067,9 +1057,9 @@ public class TeiidOpenShiftClient implements StringConstants {
                     work.setLastUpdated();
                     workQueue.remove(work);
                 } finally {
-                    if (kubernetesClient != null)
-                        kubernetesClient.close();
-
+                    if (client != null) {
+                        client.close();
+                    }
                     //
                     // Building is a long running operation so close the log file
                     //
@@ -1093,13 +1083,14 @@ public class TeiidOpenShiftClient implements StringConstants {
         info(vdbName, "Publishing - Start publishing of virtualization: " + vdbName);
 
         BuildStatus status = getVirtualizationStatus(vdbName);
-        info(vdbName, "Publishing - Virtualisation status: " + status.status());
+        info(vdbName, "Publishing - Virtualization status: " + status.status());
 
-        if ((status.status().equals(Status.BUILDING)) || (status.status().equals(Status.DEPLOYING)) ||
-                (status.status().equals(Status.RUNNING))) {
+        if (status.status().equals(Status.BUILDING)) {
+            info(vdbName, "Publishing - Previous build request in progress, failed to submit new build request: " 
+                    + status.status());
             return status;
         } else {
-            info(vdbName, "Publishing - Adding to work queue");
+            info(vdbName, "Publishing - Adding to work queue for build");
             status = addToQueue(vdbName, publishConfig);
 
             debug(vdbName, "Publishing - Initiating work monitor if not already running");
@@ -1121,7 +1112,7 @@ public class TeiidOpenShiftClient implements StringConstants {
             ModelSource[] sources = model.getSources(uow);
             for (ModelSource source : sources) {
                 String name = source.getName(uow);
-                DefaultSyndesisDataSource ds = getServiceCatalogDataSource(oauthCreds, name);
+                DefaultSyndesisDataSource ds = getSyndesisDataSource(oauthCreds, name);
                 if (ds == null) {
                     throw new KException("Datasource "+name+" not found in Syndesis");
                 }
@@ -1150,9 +1141,6 @@ public class TeiidOpenShiftClient implements StringConstants {
         for (Map.Entry<String, String> entry : publishConfig.getUserEnvironmentVariables().entrySet()) {
             envs.add(env(entry.getKey(), entry.getValue()));
         }
-        envs.add(new EnvVarBuilder().withName(EncryptionComponent.SYNDESIS_ENC_KEY)
-                .withValueFrom(new EnvVarSourceBuilder().withConfigMapKeyRef(new ConfigMapKeySelectorBuilder()
-                        .withName("syndesis-server-config").withKey("encrypt.key").build()).build()).build());
         return envs;
     }
 
@@ -1168,7 +1156,6 @@ public class TeiidOpenShiftClient implements StringConstants {
             //envs.add(env(instanceKey, datasource.getProperties().get(key)));
             //TODO: Passwords in clean text, should either create secret or figure out a way decode on server side.
             envs.add(env(instanceKey, encryptionComponent.decrypt(datasource.getProperties().get(key))));
-            
         }
         return envs;
     }
@@ -1184,13 +1171,11 @@ public class TeiidOpenShiftClient implements StringConstants {
             }
         }
         String namespace = ApplicationProperties.getNamespace();
-        Config config = new ConfigBuilder().build();
-        KubernetesClient kubernetesClient = new DefaultKubernetesClient(config);
-        final OpenShiftClient client = kubernetesClient.adapt(OpenShiftClient.class);
+        final OpenShiftClient client = openshiftClient();
         try {
             return getVDBService(vdbName, namespace, client);
         } finally {
-            kubernetesClient.close();
+            client.close();
         }
     }
 
@@ -1210,9 +1195,11 @@ public class TeiidOpenShiftClient implements StringConstants {
     private BuildStatus getVDBService(String vdbName, String namespace, final OpenShiftClient client) {
         BuildStatus status = new BuildStatus(vdbName);
         status.setNamespace(namespace);
-
-        BuildConfig buildConfig = client.buildConfigs().inNamespace(namespace)
-                                                                    .withName(getBuildConfigName(vdbName)).get();
+        
+        BuildConfig buildConfig = client.buildConfigs()
+                .inNamespace(namespace)
+                .withName(getBuildConfigName(vdbName)).get();
+        
         if (buildConfig != null) {
             BuildList buildList = client.builds().inNamespace(namespace).withLabel("application", vdbName).list();
             if ((buildList !=null) && !buildList.getItems().isEmpty()) {
@@ -1268,9 +1255,7 @@ public class TeiidOpenShiftClient implements StringConstants {
 
     public Collection<BuildStatus> getVirtualizations(boolean includeInQueue){
         String namespace = ApplicationProperties.getNamespace();
-        Config config = new ConfigBuilder().build();
-        KubernetesClient kubernetesClient = new DefaultKubernetesClient(config);
-        final OpenShiftClient client = kubernetesClient.adapt(OpenShiftClient.class);
+        final OpenShiftClient client = openshiftClient();
         Map<String, BuildStatus> services = new HashMap<>();
         try {
             BuildList bl = client.builds().inNamespace(namespace).withLabel(MANAGED_BY, SYSDESIS).list();
@@ -1279,7 +1264,7 @@ public class TeiidOpenShiftClient implements StringConstants {
                 services.put(vdbName, getVDBService(vdbName, namespace, client));
             }
         } finally {
-            kubernetesClient.close();
+            client.close();
         }
 
         if (includeInQueue) {
@@ -1307,9 +1292,7 @@ public class TeiidOpenShiftClient implements StringConstants {
             }
         }
         String namespace = ApplicationProperties.getNamespace();
-        Config config = new ConfigBuilder().build();
-        KubernetesClient kubernetesClient = new DefaultKubernetesClient(config);
-        final OpenShiftClient client = kubernetesClient.adapt(OpenShiftClient.class);
+        final OpenShiftClient client = openshiftClient();
         try {
             info(vdbName, "Deleting virtualisation deployed as Service");
             if (runningBuild != null) {
@@ -1326,7 +1309,7 @@ public class TeiidOpenShiftClient implements StringConstants {
             client.services().inNamespace(namespace).withName(vdbName+HYPHEN + ProtocolType.ODBC.id()).delete();
             client.imageStreams().inNamespace(namespace).withName(vdbName).delete();
         } finally {
-            kubernetesClient.close();
+            client.close();
         }
         runningBuild.setStatusMessage("deleted");
         return runningBuild;
@@ -1334,9 +1317,7 @@ public class TeiidOpenShiftClient implements StringConstants {
 
     private RouteStatus getRoute(String vdbName, ProtocolType protocolType) {
         String namespace = ApplicationProperties.getNamespace();
-        Config config = new ConfigBuilder().build();
-        KubernetesClient kubernetesClient = new DefaultKubernetesClient(config);
-        final OpenShiftClient client = kubernetesClient.adapt(OpenShiftClient.class);
+        final OpenShiftClient client = openshiftClient();
         try {
             RouteStatus theRoute = null;
             debug(vdbName, "Getting route of type " + protocolType.id() + " for Service");
@@ -1375,7 +1356,7 @@ public class TeiidOpenShiftClient implements StringConstants {
             return theRoute;
 
         } finally {
-            kubernetesClient.close();
+            client.close();
         }
     }
 
@@ -1402,7 +1383,7 @@ public class TeiidOpenShiftClient implements StringConstants {
                 ModelSource[] sources = model.getSources(uow);
                 for (ModelSource source : sources) {
                     String name = source.getName(uow);
-                    DefaultSyndesisDataSource ds = getServiceCatalogDataSource(oauthCreds, name);
+                    DefaultSyndesisDataSource ds = getSyndesisDataSource(oauthCreds, name);
                     if (ds == null) {
                         throw new KException("Datasource " + name + " not found");
                     }
@@ -1420,8 +1401,8 @@ public class TeiidOpenShiftClient implements StringConstants {
 
             if (enableOdata) {
                 vdbDependencies.append(StringConstants.NEW_LINE).append("<dependency>"
-                        + "<groupId>org.wildfly.swarm</groupId>"
-                        + "<artifactId>odata</artifactId>"
+                        + "<groupId>org.teiid</groupId>"
+                        + "<artifactId>thorntail-odata-api</artifactId>"
                         + "</dependency> ");
             }
 

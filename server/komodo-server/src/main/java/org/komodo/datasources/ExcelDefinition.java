@@ -35,8 +35,8 @@ public class ExcelDefinition extends DataSourceDefinition {
     public String getPomDendencies() {
         return
             "<dependency>" +
-            "  <groupId>org.wildfly.swarm</groupId>" +
-            "  <artifactId>teiid-excel</artifactId>" +
+            "  <groupId>org.teiid</groupId>" +
+            "  <artifactId>thorntail-excel</artifactId>" +
             "</dependency>";
     }
 
