@@ -12,16 +12,20 @@ Teiid Komodo is now part of the [Syndesis](https://syndesis.io) project. This wo
 - Clone the Syndesis libraries. (Note this is Ramesh's branch, until code is merged into Syndesis repo, we would need to use this. Once the code is merged we can use Syndesis repo directly
 ```
 git clone --branch=teiid-syndesis git@github.com:rareddy/syndesis.git
+cd syndesis
+tools/bin/syndesis build --flash
 ```
+
 - Clone Teiid Komodo Repository 
 ```
 git clone git@github.com:teiid/teiid-komodo.git
 ```
+
 - Now follow below script
 ```
 cd syndesis
 # install syndesis in minishift
-tools/bin/syndesis minishift --install --project syndesis --vm-driver virtualbox
+tools/bin/syndesis minishift --install --project syndesis --vm-driver virtualbox [--memory 6144 --disk-size 40GB]
 
 # wait until the Minishift is started and you logged using oc login, then proceed with next step
 
@@ -73,3 +77,15 @@ By default, Minishift starts with 2GB of memory and 20GB of storage. This can qu
 > minishift config set disk-size 60GB
 
 > minishift config set memory 6GB
+
+See also the optional parameters you can supply on the "syndesis minishift" command to achieve the same.
+
+
+Licenses
+-------
+
+The default license is the [Apache Software License (ASL) v2.0][1]
+
+Where applicable individual modules or javascript libraries will provide other copyright and license information.
+
+[1]: view-source:https://www.apache.org/licenses/LICENSE-2.0

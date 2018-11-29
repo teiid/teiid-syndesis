@@ -38,9 +38,8 @@
 
 
     <!-- Image names -->
-    <image.server>komodo/komodo-server:%l</image.server>
-
-    <fabric8.maven.plugin.version>3.5.39</fabric8.maven.plugin.version> <!-- or above 3.5.39 see THORN-1859 -->
+    <java.base.image>fabric8/s2i-java</java.base.image>
+    <fabric8.maven.plugin.version>3.5.41</fabric8.maven.plugin.version> <!-- or above 3.5.39 see THORN-1859 -->
     <maven.exec.plugin.version>1.2.1</maven.exec.plugin.version>
     <clean-maven-plugin-version>2.4.1</clean-maven-plugin-version>
     <frontend-maven-plugin-version>1.6</frontend-maven-plugin-version>
@@ -533,6 +532,18 @@
           <groupId>io.fabric8</groupId>
           <artifactId>fabric8-maven-plugin</artifactId>
           <version>${fabric8.maven.plugin.version}</version>
+          <configuration>
+            <generator>
+                <includes>
+                    <include>thorntail-v2</include>
+                </includes>
+                <config>
+                    <thorntail-v2>
+                        <from>${java.base.image}</from>
+                    </thorntail-v2>
+                </config>
+            </generator>
+          </configuration>
         </plugin>
 
         <plugin>

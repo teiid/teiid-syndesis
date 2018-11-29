@@ -1,23 +1,19 @@
 /*
- * JBoss, Home of Professional Open Source.
- * See the COPYRIGHT.txt file distributed with this work for information
- * regarding copyright ownership.  Some portions may be licensed
- * to Red Hat, Inc. under one or more contributor license agreements.
+ * Copyright Red Hat, Inc. and/or its affiliates
+ * and other contributors as indicated by the @author tags and
+ * the COPYRIGHT.txt file distributed with this work.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
- * 02110-1301 USA.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.komodo.openshift;
 
@@ -55,10 +51,7 @@ import org.komodo.spi.runtime.SyndesisDataSource;
 import org.mockito.Mockito;
 import org.teiid.core.util.ObjectConverterUtil;
 
-import io.fabric8.kubernetes.api.model.ConfigMapKeySelectorBuilder;
 import io.fabric8.kubernetes.api.model.EnvVar;
-import io.fabric8.kubernetes.api.model.EnvVarBuilder;
-import io.fabric8.kubernetes.api.model.EnvVarSourceBuilder;
 
 public class TestVDBPublisher extends AbstractLocalRepositoryTest {
 
@@ -91,7 +84,7 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
                 return sources;
             }
             @Override
-            public DefaultSyndesisDataSource getServiceCatalogDataSource(OAuthCredentials authToken, String dsName) throws KException {
+            public DefaultSyndesisDataSource getSyndesisDataSource(OAuthCredentials authToken, String dsName) throws KException {
                 if (dsName.equals("accounts-xyz")) {
                     return getPostgreSQL();
                 } else {
@@ -173,9 +166,9 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
         assertThat(variables, hasItem(new EnvVar("ACCOUNTS_XYZ_URL", "jdbc:mysql://localhost:1521/sampledb", null)));
         assertThat(variables, hasItem(new EnvVar("ACCOUNTS_XYZ_PASSWORD", "my-pass", null)));
 
-        assertThat(variables, hasItem(new EnvVarBuilder().withName(EncryptionComponent.SYNDESIS_ENC_KEY)
-                .withValueFrom(new EnvVarSourceBuilder().withConfigMapKeyRef(new ConfigMapKeySelectorBuilder()
-                        .withName("syndesis-server-config").withKey("encrypt.key").build()).build()).build()));
+//        assertThat(variables, hasItem(new EnvVarBuilder().withName(EncryptionComponent.SYNDESIS_ENC_KEY)
+//                .withValueFrom(new EnvVarSourceBuilder().withConfigMapKeyRef(new ConfigMapKeySelectorBuilder()
+//                        .withName("syndesis-server-config").withKey("encrypt.key").build()).build()).build()));
 
         assertThat(variables, hasItem(new EnvVar("AB_JOLOKIA_OFF", "true", null)));
         assertThat(variables, hasItem(new EnvVar("AB_OFF", "true", null)));
