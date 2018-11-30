@@ -71,6 +71,7 @@ import org.komodo.rest.relational.request.KomodoFileAttributes;
 import org.komodo.rest.relational.request.KomodoPathAttribute;
 import org.komodo.rest.relational.request.KomodoQueryAttribute;
 import org.komodo.rest.relational.request.KomodoSyndesisDataSourceAttributes;
+import org.komodo.rest.relational.request.PublishRequestPayload;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.RestConnectionDriver;
 import org.komodo.rest.relational.response.RestQueryResult;
@@ -189,7 +190,7 @@ public class KomodoMetadataService extends KomodoService {
             if (entry1Advanced && !entry2Advanced)
                 return 1; // De-prioritise advanced
             else if (! entry1Advanced && entry2Advanced)
-                return -1; // De-prioritise advanced    
+                return -1; // De-prioritise advanced
 
             return entry1Name.compareTo(entry2Name);
         }
@@ -210,7 +211,7 @@ public class KomodoMetadataService extends KomodoService {
     /**
      * @param engine
      *        the Komodo Engine (cannot be <code>null</code> and must be started)
-     * @param openshiftClient OpenShift client to access service catalog        
+     * @param openshiftClient OpenShift client to access service catalog
      * @throws WebApplicationException
      *         if there is a problem obtaining the {@link WorkspaceManager workspace manager}
      */
@@ -272,7 +273,7 @@ public class KomodoMetadataService extends KomodoService {
             throw ex;
         }
     }
-    
+
     private boolean hasDynamicVdb(String vdbName) throws Exception {
         boolean hasVdb = false;
 
@@ -362,7 +363,7 @@ public class KomodoMetadataService extends KomodoService {
      *         if there is a problem constructing the VDBs JSON document
      */
     @GET
-    @Path(V1Constants.STATUS_SEGMENT + StringConstants.FORWARD_SLASH + 
+    @Path(V1Constants.STATUS_SEGMENT + StringConstants.FORWARD_SLASH +
                   V1Constants.VDBS_SEGMENT)
     @Produces( MediaType.APPLICATION_JSON )
     @ApiOperation(value = "Display the status of the vdbs of the metadata instance",
@@ -487,7 +488,7 @@ public class KomodoMetadataService extends KomodoService {
             return principal.getErrorResponse();
 
         List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        
+
         UnitOfWork uow = null;
         try {
             // find VDB
@@ -583,7 +584,7 @@ public class KomodoMetadataService extends KomodoService {
             return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.METADATA_SERVICE_UNDEPLOY_VDB_ERROR, vdbName);
         }
     }
-    
+
     /**
      * Remove a Connection from the server
      * @param headers
@@ -656,7 +657,7 @@ public class KomodoMetadataService extends KomodoService {
             return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.METADATA_SERVICE_UNDEPLOY_CONNECTION_ERROR, connectionName);
         }
     }
-    
+
     /**
      * Get the schema for a model in a deployed VDB
      * @param headers
@@ -694,7 +695,7 @@ public class KomodoMetadataService extends KomodoService {
             return principal.getErrorResponse();
 
         List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        
+
         UnitOfWork uow = null;
         try {
             // Get the model schema
@@ -841,7 +842,7 @@ public class KomodoMetadataService extends KomodoService {
             return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.METADATA_SERVICE_GET_DATA_SOURCES_ERROR);
         }
     }
-    
+
     /**
      * @param headers
      *        the request headers (never <code>null</code>)
@@ -872,7 +873,7 @@ public class KomodoMetadataService extends KomodoService {
             return principal.getErrorResponse();
 
         List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        
+
         UnitOfWork uow = null;
         try {
         	Repository repo = this.kengine.getDefaultRepository();
@@ -900,7 +901,7 @@ public class KomodoMetadataService extends KomodoService {
             return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.METADATA_SERVICE_GET_DATA_SOURCE_ERROR, connectionName);
         }
     }
-    
+
     /**
      * Return the default translator to be used for a Connection
      * @param headers
@@ -911,10 +912,10 @@ public class KomodoMetadataService extends KomodoService {
      *        the id of the Connection being retrieved (cannot be empty)
      * @return the translator for the connection (never <code>null</code>)
      * @throws KomodoRestException
-     *         if there is a problem finding the specified connection 
+     *         if there is a problem finding the specified connection
      */
     @GET
-    @Path( V1Constants.CONNECTIONS_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.CONNECTION_PLACEHOLDER 
+    @Path( V1Constants.CONNECTIONS_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.CONNECTION_PLACEHOLDER
            + StringConstants.FORWARD_SLASH + V1Constants.TRANSLATOR_DEFAULT_SEGMENT)
     @Produces( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
     @ApiOperation(value = "Get the default translator recommended for a connection")
@@ -947,7 +948,7 @@ public class KomodoMetadataService extends KomodoService {
 
             // Get the translator name from the default driver - translator mappings
             String translatorName = driverTranslatorMap.get(driverName);
-            
+
             // If translator not found using driver mappings, use the connection url if available.
             // The urlContentTranslatorMap keys are unique strings within the connection url which would identify the required translator
             if(translatorName==null) {
@@ -968,7 +969,7 @@ public class KomodoMetadataService extends KomodoService {
                     }
                 }
             }
-            
+
             // Return a status object with the translator
             KomodoStatusObject kso = new KomodoStatusObject();
             kso.addAttribute("Translator", translatorName); //$NON-NLS-1$
@@ -988,7 +989,7 @@ public class KomodoMetadataService extends KomodoService {
     }
 
     /**
-     * Copy  connections from the server into the workspace that are not present in the workspace 
+     * Copy  connections from the server into the workspace that are not present in the workspace
      * @param headers
      *        the request headers (never <code>null</code>)
      * @param uriInfo
@@ -1045,7 +1046,7 @@ public class KomodoMetadataService extends KomodoService {
 
                 workspaceConnNames.add(workspaceConn.getName(uow));
             }
-                
+
             // Copy the teiid connection into the workspace, if no workspace connection with the same name
             for(TeiidDataSource teiidConn : teiidConns) {
                 String name = teiidConn.getName();
@@ -1157,7 +1158,7 @@ public class KomodoMetadataService extends KomodoService {
     public Response addDriver(final @Context HttpHeaders headers,
                                    final @Context UriInfo uriInfo,
                                    @ApiParam(
-                                             value = "" + 
+                                             value = "" +
                                                      "JSON of the properties of the driver to add:<br>" +
                                                      OPEN_PRE_TAG +
                                                      OPEN_BRACE + BR +
@@ -1345,10 +1346,10 @@ public class KomodoMetadataService extends KomodoService {
      *        the id of the Dataservice being requested for deployment (cannot be empty)
      * @return the deployable status for the Dataservice (never <code>null</code>)
      * @throws KomodoRestException
-     *         if there is a problem determining the status 
+     *         if there is a problem determining the status
      */
     @GET
-    @Path( V1Constants.DATA_SERVICE_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.DATA_SERVICE_PLACEHOLDER 
+    @Path( V1Constants.DATA_SERVICE_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.DATA_SERVICE_PLACEHOLDER
            + StringConstants.FORWARD_SLASH + V1Constants.DEPLOYABLE_STATUS_SEGMENT)
     @Produces( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
     @ApiOperation(value = "Get deployable status for a dataservice", response = KomodoStatusObject.class)
@@ -1377,7 +1378,7 @@ public class KomodoMetadataService extends KomodoService {
             Dataservice dataservice = findDataservice(uow, dataserviceName);
             if (dataservice == null)
                 return commitNoDataserviceFound(uow, mediaTypes, dataserviceName);
-            
+
 
             // Get the serviceVDB name associated with the dataservice
             Vdb serviceVdb = dataservice.getServiceVdb(uow);
@@ -1393,10 +1394,10 @@ public class KomodoMetadataService extends KomodoService {
                 if(serverVdbOwner != null) {
                     // server vdb owner is different than the current user.
                     if(!serverVdbOwner.equals(uow.getUserName())) {
-                        deployableStatusMessage = RelationalMessages.getString(RelationalMessages.Info.VDB_ALREADY_DEPLOYED_OWNER, serviceVdbName, serverVdbOwner);    
+                        deployableStatusMessage = RelationalMessages.getString(RelationalMessages.Info.VDB_ALREADY_DEPLOYED_OWNER, serviceVdbName, serverVdbOwner);
                     }
                 } else {
-                    deployableStatusMessage = RelationalMessages.getString(RelationalMessages.Info.VDB_ALREADY_DEPLOYED, serviceVdbName);    
+                    deployableStatusMessage = RelationalMessages.getString(RelationalMessages.Info.VDB_ALREADY_DEPLOYED, serviceVdbName);
                 }
             }
 
@@ -1425,7 +1426,7 @@ public class KomodoMetadataService extends KomodoService {
             }
         }
    }
-    
+
     /**
      * Adds (deploys) a Dataservice to the server
      * @param headers
@@ -1451,7 +1452,7 @@ public class KomodoMetadataService extends KomodoService {
     public Response addDataservice(final @Context HttpHeaders headers,
                                    final @Context UriInfo uriInfo,
                                    @ApiParam(
-                                             value = "" + 
+                                             value = "" +
                                                      "JSON of the properties of the data service:<br>" +
                                                      OPEN_PRE_TAG +
                                                      OPEN_BRACE + BR +
@@ -1575,7 +1576,7 @@ public class KomodoMetadataService extends KomodoService {
     public Response addConnection( final @Context HttpHeaders headers,
                                    final @Context UriInfo uriInfo,
                                    @ApiParam(
-                                             value = "" + 
+                                             value = "" +
                                                      "JSON of the properties of the connection:<br>" +
                                                      OPEN_PRE_TAG +
                                                      OPEN_BRACE + BR +
@@ -1683,7 +1684,7 @@ public class KomodoMetadataService extends KomodoService {
 //
 //    Cannot refresh teiid either since its not part of the API
 //    see https://issues.jboss.org/browse/TEIID-4592
-//    
+//
 //    /**
 //     * Updates a Connection on the server (deletes then adds)
 //     * @param headers
@@ -1709,7 +1710,7 @@ public class KomodoMetadataService extends KomodoService {
 //    public Response updateConnection( final @Context HttpHeaders headers,
 //                                   final @Context UriInfo uriInfo,
 //                                   @ApiParam(
-//                                             value = "" + 
+//                                             value = "" +
 //                                                     "JSON of the properties of the connection:<br>" +
 //                                                     OPEN_PRE_TAG +
 //                                                     OPEN_BRACE + BR +
@@ -1843,7 +1844,7 @@ public class KomodoMetadataService extends KomodoService {
     public Response addVdb(final @Context HttpHeaders headers,
                            final @Context UriInfo uriInfo,
                            @ApiParam(
-                                     value = "" + 
+                                     value = "" +
                                              "JSON of the properties of the vdb:<br>" +
                                              OPEN_PRE_TAG +
                                              OPEN_BRACE + BR +
@@ -1858,7 +1859,7 @@ public class KomodoMetadataService extends KomodoService {
         SecurityPrincipal principal = checkSecurityContext(headers);
         if (principal.hasErrorResponse())
             return principal.getErrorResponse();
-        
+
         List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
         if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
             return notAcceptableMediaTypesBuilder().build();
@@ -2000,14 +2001,14 @@ public class KomodoMetadataService extends KomodoService {
             for( VdbImport vdbImport: currentVdbImports ) {
             	currentVdbImportNames.add(vdbImport.getName(uow));
             }
-            
+
             // Get the current workspace connection VDB names
             List<String> connectionVdbNames = new ArrayList<String>();
             KomodoObject[] connVdbObjs = wMgr.getChildrenOfType(uow, VdbLexicon.Vdb.VIRTUAL_DATABASE, "*btlconn");
             for( KomodoObject kObj: connVdbObjs) {
            		connectionVdbNames.add(kObj.getName(uow));
             }
-            
+
             // Add import for connectionVdb if it is missing
             boolean importAdded = false;
             for(String connVdbName: connectionVdbNames) {
@@ -2016,7 +2017,7 @@ public class KomodoMetadataService extends KomodoService {
             		importAdded = true;
             	}
             }
-            
+
             // Remove extra imports
             boolean importRemoved = false;
             for(String currentVdbImportName: currentVdbImportNames) {
@@ -2025,7 +2026,7 @@ public class KomodoMetadataService extends KomodoService {
             		importRemoved = true;
             	}
             }
-            
+
             // The updated VDB is deployed if imports were added or removed
             if(importAdded || importRemoved) {
                 //
@@ -2121,7 +2122,7 @@ public class KomodoMetadataService extends KomodoService {
     public Response query(final @Context HttpHeaders headers,
                                    final @Context UriInfo uriInfo,
                                    @ApiParam(
-                                             value = "" + 
+                                             value = "" +
                                                      "JSON of the properties of the query:<br>" +
                                                      OPEN_PRE_TAG +
                                                      OPEN_BRACE + BR +
@@ -2208,20 +2209,20 @@ public class KomodoMetadataService extends KomodoService {
             return createErrorResponse(Status.FORBIDDEN, mediaTypes, RelationalMessages.Error.METADATA_SERVICE_QUERY_ERROR, e.getLocalizedMessage());
         }
     }
-    
+
     /*
      * Loads driver name - translator mappings from resource file
      */
     private void loadDriverTranslatorMap() {
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream( DRIVER_TRANSLATOR_MAPPING_FILE );
-        
+
         if(inputStream==null) {
             LOGGER.error(RelationalMessages.getString(RelationalMessages.Error.METADATA_SERVICE_DEFAULT_TRANSLATOR_MAPPINGS_NOT_FOUND_ERROR));
             return;
         }
-        
+
         driverTranslatorMap.clear();
-        
+
         // Load the mappings file
         Document doc;
         try {
@@ -2231,7 +2232,7 @@ public class KomodoMetadataService extends KomodoService {
             LOGGER.error(RelationalMessages.getString(RelationalMessages.Error.METADATA_SERVICE_LOAD_DEFAULT_TRANSLATOR_MAPPINGS_ERROR, ex.getLocalizedMessage()));
             return;
         }
-        
+
         // Single child node contains the mappings
         final Node mappingsNode = doc.getChildNodes().item(0);
         if ( mappingsNode.getNodeType() != Node.ELEMENT_NODE ) {
@@ -2253,14 +2254,14 @@ public class KomodoMetadataService extends KomodoService {
      */
     private void loadUrlContentTranslatorMap() {
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream( URLCONTENT_TRANSLATOR_MAPPING_FILE );
-        
+
         if(inputStream==null) {
             LOGGER.error(RelationalMessages.getString(RelationalMessages.Error.METADATA_SERVICE_DEFAULT_TRANSLATOR_MAPPINGS_NOT_FOUND_ERROR));
             return;
         }
-        
+
         urlContentTranslatorMap.clear();
-        
+
         // Load the mappings file
         Document doc;
         try {
@@ -2270,7 +2271,7 @@ public class KomodoMetadataService extends KomodoService {
             LOGGER.error(RelationalMessages.getString(RelationalMessages.Error.METADATA_SERVICE_LOAD_DEFAULT_TRANSLATOR_MAPPINGS_ERROR, ex.getLocalizedMessage()));
             return;
         }
-        
+
         // Single child node contains the mappings
         final Node mappingsNode = doc.getChildNodes().item(0);
         if ( mappingsNode.getNodeType() != Node.ELEMENT_NODE ) {
@@ -2422,7 +2423,7 @@ public class KomodoMetadataService extends KomodoService {
      */
     @GET
     @Path(V1Constants.TEMPLATES_SEGMENT + StringConstants.FORWARD_SLASH +
-                  V1Constants.TEMPLATE_PLACEHOLDER + StringConstants.FORWARD_SLASH + 
+                  V1Constants.TEMPLATE_PLACEHOLDER + StringConstants.FORWARD_SLASH +
                   V1Constants.TEMPLATE_ENTRIES_SEGMENT)
     @Produces( MediaType.APPLICATION_JSON )
     @ApiOperation(value = "Find the template entries of the named template",
@@ -2490,7 +2491,7 @@ public class KomodoMetadataService extends KomodoService {
             return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.METADATA_SERVICE_GET_TEMPLATE_ENTRIES_ERROR);
         }
     }
-    
+
 	@GET
 	@Path(V1Constants.SERVICE_CATALOG_SOURCES)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -2537,10 +2538,10 @@ public class KomodoMetadataService extends KomodoService {
 					RelationalMessages.Error.METADATA_GET_DATA_SOURCES_ERROR);
 		}
 	}
-	
+
 	/**
 	 * Binds a Syndesis Data Service
-	 * 
+	 *
 	 * @param headers
 	 *            the request headers (never <code>null</code>)
 	 * @param uriInfo
@@ -2777,8 +2778,13 @@ public class KomodoMetadataService extends KomodoService {
     })
     public Response publishVirtualization(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
             @ApiParam(value = "JSON properties:<br>" + OPEN_PRE_TAG + OPEN_BRACE + BR + NBSP
-            + "name: \"Name of the VDB or Dataservice\"" + BR + CLOSE_BRACE
-            + CLOSE_PRE_TAG, required = true) final String payload)
+                    + "\"name\":      \"Name of the VDB or Dataservice\"" + BR
+                    + "\"cpu-units\": \"(optional) Number of CPU units to allocate. 100 is 0.1 CPU (default 500)\"" + BR
+                    + "\"memor\"y:    \"(optional) Amount memory to allocate in MB (default 1024)\"" + BR
+                    + "\"disk-size\": \"(optional) Amount disk allocated in GB (default 20)\"" + BR
+                    + "\"enable-odata\": \"(optional) Enable OData interface. true|false (default true)\"" + BR
+                    + CLOSE_BRACE
+                    + CLOSE_PRE_TAG, required = true) final PublishRequestPayload payload)
             throws KomodoRestException {
 
         SecurityPrincipal principal = checkSecurityContext(headers);
@@ -2792,25 +2798,20 @@ public class KomodoMetadataService extends KomodoService {
         //
         // Error if there is no name attribute defined
         //
-        KomodoSyndesisDataSourceAttributes attributes;
-        try {
-            attributes = KomodoJsonMarshaller.unmarshall(payload, KomodoSyndesisDataSourceAttributes.class);
-            if (attributes.getName() == null) {
-                return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_NAME_NOT_PROVIDED);
-            }
-        } catch (Exception ex) {
-            return createErrorResponseWithForbidden(mediaTypes, ex, RelationalMessages.Error.VDB_NAME_NOT_PROVIDED);
+        if (payload.getName() == null) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_NAME_NOT_PROVIDED);
         }
+
         UnitOfWork uow = null;
         try {
             uow = createTransaction(principal, "publish-init", true); //$NON-NLS-1$
-            Vdb vdb = findVdb(uow, attributes.getName());
+            Vdb vdb = findVdb(uow, payload.getName());
             if (vdb == null) {
                 //
                 // We don't have a vdb so maybe we have a dataservice instead
                 // Find the dataservice's vdb to publish.
                 //
-                Dataservice dataservice = findDataservice(uow, attributes.getName());
+                Dataservice dataservice = findDataservice(uow, payload.getName());
                 if (dataservice == null) {
                     return createErrorResponse(Status.NOT_FOUND, mediaTypes, RelationalMessages.Error.VDB_NOT_FOUND);
                 }
@@ -2836,6 +2837,10 @@ public class KomodoMetadataService extends KomodoService {
             config.setVDB(theVdb);
             config.setOAuthCredentials(creds);
             config.setTransaction(publishUow);
+            config.setEnableOData(payload.getEnableOdata());
+            config.setContainerDiskSize(payload.getDiskSize());
+            config.setContainerMemorySize(payload.getMemory());
+            config.setCpuUnits(payload.getCpuUnits());
             BuildStatus buildStatus = openshiftClient.publishVirtualization(config);
 
             //

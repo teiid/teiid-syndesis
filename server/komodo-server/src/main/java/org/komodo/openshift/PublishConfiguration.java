@@ -33,17 +33,18 @@ import io.fabric8.kubernetes.api.model.EnvVar;
 
 public class PublishConfiguration implements StringConstants {
 
-    protected OAuthCredentials oauthCreds;
-    protected UnitOfWork uow;
-    protected Vdb vdb;
-    protected boolean enableOdata = true;
-    protected String containerMemorySize = "1024Mi";
-    protected List<EnvVar> allEnvironmentVariables = new ArrayList<>();
-    protected HashMap<String, String> buildNodeSelector = new HashMap<>();
+    private OAuthCredentials oauthCreds;
+    private UnitOfWork uow;
+    private Vdb vdb;
+    private boolean enableOdata;
+    private String containerMemorySize;
+    private String containerDiskSize;
+    private List<EnvVar> allEnvironmentVariables = new ArrayList<>();
+    private HashMap<String, String> buildNodeSelector = new HashMap<>();
     private String buildImageStream = "syndesis-s2i:latest";
 
     // cpu units
-    private int cpuUnits = 500; //100m is 0.1 of CPU, at 500m we have 1/2 CPU as default
+    private int cpuUnits = 500; // 100m is 0.1 of CPU, at 500m we have 1/2 CPU as default
 
     public String getBuildImageStream() {
         String stream = System.getenv("BUILD_IMAGE_STREAM");
@@ -53,16 +54,28 @@ public class PublishConfiguration implements StringConstants {
         return buildImageStream;
     }
 
+    public Vdb getVDB() {
+        return this.vdb;
+    }
+
     public void setVDB(Vdb vdb) {
         this.vdb = vdb;
+    }
+
+    public boolean isEnableOData() {
+        return this.enableOdata;
     }
 
     public void setEnableOData(boolean flag) {
         this.enableOdata = flag;
     }
 
-    public void setContainerMemorySize(String size) {
-        this.containerMemorySize = size;
+    public String getContainerMemorySize() {
+        return this.containerMemorySize;
+    }
+
+    public void setContainerMemorySize(int size) {
+        this.containerMemorySize = Integer.toString(size) + "Mi";
     }
 
     public void addEnvironmentVariables(Collection<EnvVar> envs) {
@@ -102,16 +115,28 @@ public class PublishConfiguration implements StringConstants {
         return envs;
     }
 
-    protected String cpuUnits() {
-        return Integer.toString(cpuUnits)+"m";
+    public String getCpuUnits() {
+        return Integer.toString(cpuUnits) + "m";
+    }
+
+    public void setCpuUnits(int units) {
+        this.cpuUnits = units;
     }
 
     private int cpuLimit() {
         return Math.max(cpuUnits/1000, 1);
     }
 
+    public OAuthCredentials getOAuthCredentials() {
+        return this.oauthCreds;
+    }
+
     public void setOAuthCredentials(OAuthCredentials creds) {
         this.oauthCreds = creds;
+    }
+
+    public UnitOfWork getTransaction() {
+        return this.uow;
     }
 
     public void setTransaction(UnitOfWork uow) {
@@ -129,4 +154,15 @@ public class PublishConfiguration implements StringConstants {
         return buildNodeSelector;
     }
 
+    public String getContainerDiskSize() {
+        return containerDiskSize;
+    }
+
+    public void setContainerDiskSize(int containerDiskSize) {
+        this.containerDiskSize = Integer.toString(containerDiskSize) + "Gi";
+    }
+
+    public List<EnvVar> getEnvironmentVariables() {
+        return allEnvironmentVariables;
+    }
 }
