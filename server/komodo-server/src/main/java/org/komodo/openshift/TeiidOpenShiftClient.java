@@ -766,7 +766,7 @@ public class TeiidOpenShiftClient implements StringConstants {
                     .withName(config.vdbName())
                     .withImage(" ")
                     .withImagePullPolicy("Always")
-                    .addAllToEnv(config.publishConfiguration().allEnvironmentVariables)
+                    .addAllToEnv(config.publishConfiguration().getEnvironmentVariables())
                     .withNewReadinessProbe()
                       .withNewExec()
                         .withCommand("/bin/sh", "-i", "-c",
@@ -792,8 +792,9 @@ public class TeiidOpenShiftClient implements StringConstants {
                       .withSuccessThreshold(1)
                     .endLivenessProbe()
                     .withNewResources()
-                      .addToLimits("memory", new Quantity(config.publishConfiguration().containerMemorySize))
-                      .addToLimits("cpu", new Quantity(config.publishConfiguration().cpuUnits()))
+                        .addToLimits("memory", new Quantity(config.publishConfiguration().getContainerMemorySize()))
+                        .addToLimits("cpu", new Quantity(config.publishConfiguration().getCpuUnits()))
+                        .addToLimits("ephemeral-storage", new Quantity(config.publishConfiguration().getContainerDiskSize()))
                     .endResources()
                     .addAllToPorts(getDeploymentPorts(config.publishConfiguration()))
                   .endContainer()
@@ -808,7 +809,7 @@ public class TeiidOpenShiftClient implements StringConstants {
         ports.add(createPort(ProtocolType.JOLOKIA.id(), 8778, "TCP"));
         ports.add(createPort(ProtocolType.JDBC.id(), 31000, "TCP"));
         ports.add(createPort(ProtocolType.ODBC.id(), 35432, "TCP"));
-        if (config.enableOdata) {
+        if (config.isEnableOData()) {
             ports.add(createPort(ProtocolType.ODATA.id(), 8080, "TCP"));
             ports.add(createPort(ProtocolType.SODATA.id(), 8443, "TCP"));
         }
@@ -1022,9 +1023,9 @@ public class TeiidOpenShiftClient implements StringConstants {
                 final OpenShiftClient client = openshiftClient();
                 String namespace = work.namespace();
                 PublishConfiguration publishConfig = work.publishConfiguration();
-                Vdb vdb = publishConfig.vdb;
-                UnitOfWork uow = publishConfig.uow;
-                OAuthCredentials oauthCreds = publishConfig.oauthCreds;
+                Vdb vdb = publishConfig.getVDB();
+                UnitOfWork uow = publishConfig.getTransaction();
+                OAuthCredentials oauthCreds = publishConfig.getOAuthCredentials();
 
                 String vdbName = work.vdbName();
                 try {
@@ -1033,7 +1034,7 @@ public class TeiidOpenShiftClient implements StringConstants {
                     // create build contents as tar file
                     info(vdbName, "Publishing - Creating zip archive");
                     GenericArchive archive = ShrinkWrap.create(GenericArchive.class, "contents.tar");
-                    String pomFile = generatePomXml(oauthCreds, uow, vdb, publishConfig.enableOdata);
+                    String pomFile = generatePomXml(oauthCreds, uow, vdb, publishConfig.isEnableOData());
 
                     debug(vdbName, "Publishing - Generated pom file: " + NEW_LINE + pomFile);
                     archive.add(new StringAsset(pomFile), "pom.xml");
@@ -1105,8 +1106,8 @@ public class TeiidOpenShiftClient implements StringConstants {
      * @throws KException if error occurs
      */
     public BuildStatus publishVirtualization(PublishConfiguration publishConfig) throws KException {
-        Vdb vdb = publishConfig.vdb;
-        String vdbName = vdb.getVdbName(publishConfig.uow);
+        Vdb vdb = publishConfig.getVDB();
+        String vdbName = vdb.getVdbName(publishConfig.getTransaction());
 
         removeLog(vdbName);
         info(vdbName, "Publishing - Start publishing of virtualization: " + vdbName);
