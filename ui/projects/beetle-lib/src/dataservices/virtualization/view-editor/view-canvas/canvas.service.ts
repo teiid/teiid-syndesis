@@ -16,7 +16,9 @@
  */
 import { Injectable, EventEmitter, ChangeDetectorRef, Output } from "@angular/core";
 import { CanvasConstants } from "./canvas-constants";
-import { CanvasNode, CanvasLink, CanvasGraph } from "./models";
+import { CanvasNode } from "./models/canvas-node";
+import { CanvasLink } from "./models/canvas-link";
+import { CanvasGraph } from "./models/canvas-graph";
 import { ViewCanvasEvent } from "./event/view-canvas-event";
 import { ViewCanvasEventType } from "./event/view-canvas-event-type.enum";
 import { Command } from "../command/command";

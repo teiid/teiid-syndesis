@@ -11,7 +11,6 @@ import {
   EmptyStateModule,
   FilterModule,
   ListModule,
-  NotificationModule,
   SortModule,
   TableModule,
   WizardModule } from "patternfly-ng";
@@ -41,7 +40,6 @@ describe("ConnectionTableDialogComponent", () => {
         EmptyStateModule,
         FilterModule,
         ListModule,
-        NotificationModule,
         SortModule,
         TableModule,
         WizardModule

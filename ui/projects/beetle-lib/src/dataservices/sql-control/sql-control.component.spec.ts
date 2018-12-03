@@ -18,7 +18,6 @@ import {
   EmptyStateModule,
   FilterModule,
   ListModule,
-  NotificationModule,
   SortModule,
   TableModule,
   WizardModule
@@ -42,7 +41,6 @@ describe("SqlControlComponent", () => {
         EmptyStateModule,
         FilterModule,
         ListModule,
-        NotificationModule,
         SortModule,
         TableModule,
         WizardModule

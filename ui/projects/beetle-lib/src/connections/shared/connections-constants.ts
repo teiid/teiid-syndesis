@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { NavigationItemConfig } from "patternfly-ng";
+import { VerticalNavigationItem } from "patternfly-ng/navigation/vertical-navigation/vertical-navigation-item";
 
 export class ConnectionsConstants {
 
@@ -47,7 +47,7 @@ export class ConnectionsConstants {
   public static jndiNamePropertyLabel = "JNDI Name";
   public static serviceCatalogSourceNameLabel = "Service Catalog Source";
 
-  public static readonly connectionsNavItem: NavigationItemConfig = {
+  public static readonly connectionsNavItem: VerticalNavigationItem = {
     title: "Connections",
     iconStyleClass: "fa fa-fw fa-plug",
     url: ConnectionsConstants.connectionsRootPath

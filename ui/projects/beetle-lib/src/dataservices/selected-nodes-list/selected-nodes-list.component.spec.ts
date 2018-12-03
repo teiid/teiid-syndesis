@@ -7,7 +7,6 @@ import {
   EmptyStateModule,
   FilterModule,
   ListModule,
-  NotificationModule,
   SortModule,
   TableModule,
   WizardModule } from "patternfly-ng";
@@ -26,7 +25,6 @@ describe("SelectedNodesListComponent", () => {
         EmptyStateModule,
         FilterModule,
         ListModule,
-        NotificationModule,
         SortModule,
         TableModule,
         WizardModule

@@ -11,7 +11,6 @@ import {
   EmptyStateModule,
   FilterModule,
   ListModule,
-  NotificationModule,
   SortModule,
   TableModule,
   WizardModule } from "patternfly-ng";
@@ -35,7 +34,6 @@ describe("DataservicesCardsComponent", () => {
         EmptyStateModule,
         FilterModule,
         ListModule,
-        NotificationModule,
         SortModule,
         TableModule,
         WizardModule

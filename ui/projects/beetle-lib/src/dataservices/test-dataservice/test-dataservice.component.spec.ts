@@ -14,15 +14,16 @@ import { SqlControlComponent } from "../sql-control/sql-control.component";
 import { TestDataserviceComponent } from "./test-dataservice.component";
 import { CodemirrorModule } from "ng2-codemirror";
 import {
+  AboutModalModule,
   ActionModule,
   CardModule,
   EmptyStateModule,
   FilterModule,
   ListModule,
-  NotificationModule,
   SortModule,
   TableModule,
-  WizardModule } from "patternfly-ng";
+  WizardModule
+} from "patternfly-ng";
 import { SelectionService } from "../../core/selection.service";
 
 describe("TestDataserviceComponent", () => {
@@ -36,12 +37,12 @@ describe("TestDataserviceComponent", () => {
         FormsModule,
         RouterTestingModule,
         CodemirrorModule,
+        AboutModalModule,
         ActionModule,
         CardModule,
         EmptyStateModule,
         FilterModule,
         ListModule,
-        NotificationModule,
         SortModule,
         TableModule,
         WizardModule

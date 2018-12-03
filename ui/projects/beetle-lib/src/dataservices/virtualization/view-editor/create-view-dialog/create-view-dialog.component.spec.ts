@@ -5,8 +5,7 @@ import { CreateViewDialogComponent } from './create-view-dialog.component';
 import { HttpModule } from "@angular/http";
 import { BsModalRef, ModalModule } from "ngx-bootstrap";
 import {
-  ActionModule,
-  NotificationModule
+  ActionModule
 } from "patternfly-ng";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { VdbService } from "../../../shared/vdb.service";
@@ -29,8 +28,7 @@ describe('CreateViewDialogComponent', () => {
         FormsModule,
         ReactiveFormsModule,
         moduleRoot,
-        ActionModule,
-        NotificationModule
+        ActionModule
       ],
       declarations: [ CreateViewDialogComponent ],
       providers: [ AppSettingsService, BsModalRef, LoggerService, NotifierService, SelectionService,

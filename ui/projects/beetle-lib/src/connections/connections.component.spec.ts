@@ -25,7 +25,6 @@ import {
   EmptyStateModule,
   FilterModule,
   ListModule,
-  NotificationModule,
   SortModule,
   WizardModule
 } from "patternfly-ng";
@@ -51,7 +50,6 @@ describe("ConnectionsComponent", () => {
         EmptyStateModule,
         FilterModule,
         ListModule,
-        NotificationModule,
         SortModule,
         WizardModule
       ],
