@@ -18,9 +18,8 @@
 import { Component, EventEmitter, Input, OnInit, Output, ViewEncapsulation } from "@angular/core";
 import { AboutService } from "./about.service";
 import { LoggerService } from "../logger.service";
-import { AboutEvent } from "./about-event";
 import { About } from "./about.model";
-import { AboutModalConfig } from "patternfly-ng/modal";
+import { AboutModalConfig, AboutModalEvent } from "patternfly-ng/modal";
 
 @Component({
   encapsulation: ViewEncapsulation.None,
@@ -89,7 +88,7 @@ export class AboutDialogComponent implements OnInit {
   public close(): void {
     this.onCancel.emit( {
       close: true
-    } as AboutEvent );
+    } as AboutModalEvent );
   }
 
   public get logoImageAlt(): string {

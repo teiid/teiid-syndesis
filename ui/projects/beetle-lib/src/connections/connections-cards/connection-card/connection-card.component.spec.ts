@@ -9,7 +9,6 @@ import {
   EmptyStateModule,
   FilterModule,
   ListModule,
-  NotificationModule,
   SortModule,
   WizardModule } from "patternfly-ng";
 import { ConnectionCardComponent } from "./connection-card.component";
@@ -27,7 +26,6 @@ describe("ConnectionCardComponent", () => {
         EmptyStateModule,
         FilterModule,
         ListModule,
-        NotificationModule,
         SortModule,
         WizardModule
       ],

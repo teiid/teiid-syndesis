@@ -28,7 +28,8 @@ import { ViewEditorProgressChangeId } from "../event/view-editor-save-progress-c
 import { PathUtils } from "../../../shared/path-utils";
 import { NotificationType } from "patternfly-ng";
 import { Subscription } from "rxjs/Subscription";
-import { CanvasNode, CanvasLink } from "./models";
+import { CanvasNode } from "./models/canvas-node";
+import { CanvasLink } from "./models/canvas-link";
 import { CanvasConstants } from "./canvas-constants";
 import { CanvasService } from "./canvas.service";
 import { ViewCanvasEvent } from "./event/view-canvas-event";

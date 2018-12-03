@@ -26,15 +26,17 @@ import { SharedModule } from "../shared/shared.module";
 import { CodemirrorModule } from "ng2-codemirror";
 import { ModalModule } from "ngx-bootstrap";
 import {
+  AboutModalModule,
   ActionModule,
   CardModule,
   EmptyStateModule,
   FilterModule,
   ListModule,
-  NotificationModule,
   SortModule,
   TableModule,
-  WizardModule } from "patternfly-ng";
+  ToastNotificationModule,
+  WizardModule
+} from "patternfly-ng";
 import { AccordionModule } from 'ngx-bootstrap';
 import { TooltipModule } from 'ngx-bootstrap';
 import { SelectionService } from "../core/selection.service";
@@ -59,14 +61,15 @@ describe("DataservicesComponent", () => {
         CodemirrorModule,
         accordionModule,
         tooltipModule,
+        AboutModalModule,
         ActionModule,
         CardModule,
         EmptyStateModule,
         FilterModule,
         ListModule,
-        NotificationModule,
         SortModule,
         TableModule,
+        ToastNotificationModule,
         WizardModule
       ],
       declarations: [ DataservicesDetailsComponent,
