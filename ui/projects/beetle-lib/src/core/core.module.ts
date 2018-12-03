@@ -31,18 +31,18 @@ import { VerticalNavComponent } from "./vertical-nav/vertical-nav.component";
 import { environment } from "../environments/environment";
 import { ModalModule } from "ngx-bootstrap/modal";
 import { BsModalService } from "ngx-bootstrap/modal";
-import { ModalModule as PfngModalModule, NavigationModule as PfngNavigationModule } from "patternfly-ng";
 import { StyleLibComponent } from "./style-lib/style-lib.component";
 import { LibContentComponent } from "./lib-content/lib-content.component";
+import { AboutModalModule, VerticalNavigationModule } from "patternfly-ng";
 
 @NgModule({
   imports: [
+    AboutModalModule,
     CommonModule,
     HttpModule,
     ModalModule,
-    PfngModalModule,
-    PfngNavigationModule,
-    RouterModule
+    RouterModule,
+    VerticalNavigationModule
   ],
   declarations: [
     AboutDialogComponent,

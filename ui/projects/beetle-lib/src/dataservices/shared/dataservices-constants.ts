@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { NavigationItemConfig } from "patternfly-ng";
+import { VerticalNavigationItem } from "patternfly-ng/navigation/vertical-navigation/vertical-navigation-item";
 
 export class DataservicesConstants {
 
@@ -35,7 +35,7 @@ export class DataservicesConstants {
   public static dataserviceNameLabel = "Name";
   public static descriptionLabel = "Description";
 
-  public static readonly dataservicesNavItem: NavigationItemConfig = {
+  public static readonly dataservicesNavItem: VerticalNavigationItem = {
     title: "Virtualizations",
     iconStyleClass: "fa fa-fw fa-table",
     url: DataservicesConstants.dataservicesRootPath

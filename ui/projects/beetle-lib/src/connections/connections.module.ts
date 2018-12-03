@@ -43,10 +43,11 @@ import {
   CardModule,
   EmptyStateModule,
   FilterModule,
+  InlineNotificationModule,
   ListModule,
-  NotificationModule,
   SortModule,
-  WizardModule } from "patternfly-ng";
+  WizardModule
+} from "patternfly-ng";
 import { ConnectionTypeCardComponent } from "./connection-type-cards/connection-type-card/connection-type-card.component";
 import { ConnectionTypeCardsComponent } from "./connection-type-cards/connection-type-cards.component";
 
@@ -65,8 +66,8 @@ import { ConnectionTypeCardsComponent } from "./connection-type-cards/connection
     CardModule,
     EmptyStateModule,
     FilterModule,
+    InlineNotificationModule,
     ListModule,
-    NotificationModule,
     SortModule,
     WizardModule
   ],

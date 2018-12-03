@@ -6,8 +6,8 @@ import { MockAboutService } from "./mock-about.service";
 import { AppSettingsService } from "../app-settings.service";
 import { LoggerService } from "../logger.service";
 import { MockAppSettingsService } from "../mock-app-settings.service";
-import { ModalModule } from "patternfly-ng";
 import { AboutDialogComponent } from "./about-dialog.component";
+import { AboutModalModule } from "patternfly-ng";
 
 describe("AboutDialogComponent", () => {
   let component: AboutDialogComponent;
@@ -16,7 +16,7 @@ describe("AboutDialogComponent", () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ AboutDialogComponent ],
-      imports: [ HttpModule, ModalModule ],
+      imports: [ HttpModule, AboutModalModule ],
       providers: [
           AboutService,
           { provide: AppSettingsService, useClass: MockAppSettingsService },

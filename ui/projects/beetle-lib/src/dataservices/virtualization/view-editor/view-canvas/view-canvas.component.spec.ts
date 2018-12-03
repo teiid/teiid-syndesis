@@ -13,9 +13,9 @@ import {
   EmptyStateModule,
   FilterModule,
   ListModule,
-  NotificationModule,
   SortModule,
   TableModule,
+  ToastNotificationModule,
   WizardModule } from "patternfly-ng";
 import { DataserviceService } from "../../../shared/dataservice.service";
 import { MockDataserviceService } from "../../../shared/mock-dataservice.service";
@@ -24,7 +24,9 @@ import { MockVdbService } from "../../../shared/mock-vdb.service";
 import { NotifierService } from "../../../shared/notifier.service";
 import { ViewPropertyEditorsComponent } from "../view-property-editors/view-property-editors.component";
 import { TabsModule } from "ngx-bootstrap";
-import { GraphVisualComponent, LinkVisualComponent, NodeVisualComponent } from "./visuals";
+import { GraphVisualComponent } from "./visuals/graph/graph-visual.component";
+import { LinkVisualComponent } from "./visuals/link/link-visual.component";
+import { NodeVisualComponent } from "./visuals/node/node-visual.component";
 import { CanvasService } from "./canvas.service";
 import { SelectionService } from "../../../../core/selection.service";
 import { PropertyEditorComponent } from "../view-property-editors/property-editor/property-editor.component";
@@ -48,9 +50,9 @@ describe('ViewCanvasComponent', () => {
         EmptyStateModule,
         FilterModule,
         ListModule,
-        NotificationModule,
         SortModule,
         TableModule,
+        ToastNotificationModule,
         WizardModule,
         HttpModule,
         modalModule,

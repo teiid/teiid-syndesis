@@ -28,16 +28,13 @@ import {
   EmptyStateModule,
   FilterModule,
   ListModule,
-  NotificationModule,
   SortModule,
   TableModule,
   ToolbarModule,
   WizardModule } from "patternfly-ng";
-import {
-  GraphVisualComponent,
-  LinkVisualComponent,
-  NodeVisualComponent
-} from "./view-canvas/visuals";
+import { GraphVisualComponent } from "./view-canvas/visuals/graph/graph-visual.component";
+import { LinkVisualComponent } from "./view-canvas/visuals/link/link-visual.component";
+import { NodeVisualComponent } from "./view-canvas/visuals/node/node-visual.component";
 import { CanvasService } from "./view-canvas/canvas.service";
 
 export const tabsModule: ModuleWithProviders<any> = TabsModule.forRoot();
@@ -56,7 +53,6 @@ describe('ViewEditorComponent', () => {
         EmptyStateModule,
         FilterModule,
         ListModule,
-        NotificationModule,
         SortModule,
         TableModule,
         ToolbarModule,

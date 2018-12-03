@@ -16,7 +16,9 @@
  */
 import { Component, ChangeDetectorRef, HostListener, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { CanvasService } from "../../canvas.service";
-import { CanvasGraph, CanvasNode, CanvasLink } from "../../models";
+import { CanvasGraph } from "../../models/canvas-graph";
+import { CanvasNode } from "../../models/canvas-node";
+import { CanvasLink } from "../../models/canvas-link";
 import * as d3 from 'd3';
 import * as _ from "lodash";
 

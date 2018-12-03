@@ -18,13 +18,10 @@
 import { Component, Input, OnInit, TemplateRef, ViewEncapsulation } from "@angular/core";
 import { Router } from "@angular/router";
 import { ConnectionsConstants } from "../../connections/shared/connections-constants";
-import { AboutEvent } from "../about-dialog/about-event";
-import { About } from "../about-dialog/about.model";
 import { LoggerService } from "../logger.service";
 import { DataservicesConstants } from "../../dataservices/shared/dataservices-constants";
 import { BsModalService } from "ngx-bootstrap/modal";
-import { BsModalRef } from "ngx-bootstrap/modal/bs-modal-ref.service";
-import { NavigationItemConfig } from "patternfly-ng";
+import { VerticalNavigationItem } from "patternfly-ng/navigation/vertical-navigation/vertical-navigation-item";
 
 @Component({
   encapsulation: ViewEncapsulation.None,
@@ -35,15 +32,8 @@ import { NavigationItemConfig } from "patternfly-ng";
 
 export class VerticalNavComponent implements OnInit {
 
-  /**
-   * The about information.
-   */
-  @Input() public info: About;
+  public navigationItems: VerticalNavigationItem[];
 
-  public aboutInfo: About;
-  public navigationItems: NavigationItemConfig[];
-
-  private aboutRef: BsModalRef;
   private logger: LoggerService;
   private modalService: BsModalService;
   private router: Router;
@@ -56,9 +46,9 @@ export class VerticalNavComponent implements OnInit {
     this.modalService = modalService;
   }
 
-  public closeAbout( $event: AboutEvent ): void {
-    this.aboutRef.hide();
-  }
+  // public closeAbout( $event: AboutEvent ): void {
+  //   this.aboutRef.hide();
+  // }
 
   public ngOnInit(): void {
     // uncomment to debug router events
@@ -69,15 +59,15 @@ export class VerticalNavComponent implements OnInit {
     this.navigationItems = [ DataservicesConstants.dataservicesNavItem, ConnectionsConstants.connectionsNavItem ];
   }
 
-  public onNavigation( $event: NavigationItemConfig ): void {
+  public onNavigation( $event: VerticalNavigationItem ): void {
     const link: string[] = [ $event.url ];
     this.router.navigate( link ).then(() => {
       // nothing to do
     });
   }
 
-  public openAbout( template: TemplateRef< any > ): void {
-    this.aboutRef = this.modalService.show( template );
-  }
+  // public openAbout( template: TemplateRef< any > ): void {
+  //   this.aboutRef = this.modalService.show( template );
+  // }
 
 }

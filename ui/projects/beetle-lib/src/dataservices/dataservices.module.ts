@@ -47,7 +47,9 @@ import { ViewPreviewComponent } from "./virtualization/view-editor/editor-views/
 import { EditorViewsComponent } from './virtualization/view-editor/editor-views/editor-views.component';
 import { MessageLogComponent } from './virtualization/view-editor/editor-views/message-log/message-log.component';
 import { CanvasService } from './virtualization/view-editor/view-canvas/canvas.service';
-import { GraphVisualComponent, NodeVisualComponent, LinkVisualComponent } from './virtualization/view-editor/view-canvas/visuals';
+import { GraphVisualComponent} from "./virtualization/view-editor/view-canvas/visuals/graph/graph-visual.component";
+import { NodeVisualComponent } from "./virtualization/view-editor/view-canvas/visuals/node/node-visual.component";
+import { LinkVisualComponent } from "./virtualization/view-editor/view-canvas/visuals/link/link-visual.component";
 
 import { environment } from "../environments/environment";
 import { ConfirmDialogComponent } from "../shared/confirm-dialog/confirm-dialog.component";
@@ -59,12 +61,14 @@ import {
   CardModule,
   EmptyStateModule,
   FilterModule,
+  InlineNotificationModule,
   ListModule,
-  NotificationModule,
   SortModule,
   TableModule,
+  ToastNotificationModule,
   ToolbarModule,
-  WizardModule } from "patternfly-ng";
+  WizardModule
+} from "patternfly-ng";
 import { OdataControlComponent } from "./odata-control/odata-control.component";
 import { AccordionModule, BsDropdownModule, TabsModule, TooltipModule } from 'ngx-bootstrap';
 import { ConnectionTreeSelectorComponent } from './virtualization/view-editor/connection-table-dialog/connection-tree-selector/connection-tree-selector.component';
@@ -107,10 +111,11 @@ export { ViewEditorComponent } from "./virtualization/view-editor/view-editor.co
     CardModule,
     EmptyStateModule,
     FilterModule,
+    InlineNotificationModule,
     ListModule,
-    NotificationModule,
     SortModule,
     TableModule,
+    ToastNotificationModule,
     ToolbarModule,
     WizardModule,
     tabsModule

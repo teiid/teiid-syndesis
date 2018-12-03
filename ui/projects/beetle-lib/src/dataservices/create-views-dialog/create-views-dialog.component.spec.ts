@@ -8,8 +8,8 @@ import {
   CardModule,
   EmptyStateModule,
   FilterModule,
+  InlineNotificationModule,
   ListModule,
-  NotificationModule,
   SortModule,
   TableModule,
   WizardModule } from "patternfly-ng";
@@ -42,8 +42,8 @@ describe("CreateViewsDialogComponent", () => {
         CardModule,
         EmptyStateModule,
         FilterModule,
+        InlineNotificationModule,
         ListModule,
-        NotificationModule,
         SortModule,
         TableModule,
         WizardModule

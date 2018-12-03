@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 import { Component, Input } from '@angular/core';
-import { CanvasNode } from "../../models";
+import { CanvasNode } from "../../models/canvas-node";
 import { CanvasService } from "../../canvas.service";
 import { CanvasConstants } from "../../canvas-constants";
 import * as _ from "lodash";
