@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
-  "newProjectRoot": "projects",
+  "newProjectRoot": "beetle-lib",
   "projects": {
     "ui": {
       "root": "",
@@ -126,7 +126,7 @@
       }
     },
     "beetle-lib": {
-      "root": "projects/beetle-lib",
+      "root": "beetle-lib",
       "sourceRoot": "projects/beetle-lib/src",
       "projectType": "library",
       "prefix": "btl",
@@ -134,24 +134,24 @@
         "build": {
           "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
-            "tsConfig": "projects/beetle-lib/tsconfig.lib.json",
-            "project": "projects/beetle-lib/ng-package.json"
+            "tsConfig": "beetle-lib/tsconfig.lib.json",
+            "project": "beetle-lib/ng-package.json"
           }
         },
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/beetle-lib/src/test.ts",
-            "tsConfig": "projects/beetle-lib/tsconfig.spec.json",
-            "karmaConfig": "projects/beetle-lib/karma.conf.js"
+            "main": "beetle-lib/src/test.ts",
+            "tsConfig": "beetle-lib/tsconfig.spec.json",
+            "karmaConfig": "beetle-lib/karma.conf.js"
           }
         },
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
             "tsConfig": [
-              "projects/beetle-lib/tsconfig.lib.json",
-              "projects/beetle-lib/tsconfig.spec.json"
+              "beetle-lib/tsconfig.lib.json",
+              "beetle-lib/tsconfig.spec.json"
             ],
             "exclude": [
               "**/node_modules/**"

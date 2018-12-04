@@ -18,13 +18,13 @@
 import { NgModule } from "@angular/core";
 import { RouterModule } from "@angular/router";
 import { Routes } from "@angular/router";
-import { ConnectionsConstants } from "../../projects/beetle-lib/src/connections/shared/connections-constants";
-import { DataservicesConstants } from "../../projects/beetle-lib/src/dataservices/shared/dataservices-constants";
-import { PageNotFoundComponent } from "../../projects/beetle-lib/src/shared/page-not-found/page-not-found.component";
+import { ConnectionsConstants } from "../../beetle-lib/src/connections/shared/connections-constants";
+import { DataservicesConstants } from "../../beetle-lib/src/dataservices/shared/dataservices-constants";
+import { PageNotFoundComponent } from "../../beetle-lib/src/shared/page-not-found/page-not-found.component";
 
 const appRoutes: Routes = [
-  { path: ConnectionsConstants.connectionsRootRoute, loadChildren: "../../projects/beetle-lib/src/connections/connections.module#ConnectionsModule" },
-  { path: DataservicesConstants.dataservicesRootRoute, loadChildren: "../../projects/beetle-lib/src/dataservices/dataservices.module#DataservicesModule" },
+  { path: ConnectionsConstants.connectionsRootRoute, loadChildren: "../../beetle-lib/src/connections/connections.module#ConnectionsModule" },
+  { path: DataservicesConstants.dataservicesRootRoute, loadChildren: "../../beetle-lib/src/dataservices/dataservices.module#DataservicesModule" },
   { path: "**", component: PageNotFoundComponent }, // always last
 ];
 
