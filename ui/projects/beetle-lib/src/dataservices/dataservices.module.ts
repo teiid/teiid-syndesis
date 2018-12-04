@@ -92,6 +92,7 @@ export { NotifierService } from './shared/notifier.service';
 export { SelectionService } from '../core/selection.service';
 export { CanvasService } from './virtualization/view-editor/view-canvas/canvas.service';
 export { ViewEditorComponent } from "./virtualization/view-editor/view-editor.component";
+export { TestDataserviceComponent } from "./test-dataservice/test-dataservice.component";
 
 @NgModule({
   imports: [
@@ -171,7 +172,7 @@ export { ViewEditorComponent } from "./virtualization/view-editor/view-editor.co
     CanvasService
   ],
   exports: [
-    DataservicesComponent, EditorViewsComponent
+    DataservicesComponent, ViewEditorComponent, TestDataserviceComponent
   ],
   entryComponents: [AddCompositionWizardComponent, ConfirmDialogComponent, ConnectionTableDialogComponent,
                     CreateViewDialogComponent, CreateViewsDialogComponent, ProgressDialogComponent, SetDescriptionDialogComponent]
