@@ -1,0 +1,92 @@
+import { async, ComponentFixture, TestBed } from "@angular/core/testing";
+
+import { FormsModule } from "@angular/forms";
+import { HttpModule } from "@angular/http";
+import { AppSettingsService } from "../../core/app-settings.service";
+import { LoggerService } from "../../core/logger.service";
+import { MockAppSettingsService } from "../../core/mock-app-settings.service";
+import { Dataservice } from "../shared/dataservice.model";
+import { DataserviceService } from "../shared/dataservice.service";
+import { MockVdbService } from "../shared/mock-vdb.service";
+import { NotifierService } from "../shared/notifier.service";
+import { SelectionService } from "../../core/selection.service";
+import { VdbService } from "../shared/vdb.service";
+import { CodemirrorModule } from "ng2-codemirror";
+import {
+  ActionModule,
+  CardModule,
+  EmptyStateModule,
+  FilterModule,
+  ListModule,
+  SortModule,
+  TableModule,
+  WizardModule
+} from "patternfly-ng";
+import { SqlControlComponent } from "./sql-control.component";
+import { SqlView } from "../shared/sql-view.model";
+import { MockDataserviceService } from "../shared/mock-dataservice.service";
+
+describe("SqlControlComponent", () => {
+  let component: SqlControlComponent;
+  let fixture: ComponentFixture<SqlControlComponent>;
+
+  beforeEach(async(() => {
+    TestBed.configureTestingModule({
+      imports: [
+        FormsModule,
+        HttpModule,
+        CodemirrorModule,
+        ActionModule,
+        CardModule,
+        EmptyStateModule,
+        FilterModule,
+        ListModule,
+        SortModule,
+        TableModule,
+        WizardModule
+      ],
+      declarations: [ SqlControlComponent ],
+      providers: [
+        AppSettingsService,
+        LoggerService,
+        NotifierService,
+        SelectionService,
+        { provide: AppSettingsService, useClass: MockAppSettingsService },
+        { provide: DataserviceService, useClass: MockDataserviceService },
+        { provide: VdbService, useClass: MockVdbService }
+      ]
+    })
+      .compileComponents().then(() => {
+      // nothing to do
+    });
+  }));
+
+  beforeEach(() => {
+    // select a dataservice before constructing component
+    const service = TestBed.get( DataserviceService );
+    let dataservices: Dataservice[];
+    service.getAllDataservices().subscribe( ( values ) => { dataservices = values; } );
+
+    const selService = TestBed.get( SelectionService );
+    // noinspection JSUnusedAssignment
+    selService.setSelectedVirtualization( dataservices[ 0 ] );
+
+    fixture = TestBed.createComponent(SqlControlComponent);
+    component = fixture.componentInstance;
+
+    // Set the inputs for the component
+    component.viewSql = "SELECT * FROM views.View1";
+    const sqlView = new SqlView("views.View1");
+    const sqlViews: SqlView[] = [];
+    sqlViews.push(sqlView);
+    component.serviceViews = sqlViews;
+    component.selectedViews = sqlViews;
+
+    fixture.detectChanges();
+  });
+
+  it("should be created", () => {
+    console.log("========== [SqlControlComponent] should be created");
+    expect(component).toBeTruthy();
+  });
+});

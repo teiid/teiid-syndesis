@@ -1,7 +1,0 @@
-<div class="object-card-container">
-  <div *ngFor="let connType of connectionTypes">
-    <app-connection-type-card [connectionType]="connType"
-                              [selectedConnectionTypes]="selectedConnectionTypes"
-                              (selectEvent)="onSelectEvent($event)"></app-connection-type-card>
-  </div>
-</div>

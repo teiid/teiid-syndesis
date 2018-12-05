@@ -6,7 +6,7 @@
     "node_modules/codelyzer"
   ],
   "rules": {
-	"adjacent-overload-signatures": false,
+    "adjacent-overload-signatures": false,
     "align": [
       true,
       "members",

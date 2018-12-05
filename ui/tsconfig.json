@@ -1,18 +1,11 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "baseUrl": "src",
-    "paths": {
-      "@app/*": ["app/*"],
-      "@connections/*": ["app/connections/*"],
-      "@core/*": ["app/core/*"],
-      "@dataservices/*": ["app/dataservices/*"],
-      "@environments/*": ["environments/*"],
-      "@shared/*": ["app/shared/*"]
-    },
+    "baseUrl": "./",
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
     "declaration": false,
+    "module": "es2015",
     "moduleResolution": "node",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
@@ -23,6 +16,21 @@
     "lib": [
       "es2017",
       "dom"
-    ]
+    ],
+    "paths": {
+      "beetle-lib": [
+        "dist/beetle-lib"
+      ],
+      "beetle-lib/*": [
+        "dist/beetle-lib/*"
+      ]
+    }
+  },
+  "angularCompilerOptions": {
+    "annotateForClosureCompiler": false,
+    "skipTemplateCodegen": true,
+    "strictMetadataEmit": true,
+    "strictInjectionParameters": true,
+    "enableResourceInlining": true
   }
 }
