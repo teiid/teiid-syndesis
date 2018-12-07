@@ -390,46 +390,6 @@ public final class RelationalMessages {
         DATASERVICE_SERVICE_MISSING_PARAMETER_ERROR,
 
         /**
-         * An error indicating set attempt failed because the dataservice name was missing
-         */
-        DATASERVICE_SERVICE_SET_SERVICE_MISSING_NAME,
-        
-        /**
-         * An error indicating set attempt failed because the tablePath was missing
-         */
-        DATASERVICE_SERVICE_SET_SERVICE_MISSING_TABLEPATH,
-        
-        /**
-         * An error indicating set attempt failed because the modelSource path was missing
-         */
-        DATASERVICE_SERVICE_SET_SERVICE_MISSING_MODELSOURCE_PATH,
-        
-        /**
-         * An error indicating set attempt failed because the Join type was missing
-         */
-        DATASERVICE_SERVICE_SET_SERVICE_MISSING_JOIN_TYPE,
-        
-        /**
-         * An error indicating set attempt failed because the Join criteria lh column was missing
-         */
-        DATASERVICE_SERVICE_SET_SERVICE_MISSING_JOIN_LH_COLUMN,
-        
-        /**
-         * An error indicating set attempt failed because the Join criteria rh column was missing
-         */
-        DATASERVICE_SERVICE_SET_SERVICE_MISSING_JOIN_RH_COLUMN,
-        
-        /**
-         * An error indicating set attempt failed because the expected view ddl was missing
-         */
-        DATASERVICE_SERVICE_SET_SERVICE_MISSING_VIEWDDL,
-        
-        /**
-         * An error indicating set attempt failed
-         */
-        DATASERVICE_SERVICE_SET_SERVICE_ERROR,
-
-        /**
          * A message indicating that a data service with the given name already exists.
          */
         DATASERVICE_SERVICE_NAME_EXISTS,
