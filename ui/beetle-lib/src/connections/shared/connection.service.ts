@@ -147,14 +147,14 @@ export class ConnectionService extends ApiService {
   }
 
   /**
-   * Bind a service catalog source via the komodo rest interface
-   * @param {string} serviceCatalogSourceName
+   * Bind a syndesis source via the komodo rest interface
+   * @param {string} syndesisSourceName
    * @returns {Observable<boolean>}
    */
-  public bindServiceCatalogSource(serviceCatalogSourceName: string): Observable<any> {
+  public bindSyndesisSource(syndesisSourceName: string): Observable<any> {
     return this.http
-      .post(environment.komodoTeiidUrl + ConnectionsConstants.serviceCatalogSourcesRootPath,
-        { name: serviceCatalogSourceName}, this.getAuthRequestOptions())
+      .post(environment.komodoTeiidUrl + ConnectionsConstants.syndesisSourcesRootPath,
+        { name: syndesisSourceName}, this.getAuthRequestOptions())
       .map((response) => {
         return response.ok;
       })
@@ -208,12 +208,12 @@ export class ConnectionService extends ApiService {
   }
 
   /**
-   * Get the available ServiceCatalogSources from the komodo rest interface
+   * Get the available SyndesisSources from the komodo rest interface
    * @returns {Observable<ServiceCatalogSource[]>}
    */
-  public getAllServiceCatalogSources(): Observable<ServiceCatalogSource[]> {
+  public getAllSyndesisSources(): Observable<ServiceCatalogSource[]> {
     return this.http
-      .get(environment.komodoTeiidUrl + ConnectionsConstants.serviceCatalogSourcesRootPath, this.getAuthRequestOptions())
+      .get(environment.komodoTeiidUrl + ConnectionsConstants.syndesisSourcesRootPath, this.getAuthRequestOptions())
       .map((response) => {
         const catalogSources = response.json();
         return catalogSources.map((catSource) => ServiceCatalogSource.create( catSource ));
@@ -265,7 +265,7 @@ export class ConnectionService extends ApiService {
   }
 
   /**
-   * Create a connection in the Komodo repo - also binds the specified serviceCatalogSource
+   * Create a connection in the Komodo repo - also binds the specified syndesisSource
    * @param {NewConnection} connection the connection object
    * @returns {Observable<boolean>}
    */
@@ -280,7 +280,7 @@ export class ConnectionService extends ApiService {
   }
 
   /**
-   * Update a connection in the Komodo repo - also binds the specified serviceCatalogSource.
+   * Update a connection in the Komodo repo - also binds the specified syndesisSource.
    * @param {NewConnection} connection the connection object
    * @returns {Observable<boolean>}
    */
@@ -295,7 +295,7 @@ export class ConnectionService extends ApiService {
   }
 
   /**
-   * Creates a workspace Connection, binds it to the specified serviceCatalogSource, and initiates
+   * Creates a workspace Connection, binds it to the specified syndesisSource, and initiates
    * a refresh of the connection schema.
    * @param {NewConnection} connection the connection object
    * @returns {Observable<boolean>}
@@ -307,7 +307,7 @@ export class ConnectionService extends ApiService {
   }
 
   /**
-   * Updates a workspace Connection, binds it to the specified serviceCatalogSource, and initiates
+   * Updates a workspace Connection, binds it to the specified syndesisSource, and initiates
    * a refresh of the connection schema.
    * @param {NewConnection} connection the connection object
    * @returns {Observable<boolean>}

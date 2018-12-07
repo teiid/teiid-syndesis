@@ -224,9 +224,9 @@ public final class RelationalMessages {
         CONNECTION_TO_REPO_SUCCESS,
         
         /**
-         * Bind operation with Service Catalog Data Source
+         * Bind operation with Syndesis Source
          */
-        METADATA_SERVICE_CATALOG_DATA_SERVIVE_BIND_TITLE;
+        METADATA_SYNDESIS_SOURCE_BIND_TITLE;
 
         /**
          * {@inheritDoc}
@@ -1451,24 +1451,24 @@ public final class RelationalMessages {
         IMPORT_EXPORT_SERVICE_NO_NAMED_GIT_REPO_ERROR,
 
         /**
-         * An error indicating the failed status of to get a data services from service catalog
+         * An error indicating the failed status of to get syndesis sources
          */
-        METADATA_GET_DATA_SOURCES_ERROR,
+        METADATA_GET_SYNDESIS_SOURCES_ERROR,
         
         /**
-         * An error indicating a name of data service missing from bind operation on service catalog service 
+         * An error indicating a name of syndesis source missing from bind operation 
          */
-        METADATA_DATA_SERVICE_BIND_MISSING_NAME,
+        METADATA_SYNDESIS_SOURCE_BIND_MISSING_NAME,
         
         /**
-         * An error indicating payload parse error from bind operation on service catalog service 
+         * An error indicating payload parse error from bind operation
          */
-        METADATA_DATA_SERVICE_BIND_PARSE_ERROR,
+        METADATA_SYNDESIS_SOURCE_BIND_PARSE_ERROR,
         
         /**
          * An error indicating from bind operation on service catalog service
          */
-        METADATA_DATA_SERVIVE_BIND_ERROR,
+        METADATA_SYNDESIS_SOURCE_BIND_ERROR,
 
         /**
          * An error indicating the about service failed

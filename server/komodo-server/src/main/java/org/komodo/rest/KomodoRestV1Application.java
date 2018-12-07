@@ -595,9 +595,14 @@ public class KomodoRestV1Application extends Application implements SystemConsta
         String PING_TYPE_PARAMETER = "pingType"; //$NON-NLS-1$
         
         /**
-         * Available sources from OpenShift Service catalog
+         * syndesis source segment
          */
-        String SERVICE_CATALOG_SOURCES = "serviceCatalogSources"; //$NON-NLS-1$
+        String SYNDESIS_SOURCE = "syndesisSource"; //$NON-NLS-1$
+
+        /**
+         * syndesis sources segment
+         */
+        String SYNDESIS_SOURCES = "syndesisSources"; //$NON-NLS-1$
         
         /**
          * Bind to available source in OpenShift Service catalog

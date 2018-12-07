@@ -118,7 +118,7 @@ export class MockConnectionService extends ConnectionService {
    * Get the available ServiceCatalogSources from the komodo rest interface
    * @returns {Observable<ServiceCatalogSource[]>}
    */
-  public getAllServiceCatalogSources(): Observable<ServiceCatalogSource[]> {
+  public getAllSyndesisSources(): Observable<ServiceCatalogSource[]> {
     return Observable.of(this.serviceCatalogSources);
   }
 
@@ -143,7 +143,7 @@ export class MockConnectionService extends ConnectionService {
   }
 
   /**
-   * Create a connection in the Komodo repo - also binds the specified serviceCatalogSource
+   * Create a connection in the Komodo repo - also binds the specified syndesisSource
    * @param {NewConnection} connection the connection object
    * @returns {Observable<boolean>}
    */
@@ -152,7 +152,7 @@ export class MockConnectionService extends ConnectionService {
   }
 
   /**
-   * Update a connection in the Komodo repo - also binds the specified serviceCatalogSource.
+   * Update a connection in the Komodo repo - also binds the specified syndesisSource.
    * @param {NewConnection} connection the connection object
    * @returns {Observable<boolean>}
    */
