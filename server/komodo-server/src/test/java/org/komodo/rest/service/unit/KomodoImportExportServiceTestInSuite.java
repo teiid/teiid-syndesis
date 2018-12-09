@@ -55,6 +55,7 @@ import org.eclipse.jgit.treewalk.TreeWalk;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.komodo.importer.ImportMessages;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.profile.GitRepository;
@@ -66,6 +67,7 @@ import org.komodo.rest.relational.response.ImportExportStatus;
 import org.komodo.rest.relational.response.KomodoStorageAttributes;
 import org.komodo.rest.relational.response.RestStorageType;
 import org.komodo.rest.relational.response.RestStorageTypeDescriptor;
+import org.komodo.rest.service.AbstractServiceTest;
 import org.komodo.rest.service.KomodoImportExportService;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.DocumentType;
@@ -76,7 +78,6 @@ import org.komodo.spi.storage.StorageConnector;
 import org.komodo.test.utils.TestUtilities;
 import org.komodo.utils.FileUtils;
 import org.komodo.utils.StringUtils;
-@net.jcip.annotations.NotThreadSafe
 public class KomodoImportExportServiceTestInSuite extends AbstractKomodoServiceTest {
 
     public KomodoImportExportServiceTestInSuite() throws Exception {
@@ -173,7 +174,7 @@ public class KomodoImportExportServiceTestInSuite extends AbstractKomodoServiceT
 
     @Test
     public void shouldImportVdb() throws Exception {
-        Repository repository = restApp().getDefaultRepository();
+        Repository repository = engine.getDefaultRepository();
         UnitOfWork uow = repository.createTransaction(USER_NAME,
                                                       getClass().getSimpleName() + COLON + "importVdb" + COLON
                                                                  + System.currentTimeMillis(),
@@ -239,11 +240,14 @@ public class KomodoImportExportServiceTestInSuite extends AbstractKomodoServiceT
 
     @Test
     public void shouldExportVdb() throws Exception {
+        ImportMessages msgs = importVdb(TestUtilities.portfolioExample(), AbstractServiceTest.USER_NAME);
+        assertTrue(msgs.getErrorMessages().isEmpty());
+
         URI uri = UriBuilder.fromUri(uriBuilder().baseUri()).path(V1Constants.IMPORT_EXPORT_SEGMENT).path(V1Constants.EXPORT).build();
 
         KomodoStorageAttributes storageAttr = new KomodoStorageAttributes();
         storageAttr.setStorageType(StorageConnector.Types.FILE.id());
-        storageAttr.setArtifactPath(serviceTestUtilities.getWorkspace(USER_NAME) + FORWARD_SLASH + "myVDB");
+        storageAttr.setArtifactPath(PORTFOLIO_DATA_PATH);
 
         String tmpDirPath = System.getProperty("java.io.tmpdir");
         storageAttr.setParameter(FILES_HOME_PATH_PROPERTY, tmpDirPath);
@@ -259,7 +263,7 @@ public class KomodoImportExportServiceTestInSuite extends AbstractKomodoServiceT
         //
         // Test that the file storage connector really did export the vdb
         //
-        File tmpFile = new File(tmpDirPath, "myVDB" + VDB_DEPLOYMENT_SUFFIX);
+        File tmpFile = new File(tmpDirPath, "Portfolio" + VDB_DEPLOYMENT_SUFFIX);
         assertTrue(tmpFile.exists());
         tmpFile.deleteOnExit();
 
@@ -288,7 +292,7 @@ public class KomodoImportExportServiceTestInSuite extends AbstractKomodoServiceT
 
     @Test
     public void shouldImportDataservice() throws Exception {
-        Repository repository = restApp().getDefaultRepository();
+        Repository repository = engine.getDefaultRepository();
         UnitOfWork uow = repository.createTransaction(USER_NAME,
                                                       getClass().getSimpleName() + COLON + "importDataservice" + COLON
                                                                  + System.currentTimeMillis(),
@@ -356,13 +360,13 @@ public class KomodoImportExportServiceTestInSuite extends AbstractKomodoServiceT
             //
             // Restore core test vdbs
             //
-            UnitServiceResources.getInstance().loadVdbs();
+            loadVdbs();
         }
     }
 
     @Test
     public void shouldImportUSDataservice() throws Exception {
-        Repository repository = restApp().getDefaultRepository();
+        Repository repository = engine.getDefaultRepository();
         UnitOfWork uow = repository.createTransaction(USER_NAME,
                                                       getClass().getSimpleName() + COLON + "importDataservice" + COLON
                                                                  + System.currentTimeMillis(),
@@ -420,7 +424,7 @@ public class KomodoImportExportServiceTestInSuite extends AbstractKomodoServiceT
     @Test
     public void shouldImportUSDataserviceFromGit() throws Exception {
         String dsName = TestUtilities.US_STATES_DATA_SERVICE_NAME;
-        Repository repository = restApp().getDefaultRepository();
+        Repository repository = engine.getDefaultRepository();
         UnitOfWork uow = repository.createTransaction(USER_NAME,
                                                       getClass().getSimpleName() + COLON + "importDataservice" + COLON
                                                                  + System.currentTimeMillis(),
@@ -845,7 +849,7 @@ public class KomodoImportExportServiceTestInSuite extends AbstractKomodoServiceT
         String MODEL_NAME = "testModel";
         createVdbModel(VDB_NAME, MODEL_NAME);
 
-        Repository repository = restApp().getDefaultRepository();
+        Repository repository = engine.getDefaultRepository();
         UnitOfWork uow = repository.createTransaction(USER_NAME,
                                                       getClass().getSimpleName() + COLON + "importVdb" + COLON
                                                                  + System.currentTimeMillis(),

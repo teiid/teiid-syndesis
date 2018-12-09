@@ -21,43 +21,22 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import java.io.File;
+
 import java.util.Collection;
 import java.util.Properties;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
+
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.komodo.rest.TeiidSwarmConnectionProvider;
-import org.komodo.rest.TeiidSwarmMetadataInstance;
-import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.runtime.TeiidDataSource;
 import org.komodo.spi.runtime.TeiidVdb;
 import org.komodo.test.utils.TestUtilities;
 
-@RunWith( Arquillian.class )
-public class IT_KomodoMetadataServiceCreateTests {
+public class IT_KomodoMetadataServiceCreateTests extends AbstractKomodoMetadataServiceTest {
 
-    @Deployment(testable=false)
-    public static WebArchive createDeployment() throws Exception {
-        return ShrinkWrap.createFromZipFile(WebArchive.class, new File("target/vdb-builder.war"));
+    @Override
+    protected int getTestTotalInClass() {
+        return 1;
     }
-
-    private TeiidSwarmMetadataInstance instance;
-
-    private MetadataInstance getMetadataInstance() throws Exception {
-        if (instance == null) {
-            TeiidSwarmConnectionProvider connectionProvider = new TeiidSwarmConnectionProvider();
-            instance = new TeiidSwarmMetadataInstance(connectionProvider);
-        }
-
-        return instance;
-    }
-
-    
 
     @Test
     public void testCreateDataSource() throws Exception {

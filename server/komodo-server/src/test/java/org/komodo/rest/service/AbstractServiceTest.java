@@ -19,10 +19,13 @@ package org.komodo.rest.service;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+
 import javax.ws.rs.core.MediaType;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
@@ -60,7 +63,7 @@ public class AbstractServiceTest implements StringConstants, V1Constants {
     public static final int TEST_PORT = 8080;
 
     public static final String USER_NAME = "komodo";
-    
+
     public static final String PASSWORD = "user";
 
     //
@@ -130,7 +133,7 @@ public class AbstractServiceTest implements StringConstants, V1Constants {
     	request.addHeader("X-Forwarded-Access-Token", "dev-token");
     	request.addHeader("X-Forwarded-User", USER_NAME);
     }
-    
+
     @SuppressWarnings( "unchecked" )
     protected <T extends HttpUriRequest> T request(URI uri, RequestType requestType, MediaType type) throws Exception {
         switch (requestType) {
@@ -172,7 +175,7 @@ public class AbstractServiceTest implements StringConstants, V1Constants {
         assertNotNull(response);
         HttpEntity entity = response.getEntity();
         assertNotNull(entity);
-    
+
         String value = EntityUtils.toString(entity);
         assertNotNull(value);
         return value;
@@ -181,7 +184,7 @@ public class AbstractServiceTest implements StringConstants, V1Constants {
     protected void assertResponse(HttpResponse response, int expectedStatusCode) throws Exception {
         assertNotNull(response);
         StatusLine status = response.getStatusLine();
-    
+
         // Rather do this than AssertEquals since it will show the response body in the failure
         if (expectedStatusCode != status.getStatusCode()) {
             String value = EntityUtils.toString(response.getEntity());
@@ -192,7 +195,7 @@ public class AbstractServiceTest implements StringConstants, V1Constants {
     protected void okResponse(HttpResponse response) throws Exception {
         assertNotNull(response);
         StatusLine status = response.getStatusLine();
-    
+
         if (HttpStatus.SC_OK != status.getStatusCode()) {
             String value = EntityUtils.toString(response.getEntity());
             fail(status + COLON + SPACE + value);

@@ -15,22 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.rest.service.integration;
+package org.komodo.rest;
 
-import org.junit.Test;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.support.SpringBootServletInitializer;
 
-@SuppressWarnings( {"javadoc", "nls"} )
-public class IT_KomodoMetadataServiceDataServiceTests extends AbstractKomodoMetadataServiceTest {
+@SpringBootApplication
+public class Application extends SpringBootServletInitializer {
 
-    @Override
-    protected int getTestTotalInClass() {
-        return 1;
-    }
-
-    @Test
-    public void shouldDeployDataService() throws Exception {
-        importDataService();
-
-        deployDataService();
+    public static void main(String[] args) throws Exception {
+        new Application().configure(new SpringApplicationBuilder(Application.class)).run(args);
     }
 }

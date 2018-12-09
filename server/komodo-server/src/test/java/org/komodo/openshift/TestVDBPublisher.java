@@ -44,7 +44,7 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.rest.AuthHandlingFilter;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
-import org.komodo.rest.TeiidSwarmMetadataInstance;
+import org.komodo.rest.TeiidMetadataInstance;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.runtime.SyndesisDataSource;
@@ -72,7 +72,7 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
 
     private TeiidOpenShiftClient testDataSetup() throws KException {
         AuthHandlingFilter.threadOAuthCredentials.set(new OAuthCredentials("token", "user"));
-        TeiidSwarmMetadataInstance metadata = Mockito.mock(TeiidSwarmMetadataInstance.class);
+        TeiidMetadataInstance metadata = Mockito.mock(TeiidMetadataInstance.class);
 
         HashSet<SyndesisDataSource> sources = new HashSet<>();
         sources.add(getMySQLDS());

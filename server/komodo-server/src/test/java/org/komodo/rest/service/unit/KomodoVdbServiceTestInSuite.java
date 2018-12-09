@@ -19,7 +19,6 @@ package org.komodo.rest.service.unit;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -44,9 +43,9 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.junit.Rule;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.rules.TestName;
+import org.komodo.importer.ImportMessages;
 import org.komodo.relational.model.Model.Type;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.RestBasicEntity;
@@ -66,24 +65,23 @@ import org.komodo.rest.relational.response.RestVdbModelTableColumn;
 import org.komodo.rest.relational.response.RestVdbModelView;
 import org.komodo.rest.relational.response.RestVdbPermission;
 import org.komodo.rest.relational.response.RestVdbTranslator;
+import org.komodo.rest.service.AbstractServiceTest;
 import org.komodo.rest.service.KomodoVdbService;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.test.utils.TestUtilities;
 
 @SuppressWarnings( {"javadoc", "nls"} )
-@net.jcip.annotations.NotThreadSafe
 public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
 
-    @Rule
-    public TestName testName = new TestName();
-
-    public KomodoVdbServiceTestInSuite() throws Exception {
-        super();
+    @Before
+    public void setup() throws Exception{
     }
 
     @Test
     public void shouldGetVdbs() throws Exception {
+        ImportMessages msgs = importVdb(TestUtilities.portfolioExample(), AbstractServiceTest.USER_NAME);
+        assertTrue(msgs.getErrorMessages().isEmpty());
 
         // get
         URI uri = uriBuilder().workspaceVdbsUri();
@@ -128,8 +126,6 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
 
         String entity = extractResponse(response);
         assertThat(entity, is(notNullValue()));
-
-        assertTrue(entity.contains("No match for accept header"));
     }
 
     //    @Test
@@ -381,10 +377,10 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
         final String rightColumn = "rightCol";
         final String type = "INNER_JOIN";
         final String operator = "EQ";
-        
+
         // setup test by creating view and view editor state
         this.serviceTestUtilities.createVdbModelView( vdbName, modelName, viewName, USER_NAME );
-        this.serviceTestUtilities.addViewEditorState(USER_NAME, editorStateId, 
+        this.serviceTestUtilities.addViewEditorState(USER_NAME, editorStateId,
         		                                                undoId, undoArgs, redoId, redoArgs,
                                                                 viewName, viewDescr, sourcePaths,
                                                                 compName, compDescr, compLeftSource, compRightSource,
@@ -478,6 +474,8 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
 
     @Test
     public void shouldGetVdb() throws Exception {
+        ImportMessages msgs = importVdb(TestUtilities.portfolioExample(), AbstractServiceTest.USER_NAME);
+        assertTrue(msgs.getErrorMessages().isEmpty());
 
         // get
         Properties settings = uriBuilder().createSettings(SettingNames.VDB_NAME, TestUtilities.PORTFOLIO_VDB_NAME);
@@ -498,6 +496,8 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
 
     @Test
     public void shouldGetVdbXml() throws Exception {
+        ImportMessages msgs = importVdb(TestUtilities.portfolioExample(), AbstractServiceTest.USER_NAME);
+        assertTrue(msgs.getErrorMessages().isEmpty());
 
         Properties settings = uriBuilder().createSettings(SettingNames.VDB_NAME, TestUtilities.PORTFOLIO_VDB_NAME);
         uriBuilder().addSetting(settings, SettingNames.VDB_PARENT_PATH, uriBuilder().workspaceVdbsUri());
@@ -613,7 +613,7 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
             //
             // Restore the sample vdbs
             //
-            UnitServiceResources.getInstance().loadVdbs();
+            loadVdbs();
         }
     }
 
@@ -655,6 +655,8 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
 
     @Test
     public void shouldGetVdbModel() throws Exception {
+        ImportMessages msgs = importVdb(TestUtilities.portfolioExample(), AbstractServiceTest.USER_NAME);
+        assertTrue(msgs.getErrorMessages().isEmpty());
 
         // get
         Properties settings = uriBuilder().createSettings(SettingNames.VDB_NAME, TestUtilities.PORTFOLIO_VDB_NAME);
@@ -738,6 +740,8 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
 
     @Test
     public void shouldGetVdbModelTableColumns() throws Exception {
+        ImportMessages msgs = importVdb(TestUtilities.partsExample(), AbstractServiceTest.USER_NAME);
+        assertTrue(msgs.getErrorMessages().isEmpty());
 
         // get
         Properties settings = uriBuilder().createSettings(SettingNames.VDB_NAME, TestUtilities.PARTS_VDB_NAME);
@@ -773,6 +777,9 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
 
     @Test
     public void shouldGetVdbModelSourcesIncludeReferenceForTranslator() throws Exception {
+        ImportMessages msgs = importVdb(TestUtilities.tweetExample(), AbstractServiceTest.USER_NAME);
+        assertTrue(msgs.getErrorMessages().isEmpty());
+
         // get
         Properties settings = uriBuilder().createSettings(SettingNames.VDB_NAME, TestUtilities.TWEET_EXAMPLE_VDB_NAME);
         uriBuilder().addSetting(settings, SettingNames.VDB_PARENT_PATH, uriBuilder().workspaceVdbsUri());
@@ -844,6 +851,8 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
 
     @Test
     public void shouldGetVdbTranslators() throws Exception {
+        ImportMessages msgs = importVdb(TestUtilities.tweetExample(), AbstractServiceTest.USER_NAME);
+        assertTrue(msgs.getErrorMessages().isEmpty());
 
         // get
         URI vdbBaseUri = uriBuilder().workspaceVdbsUri();
@@ -886,6 +895,8 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
 
     @Test
     public void shouldGetVdbTranslator() throws Exception {
+        ImportMessages msgs = importVdb(TestUtilities.tweetExample(), AbstractServiceTest.USER_NAME);
+        assertTrue(msgs.getErrorMessages().isEmpty());
 
         // get
         String vdbName = TestUtilities.TWEET_EXAMPLE_VDB_NAME;
@@ -915,6 +926,8 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
 
     @Test
     public void shouldGetVdbImports() throws Exception {
+        ImportMessages msgs = importVdb(TestUtilities.allElementsExample(), AbstractServiceTest.USER_NAME);
+        assertTrue(msgs.getErrorMessages().isEmpty());
 
         // get
         URI vdbBaseUri = uriBuilder().workspaceVdbsUri();
@@ -942,6 +955,8 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
 
     @Test
     public void shouldGetVdbImportsEmptyList() throws Exception {
+        ImportMessages msgs = importVdb(TestUtilities.portfolioExample(), AbstractServiceTest.USER_NAME);
+        assertTrue(msgs.getErrorMessages().isEmpty());
 
         // get
         URI vdbBaseUri = uriBuilder().workspaceVdbsUri();
@@ -1100,6 +1115,8 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
 
     @Test
     public void shouldDeleteDataRole() throws Exception {
+        ImportMessages msgs = importVdb(TestUtilities.portfolioExample(), AbstractServiceTest.USER_NAME);
+        assertTrue(msgs.getErrorMessages().isEmpty());
 
         String dataRoleName = "MyDataRole";
 
@@ -1152,6 +1169,8 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
 
     @Test
     public void shouldGetVdbDataRoles() throws Exception {
+        ImportMessages msgs = importVdb(TestUtilities.allElementsExample(), AbstractServiceTest.USER_NAME);
+        assertTrue(msgs.getErrorMessages().isEmpty());
 
         // get
         URI vdbBaseUri = uriBuilder().workspaceVdbsUri();
@@ -1201,6 +1220,8 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
 
     @Test
     public void shouldGetVdbDataRole() throws Exception {
+        ImportMessages msgs = importVdb(TestUtilities.allElementsExample(), AbstractServiceTest.USER_NAME);
+        assertTrue(msgs.getErrorMessages().isEmpty());
 
         // get
         Properties settings = uriBuilder().createSettings(SettingNames.VDB_NAME, TestUtilities.ALL_ELEMENTS_EXAMPLE_VDB_NAME);
@@ -1232,6 +1253,8 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
 
     @Test
     public void shouldGetVdbPermissions() throws Exception {
+        ImportMessages msgs = importVdb(TestUtilities.allElementsExample(), AbstractServiceTest.USER_NAME);
+        assertTrue(msgs.getErrorMessages().isEmpty());
 
         // get
         Properties settings = uriBuilder().createSettings(SettingNames.VDB_NAME, TestUtilities.ALL_ELEMENTS_EXAMPLE_VDB_NAME);
@@ -1358,6 +1381,8 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
 
     @Test
     public void shouldGetVdbCondition() throws Exception {
+        ImportMessages msgs = importVdb(TestUtilities.allElementsExample(), AbstractServiceTest.USER_NAME);
+        assertTrue(msgs.getErrorMessages().isEmpty());
 
         // get
         Properties settings = uriBuilder().createSettings(SettingNames.VDB_NAME, TestUtilities.ALL_ELEMENTS_EXAMPLE_VDB_NAME);
@@ -1385,6 +1410,8 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
 
     @Test
     public void shouldGetVdbMasks() throws Exception {
+        ImportMessages msgs = importVdb(TestUtilities.allElementsExample(), AbstractServiceTest.USER_NAME);
+        assertTrue(msgs.getErrorMessages().isEmpty());
 
         // get
         Properties settings = uriBuilder().createSettings(SettingNames.VDB_NAME, TestUtilities.ALL_ELEMENTS_EXAMPLE_VDB_NAME);
@@ -1412,6 +1439,8 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
 
     @Test
     public void shouldGetVdbMask() throws Exception {
+        ImportMessages msgs = importVdb(TestUtilities.allElementsExample(), AbstractServiceTest.USER_NAME);
+        assertTrue(msgs.getErrorMessages().isEmpty());
 
         // get
         Properties settings = uriBuilder().createSettings(SettingNames.VDB_NAME, TestUtilities.ALL_ELEMENTS_EXAMPLE_VDB_NAME);
@@ -1436,9 +1465,12 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
         Collection<RestLink> links = mask.getLinks();
         assertEquals(3, links.size());
     }
-    
+
     @Test
     public void shouldGetVdbModelViews() throws Exception {
+        ImportMessages msgs = importVdb(TestUtilities.allElementsExample(), AbstractServiceTest.USER_NAME);
+        assertTrue(msgs.getErrorMessages().isEmpty());
+
         Properties settings = uriBuilder().createSettings(SettingNames.VDB_NAME, TestUtilities.ALL_ELEMENTS_EXAMPLE_VDB_NAME);
         uriBuilder().addSetting( settings, SettingNames.VDB_PARENT_PATH, uriBuilder().workspaceVdbsUri() );
         uriBuilder().addSetting( settings, SettingNames.MODEL_NAME, "model-two" );
@@ -1476,7 +1508,7 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
 
     @Test
     public void shouldFailNameValidationWhenNameAlreadyExists() throws Exception {
-        restApp().importVdb(TestUtilities.partsExample(), USER_NAME);
+        importVdb(TestUtilities.partsExample(), USER_NAME);
 
         // try and validate the same name of an existing VDB
         URI vdbUri = uriBuilder().workspaceVdbsUri();
@@ -1519,8 +1551,6 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
         HttpResponse response = execute(request);
 
         assertResponse(response, HttpStatus.SC_INTERNAL_SERVER_ERROR);
-        String errorMsg = extractResponse(response);
-        assertThat(errorMsg, startsWith("RESTEASY"));
     }
 
     @Test
@@ -1542,8 +1572,6 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
         HttpResponse response = execute(request);
 
         assertResponse(response, HttpStatus.SC_INTERNAL_SERVER_ERROR);
-        String errorMsg = extractResponse(response);
-        assertThat(errorMsg, startsWith("RESTEASY"));
     }
 
     @Test
@@ -1596,8 +1624,6 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
         HttpResponse response = execute(request);
 
         assertResponse(response, HttpStatus.SC_INTERNAL_SERVER_ERROR);
-        String errorMsg = extractResponse(response);
-        assertThat(errorMsg, startsWith("RESTEASY"));
     }
 
     @Test
@@ -1655,5 +1681,5 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
         String errorMsg = extractResponse(response);
         assertThat(errorMsg, is("")); // no error message since name was valid
     }
-    
+
 }

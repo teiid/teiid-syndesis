@@ -127,7 +127,7 @@
     <version.h2>1.4.196</version.h2>
 
     <version.commons.io>2.5</version.commons.io>
-    <version.org.teiid>10.2.0</version.org.teiid>
+    <version.org.teiid>11.2.0</version.org.teiid>
 
     <!-- Instruct the build to use only UTF-8 encoding for source code -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -157,8 +157,9 @@
     <version.teiid.modeshape>1.0.1.Final</version.teiid.modeshape>
     <version.postgresql>42.1.4</version.postgresql>
     <version.xerces>2.11.0</version.xerces>
-    <version.thorntail.teiid>1.0.3</version.thorntail.teiid>
-    <version.thorntail>2.2.0.Final</version.thorntail>
+    
+    <version.springboot.teiid>1.0.1-SNAPSHOT</version.springboot.teiid>
+    
     <version.gson>2.2.4</version.gson>
     <version.apache.commons.codec>1.10</version.apache.commons.codec>
     <version.guava>20.0</version.guava>
@@ -372,9 +373,9 @@
         <version>${version.org.teiid}</version>
       </dependency>
       <dependency>
-        <groupId>org.teiid</groupId>
-        <artifactId>thorntail-jdbc</artifactId>
-        <version>${version.thorntail.teiid}</version>
+          <groupId>org.teiid</groupId>
+          <artifactId>teiid-spring-boot-starter</artifactId>
+          <version>${version.springboot.teiid}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.httpcomponents</groupId>
@@ -456,14 +457,7 @@
         <groupId>xerces</groupId>
         <artifactId>xercesImpl</artifactId>
         <version>${version.xerces}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.teiid</groupId>
-        <artifactId>thorntail-bom</artifactId>
-        <version>${version.thorntail.teiid}</version>
-        <scope>import</scope>
-        <type>pom</type>
-      </dependency>     
+      </dependency>    
       <dependency>
         <groupId>org.jboss.arquillian</groupId>
         <artifactId>arquillian-bom</artifactId>

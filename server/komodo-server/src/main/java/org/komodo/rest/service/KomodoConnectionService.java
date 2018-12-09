@@ -20,11 +20,13 @@ package org.komodo.rest.service;
 import static org.komodo.rest.relational.RelationalMessages.Error.CONNECTION_SERVICE_NAME_EXISTS;
 import static org.komodo.rest.relational.RelationalMessages.Error.CONNECTION_SERVICE_NAME_VALIDATION_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.VDB_DATA_SOURCE_NAME_EXISTS;
+
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -32,14 +34,13 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
-import org.komodo.core.KEngine;
+
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.relational.connection.Connection;
@@ -71,6 +72,9 @@ import org.komodo.spi.runtime.SyndesisDataSource;
 import org.komodo.spi.runtime.TeiidDataSource;
 import org.komodo.spi.runtime.TeiidVdb;
 import org.komodo.utils.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -82,6 +86,7 @@ import io.swagger.annotations.ApiResponses;
 /**
  * A Komodo REST service for obtaining Connection information from the workspace.
  */
+@Component
 @Path(V1Constants.WORKSPACE_SEGMENT + StringConstants.FORWARD_SLASH +
            V1Constants.CONNECTIONS_SEGMENT)
 @Api(tags = {V1Constants.CONNECTIONS_SEGMENT})
@@ -98,25 +103,12 @@ public final class KomodoConnectionService extends KomodoService {
          */
         String INCLUDE_CONNECTION = "include-connection"; //$NON-NLS-1$
     }
-
+	@Autowired
 	private TeiidOpenShiftClient openshiftClient;
     private static final String CONNECTION_VDB_PATTERN = "{0}btlconn"; //$NON-NLS-1$
 
     private static final String SCHEMA_MODEL_NAME_PATTERN = "{0}schemamodel"; //$NON-NLS-1$
     private static final String SCHEMA_VDB_NAME_PATTERN = "{0}schemavdb"; //$NON-NLS-1$
-
-    /**
-     * @param engine
-     *        the Komodo Engine (cannot be <code>null</code> and must be started)
-     * @param openshiftClient OpenShift Client to access service catalog
-     * @throws WebApplicationException
-     *         if there is a problem obtaining the {@link WorkspaceManager workspace manager}
-     */
-    public KomodoConnectionService(final KEngine engine, TeiidOpenShiftClient openshiftClient)
-            throws WebApplicationException {
-        super( engine );
-        this.openshiftClient = openshiftClient;
-    }
 
     /**
      * Get connection summaries from the komodo repository
@@ -207,37 +199,37 @@ public final class KomodoConnectionService extends KomodoService {
             final Collection< TeiidVdb > vdbs = includeSchemaStatus ? getMetadataInstance().getVdbs() : null;
             Connection[] connections = null;
 
-            if ( includeConnection ) {	
+            if ( includeConnection ) {
 	            if ( StringUtils.isBlank( searchPattern ) ) {
 	                connections = getWorkspaceManager(uow).findConnections( uow );
 	                LOGGER.debug( "getConnections:found '{0}' Connections", connections.length ); //$NON-NLS-1$
 	            } else {
 	                final String[] connectionPaths = getWorkspaceManager(uow).findByType( uow, DataVirtLexicon.Connection.NODE_TYPE, null, searchPattern, false );
-	
+
 	                if ( connectionPaths.length == 0 ) {
 	                    connections = Connection.NO_CONNECTIONS;
 	                } else {
 	                    connections = new Connection[ connectionPaths.length ];
 	                    int i = 0;
-	
+
 	                    for ( final String path : connectionPaths ) {
 	                        connections[ i++ ] = getWorkspaceManager(uow).resolve( uow, new ObjectImpl( getWorkspaceManager(uow).getRepository(), path, 0 ), Connection.class );
 	                    }
-	
+
 	                    LOGGER.debug( "getConnections:found '{0}' Connections using pattern '{1}'", connections.length, searchPattern ); //$NON-NLS-1$
 	                }
 	            }
-	
+
 	            int start = 0;
-	
+
 	            { // start query parameter
 	                final String qparam = uriInfo.getQueryParameters().getFirst( QueryParamKeys.START );
-	
+
 	                if ( qparam != null ) {
-	
+
 	                    try {
 	                        start = Integer.parseInt( qparam );
-	
+
 	                        if ( start < 0 ) {
 	                            start = 0;
 	                        }
@@ -246,17 +238,17 @@ public final class KomodoConnectionService extends KomodoService {
 	                    }
 	                }
 	            }
-	
+
 	            int size = KomodoService.ALL_AVAILABLE;
-	
+
 	            { // size query parameter
 	                final String qparam = uriInfo.getQueryParameters().getFirst( QueryParamKeys.SIZE );
-	
+
 	                if ( qparam != null ) {
-	
+
 	                    try {
 	                        size = Integer.parseInt( qparam );
-	
+
 	                        if ( size <= 0 ) {
 	                            size = KomodoService.ALL_AVAILABLE;
 	                        }
@@ -265,16 +257,16 @@ public final class KomodoConnectionService extends KomodoService {
 	                    }
 	                }
 	            }
-	
+
 	            int i = 0;
-	
+
 	            KomodoProperties properties = new KomodoProperties();
 	            for ( final Connection connection : connections ) {
 	                if ( ( start == 0 ) || ( i >= start ) ) {
 	                	RestConnection restConnection = null;
 	                	RestMetadataConnectionStatus restStatus = null;
 
-	                	if ( ( size == KomodoService.ALL_AVAILABLE ) || ( summaries.size() < size ) ) {                        
+	                	if ( ( size == KomodoService.ALL_AVAILABLE ) || ( summaries.size() < size ) ) {
 	                        restConnection = entityFactory.create(connection, uriInfo.getBaseUri(), uow, properties);
 	                        LOGGER.debug("getConnections:Connection '{0}' entity was constructed", connection.getName(uow)); //$NON-NLS-1$
 
@@ -287,12 +279,12 @@ public final class KomodoConnectionService extends KomodoService {
 	                        break;
 	                    }
 	                }
-	
+
 	                ++i;
 	            }
             } else if ( includeSchemaStatus ) { // include schema status and no connections
             	connections = getWorkspaceManager(uow).findConnections( uow );
-                
+
                 for ( final Connection connection: connections ) {
                     final RestMetadataConnectionStatus restStatus = createStatusRestEntity( uow, vdbs, connection );
                     summaries.add( new RestConnectionSummary( uriInfo.getBaseUri(), null, restStatus ) );
@@ -335,7 +327,7 @@ public final class KomodoConnectionService extends KomodoService {
                                                                  final Connection connection ) throws Exception {
         final String connectionName = connection.getName( uow );
         final String connVdbName = getConnectionWorkspaceVdbName( connectionName );
-        
+
         // find status of server connection VDB
         TeiidVdb connVdb = null;
 
@@ -494,7 +486,7 @@ public final class KomodoConnectionService extends KomodoService {
             return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.CONNECTION_SERVICE_GET_CONNECTION_ERROR, connectionName);
         }
     }
-    
+
     /**
      * Create a new Connection in the komodo repository, using a service catalogSource
      * @param headers
@@ -525,7 +517,7 @@ public final class KomodoConnectionService extends KomodoService {
                                       )
                                       final @PathParam( "connectionName" ) String connectionName,
                                       @ApiParam(
-                                              value = "" + 
+                                              value = "" +
                                                       "Properties for the new connection:<br>" +
                                                       OPEN_PRE_TAG +
                                                       OPEN_BRACE + BR +
@@ -554,7 +546,7 @@ public final class KomodoConnectionService extends KomodoService {
         KomodoConnectionAttributes rcAttr;
         try {
         	rcAttr = KomodoJsonMarshaller.unmarshall(connectionJson, KomodoConnectionAttributes.class);
-            
+
             Response response = checkConnectionAttributes(rcAttr, mediaTypes);
             if (response.getStatus() != Status.OK.getStatusCode())
                 return response;
@@ -562,9 +554,9 @@ public final class KomodoConnectionService extends KomodoService {
         } catch (Exception ex) {
             return createErrorResponseWithForbidden(mediaTypes, ex, RelationalMessages.Error.CONNECTION_SERVICE_REQUEST_PARSING_ERROR);
         }
-        
+
         SyndesisDataSource serviceCatalogSource = null;
-        
+
         RestConnection restConnection = new RestConnection();
         restConnection.setId(connectionName);
 
@@ -573,7 +565,7 @@ public final class KomodoConnectionService extends KomodoService {
             restConnection.addProperty("description", rcAttr.getDescription()); //$NON-NLS-1$
             restConnection.addProperty(DataVirtLexicon.Connection.SERVICE_CATALOG_SOURCE, rcAttr.getDataSource());
             restConnection.setJdbc(true);
-            
+
             // Get the specified ServiceCatalogDataSource from the metadata instance
             Collection<SyndesisDataSource> dataSources = openshiftClient.getSyndesisSources(getAuthenticationToken());
 			for(SyndesisDataSource ds: dataSources) {
@@ -602,12 +594,12 @@ public final class KomodoConnectionService extends KomodoService {
 
 			// Ensures service catalog is bound, and creates the corresponding datasource in wildfly
 			openshiftClient.bindToSyndesisSource(getAuthenticationToken(), serviceCatalogSource.getName());
-			
+
 			// Get the connection from the wildfly instance (should be available after binding)
             TeiidDataSource dataSource = getMetadataInstance().getDataSource(serviceCatalogSource.getName());
             if (dataSource == null)
                 return commitNoConnectionFound(uow, mediaTypes, connectionName);
-			
+
             // Add the jndi and driver to the komodo connection to be created
             restConnection.setJndiName(dataSource.getJndiName());
             restConnection.setDriverName(dataSource.getType());
@@ -702,7 +694,7 @@ public final class KomodoConnectionService extends KomodoService {
             final KomodoObject kobject = getWorkspaceManager(uow).getChild( uow, connectionName, DataVirtLexicon.Connection.NODE_TYPE );
             final Connection oldConnection = getWorkspaceManager(uow).resolve( uow, kobject, Connection.class );
             final RestConnection oldEntity = entityFactory.create(oldConnection, uriInfo.getBaseUri(), uow );
-            
+
             final Connection connection = getWorkspaceManager(uow).createConnection( uow, null, newConnectionName);
 
             setProperties( uow, connection, oldEntity );
@@ -753,7 +745,7 @@ public final class KomodoConnectionService extends KomodoService {
                                       )
                                       final @PathParam( "connectionName" ) String connectionName,
                                       @ApiParam(
-                                                value = "" + 
+                                                value = "" +
                                                         "Properties for the connection update:<br>" +
                                                         OPEN_PRE_TAG +
                                                         OPEN_BRACE + BR +
@@ -777,12 +769,12 @@ public final class KomodoConnectionService extends KomodoService {
         if (StringUtils.isBlank( connectionName )) {
             return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.CONNECTION_SERVICE_MISSING_CONNECTION_NAME);
         }
-        
+
         // Get the attributes - ensure valid attributes provided
         KomodoConnectionAttributes rcAttr;
         try {
         	rcAttr = KomodoJsonMarshaller.unmarshall(connectionJson, KomodoConnectionAttributes.class);
-            
+
             Response response = checkConnectionAttributes(rcAttr, mediaTypes);
             if (response.getStatus() != Status.OK.getStatusCode())
                 return response;
@@ -801,7 +793,7 @@ public final class KomodoConnectionService extends KomodoService {
             restConnection.addProperty("description", rcAttr.getDescription()); //$NON-NLS-1$
             restConnection.addProperty(DataVirtLexicon.Connection.SERVICE_CATALOG_SOURCE, rcAttr.getDataSource());
             restConnection.setJdbc(true);
-            
+
             // Get the specified ServiceCatalogDataSource from the metadata instance
             Collection<SyndesisDataSource> dataSources = openshiftClient.getSyndesisSources(getAuthenticationToken());
 			for(SyndesisDataSource ds: dataSources) {
@@ -834,12 +826,12 @@ public final class KomodoConnectionService extends KomodoService {
 
 			// Ensures service catalog is bound, and creates the corresponding datasource in wildfly
 			openshiftClient.bindToSyndesisSource(getAuthenticationToken(), serviceCatalogSource.getName());
-			
+
 			// Get the connection from the wildfly instance (should be available after binding)
             TeiidDataSource dataSource = getMetadataInstance().getDataSource(serviceCatalogSource.getName());
             if (dataSource == null)
                 return commitNoConnectionFound(uow, mediaTypes, connectionName);
-			
+
             // Add the jndi and driver to the komodo connection to be created
             restConnection.setJndiName(dataSource.getJndiName());
             restConnection.setDriverName(dataSource.getType());
@@ -943,13 +935,13 @@ public final class KomodoConnectionService extends KomodoService {
             if (connectionWorkspaceVdb != null) {
                 mgr.delete(uow, connectionWorkspaceVdb);
             }
-            
+
             // get associated deployed vdb - undeploy if it exists
             final TeiidVdb deployedVdb = findDeployedVdb( connectionName );
             if (deployedVdb != null) {
                 getMetadataInstance().undeployDynamicVdb(connectionVdbName);
             }
-            
+
             // Delete the workspace connection
             mgr.delete(uow, connection);
 
@@ -1008,7 +1000,7 @@ public final class KomodoConnectionService extends KomodoService {
         }
 
         final String errorMsg = VALIDATOR.checkValidName( connectionName );
-        
+
         // a name validation error occurred
         if ( errorMsg != null ) {
             return Response.ok().entity( errorMsg ).build();
@@ -1050,16 +1042,16 @@ public final class KomodoConnectionService extends KomodoService {
                 throw ( KomodoRestException )e;
             }
 
-            return createErrorResponseWithForbidden( headers.getAcceptableMediaTypes(), 
-                                                     e, 
+            return createErrorResponseWithForbidden( headers.getAcceptableMediaTypes(),
+                                                     e,
                                                      CONNECTION_SERVICE_NAME_VALIDATION_ERROR );
         }
     }
-    
+
     private synchronized MetadataInstance getMetadataInstance() throws KException {
         return this.kengine.getMetadataInstance();
     }
-    
+
     /*
      * Checks the supplied attributes for create and update of connections
      *  - serviceCatalogSource is required

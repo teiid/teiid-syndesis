@@ -18,6 +18,7 @@
 package org.komodo.rest.service;
 
 import static org.komodo.rest.relational.RelationalMessages.Error.SCHEMA_SERVICE_GET_SCHEMA_ERROR;
+
 import java.io.File;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -25,6 +26,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -33,7 +35,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -41,7 +42,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
-import org.komodo.core.KEngine;
+
 import org.komodo.core.repository.SynchronousCallback;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
@@ -56,7 +57,6 @@ import org.komodo.relational.profile.StateCommandAggregate;
 import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.vdb.Vdb;
-import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.rest.KomodoRestException;
 import org.komodo.rest.KomodoRestV1Application;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
@@ -79,6 +79,8 @@ import org.komodo.spi.repository.Repository.Id;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.StringUtils;
+import org.springframework.stereotype.Component;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -90,6 +92,7 @@ import io.swagger.annotations.ApiResponses;
 /**
  * A Komodo REST service for obtaining VDB information from the workspace.
  */
+@Component
 @Path( V1Constants.SERVICE_SEGMENT )
 @Api( tags = {V1Constants.SERVICE_SEGMENT} )
 public final class KomodoUtilService extends KomodoService {
@@ -122,15 +125,6 @@ public final class KomodoUtilService extends KomodoService {
         "northwind.xml", "financials.xml"
     };
 
-    /**
-     * @param engine
-     *        the Komodo Engine (cannot be <code>null</code> and must be started)
-     * @throws WebApplicationException
-     *         if there is a problem obtaining the {@link WorkspaceManager workspace manager}
-     */
-    public KomodoUtilService(final KEngine engine) throws WebApplicationException {
-        super(engine);
-    }
 
     /**
      * @param headers
@@ -167,7 +161,7 @@ public final class KomodoUtilService extends KomodoService {
             Id id = repo.getId();
             repoStatus.addAttribute(REPO_WKSP_LABEL, id.getWorkspaceName());
             repoStatus.addAttribute(REPO_CONFIG_LABEL, id.getConfiguration().toString());
-        	
+
             // find VDBs
             uow = systemTx("getVdbs", true); //$NON-NLS-1$
             Vdb[] vdbs = getWorkspaceManager(uow).findVdbs(uow);
@@ -254,7 +248,7 @@ public final class KomodoUtilService extends KomodoService {
                 ImportOptions importOptions = new ImportOptions();
                 importOptions.setOption(OptionKeys.HANDLE_EXISTING, ExistingNodeOptions.RETURN);
                 ImportMessages importMessages = new ImportMessages();
-                
+
                 Repository repo = this.kengine.getDefaultRepository();
                 KomodoObject workspace = repo.komodoWorkspace(uow);
                 VdbImporter importer = new VdbImporter(repo);
@@ -411,7 +405,7 @@ public final class KomodoUtilService extends KomodoService {
         }
 
         final String errorMsg = VALIDATOR.checkValidName( validateValue );
-        
+
         // a name validation error occurred
         if ( errorMsg != null ) {
             return Response.ok().entity( errorMsg ).build();
@@ -828,7 +822,7 @@ public final class KomodoUtilService extends KomodoService {
             uow = createTransaction(principal, txId, true );
             Profile profile = getUserProfile(uow);
             ViewEditorState[] viewEditorStates = profile.getViewEditorStates(uow, viewEditorStateId);
-            LOGGER.debug( "getViewEditorState:found '{0}' ViewEditorStates", 
+            LOGGER.debug( "getViewEditorState:found '{0}' ViewEditorStates",
                               viewEditorStates == null ? 0 : viewEditorStates.length ); //$NON-NLS-1$
 
             if (viewEditorStates == null || viewEditorStates.length == 0)
@@ -893,13 +887,13 @@ public final class KomodoUtilService extends KomodoService {
             return notAcceptableMediaTypesBuilder().build();
 
         RestViewEditorState[] restViewEditorStates = KomodoJsonMarshaller.unmarshallArray(viewEditorStateConfig, RestViewEditorState[].class);
-        
+
         // Validate the RestViewEditorStates, return if any errors found
         for (RestViewEditorState restViewEditorState : restViewEditorStates) {
             Response resp = this.checkRestEditorState(mediaTypes, restViewEditorState);
             if (resp != null) return resp;
         }
-        
+
         UnitOfWork uow = null;
         try {
             uow = createTransaction(principal, "addUserProfileViewEditorState", false); //$NON-NLS-1$
@@ -951,7 +945,7 @@ public final class KomodoUtilService extends KomodoService {
         }
         return null;
     }
-    
+
     /**
      * Creates the view editor state from the RestViewEditorState
      * @param editorState the state
@@ -967,7 +961,7 @@ public final class KomodoUtilService extends KomodoService {
         // Add a new ViewEditorState to the userProfile
         Profile userProfile = getUserProfile(uow);
         ViewEditorState viewEditorState = userProfile.addViewEditorState(uow, stateId);
-        
+
         // Add commands to the ViewEditorState
         for (RestStateCommandAggregate restCmd : commands) {
             RestStateCommand restUndo = restCmd.getUndo();
@@ -977,7 +971,7 @@ public final class KomodoUtilService extends KomodoService {
             stateCmdAgg.setUndo(uow, restUndo.getId(), restUndo.getArguments());
             stateCmdAgg.setRedo(uow, restRedo.getId(), restRedo.getArguments());
         }
-        
+
         // Set ViewDefinition of the ViewEditorState
         ViewDefinition viewDefn = viewEditorState.setViewDefinition(uow);
         viewDefn.setViewName(uow, restViewDefn.getViewName());
@@ -1006,7 +1000,7 @@ public final class KomodoUtilService extends KomodoService {
         }
         return viewEditorState;
     }
-    
+
     /**
      * @param headers
      *        the request headers (never <code>null</code>)

@@ -43,7 +43,6 @@ import org.komodo.rest.relational.request.KomodoConnectionAttributes;
 import org.komodo.rest.relational.response.RestConnectionSummary;
 
 @SuppressWarnings( {"javadoc", "nls"} )
-@net.jcip.annotations.NotThreadSafe
 public class KomodoConnectionServiceTestInSuite extends AbstractKomodoServiceTest {
 
     @Rule
@@ -83,7 +82,7 @@ public class KomodoConnectionServiceTestInSuite extends AbstractKomodoServiceTes
         assertNotNull(connection.getDataPath());
         assertNotNull(connection.getkType());
     }
-    
+
     @Test
     public void shouldReturnEmptyListWhenNoDataservicesInWorkspace() throws Exception {
         URI uri = uriBuilder().workspaceDataservicesUri();
@@ -99,7 +98,7 @@ public class KomodoConnectionServiceTestInSuite extends AbstractKomodoServiceTes
         assertNotNull(connections);
         assertEquals(0, connections.length);
     }
-    
+
     @Test
     public void shouldGetConnection() throws Exception {
         String connectionName = "shouldGetConnection";
@@ -118,7 +117,7 @@ public class KomodoConnectionServiceTestInSuite extends AbstractKomodoServiceTes
 
         RestConnectionSummary connectionSummary = KomodoJsonMarshaller.unmarshall(entity, RestConnectionSummary.class);
         assertNotNull(connectionSummary);
-        
+
         RestConnection conn = connectionSummary.getConnection();
         assertNotNull(conn);
         assertEquals(conn.getId(), connectionName);

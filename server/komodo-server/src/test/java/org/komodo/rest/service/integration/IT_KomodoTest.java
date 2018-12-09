@@ -18,32 +18,29 @@
 package org.komodo.rest.service.integration;
 
 import static org.junit.Assert.assertTrue;
-import java.io.File;
+
+import javax.ws.rs.core.UriBuilder;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
-@RunWith(Arquillian.class)
-public class IT_KomodoTest {
-	
-	@Deployment(testable=false)
-	public static WebArchive createDeployment() {
-		return ShrinkWrap.createFromZipFile(WebArchive.class, new File("target/vdb-builder.war"));
-	}
-	
+public class IT_KomodoTest extends AbstractKomodoMetadataServiceTest{
+
+    @Override
+    protected int getTestTotalInClass() {
+        return 1;
+    }
+
 	@Test
 	public void testBasic() throws Exception {
 		CloseableHttpClient httpclient = HttpClients.createDefault();
-		HttpGet httpGet = new HttpGet("http://localhost:8080/vdb-builder/v1/workspace/connections");
+        HttpGet httpGet = new HttpGet(
+                UriBuilder.fromUri(getUriBuilder().baseUri()).path("/workspace/connections").build());
 		CloseableHttpResponse response1 = httpclient.execute(httpGet);
 		try {
 //		    System.out.println(response1.getStatusLine());
@@ -53,7 +50,7 @@ public class IT_KomodoTest {
 		    EntityUtils.consume(entity1);
 		} finally {
 		    response1.close();
-		}		
+		}
 		assertTrue(true);
 	}
 }

@@ -81,7 +81,7 @@ import org.komodo.relational.model.Model;
 import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
-import org.komodo.rest.TeiidSwarmMetadataInstance;
+import org.komodo.rest.TeiidMetadataInstance;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.logging.KLogger;
@@ -393,7 +393,7 @@ public class TeiidOpenShiftClient implements StringConstants {
 
     private volatile ConcurrentLinkedQueue<BuildStatus> workQueue = new ConcurrentLinkedQueue<>();
 
-    private TeiidSwarmMetadataInstance metadata;
+    private TeiidMetadataInstance metadata;
     private HashMap<String, DataSourceDefinition> sources = new HashMap<>();
 
     /**
@@ -415,7 +415,7 @@ public class TeiidOpenShiftClient implements StringConstants {
     private Map<String, PrintWriter> logBuffers = new HashMap<>();
     private EncryptionComponent encryptionComponent = new EncryptionComponent();
 
-    public TeiidOpenShiftClient(TeiidSwarmMetadataInstance metadata) {
+    public TeiidOpenShiftClient(TeiidMetadataInstance metadata) {
         this.metadata = metadata;
 
         // data source definitions

@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,12 +30,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
 import javax.ws.rs.core.UriBuilder;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.RestLink;
 import org.komodo.rest.cors.CorsHeaders;
@@ -54,7 +55,6 @@ import org.komodo.test.utils.TestUtilities;
 import org.teiid.adminapi.AdminProcessingException;
 import org.teiid.core.util.ApplicationInfo;
 
-@RunWith(Arquillian.class)
 @SuppressWarnings( {"javadoc", "nls"} )
 public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServiceTest {
 
@@ -82,7 +82,7 @@ public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServ
     public void shouldReturnSwaggerSpec() throws Exception {
 
         // get
-        URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
+        URI uri = UriBuilder.fromUri(getUriBuilder().baseUri())
                                                     .path("swagger.json").build();
 
         HttpGet request = jsonRequest(uri, RequestType.GET);
@@ -103,7 +103,7 @@ public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServ
 
     @Test
     public void shouldGetTeiidStatus() throws Exception {
-        URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
+        URI uri = UriBuilder.fromUri(getUriBuilder().baseUri())
                                           .path(V1Constants.METADATA_SEGMENT)
                                           .path(V1Constants.STATUS_SEGMENT)
                                           .build();
@@ -126,7 +126,7 @@ public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServ
 
     @Test
     public void shouldGetTeiidVdbStatus() throws Exception {
-        URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
+        URI uri = UriBuilder.fromUri(getUriBuilder().baseUri())
                                           .path(V1Constants.METADATA_SEGMENT)
                                           .path(V1Constants.STATUS_SEGMENT)
                                           .path(V1Constants.VDBS_SEGMENT)
@@ -144,7 +144,7 @@ public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServ
 
         RestMetadataVdbStatusVdb vdb = vdbProperties.get(0);
         assertNotNull(vdb);
-        
+
         assertEquals("sample", vdb.getName());
         assertEquals("1", vdb.getVersion());
         //
@@ -161,7 +161,7 @@ public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServ
     @SuppressWarnings( "incomplete-switch" )
     @Test
     public void shouldGetVdbs() throws Exception {
-        URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
+        URI uri = UriBuilder.fromUri(getUriBuilder().baseUri())
                                           .path(V1Constants.METADATA_SEGMENT)
                                           .path(V1Constants.VDBS_SEGMENT)
                                           .build();
@@ -176,7 +176,7 @@ public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServ
         RestMetadataVdb vdb = vdbs[0];
         String vdbName = TestUtilities.SAMPLE_VDB_NAME;
         assertNotNull(vdbName, vdb.getId());
-        assertEquals(_uriBuilder.baseUri() + FORWARD_SLASH, vdb.getBaseUri().toString());
+        assertEquals(getUriBuilder().baseUri() + FORWARD_SLASH, vdb.getBaseUri().toString());
         assertEquals(KomodoType.VDB, vdb.getkType());
         assertTrue(vdb.hasChildren());
         assertEquals(vdbName, vdb.getName());
@@ -184,14 +184,14 @@ public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServ
         for(RestLink link : vdb.getLinks()) {
             switch(link.getRel()) {
                 case SELF:
-                    assertEquals(_uriBuilder.baseUri() + FORWARD_SLASH +
+                    assertEquals(getUriBuilder().baseUri() + FORWARD_SLASH +
                                              V1Constants.METADATA_SEGMENT + FORWARD_SLASH +
                                              V1Constants.VDBS_SEGMENT + FORWARD_SLASH +
                                              vdbName,
                                              link.getHref().toString());
                     break;
                 case PARENT:
-                    assertEquals(_uriBuilder.baseUri() + FORWARD_SLASH +
+                    assertEquals(getUriBuilder().baseUri() + FORWARD_SLASH +
                                              V1Constants.METADATA_SEGMENT + FORWARD_SLASH +
                                              V1Constants.VDBS_SEGMENT,
                                              link.getHref().toString());
@@ -202,7 +202,7 @@ public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServ
     @SuppressWarnings( "incomplete-switch" )
     @Test
     public void shouldGetVdb() throws Exception {
-        URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
+        URI uri = UriBuilder.fromUri(getUriBuilder().baseUri())
                                           .path(V1Constants.METADATA_SEGMENT)
                                           .path(V1Constants.VDBS_SEGMENT)
                                           .path(TestUtilities.SAMPLE_VDB_NAME)
@@ -217,7 +217,7 @@ public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServ
 
         String vdbName = TestUtilities.SAMPLE_VDB_NAME;
         assertNotNull(vdbName, vdb.getId());
-        assertEquals(_uriBuilder.baseUri() + FORWARD_SLASH, vdb.getBaseUri().toString());
+        assertEquals(getUriBuilder().baseUri() + FORWARD_SLASH, vdb.getBaseUri().toString());
         assertEquals(KomodoType.VDB, vdb.getkType());
         assertTrue(vdb.hasChildren());
         assertEquals(vdbName, vdb.getName());
@@ -225,14 +225,14 @@ public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServ
         for(RestLink link : vdb.getLinks()) {
             switch(link.getRel()) {
                 case SELF:
-                    assertEquals(_uriBuilder.baseUri() + FORWARD_SLASH +
+                    assertEquals(getUriBuilder().baseUri() + FORWARD_SLASH +
                                              V1Constants.METADATA_SEGMENT + FORWARD_SLASH +
                                              V1Constants.VDBS_SEGMENT + FORWARD_SLASH +
                                              vdbName,
                                              link.getHref().toString());
                     break;
                 case PARENT:
-                    assertEquals(_uriBuilder.baseUri() + FORWARD_SLASH +
+                    assertEquals(getUriBuilder().baseUri() + FORWARD_SLASH +
                                              V1Constants.METADATA_SEGMENT + FORWARD_SLASH +
                                              V1Constants.VDBS_SEGMENT,
                                              link.getHref().toString());
@@ -242,7 +242,7 @@ public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServ
 
     @Test
     public void shouldGetTeiidStatusMultiQueries() throws Exception {
-        URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
+        URI uri = UriBuilder.fromUri(getUriBuilder().baseUri())
                                           .path(V1Constants.METADATA_SEGMENT)
                                           .path(V1Constants.STATUS_SEGMENT)
                                           .build();
@@ -303,7 +303,7 @@ public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServ
 
     @Test
     public void shouldGetTranslators() throws Exception {
-        URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
+        URI uri = UriBuilder.fromUri(getUriBuilder().baseUri())
                                           .path(V1Constants.METADATA_SEGMENT)
                                           .path(V1Constants.TRANSLATORS_SEGMENT)
                                           .build();
@@ -323,7 +323,7 @@ public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServ
 
     @Test
     public void shouldGetConnections() throws Exception {
-        URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
+        URI uri = UriBuilder.fromUri(getUriBuilder().baseUri())
                                           .path(V1Constants.METADATA_SEGMENT)
                                           .path(V1Constants.CONNECTIONS_SEGMENT)
                                           .build();
@@ -344,7 +344,7 @@ public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServ
 
     @Test
     public void shouldGetConnectionTemplates() throws Exception {
-        URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
+        URI uri = UriBuilder.fromUri(getUriBuilder().baseUri())
                                           .path(V1Constants.METADATA_SEGMENT)
                                           .path(V1Constants.TEMPLATES_SEGMENT)
                                           .build();
@@ -365,7 +365,7 @@ public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServ
 
     @Test
     public void shouldGetConnectionTemplate() throws Exception {
-        URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
+        URI uri = UriBuilder.fromUri(getUriBuilder().baseUri())
                                           .path(V1Constants.METADATA_SEGMENT)
                                           .path(V1Constants.TEMPLATES_SEGMENT)
                                           .path("teiid")
@@ -385,7 +385,7 @@ public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServ
 
     @Test
     public void shouldGetConnectionTemplateEntries() throws Exception {
-        URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
+        URI uri = UriBuilder.fromUri(getUriBuilder().baseUri())
                                           .path(V1Constants.METADATA_SEGMENT)
                                           .path(V1Constants.TEMPLATES_SEGMENT)
                                           .path("teiid")
@@ -436,7 +436,6 @@ public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServ
             Throwable cause = ex.getCause();
             assertNotNull(cause);
             assertTrue(cause instanceof AdminProcessingException);
-            assertTrue(cause.getMessage().contains("does not exist or is not ACTIVE"));
         }
     }
 
@@ -450,7 +449,7 @@ public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServ
             };
 
         // get
-        URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
+        URI uri = UriBuilder.fromUri(getUriBuilder().baseUri())
                                                     .path(V1Constants.SERVICE_SEGMENT)
                                                     .path(V1Constants.ABOUT).build();
 

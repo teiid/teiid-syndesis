@@ -1,33 +1,60 @@
+<!-- HTML for static distribution bundle build -->
+<!DOCTYPE html>
 <html lang="en">
-<head>
-	<meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+  <head>
+    <meta charset="UTF-8">
+    <title>Swagger UI</title>
+    <link rel="stylesheet" type="text/css" href="./swagger-ui.css" >
+    <link rel="icon" type="image/png" href="./favicon-32x32.png" sizes="32x32" />
+    <link rel="icon" type="image/png" href="./favicon-16x16.png" sizes="16x16" />
+    <style>
+      html
+      {
+        box-sizing: border-box;
+        overflow: -moz-scrollbars-vertical;
+        overflow-y: scroll;
+      }
 
-	<!-- Bootstrap -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
+      *,
+      *:before,
+      *:after
+      {
+        box-sizing: inherit;
+      }
 
-	<link type="text/css" href="css/style.css" rel="stylesheet" />
-	<title>vdb-builder</title>
-</head>
+      body
+      {
+        margin:0;
+        background: #fafafa;
+      }
+    </style>
+  </head>
 
-<body>
-	<div class="container">
-		<div class="row">
-			<img class="teiid-logo-img" src="img/teiid-logo.svg" alt="teiid-logo" />
-		</div>
-		<div class="row vdb-builder-title">
-			<h1>Vdb Builder</h1>
-		</div>
-		<div class="row">
-			<div class="col-sm-6 col-md-6 col-lg-6 vdb-builder-link-cell">
-				<a class="vdb-builder-link" href="api-docs/">Rest API Documentation</a>
-			</div>
-			<div class="col-sm-6 col-md-6 col-lg-6 vdb-builder-link-cell">
-				<a class="vdb-builder-link" href="v1/swagger.json">API Json Specification</a>
-			</div>
-		</div>
-	</div>
-</body>
+  <body>
+    <div id="swagger-ui"></div>
+
+    <script src="./swagger-ui-bundle.js"> </script>
+    <script src="./swagger-ui-standalone-preset.js"> </script>
+    <script>
+    window.onload = function() {
+      // Begin Swagger UI call region
+      const ui = SwaggerUIBundle({
+        url: "/vdb-builder/v1/swagger.json",
+        dom_id: '#swagger-ui',
+        deepLinking: true,
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIStandalonePreset
+        ],
+        plugins: [
+          SwaggerUIBundle.plugins.DownloadUrl
+        ],
+        layout: "StandaloneLayout"
+      })
+      // End Swagger UI call region
+
+      window.ui = ui
+    }
+  </script>
+  </body>
 </html>

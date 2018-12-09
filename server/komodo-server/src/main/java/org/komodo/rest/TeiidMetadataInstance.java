@@ -15,22 +15,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.rest.service.integration;
+package org.komodo.rest;
 
-import org.junit.Test;
+import org.komodo.metadata.DefaultMetadataInstance;
+import org.komodo.metadata.TeiidConnectionProvider;
+import org.teiid.adminapi.Admin;
+import org.teiid.adminapi.AdminException;
 
-@SuppressWarnings( {"javadoc", "nls"} )
-public class IT_KomodoMetadataServiceDataServiceTests extends AbstractKomodoMetadataServiceTest {
+public class TeiidMetadataInstance extends DefaultMetadataInstance {
 
-    @Override
-    protected int getTestTotalInClass() {
-        return 1;
+    public TeiidMetadataInstance(TeiidConnectionProvider connectionProvider) {
+        super(connectionProvider);
     }
 
-    @Test
-    public void shouldDeployDataService() throws Exception {
-        importDataService();
-
-        deployDataService();
+    @Override
+    public Admin admin() throws AdminException {
+        return super.admin();
     }
 }

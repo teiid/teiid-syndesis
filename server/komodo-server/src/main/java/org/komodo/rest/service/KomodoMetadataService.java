@@ -46,7 +46,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
-import org.komodo.core.KEngine;
 import org.komodo.openshift.BuildStatus;
 import org.komodo.openshift.PublishConfiguration;
 import org.komodo.openshift.TeiidOpenShiftClient;
@@ -111,6 +110,8 @@ import org.komodo.spi.runtime.TeiidTranslator;
 import org.komodo.spi.runtime.TeiidVdb;
 import org.komodo.utils.FileUtils;
 import org.komodo.utils.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -126,6 +127,7 @@ import io.swagger.annotations.ApiResponses;
 /**
  * A Komodo REST service for obtaining information from a metadata instance.
  */
+@Component
 @Path( V1Constants.METADATA_SEGMENT )
 @Api( tags = {V1Constants.METADATA_SEGMENT} )
 public class KomodoMetadataService extends KomodoService {
@@ -239,6 +241,7 @@ public class KomodoMetadataService extends KomodoService {
      */
     private Map<String, String> urlContentTranslatorMap = new HashMap<String,String>();
 
+    @Autowired
     private TeiidOpenShiftClient openshiftClient;
 
     /**
@@ -248,13 +251,10 @@ public class KomodoMetadataService extends KomodoService {
      * @throws WebApplicationException
      *         if there is a problem obtaining the {@link WorkspaceManager workspace manager}
      */
-    public KomodoMetadataService(final KEngine engine, TeiidOpenShiftClient openshiftClient) throws WebApplicationException {
-        super(engine);
+    public KomodoMetadataService() throws WebApplicationException {
         // Loads default translator mappings
         loadDriverTranslatorMap();
         loadUrlContentTranslatorMap();
-
-        this.openshiftClient = openshiftClient;
     }
 
     private synchronized MetadataInstance getMetadataInstance() throws KException {

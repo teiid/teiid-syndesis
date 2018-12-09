@@ -23,11 +23,11 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
+
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.Session;
-import org.komodo.core.JcrLogConfigurator;
+
 import org.komodo.core.KEngine;
 import org.komodo.core.KomodoLexicon.Environment;
 import org.komodo.core.KomodoLexicon.Komodo;
@@ -117,7 +117,7 @@ public class JcrEngine extends Thread implements RepoEngine {
     private final JcrQueryManager queryManager;
 
     private KSequencerController sequencers;
-    
+
     private KEngine kEngine;
 
     /**
@@ -137,10 +137,12 @@ public class JcrEngine extends Thread implements RepoEngine {
         queryManager = new JcrQueryManager((JcrNodeFactory) nodeFactory);
     }
 
+    @Override
     public KObjectFactory getNodeFactory() {
         return nodeFactory;
     }
 
+    @Override
     public KPropertyFactory getPropertyFactory() {
         return propertyFactory;
     }
@@ -276,6 +278,7 @@ public class JcrEngine extends Thread implements RepoEngine {
     /**
      * @return is modeshape engine and repository are running
      */
+    @Override
     public boolean isRunning() {
         return RepositoryUtils.isEngineRunning(msEngine) &&
                     RepositoryUtils.isRepositoryRunning(identifier.getRepository());
@@ -284,6 +287,7 @@ public class JcrEngine extends Thread implements RepoEngine {
     /**
      * @return any error that may have occurred when the run method threw an error
      */
+    @Override
     public Exception getError() {
         return this.error;
     }
@@ -392,7 +396,7 @@ public class JcrEngine extends Thread implements RepoEngine {
             return;
 
         try {
-            JcrLogConfigurator.getInstance().setLevel(Level.INFO);
+            //JcrLogConfigurator.getInstance().setLevel(Level.INFO);
 
             // start the ModeShape Engine
             msEngine.start();

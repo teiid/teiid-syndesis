@@ -29,249 +29,66 @@
   <artifactId>komodo-server</artifactId>
   <name>Komodo Server</name>
   <description>Provides RESTful access to the Komodo engine</description>
-  <packaging>war</packaging>
-
+  <packaging>jar</packaging>
+  
   <properties>
     <basepom.test.fork-count>1</basepom.test.fork-count>
     <basepom.test.timeout>600</basepom.test.timeout>
     
-    <version.resteasy>3.0.19.Final</version.resteasy>
-    <webapp-dir>${project.artifactId}-${project.version}</webapp-dir>
-    <webapp-outdir>${basedir}/target/${webapp-dir}</webapp-outdir>
-    <!-- To be injected into swagger index.html -->
-    <rest-context>vdb-builder</rest-context>
-    <rest-version>v1</rest-version>
-    <app.rest.name>${rest-context}</app.rest.name>
-    <app.rest.title>Vdb Builder</app.rest.title>
-    <app.rest.version>${project.version}</app.rest.version>
-    <app.rest.description>A tool that allows creating, editing and managing dynamic VDBs and their contents</app.rest.description>
-    <!-- Must remain all on one line. Otherwise, VFSUtils.readManifest complains of invalid header -->
-    <manifest.dependencies>org.jboss.logging,org.jboss.teiid.api,org.jboss.teiid.admin,org.jboss.teiid.common-core,org.jboss.teiid,org.jboss.teiid.client,io.swagger,com.fasterxml.jackson.core.jackson-core,com.fasterxml.jackson.core.jackson-databind,com.fasterxml.jackson.core.jackson-annotations,com.fasterxml.jackson.dataformat,org.jboss.as.cli,org.jboss.as.controller,org.jboss.dmr</manifest.dependencies>
+    <swagger.version>1.5.8</swagger.version>
   </properties>
 
   <dependencies>
-    <dependency>
-      <groupId>org.teiid</groupId>
-      <artifactId>komodo-relational</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.teiid</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.teiid</groupId>
-      <artifactId>komodo-importer</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.teiid</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.teiid</groupId>
-      <artifactId>komodo-utils</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.teiid</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.teiid</groupId>
-      <artifactId>komodo-storage</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.teiid</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.teiid</groupId>
-      <artifactId>komodo-spi</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.teiid</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.teiid</groupId>
-      <artifactId>komodo-core</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.teiid</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.teiid</groupId>
-      <artifactId>komodo-metadata</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.teiid</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-    </dependency>
-    <dependency>
-        <groupId>xml-apis</groupId>
-        <artifactId>xml-apis</artifactId>
-    </dependency>     
-    <dependency>
-      <groupId>io.thorntail</groupId>
-      <artifactId>undertow</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.thorntail</groupId>
-      <artifactId>management</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.thorntail</groupId>
-      <artifactId>swagger</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.swagger</groupId>
-      <artifactId>swagger-core</artifactId>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>*</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>io.swagger</groupId>
-      <artifactId>swagger-models</artifactId>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>*</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
 
     <dependency>
-      <groupId>org.teiid</groupId>
-      <artifactId>teiid-api</artifactId>
-      <scope>provided</scope>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-jersey</artifactId>
+        <exclusions>
+            <exclusion>
+                <groupId>org.slf4j</groupId>
+                <artifactId>log4j-over-slf4j</artifactId>
+            </exclusion>
+        </exclusions>        
     </dependency>
     <dependency>
-      <groupId>org.teiid</groupId>
-      <artifactId>teiid-client</artifactId>
-      <scope>provided</scope>
+        <groupId>org.glassfish.jersey.core</groupId>
+        <artifactId>jersey-server</artifactId>
+        <version>2.25.1.redhat-2</version>
     </dependency>
     <dependency>
-      <groupId>org.teiid</groupId>
-      <artifactId>teiid-engine</artifactId>
-      <scope>provided</scope>
+        <groupId>io.swagger</groupId>
+        <artifactId>swagger-jersey2-jaxrs</artifactId>
+        <version>${swagger.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.teiid</groupId>
-      <artifactId>teiid-common-core</artifactId>
-      <scope>provided</scope>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>3.8.1</version>
+    </dependency>   
+    <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>teiid-spring-boot-starter</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.teiid</groupId>
-      <artifactId>teiid-admin</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.teiid</groupId>
-      <artifactId>teiid-jboss-admin</artifactId>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.teiid</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
+      <groupId>io.opentracing.contrib</groupId>
+      <artifactId>opentracing-spring-jaeger-starter</artifactId>
+    </dependency>    
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>komodo-relational</artifactId>
+    </dependency>  
     <dependency>
       <groupId>com.sun.xsom</groupId>
       <artifactId>xsom</artifactId>
     </dependency>
+    
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.teiid</groupId>
-      <artifactId>thorntail-runtime</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.teiid</groupId>
-      <artifactId>thorntail-jdbc</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.teiid</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.teiid</groupId>
-      <artifactId>thorntail-mongodb</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.teiid</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.teiid</groupId>
-      <artifactId>thorntail-salesforce-41</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.teiid</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>io.thorntail</groupId>
-      <artifactId>logging</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.thorntail</groupId>
-      <artifactId>jaeger</artifactId>
-    </dependency>    
-    <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.dataformat</groupId>
-      <artifactId>jackson-dataformat-yaml</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>io.fabric8</groupId>
@@ -302,6 +119,10 @@
       </exclusions>
     </dependency>
     <dependency>
+        <groupId>org.jboss.shrinkwrap</groupId>
+        <artifactId>shrinkwrap-api</artifactId>
+    </dependency>    
+    <dependency>
       <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-core</artifactId>
     </dependency>
@@ -316,13 +137,6 @@
       <artifactId>postgresql</artifactId>
       <scope>runtime</scope>
     </dependency>
-    <!-- Test Dependencies -->
-    <dependency>
-      <groupId>org.jboss.spec</groupId>
-      <artifactId>jboss-javaee-7.0</artifactId>
-      <type>pom</type>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>org.teiid</groupId>
       <artifactId>komodo-utils</artifactId>
@@ -335,31 +149,13 @@
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
-<!--     <dependency>
-      <groupId>org.eclipse.jgit</groupId>
-      <artifactId>org.eclipse.jgit</artifactId>
-      <scope>test</scope>
-    </dependency> -->
 
     <!-- Required for unit testing the rest resources rather than integration testing -->
     <dependency>
-      <groupId>org.jboss.resteasy</groupId>
-      <artifactId>tjws</artifactId>
-      <scope>test</scope>
-      <version>${version.resteasy}</version>
-    </dependency>
-
-    <!-- Required for unit testing the rest resources. A xnio implementation is already provided in swarm -->
-<!--     <dependency>
-      <groupId>org.jboss.xnio</groupId>
-      <artifactId>xnio-nio</artifactId>
-      <scope>test</scope>
-    </dependency> -->
-    <dependency>
-      <groupId>io.thorntail</groupId>
-      <artifactId>arquillian</artifactId>
-      <scope>test</scope>
-    </dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-test</artifactId>
+        <scope>test</scope>
+    </dependency>    
     <dependency>
       <groupId>org.jboss.arquillian.junit</groupId>
       <artifactId>arquillian-junit-container</artifactId>
@@ -371,14 +167,6 @@
       <type>pom</type>
       <scope>test</scope>
     </dependency>
-
-    <dependency>
-      <groupId>org.jboss.resteasy</groupId>
-      <artifactId>resteasy-jaxrs</artifactId>
-      <version>${version.resteasy}</version>
-      <scope>test</scope>
-    </dependency>
-
   </dependencies>
 
   <build>
@@ -393,57 +181,17 @@
       </resource>
     </resources>
 
-    <!-- Set the name of the war, used as the context root when the app is deployed -->
-    <finalName>${rest-context}</finalName>
-
     <plugins>
-      <!-- Creates the war for deployment -->
       <plugin>
-        <artifactId>maven-war-plugin</artifactId>
-        <configuration>
-          <warName>${rest-context}</warName>
-          <failOnMissingWebXml>false</failOnMissingWebXml>
-
-          <!-- Avoid filtering certain types of file -->
-          <nonFilteredFileExtensions>
-            <!-- default value contains jpg,jpeg,gif,bmp,png -->
-            <nonFilteredFileExtension>jpg,jpeg,gif,bmp,png,ttf,svg,woff,woff2,eot,map</nonFilteredFileExtension>
-          </nonFilteredFileExtensions>
-
-          <!-- Adds the swagger ui files to war, filtering them to include the context -->
-          <webResources>
-            <resource>
-              <directory>api-docs</directory>
-              <filtering>true</filtering>
-              <targetPath>api-docs</targetPath>
-            </resource>
-          </webResources>
-
-          <archive>
-            <manifestEntries>
-              <Dependencies>${manifest.dependencies}</Dependencies>
-            </manifestEntries>
-          </archive>
-        </configuration>
-      </plugin>
-
-      <plugin>
-        <groupId>io.thorntail</groupId>
-        <artifactId>thorntail-maven-plugin</artifactId>
-        <version>${version.thorntail}</version>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
         <executions>
           <execution>
             <goals>
-              <goal>package</goal>
+              <goal>repackage</goal>
             </goals>
           </execution>
         </executions>
-        <configuration>
-          <arguments>
-            <argument>-S</argument>
-            <argument>openshift</argument>
-          </arguments>
-        </configuration>
       </plugin>
     </plugins>
   </build>
@@ -479,6 +227,7 @@
         </plugins>
       </build>
     </profile>
+    
     <profile>
       <id>image</id>
       <activation>

@@ -38,20 +38,16 @@ public class ApplicationProperties implements SystemConstants {
      */
     public static KLogger.Level getLogLevel() {
         String value = System.getProperty("LOGLEVEL");
-        KLogger.Level level = KLogger.Level.level(value); 
+        KLogger.Level level = KLogger.Level.level(value);
         return level != null ? level : KLogger.Level.INFO;
     }
-    
+
     /**
      * Gets the type system property for connection persistence.
      * If none is defined then return the default {@link PersistenceType#PGSQL} type name
      */
     public static String getRepositoryPersistenceType() {
-        String type = System.getProperty(REPOSITORY_PERSISTENCE_TYPE);
-        if (type == null)
-            type = PersistenceType.PGSQL.name();
-
-        return type;
+        return System.getProperty(REPOSITORY_PERSISTENCE_TYPE);
     }
 
     /**
@@ -113,7 +109,7 @@ public class ApplicationProperties implements SystemConstants {
         if (host != null) {
             connUrl = substitute(connUrl, REPOSITORY_PERSISTENCE_HOST);
         }
-            
+
         return connUrl;
     }
 
@@ -194,7 +190,7 @@ public class ApplicationProperties implements SystemConstants {
 
     /**
      * Replaces in the target any instances of the given system property with its value
-     * 
+     *
      * @param target
      * @param property
      * @return the value with any instances of the given system property replaced
@@ -204,7 +200,7 @@ public class ApplicationProperties implements SystemConstants {
         if (propValue == null) {
             return target; // Just confuse if value returns null
         }
-    
+
         String template = DOLLAR_SIGN + OPEN_BRACE + property + CLOSE_BRACE;
         target = target.replace(template, propValue);
         return target;
@@ -215,11 +211,11 @@ public class ApplicationProperties implements SystemConstants {
      * @param property Name of the property
      */
     public static String getProperty(String property, String defalt) {
-        String propValue = System.getProperty(property);
+       String  propValue = System.getenv(property);
         if (propValue != null) {
-        	return propValue;
+            return propValue;
         }
-        propValue = System.getenv(property);
+        propValue = System.getProperty(property);
         if (propValue != null) {
         	return propValue;
         }
