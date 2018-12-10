@@ -23,8 +23,8 @@ export class ConnectionsConstants {
   public static readonly addConnectionRoute = ConnectionsConstants.connectionsRootRoute + "/add-connection";
   public static readonly addConnectionPath = ConnectionsConstants.connectionsRootPath + "/add-connection";
 
-  public static readonly serviceCatalogSourcesRootRoute = "serviceCatalogSources";
-  public static readonly serviceCatalogSourcesRootPath = "/" + ConnectionsConstants.serviceCatalogSourcesRootRoute;
+  public static readonly syndesisSourcesRootRoute = "syndesisSources";
+  public static readonly syndesisSourcesRootPath = "/" + ConnectionsConstants.syndesisSourcesRootRoute;
 
   public static readonly connectionType_postgresql = "postgresql";
   public static readonly connectionType_mysql = "mysql";

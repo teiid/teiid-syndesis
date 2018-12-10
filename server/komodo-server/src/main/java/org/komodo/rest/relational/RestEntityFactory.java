@@ -237,7 +237,6 @@ public class RestEntityFactory implements V1Constants {
                                                                                                  TeiidDataSource teiidDataSource, URI baseUri)
                                                                                                    throws Exception {
         checkTransaction(transaction);
-        ArgCheck.isTrue(transaction.isRollbackOnly(), "transaction should be rollback-only");
 
         KomodoObject parent = createTemporaryParent(transaction, repository, null);
         Connection connection = RelationalModelFactory.createConnection(transaction, repository,parent.getAbsolutePath(), teiidDataSource.getName());

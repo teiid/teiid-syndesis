@@ -447,7 +447,7 @@ export class AddConnectionWizardComponent implements OnInit {
 
     const self = this;
     this.connectionService
-      .getAllServiceCatalogSources()
+      .getAllSyndesisSources()
       .subscribe(
         (sources) => {
           // Only keep the service catalog sources whose type matches the connectionType.  empty source is always included.
