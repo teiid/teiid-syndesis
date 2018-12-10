@@ -77,7 +77,7 @@ public class JerseyConfig extends ResourceConfig {
         config.setTitle("Teiid Komodo Server API");
         config.setVersion("v1");
         config.setContact("Teiid");
-        config.setSchemes(new String[] { "http", "https" });
+        config.setSchemes(new String[] {"https"});
         config.setBasePath(this.context+"/"+this.apiPath);
         config.setResourcePackage("org.komodo.rest.service");
         config.setPrettyPrint(true);
