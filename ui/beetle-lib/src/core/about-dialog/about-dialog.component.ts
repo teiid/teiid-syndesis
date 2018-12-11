@@ -82,7 +82,7 @@ export class AboutDialogComponent implements OnInit {
   }
 
   public get appImageSrc(): string {
-    return "assets/teiid-lizard-gradient-bgd.png";
+    return "assets/bs/teiid-lizard-gradient-bgd.png";
   }
 
   public close(): void {
@@ -96,7 +96,7 @@ export class AboutDialogComponent implements OnInit {
   }
 
   public get logoImageSrc(): string {
-    return "assets/redhat-iot.png";
+    return "assets/bs/redhat-iot.png";
   }
 
 }

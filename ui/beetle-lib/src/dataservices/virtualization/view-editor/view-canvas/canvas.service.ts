@@ -264,9 +264,9 @@ export class CanvasService {
    */
   public commandIcon(cmdType: string, depressed: boolean): string {
     if (depressed)
-      return "/assets/iconfinder/Aha-soft/" + cmdType + "-depressed.png";
+      return "/assets/bs/iconfinder/Aha-soft/" + cmdType + "-depressed.png";
 
-    return "/assets/iconfinder/Aha-soft/" + cmdType + ".png";
+    return "/assets/bs/iconfinder/Aha-soft/" + cmdType + ".png";
   }
 
   /**

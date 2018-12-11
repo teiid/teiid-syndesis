@@ -7,7 +7,7 @@
     "start": "ng serve",
     "build": "ng build",
     "build_lib": "ng build beetle-lib && npm run cp-lib-assets",
-    "cp-lib-assets": "cpx \"./src/assets/**/*\" \"./dist/beetle-lib/assets\"",
+    "cp-lib-assets": "cpx \"./src/assets/**/*\" \"./dist/beetle-lib/assets/\"",
     "npm_pack": "cd dist/beetle-lib && npm pack",
     "package": "npm run build_lib && npm run npm_pack",
     "test": "ng test",
