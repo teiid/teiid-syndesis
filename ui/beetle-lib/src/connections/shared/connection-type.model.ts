@@ -63,15 +63,15 @@ export class ConnectionType {
   public getImageSrc(): string {
     const name = this.getName();
     if (name === ConnectionsConstants.connectionType_mysql) {
-      return "assets/MySQL_70x40.png";
+      return "assets/bs/MySQL_70x40.png";
     } else if (name === ConnectionsConstants.connectionType_postgresql) {
-      return "assets/PostgresSql_70x40.png";
+      return "assets/bs/PostgresSql_70x40.png";
     } else if (name === ConnectionsConstants.connectionType_mongodb) {
-      return "assets/MongoDB_70x40.png";
+      return "assets/bs/MongoDB_70x40.png";
     } else if (name === ConnectionsConstants.connectionType_mariadb) {
-      return "assets/MongoDB_70x40.png";
+      return "assets/bs/MongoDB_70x40.png";
     } else if (name === ConnectionsConstants.connectionType_salesforce) {
-      return "assets/salesforce_40x40.png";
+      return "assets/bs/salesforce_40x40.png";
     }
     return "";
   }

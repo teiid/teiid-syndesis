@@ -77,11 +77,11 @@ export class NodeVisualComponent {
 
   public get icon(): string {
     if (this.node.type === CanvasConstants.SOURCE_TYPE)
-      return "/assets/table.png";
+      return "/assets/bs/table.png";
     else if (this.node.type === CanvasConstants.COMPOSITION_TYPE)
-      return "/assets/composition.png";
+      return "/assets/bs/composition.png";
 
-    return "/assets/iconfinder/Natalya-Skidan/question-mark.png";
+    return "/assets/bs/iconfinder/Natalya-Skidan/question-mark.png";
   }
 
   public cmdIcon(type: string): string {
