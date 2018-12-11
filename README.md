@@ -52,10 +52,13 @@ Once the above build is done, it will replace the existing `komodo-server` insta
 
 
 #### Remote Debugging
-By default, the built images are deployed with java virtual machine debugging enabled, using port 5005. This allows for developers to remotely connect to the running vdb-builder using an IDE like [Eclipse](https://www.eclipse.org).
+To enable the debugging of "komodo-server" instance, go to the OpenShift console where the application is deployed, and in the `komodo-server` deployment config's Environment variables add `JAVA_DEBUG` to `true` and then recyle the current pod such that new pod will be generated with new environment property.
+
+The built images are deployed with java virtual machine debugging enabled, using port 5005. This allows for developers to remotely connect to the running vdb-builder using an IDE like [Eclipse](https://www.eclipse.org).
 
 The port 5005 is not offered by any of the routes, although a route can be setup if preferred. A quick alternative is to [port-forward](https://docs.openshift.com/enterprise/3.0/dev_guide/port_forwarding.html) the port to the localhost using the following command:
 
+> oc get pods
 > oc port-forward komodo-server-x-yyyy 5005:5005
 
 where *vdb-builder-x-yyyy* is the latest deployed `komodo-server` pod.
