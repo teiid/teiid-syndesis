@@ -59,7 +59,7 @@ public class MongoDBDefinition extends DataSourceDefinition {
     }
 
     @Override
-    public Properties getDataSourceProperties(DefaultSyndesisDataSource source) {
+    public Properties getInternalTeiidDataSourceProperties(DefaultSyndesisDataSource source) {
         /*
         {
               "DATABASE_SERVICE_NAME":"mongodb",
@@ -91,7 +91,7 @@ public class MongoDBDefinition extends DataSourceDefinition {
     }
 
     @Override
-    public Properties getWFSDataSourceProperties(DefaultSyndesisDataSource scd, String jndiName) {
+    public Properties getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd, String jndiName) {
         Properties props = setupResourceAdapter(scd.getName(), "org.jboss.teiid.resource-adapter.mongodb",
                 "org.teiid.resource.adapter.mongodb.MongoDBManagedConnectionFactory", jndiName);
         ds(props, scd, "SecurityType", "SCRAM_SHA_1");

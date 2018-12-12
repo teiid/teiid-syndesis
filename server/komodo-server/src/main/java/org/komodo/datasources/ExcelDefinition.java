@@ -55,7 +55,7 @@ public class ExcelDefinition extends DataSourceDefinition {
     }
     
     @Override
-    public Properties getDataSourceProperties(DefaultSyndesisDataSource source) {
+    public Properties getInternalTeiidDataSourceProperties(DefaultSyndesisDataSource source) {
         Properties props = new Properties();
         props.setProperty("class-name", "org.teiid.resource.adapter.file.FileManagedConnectionFactory");
         props.setProperty("ParentDirectory", source.getProperty("directory"));
@@ -63,7 +63,7 @@ public class ExcelDefinition extends DataSourceDefinition {
     } 
     
     @Override
-    public Properties getWFSDataSourceProperties(DefaultSyndesisDataSource scd, String jndiName) {
+    public Properties getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd, String jndiName) {
         Properties props = setupResourceAdapter(scd.getName(), "org.jboss.teiid.resource-adapter.file",
                 "org.teiid.resource.adapter.file.FileManagedConnectionFactory", jndiName);
         ds(props, scd, "ParentDirectory", scd.canonicalEnvKey("directory"));

@@ -44,7 +44,7 @@ public class JerseyConfig extends ResourceConfig {
     private String context;
 
 	public JerseyConfig() {
-	    register(KomodoConnectionService.class);
+	   register(KomodoConnectionService.class);
        register(KomodoExceptionMapper.class);
        register(KomodoUtilService.class);
        register(KomodoDataserviceService.class);

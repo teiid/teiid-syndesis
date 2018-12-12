@@ -32,19 +32,30 @@ import org.komodo.core.KEngine;
 import org.komodo.core.repository.LocalRepository;
 import org.komodo.metadata.DefaultMetadataInstance;
 import org.komodo.metadata.TeiidConnectionProvider;
+import org.komodo.openshift.EncryptionComponent;
 import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.SystemConstants;
 import org.komodo.spi.repository.ApplicationProperties;
 import org.komodo.spi.repository.PersistenceType;
-import org.komodo.utils.KLog;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.encrypt.Encryptors;
+import org.springframework.security.crypto.encrypt.TextEncryptor;
 
 @Configuration
 public class KomodoAutoConfiguration {
+
+    @Value("${encrypt.key}")
+    private String encryptKey;
+
+    @Bean
+    public TextEncryptor getTextEncryptor() {
+        return Encryptors.text(encryptKey, "deadbeef");
+    }
 
     @Bean
     @ConditionalOnMissingBean
@@ -74,12 +85,6 @@ public class KomodoAutoConfiguration {
             // Set the komodo data directory prior to starting the engine
             System.setProperty(SystemConstants.ENGINE_DATA_DIR, workingDir+"/komodo/data"); //$NON-NLS-1$
 
-            // Set the log file path
-            KLog.getLogger().setLogPath(workingDir+"/komodo/log/vdb-builder.log");
-
-            // Ensure server logging level is reduced to something sane!
-            KLog.getLogger().setLevel(ApplicationProperties.getLogLevel());
-
             initPersistenceEnvironment();
 
             // configure metadata
@@ -102,9 +107,10 @@ public class KomodoAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public TeiidOpenShiftClient openShiftClient(@Autowired KEngine kengine) {
+    public TeiidOpenShiftClient openShiftClient(@Autowired KEngine kengine, @Autowired TextEncryptor enc) {
         try {
-            return  new TeiidOpenShiftClient((TeiidMetadataInstance) kengine.getMetadataInstance());
+            return new TeiidOpenShiftClient((TeiidMetadataInstance) kengine.getMetadataInstance(),
+                    new EncryptionComponent(enc));
         } catch (KException e) {
             throw new RuntimeException(e);
         }

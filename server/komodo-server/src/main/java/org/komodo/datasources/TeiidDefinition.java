@@ -20,31 +20,27 @@ package org.komodo.datasources;
 import java.util.Map;
 import java.util.Properties;
 
-public class PostgreSQLDefinition extends DataSourceDefinition {
+public class TeiidDefinition extends DataSourceDefinition {
 
     @Override
     public String getType() {
-        return "postgresql";
+        return "teiid";
     }
 
     @Override
     public String getPomDendencies() {
-        return "<dependency>" +
-            "  <groupId>org.postgresql</groupId>" +
-            "  <artifactId>postgresql</artifactId>" +
-            "  <version>${version.postgresql}</version>" +
-            "</dependency>\n";
+        return "";
     }
 
     @Override
     public String getTranslatorName() {
-        return "postgresql";
+        return "teiid";
     }
 
     @Override
     public boolean isTypeOf(Map<String, String> properties) {
         if ((properties != null) && (properties.get("url") != null)
-                && properties.get("url").startsWith("jdbc:postgresql:")) {
+                && (properties.get("url").startsWith("jdbc:teiid:"))) {
             return true;
         }
         return false;
@@ -53,8 +49,9 @@ public class PostgreSQLDefinition extends DataSourceDefinition {
     @Override
     public Properties getInternalTeiidDataSourceProperties(DefaultSyndesisDataSource source) {
         Properties props = new Properties();
+
         props.setProperty("url", source.getProperty("url"));
-        props.setProperty("username", source.getProperty("user"));
+        props.setProperty("user", source.getProperty("user"));
         props.setProperty("password", source.getProperty("password"));
         return props;
     }
@@ -62,8 +59,11 @@ public class PostgreSQLDefinition extends DataSourceDefinition {
     @Override
     public Properties getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd, String jndiName) {
         Properties props = new Properties();
+        ds(props, scd, "driver-name", scd.getType());
+        ds(props, scd, "jndi-name", jndiName);
+
         ds(props, scd, "url", scd.canonicalEnvKey("url"));
-        ds(props, scd, "username", scd.canonicalEnvKey("user"));
+        ds(props, scd, "user", scd.canonicalEnvKey("user"));
         ds(props, scd, "password", scd.canonicalEnvKey("password"));
         return props;
     }

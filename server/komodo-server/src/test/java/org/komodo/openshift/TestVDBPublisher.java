@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
 import org.junit.Before;
@@ -78,7 +79,7 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
         sources.add(getMySQLDS());
         sources.add(getPostgreSQL());
 
-        TeiidOpenShiftClient client = new TeiidOpenShiftClient(metadata) {
+        TeiidOpenShiftClient client = new TeiidOpenShiftClient(metadata, null) {
             @Override
             public Set<SyndesisDataSource> getSyndesisSources(OAuthCredentials authToken) throws KException {
                 return sources;
@@ -125,6 +126,18 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
         credentialData.put("user", "johnny");
         ds2.setProperties(credentialData);
         return ds2;
+    }
+
+    @Test
+    public void testDecryption() throws Exception {
+        EncryptionComponent ec = new EncryptionComponent("GpADvcFIBgqMUwSfvljdQ1N5qeQFNXaAToht2O4kgBW2bIalkcPWphs54C4e7mjq");
+        Properties credentialData = new Properties();
+        credentialData.put("password", "»ENC:7965a258e2f0029b0e5e797b81917366ed11608f195755fc4fcfebecfca4781917de289fb8579d306741b5ec5680a686");
+        credentialData.put("schema", "sampledb");
+        credentialData.put("url", "jdbc:mysql://localhost:1521/sampledb");
+        credentialData.put("user", "johnny");
+        Properties decrypted = ec.decrypt(credentialData);
+        assertThat(credentialData.getProperty("password").equals(decrypted.getProperty("password")), is(false));
     }
 
     @Test
@@ -175,6 +188,6 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
         assertThat(variables, hasItem(new EnvVar("GC_MAX_METASPACE_SIZE", "256", null)));
 
         assertThat(variables, hasItem(new EnvVar("JAVA_OPTIONS", javaOptions, null)));
-        
+
     }
 }

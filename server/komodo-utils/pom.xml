@@ -32,15 +32,14 @@
     <dependency>
       <groupId>org.teiid</groupId>
       <artifactId>komodo-spi</artifactId>
-    </dependency>
-    <dependency>
+    </dependency>  
+   <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-    </dependency>
+    </dependency>  
     <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <scope>compile</scope>
+        <groupId>commons-logging</groupId>
+        <artifactId>commons-logging</artifactId>
     </dependency>
   </dependencies>
 </project>

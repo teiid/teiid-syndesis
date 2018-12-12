@@ -21,8 +21,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.komodo.spi.logging.KLogger;
-import org.komodo.utils.KLog;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.security.crypto.encrypt.Encryptors;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
 
@@ -37,18 +37,25 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
  */
 public class EncryptionComponent {
     public static final String SYNDESIS_ENC_KEY = "SYNDESIS_ENC_KEY";
-    private static final KLogger logger = KLog.getLogger();
     public static final String ENCRYPTED_PREFIX = "\u00BBENC:";
+    private static final Log logger = LogFactory.getLog(EncryptionComponent.class);
 
     private final TextEncryptor textEncryptor;
+    private String encryptKey;
 
-    public EncryptionComponent() {
-        String encryptKey = getEncryptKey();
+    public EncryptionComponent(String encryptKey) {
+        if (encryptKey == null) {
+            encryptKey = getEncryptKey();
+        }
         if (encryptKey != null) {
             this.textEncryptor = Encryptors.text(encryptKey, "deadbeef");
         } else {
             this.textEncryptor = null;
         }
+    }
+
+    public EncryptionComponent(TextEncryptor encryptor) {
+        this.textEncryptor = encryptor;
     }
 
     public static String stripPrefix(String value, String prefix) {
@@ -70,9 +77,10 @@ public class EncryptionComponent {
             return null;
         }
         String result = value;
-        if( result.startsWith(ENCRYPTED_PREFIX) && textEncryptor != null) {
+        if( result.startsWith(ENCRYPTED_PREFIX)) {
+            TextEncryptor enc = Encryptors.text(getEncryptKey(), "deadbeef");
             try {
-                result = textEncryptor.decrypt(stripPrefix(result, ENCRYPTED_PREFIX));
+                result = enc.decrypt(stripPrefix(result, ENCRYPTED_PREFIX));
             } catch (RuntimeException e) {
                 // We could fail to decrypt the value..
                 result = null;
@@ -91,27 +99,31 @@ public class EncryptionComponent {
         }
         return result;
     }
-    
+
     public Properties decrypt(Properties props) {
         if( props == null ) {
             return null;
         }
         Properties result = new Properties();
-        props.forEach((k,v)->result.setProperty((String)k, decrypt((String)v)));
+        for (String key : props.stringPropertyNames()) {
+            result.put(key, decrypt(props.getProperty(key)));
+        }
         return result;
     }
-    
+
     private String getEncryptKey() {
         try {
-            String encryptKey = System.getenv(SYNDESIS_ENC_KEY);
             if (encryptKey == null) {
-                final ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-                // this is syndesis-server's configuration file. When we need more than encryption key
-                // will need to pull out as configuration.
-                JsonNode config = mapper.readTree(new File("./config/application.yml"));
-                JsonNode encrypt = config.get("encrypt");
-                if (encrypt != null) {
-                    encryptKey = encrypt.get("key").asText();
+                this.encryptKey = System.getenv(SYNDESIS_ENC_KEY);
+                if (this.encryptKey == null) {
+                    final ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+                    // this is syndesis-server's configuration file. When we need more than encryption key
+                    // will need to pull out as configuration.
+                    JsonNode config = mapper.readTree(new File("./config/application.yml"));
+                    JsonNode encrypt = config.get("encrypt");
+                    if (encrypt != null) {
+                        this.encryptKey = encrypt.get("key").asText();
+                    }
                 }
             }
             return encryptKey;
@@ -121,5 +133,9 @@ public class EncryptionComponent {
             logger.error("Failed to load decryptor key");
         }
         return null;
-    }    
+    }
+
+    public void setEncryptKey(String encryptKey) {
+        this.encryptKey = encryptKey;
+    }
 }

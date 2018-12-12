@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -29,6 +30,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import org.junit.Ignore;
 import org.junit.Test;
 import org.komodo.core.internal.repository.search.ObjectSearcher;
 import org.komodo.core.repository.SynchronousCallback;
@@ -442,6 +445,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
     }
 
     @Test
+    @Ignore
     public void testBasicVdbImportInvalidVdbSequencerError() throws Exception {
         InputStream vdbStream =  TestUtilities.getResourceAsStream(getClass(),
                                                                    VDB_DIRECTORY,

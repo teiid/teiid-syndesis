@@ -33,11 +33,7 @@ public class MySQLDefinition extends DataSourceDefinition {
           "  <groupId>mysql</groupId>" +
           "  <artifactId>mysql-connector-java</artifactId>" +
           "  <version>${version.mysql}</version>" +
-          "</dependency>\n" +
-          "<dependency>" +
-          "  <groupId>org.teiid</groupId>" +
-          "   <artifactId>thorntail-jdbc</artifactId>" +
-          "</dependency>";
+          "</dependency>\n";
 
     }
 
@@ -56,23 +52,23 @@ public class MySQLDefinition extends DataSourceDefinition {
     }
 
     @Override
-    public Properties getDataSourceProperties(DefaultSyndesisDataSource source) {
+    public Properties getInternalTeiidDataSourceProperties(DefaultSyndesisDataSource source) {
         Properties props = new Properties();
-        
-        props.setProperty("connection-url", source.getProperty("url"));
-        props.setProperty("user-name", source.getProperty("user"));        
+
+        props.setProperty("url", source.getProperty("url"));
+        props.setProperty("username", source.getProperty("user"));
         props.setProperty("password", source.getProperty("password"));
         return props;
     }
 
     @Override
-    public Properties getWFSDataSourceProperties(DefaultSyndesisDataSource scd, String jndiName) {
+    public Properties getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd, String jndiName) {
         Properties props = new Properties();
         ds(props, scd, "driver-name", scd.getType());
         ds(props, scd, "jndi-name", jndiName);
-        
-        ds(props, scd, "connection-url", scd.canonicalEnvKey("url"));
-        ds(props, scd, "user-name", scd.canonicalEnvKey("user"));
+
+        ds(props, scd, "url", scd.canonicalEnvKey("url"));
+        ds(props, scd, "username", scd.canonicalEnvKey("user"));
         ds(props, scd, "password", scd.canonicalEnvKey("password"));
         return props;
     }

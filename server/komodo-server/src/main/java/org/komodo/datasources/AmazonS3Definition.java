@@ -55,7 +55,7 @@ public class AmazonS3Definition extends DataSourceDefinition {
     }
     
     @Override
-    public Properties getDataSourceProperties(DefaultSyndesisDataSource source) {
+    public Properties getInternalTeiidDataSourceProperties(DefaultSyndesisDataSource source) {
         Properties props = new Properties();
         props.setProperty("class-name", "org.teiid.resource.adapter.ws.WSManagedConnectionFactory");
         props.setProperty("EndPoint", source.getProperty("url"));
@@ -65,7 +65,7 @@ public class AmazonS3Definition extends DataSourceDefinition {
     } 
     
     @Override
-    public Properties getWFSDataSourceProperties(DefaultSyndesisDataSource scd, String jndiName) {
+    public Properties getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd, String jndiName) {
         Properties props = setupResourceAdapter(scd.getName(), "org.jboss.teiid.resource-adapter.webservice",
                 "org.teiid.resource.adapter.ws.WSManagedConnectionFactory", jndiName);
         ds(props, scd, "EndPoint", scd.canonicalEnvKey("url"));

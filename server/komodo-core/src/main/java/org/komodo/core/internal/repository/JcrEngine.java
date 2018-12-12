@@ -23,11 +23,13 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.Session;
 
+import org.komodo.core.JcrLogConfigurator;
 import org.komodo.core.KEngine;
 import org.komodo.core.KomodoLexicon.Environment;
 import org.komodo.core.KomodoLexicon.Komodo;
@@ -396,7 +398,7 @@ public class JcrEngine extends Thread implements RepoEngine {
             return;
 
         try {
-            //JcrLogConfigurator.getInstance().setLevel(Level.INFO);
+            JcrLogConfigurator.getInstance().setLevel(Level.INFO);
 
             // start the ModeShape Engine
             msEngine.start();

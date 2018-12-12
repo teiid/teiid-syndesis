@@ -55,7 +55,7 @@ public class SalesforceDefinition extends DataSourceDefinition {
     }
     
     @Override
-    public Properties getDataSourceProperties(DefaultSyndesisDataSource source) {
+    public Properties getInternalTeiidDataSourceProperties(DefaultSyndesisDataSource source) {
         Properties props = new Properties();
         props.setProperty("class-name", "org.teiid.resource.adapter.salesforce.SalesForceManagedConnectionFactory");
         props.setProperty("URL", source.getProperty("url"));
@@ -65,7 +65,7 @@ public class SalesforceDefinition extends DataSourceDefinition {
     }    
 
     @Override
-    public Properties getWFSDataSourceProperties(DefaultSyndesisDataSource scd, String jndiName) {
+    public Properties getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd, String jndiName) {
         Properties props = setupResourceAdapter(scd.getName(), "org.jboss.teiid.resource-adapter.salesforce-41",
                 "org.teiid.resource.adapter.salesforce.SalesForceManagedConnectionFactory", jndiName);
         ds(props, scd, "URL", scd.canonicalEnvKey("url"));

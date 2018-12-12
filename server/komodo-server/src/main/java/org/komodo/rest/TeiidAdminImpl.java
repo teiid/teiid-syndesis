@@ -264,7 +264,7 @@ public class TeiidAdminImpl implements Admin {
 
     @Override
     public Collection<String> getDataSourceNames() throws AdminException {
-        return delegate.getDataSourceNames();
+        return datasources.keySet();
     }
 
     @Override

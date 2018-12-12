@@ -3188,7 +3188,7 @@ public class KomodoMetadataService extends KomodoService {
             @ApiParam(value = "JSON properties:<br>" + OPEN_PRE_TAG + OPEN_BRACE + BR + NBSP
                     + "\"name\":      \"Name of the VDB or Dataservice\"" + BR
                     + "\"cpu-units\": \"(optional) Number of CPU units to allocate. 100 is 0.1 CPU (default 500)\"" + BR
-                    + "\"memor\"y:    \"(optional) Amount memory to allocate in MB (default 1024)\"" + BR
+                    + "\"memory\":    \"(optional) Amount memory to allocate in MB (default 1024)\"" + BR
                     + "\"disk-size\": \"(optional) Amount disk allocated in GB (default 20)\"" + BR
                     + "\"enable-odata\": \"(optional) Enable OData interface. true|false (default true)\"" + BR
                     + CLOSE_BRACE

@@ -23,10 +23,13 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
+import org.springframework.stereotype.Component;
+
 /**
  * Maps {@link Throwable errors} to {@link Response responses}.
  */
 @Provider
+@Component
 public class KomodoExceptionMapper implements ExceptionMapper< Throwable > {
 
     /**
@@ -36,6 +39,7 @@ public class KomodoExceptionMapper implements ExceptionMapper< Throwable > {
      */
     @Override
     public Response toResponse( final Throwable t ) {
+        System.out.println("****** Exception caught in exception mapper");
         return Response.status( Status.INTERNAL_SERVER_ERROR )
                        .entity( t.getLocalizedMessage() )
                        .type( MediaType.TEXT_PLAIN )

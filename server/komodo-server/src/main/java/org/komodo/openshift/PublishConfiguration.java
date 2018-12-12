@@ -102,10 +102,7 @@ public class PublishConfiguration implements StringConstants {
 
     protected Map<String, String> getUserEnvironmentVariables() {
         Map<String, String> envs = new TreeMap<>();
-        envs.put("AB_JOLOKIA_OFF", "true");
-        envs.put("AB_OFF", "true");
         envs.put("GC_MAX_METASPACE_SIZE", "256");
-        envs.put("AB_PROMETHEUS_OFF", "true");
         return envs;
     }
 
