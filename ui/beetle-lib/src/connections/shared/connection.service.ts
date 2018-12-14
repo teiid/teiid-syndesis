@@ -44,8 +44,7 @@ export class ConnectionService extends ApiService {
   private static readonly nameValidationUrl = environment.komodoWorkspaceUrl
     + ConnectionsConstants.connectionsRootPath
     + "/nameValidation/";
-  private static readonly refreshConnectionSchemaUrl = environment.komodoWorkspaceUrl
-    + ConnectionsConstants.connectionsRootPath
+  private static readonly refreshConnectionSchemaUrl = environment.komodoTeiidUrl
     + "/refresh-schema/";
 
   private http: Http;
@@ -229,8 +228,7 @@ export class ConnectionService extends ApiService {
    */
   public getConnectionSchema(connectionId: string): Observable<SchemaNode[]> {
     return this.http
-      .get( environment.komodoWorkspaceUrl + ConnectionsConstants.connectionsRootPath
-        + "/" + connectionId + "/schema", this.getAuthRequestOptions())
+      .get( environment.komodoTeiidUrl + "/" + connectionId + "/schema", this.getAuthRequestOptions())
       .map((response) => {
         const schemaNodes = response.json();
         return schemaNodes.map((schemaNode) => SchemaNode.create( schemaNode ));
@@ -255,8 +253,7 @@ export class ConnectionService extends ApiService {
     const options = new RequestOptions( tableParam );
 
     return this.http
-      .get( environment.komodoWorkspaceUrl + ConnectionsConstants.connectionsRootPath
-        + "/" + connectionId + "/schema-columns", this.getAuthRequestOptions().merge(options))
+      .get( environment.komodoTeiidUrl + "/" + connectionId + "/schema-columns", this.getAuthRequestOptions().merge(options))
       .map((response) => {
         const columns = response.json();
         return columns.map((column) => Column.create( column ));
@@ -386,7 +383,7 @@ export class ConnectionService extends ApiService {
    */
   private buildGetConnectionsUrl(includeConnection: boolean, includeSchemaStatus: boolean): string {
     // Base getConnections service url
-    const connectionsUrl = environment.komodoWorkspaceUrl + ConnectionsConstants.connectionsRootPath;
+    const connectionsUrl = environment.komodoTeiidUrl + "/syndesisSourceSummaries";
 
     // Additional parameters
     const urlParams = "?" + ConnectionsConstants.includeConnectionParameter + "=" + String(includeConnection) +

@@ -38,6 +38,9 @@ tools/bin/syndesis build -m operator -i
 # invoke the operator with new template, replace will replace previous duplicate ones
 oc replace -f install/operator/deploy/syndesis.yml
 
+# fresh ui to get local changes
+tools/bin/syndesis -m ui --image
+
 ```
 
 At this point Syndesis should be running with `komodo-server` in it, now if you are working on any changes for development in komodo, make you code edits, once done execute below

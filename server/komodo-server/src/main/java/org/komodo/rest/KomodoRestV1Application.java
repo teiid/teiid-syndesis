@@ -275,6 +275,11 @@ public class KomodoRestV1Application extends Application implements SystemConsta
         String CONNECTION_PLACEHOLDER = "{connectionName}"; //$NON-NLS-1$
 
         /**
+         * Placeholder added to an URI to allow a specific syndesis source name
+         */
+        String SYNDESIS_SOURCE_PLACEHOLDER = "{syndesisSourceName}"; //$NON-NLS-1$
+
+        /**
          * The name of the URI path segment for schema refresh
          */
         String REFRESH_SCHEMA_SEGMENT = "refresh-schema"; //$NON-NLS-1$
@@ -603,6 +608,11 @@ public class KomodoRestV1Application extends Application implements SystemConsta
          * syndesis sources segment
          */
         String SYNDESIS_SOURCES = "syndesisSources"; //$NON-NLS-1$
+        
+        /**
+         * syndesis source summaries segment
+         */
+        String SYNDESIS_SOURCE_SUMMARIES = "syndesisSourceSummaries"; //$NON-NLS-1$
         
         /**
          * Bind to available source in OpenShift Service catalog

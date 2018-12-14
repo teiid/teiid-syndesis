@@ -25,37 +25,40 @@ import javax.ws.rs.core.MediaType;
 
 import org.komodo.rest.KRestEntity;
 
+/**
+ * Used to build a JSON representation for a schema node
+ */
 public class RestSchemaNode implements KRestEntity {
 
     /**
      * Label for connection name
      */
-    public static final String CONNECTION_NAME_LABEL = "connectionName";
+    public static final String CONNECTION_NAME_LABEL = "connectionName"; //$NON-NLS-1$
 
     /**
      * Label for name
      */
-    public static final String NAME_LABEL = "name";
+    public static final String NAME_LABEL = "name"; //$NON-NLS-1$
 
     /**
      * Label for type
      */
-    public static final String TYPE_LABEL = "type";
+    public static final String TYPE_LABEL = "type"; //$NON-NLS-1$
 
     /**
      * Label for type
      */
-    public static final String PATH_LABEL = "path";
+    public static final String PATH_LABEL = "path"; //$NON-NLS-1$
 
     /**
      * Label for queryable
      */
-    public static final String QUERYABLE_LABEL = "queryable";
+    public static final String QUERYABLE_LABEL = "queryable"; //$NON-NLS-1$
 
     /**
      * Label for parent
      */
-    public static final String CHILDREN_LABEL = "children";
+    public static final String CHILDREN_LABEL = "children"; //$NON-NLS-1$
 
     private List<RestSchemaNode> children = new ArrayList<RestSchemaNode>();
     
@@ -76,6 +79,12 @@ public class RestSchemaNode implements KRestEntity {
         super();
     }
 
+    /**
+     * Constructor
+     * @param connName source name
+     * @param name node name
+     * @param type type
+     */
     public RestSchemaNode(String connName, String name, String type) {
         this.connectionName = connName;
         this.name = name;
@@ -92,50 +101,98 @@ public class RestSchemaNode implements KRestEntity {
         return MediaType.APPLICATION_JSON_TYPE.equals(mediaType);
     }
 
+    /**
+     * Get connection name
+     * @return the connection name
+     */
     public String getConnectionName() {
         return connectionName;
     }
 
+    /**
+     * Set connection name
+     * @param connName connection name
+     */
     public void setConnectionName(String connName) {
         this.connectionName = connName;
     }
 
+    /**
+     * Get node name
+     * @return the node name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Set node name
+     * @param name the node name
+     */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * Get node type
+     * @return the node type
+     */
     public String getType() {
         return type;
     }
 
+    /**
+     * Set node type
+     * @param type the node type
+     */
     public void setType(String type) {
         this.type = type;
     }
 
+    /**
+     * Get node path
+     * @return the node path
+     */
     public String getPath() {
         return path;
     }
 
+    /**
+     * Set node path
+     * @param path the node path
+     */
     public void setPath(String path) {
         this.path = path;
     }
 
+    /**
+     * Get isQueryable state
+     * @return 'true' if is queryable
+     */
     public boolean isQueryable() {
         return queryable;
     }
 
+    /**
+     * Set queryable state
+     * @param queryable 'true' if queryable
+     */
     public void setQueryable(boolean queryable) {
         this.queryable = queryable;
     }
 
+    /**
+     * Get node children
+     * @return the node children
+     */
     public RestSchemaNode[] getChildren() {
         return children.toArray(new RestSchemaNode[0]);
     }
 
+    /**
+     * Set node children
+     * @param children the node children
+     */
     public void setChildren(RestSchemaNode[] children) {
         if (children == null || children.length == 0)
             this.children = Collections.emptyList();
@@ -146,6 +203,10 @@ public class RestSchemaNode implements KRestEntity {
         }
     }
 
+    /**
+     * Add node child
+     * @param child the child node
+     */
     public void addChild(RestSchemaNode child) {
         if ( !hasChild(child) ) {
         	this.children.add(child);
