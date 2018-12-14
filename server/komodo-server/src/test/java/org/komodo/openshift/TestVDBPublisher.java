@@ -79,7 +79,7 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
         sources.add(getMySQLDS());
         sources.add(getPostgreSQL());
 
-        TeiidOpenShiftClient client = new TeiidOpenShiftClient(metadata, null) {
+        TeiidOpenShiftClient client = new TeiidOpenShiftClient(metadata, new EncryptionComponent("blah")) {
             @Override
             public Set<SyndesisDataSource> getSyndesisSources(OAuthCredentials authToken) throws KException {
                 return sources;
@@ -163,12 +163,10 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
         PublishConfiguration config = new PublishConfiguration();
         Collection<EnvVar> variables = generator
                 .getEnvironmentVariablesForVDBDataSources(authToken, getTransaction(), vdbs[0], config);
-        assertThat( variables.size(), is(9));
-        String javaOptions= " -Dswarm.datasources.data-sources.accounts-xyz.driver-name=postgresql"
-                + " -Dswarm.datasources.data-sources.accounts-xyz.user-name=$(ACCOUNTS_XYZ_USER)"
-                + " -Dswarm.datasources.data-sources.accounts-xyz.jndi-name=java:/accountsDS"
-                + " -Dswarm.datasources.data-sources.accounts-xyz.password=$(ACCOUNTS_XYZ_PASSWORD)"
-                + " -Dswarm.datasources.data-sources.accounts-xyz.connection-url=$(ACCOUNTS_XYZ_URL)"
+        assertThat( variables.size(), is(7));
+        String javaOptions= " -Dspring.datasource.accounts-xyz.password=$(ACCOUNTS_XYZ_PASSWORD)"
+                + " -Dspring.datasource.accounts-xyz.username=$(ACCOUNTS_XYZ_USER)"
+                + " -Dspring.datasource.accounts-xyz.url=$(ACCOUNTS_XYZ_URL)"
                 + " -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
                 + " -Djava.net.preferIPv4Addresses=true -Djava.net.preferIPv4Stack=true"
                 + " -XX:ParallelGCThreads=1 -XX:ConcGCThreads=1"
@@ -183,8 +181,6 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
 //                .withValueFrom(new EnvVarSourceBuilder().withConfigMapKeyRef(new ConfigMapKeySelectorBuilder()
 //                        .withName("syndesis-server-config").withKey("encrypt.key").build()).build()).build()));
 
-        assertThat(variables, hasItem(new EnvVar("AB_JOLOKIA_OFF", "true", null)));
-        assertThat(variables, hasItem(new EnvVar("AB_OFF", "true", null)));
         assertThat(variables, hasItem(new EnvVar("GC_MAX_METASPACE_SIZE", "256", null)));
 
         assertThat(variables, hasItem(new EnvVar("JAVA_OPTIONS", javaOptions, null)));

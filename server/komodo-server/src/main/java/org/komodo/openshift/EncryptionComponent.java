@@ -78,7 +78,7 @@ public class EncryptionComponent {
         }
         String result = value;
         if( result.startsWith(ENCRYPTED_PREFIX)) {
-            TextEncryptor enc = Encryptors.text(getEncryptKey(), "deadbeef");
+            TextEncryptor enc = textEncryptor;
             try {
                 result = enc.decrypt(stripPrefix(result, ENCRYPTED_PREFIX));
             } catch (RuntimeException e) {

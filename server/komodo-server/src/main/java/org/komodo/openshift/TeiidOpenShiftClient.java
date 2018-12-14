@@ -390,8 +390,7 @@ public class TeiidOpenShiftClient implements StringConstants {
     private static final long MONITOR_SERVICE_INITIAL_DELAY = 3;
     private static final long MONITOR_SERVICE_POLLING_DELAY = 5;
 
-    private static String CONTENT_TYPE = " -H 'Content-Type: application/json' ";
-    private static String MANAGEMENT_URL = "http://127.0.0.1:9990/management";
+    private static String MANAGEMENT_URL = "http://127.0.0.1:8080/\\$metadata";
 
     private volatile ConcurrentLinkedQueue<BuildStatus> workQueue = new ConcurrentLinkedQueue<>();
 
@@ -727,20 +726,6 @@ public class TeiidOpenShiftClient implements StringConstants {
 
     private DeploymentConfig createDeploymentConfig(OpenShiftClient client, BuildStatus config) {
 
-        String readinessPayload = "-d '{\"operation\": \"execute-query\", "
-                + "\"vdb-name\": \""+config.vdbName()+"\","
-                + "\"vdb-version\": \"1.0.0\", "
-                + "\"sql-query\": \"select 1\", "
-                + "\"timeout-in-milli\": 100, "
-                + "\"address\": [\"subsystem\",\"teiid\"], "
-                + "\"json.pretty\":1}'";
-
-        String livenessPayload = "-d '{\"operation\": \"get-vdb\", "
-                + "\"vdb-name\": \""+config.vdbName()+"\","
-                + "\"vdb-version\": \"1.0.0\", "
-                + "\"address\": [\"subsystem\",\"teiid\"], "
-                + "\"json.pretty\":1}'";
-
         return client.deploymentConfigs().inNamespace(config.namespace()).createOrReplaceWithNew()
             .withNewMetadata().withName(config.vdbName())
                 .addToLabels("application", config.vdbName())
@@ -772,9 +757,9 @@ public class TeiidOpenShiftClient implements StringConstants {
                     .addAllToEnv(config.publishConfiguration().getEnvironmentVariables())
                     .withNewReadinessProbe()
                       .withNewExec()
-                        .withCommand("/bin/sh", "-i", "-c",
-                                "curl -X POST " + readinessPayload + CONTENT_TYPE + MANAGEMENT_URL
-                                + " | grep '\"outcome\" : \"success\"'")
+                      .withCommand("/bin/sh", "-i", "-c",
+                                "curl " + MANAGEMENT_URL
+                                + " | grep '<edmx:Edmx '")
                       .endExec()
                       .withInitialDelaySeconds(30)
                       .withTimeoutSeconds(80)
@@ -784,9 +769,9 @@ public class TeiidOpenShiftClient implements StringConstants {
                     .endReadinessProbe()
                     .withNewLivenessProbe()
                       .withNewExec()
-                        .withCommand("/bin/sh", "-i", "-c",
-                              "curl -X POST " + livenessPayload + CONTENT_TYPE + MANAGEMENT_URL
-                              + " | grep '\"outcome\" : \"success\"'")
+                      .withCommand("/bin/sh", "-i", "-c",
+                              "curl " + MANAGEMENT_URL
+                              + " | grep '<edmx:Edmx '")
                       .endExec()
                       .withInitialDelaySeconds(30)
                       .withTimeoutSeconds(80)

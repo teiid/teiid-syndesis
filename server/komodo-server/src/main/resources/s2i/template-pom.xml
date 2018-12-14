@@ -20,8 +20,8 @@
     <version.org.mongodb>${version.org.mongodb}</version.org.mongodb>
     <version.postgresql>${version.postgresql}</version.postgresql>
   </properties>
-
-<!--   <dependencyManagement>
+  <!-- 
+  <dependencyManagement>
     <dependencies>
       <dependency>
         <groupId>org.teiid</groupId>
@@ -31,8 +31,8 @@
         <type>pom</type>
       </dependency>
     </dependencies>
-  </dependencyManagement> -->
-
+  </dependencyManagement>
+   -->
   <repositories>
     <repository>
       <id>oss.sonatype.org</id>
