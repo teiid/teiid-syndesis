@@ -194,14 +194,25 @@ public class RestEntityFactory implements V1Constants {
 
     private KomodoObject createTemporaryParent(UnitOfWork transaction, Repository repository, String primaryType) throws KException {
         String wkspPath = repository.komodoWorkspace(transaction).getAbsolutePath();
-        String timeNow = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss-SSS"));
+        String timeNow = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss-SSS")); //$NON-NLS-1$
         return repository.add(transaction, wkspPath, timeNow, primaryType);
     }
 
-    public RestMetadataVdb createMetadataVdb(UnitOfWork transaction, Repository repository, 
-                                                                                       TeiidVdb teiidVdb, URI baseUri) throws Exception {
+    /**
+     * Create RestMetadataVdb
+     * @param transaction the transaction
+     * @param repository the repo
+     * @param teiidVdb the teiid vdb
+     * @param baseUri the uri
+     * @return RestMetadataVdb
+     * @throws Exception if error occurs
+     */
+    public RestMetadataVdb createMetadataVdb(UnitOfWork transaction, 
+                                             Repository repository, 
+                                             TeiidVdb teiidVdb, 
+                                             URI baseUri) throws Exception {
         checkTransaction(transaction);
-        ArgCheck.isTrue(transaction.isRollbackOnly(), "transaction should be rollback-only");
+        ArgCheck.isTrue(transaction.isRollbackOnly(), "transaction should be rollback-only"); //$NON-NLS-1$
 
         KomodoObject parent = createTemporaryParent(transaction, repository, null);
         KomodoObject vdbObj = parent.getObjectFactory().exportTeiidVdb(transaction, parent, teiidVdb);
@@ -211,11 +222,20 @@ public class RestEntityFactory implements V1Constants {
         return new RestMetadataVdb(baseUri, vdb, transaction, false);
     }
 
-    public RestMetadataVdbTranslator createMetadataTranslator(UnitOfWork transaction, Repository repository,
-                                                                                                  TeiidTranslator teiidTranslator, URI baseUri)
-                                                                                                  throws Exception {
+    /**
+     * Create RestMetadataVdbTranslator
+     * @param transaction the transaction
+     * @param repository the repo
+     * @param teiidTranslator the teiid translator
+     * @param baseUri the uri
+     * @return RestMetadataVdbTranslator
+     * @throws Exception if error occurs
+     */
+    public RestMetadataVdbTranslator createMetadataTranslator(UnitOfWork transaction, 
+                                                              Repository repository,
+                                                              TeiidTranslator teiidTranslator, URI baseUri) throws Exception {
         checkTransaction(transaction);
-        ArgCheck.isTrue(transaction.isRollbackOnly(), "transaction should be rollback-only");
+        ArgCheck.isTrue(transaction.isRollbackOnly(), "transaction should be rollback-only"); //$NON-NLS-1$
 
         KomodoObject parent = createTemporaryParent(transaction, repository, VdbLexicon.Vdb.VIRTUAL_DATABASE);
         WorkspaceManager mgr = WorkspaceManager.getInstance(repository, transaction);
@@ -233,9 +253,19 @@ public class RestEntityFactory implements V1Constants {
         return new RestMetadataVdbTranslator(baseUri, translator, transaction);
     }
 
-    public RestMetadataConnection createMetadataDataSource(UnitOfWork transaction, Repository repository,
-                                                                                                 TeiidDataSource teiidDataSource, URI baseUri)
-                                                                                                   throws Exception {
+    /**
+     * Create RestMetadataConnection
+     * @param transaction the transaction
+     * @param repository the repo
+     * @param teiidDataSource the teiid data source
+     * @param baseUri the uri
+     * @return RestMetadataConnection
+     * @throws Exception if error occurs
+     */
+    public RestMetadataConnection createMetadataDataSource(UnitOfWork transaction, 
+                                                           Repository repository,
+                                                           TeiidDataSource teiidDataSource, 
+                                                           URI baseUri) throws Exception {
         checkTransaction(transaction);
 
         KomodoObject parent = createTemporaryParent(transaction, repository, null);
@@ -307,13 +337,23 @@ public class RestEntityFactory implements V1Constants {
         return templateEntry;
     }
 
-    public RestMetadataTemplate createMetadataTemplate(UnitOfWork transaction, Repository repository,
-                                                                                         String templateName,
-                                                                                         Collection<TeiidPropertyDefinition> propertyDefns,
-                                                                                         URI baseUri)
-                                                                                         throws Exception {
+    /**
+     * Create RestMetadataTemplate
+     * @param transaction the transaction
+     * @param repository the repo
+     * @param templateName the template name
+     * @param propertyDefns collection of property definitions
+     * @param baseUri the uri
+     * @return RestMetadataTemplate
+     * @throws Exception if error occurs
+     */
+    public RestMetadataTemplate createMetadataTemplate(UnitOfWork transaction, 
+                                                       Repository repository,
+                                                       String templateName,
+                                                       Collection<TeiidPropertyDefinition> propertyDefns,
+                                                       URI baseUri) throws Exception {
         checkTransaction(transaction);
-        ArgCheck.isTrue(transaction.isRollbackOnly(), "transaction should be rollback-only");
+        ArgCheck.isTrue(transaction.isRollbackOnly(), "transaction should be rollback-only"); //$NON-NLS-1$
 
         KomodoObject parent = createTemporaryParent(transaction, repository, null);
 
@@ -329,15 +369,24 @@ public class RestEntityFactory implements V1Constants {
         return new RestMetadataTemplate(baseUri, template, transaction);
     }
 
-    public List<RestMetadataTemplateEntry> createMetadataTemplateEntry(UnitOfWork transaction, Repository repository,
-                                                                                                             Collection<TeiidPropertyDefinition> propertyDefns,
-                                                                                                             URI baseUri)
-                                                                                                             throws Exception {
+    /**
+     * Create RestMetadataTemplateEntry
+     * @param transaction the transaction
+     * @param repository the repo
+     * @param propertyDefns collection of property definitions
+     * @param baseUri the uri
+     * @return RestMetadataTemplateEntry
+     * @throws Exception if error occurs
+     */
+    public List<RestMetadataTemplateEntry> createMetadataTemplateEntry(UnitOfWork transaction, 
+                                                                       Repository repository,
+                                                                       Collection<TeiidPropertyDefinition> propertyDefns,
+                                                                       URI baseUri) throws Exception {
         checkTransaction(transaction);
-        ArgCheck.isTrue(transaction.isRollbackOnly(), "transaction should be rollback-only");
+        ArgCheck.isTrue(transaction.isRollbackOnly(), "transaction should be rollback-only"); //$NON-NLS-1$
 
         KomodoObject parent = createTemporaryParent(transaction, repository, null);
-        Template template = RelationalModelFactory.createTemplate(transaction, repository, parent, "tempTemplate");
+        Template template = RelationalModelFactory.createTemplate(transaction, repository, parent, "tempTemplate"); //$NON-NLS-1$
         
         // Get the Managed connection factory class for rars
         String factoryClass = getManagedConnectionFactoryClassDefault(propertyDefns);
@@ -352,16 +401,34 @@ public class RestEntityFactory implements V1Constants {
         return restEntries;
     }
     
-	public RestSyndesisDataSource createServiceCatalogDataSource(UnitOfWork transaction, Repository repository,
-			SyndesisDataSource datasource, URI baseUri) throws Exception {
+	/**
+	 * Create RestSyndesis data source
+	 * @param transaction the transaction
+	 * @param repository the repo
+	 * @param datasource syndesis data source
+	 * @param baseUri the uri
+	 * @return the rest source
+	 * @throws Exception if error occurs
+	 */
+	public RestSyndesisDataSource createSyndesisDataSource(UnitOfWork transaction, 
+	                                                       Repository repository,
+			                                               SyndesisDataSource datasource, 
+			                                               URI baseUri) throws Exception {
         checkTransaction(transaction);
-        ArgCheck.isTrue(transaction.isRollbackOnly(), "transaction should be rollback-only");
+        ArgCheck.isTrue(transaction.isRollbackOnly(), "transaction should be rollback-only"); //$NON-NLS-1$
         
         // TODO:  phantomjinx what needs to be done here?
         KomodoObject parent = createTemporaryParent(transaction, repository, null);
         return new RestSyndesisDataSource(baseUri, parent, datasource, transaction);
 	}
 
+    /**
+     * Create RestVirtualizationStatus
+     * @param status the build status
+     * @param baseUri the base uri
+     * @return RestVirtualizationStatus
+     * @throws Exception if error occurs
+     */
     public RestVirtualizationStatus createBuildStatus(BuildStatus status, URI baseUri) throws Exception {
         return new RestVirtualizationStatus(baseUri, status);
     }

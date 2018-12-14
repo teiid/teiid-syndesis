@@ -28,7 +28,7 @@ public final class ConnectionSerializer extends BasicEntitySerializer<RestConnec
 
     @Override
     protected boolean isComplete(final RestConnection connection) {
-        return super.isComplete(connection) && (!StringUtils.isBlank(connection.getId()));
+        return  !StringUtils.isBlank(connection.getId());
     }
 
     @Override

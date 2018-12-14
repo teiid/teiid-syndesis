@@ -20,23 +20,18 @@ package org.komodo.rest.service;
 import static org.komodo.rest.relational.RelationalMessages.Error.CONNECTION_SERVICE_NAME_EXISTS;
 import static org.komodo.rest.relational.RelationalMessages.Error.CONNECTION_SERVICE_NAME_VALIDATION_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.VDB_DATA_SOURCE_NAME_EXISTS;
-
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-
 import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
@@ -44,17 +39,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
-
 import org.komodo.core.KEngine;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.openshift.TeiidOpenShiftClient;
-import org.komodo.relational.DeployStatus;
 import org.komodo.relational.connection.Connection;
-import org.komodo.relational.model.Column;
 import org.komodo.relational.model.Model;
-import org.komodo.relational.model.Table;
-import org.komodo.relational.model.internal.OptionContainerUtils;
-import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.rest.KomodoRestException;
@@ -63,12 +52,10 @@ import org.komodo.rest.KomodoService;
 import org.komodo.rest.relational.KomodoProperties;
 import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.connection.RestConnection;
-import org.komodo.rest.relational.connection.RestSchemaNode;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.request.KomodoConnectionAttributes;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.RestConnectionSummary;
-import org.komodo.rest.relational.response.RestVdbModelTableColumn;
 import org.komodo.rest.relational.response.metadata.RestMetadataConnectionStatus;
 import org.komodo.rest.relational.response.metadata.RestMetadataConnectionStatus.EntityState;
 import org.komodo.spi.KException;
@@ -84,7 +71,6 @@ import org.komodo.spi.runtime.SyndesisDataSource;
 import org.komodo.spi.runtime.TeiidDataSource;
 import org.komodo.spi.runtime.TeiidVdb;
 import org.komodo.utils.StringUtils;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -102,12 +88,6 @@ import io.swagger.annotations.ApiResponses;
 public final class KomodoConnectionService extends KomodoService {
 
 	private interface OptionalParam {
-
-        /**
-         * Indicates if connection schema should be generated if it doesn't exist. Defaults to <code>true</code>.
-         */
-        String GENERATE_SCHEMA = "generate-schema"; //$NON-NLS-1$
-
         /**
          * Indicates if schema statuses should be returned. Defaults to <code>false</code>.
          */
@@ -117,12 +97,6 @@ public final class KomodoConnectionService extends KomodoService {
          * Indicates if workspace connection should be included. Defaults to <code>true</code>.
          */
         String INCLUDE_CONNECTION = "include-connection"; //$NON-NLS-1$
-
-        /**
-         * Indicates if the connection server VDB should be redeployed if it already exists. Defaults to <code>false</code>.
-         */
-        String REDEPLOY_CONNECTION = "redeploy"; //$NON-NLS-1$
-
     }
 
 	private TeiidOpenShiftClient openshiftClient;
@@ -130,16 +104,6 @@ public final class KomodoConnectionService extends KomodoService {
 
     private static final String SCHEMA_MODEL_NAME_PATTERN = "{0}schemamodel"; //$NON-NLS-1$
     private static final String SCHEMA_VDB_NAME_PATTERN = "{0}schemavdb"; //$NON-NLS-1$
-
-    /**
-     * Time to wait after deploying/undeploying a connection VDB from the metadata instance
-     */
-    private final static int DEPLOYMENT_WAIT_TIME = 5000;
-    
-    /**
-     * fqn table option key
-     */
-    private final static String TABLE_OPTION_FQN = "teiid_rel:fqn"; //$NON-NLS-1$
 
     /**
      * @param engine
@@ -354,98 +318,12 @@ public final class KomodoConnectionService extends KomodoService {
         return getMetadataInstance().getVdb( connectionVdbName );
     }
 
-    private Vdb findSchemaVdb( final UnitOfWork uow,
-                               final Connection connection ) throws KException {
-        final WorkspaceManager wkspMgr = getWorkspaceManager( uow );
-        final String connectionName = connection.getName( uow );
-
-        final String schemaVdbName = getSchemaVdbName( connectionName );
-        final KomodoObject[] vdbs = connection.getChildrenOfType( uow,
-                                                                  VdbLexicon.Vdb.VIRTUAL_DATABASE,
-                                                                  schemaVdbName );
-
-        if ( vdbs.length == 0 ) {
-            return null;
-        }
-        
-        return wkspMgr.resolve( uow, vdbs[ 0 ], Vdb.class );
-    }
-
-    private Model findSchemaModel( final UnitOfWork uow,
-                                   final Connection connection ) throws KException {
-        final Vdb vdb = findSchemaVdb( uow, connection );
-
-        if ( vdb != null ) {
-            final String connectionName = connection.getName( uow );
-            final String schemaModelName = getSchemaModelName( connectionName );
-            final Model[] models = vdb.getModels( uow, schemaModelName );
-
-            if ( models.length != 0 ) {
-                return models[ 0 ];
-            }
-        }
-
-        return null;
-    }
-
-    private Vdb findConnectionWorkspaceVdb( final UnitOfWork uow,
-    		                                final Connection connection ) throws KException {
-    	final WorkspaceManager wkspMgr = getWorkspaceManager( uow );
-    	final String connectionName = connection.getName( uow );
-
-    	final String wsConnectionVdbName = this.getConnectionWorkspaceVdbName(connectionName);
-    	final KomodoObject vdb = wkspMgr.getChild(uow, 
-    			                                  wsConnectionVdbName, 
-    			                                  VdbLexicon.Vdb.VIRTUAL_DATABASE);
-
-    	if(vdb == null) return null;
-
-    	return wkspMgr.resolve( uow, vdb, Vdb.class );
-    }
-    
-    private ModelSource findConnectionWorkspaceVdbModelSource( final UnitOfWork uow,
-    		                                                   final Connection connection ) throws KException {
-        ModelSource modelSource = null;
-        
-    	final Vdb vdb = findConnectionWorkspaceVdb( uow, connection );
-
-    	if ( vdb != null ) {
-    		final String connectionName = connection.getName( uow );
-    		final String schemaModelName = getSchemaModelName( connectionName );
-    		final Model[] models = vdb.getModels(uow, schemaModelName);
-
-    		Model model = null;
-    		if ( models.length != 0 ) {
-    			model = models[ 0 ];
-    		}
-    		
-    		if( model != null ) {
-        		final String schemaModelSourceName = getSchemaModelSourceName( uow, connection );
-    			final ModelSource[] modelSources = model.getSources(uow, schemaModelSourceName);
-    			if ( modelSources.length != 0 ) {
-    				modelSource = modelSources[ 0 ];
-    			}
-    		}
-    	}
-
-    	return modelSource;
-    }
-
     private String getConnectionWorkspaceVdbName( final String connectionName ) {
         return MessageFormat.format( CONNECTION_VDB_PATTERN, connectionName.toLowerCase() );
     }
 
     private String getSchemaModelName( final String connectionName ) {
         return MessageFormat.format( SCHEMA_MODEL_NAME_PATTERN, connectionName.toLowerCase() );
-    }
-
-    private String getSchemaModelSourceName( final UnitOfWork uow, final Connection connection ) throws KException {
-    	String svcCatalogSourceName = null;
-    	if(connection.hasProperty(uow, "serviceCatalogSource")) {
-            svcCatalogSourceName = connection.getProperty(uow, "serviceCatalogSource").getStringValue(uow);
-    	}
-    	String schemaModelSourceName = svcCatalogSourceName != null ? svcCatalogSourceName : connection.getId(uow).toLowerCase();
-    	return schemaModelSourceName;
     }
 
     private String getSchemaVdbName( final String connectionName ) {
@@ -518,172 +396,6 @@ public final class KomodoConnectionService extends KomodoService {
      * @param uriInfo
      *        the request URI information (never <code>null</code>)
      * @param connectionName
-     *        the name of the connection whose tables are being requested (cannot be empty)
-     * @return the JSON representation of the tables collection (never <code>null</code>)
-     * @throws KomodoRestException
-     *         if there is a problem finding the specified workspace connection or constructing the JSON representation
-     */
-    @GET
-    @Path( "{connectionName}/schema" )
-    @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation( value = "Get the native schema for the connection",
-                   response = RestSchemaNode[].class )
-    @ApiResponses( value = {
-        @ApiResponse( code = 403, message = "An error has occurred." ),
-        @ApiResponse( code = 404, message = "No connection could be found with the specified name" ),
-        @ApiResponse( code = 406, message = "Only JSON is returned by this operation" )
-    } )
-    public Response getSchema( @Context final HttpHeaders headers,
-                               final @Context UriInfo uriInfo,
-                               @ApiParam( value = "Name of the connection",
-                                          required = true )
-                               @PathParam( "connectionName" )
-                               final String connectionName ) throws KomodoRestException {
-        final SecurityPrincipal principal = checkSecurityContext( headers );
-
-        if ( principal.hasErrorResponse() ) {
-            return principal.getErrorResponse();
-        }
-
-        final List< MediaType > mediaTypes = headers.getAcceptableMediaTypes();
-        UnitOfWork uow = null;
-
-        try {
-            uow = createTransaction( principal, "getSchema?connectionName=" + connectionName, true ); //$NON-NLS-1$
-            final Connection connection = findConnection( uow, connectionName );
-
-            // connection not found so return 404 error response
-            if ( connection == null ) {
-                return commitNoConnectionFound( uow, mediaTypes, connectionName );
-            }
-
-            final Model schemaModel = findSchemaModel( uow, connection );
-
-            List<RestSchemaNode> schemaNodes = Collections.emptyList();
-            if ( schemaModel != null ) {
-                final Table[] tables = schemaModel.getTables( uow );
-                
-                schemaNodes = this.generateConnectionSchema(uow, connectionName, tables);
-            }
-
-            return commit( uow, mediaTypes, schemaNodes ); 
-        } catch ( final Exception e ) {
-            if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
-                uow.rollback();
-            }
-
-            if ( e instanceof KomodoRestException ) {
-                throw ( KomodoRestException )e;
-            }
-
-            return createErrorResponseWithForbidden( mediaTypes, e, RelationalMessages.Error.CONNECTION_SERVICE_GET_TABLES_ERROR );
-        }
-    }
-
-    /**
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
-     * @param connectionName
-     *        the name of the connection whose schemaColumns are being requested (cannot be empty)
-     * @return the JSON representation of the columns collection (never <code>null</code>)
-     * @throws KomodoRestException
-     *         if there is a problem finding the specified workspace connection or constructing the JSON representation
-     */
-    @GET
-    @Path( "{connectionName}/schema-columns" )
-    @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation( value = "Get the native schema for the connection",
-                   response = RestVdbModelTableColumn[].class )
-    @ApiResponses( value = {
-        @ApiResponse( code = 403, message = "An error has occurred." ),
-        @ApiResponse( code = 404, message = "No connection could be found with the specified name" ),
-        @ApiResponse( code = 406, message = "Only JSON is returned by this operation" )
-    } )
-    @ApiImplicitParams({
-      	@ApiImplicitParam(
-      			name = "tableOption",
-      			value = "tableOption of the table to get columns.",
-      			required = true,
-      			dataType = "string",
-      			paramType = "query")
-        })
-    public Response getSchemaColumns( @Context final HttpHeaders headers,
-                                      final @Context UriInfo uriInfo,
-                                      @ApiParam( value = "Name of the connection",
-                                                 required = true )
-                                      @PathParam( "connectionName" )
-                                      final String connectionName)  throws KomodoRestException {
-        final SecurityPrincipal principal = checkSecurityContext( headers );
-
-        if ( principal.hasErrorResponse() ) {
-            return principal.getErrorResponse();
-        }
-
-        final List< MediaType > mediaTypes = headers.getAcceptableMediaTypes();
-        UnitOfWork uow = null;
-
-        try {
-            final String tableOption = uriInfo.getQueryParameters().getFirst( "tableOption" );
-            
-            uow = createTransaction( principal, "getSchemaColumns?connectionName=" + connectionName, true ); //$NON-NLS-1$
-            final Connection connection = findConnection( uow, connectionName );
-
-            // connection not found so return 404 error response
-            if ( connection == null ) {
-                return commitNoConnectionFound( uow, mediaTypes, connectionName );
-            }
-
-            final Model schemaModel = findSchemaModel( uow, connection );
-
-            // Get the columns for the table with the supplied tableOption path
-            Column[] columns = null;
-            if ( schemaModel != null ) {
-            	Table resultTable = null;
-                final Table[] tables = schemaModel.getTables( uow );
-                for (Table table: tables) {
-                    final String option = OptionContainerUtils.getOption( uow, table, TABLE_OPTION_FQN );
-                    if( option != null && option.equals(tableOption)) {
-                    	resultTable = table;
-                    }                	
-                }
-                if( resultTable != null ) {
-                	columns = resultTable.getColumns(uow);
-                }
-            }
-
-            // No columns found - set to empty array
-            if (columns == null)
-            	columns = new Column[0];
-
-            List<RestVdbModelTableColumn> restColumns = new ArrayList<>(columns.length);
-            for (Column column : columns) {
-                RestVdbModelTableColumn entity = entityFactory.create(column, uriInfo.getBaseUri(), uow);
-                restColumns.add(entity);
-                LOGGER.debug("getSchemaColumns: columns were constructed"); //$NON-NLS-1$
-            }
-
-            return commit( uow, mediaTypes, restColumns );
-        } catch ( final Exception e ) {
-            if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
-                uow.rollback();
-            }
-
-            if ( e instanceof KomodoRestException ) {
-                throw ( KomodoRestException )e;
-            }
-
-            return createErrorResponseWithForbidden( mediaTypes, e, RelationalMessages.Error.CONNECTION_SERVICE_GET_TABLES_ERROR );
-        }
-    }
-
-    /**
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
-     * @param connectionName
      *        the id of the connection whose summary is being retrieved (cannot be empty)
      * @return a JSON document representing the summary of the requested connection in the Komodo workspace (never <code>null</code>)
      * @throws KomodoRestException
@@ -747,7 +459,7 @@ public final class KomodoConnectionService extends KomodoService {
             }
 
             final String txId = "getConnection?includeSchemaStatus=" + includeSchemaStatus + "&includeConnection=" + includeConnection; //$NON-NLS-1$ //$NON-NLS-2$
-            uow = createTransaction(principal, txId, true ); //$NON-NLS-1$
+            uow = createTransaction(principal, txId, true );
 
             Connection connection = findConnection(uow, connectionName);
             if (connection == null)
@@ -858,7 +570,7 @@ public final class KomodoConnectionService extends KomodoService {
 
         try {
             // Add properties for the description and serviceCatalogSource
-            restConnection.addProperty("description", rcAttr.getDescription());
+            restConnection.addProperty("description", rcAttr.getDescription()); //$NON-NLS-1$
             restConnection.addProperty(DataVirtLexicon.Connection.SERVICE_CATALOG_SOURCE, rcAttr.getDataSource());
             restConnection.setJdbc(true);
             
@@ -1086,7 +798,7 @@ public final class KomodoConnectionService extends KomodoService {
 
         try {
             // Add properties for the description and serviceCatalogSource
-            restConnection.addProperty("description", rcAttr.getDescription());
+            restConnection.addProperty("description", rcAttr.getDescription()); //$NON-NLS-1$
             restConnection.addProperty(DataVirtLexicon.Connection.SERVICE_CATALOG_SOURCE, rcAttr.getDataSource());
             restConnection.setJdbc(true);
             
@@ -1344,219 +1056,6 @@ public final class KomodoConnectionService extends KomodoService {
         }
     }
     
-    /**
-     * Initiate schema refresh for a Connection
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
-     * @param connectionName
-     *        the connection name (cannot be empty)
-     * @return a JSON representation of the refresh status (never <code>null</code>)
-     * @throws KomodoRestException
-     *         if there is an error initiating a connection schema refresh
-     */
-    @POST
-    @Path( StringConstants.FORWARD_SLASH + V1Constants.REFRESH_SCHEMA_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.CONNECTION_PLACEHOLDER )
-    @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Initiate schema refresh for a workspace connection")
-    @ApiResponses(value = {
-        @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-    public Response refreshConnection( final @Context HttpHeaders headers,
-                                       final @Context UriInfo uriInfo,
-                                       @ApiParam( value = "Name of the connection",
-                                                  required = true )
-                                       final @PathParam( "connectionName" ) String connectionName,
-                                       @ApiParam( value = "Indicates the connection VDB should be redeployed if it already exists",
-                                                  required = false )
-                                       @DefaultValue( "false" )
-                                       @QueryParam( OptionalParam.REDEPLOY_CONNECTION )
-                                       final boolean redeployServerVdb,
-                                       @ApiParam( value = "Indicates the workspace schema model should be generated if it doesn't exist",
-                                                  required = false )
-                                       @DefaultValue( "true" )
-                                       @QueryParam( OptionalParam.GENERATE_SCHEMA )
-                                       final boolean generateSchema ) throws KomodoRestException {
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
-
-        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
-            return notAcceptableMediaTypesBuilder().build();
-
-        // Error if the connection name is missing
-        if (StringUtils.isBlank( connectionName )) {
-            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.CONNECTION_SERVICE_MISSING_CONNECTION_NAME);
-        }
-
-        UnitOfWork uow = null;
-
-        try {
-            final String txId = "refreshConnection?redeploy=" + redeployServerVdb + "&generate-schema=" + generateSchema; 
-            uow = createTransaction(principal, txId, false );
-
-            // Find the requested connection
-            Connection connection = findConnection(uow, connectionName);
-            if (connection == null)
-                return commitNoConnectionFound(uow, mediaTypes, connectionName);
-
-            final KomodoStatusObject kso = new KomodoStatusObject( "Refresh connection" );
-            final TeiidVdb deployedVdb = findDeployedVdb( connectionName );
-            boolean doDeploy = false;
-
-            if ( deployedVdb == null ) {
-                doDeploy = true;
-            } else {
-                doDeploy = redeployServerVdb;
-            }
-
-            // Initiate the VDB deployment
-            if ( doDeploy ) {
-                doDeployConnectionVdb(uow, connection); // this will delete workspace VDB first
-                kso.addAttribute(connectionName, "Delete workspace VDB, recreate, and redeploy");
-            } else if ( generateSchema ) {
-                Vdb schemaVdb = findSchemaVdb( uow, connection );
-                final String schemaModelName = getSchemaModelName( connectionName );
-                Model schemaModel = null;
-
-                // create if necessary
-                if ( schemaVdb == null ) {
-                    final WorkspaceManager wkspMgr = getWorkspaceManager( uow );
-                    final String schemaVdbName = getSchemaVdbName( connectionName );
-                    schemaVdb = wkspMgr.createVdb( uow, connection, schemaVdbName, schemaVdbName );
-
-                    // Add schema model to schema vdb
-                    schemaModel = addModelToSchemaVdb(uow, schemaVdb, connection, schemaModelName);
-                } else {
-                    final Model[] models = schemaVdb.getModels( uow, schemaModelName );
-
-                    if ( models.length != 0 ) {
-                        schemaModel = models[ 0 ];
-                    } else {
-                        // should never happen but just in case
-                        schemaModel = addModelToSchemaVdb(uow, schemaVdb, connection, schemaModelName);
-                    }
-                }
-
-                final String modelDdl = getMetadataInstance().getSchema( deployedVdb.getName(), "1", schemaModelName );
-                schemaModel.setModelDefinition( uow, modelDdl );
-                kso.addAttribute(connectionName, "Generate schema");
-                // after transaction is committed this will trigger the DDL sequencer which will create
-                // the model objects.
-            } else {
-                kso.addAttribute( connectionName, "Neither redeploy or generate schema requested" );
-            }
-
-            return commit(uow, mediaTypes, kso);
-        } catch (final Exception e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
-                uow.rollback();
-            }
-
-            if (e instanceof KomodoRestException) {
-                throw (KomodoRestException)e;
-            }
-
-            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.CONNECTION_SERVICE_REFRESH_SCHEMA_ERROR);
-        }
-    }
-
-    /**
-     * Deploy / re-deploy a VDB to the metadata instance for the provided workspace connection.
-     * @param uow the transaction
-     * @param connection the connection
-     * @return the DeployStatus from deploying the VDB
-     * @throws KException
-     * @throws InterruptedException
-     */
-    private DeployStatus doDeployConnectionVdb( final UnitOfWork uow,
-    		                                    Connection connection ) throws KException, InterruptedException {
-    	assert( uow.getState() == State.NOT_STARTED );
-    	assert( connection != null );
-
-    	// Get necessary info from the connection
-    	String connectionName = connection.getName(uow);
-        String jndiName = connection.getJndiName(uow);
-        String driverName = connection.getDriverName(uow);
-        
-        // Name of VDB to be created is based on the connection name
-        String vdbName = getConnectionWorkspaceVdbName( connectionName );
-        
-        // VDB is created in the repository.  If it already exists, delete it
-        Repository repo = this.kengine.getDefaultRepository();
-        final WorkspaceManager mgr = WorkspaceManager.getInstance( repo, uow );
-        String repoPath = repo.komodoWorkspace( uow ).getAbsolutePath();
-        
-        final Vdb existingVdb = findVdb( uow, vdbName );
-
-        if ( existingVdb != null ) {
-            mgr.delete(uow, existingVdb);
-        }
-        
-        // delete schema VDB if it exists
-        final Vdb schemaVdb = findSchemaVdb( uow, connection );
-
-        if ( schemaVdb != null ) {
-            mgr.delete( uow, schemaVdb );
-        }
-
-        // Create new VDB
-        String vdbPath = repoPath + "/" + vdbName;
-        final Vdb vdb = mgr.createVdb( uow, null, vdbName, vdbPath );
-        vdb.setDescription(uow, "Vdb for connection "+connectionName);
-                    
-        // Add model to the VDB
-        Model model = vdb.addModel(uow, getSchemaModelName(connectionName));
-        model.setModelType(uow, Model.Type.PHYSICAL);
-        model.setProperty(uow, "importer.TableTypes", "TABLE,VIEW");
-        model.setProperty(uow, "importer.UseQualifiedName", "true");
-        model.setProperty(uow, "importer.UseCatalogName", "false");
-        model.setProperty(uow, "importer.UseFullSchemaName", "false");
-        
-        // Add model source to the model
-        final String modelSourceName = getSchemaModelSourceName(uow, connection);
-        ModelSource modelSource = model.addSource(uow, modelSourceName);
-        modelSource.setJndiName(uow, jndiName);
-        modelSource.setTranslatorName(uow, driverName);
-        modelSource.setAssociatedConnection(uow, connection);
-        
-        // Deploy the VDB
-        DeployStatus deployStatus = vdb.deploy(uow);
-        
-        // Wait for deployment to complete
-        Thread.sleep(DEPLOYMENT_WAIT_TIME);
-        
-        return deployStatus;
-    }
-
-    /**
-     * Add model to the schema vdb
-     * @param uow the transaction
-     * @param schemaVdb the schema VDB
-     * @param connection the connection
-     * @param schemaModelName the name for the schema model being created
-     * @return the created schema model
-     * @throws KException
-     */
-    private Model addModelToSchemaVdb(final UnitOfWork uow, final Vdb schemaVdb, final Connection connection, final String schemaModelName) throws KException {
-        // create schema model
-        Model schemaModel = schemaVdb.addModel( uow, schemaModelName );
-        
-        // Make a copy of the workspace connection vdb model source under the connection schema vdb model
-        final ModelSource workspaceVdbModelSource = findConnectionWorkspaceVdbModelSource( uow, connection );
-        if( workspaceVdbModelSource != null ) {
-        	ModelSource mdlSource = schemaModel.addSource(uow, workspaceVdbModelSource.getName(uow));
-        	mdlSource.setJndiName(uow, workspaceVdbModelSource.getJndiName(uow));
-        	mdlSource.setTranslatorName(uow, workspaceVdbModelSource.getTranslatorName(uow));
-        	mdlSource.setAssociatedConnection(uow, workspaceVdbModelSource.getOriginConnection(uow));
-        }
-        
-        return schemaModel;
-    }
-    
     private synchronized MetadataInstance getMetadataInstance() throws KException {
         return this.kengine.getMetadataInstance();
     }
@@ -1574,160 +1073,5 @@ public final class KomodoConnectionService extends KomodoService {
         }
 
         return Response.ok().build();
-    }
-
-    /**
-     * Generate the Connection Schema structure using the supplied table fqn information.
-     * @param uow the transaction
-     * @param connectionName the name of the connection
-     * @param tables the supplied array of tables
-     * @return the list of schema nodes
-     * @throws KException exception if problem occurs
-     */
-    private List<RestSchemaNode> generateConnectionSchema(final UnitOfWork uow, final String connectionName, final Table[] tables) throws KException {
-    	List<RestSchemaNode> schemaNodes = new ArrayList<RestSchemaNode>();
-
-    	for(final Table table : tables) {
-    		// Use the fqb table option do determine native structure
-            final String option = OptionContainerUtils.getOption( uow, table, TABLE_OPTION_FQN );
-            if( option != null ) {
-            	// Break fqn into segments (segment starts at root, eg "schema=public/table=customer")
-                String[] segments = option.split(FORWARD_SLASH);
-                // Get the parent node of the final segment in the 'path'.  New nodes are created if needed.
-                RestSchemaNode parentNode = getLeafNodeParent(connectionName, schemaNodes, segments);
-
-                // Use last segment to create the leaf node child in the parent.  If parent is null, was root (and leaf already created).
-                if( parentNode != null ) {
-                	String type = getSegmentType(segments[segments.length-1]);
-                	String name = getSegmentName(segments[segments.length-1]);
-                	RestSchemaNode node = new RestSchemaNode(connectionName, name, type);
-                	node.setQueryable(true);
-                	String path = createSchemaNodePath(segments.length-1, segments);
-                	node.setPath(path);
-                	parentNode.addChild(node);
-                }
-            }
-    	}
-    	
-    	return schemaNodes;
-    }
-
-    /**
-     * Get the RestSchemaNode immediately above the last path segment (leaf parent).  If the parent nodes do not already exist,
-     * they are created and added to the currentNodes.  The returned List is a list of the root nodes.  The root node children,
-     * children's children, etc, are built out according to the path segments.
-     * @param connectionName the connection name
-     * @param currentNodes the current node list
-     * @param segments the full path of segments, starting at the root
-     * @return the final segments parent node.  (null if final segment is at the root)
-     */
-    private RestSchemaNode getLeafNodeParent(String connectionName, List<RestSchemaNode> currentNodes, String[] segments) {
-    	RestSchemaNode parentNode = null;
-    	// Determine number of levels to process.
-    	// - process one level if one segment
-    	// - if more than one level, process nSegment - 1 levels
-    	int nLevels = (segments.length > 1) ? segments.length-1 : 1;
-
-    	// Start at beginning of segment path, creating nodes if necessary
-    	for( int i=0; i < nLevels; i++ ) {
-        	String type = getSegmentType(segments[i]);
-        	String name = getSegmentName(segments[i]);
-        	// Root Level - look for matching root node in the list 
-    		if( i == 0 ) {
-    			RestSchemaNode matchNode = getMatchingNode(connectionName, name, type, currentNodes.toArray( new RestSchemaNode[ currentNodes.size() ] ));
-    			// No match - create a new node
-    			if(matchNode == null) {
-    				matchNode = new RestSchemaNode(connectionName, name, type);
-    				String path = createSchemaNodePath(i,segments);
-    				matchNode.setPath(path);
-    				currentNodes.add(matchNode);
-    			}
-    		    // Set parent for next iteration
-    			if( segments.length == 1 ) {       // Only one segment - parent is null (root)
-    				matchNode.setQueryable(true);
-    				parentNode = null;
-    			} else {
-    				// Set next parent if not last level
-    				if( i != segments.length-1 ) { 
-    					parentNode = matchNode;
-    				}
-    			}
-    		// Not at root - look for matching node in parents children
-    		} else {
-    			RestSchemaNode matchNode = getMatchingNode(connectionName, name, type, parentNode.getChildren());
-    			// No match - create a new node
-    			if(matchNode == null) {
-    				matchNode = new RestSchemaNode(connectionName, name, type);
-    				String path = createSchemaNodePath(i,segments);
-    				matchNode.setPath(path);
-    				parentNode.addChild(matchNode);
-    			}
-    			// Set next parent if not last level
-    			if( i != segments.length-1 ) {
-    				parentNode = matchNode;
-    			}
-    		}
-    	}
-    	return parentNode;
-    }
-
-    /**
-     * Generate the path for the node, given the segments and the position within the segments
-     * @param iPosn the index position within the segments
-     * @param segments the array of segments
-     * @return the node path (segment0/segment1/etc)
-     */
-    private String createSchemaNodePath(int iPosn, String[] segments) {
-    	StringBuilder sb = new StringBuilder();
-    	if(segments!=null && segments.length > 0) {
-        	for (int i = 0; i < segments.length; i++) {
-        		if(i < iPosn) {
-        			sb.append(segments[i]+"/");
-        		} else {
-        			sb.append(segments[i]);
-        			break;
-        		}
-        	}
-    	}
-    	return sb.toString();
-    }
-    
-    /**
-     * Searches the supplied list for node with matching name and type.  Does NOT search children or parents of supplied nodes.
-     * @param connectionName the connection name
-     * @param name the node name
-     * @param type the node type
-     * @param nodeList the list of nodes to search
-     * @return the matching node, if found
-     */
-    private RestSchemaNode getMatchingNode(String connectionName, String name, String type, RestSchemaNode[] nodeArray) {
-		RestSchemaNode matchedNode = null;
-    	for(RestSchemaNode node : nodeArray) {
-			if( node.getConnectionName().equals(connectionName) && node.getName().equals(name) && node.getType().equals(type) ) {
-				matchedNode = node;
-				break;
-			}
-		}
-    	return matchedNode;
-    }
-
-    /**
-     * Split the segment apart and return the name
-     * @param segment the segment (eg "table=customer")
-     * @return the name
-     */
-    private String getSegmentName(String segment) {
-    	String[] parts = segment.split(EQUALS);
-    	return parts[1].trim();
-    }
-    
-    /**
-     * Split the segment apart and return the type
-     * @param segment the segment (eg "table=customer")
-     * @return the type
-     */
-    private String getSegmentType(String segment) {
-    	String[] parts = segment.split(EQUALS);
-    	return parts[0].trim();
     }
 }
