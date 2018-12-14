@@ -1,6 +1,6 @@
 {
   "name": "@teiid/beetle-studio",
-  "version": "0.0.8",
+  "version": "0.0.17",
   "private": false,
   "scripts": {
     "ng": "ng",
