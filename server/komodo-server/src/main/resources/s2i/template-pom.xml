@@ -20,7 +20,6 @@
     <version.org.mongodb>${version.org.mongodb}</version.org.mongodb>
     <version.postgresql>${version.postgresql}</version.postgresql>
   </properties>
-  <!-- 
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -32,16 +31,13 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
-   -->
   <repositories>
-    <repository>
-      <id>oss.sonatype.org</id>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository>
-    <repository>
-      <id>snapshots.oss.sonatype.org</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </repository>
+     <repository>
+       <id>snapshots-repo</id>
+       <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+       <releases><enabled>false</enabled></releases>
+       <snapshots><enabled>true</enabled></snapshots>
+     </repository>
   </repositories>
 
   <build>
@@ -66,7 +62,6 @@
     <dependency>
       <groupId>org.teiid</groupId>
       <artifactId>teiid-spring-boot-starter</artifactId>
-      <version>${version.springboot.teiid}</version>
     </dependency>
   </dependencies>
 </project>
