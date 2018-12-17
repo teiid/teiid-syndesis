@@ -108,27 +108,6 @@
             </plugin>
             <!-- Call npm install to resolve the dependencies of the Angular UI in package.json. -->
             <plugin>
-                <artifactId>exec-maven-plugin</artifactId>
-                <groupId>org.codehaus.mojo</groupId>
-                <version>${version.exec-maven-plugin}</version>
-                <executions>
-                    <execution>
-                        <id>karmaTest</id>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <phase>test</phase>
-                        <configuration>
-                            <executable>ng</executable>
-                            <arguments>
-                              <argument>test</argument>
-                              <argument>beetle-lib</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
                 <configuration>
                     <filesets>
@@ -191,6 +170,37 @@
                         <configuration>
                             <skip>true</skip>
                         </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>ng-test</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <version>${version.exec-maven-plugin}</version>
+                        <executions>
+                            <execution>
+                                <id>karmaTest</id>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <phase>test</phase>
+                                <configuration>
+                                    <executable>ng</executable>
+                                    <arguments>
+                                        <argument>test</argument>
+                                        <argument>beetle-lib</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
