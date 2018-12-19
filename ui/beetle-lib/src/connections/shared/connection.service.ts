@@ -37,6 +37,7 @@ import { Column } from "../../dataservices/shared/column.model";
 import "rxjs/add/operator/map";
 import { timer } from "rxjs/observable/timer";
 import "rxjs/add/observable/of";
+import { SyndesisSourceStatus } from "./syndesis-source-status.model";
 
 @Injectable()
 export class ConnectionService extends ApiService {
@@ -216,6 +217,20 @@ export class ConnectionService extends ApiService {
       .map((response) => {
         const catalogSources = response.json();
         return catalogSources.map((catSource) => ServiceCatalogSource.create( catSource ));
+      })
+      .catch( ( error ) => this.handleError( error ) );
+  }
+
+  /**
+   * Get the available SyndesisSource statuses from the komodo rest interface
+   * @returns {Observable<SyndesisSourceStatus[]>}
+   */
+  public getAllSyndesisSourceStatuses(): Observable<SyndesisSourceStatus[]> {
+    return this.http
+      .get(environment.komodoTeiidUrl + ConnectionsConstants.syndesisSourceStatusesRootPath, this.getAuthRequestOptions())
+      .map((response) => {
+        const sourceStatuses = response.json();
+        return sourceStatuses.map((status) => SyndesisSourceStatus.create( status ));
       })
       .catch( ( error ) => this.handleError( error ) );
   }

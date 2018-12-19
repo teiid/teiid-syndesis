@@ -29,6 +29,7 @@ import { Vdb } from "../dataservices/shared/vdb.model";
 import { Virtualization } from "../dataservices/shared/virtualization.model";
 import { Column } from "../dataservices/shared/column.model";
 import { ViewEditorState } from "../dataservices/shared/view-editor-state.model";
+import { SyndesisSourceStatus } from "../connections/shared/syndesis-source-status.model";
 
 @Injectable()
 export class TestDataService {
@@ -388,6 +389,49 @@ export class TestDataService {
   private static conn3Status = ConnectionStatus.create(
     {
       "connectionName": TestDataService.conn3.getId(),
+      "vdbState": "ACTIVE",
+      "vdbName": TestDataService.conn3.getId() + TestDataService.connectionVdbSuffix,
+      "schemaState": "ACTIVE",
+      "schemaVdbName": TestDataService.conn3.getId() + TestDataService.connectionSchemaVdbSuffix,
+      "schemaModelName": TestDataService.conn3.getId() + TestDataService.connectionSchemaModelSuffix,
+      "errors": []
+    },
+  );
+
+  // =================================================================
+  // Syndesis Source Statuses
+  // =================================================================
+
+  private static syndesisSrc1Status = SyndesisSourceStatus.create(
+    {
+      "sourceName": TestDataService.conn1.getId(),
+      "hasTeiidSource": false,
+      "vdbState": "MISSING",
+      "vdbName": TestDataService.conn1.getId() + TestDataService.connectionVdbSuffix,
+      "schemaState": "MISSING",
+      "schemaVdbName": TestDataService.conn1.getId() + TestDataService.connectionSchemaVdbSuffix,
+      "schemaModelName": TestDataService.conn1.getId() + TestDataService.connectionSchemaModelSuffix,
+      "errors": []
+    },
+  );
+
+  private static syndesisSrc2Status = SyndesisSourceStatus.create(
+    {
+      "sourceName": TestDataService.conn2.getId(),
+      "hasTeiidSource": true,
+      "vdbState": "ACTIVE",
+      "vdbName": TestDataService.conn2.getId() + TestDataService.connectionVdbSuffix,
+      "schemaState": "MISSING",
+      "schemaVdbName": TestDataService.conn2.getId() + TestDataService.connectionSchemaVdbSuffix,
+      "schemaModelName": TestDataService.conn2.getId() + TestDataService.connectionSchemaModelSuffix,
+      "errors": []
+    },
+  );
+
+  private static syndesisSrc3Status = SyndesisSourceStatus.create(
+    {
+      "sourceName": TestDataService.conn3.getId(),
+      "hasTeiidSource": true,
       "vdbState": "ACTIVE",
       "vdbName": TestDataService.conn3.getId() + TestDataService.connectionVdbSuffix,
       "schemaState": "ACTIVE",
@@ -1879,6 +1923,11 @@ export class TestDataService {
     }
   );
 
+  private syndesisSrcStatuses: SyndesisSourceStatus[] = [
+    TestDataService.syndesisSrc1Status,
+    TestDataService.syndesisSrc2Status,
+    TestDataService.syndesisSrc3Status];
+
   private catalogSources: ServiceCatalogSource[] = [
     TestDataService.pgConnCatalogSource,
     TestDataService.catalogSource1,
@@ -1971,6 +2020,13 @@ export class TestDataService {
    */
   public getServiceCatalogSources(): ServiceCatalogSource[] {
     return this.catalogSources;
+  }
+
+  /**
+   * @returns {SyndesisSourceStatus[]} the array of test SyndesisSourceStatus
+   */
+  public getSyndesisSourceStatuses(): SyndesisSourceStatus[] {
+    return this.syndesisSrcStatuses;
   }
 
   /**

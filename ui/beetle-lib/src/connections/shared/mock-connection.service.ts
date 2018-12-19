@@ -34,12 +34,14 @@ import "rxjs/add/operator/catch";
 import "rxjs/add/operator/map";
 import { Observable } from "rxjs/Observable";
 import { Column } from "../../dataservices/shared/column.model";
+import { SyndesisSourceStatus } from "./syndesis-source-status.model";
 
 @Injectable()
 export class MockConnectionService extends ConnectionService {
 
   private connections: Connection[];
   private readonly serviceCatalogSources: ServiceCatalogSource[];
+  private readonly syndesisSrcStatuses: SyndesisSourceStatus[];
   private connectionSchemaMap = new Map<string, SchemaNode[]>();
   private connectionSchemaColumnsMap = new Map<string, Column[]>();
   private testDataService: TestDataService;
@@ -60,6 +62,7 @@ export class MockConnectionService extends ConnectionService {
     }
     this.connections = conns;
     this.serviceCatalogSources = this.testDataService.getServiceCatalogSources();
+    this.syndesisSrcStatuses = this.testDataService.getSyndesisSourceStatuses();
     this.connectionSchemaMap = this.testDataService.getConnectionSchemaMap();
     this.connectionSchemaColumnsMap = this.testDataService.getConnectionSchemaColumnsMap();
   }
@@ -120,6 +123,14 @@ export class MockConnectionService extends ConnectionService {
    */
   public getAllSyndesisSources(): Observable<ServiceCatalogSource[]> {
     return Observable.of(this.serviceCatalogSources);
+  }
+
+  /**
+   * Get the available syndesis source statuses from the komodo rest interface
+   * @returns {Observable<SyndesisSourceStatus[]>}
+   */
+  public getAllSyndesisSourceStatuses(): Observable<SyndesisSourceStatus[]> {
+    return Observable.of(this.syndesisSrcStatuses);
   }
 
   /**

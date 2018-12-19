@@ -26,6 +26,9 @@ export class ConnectionsConstants {
   public static readonly syndesisSourcesRootRoute = "syndesisSources";
   public static readonly syndesisSourcesRootPath = "/" + ConnectionsConstants.syndesisSourcesRootRoute;
 
+  public static readonly syndesisSourceStatusesRootRoute = "syndesisSourceStatuses";
+  public static readonly syndesisSourceStatusesRootPath = "/" + ConnectionsConstants.syndesisSourceStatusesRootRoute;
+
   public static readonly connectionType_postgresql = "postgresql";
   public static readonly connectionType_mysql = "mysql";
   public static readonly connectionType_mongodb = "mongodb";
