@@ -43,7 +43,7 @@ import {
   FilterConfig,
   FilterEvent,
   FilterField,
-  FilterType,
+  FilterType, ListConfig,
   NotificationType,
   SortConfig,
   SortEvent,
@@ -57,6 +57,8 @@ import { ViewEditorState } from "./shared/view-editor-state.model";
 import { NameValue } from "./shared/name-value.model";
 import { CreateViewsDialogComponent } from "./create-views-dialog/create-views-dialog.component";
 import { SetDescriptionDialogComponent } from "./set-description-dialog/set-description-dialog.component";
+import { SyndesisSourceStatus } from "../connections/shared/syndesis-source-status.model";
+import { LoadingState } from "../shared/loading-state.enum";
 
 @Component({
   selector: "btl-dataservices",
@@ -66,6 +68,14 @@ import { SetDescriptionDialogComponent } from "./set-description-dialog/set-desc
 export class DataservicesComponent extends AbstractPageComponent implements OnInit {
 
   public readonly connectionsLoadedTag = "connections";
+  public connectionsExist = false;
+
+  public syndesisStatusListConfig: ListConfig;
+  public syndesisStatuses: SyndesisSourceStatus[] = [];
+  public syndesisStatusesLoadingState: LoadingState = LoadingState.LOADING;
+  public readonly syndesisStatusesLoadFailedHeader = "Loading Failed: ";
+  public readonly syndesisStatusesLoadFailedMsg = "Syndesis Statuses failed to load!";
+  public readonly syndesisStatusesLoadFailedType = NotificationType.DANGER;
 
   public filterConfig: FilterConfig;
   public filtersText = "";
@@ -74,17 +84,21 @@ export class DataservicesComponent extends AbstractPageComponent implements OnIn
   public currentSortField: SortField;
   public isAscendingSort = true;
 
-  private connectionsExist = false;
-  private noConnectionsConfig: EmptyStateConfig;
-  private noDataservicesConfig: EmptyStateConfig;
+  public cardListAreaCss = "dataservice-summary-top-area-no-results";
+  public resultsAreaCss = "dataservice-summary-bottom-area-no-results";
+  public toastNotificationHeader: string;
+  public toastNotificationMessage: string;
+  public toastNotificationType = NotificationType.SUCCESS;
+  private toastNotificationVisible = false;
 
-  private cardListAreaCss = "dataservice-summary-top-area-no-results";
-  private resultsAreaCss = "dataservice-summary-bottom-area-no-results";
   private resultsShowing = false;
   private odataEditorShowing = false;
   private quickLookSvcName: string;
   private odataSvcName: string;
   private quickLookQueryText: string;
+
+  private noConnectionsConfig: EmptyStateConfig;
+  private noDataservicesConfig: EmptyStateConfig;
 
   private allServices: Dataservice[] = [];
   private connectionService: ConnectionService;
@@ -96,10 +110,6 @@ export class DataservicesComponent extends AbstractPageComponent implements OnIn
   private dataserviceService: DataserviceService;
   private vdbService: VdbService;
   private sortDirection: SortDirection = SortDirection.ASC;
-  private toastNotificationHeader: string;
-  private toastNotificationMessage: string;
-  private toastNotificationType = NotificationType.SUCCESS;
-  private toastNotificationVisible = false;
   private dataserviceDeployStateSubscription: Subscription;
   private dataservicePublishStateSubscription: Subscription;
   private notifierService: NotifierService;
@@ -135,6 +145,14 @@ export class DataservicesComponent extends AbstractPageComponent implements OnIn
 
   public ngOnInit(): void {
     super.ngOnInit();
+
+    // List configuration
+    this.syndesisStatusListConfig = {
+      dblClick: false,
+      multiSelect: false,
+      selectItems: false,
+      showCheckbox: false
+    };
 
     this.filterConfig = {
       fields: [{
@@ -213,6 +231,30 @@ export class DataservicesComponent extends AbstractPageComponent implements OnIn
     return this.noDataservicesConfig;
   }
 
+  /**
+   * Determine if statuses are loading
+   * @returns {boolean}
+   */
+  public get syndesisStatusesLoading( ): boolean {
+    return ( this.syndesisStatusesLoadingState === LoadingState.LOADING );
+  }
+
+  /**
+   * Determine if statuses loading completed, and was successful
+   * @returns {boolean}
+   */
+  public get syndesisStatusesLoadedSuccess( ): boolean {
+    return ( this.syndesisStatusesLoadingState === LoadingState.LOADED_VALID );
+  }
+
+  /**
+   * Determine if statuses loading completed, but failed
+   * @returns {boolean}
+   */
+  public get syndesisStatusesLoadedFailed( ): boolean {
+    return ( this.syndesisStatusesLoadingState === LoadingState.LOADED_INVALID );
+  }
+
   public get hasConnections(): boolean {
     return this.isLoaded( this.connectionsLoadedTag ) && this.connectionsExist;
   }
@@ -243,19 +285,20 @@ export class DataservicesComponent extends AbstractPageComponent implements OnIn
         }
       );
 
+    // Get all syndesis sources available
+    self.syndesisStatusesLoadingState = LoadingState.LOADING;
     this.connectionService
-      .getConnections(true, false)
+      .getAllSyndesisSourceStatuses( )
       .subscribe(
-        ( connectionSummaries ) => {
-          const connections = [];
-          for ( const connectionSummary of connectionSummaries ) {
-            connections.push(connectionSummary.getConnection());
-          }
-          self.connectionsExist = connections.length !== 0;
+        ( statuses ) => {
+          self.syndesisStatuses = statuses;
+          self.syndesisStatusesLoadingState = LoadingState.LOADED_VALID;
+          self.connectionsExist = statuses.length !== 0;
           self.loaded( self.connectionsLoadedTag );
         },
         ( error ) => {
-          self.error( error, "Error getting connections" );
+          self.error( error, "Error getting syndesis sources" );
+          self.syndesisStatusesLoadingState = LoadingState.LOADED_INVALID;
         }
       );
   }

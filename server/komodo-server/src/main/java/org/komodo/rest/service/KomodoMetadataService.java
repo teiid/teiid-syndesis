@@ -80,21 +80,19 @@ import org.komodo.rest.relational.request.KomodoSyndesisDataSourceAttributes;
 import org.komodo.rest.relational.request.PublishRequestPayload;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.RestConnectionDriver;
-import org.komodo.rest.relational.response.RestConnectionSummary;
 import org.komodo.rest.relational.response.RestQueryResult;
 import org.komodo.rest.relational.response.RestSyndesisDataSource;
 import org.komodo.rest.relational.response.RestVdb;
 import org.komodo.rest.relational.response.RestVdbModelTableColumn;
 import org.komodo.rest.relational.response.RestVdbTranslator;
 import org.komodo.rest.relational.response.metadata.RestMetadataConnection;
-import org.komodo.rest.relational.response.metadata.RestMetadataConnectionStatus;
-import org.komodo.rest.relational.response.metadata.RestMetadataConnectionStatus.EntityState;
 import org.komodo.rest.relational.response.metadata.RestMetadataStatus;
 import org.komodo.rest.relational.response.metadata.RestMetadataTemplate;
 import org.komodo.rest.relational.response.metadata.RestMetadataTemplateEntry;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdb;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatus;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbTranslator;
+import org.komodo.rest.relational.response.metadata.RestSyndesisSourceStatus;
 import org.komodo.rest.relational.response.virtualization.RestVirtualizationStatus;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
@@ -140,16 +138,6 @@ public class KomodoMetadataService extends KomodoService {
         String GENERATE_SCHEMA = "generate-schema"; //$NON-NLS-1$
 
         /**
-         * Indicates if schema statuses should be returned. Defaults to <code>false</code>.
-         */
-        String INCLUDE_SCHEMA_STATUS = "include-schema-status"; //$NON-NLS-1$
-
-        /**
-         * Indicates if workspace connection should be included. Defaults to <code>true</code>.
-         */
-        String INCLUDE_CONNECTION = "include-connection"; //$NON-NLS-1$
-
-        /**
          * Indicates if the connection server VDB should be redeployed if it already exists. Defaults to <code>false</code>.
          */
         String REDEPLOY_CONNECTION = "redeploy"; //$NON-NLS-1$
@@ -193,7 +181,7 @@ public class KomodoMetadataService extends KomodoService {
      */
     private final static int DEPLOYMENT_WAIT_TIME = 10000;
 
-    private static final String[] PRIORITY_TEMPLATE_NAMES = {"connection-url", "user-name", "password", "port"};
+    private static final String[] PRIORITY_TEMPLATE_NAMES = {"connection-url", "user-name", "password", "port"};  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 
     private static class TeiidPropertyDefinitionComparator implements Comparator<TeiidPropertyDefinition> {
 
@@ -275,7 +263,7 @@ public class KomodoMetadataService extends KomodoService {
 
     private String getSchema(UnitOfWork uow, String vdbName, String modelName) throws Exception {
         MetadataInstance mServer = getMetadataInstance();
-        return mServer.getSchema(vdbName, "1", modelName);
+        return mServer.getSchema(vdbName, "1", modelName); //$NON-NLS-1$
     }
 
     private Response createTimeoutResponse(List<MediaType> mediaTypes) {
@@ -2465,9 +2453,9 @@ public class KomodoMetadataService extends KomodoService {
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
     public Response getConnectionTemplateEntries(final @Context HttpHeaders headers,
-                                                   final @Context UriInfo uriInfo,
-                                                   @ApiParam(value = "Name of the template", required = true)
-                                                    final @PathParam( "templateName" ) String templateName) throws KomodoRestException {
+                                                 final @Context UriInfo uriInfo,
+                                                 @ApiParam(value = "Name of the template", required = true)
+                                                 final @PathParam( "templateName" ) String templateName) throws KomodoRestException {
 
         SecurityPrincipal principal = checkSecurityContext(headers);
         if (principal.hasErrorResponse())
@@ -2560,9 +2548,9 @@ public class KomodoMetadataService extends KomodoService {
 
 			for (SyndesisDataSource dataSource : dataSources) {
 				RestSyndesisDataSource entity = entityFactory.createSyndesisDataSource(uow, 
-				                                                                             repo,
-						                                                                     dataSource, 
-						                                                                     uriInfo.getBaseUri());
+				                                                                       repo,
+						                                                               dataSource, 
+						                                                               uriInfo.getBaseUri());
 				entities.add(entity);
 				LOGGER.info("syndesisSources:Source '{0}' entity was constructed", dataSource.getName()); //$NON-NLS-1$
 			}
@@ -2946,39 +2934,25 @@ public class KomodoMetadataService extends KomodoService {
     }
 
     /**
-     * Get summaries for the available syndesis sources.
+     * Get status for the available syndesis sources.
      * @param headers
      *        the request headers (never <code>null</code>)
      * @param uriInfo
      *        the request URI information (never <code>null</code>)
-     * @return a JSON document representing the summaries of the sources (never <code>null</code>)
+     * @return a JSON document representing the statuses of the sources (never <code>null</code>)
      * @throws KomodoRestException
-     *         if there is a problem constructing the Connection JSON document
+     *         if there is a problem constructing the JSON document
      */
     @GET
-    @Path(V1Constants.SYNDESIS_SOURCE_SUMMARIES)
+    @Path(V1Constants.SYNDESIS_SOURCE_STATUSES)
     @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Return the syndesis source summaries",
-                  response = RestConnectionSummary[].class)
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-                name = OptionalParam.INCLUDE_CONNECTION,
-                value = "Include connections in result.  If not present, connections are returned.",
-                required = false,
-                dataType = "boolean",
-                paramType = "query"),
-        @ApiImplicitParam(
-                name = OptionalParam.INCLUDE_SCHEMA_STATUS,
-                value = "Include statuses in result. If not present, status are not returned.",
-                required = false,
-                dataType = "boolean",
-                paramType = "query")
-      })
+    @ApiOperation(value = "Return the syndesis source statuses",
+                  response = RestSyndesisSourceStatus[].class)
     @ApiResponses(value = {
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
-    public Response getSourceSummaries( final @Context HttpHeaders headers,
-                                        final @Context UriInfo uriInfo ) throws KomodoRestException {
+    public Response getSyndesisSourceStatuses( final @Context HttpHeaders headers,
+                                               final @Context UriInfo uriInfo ) throws KomodoRestException {
 
         SecurityPrincipal principal = checkSecurityContext(headers);
         if (principal.hasErrorResponse())
@@ -2986,39 +2960,12 @@ public class KomodoMetadataService extends KomodoService {
 
         List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
         UnitOfWork uow = null;
-        boolean includeSchemaStatus = false;
-        boolean includeConnection = true;
-        final List< RestConnectionSummary > summaries = new ArrayList<>();
+        final List< RestSyndesisSourceStatus > statuses = new ArrayList<>();
 
         try {
-            { // include-schema-status query parameter
-                final String param = uriInfo.getQueryParameters().getFirst( OptionalParam.INCLUDE_SCHEMA_STATUS );
-
-                if ( param != null ) {
-                    includeSchemaStatus = Boolean.parseBoolean( param );
-                }
-            }
-
-            { // include-connection query parameter
-                final String param = uriInfo.getQueryParameters().getFirst( OptionalParam.INCLUDE_CONNECTION );
-
-                if ( param != null ) {
-                    includeConnection = Boolean.parseBoolean( param );
-                }
-            }
 
             // find sources
-            final String txId = "getSyndesisSourceSummaries?includeSchemaStatus=" + includeSchemaStatus + "&includeConnection=" + includeConnection; //$NON-NLS-1$ //$NON-NLS-2$
-            uow = createTransaction(principal, txId, true );
-
-            final Collection< TeiidVdb > vdbs = includeSchemaStatus ? getMetadataInstance().getVdbs() : null;
-            Collection<TeiidDataSource> teiidSources = new ArrayList<TeiidDataSource>();
-
-            Repository repo = this.kengine.getDefaultRepository();
-
-            // ----------------------------------------------------------------
-            // Get teiid datasources which match the current syndesis sources
-            // ----------------------------------------------------------------
+            uow = createTransaction(principal, "getSyndesisSourceStatuses", true ); //$NON-NLS-1$
 
             // Get syndesis sources
             Collection<SyndesisDataSource> dataSources = this.openshiftClient.getSyndesisSources(getAuthenticationToken());
@@ -3026,35 +2973,39 @@ public class KomodoMetadataService extends KomodoService {
             // Get teiid datasources
             Collection<TeiidDataSource> allTeiidSources = getMetadataInstance().getDataSources();
 
-            // Include teiid datasources which match syndesis sources
+            // Add status summary for each of the syndesis sources.  Determine if there is a matching teiid source
             for (SyndesisDataSource dataSource : dataSources) {
+                RestSyndesisSourceStatus status = new RestSyndesisSourceStatus(dataSource.getName());
                 for (TeiidDataSource teiidSource : allTeiidSources) {
+                    // Syndesis source has a corresponding VDB.  Use VDB for status
                     if (teiidSource.getName().equals(dataSource.getName())) {
-                        teiidSources.add(teiidSource);
+                        status.setHasTeiidSource(true);
+                    }
+                }
+                statuses.add(status);
+            }
+            
+            // For each syndesis source, determine if there is a matching teiid VDB for the source
+            final Collection< TeiidVdb > vdbs = getMetadataInstance().getVdbs();
+            for( RestSyndesisSourceStatus status : statuses ) {
+                // Name of vdb based on source name
+                String vdbName = getWorkspaceSourceVdbName( status.getSourceName() );
+                for (TeiidVdb vdb: vdbs) {
+                    if ( vdb.getName().equals(vdbName) ) {
+                        status.setTeiidVdbDetails(vdb);
+                        break;
                     }
                 }
             }
 
-            LOGGER.debug( "getSyndesisSourceSummaries '{0}' sources", teiidSources.size() ); //$NON-NLS-1$
-
-            // Build results depending on which items to include
-            if ( includeConnection ) {  
-                for ( final TeiidDataSource tSource: teiidSources ) {
-                    RestMetadataConnection restTeiidSource = entityFactory.createMetadataDataSource(uow, repo, tSource, uriInfo.getBaseUri());
-                    RestMetadataConnectionStatus restStatus = null;
-                    if ( includeSchemaStatus ) {
-                        restStatus = createStatusRestEntity( uow, vdbs, tSource );
-                    }
-                    summaries.add( new RestConnectionSummary( uriInfo.getBaseUri(), restTeiidSource, restStatus ) );
-                }
-            } else if ( includeSchemaStatus ) { // include schema status and no connections
-                for ( final TeiidDataSource tSource: teiidSources ) {
-                    RestMetadataConnectionStatus restStatus = createStatusRestEntity( uow, vdbs, tSource );
-                    summaries.add( new RestConnectionSummary( uriInfo.getBaseUri(), null, restStatus ) );
-                }
+            // For each syndesis source, set the schema availability status
+            for( RestSyndesisSourceStatus status : statuses ) {
+                this.setSchemaStatus(uow, status);
             }
 
-            return commit( uow, mediaTypes, summaries );
+            LOGGER.debug( "getSyndesisSourceStatuses '{0}' statuses", statuses.size() ); //$NON-NLS-1$
+
+            return commit( uow, mediaTypes, statuses );
         } catch ( final Exception e ) {
             if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
                 uow.rollback();
@@ -3715,66 +3666,46 @@ public class KomodoMetadataService extends KomodoService {
     }
     
     /**
-     * Get status of teiidSource metadata readiness
+     * Set the schema availability for the provided RestSyndesisSourceStatus 
      * @param uow the transaction
-     * @param vdbs the vdbs
-     * @param teiidSource the teiidSource
-     * @return status for the teiidSource
-     * @throws Exception
+     * @param status the RestSyndesisSourceStatus
+     * @throws Exception if error occurs
      */
-    private RestMetadataConnectionStatus createStatusRestEntity( final UnitOfWork uow,
-                                                                 final Collection< TeiidVdb > vdbs,
-                                                                 final TeiidDataSource teiidSource ) throws Exception {
-        final String sourceName = teiidSource.getName( );
-        final String sourceVdbName = getWorkspaceSourceVdbName( sourceName );
-        
-        // find status of server source VDB
-        TeiidVdb sourceVdb = null;
-
-        for ( final TeiidVdb vdb : vdbs ) {
-            if ( vdb.getName().equals( sourceVdbName ) ) {
-                sourceVdb = vdb;
-                break;
-            }
-        }
-
-        if ( sourceVdb == null ) {
-            return new RestMetadataConnectionStatus( sourceName );
-        }
-
-        // now find status of workspace schema
-        final RestMetadataConnectionStatus restStatus = new RestMetadataConnectionStatus( sourceName, sourceVdb );
+    private void setSchemaStatus( final UnitOfWork uow,
+                                  final RestSyndesisSourceStatus status ) throws Exception {
+        // Name of schema vdb based on source name
+        final String srcName = status.getSourceName();
+        final String schemaVdbName = getSchemaVdbName( srcName );
 
         // Get the workspace schema VDB
-        final Vdb vdb = this.findWorkspaceSchemaVdb(uow, teiidSource);
+        Vdb vdb = findVdb(uow, schemaVdbName);
 
+        // If no vdb found, then status is not set
         if ( vdb != null ) {
-            restStatus.setSchemaVdbName( vdb.getName(uow) );
+            status.setSchemaVdbName( vdb.getName(uow) );
 
             // there should be one model
-            final String schemaModelName = getSchemaModelName( sourceName );
+            final String schemaModelName = getSchemaModelName( srcName );
             final Model[] models = vdb.getModels( uow, schemaModelName );
 
             if ( models.length > 0 ) {
                 final Model schemaModel = models[ 0 ];
-                restStatus.setSchemaModelName( schemaModelName );
+                status.setSchemaModelName( schemaModelName );
 
                 // if model has children the DDL has been sequenced
                 if ( schemaModel.hasChildren( uow ) ) {
                     // assume sequencer ran successfully
-                    restStatus.setSchemaState( EntityState.ACTIVE );
+                    status.setSchemaState( RestSyndesisSourceStatus.EntityState.ACTIVE );
                 } else if ( schemaModel.hasProperty( uow, VdbLexicon.Model.MODEL_DEFINITION ) ) {
                     // assume sequencer is running but could have failed
-                    restStatus.setSchemaState( EntityState.LOADING );
+                    status.setSchemaState( RestSyndesisSourceStatus.EntityState.LOADING );
                 }
             } else {
                 // Since VDB and model are created in the same transaction this should never happen.
                 // Would be nice to be able to get here if we can detect the DDL sequencing failed.
-                restStatus.setSchemaState( EntityState.FAILED );
+                status.setSchemaState( RestSyndesisSourceStatus.EntityState.FAILED );
             }
         }
-
-        return restStatus;
     }
 
 }

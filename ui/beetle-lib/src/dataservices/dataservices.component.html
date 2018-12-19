@@ -9,6 +9,51 @@
 
     <btl-page-error [error]="pageError" *ngIf="pageError"></btl-page-error>
 
+    <!-- ------------------------- -->
+    <!-- SyndesisSourceStatus List -->
+    <!-- ------------------------- -->
+    <div class="col-sm-6">
+      <strong>Syndesis Sources</strong>
+      <div class="col-md-12 connections-list" *ngIf="syndesisStatusesLoadedSuccess">
+        <pfng-list
+          [config]="syndesisStatusListConfig"
+          [itemTemplate]="itemTemplate"
+          [items]="syndesisStatuses">
+          <ng-template #itemTemplate let-item="item">
+            <div class="list-pf-left">
+                <span class="fa fa-check-circle list-pf-icon list-pf-icon-small"
+                      style="color:green"
+                      *ngIf="item.isReady">
+                </span>
+              <span class="fa fa-times-circle list-pf-icon list-pf-icon-small"
+                    style="color:red"
+                    *ngIf="!item.isReady">
+                </span>
+            </div>
+            <div class="list-pf-content-wrapper">
+              <div class="list-pf-main-content">
+                <div class="list-pf-title">{{item.getName()}}</div>
+              </div>
+              <div class="list-pf-additional-content">
+                <div class="list-pf-title">{{item.getOverallStatusMessage()}}</div>
+              </div>
+            </div>
+          </ng-template>
+        </pfng-list>
+      </div>
+      <div class="col-md-12" *ngIf="syndesisStatusesLoading">
+        <div class="spinner spinner-lg blank-slate-pf-icon"></div>
+      </div>
+      <div class="col-md-12" *ngIf="syndesisStatusesLoadedFailed">
+        <pfng-inline-notification
+          [header]="syndesisStatusesLoadFailedHeader"
+          [message]="syndesisStatusesLoadFailedMsg"
+          [type]="syndesisStatusesLoadFailedType">
+        </pfng-inline-notification>
+      </div>
+    </div>
+    <div class="col-sm-6"></div>
+
     <div class="container-fluid dataservice-list-dataservices" *ngIf="!pageError">
       <div class="col-sm-12">
         <h2 class="btl-feature-title" i18n="@@dataservices.dataservices">Data Virtualizations</h2>

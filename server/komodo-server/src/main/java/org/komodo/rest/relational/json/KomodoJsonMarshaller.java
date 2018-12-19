@@ -54,9 +54,9 @@ import org.komodo.rest.relational.response.RestGitRepository;
 import org.komodo.rest.relational.response.RestQueryColumn;
 import org.komodo.rest.relational.response.RestQueryResult;
 import org.komodo.rest.relational.response.RestQueryRow;
-import org.komodo.rest.relational.response.RestSyndesisDataSource;
 import org.komodo.rest.relational.response.RestStorageType;
 import org.komodo.rest.relational.response.RestStorageTypeDescriptor;
+import org.komodo.rest.relational.response.RestSyndesisDataSource;
 import org.komodo.rest.relational.response.RestVdb;
 import org.komodo.rest.relational.response.RestVdbCondition;
 import org.komodo.rest.relational.response.RestVdbDataRole;
@@ -78,6 +78,7 @@ import org.komodo.rest.relational.response.metadata.RestMetadataVdb;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatus;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatusVdb;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbTranslator;
+import org.komodo.rest.relational.response.metadata.RestSyndesisSourceStatus;
 import org.komodo.rest.relational.response.vieweditorstate.RestSqlComposition;
 import org.komodo.rest.relational.response.vieweditorstate.RestSqlProjectedColumn;
 import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate;
@@ -134,6 +135,7 @@ public final class KomodoJsonMarshaller {
                                                   .registerTypeAdapter(RestDataservice.class, new DataserviceSerializer())
                                                   .registerTypeAdapter(RestConnection.class, new ConnectionSerializer())
                                                   .registerTypeAdapter(RestConnectionSummary.class, new ConnectionSummarySerializer())
+                                                  .registerTypeAdapter(RestSyndesisSourceStatus.class, new SyndesisSourceStatusSerializer())
                                                   .registerTypeAdapter(RestMetadataConnectionStatus.class, new MetadataConnectionStatusSerializer())
                                                   .registerTypeAdapter(RestMetadataTemplate.class, new MetadataTemplateSerializer())
                                                   .registerTypeAdapter(RestMetadataTemplateEntry.class, new MetadataTemplateEntrySerializer())

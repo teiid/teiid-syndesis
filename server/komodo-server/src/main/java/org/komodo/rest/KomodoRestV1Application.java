@@ -612,7 +612,7 @@ public class KomodoRestV1Application extends Application implements SystemConsta
         /**
          * syndesis source summaries segment
          */
-        String SYNDESIS_SOURCE_SUMMARIES = "syndesisSourceSummaries"; //$NON-NLS-1$
+        String SYNDESIS_SOURCE_STATUSES = "syndesisSourceStatuses"; //$NON-NLS-1$
         
         /**
          * Bind to available source in OpenShift Service catalog

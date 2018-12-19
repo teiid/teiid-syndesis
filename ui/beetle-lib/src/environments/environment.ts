@@ -37,7 +37,7 @@ export const openshiftKomodoPrefix = "/";
 export const komodoUrlPrefix = openshiftKomodoPrefix;
 
 export const environment = {
-  production: true,
+  production: false,
 
   komodoEngine,
 
