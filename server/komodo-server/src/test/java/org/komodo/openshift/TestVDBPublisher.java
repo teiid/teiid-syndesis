@@ -164,8 +164,8 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
         Collection<EnvVar> variables = generator
                 .getEnvironmentVariablesForVDBDataSources(authToken, getTransaction(), vdbs[0], config);
         assertThat( variables.size(), is(7));
-        String javaOptions= " -Dspring.datasource.accounts-xyz.password=$(ACCOUNTS_XYZ_PASSWORD)"
-                + " -Dspring.datasource.accounts-xyz.username=$(ACCOUNTS_XYZ_USER)"
+        String javaOptions= " -Dspring.datasource.accounts-xyz.username=$(ACCOUNTS_XYZ_USER)"
+                + " -Dspring.datasource.accounts-xyz.password=$(ACCOUNTS_XYZ_PASSWORD)"
                 + " -Dspring.datasource.accounts-xyz.url=$(ACCOUNTS_XYZ_URL)"
                 + " -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
                 + " -Djava.net.preferIPv4Addresses=true -Djava.net.preferIPv4Stack=true"
