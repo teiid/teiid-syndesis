@@ -1,4 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" 
+<project xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>org.teiid</groupId>
@@ -128,7 +128,7 @@
                             <includes>
                                 <include>**</include>
                             </includes>
-                        </fileset>                        
+                        </fileset>
                     </filesets>
                     <followSymlinks>false</followSymlinks>
                 </configuration>
@@ -177,7 +177,9 @@
         <profile>
             <id>ng-test</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <property>
+                  <name>!skipTests</name>
+                </property>
             </activation>
             <build>
                 <plugins>
