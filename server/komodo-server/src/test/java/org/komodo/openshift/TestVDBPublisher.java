@@ -164,14 +164,23 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
         Collection<EnvVar> variables = generator
                 .getEnvironmentVariablesForVDBDataSources(authToken, getTransaction(), vdbs[0], config);
         assertThat( variables.size(), is(7));
-        String javaOptions= " -Dspring.datasource.accounts-xyz.username=$(ACCOUNTS_XYZ_USER)"
-                + " -Dspring.datasource.accounts-xyz.password=$(ACCOUNTS_XYZ_PASSWORD)"
+        String javaOptions= " -Dspring.datasource.accounts-xyz.password=$(ACCOUNTS_XYZ_PASSWORD)"
+                + " -Dspring.datasource.accounts-xyz.username=$(ACCOUNTS_XYZ_USER)"
                 + " -Dspring.datasource.accounts-xyz.url=$(ACCOUNTS_XYZ_URL)"
                 + " -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
                 + " -Djava.net.preferIPv4Addresses=true -Djava.net.preferIPv4Stack=true"
                 + " -XX:ParallelGCThreads=1 -XX:ConcGCThreads=1"
                 + " -Djava.util.concurrent.ForkJoinPool.common.parallelism=1"
                 + " -Dio.netty.eventLoopThreads=2";
+        
+        String javaOptions2= " -Dspring.datasource.accounts-xyz.username=$(ACCOUNTS_XYZ_USER)"
+                + " -Dspring.datasource.accounts-xyz.password=$(ACCOUNTS_XYZ_PASSWORD)"
+                + " -Dspring.datasource.accounts-xyz.url=$(ACCOUNTS_XYZ_URL)"
+                + " -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
+                + " -Djava.net.preferIPv4Addresses=true -Djava.net.preferIPv4Stack=true"
+                + " -XX:ParallelGCThreads=1 -XX:ConcGCThreads=1"
+                + " -Djava.util.concurrent.ForkJoinPool.common.parallelism=1"
+                + " -Dio.netty.eventLoopThreads=2";        
 
         assertThat(variables, hasItem(new EnvVar("ACCOUNTS_XYZ_USER", "johnny", null)));
         assertThat(variables, hasItem(new EnvVar("ACCOUNTS_XYZ_URL", "jdbc:mysql://localhost:1521/sampledb", null)));
@@ -183,7 +192,11 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
 
         assertThat(variables, hasItem(new EnvVar("GC_MAX_METASPACE_SIZE", "256", null)));
 
-        assertThat(variables, hasItem(new EnvVar("JAVA_OPTIONS", javaOptions, null)));
+        try {
+        	assertThat(variables, hasItem(new EnvVar("JAVA_OPTIONS", javaOptions, null)));
+        } catch (Throwable e) {
+        	assertThat(variables, hasItem(new EnvVar("JAVA_OPTIONS", javaOptions2, null)));
+		}
 
     }
 }
