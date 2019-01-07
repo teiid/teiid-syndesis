@@ -2585,16 +2585,16 @@ public class KomodoMetadataService extends KomodoService {
 	 *             if there is an error adding the Connection
 	 */
 	@POST
-	@Path(V1Constants.SYNDESIS_SOURCE)
+	@Path(V1Constants.SYNDESIS_SOURCE+V1Constants.FORWARD_SLASH+V1Constants.SYNDESIS_SOURCE_PLACEHOLDER)
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes({ MediaType.APPLICATION_JSON })
 	@ApiOperation(value = "Create a connection in the teiid engine for a Syndesis source")
 	@ApiResponses(value = { @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
 			@ApiResponse(code = 403, message = "An error has occurred.") })
 	public Response bindSyndesisSource(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
-			@ApiParam(value = "JSON of the syndesis source name:<br>" + OPEN_PRE_TAG + OPEN_BRACE + BR + NBSP
-					+ "name: \"Name of the Syndesis source\"" + BR + CLOSE_BRACE
-					+ CLOSE_PRE_TAG, required = true) final String payload)
+            @ApiParam( value = "Name of the syndesis source",
+            required = true )
+			final @PathParam( "syndesisSourceName" ) String syndesisSourceName)
 			throws KomodoRestException {
 
 		SecurityPrincipal principal = checkSecurityContext(headers);
@@ -2605,28 +2605,13 @@ public class KomodoMetadataService extends KomodoService {
 		if (!isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
 			return notAcceptableMediaTypesBuilder().build();
 
-		//
-		// Error if there is no name attribute defined
-		//
-		KomodoSyndesisDataSourceAttributes attributes;
-		try {
-			attributes = KomodoJsonMarshaller.unmarshall(payload, KomodoSyndesisDataSourceAttributes.class);
-			if (attributes.getName() == null) {
-				return createErrorResponseWithForbidden(mediaTypes,
-						RelationalMessages.Error.METADATA_SYNDESIS_SOURCE_BIND_MISSING_NAME);
-			}
-		} catch (Exception ex) {
-			return createErrorResponseWithForbidden(mediaTypes, ex,
-					RelationalMessages.Error.METADATA_SYNDESIS_SOURCE_BIND_PARSE_ERROR);
-		}
-
 		UnitOfWork uow = null;
 
 		try {
 			uow = createTransaction(principal, "bindSyndesisSource", false); //$NON-NLS-1$
-			this.openshiftClient.bindToSyndesisSource(getAuthenticationToken(), attributes.getName());
+			this.openshiftClient.bindToSyndesisSource(getAuthenticationToken(), syndesisSourceName);
 			String title = RelationalMessages.getString(
-					RelationalMessages.Info.METADATA_SYNDESIS_SOURCE_BIND_TITLE, attributes.getName());
+					RelationalMessages.Info.METADATA_SYNDESIS_SOURCE_BIND_TITLE, syndesisSourceName);
 			KomodoStatusObject status = new KomodoStatusObject(title);
 			return commit(uow, mediaTypes, status);
 		} catch (final Exception e) {
@@ -2637,7 +2622,7 @@ public class KomodoMetadataService extends KomodoService {
 				throw (KomodoRestException) e;
 			}
 			return createErrorResponse(Status.FORBIDDEN, mediaTypes, e,
-					RelationalMessages.Error.METADATA_SYNDESIS_SOURCE_BIND_ERROR, e, attributes.getName());
+					RelationalMessages.Error.METADATA_SYNDESIS_SOURCE_BIND_ERROR, e, syndesisSourceName);
 		   }
     }
 
@@ -3325,6 +3310,9 @@ public class KomodoMetadataService extends KomodoService {
         model.setProperty(uow, "importer.UseQualifiedName", "true");  //$NON-NLS-1$//$NON-NLS-2$
         model.setProperty(uow, "importer.UseCatalogName", "false");  //$NON-NLS-1$//$NON-NLS-2$
         model.setProperty(uow, "importer.UseFullSchemaName", "false");  //$NON-NLS-1$//$NON-NLS-2$
+        if (teiidSource.getPropertyValue("schema") != null) {
+        	model.setProperty(uow, "importer.schemaPattern", teiidSource.getPropertyValue("schema"));  //$NON-NLS-1$//$NON-NLS-2$
+        }
         
         // Add model source to the model
         final String modelSourceName = teiidSource.getName();

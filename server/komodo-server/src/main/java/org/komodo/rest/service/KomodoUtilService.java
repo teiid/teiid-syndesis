@@ -136,6 +136,7 @@ public final class KomodoUtilService extends KomodoService {
      */
     @GET
     @Path(V1Constants.ABOUT)
+    @Produces( MediaType.APPLICATION_JSON )
     @ApiOperation( value = "Display status of this rest service", response = String.class )
     @ApiResponses(value = {
         @ApiResponse(code = 403, message = "An error has occurred.")

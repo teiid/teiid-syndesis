@@ -53,9 +53,15 @@ public class PostgreSQLDefinition extends DataSourceDefinition {
     @Override
     public Properties getInternalTeiidDataSourceProperties(DefaultSyndesisDataSource source) {
         Properties props = new Properties();
+        
+        props.setProperty("jndi-name", source.getName());
+        props.setProperty("driver-name", getType()); // used as translator name
+        props.setProperty("display-name", source.getName());
+        
         props.setProperty("url", source.getProperty("url"));
         props.setProperty("username", source.getProperty("user"));
         props.setProperty("password", source.getProperty("password"));
+        props.setProperty("schema", source.getProperty("schema"));
         return props;
     }
 

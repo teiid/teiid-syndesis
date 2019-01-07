@@ -402,7 +402,7 @@ public class DataserviceConveyor implements StringConstants {
             vdbDeploymentName = vdb.getProperty( uow, "deployment-name" ).getStringValue( uow ); //$NON-NLS-1$
         }
         if(StringUtils.isEmpty(vdbDeploymentName)) {
-        	vdbDeploymentName = vdb.getName(uow) + TeiidVdb.DYNAMIC_VDB_SUFFIX;
+        	vdbDeploymentName = vdb.getName(uow);
         }
 
         final InputStream stream = new ByteArrayInputStream( vdbXml );

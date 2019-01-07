@@ -23,6 +23,7 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.komodo.spi.KException;
 import org.springframework.security.crypto.encrypt.Encryptors;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
 
@@ -71,7 +72,7 @@ public class EncryptionComponent {
     }
 
 
-    public String decrypt(final String value) {
+    public String decrypt(final String value) throws KException {
         // value might not be encrypted...
         if( value == null ) {
             return null;
@@ -83,13 +84,13 @@ public class EncryptionComponent {
                 result = enc.decrypt(stripPrefix(result, ENCRYPTED_PREFIX));
             } catch (RuntimeException e) {
                 // We could fail to decrypt the value..
-                result = null;
+                throw new KException(e);
             }
         }
         return result;
     }
 
-    public Map<String, String> decrypt(Map<String, String> props) {
+    public Map<String, String> decrypt(Map<String, String> props) throws KException {
         if( props == null ) {
             return null;
         }
@@ -100,7 +101,7 @@ public class EncryptionComponent {
         return result;
     }
 
-    public Properties decrypt(Properties props) {
+    public Properties decrypt(Properties props) throws KException {
         if( props == null ) {
             return null;
         }

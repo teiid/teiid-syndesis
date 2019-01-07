@@ -619,14 +619,4 @@ public class KomodoRestV1Application implements SystemConstants {
     public Repository getDefaultRepository() throws KException {
         return kengine.getDefaultRepository();
     }
-
-    /**
-     * Import a vdb into the komodo engine
-     *
-     * @param vdbStream vdb input stream
-     * @param user initiating import
-     *
-     * @throws Exception if error occurs
-     */
-
 }

@@ -1217,7 +1217,7 @@ public class TeiidOpenShiftClient implements StringConstants {
      * @return YML fragment depicting the ENV variables
      */
     private List<EnvVar> convertToEnvironmentVariables(DefaultSyndesisDataSource datasource,
-            List<EnvVar> envs) {
+            List<EnvVar> envs) throws KException {
         for (String key : datasource.getProperties().keySet()) {
             String instanceKey = datasource.canonicalKey(key);
             //envs.add(env(instanceKey, datasource.getProperties().get(key)));

@@ -107,18 +107,20 @@ public class TeiidAdminImpl implements Admin {
 
     @Override
     public void createDataSource(String deploymentName, String templateName, Properties properties) throws AdminException {
-        properties.setProperty(TeiidDataSource.DATASOURCE_DRIVERNAME, templateName);
         switch(templateName) {
         case "postgresql":
         case "mysql":
         case "h2":
         case "teiid":
-            DataSource ds = DataSourceBuilder.create()
-                .url(properties.getProperty("url"))
-                .username(properties.getProperty("user"))
-                .password(properties.getProperty("password")).build();
-            this.datasources.put(deploymentName, ds);
-            this.dsProperties.put(deploymentName, properties);
+        	if (datasources.get(deploymentName) == null) {
+	            DataSource ds = DataSourceBuilder.create()
+	                .url(properties.getProperty("url"))
+	                .username(properties.getProperty("username") != null ? properties.getProperty("username") :properties.getProperty("user") )
+	                .password(properties.getProperty("password")).build();
+	            this.datasources.put(deploymentName, ds);
+	            properties.setProperty("type", templateName);
+	            this.dsProperties.put(deploymentName, properties);
+        	}
             break;
             default:
             throw new AdminProcessingException(
