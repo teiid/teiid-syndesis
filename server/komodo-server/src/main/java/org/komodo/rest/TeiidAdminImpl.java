@@ -35,7 +35,6 @@ import java.util.Set;
 import javax.sql.DataSource;
 import javax.xml.stream.XMLStreamException;
 
-import org.komodo.spi.runtime.TeiidDataSource;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.teiid.adminapi.Admin;
 import org.teiid.adminapi.AdminException;
@@ -60,10 +59,11 @@ import org.teiid.spring.autoconfigure.ExternalSource;
 import org.teiid.spring.autoconfigure.TeiidServer;
 import org.teiid.translator.TranslatorException;
 
+@SuppressWarnings("deprecation")
 public class TeiidAdminImpl implements Admin {
     private Admin delegate;
     private TeiidServer server;
-    private HashMap<String, DataSource> datasources = new HashMap<>();
+    private HashMap<String, Object> datasources = new HashMap<>();
     private HashMap<String, Properties> dsProperties = new HashMap<>();
 
     public TeiidAdminImpl(Admin delegate, TeiidServer server) {
@@ -81,7 +81,7 @@ public class TeiidAdminImpl implements Admin {
         case "teiid":
             ArrayList<PropertyDefinitionMetadata> props = new ArrayList<>();
             props.add(buildNode("url", "string", "Connection URL", true, false, "Connection URL"));
-            props.add(buildNode("user", "string", "User Name", true, false, "User Name"));
+            props.add(buildNode("username", "string", "User Name", true, false, "User Name"));
             props.add(buildNode("password", "string", "Password", true, true, "Password"));
             props.add(buildNode("schema", "string", "Schema", true, true, "Schema"));
             return props;
@@ -130,7 +130,7 @@ public class TeiidAdminImpl implements Admin {
 
     @Override
     public void deleteDataSource(String dsName) throws AdminException {
-        DataSource ds = this.datasources.get(dsName);
+        Object ds = this.datasources.get(dsName);
         if (ds != null) {
             this.server.removeConnectionFactoryProvider(dsName);
             this.datasources.remove(dsName);
@@ -192,7 +192,8 @@ public class TeiidAdminImpl implements Admin {
         pdm.setCategory("");
         return pdm;
     }
-    @Override
+    
+	@Override
     public void addDataRoleMapping(String arg0, int arg1, String arg2, String arg3) throws AdminException {
         delegate.addDataRoleMapping(arg0, arg1, arg2, arg3);
     }
