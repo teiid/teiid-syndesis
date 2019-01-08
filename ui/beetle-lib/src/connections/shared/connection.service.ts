@@ -91,28 +91,6 @@ export class ConnectionService extends ApiService {
   }
 
   /**
-   * Get the connection summaries from the komodo rest interface.  The supplied parameters determine what portions
-   * of the ConnectionSummary are returned.
-   *   - include-connection=true (include connection [default=true])
-   *   - include-schema-status=true (include schema vdb status [default=false])
-   * @param {boolean} includeConnection 'true' to include connection
-   * @param {boolean} includeSchemaStatus 'true' to include connection schema status
-   * @returns {Observable<ConnectionSummary[]>}
-   */
-  public getConnections(includeConnection: boolean, includeSchemaStatus: boolean): Observable<ConnectionSummary[]> {
-    // Build the url with parameters
-    const connectionsUrl = this.buildGetConnectionsUrl(includeConnection, includeSchemaStatus);
-
-    return this.http
-      .get(connectionsUrl, this.getAuthRequestOptions())
-      .map((response) => {
-        const connectionSummaries = response.json();
-        return connectionSummaries.map((connectionSummary) => ConnectionSummary.create( connectionSummary ));
-      })
-      .catch( ( error ) => this.handleError( error ) );
-  }
-
-  /**
    * Deployes the connection server VDB if one does not already exists. If a server VDB has already been deployed, one
    * can be redeployed. A schema can only be generated if it doesn't exist and there is already a deployed server VDB.
    * @param {string} connectionName the name of the connection being refreshed
@@ -363,17 +341,17 @@ export class ConnectionService extends ApiService {
    */
   public updateConnectionSchemaStates(): void {
     const self = this;
-    this.getConnections(false, true)
-      .subscribe(
-        (connectionSummaries) => {
-          self.cachedConnectionStatuses = self.createConnectionStatusMap(connectionSummaries);
-          this.notifierService.sendConnectionStatusMap(self.cachedConnectionStatuses);
-        },
-        (error) => {
-          // On error, broadcast the cached states
-          this.notifierService.sendConnectionStatusMap(self.cachedConnectionStatuses);
-        }
-      );
+    // this.getConnections(false, true)
+    //   .subscribe(
+    //     (connectionSummaries) => {
+    //       self.cachedConnectionStatuses = self.createConnectionStatusMap(connectionSummaries);
+    //       this.notifierService.sendConnectionStatusMap(self.cachedConnectionStatuses);
+    //     },
+    //     (error) => {
+    //       // On error, broadcast the cached states
+    //       this.notifierService.sendConnectionStatusMap(self.cachedConnectionStatuses);
+    //     }
+    //   );
   }
 
   /**
@@ -389,22 +367,6 @@ export class ConnectionService extends ApiService {
     this.updatesSubscription = stopWatch.subscribe((t: any) => {
       self.updateConnectionSchemaStates();
     });
-  }
-
-  /**
-   * Build the getConnection Url based on the supplied parameters.
-   * @param {boolean} includeConnection 'true' to include connection, 'false' to omit
-   * @param {boolean} includeSchemaStatus 'true' to include connection schema status, 'false' to omit
-   */
-  private buildGetConnectionsUrl(includeConnection: boolean, includeSchemaStatus: boolean): string {
-    // Base getConnections service url
-    const connectionsUrl = environment.komodoTeiidUrl + "/syndesisSourceSummaries";
-
-    // Additional parameters
-    const urlParams = "?" + ConnectionsConstants.includeConnectionParameter + "=" + String(includeConnection) +
-                      "&" + ConnectionsConstants.includeSchemaStatusParameter + "=" + String(includeSchemaStatus);
-
-    return connectionsUrl + urlParams;
   }
 
   /*

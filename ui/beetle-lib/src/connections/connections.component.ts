@@ -143,32 +143,32 @@ export class ConnectionsComponent extends AbstractPageComponent implements OnIni
   public loadAsyncPageData(): void {
     const self = this;
 
-    this.connectionService
-      .getConnections(true, true)
-      .subscribe(
-        (connectionSummaries) => {
-          const conns = [];
-          // If there is a newly added connection, it has been flagged for schema regen
-          const newlyAddedConnName = self.selectionService.getConnectionIdForSchemaRegen();
-          for ( const connSummary of connectionSummaries ) {
-            const conn = connSummary.getConnection();
-            let status = connSummary.getStatus();
-            // Newly added connection is given a loading status
-            if (conn.getId() === newlyAddedConnName) {
-              status = ConnectionStatus.createLoadingStatus(newlyAddedConnName);
-            }
-            conn.setStatus(status);
-            conns.push(conn);
-          }
-          self.allConns = conns;
-          self.filteredConns = conns;
-          self.connectionService.updateConnectionSchemaStates();  // triggers refresh to get latest connection states
-          self.loaded("connections");
-        },
-        (error) => {
-          self.error(error, "Error getting connections");
-        }
-      );
+    // this.connectionService
+    //   .getConnections(true, true)
+    //   .subscribe(
+    //     (connectionSummaries) => {
+    //       const conns = [];
+    //       // If there is a newly added connection, it has been flagged for schema regen
+    //       const newlyAddedConnName = self.selectionService.getConnectionIdForSchemaRegen();
+    //       for ( const connSummary of connectionSummaries ) {
+    //         const conn = connSummary.getConnection();
+    //         let status = connSummary.getStatus();
+    //         // Newly added connection is given a loading status
+    //         if (conn.getId() === newlyAddedConnName) {
+    //           status = ConnectionStatus.createLoadingStatus(newlyAddedConnName);
+    //         }
+    //         conn.setStatus(status);
+    //         conns.push(conn);
+    //       }
+    //       self.allConns = conns;
+    //       self.filteredConns = conns;
+    //       self.connectionService.updateConnectionSchemaStates();  // triggers refresh to get latest connection states
+    //       self.loaded("connections");
+    //     },
+    //     (error) => {
+    //       self.error(error, "Error getting connections");
+    //     }
+    //   );
   }
 
   /**

@@ -1,6 +1,6 @@
 {
   "name": "@teiid/beetle-lib",
-  "version": "0.0.17",
+  "version": "0.1.5",
   "peerDependencies": {
     "@angular/animations": "^6.0.3",
     "angular-tree-component": "^7.1.0",

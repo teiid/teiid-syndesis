@@ -25,7 +25,6 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.komodo.relational.connection.Connection;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Model.Type;
 import org.komodo.relational.model.View;
@@ -148,54 +147,50 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     	Model viewModel = dsVdb.addModel(getTransaction(), TEST_VIEW_NAME);
     	viewModel.setModelType(getTransaction(), Type.VIRTUAL);
     	
-        Connection connection = createConnection( DS_NAME );
-        connection.setDescription(getTransaction(), description);
+//        Connection connection = createConnection( DS_NAME );
+//        connection.setDescription(getTransaction(), description);
+//
+//        final String extLoc = "new-external-location";
+//        connection.setExternalLocation(getTransaction(), extLoc );
+//
+//        connection.setJdbc(getTransaction(), false);
+//        connection.setJndiName(getTransaction(), DS_JNDI_NAME);
+//        connection.setDriverName(getTransaction(), "dsDriver");
+//        connection.setClassName(getTransaction(), "dsClassname");
+//        connection.setProperty(getTransaction(), "prop1", "prop1Value");
+//        connection.setProperty(getTransaction(), "prop2", "prop2Value");
 
-        final String extLoc = "new-external-location";
-        connection.setExternalLocation(getTransaction(), extLoc );
-
-        connection.setJdbc(getTransaction(), false);
-        connection.setJndiName(getTransaction(), DS_JNDI_NAME);
-        connection.setDriverName(getTransaction(), "dsDriver");
-        connection.setClassName(getTransaction(), "dsClassname");
-        connection.setProperty(getTransaction(), "prop1", "prop1Value");
-        connection.setProperty(getTransaction(), "prop2", "prop2Value");
-
-        // Create a VDB for this connection
-        Vdb sourceVdb = createVdb(VDB_NAME, connection, "originalFilePath");
+        // Create a schema VDB for connection1
+        Vdb sourceVdb = createVdb(VDB_NAME, null, "originalFilePath");
         Model sourceModel = sourceVdb.addModel(getTransaction(), MODEL_NAME);
         sourceModel.setModelDefinition(getTransaction(), pgconnection1schemamodelDDL);
         ModelSource modelSource = sourceModel.addSource(getTransaction(), DS_NAME);
         modelSource.setJndiName(getTransaction(), DS_JNDI_NAME);
         modelSource.setTranslatorName(getTransaction(), TRANSLATOR_JDBC);
-        modelSource.setAssociatedConnection(getTransaction(), connection);
+        //modelSource.setAssociatedConnection(getTransaction(), connection);
 
         commit();
         
-        Connection connection2 = createConnection( DS_NAME_2 );
-        connection2.setDescription(getTransaction(), description);
-        
-        connection2.setExternalLocation(getTransaction(), extLoc );
-        
-        connection2.setJdbc(getTransaction(), false);
-        connection2.setJndiName(getTransaction(), "DS_JNDI_NAME2");
-        connection2.setDriverName(getTransaction(), "dsDriver");
-        connection2.setClassName(getTransaction(), "dsClassname2");
-        connection2.setProperty(getTransaction(), "prop1", "prop1Value");
-        connection2.setProperty(getTransaction(), "prop2", "prop2Value");
+//        Connection connection2 = createConnection( DS_NAME_2 );
+//        connection2.setDescription(getTransaction(), description);
+//        
+//        connection2.setExternalLocation(getTransaction(), extLoc );
+//        
+//        connection2.setJdbc(getTransaction(), false);
+//        connection2.setJndiName(getTransaction(), "DS_JNDI_NAME2");
+//        connection2.setDriverName(getTransaction(), "dsDriver");
+//        connection2.setClassName(getTransaction(), "dsClassname2");
+//        connection2.setProperty(getTransaction(), "prop1", "prop1Value");
+//        connection2.setProperty(getTransaction(), "prop2", "prop2Value");
 
-        // Create a VDB for this connection
-        sourceVdb = createVdb(VDB_NAME_2, connection2, "originalFilePath");
+        // Create a schema VDB for connection2
+        sourceVdb = createVdb(VDB_NAME_2, null, "originalFilePath");
         sourceModel = sourceVdb.addModel(getTransaction(), MODEL_NAME_2);
+        sourceModel.setModelDefinition(getTransaction(), pgconnection2schemamodelDDL);
         ModelSource modelSource2 = sourceModel.addSource(getTransaction(), DS_NAME_2);
         modelSource2.setJndiName(getTransaction(), DS_JNDI_NAME2);
         modelSource2.setTranslatorName(getTransaction(), TRANSLATOR_JDBC);
-        modelSource2.setAssociatedConnection(getTransaction(), connection2);
-        
-        // Rather than creating model objects piecemeal, it's easier to have komodo & modeshape do it via
-        // setting the model definition via Teiid DDL statements
-        sourceModel.setModelDefinition(getTransaction(), pgconnection2schemamodelDDL);
-        
+        //modelSource2.setAssociatedConnection(getTransaction(), connection2);
         
         commit();
     }
@@ -543,15 +538,15 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     	assertNotNull(view);
     	assertThat(view.getColumns(getTransaction()).length, is(4));
     	
-    	for( Model model : models ) {
-    		if( model.getModelType(getTransaction()) == Type.PHYSICAL) {
-    			ModelSource[] modelSources = model.getSources(getTransaction());
-    			assertNotNull(modelSources);
-    			for( ModelSource ms : modelSources ) {
-    				assertNotNull(ms.getOriginConnection(getTransaction()));
-    			}
-    		}
-    	}
+//    	for( Model model : models ) {
+//    		if( model.getModelType(getTransaction()) == Type.PHYSICAL) {
+//    			ModelSource[] modelSources = model.getSources(getTransaction());
+//    			assertNotNull(modelSources);
+//    			for( ModelSource ms : modelSources ) {
+//    				assertNotNull(ms.getOriginConnection(getTransaction()));
+//    			}
+//    		}
+//    	}
     }
     
     @Test
@@ -584,14 +579,14 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     	assertThat(view.getColumns(getTransaction()).length, is(4));
     	
     	
-    	for( Model model : models ) {
-    		if( model.getModelType(getTransaction()) == Type.PHYSICAL) {
-    			ModelSource[] modelSources = model.getSources(getTransaction());
-    			assertNotNull(modelSources);
-    			for( ModelSource ms : modelSources ) {
-    				assertNotNull(ms.getOriginConnection(getTransaction()));
-    			}
-    		}
-    	}
+//    	for( Model model : models ) {
+//    		if( model.getModelType(getTransaction()) == Type.PHYSICAL) {
+//    			ModelSource[] modelSources = model.getSources(getTransaction());
+//    			assertNotNull(modelSources);
+//    			for( ModelSource ms : modelSources ) {
+//    				assertNotNull(ms.getOriginConnection(getTransaction()));
+//    			}
+//    		}
+//    	}
     }
 }

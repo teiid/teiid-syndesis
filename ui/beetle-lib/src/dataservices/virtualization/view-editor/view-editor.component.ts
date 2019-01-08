@@ -154,26 +154,26 @@ export class ViewEditorComponent implements DoCheck, OnDestroy, OnInit {
     this.editorService.setEditorConfig( this.fullEditorCssType ); // this could be set via preference or last used config
     this.subscription = this.editorService.editorEvent.subscribe( ( event ) => this.handleEditorEvent( event ) );
 
-    // Load the connections
-    const self = this;
-    this.connectionService
-      .getConnections(true, true)
-      .subscribe(
-        (connectionSummaries) => {
-          const conns = [];
-          for ( const connectionSummary of connectionSummaries ) {
-            const connStatus = connectionSummary.getStatus();
-            const conn = connectionSummary.getConnection();
-            conn.setStatus(connStatus);
-            conns.push(conn);
-            self.connections = conns;
-          }
-        },
-        (error) => {
-          // self.logger.error("[ConnectionSchemaTreeComponent] Error getting connections: %o", error);
-          // self.connectionLoadingState = LoadingState.LOADED_INVALID;
-        }
-      );
+    // // Load the connections
+    // const self = this;
+    // this.connectionService
+    //   .getConnections(true, true)
+    //   .subscribe(
+    //     (connectionSummaries) => {
+    //       const conns = [];
+    //       for ( const connectionSummary of connectionSummaries ) {
+    //         const connStatus = connectionSummary.getStatus();
+    //         const conn = connectionSummary.getConnection();
+    //         conn.setStatus(connStatus);
+    //         conns.push(conn);
+    //         self.connections = conns;
+    //       }
+    //     },
+    //     (error) => {
+    //       // self.logger.error("[ConnectionSchemaTreeComponent] Error getting connections: %o", error);
+    //       // self.connectionLoadingState = LoadingState.LOADED_INVALID;
+    //     }
+    //   );
 
     // Listen for event when user moves away from this page
     this.routeSub = this.router.events.pairwise().subscribe((event) => {

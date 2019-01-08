@@ -39,7 +39,6 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
 import org.komodo.spi.lexicon.sql.teiid.TeiidSqlConstants;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
@@ -443,32 +442,29 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
 		int iTable = 0;
 		for(String path : sourceTablePaths) {
 			String connectionName = PathUtils.getOption(path, "connection"); //$NON-NLS-1$
-			Connection connection = findConnection(uow, connectionName);
 
-			if (connection != null) {
-				// Find Table objects in Komodo based on the connection name (i.e.    connection=pgConn
-				final Model schemaModel = findSchemaModel( uow, connection );
+			// Find schema model based on the connection name (i.e. connection=pgConn)
+			final Model schemaModel = findSchemaModel( uow, connectionName );
 
-				// Get the tables from the schema and match them with the table name
-				if ( schemaModel != null ) {
-					final Table[] tables = schemaModel.getTables( uow );
-					String tableOption = PathUtils.getTableOption(path);
+			// Get the tables from the schema and match them with the table name
+			if ( schemaModel != null ) {
+			    final Table[] tables = schemaModel.getTables( uow );
+			    String tableOption = PathUtils.getTableOption(path);
 
-					// Look thru schema tables for table with matching option.
-					for (Table table: tables) {
-						final String option = OptionContainerUtils.getOption( uow, table, TABLE_OPTION_FQN );
-						if( option != null ) {
-							// If table found, create the TableInfo and break
-							if( option.equals(tableOption) ) {
-								String alias = (iTable == 0) ? "A" : "B"; //$NON-NLS-1$ //$NON-NLS-2$
-								// create a new TableInfo object
-								sourceTableInfos.add(new TableInfo(uow, path, table, alias));
-								iTable++;
-								break;
-							}
-						}            	
-					}
-				}
+			    // Look thru schema tables for table with matching option.
+			    for (Table table: tables) {
+			        final String option = OptionContainerUtils.getOption( uow, table, TABLE_OPTION_FQN );
+			        if( option != null ) {
+			            // If table found, create the TableInfo and break
+			            if( option.equals(tableOption) ) {
+			                String alias = (iTable == 0) ? "A" : "B"; //$NON-NLS-1$ //$NON-NLS-2$
+			                // create a new TableInfo object
+			                sourceTableInfos.add(new TableInfo(uow, path, table, alias));
+			                iTable++;
+			                break;
+			            }
+			        }
+			    }
 			}
 		}
 
@@ -560,28 +556,12 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
     }
 
     /*
-     * Finds a connection object from the workspace manager using connection name
+     * Finds a schema model for a given connectionName from the workspace manager
      */
-    private Connection findConnection(UnitOfWork uow, String connectionName) throws KException {
-        if (! this.wsManager.hasChild( uow, connectionName, DataVirtLexicon.Connection.NODE_TYPE ) ) {
-            return null;
-        }
-
-        final KomodoObject kobject = this.wsManager.getChild( uow, connectionName, DataVirtLexicon.Connection.NODE_TYPE );
-        final Connection connection = this.wsManager.resolve( uow, kobject, Connection.class );
-
-        LOGGER.debug( "Connection '{0}' was found", connectionName ); //$NON-NLS-1$
-        return connection;
-    }
-    
-    /*
-     * Finds a schema model for a given connection from the workspace manager
-     */
-    private Model findSchemaModel(final UnitOfWork uow, final Connection connection) throws KException {
-		final Vdb vdb = findSchemaVdb(uow, connection);
+    private Model findSchemaModel(final UnitOfWork uow, final String connectionName) throws KException {
+		final Vdb vdb = findSchemaVdb(uow, connectionName);
 
 		if (vdb != null) {
-			final String connectionName = connection.getName(uow);
 			final String schemaModelName = getSchemaModelName(connectionName);
 			final Model[] models = vdb.getModels(uow, schemaModelName);
 
@@ -596,17 +576,15 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
     /*
      * Finds a schema VDB for a given connection from the workspace manager
      */
-    private Vdb findSchemaVdb(final UnitOfWork uow, final Connection connection) throws KException {
-		final String connectionName = connection.getName(uow);
-
+    private Vdb findSchemaVdb(final UnitOfWork uow, final String connectionName) throws KException {
 		final String schemaVdbName = getSchemaVdbName(connectionName);
-		final KomodoObject[] vdbs = connection.getChildrenOfType(uow, VdbLexicon.Vdb.VIRTUAL_DATABASE, schemaVdbName);
+        final KomodoObject vdb = this.wsManager.getChild( uow, schemaVdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE );
 
-		if (vdbs.length == 0) {
-			return null;
+		if (vdb != null) {
+	        return this.wsManager.resolve(uow, vdb, Vdb.class);
 		}
 
-		return this.wsManager.resolve(uow, vdbs[0], Vdb.class);
+		return null;
 	}
 
     private static String getSchemaVdbName(final String connectionName) {
