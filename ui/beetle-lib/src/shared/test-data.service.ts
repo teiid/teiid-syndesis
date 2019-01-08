@@ -402,6 +402,19 @@ export class TestDataService {
   // Syndesis Source Statuses
   // =================================================================
 
+  private static syndesisSrc0Status = SyndesisSourceStatus.create(
+    {
+      "sourceName": TestDataService.pgConn.getId(),
+      "hasTeiidSource": true,
+      "vdbState": "ACTIVE",
+      "vdbName": TestDataService.pgConn.getId() + TestDataService.connectionVdbSuffix,
+      "schemaState": "ACTIVE",
+      "schemaVdbName": TestDataService.pgConn.getId() + TestDataService.connectionSchemaVdbSuffix,
+      "schemaModelName": TestDataService.pgConn.getId() + TestDataService.connectionSchemaModelSuffix,
+      "errors": []
+    },
+  );
+
   private static syndesisSrc1Status = SyndesisSourceStatus.create(
     {
       "sourceName": TestDataService.conn1.getId(),
@@ -421,7 +434,7 @@ export class TestDataService {
       "hasTeiidSource": true,
       "vdbState": "ACTIVE",
       "vdbName": TestDataService.conn2.getId() + TestDataService.connectionVdbSuffix,
-      "schemaState": "MISSING",
+      "schemaState": "ACTIVE",
       "schemaVdbName": TestDataService.conn2.getId() + TestDataService.connectionSchemaVdbSuffix,
       "schemaModelName": TestDataService.conn2.getId() + TestDataService.connectionSchemaModelSuffix,
       "errors": []
@@ -1924,6 +1937,7 @@ export class TestDataService {
   );
 
   private syndesisSrcStatuses: SyndesisSourceStatus[] = [
+    TestDataService.syndesisSrc0Status,
     TestDataService.syndesisSrc1Status,
     TestDataService.syndesisSrc2Status,
     TestDataService.syndesisSrc3Status];

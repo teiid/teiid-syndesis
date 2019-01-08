@@ -146,21 +146,44 @@ export class AddCompositionWizardComponent implements OnInit {
     const self = this;
     // Load the connection tables
     this.compositionTablesLoadingState = LoadingState.LOADING;
+    // this.connectionService
+    //   .getConnections(true, true)
+    //   .subscribe(
+    //     (connectionSummaries) => {
+    //       const conns = [];
+    //       const treeNodes = [];
+    //       for ( const connectionSummary of connectionSummaries ) {
+    //         const connStatus = connectionSummary.getStatus();
+    //         const conn = connectionSummary.getConnection();
+    //         conn.setStatus(connStatus);
+    //         conns.push(conn);
+    //         // Add active connection to tree root nodes
+    //         if (conn.isActive) {
+    //           const node = new SchemaNode();
+    //           node.setName(conn.getId());
+    //           node.setType(ConnectionsConstants.schemaNodeType_connection);
+    //           node.setHasChildren(true);
+    //           treeNodes.push(node);
+    //         }
+    //       }
+    //       self.connectionTree.setTreeRoots(treeNodes);
+    //       self.compositionTablesLoadingState = LoadingState.LOADED_VALID;
+    //     },
+    //     (error) => {
+    //       self.logger.error("[ConnectionTableDialogComponent] Error getting connections: %o", error);
+    //       self.compositionTablesLoadingState = LoadingState.LOADED_INVALID;
+    //     }
+    //   );
+
     this.connectionService
-      .getConnections(true, true)
+      .getAllSyndesisSourceStatuses( )
       .subscribe(
-        (connectionSummaries) => {
-          const conns = [];
+        ( statuses ) => {
           const treeNodes = [];
-          for ( const connectionSummary of connectionSummaries ) {
-            const connStatus = connectionSummary.getStatus();
-            const conn = connectionSummary.getConnection();
-            conn.setStatus(connStatus);
-            conns.push(conn);
-            // Add active connection to tree root nodes
-            if (conn.isActive) {
+          for ( const status of statuses ) {
+            if (status.isReady) {
               const node = new SchemaNode();
-              node.setName(conn.getId());
+              node.setName(status.getId());
               node.setType(ConnectionsConstants.schemaNodeType_connection);
               node.setHasChildren(true);
               treeNodes.push(node);

@@ -135,24 +135,17 @@ export class CreateViewsDialogComponent implements OnInit {
     this.virtualizationPropertyForm.controls["virtName"].setValue("");
     this.virtualizationPropertyForm.controls["virtDescription"].setValue("");
 
-    // Load the connections
+    // Load the syndesis connections / sources
     this.connectionsLoadingState = LoadingState.LOADING;
     const self = this;
     this.connectionService
-      .getConnections(true, true)
+      .getAllSyndesisSourceStatuses( )
       .subscribe(
-        (connectionSummaries) => {
-          const conns = [];
-          const treeNodes = [];
-          for ( const connectionSummary of connectionSummaries ) {
-            const connStatus = connectionSummary.getStatus();
-            const conn = connectionSummary.getConnection();
-            conn.setStatus(connStatus);
-            conns.push(conn);
-            // Add active connection to tree root nodes
-            if (conn.isActive) {
+        ( statuses ) => {
+          for ( const status of statuses ) {
+            if (status.isReady) {
               const node = new SchemaNode();
-              node.setName(conn.getId());
+              node.setName(status.getId());
               node.setType(ConnectionsConstants.schemaNodeType_connection);
               node.selected = false;
               this.connections.push(node);
