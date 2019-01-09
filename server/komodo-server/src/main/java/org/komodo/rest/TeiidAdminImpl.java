@@ -145,8 +145,7 @@ public class TeiidAdminImpl implements Admin {
     @Override
     public void deploy(String deployName, InputStream arg1) throws AdminException {
         if (!deployName.endsWith("-vdb.xml")) {
-             //TODO: log error ?
-            return;
+        	deployName = deployName +"-vdb.xml";
         }
         try {
             VDBMetaData vdb =  VDBMetadataParser.unmarshell(arg1);
