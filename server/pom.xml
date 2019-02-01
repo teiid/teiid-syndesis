@@ -161,7 +161,7 @@
     <version.postgresql>42.1.4</version.postgresql>
     <version.xerces>2.11.0</version.xerces>
     
-    <version.springboot.teiid>1.0.2-SNAPSHOT</version.springboot.teiid>
+    <version.springboot.teiid>1.0.2</version.springboot.teiid>
     
     <version.gson>2.2.4</version.gson>
     <version.apache.commons.codec>1.10</version.apache.commons.codec>

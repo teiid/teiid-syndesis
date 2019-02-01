@@ -535,7 +535,7 @@
           <configuration>
             <generator>
                 <includes>
-                    <include>thorntail-v2</include>
+                    <include>spring-boot</include>
                 </includes>
                 <config>
                     <thorntail-v2>
