@@ -20,7 +20,9 @@ package org.komodo.rest.service.unit;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,15 +31,19 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.runner.RunWith;
+import org.komodo.core.KEngine;
 import org.komodo.core.internal.repository.search.ComparisonOperator;
 import org.komodo.core.internal.repository.search.ObjectSearcher;
 import org.komodo.core.repository.SynchronousCallback;
 import org.komodo.importer.ImportMessages;
+import org.komodo.importer.ImportOptions;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
+import org.komodo.relational.importer.vdb.VdbImporter;
 import org.komodo.relational.resource.Driver;
 import org.komodo.relational.vdb.Vdb;
-import org.komodo.rest.KomodoRestV1Application;
 import org.komodo.rest.RestLink;
 import org.komodo.rest.RestLink.LinkType;
 import org.komodo.rest.RestProperty;
@@ -47,27 +53,40 @@ import org.komodo.rest.service.AbstractServiceTest;
 import org.komodo.rest.service.ServiceTestUtilities;
 import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
+import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.test.utils.TestUtilities;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.embedded.LocalServerPort;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-/**
- *
- */
-@SuppressWarnings( {"nls", "javadoc"} )
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
 
-    //
-    // With this rule placed here and in the suite ensures that UnitServiceResources
-    // will be correctly instantiated whether running in the suite or as a single test class
-    //
-    protected final ServiceTestUtilities serviceTestUtilities;
+    @Autowired
+    TestRestTemplate web;
 
-    protected final String PORTFOLIO_DATA_PATH;
+    @Autowired
+    KEngine engine;
 
-    protected static KomodoRestV1Application restApp() {
-        return UnitServiceResources.getInstance().restApp();
+    @LocalServerPort
+    private int port;
+
+    protected ServiceTestUtilities serviceTestUtilities;
+
+    protected String PORTFOLIO_DATA_PATH;
+
+
+    @Before
+    public void beforeEachTest() throws Exception {
+        serviceTestUtilities = new ServiceTestUtilities(this.engine);
+        PORTFOLIO_DATA_PATH = serviceTestUtilities.getWorkspace(USER_NAME) + FORWARD_SLASH + TestUtilities.PORTFOLIO_VDB_NAME;
     }
 
     @After
@@ -75,18 +94,12 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
         serviceTestUtilities.deleteLogged(USER_NAME);
     }
 
-    protected static URI appUri() {
-        return UnitServiceResources.getInstance().appUri();
+    protected URI appUri() {
+        return URI.create("http://localhost:"+port+"/vdb-builder/v1");
     }
 
-    protected static KomodoRestUriBuilder uriBuilder() {
-        return UnitServiceResources.getInstance().uriBuilder();
-    }
-
-    public AbstractKomodoServiceTest() throws Exception {
-        super();
-        serviceTestUtilities = new ServiceTestUtilities(restApp().getEngine());
-        PORTFOLIO_DATA_PATH = serviceTestUtilities.getWorkspace(USER_NAME) + FORWARD_SLASH + TestUtilities.PORTFOLIO_VDB_NAME;
+    protected KomodoRestUriBuilder uriBuilder() {
+        return new KomodoRestUriBuilder(appUri());
     }
 
     protected void logObjectPath(String objectPath) {
@@ -116,7 +129,7 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
         for (Connection connection : connections)
             logObjectPath(connection.getAbsolutePath());
 
-        
+
     }
 
     protected void loadStatesDataService() throws Exception {
@@ -171,7 +184,7 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
     }
 
     protected void loadStatesServiceSourceVdb() throws Exception {
-        ImportMessages msgs = restApp().importVdb(TestUtilities.usStatesSourceExample(), USER_NAME);
+        ImportMessages msgs = importVdb(TestUtilities.usStatesSourceExample(), USER_NAME);
         Assert.assertTrue(msgs.getErrorMessages().isEmpty());
 
         Vdb vdb = serviceTestUtilities.getVdb(USER_NAME, TestUtilities.USSTATES_SOURCE_VDB_NAME);
@@ -236,7 +249,7 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
 
     protected List<String> loadSampleSearches() throws Exception {
         List<String> searchNames = new ArrayList<>();
-        Repository repository = restApp().getDefaultRepository();
+        Repository repository = this.engine.getDefaultRepository();
 
         SynchronousCallback callback = new SynchronousCallback();
         UnitOfWork uow = repository.createTransaction(USER_NAME,
@@ -305,16 +318,16 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
 
             if (link.getRel().equals(LinkType.SELF)) {
                 linkCounter++;
-                assertTrue(href.startsWith(appUri().toString() + "workspace/vdbs"));
+                assertTrue(href.startsWith(appUri().toString() + "/workspace/vdbs"));
                 assertTrue(href.endsWith(TestUtilities.PORTFOLIO_VDB_NAME));
             } else if (link.getRel().equals(LinkType.PARENT)) {
                 linkCounter++;
-                assertTrue(href.startsWith(appUri().toString() + "workspace/vdbs"));
+                assertTrue(href.startsWith(appUri().toString() + "/workspace/vdbs"));
             } else if (link.getRel().equals(LinkType.CHILDREN)) {
                 linkCounter++;
-                assertTrue(href.startsWith(appUri().toString() + "workspace/search"));
+                assertTrue(href.startsWith(appUri().toString() + "/workspace/search"));
             } else {
-                assertTrue(href.startsWith(appUri().toString() + "workspace/vdbs"));
+                assertTrue(href.startsWith(appUri().toString() + "/workspace/vdbs"));
 
                 String suffixPrefix = TestUtilities.PORTFOLIO_VDB_NAME + FORWARD_SLASH;
 
@@ -337,4 +350,39 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
         assertEquals(7, linkCounter);
     }
 
+    public ImportMessages importVdb(InputStream vdbStream, String user) throws Exception {
+        Repository repository = this.engine.getDefaultRepository();
+
+        SynchronousCallback callback = new SynchronousCallback();
+        UnitOfWork uow = repository.createTransaction(user, "Import Vdb", false, callback); //$NON-NLS-1$
+
+        ImportOptions importOptions = new ImportOptions();
+        ImportMessages importMessages = new ImportMessages();
+
+        KomodoObject workspace = repository.komodoWorkspace(uow);
+        VdbImporter importer = new VdbImporter(repository);
+        importer.importVdb(uow, vdbStream, workspace, importOptions, importMessages);
+        uow.commit();
+        callback.await(3, TimeUnit.MINUTES);
+
+        return importMessages;
+    }
+
+    void loadVdbs() {
+        try {
+            ImportMessages msgs = importVdb(TestUtilities.allElementsExample(), AbstractServiceTest.USER_NAME);
+            assertTrue(msgs.getErrorMessages().isEmpty());
+
+            msgs = importVdb(TestUtilities.portfolioExample(), AbstractServiceTest.USER_NAME);
+            assertTrue(msgs.getErrorMessages().isEmpty());
+
+            msgs = importVdb(TestUtilities.partsWithKeysExample(), AbstractServiceTest.USER_NAME);
+            assertTrue(msgs.getErrorMessages().isEmpty());
+
+            msgs = importVdb(TestUtilities.tweetExample(), AbstractServiceTest.USER_NAME);
+            assertTrue(msgs.getErrorMessages().isEmpty());
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
 }

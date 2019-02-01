@@ -21,7 +21,6 @@ import static org.komodo.rest.Messages.Error.COMMIT_TIMEOUT;
 import static org.komodo.rest.Messages.Error.RESOURCE_NOT_FOUND;
 import static org.komodo.rest.Messages.General.GET_OPERATION_NAME;
 
-import java.io.StringWriter;
 import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -37,10 +36,6 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.Variant;
 import javax.ws.rs.core.Variant.VariantListBuilder;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Marshaller;
-import javax.xml.namespace.QName;
 
 import org.komodo.core.KEngine;
 import org.komodo.core.repository.RepositoryImpl;
@@ -69,6 +64,7 @@ import org.komodo.spi.repository.Repository.UnitOfWorkListener;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.gson.Gson;
 
@@ -189,23 +185,14 @@ public abstract class KomodoService implements V1Constants {
     }
 
     protected final static SecurityPrincipal SYSTEM_USER = new SecurityPrincipal(RepositoryImpl.SYSTEM_USER, null);
-    
-    protected final KEngine kengine;
+
+    @Autowired
+    protected KEngine kengine;
 
     protected RestEntityFactory entityFactory = new RestEntityFactory();
 
     @Context
     protected SecurityContext securityContext;
-
-    /**
-     * Constructs a Komodo service.
-     *
-     * @param engine
-     *        the Komodo Engine (cannot be <code>null</code> and must be started)
-     */
-    protected KomodoService( final KEngine engine ) {
-        this.kengine = engine;
-    }
 
     /**
      * @param value the value
@@ -322,7 +309,7 @@ public abstract class KomodoService implements V1Constants {
     }
 
      /**
-     * 
+     *
      * @param uow the transaction to use
      * @param searchPattern the optional search pattern
      * @return the view editor states (never <code>null</code> but can be empty)
@@ -383,24 +370,7 @@ public abstract class KomodoService implements V1Constants {
             Gson gson = new Gson();
             responseEntity = gson.toJson(new ErrorResponse(errorMessage));
         } else if (acceptableMediaTypes.contains(MediaType.APPLICATION_XML_TYPE)) {
-            ErrorResponse errResponse = new ErrorResponse(errorMessage);
-
-            JAXBElement<ErrorResponse> xmlErrResponse = new JAXBElement<>(
-                                                                                        new QName("error"), //$NON-NLS-1$
-                                                                                        ErrorResponse.class,
-                                                                                        errResponse);
-
-            try {
-                JAXBContext context = JAXBContext.newInstance(ErrorResponse.class);
-                StringWriter writer = new StringWriter();
-                Marshaller m = context.createMarshaller();
-                m.marshal(xmlErrResponse, writer);
-
-                responseEntity = writer.toString();
-            } catch (Exception ex) {
-                // String failed to marshall - return as plain text
-                responseEntity = errorMessage;
-            }
+        	return "<error>"+errorMessage+"</error>";
         } else
             responseEntity = errorMessage;
 
@@ -427,7 +397,7 @@ public abstract class KomodoService implements V1Constants {
 
         return createErrorResponse(returnCode, mediaTypes, resultMsg);
     }
-    
+
     protected Response createErrorResponse(Status returnCode, List<MediaType> mediaTypes,
                                            RelationalMessages.Error errorType, Object... errorMsgInputs) {
         String resultMsg = null;
@@ -443,12 +413,12 @@ public abstract class KomodoService implements V1Constants {
                                                         RelationalMessages.Error errorType, Object... errorMsgInputs) {
         return createErrorResponse(Status.FORBIDDEN, mediaTypes, ex, errorType, errorMsgInputs);
     }
-    
+
     protected Response createErrorResponseWithForbidden(List<MediaType> mediaTypes,
                                                         RelationalMessages.Error errorType, Object... errorMsgInputs) {
         return createErrorResponse(Status.FORBIDDEN, mediaTypes, errorType, errorMsgInputs);
     }
-    
+
     protected Response createErrorResponse(Status returnCode, List<MediaType> mediaTypes, String resultMsg) {
         Object responseEntity = createErrorResponseEntity(mediaTypes, resultMsg);
 
@@ -545,7 +515,7 @@ public abstract class KomodoService implements V1Constants {
         LOGGER.debug( "commit: successfully committed '{0}', rollbackOnly = '{1}'", //$NON-NLS-1$
                       transaction.getName(),
                       transaction.isRollbackOnly() );
-        
+
         return commit(acceptableMediaTypes, entity);
     }
 
@@ -634,7 +604,7 @@ public abstract class KomodoService implements V1Constants {
     protected UnitOfWork createTransaction(final SecurityPrincipal user, final String name,
                                             final boolean rollbackOnly, final UnitOfWorkListener callback) throws KException {
     	Repository repo = this.kengine.getDefaultRepository();
-        final UnitOfWork result = repo.createTransaction( user.getUserName(), 
+        final UnitOfWork result = repo.createTransaction( user.getUserName(),
                                                                (getClass().getSimpleName() + COLON + name + COLON + System.currentTimeMillis()),
                                                                rollbackOnly, callback );
         LOGGER.debug( "createTransaction:created '{0}', rollbackOnly = '{1}'", result.getName(), result.isRollbackOnly() ); //$NON-NLS-1$
@@ -656,7 +626,7 @@ public abstract class KomodoService implements V1Constants {
                                             final boolean rollbackOnly ) throws KException {
     	Repository repo = this.kengine.getDefaultRepository();
         final SynchronousCallback callback = new SynchronousCallback();
-        final UnitOfWork result = repo.createTransaction(user.getUserName(), 
+        final UnitOfWork result = repo.createTransaction(user.getUserName(),
                                                                (getClass().getSimpleName() + COLON + name + COLON + System.currentTimeMillis()),
                                                                rollbackOnly, callback );
         LOGGER.debug( "createTransaction:created '{0}', rollbackOnly = '{1}'", result.getName(), result.isRollbackOnly() ); //$NON-NLS-1$
@@ -803,20 +773,20 @@ public abstract class KomodoService implements V1Constants {
         String newJndiName = restConnection.getJndiName();
         String newDriverName = restConnection.getDriverName();
         boolean newJdbc = restConnection.isJdbc();
-        
+
         // 'Old' = current Connection properties
         String oldJndiName = connection.getJndiName(uow);
         String oldDriverName = connection.getDriverName(uow);
         boolean oldJdbc = connection.isJdbc(uow);
-        
+
         // JndiName
         if ( !StringUtils.equals(newJndiName, oldJndiName) ) {
             connection.setJndiName( uow, newJndiName );
-        } 
+        }
         // DriverName
         if ( !StringUtils.equals(newDriverName, oldDriverName) ) {
             connection.setDriverName( uow, newDriverName );
-        } 
+        }
         // jdbc
         if ( newJdbc != oldJdbc ) {
             connection.setJdbc( uow, newJdbc );

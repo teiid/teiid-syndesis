@@ -535,7 +535,7 @@
           <configuration>
             <generator>
                 <includes>
-                    <include>thorntail-v2</include>
+                    <include>spring-boot</include>
                 </includes>
                 <config>
                     <thorntail-v2>
@@ -791,23 +791,12 @@
         <version>${junit.version}</version>
         <scope>test</scope>
       </dependency>
-      <!-- ============================================================== -->
-      <!-- === Internal Dependencies -->
-
-      <!-- ============================================== -->
-
-
     </dependencies>
   </dependencyManagement>
 
   <!-- Metadata need to publish to central -->
   <url>https://teiid.io/</url>
   <inceptionYear>2013</inceptionYear>
-
-  <organization>
-    <name>Red Hat</name>
-    <url>https://redhat.com</url>
-  </organization>
 
   <licenses>
     <license>
@@ -819,7 +808,10 @@
 
   <developers>
     <developer>
-      <name>Teiid committers</name>
+      <id>teiid.io</id>
+      <name>Teiid Community</name>
+      <organization>Teiid Komodo</organization>
+      <organizationUrl>http://teiid.io/</organizationUrl>
     </developer>
   </developers>
 
@@ -856,20 +848,4 @@
       <url>https://maven.repository.redhat.com/ga</url>
     </repository>
   </repositories>
-
-  <pluginRepositories>
-    <pluginRepository>
-      <releases />
-      <snapshots />
-      <id>jboss_origin</id>
-      <name>jboss_origin</name>
-      <url>https://origin-repository.jboss.org/nexus/content/groups/ea</url>
-    </pluginRepository>
-    <pluginRepository>
-      <id>redhat.ga</id>
-      <name>Red Hat General Availability Repository</name>
-      <url>https://maven.repository.redhat.com/ga</url>
-    </pluginRepository>
-  </pluginRepositories>
-
 </project>

@@ -17,11 +17,8 @@
  */
 package org.komodo.rest.service.integration;
 
-import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
-@RunWith(Arquillian.class)
 @SuppressWarnings( {"javadoc", "nls"} )
 public class IT_KomodoMetadataServiceDataServiceTests extends AbstractKomodoMetadataServiceTest {
 

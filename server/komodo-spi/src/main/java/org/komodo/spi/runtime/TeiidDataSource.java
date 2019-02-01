@@ -26,7 +26,7 @@ public interface TeiidDataSource {
      * The data source jndi property name.  Value is {@value} .
      */
     String DATASOURCE_JNDINAME = "jndi-name";  //$NON-NLS-1$
-    
+
     /**
      * The data source className property name.  Value is {@value} .
      */
@@ -40,7 +40,7 @@ public interface TeiidDataSource {
     /**
      * The connection url property name. Value is {@value}.
      */
-    String DATASOURCE_CONNECTION_URL = "connection-url"; //$NON-NLS-1$
+    String DATASOURCE_CONNECTION_URL = "url"; //$NON-NLS-1$
 
     /**
      * The display name property.
@@ -53,9 +53,9 @@ public interface TeiidDataSource {
 		int DATA_SOURCE_TYPE_DOES_NOT_EXIST_ON_TEIID = 102; // Data Source Type {0} does not exist on teiid instance {1}
 		int DATA_SOURCE_COULD_NOT_BE_CREATED = 103; // errorCreatingDataSource = Data Source {0} could not be created for type {1}
 		int NO_CONNECTION_PROVIDER = 104; //
-		int NO_CONNECTION_PROFILE_DEFINED_IN_MODEL = 105; // 
-		int NO_TEIID_RELATED_PROPERTIES_IN_PROFILE = 106; // 
-		int COULD_NOT_GET_OR_CREATE_DATASOURCE = 107; // 
+		int NO_CONNECTION_PROFILE_DEFINED_IN_MODEL = 105; //
+		int NO_TEIID_RELATED_PROPERTIES_IN_PROFILE = 106; //
+		int COULD_NOT_GET_OR_CREATE_DATASOURCE = 107; //
 	}
 
     /**
@@ -70,7 +70,7 @@ public interface TeiidDataSource {
 
     /**
      * Returns the data source type name
-     * 
+     *
      * @return the type
      */
     String getType();
@@ -96,7 +96,7 @@ public interface TeiidDataSource {
 
     /**
      * @param name
-     * 
+     *
      * @return value of named property
      */
     String getPropertyValue(String name);

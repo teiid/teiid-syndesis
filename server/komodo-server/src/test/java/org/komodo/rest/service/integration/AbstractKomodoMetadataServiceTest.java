@@ -22,7 +22,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Base64;
@@ -36,18 +35,14 @@ import javax.ws.rs.core.UriBuilder;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.runner.RunWith;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.importer.ImportOptions.ExistingNodeOptions;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
-import org.komodo.rest.TeiidSwarmConnectionProvider;
-import org.komodo.rest.TeiidSwarmMetadataInstance;
+import org.komodo.rest.TeiidMetadataInstance;
 import org.komodo.rest.relational.KomodoRestUriBuilder;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.request.KomodoPathAttribute;
@@ -65,29 +60,36 @@ import org.komodo.spi.runtime.TeiidDataSource;
 import org.komodo.spi.storage.StorageConnector;
 import org.komodo.test.utils.TestUtilities;
 import org.komodo.utils.FileUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.embedded.LocalServerPort;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @SuppressWarnings( {"javadoc", "nls"} )
 public abstract class AbstractKomodoMetadataServiceTest extends AbstractServiceTest {
 
-    protected static final String MYSQL_DRIVER = "mysql-connector";
+    @Autowired
+    TestRestTemplate web;
 
-    protected static KomodoRestUriBuilder _uriBuilder;
+    @LocalServerPort
+    private int port;
+
+    @Autowired
+    private TeiidMetadataInstance instance;
+
+    protected static final String MYSQL_DRIVER = "mysql-connector";
 
     private int testIndex = 0;
 
-    private TeiidSwarmMetadataInstance instance;
-
-    @Deployment( testable = false )
-    public static WebArchive createRestDeployment() {
-        return ShrinkWrap.createFromZipFile(WebArchive.class, new File("target/vdb-builder.war"));
-    }
-
-    @BeforeClass
-    public static void beforeAllSetupBaseUri() throws Exception {
+    public KomodoRestUriBuilder getUriBuilder() throws Exception {
         //System.setProperty("org.jboss.resteasy.port", Integer.toString(TEST_PORT));
-        URI baseUri = URI.create("http://localhost" + COLON + TEST_PORT);
+        URI baseUri = URI.create("http://localhost:" + port);
         baseUri = UriBuilder.fromUri(baseUri).scheme("http").path("/vdb-builder/v1").build();
-        _uriBuilder = new KomodoRestUriBuilder(baseUri);
+        return new KomodoRestUriBuilder(baseUri);
     }
 
     @AfterClass
@@ -97,7 +99,7 @@ public abstract class AbstractKomodoMetadataServiceTest extends AbstractServiceT
 
     protected void assertNoMysqlDriver() throws Exception {
         wait(2);
-    
+
         Collection<ConnectionDriver> drivers = getMetadataInstance().getDataSourceDrivers();
         for (ConnectionDriver driver : drivers) {
             assertFalse(driver.getName().startsWith(MYSQL_DRIVER));
@@ -122,11 +124,6 @@ public abstract class AbstractKomodoMetadataServiceTest extends AbstractServiceT
     }
 
     protected MetadataInstance getMetadataInstance() throws Exception {
-        if (instance == null) {
-            TeiidSwarmConnectionProvider connectionProvider = new TeiidSwarmConnectionProvider();
-            instance = new TeiidSwarmMetadataInstance(connectionProvider);
-        }
-
         return instance;
     }
 
@@ -156,11 +153,11 @@ public abstract class AbstractKomodoMetadataServiceTest extends AbstractServiceT
                 int endsWithClass = driverName.lastIndexOf(JAR + UNDERSCORE);
                 if (endsWithClass > -1)
                     driverName = driverName.substring(0, endsWithClass + JAR.length());
-    
+
                 undeployDrivers.add(driverName);
             }
         }
-    
+
         for (String driver : undeployDrivers) {
             try {
                 getMetadataInstance().undeployDataSourceDriver(driver);
@@ -177,7 +174,7 @@ public abstract class AbstractKomodoMetadataServiceTest extends AbstractServiceT
 
     private void undeployDataSources() throws Exception {
         MetadataInstance teiidInstance = getMetadataInstance();
-    
+
         for (TeiidDataSource ds : teiidInstance.getDataSources()) {
             if (ds.getName().contains("Example"))
                 continue; // Leave the exampleDS in situ
@@ -190,7 +187,7 @@ public abstract class AbstractKomodoMetadataServiceTest extends AbstractServiceT
         //
         // REMOVE SAMPLE IF IT EXISTS
         //
-        URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
+        URI uri = UriBuilder.fromUri(getUriBuilder().baseUri())
                                             .path(V1Constants.WORKSPACE_SEGMENT)
                                             .path(V1Constants.VDBS_SEGMENT)
                                             .path(TestUtilities.SAMPLE_VDB_NAME).build();
@@ -207,7 +204,7 @@ public abstract class AbstractKomodoMetadataServiceTest extends AbstractServiceT
         //
         // IMPORT SAMPLE INTO WORKSPACE
         //
-        URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
+        URI uri = UriBuilder.fromUri(getUriBuilder().baseUri())
                                             .path(V1Constants.IMPORT_EXPORT_SEGMENT)
                                             .path(V1Constants.IMPORT).build();
 
@@ -241,7 +238,7 @@ public abstract class AbstractKomodoMetadataServiceTest extends AbstractServiceT
         KomodoPathAttribute pathAttribute = new KomodoPathAttribute();
         pathAttribute.setPath(samplePath);
 
-        uri = UriBuilder.fromUri(_uriBuilder.baseUri())
+        uri = UriBuilder.fromUri(getUriBuilder().baseUri())
                                     .path(V1Constants.METADATA_SEGMENT)
                                     .path(V1Constants.VDB_SEGMENT).build();
 
@@ -255,7 +252,7 @@ public abstract class AbstractKomodoMetadataServiceTest extends AbstractServiceT
     @Before
     public void beforeEach() throws Exception {
         testIndex++;
-    
+
         // Deploy sample vdb for services to find
         loadSample();
 
@@ -289,11 +286,11 @@ public abstract class AbstractKomodoMetadataServiceTest extends AbstractServiceT
         //
         // Import the data service into the workspace
         //
-        URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
+        URI uri = UriBuilder.fromUri(getUriBuilder().baseUri())
                                           .path(V1Constants.IMPORT_EXPORT_SEGMENT)
                                           .path(V1Constants.IMPORT)
                                           .build();
-    
+
         KomodoStorageAttributes storageAttr = new KomodoStorageAttributes();
         storageAttr.setStorageType(StorageConnector.Types.FILE.id());
         storageAttr.setDocumentType(DocumentType.ZIP);
@@ -302,7 +299,7 @@ public abstract class AbstractKomodoMetadataServiceTest extends AbstractServiceT
         byte[] sampleBytes = TestUtilities.streamToBytes(usStatesDSStream);
         String content = Base64.getEncoder().encodeToString(sampleBytes);
         storageAttr.setContent(content);
-    
+
         HttpPost request = jsonRequest(uri, RequestType.POST);
         addBody(request, storageAttr);
 
@@ -314,27 +311,28 @@ public abstract class AbstractKomodoMetadataServiceTest extends AbstractServiceT
         String path = RepositoryImpl.komodoWorkspacePath(null) + FORWARD_SLASH +
                                         USER_NAME + FORWARD_SLASH + "UsStatesService";
         pathAttr.setPath(path);
-    
+
         //
         // Deploy the data service
         //
-        URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
+        URI uri = UriBuilder.fromUri(getUriBuilder().baseUri())
                                     .path(V1Constants.METADATA_SEGMENT)
                                     .path(V1Constants.DATA_SERVICE_SEGMENT)
                                     .build();
-    
+
         HttpPost request = jsonRequest(uri, RequestType.POST);
         addBody(request, pathAttr);
         HttpResponse response = executeOk(request);
-    
+
         String entity = extractResponse(response);
         KomodoStatusObject status = KomodoJsonMarshaller.unmarshall(entity, KomodoStatusObject.class);
         assertNotNull(status);
-    
+
         Map<String, String> attributes = status.getAttributes();
         for (Map.Entry<String, String> attribute : attributes.entrySet()) {
-            assertFalse("Error occurred in deployment: " + attribute.getValue(),
-                        attribute.getKey().startsWith("ErrorMessage"));
+            if (attribute.getKey().startsWith("ErrorMessage")) {
+                org.junit.Assert.fail("failed deployment");
+            }
         }
     }
 
@@ -344,11 +342,11 @@ public abstract class AbstractKomodoMetadataServiceTest extends AbstractServiceT
         //
         // Query the deployed vdb
         //
-        uri = UriBuilder.fromUri(_uriBuilder.baseUri())
+        uri = UriBuilder.fromUri(getUriBuilder().baseUri())
                                     .path(V1Constants.METADATA_SEGMENT)
                                     .path(V1Constants.QUERY_SEGMENT)
                                     .build();
-    
+
         HttpPost request = jsonRequest(uri, RequestType.POST);
         addBody(request, queryAttr);
         HttpResponse response = executeOk(request);
@@ -357,7 +355,7 @@ public abstract class AbstractKomodoMetadataServiceTest extends AbstractServiceT
         RestQueryResult result = KomodoJsonMarshaller.unmarshall(entity, RestQueryResult.class);
         assertNotNull(result);
         assertEquals(expRowCount, result.getRows().length);
-    
+
         RestQueryRow firstRow = result.getRows()[0];
         String value = firstRow.getValues()[0];
         assertEquals(firstCellValue, value);

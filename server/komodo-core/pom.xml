@@ -97,7 +97,6 @@
       <artifactId>log4j</artifactId>
       <scope>compile</scope>
     </dependency>
-
     <dependency>
       <groupId>org.teiid</groupId>
       <artifactId>komodo-utils</artifactId>

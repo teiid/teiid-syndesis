@@ -33,11 +33,7 @@ public class PostgreSQLDefinition extends DataSourceDefinition {
             "  <groupId>org.postgresql</groupId>" +
             "  <artifactId>postgresql</artifactId>" +
             "  <version>${version.postgresql}</version>" +
-            "</dependency>\n" +
-            "<dependency>" +
-            "  <groupId>org.teiid</groupId>" +
-            "   <artifactId>thorntail-jdbc</artifactId>" +
-            "</dependency>";
+            "</dependency>\n";
     }
 
     @Override
@@ -55,24 +51,25 @@ public class PostgreSQLDefinition extends DataSourceDefinition {
     }
 
     @Override
-    public Properties getDataSourceProperties(DefaultSyndesisDataSource source) {
+    public Properties getInternalTeiidDataSourceProperties(DefaultSyndesisDataSource source) {
         Properties props = new Properties();
-        props.setProperty("connection-url", source.getProperty("url"));
-        props.setProperty("user-name", source.getProperty("user"));
+        
+        props.setProperty("jndi-name", source.getName());
+        props.setProperty("driver-name", getType()); // used as translator name
+        props.setProperty("display-name", source.getName());
+        
+        props.setProperty("url", source.getProperty("url"));
+        props.setProperty("username", source.getProperty("user"));
         props.setProperty("password", source.getProperty("password"));
+        props.setProperty("schema", source.getProperty("schema"));
         return props;
-        
-        
     }
 
     @Override
-    public Properties getWFSDataSourceProperties(DefaultSyndesisDataSource scd, String jndiName) {
+    public Properties getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd, String jndiName) {
         Properties props = new Properties();
-        ds(props, scd, "driver-name", scd.getType());
-        ds(props, scd, "jndi-name", jndiName);
-        
-        ds(props, scd, "connection-url", scd.canonicalEnvKey("url"));
-        ds(props, scd, "user-name", scd.canonicalEnvKey("user"));
+        ds(props, scd, "url", scd.canonicalEnvKey("url"));
+        ds(props, scd, "username", scd.canonicalEnvKey("user"));
         ds(props, scd, "password", scd.canonicalEnvKey("password"));
         return props;
     }

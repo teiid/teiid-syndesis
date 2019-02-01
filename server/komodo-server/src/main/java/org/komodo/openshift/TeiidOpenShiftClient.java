@@ -18,12 +18,15 @@
 package org.komodo.openshift;
 
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -50,6 +53,8 @@ import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ResponseHandler;
@@ -81,16 +86,13 @@ import org.komodo.relational.model.Model;
 import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
-import org.komodo.rest.TeiidSwarmMetadataInstance;
+import org.komodo.rest.TeiidMetadataInstance;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.logging.KLogger;
-import org.komodo.spi.logging.KLogger.Level;
 import org.komodo.spi.repository.ApplicationProperties;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.runtime.SyndesisDataSource;
 import org.komodo.utils.FileUtils;
-import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
 import org.teiid.adminapi.AdminException;
 import org.teiid.core.util.ObjectConverterUtil;
@@ -380,7 +382,7 @@ public class TeiidOpenShiftClient implements StringConstants {
 
     private static final String SERVICE_DESCRIPTION = "Virtual Database (VDB)";
 
-    private static final KLogger logger = KLog.getLogger();
+    private static final Log logger = LogFactory.getLog(TeiidOpenShiftClient.class);
 
     private static final String SYSDESIS = "syndesis";
     private static final String MANAGED_BY = "managed-by";
@@ -388,12 +390,11 @@ public class TeiidOpenShiftClient implements StringConstants {
     private static final long MONITOR_SERVICE_INITIAL_DELAY = 3;
     private static final long MONITOR_SERVICE_POLLING_DELAY = 5;
 
-    private static String CONTENT_TYPE = " -H 'Content-Type: application/json' ";
-    private static String MANAGEMENT_URL = "http://127.0.0.1:9990/management";
+    private static String MANAGEMENT_URL = "http://127.0.0.1:8080/\\$metadata";
 
     private volatile ConcurrentLinkedQueue<BuildStatus> workQueue = new ConcurrentLinkedQueue<>();
 
-    private TeiidSwarmMetadataInstance metadata;
+    private TeiidMetadataInstance metadata;
     private HashMap<String, DataSourceDefinition> sources = new HashMap<>();
 
     /**
@@ -413,10 +414,11 @@ public class TeiidOpenShiftClient implements StringConstants {
     private ExecutorService configureService = Executors.newFixedThreadPool(3);
 
     private Map<String, PrintWriter> logBuffers = new HashMap<>();
-    private EncryptionComponent encryptionComponent = new EncryptionComponent();
+    private EncryptionComponent encryptionComponent;
 
-    public TeiidOpenShiftClient(TeiidSwarmMetadataInstance metadata) {
+    public TeiidOpenShiftClient(TeiidMetadataInstance metadata, EncryptionComponent encryptor) {
         this.metadata = metadata;
+        this.encryptionComponent = encryptor;
 
         // data source definitions
         add(new PostgreSQLDefinition());
@@ -433,7 +435,7 @@ public class TeiidOpenShiftClient implements StringConstants {
     private String getLogPath(String id) {
         String parentDir;
         try {
-            File loggerPath = new File(logger.getLogPath());
+            File loggerPath = File.createTempFile("vdb-", "log");
             parentDir = loggerPath.getParent();
         } catch(Exception ex) {
             logger.error("Failure to get logger path", ex);
@@ -450,7 +452,7 @@ public class TeiidOpenShiftClient implements StringConstants {
 
         pw.close();
     }
-    private void addLog(String id, Level level, String message) {
+    private void addLog(String id, String message) {
         if (id == null)
             return; // Cannot record these log messages
 
@@ -468,9 +470,7 @@ public class TeiidOpenShiftClient implements StringConstants {
             }
 
             Calendar calendar = Calendar.getInstance();
-            message = OPEN_SQUARE_BRACKET + level + CLOSE_SQUARE_BRACKET + SPACE +
-                                        OPEN_BRACKET + calendar.getTime() + CLOSE_BRACKET + SPACE + HYPHEN + SPACE +
-                                        message + NEW_LINE;
+            message =  OPEN_BRACKET + calendar.getTime() + CLOSE_BRACKET + SPACE + HYPHEN + SPACE + message + NEW_LINE;
             pw.write(message);
             pw.flush();
 
@@ -493,24 +493,24 @@ public class TeiidOpenShiftClient implements StringConstants {
             return;
 
         logger.debug(message);
-        addLog(id, Level.DEBUG, message);
+        addLog(id, message);
     }
 
     private void error(String id, String message, Throwable ex) {
         logger.error(message, ex);
         String cause = StringUtils.exceptionToString(ex);
-        addLog(id, Level.ERROR, message);
-        addLog(id, Level.ERROR, cause);
+        addLog(id, message);
+        addLog(id,cause);
     }
 
     private void error(String id, String message) {
         logger.error(message);
-        addLog(id, Level.ERROR, message);
+        addLog(id, message);
     }
 
     private void info(String id, String message) {
         logger.info(message);
-        addLog(id, Level.INFO, message);
+        addLog(id, message);
     }
 
     private void add(DataSourceDefinition def) {
@@ -584,9 +584,8 @@ public class TeiidOpenShiftClient implements StringConstants {
                 if (!connectorType.equals("sql")) {
                     continue;
                 }
-                String id = item.get("id").asText();
                 String name = item.get("name").asText();
-                sources.add(buildSyndesisDataSource(name+"_"+id, dsNames, item));
+                sources.add(buildSyndesisDataSource(name, dsNames, item));
             }
         } catch (Exception e) {
             throw handleError(e);
@@ -598,6 +597,9 @@ public class TeiidOpenShiftClient implements StringConstants {
         info(dsName, "Bind to Service: " + dsName);
         try {
             DefaultSyndesisDataSource scd = getSyndesisDataSource(oauthCreds, dsName);
+            if (scd == null) {
+                throw new KException("failed to find the syndesis datasource by name " + dsName);
+            }
             Collection<String> dsNames = this.metadata.admin().getDataSourceNames();
             if (!dsNames.contains(dsName)) {
                 createDataSource(dsName, scd);
@@ -610,13 +612,13 @@ public class TeiidOpenShiftClient implements StringConstants {
     public DefaultSyndesisDataSource getSyndesisDataSource(OAuthCredentials oauthCreds, String dsName)
             throws KException {
         try {
-            Collection<String> dsNames = this.metadata.admin().getDataSourceNames();
-            String id = dsName.substring(dsName.lastIndexOf("_")+1);
-            String url = SYNDESISURL+"/connections/"+id;
-            InputStream response = executeGET(url, oauthCreds);
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode item = mapper.readTree(response);
-            return buildSyndesisDataSource(dsName, dsNames, item);
+            Set<SyndesisDataSource> sources = getSyndesisSources(oauthCreds);
+            for (SyndesisDataSource source:sources) {
+                if (source.getName().equals(dsName)) {
+                    return (DefaultSyndesisDataSource)source;
+                }
+            }
+            return null;
         } catch (Exception e) {
             throw handleError(e);
         }
@@ -724,20 +726,6 @@ public class TeiidOpenShiftClient implements StringConstants {
 
     private DeploymentConfig createDeploymentConfig(OpenShiftClient client, BuildStatus config) {
 
-        String readinessPayload = "-d '{\"operation\": \"execute-query\", "
-                + "\"vdb-name\": \""+config.vdbName()+"\","
-                + "\"vdb-version\": \"1.0.0\", "
-                + "\"sql-query\": \"select 1\", "
-                + "\"timeout-in-milli\": 100, "
-                + "\"address\": [\"subsystem\",\"teiid\"], "
-                + "\"json.pretty\":1}'";
-
-        String livenessPayload = "-d '{\"operation\": \"get-vdb\", "
-                + "\"vdb-name\": \""+config.vdbName()+"\","
-                + "\"vdb-version\": \"1.0.0\", "
-                + "\"address\": [\"subsystem\",\"teiid\"], "
-                + "\"json.pretty\":1}'";
-
         return client.deploymentConfigs().inNamespace(config.namespace()).createOrReplaceWithNew()
             .withNewMetadata().withName(config.vdbName())
                 .addToLabels("application", config.vdbName())
@@ -769,9 +757,9 @@ public class TeiidOpenShiftClient implements StringConstants {
                     .addAllToEnv(config.publishConfiguration().getEnvironmentVariables())
                     .withNewReadinessProbe()
                       .withNewExec()
-                        .withCommand("/bin/sh", "-i", "-c",
-                                "curl -X POST " + readinessPayload + CONTENT_TYPE + MANAGEMENT_URL
-                                + " | grep '\"outcome\" : \"success\"'")
+                      .withCommand("/bin/sh", "-i", "-c",
+                                "curl " + MANAGEMENT_URL
+                                + " | grep '<edmx:Edmx '")
                       .endExec()
                       .withInitialDelaySeconds(30)
                       .withTimeoutSeconds(80)
@@ -781,9 +769,9 @@ public class TeiidOpenShiftClient implements StringConstants {
                     .endReadinessProbe()
                     .withNewLivenessProbe()
                       .withNewExec()
-                        .withCommand("/bin/sh", "-i", "-c",
-                              "curl -X POST " + livenessPayload + CONTENT_TYPE + MANAGEMENT_URL
-                              + " | grep '\"outcome\" : \"success\"'")
+                      .withCommand("/bin/sh", "-i", "-c",
+                              "curl " + MANAGEMENT_URL
+                              + " | grep '<edmx:Edmx '")
                       .endExec()
                       .withInitialDelaySeconds(30)
                       .withTimeoutSeconds(80)
@@ -794,7 +782,8 @@ public class TeiidOpenShiftClient implements StringConstants {
                     .withNewResources()
                         .addToLimits("memory", new Quantity(config.publishConfiguration().getContainerMemorySize()))
                         .addToLimits("cpu", new Quantity(config.publishConfiguration().getCpuUnits()))
-                        .addToLimits("ephemeral-storage", new Quantity(config.publishConfiguration().getContainerDiskSize()))
+                        // deployment fails with this.
+                        // .addToLimits("ephemeral-storage", new Quantity(config.publishConfiguration().getContainerDiskSize()))
                     .endResources()
                     .addAllToPorts(getDeploymentPorts(config.publishConfiguration()))
                   .endContainer()
@@ -1041,11 +1030,19 @@ public class TeiidOpenShiftClient implements StringConstants {
 
                     byte[] vdbFile = vdb.export(uow, null);
                     debug(vdbName, "Publishing - Exported vdb: " + NEW_LINE + new String(vdbFile));
-                    archive.add(new ByteArrayAsset(vdbFile), "/src/main/vdb/" + vdbName + "-vdb.xml");
+                    archive.add(new ByteArrayAsset(vdbFile), "/src/main/resources/" + vdbName + "-vdb.xml");
 
-                    InputStream configIs = this.getClass().getClassLoader().getResourceAsStream("s2i/project-defaults.yml");
+                    InputStream configIs = this.getClass().getClassLoader().getResourceAsStream("s2i/application.properties");
                     archive.add(new ByteArrayAsset(ObjectConverterUtil.convertToByteArray(configIs)),
-                                "/src/main/resources/project-defaults.yml");
+                                "/src/main/resources/application.properties");
+
+                    InputStream dsIs = buildDataSourceBuilders(vdb, uow);
+                    archive.add(new ByteArrayAsset(ObjectConverterUtil.convertToByteArray(dsIs)),
+                            "/src/main/java/io/integration/DataSources.java");
+
+                    InputStream appIs = this.getClass().getClassLoader().getResourceAsStream("s2i/Application.java");
+                    archive.add(new ByteArrayAsset(ObjectConverterUtil.convertToByteArray(appIs)),
+                                "/src/main/java/io/integration/Application.java");
 
                     info(vdbName, "Publishing - Converting archive to TarExport");
                     InputStream buildContents = archive.as(TarExporter.class).exportAsInputStream();
@@ -1097,6 +1094,45 @@ public class TeiidOpenShiftClient implements StringConstants {
                 }
             }
         });
+    }
+
+    private static final String DS_TEMPLATE =
+            "    @ConfigurationProperties(prefix = \"spring.datasource.{name}\")\n" +
+            "    @Bean\n" +
+            "    public DataSource {name}() {\n" +
+            "        return DataSourceBuilder.create().build();\n" +
+            "    }";
+
+    private InputStream buildDataSourceBuilders(Vdb vdb, UnitOfWork uow) throws KException {
+        StringWriter sw = new StringWriter();
+        sw.write("package io.integration;\n" +
+                "\n" +
+                "import javax.sql.DataSource;\n" +
+                "\n" +
+                "import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;\n" +
+                "import org.springframework.boot.context.properties.ConfigurationProperties;\n" +
+                "import org.springframework.context.annotation.Bean;\n" +
+                "import org.springframework.context.annotation.Configuration;\n" +
+                "\n" +
+                "@Configuration\n" +
+                "public class DataSources {\n");
+
+        Model[] models = vdb.getModels(uow);
+        for (Model model : models) {
+            ModelSource[] sources = model.getSources(uow);
+            for (ModelSource source : sources) {
+                String name = source.getName(uow);
+                sw.write(DS_TEMPLATE.replace("{name}", name));
+                sw.write("\n");
+            }
+        }
+        sw.write("}\n");
+
+        try {
+            return new ByteArrayInputStream(sw.toString().getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            throw new KException(e);
+        }
     }
 
     /**
@@ -1154,10 +1190,10 @@ public class TeiidOpenShiftClient implements StringConstants {
                             + name + " in VDB " + vdb.getName(uow));
                 }
 
-                //  build properties to create data source in Throntail
+                //  build properties to create data source in Spring Boot
                 convertToEnvironmentVariables(ds, envs);
 
-                Properties config = def.getWFSDataSourceProperties(ds, source.getJndiName(uow));
+                Properties config = def.getPublishedImageDataSourceProperties(ds, source.getJndiName(uow));
                 if (config != null) {
                     for (String key : config.stringPropertyNames()) {
                         javaOptions.append(" -D").append(key).append("=").append(config.getProperty(key));
@@ -1171,6 +1207,7 @@ public class TeiidOpenShiftClient implements StringConstants {
         for (Map.Entry<String, String> entry : publishConfig.getUserEnvironmentVariables().entrySet()) {
             envs.add(env(entry.getKey(), entry.getValue()));
         }
+        envs.add(env("VDB_FILE", vdb.getName(uow)+"-vdb.xml"));
         return envs;
     }
 
@@ -1180,7 +1217,7 @@ public class TeiidOpenShiftClient implements StringConstants {
      * @return YML fragment depicting the ENV variables
      */
     private List<EnvVar> convertToEnvironmentVariables(DefaultSyndesisDataSource datasource,
-            List<EnvVar> envs) {
+            List<EnvVar> envs) throws KException {
         for (String key : datasource.getProperties().keySet()) {
             String instanceKey = datasource.canonicalKey(key);
             //envs.add(env(instanceKey, datasource.getProperties().get(key)));
@@ -1470,7 +1507,8 @@ public class TeiidOpenShiftClient implements StringConstants {
             if (enableOdata) {
                 vdbDependencies.append(StringConstants.NEW_LINE).append("<dependency>"
                         + "<groupId>org.teiid</groupId>"
-                        + "<artifactId>thorntail-odata-api</artifactId>"
+                        + "<artifactId>spring-odata</artifactId>"
+                        + "<version>${version.springboot.teiid}</version>"
                         + "</dependency> ");
             }
 

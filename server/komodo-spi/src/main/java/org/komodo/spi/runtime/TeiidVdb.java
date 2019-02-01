@@ -35,11 +35,11 @@ public interface TeiidVdb {
      * Extension of a vdb file with dot appended
      */
     static final String VDB_DOT_EXTENSION = ".vdb"; //$NON-NLS-1$
-
+    
     /**
      * Suffix of a dynamic vdb
      */
-    static final String DYNAMIC_VDB_SUFFIX = "-vdb.xml"; //$NON-NLS-1$
+    static final String DYNAMIC_VDB_SUFFIX = "-vdb.xml"; //$NON-NLS-1$    
 
     /**
      * @return the name

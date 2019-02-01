@@ -27,6 +27,7 @@ import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_BRANC
 import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_PASSWORD;
 import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_PATH_PROPERTY;
 import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_USERNAME;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
@@ -34,19 +35,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
-import org.komodo.core.KEngine;
+
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.OptionKeys;
@@ -74,6 +75,8 @@ import org.komodo.storage.StorageServiceProvider;
 import org.komodo.utils.FileUtils;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
+import org.springframework.stereotype.Component;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -83,6 +86,7 @@ import io.swagger.annotations.ApiResponses;
 /**
  * A Komodo REST service for import / export artifacts into / out of the workspace
  */
+@Component
 @Path( V1Constants.IMPORT_EXPORT_SEGMENT )
 @Api( tags = {V1Constants.IMPORT_EXPORT_SEGMENT} )
 public class KomodoImportExportService extends KomodoService {
@@ -92,10 +96,6 @@ public class KomodoImportExportService extends KomodoService {
      * contained in the user's profile.
      */
     public static final String PROFILE_REPOSITORY_NAME = "profile-repository-name";
-
-    public KomodoImportExportService(KEngine engine) throws WebApplicationException {
-        super(engine);
-    }
 
     private Response checkStorageAttributes(KomodoStorageAttributes sta,
                                             List<MediaType> mediaTypes) throws Exception {
@@ -156,7 +156,7 @@ public class KomodoImportExportService extends KomodoService {
      *        the request URI information (never <code>null</code>)
      * @param export attributes
      *        the export attributes JSON representation (cannot be <code>null</code>)
-     * @return a JSON document including Base64 content of the file 
+     * @return a JSON document including Base64 content of the file
      *                  (never <code>null</code>)
      * @throws KomodoRestException
      *         if there is a problem with the export
@@ -174,14 +174,14 @@ public class KomodoImportExportService extends KomodoService {
     public Response exportArtifact( final @Context HttpHeaders headers,
                              final @Context UriInfo uriInfo,
                              @ApiParam(
-                                       value = "" + 
+                                       value = "" +
                                                "JSON of the possible storage attributes:<br>" +
                                                OPEN_PRE_TAG +
                                                OPEN_BRACE + BR +
                                                NBSP + "storageType: \"Either 'file' or 'git'\"" + COMMA + BR +
                                                NBSP + "dataPath: \"Path of the object to be exported\"" + COMMA + BR +
                                                NBSP + "documentType: \"Expected destination export file type\"" + BR +
-                                               NBSP + OPEN_PRE_CMT + "(Used to help determine the expected file type, " + 
+                                               NBSP + OPEN_PRE_CMT + "(Used to help determine the expected file type, " +
                                                "eg. zip, xml, directory)" + CLOSE_PRE_CMT + BR +
                                                NBSP + "parameters: " + OPEN_BRACE + BR +
                                                NBSP + NBSP + FILES_HOME_PATH_PROPERTY + ": \"Path to the parent " +
@@ -324,7 +324,7 @@ public class KomodoImportExportService extends KomodoService {
     public Response importArtifact( final @Context HttpHeaders headers,
                              final @Context UriInfo uriInfo,
                              @ApiParam(
-                                       value = "" + 
+                                       value = "" +
                                                "JSON of the possible storage attributes:<br>" +
                                                OPEN_PRE_TAG +
                                                OPEN_BRACE + BR +
@@ -338,7 +338,7 @@ public class KomodoImportExportService extends KomodoService {
                                                NBSP + "parameters: " + OPEN_BRACE + BR +
                                                NBSP + NBSP + FILES_HOME_PATH_PROPERTY + ": \"Path to the parent " +
                                                "location of the file to import\"" + COMMA + BR +
-                                               NBSP + NBSP + FILE_PATH_PROPERTY + ": \"Relative path, inc. name, " + 
+                                               NBSP + NBSP + FILE_PATH_PROPERTY + ": \"Relative path, inc. name, " +
                                                "of the file to import\"" + BR +
                                                NBSP + NBSP + OPEN_PRE_CMT +  "(Further parameters are specific to storage type. " +
                                                "see /importexport/availableStorageType REST link)" + CLOSE_PRE_CMT + BR +
@@ -395,7 +395,7 @@ public class KomodoImportExportService extends KomodoService {
             Repository repo = this.kengine.getDefaultRepository();
             uow = createTransaction(principal, "importToWorkspace", false); //$NON-NLS-1$
             KomodoObject importTarget = repo.komodoWorkspace(uow);
-            
+
             // If artifact path is supplied, it is the target.  Otherwise default to workspace
             String artifactPath = sta.getArtifactPath();
             if(!StringUtils.isEmpty(artifactPath)) {
@@ -426,7 +426,7 @@ public class KomodoImportExportService extends KomodoService {
             } else {
                 importOptions.setOption(OptionKeys.HANDLE_EXISTING, ImportOptions.ExistingNodeOptions.OVERWRITE);
             }
-            
+
             ImportMessages messages = getWorkspaceManager(uow).importArtifact(uow, importTarget, storageRef, importOptions);
             if (messages.hasError()) {
                 return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.IMPORT_EXPORT_SERVICE_IMPORT_ARTIFACT_ERROR, messages.errorMessagesToString());
@@ -435,7 +435,7 @@ public class KomodoImportExportService extends KomodoService {
             status.setSuccess(true);
             status.setName(storageRef.getRelativeRef());
             status.setMessage(RelationalMessages.getString( RelationalMessages.Info.IMPORT_EXPORT_SERVICE_IMPORT_SUCCESS_MESSAGE, importOptions.getOption(OptionKeys.NAME) ));
-            
+
             if(sta.getDocumentType().equals(DocumentType.JAR.toString())) {
                 String driverName = storageRef.getParameters().getProperty(StorageReference.DRIVER_NAME_KEY);
                 if(StringUtils.isBlank(driverName)) {
@@ -443,7 +443,7 @@ public class KomodoImportExportService extends KomodoService {
                 }
                 status.setName(driverName);
             }
-            
+
             status.setType(sta.getDocumentType().toString());
 
             return commit( uow, mediaTypes, status );
@@ -538,7 +538,7 @@ public class KomodoImportExportService extends KomodoService {
      *        the url of the destination git repository
      * @param destinationPath
      *        the path of the destination directory (optional)
-     * @return a JSON document including Base64 content of the file 
+     * @return a JSON document including Base64 content of the file
      *                  (never <code>null</code>)
      * @throws KomodoRestException
      *         if there is a problem with the export
@@ -557,7 +557,7 @@ public class KomodoImportExportService extends KomodoService {
     public Response exportArtifactToGit( final @Context HttpHeaders headers,
                              final @Context UriInfo uriInfo,
                              @ApiParam(
-                                       value = "" + 
+                                       value = "" +
                                                "JSON of the possible git storage attributes:<br>" +
                                                OPEN_PRE_TAG +
                                                OPEN_BRACE + BR +
@@ -613,7 +613,7 @@ public class KomodoImportExportService extends KomodoService {
 
             DocumentType documentType = artifact.getDocumentType(uow);
             String fileName = documentType.fileName(artifact.getName(uow));
-            
+
             //
             // If a name git repository has been specified then fetch it from the profile
             // and populate the storageAttributes object with its configuration
@@ -624,7 +624,7 @@ public class KomodoImportExportService extends KomodoService {
                 GitRepository[] gitRepositories = profile.getGitRepositories(uow, repoName);
                 if (gitRepositories.length == 0)
                     return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.IMPORT_EXPORT_SERVICE_NO_NAMED_GIT_REPO_ERROR, repoName);
-    
+
                 sta.setParameter(REPO_PATH_PROPERTY, gitRepositories[0].getUrl(uow).toString());
                 sta.setParameter(REPO_USERNAME, gitRepositories[0].getUser(uow));
                 String password = gitRepositories[0].getPassword(uow);

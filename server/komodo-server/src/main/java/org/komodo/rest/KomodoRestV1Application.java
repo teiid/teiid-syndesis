@@ -17,80 +17,25 @@
  */
 package org.komodo.rest;
 
-import static org.komodo.rest.Messages.Error.KOMODO_ENGINE_CLEAR_TIMEOUT;
-import static org.komodo.rest.Messages.Error.KOMODO_ENGINE_SHUTDOWN_ERROR;
-import static org.komodo.rest.Messages.Error.KOMODO_ENGINE_SHUTDOWN_TIMEOUT;
-import static org.komodo.rest.Messages.Error.KOMODO_ENGINE_STARTUP_TIMEOUT;
-
-import java.io.File;
 import java.io.InputStream;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Properties;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
-import javax.annotation.PreDestroy;
-import javax.ws.rs.ApplicationPath;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Application;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
 import org.komodo.core.KEngine;
-import org.komodo.core.repository.LocalRepository;
-import org.komodo.core.repository.SynchronousCallback;
-import org.komodo.importer.ImportMessages;
-import org.komodo.importer.ImportOptions;
-import org.komodo.openshift.TeiidOpenShiftClient;
-import org.komodo.relational.importer.vdb.VdbImporter;
-import org.komodo.rest.KomodoRestV1Application.V1Constants;
-import org.komodo.rest.cors.KCorsFactory;
-import org.komodo.rest.cors.KCorsHandler;
 import org.komodo.rest.json.JsonConstants;
-import org.komodo.rest.service.KomodoConnectionService;
-import org.komodo.rest.service.KomodoDataserviceService;
-import org.komodo.rest.service.KomodoDriverService;
-import org.komodo.rest.service.KomodoImportExportService;
-import org.komodo.rest.service.KomodoMetadataService;
-import org.komodo.rest.service.KomodoSearchService;
-import org.komodo.rest.service.KomodoUtilService;
-import org.komodo.rest.service.KomodoVdbService;
-import org.komodo.rest.swagger.RestDataserviceConverter;
-import org.komodo.rest.swagger.RestPropertyConverter;
-import org.komodo.rest.swagger.RestServiceCatalogDataSourceConverter;
-import org.komodo.rest.swagger.RestVdbConditionConverter;
-import org.komodo.rest.swagger.RestVdbConverter;
-import org.komodo.rest.swagger.RestVdbDataRoleConverter;
-import org.komodo.rest.swagger.RestVdbImportConverter;
-import org.komodo.rest.swagger.RestVdbMaskConverter;
-import org.komodo.rest.swagger.RestVdbModelConverter;
-import org.komodo.rest.swagger.RestVdbModelSourceConverter;
-import org.komodo.rest.swagger.RestVdbPermissionConverter;
-import org.komodo.rest.swagger.RestVdbTranslatorConverter;
-import org.komodo.rest.swagger.RestVirtualisationStatusConverter;
-import org.komodo.spi.KEvent.Type;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.SystemConstants;
-import org.komodo.spi.repository.ApplicationProperties;
-import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.repository.PersistenceType;
 import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.RepositoryClientEvent;
-import org.komodo.utils.KLog;
-import org.komodo.utils.observer.KLatchObserver;
-
-import io.swagger.converter.ModelConverters;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * The JAX-RS {@link Application} that provides the Komodo REST API.
  */
-@ApplicationPath( V1Constants.APP_PATH )
-public class KomodoRestV1Application extends Application implements SystemConstants {
+public class KomodoRestV1Application implements SystemConstants {
+
+    @Autowired
+    KEngine kengine;
 
     /**
      * Constants associated with version 1 of the Komodo REST application.
@@ -243,7 +188,7 @@ public class KomodoRestV1Application extends Application implements SystemConsta
          * The name of the URI path segment for DataService deployable status
          */
         String DEPLOYABLE_STATUS_SEGMENT = "deployableStatus"; //$NON-NLS-1$
-        
+
         /**
          * The name of the URI path segment for validating a data service or connection name.
          */
@@ -323,7 +268,7 @@ public class KomodoRestV1Application extends Application implements SystemConsta
          * The name of the URI path segment for a setting a dataservice's service vdb for join view
          */
         String SERVICE_VDB_FOR_JOIN_TABLES = "ServiceVdbForJoinTables"; //$NON-NLS-1$
-        
+
         /**
          * The name of the URI path segment for getting the DDL for single table view
          */
@@ -333,12 +278,12 @@ public class KomodoRestV1Application extends Application implements SystemConsta
          * The name of the URI path segment for getting the DDL for join view
          */
         String SERVICE_VIEW_DDL_FOR_JOIN_TABLES = "ServiceViewDdlForJoinTables"; //$NON-NLS-1$
-        
+
         /**
          * The name of the URI path segment for getting the join criteria given two tables
          */
         String CRITERIA_FOR_JOIN_TABLES = "CriteriaForJoinTables"; //$NON-NLS-1$
-        
+
         /**
          * The name of the URI path segment for the collection of Drivers in the Komodo workspace.
          */
@@ -598,7 +543,7 @@ public class KomodoRestV1Application extends Application implements SystemConsta
          * The name of the URI ping type parameter
          */
         String PING_TYPE_PARAMETER = "pingType"; //$NON-NLS-1$
-        
+
         /**
          * syndesis source segment
          */
@@ -608,7 +553,7 @@ public class KomodoRestV1Application extends Application implements SystemConsta
          * syndesis sources segment
          */
         String SYNDESIS_SOURCES = "syndesisSources"; //$NON-NLS-1$
-        
+
         /**
          * syndesis source summaries segment
          */
@@ -658,387 +603,20 @@ public class KomodoRestV1Application extends Application implements SystemConsta
          * Publish VDB Logs
          */
         String PUBLISH_LOGS = "publishLogs"; //$NON-NLS-1$
-        
+
         /**
          * Refresh views referenced in a view editor state object
          */
         String REFRESH_DATASERVICE_VIEWS = "refreshViews";
     }
 
-    private static final int TIMEOUT = 1;
-    private static final TimeUnit UNIT = TimeUnit.MINUTES;
 
-    private KEngine kengine;
-    private final Set< Object > singletons;
-
-    /**
-     * Constructs a Komodo REST application.
-     *
-     * @throws WebApplicationException
-     *         if the Komodo engine cannot be started
-     */
-    public KomodoRestV1Application() throws WebApplicationException {
-        KCorsHandler corsHandler;
-        try {
-            String workingDir = System.getProperty("user.dir");
-            if (new File(workingDir+"/target").exists()) {
-                Random r = new Random();
-                workingDir = workingDir+"/target/"+Math.abs(r.nextLong());
-            }
-            // Set the komodo data directory prior to starting the engine
-            System.setProperty(ENGINE_DATA_DIR, workingDir+"/komodo/data"); //$NON-NLS-1$
-
-            // Set the log file path
-            KLog.getLogger().setLogPath(workingDir+"/komodo/log/vdb-builder.log");
-
-            // Ensure server logging level is reduced to something sane!
-            KLog.getLogger().setLevel(ApplicationProperties.getLogLevel());
-
-            corsHandler = initCorsHandler();
-
-            initPersistenceEnvironment();
-
-        } catch (Exception ex) {
-            throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
-        }
-
-        this.kengine = start();
-        TeiidOpenShiftClient openShiftClient = null;
-        try {
-            openShiftClient = new TeiidOpenShiftClient(
-                    (TeiidSwarmMetadataInstance) this.kengine.getMetadataInstance());
-        } catch (KException e) {
-            throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
-        }
-
-        final Set< Object > objs = new HashSet< >();
-        objs.add( new KomodoExceptionMapper() );
-        objs.add( new KomodoUtilService( this.kengine ) );
-        objs.add( new KomodoDataserviceService( this.kengine ) );
-        objs.add( new KomodoConnectionService( this.kengine, openShiftClient) );
-        objs.add( new KomodoDriverService( this.kengine ) );
-        objs.add( new KomodoVdbService( this.kengine ) );
-        objs.add( new KomodoSearchService( this.kengine ));
-        objs.add( new KomodoMetadataService( this.kengine, openShiftClient));
-        objs.add( new KomodoImportExportService( this.kengine ));
-        objs.add(new AuthHandlingFilter());
-        objs.add(corsHandler);
-
-        this.singletons = Collections.unmodifiableSet( objs );
-
-        initSwaggerConfiguration();
-    }
-
-    private KCorsHandler initCorsHandler() throws Exception {
-        KCorsHandler corsHandler = KCorsFactory.getInstance().createHandler();
-        corsHandler.getAllowedOrigins().add(STAR);
-        corsHandler.setAllowedHeaders(KCorsHandler.ALLOW_HEADERS);
-        corsHandler.setAllowCredentials(true);
-        corsHandler.setAllowedMethods(KCorsHandler.ALLOW_METHODS);
-        corsHandler.setCorsMaxAge(1209600);
-        return corsHandler;
-    }
-
-    //
-    // Configure properties for persistence connection
-    //
-    private void initPersistenceEnvironment() {
-        //
-        // If the env variable REPOSITORY_PERSISTENCE_TYPE is defined then respect
-        // its value and set the persistence type accordingly. If not defined then assume
-        // PGSQL is required.
-        //
-        PersistenceType persistenceType = PersistenceType.PGSQL;
-        String pType = ApplicationProperties.getRepositoryPersistenceType();
-        if (PersistenceType.H2.name().equals(pType)) {
-            persistenceType = PersistenceType.H2;
-        }
-
-        if (ApplicationProperties.getRepositoryPersistenceHost() == null) {
-            ApplicationProperties.setRepositoryPersistenceHost("localhost");
-        }
-
-        if (ApplicationProperties.getRepositoryPersistenceURL() == null) {
-            ApplicationProperties.setRepositoryPersistenceURL(persistenceType.getConnUrl());
-        }
-
-        if (ApplicationProperties.getRepositoryPersistenceBinaryStoreURL() == null) {
-
-            //
-            // If the connection url has been defined then prefer that before the default
-            //
-            String binaryStoreUrl = ApplicationProperties.getRepositoryPersistenceURL();
-            if (binaryStoreUrl == null) {
-                //
-                // Connection Url not defined so assume the default
-                //
-                binaryStoreUrl = persistenceType.getBinaryStoreUrl();
-            }
-
-            ApplicationProperties.setRepositoryPersistenceBinaryStoreURL(binaryStoreUrl);
-        }
-
-        if (ApplicationProperties.getRepositoryPersistenceDriver() == null) {
-            ApplicationProperties.setRepositoryPersistenceDriver(persistenceType.getDriver());
-        }
-
-        String persistenceUser = ApplicationProperties.getRepositoryPersistenceUser();
-        if (ApplicationProperties.getRepositoryPersistenceDefaultUser().equals(persistenceUser)) {
-            //
-            // Either the default user is being used or more importantly the user has not been set
-            // To ensure komodo does not complain about a lack of user, ie. exceptions concerning
-            // ${komodo.user} set the user accordingly.
-            //
-            ApplicationProperties.setRepositoryPersistenceUser(persistenceUser);
-        }
-
-        String persistencePasswd = ApplicationProperties.getRepositoryPersistencePassword();
-        if (ApplicationProperties.getRepositoryPersistenceDefaultPassword().equals(persistencePasswd)) {
-            //
-            // Either the default password is being used or more importantly the password has not been set
-            // To ensure komodo does not complain about a lack of password, ie. exceptions concerning
-            // ${komodo.password} set the password accordingly.
-            //
-            ApplicationProperties.setRepositoryPersistencePassword(persistencePasswd);
-        }
-
-        //
-        // No need to check repo storage for H2 as its generated upon first repository connection
-        // Other persistence types are external so do require this.
-        //
-        if(persistenceType.isExternal())
-            checkRepoStorage();
-        }
-
-    @SuppressWarnings( "nls" )
-    private void initSwaggerConfiguration() {
-        //
-        // Add converters for display of definitions
-        //
-        ModelConverters converters = ModelConverters.getInstance();
-        converters.addConverter(new RestPropertyConverter());
-        converters.addConverter(new RestVdbConditionConverter());
-        converters.addConverter(new RestVdbConverter());
-        converters.addConverter(new RestVdbDataRoleConverter());
-        converters.addConverter(new RestVdbImportConverter());
-        converters.addConverter(new RestVdbMaskConverter());
-        converters.addConverter(new RestVdbModelConverter());
-        converters.addConverter(new RestVdbModelSourceConverter());
-        converters.addConverter(new RestVdbPermissionConverter());
-        converters.addConverter(new RestVdbTranslatorConverter());
-        converters.addConverter(new RestDataserviceConverter());
-        converters.addConverter(new RestServiceCatalogDataSourceConverter());
-        converters.addConverter(new RestVirtualisationStatusConverter());
-    }
-
-    /**
-     * @return the komodo engine of this application.
-     *           Should only be applicable for testing.
-     */
     public KEngine getEngine() throws KException {
         return kengine;
     }
 
-    /**
-     * @return the default repository of this application.
-     *            Should only be applicable for testing.
-     *
-     */
+
     public Repository getDefaultRepository() throws KException {
         return kengine.getDefaultRepository();
-    }
-
-    /**
-     * Clears the Komodo default repository.
-     *
-     * @throws WebApplicationException
-     *         if an error occurs clearing the repository
-     */
-    public void clearRepository() throws WebApplicationException {
-        try {
-			final RepositoryClientEvent event = RepositoryClientEvent.createClearEvent( this.kengine );
-			this.kengine.getDefaultRepository().notify( event );
-		} catch (KException e1) {
-            throw new WebApplicationException( new Exception(Messages.getString( KOMODO_ENGINE_CLEAR_TIMEOUT, TIMEOUT, UNIT )),
-                    Status.INTERNAL_SERVER_ERROR );
-		}
-
-        KLatchObserver observer = new KLatchObserver(Type.REPOSITORY_CLEARED);
-        this.kengine.addObserver(observer);
-
-        // wait for repository to clear
-        boolean cleared = false;
-
-        try {
-            cleared = observer.getLatch().await( TIMEOUT, UNIT );
-        } catch ( final Exception e ) {
-            throw new WebApplicationException( e, Status.INTERNAL_SERVER_ERROR );
-        } finally {
-            this.kengine.removeObserver(observer);
-        }
-
-        if ( !cleared ) {
-            throw new WebApplicationException( new Exception(Messages.getString( KOMODO_ENGINE_CLEAR_TIMEOUT, TIMEOUT, UNIT )),
-                                            Status.INTERNAL_SERVER_ERROR );
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see javax.ws.rs.core.Application#getSingletons()
-     */
-    @Override
-    public Set< Object > getSingletons() {
-        return this.singletons;
-    }
-
-	@Override
-    public Set<Class<?>> getClasses() {
-        Set<Class<?>> resources = new HashSet<Class<?>>();
-
-        // When getClasses and/or getSingleton and/or getProperties is overridden in the
-        // Application class, RestEasy scanner for @Path do not look any further than classes defined
-        // in these methods. To make /swagger.json work this is alternative way to extend the scanning.
-        // Enable swagger support
-        try {
-			resources.add(Class.forName("io.swagger.jaxrs.listing.ApiListingResource"));
-			resources.add(Class.forName("io.swagger.jaxrs.listing.SwaggerSerializers"));
-		} catch (ClassNotFoundException e) {
-			// ignore. Swarm fraction not adding this correctly looks like
-		}
-        return resources;
-    }
-
-	public void validateRepositoryProperties() throws WebApplicationException {
-		if (ApplicationProperties.getRepositoryPersistenceDriver() == null
-				|| ApplicationProperties.getRepositoryPersistenceURL() == null) {
-			throw new WebApplicationException(
-					"Properties required to make connection to the repository storage missing");
-		}
-	}
-	
-	/**
-	 * Check there is a store for repository persistence.
-	 * @throws WebApplicationException
-	 */
-	private void checkRepoStorage() throws WebApplicationException {
-		validateRepositoryProperties();
-		try {
-			Class.forName(ApplicationProperties.getRepositoryPersistenceDriver());
-		} catch (Exception ex) {
-			throw new WebApplicationException("Failed to initialise repository persistence driver", ex);
-		}
-
-		java.sql.Connection connection = null;
-        String connUrl = ApplicationProperties.getRepositoryPersistenceURL();
-
-        //
-        // If HOST has been defined then ensure that connection url is evaluated first to replace the
-        // property name with its value. Otherwise connection url remains unchanged
-        //
-        connUrl = ApplicationProperties.substitute(connUrl, SystemConstants.REPOSITORY_PERSISTENCE_HOST);
-
-        String user = ApplicationProperties.getRepositoryPersistenceUser();
-        String password = ApplicationProperties.getRepositoryPersistencePassword();
-        try  {
-            connection = DriverManager.getConnection(connUrl, user, password);
-        } catch (Exception ex) {
-            throw new WebApplicationException("Failed to connect to persistence storage: " + connUrl + SEMI_COLON + user, ex);
-        } finally {
-            if(connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    // nothing to do
-                }
-            }
-        }
-	}
-
-    private KEngine start() throws WebApplicationException {
-        final KEngine kengine = new KEngine();
-        boolean started;
-        try {
-
-        	// configure metadata
-        	TeiidSwarmConnectionProvider connectionProvider = new TeiidSwarmConnectionProvider();
-        	TeiidSwarmMetadataInstance metadata = new TeiidSwarmMetadataInstance(connectionProvider);
-        	kengine.setMetadataInstance(metadata);
-        	
-        	// configure repository
-        	LocalRepository repository = new LocalRepository(); 
-        	kengine.setDefaultRepository(repository);
-        	
-        	started = kengine.startAndWait();
-        } catch (Exception e) {
-            throw new WebApplicationException( e, Status.INTERNAL_SERVER_ERROR );
-        }
-
-        if ( !started ) {
-            throw new WebApplicationException( new Exception(Messages.getString( KOMODO_ENGINE_STARTUP_TIMEOUT, TIMEOUT, UNIT )),
-                                            Status.INTERNAL_SERVER_ERROR );
-        }
-
-        return kengine;
-    }
-
-    /**
-     * Stops the Komodo Engine.
-     *
-     * @throws WebApplicationException
-     *         if there is a problem shutting down the Komodo engine
-     */
-    @PreDestroy
-    public void stop() throws WebApplicationException {
-        if (this.kengine == null)
-            return;
-
-        KLatchObserver observer = new KLatchObserver(Type.ENGINE_SHUTDOWN);
-        this.kengine.addObserver(observer);
-
-        // wait for repository to shutdown
-        boolean shutdown = false;
-
-        try {
-            this.kengine.shutdownAndWait();
-            shutdown = observer.getLatch().await(TIMEOUT, UNIT);
-        } catch (final Exception e) {
-            throw new WebApplicationException(new Exception(Messages.getString(KOMODO_ENGINE_SHUTDOWN_ERROR, e)),
-                                              Status.INTERNAL_SERVER_ERROR);
-        } finally {
-            this.kengine = null;
-        }
-
-        if (!shutdown) {
-            throw new WebApplicationException(new Exception(Messages.getString(KOMODO_ENGINE_SHUTDOWN_TIMEOUT, TIMEOUT, UNIT)),
-                                              Status.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    /**
-     * Import a vdb into the komodo engine
-     *
-     * @param vdbStream vdb input stream
-     * @param user initiating import
-     *
-     * @throws Exception if error occurs
-     */
-    public ImportMessages importVdb(InputStream vdbStream, String user) throws Exception {
-        Repository repository = this.kengine.getDefaultRepository();
-
-        SynchronousCallback callback = new SynchronousCallback();
-        UnitOfWork uow = repository.createTransaction(user, "Import Vdb", false, callback); //$NON-NLS-1$
-
-        ImportOptions importOptions = new ImportOptions();
-        ImportMessages importMessages = new ImportMessages();
-
-        KomodoObject workspace = repository.komodoWorkspace(uow);
-        VdbImporter importer = new VdbImporter(repository);
-        importer.importVdb(uow, vdbStream, workspace, importOptions, importMessages);
-        uow.commit();
-        callback.await(3, TimeUnit.MINUTES);
-
-        return importMessages;
     }
 }

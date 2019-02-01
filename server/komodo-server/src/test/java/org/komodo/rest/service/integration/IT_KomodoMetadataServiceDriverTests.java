@@ -21,18 +21,20 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Base64;
 import java.util.Map;
+
 import javax.ws.rs.core.UriBuilder;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpPost;
-import org.jboss.arquillian.junit.Arquillian;
+import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
@@ -41,8 +43,9 @@ import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.test.utils.TestUtilities;
 import org.komodo.utils.FileUtils;
 
-@RunWith(Arquillian.class)
 @SuppressWarnings( {"javadoc", "nls"} )
+@Ignore
+// the deployment of drivers is not supported.
 public class IT_KomodoMetadataServiceDriverTests extends AbstractKomodoMetadataServiceTest  {
 
     @Override
@@ -55,7 +58,7 @@ public class IT_KomodoMetadataServiceDriverTests extends AbstractKomodoMetadataS
         undeployDrivers();
         assertNoMysqlDriver();
 
-        URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
+        URI uri = UriBuilder.fromUri(getUriBuilder().baseUri())
                                             .path(V1Constants.METADATA_SEGMENT)
                                             .path(V1Constants.METADATA_DRIVER)
                                             .build();
@@ -109,7 +112,7 @@ public class IT_KomodoMetadataServiceDriverTests extends AbstractKomodoMetadataS
         getMetadataInstance().deployDataSourceDriver(MYSQL_DRIVER, driverFile);
         assertMysqlDriver();
 
-        URI uri = UriBuilder.fromUri(_uriBuilder.baseUri())
+        URI uri = UriBuilder.fromUri(getUriBuilder().baseUri())
                                             .path(V1Constants.METADATA_SEGMENT)
                                             .path(V1Constants.METADATA_DRIVER)
                                             .path(MYSQL_DRIVER)
@@ -118,7 +121,7 @@ public class IT_KomodoMetadataServiceDriverTests extends AbstractKomodoMetadataS
         HttpDelete request = jsonRequest(uri, RequestType.DELETE);
         HttpResponse response = executeOk(request);
 
-        
+
         String entity = extractResponse(response);
         KomodoStatusObject status = KomodoJsonMarshaller.unmarshall(entity, KomodoStatusObject.class);
         assertNotNull(status);

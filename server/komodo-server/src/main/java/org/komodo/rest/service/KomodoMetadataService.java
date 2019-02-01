@@ -46,7 +46,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
-import org.komodo.core.KEngine;
 import org.komodo.openshift.BuildStatus;
 import org.komodo.openshift.PublishConfiguration;
 import org.komodo.openshift.TeiidOpenShiftClient;
@@ -76,7 +75,6 @@ import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.request.KomodoFileAttributes;
 import org.komodo.rest.relational.request.KomodoPathAttribute;
 import org.komodo.rest.relational.request.KomodoQueryAttribute;
-import org.komodo.rest.relational.request.KomodoSyndesisDataSourceAttributes;
 import org.komodo.rest.relational.request.PublishRequestPayload;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.RestConnectionDriver;
@@ -111,6 +109,8 @@ import org.komodo.spi.runtime.TeiidTranslator;
 import org.komodo.spi.runtime.TeiidVdb;
 import org.komodo.utils.FileUtils;
 import org.komodo.utils.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -126,6 +126,7 @@ import io.swagger.annotations.ApiResponses;
 /**
  * A Komodo REST service for obtaining information from a metadata instance.
  */
+@Component
 @Path( V1Constants.METADATA_SEGMENT )
 @Api( tags = {V1Constants.METADATA_SEGMENT} )
 public class KomodoMetadataService extends KomodoService {
@@ -239,6 +240,7 @@ public class KomodoMetadataService extends KomodoService {
      */
     private Map<String, String> urlContentTranslatorMap = new HashMap<String,String>();
 
+    @Autowired
     private TeiidOpenShiftClient openshiftClient;
 
     /**
@@ -248,13 +250,10 @@ public class KomodoMetadataService extends KomodoService {
      * @throws WebApplicationException
      *         if there is a problem obtaining the {@link WorkspaceManager workspace manager}
      */
-    public KomodoMetadataService(final KEngine engine, TeiidOpenShiftClient openshiftClient) throws WebApplicationException {
-        super(engine);
+    public KomodoMetadataService() throws WebApplicationException {
         // Loads default translator mappings
         loadDriverTranslatorMap();
         loadUrlContentTranslatorMap();
-
-        this.openshiftClient = openshiftClient;
     }
 
     private synchronized MetadataInstance getMetadataInstance() throws KException {
@@ -2585,16 +2584,16 @@ public class KomodoMetadataService extends KomodoService {
 	 *             if there is an error adding the Connection
 	 */
 	@POST
-	@Path(V1Constants.SYNDESIS_SOURCE)
+	@Path(V1Constants.SYNDESIS_SOURCE+V1Constants.FORWARD_SLASH+V1Constants.SYNDESIS_SOURCE_PLACEHOLDER)
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes({ MediaType.APPLICATION_JSON })
 	@ApiOperation(value = "Create a connection in the teiid engine for a Syndesis source")
 	@ApiResponses(value = { @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
 			@ApiResponse(code = 403, message = "An error has occurred.") })
 	public Response bindSyndesisSource(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
-			@ApiParam(value = "JSON of the syndesis source name:<br>" + OPEN_PRE_TAG + OPEN_BRACE + BR + NBSP
-					+ "name: \"Name of the Syndesis source\"" + BR + CLOSE_BRACE
-					+ CLOSE_PRE_TAG, required = true) final String payload)
+            @ApiParam( value = "Name of the syndesis source",
+            required = true )
+			final @PathParam( "syndesisSourceName" ) String syndesisSourceName)
 			throws KomodoRestException {
 
 		SecurityPrincipal principal = checkSecurityContext(headers);
@@ -2605,28 +2604,13 @@ public class KomodoMetadataService extends KomodoService {
 		if (!isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
 			return notAcceptableMediaTypesBuilder().build();
 
-		//
-		// Error if there is no name attribute defined
-		//
-		KomodoSyndesisDataSourceAttributes attributes;
-		try {
-			attributes = KomodoJsonMarshaller.unmarshall(payload, KomodoSyndesisDataSourceAttributes.class);
-			if (attributes.getName() == null) {
-				return createErrorResponseWithForbidden(mediaTypes,
-						RelationalMessages.Error.METADATA_SYNDESIS_SOURCE_BIND_MISSING_NAME);
-			}
-		} catch (Exception ex) {
-			return createErrorResponseWithForbidden(mediaTypes, ex,
-					RelationalMessages.Error.METADATA_SYNDESIS_SOURCE_BIND_PARSE_ERROR);
-		}
-
 		UnitOfWork uow = null;
 
 		try {
 			uow = createTransaction(principal, "bindSyndesisSource", false); //$NON-NLS-1$
-			this.openshiftClient.bindToSyndesisSource(getAuthenticationToken(), attributes.getName());
+			this.openshiftClient.bindToSyndesisSource(getAuthenticationToken(), syndesisSourceName);
 			String title = RelationalMessages.getString(
-					RelationalMessages.Info.METADATA_SYNDESIS_SOURCE_BIND_TITLE, attributes.getName());
+					RelationalMessages.Info.METADATA_SYNDESIS_SOURCE_BIND_TITLE, syndesisSourceName);
 			KomodoStatusObject status = new KomodoStatusObject(title);
 			return commit(uow, mediaTypes, status);
 		} catch (final Exception e) {
@@ -2637,7 +2621,7 @@ public class KomodoMetadataService extends KomodoService {
 				throw (KomodoRestException) e;
 			}
 			return createErrorResponse(Status.FORBIDDEN, mediaTypes, e,
-					RelationalMessages.Error.METADATA_SYNDESIS_SOURCE_BIND_ERROR, e, attributes.getName());
+					RelationalMessages.Error.METADATA_SYNDESIS_SOURCE_BIND_ERROR, e, syndesisSourceName);
 		   }
     }
 
@@ -3188,7 +3172,7 @@ public class KomodoMetadataService extends KomodoService {
             @ApiParam(value = "JSON properties:<br>" + OPEN_PRE_TAG + OPEN_BRACE + BR + NBSP
                     + "\"name\":      \"Name of the VDB or Dataservice\"" + BR
                     + "\"cpu-units\": \"(optional) Number of CPU units to allocate. 100 is 0.1 CPU (default 500)\"" + BR
-                    + "\"memor\"y:    \"(optional) Amount memory to allocate in MB (default 1024)\"" + BR
+                    + "\"memory\":    \"(optional) Amount memory to allocate in MB (default 1024)\"" + BR
                     + "\"disk-size\": \"(optional) Amount disk allocated in GB (default 20)\"" + BR
                     + "\"enable-odata\": \"(optional) Enable OData interface. true|false (default true)\"" + BR
                     + CLOSE_BRACE
@@ -3325,6 +3309,9 @@ public class KomodoMetadataService extends KomodoService {
         model.setProperty(uow, "importer.UseQualifiedName", "true");  //$NON-NLS-1$//$NON-NLS-2$
         model.setProperty(uow, "importer.UseCatalogName", "false");  //$NON-NLS-1$//$NON-NLS-2$
         model.setProperty(uow, "importer.UseFullSchemaName", "false");  //$NON-NLS-1$//$NON-NLS-2$
+        if (teiidSource.getPropertyValue("schema") != null) {
+        	model.setProperty(uow, "importer.schemaPattern", teiidSource.getPropertyValue("schema"));  //$NON-NLS-1$//$NON-NLS-2$
+        }
         
         // Add model source to the model
         final String modelSourceName = teiidSource.getName();

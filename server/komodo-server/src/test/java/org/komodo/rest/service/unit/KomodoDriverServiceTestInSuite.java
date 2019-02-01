@@ -36,7 +36,6 @@ import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.response.RestConnectionDriver;
 
 @SuppressWarnings( {"javadoc", "nls"} )
-@net.jcip.annotations.NotThreadSafe
 public class KomodoDriverServiceTestInSuite extends AbstractKomodoServiceTest {
 
     public KomodoDriverServiceTestInSuite() throws Exception {
@@ -60,7 +59,7 @@ public class KomodoDriverServiceTestInSuite extends AbstractKomodoServiceTest {
 
         String entities = extractResponse(response);
         assertNotNull(entities);
-        
+
         assertThat(entities, is(notNullValue()));
 
         // System.out.println("Response:\n" + entities);
@@ -71,7 +70,7 @@ public class KomodoDriverServiceTestInSuite extends AbstractKomodoServiceTest {
         RestConnectionDriver myDriver = driver[0];
         assertTrue(driverName.equals(myDriver.getName()));
     }
-    
+
     @Test
     public void shouldReturnEmptyListWhenNoDriversInWorkspace() throws Exception {
         URI uri = uriBuilder().workspaceDriversUri();
@@ -85,8 +84,8 @@ public class KomodoDriverServiceTestInSuite extends AbstractKomodoServiceTest {
         System.out.println("Response:\n" + entity);
 
         RestConnectionDriver[] drivers = KomodoJsonMarshaller.unmarshallArray(entity, RestConnectionDriver[].class);
-        
+
         assertNotNull(drivers);
     }
-    
+
 }

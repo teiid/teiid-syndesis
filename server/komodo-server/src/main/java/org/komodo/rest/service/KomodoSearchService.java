@@ -21,9 +21,11 @@ import static org.komodo.rest.relational.RelationalMessages.Error.SEARCH_SERVICE
 import static org.komodo.rest.relational.RelationalMessages.Error.SEARCH_SERVICE_GET_SEARCH_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.SEARCH_SERVICE_SAVE_SEARCH_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.SEARCH_SERVICE_WKSP_SEARCHES_ERROR;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -32,21 +34,19 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
-import org.komodo.core.KEngine;
+
 import org.komodo.core.KomodoLexicon;
 import org.komodo.core.internal.repository.search.ComparisonOperator;
 import org.komodo.core.internal.repository.search.ContainsClause;
 import org.komodo.core.internal.repository.search.ObjectSearcher;
 import org.komodo.core.repository.KomodoTypeRegistry;
 import org.komodo.core.repository.KomodoTypeRegistry.TypeIdentifier;
-import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.rest.KomodoRestException;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
@@ -66,6 +66,8 @@ import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.KeywordCriteria;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.springframework.stereotype.Component;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -75,20 +77,11 @@ import io.swagger.annotations.ApiResponses;
 /**
  * A Komodo REST service for obtaining VDB information from the workspace.
  */
+@Component
 @Path(V1Constants.WORKSPACE_SEGMENT + StringConstants.FORWARD_SLASH +
            V1Constants.SEARCH_SEGMENT)
 @Api(tags = {V1Constants.SEARCH_SEGMENT})
 public final class KomodoSearchService extends KomodoService {
-
-    /**
-     * @param engine
-     *        the Komodo Engine (cannot be <code>null</code> and must be started)
-     * @throws WebApplicationException
-     *         if there is a problem obtaining the {@link WorkspaceManager workspace manager}
-     */
-    public KomodoSearchService( final KEngine engine ) throws WebApplicationException {
-        super( engine );
-    }
 
     /**
      * @param type
@@ -112,7 +105,7 @@ public final class KomodoSearchService extends KomodoService {
 
 	private ObjectSearcher createObjectSearcher(String type, String parent, String ancestor, String path,
 			String contains, String name) throws KException {
-		
+
     	Repository repo = this.kengine.getDefaultRepository();
     	final String ALIAS = "nt";  //$NON-NLS-1$
         ObjectSearcher os = new ObjectSearcher(repo);
@@ -302,7 +295,7 @@ public final class KomodoSearchService extends KomodoService {
     public Response searchWorkspace( final @Context HttpHeaders headers,
                              final @Context UriInfo uriInfo,
                              @ApiParam(
-                                       value = "" + 
+                                       value = "" +
                                                "JSON of the possible search attributes:<br>" +
                                                OPEN_PRE_TAG +
                                                OPEN_BRACE + BR +
@@ -498,7 +491,7 @@ public final class KomodoSearchService extends KomodoService {
     public Response saveSearch( final @Context HttpHeaders headers,
                              final @Context UriInfo uriInfo,
                              @ApiParam(
-                                       value = "" + 
+                                       value = "" +
                                                "JSON of the search attributes:<br>" +
                                                OPEN_PRE_TAG +
                                                OPEN_BRACE + BR +

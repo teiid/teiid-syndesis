@@ -125,9 +125,12 @@
     <version.log4j>1.2.16</version.log4j>
     <version.slf4j.log4j>1.7.2</version.slf4j.log4j>
     <version.h2>1.4.196</version.h2>
-
+    <version.org.apache.commons>3.8.1</version.org.apache.commons>
+    <version.io.swagger>1.5.8</version.io.swagger>
+	<version.io.opentracing.contrib>1.0.1</version.io.opentracing.contrib>
+	
     <version.commons.io>2.5</version.commons.io>
-    <version.org.teiid>10.2.0</version.org.teiid>
+    <version.org.teiid>11.2.0</version.org.teiid>
 
     <!-- Instruct the build to use only UTF-8 encoding for source code -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -157,8 +160,9 @@
     <version.teiid.modeshape>1.0.1.Final</version.teiid.modeshape>
     <version.postgresql>42.1.4</version.postgresql>
     <version.xerces>2.11.0</version.xerces>
-    <version.thorntail.teiid>1.0.3</version.thorntail.teiid>
-    <version.thorntail>2.2.0.Final</version.thorntail>
+    
+    <version.springboot.teiid>1.0.2</version.springboot.teiid>
+    
     <version.gson>2.2.4</version.gson>
     <version.apache.commons.codec>1.10</version.apache.commons.codec>
     <version.guava>20.0</version.guava>
@@ -178,6 +182,7 @@
     <version.javax.jcr>2.0</version.javax.jcr>
     <version.org.jboss.spec.javax.transaction>1.0.1.Final</version.org.jboss.spec.javax.transaction>
     <version.xml-apis>1.4.01</version.xml-apis>
+    <version.javax.xml.bind>2.1</version.javax.xml.bind>
     <version.org.hamcrest>1.3</version.org.hamcrest> <!-- tesing only -->
 
     <!-- DO NOT CHANGE VERSION PROPETY NAMES, THESE ARE USED IN CODE At komodo-rest/template-pom.xml -->
@@ -203,6 +208,12 @@
     add dependencies, but rather provide default settings. -->
   <dependencyManagement>
     <dependencies>
+	  <dependency>
+	    <groupId>javax.xml.bind</groupId>
+	    <artifactId>jaxb-api</artifactId>
+	    <version>${version.javax.xml.bind}</version>
+	  </dependency>    
+    
       <dependency>
         <groupId>org.hamcrest</groupId>
         <artifactId>hamcrest-core</artifactId>
@@ -259,6 +270,21 @@
           </exclusion>
         </exclusions>
       </dependency>
+	<dependency>
+		<groupId>org.apache.commons</groupId>
+		<artifactId>commons-lang3</artifactId>
+		<version>${version.org.apache.commons}</version>
+	</dependency>
+	<dependency>
+		<groupId>io.swagger</groupId>
+		<artifactId>swagger-jersey2-jaxrs</artifactId>
+		<version>${version.io.swagger}</version>
+	</dependency>
+	<dependency>
+	  <groupId>io.opentracing.contrib</groupId>
+	  <artifactId>opentracing-spring-jaeger-web-starter</artifactId>
+	  <version>${version.io.opentracing.contrib}</version>
+	</dependency>             
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
@@ -372,9 +398,9 @@
         <version>${version.org.teiid}</version>
       </dependency>
       <dependency>
-        <groupId>org.teiid</groupId>
-        <artifactId>thorntail-jdbc</artifactId>
-        <version>${version.thorntail.teiid}</version>
+          <groupId>org.teiid</groupId>
+          <artifactId>teiid-spring-boot-starter</artifactId>
+          <version>${version.springboot.teiid}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.httpcomponents</groupId>
@@ -456,14 +482,7 @@
         <groupId>xerces</groupId>
         <artifactId>xercesImpl</artifactId>
         <version>${version.xerces}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.teiid</groupId>
-        <artifactId>thorntail-bom</artifactId>
-        <version>${version.thorntail.teiid}</version>
-        <scope>import</scope>
-        <type>pom</type>
-      </dependency>     
+      </dependency>    
       <dependency>
         <groupId>org.jboss.arquillian</groupId>
         <artifactId>arquillian-bom</artifactId>

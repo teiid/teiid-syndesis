@@ -17,17 +17,12 @@
  */
 package org.komodo.core;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.File;
 import java.nio.file.Path;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.logging.KLogger.Level;
 import org.komodo.utils.FileUtils;
-import org.komodo.utils.KLog;
 import org.komodo.utils.TestKLog;
 
 /**
@@ -41,44 +36,19 @@ public abstract class AbstractLoggingTest implements StringConstants {
 
     private static Path _dataDirectory;
 
-    private static File configureLogPath(KLog logger) throws Exception {
-        File newLogFile = File.createTempFile("TestKLog", ".log");
-        newLogFile.deleteOnExit();
-
-        logger.setLogPath(newLogFile.getAbsolutePath());
-        logger.setLevel(Level.INFO);
-//        logger.setLevel(Level.DEBUG);
-        assertEquals(newLogFile.getAbsolutePath(), logger.getLogPath());
-
-        return newLogFile;
-    }
-
     protected static Path getLoggingDirectory() {
         return _dataDirectory;
-    }
-
-    /**
-     * Sets the {@link KLog} level to the desired level
-     *
-     * @param level
-     * @throws Exception
-     */
-    public void setLoggingLevel(Level level) throws Exception {
-        KLog.getLogger().setLevel(level);
     }
 
     @BeforeClass
     public static void initLogging() throws Exception {
         // create data directory for engine logging
-    	_dataDirectory = TestKLog.createEngineDirectory();        
-
-        // Initialises logging and reduces modeshape logging from DEBUG to INFO
-        configureLogPath(KLog.getLogger());
+    	_dataDirectory = TestKLog.createEngineDirectory();
     }
 
     @AfterClass
     public static void shutdown() throws Exception {
         FileUtils.removeDirectoryAndChildren( _dataDirectory.toFile() );
-    }   
+    }
 }
 

@@ -17,13 +17,10 @@
  */
 package org.komodo.utils;
 
-import org.komodo.logging.DefaultKLogger;
-import org.komodo.spi.logging.KLogger;
+import org.apache.commons.logging.LogFactory;
+import org.komodo.logging.i18n.TextI18n;
 
-/**
- *
- */
-public class KLog implements KLogger {
+public class KLog {
 
     private static KLog instance;
 
@@ -37,166 +34,80 @@ public class KLog implements KLogger {
         return instance;
     }
 
-    private final KLogger kLogger;
+    private final org.apache.commons.logging.Log kLogger = LogFactory.getLog(KLog.class);
 
-    /**
-     *
-     */
-    private KLog() {
-        kLogger = new DefaultKLogger();
+    private TextI18n getI18n(String message) {
+        TextI18n ti18n = new TextI18n(message);
+        return ti18n;
     }
 
-    @Override
-    public void dispose() {
-        kLogger.dispose();
-    }
-
-    @Override
-    public String getLogPath() throws Exception {
-        return kLogger.getLogPath();
-    }
-
-    @Override
-    public synchronized void setLogPath(String logPath) throws Exception {
-        kLogger.setLogPath(logPath);
-    }
-
-    /* (non-Javadoc)
-     * @see org.komodo.spi.logging.KLogger#setLevel(java.util.logging.Level)
-     */
-    @Override
-    public synchronized void setLevel(Level level) throws Exception {
-        kLogger.setLevel(level);
-    }
-
-    /* (non-Javadoc)
-     * @see org.komodo.spi.logging.KLogger#info(java.lang.String, java.lang.Object[])
-     */
-    @Override
     public synchronized void info(String message, Object... args) {
-        kLogger.info(message, args);
+        TextI18n ti18n = getI18n(message);
+        kLogger.info(ti18n.text(args));
     }
 
-    /* (non-Javadoc)
-     * @see org.komodo.spi.logging.KLogger#info(java.lang.String, java.lang.Throwable, java.lang.Object[])
-     */
-    @Override
     public synchronized void info(String message, Throwable throwable, Object... args) {
-        kLogger.info(message, throwable, args);
+        TextI18n ti18n = getI18n(message);
+        kLogger.info(ti18n.text(args), throwable);
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.spi.logging.KLogger#isInfoEnabled()
-     */
-    @Override
     public boolean isInfoEnabled() {
         return this.kLogger.isInfoEnabled();
     }
 
-    /* (non-Javadoc)
-     * @see org.komodo.spi.logging.KLogger#warn(java.lang.String, java.lang.Object[])
-     */
-    @Override
     public synchronized void warn(String message, Object... args) {
-        kLogger.warn(message, args);
+        TextI18n ti18n = getI18n(message);
+        kLogger.warn(ti18n.text(args));
     }
 
-    /* (non-Javadoc)
-     * @see org.komodo.spi.logging.KLogger#warn(java.lang.String, java.lang.Throwable, java.lang.Object[])
-     */
-    @Override
     public synchronized void warn(String message, Throwable throwable, Object... args) {
-        kLogger.warn(message, throwable, args);
+        TextI18n ti18n = getI18n(message);
+        kLogger.warn(ti18n.text(args), throwable);
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.spi.logging.KLogger#isWarnEnabled()
-     */
-    @Override
     public boolean isWarnEnabled() {
         return this.kLogger.isWarnEnabled();
     }
 
-    /* (non-Javadoc)
-     * @see org.komodo.spi.logging.KLogger#error(java.lang.String, java.lang.Object[])
-     */
-    @Override
     public synchronized void error(String message, Object... args) {
-        kLogger.error(message, args);
+        TextI18n ti18n = getI18n(message);
+        kLogger.error(ti18n.text(args));
     }
 
-    /* (non-Javadoc)
-     * @see org.komodo.spi.logging.KLogger#error(java.lang.String, java.lang.Throwable, java.lang.Object[])
-     */
-    @Override
     public synchronized void error(String message, Throwable throwable, Object... args) {
-        kLogger.error(message, throwable, args);
+        TextI18n ti18n = getI18n(message);
+        kLogger.error(ti18n.text(args), throwable);
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.spi.logging.KLogger#isErrorEnabled()
-     */
-    @Override
     public boolean isErrorEnabled() {
         return this.kLogger.isErrorEnabled();
     }
 
-    /* (non-Javadoc)
-     * @see org.komodo.spi.logging.KLogger#debug(java.lang.String, java.lang.Object[])
-     */
-    @Override
     public synchronized void debug(String message, Object... args) {
-        kLogger.debug(message, args);
+        TextI18n ti18n = getI18n(message);
+        kLogger.debug(ti18n.text(args));
     }
 
-    /* (non-Javadoc)
-     * @see org.komodo.spi.logging.KLogger#debug(java.lang.String, java.lang.Throwable, java.lang.Object[])
-     */
-    @Override
     public synchronized void debug(String message, Throwable throwable, Object... args) {
-        kLogger.debug(message, throwable, args);
+        TextI18n ti18n = getI18n(message);
+        kLogger.debug(ti18n.text(args), throwable);
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.spi.logging.KLogger#isDebugEnabled()
-     */
-    @Override
     public boolean isDebugEnabled() {
         return this.kLogger.isDebugEnabled();
     }
 
-    /* (non-Javadoc)
-     * @see org.komodo.spi.logging.KLogger#trace(java.lang.String, java.lang.Object[])
-     */
-    @Override
     public synchronized void trace(String message, Object... args) {
-        kLogger.trace(message, args);
+        TextI18n ti18n = getI18n(message);
+        kLogger.trace(ti18n.text(args));
     }
 
-    /* (non-Javadoc)
-     * @see org.komodo.spi.logging.KLogger#trace(java.lang.String, java.lang.Throwable, java.lang.Object[])
-     */
-    @Override
     public synchronized void trace(String message, Throwable throwable, Object... args) {
-        kLogger.trace(message, throwable, args);
+        TextI18n ti18n = getI18n(message);
+        kLogger.trace(ti18n.text(args), throwable);
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.spi.logging.KLogger#isTraceEnabled()
-     */
-    @Override
     public boolean isTraceEnabled() {
         return this.kLogger.isTraceEnabled();
     }
-
 }

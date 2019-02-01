@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
 import org.junit.Before;
@@ -44,7 +45,7 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.rest.AuthHandlingFilter;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
-import org.komodo.rest.TeiidSwarmMetadataInstance;
+import org.komodo.rest.TeiidMetadataInstance;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.runtime.SyndesisDataSource;
@@ -72,13 +73,13 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
 
     private TeiidOpenShiftClient testDataSetup() throws KException {
         AuthHandlingFilter.threadOAuthCredentials.set(new OAuthCredentials("token", "user"));
-        TeiidSwarmMetadataInstance metadata = Mockito.mock(TeiidSwarmMetadataInstance.class);
+        TeiidMetadataInstance metadata = Mockito.mock(TeiidMetadataInstance.class);
 
         HashSet<SyndesisDataSource> sources = new HashSet<>();
         sources.add(getMySQLDS());
         sources.add(getPostgreSQL());
 
-        TeiidOpenShiftClient client = new TeiidOpenShiftClient(metadata) {
+        TeiidOpenShiftClient client = new TeiidOpenShiftClient(metadata, new EncryptionComponent("blah")) {
             @Override
             public Set<SyndesisDataSource> getSyndesisSources(OAuthCredentials authToken) throws KException {
                 return sources;
@@ -128,6 +129,18 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
     }
 
     @Test
+    public void testDecryption() throws Exception {
+        EncryptionComponent ec = new EncryptionComponent("GpADvcFIBgqMUwSfvljdQ1N5qeQFNXaAToht2O4kgBW2bIalkcPWphs54C4e7mjq");
+        Properties credentialData = new Properties();
+        credentialData.put("password", "»ENC:7965a258e2f0029b0e5e797b81917366ed11608f195755fc4fcfebecfca4781917de289fb8579d306741b5ec5680a686");
+        credentialData.put("schema", "sampledb");
+        credentialData.put("url", "jdbc:mysql://localhost:1521/sampledb");
+        credentialData.put("user", "johnny");
+        Properties decrypted = ec.decrypt(credentialData);
+        assertThat(credentialData.getProperty("password").equals(decrypted.getProperty("password")), is(false));
+    }
+
+    @Test
     public void testGeneratePomXML() throws Exception {
         TeiidOpenShiftClient generator = testDataSetup();
 
@@ -150,17 +163,24 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
         PublishConfiguration config = new PublishConfiguration();
         Collection<EnvVar> variables = generator
                 .getEnvironmentVariablesForVDBDataSources(authToken, getTransaction(), vdbs[0], config);
-        assertThat( variables.size(), is(9));
-        String javaOptions= " -Dswarm.datasources.data-sources.accounts-xyz.driver-name=postgresql"
-                + " -Dswarm.datasources.data-sources.accounts-xyz.user-name=$(ACCOUNTS_XYZ_USER)"
-                + " -Dswarm.datasources.data-sources.accounts-xyz.jndi-name=java:/accountsDS"
-                + " -Dswarm.datasources.data-sources.accounts-xyz.password=$(ACCOUNTS_XYZ_PASSWORD)"
-                + " -Dswarm.datasources.data-sources.accounts-xyz.connection-url=$(ACCOUNTS_XYZ_URL)"
+        assertThat( variables.size(), is(7));
+        String javaOptions= " -Dspring.datasource.accounts-xyz.password=$(ACCOUNTS_XYZ_PASSWORD)"
+                + " -Dspring.datasource.accounts-xyz.username=$(ACCOUNTS_XYZ_USER)"
+                + " -Dspring.datasource.accounts-xyz.url=$(ACCOUNTS_XYZ_URL)"
                 + " -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
                 + " -Djava.net.preferIPv4Addresses=true -Djava.net.preferIPv4Stack=true"
                 + " -XX:ParallelGCThreads=1 -XX:ConcGCThreads=1"
                 + " -Djava.util.concurrent.ForkJoinPool.common.parallelism=1"
                 + " -Dio.netty.eventLoopThreads=2";
+        
+        String javaOptions2= " -Dspring.datasource.accounts-xyz.username=$(ACCOUNTS_XYZ_USER)"
+                + " -Dspring.datasource.accounts-xyz.password=$(ACCOUNTS_XYZ_PASSWORD)"
+                + " -Dspring.datasource.accounts-xyz.url=$(ACCOUNTS_XYZ_URL)"
+                + " -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
+                + " -Djava.net.preferIPv4Addresses=true -Djava.net.preferIPv4Stack=true"
+                + " -XX:ParallelGCThreads=1 -XX:ConcGCThreads=1"
+                + " -Djava.util.concurrent.ForkJoinPool.common.parallelism=1"
+                + " -Dio.netty.eventLoopThreads=2";        
 
         assertThat(variables, hasItem(new EnvVar("ACCOUNTS_XYZ_USER", "johnny", null)));
         assertThat(variables, hasItem(new EnvVar("ACCOUNTS_XYZ_URL", "jdbc:mysql://localhost:1521/sampledb", null)));
@@ -170,11 +190,13 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
 //                .withValueFrom(new EnvVarSourceBuilder().withConfigMapKeyRef(new ConfigMapKeySelectorBuilder()
 //                        .withName("syndesis-server-config").withKey("encrypt.key").build()).build()).build()));
 
-        assertThat(variables, hasItem(new EnvVar("AB_JOLOKIA_OFF", "true", null)));
-        assertThat(variables, hasItem(new EnvVar("AB_OFF", "true", null)));
         assertThat(variables, hasItem(new EnvVar("GC_MAX_METASPACE_SIZE", "256", null)));
 
-        assertThat(variables, hasItem(new EnvVar("JAVA_OPTIONS", javaOptions, null)));
-        
+        try {
+        	assertThat(variables, hasItem(new EnvVar("JAVA_OPTIONS", javaOptions, null)));
+        } catch (Throwable e) {
+        	assertThat(variables, hasItem(new EnvVar("JAVA_OPTIONS", javaOptions2, null)));
+		}
+
     }
 }

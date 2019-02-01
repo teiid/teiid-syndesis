@@ -32,7 +32,9 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.junit.Before;
 import org.junit.Test;
+import org.komodo.importer.ImportMessages;
 import org.komodo.rest.RestBasicEntity;
 import org.komodo.rest.relational.KomodoProperties;
 import org.komodo.rest.relational.RestEntityFactory;
@@ -41,23 +43,26 @@ import org.komodo.rest.relational.request.KomodoSearcherAttributes;
 import org.komodo.rest.relational.response.KomodoSavedSearcher;
 import org.komodo.rest.relational.response.RestVdb;
 import org.komodo.rest.relational.response.RestVdbModel;
+import org.komodo.rest.service.AbstractServiceTest;
 import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
+import org.komodo.test.utils.TestUtilities;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 @SuppressWarnings( {"javadoc", "nls"} )
-@net.jcip.annotations.NotThreadSafe
 public class KomodoSearchServiceTestInSuite extends AbstractKomodoServiceTest {
 
-    public KomodoSearchServiceTestInSuite() throws Exception {
-        super();
+    @Before
+    public void setup() throws Exception{
+        ImportMessages msgs = importVdb(TestUtilities.portfolioExample(), AbstractServiceTest.USER_NAME);
+        assertTrue(msgs.getErrorMessages().isEmpty());
     }
 
     @Test
@@ -345,7 +350,7 @@ public class KomodoSearchServiceTestInSuite extends AbstractKomodoServiceTest {
         addBody(request, searchAttr);
         executeOk(request);
 
-        Repository repository = restApp().getDefaultRepository();
+        Repository repository = engine.getDefaultRepository();
         UnitOfWork uow = repository.createTransaction(USER_NAME,
                                                       getClass().getSimpleName() + COLON + "FindSavedSearches" + COLON + System.currentTimeMillis(),
                                                       true, null);
@@ -379,7 +384,7 @@ public class KomodoSearchServiceTestInSuite extends AbstractKomodoServiceTest {
         addBody(request, searchAttr);
         executeOk(request);
 
-        Repository repository = restApp().getDefaultRepository();
+        Repository repository = engine.getDefaultRepository();
         UnitOfWork uow = repository.createTransaction(USER_NAME,
                                                       getClass().getSimpleName() + COLON + "FindSavedSearches" + COLON + System.currentTimeMillis(),
                                                       true, null);
@@ -410,7 +415,7 @@ public class KomodoSearchServiceTestInSuite extends AbstractKomodoServiceTest {
         addJsonConsumeContentType(request);
         execute(request);
 
-        Repository repository = restApp().getDefaultRepository();
+        Repository repository = engine.getDefaultRepository();
         UnitOfWork uow = repository.createTransaction(USER_NAME,
                                                       getClass().getSimpleName() + COLON + "FindSavedSearches" + COLON + System.currentTimeMillis(),
                                                       true, null);
@@ -762,7 +767,7 @@ public class KomodoSearchServiceTestInSuite extends AbstractKomodoServiceTest {
         addJsonConsumeContentType(request);
         addBody(request, searchAttr);
         HttpResponse response = execute(request);
-        
+
         assertResponse(response, HttpStatus.SC_FORBIDDEN);
 
         String entity = extractResponse(response);

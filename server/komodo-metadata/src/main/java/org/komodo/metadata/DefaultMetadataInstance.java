@@ -640,26 +640,13 @@ public class DefaultMetadataInstance implements MetadataInstance {
         }
     }
 
-    /**
-     * Append the suffix for dynamic VDB to the vdb name if not already appended.
-     * 
-     * @param vdbName
-     * @return
-     */
-    protected String appendDynamicVdbSuffix(String vdbName) {
-        if (vdbName.endsWith(TeiidVdb.DYNAMIC_VDB_SUFFIX))
-            return vdbName;
-
-        return vdbName + TeiidVdb.DYNAMIC_VDB_SUFFIX;
-    }
-
     @Override
     public void undeployDynamicVdb(String vdbName) throws KException {
         checkStarted();
         try {
             TeiidVdb vdb = getVdb(vdbName);
             if (vdb != null) {
-                admin().undeploy(appendDynamicVdbSuffix(vdbName));
+                admin().undeploy(vdbName);
             }
             vdb = getVdb(vdbName);
         } catch (Exception ex) {

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.integration</groupId>
   <artifactId>
@@ -7,72 +8,49 @@
   </artifactId>
   <name>Data Access Service</name>
   <version>1.0.0</version>
-  <packaging>vdb</packaging>
+  <packaging>jar</packaging>
   <properties>
-    <version.thorntail.teiid>
-      ${version.thorntail.teiid}
-    </version.thorntail.teiid>
+    <version.springboot.teiid>
+      ${version.springboot.teiid}
+    </version.springboot.teiid>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <version.teiid>
-      ${version.org.teiid}
-    </version.teiid>
     <version.mysql>${version.mysql}</version.mysql>
     <version.org.mongodb>${version.org.mongodb}</version.org.mongodb>
-    <version.postgresql>${version.postgresql}</version.postgresql>    
+    <version.postgresql>${version.postgresql}</version.postgresql>
   </properties>
   <dependencyManagement>
     <dependencies>
       <dependency>
         <groupId>org.teiid</groupId>
-        <artifactId>thorntail-bom</artifactId>
-        <version>${version.thorntail.teiid}</version>
+        <artifactId>spring-boot-bom</artifactId>
+        <version>${version.springboot.teiid}</version>
         <scope>import</scope>
         <type>pom</type>
       </dependency>
     </dependencies>
   </dependencyManagement>
+  <repositories>
+     <repository>
+       <id>snapshots-repo</id>
+       <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+       <releases><enabled>false</enabled></releases>
+       <snapshots><enabled>true</enabled></snapshots>
+     </repository>
+  </repositories>
+
   <build>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>true</filtering>
-      </resource>
-    </resources>
     <plugins>
       <plugin>
-        <groupId>io.thorntail</groupId>
-        <artifactId>thorntail-maven-plugin</artifactId>
-        <version>${version.thorntail}</version>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring-boot.version}</version>
         <executions>
           <execution>
             <goals>
-              <goal>package</goal>
+              <goal>repackage</goal>
             </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <arguments>
-            <argument>-S</argument>
-            <argument>local</argument>
-          </arguments>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.teiid</groupId>
-        <artifactId>vdb-maven-plugin</artifactId>
-        <version>1.3</version>
-        <extensions>true</extensions>
-        <executions>
-          <execution>
-            <id>test</id>
-            <goals>
-              <goal>vdb</goal>
-            </goals>
-            <configuration>
-              <!-- your configuration here -->
-            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -80,17 +58,15 @@
   </build>
   <dependencies>
     <!--vdb-dependencies-->
+
     <dependency>
       <groupId>org.teiid</groupId>
-      <artifactId>thorntail-runtime</artifactId>
+      <artifactId>teiid-spring-boot-starter</artifactId>
     </dependency>
-    <dependency>
-        <groupId>io.thorntail</groupId>
-        <artifactId>management</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.thorntail</groupId>
-      <artifactId>jaeger</artifactId>
-    </dependency>
+	<dependency>
+	  <groupId>io.opentracing.contrib</groupId>
+	  <artifactId>opentracing-spring-jaeger-web-starter</artifactId>
+	  <version>1.0.1</version>
+	</dependency>
   </dependencies>
 </project>

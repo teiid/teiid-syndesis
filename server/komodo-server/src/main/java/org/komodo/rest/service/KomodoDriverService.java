@@ -19,16 +19,16 @@ package org.komodo.rest.service;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import org.komodo.core.KEngine;
+
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.resource.Driver;
 import org.komodo.relational.workspace.WorkspaceManager;
@@ -43,6 +43,8 @@ import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.spi.runtime.ConnectionDriver;
 import org.komodo.utils.StringUtils;
+import org.springframework.stereotype.Component;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -53,21 +55,12 @@ import io.swagger.annotations.ApiResponses;
 /**
  * A Komodo REST service for obtaining Driver information from the workspace.
  */
+@Component
 @Path(V1Constants.WORKSPACE_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.DRIVERS_SEGMENT)
 @Api(tags = {V1Constants.DRIVERS_SEGMENT})
 public final class KomodoDriverService extends KomodoService {
 
     private static final int ALL_AVAILABLE = -1;
-
-    /**
-     * @param engine
-     *        the Komodo Engine (cannot be <code>null</code> and must be started)
-     * @throws WebApplicationException
-     *         if there is a problem obtaining the {@link WorkspaceManager workspace manager}
-     */
-    public KomodoDriverService( final KEngine engine ) throws WebApplicationException {
-        super( engine );
-    }
 
     /**
      * Get the Drivers from the komodo repository
@@ -215,5 +208,5 @@ public final class KomodoDriverService extends KomodoService {
             return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.DRIVER_SERVICE_GET_DRIVERS_ERROR);
         }
     }
-        
+
 }

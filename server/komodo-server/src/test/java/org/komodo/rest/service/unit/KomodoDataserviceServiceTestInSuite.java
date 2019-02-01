@@ -19,7 +19,6 @@ package org.komodo.rest.service.unit;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -42,9 +41,8 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.junit.Rule;
+import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.rules.TestName;
 import org.komodo.relational.ViewBuilderCriteriaPredicate;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.RestLink;
@@ -60,15 +58,7 @@ import org.komodo.rest.service.KomodoVdbService;
 import org.komodo.test.utils.TestUtilities;
 
 @SuppressWarnings( {"javadoc", "nls"} )
-@net.jcip.annotations.NotThreadSafe
 public class KomodoDataserviceServiceTestInSuite extends AbstractKomodoServiceTest {
-
-    @Rule
-    public TestName testName = new TestName();
-
-    public KomodoDataserviceServiceTestInSuite() throws Exception {
-        super();
-    }
 
     @Test
     public void shouldGetDataservices() throws Exception {
@@ -451,9 +441,6 @@ public class KomodoDataserviceServiceTestInSuite extends AbstractKomodoServiceTe
         HttpGet request = request(uri, RequestType.GET, MediaType.TEXT_PLAIN_TYPE);
         HttpResponse response = execute(request);
         assertThat(response.getStatusLine().getStatusCode(), is(HttpStatus.SC_INTERNAL_SERVER_ERROR));
-
-        String errorMsg = extractResponse(response);
-        assertThat(errorMsg, startsWith("RESTEASY"));
     }
 
     @Test
@@ -469,6 +456,8 @@ public class KomodoDataserviceServiceTestInSuite extends AbstractKomodoServiceTe
     }
 
     @Test
+    @Ignore
+    // invalid test any client should encode the URL before sending it over.
     public void shouldFailNameValidationWhenNameHasBackslash() throws Exception {
         URI dsUri = uriBuilder().workspaceDataservicesUri();
         URI uri = UriBuilder.fromUri(dsUri).path(V1Constants.NAME_VALIDATION_SEGMENT).path("\\").build();
@@ -499,9 +488,6 @@ public class KomodoDataserviceServiceTestInSuite extends AbstractKomodoServiceTe
         HttpGet request = request(uri, RequestType.GET, MediaType.TEXT_PLAIN_TYPE);
         HttpResponse response = execute(request);
         assertThat(response.getStatusLine().getStatusCode(), is(HttpStatus.SC_INTERNAL_SERVER_ERROR));
-
-        String errorMsg = extractResponse(response);
-        assertThat(errorMsg, startsWith("RESTEASY"));
     }
 
     @Test
@@ -608,11 +594,11 @@ public class KomodoDataserviceServiceTestInSuite extends AbstractKomodoServiceTe
         final String rightColumn = "rightCol";
         final String type = "INNER_JOIN";
         final String operator = "EQ";
-        
+
         // setup test by creating view and view editor state
         final String modelName = "MyModel";
         this.serviceTestUtilities.createVdbModelView( vdbName, modelName, viewName, USER_NAME );
-        this.serviceTestUtilities.addViewEditorState( USER_NAME, editorStateId, 
+        this.serviceTestUtilities.addViewEditorState( USER_NAME, editorStateId,
         		                                                 undoId, undoArgs, redoId, redoArgs,
         		                                                 viewName, viewDescr, sourcePaths,
         		                                                 compName, compDescr, compLeftSource, compRightSource,
@@ -624,5 +610,5 @@ public class KomodoDataserviceServiceTestInSuite extends AbstractKomodoServiceTe
         executeOk( deleteRequest );
         assertThat( this.serviceTestUtilities.viewEditorStateExists( USER_NAME, editorStateId ), is( false ) );
     }
-    
+
 }

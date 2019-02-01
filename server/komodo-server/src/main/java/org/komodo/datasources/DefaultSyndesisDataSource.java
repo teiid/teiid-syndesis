@@ -93,6 +93,6 @@ public class DefaultSyndesisDataSource implements SyndesisDataSource {
     }
 
     public Properties convertToDataSourceProperties() {
-        return this.definition.getDataSourceProperties(this);
+        return this.definition.getInternalTeiidDataSourceProperties(this);
     }
 }
