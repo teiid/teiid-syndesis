@@ -24,7 +24,7 @@ git clone git@github.com:teiid/teiid-komodo.git
 ```
 cd syndesis
 # install syndesis in minishift
-tools/bin/syndesis minishift --install --project syndesis --vm-driver virtualbox [--memory 6144 --disk-size 40GB]
+tools/bin/syndesis minishift --install --project syndesis --vm-driver virtualbox --full-reset [--memory 6144 --disk-size 40GB]
 
 # wait until the Minishift is started and you logged using oc login, then proceed with next step
 
@@ -37,7 +37,7 @@ tools/bin/syndesis build -m operator -i
 # invoke the operator with new template, replace will replace previous duplicate ones
 oc replace -f install/operator/deploy/syndesis.yml
 
-# fresh ui to get local changes
+# fresh ui to get local changes (Note: if you are working react POC this will be different, you need to stop the UI pod using the OS console to push the react based UI in place)
 tools/bin/syndesis -m ui --image
 
 ```
