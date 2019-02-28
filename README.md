@@ -13,7 +13,6 @@ Teiid Komodo is now part of the [Syndesis](https://syndesis.io) project. This wo
 ```
 git clone --branch=teiid-syndesis git@github.com:rareddy/syndesis.git
 cd syndesis
-tools/bin/syndesis build --flash
 ```
 - Clone Teiid Komodo Repository 
 ```
@@ -23,10 +22,16 @@ git clone git@github.com:teiid/teiid-komodo.git
 - Now follow below script
 ```
 cd syndesis
+minishift addons enable admin-user
+
 # install syndesis in minishift
-tools/bin/syndesis minishift --install --project syndesis --vm-driver virtualbox --full-reset [--memory 6144 --disk-size 40GB]
+tools/bin/syndesis minishift --install --project syndesis --vm-driver virtualbox --full-reset --memory 8GB --disk-size 40GB
 
 # wait until the Minishift is started and you logged using oc login, then proceed with next step
+
+oc login -u system:admin
+
+tools/bin/syndesis install --setup --grant developer --cluster --project syndesis
 
 # Build syndesis templates with Komodo images
 install/generator/run.sh
@@ -36,9 +41,6 @@ tools/bin/syndesis build -m operator -i
 
 # invoke the operator with new template, replace will replace previous duplicate ones
 oc replace -f install/operator/deploy/syndesis.yml
-
-# fresh ui to get local changes (Note: if you are working react POC this will be different, you need to stop the UI pod using the OS console to push the react based UI in place)
-tools/bin/syndesis -m ui --image
 
 ```
 

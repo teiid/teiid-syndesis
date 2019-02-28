@@ -1,8 +1,0 @@
-/*
- * Tree selection area
- */
-.tree-selection-area {
-  border: 1px solid #bbbbbb;
-  overflow-y: auto;
-  height: 250px;
-}

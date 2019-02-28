@@ -1,8 +1,0 @@
-<div class="object-card-container dataservices-container">
-  <div *ngFor="let dataservice of dataservices">
-    <btl-dataservice-card-component [dataservice]="dataservice"
-                                    [selectedDataservices]="selectedDataservices"
-                                    (cardEvent)="onCardEvent($event)"
-                                    (selectEvent)="onSelectEvent($event)"></btl-dataservice-card-component>
-  </div>
-</div>
