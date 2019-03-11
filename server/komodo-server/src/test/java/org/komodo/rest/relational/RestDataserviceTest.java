@@ -28,6 +28,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.komodo.openshift.BuildStatus;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.resource.Driver;
@@ -55,6 +56,7 @@ public final class RestDataserviceTest {
     private static final String SERVICE_VIEW_MODEL = "serviceViewModel";
     private static final String SERVICE_VIEW1 = "serviceView1";
     private static final String SERVICE_VIEW2 = "serviceView2";
+    private static final String DATASERVICE_PUBLISHED_STATE = BuildStatus.Status.NOTFOUND.name();
 
     private RestDataservice dataservice;
 
@@ -75,6 +77,7 @@ public final class RestDataserviceTest {
         copy.setViewDefinitionNames(this.dataservice.getViewDefinitionNames());
         copy.setDriverTotal(this.dataservice.getDriverTotal());
         copy.setConnectionTotal(this.dataservice.getConnectionTotal());
+        copy.setPublishedState(this.dataservice.getPublishedState());
 
         return copy;
     }
@@ -112,6 +115,7 @@ public final class RestDataserviceTest {
         this.dataservice.setServiceVdbName(SERVICE_VDB_NAME);
         this.dataservice.setServiceVdbVersion(SERVICE_VDB_VERSION);
         this.dataservice.setServiceViewModel(SERVICE_VIEW_MODEL);
+        this.dataservice.setPublishedState(DATASERVICE_PUBLISHED_STATE);
         String[] viewNames = new String[2];
         viewNames[0] = SERVICE_VIEW1;
         viewNames[1] = SERVICE_VIEW2;

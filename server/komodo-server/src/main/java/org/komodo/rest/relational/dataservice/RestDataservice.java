@@ -21,6 +21,7 @@ import java.net.URI;
 import java.util.Properties;
 
 import org.komodo.core.KomodoLexicon;
+import org.komodo.openshift.BuildStatus;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.resource.Driver;
@@ -75,6 +76,11 @@ public final class RestDataservice extends RestBasicEntity {
     public static final String DATASERVICE_CONNECTION_TOTAL_LABEL = "connections"; //$NON-NLS-1$
 
     /**
+     * Label used to describe dataservice published state
+     */
+    public static final String DATASERVICE_PUBLISHED_STATE_LABEL = "publishedState"; //$NON-NLS-1$
+
+    /**
      * fqn table option key
      */
     private final static String TABLE_OPTION_FQN = "teiid_rel:fqn"; //$NON-NLS-1$
@@ -125,6 +131,9 @@ public final class RestDataservice extends RestBasicEntity {
 
         Driver[] drivers = dataService.getDrivers(uow);
         setDriverTotal(drivers != null ? drivers.length : 0);
+        
+        // Initialize the published state to NOTFOUND
+        setPublishedState(BuildStatus.Status.NOTFOUND.name());
 
         addLink(new RestLink(LinkType.SELF, getUriBuilder().dataserviceUri(LinkType.SELF, settings)));
         addLink(new RestLink(LinkType.PARENT, getUriBuilder().dataserviceUri(LinkType.PARENT, settings)));
@@ -235,6 +244,21 @@ public final class RestDataservice extends RestBasicEntity {
      */
     public void setDriverTotal(int total) {
         tuples.put(DATASERVICE_DRIVER_TOTAL_LABEL, total);
+    }
+    
+    /**
+     * @return the service published state (never empty)
+     */
+    public String getPublishedState() {
+        Object publishedState = tuples.get(DATASERVICE_PUBLISHED_STATE_LABEL);
+        return publishedState != null ? publishedState.toString() : null;
+    }
+
+    /**
+     * @param publishedState the published state
+     */
+    public void setPublishedState(String publishedState) {
+        tuples.put(DATASERVICE_PUBLISHED_STATE_LABEL, publishedState);
     }
     
 }

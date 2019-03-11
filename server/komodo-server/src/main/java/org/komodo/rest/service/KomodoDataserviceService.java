@@ -30,7 +30,6 @@ import static org.komodo.rest.relational.RelationalMessages.Error.DATASERVICE_SE
 import static org.komodo.rest.relational.RelationalMessages.Error.DATASERVICE_SERVICE_NAME_VALIDATION_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.DATASERVICE_SERVICE_SERVICE_NAME_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.DATASERVICE_SERVICE_UPDATE_DATASERVICE_ERROR;
-
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,7 +39,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -54,9 +52,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
-
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.SynchronousCallback;
+import org.komodo.openshift.BuildStatus;
+import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.relational.ServiceVdbGenerator;
 import org.komodo.relational.ViewBuilderCriteriaPredicate;
 import org.komodo.relational.connection.Connection;
@@ -95,9 +94,9 @@ import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.spi.runtime.ConnectionDriver;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.teiid.language.SQLConstants;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -113,11 +112,14 @@ import io.swagger.annotations.ApiResponses;
 @Path(V1Constants.WORKSPACE_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.DATA_SERVICES_SEGMENT)
 @Api(tags = { V1Constants.DATA_SERVICES_SEGMENT })
 public final class KomodoDataserviceService extends KomodoService
-        implements TeiidSqlConstants.Reserved, TeiidSqlConstants.Tokens, TeiidSqlConstants.Phrases {
+        implements TeiidSqlConstants.Tokens, TeiidSqlConstants.Phrases {
 
     private static final int ALL_AVAILABLE = -1;
 
     private static final StringNameValidator VALIDATOR = new StringNameValidator();
+
+    @Autowired
+    private TeiidOpenShiftClient openshiftClient;
 
     /**
      * Get the Dataservices from the komodo repository
@@ -226,6 +228,11 @@ public final class KomodoDataserviceService extends KomodoService
                     if ((size == ALL_AVAILABLE) || (entities.size() < size)) {
                         RestDataservice entity = entityFactory.create(dataService, uriInfo.getBaseUri(), uow,
                                 properties);
+                        
+                        // Set published status of dataservice
+                        BuildStatus status = this.openshiftClient.getVirtualizationStatus(dataService.getServiceVdb(uow).getName(uow));
+                        entity.setPublishedState(status.status().name());
+
                         entities.add(entity);
                         LOGGER.debug("getDataservices:Dataservice '{0}' entity was constructed", //$NON-NLS-1$
                                 dataService.getName(uow));
@@ -293,6 +300,11 @@ public final class KomodoDataserviceService extends KomodoService
             KomodoProperties properties = new KomodoProperties();
             final RestDataservice restDataservice = entityFactory.create(dataservice, uriInfo.getBaseUri(), uow,
                     properties);
+            
+            // Set published status of dataservice
+            BuildStatus status = this.openshiftClient.getVirtualizationStatus(dataservice.getServiceVdb(uow).getName(uow));
+            restDataservice.setPublishedState(status.status().name());
+            
             LOGGER.debug("getDataservice:Dataservice '{0}' entity was constructed", dataservice.getName(uow)); //$NON-NLS-1$
             return commit(uow, mediaTypes, restDataservice);
 
