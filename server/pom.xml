@@ -130,7 +130,7 @@
 	<version.io.opentracing.contrib>1.0.1</version.io.opentracing.contrib>
 	
     <version.commons.io>2.5</version.commons.io>
-    <version.org.teiid>11.2.0</version.org.teiid>
+    <version.org.teiid>12.0.0</version.org.teiid>
 
     <!-- Instruct the build to use only UTF-8 encoding for source code -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

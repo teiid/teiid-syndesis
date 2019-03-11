@@ -695,7 +695,7 @@ public class NodeGenerator implements StringConstants {
             visitSourceHint(node, obj.getSourceHint());
 
             setProperty(node, TeiidSqlLexicon.Command.TYPE_PROP_NAME, obj.getType());
-            setProperty(node, TeiidSqlLexicon.Command.IS_RESOLVED_PROP_NAME, obj.isResolved());
+            setProperty(node, TeiidSqlLexicon.Command.IS_RESOLVED_PROP_NAME, false);
 
             visitObject(node, TeiidSqlLexicon.Command.OPTION_REF_NAME, obj.getOption());
         }
