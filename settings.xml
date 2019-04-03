@@ -68,7 +68,7 @@
 				<repository>
 					<id>redhat-techpreview-all-repository</id>
 					<name>Red Hat Tech Preview repository (all)</name>
-					<url>http://origin-maven.repository.redhat.com/techpreview/all/
+					<url>https://origin-maven.repository.redhat.com/techpreview/all/
 					</url>
 					<layout>default</layout>
 					<releases>
@@ -85,7 +85,7 @@
 				<pluginRepository>
 					<id>redhat-techpreview-all-repository</id>
 					<name>Red Hat Tech Preview repository (all)</name>
-					<url>http://origin-maven.repository.redhat.com/techpreview/all/
+					<url>https://origin-maven.repository.redhat.com/techpreview/all/
 					</url>
 					<layout>default</layout>
 					<releases>
@@ -105,7 +105,7 @@
 				<repository>
 					<id>jboss-public-repository-group</id>
 					<name>JBoss Public Maven Repository Group</name>
-					<url>http://repository.jboss.org/nexus/content/groups/public/</url>
+					<url>https://repository.jboss.org/nexus/content/groups/public/</url>
 					<layout>default</layout>
 					<releases>
 						<enabled>true</enabled>
@@ -121,7 +121,7 @@
 				<pluginRepository>
 					<id>jboss-public-repository-group</id>
 					<name>JBoss Public Maven Repository Group</name>
-					<url>http://repository.jboss.org/nexus/content/groups/public/</url>
+					<url>https://repository.jboss.org/nexus/content/groups/public/</url>
 					<layout>default</layout>
 					<releases>
 						<enabled>true</enabled>
@@ -140,7 +140,7 @@
 				<repository>
 					<id>jboss-developer-repository-group</id>
 					<name>JBoss Developer Maven Repository Group</name>
-					<url>http://repository.jboss.org/nexus/content/groups/developer/
+					<url>https://repository.jboss.org/nexus/content/groups/developer/
 					</url>
 					<layout>default</layout>
 					<releases>
