@@ -47,6 +47,8 @@ oc replace -f install/operator/deploy/syndesis.yml
 At this point Syndesis should be running with `komodo-server` in it, now if you are working on any changes for development in komodo, make you code edits, once done execute below
 ```
 cd teiid-komodo
+oc login -u developer (if new terminal)
+oc project syndesis (if current project is myproject)
 mvn install -Pimage [-DskipTests]
 ```
 
