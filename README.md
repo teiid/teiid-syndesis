@@ -63,6 +63,7 @@ The built images are deployed with java virtual machine debugging enabled, using
 The port 5005 is not offered by any of the routes, although a route can be setup if preferred. A quick alternative is to [port-forward](https://docs.openshift.com/enterprise/3.0/dev_guide/port_forwarding.html) the port to the localhost using the following command:
 
 > oc get pods
+
 > oc port-forward komodo-server-x-yyyy 5005:5005
 
 where *vdb-builder-x-yyyy* is the latest deployed `komodo-server` pod.
