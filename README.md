@@ -47,11 +47,19 @@ oc replace -f install/operator/deploy/syndesis.yml
 At this point Syndesis should be running with `komodo-server` in it, now if you are working on any changes for development in komodo, make you code edits, once done execute below
 ```
 cd teiid-komodo
+oc login -u developer (if new terminal)
+oc project syndesis (if current project is myproject)
 mvn install -Pimage [-DskipTests]
 ```
 
 Once the above build is done, it will replace the existing `komodo-server` instance with lastest one that has been just built with your latest changes.
 
+### Avoid updating with remote instance when working locally
+When working in the development mode, the server image will automatically will be replaced with one in the Docker repo in 15 minutes, to avoid it run the following on your OpenShift after above installation.
+
+```
+oc patch is komodo-server --type json -p="[{\"op\": \"replace\", \"path\": \"/spec/tags/0/from/kind\", \"value\": \"ImageStreamTag\"},{\"op\": \"replace\", \"path\": \"/spec/tags/0/from/name\", \"value\": \"komodo-server:latest\"},{\"op\": \"remove\", \"path\": \"/spec/tags/0/importPolicy\"}]"
+```
 
 #### Remote Debugging
 To enable the debugging of "komodo-server" instance, go to the OpenShift console where the application is deployed, and in the `komodo-server` deployment config's Environment variables add `JAVA_DEBUG` to `true` and then recyle the current pod such that new pod will be generated with new environment property.
@@ -61,6 +69,7 @@ The built images are deployed with java virtual machine debugging enabled, using
 The port 5005 is not offered by any of the routes, although a route can be setup if preferred. A quick alternative is to [port-forward](https://docs.openshift.com/enterprise/3.0/dev_guide/port_forwarding.html) the port to the localhost using the following command:
 
 > oc get pods
+
 > oc port-forward komodo-server-x-yyyy 5005:5005
 
 where *vdb-builder-x-yyyy* is the latest deployed `komodo-server` pod.

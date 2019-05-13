@@ -108,6 +108,7 @@ import io.fabric8.kubernetes.api.model.EnvVarBuilder;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.Quantity;
+import io.fabric8.kubernetes.api.model.ReplicationController;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
@@ -183,13 +184,47 @@ public class TeiidOpenShiftClient implements StringConstants {
                         }
                     }
 
+                    if (BuildStatus.Status.DELETE_SUBMITTED.equals(work.status())) {
+                        work.setLastUpdated();
+                        workQueue.poll(); // remove
+                        workQueue.offer(work); // add at end                        
+                        continue;
+                    }
+                    
+                    if (BuildStatus.Status.DELETE_REQUEUE.equals(work.status())) {
+                    	// requeue will change state to submitted and 
+                        work.setLastUpdated();
+                        workQueue.poll(); // remove
+                        deleteVirtualization(work.vdbName());
+                        workQueue.offer(work); // add at end
+                        continue;
+                    }
+                    
+                    if (BuildStatus.Status.DELETE_DONE.equals(work.status())) {
+                    	workQueue.poll(); //remove
+                    	continue;
+                    }
+                    
+                    if (BuildStatus.Status.FAILED.equals(work.status()) || BuildStatus.Status.CANCELLED.equals(work.status())) {
+                        work.setLastUpdated();
+                        workQueue.poll();
+                    	continue;
+                    }                    
+
                     if (BuildStatus.Status.SUBMITTED.equals(work.status())) {
                         //
                         // build submitted for configuration. This is done on another
                         // thread to avoid clogging up the monitor thread.
                         //
                         info(work.vdbName(), "Publishing - Submitted build to be configured");
+                        
+                        workQueue.poll(); // remove
+                        
                         configureBuild(work);
+                        
+                        work.setLastUpdated();
+                        workQueue.offer(work); // add at end
+                        
                         continue;
                     }
 
@@ -198,16 +233,7 @@ public class TeiidOpenShiftClient implements StringConstants {
                     // so ignore this build for the moment
                     //
                     if (Status.CONFIGURING.equals(work.status())) {
-                        //
-                        // Refresh work's timestamp to stop it being considered
-                        // too soon if its the only one on the queue
-                        //
                         work.setLastUpdated();
-
-                        //
-                        // Take it from the top and put it on the bottom
-                        // allowing other work to be considered
-                        //
                         workQueue.poll(); // remove
                         workQueue.offer(work); // add at end
 
@@ -217,8 +243,9 @@ public class TeiidOpenShiftClient implements StringConstants {
 
                     Build build = client.builds().inNamespace(work.namespace()).withName(work.buildName()).get();
                     if (build == null) {
-                        // build got deleted some how ignore..
+                        // build got deleted some how ignore, remove from monitoring..
                         error(work.vdbName(), "Publishing - No build available for building");
+                        workQueue.poll();
                         continue;
                     }
 
@@ -244,6 +271,12 @@ public class TeiidOpenShiftClient implements StringConstants {
                                 work.setStatus(Status.RUNNING);
                                 shouldReQueue = false;
                             } else {
+                            	if (!isDeploymentProgressing(dc)) {
+                            		work.setStatus(Status.FAILED);
+                            		info(work.vdbName(), "Publishing - Deployment seems to be failed, this could be "
+                            				+ "due to vdb failure, rediness check failed. Wait threshold is 2 minutes.");
+                            		shouldReQueue = false;
+                            	}
                                 debug(work.vdbName(), "Publishing - Deployment not ready");
                                 DeploymentCondition cond = getDeploymentConfigStatus(dc);
                                 if (cond != null) {
@@ -278,14 +311,9 @@ public class TeiidOpenShiftClient implements StringConstants {
                         if (shouldReQueue) {
                             workQueue.offer(work); // add at end
                         } else {
-                            //
                             // Close the log as no longer needed actively
-                            //
                             closeLog(work.vdbName());
-
-                            //
                             // dispose of the publish config artifacts
-                            //
                             work.publishConfiguration().dispose();
                         }
                     }
@@ -887,35 +915,6 @@ public class TeiidOpenShiftClient implements StringConstants {
         }
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    private void deleteResouceAndWaitTillComplete(final String vdbName, Resource resource, int nAwaitTimeout) {
-        if (resource == null) {
-            return;
-        }
-        resource.delete();
-        final CountDownLatch readyLatch = new CountDownLatch(1);
-        Watcher w = new Watcher<Resource>() {
-            @Override
-            public void eventReceived(Action action, Resource resource) {
-                if (action.equals(Action.DELETED)) {
-                    debug(vdbName, "finished deleteing " + resource.get());
-                    readyLatch.countDown();
-                }
-            }
-
-            @Override
-            public void onClose(KubernetesClientException e) {
-                // Ignore
-            }
-        };
-
-        try (Watch watch = (Watch) resource.watch(w)) {
-            readyLatch.await(nAwaitTimeout, TimeUnit.SECONDS);
-        } catch (KubernetesClientException | InterruptedException e) {
-            error(vdbName, "Publishing - failed to delete the resource", e);
-        }
-    }
-
     private void createServices(final OpenShiftClient client, final String namespace,
             final String vdbName) {
         createService(client, namespace, vdbName, ProtocolType.ODATA.id(), 8080);
@@ -934,6 +933,16 @@ public class TeiidOpenShiftClient implements StringConstants {
         }
         return false;
     }
+    
+    private boolean isDeploymentProgressing(DeploymentConfig dc) {
+        List<DeploymentCondition> conditions = dc.getStatus().getConditions();
+        for (DeploymentCondition cond : conditions) {
+            if (cond.getType().equals("Progressing") && cond.getStatus().equals("True")) {
+                return true;
+            }
+        }
+        return false;
+    }    
 
     private DeploymentCondition getDeploymentConfigStatus(DeploymentConfig dc) {
         List<DeploymentCondition> conditions = dc.getStatus().getConditions();
@@ -996,14 +1005,7 @@ public class TeiidOpenShiftClient implements StringConstants {
     }
 
     protected void configureBuild(BuildStatus work) {
-        //
-        // Sets the status immediately since the task may have to wait
-        // if all threads are currently undergoing tasks. This ensures
-        // that the monitor thread will not try to do anything more with it.
-        //
-        info(work.vdbName(), "Publishing  - Adding configuring task");
-        work.setStatus(Status.CONFIGURING);
-
+    	work.setStatus(Status.CONFIGURING);
         configureService.execute(new Runnable() {
             @Override
             public void run() {
@@ -1078,11 +1080,7 @@ public class TeiidOpenShiftClient implements StringConstants {
                 } catch (Exception ex) {
                     work.setStatus(Status.FAILED);
                     work.setStatusMessage(ex.getLocalizedMessage());
-
                     error(work.vdbName(), "Publishing - Build failed", ex);
-
-                    work.setLastUpdated();
-                    workQueue.remove(work);
                 } finally {
                     if (client != null) {
                         client.close();
@@ -1266,58 +1264,67 @@ public class TeiidOpenShiftClient implements StringConstants {
         BuildStatus status = new BuildStatus(vdbName);
         status.setNamespace(namespace);
 
-        BuildConfig buildConfig = client.buildConfigs()
-                .inNamespace(namespace)
-                .withName(getBuildConfigName(vdbName)).get();
+        BuildList buildList = client.builds().inNamespace(namespace).withLabel("application", vdbName).list();
+        if ((buildList !=null) && !buildList.getItems().isEmpty()) {
+            Build build = buildList.getItems().get(0);
+            status.setBuildName(build.getMetadata().getName());
+            if (Builds.isCancelled(build.getStatus().getPhase())) {
+                status.setStatus(Status.CANCELLED);
+                status.setStatusMessage(build.getStatus().getMessage());
+            } else if (Builds.isFailed(build.getStatus().getPhase())) {
+                status.setStatus(Status.FAILED);
+                status.setStatusMessage(build.getStatus().getMessage());
+            } else if (Builds.isCompleted(build.getStatus().getPhase())) {
+                DeploymentConfig dc = client.deploymentConfigs().inNamespace(namespace).withName(vdbName).get();
+                if (dc != null) {
+                    status.setStatus(Status.DEPLOYING);
+                    status.setDeploymentName(dc.getMetadata().getName());
+                    if (isDeploymentInReadyState(dc)) {
+                        status.setStatus(Status.RUNNING);
 
-        if (buildConfig != null) {
-            BuildList buildList = client.builds().inNamespace(namespace).withLabel("application", vdbName).list();
-            if ((buildList !=null) && !buildList.getItems().isEmpty()) {
-                Build build = buildList.getItems().get(0);
-                status.setBuildName(build.getMetadata().getName());
-                if (Builds.isCancelled(build.getStatus().getPhase())) {
-                    status.setStatus(Status.CANCELLED);
-                    status.setStatusMessage(build.getStatus().getMessage());
-                } else if (Builds.isFailed(build.getStatus().getPhase())) {
-                    status.setStatus(Status.FAILED);
-                    status.setStatusMessage(build.getStatus().getMessage());
-                } else if (Builds.isCompleted(build.getStatus().getPhase())) {
-                    DeploymentConfig dc = client.deploymentConfigs().inNamespace(namespace).withName(vdbName).get();
-                    if (dc != null) {
-                        status.setStatus(Status.DEPLOYING);
-                        status.setDeploymentName(dc.getMetadata().getName());
-                        if (isDeploymentInReadyState(dc)) {
-                            status.setStatus(Status.RUNNING);
+                        //
+                        // Only if status is running then populate the routes
+                        // for this virtualization
+                        //
+                        ProtocolType[] types = { ProtocolType.ODATA, ProtocolType.JDBC, ProtocolType.ODBC };
+                        for (ProtocolType type : types) {
+                            RouteStatus route = getRoute(vdbName, type);
+                            if (route == null)
+                                continue;
 
-                            //
-                            // Only if status is running then populate the routes
-                            // for this virtualization
-                            //
-                            ProtocolType[] types = { ProtocolType.ODATA, ProtocolType.JDBC, ProtocolType.ODBC };
-                            for (ProtocolType type : types) {
-                                RouteStatus route = getRoute(vdbName, type);
-                                if (route == null)
-                                    continue;
-
-                                status.addRoute(route);
-                            }
+                            status.addRoute(route);
                         }
-
-                        DeploymentCondition cond = getDeploymentConfigStatus(dc);
-                        if (cond != null) {
-                            status.setStatusMessage(cond.getMessage());
-                        } else {
-                            status.setStatusMessage("Available condition not found in deployment, delete the service and re-deploy?");
-                        }
-                    } else {
-                        status.setStatusMessage("Build Completed, but no deployment found. Reason unknown, please redeploy");
+                    }
+                    
+                    if (!isDeploymentProgressing(dc)) {
                         status.setStatus(Status.FAILED);
                     }
+
+                    DeploymentCondition cond = getDeploymentConfigStatus(dc);
+                    if (cond != null) {
+                        status.setStatusMessage(cond.getMessage());
+                    } else {
+                        status.setStatusMessage("Available condition not found in deployment, delete the service and re-deploy?");
+                    }
                 } else {
-                    status.setStatus(Status.BUILDING);
-                    status.setStatusMessage(build.getStatus().getMessage());
+                    status.setStatusMessage("Build Completed, but no deployment found. Reason unknown, please redeploy");
+                    status.setStatus(Status.FAILED);
                 }
+            } else {
+                status.setStatus(Status.BUILDING);
+                status.setStatusMessage(build.getStatus().getMessage());
             }
+        } else {
+        	// special case when there is dangling replication controller after delete is found
+			List<ReplicationController> rcs = client.replicationControllers().inNamespace(namespace)
+					.withLabel("application", vdbName).list().getItems();
+			if (!rcs.isEmpty()) {
+				ReplicationController rc = rcs.get(0);
+				if (rc.getStatus().getReplicas() == 0) {
+                    status.setStatusMessage("Build Completed, but no deployment found. Reason unknown, please redeploy");
+                    status.setStatus(Status.FAILED);					
+				}
+			}
         }
         status.setLastUpdated();
         return status;
@@ -1358,66 +1365,129 @@ public class TeiidOpenShiftClient implements StringConstants {
         for (BuildStatus status: workQueue) {
             if (status.vdbName().equals(vdbName)) {
                 runningBuild = status;
-                workQueue.remove(status);
             }
         }
 
+        boolean queue = false;
         if (runningBuild == null) {
-            runningBuild = getVirtualizationStatus(vdbName);
+            runningBuild = getVirtualizationStatus(vdbName);            
+            queue = true;
         }
 
+        if (BuildStatus.Status.NOTFOUND.equals(runningBuild.status())) {
+        	return runningBuild;
+        }
+        
         info(vdbName, "Deleting virtualization deployed as Service");
         final String inProgressBuildName = runningBuild.buildName();
+        final BuildStatus status = runningBuild;
         configureService.submit(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                deleteVDBServiceResources(vdbName, inProgressBuildName);
+                deleteVDBServiceResources(vdbName, inProgressBuildName, status);
                 debug(vdbName, "finished deleteing " + vdbName + " service");
                 return true;
             }
         });
-        runningBuild.setStatusMessage("deleted submitted");
+        runningBuild.setStatus(Status.DELETE_SUBMITTED);
+        runningBuild.setStatusMessage("delete submitted");
+        // since delete is async process too, monitor it in the monitor thread.
+        if (queue) {
+        	workQueue.offer(runningBuild);
+        }
+        
+        // start the monitor thread is not active already
+        synchronized (monitorState) {
+            monitorWork();
+        }        
         return runningBuild;
     }
 
-    @SuppressWarnings("rawtypes")
-    private void deleteVDBServiceResources(String vdbName, String inProgressBuildName) {
+    private void deleteVDBServiceResources(String vdbName, String inProgressBuildName, BuildStatus status) {
         final OpenShiftClient client = openshiftClient();
         final String namespace = ApplicationProperties.getNamespace();
 
-        // delete routes first
-        Resource resource = client.routes().inNamespace(namespace).withName(vdbName + HYPHEN + ProtocolType.ODATA.id());
-        deleteResouceAndWaitTillComplete(vdbName, resource, 10);
-
-        // delete services next
-        resource = client.services().inNamespace(namespace).withName(vdbName + HYPHEN + ProtocolType.JDBC.id());
-        deleteResouceAndWaitTillComplete(vdbName, resource, 10);
-
-        resource = client.services().inNamespace(namespace).withName(vdbName + HYPHEN + ProtocolType.ODATA.id());
-        deleteResouceAndWaitTillComplete(vdbName, resource, 10);
-
-        resource = client.services().inNamespace(namespace).withName(vdbName + HYPHEN + ProtocolType.ODBC.id());
-        deleteResouceAndWaitTillComplete(vdbName, resource, 10);
-
-        resource = client.imageStreams().inNamespace(namespace).withName(vdbName);
-        deleteResouceAndWaitTillComplete(vdbName, resource, 10);
-
-        if (inProgressBuildName != null) {
-            resource = client.builds().inNamespace(namespace).withName(inProgressBuildName);
-            deleteResouceAndWaitTillComplete(vdbName, resource, 30);
+        try {
+	        // delete routes first
+	        client.routes().inNamespace(namespace).withName(vdbName + HYPHEN + ProtocolType.ODATA.id()).delete();
+	        // delete services next
+	        client.services().inNamespace(namespace).withName(vdbName + HYPHEN + ProtocolType.JDBC.id()).delete();
+	        client.services().inNamespace(namespace).withName(vdbName + HYPHEN + ProtocolType.ODATA.id()).delete();
+	        client.services().inNamespace(namespace).withName(vdbName + HYPHEN + ProtocolType.ODBC.id()).delete();
+        } catch (KubernetesClientException e ) {
+        	error(vdbName, e.getMessage());
+        	error(vdbName, "requeueing the delete request");
+        	status.setStatus(Status.DELETE_REQUEUE);
         }
-
-        resource = client.pods().inNamespace(namespace).withName(vdbName);
-        deleteResouceAndWaitTillComplete(vdbName, resource, 30);
-
-        resource = client.replicationControllers().inNamespace(namespace).withName(vdbName);
-        deleteResouceAndWaitTillComplete(vdbName, resource, 30);
-
-        resource = client.buildConfigs().inNamespace(namespace).withName(getBuildConfigName(vdbName));
-        deleteResouceAndWaitTillComplete(vdbName, resource, 30);
-
-        resource = client.deploymentConfigs().inNamespace(namespace).withName(vdbName);
-        deleteResouceAndWaitTillComplete(vdbName, resource, 30);
+        
+        try {
+	        // delete builds
+	        client.builds().inNamespace(namespace).withLabel("application", vdbName).delete();
+        } catch (KubernetesClientException e ) {
+        	error(vdbName, e.getMessage());
+        	error(vdbName, "requeueing the delete request");
+        	status.setStatus(Status.DELETE_REQUEUE);
+        }
+        try {
+	        // delete pods
+	        client.pods().inNamespace(namespace).withLabel("application", vdbName).delete();
+        } catch (KubernetesClientException e ) {
+        	error(vdbName, e.getMessage());
+        	error(vdbName, "requeueing the delete request");
+        	status.setStatus(Status.DELETE_REQUEUE);
+        }	       
+	    try {
+	        // delete image streams
+	        client.imageStreams().inNamespace(namespace).withLabel("application", vdbName).delete();
+        } catch (KubernetesClientException e ) {
+        	error(vdbName, e.getMessage());
+        	error(vdbName, "requeueing the delete request");
+        	status.setStatus(Status.DELETE_REQUEUE);
+        }        
+	    try {
+	        // delete replication controller
+	        client.replicationControllers().inNamespace(namespace).withLabel("application", vdbName).delete();
+        } catch (KubernetesClientException e ) {
+        	error(vdbName, e.getMessage());
+        	error(vdbName, "requeueing the delete request");
+        	status.setStatus(Status.DELETE_REQUEUE);
+        }
+	    try {
+	        // deployment configs
+	        client.deploymentConfigs().inNamespace(namespace).withName(vdbName).delete();
+        } catch (KubernetesClientException e ) {
+        	error(vdbName, e.getMessage());
+        	error(vdbName, "requeueing the delete request");
+        	status.setStatus(Status.DELETE_REQUEUE);
+        }
+	    try {
+	        // delete build configuration
+	        client.buildConfigs().inNamespace(namespace).withLabel("application", vdbName).delete();
+        } catch (KubernetesClientException e ) {
+        	error(vdbName, e.getMessage());
+        	error(vdbName, "requeueing the delete request");
+        	status.setStatus(Status.DELETE_REQUEUE);
+        }
+	    try {
+	    	// checking 2nd time as, I found this not being deleted completely
+	        // delete replication controller
+	        client.replicationControllers().inNamespace(namespace).withLabel("application", vdbName).delete();
+        } catch (KubernetesClientException e ) {
+        	error(vdbName, e.getMessage());
+        	error(vdbName, "requeueing the delete request");
+        	status.setStatus(Status.DELETE_REQUEUE);
+        }
+	    
+	    try {
+	        // delete image streams
+	        client.imageStreams().inNamespace(namespace).withLabel("application", vdbName).delete();
+        } catch (KubernetesClientException e ) {
+        	error(vdbName, e.getMessage());
+        	error(vdbName, "requeueing the delete request");
+        	status.setStatus(Status.DELETE_REQUEUE);
+        }
+	    
+        status.setStatus(Status.DELETE_DONE);
     }
 
     private RouteStatus getRoute(String vdbName, ProtocolType protocolType) {
