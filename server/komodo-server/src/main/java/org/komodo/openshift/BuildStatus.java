@@ -31,7 +31,10 @@ public class BuildStatus {
         DEPLOYING,
         RUNNING,
         FAILED,
-        CANCELLED
+        CANCELLED,
+        DELETE_SUBMITTED,
+        DELETE_REQUEUE,
+        DELETE_DONE
     }
 
     public static class RouteStatus {
@@ -107,7 +110,7 @@ public class BuildStatus {
     private long lastUpdated = 0L;
     private String statusMessage;
 
-    private List<RouteStatus> routes = null;
+	private List<RouteStatus> routes = null;
 
     public BuildStatus(String vdbName) {
         this.vdbName = vdbName;

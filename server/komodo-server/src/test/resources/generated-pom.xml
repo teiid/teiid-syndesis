@@ -20,17 +20,7 @@
     <version.org.mongodb>3.6.3</version.org.mongodb>
     <version.postgresql>42.1.4</version.postgresql>
   </properties>
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.teiid</groupId>
-        <artifactId>spring-boot-bom</artifactId>
-        <version>1.0.2</version>
-        <scope>import</scope>
-        <type>pom</type>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
+
   <repositories>
      <repository>
        <id>snapshots-repo</id>
@@ -64,6 +54,7 @@
     <dependency>
       <groupId>org.teiid</groupId>
       <artifactId>teiid-spring-boot-starter</artifactId>
+      <version>1.0.2</version>
     </dependency>
 	<dependency>
 	  <groupId>io.opentracing.contrib</groupId>
