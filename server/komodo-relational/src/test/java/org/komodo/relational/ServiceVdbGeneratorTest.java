@@ -99,7 +99,7 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     		+ "ID long, customerName string) OPTIONS(\"" + TABLE_OPTION_FQN + "\" \"" + FQN_TABLE_2 + "\");";
     
     private final static String EXPECTED_JOIN_SQL_TWO_SOURCES_START =
-            "CREATE VIEW orderInfoView (RowId integer PRIMARY KEY, ID LONG, orderDate TIMESTAMP, customerName STRING) AS \n"
+            "CREATE VIEW orderInfoView (RowId long PRIMARY KEY, ID LONG, orderDate TIMESTAMP, customerName STRING) AS \n"
           + "SELECT ROW_NUMBER() OVER (ORDER BY A.ID), A.ID, A.orderDate, B.customerName\n"
           + "FROM pgconnection1schemamodel.orders AS A \n";
     
@@ -108,7 +108,7 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
             + "A.ID = B.ID;";
     
     private final static String EXPECTED_JOIN_SQL_SINGE_SOURCE_START =
-            "CREATE VIEW orderInfoView (RowId integer PRIMARY KEY, ID LONG, orderDate TIMESTAMP, name STRING) AS \n"
+            "CREATE VIEW orderInfoView (RowId long PRIMARY KEY, ID LONG, orderDate TIMESTAMP, name STRING) AS \n"
           + "SELECT ROW_NUMBER() OVER (ORDER BY A.ID), A.ID, A.orderDate, B.name\n"
           + "FROM pgconnection1schemamodel.orders AS A \n";
     
@@ -117,7 +117,7 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
           + "A.ID = B.ID;";
     
     private final static String EXPECTED_NO_JOIN_SQL_SINGE_SOURCE =
-            "CREATE VIEW orderInfoView (RowId integer PRIMARY KEY, ID LONG, orderDate TIMESTAMP) AS \n"
+            "CREATE VIEW orderInfoView (RowId long PRIMARY KEY, ID LONG, orderDate TIMESTAMP) AS \n"
           + "SELECT ROW_NUMBER() OVER (ORDER BY ID), ID, orderDate\n"
           + "FROM pgconnection1schemamodel.orders;";
     

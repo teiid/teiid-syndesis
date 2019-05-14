@@ -2824,6 +2824,87 @@ public class KomodoMetadataService extends KomodoService {
      *        the request headers (never <code>null</code>)
      * @param uriInfo
      *        the request URI information (never <code>null</code>)
+     * @return the JSON representation of the schema collection (never <code>null</code>)
+     * @throws KomodoRestException
+     *         if there is a problem finding the schema collection or constructing the JSON representation
+     */
+    @GET
+    @Path( "connection-schema" )
+    @Produces( MediaType.APPLICATION_JSON )
+    @ApiOperation( value = "Get the native schema for all syndesis sources",
+                   response = RestSchemaNode[].class )
+    @ApiResponses( value = {
+        @ApiResponse( code = 403, message = "An error has occurred." ),
+        @ApiResponse( code = 404, message = "No results found" ),
+        @ApiResponse( code = 406, message = "Only JSON is returned by this operation" )
+    } )
+    public Response getAllConnectionSchema( @Context final HttpHeaders headers,
+                                            final @Context UriInfo uriInfo ) throws KomodoRestException {
+        final SecurityPrincipal principal = checkSecurityContext( headers );
+
+        if ( principal.hasErrorResponse() ) {
+            return principal.getErrorResponse();
+        }
+
+        final List< MediaType > mediaTypes = headers.getAcceptableMediaTypes();
+        UnitOfWork uow = null;
+
+        try {
+            uow = createTransaction( principal, "getAllConnectionSchema", true ); //$NON-NLS-1$
+
+            List<RestSchemaNode> rootNodes = new ArrayList<RestSchemaNode>();
+            
+            // Get syndesis sources
+            Collection<SyndesisDataSource> dataSources = this.openshiftClient.getSyndesisSources(getAuthenticationToken());
+
+            // Get teiid datasources
+            Collection<TeiidDataSource> allTeiidSources = getMetadataInstance().getDataSources();
+
+            // Add status summary for each of the syndesis sources.  Determine if there is a matching teiid source
+            for (SyndesisDataSource dataSource : dataSources) {
+                for (TeiidDataSource teiidSource : allTeiidSources) {
+                    // Syndesis source has a corresponding VDB.  Use VDB for status
+                    if (teiidSource.getName().equals(dataSource.getName())) {
+                        final Model schemaModel = findSchemaModel( uow, teiidSource );
+
+                        List<RestSchemaNode> schemaNodes = null;
+                        if ( schemaModel != null ) {
+                            final Table[] tables = schemaModel.getTables( uow );
+                            
+                            schemaNodes = this.generateSourceSchema(uow, dataSource.getName(), tables);
+                            if(schemaNodes != null && !schemaNodes.isEmpty()) {
+                            	RestSchemaNode rootNode = new RestSchemaNode();
+                            	rootNode.setName(dataSource.getName());
+                            	rootNode.setType("root");
+                            	for(RestSchemaNode sNode: schemaNodes) {
+                            		rootNode.addChild(sNode);
+                            	}
+                            	rootNodes.add(rootNode);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return commit( uow, mediaTypes, rootNodes ); 
+        } catch ( final Exception e ) {
+            if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
+                uow.rollback();
+            }
+
+            if ( e instanceof KomodoRestException ) {
+                throw ( KomodoRestException )e;
+            }
+
+            return createErrorResponseWithForbidden( mediaTypes, e, RelationalMessages.Error.CONNECTION_SERVICE_GET_TABLES_ERROR );
+        }
+    }
+
+    /**
+     * @param headers
+     *        the request headers (never <code>null</code>)
+     * @param uriInfo
+     *        the request URI information (never <code>null</code>)
      * @param syndesisSourceName
      *        the name of the syndesis source whose schemaColumns are being requested (cannot be empty)
      * @return the JSON representation of the columns collection (never <code>null</code>)

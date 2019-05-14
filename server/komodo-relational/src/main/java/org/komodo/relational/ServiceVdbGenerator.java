@@ -229,7 +229,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
         sb.append("CREATE VIEW "); //$NON-NLS-1$
         sb.append(viewName);
         sb.append(StringConstants.SPACE+StringConstants.OPEN_BRACKET);
-        sb.append("RowId integer PRIMARY KEY, "); //$NON-NLS-1$
+        sb.append("RowId long PRIMARY KEY, "); //$NON-NLS-1$
 
         // Check for join and single or 2 source join
         boolean isJoin = sourceTableInfos.length > 1;
