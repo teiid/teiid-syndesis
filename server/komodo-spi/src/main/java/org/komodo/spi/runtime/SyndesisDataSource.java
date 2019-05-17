@@ -23,6 +23,11 @@ package org.komodo.spi.runtime;
  */
 public interface SyndesisDataSource {
     /**
+     * @return syndesis connection id of data source
+     */
+    String getId();
+    
+    /**
      * @return real name of data source, maybe different from display name
      */
     String getName();

@@ -24,11 +24,15 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.ext.Provider;
 
+//import org.apache.commons.logging.Log;
+//import org.apache.commons.logging.LogFactory;
 import org.komodo.utils.KLog;
 
 @Provider
 @PreMatching
 public class AuthHandlingFilter implements ContainerRequestFilter {
+
+//    private static final Log LOGGER = LogFactory.getLog(AuthHandlingFilter.class);
 
     public static class AuthToken {
         private String token;
@@ -40,6 +44,10 @@ public class AuthHandlingFilter implements ContainerRequestFilter {
         @Override
         public String toString() {
             return token;
+        }
+        
+        public String getHttpAuthentication() {
+        	return "Bearer " + toString();
         }
     }
 
@@ -71,6 +79,7 @@ public class AuthHandlingFilter implements ContainerRequestFilter {
 		KLog.getLogger().trace("X-Forwarded-User = " + user);
 		OAuthCredentials creds = new OAuthCredentials(accessToken, user);
 		threadOAuthCredentials.set(creds);		
+//		LOGGER.info("  *** AuthHandlingFilter.filter() OAuth user = " + creds.user + "  Token = " + creds.getToken().toString());
 	}
 
 }

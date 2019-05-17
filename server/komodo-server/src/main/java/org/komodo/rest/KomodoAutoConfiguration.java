@@ -34,6 +34,8 @@ import org.komodo.metadata.DefaultMetadataInstance;
 import org.komodo.metadata.TeiidConnectionProvider;
 import org.komodo.openshift.EncryptionComponent;
 import org.komodo.openshift.TeiidOpenShiftClient;
+import org.komodo.rest.connections.SyndesisConnectionMonitor;
+import org.komodo.rest.connections.SyndesisConnectionSynchronizer;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.SystemConstants;
 import org.komodo.spi.repository.ApplicationProperties;
@@ -48,7 +50,7 @@ import org.springframework.security.crypto.encrypt.TextEncryptor;
 
 @Configuration
 public class KomodoAutoConfiguration {
-
+	
     @Value("${encrypt.key}")
     private String encryptKey;
 
@@ -101,6 +103,16 @@ public class KomodoAutoConfiguration {
 
         if ( !started ) {
             throw new RuntimeException(Messages.getString( KOMODO_ENGINE_STARTUP_TIMEOUT, 1, TimeUnit.MINUTES));
+        } else {
+            try {
+	        	// monitor to track connections from the syndesis
+	        	TeiidOpenShiftClient TOSClient = new TeiidOpenShiftClient((TeiidMetadataInstance)kengine.getMetadataInstance(), new EncryptionComponent(getTextEncryptor()));
+	        	SyndesisConnectionSynchronizer sync = new SyndesisConnectionSynchronizer(kengine, TOSClient);
+	        	SyndesisConnectionMonitor scm = new SyndesisConnectionMonitor(sync);
+	        	scm.start();
+            } catch (KException e) {
+                throw new WebApplicationException( e, Status.INTERNAL_SERVER_ERROR );
+            }
         }
         return kengine;
     }
