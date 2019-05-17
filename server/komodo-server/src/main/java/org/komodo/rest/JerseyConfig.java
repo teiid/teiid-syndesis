@@ -55,7 +55,6 @@ public class JerseyConfig extends ResourceConfig {
        register(KomodoMetadataService.class);
        register(KomodoImportExportService.class);
        register(AuthHandlingFilter.class);
-       register(ConnectionMonitorFilter.class);
 
        KCorsFilter corsHandler =  new KCorsFilter();
        corsHandler.getAllowedOrigins().add("*");

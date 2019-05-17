@@ -24,12 +24,18 @@ import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.runtime.SyndesisDataSource;
 
 public class DefaultSyndesisDataSource implements SyndesisDataSource {
+	private String id;
     private String name;
     private boolean bound;
     private String translator;
     private Map<String, String> properties;
     private DataSourceDefinition definition;
-
+    
+    @Override
+    public String getId() {
+        return id;
+    }
+    
     @Override
     public String getName() {
         return name;
@@ -43,6 +49,10 @@ public class DefaultSyndesisDataSource implements SyndesisDataSource {
     @Override
     public boolean isBound() {
         return bound;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public void setName(String name) {
