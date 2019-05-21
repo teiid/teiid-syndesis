@@ -63,6 +63,9 @@ public class RestViewDefinition extends RestBasicEntity {
         if( viewDef.getDescription() != null ) {
         	tuples.put(RestViewEditorState.DESCRIPTION, viewDef.getDescription());
         }
+        if( viewDef.getDdl() != null ) {
+        	tuples.put(RestViewEditorState.DDL, viewDef.getDdl());
+        }
         
         setComplete(viewDef.isComplete());
         
@@ -103,6 +106,9 @@ public class RestViewDefinition extends RestBasicEntity {
         }
         if( viewDef.getDescription(transaction) != null ) {
         	tuples.put(RestViewEditorState.DESCRIPTION, viewDef.getDescription(transaction));
+        }
+        if( viewDef.getDdl(transaction) != null ) {
+        	tuples.put(RestViewEditorState.DDL, viewDef.getDdl(transaction));
         }
         
         setComplete(viewDef.isComplete(transaction));
@@ -157,6 +163,22 @@ public class RestViewDefinition extends RestBasicEntity {
      */
     public void setDescription(final String description) {
         tuples.put(RestViewEditorState.DESCRIPTION, description);
+    }
+
+    /**
+     * @return the view DDL (can be empty)
+     */
+    public String getDdl() {
+        Object result = tuples.get(RestViewEditorState.DDL);
+        return result != null ? result.toString() : null;
+    }
+
+    /**
+     * @param ddl
+     *        the new DDL (can be empty)
+     */
+    public void setDdl(final String ddl) {
+        tuples.put(RestViewEditorState.DDL, ddl);
     }
     
     /**

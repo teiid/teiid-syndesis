@@ -51,7 +51,7 @@ public interface SqlProjectedColumn  extends RelationalObject, StringConstants {
 
 
     /**
-     * The resolver of a {@link ViewDefinition}.
+     * The resolver of a {@link SqlProjectedColumn}.
      */
     TypeResolver<SqlProjectedColumn> RESOLVER = new TypeResolver<SqlProjectedColumn>() {
 

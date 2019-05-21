@@ -1531,6 +1531,21 @@ public final class RelationalMessages {
         PUBLISH_ERROR,
 
         /**
+         * An error indicating a view definition is missing the name
+         */
+        VIEW_DEFINITION_MISSING_NAME,
+
+        /**
+         * An error indicating a view definition is missing the DDL
+         */
+        VIEW_DEFINITION_MISSING_DDL,
+
+        /**
+         * An error indicating a problem with validating the viewDefinition DDL
+         */
+        VALIDATE_VIEW_DEFINITION_ERROR,
+
+        /**
          * VDB Not found
          */
         VDB_NOT_FOUND,
