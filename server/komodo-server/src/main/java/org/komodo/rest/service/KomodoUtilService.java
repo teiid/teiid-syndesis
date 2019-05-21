@@ -20,6 +20,9 @@ package org.komodo.rest.service;
 import static org.komodo.rest.relational.RelationalMessages.Error.SCHEMA_SERVICE_GET_SCHEMA_ERROR;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -48,7 +51,9 @@ import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.ExistingNodeOptions;
 import org.komodo.importer.ImportOptions.OptionKeys;
+import org.komodo.relational.importer.ddl.DdlImporter;
 import org.komodo.relational.importer.vdb.VdbImporter;
+import org.komodo.relational.model.Model;
 import org.komodo.relational.profile.GitRepository;
 import org.komodo.relational.profile.Profile;
 import org.komodo.relational.profile.SqlComposition;
@@ -70,8 +75,10 @@ import org.komodo.rest.relational.response.vieweditorstate.RestSqlProjectedColum
 import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate;
 import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate.RestStateCommand;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewDefinition;
+import org.komodo.rest.relational.response.vieweditorstate.RestViewDefinitionStatus;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository;
@@ -921,7 +928,148 @@ public final class KomodoUtilService extends KomodoService {
             return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.PROFILE_EDITOR_STATE_CREATE_ERROR);
         }
     }
+    
+    /**
+     * Validate the supplied ViewDefinition
+     * @param headers
+     *        the request headers (never <code>null</code>)
+     * @param uriInfo
+     *        the request URI information (never <code>null</code>)
+     * @return validation status of the supplied ViewDefinition
+     * @throws KomodoRestException if error occurs
+     */
+    @POST
+    @Path(V1Constants.USER_PROFILE + FORWARD_SLASH + V1Constants.VALIDATE_VIEW_DEFINITION)
+    @ApiOperation( value = "Validate a ViewDefinition", response = RestViewDefinitionStatus.class )
+    @ApiResponses(value = {
+        @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
+        @ApiResponse(code = 403, message = "An error has occurred.")
+    })
+    public Response validateViewDefinition(final @Context HttpHeaders headers,
+                                               final @Context UriInfo uriInfo,
+                                               @ApiParam(
+                                                         value = "" +
+                                                                 "JSON of the view definition:<br>" +
+                                                                 OPEN_PRE_TAG + OPEN_BRACE + BR +
+                                                                 NBSP + RestViewEditorState.ID_VIEW_NAME + ": \"Name of the view definition\"" + BR +
+                                                                 NBSP + RestViewEditorState.DDL + ": { ... \"View definition DDL\" ... }" + BR +
+                                                                 CLOSE_BRACE +
+                                                                 CLOSE_PRE_TAG,
+                                                         required = true
+                                               )
+                                               final String viewDefinitionConfig) throws KomodoRestException {
 
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
+            return notAcceptableMediaTypesBuilder().build();
+
+        RestViewDefinition restViewDefinition = KomodoJsonMarshaller.unmarshall(viewDefinitionConfig, RestViewDefinition.class);
+
+        // Make sure the RestViewDefinition is valid
+        Response resp = this.checkRestViewDefinition(mediaTypes, restViewDefinition);
+        if (resp != null) return resp;
+
+        RestViewDefinitionStatus viewDefnStatus = new RestViewDefinitionStatus();
+        
+        // InputStream for the viewDefinition
+        InputStream inputStream = null;
+        File tmpFile = null;
+        try {
+            tmpFile = File.createTempFile("tempValidation", ".ddl");
+        	FileWriter writer = new FileWriter(tmpFile);
+        	writer.write(restViewDefinition.getDdl());
+        	writer.close();
+        	inputStream = new FileInputStream(tmpFile);
+        } catch (final Exception e) {
+        	cleanupValidationFile(inputStream, tmpFile);
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VALIDATE_VIEW_DEFINITION_ERROR);
+        }
+        
+        UnitOfWork uow = null;
+        try {
+            SynchronousCallback callback = new SynchronousCallback();
+            uow = createTransaction(principal, "Validate ViewDefinition", false, callback); //$NON-NLS-1$
+
+            Repository repo = this.kengine.getDefaultRepository();
+
+            // Create a temp model for the DDL importer
+            String validationVdbName = "validationVdbTemp";
+            String validationModelName = "views";
+            Model viewModel = null;
+            Vdb validationVdb = findVdb( uow, validationVdbName );
+            if(validationVdb == null) {
+                validationVdb = getWorkspaceManager(uow).createVdb( uow, null, validationVdbName, validationVdbName );
+            }
+            if (validationVdb.hasChild(uow, validationModelName, VdbLexicon.Vdb.DECLARATIVE_MODEL)) {
+            	validationVdb.removeModel(uow, validationModelName);
+            }
+            viewModel = validationVdb.addModel(uow, validationModelName);
+
+            // Run the DDL import
+            String msg = null;
+            ImportOptions importOptions = new ImportOptions();
+            ImportMessages importMessages = new ImportMessages();
+            try {
+				DdlImporter importer = new DdlImporter(repo);
+				importer.importDdl(uow, inputStream, viewModel, importOptions, importMessages);
+			} catch (Exception e) {
+				msg = e.getLocalizedMessage();
+			}
+            uow.commit();
+            
+            if (callback.await(3, TimeUnit.MINUTES)) {
+                if(msg == null) {
+                    List<String> errorMsgs = importMessages.getErrorMessages();
+                    if (errorMsgs.isEmpty()) {
+                        msg = "Validation successful";
+                    } else {
+                    	msg = errorMsgs.get(0);
+                    }
+                }
+            	viewDefnStatus.setStatus("SUCCESS");
+            	viewDefnStatus.setMessage(msg);
+            } else {
+            	viewDefnStatus.setStatus("ERROR");
+            	viewDefnStatus.setMessage("The validation timed out");
+            }
+
+        } catch ( final Exception e ) {
+            if ( ( uow != null ) && ( uow.getState() != State.COMMITTED ) ) {
+                uow.rollback();
+            }
+        	try {
+            	viewDefnStatus.setStatus("ERROR");
+            	viewDefnStatus.setMessage("Error with validation");
+			} catch (Exception e1) {
+			}
+        }
+        
+        cleanupValidationFile(inputStream, tmpFile);
+        
+        // create response
+        try {
+            return commit(uow, mediaTypes, viewDefnStatus);
+        } catch (Exception ex) {
+            return createErrorResponseWithForbidden(mediaTypes, ex, RelationalMessages.Error.VALIDATE_VIEW_DEFINITION_ERROR);
+        }
+    }
+
+    private void cleanupValidationFile(InputStream inputStream, File tempFile) {
+        if(inputStream != null) {
+        	try {
+				inputStream.close();
+			} catch (IOException e1) {
+			}
+        }
+        if(tempFile != null) {
+        	tempFile.delete();
+        }
+    }
+    
     /**
      * Check the RestViewEditorState for correctness before proceeding.  If no errors are found, the return value is null
      * @param mediaTypes the media types
@@ -944,6 +1092,26 @@ public final class KomodoUtilService extends KomodoService {
         if (restViewDefn == null) {
             return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_VIEW_DEFINITION);
         }
+        return null;
+    }
+
+    /**
+     * Check the RestViewDefinition for correctness before proceeding.  If no errors are found, the return value is null
+     * @param restViewDefinition the view definition
+     * @return the error message - null if none found
+     */
+    private Response checkRestViewDefinition(final List<MediaType> mediaTypes, final RestViewDefinition restViewDefinition) {
+    	String viewName = restViewDefinition.getViewName();
+    	String viewDdl = restViewDefinition.getDdl();
+
+        if (StringUtils.isBlank(viewName)) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VIEW_DEFINITION_MISSING_NAME);
+        }
+
+        if (StringUtils.isBlank(viewDdl)) {
+            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VIEW_DEFINITION_MISSING_DDL);
+        }
+
         return null;
     }
 
@@ -977,6 +1145,7 @@ public final class KomodoUtilService extends KomodoService {
         ViewDefinition viewDefn = viewEditorState.setViewDefinition(uow);
         viewDefn.setViewName(uow, restViewDefn.getViewName());
         viewDefn.setDescription(uow, restViewDefn.getDescription());
+        viewDefn.setDdl(uow, restViewDefn.getDdl());
         for (String restSourcePath: restViewDefn.getSourcePaths()) {
             viewDefn.addSourcePath(uow, restSourcePath);
         }

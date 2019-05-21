@@ -171,6 +171,24 @@ public interface ViewDefinition  extends RelationalObject, StringConstants {
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+     * @return the view DDL
+     * @throws KException
+     *         if an error occurs
+     */
+    String getDdl(final UnitOfWork transaction) throws KException;
+    
+    /**
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+     * @param ddl value of view ddl
+     * @throws KException
+     *         if an error occurs         
+     */
+    void setDdl(final UnitOfWork transaction, String ddl) throws KException;
+
+    /**
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param complete value for isComplete
      * @throws KException
      *         if an error occurs         

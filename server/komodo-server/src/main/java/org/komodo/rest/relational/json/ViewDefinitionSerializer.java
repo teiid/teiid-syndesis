@@ -48,6 +48,10 @@ public class ViewDefinitionSerializer extends TypeAdapter<RestViewDefinition> {
 			out.name(RestViewEditorState.DESCRIPTION);
 			out.value(restViewDef.getDescription());
 		}
+		if( restViewDef.getDdl() != null ) {
+			out.name(RestViewEditorState.DDL);
+			out.value(restViewDef.getDdl());
+		}
 		
 		out.name(RestViewEditorState.IS_COMPLETE);
 		out.value(restViewDef.isComplete());
@@ -100,6 +104,9 @@ public class ViewDefinitionSerializer extends TypeAdapter<RestViewDefinition> {
                     break;
                 case RestViewEditorState.DESCRIPTION:
                 	viewDef.setDescription(in.nextString());
+                    break;
+                case RestViewEditorState.DDL:
+                	viewDef.setDdl(in.nextString());
                     break;
                 case RestViewEditorState.SOURCE_PATHS:
                     String[] sourcePaths = BUILDER.fromJson(in, String[].class);

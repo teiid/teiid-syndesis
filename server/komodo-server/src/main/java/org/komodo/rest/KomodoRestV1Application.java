@@ -608,6 +608,11 @@ public class KomodoRestV1Application implements SystemConstants {
          * Refresh views referenced in a view editor state object
          */
         String REFRESH_DATASERVICE_VIEWS = "refreshViews";
+        
+        /**
+         * Validate a ViewDefintion
+         */
+        String VALIDATE_VIEW_DEFINITION = "validateViewDefinition";
     }
 
 

@@ -255,6 +255,7 @@
 [tko:viewDefinition] > nt:unstructured
   - tko:viewName (string)
   - tko:description (string)
+  - tko:ddl (string)
   - tko:isComplete (boolean) = 'false' mandatory autocreated
   - tko:sourcePaths (string) multiple
   + tko:sqlCompositions (tko:sqlCompositions)

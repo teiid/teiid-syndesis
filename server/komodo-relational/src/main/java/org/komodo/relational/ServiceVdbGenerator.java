@@ -140,7 +140,11 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
             	if( viewDef.isComplete(uow) ) {
             		TableInfo[] tableInfos = getSourceTableInfos(uow, viewDef);
 
-            		String viewDdl = getODataViewDdl(uow, viewDef, tableInfos);
+            		// If user has supplied DDL, use it.  (Assume it has already been validated)
+            		String viewDdl = viewDef.getDdl(uow);
+            		if(viewDdl == null || viewDdl.length() < 1) {
+                		viewDdl = getODataViewDdl(uow, viewDef, tableInfos);
+            		}
             		allViewDdl.append(viewDdl).append(NEW_LINE);
    
             		// Add sources to list if not already present

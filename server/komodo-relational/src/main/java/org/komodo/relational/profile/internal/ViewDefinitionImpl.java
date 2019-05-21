@@ -200,6 +200,16 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
 	}
 
 	@Override
+	public String getDdl(UnitOfWork transaction) throws KException {
+        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        
+        String desc = getObjectProperty(transaction, PropertyValueType.STRING, "getDdl", //$NON-NLS-1$
+                KomodoLexicon.ViewDefinition.DDL );
+		return desc;
+	}
+
+	@Override
 	public String[] getSourcePaths(UnitOfWork transaction,
             final String... namePatterns ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
@@ -250,6 +260,11 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
 	@Override
 	public void setDescription(UnitOfWork transaction, String description) throws KException {
 		setObjectProperty( transaction, "setDescription", KomodoLexicon.ViewDefinition.DESCRIPTION, description ); //$NON-NLS-1$
+	}
+
+	@Override
+	public void setDdl(UnitOfWork transaction, String ddl) throws KException {
+		setObjectProperty( transaction, "setDdl", KomodoLexicon.ViewDefinition.DDL, ddl ); //$NON-NLS-1$
 	}
 
 	@Override

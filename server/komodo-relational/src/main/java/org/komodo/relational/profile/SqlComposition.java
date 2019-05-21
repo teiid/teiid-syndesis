@@ -51,7 +51,7 @@ public interface SqlComposition  extends RelationalObject, StringConstants {
 
 
     /**
-     * The resolver of a {@link ViewDefinition}.
+     * The resolver of a {@link SqlComposition}.
      */
     TypeResolver<SqlComposition> RESOLVER = new TypeResolver<SqlComposition>() {
 
