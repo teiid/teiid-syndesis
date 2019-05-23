@@ -10,23 +10,25 @@ cache:
   directories:
   - "$HOME/.m2"
 
-install: true
+before_install:
+  - cp settings.xml $HOME/.m2/settings.xml
+  - rm -rf $HOME/.m2/repository/org/teiid/komodo*
+
+install: mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -Dorg.slf4j.simpleLogger.defaultLogLevel=error -Pimage -Dfabric8.mode=kubernetes
 
 before_script:
-  - rm -rf $HOME/.m2/repository/org/teiid/komodo*
-  - npm install -g @angular/cli
-
-script: "mvn clean install -Dmaven.javadoc.skip=true -B -V -q -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -s settings.xml -Pimage -Dfabric8.mode=kubernetes"
+  
+script: mvn test -B -V -q -Dlog4j.configuration=server/komodo-server/src/main/resources/log4j.properties
 
 after_success:
   - if [[ ( "$TRAVIS_BRANCH" == "master" ) && ( "$TRAVIS_PULL_REQUEST" == "false" ) ]]; then
-      echo "pushing te image to docker";
+      echo "pushing to image to docker";
       docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD ;
       docker push teiid/komodo-server:latest ;
     fi
 
   - if [[ "$TRAVIS_BRANCH" =~ ^[0-9]+(\.[0-9]+){2} ]]; then
-      echo "pushing te image to docker";
+      echo "pushing to image to docker";
       docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD ;
       docker push teiid/komodo-server:$TRAVIS_BRANCH ; 
       docker tag teiid/komodo-server:$TRAVIS_BRANCH teiid/komodo:$(echo $TRAVIS_BRANCH | sed -e 's/\.[0-9][0-9]*$//') ;
