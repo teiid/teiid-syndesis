@@ -37,7 +37,18 @@
   </properties>
 
   <dependencies>
-
+    <!-- Teiid level dependencies -->
+    <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>teiid-runtime</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.teiid.connectors</groupId>
+      <artifactId>translator-jdbc</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <!-- Teiid level dependencies -->
+               
     <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-jersey</artifactId>
@@ -62,10 +73,6 @@
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
     </dependency>   
-    <dependency>
-        <groupId>org.teiid</groupId>
-        <artifactId>teiid-spring-boot-starter</artifactId>
-    </dependency>
 	<dependency>
 	  <groupId>io.opentracing.contrib</groupId>
 	  <artifactId>opentracing-spring-jaeger-web-starter</artifactId>

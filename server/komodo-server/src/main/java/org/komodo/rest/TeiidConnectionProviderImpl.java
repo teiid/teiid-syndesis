@@ -29,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.teiid.adminapi.Admin;
 import org.teiid.adminapi.AdminException;
-import org.teiid.spring.autoconfigure.TeiidServer;
 
 @Configuration
 public class TeiidConnectionProviderImpl implements TeiidConnectionProvider {

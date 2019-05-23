@@ -161,6 +161,7 @@
     <version.postgresql>42.1.4</version.postgresql>
     <version.xerces>2.11.0</version.xerces>
     
+    <!-- this is simply a version no dependencies involved right now -->
     <version.springboot.teiid>1.0.2</version.springboot.teiid>
     
     <version.gson>2.2.4</version.gson>
@@ -398,9 +399,9 @@
         <version>${version.org.teiid}</version>
       </dependency>
       <dependency>
-          <groupId>org.teiid</groupId>
-          <artifactId>teiid-spring-boot-starter</artifactId>
-          <version>${version.springboot.teiid}</version>
+        <groupId>org.teiid.connectors</groupId>
+        <artifactId>translator-jdbc</artifactId>
+        <version>${version.org.teiid}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.httpcomponents</groupId>
