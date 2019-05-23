@@ -13,8 +13,6 @@
     <version.springboot.teiid>
       1.0.2
     </version.springboot.teiid>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <version.mysql>5.1.40</version.mysql>
     <version.org.mongodb>3.6.3</version.org.mongodb>

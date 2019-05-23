@@ -118,6 +118,7 @@ import io.fabric8.openshift.api.model.BuildConfig;
 import io.fabric8.openshift.api.model.BuildList;
 import io.fabric8.openshift.api.model.DeploymentCondition;
 import io.fabric8.openshift.api.model.DeploymentConfig;
+import io.fabric8.openshift.api.model.DeploymentConfigStatus;
 import io.fabric8.openshift.api.model.ImageStream;
 import io.fabric8.openshift.api.model.Route;
 import io.fabric8.openshift.api.model.RouteList;
@@ -901,11 +902,12 @@ public class TeiidOpenShiftClient implements StringConstants {
         return p;
     }
 
-    private Service createService(OpenShiftClient client, String namespace, String vdbName, String type, int port) {
+    private Service createService(OpenShiftClient client, String namespace, String vdbName, String type, int port) {    	
         String serviceName = vdbName+"-"+type;
+        debug(vdbName, "Creating the Service of Type " + type + " for VDB "+vdbName);
         Service service = client.services().inNamespace(namespace).withName(serviceName).get();
         if (service == null) {
-            service = client.services().inNamespace(namespace).createNew()
+            client.services().inNamespace(namespace).createNew()
               .withNewMetadata()
                 .withName(serviceName)
                 .addToLabels("application", vdbName)
@@ -922,7 +924,9 @@ public class TeiidOpenShiftClient implements StringConstants {
                 .endPort()
               .endSpec()
               .done();
+            service = client.services().inNamespace(namespace).withName(serviceName).get();
         }
+        
         return service;
     }
 
@@ -995,11 +999,16 @@ public class TeiidOpenShiftClient implements StringConstants {
     }
     
     private boolean isDeploymentProgressing(DeploymentConfig dc) {
-        List<DeploymentCondition> conditions = dc.getStatus().getConditions();
+    	DeploymentConfigStatus status = dc.getStatus();
+        List<DeploymentCondition> conditions = status.getConditions();
         for (DeploymentCondition cond : conditions) {
             if (cond.getType().equals("Progressing") && cond.getStatus().equals("True")) {
                 return true;
             }
+        }
+        // let's try to deploy five times before giving up.
+        if (status.getObservedGeneration() <= 5) {
+        	return true;
         }
         return false;
     }    
@@ -1010,7 +1019,7 @@ public class TeiidOpenShiftClient implements StringConstants {
             if (cond.getType().equals("Available")) {
                 return cond;
             }
-        }
+        }        
         return null;
     }
 

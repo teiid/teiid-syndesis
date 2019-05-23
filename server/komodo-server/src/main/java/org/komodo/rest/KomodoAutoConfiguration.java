@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import javax.transaction.TransactionManager;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
@@ -47,12 +48,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.encrypt.Encryptors;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
+import org.teiid.runtime.EmbeddedConfiguration;
 
 @Configuration
 public class KomodoAutoConfiguration {
 	
     @Value("${encrypt.key}")
     private String encryptKey;
+    
+    @Autowired(required=false)
+    private TransactionManager transactionManager;
 
     @Bean
     public TextEncryptor getTextEncryptor() {
@@ -115,6 +120,25 @@ public class KomodoAutoConfiguration {
             }
         }
         return kengine;
+    }
+
+    @Bean
+    @ConditionalOnMissingBean    
+    public TeiidServer teiidServer() {
+
+        // turning off PostgreSQL support
+        System.setProperty("org.teiid.addPGMetadata", "false");
+        System.setProperty("org.teiid.hiddenMetadataResolvable", "false");
+        System.setProperty("org.teiid.allowAlter", "true");
+
+        final TeiidServer server = new TeiidServer();
+
+    	EmbeddedConfiguration config = new EmbeddedConfiguration();
+    	if (this.transactionManager != null) {
+    		config.setTransactionManager(this.transactionManager);
+    	}
+        server.start(config);
+        return server;
     }
 
     @Bean

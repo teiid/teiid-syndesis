@@ -55,8 +55,6 @@ import org.teiid.adminapi.impl.SourceMappingMetadata;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.adminapi.impl.VDBMetadataParser;
 import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository.ConnectorManagerException;
-import org.teiid.spring.autoconfigure.ExternalSource;
-import org.teiid.spring.autoconfigure.TeiidServer;
 import org.teiid.translator.TranslatorException;
 
 @SuppressWarnings("deprecation")
@@ -113,10 +111,10 @@ public class TeiidAdminImpl implements Admin {
         case "h2":
         case "teiid":
         	if (datasources.get(deploymentName) == null) {
-	            DataSource ds = DataSourceBuilder.create()
-	                .url(properties.getProperty("url"))
-	                .username(properties.getProperty("username") != null ? properties.getProperty("username") :properties.getProperty("user") )
-	                .password(properties.getProperty("password")).build();
+				DataSource ds = DataSourceBuilder.create().url(properties.getProperty("url"))
+						.username(properties.getProperty("username") != null ? properties.getProperty("username")
+								: properties.getProperty("user"))
+						.password(properties.getProperty("password")).build();
 	            this.datasources.put(deploymentName, ds);
 	            properties.setProperty("type", templateName);
 	            this.dsProperties.put(deploymentName, properties);
@@ -168,7 +166,7 @@ public class TeiidAdminImpl implements Admin {
     void addTranslator(String translatorname) {
         try {
             if (server.getExecutionFactory(translatorname) == null) {
-                server.addTranslator(ExternalSource.translatorClass(translatorname));
+                server.addTranslator(ExternalSource.translatorClass(translatorname, "org.komodo.rest"));
             }
         } catch (ConnectorManagerException | TranslatorException e) {
             throw new IllegalStateException("Failed to load translator " + translatorname, e);
