@@ -81,8 +81,6 @@ public class KomodoDriverServiceTestInSuite extends AbstractKomodoServiceTest {
         String entity = extractResponse(response);
         assertThat(entity, is(notNullValue()));
 
-        System.out.println("Response:\n" + entity);
-
         RestConnectionDriver[] drivers = KomodoJsonMarshaller.unmarshallArray(entity, RestConnectionDriver[].class);
 
         assertNotNull(drivers);

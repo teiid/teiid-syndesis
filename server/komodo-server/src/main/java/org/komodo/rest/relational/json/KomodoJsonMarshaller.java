@@ -262,8 +262,6 @@ public final class KomodoJsonMarshaller {
         } else {
             json = BUILDER.toJson( entity );
         }
-
-        LOGGER.debug( "marshall: {0}", json ); //$NON-NLS-1$
         return json;
     }
 
@@ -302,7 +300,6 @@ public final class KomodoJsonMarshaller {
     public static < T extends KRestEntity > T unmarshall( final String json,
                                                                final Class< T > entityClass ) {
         final T entity = BUILDER.fromJson( json, entityClass );
-        LOGGER.debug( "unmarshall: class = {0}, entity = {1}", entityClass, entity ); //$NON-NLS-1$
         return entity;
     }
 
@@ -318,7 +315,6 @@ public final class KomodoJsonMarshaller {
     public static < T extends KRestEntity > T[] unmarshallArray( final String json,
                                                                final Class< T[] > entityClass ) {
         final T[] entity = BUILDER.fromJson( json, entityClass );
-        LOGGER.debug( "unmarshall: class = {0}, entity = {1}", entityClass, entity ); //$NON-NLS-1$
         return entity;
     }
 
