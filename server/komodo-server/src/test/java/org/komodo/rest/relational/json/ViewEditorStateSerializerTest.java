@@ -297,16 +297,11 @@ public class ViewEditorStateSerializerTest extends AbstractSerializerTest {
                                                     .replaceAll(NEW_LINE,  SPACE)
                                                     .replaceAll(TAB, SPACE)
                                                     .replaceAll(SPACE, EMPTY_STRING);
-        System.out.println("== EXPECTED ==");
-        System.out.println(expectedJson);
         
         String resultJson = KomodoJsonMarshaller.marshall(restState)
                                                     .replaceAll(NEW_LINE,  SPACE)
                                                     .replaceAll(TAB, SPACE)
                                                     .replaceAll(SPACE, EMPTY_STRING);
-        System.out.println("== RESULT ==");
-        System.out.println(resultJson);
-        
         assertEquals(expectedJson, resultJson);
     }  
 }

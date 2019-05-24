@@ -111,8 +111,6 @@
 
   <properties>
     <!-- dependencies from IP-BOM -->
-    <version.log4j>1.2.17</version.log4j>
-    <version.org.slf4j>1.7.22</version.org.slf4j>
     <version.com.jcraft>0.1.54</version.com.jcraft>
     <!-- dependencies from IP-BOM -->
 
@@ -122,8 +120,6 @@
     <version.joda.time>2.7</version.joda.time>
     <version.mapdb>1.0.6</version.mapdb>
     <version.apache.commons.compress>1.12</version.apache.commons.compress>
-    <version.log4j>1.2.16</version.log4j>
-    <version.slf4j.log4j>1.7.2</version.slf4j.log4j>
     <version.h2>1.4.196</version.h2>
     <version.org.apache.commons>3.8.1</version.org.apache.commons>
     <version.io.swagger>1.5.8</version.io.swagger>
@@ -241,36 +237,6 @@
         <artifactId>jsch</artifactId>
         <version>${version.com.jcraft}</version>
       </dependency>
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-log4j12</artifactId>
-        <version>${version.org.slf4j}</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>log4j</groupId>
-        <artifactId>log4j</artifactId>
-        <version>${version.log4j}</version>
-        <scope>test</scope>
-        <exclusions>
-          <exclusion>
-            <artifactId>ant-nodeps</artifactId>
-            <groupId>ant</groupId>
-          </exclusion>
-          <exclusion>
-            <artifactId>ant-contrib</artifactId>
-            <groupId>ant-contrib</groupId>
-          </exclusion>
-          <exclusion>
-            <artifactId>ant-junit</artifactId>
-            <groupId>ant</groupId>
-          </exclusion>
-          <exclusion>
-            <artifactId>tools</artifactId>
-            <groupId>sun.jdk</groupId>
-          </exclusion>
-        </exclusions>
-      </dependency>
 	<dependency>
 		<groupId>org.apache.commons</groupId>
 		<artifactId>commons-lang3</artifactId>
@@ -286,11 +252,6 @@
 	  <artifactId>opentracing-spring-jaeger-web-starter</artifactId>
 	  <version>${version.io.opentracing.contrib}</version>
 	</dependency>             
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-api</artifactId>
-        <version>${version.org.slf4j}</version>
-      </dependency>
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>

@@ -39,7 +39,6 @@ public class KomodoExceptionMapper implements ExceptionMapper< Throwable > {
      */
     @Override
     public Response toResponse( final Throwable t ) {
-        System.out.println("****** Exception caught in exception mapper");
         return Response.status( Status.INTERNAL_SERVER_ERROR )
                        .entity( t.getLocalizedMessage() )
                        .type( MediaType.TEXT_PLAIN )
