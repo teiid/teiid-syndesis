@@ -69,7 +69,7 @@ public class PostgreSQLDefinition extends DataSourceDefinition {
     @Override
     public Properties getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd, String jndiName) {
         Properties props = new Properties();
-        ds(props, scd, "url", scd.canonicalEnvKey("url"));
+        ds(props, scd, "jdbc-url", scd.canonicalEnvKey("url"));
         ds(props, scd, "username", scd.canonicalEnvKey("user"));
         ds(props, scd, "password", scd.canonicalEnvKey("password"));
         return props;
