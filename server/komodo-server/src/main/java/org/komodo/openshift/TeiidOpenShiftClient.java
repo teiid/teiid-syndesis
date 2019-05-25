@@ -33,6 +33,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -416,8 +417,6 @@ public class TeiidOpenShiftClient implements StringConstants {
     private static final String SYNDESISURL = "http://syndesis-server/api/v1";
     private static final long MONITOR_SERVICE_INITIAL_DELAY = 3;
     private static final long MONITOR_SERVICE_POLLING_DELAY = 5;
-
-    private static String MANAGEMENT_URL = "http://127.0.0.1:8080/\\$metadata";
 
     private volatile ConcurrentLinkedQueue<BuildStatus> workQueue = new ConcurrentLinkedQueue<>();
 
@@ -845,26 +844,24 @@ public class TeiidOpenShiftClient implements StringConstants {
                     .withImagePullPolicy("Always")
                     .addAllToEnv(config.publishConfiguration().getEnvironmentVariables())
                     .withNewReadinessProbe()
-                      .withNewExec()
-                      .withCommand("/bin/sh", "-i", "-c",
-                                "curl " + MANAGEMENT_URL
-                                + " | grep '<edmx:Edmx '")
-                      .endExec()
+                      .withNewHttpGet()
+                      .withNewPort(8080)
+                      .withPath("/actuator/health")
+                      .endHttpGet()
                       .withInitialDelaySeconds(30)
-                      .withTimeoutSeconds(80)
-                      .withPeriodSeconds(60)
+                      .withTimeoutSeconds(5)
+                      .withPeriodSeconds(20)
                       .withFailureThreshold(5)
                       .withSuccessThreshold(1)
                     .endReadinessProbe()
                     .withNewLivenessProbe()
-                      .withNewExec()
-                      .withCommand("/bin/sh", "-i", "-c",
-                              "curl " + MANAGEMENT_URL
-                              + " | grep '<edmx:Edmx '")
-                      .endExec()
+	                  .withNewHttpGet()
+	                  .withNewPort(8080)
+	                  .withPath("/actuator/health")
+	                  .endHttpGet()                    
                       .withInitialDelaySeconds(30)
-                      .withTimeoutSeconds(80)
-                      .withPeriodSeconds(60)
+                      .withTimeoutSeconds(5)
+                      .withPeriodSeconds(20)
                       .withFailureThreshold(5)
                       .withSuccessThreshold(1)
                     .endLivenessProbe()
@@ -884,6 +881,7 @@ public class TeiidOpenShiftClient implements StringConstants {
 
     private List<ContainerPort> getDeploymentPorts(PublishConfiguration config){
         List<ContainerPort> ports = new ArrayList<>();
+        ports.add(createPort(ProtocolType.PROMENTHEUS.id(), 9779, "TCP"));
         ports.add(createPort(ProtocolType.JOLOKIA.id(), 8778, "TCP"));
         ports.add(createPort(ProtocolType.JDBC.id(), 31000, "TCP"));
         ports.add(createPort(ProtocolType.ODBC.id(), 35432, "TCP"));
@@ -1176,7 +1174,7 @@ public class TeiidOpenShiftClient implements StringConstants {
                 "\n" +
                 "import javax.sql.DataSource;\n" +
                 "\n" +
-                "import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;\n" +
+                "import org.springframework.boot.jdbc.DataSourceBuilder;\n" +
                 "import org.springframework.boot.context.properties.ConfigurationProperties;\n" +
                 "import org.springframework.context.annotation.Bean;\n" +
                 "import org.springframework.context.annotation.Configuration;\n" +
@@ -1262,7 +1260,9 @@ public class TeiidOpenShiftClient implements StringConstants {
 
                 Properties config = def.getPublishedImageDataSourceProperties(ds, source.getJndiName(uow));
                 if (config != null) {
-                    for (String key : config.stringPropertyNames()) {
+                	ArrayList<String> names = new ArrayList<String>(config.stringPropertyNames());
+                	Collections.sort(names);
+                    for (String key : names) {
                         javaOptions.append(" -D").append(key).append("=").append(config.getProperty(key));
                     }
                 }

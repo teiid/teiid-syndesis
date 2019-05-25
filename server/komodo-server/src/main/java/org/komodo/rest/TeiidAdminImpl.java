@@ -352,6 +352,11 @@ public class TeiidAdminImpl implements Admin {
     }
 
     @Override
+    public Collection<? extends VDB> getVDBs(boolean single) throws AdminException {
+        return delegate.getVDBs();
+    }
+    
+    @Override
     public Collection<? extends WorkerPoolStatistics> getWorkerPoolStats() throws AdminException {
         return delegate.getWorkerPoolStats();
     }

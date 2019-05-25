@@ -22,7 +22,8 @@ public enum ProtocolType {
     SODATA,
     JDBC,
     ODBC,
-    JOLOKIA;
+    JOLOKIA,
+    PROMENTHEUS;
 
     public String id() {
         return this.name().toLowerCase();
