@@ -62,7 +62,6 @@ public class PostgreSQLDefinition extends DataSourceDefinition {
         props.setProperty("username", source.getProperty("user"));
         props.setProperty("password", source.getProperty("password"));
         props.setProperty("schema", source.getProperty("schema"));
-        props.setProperty("syndesis-connector-id", source.getId());
         return props;
     }
 

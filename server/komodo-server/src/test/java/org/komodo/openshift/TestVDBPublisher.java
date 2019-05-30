@@ -75,13 +75,13 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
         AuthHandlingFilter.threadOAuthCredentials.set(new OAuthCredentials("token", "user"));
         TeiidMetadataInstance metadata = Mockito.mock(TeiidMetadataInstance.class);
 
-        HashSet<SyndesisDataSource> sources = new HashSet<>();
+        HashSet<DefaultSyndesisDataSource> sources = new HashSet<>();
         sources.add(getMySQLDS());
         sources.add(getPostgreSQL());
 
         TeiidOpenShiftClient client = new TeiidOpenShiftClient(metadata, new EncryptionComponent("blah")) {
             @Override
-            public Set<SyndesisDataSource> getSyndesisSources(OAuthCredentials authToken) throws KException {
+            public Set<DefaultSyndesisDataSource> getSyndesisSources(OAuthCredentials authToken) throws KException {
                 return sources;
             }
             @Override

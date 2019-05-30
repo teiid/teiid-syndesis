@@ -188,6 +188,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
         protected final boolean rollbackOnly;
         protected UnitOfWorkDelegate uowDelegate;
         protected State state = State.NOT_STARTED;
+        protected String repositoryUser;
 
         /**
          * @param userName
@@ -205,7 +206,8 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
                                final String uowName,
                                final UnitOfWorkDelegate uowDelegate,
                                final boolean uowRollbackOnly,
-                               final UnitOfWorkListener listener) {
+                               final UnitOfWorkListener listener,
+                               final String repoUser) {
             ArgCheck.isNotEmpty(userName, "userName"); //$NON-NLS-1$
             ArgCheck.isNotEmpty(uowName, "uowName"); //$NON-NLS-1$
             ArgCheck.isNotNull(uowDelegate, "uowSession"); //$NON-NLS-1$
@@ -215,6 +217,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
             this.uowDelegate = uowDelegate;
             this.rollbackOnly = uowRollbackOnly;
             this.callback = listener;
+            this.repositoryUser = repoUser;
         }
 
         @Override
@@ -305,6 +308,11 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
             return userName;
         }
 
+        @Override
+        public String getRepositoryUser() {
+            return repositoryUser;
+        }
+        
         /**
          * {@inheritDoc}
          *
@@ -466,7 +474,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
         //
         // Transactions should always have a user name but just in case one sneaked through
         //
-        return SYSTEM_USER.equals(transaction.getUserName());
+        return SYSTEM_USER.equals(transaction.getRepositoryUser());
     }
 
     /**
@@ -483,7 +491,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
         if(uow == null)
             return WORKSPACE_ROOT;
 
-        String userName = uow.getUserName();
+        String userName = uow.getRepositoryUser();
         if (userName == null || isSystemTx(uow))
             return WORKSPACE_ROOT;
 
@@ -504,7 +512,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
         if(uow == null)
             return PROFILES_ROOT;
 
-        String userName = uow.getUserName();
+        String userName = uow.getRepositoryUser();
         if (userName == null || isSystemTx(uow))
             return PROFILES_ROOT;
 
@@ -1116,7 +1124,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
         if ( this.validationMgr == null ) {
             // the ValidationManager loads validation rules when it is constructed so we need a transaction to save those rules
             final SynchronousCallback callback = new SynchronousCallback();
-            final UnitOfWork transaction = createTransaction(SYSTEM_USER, "getValidationManager", false, callback ); //$NON-NLS-1$
+            final UnitOfWork transaction = createTransaction(SYSTEM_USER, "getValidationManager", false, callback, SYSTEM_USER); //$NON-NLS-1$
             this.validationMgr = new ValidationManagerImpl( transaction, this );
             transaction.commit();
 

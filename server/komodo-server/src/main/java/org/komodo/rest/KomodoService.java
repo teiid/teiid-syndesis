@@ -606,7 +606,7 @@ public abstract class KomodoService implements V1Constants {
     	Repository repo = this.kengine.getDefaultRepository();
         final UnitOfWork result = repo.createTransaction( user.getUserName(),
                                                                (getClass().getSimpleName() + COLON + name + COLON + System.currentTimeMillis()),
-                                                               rollbackOnly, callback );
+                                                               rollbackOnly, callback, "anonymous");
         LOGGER.debug( "createTransaction:created '{0}', rollbackOnly = '{1}'", result.getName(), result.isRollbackOnly() ); //$NON-NLS-1$
         return result;
     }
@@ -628,7 +628,7 @@ public abstract class KomodoService implements V1Constants {
         final SynchronousCallback callback = new SynchronousCallback();
         final UnitOfWork result = repo.createTransaction(user.getUserName(),
                                                                (getClass().getSimpleName() + COLON + name + COLON + System.currentTimeMillis()),
-                                                               rollbackOnly, callback );
+                                                               rollbackOnly, callback, "anonymous");
         LOGGER.debug( "createTransaction:created '{0}', rollbackOnly = '{1}'", result.getName(), result.isRollbackOnly() ); //$NON-NLS-1$
         return result;
     }

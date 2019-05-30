@@ -20,7 +20,7 @@ public final class SyndesisSourceStatusSerializer extends TypeAdapter< RestSynde
     private void checkComplete( final RestSyndesisSourceStatus status ) throws IOException {
         // per documentation
         assert( status.getSchemaState() != null );
-        assert( status.getServerVdbState() != null );
+        assert( status.getVdbState() != null );
         assert( status.getErrors() != null );
 
         // should always have a connection name
@@ -56,9 +56,9 @@ public final class SyndesisSourceStatusSerializer extends TypeAdapter< RestSynde
             } else if ( RestSyndesisSourceStatus.SCHEMA_VDB_NAME.equals( name ) ) {
                 status.setSchemaVdbName( in.nextString() );
             } else if ( RestSyndesisSourceStatus.SERVER_VDB_NAME.equals( name ) ) {
-                status.setServerVdbName( in.nextString() );
+                status.setVdbName( in.nextString() );
             } else if ( RestSyndesisSourceStatus.SERVER_VDB_STATE.equals( name ) ) {
-                status.setServerVdbState( EntityState.fromString( in.nextString() ) );
+                status.setVdbState( EntityState.fromString( in.nextString() ) );
 			} else {
 				throw new IOException( Messages.getString( Messages.Error.UNEXPECTED_JSON_TOKEN, name ) );
 			}
@@ -91,7 +91,7 @@ public final class SyndesisSourceStatusSerializer extends TypeAdapter< RestSynde
 
         // server VDB state
         out.name( RestSyndesisSourceStatus.SERVER_VDB_STATE );
-        out.value( status.getServerVdbState().toString() );
+        out.value( status.getVdbState().toString() );
 
         // workspace schema state
         out.name( RestSyndesisSourceStatus.SCHEMA_STATE );
@@ -122,9 +122,9 @@ public final class SyndesisSourceStatusSerializer extends TypeAdapter< RestSynde
         }
 
         // server VDB name
-        if ( !StringUtils.isBlank( status.getServerVdbName() ) ) {
+        if ( !StringUtils.isBlank( status.getVdbName() ) ) {
             out.name( RestSyndesisSourceStatus.SERVER_VDB_NAME );
-            out.value( status.getServerVdbName() );
+            out.value( status.getVdbName() );
         }
 
 		out.endObject();

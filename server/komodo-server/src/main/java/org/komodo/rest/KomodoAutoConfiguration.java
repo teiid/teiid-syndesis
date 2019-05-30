@@ -23,6 +23,7 @@ import java.io.File;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Random;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import javax.transaction.TransactionManager;
@@ -112,9 +113,10 @@ public class KomodoAutoConfiguration {
             try {
 	        	// monitor to track connections from the syndesis
 	        	TeiidOpenShiftClient TOSClient = new TeiidOpenShiftClient((TeiidMetadataInstance)kengine.getMetadataInstance(), new EncryptionComponent(getTextEncryptor()));
-	        	SyndesisConnectionSynchronizer sync = new SyndesisConnectionSynchronizer(kengine, TOSClient);
+	        	SyndesisConnectionSynchronizer sync = new SyndesisConnectionSynchronizer(TOSClient);
 	        	SyndesisConnectionMonitor scm = new SyndesisConnectionMonitor(sync);
-	        	scm.start();
+	        	ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
+	        	executor.schedule(scm, 15, TimeUnit.SECONDS);
             } catch (KException e) {
                 throw new WebApplicationException( e, Status.INTERNAL_SERVER_ERROR );
             }

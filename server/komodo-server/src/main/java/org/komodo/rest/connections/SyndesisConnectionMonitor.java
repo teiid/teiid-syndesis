@@ -18,6 +18,10 @@
 package org.komodo.rest.connections;
 
 import java.io.IOException;
+import java.util.Map.Entry;
+import java.util.TreeMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,6 +42,7 @@ public class SyndesisConnectionMonitor extends Thread {
 	private boolean connected;
 	private ObjectMapper mapper = new ObjectMapper();
 	private SyndesisConnectionSynchronizer connectionSynchronizer;
+	private TreeMap<EventMsg, Future<Boolean>> pendingWork = new TreeMap<>();
 	
 	static class Message {
 		private String event;
@@ -60,13 +65,14 @@ public class SyndesisConnectionMonitor extends Thread {
 		}
 	}
 	
-	static class EventMsg {
+	static class EventMsg implements Comparable<EventMsg>{
 		enum Type {
 			created, deleted, updated
 		};
 		private Type action;
 		private String kind;
 		private String id;
+		private int retries = 0;
 		
 		public Type getAction() {
 			return action;
@@ -86,6 +92,16 @@ public class SyndesisConnectionMonitor extends Thread {
 		public void setId(String id) {
 			this.id = id;
 		}
+		public int getRetries() {
+			return retries;
+		}
+		public void setRetries(int retries) {
+			this.retries = retries;
+		}
+		@Override
+		public int compareTo(EventMsg o) {
+			return id.compareTo(o.id);
+		}
 	}
 	
 	public SyndesisConnectionMonitor(SyndesisConnectionSynchronizer scs) {
@@ -99,6 +115,26 @@ public class SyndesisConnectionMonitor extends Thread {
 		while (true) {
 			try {
 				sleep((int) (30 * 1000));
+				if (!this.pendingWork.isEmpty()) {
+					Entry<EventMsg, Future<Boolean>> entry = this.pendingWork.firstEntry();
+					this.pendingWork.remove(entry.getKey());
+					
+					if (entry.getValue().isDone()) {
+						try {
+							entry.getValue().get();
+						} catch (ExecutionException e) {
+							LOGGER.error("Error = " + e.getCause().getMessage(), e.getCause());
+							int retries = entry.getKey().getRetries();
+							if (retries < 3) {
+								LOGGER.info("Retrying the event again..");
+								entry.getKey().setRetries(retries+1);
+								// to make this work, the tasks need to be idempotent by the time they end
+								Future<Boolean> task = connectionSynchronizer.handleConnectionEvent(entry.getKey());
+								this.pendingWork.put(entry.getKey(), task);
+							}
+						}
+					}
+				}
 			} catch (InterruptedException e) {
 				break;
 			}			
@@ -108,7 +144,7 @@ public class SyndesisConnectionMonitor extends Thread {
 		}
 	}
 	
-	private Request.Builder buildRequest() {
+	static Request.Builder buildRequest() {
 		Request.Builder builder = new Request.Builder();
 		builder.addHeader("Content-Type", "application/json")
 			.addHeader("Accept", "application/json")
@@ -192,7 +228,8 @@ public class SyndesisConnectionMonitor extends Thread {
 			} else if (msg.getEvent().contentEquals("change-event")) {
 				EventMsg event = mapper.readValue(msg.getData().getBytes(), EventMsg.class);
 				if (event.getKind().contentEquals("connection")) {
-					connectionSynchronizer.handleConnectionEvent(event);
+					Future<Boolean> task = connectionSynchronizer.handleConnectionEvent(event);
+					this.pendingWork.put(event, task);
 				} else {
 					LOGGER.debug("Message discarded " + text);
 				}

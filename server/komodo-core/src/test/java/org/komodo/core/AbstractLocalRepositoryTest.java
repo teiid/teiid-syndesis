@@ -125,7 +125,7 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
             UnitOfWork transaction = null;
 
             try {
-                transaction = _repo.createTransaction(TEST_USER, "verifyInitialRepositoryContent", true, null );
+                transaction = _repo.createTransaction(TEST_USER, "verifyInitialRepositoryContent", true, null, TEST_USER);
                 final KomodoObject workspace = _repo.komodoWorkspace(transaction);
                 workspace.getName( transaction );
                 transaction.commit();
@@ -283,7 +283,7 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
         commit(this.uow, this.callback, expectedState);
 
         this.callback = nextCallback;
-        this.uow = _repo.createTransaction(TEST_USER, this.name.getMethodName(), this.rollbackOnly, this.callback );
+        this.uow = _repo.createTransaction(TEST_USER, this.name.getMethodName(), this.rollbackOnly, this.callback, TEST_USER);
     }
 
     protected void commit( final UnitOfWork.State expectedState ) throws Exception {
@@ -321,7 +321,7 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
     }
 
     protected static UnitOfWork createTransaction( String user, String txName, boolean rollback, final UnitOfWorkListener callback ) throws Exception {
-        return _repo.createTransaction(user, txName , rollback, callback);
+        return _repo.createTransaction(user, txName , rollback, callback, user);
     }
 
     private UnitOfWork createTransaction( final UnitOfWorkListener callback ) throws Exception {
