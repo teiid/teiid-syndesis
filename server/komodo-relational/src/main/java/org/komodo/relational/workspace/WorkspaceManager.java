@@ -179,10 +179,12 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
     public static WorkspaceManager getInstance( Repository repository, UnitOfWork transaction) throws KException {
         boolean txNotProvided = transaction == null;
 
-        if (txNotProvided)
-            transaction = repository.createTransaction(Repository.SYSTEM_USER, "createWorkspaceManager", false, null ); //$NON-NLS-1$
+        if (txNotProvided) {
+			transaction = repository.createTransaction(Repository.SYSTEM_USER, "createWorkspaceManager", false, null, //$NON-NLS-1$
+					Repository.SYSTEM_USER);
+        }
 
-        WorkspaceManager instance = instances.get(new CacheKey(repository.getId(), transaction.getUserName()));
+        WorkspaceManager instance = instances.get(new CacheKey(repository.getId(), transaction.getRepositoryUser()));
 
         if ( instance == null ) {
             // We must create a transaction here so that it can be passed on to the constructor. Since the
@@ -254,7 +256,7 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
 
     private WorkspaceManager(Repository repository, UnitOfWork uow ) throws KException {
         super( repository, RepositoryImpl.komodoWorkspacePath(uow), 0 );
-        this.owner = uow.getUserName();
+        this.owner = uow.getRepositoryUser();
 
         repository.addObserver(new RepositoryObserver() {
 

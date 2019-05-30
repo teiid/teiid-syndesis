@@ -353,7 +353,7 @@ public class KomodoSearchServiceTestInSuite extends AbstractKomodoServiceTest {
         Repository repository = engine.getDefaultRepository();
         UnitOfWork uow = repository.createTransaction(USER_NAME,
                                                       getClass().getSimpleName() + COLON + "FindSavedSearches" + COLON + System.currentTimeMillis(),
-                                                      true, null);
+                                                      true, null, USER_NAME);
 
         KomodoObject searches = repository.komodoSearches(uow);
         KomodoObject[] children = searches.getChildren(uow);
@@ -387,7 +387,7 @@ public class KomodoSearchServiceTestInSuite extends AbstractKomodoServiceTest {
         Repository repository = engine.getDefaultRepository();
         UnitOfWork uow = repository.createTransaction(USER_NAME,
                                                       getClass().getSimpleName() + COLON + "FindSavedSearches" + COLON + System.currentTimeMillis(),
-                                                      true, null);
+                                                      true, null, USER_NAME);
 
         KomodoObject searches = repository.komodoSearches(uow);
         KomodoObject[] children = searches.getChildren(uow);
@@ -418,7 +418,7 @@ public class KomodoSearchServiceTestInSuite extends AbstractKomodoServiceTest {
         Repository repository = engine.getDefaultRepository();
         UnitOfWork uow = repository.createTransaction(USER_NAME,
                                                       getClass().getSimpleName() + COLON + "FindSavedSearches" + COLON + System.currentTimeMillis(),
-                                                      true, null);
+                                                      true, null, USER_NAME);
 
         KomodoObject searches = repository.komodoSearches(uow);
         KomodoObject[] children = searches.getChildren(uow);

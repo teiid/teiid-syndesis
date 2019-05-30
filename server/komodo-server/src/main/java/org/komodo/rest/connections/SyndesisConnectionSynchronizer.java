@@ -17,62 +17,88 @@
  */
 package org.komodo.rest.connections;
 
+import java.io.IOException;
 import java.util.Collection;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.komodo.core.KEngine;
+import org.komodo.datasources.DefaultSyndesisDataSource;
 import org.komodo.openshift.TeiidOpenShiftClient;
-import org.komodo.rest.AbstractKomodoMetadataService;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.connections.SyndesisConnectionMonitor.EventMsg;
+import org.komodo.rest.relational.response.metadata.RestSyndesisSourceStatus;
 import org.komodo.spi.KException;
-import org.komodo.spi.runtime.SyndesisDataSource;
+import org.teiid.adminapi.AdminException;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * This class provides the communication and hooks
  *
  */
-public class SyndesisConnectionSynchronizer extends AbstractKomodoMetadataService {
+public class SyndesisConnectionSynchronizer {
 	private static final Log LOGGER = LogFactory.getLog(SyndesisConnectionSynchronizer.class);
+	private static final String LOCAL_REST = "http://localhost:8080/vdb-builder/v1";
 
-	private KEngine kengine;
 	private TeiidOpenShiftClient openshiftClient;
-	
+	private OkHttpClient client;
+
 	OAuthCredentials bogusCredentials = new OAuthCredentials("supersecret", "developer");
 
-	public SyndesisConnectionSynchronizer(KEngine kengine, TeiidOpenShiftClient client) {
-		super(kengine);
-		this.kengine = kengine;
-		openshiftClient = client;
+	public SyndesisConnectionSynchronizer(TeiidOpenShiftClient toc) {
+		this.openshiftClient = toc;
+		this.client = buildHttpClient();
 	}
 
 	/*
 	 * This method processes each connection event and delegates to appropriate
 	 * connection operation
 	 */
-	public void handleConnectionEvent(EventMsg event) {
+	public Future<Boolean> handleConnectionEvent(final EventMsg event) {
+		ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
+		Future<Boolean> future = null;
 		switch (event.getAction()) {
 
-		case created: {
+		case created:
 			LOGGER.info("Handling CREATE connection with Event ID = " + event.getId());
-			handleAddConnection(event);
-		}
+			future = executor.submit(new Callable<Boolean>() {
+				public Boolean call() throws Exception{
+					handleAddConnection(event);
+					return true;
+				}
+			});
 			break;
 
-		case deleted: {
+		case deleted:
 			LOGGER.info("Handling DELETE connection with Event ID = " + event.getId());
-			handleDeleteConnection(event);
-		}
+			future = executor.submit(new Callable<Boolean>() {
+				public Boolean call() throws Exception{
+					handleDeleteConnection(event);
+					return true;
+				}
+			});
 			break;
 
-		case updated: {
+		case updated:
 			LOGGER.info("Handling UPDATE connection with Event ID = " + event.getId());
-			handleUpdateConnection(event);
-
-		}
+			future = executor.submit(new Callable<Boolean>() {
+				public Boolean call() throws Exception{
+					handleUpdateConnection(event);
+					return true;
+				}
+			});
 			break;
 		}
+		return future;
 	}
 
 	/*
@@ -80,93 +106,206 @@ public class SyndesisConnectionSynchronizer extends AbstractKomodoMetadataServic
 	 * associated syndesisSource vdbs and schema
 	 */
 	public void synchronizeConnections() {
-
-		// get all source connections from syndesis
-
 		try {
 			// Get syndesis sources
-			Collection<SyndesisDataSource> dataSources = this.openshiftClient.getSyndesisSources(bogusCredentials);
-			
-			for( SyndesisDataSource sds : dataSources ) {
-				SyndesisSourceVdbProcessor processor = new SyndesisSourceVdbProcessor(this.kengine, this.openshiftClient, sds.getName());
-				
-				try {
-					boolean success = processor.refreshSchema(false);
-					
-					if( success ) {
-						LOGGER.info("synchronizeConnections()  Schema REFRESHED for source = " + sds.getName());
-					} else {
-						LOGGER.info("synchronizeConnections()  Schema NOT REFRESHED for source = " + sds.getName() 
-						 + " Check log for details...");
-					}
-				} catch (Exception e) {
-					LOGGER.error("PROCESSOR ERROR in synchronizeConnections() for data source:  " + sds.getName() 
-					+ " \nREASON: " + e);
-				}
-			}
-			
-			
-		} catch (Exception e) {
-			LOGGER.error(e);
-		}
-	}
-
-	private void handleAddConnection(EventMsg event) {
-		try {
-			this.openshiftClient.bindToSyndesisSourceById(bogusCredentials, event.getId());
-			
-			SyndesisDataSource sds = this.openshiftClient.getSyndesisDataSourceById(bogusCredentials, event.getId());
-
-			SyndesisSourceVdbProcessor processor = new SyndesisSourceVdbProcessor(this.kengine, this.openshiftClient, sds.getName());
-			
-			try {
-				processor.refreshSchema(true);
-
-			} catch (Exception e) {
-				LOGGER.error("PROCESSOR ERROR in synchronizeConnections() for data source:  " + sds.getName() 
-				+ " \nREASON: " + e);
+			Collection<DefaultSyndesisDataSource> dataSources = this.openshiftClient
+					.getSyndesisSources(bogusCredentials);
+			for (DefaultSyndesisDataSource sds : dataSources) {
+				addConnection(sds);
 			}
 		} catch (Exception e) {
 			LOGGER.error(e);
 		}
 	}
 
-	private boolean handleDeleteConnection(EventMsg event) {
-		try {
-			String sourceName = this.openshiftClient.findDataSourceName(event.getId());
-			
-			SyndesisSourceVdbProcessor processor = new SyndesisSourceVdbProcessor(this.kengine, this.openshiftClient, sourceName);
-			processor.removeConnection(sourceName);
-			
-			LOGGER.info("DELETE connection completed for " + sourceName);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return false;
+	private void handleAddConnection(EventMsg event) throws KException {
+		DefaultSyndesisDataSource sds = this.openshiftClient.getSyndesisDataSourceByEventId(bogusCredentials,
+				event.getId());
+		if (sds != null) {
+			addConnection(sds);
+			LOGGER.info("Add connection completed for " + sds.getName());
+		} else {
+			LOGGER.info("failed find data source with id " + event.getId());
 		}
-
-		return true;
 	}
 
 	/*
-	 * Updating a connection requires deleting the existing connection and associated objects and 
-	 * then re-adding the same connection.
+	 * Updating a connection requires deleting the existing connection and
+	 * associated objects and then re-adding the same connection.
 	 */
-	private void handleUpdateConnection(EventMsg event) {
-
+	private void handleUpdateConnection(EventMsg event) throws KException{
+		DefaultSyndesisDataSource sds = this.openshiftClient.getSyndesisDataSourceByEventId(bogusCredentials,
+				event.getId());
+		if (sds != null) {
+			deleteConnection(sds.getName());
+			handleAddConnection(event);
+		}
+		LOGGER.info("UPDATE connection completed for " + sds.getName());
+	}
+	
+	private boolean handleDeleteConnection(EventMsg event) throws KException {
 		try {
-			String sourceName = this.openshiftClient.findDataSourceName(event.getId());
-			
-			if( handleDeleteConnection(event) ) {
-				handleAddConnection(event);
-			} else {
-				throw new KException("Delete connection failed. Check log for details");
+			// note here that the datasource is already deleted from the syndesis
+			// so we would need to search by local cached event id
+			String dsName = this.openshiftClient.findDataSourceNameByEventId(event.getId());
+			if (dsName == null) {
+				return true;
 			}
 			
-			LOGGER.info("UPDATE connection completed for " + sourceName);
+			return deleteConnection(dsName);
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw handleError(e);
 		}
-		
-		
+	}	
+	
+	private void addConnection(DefaultSyndesisDataSource sds) throws KException {
+		if (!sds.isBound()) {
+			this.openshiftClient.bindToSyndesisSource(bogusCredentials, sds);
+		}
+
+		// check if the metadata is already available, then skip it.
+		RestSyndesisSourceStatus status = checkMetadataStatus(sds.getName());
+		if (status != null && status.getSchemaState() == RestSyndesisSourceStatus.EntityState.ACTIVE
+				&& status.getVdbState() == RestSyndesisSourceStatus.EntityState.ACTIVE) {
+			LOGGER.info("Schema already in repo for source " + sds.getName() +" skipping refresh");
+			return;
+		}
+
+		// check for 5 mins
+		boolean schemaRequestSubmitted = false;
+		boolean vdbRequestSubmitted = false;
+		long start = System.currentTimeMillis();
+		while (System.currentTimeMillis() - start < (5 * 60 * 1000)) {
+			status = checkMetadataStatus(sds.getName());
+			if (status.getSchemaState() == RestSyndesisSourceStatus.EntityState.ACTIVE
+					&& status.getVdbState() == RestSyndesisSourceStatus.EntityState.ACTIVE) {
+				// we are done.
+				LOGGER.info("Schema Generation Success for source " + sds.getName());
+				break;
+			} else if (status.getSchemaState() == RestSyndesisSourceStatus.EntityState.FAILED) {
+				LOGGER.warn("Schema Generation Failed for fetching metadata for source " + sds.getName());
+				break;
+			} else if (status.getVdbState() == RestSyndesisSourceStatus.EntityState.FAILED) {
+				LOGGER.warn("VDB deployment Failed for fetching metadata for source " + sds.getName());
+				break;
+			} else if (status.getVdbState() == RestSyndesisSourceStatus.EntityState.MISSING && !vdbRequestSubmitted) {
+				requestMetadataForDataSource(sds, false);
+				vdbRequestSubmitted = true;
+			} else if (status.getVdbState() == RestSyndesisSourceStatus.EntityState.ACTIVE
+					&& status.getSchemaState() == RestSyndesisSourceStatus.EntityState.MISSING
+					&& !schemaRequestSubmitted) {
+				// request to read metadata and add to komodo repo
+				requestMetadataForDataSource(sds, true);
+				schemaRequestSubmitted = true;
+			}
+			
+			// sleep for 5 seconds
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+				break;
+			}			
+		}
 	}
+
+	private RestSyndesisSourceStatus checkMetadataStatus(String dsName) throws KException {
+		ObjectMapper mapper = new ObjectMapper();
+		
+		Request request = SyndesisConnectionMonitor.buildRequest().url(LOCAL_REST + "/metadata/syndesisSourceStatuses/"+dsName)
+				.get().build();
+		try (Response response = client.newCall(request).execute()) {
+			if (response.isSuccessful()) {
+				String r = new String(response.body().bytes());
+				LOGGER.debug("status :" + r);
+				RestSyndesisSourceStatus status = mapper.readValue(r,RestSyndesisSourceStatus.class);
+				return status;
+			}
+			response.close();
+		} catch (IOException e) {
+			LOGGER.warn("Failed to submitted request to fetch metadata for connection " + dsName, e);
+			throw handleError(e);
+		}
+		return null;
+	}
+
+	private void requestMetadataForDataSource(DefaultSyndesisDataSource sds, boolean generateSchema) {
+		String query = "?redeploy=true&generate-schema=false";
+		if (generateSchema) {
+			query = "?redeploy=false&generate-schema=true";
+		}
+		Request request = SyndesisConnectionMonitor.buildRequest()
+				.url(LOCAL_REST + "/metadata/refresh-schema/" + sds.getName() + query)
+				.post(RequestBody.create(null, "")).build();
+		try (Response response = this.client.newCall(request).execute()) {
+			if (response.isSuccessful()) {
+				LOGGER.info("submitted request to fetch metadata of connection " + sds.getName()
+						+ " with schema-generation " + generateSchema);
+			} else {
+				LOGGER.warn("Failed to submitted request to fetch metadata for connection " + sds.getName());
+			}
+		} catch (IOException e) {
+			LOGGER.warn("Failed to submitted request to fetch metadata for connection " + sds.getName(), e);
+		}
+	}
+
+	private OkHttpClient buildHttpClient() {
+		OkHttpClient client = new OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS)
+				.writeTimeout(10, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
+		return client;
+	}
+
+	private boolean deleteConnection(String dsName) throws KException {
+		try {
+			RestSyndesisSourceStatus status = checkMetadataStatus(dsName);
+			if (status != null && status.getSchemaVdbName() != null) {
+				deleteSchemaVDB(status);
+			}
+	
+			if (status != null && status.getVdbName() != null) {
+				deleteSourceVDB(status);
+			}
+	
+			this.openshiftClient.deleteDataSource(dsName);
+			LOGGER.info("Connection deleted " + dsName);
+			return true;
+		} catch(AdminException e) {
+			throw handleError(e);
+		}
+	}
+
+	private void deleteSchemaVDB(RestSyndesisSourceStatus status) throws KException {
+		Request request = SyndesisConnectionMonitor.buildRequest()
+				.url(LOCAL_REST + "/workspace/vdbs/" + status.getSchemaVdbName()).delete().build();
+		try (Response response = this.client.newCall(request).execute()) {
+			if (response.isSuccessful()) {
+				LOGGER.info("Workspace VDB " + status.getSchemaVdbName() + " deleted.");
+			} else {
+				LOGGER.info("Failed to delete Workspace VDB " + status.getSchemaVdbName());
+			}
+		} catch (IOException e) {
+			throw handleError(e);
+		}
+	}
+
+	private void deleteSourceVDB(RestSyndesisSourceStatus status) throws KException {
+		Request request = SyndesisConnectionMonitor.buildRequest()
+				.url(LOCAL_REST + "/metadata/vdbs/" + status.getVdbName()).delete().build();
+		try (Response response = this.client.newCall(request).execute()) {
+			if (response.isSuccessful()) {
+				LOGGER.info("Source VDB " + status.getVdbName() + " deleted.");
+			} else {
+				LOGGER.info("Failed to delete Source VDB " + status.getVdbName());
+			}
+		} catch (IOException e) {
+			throw handleError(e);
+		}
+	}
+	
+    protected static KException handleError(Throwable e) {
+        assert (e != null);
+        if (e instanceof KException) {
+            return (KException)e;
+        }
+        return new KException(e);
+    }	
 }

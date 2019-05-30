@@ -103,7 +103,7 @@ public final class ServiceTestUtilities implements StringConstants {
      */
     public void importDataservice(InputStream dsStream, String user) throws Exception {
         SynchronousCallback callback = new SynchronousCallback();
-        UnitOfWork uow = repository.createTransaction(user, "Import Dataservice", false, callback); //$NON-NLS-1$
+        UnitOfWork uow = repository.createTransaction(user, "Import Dataservice", false, callback, user); //$NON-NLS-1$
     
         ImportOptions importOptions = new ImportOptions();
         ImportMessages importMessages = new ImportMessages();
@@ -122,7 +122,7 @@ public final class ServiceTestUtilities implements StringConstants {
      */
     public UnitOfWork createReadTransaction(String user) throws KException {
     
-        return repository.createTransaction(user, "Read-Only Tx", true, null); //$NON-NLS-1$
+        return repository.createTransaction(user, "Read-Only Tx", true, null, user); //$NON-NLS-1$
     }
 
     /**
@@ -134,7 +134,7 @@ public final class ServiceTestUtilities implements StringConstants {
      */
     public Vdb getVdb(String user, String vdbName) throws Exception {
     
-        UnitOfWork uow = repository.createTransaction(user, "Find vdb " + vdbName, true, null); //$NON-NLS-1$
+        UnitOfWork uow = repository.createTransaction(user, "Find vdb " + vdbName, true, null, user); //$NON-NLS-1$
         WorkspaceManager mgr = WorkspaceManager.getInstance(repository, uow);
         Vdb[] vdbs = mgr.findVdbs(uow);
         Vdb theVdb = null;
@@ -157,7 +157,7 @@ public final class ServiceTestUtilities implements StringConstants {
      */
     public Vdb[] getVdbs(String user) throws Exception {
     
-        UnitOfWork uow = repository.createTransaction(user, "Find vdbs", true, null); //$NON-NLS-1$
+        UnitOfWork uow = repository.createTransaction(user, "Find vdbs", true, null, user); //$NON-NLS-1$
         WorkspaceManager mgr = WorkspaceManager.getInstance(repository, uow);
         Vdb[] vdbs = mgr.findVdbs(uow);
     
@@ -179,7 +179,7 @@ public final class ServiceTestUtilities implements StringConstants {
         if (vdb == null)
             return null;
     
-        UnitOfWork uow = repository.createTransaction(user, "Find vdb model " + vdbModelName, true, null); //$NON-NLS-1$
+        UnitOfWork uow = repository.createTransaction(user, "Find vdb model " + vdbModelName, true, null, user); //$NON-NLS-1$
         Model[] models = vdb.getModels(uow, vdbModelName);
         Model theVdbModel = null;
         for(Model model : models) {
@@ -207,7 +207,7 @@ public final class ServiceTestUtilities implements StringConstants {
         if (vdbModel == null)
             return null;
     
-        UnitOfWork uow = repository.createTransaction(user, "Find vdb model view " + viewName, true, null); //$NON-NLS-1$
+        UnitOfWork uow = repository.createTransaction(user, "Find vdb model view " + viewName, true, null, user); //$NON-NLS-1$
         View[] views = vdbModel.getViews(uow, viewName);
         View theView = null;
         for(View view : views) {
@@ -233,7 +233,7 @@ public final class ServiceTestUtilities implements StringConstants {
     public void createDataservice(String dataserviceName, boolean populateWithSamples, String user) throws Exception {
     
         SynchronousCallback callback = new SynchronousCallback();
-        UnitOfWork uow = repository.createTransaction(user, "Create Dataservice", false, callback); //$NON-NLS-1$
+        UnitOfWork uow = repository.createTransaction(user, "Create Dataservice", false, callback, user); //$NON-NLS-1$
     
         KomodoObject wkspace = repository.komodoWorkspace(uow);
         WorkspaceManager wsMgr = WorkspaceManager.getInstance(repository, uow);
@@ -277,7 +277,7 @@ public final class ServiceTestUtilities implements StringConstants {
      */
     public Dataservice getDataservice(String user, String dataserviceName) throws Exception {
     
-        UnitOfWork uow = repository.createTransaction(user, "Find dataservice " + dataserviceName, true, null); //$NON-NLS-1$
+        UnitOfWork uow = repository.createTransaction(user, "Find dataservice " + dataserviceName, true, null, user); //$NON-NLS-1$
         WorkspaceManager mgr = WorkspaceManager.getInstance(repository, uow);
         Dataservice[] dataservices = mgr.findDataservices(uow);
         Dataservice theDataservice = null;
@@ -300,7 +300,7 @@ public final class ServiceTestUtilities implements StringConstants {
      */
     public Dataservice[] getDataservices(String user) throws Exception {
     
-        UnitOfWork uow = repository.createTransaction(user, "Find dataservices", true, null); //$NON-NLS-1$
+        UnitOfWork uow = repository.createTransaction(user, "Find dataservices", true, null, user); //$NON-NLS-1$
         WorkspaceManager mgr = WorkspaceManager.getInstance(repository, uow);
         Dataservice[] services = mgr.findDataservices(uow);
         uow.commit();
@@ -318,7 +318,7 @@ public final class ServiceTestUtilities implements StringConstants {
     public void createVdb(String vdbName, String user) throws Exception {
     
         SynchronousCallback callback = new SynchronousCallback();
-        UnitOfWork uow = repository.createTransaction(user, "Create VDB", false, callback); //$NON-NLS-1$
+        UnitOfWork uow = repository.createTransaction(user, "Create VDB", false, callback, user); //$NON-NLS-1$
     
         WorkspaceManager wsMgr = WorkspaceManager.getInstance(repository, uow);
         Vdb vdb = wsMgr.createVdb(uow, null, vdbName, vdbName);
@@ -339,7 +339,7 @@ public final class ServiceTestUtilities implements StringConstants {
     public void createVdbModel(String vdbName, String modelName, String user) throws Exception {
     
         SynchronousCallback callback = new SynchronousCallback();
-        UnitOfWork uow = repository.createTransaction(user, "Create Model", false, callback); //$NON-NLS-1$
+        UnitOfWork uow = repository.createTransaction(user, "Create Model", false, callback, user); //$NON-NLS-1$
     
         WorkspaceManager wsMgr = WorkspaceManager.getInstance(repository, uow);
         if(!wsMgr.hasChild(uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE)) {
@@ -367,7 +367,7 @@ public final class ServiceTestUtilities implements StringConstants {
     public void createVdbModelView(String vdbName, String modelName, String viewName, String user) throws Exception {
     
         SynchronousCallback callback = new SynchronousCallback();
-        UnitOfWork uow = repository.createTransaction(user, "Create View", false, callback); //$NON-NLS-1$
+        UnitOfWork uow = repository.createTransaction(user, "Create View", false, callback, user); //$NON-NLS-1$
     
         WorkspaceManager wsMgr = WorkspaceManager.getInstance(repository, uow);
         if(!wsMgr.hasChild(uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE)) {
@@ -391,7 +391,7 @@ public final class ServiceTestUtilities implements StringConstants {
     public void deleteVdbs(String user) throws Exception {
     
         SynchronousCallback callback = new SynchronousCallback();
-        UnitOfWork uow = repository.createTransaction(user, "Delete vdbs", false, callback); //$NON-NLS-1$
+        UnitOfWork uow = repository.createTransaction(user, "Delete vdbs", false, callback, user); //$NON-NLS-1$
         
         WorkspaceManager wsMgr = WorkspaceManager.getInstance(repository, uow);
         Vdb[] vdbs = wsMgr.findVdbs(uow);
@@ -412,7 +412,7 @@ public final class ServiceTestUtilities implements StringConstants {
      */
     public void createConnection(String connectionName, String user) throws Exception {
         SynchronousCallback callback = new SynchronousCallback();
-        UnitOfWork uow = repository.createTransaction(user, "Create Connection", false, callback); //$NON-NLS-1$
+        UnitOfWork uow = repository.createTransaction(user, "Create Connection", false, callback, user); //$NON-NLS-1$
     
         WorkspaceManager wsMgr = WorkspaceManager.getInstance(repository, uow);
         Connection connection = wsMgr.createConnection(uow, null, connectionName);
@@ -432,7 +432,7 @@ public final class ServiceTestUtilities implements StringConstants {
     public void deleteObject(String absPath, String user) throws Exception {
     
         SynchronousCallback callback = new SynchronousCallback();
-        UnitOfWork uow = repository.createTransaction(user, "Delete object at path " + absPath, false, callback); //$NON-NLS-1$
+        UnitOfWork uow = repository.createTransaction(user, "Delete object at path " + absPath, false, callback, user); //$NON-NLS-1$
         
         WorkspaceManager wsMgr = WorkspaceManager.getInstance(repository, uow);
         KomodoObject kObject = repository.getFromWorkspace(uow, absPath);
@@ -453,7 +453,7 @@ public final class ServiceTestUtilities implements StringConstants {
      */
     public Connection getConnection(String user, String connectionName) throws Exception {
     
-        UnitOfWork uow = repository.createTransaction(user, "Find connection " + connectionName, true, null); //$NON-NLS-1$
+        UnitOfWork uow = repository.createTransaction(user, "Find connection " + connectionName, true, null, user); //$NON-NLS-1$
         WorkspaceManager mgr = WorkspaceManager.getInstance(repository, uow);
         Connection[] connections = mgr.findConnections(uow);
         Connection theConnection = null;
@@ -476,7 +476,7 @@ public final class ServiceTestUtilities implements StringConstants {
      */
     public Connection[] getConnections(String user) throws Exception {
     
-        UnitOfWork uow = repository.createTransaction(user, "Find connections", true, null); //$NON-NLS-1$
+        UnitOfWork uow = repository.createTransaction(user, "Find connections", true, null, user); //$NON-NLS-1$
         WorkspaceManager mgr = WorkspaceManager.getInstance(repository, uow);
         Connection[] sources = mgr.findConnections(uow);
         uow.commit();
@@ -492,7 +492,7 @@ public final class ServiceTestUtilities implements StringConstants {
      */
     public void createDriver(String driverName) throws Exception {
         SynchronousCallback callback = new SynchronousCallback();
-        UnitOfWork uow = repository.createTransaction(Repository.SYSTEM_USER, "Create Driver", false, callback); //$NON-NLS-1$
+        UnitOfWork uow = repository.createTransaction(Repository.SYSTEM_USER, "Create Driver", false, callback, Repository.SYSTEM_USER); //$NON-NLS-1$
     
         WorkspaceManager wsMgr = WorkspaceManager.getInstance(repository, uow);
         Driver driver = wsMgr.createDriver(uow, null, driverName);
@@ -511,7 +511,7 @@ public final class ServiceTestUtilities implements StringConstants {
      */
     public Driver getDriver(String user, String driverName) throws Exception {
     
-        UnitOfWork uow = repository.createTransaction(user, "Find driver " + driverName, true, null); //$NON-NLS-1$
+        UnitOfWork uow = repository.createTransaction(user, "Find driver " + driverName, true, null, user); //$NON-NLS-1$
         WorkspaceManager mgr = WorkspaceManager.getInstance(repository, uow);
         Driver[] drivers = mgr.findDrivers(uow);
         Driver theDriver = null;
@@ -531,7 +531,7 @@ public final class ServiceTestUtilities implements StringConstants {
      * @throws Exception if error occurs
      */
     public Driver[] getDrivers() throws Exception {
-        UnitOfWork uow = repository.createTransaction(Repository.SYSTEM_USER, "Find drivers", true, null); //$NON-NLS-1$
+        UnitOfWork uow = repository.createTransaction(Repository.SYSTEM_USER, "Find drivers", true, null,Repository.SYSTEM_USER); //$NON-NLS-1$
         WorkspaceManager mgr = WorkspaceManager.getInstance(repository, uow);
         Driver[] drivers = mgr.findDrivers(uow);
         uow.commit();
@@ -545,13 +545,13 @@ public final class ServiceTestUtilities implements StringConstants {
      * @throws Exception
      */
     public String getWorkspace(String user) throws Exception {
-        UnitOfWork uow = repository.createTransaction(user, "Get Workspace", true, null); //$NON-NLS-1$
+        UnitOfWork uow = repository.createTransaction(user, "Get Workspace", true, null, user); //$NON-NLS-1$
         KomodoObject workspace = repository.komodoWorkspace(uow);
         return workspace.getAbsolutePath();
     }
 
     public GitRepository addGitRepositoryConfig(String user, String repoName, KomodoStorageAttributes sta) throws Exception {
-        UnitOfWork uow = repository.createTransaction(user, "Create Git Repository Config", false, null); //$NON-NLS-1$
+        UnitOfWork uow = repository.createTransaction(user, "Create Git Repository Config", false, null, user); //$NON-NLS-1$
         KomodoObject profileObj = repository.komodoProfile(uow);
         assertNotNull(profileObj);
 
@@ -587,7 +587,7 @@ public final class ServiceTestUtilities implements StringConstants {
                                                            String rightColumn,
                                                            String type,
                                                            String operator) throws Exception {
-        UnitOfWork uow = repository.createTransaction(user, "Create View Editor State", false, null); //$NON-NLS-1$
+        UnitOfWork uow = repository.createTransaction(user, "Create View Editor State", false, null, user); //$NON-NLS-1$
         KomodoObject profileObj = repository.komodoProfile(uow);
         assertNotNull(profileObj);
 
@@ -621,7 +621,7 @@ public final class ServiceTestUtilities implements StringConstants {
 
     public ViewEditorState getViewEditorState( final String user,
                                                final String stateId ) throws Exception {
-        UnitOfWork uow = repository.createTransaction(user, "getViewEditorState", true, null); //$NON-NLS-1$
+        UnitOfWork uow = repository.createTransaction(user, "getViewEditorState", true, null, user); //$NON-NLS-1$
 
         try {
             KomodoObject profileObj = repository.komodoProfile(uow);
@@ -650,7 +650,7 @@ public final class ServiceTestUtilities implements StringConstants {
     }
 
     public void removeViewEditorState(String user, String stateId) throws Exception {
-        UnitOfWork uow = repository.createTransaction(user, "Remove View Editor State", false, null); //$NON-NLS-1$
+        UnitOfWork uow = repository.createTransaction(user, "Remove View Editor State", false, null, user); //$NON-NLS-1$
         KomodoObject profileObj = repository.komodoProfile(uow);
         assertNotNull(profileObj);
 

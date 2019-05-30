@@ -271,11 +271,11 @@ public class LocalRepository extends RepositoryImpl {
     @Override
     public UnitOfWork createTransaction(final String userName, final String name,
                                          final boolean rollbackOnly,
-                                         final UnitOfWorkListener callback ) throws KException {
+                                         final UnitOfWorkListener callback, String repoUser) throws KException {
         ArgCheck.isNotEmpty(name, "name"); //$NON-NLS-1$
         LOGGER.debug("creating transaction {0} with rollbackOnly = {1}", name, rollbackOnly); //$NON-NLS-1$
         final UnitOfWorkDelegate session = createSession();
-        final UnitOfWork uow = new LocalRepositoryTransaction(userName, name, session, rollbackOnly, callback);
+        final UnitOfWork uow = new LocalRepositoryTransaction(userName, name, session, rollbackOnly, callback, repoUser);
         this.sessions.put(session, uow);
         return uow;
     }
@@ -286,8 +286,9 @@ public class LocalRepository extends RepositoryImpl {
                                     final String uowName,
                                     final UnitOfWorkDelegate uowSession,
                                     final boolean uowRollbackOnly,
-                                    final UnitOfWorkListener listener) {
-            super(userName, uowName, uowSession, uowRollbackOnly, listener);
+                                    final UnitOfWorkListener listener,
+                                    final String repoUser) {
+            super(userName, uowName, uowSession, uowRollbackOnly, listener, repoUser);
         }
 
         /**

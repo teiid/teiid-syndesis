@@ -89,7 +89,7 @@ public abstract class AbstractSerializerTest implements JsonConstants {
         Mockito.when(repository.createTransaction(Matchers.anyString(),
                                                   Matchers.anyString(),
                                                   Matchers.anyBoolean(),
-                                                  listener)).thenReturn(uow);
+                                                  listener,Matchers.anyString())).thenReturn(uow);
     }
 
     protected <T extends KomodoObject> T mockObject(Class<T> mockClass, String name, String dataPath, KomodoType kType, boolean hasChildren, String descriptorName) throws KException {

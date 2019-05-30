@@ -66,7 +66,7 @@ public final class RestConnectionTest implements V1Constants {
         when(repository.createTransaction(Matchers.anyString(),
                                                   Matchers.anyString(),
                                                   Matchers.anyBoolean(),
-                                                  listener)).thenReturn(uow);
+                                                  listener, Matchers.anyString())).thenReturn(uow);
 
         this.connection = new RestConnection();
         this.connection.setId(NAME);

@@ -179,7 +179,7 @@ public class KomodoImportExportServiceTestInSuite extends AbstractKomodoServiceT
                                                       getClass().getSimpleName() + COLON + "importVdb" + COLON
                                                                  + System.currentTimeMillis(),
                                                       false,
-                                                      null);
+                                                      null, USER_NAME);
 
         KomodoObject workspace = repository.komodoWorkspace(uow);
 
@@ -297,7 +297,7 @@ public class KomodoImportExportServiceTestInSuite extends AbstractKomodoServiceT
                                                       getClass().getSimpleName() + COLON + "importDataservice" + COLON
                                                                  + System.currentTimeMillis(),
                                                       false,
-                                                      null);
+                                                      null, USER_NAME);
 
         KomodoObject workspace = repository.komodoWorkspace(uow);
 
@@ -371,7 +371,7 @@ public class KomodoImportExportServiceTestInSuite extends AbstractKomodoServiceT
                                                       getClass().getSimpleName() + COLON + "importDataservice" + COLON
                                                                  + System.currentTimeMillis(),
                                                       false,
-                                                      null);
+                                                      null, USER_NAME);
 
         KomodoObject workspace = repository.komodoWorkspace(uow);
 
@@ -429,7 +429,7 @@ public class KomodoImportExportServiceTestInSuite extends AbstractKomodoServiceT
                                                       getClass().getSimpleName() + COLON + "importDataservice" + COLON
                                                                  + System.currentTimeMillis(),
                                                       false,
-                                                      null);
+                                                      null, USER_NAME);
 
         KomodoObject workspace = repository.komodoWorkspace(uow);
 
@@ -854,7 +854,7 @@ public class KomodoImportExportServiceTestInSuite extends AbstractKomodoServiceT
                                                       getClass().getSimpleName() + COLON + "importVdb" + COLON
                                                                  + System.currentTimeMillis(),
                                                       false,
-                                                      null);
+                                                      null, USER_NAME);
 
         WorkspaceManager mgr = WorkspaceManager.getInstance(repository, uow);
         KomodoObject kObj = mgr.getChild(uow, VDB_NAME, VdbLexicon.Vdb.VIRTUAL_DATABASE);

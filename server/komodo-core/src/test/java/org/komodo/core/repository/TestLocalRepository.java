@@ -193,7 +193,7 @@ public class TestLocalRepository extends AbstractLocalRepositoryTest {
     public void shouldCreateRollbackTransaction() throws Exception {
         // setup
         final String name = "elvis";
-        final UnitOfWork transaction = _repo.createTransaction(TEST_USER, name, true, null);
+        final UnitOfWork transaction = _repo.createTransaction(TEST_USER, name, true, null, TEST_USER);
 
         // tests
         assertThat(transaction, is(notNullValue()));
@@ -208,7 +208,7 @@ public class TestLocalRepository extends AbstractLocalRepositoryTest {
     public void shouldCreateUpdateTransaction() throws Exception {
         // setup
         final String name = "elvis";
-        final UnitOfWork transaction = _repo.createTransaction(TEST_USER, name, false, null);
+        final UnitOfWork transaction = _repo.createTransaction(TEST_USER, name, false, null, TEST_USER);
 
         // tests
         assertThat(transaction, is(notNullValue()));

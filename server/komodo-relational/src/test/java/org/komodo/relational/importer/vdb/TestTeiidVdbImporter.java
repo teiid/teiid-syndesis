@@ -1451,7 +1451,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
      */
     private void importVdb(InputStream vdbStream) throws Exception {
         SynchronousCallback callback = new SynchronousCallback();
-        UnitOfWork uow = _repo.createTransaction(TEST_USER, "Import Vdb", false, callback); //$NON-NLS-1$
+        UnitOfWork uow = _repo.createTransaction(TEST_USER, "Import Vdb", false, callback, TEST_USER); //$NON-NLS-1$
 
         ImportOptions importOptions = new ImportOptions();
         ImportMessages importMessages = new ImportMessages();

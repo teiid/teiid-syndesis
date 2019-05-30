@@ -241,6 +241,12 @@ public interface Repository {
          * Discards all current changes made during this transaction.
          */
         void rollback();
+        
+        /**
+         * repository user. Always SYSTEM
+         * @return
+         */
+        String getRepositoryUser();
     }
 
     /**
@@ -335,7 +341,8 @@ public interface Repository {
      */
     UnitOfWork createTransaction(final String userName, final String name,
                                   final boolean rollbackOnly,
-                                  final UnitOfWorkListener callback ) throws KException;
+                                  final UnitOfWorkListener callback,
+                                  final String repoUser) throws KException;
 
     /**
      * @param transaction

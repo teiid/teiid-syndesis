@@ -254,7 +254,7 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
         SynchronousCallback callback = new SynchronousCallback();
         UnitOfWork uow = repository.createTransaction(USER_NAME,
                                                       getClass().getSimpleName() + COLON + "SaveSearchInWorkspace" + COLON + System.currentTimeMillis(),
-                                                      false, callback);
+                                                      false, callback, USER_NAME);
 
         ObjectSearcher vdbsSearch = new ObjectSearcher(repository);
         vdbsSearch.setFromType(VdbLexicon.Vdb.VIRTUAL_DATABASE, "vdbs");
@@ -354,7 +354,7 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
         Repository repository = this.engine.getDefaultRepository();
 
         SynchronousCallback callback = new SynchronousCallback();
-        UnitOfWork uow = repository.createTransaction(user, "Import Vdb", false, callback); //$NON-NLS-1$
+        UnitOfWork uow = repository.createTransaction(user, "Import Vdb", false, callback, user); //$NON-NLS-1$
 
         ImportOptions importOptions = new ImportOptions();
         ImportMessages importMessages = new ImportMessages();

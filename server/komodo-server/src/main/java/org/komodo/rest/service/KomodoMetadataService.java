@@ -46,6 +46,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
+
+import org.komodo.datasources.DefaultSyndesisDataSource;
 import org.komodo.openshift.BuildStatus;
 import org.komodo.openshift.PublishConfiguration;
 import org.komodo.openshift.TeiidOpenShiftClient;
@@ -2540,7 +2542,7 @@ public class KomodoMetadataService extends KomodoService {
 			uow = createTransaction(principal, "getSyndesisSources", true); //$NON-NLS-1$
 
 			// Get OpenShift based syndesis sources
-			Collection<SyndesisDataSource> dataSources = this.openshiftClient.getSyndesisSources(getAuthenticationToken());
+			Collection<DefaultSyndesisDataSource> dataSources = this.openshiftClient.getSyndesisSources(getAuthenticationToken());
 			LOGGER.info("syndesisSources - '{0}' Sources", dataSources.size()); //$NON-NLS-1$
 
 			final List<RestSyndesisDataSource> entities = new ArrayList<>();
@@ -2855,7 +2857,7 @@ public class KomodoMetadataService extends KomodoService {
             List<RestSchemaNode> rootNodes = new ArrayList<RestSchemaNode>();
             
             // Get syndesis sources
-            Collection<SyndesisDataSource> dataSources = this.openshiftClient.getSyndesisSources(getAuthenticationToken());
+            Collection<DefaultSyndesisDataSource> dataSources = this.openshiftClient.getSyndesisSources(getAuthenticationToken());
 
             // Get teiid datasources
             Collection<TeiidDataSource> allTeiidSources = getMetadataInstance().getDataSources();
@@ -3033,7 +3035,7 @@ public class KomodoMetadataService extends KomodoService {
             uow = createTransaction(principal, "getSyndesisSourceStatuses", true ); //$NON-NLS-1$
 
             // Get syndesis sources
-            Collection<SyndesisDataSource> dataSources = this.openshiftClient.getSyndesisSources(getAuthenticationToken());
+            Collection<DefaultSyndesisDataSource> dataSources = this.openshiftClient.getSyndesisSources(getAuthenticationToken());
 
             // Get teiid datasources
             Collection<TeiidDataSource> allTeiidSources = getMetadataInstance().getDataSources();
@@ -3083,6 +3085,55 @@ public class KomodoMetadataService extends KomodoService {
             return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.CONNECTION_SERVICE_GET_CONNECTIONS_ERROR);
         }
     }
+    
+    @GET
+    @Path(V1Constants.SYNDESIS_SOURCE_STATUSES+"/{syndesisSourceName}")
+    @Produces( MediaType.APPLICATION_JSON )
+    @ApiOperation(value = "Return the syndesis source statuses by name",
+                  response = RestSyndesisSourceStatus.class)
+    @ApiResponses(value = {
+        @ApiResponse(code = 403, message = "An error has occurred.")
+    })
+	public Response getSyndesisSourceStatusesByName(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
+			@PathParam("syndesisSourceName") final String syndesisSourceName) throws KomodoRestException {
+
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        UnitOfWork uow = null;
+
+        try {
+            uow = createTransaction(principal, "getSyndesisSourceStatus", true ); //$NON-NLS-1$
+
+            TeiidDataSource teiidSource = getMetadataInstance().getDataSource(syndesisSourceName);
+            RestSyndesisSourceStatus status = new RestSyndesisSourceStatus(syndesisSourceName);
+            if (teiidSource != null) {
+            	status.setHasTeiidSource(true);
+            }
+
+            // Name of vdb based on source name
+            String vdbName = getWorkspaceSourceVdbName(syndesisSourceName);
+            TeiidVdb teiidVdb = getMetadataInstance().getVdb(vdbName);
+            if (teiidVdb != null) {
+            	status.setTeiidVdbDetails(teiidVdb);
+            }
+
+            // For each syndesis source, set the schema availability status
+            setSchemaStatus(uow, status);
+            return commit( uow, mediaTypes, status );
+        } catch ( final Exception e ) {
+            if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
+                uow.rollback();
+            }
+            if ( e instanceof KomodoRestException ) {
+                throw ( KomodoRestException )e;
+            }
+			return createErrorResponseWithForbidden(mediaTypes, e,
+					RelationalMessages.Error.CONNECTION_SERVICE_GET_CONNECTIONS_ERROR);
+        }
+    }    
 
     @GET
     @Path(V1Constants.PUBLISH)

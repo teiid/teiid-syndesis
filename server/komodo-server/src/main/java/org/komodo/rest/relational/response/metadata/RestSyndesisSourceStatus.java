@@ -213,14 +213,14 @@ public final class RestSyndesisSourceStatus implements KRestEntity {
     /**
      * @return the server VDB name (can be empty)
      */
-    public String getServerVdbName() {
+    public String getVdbName() {
         return this.vdbName;
     }
 
     /**
      * @return the server VDB state or {@link EntityState#MISSING} if not set
      */
-    public EntityState getServerVdbState() {
+    public EntityState getVdbState() {
         return this.vdbState == null ? EntityState.MISSING : this.vdbState;
     }
 
@@ -297,6 +297,10 @@ public final class RestSyndesisSourceStatus implements KRestEntity {
         this.schemaState = schemaState == null ? EntityState.MISSING : schemaState;
     }
 
+    public void setSchemaState( final String state) {
+        this.schemaState = schemaState == null ? EntityState.MISSING : EntityState.valueOf(state);
+    }
+    
     /**
      * @param schemaModelName the workspace schema model name (can be empty)
      */
@@ -314,17 +318,21 @@ public final class RestSyndesisSourceStatus implements KRestEntity {
     /**
      * @param vdbName the server VDB name (can be empty)
      */
-    public void setServerVdbName( final String vdbName ) {
+    public void setVdbName( final String vdbName ) {
         this.vdbName = vdbName;
     }
 
     /**
      * @param vdbState the server VDB state (can be <code>null</code>)
      */
-    public void setServerVdbState( final EntityState vdbState ) {
+    public void setVdbState( final EntityState vdbState ) {
         this.vdbState = vdbState == null ? EntityState.MISSING : vdbState;
     }
 
+    public void setVdbState( final String state ) {
+        this.vdbState = vdbState == null ? EntityState.MISSING : EntityState.valueOf(state);
+    }
+    
     /**
      * {@inheritDoc}
      *

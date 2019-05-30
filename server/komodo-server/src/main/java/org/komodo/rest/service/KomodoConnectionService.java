@@ -42,6 +42,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.komodo.core.repository.ObjectImpl;
+import org.komodo.datasources.DefaultSyndesisDataSource;
 import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.model.Model;
@@ -567,7 +568,7 @@ public final class KomodoConnectionService extends KomodoService {
             restConnection.setJdbc(true);
 
             // Get the specified ServiceCatalogDataSource from the metadata instance
-            Collection<SyndesisDataSource> dataSources = openshiftClient.getSyndesisSources(getAuthenticationToken());
+            Collection<DefaultSyndesisDataSource> dataSources = openshiftClient.getSyndesisSources(getAuthenticationToken());
 			for(SyndesisDataSource ds: dataSources) {
 				if(ds.getName().equals(rcAttr.getDataSource())) {
 					serviceCatalogSource = ds;
@@ -795,7 +796,7 @@ public final class KomodoConnectionService extends KomodoService {
             restConnection.setJdbc(true);
 
             // Get the specified ServiceCatalogDataSource from the metadata instance
-            Collection<SyndesisDataSource> dataSources = openshiftClient.getSyndesisSources(getAuthenticationToken());
+            Collection<DefaultSyndesisDataSource> dataSources = openshiftClient.getSyndesisSources(getAuthenticationToken());
 			for(SyndesisDataSource ds: dataSources) {
 				if(ds.getName().equals(rcAttr.getDataSource())) {
 					serviceCatalogSource = ds;

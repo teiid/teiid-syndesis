@@ -132,7 +132,8 @@ import io.fabric8.openshift.client.OpenShiftConfig;
 import io.fabric8.openshift.client.OpenShiftConfigBuilder;
 
 public class TeiidOpenShiftClient implements StringConstants {
-    private static final String SERVICE_CA_CERT_FILE = "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt";
+    private static final String ID = "id";
+	private static final String SERVICE_CA_CERT_FILE = "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt";
     private String openShiftHost = "https://openshift.default.svc";
     private long buildTimeoutInSeconds = 2 * 60 * 1000L;
     private final OpenShiftConfig openShiftClientConfig = new OpenShiftConfigBuilder().withMasterUrl(openShiftHost)
@@ -597,8 +598,8 @@ public class TeiidOpenShiftClient implements StringConstants {
         }
     }
 
-    public Set<SyndesisDataSource> getSyndesisSources(OAuthCredentials oauthCreds) throws KException {
-        Set<SyndesisDataSource> sources = new HashSet<>();
+    public Set<DefaultSyndesisDataSource> getSyndesisSources(OAuthCredentials oauthCreds) throws KException {
+        Set<DefaultSyndesisDataSource> sources = new HashSet<>();
         try {
             Collection<String> dsNames = this.metadata.admin().getDataSourceNames();
             String url = SYNDESISURL+"/connections";
@@ -618,6 +619,25 @@ public class TeiidOpenShiftClient implements StringConstants {
         }
         return sources;
     }
+    
+    public DefaultSyndesisDataSource getSyndesisDataSourceById(OAuthCredentials oauthCreds, String dsId)
+            throws KException {
+        try {
+            Collection<String> dsNames = this.metadata.admin().getDataSourceNames();
+            String url = SYNDESISURL+"/connections/"+dsId;
+            InputStream response = executeGET(url, oauthCreds);
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(response);
+            String connectorType = root.get("connectorId").asText();
+            if (!connectorType.equals("sql")) {
+                throw new KException("Not SQL Connection, not supported yet.");
+            }
+            String name = root.get("name").asText();
+            return buildSyndesisDataSource(name, dsNames, root);
+        } catch (Exception e) {
+            throw handleError(e);
+        }
+    }    
 
     public void bindToSyndesisSource(OAuthCredentials oauthCreds, String dsName) throws KException {
         info(dsName, "Bind source with name to Service: " + dsName);
@@ -635,28 +655,25 @@ public class TeiidOpenShiftClient implements StringConstants {
         }
     }
     
-    public void bindToSyndesisSourceById(OAuthCredentials oauthCreds, String dsId) throws KException {
-        info(dsId, "Bind source with ID to Service: " + dsId);
+    public void bindToSyndesisSource(OAuthCredentials oauthCreds, DefaultSyndesisDataSource scd) throws KException {
+        if (scd == null) {
+            throw new KException("failed to find the syndesis datasource");
+        }
+        info(scd.getName(), "Bind source with name to Service: " + scd.getName());
         try {
-            DefaultSyndesisDataSource scd = getSyndesisDataSourceById(oauthCreds, dsId);
-
-            if (scd == null) {
-                throw new KException("failed to find the syndesis datasource by ID " + dsId);
-            }
             Collection<String> dsNames = this.metadata.admin().getDataSourceNames();
-
             if (!dsNames.contains(scd.getName())) {
                 createDataSource(scd.getName(), scd);
             }
         } catch (Exception e) {
             throw handleError(e);
         }
-    }
+    }    
 
     public DefaultSyndesisDataSource getSyndesisDataSource(OAuthCredentials oauthCreds, String dsName)
             throws KException {
         try {
-            Set<SyndesisDataSource> sources = getSyndesisSources(oauthCreds);
+            Set<DefaultSyndesisDataSource> sources = getSyndesisSources(oauthCreds);
             for (SyndesisDataSource source:sources) {
                 if (source.getName().equals(dsName)) {
                     return (DefaultSyndesisDataSource)source;
@@ -668,12 +685,12 @@ public class TeiidOpenShiftClient implements StringConstants {
         }
     }
     
-    public DefaultSyndesisDataSource getSyndesisDataSourceById(OAuthCredentials oauthCreds, String dsId)
+    public DefaultSyndesisDataSource getSyndesisDataSourceByEventId(OAuthCredentials oauthCreds, String eventId)
             throws KException {
         try {
-            Set<SyndesisDataSource> sources = getSyndesisSources(oauthCreds);
-            for (SyndesisDataSource source:sources) {
-                if (source.getId().equals(dsId)) {
+            Set<DefaultSyndesisDataSource> sources = getSyndesisSources(oauthCreds);
+            for (DefaultSyndesisDataSource source:sources) {
+                if (source.getId().equals(eventId)) {
                     return (DefaultSyndesisDataSource)source;
                 }
             }
@@ -681,16 +698,16 @@ public class TeiidOpenShiftClient implements StringConstants {
         } catch (Exception e) {
             throw handleError(e);
         }
-    }
-
+    }    
+    
     private DefaultSyndesisDataSource buildSyndesisDataSource(String dsName, Collection<String> dsNames, JsonNode item)
             throws KException {
         Map<String, String> p = new HashMap<>();
         JsonNode configuredProperties = item.get("configuredProperties");
-        JsonNode connectorIDNode = item.get("id");
+        JsonNode connectorIDNode = item.get(ID);
         configuredProperties.fieldNames()
                 .forEachRemaining(key -> p.put(key, configuredProperties.get(key).asText()));
-
+        
         DataSourceDefinition def = getSourceDefinitionThatMatches(p);
         if (def != null) {
         	if( connectorIDNode != null ) {
@@ -733,6 +750,7 @@ public class TeiidOpenShiftClient implements StringConstants {
         }
 
         Properties properties = scd.convertToDataSourceProperties();
+        properties.setProperty(ID, scd.getId());
 
         this.metadata.admin().createDataSource(name, driverName, encryptionComponent.decrypt(properties));
     }
@@ -747,11 +765,11 @@ public class TeiidOpenShiftClient implements StringConstants {
     	}
     }
     
-    public String findDataSourceName(String connectionId) throws AdminException, KException  {
+    public String findDataSourceNameByEventId(String eventId) throws AdminException, KException  {
     	for( String dsName : this.metadata.admin().getDataSourceNames() ) {
     		Properties props = this.metadata.admin().getDataSource(dsName);
-    		String id = props.getProperty("syndesis-connector-id");
-    		if( id != null && !StringUtils.isBlank(id) && id.equals(connectionId)) {
+    		String id = props.getProperty(ID);
+    		if( id != null && !StringUtils.isBlank(id) && id.equals(eventId)) {
     			return dsName;
     		}
     	}
