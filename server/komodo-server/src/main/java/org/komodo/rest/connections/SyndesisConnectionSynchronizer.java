@@ -48,7 +48,8 @@ import okhttp3.Response;
 public class SyndesisConnectionSynchronizer {
 	private static final Log LOGGER = LogFactory.getLog(SyndesisConnectionSynchronizer.class);
 	private static final String LOCAL_REST = "http://localhost:8080/vdb-builder/v1";
-
+	
+	private ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
 	private TeiidOpenShiftClient openshiftClient;
 	private OkHttpClient client;
 
@@ -64,40 +65,26 @@ public class SyndesisConnectionSynchronizer {
 	 * connection operation
 	 */
 	public Future<Boolean> handleConnectionEvent(final EventMsg event) {
-		ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
-		Future<Boolean> future = null;
-		switch (event.getAction()) {
-
-		case created:
-			LOGGER.info("Handling CREATE connection with Event ID = " + event.getId());
-			future = executor.submit(new Callable<Boolean>() {
-				public Boolean call() throws Exception{
+		Future<Boolean> future = executor.submit(new Callable<Boolean>() {
+			public Boolean call() throws Exception {
+				switch (event.getAction()) {
+				case created:
+					LOGGER.info("Handling CREATE connection with Event ID = " + event.getId());
 					handleAddConnection(event);
-					return true;
-				}
-			});
-			break;
-
-		case deleted:
-			LOGGER.info("Handling DELETE connection with Event ID = " + event.getId());
-			future = executor.submit(new Callable<Boolean>() {
-				public Boolean call() throws Exception{
+					break;
+				case deleted:
+					LOGGER.info("Handling DELETE connection with Event ID = " + event.getId());
 					handleDeleteConnection(event);
-					return true;
-				}
-			});
-			break;
-
-		case updated:
-			LOGGER.info("Handling UPDATE connection with Event ID = " + event.getId());
-			future = executor.submit(new Callable<Boolean>() {
-				public Boolean call() throws Exception{
+					break;
+				case updated:
+					LOGGER.info("Handling UPDATE connection with Event ID = " + event.getId());
 					handleUpdateConnection(event);
-					return true;
+					break;
 				}
-			});
-			break;
-		}
+				synchronzePreviewVDB();
+				return true;
+			}
+		});		
 		return future;
 	}
 
@@ -105,17 +92,24 @@ public class SyndesisConnectionSynchronizer {
 	 * This method checks each applicable syndesis connection and updates all
 	 * associated syndesisSource vdbs and schema
 	 */
-	public void synchronizeConnections() {
-		try {
-			// Get syndesis sources
-			Collection<DefaultSyndesisDataSource> dataSources = this.openshiftClient
-					.getSyndesisSources(bogusCredentials);
-			for (DefaultSyndesisDataSource sds : dataSources) {
-				addConnection(sds);
+	public Future<Boolean> synchronizeConnections() {
+		 return executor.submit(new Callable<Boolean>() {
+			public Boolean call() throws Exception{
+				try {
+					// Get syndesis sources
+					Collection<DefaultSyndesisDataSource> dataSources = openshiftClient
+							.getSyndesisSources(bogusCredentials);
+					for (DefaultSyndesisDataSource sds : dataSources) {
+						addConnection(sds);
+					}
+					synchronzePreviewVDB();
+					return true;
+				} catch (Exception e) {
+					LOGGER.error(e);
+				}
+				return false;
 			}
-		} catch (Exception e) {
-			LOGGER.error(e);
-		}
+		});
 	}
 
 	private void handleAddConnection(EventMsg event) throws KException {
@@ -201,7 +195,7 @@ public class SyndesisConnectionSynchronizer {
 			
 			// sleep for 5 seconds
 			try {
-				Thread.sleep(5000);
+				Thread.sleep(3000);
 			} catch (InterruptedException e) {
 				break;
 			}			
@@ -307,5 +301,22 @@ public class SyndesisConnectionSynchronizer {
             return (KException)e;
         }
         return new KException(e);
-    }	
+    }
+
+	private boolean synchronzePreviewVDB() {
+		LOGGER.info("Preview VDB update Request being submitted.");
+		Request request = SyndesisConnectionMonitor.buildRequest()
+				.url(LOCAL_REST + "/metadata/refreshPreviewVdb/PreviewVdb").post(RequestBody.create(null, "")).build();
+		try (Response response = this.client.newCall(request).execute()) {
+			if (response.isSuccessful()) {
+				LOGGER.info("Preview VDB Updated");
+			} else {
+				LOGGER.info("Failed to Update Preview VDB");
+			}
+			return true;
+		} catch (IOException e) {
+			LOGGER.error("Failed to Update Preview VDB", e);
+		}
+		return false;
+	}	
 }
