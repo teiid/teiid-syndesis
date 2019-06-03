@@ -20,7 +20,6 @@ package org.komodo.datasources;
 import java.util.Map;
 import java.util.Properties;
 
-import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.runtime.SyndesisDataSource;
 
 public class DefaultSyndesisDataSource implements SyndesisDataSource {
@@ -90,16 +89,6 @@ public class DefaultSyndesisDataSource implements SyndesisDataSource {
     
     public String getProperty(String key) {
         return this.properties.get(key);
-    }
-
-    public String canonicalKey(String key) {
-        return this.name.replace(StringConstants.HYPHEN, StringConstants.UNDERSCORE).toUpperCase()
-                + StringConstants.UNDERSCORE
-                + key.replace(StringConstants.HYPHEN, StringConstants.UNDERSCORE).toUpperCase();
-    }    
-    
-    protected String canonicalEnvKey(String key) {
-        return "$(" + canonicalKey(key) + ")";
     }
 
     public Properties convertToDataSourceProperties() {

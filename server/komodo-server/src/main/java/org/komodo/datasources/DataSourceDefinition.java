@@ -62,10 +62,9 @@ public abstract class DataSourceDefinition {
      * Given the connection properties from the Syndesis secrets generate Spring Boot
      * configuration file to configure the data source
      * @param datasource data source details
-     * @param jndiName JNDI Name of the source
      * @return properties properties required to create a connection in target environment
      */
-    public abstract Properties getPublishedImageDataSourceProperties(DefaultSyndesisDataSource datasource, String jndiName);
+    public abstract Properties getPublishedImageDataSourceProperties(DefaultSyndesisDataSource datasource);
 
     /**
      * Returns true if the data source type is a resource adapter, otherwise false.

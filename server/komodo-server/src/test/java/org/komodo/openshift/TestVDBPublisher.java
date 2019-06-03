@@ -53,6 +53,7 @@ import org.mockito.Mockito;
 import org.teiid.core.util.ObjectConverterUtil;
 
 import io.fabric8.kubernetes.api.model.EnvVar;
+import io.fabric8.kubernetes.api.model.EnvVarSourceBuilder;
 
 public class TestVDBPublisher extends AbstractLocalRepositoryTest {
 
@@ -163,21 +164,18 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
         PublishConfiguration config = new PublishConfiguration();
         Collection<EnvVar> variables = generator
                 .getEnvironmentVariablesForVDBDataSources(authToken, getTransaction(), vdbs[0], config);
-        assertThat( variables.size(), is(7));
+        assertThat( variables.size(), is(6));
         
         String javaOptions= 
-        		" -Dspring.datasource.accounts-xyz.jdbc-url=$(ACCOUNTS_XYZ_URL)"
-        		+ " -Dspring.datasource.accounts-xyz.password=$(ACCOUNTS_XYZ_PASSWORD)"
-        		+ " -Dspring.datasource.accounts-xyz.username=$(ACCOUNTS_XYZ_USER)"
-                + " -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
+                  " -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
                 + " -Djava.net.preferIPv4Addresses=true -Djava.net.preferIPv4Stack=true"
                 + " -XX:ParallelGCThreads=1 -XX:ConcGCThreads=1"
                 + " -Djava.util.concurrent.ForkJoinPool.common.parallelism=1"
                 + " -Dio.netty.eventLoopThreads=2";
         
-        assertThat(variables, hasItem(new EnvVar("ACCOUNTS_XYZ_USER", "johnny", null)));
-        assertThat(variables, hasItem(new EnvVar("ACCOUNTS_XYZ_URL", "jdbc:mysql://localhost:1521/sampledb", null)));
-        assertThat(variables, hasItem(new EnvVar("ACCOUNTS_XYZ_PASSWORD", "my-pass", null)));
+        assertThat(variables, hasItem(generator.envFromSecret("myservice-secret", "spring.datasource.accounts-xyz.username")));
+        assertThat(variables, hasItem(generator.envFromSecret("myservice-secret", "spring.datasource.accounts-xyz.jdbc-url")));
+        assertThat(variables, hasItem(generator.envFromSecret("myservice-secret", "spring.datasource.accounts-xyz.password")));
 
 //        assertThat(variables, hasItem(new EnvVarBuilder().withName(EncryptionComponent.SYNDESIS_ENC_KEY)
 //                .withValueFrom(new EnvVarSourceBuilder().withConfigMapKeyRef(new ConfigMapKeySelectorBuilder()
