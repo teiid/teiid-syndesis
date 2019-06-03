@@ -21,7 +21,7 @@ public enum ProtocolType {
     ODATA,
     SODATA,
     JDBC,
-    ODBC,
+    PG,
     JOLOKIA,
     PROMENTHEUS;
 
