@@ -91,16 +91,16 @@ public class MongoDBDefinition extends DataSourceDefinition {
     }
 
     @Override
-    public Properties getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd, String jndiName) {
+    public Properties getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd) {
         Properties props = setupResourceAdapter(scd.getName(), "org.jboss.teiid.resource-adapter.mongodb",
-                "org.teiid.resource.adapter.mongodb.MongoDBManagedConnectionFactory", jndiName);
+                "org.teiid.resource.adapter.mongodb.MongoDBManagedConnectionFactory", scd.getName());
         ds(props, scd, "SecurityType", "SCRAM_SHA_1");
         ds(props, scd, "Ssl", "false");
-        ds(props, scd, "AuthDatabase", scd.canonicalEnvKey("database_name"));
-        ds(props, scd, "RemoteServerList", scd.canonicalEnvKey("DATABASE_SERVICE_NAME")+":27017");
-        ds(props, scd, "Database", scd.canonicalEnvKey("database_name"));
-        ds(props, scd, "Username", scd.canonicalEnvKey("username"));
-        ds(props, scd, "Password", scd.canonicalEnvKey("password"));
+        ds(props, scd, "AuthDatabase", scd.getProperty("database_name"));
+        ds(props, scd, "RemoteServerList", scd.getProperty("DATABASE_SERVICE_NAME")+":27017");
+        ds(props, scd, "Database", scd.getProperty("database_name"));
+        ds(props, scd, "Username", scd.getProperty("username"));
+        ds(props, scd, "Password", scd.getProperty("password"));
         return props;
     }
     

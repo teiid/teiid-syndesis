@@ -31,9 +31,9 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -106,10 +106,13 @@ import io.fabric8.kubernetes.api.builds.Builds;
 import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
+import io.fabric8.kubernetes.api.model.EnvVarSourceBuilder;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.ReplicationController;
+import io.fabric8.kubernetes.api.model.Secret;
+import io.fabric8.kubernetes.api.model.SecretBuilder;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
@@ -124,7 +127,6 @@ import io.fabric8.openshift.api.model.ImageStream;
 import io.fabric8.openshift.api.model.Route;
 import io.fabric8.openshift.api.model.RouteList;
 import io.fabric8.openshift.api.model.RouteSpec;
-import io.fabric8.openshift.api.model.TLSConfigBuilder;
 import io.fabric8.openshift.client.DefaultOpenShiftClient;
 import io.fabric8.openshift.client.NamespacedOpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftClient;
@@ -256,7 +258,7 @@ public class TeiidOpenShiftClient implements StringConstants {
                         if (! Status.DEPLOYING.equals(work.status())) {
                             info(work.vdbName(), "Publishing - Build completed. Preparing to deploy");
                             work.setStatusMessage("build completed, deployment started");
-
+                            createSecret(client, work.namespace(), work.vdbName(), work);
                             DeploymentConfig dc = createDeploymentConfig(client, work);
                             work.setDeploymentName(dc.getMetadata().getName());
                             work.setStatus(Status.DEPLOYING);
@@ -979,8 +981,25 @@ public class TeiidOpenShiftClient implements StringConstants {
             service = client.services().inNamespace(namespace).withName(serviceName).get();
         }
         return service;
-    }    
+    }
+    
+    private String secretName(String name) {
+        return name+"-secret";
+    }
+    
+	private Secret createSecret(OpenShiftClient client, String namespace, String vdbName,
+			BuildStatus config) {
+        String secretName = secretName(vdbName);
+        
+		Secret item = new SecretBuilder().withData(config.publishConfiguration().getSecretVariables()).withNewMetadata()
+				.addToLabels("application", vdbName).withName(secretName).endMetadata().build();
+        
+        Secret secret = client.secrets().inNamespace(namespace).withName(secretName).createOrReplace(item);
+        
+        return secret;
+    }
 
+	/*
     private Route createRoute(OpenShiftClient client, String namespace, String vdbName, String type) {
         String routeName = vdbName+"-"+type;
         Route route = client.routes().inNamespace(namespace).withName(routeName).get();
@@ -1009,6 +1028,7 @@ public class TeiidOpenShiftClient implements StringConstants {
         }
         return route;
     }
+    */
 
     private void waitUntilPodIsReady(String vdbName, final OpenShiftClient client, String podName, int nAwaitTimeout) {
         final CountDownLatch readyLatch = new CountDownLatch(1);
@@ -1187,9 +1207,13 @@ public class TeiidOpenShiftClient implements StringConstants {
                     waitUntilPodIsReady(vdbName, client, buildName + "-build", 20);
 
                     info(vdbName, "Publishing - Fetching environment variables for vdb data sources");
-                    Collection<EnvVar> envs = getEnvironmentVariablesForVDBDataSources(oauthCreds, uow, vdb, publishConfig);
 
-                    publishConfig.addEnvironmentVariables(envs);
+					publishConfig.addEnvironmentVariables(
+							getEnvironmentVariablesForVDBDataSources(oauthCreds, uow, vdb, publishConfig));
+					
+					publishConfig.addSecretVariables(
+							getSecretVariablesForVDBDataSources(oauthCreds, uow, vdb, publishConfig));
+					
                     work.setBuildName(buildName);
                     work.setStatusMessage("Build Running");
                     work.setLastUpdated();
@@ -1286,11 +1310,10 @@ public class TeiidOpenShiftClient implements StringConstants {
             return status;
         }
     }
-
-    Collection<EnvVar> getEnvironmentVariablesForVDBDataSources(OAuthCredentials oauthCreds, UnitOfWork uow, Vdb vdb,
+    
+    Map<String, String> getSecretVariablesForVDBDataSources(OAuthCredentials oauthCreds, UnitOfWork uow, Vdb vdb,
             PublishConfiguration publishConfig) throws KException {
-        List<EnvVar> envs = new ArrayList<>();
-        StringBuilder javaOptions = new StringBuilder();
+        Map<String, String> properties = new HashMap<>();
         Model[] models = vdb.getModels(uow);
         for (Model model : models) {
             ModelSource[] sources = model.getSources(uow);
@@ -1308,47 +1331,68 @@ public class TeiidOpenShiftClient implements StringConstants {
                             + name + " in VDB " + vdb.getName(uow));
                 }
 
-                //  build properties to create data source in Spring Boot
-                convertToEnvironmentVariables(ds, envs);
-
-                Properties config = def.getPublishedImageDataSourceProperties(ds, source.getJndiName(uow));
+                Properties config = def.getPublishedImageDataSourceProperties(ds);
                 if (config != null) {
-                	ArrayList<String> names = new ArrayList<String>(config.stringPropertyNames());
-                	Collections.sort(names);
-                    for (String key : names) {
-                        javaOptions.append(" -D").append(key).append("=").append(config.getProperty(key));
-                    }
+                	for (Map.Entry<Object, Object> entry : config.entrySet())
+						properties.put((String) entry.getKey(), Base64.getEncoder()
+								.encodeToString(encryptionComponent.decrypt((String) entry.getValue()).getBytes()));
                 }
             }
         }
+        return properties;
+    }    
+
+    Collection<EnvVar> getEnvironmentVariablesForVDBDataSources(OAuthCredentials oauthCreds, UnitOfWork uow, Vdb vdb,
+            PublishConfiguration publishConfig) throws KException {
+        List<EnvVar> envs = new ArrayList<>();
+        Model[] models = vdb.getModels(uow);
+        for (Model model : models) {
+            ModelSource[] sources = model.getSources(uow);
+            for (ModelSource source : sources) {
+                String name = source.getName(uow);
+                DefaultSyndesisDataSource ds = getSyndesisDataSource(oauthCreds, name);
+                if (ds == null) {
+                    throw new KException("Datasource "+name+" not found in Syndesis");
+                }
+
+                // if null this is either file, ws, kind of source where service catalog source does not exist
+                DataSourceDefinition def = ds.getDefinition();
+                if (def == null) {
+                    throw new KException("Failed to determine the source type for "
+                            + name + " in VDB " + vdb.getName(uow));
+                }
+                // data source properties as ENV variables
+                def.getPublishedImageDataSourceProperties(ds).forEach((K,V) -> {
+                	try {
+						envs.add(envFromSecret(secretName(vdb.getName(uow)), (String)K));
+					} catch (KException e) {
+						//ignore.
+					}
+                });
+            }
+        }
         // These options need to be removed after the base image gets updated with them natively
-        javaOptions.append(publishConfig.getUserJavaOptions());
-        envs.add(env("JAVA_OPTIONS", javaOptions.toString()));
         for (Map.Entry<String, String> entry : publishConfig.getUserEnvironmentVariables().entrySet()) {
             envs.add(env(entry.getKey(), entry.getValue()));
         }
         envs.add(env("VDB_FILE", vdb.getName(uow)+"-vdb.xml"));
+        envs.add(env("JAVA_OPTIONS", publishConfig.getUserJavaOptions()));
         return envs;
     }
 
-    /**
-     * Convert given secrets for Service Catalog data source into Environment variables.
-     * @param datasource data source
-     * @return YML fragment depicting the ENV variables
-     */
-    private List<EnvVar> convertToEnvironmentVariables(DefaultSyndesisDataSource datasource,
-            List<EnvVar> envs) throws KException {
-        for (String key : datasource.getProperties().keySet()) {
-            String instanceKey = datasource.canonicalKey(key);
-            //envs.add(env(instanceKey, datasource.getProperties().get(key)));
-            //TODO: Passwords in clean text, should either create secret or figure out a way decode on server side.
-            envs.add(env(instanceKey, encryptionComponent.decrypt(datasource.getProperties().get(key))));
-        }
-        return envs;
-    }
-
+    protected String envName(String key) {
+        key = key.replace(StringConstants.HYPHEN, StringConstants.UNDERSCORE);
+        key = key.replace(StringConstants.DOT, StringConstants.UNDERSCORE);
+        return key.toUpperCase();
+    }  
+    
     protected EnvVar env(String name, String value) {
         return new EnvVarBuilder().withName(name).withValue(value).build();
+    }
+    
+    protected EnvVar envFromSecret(String secret, String key) {
+		return new EnvVarBuilder().withName(envName(key))
+				.withValueFrom(new EnvVarSourceBuilder().withNewSecretKeyRef(key, secret, false).build()).build();
     }
 
     private BuildStatus getVirtualizationStatus(OpenShiftClient client, String vdbName) {
@@ -1582,6 +1626,14 @@ public class TeiidOpenShiftClient implements StringConstants {
         	error(vdbName, "requeueing the delete request");
         	status.setStatus(Status.DELETE_REQUEUE);
         }
+	    try {
+	        // secrets
+	        client.secrets().inNamespace(namespace).withName(secretName(vdbName)).delete();
+        } catch (KubernetesClientException e ) {
+        	error(vdbName, e.getMessage());
+        	error(vdbName, "requeueing the delete request");
+        	status.setStatus(Status.DELETE_REQUEUE);
+        }	    
 	    try {
 	        // delete build configuration
 	        client.buildConfigs().inNamespace(namespace).withLabel("application", vdbName).delete();

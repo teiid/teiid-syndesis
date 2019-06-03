@@ -63,10 +63,10 @@ public class ExcelDefinition extends DataSourceDefinition {
     } 
     
     @Override
-    public Properties getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd, String jndiName) {
+    public Properties getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd) {
         Properties props = setupResourceAdapter(scd.getName(), "org.jboss.teiid.resource-adapter.file",
-                "org.teiid.resource.adapter.file.FileManagedConnectionFactory", jndiName);
-        ds(props, scd, "ParentDirectory", scd.canonicalEnvKey("directory"));
+                "org.teiid.resource.adapter.file.FileManagedConnectionFactory", scd.getName());
+        ds(props, scd, "ParentDirectory", scd.getProperty("directory"));
         return props;
     }  
 }

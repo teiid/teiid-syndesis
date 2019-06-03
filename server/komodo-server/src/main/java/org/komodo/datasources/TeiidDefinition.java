@@ -62,11 +62,11 @@ public class TeiidDefinition extends DataSourceDefinition {
     }
 
     @Override
-    public Properties getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd, String jndiName) {
+    public Properties getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd) {
         Properties props = new Properties();
-        ds(props, scd, "jdbc-url", scd.canonicalEnvKey("url"));
-        ds(props, scd, "user", scd.canonicalEnvKey("user"));
-        ds(props, scd, "password", scd.canonicalEnvKey("password"));
+        ds(props, scd, "jdbc-url", scd.getProperty("url"));
+        ds(props, scd, "user", scd.getProperty("user"));
+        ds(props, scd, "password", scd.getProperty("password"));
         return props;
     }
 }

@@ -65,12 +65,12 @@ public class ODataV4Definition extends DataSourceDefinition {
     }    
     
     @Override
-    public Properties getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd, String jndiName) {
+    public Properties getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd) {
         Properties props = setupResourceAdapter(scd.getName(), "org.jboss.teiid.resource-adapter.webservice",
-                "org.teiid.resource.adapter.ws.WSManagedConnectionFactory", jndiName);
-        ds(props, scd, "EndPoint", scd.canonicalEnvKey("url"));
-        ds(props, scd, "AuthUserName", scd.canonicalEnvKey("username"));
-        ds(props, scd, "AuthPassword", scd.canonicalEnvKey("password"));
+                "org.teiid.resource.adapter.ws.WSManagedConnectionFactory", scd.getName());
+        ds(props, scd, "EndPoint", scd.getProperty("url"));
+        ds(props, scd, "AuthUserName", scd.getProperty("username"));
+        ds(props, scd, "AuthPassword", scd.getProperty("password"));
         return props;
     }
 }

@@ -65,12 +65,12 @@ public class SalesforceDefinition extends DataSourceDefinition {
     }    
 
     @Override
-    public Properties getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd, String jndiName) {
+    public Properties getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd) {
         Properties props = setupResourceAdapter(scd.getName(), "org.jboss.teiid.resource-adapter.salesforce-41",
-                "org.teiid.resource.adapter.salesforce.SalesForceManagedConnectionFactory", jndiName);
-        ds(props, scd, "URL", scd.canonicalEnvKey("url"));
-        ds(props, scd, "username", scd.canonicalEnvKey("username"));
-        ds(props, scd, "password", scd.canonicalEnvKey("password"));
+                "org.teiid.resource.adapter.salesforce.SalesForceManagedConnectionFactory", scd.getName());
+        ds(props, scd, "URL", scd.getProperty("url"));
+        ds(props, scd, "username", scd.getProperty("username"));
+        ds(props, scd, "password", scd.getProperty("password"));
         return props;
     }
 }

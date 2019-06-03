@@ -42,8 +42,9 @@ public class PublishConfiguration implements StringConstants {
     private List<EnvVar> allEnvironmentVariables = new ArrayList<>();
     private HashMap<String, String> buildNodeSelector = new HashMap<>();
     private String buildImageStream = "syndesis-s2i:latest";
+    private Map<String, String> secretVariables = new HashMap<>();
 
-    // cpu units
+	// cpu units
     private int cpuUnits = 500; // 100m is 0.1 of CPU, at 500m we have 1/2 CPU as default
 
     public String getBuildImageStream() {
@@ -83,6 +84,20 @@ public class PublishConfiguration implements StringConstants {
             this.allEnvironmentVariables.addAll(envs);
         }
     }
+    
+    public void addSecretVariables(Map<String, String> properties) {
+        if (properties != null && !properties.isEmpty()) {
+            this.secretVariables.putAll(properties);
+        }
+    }    
+    
+    public Map<String, String> getSecretVariables() {
+		return secretVariables;
+	}
+
+	public void setSecretVariables(Map<String, String> secretVariables) {
+		this.secretVariables = secretVariables;
+	}    
 
     protected String getUserJavaOptions() {
         StringBuilder sb = new StringBuilder();
