@@ -854,6 +854,9 @@ public class TeiidOpenShiftClient implements StringConstants {
                   .withName(config.vdbName())
                   .addToLabels("application", config.vdbName())
                   .addToLabels("deploymentConfig", config.vdbName())
+                  .addToLabels("syndesis.io/type", "datavirtualization")
+                  .addToAnnotations("prometheus.io/scrape", "true")
+                  .addToAnnotations("prometheus.io/port", "9779")
                 .endMetadata()
                 .withNewSpec()
                   .addNewContainer()
@@ -902,7 +905,7 @@ public class TeiidOpenShiftClient implements StringConstants {
         ports.add(createPort(ProtocolType.PROMENTHEUS.id(), 9779, "TCP"));
         ports.add(createPort(ProtocolType.JOLOKIA.id(), 8778, "TCP"));
         ports.add(createPort(ProtocolType.JDBC.id(), 31000, "TCP"));
-        ports.add(createPort(ProtocolType.ODBC.id(), 35432, "TCP"));
+        ports.add(createPort(ProtocolType.PG.id(), 35432, "TCP"));
         if (config.isEnableOData()) {
             ports.add(createPort(ProtocolType.ODATA.id(), 8080, "TCP"));
             ports.add(createPort(ProtocolType.SODATA.id(), 8443, "TCP"));
@@ -930,6 +933,7 @@ public class TeiidOpenShiftClient implements StringConstants {
                 .addToAnnotations(DESCRIPTION_ANNOTATION_LABEL, SERVICE_DESCRIPTION)
               .endMetadata()
               .withNewSpec()
+                .withSessionAffinity("ClientIP")
                 .addToSelector("application", vdbName)
                 .addNewPort()
                   .withName(type)
@@ -942,9 +946,40 @@ public class TeiidOpenShiftClient implements StringConstants {
               .done();
             service = client.services().inNamespace(namespace).withName(serviceName).get();
         }
-        
         return service;
     }
+    
+    private Service createODataService(OpenShiftClient client, String namespace, String vdbName, String type, int port) {    	
+        String serviceName = vdbName+"-"+type;
+        debug(vdbName, "Creating the Service of Type " + type + " for VDB "+vdbName);
+        Service service = client.services().inNamespace(namespace).withName(serviceName).get();
+        if (service == null) {
+            client.services().inNamespace(namespace).createNew()
+              .withNewMetadata()
+                .withName(serviceName)
+                .addToLabels("application", vdbName)
+                .addToLabels("discovery.3scale.net", "true")
+                .addToAnnotations(DESCRIPTION_ANNOTATION_LABEL, SERVICE_DESCRIPTION)
+                .addToAnnotations("discovery.3scale.net/scheme", "http")
+                .addToAnnotations("discovery.3scale.net/port", Integer.toString(port))
+                .addToAnnotations("discovery.3scale.net/description-path", "/swagger.json")
+              .endMetadata()
+              .withNewSpec()
+                .withSessionAffinity("ClientIP")
+                .addToSelector("application", vdbName)
+                .addNewPort()
+                  .withName(type)
+                  .withPort(port)
+                  .withNewTargetPort()
+                    .withStrVal(type)
+                  .endTargetPort()
+                .endPort()
+              .endSpec()
+              .done();
+            service = client.services().inNamespace(namespace).withName(serviceName).get();
+        }
+        return service;
+    }    
 
     private Route createRoute(OpenShiftClient client, String namespace, String vdbName, String type) {
         String routeName = vdbName+"-"+type;
@@ -997,11 +1032,11 @@ public class TeiidOpenShiftClient implements StringConstants {
 
     private void createServices(final OpenShiftClient client, final String namespace,
             final String vdbName) {
-        createService(client, namespace, vdbName, ProtocolType.ODATA.id(), 8080);
+        createODataService(client, namespace, vdbName, ProtocolType.ODATA.id(), 8080);
         createService(client, namespace, vdbName, ProtocolType.JDBC.id(), 31000);
-        createService(client, namespace, vdbName, ProtocolType.ODBC.id(), 35432);
-        createRoute(client, namespace, vdbName, ProtocolType.ODATA.id());
-        //createRoute(client, namespace, vdbName, RouteType.JDBC.id());
+        createService(client, namespace, vdbName, ProtocolType.PG.id(), 35432);
+        // createRoute(client, namespace, vdbName, ProtocolType.ODATA.id());
+        // createRoute(client, namespace, vdbName, RouteType.JDBC.id());
     }
 
     private boolean isDeploymentInReadyState(DeploymentConfig dc) {
@@ -1373,7 +1408,7 @@ public class TeiidOpenShiftClient implements StringConstants {
                         // Only if status is running then populate the routes
                         // for this virtualization
                         //
-                        ProtocolType[] types = { ProtocolType.ODATA, ProtocolType.JDBC, ProtocolType.ODBC };
+                        ProtocolType[] types = { ProtocolType.ODATA, ProtocolType.JDBC, ProtocolType.PG };
                         for (ProtocolType type : types) {
                             RouteStatus route = getRoute(vdbName, type);
                             if (route == null)
@@ -1496,11 +1531,11 @@ public class TeiidOpenShiftClient implements StringConstants {
 
         try {
 	        // delete routes first
-	        client.routes().inNamespace(namespace).withName(vdbName + HYPHEN + ProtocolType.ODATA.id()).delete();
+	        // client.routes().inNamespace(namespace).withName(vdbName + HYPHEN + ProtocolType.ODATA.id()).delete();
 	        // delete services next
 	        client.services().inNamespace(namespace).withName(vdbName + HYPHEN + ProtocolType.JDBC.id()).delete();
 	        client.services().inNamespace(namespace).withName(vdbName + HYPHEN + ProtocolType.ODATA.id()).delete();
-	        client.services().inNamespace(namespace).withName(vdbName + HYPHEN + ProtocolType.ODBC.id()).delete();
+	        client.services().inNamespace(namespace).withName(vdbName + HYPHEN + ProtocolType.PG.id()).delete();
         } catch (KubernetesClientException e ) {
         	error(vdbName, e.getMessage());
         	error(vdbName, "requeueing the delete request");
