@@ -1240,7 +1240,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
             String vdbToDeployName = getName(uow);
             String vdbDeploymentName = vdbToDeployName + VDB_DEPLOYMENT_SUFFIX;
             MetadataInstance metadata = getRepository().getMetadataInstance();
-            metadata.deployDynamicVdb(vdbDeploymentName, new ByteArrayInputStream(vdbXml));
+            metadata.deployDynamicVdb(getName(uow), vdbDeploymentName, new ByteArrayInputStream(vdbXml));
 
             status.addProgressMessage("VDB deployed " + vdbName + " to teiid"); //$NON-NLS-1$ //$NON-NLS-2$
         } catch (Exception ex) {

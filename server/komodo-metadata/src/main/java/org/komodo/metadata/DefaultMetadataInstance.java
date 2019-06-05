@@ -619,13 +619,17 @@ public class DefaultMetadataInstance implements MetadataInstance {
     }
 
     @Override
-    public void deployDynamicVdb(String deploymentName, InputStream inStream) throws KException {
+    public void deployDynamicVdb(String vdbName, String deploymentName, InputStream inStream) throws KException {
         checkStarted();
 
         try {
             ArgCheck.isNotNull(deploymentName, "deploymentName"); //$NONNLS1$
             ArgCheck.isNotNull(inStream, "inStream"); //$NONNLS1$
 
+            VDB vdb = admin().getVDB(vdbName, "1.0");
+            if (vdb != null) {
+            	admin().undeploy(deploymentName);
+            }
             admin().deploy(deploymentName, inStream);
 
             // Give a 0.5 sec pause for the VDB to finish loading metadata.

@@ -406,7 +406,7 @@ public class DataserviceConveyor implements StringConstants {
         }
 
         final InputStream stream = new ByteArrayInputStream( vdbXml );
-        metadataInstance.deployDynamicVdb( vdbDeploymentName, stream );
+        metadataInstance.deployDynamicVdb(vdb.getName(uow), vdbDeploymentName, stream );
 
         status.addProgressMessage( Messages.getString( Messages.DataserviceConveyor.DATA_SERVICE_VDB_SUCCESSFULLY_DEPLOYED,
                                                        vdbName ) );
