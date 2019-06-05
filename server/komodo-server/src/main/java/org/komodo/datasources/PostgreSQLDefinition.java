@@ -71,6 +71,11 @@ public class PostgreSQLDefinition extends DataSourceDefinition {
         ds(props, scd, "jdbc-url", scd.getProperty("url"));
         ds(props, scd, "username", scd.getProperty("user"));
         ds(props, scd, "password", scd.getProperty("password"));
+
+        if (scd.getProperty("schema") != null) {
+        	ds(props, scd, "importer.schemaName", scd.getProperty("schema"));
+        }
+
         return props;
     }
 }
