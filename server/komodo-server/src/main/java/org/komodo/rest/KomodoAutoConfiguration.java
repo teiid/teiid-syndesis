@@ -45,6 +45,7 @@ import org.komodo.spi.repository.PersistenceType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.encrypt.Encryptors;
@@ -52,6 +53,7 @@ import org.springframework.security.crypto.encrypt.TextEncryptor;
 import org.teiid.runtime.EmbeddedConfiguration;
 
 @Configuration
+@EnableConfigurationProperties(KomodoConfigurationProperties.class)
 public class KomodoAutoConfiguration {
 	
     @Value("${encrypt.key}")
@@ -59,6 +61,9 @@ public class KomodoAutoConfiguration {
     
     @Autowired(required=false)
     private TransactionManager transactionManager;
+    
+    @Autowired
+    private KomodoConfigurationProperties config;
 
     @Bean
     public TextEncryptor getTextEncryptor() {
@@ -112,7 +117,9 @@ public class KomodoAutoConfiguration {
         } else {
             try {
 	        	// monitor to track connections from the syndesis
-	        	TeiidOpenShiftClient TOSClient = new TeiidOpenShiftClient((TeiidMetadataInstance)kengine.getMetadataInstance(), new EncryptionComponent(getTextEncryptor()));
+				TeiidOpenShiftClient TOSClient = new TeiidOpenShiftClient(
+						(TeiidMetadataInstance) kengine.getMetadataInstance(),
+						new EncryptionComponent(getTextEncryptor()), this.config);
 	        	SyndesisConnectionSynchronizer sync = new SyndesisConnectionSynchronizer(TOSClient);
 	        	SyndesisConnectionMonitor scm = new SyndesisConnectionMonitor(sync);
 	        	ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
@@ -148,7 +155,7 @@ public class KomodoAutoConfiguration {
     public TeiidOpenShiftClient openShiftClient(@Autowired KEngine kengine, @Autowired TextEncryptor enc) {
         try {
             return new TeiidOpenShiftClient((TeiidMetadataInstance) kengine.getMetadataInstance(),
-                    new EncryptionComponent(enc));
+                    new EncryptionComponent(enc), this.config);
         } catch (KException e) {
             throw new RuntimeException(e);
         }

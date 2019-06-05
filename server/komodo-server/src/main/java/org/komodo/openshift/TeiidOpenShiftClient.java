@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
@@ -87,6 +88,7 @@ import org.komodo.relational.model.Model;
 import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
+import org.komodo.rest.KomodoConfigurationProperties;
 import org.komodo.rest.TeiidMetadataInstance;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
@@ -445,10 +447,13 @@ public class TeiidOpenShiftClient implements StringConstants {
 
     private Map<String, PrintWriter> logBuffers = new HashMap<>();
     private EncryptionComponent encryptionComponent;
+    private KomodoConfigurationProperties config;
 
-    public TeiidOpenShiftClient(TeiidMetadataInstance metadata, EncryptionComponent encryptor) {
+	public TeiidOpenShiftClient(TeiidMetadataInstance metadata, EncryptionComponent encryptor,
+			KomodoConfigurationProperties config) {
         this.metadata = metadata;
         this.encryptionComponent = encryptor;
+        this.config = config;
 
         // data source definitions
         add(new PostgreSQLDefinition());
@@ -957,15 +962,23 @@ public class TeiidOpenShiftClient implements StringConstants {
         debug(vdbName, "Creating the Service of Type " + type + " for VDB "+vdbName);
         Service service = client.services().inNamespace(namespace).withName(serviceName).get();
         if (service == null) {
+        	TreeMap<String, String> labels = new TreeMap<String, String>();
+        	labels.put("application", vdbName);
+        	
+        	TreeMap<String, String> annotations = new TreeMap<String, String>();
+        	annotations.put(DESCRIPTION_ANNOTATION_LABEL, SERVICE_DESCRIPTION);
+        	if (this.config.isExposeVia3scale()) {
+        		labels.put("discovery.3scale.net", "true");
+        		annotations.put("discovery.3scale.net/scheme", "http");
+        		annotations.put("discovery.3scale.net/port", Integer.toString(port));
+        		annotations.put("discovery.3scale.net/description-path", "/swagger.json");        		
+        	}
+        	
             client.services().inNamespace(namespace).createNew()
               .withNewMetadata()
                 .withName(serviceName)
-                .addToLabels("application", vdbName)
-                .addToLabels("discovery.3scale.net", "true")
-                .addToAnnotations(DESCRIPTION_ANNOTATION_LABEL, SERVICE_DESCRIPTION)
-                .addToAnnotations("discovery.3scale.net/scheme", "http")
-                .addToAnnotations("discovery.3scale.net/port", Integer.toString(port))
-                .addToAnnotations("discovery.3scale.net/description-path", "/swagger.json")
+                .addToLabels(labels)
+                .addToAnnotations(annotations)
               .endMetadata()
               .withNewSpec()
                 .withSessionAffinity("ClientIP")
@@ -1054,7 +1067,9 @@ public class TeiidOpenShiftClient implements StringConstants {
         createODataService(client, namespace, vdbName, ProtocolType.ODATA.id(), 8080);
         createService(client, namespace, vdbName, ProtocolType.JDBC.id(), 31000);
         createService(client, namespace, vdbName, ProtocolType.PG.id(), 35432);
-        createRoute(client, namespace, vdbName, ProtocolType.ODATA.id());
+        if (!this.config.isExposeVia3scale()) {
+        	createRoute(client, namespace, vdbName, ProtocolType.ODATA.id());
+        }
         // createRoute(client, namespace, vdbName, RouteType.JDBC.id());
     }
 
@@ -1597,7 +1612,7 @@ public class TeiidOpenShiftClient implements StringConstants {
 
         try {
 	        // delete routes first
-	        // client.routes().inNamespace(namespace).withName(vdbName + HYPHEN + ProtocolType.ODATA.id()).delete();
+	        client.routes().inNamespace(namespace).withName(vdbName + HYPHEN + ProtocolType.ODATA.id()).delete();
 	        // delete services next
 	        client.services().inNamespace(namespace).withName(vdbName + HYPHEN + ProtocolType.JDBC.id()).delete();
 	        client.services().inNamespace(namespace).withName(vdbName + HYPHEN + ProtocolType.ODATA.id()).delete();

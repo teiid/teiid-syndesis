@@ -45,6 +45,7 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.rest.AuthHandlingFilter;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
+import org.komodo.rest.KomodoConfigurationProperties;
 import org.komodo.rest.TeiidMetadataInstance;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
@@ -78,7 +79,8 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
         sources.add(getMySQLDS());
         sources.add(getPostgreSQL());
 
-        TeiidOpenShiftClient client = new TeiidOpenShiftClient(metadata, new EncryptionComponent("blah")) {
+		TeiidOpenShiftClient client = new TeiidOpenShiftClient(metadata, new EncryptionComponent("blah"),
+				new KomodoConfigurationProperties()) {
             @Override
             public Set<DefaultSyndesisDataSource> getSyndesisSources(OAuthCredentials authToken) throws KException {
                 return sources;
