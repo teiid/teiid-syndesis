@@ -1,0 +1,17 @@
+package io.integration;
+
+import javax.sql.DataSource;
+
+import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class DataSources {
+    @ConfigurationProperties(prefix = "spring.datasource.accountsxyz")
+    @Bean("accountsxyz")
+    public DataSource accountsxyz() {
+        return DataSourceBuilder.create().build();
+    }
+}

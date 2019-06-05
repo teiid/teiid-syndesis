@@ -48,12 +48,10 @@ import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.TeiidMetadataInstance;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.runtime.SyndesisDataSource;
 import org.mockito.Mockito;
 import org.teiid.core.util.ObjectConverterUtil;
 
 import io.fabric8.kubernetes.api.model.EnvVar;
-import io.fabric8.kubernetes.api.model.EnvVarSourceBuilder;
 
 public class TestVDBPublisher extends AbstractLocalRepositoryTest {
 
@@ -152,6 +150,18 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
         String pom = generator.generatePomXml(authToken, getTransaction(), vdbs[0], false);
         assertEquals(ObjectConverterUtil.convertFileToString(new File("src/test/resources/generated-pom.xml")), pom);
     }
+    
+    @Test
+    public void testGenerateDataSource() throws Exception {
+        TeiidOpenShiftClient generator = testDataSetup();
+
+        final Vdb[] vdbs = WorkspaceManager.getInstance( _repo, getTransaction() ).findVdbs( getTransaction() );
+        assertThat( vdbs.length, is(1));
+
+        InputStream dsIs = generator.buildDataSourceBuilders(vdbs[0], getTransaction());
+        String ds = ObjectConverterUtil.convertToString(dsIs);
+        assertEquals(ObjectConverterUtil.convertFileToString(new File("src/test/resources/generated-ds.txt")), ds);
+    }    
 
     @Test
     public void testGenerateDeploymentYML() throws Exception {

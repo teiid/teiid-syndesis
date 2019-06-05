@@ -231,7 +231,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
         
         // Generate the View DDL
         sb.append("CREATE VIEW "); //$NON-NLS-1$
-        sb.append(viewName);
+        sb.append(escapeSQLName(viewName));
         sb.append(StringConstants.SPACE+StringConstants.OPEN_BRACKET);
         sb.append("RowId long PRIMARY KEY, "); //$NON-NLS-1$
 
@@ -618,7 +618,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
     		this.table = table;
     		this.name = table.getName(uow);
     		Model schemaModel = table.getParent(uow);
-    		this.fqname = schemaModel.getName(uow) + DOT + this.name;
+    		this.fqname = escapeSQLName(schemaModel.getName(uow)) + DOT + escapeSQLName(this.name);
     		createColumnInfos(uow, table);
     	}
     	
