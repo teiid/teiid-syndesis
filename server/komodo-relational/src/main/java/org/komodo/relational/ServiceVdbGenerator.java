@@ -616,9 +616,9 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
     		this.path = path;
     		this.alias = alias;
     		this.table = table;
-    		this.name = table.getName(uow);
+    		this.name = escapeSQLName(table.getName(uow));
     		Model schemaModel = table.getParent(uow);
-    		this.fqname = escapeSQLName(schemaModel.getName(uow)) + DOT + escapeSQLName(this.name);
+    		this.fqname = escapeSQLName(schemaModel.getName(uow)) + DOT + this.name;
     		createColumnInfos(uow, table);
     	}
     	
@@ -670,13 +670,13 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
     	private String nameAndType;
     	
     	private ColumnInfo(UnitOfWork uow, Column column, String tableFqn, String tblAlias) throws KException {
-			this.name = column.getName(uow);
-			this.nameAndType =  escapeSQLName(name) + SPACE + getColumnDatatypeString(uow, column);
+			this.name = escapeSQLName(column.getName(uow));
+			this.nameAndType =  name + SPACE + getColumnDatatypeString(uow, column);
 			this.aliasedName = name;
 			if( tblAlias != null ) {
 				this.aliasedName = tblAlias + DOT + name;
 			}
-			this.fqname = tableFqn + DOT + escapeSQLName(name);
+			this.fqname = tableFqn + DOT + name;
     	}
     	
 		public String getName() {

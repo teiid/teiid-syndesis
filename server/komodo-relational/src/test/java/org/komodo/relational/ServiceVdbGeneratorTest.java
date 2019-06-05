@@ -45,6 +45,7 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     private static String description = "test view description text";
     private boolean isComplete = true;
     private static String sourceTablePath1 = "connection=pgconnection1/schema=public/table=orders";
+    private static String sourceTablePath1b = "connection=pgconnection1/schema=public/table=orders2";
     private static String sourceTablePath2 = "connection=pgconnection1/schema=public/table=customers";
     private static String sourceTablePath3 = "connection=pgconnection2/schema=public/table=customers";
     private static String comp1Name = "comp1";
@@ -64,7 +65,8 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     private static String CUSTOMER_NAME = "customerName";
     
     private static String FQN_TABLE_1 = "schema=public/table=orders";
-    private static String FQN_TABLE_2 = "schema=public/table=customers";
+    private static String FQN_TABLE_2 = "schema=public/table=orders2";
+    private static String FQN_TABLE_3 = "schema=public/table=customers";
     
     private static final String TEST_VIEW_NAME = "test_view_name";
     private static final String DS_NAME = "pgconnection1";
@@ -88,15 +90,19 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     		SET_NAMESPACE_STRING +
     		"CREATE FOREIGN TABLE orders ( "
     		+ "ID long, orderDate timestamp) OPTIONS(\"" + TABLE_OPTION_FQN + "\" \"" + FQN_TABLE_1 + "\");\n" +
+    		"CREATE FOREIGN TABLE orders2 ( "
+    		+ "ID long, year string, orderDate timestamp) OPTIONS(\"" + TABLE_OPTION_FQN + "\" \"" + FQN_TABLE_2 + "\");\n" +
     		"CREATE FOREIGN TABLE customers ( "
-    		+ "ID long, name string) OPTIONS(\"" + TABLE_OPTION_FQN + "\" \"" + FQN_TABLE_2 + "\");";
+    		+ "ID long, name string) OPTIONS(\"" + TABLE_OPTION_FQN + "\" \"" + FQN_TABLE_3 + "\");";
     
     private final static String pgconnection2schemamodelDDL = 
     		SET_NAMESPACE_STRING +
     		"CREATE FOREIGN TABLE orders ( "
     		+ "ID long, orderDate timestamp) OPTIONS(\"" + TABLE_OPTION_FQN + "\" \"" + FQN_TABLE_1 + "\");\n" +
+    		"CREATE FOREIGN TABLE orders2 ( "
+    		+ "ID long, year string, orderDate timestamp) OPTIONS(\"" + TABLE_OPTION_FQN + "\" \"" + FQN_TABLE_2 + "\");\n" +
     		"CREATE FOREIGN TABLE customers ( "
-    		+ "ID long, customerName string) OPTIONS(\"" + TABLE_OPTION_FQN + "\" \"" + FQN_TABLE_2 + "\");";
+    		+ "ID long, customerName string) OPTIONS(\"" + TABLE_OPTION_FQN + "\" \"" + FQN_TABLE_3 + "\");";
     
     private final static String EXPECTED_JOIN_SQL_TWO_SOURCES_START =
             "CREATE VIEW orderInfoView (RowId long PRIMARY KEY, ID LONG, orderDate TIMESTAMP, customerName STRING) AS \n"
@@ -120,6 +126,11 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
             "CREATE VIEW orderInfoView (RowId long PRIMARY KEY, ID LONG, orderDate TIMESTAMP) AS \n"
           + "SELECT ROW_NUMBER() OVER (ORDER BY ID), ID, orderDate\n"
           + "FROM pgconnection1schemamodel.orders;";
+
+    private final static String EXPECTED_NO_JOIN_SQL_SINGE_SOURCE_WITH_KEYWORD =
+            "CREATE VIEW orderInfoView (RowId long PRIMARY KEY, ID LONG, \"year\" STRING, orderDate TIMESTAMP) AS \n"
+          + "SELECT ROW_NUMBER() OVER (ORDER BY ID), ID, \"year\", orderDate\n"
+          + "FROM pgconnection1schemamodel.orders2;";
     
     // ===========================
     // orders
@@ -360,6 +371,34 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(WorkspaceManager.getInstance(_repo, getTransaction()));
 
         String[] sourceTablePaths = { sourceTablePath1 };
+        ViewDefinition viewDef = mock(ViewDefinition.class);
+        when(viewDef.getName(getTransaction())).thenReturn("vdbDefinition");
+        when(viewDef.getViewName(getTransaction())).thenReturn(viewDefinitionName);
+        when(viewDef.getDescription(getTransaction())).thenReturn(description);
+        when(viewDef.isComplete(getTransaction())).thenReturn(isComplete);
+        when(viewDef.getSourcePaths(getTransaction())).thenReturn(sourceTablePaths);
+        
+        SqlProjectedColumn projCol = mock(SqlProjectedColumn.class);
+        when(projCol.getName(getTransaction())).thenReturn("ALL");
+        when(projCol.getType(getTransaction())).thenReturn("ALL");
+        when(projCol.isSelected(getTransaction())).thenReturn(true);
+        
+        SqlProjectedColumn[] projCols = new SqlProjectedColumn[1];
+        projCols[0] = projCol;
+        when(viewDef.getProjectedColumns(getTransaction())).thenReturn(projCols);
+
+        String viewDdl = vdbGenerator.getODataViewDdl(getTransaction(), viewDef);
+        printResults(EXPECTED_DDL, viewDdl);
+        assertThat(viewDdl, is(EXPECTED_DDL));
+    }
+
+    @Test
+    public void shouldGenerateOdataViewDDL_WithSingleSourceViewDefinition_NoJoinOneTable_withKeywordCol() throws Exception {
+    	String EXPECTED_DDL = EXPECTED_NO_JOIN_SQL_SINGE_SOURCE_WITH_KEYWORD;
+    	
+    	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(WorkspaceManager.getInstance(_repo, getTransaction()));
+
+        String[] sourceTablePaths = { sourceTablePath1b };
         ViewDefinition viewDef = mock(ViewDefinition.class);
         when(viewDef.getName(getTransaction())).thenReturn("vdbDefinition");
         when(viewDef.getViewName(getTransaction())).thenReturn(viewDefinitionName);
