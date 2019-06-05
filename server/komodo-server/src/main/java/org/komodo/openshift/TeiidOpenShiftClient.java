@@ -119,6 +119,7 @@ import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
+import io.fabric8.kubernetes.client.dsl.internal.PodOperationsImpl;
 import io.fabric8.openshift.api.model.Build;
 import io.fabric8.openshift.api.model.BuildConfig;
 import io.fabric8.openshift.api.model.BuildList;
@@ -1217,6 +1218,8 @@ public class TeiidOpenShiftClient implements StringConstants {
 
                     String buildName = build.getMetadata().getName();
                     info(vdbName, "Publishing - Build created: " + buildName);
+                  
+                    PodOperationsImpl publishPod = (PodOperationsImpl)client.pods().withName(buildName + "-build");
 
                     info(vdbName, "Publishing - Awaiting pod readiness ...");
                     waitUntilPodIsReady(vdbName, client, buildName + "-build", 20);
@@ -1231,10 +1234,11 @@ public class TeiidOpenShiftClient implements StringConstants {
 					
                     work.setBuildName(buildName);
                     work.setStatusMessage("Build Running");
+                    work.setPublishPodName(publishPod.getName());
                     work.setLastUpdated();
                     work.setStatus(Status.BUILDING);
 
-                    info(vdbName, "Publishing  - Configuration completed. Building ...");
+                    info(vdbName, "Publishing  - Configuration completed. Building ... Pod Name: " + work.publishPodName());
 
                 } catch (Exception ex) {
                     work.setStatus(Status.FAILED);
