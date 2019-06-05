@@ -288,7 +288,7 @@ public interface MetadataInstance extends StringConstants {
      * @param stream
      * @throws KException 
      */
-    void deployDynamicVdb(String vdbDeploymentName, InputStream stream) throws KException;
+    void deployDynamicVdb(String vdbName, String vdbDeploymentName, InputStream stream) throws KException;
 
     /**
      * Undeploy the dynamic vdb with the given name

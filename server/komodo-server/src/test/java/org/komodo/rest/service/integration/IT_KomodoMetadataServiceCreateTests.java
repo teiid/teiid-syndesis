@@ -69,7 +69,7 @@ public class IT_KomodoMetadataServiceCreateTests extends AbstractKomodoMetadataS
     @Test
     @Ignore("Requires configuration of loopback translator")
     public void testDeployment() throws Exception {
-        getMetadataInstance().deployDynamicVdb(TestUtilities.SAMPLE_VDB_FILE, TestUtilities.sampleExample());
+        getMetadataInstance().deployDynamicVdb("sample", TestUtilities.SAMPLE_VDB_FILE, TestUtilities.sampleExample());
         Thread.sleep(2000);
 
         Collection<TeiidVdb> vdbs = getMetadataInstance().getVdbs();

@@ -2047,8 +2047,11 @@ public class KomodoMetadataService extends KomodoService {
             	}
             }
 
+            // check if there is a VDB already deployed in the instance
+            TeiidVdb vdb = getMetadataInstance().getVdb(previewVdb.getName(uow));
+             
             // The updated VDB is deployed if imports were added or removed
-            if(importAdded || importRemoved) {
+            if(vdb == null || importAdded || importRemoved) {
                 //
                 // Deploy the VDB
                 //
@@ -2137,7 +2140,7 @@ public class KomodoMetadataService extends KomodoService {
     @ApiOperation(value = "Pass a query to the teiid server")
     @ApiResponses(value = {
         @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
-        @ApiResponse(code = 403, message = "An error has occurred.")
+        @ApiResponse(code = 400, message = "An error has occurred.")
     })
     public Response query(final @Context HttpHeaders headers,
                                    final @Context UriInfo uriInfo,
@@ -2208,7 +2211,8 @@ public class KomodoMetadataService extends KomodoService {
 
             TeiidVdb vdb = getMetadataInstance().getVdb(vdbName);
             if (vdb == null) {
-                return createErrorResponse(Status.FORBIDDEN, mediaTypes, RelationalMessages.Error.METADATA_SERVICE_QUERY_TARGET_NOT_DEPLOYED);
+				return createErrorResponse(Status.BAD_REQUEST, mediaTypes,
+						RelationalMessages.Error.METADATA_SERVICE_QUERY_TARGET_NOT_DEPLOYED);
             }
 
             LOGGER.debug("Establishing query service for query {0} on vdb {1}", query, vdbName);
