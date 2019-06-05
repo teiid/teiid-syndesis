@@ -1078,7 +1078,7 @@ public class TeiidOpenShiftClient implements StringConstants {
             }
         }
         // let's try to deploy five times before giving up.
-        if (status.getObservedGeneration() <= 5) {
+        if (status.getObservedGeneration() < 4) {
         	return true;
         }
         return false;
@@ -1170,9 +1170,10 @@ public class TeiidOpenShiftClient implements StringConstants {
                     debug(vdbName, "Publishing - Generated pom file: " + NEW_LINE + pomFile);
                     archive.add(new StringAsset(pomFile), "pom.xml");
 
-                    byte[] vdbFile = vdb.export(uow, null);
-                    debug(vdbName, "Publishing - Exported vdb: " + NEW_LINE + new String(vdbFile));
-                    archive.add(new ByteArrayAsset(vdbFile), "/src/main/resources/" + vdbName + "-vdb.xml");
+                    byte[] vdbContents = vdb.export(uow, null);
+                    String modifiedVDB = normalizeDataSourceNames(vdb, new String(vdbContents), uow);
+                    debug(vdbName, "Publishing - Exported vdb: " + NEW_LINE + new String(vdbContents));
+                    archive.add(new StringAsset(modifiedVDB), "/src/main/resources/" + vdbName + "-vdb.xml");
 
                     InputStream configIs = this.getClass().getClassLoader().getResourceAsStream("s2i/application.properties");
                     archive.add(new ByteArrayAsset(ObjectConverterUtil.convertToByteArray(configIs)),
@@ -1238,14 +1239,34 @@ public class TeiidOpenShiftClient implements StringConstants {
         });
     }
 
+	private String normalizeDataSourceNames(Vdb vdb, String vdbContents, UnitOfWork uow) throws KException {
+		debug(vdb.getName(uow), vdbContents);
+        Model[] models = vdb.getModels(uow);
+        for (Model model : models) {
+            ModelSource[] sources = model.getSources(uow);
+            for (ModelSource source : sources) {
+                String originalName = source.getName(uow);
+                String name = originalName.toLowerCase();
+                name = name.replace("-", "");
+                if (!originalName.contentEquals(name)) {
+                	// <source name="sample-db" translator-name="postgresql" connection-jndi-name="sample-db"></source>
+					vdbContents = vdbContents.replace("name=\"" + originalName + "\"", "name=\"" + name + "\"");
+					vdbContents = vdbContents.replace("connection-jndi-name=\"" + originalName + "\"",
+							"connection-jndi-name=\"" + name + "\"");
+                }
+            }
+        }
+		return vdbContents;
+	}
+	
     private static final String DS_TEMPLATE =
             "    @ConfigurationProperties(prefix = \"spring.datasource.{name}\")\n" +
-            "    @Bean\n" +
-            "    public DataSource {name}() {\n" +
+            "    @Bean(\"{name}\")\n" +
+            "    public DataSource {method-name}() {\n" +
             "        return DataSourceBuilder.create().build();\n" +
             "    }";
 
-    private InputStream buildDataSourceBuilders(Vdb vdb, UnitOfWork uow) throws KException {
+    protected InputStream buildDataSourceBuilders(Vdb vdb, UnitOfWork uow) throws KException {
         StringWriter sw = new StringWriter();
         sw.write("package io.integration;\n" +
                 "\n" +
@@ -1264,7 +1285,9 @@ public class TeiidOpenShiftClient implements StringConstants {
             ModelSource[] sources = model.getSources(uow);
             for (ModelSource source : sources) {
                 String name = source.getName(uow);
-                sw.write(DS_TEMPLATE.replace("{name}", name));
+                name = name.toLowerCase();
+                name = name.replace("-", "");
+                sw.write(DS_TEMPLATE.replace("{name}", name).replace("{method-name}", name));                
                 sw.write("\n");
             }
         }
@@ -1381,7 +1404,7 @@ public class TeiidOpenShiftClient implements StringConstants {
     }
 
     protected String envName(String key) {
-        key = key.replace(StringConstants.HYPHEN, StringConstants.UNDERSCORE);
+        key = key.replace(StringConstants.HYPHEN, "");
         key = key.replace(StringConstants.DOT, StringConstants.UNDERSCORE);
         return key.toUpperCase();
     }  
