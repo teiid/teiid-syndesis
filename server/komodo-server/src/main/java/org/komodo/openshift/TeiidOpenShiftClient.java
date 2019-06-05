@@ -127,6 +127,7 @@ import io.fabric8.openshift.api.model.ImageStream;
 import io.fabric8.openshift.api.model.Route;
 import io.fabric8.openshift.api.model.RouteList;
 import io.fabric8.openshift.api.model.RouteSpec;
+import io.fabric8.openshift.api.model.TLSConfigBuilder;
 import io.fabric8.openshift.client.DefaultOpenShiftClient;
 import io.fabric8.openshift.client.NamespacedOpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftClient;
@@ -999,7 +1000,6 @@ public class TeiidOpenShiftClient implements StringConstants {
         return secret;
     }
 
-	/*
     private Route createRoute(OpenShiftClient client, String namespace, String vdbName, String type) {
         String routeName = vdbName+"-"+type;
         Route route = client.routes().inNamespace(namespace).withName(routeName).get();
@@ -1028,7 +1028,6 @@ public class TeiidOpenShiftClient implements StringConstants {
         }
         return route;
     }
-    */
 
     private void waitUntilPodIsReady(String vdbName, final OpenShiftClient client, String podName, int nAwaitTimeout) {
         final CountDownLatch readyLatch = new CountDownLatch(1);
@@ -1055,7 +1054,7 @@ public class TeiidOpenShiftClient implements StringConstants {
         createODataService(client, namespace, vdbName, ProtocolType.ODATA.id(), 8080);
         createService(client, namespace, vdbName, ProtocolType.JDBC.id(), 31000);
         createService(client, namespace, vdbName, ProtocolType.PG.id(), 35432);
-        // createRoute(client, namespace, vdbName, ProtocolType.ODATA.id());
+        createRoute(client, namespace, vdbName, ProtocolType.ODATA.id());
         // createRoute(client, namespace, vdbName, RouteType.JDBC.id());
     }
 
