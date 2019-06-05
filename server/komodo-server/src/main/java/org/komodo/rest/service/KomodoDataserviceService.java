@@ -232,6 +232,7 @@ public final class KomodoDataserviceService extends KomodoService
                         // Set published status of dataservice
                         BuildStatus status = this.openshiftClient.getVirtualizationStatus(dataService.getServiceVdb(uow).getName(uow));
                         entity.setPublishedState(status.status().name());
+                        entity.setPublishPodName(status.publishPodName());
 
                         entities.add(entity);
                         LOGGER.debug("getDataservices:Dataservice '{0}' entity was constructed", //$NON-NLS-1$
@@ -304,6 +305,7 @@ public final class KomodoDataserviceService extends KomodoService
             // Set published status of dataservice
             BuildStatus status = this.openshiftClient.getVirtualizationStatus(dataservice.getServiceVdb(uow).getName(uow));
             restDataservice.setPublishedState(status.status().name());
+            restDataservice.setPublishPodName(status.publishPodName());
             
             LOGGER.debug("getDataservice:Dataservice '{0}' entity was constructed", dataservice.getName(uow)); //$NON-NLS-1$
             return commit(uow, mediaTypes, restDataservice);

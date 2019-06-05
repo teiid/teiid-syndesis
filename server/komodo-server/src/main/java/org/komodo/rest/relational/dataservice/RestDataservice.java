@@ -79,6 +79,11 @@ public final class RestDataservice extends RestBasicEntity {
      * Label used to describe dataservice published state
      */
     public static final String DATASERVICE_PUBLISHED_STATE_LABEL = "publishedState"; //$NON-NLS-1$
+    
+    /**
+     * Label used to describe dataservice publish pod name
+     */
+    public static final String DATASERVICE_PUBLISH_POD_NAME = "publishPodName"; //$NON-NLS-1$
 
     /**
      * fqn table option key
@@ -252,6 +257,21 @@ public final class RestDataservice extends RestBasicEntity {
     public String getPublishedState() {
         Object publishedState = tuples.get(DATASERVICE_PUBLISHED_STATE_LABEL);
         return publishedState != null ? publishedState.toString() : null;
+    }
+    
+    /**
+     * @return the service vdb name (can be empty)
+     */
+    public String getPublishPodName() {
+        Object publishPodName = tuples.get(DATASERVICE_PUBLISH_POD_NAME);
+        return publishPodName != null ? publishPodName.toString() : null;
+    }
+
+    /**
+     * @param serviceVdbName the service vdb name to set
+     */
+    public void setPublishPodName(String publishPodName) {
+        tuples.put(DATASERVICE_PUBLISH_POD_NAME, publishPodName);
     }
 
     /**

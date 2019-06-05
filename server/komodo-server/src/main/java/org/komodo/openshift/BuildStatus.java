@@ -107,6 +107,7 @@ public class BuildStatus {
     private String deploymentName;
     private final String vdbName;
     private String namespace;
+    private String publishPodName;
     private long lastUpdated = 0L;
     private String statusMessage;
 
@@ -166,6 +167,14 @@ public class BuildStatus {
 
     public synchronized void setLastUpdated() {
         this.lastUpdated = System.currentTimeMillis();
+    }
+    
+    public void setPublishPodName(String name) {
+    	this.publishPodName = name;
+    }
+    
+    public String publishPodName() {
+    	return this.publishPodName;
     }
 
     public Status status() {
