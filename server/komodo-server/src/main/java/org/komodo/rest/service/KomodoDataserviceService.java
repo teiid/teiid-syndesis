@@ -55,6 +55,8 @@ import javax.ws.rs.core.UriInfo;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.SynchronousCallback;
 import org.komodo.openshift.BuildStatus;
+import org.komodo.openshift.BuildStatus.RouteStatus;
+import org.komodo.openshift.ProtocolType;
 import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.relational.ServiceVdbGenerator;
 import org.komodo.relational.ViewBuilderCriteriaPredicate;
@@ -233,6 +235,8 @@ public final class KomodoDataserviceService extends KomodoService
                         BuildStatus status = this.openshiftClient.getVirtualizationStatus(dataService.getServiceVdb(uow).getName(uow));
                         entity.setPublishedState(status.status().name());
                         entity.setPublishPodName(status.publishPodName());
+                        entity.setPodNamespace(status.namespace());
+                        entity.setOdataHostName(getOdataHost(status));
 
                         entities.add(entity);
                         LOGGER.debug("getDataservices:Dataservice '{0}' entity was constructed", //$NON-NLS-1$
@@ -306,6 +310,8 @@ public final class KomodoDataserviceService extends KomodoService
             BuildStatus status = this.openshiftClient.getVirtualizationStatus(dataservice.getServiceVdb(uow).getName(uow));
             restDataservice.setPublishedState(status.status().name());
             restDataservice.setPublishPodName(status.publishPodName());
+            restDataservice.setPodNamespace(status.namespace());
+            restDataservice.setOdataHostName(getOdataHost(status));
             
             LOGGER.debug("getDataservice:Dataservice '{0}' entity was constructed", dataservice.getName(uow)); //$NON-NLS-1$
             return commit(uow, mediaTypes, restDataservice);
@@ -1718,4 +1724,25 @@ public final class KomodoDataserviceService extends KomodoService
         }
     }
 
+    /**
+     * Get OData hostname from the buildStatus
+     * @param buildStatus the BuildStatus
+     * @return the odata hostname
+     */
+    private String getOdataHost(final BuildStatus buildStatus) {
+    	String odataHost = null;
+    	if(buildStatus != null) {
+            List<RouteStatus> routeStatuses = buildStatus.routes();
+            if(!routeStatuses.isEmpty()) {
+            	// Find Odata route if it exists
+            	for(RouteStatus routeStatus: routeStatuses) {
+            		if(routeStatus.getKind() == ProtocolType.ODATA) {
+            			odataHost = routeStatus.getHost();
+            			break;
+            		}
+            	}
+            }
+    	}
+    	return odataHost;
+    }
 }
