@@ -81,9 +81,19 @@ public final class RestDataservice extends RestBasicEntity {
     public static final String DATASERVICE_PUBLISHED_STATE_LABEL = "publishedState"; //$NON-NLS-1$
     
     /**
+     * Label used to describe dataservice pod namespace
+     */
+    public static final String DATASERVICE_POD_NAMESPACE = "podNamespace"; //$NON-NLS-1$
+
+    /**
      * Label used to describe dataservice publish pod name
      */
     public static final String DATASERVICE_PUBLISH_POD_NAME = "publishPodName"; //$NON-NLS-1$
+
+    /**
+     * Label used to describe dataservice odata host name
+     */
+    public static final String DATASERVICE_ODATA_HOST_NAME = "odataHostName"; //$NON-NLS-1$
 
     /**
      * fqn table option key
@@ -260,7 +270,29 @@ public final class RestDataservice extends RestBasicEntity {
     }
     
     /**
-     * @return the service vdb name (can be empty)
+     * @param publishedState the published state
+     */
+    public void setPublishedState(String publishedState) {
+        tuples.put(DATASERVICE_PUBLISHED_STATE_LABEL, publishedState);
+    }
+
+    /**
+     * @return the pod namespace (can be empty)
+     */
+    public String getPodNamespace() {
+        Object podNamespace = tuples.get(DATASERVICE_POD_NAMESPACE);
+        return podNamespace != null ? podNamespace.toString() : null;
+    }
+
+    /**
+     * @param podNamesapce the service pod namespace to set
+     */
+    public void setPodNamespace(String podNamespace) {
+        tuples.put(DATASERVICE_POD_NAMESPACE, podNamespace);
+    }
+
+    /**
+     * @return the service pod name (can be empty)
      */
     public String getPublishPodName() {
         Object publishPodName = tuples.get(DATASERVICE_PUBLISH_POD_NAME);
@@ -268,17 +300,25 @@ public final class RestDataservice extends RestBasicEntity {
     }
 
     /**
-     * @param serviceVdbName the service vdb name to set
+     * @param publishPodName the service pod name to set
      */
     public void setPublishPodName(String publishPodName) {
         tuples.put(DATASERVICE_PUBLISH_POD_NAME, publishPodName);
     }
+    
+    /**
+     * @return the service pod name (can be empty)
+     */
+    public String getOdataHostName() {
+        Object odataHostName = tuples.get(DATASERVICE_ODATA_HOST_NAME);
+        return odataHostName != null ? odataHostName.toString() : null;
+    }
 
     /**
-     * @param publishedState the published state
+     * @param publishPodName the service pod name to set
      */
-    public void setPublishedState(String publishedState) {
-        tuples.put(DATASERVICE_PUBLISHED_STATE_LABEL, publishedState);
+    public void setOdataHostName(String odataHostName) {
+        tuples.put(DATASERVICE_ODATA_HOST_NAME, odataHostName);
     }
     
 }
