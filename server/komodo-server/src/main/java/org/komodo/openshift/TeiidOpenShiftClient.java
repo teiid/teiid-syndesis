@@ -621,7 +621,11 @@ public class TeiidOpenShiftClient implements StringConstants {
                     continue;
                 }
                 String name = item.get("name").asText();
-                sources.add(buildSyndesisDataSource(name, dsNames, item));
+                try {
+                	sources.add(buildSyndesisDataSource(name, dsNames, item));
+                } catch (KException e) {
+                	error(name, e.getMessage(), e);
+                }
             }
         } catch (Exception e) {
             throw handleError(e);
@@ -734,7 +738,7 @@ public class TeiidOpenShiftClient implements StringConstants {
         		throw new KException("Datasource has no connection ID");
         	}
         } else {
-            throw new KException("Could not find datasource that matches to the configuration");
+            throw new KException("Could not find datasource that matches to the configuration."+ p.get("url"));
         }
     }
 
