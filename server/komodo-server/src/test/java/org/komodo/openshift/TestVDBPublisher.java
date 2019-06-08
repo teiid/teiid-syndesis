@@ -176,7 +176,7 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
         PublishConfiguration config = new PublishConfiguration();
         Collection<EnvVar> variables = generator
                 .getEnvironmentVariablesForVDBDataSources(authToken, getTransaction(), vdbs[0], config);
-        assertThat( variables.size(), is(7));
+        assertThat( variables.size(), is(9));
         
         String javaOptions= 
                   " -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
