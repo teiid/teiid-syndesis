@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import javax.sql.DataSource;
 import javax.xml.stream.XMLStreamException;
@@ -57,12 +58,15 @@ import org.teiid.adminapi.impl.VDBMetadataParser;
 import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository.ConnectorManagerException;
 import org.teiid.translator.TranslatorException;
 
+import com.zaxxer.hikari.HikariDataSource;
+
 @SuppressWarnings("deprecation")
 public class TeiidAdminImpl implements Admin {
     private Admin delegate;
     private TeiidServer server;
     private HashMap<String, Object> datasources = new HashMap<>();
     private HashMap<String, Properties> dsProperties = new HashMap<>();
+    private ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1); 
 
     public TeiidAdminImpl(Admin delegate, TeiidServer server) {
         this.delegate = delegate;
@@ -115,6 +119,14 @@ public class TeiidAdminImpl implements Admin {
 						.username(properties.getProperty("username") != null ? properties.getProperty("username")
 								: properties.getProperty("user"))
 						.password(properties.getProperty("password")).build();
+				
+				if (ds instanceof HikariDataSource) {
+					((HikariDataSource)ds).setMaximumPoolSize(1);
+					((HikariDataSource)ds).setMinimumIdle(0);
+					((HikariDataSource)ds).setIdleTimeout(60000);
+					((HikariDataSource)ds).setScheduledExecutorService(executor);
+				}
+				
 	            this.datasources.put(deploymentName, ds);
 	            properties.setProperty("type", templateName);
 	            this.dsProperties.put(deploymentName, properties);
@@ -132,6 +144,11 @@ public class TeiidAdminImpl implements Admin {
         if (ds != null) {
             this.server.removeConnectionFactoryProvider(dsName);
             this.datasources.remove(dsName);
+        }
+        
+        // close the underlying datasource and any connections
+        if (ds instanceof HikariDataSource) {
+        	((HikariDataSource)ds).close();
         }
     }
 

@@ -76,6 +76,9 @@ public class PostgreSQLDefinition extends DataSourceDefinition {
         	ds(props, scd, "importer.schemaName", scd.getProperty("schema"));
         }
 
+        // pool properties
+        ds(props, scd, "maximumPoolSize", "5");
+        ds(props, scd, "minimumIdle", "0");
         return props;
     }
 }
