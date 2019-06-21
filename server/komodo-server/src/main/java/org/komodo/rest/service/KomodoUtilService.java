@@ -25,7 +25,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.DELETE;
@@ -62,6 +61,7 @@ import org.komodo.rest.KomodoRestException;
 import org.komodo.rest.KomodoRestV1Application;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
+import org.komodo.rest.TeiidMetadataInstance;
 import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.response.KomodoStatusObject;
@@ -82,9 +82,16 @@ import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.StringUtils;
 import org.springframework.stereotype.Component;
+import org.teiid.adminapi.impl.ModelMetaData;
+import org.teiid.adminapi.impl.VDBMetaData;
+import org.teiid.metadata.AbstractMetadataRecord;
 import org.teiid.metadata.MetadataFactory;
+import org.teiid.query.metadata.CompositeMetadataStore;
+import org.teiid.query.metadata.MetadataValidator;
 import org.teiid.query.metadata.SystemMetadata;
+import org.teiid.query.metadata.TransformationMetadata;
 import org.teiid.query.parser.QueryParser;
+import org.teiid.query.validator.ValidatorReport;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -975,10 +982,37 @@ public final class KomodoUtilService extends KomodoService {
         RestViewDefinitionStatus viewDefnStatus = new RestViewDefinitionStatus();
 
         try {
-        	MetadataFactory mf = new MetadataFactory("foo", 1, "bar", SystemMetadata.getInstance().getRuntimeTypeMap(), new Properties(), null);
-        	QueryParser.getQueryParser().parseDDL(mf, restViewDefinition.getDdl());
-        	viewDefnStatus.setStatus("SUCCESS");
-        	viewDefnStatus.setMessage("View DDL was parsed successfully");
+        	QueryParser parser = QueryParser.getQueryParser();
+        	
+            ModelMetaData m = new ModelMetaData();
+            m.setName("m"); //$NON-NLS-1$
+        	
+			MetadataFactory mf = new MetadataFactory("PreviewVdb", 1,SystemMetadata.getInstance().getRuntimeTypeMap(),m);
+        	parser.parseDDL(mf, restViewDefinition.getDdl());
+        	
+			VDBMetaData vdb = (VDBMetaData) ((TeiidMetadataInstance) this.kengine.getMetadataInstance()).admin()
+					.getVDB("PreviewVdb", "1");
+			TransformationMetadata qmi = vdb.getAttachment(TransformationMetadata.class);
+        	
+			CompositeMetadataStore store = qmi.getMetadataStore();
+			mf.mergeInto(store);
+			
+			ValidatorReport report = new ValidatorReport();
+        	MetadataValidator validator = new MetadataValidator();
+        	for (AbstractMetadataRecord record : mf.getSchema().getResolvingOrder()) {
+        		validator.validate(vdb, m, record, report, qmi, mf, parser);
+        	}
+        	
+        	store.removeSchema("m");
+        	
+        	String error = report.getFailureMessage();
+        	if (report.hasItems() && !error.isEmpty()) {
+            	viewDefnStatus.setStatus("ERROR");
+            	viewDefnStatus.setMessage(error);        		
+        	} else {
+	        	viewDefnStatus.setStatus("SUCCESS");
+	        	viewDefnStatus.setMessage("View DDL was parsed successfully");
+        	}
 		} catch (Exception ex) {
 			String msg = "Parsing Error for view: " + restViewDefinition.getViewName()
 				+ "\n" + ex.getMessage();
