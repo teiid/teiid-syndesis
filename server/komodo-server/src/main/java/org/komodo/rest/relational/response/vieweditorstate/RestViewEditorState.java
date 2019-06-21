@@ -58,6 +58,11 @@ public class RestViewEditorState extends AbstractKEntity {
      * isComplete property
      */
     public static final String IS_COMPLETE = "isComplete"; //$NON-NLS-1$
+
+    /**
+     * isUserDefined property
+     */
+    public static final String IS_USER_DEFINED = "isUserDefined"; //$NON-NLS-1$
     
     /**
      * Label used for view definition source table paths array

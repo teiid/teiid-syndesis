@@ -68,6 +68,7 @@ public class RestViewDefinition extends RestBasicEntity {
         }
         
         setComplete(viewDef.isComplete());
+        setUserDefined(viewDef.isUserDefined());
         
         String[] paths = viewDef.getSourcePaths();
         if( paths != null && paths.length > 0 ) {
@@ -112,6 +113,7 @@ public class RestViewDefinition extends RestBasicEntity {
         }
         
         setComplete(viewDef.isComplete(transaction));
+        setUserDefined(viewDef.isUserDefined(transaction));
         
         String[] paths = viewDef.getSourcePaths(transaction);
         if( paths != null && paths.length > 0 ) {
@@ -195,6 +197,22 @@ public class RestViewDefinition extends RestBasicEntity {
      */
     public void setComplete(final boolean complete) {
         tuples.put(RestViewEditorState.IS_COMPLETE, complete);
+    }
+
+    /**
+     * @return the view definition isUserDefined status
+     */
+    public boolean isUserDefined() {
+        Object hasIsUserDefined = tuples.get(RestViewEditorState.IS_USER_DEFINED);
+        return hasIsUserDefined != null ? Boolean.parseBoolean(hasIsUserDefined.toString()) : false;
+    }
+
+    /**
+     * @param userDefined 
+     *        the userDefined status
+     */
+    public void setUserDefined(final boolean userDefined) {
+        tuples.put(RestViewEditorState.IS_USER_DEFINED, userDefined);
     }
     
     /**
