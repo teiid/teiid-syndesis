@@ -1016,6 +1016,11 @@ public interface KomodoLexicon extends StringConstants {
          * The name of the view definition isComplete property. Value is {@value} .
          */
         String IS_COMPLETE = Namespace.PREFIX + COLON + "isComplete"; //$NON-NLS-1$
+
+        /**
+         * The name of the view definition isUserDefined property. Value is {@value} .
+         */
+        String IS_USER_DEFINED = Namespace.PREFIX + COLON + "isUserDefined"; //$NON-NLS-1$
         
         /**
          * The name of the view definition source paths container property. Value is {@value} .
