@@ -49,6 +49,7 @@ public class ViewEditorStateSerializerTest extends AbstractSerializerTest {
     private String viewDefinitionName = "testView";
     private String description = "test view description text";
     private boolean isComplete = true;
+    private boolean isUserDefined = false;
     private String sourceTablePath1 = "path/to/source1";
     private String sourceTablePath2 = "path/to/source2";
     private String sourceTablePath3 = "path/to/source3";
@@ -87,6 +88,7 @@ public class ViewEditorStateSerializerTest extends AbstractSerializerTest {
                 	tab(2) + q(RestViewEditorState.ID_VIEW_NAME) + colon() + q(viewDefinitionName) + pnl(COMMA) +
                 	tab(2) + q(RestViewEditorState.DESCRIPTION) + colon() + q(description) + pnl(COMMA) +
                 	tab(2) + q(RestViewEditorState.IS_COMPLETE) + colon() + isComplete + pnl(COMMA) +
+                	tab(2) + q(RestViewEditorState.IS_USER_DEFINED) + colon() + isUserDefined + pnl(COMMA) +
                 	tab(2) + q(RestViewEditorState.SOURCE_PATHS) + colon() + pnl(OPEN_SQUARE_BRACKET) +
                 		tab(3) + q(sourceTablePath1) + pnl(COMMA) +
                 		tab(3) + q(sourceTablePath2) + pnl(COMMA) +
@@ -249,6 +251,7 @@ public class ViewEditorStateSerializerTest extends AbstractSerializerTest {
         when(viewDef.getViewName(transaction)).thenReturn(viewDefinitionName);
         when(viewDef.getDescription(transaction)).thenReturn(description);
         when(viewDef.isComplete(transaction)).thenReturn(isComplete);
+        when(viewDef.isUserDefined(transaction)).thenReturn(isUserDefined);
         when(viewDef.getSourcePaths(transaction)).thenReturn(sourceTablePaths);
         
         // Mocks for Compositions

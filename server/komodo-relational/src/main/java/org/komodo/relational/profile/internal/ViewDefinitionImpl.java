@@ -349,6 +349,21 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
 		return value;
 	}
 
+	@Override
+	public void setUserDefined(UnitOfWork transaction, boolean userDefined) throws KException {
+		setObjectProperty( transaction, "setUserDefined", KomodoLexicon.ViewDefinition.IS_USER_DEFINED, userDefined ); //$NON-NLS-1$
+	}
+
+	@Override
+	public boolean isUserDefined(UnitOfWork transaction) throws KException {
+        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        
+        final Boolean value = getObjectProperty(transaction, PropertyValueType.BOOLEAN, "isUserDefined", //$NON-NLS-1$
+                                                             KomodoLexicon.ViewDefinition.IS_USER_DEFINED );
+		return value;
+	}
+
     /**
      * {@inheritDoc}
      *

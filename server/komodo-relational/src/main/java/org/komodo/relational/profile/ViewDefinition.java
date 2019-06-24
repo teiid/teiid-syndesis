@@ -203,6 +203,24 @@ public interface ViewDefinition  extends RelationalObject, StringConstants {
      *         if an error occurs         
      */
     boolean isComplete(final UnitOfWork transaction) throws KException;
+
+    /**
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+     * @param userDefined value for isUserDefined
+     * @throws KException
+     *         if an error occurs         
+     */
+    void setUserDefined(final UnitOfWork transaction, boolean userDefined) throws KException;
+    
+    /**
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+     * @return boolean value of isUserDefined
+     * @throws KException
+     *         if an error occurs         
+     */
+    boolean isUserDefined(final UnitOfWork transaction) throws KException;
     
     /**
      * @param transaction

@@ -55,6 +55,9 @@ public class ViewDefinitionSerializer extends TypeAdapter<RestViewDefinition> {
 		
 		out.name(RestViewEditorState.IS_COMPLETE);
 		out.value(restViewDef.isComplete());
+
+		out.name(RestViewEditorState.IS_USER_DEFINED);
+		out.value(restViewDef.isUserDefined());
 		
 		if( restViewDef.getSourcePaths() != null ) {
 			out.name(RestViewEditorState.SOURCE_PATHS);
@@ -114,6 +117,9 @@ public class ViewDefinitionSerializer extends TypeAdapter<RestViewDefinition> {
                     break;
                 case RestViewEditorState.IS_COMPLETE:
                     viewDef.setComplete(in.nextBoolean());
+                    break;
+                case RestViewEditorState.IS_USER_DEFINED:
+                    viewDef.setUserDefined(in.nextBoolean());
                     break;
                 case RestViewEditorState.COMPOSITIONS_LABEL:
                     RestSqlComposition[] comps = BUILDER.fromJson(in, RestSqlComposition[].class);
