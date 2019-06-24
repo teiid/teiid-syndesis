@@ -118,7 +118,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
         this.connectionProvider = connectionProvider;
     }
 
-    protected Admin admin() throws AdminException {
+    public Admin admin() throws AdminException {
     	return connectionProvider.getAdmin();
     }
     
