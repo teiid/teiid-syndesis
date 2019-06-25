@@ -981,45 +981,66 @@ public final class KomodoUtilService extends KomodoService {
 
         RestViewDefinitionStatus viewDefnStatus = new RestViewDefinitionStatus();
 
-        try {
-        	QueryParser parser = QueryParser.getQueryParser();
-        	
-            ModelMetaData m = new ModelMetaData();
-            m.setName("m"); //$NON-NLS-1$
-        	
-			MetadataFactory mf = new MetadataFactory("PreviewVdb", 1,SystemMetadata.getInstance().getRuntimeTypeMap(),m);
-        	parser.parseDDL(mf, restViewDefinition.getDdl());
-        	
-			VDBMetaData vdb = (VDBMetaData) ((TeiidMetadataInstance) this.kengine.getMetadataInstance()).admin()
-					.getVDB("PreviewVdb", "1");
-			TransformationMetadata qmi = vdb.getAttachment(TransformationMetadata.class);
-        	
-			CompositeMetadataStore store = qmi.getMetadataStore();
-			mf.mergeInto(store);
-			
-			ValidatorReport report = new ValidatorReport();
-        	MetadataValidator validator = new MetadataValidator();
-        	for (AbstractMetadataRecord record : mf.getSchema().getResolvingOrder()) {
-        		validator.validate(vdb, m, record, report, qmi, mf, parser);
-        	}
-        	
-        	store.removeSchema("m");
-        	
-        	String error = report.getFailureMessage();
-        	if (report.hasItems() && !error.isEmpty()) {
-            	viewDefnStatus.setStatus("ERROR");
-            	viewDefnStatus.setMessage(error);        		
-        	} else {
-	        	viewDefnStatus.setStatus("SUCCESS");
-	        	viewDefnStatus.setMessage("View DDL was parsed successfully");
-        	}
-		} catch (Exception ex) {
-			String msg = "Parsing Error for view: " + restViewDefinition.getViewName()
-				+ "\n" + ex.getMessage();
-        	LOGGER.error(msg);
-        	viewDefnStatus.setStatus("ERROR");
-        	viewDefnStatus.setMessage("Parsing Error\n" + ex.getMessage());
-		}
+        String ddlViewName = null;
+        
+        if( !StringUtils.isBlank(restViewDefinition.getDdl()) ) {
+        	// Replace tab and return characters with space, then remove all extra spaces
+        	String trimmedDdl = restViewDefinition.getDdl().replaceAll("[\\n\\t]", " ").trim().replaceAll("\\s{2,}", " ");
+            // Split string using space
+        	String[] tokens = trimmedDdl.split(" ");
+            // just check if found NAME token then set ddlViewName
+            // Note that below, parsing and resolving will catch most errors if view name is invalid or missing
+            if( tokens.length > 2 && tokens[0].equalsIgnoreCase("CREATE") && tokens[1].equalsIgnoreCase("VIEW")) {
+            	// Save name for final name validation check (see below)
+            	ddlViewName = tokens[2].trim();
+            }
+        }
+        
+        if( ddlViewName != null && !restViewDefinition.getViewName().equalsIgnoreCase(ddlViewName)) {
+			String msg = "View name " + ddlViewName + " does not match defined view: " + restViewDefinition.getViewName();
+			viewDefnStatus.setStatus("ERROR");
+			viewDefnStatus.setMessage(msg);
+        } else {
+	        try {
+	        	QueryParser parser = QueryParser.getQueryParser();
+	        	
+	            ModelMetaData m = new ModelMetaData();
+	            m.setName("m"); //$NON-NLS-1$
+	        	
+				MetadataFactory mf = new MetadataFactory("PreviewVdb", 1,SystemMetadata.getInstance().getRuntimeTypeMap(),m);
+	        	parser.parseDDL(mf, restViewDefinition.getDdl());
+	        	
+				VDBMetaData vdb = (VDBMetaData) ((TeiidMetadataInstance) this.kengine.getMetadataInstance()).admin()
+						.getVDB("PreviewVdb", "1");
+				TransformationMetadata qmi = vdb.getAttachment(TransformationMetadata.class);
+	        	
+				CompositeMetadataStore store = qmi.getMetadataStore();
+				mf.mergeInto(store);
+				
+				ValidatorReport report = new ValidatorReport();
+	        	MetadataValidator validator = new MetadataValidator();
+	        	for (AbstractMetadataRecord record : mf.getSchema().getResolvingOrder()) {
+	        		validator.validate(vdb, m, record, report, qmi, mf, parser);
+	        	}
+	        	
+	        	store.removeSchema("m");
+	        	
+	        	String error = report.getFailureMessage();
+	        	if (report.hasItems() && !error.isEmpty()) {
+	            	viewDefnStatus.setStatus("ERROR");
+	            	viewDefnStatus.setMessage(error);        		
+	        	} else {
+		        	viewDefnStatus.setStatus("SUCCESS");
+		        	viewDefnStatus.setMessage("View DDL was parsed successfully");
+	        	}
+			} catch (Exception ex) {
+				String msg = "Parsing Error for view: " + restViewDefinition.getViewName()
+					+ "\n" + ex.getMessage();
+	        	LOGGER.error(msg);
+	        	viewDefnStatus.setStatus("ERROR");
+	        	viewDefnStatus.setMessage("Parsing Error\n" + ex.getMessage());
+			}
+        }
 
         UnitOfWork uow = null;
         
