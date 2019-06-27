@@ -981,26 +981,22 @@ public final class KomodoUtilService extends KomodoService {
 
         RestViewDefinitionStatus viewDefnStatus = new RestViewDefinitionStatus();
 
-        String ddlViewName = null;
-        
-        if( !StringUtils.isBlank(restViewDefinition.getDdl()) ) {
-        	// Replace tab and return characters with space, then remove all extra spaces
-        	String trimmedDdl = restViewDefinition.getDdl().replaceAll("[\\n\\t]", " ").trim().replaceAll("\\s{2,}", " ");
-            // Split string using space
-        	String[] tokens = trimmedDdl.split(" ");
-            // just check if found NAME token then set ddlViewName
-            // Note that below, parsing and resolving will catch most errors if view name is invalid or missing
-            if( tokens.length > 2 && tokens[0].equalsIgnoreCase("CREATE") && tokens[1].equalsIgnoreCase("VIEW")) {
-            	// Save name for final name validation check (see below)
-            	ddlViewName = tokens[2].trim();
-            }
+        // If user-defined view, make sure DDL name matches ViewDefinition
+        boolean namesMatch = true;
+        String defnDdl = restViewDefinition.getDdl();
+        if(!StringUtils.isBlank(defnDdl)) {
+        	String ddlViewName = getDdlViewName(defnDdl);
+        	// If names do not match, create an error status
+        	if(!restViewDefinition.getViewName().equalsIgnoreCase(ddlViewName)) {
+        		namesMatch = false;
+                String errorMsg = RelationalMessages.getString(RelationalMessages.Error.VALIDATE_VIEW_DEFINITION_NAME_MATCH_ERROR, ddlViewName, restViewDefinition.getViewName());
+    			viewDefnStatus.setStatus("ERROR");
+    			viewDefnStatus.setMessage(errorMsg);
+        	}
         }
         
-        if( ddlViewName != null && !restViewDefinition.getViewName().equalsIgnoreCase(ddlViewName)) {
-			String msg = "View name " + ddlViewName + " does not match defined view: " + restViewDefinition.getViewName();
-			viewDefnStatus.setStatus("ERROR");
-			viewDefnStatus.setMessage(msg);
-        } else {
+        // Name is ok, do full parse if ddl is defined
+        if( namesMatch && !StringUtils.isBlank(defnDdl)) {
 	        try {
 	        	QueryParser parser = QueryParser.getQueryParser();
 	        	
@@ -1126,8 +1122,14 @@ public final class KomodoUtilService extends KomodoService {
         // Set ViewDefinition of the ViewEditorState
         ViewDefinition viewDefn = viewEditorState.setViewDefinition(uow);
         viewDefn.setViewName(uow, restViewDefn.getViewName());
-        viewDefn.setDescription(uow, restViewDefn.getDescription());
         viewDefn.setDdl(uow, restViewDefn.getDdl());
+        // If user-defined, user may have changed description.  Reset object description from DDL
+        if(restViewDefn.isUserDefined()) {
+          String ddlDescr = getDdlViewDescription(restViewDefn.getDdl());
+          viewDefn.setDescription(uow, ddlDescr);
+        } else {
+          viewDefn.setDescription(uow, restViewDefn.getDescription());
+        }
         for (String restSourcePath: restViewDefn.getSourcePaths()) {
             viewDefn.addSourcePath(uow, restSourcePath);
         }
@@ -1154,6 +1156,53 @@ public final class KomodoUtilService extends KomodoService {
         return viewEditorState;
     }
 
+    /**
+     * Find and return the VIEW name from the supplied View DDL.  If none found, returns empty string
+     * @param ddl the VIEW ddl
+     * @return view name
+     */
+    private String getDdlViewName(final String ddl) {
+    	String viewName = "";
+    	if(ddl != null) {
+        	// Replace tab and return characters with space, then remove all extra spaces
+        	String trimmedDdl = ddl.replaceAll("[\\n\\t]", " ").trim().replaceAll("\\s{2,}", " ");
+        	
+        	// Split string using space
+        	String[] tokens = trimmedDdl.split(" ");
+        	
+        	// view name will follow 'CREATE VIEW'
+        	if( tokens.length > 2 && tokens[0].equalsIgnoreCase("CREATE") && tokens[1].equalsIgnoreCase("VIEW")) {
+        		viewName = tokens[2].trim();
+        	}
+    	}
+    	return viewName;
+    }
+
+    /**
+     * Find and return the VIEW table ANNOTATION from the supplied View DDL.  If none found, returns empty string
+     * @param ddl the VIEW ddl
+     * @return the table description
+     */
+    private String getDdlViewDescription(final String ddl) {
+    	String viewDescription = "";
+    	if(ddl != null) {
+    		// Replace tab and return characters with space, then remove all extra spaces
+    		String trimmedDdl = ddl.replaceAll("[\\n\\t]", " ").trim().replaceAll("\\s{2,}", " ");
+
+    		int annotationIndx = trimmedDdl.indexOf("ANNOTATION");
+    		if(annotationIndx != -1) {
+    			String annotationStr = trimmedDdl.substring(annotationIndx);
+    			int firstTickIndx = annotationStr.indexOf(StringConstants.QUOTE_MARK);
+    			if(firstTickIndx != -1) {
+    				String descStr = annotationStr.substring(firstTickIndx+1);
+    				int secondTickIndx = descStr.indexOf(StringConstants.QUOTE_MARK);
+    				viewDescription = descStr.substring(0, secondTickIndx);
+    			}
+    		}
+    	}
+    	return viewDescription;
+    }
+    
     /**
      * @param headers
      *        the request headers (never <code>null</code>)
