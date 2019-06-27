@@ -45,7 +45,6 @@ import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.utils.KLog;
 import org.komodo.utils.PathUtils;
 import org.komodo.utils.StringUtils;
 
@@ -60,7 +59,6 @@ import org.komodo.utils.StringUtils;
  */
 public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
 	
-	private static final KLog LOGGER = KLog.getLogger();
     private static final String SCHEMA_MODEL_NAME_PATTERN = "{0}schemamodel"; //$NON-NLS-1$
     private static final String SCHEMA_VDB_NAME_PATTERN = "{0}schemavdb"; //$NON-NLS-1$
     private static final char SQL_ESCAPE_CHAR = '\"';
@@ -325,8 +323,9 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
             }
         }
 
-        sb.append(") AS \n"); //$NON-NLS-1$
-        sb.append("SELECT "); //$NON-NLS-1$
+        sb.append(") "); //$NON-NLS-1$
+        sb.append(getTableAnnotation(viewDef.getDescription(uow)));
+        sb.append("AS \nSELECT "); //$NON-NLS-1$
         sb.append("ROW_NUMBER() OVER (ORDER BY "); //$NON-NLS-1$
         sb.append(srcTableFqnColumnNames.get(0));
         sb.append("), "); //$NON-NLS-1$
@@ -411,6 +410,18 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
     	return getODataViewDdl(uow, viewDef, tableInfos);
     }
 
+    /**
+     * Generate the table annotation for the supplied description
+     * @param description the description
+     * @return the table annotation
+     */
+    private String getTableAnnotation(final String description) {
+    	if( description!=null && description.length()>0 ) {
+    		return "OPTIONS (ANNOTATION '" + description + "') ";
+    	}
+    	return "";
+    }
+    
     /**
      * Method returns the view model for a service VDB
      * 

@@ -1546,6 +1546,11 @@ public final class RelationalMessages {
         VALIDATE_VIEW_DEFINITION_ERROR,
 
         /**
+         * An error indicating a problem with name match validating the viewDefinition DDL
+         */
+        VALIDATE_VIEW_DEFINITION_NAME_MATCH_ERROR,
+        
+        /**
          * VDB Not found
          */
         VDB_NOT_FOUND,
