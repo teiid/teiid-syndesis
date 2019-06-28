@@ -1499,11 +1499,15 @@ public class TeiidOpenShiftClient implements StringConstants {
                         //
                         ProtocolType[] types = { ProtocolType.ODATA, ProtocolType.JDBC, ProtocolType.PG };
                         for (ProtocolType type : types) {
-                            RouteStatus route = getRoute(vdbName, type);
-                            if (route == null)
-                                continue;
-
-                            status.addRoute(route);
+                        	try {
+	                            RouteStatus route = getRoute(vdbName, type);
+	                            if (route == null) {
+	                                continue;
+	                            }
+	                            status.addRoute(route);
+                        	} catch(KubernetesClientException e) {
+                        		// ignore..
+                        	}
                         }
                     }
                     
