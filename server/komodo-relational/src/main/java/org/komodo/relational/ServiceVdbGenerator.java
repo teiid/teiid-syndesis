@@ -239,8 +239,9 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
         sb.append("RowId long PRIMARY KEY, "); //$NON-NLS-1$
 
         // Check for join and single or 2 source join
-        boolean isJoin = sourceTableInfos.length > 1;
-        boolean singleTable = sourceTableInfos.length == 1;
+        // Disable join for Syndesis 7.4 DDL generation. 
+        boolean isJoin = false; // sourceTableInfos.length > 1;
+        boolean singleTable = true; // sourceTableInfos.length == 1;
         
         TableInfo lhTableInfo = sourceTableInfos[0];
         TableInfo rhTableInfo = null;
