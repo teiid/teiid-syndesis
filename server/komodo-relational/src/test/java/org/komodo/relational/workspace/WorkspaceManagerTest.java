@@ -39,7 +39,6 @@ import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.folder.Folder;
 import org.komodo.relational.model.AccessPattern;
 import org.komodo.relational.model.DataTypeResultSet;
 import org.komodo.relational.model.ForeignKey;
@@ -110,13 +109,6 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
         final Dataservice dataservice = this.wsMgr.createDataservice( getTransaction(), null, "service" );
         assertThat( dataservice, is( notNullValue() ) );
         assertThat( _repo.getFromWorkspace( getTransaction(), dataservice.getAbsolutePath() ), is( ( KomodoObject )dataservice ) );
-    }
-
-    @Test
-    public void shouldCreateFolder() throws Exception {
-        final Folder folder = this.wsMgr.createFolder( getTransaction(), null, "model" );
-        assertThat( folder, is( notNullValue() ) );
-        assertThat( _repo.getFromWorkspace( getTransaction(), folder.getAbsolutePath() ), is( ( KomodoObject )folder ) );
     }
 
     @Test
@@ -302,7 +294,7 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
 
     @Test
     public void shouldHaveCorrectChildTypes() {
-        KomodoType[] types = { Folder.IDENTIFIER, Connection.IDENTIFIER, Dataservice.IDENTIFIER, Vdb.IDENTIFIER, Schema.IDENTIFIER};
+        KomodoType[] types = { Connection.IDENTIFIER, Dataservice.IDENTIFIER, Vdb.IDENTIFIER, Schema.IDENTIFIER};
         assertThat( Arrays.asList( this.wsMgr.getChildTypes() ), hasItems( types ) );
         assertThat( this.wsMgr.getChildTypes().length, is( types.length ) );
     }
@@ -429,13 +421,6 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
         final Entry entry = vdb.addEntry(getTransaction(), "entry", "path");
         final KomodoObject kobject = new ObjectImpl(_repo, entry.getAbsolutePath(), entry.getIndex());
         assertThat(this.wsMgr.resolve(getTransaction(), kobject, Entry.class), is(instanceOf(Entry.class)));
-    }
-
-    @Test
-    public void shouldResolveFolder() throws Exception {
-        final Folder folder = this.wsMgr.createFolder(getTransaction(), null, "folder");
-        final KomodoObject kobject = new ObjectImpl(_repo, folder.getAbsolutePath(), folder.getIndex());
-        assertThat(this.wsMgr.resolve(getTransaction(), kobject, Folder.class), is(instanceOf(Folder.class)));
     }
 
     @Test

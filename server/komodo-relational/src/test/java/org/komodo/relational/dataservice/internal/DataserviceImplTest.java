@@ -53,15 +53,9 @@ import org.komodo.relational.dataservice.ConnectionEntry;
 import org.komodo.relational.dataservice.DataServiceEntry;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.DataserviceManifest;
-import org.komodo.relational.dataservice.DdlEntry;
-import org.komodo.relational.dataservice.ResourceEntry;
 import org.komodo.relational.dataservice.ServiceVdbEntry;
-import org.komodo.relational.dataservice.UdfEntry;
 import org.komodo.relational.dataservice.VdbEntry;
 import org.komodo.relational.model.Model;
-import org.komodo.relational.resource.DdlFile;
-import org.komodo.relational.resource.ResourceFile;
-import org.komodo.relational.resource.UdfFile;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
@@ -163,19 +157,13 @@ public final class DataserviceImplTest extends RelationalModelTest {
         assertThat( entry.getDependencies( getTransaction() ).length, is( 2 ) );
 
         this.dataservice.addConnectionEntry( getTransaction(), "connection" );
-        this.dataservice.addDdlEntry( getTransaction(), "ddl" );
-        this.dataservice.addResourceEntry( getTransaction(), "resource" );
-        this.dataservice.addUdfEntry( getTransaction(), "udf" );
         this.dataservice.addVdbEntry( getTransaction(), "vdb" );
 
         assertThat( this.dataservice.getConnectionEntries( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getDdlEntries( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getResourceEntries( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getUdfEntries( getTransaction() ).length, is( 1 ) );
         assertThat( this.dataservice.getVdbEntries( getTransaction() ).length, is( 1 ) );
         assertThat( this.dataservice.getServiceVdbEntry( getTransaction() ), is( notNullValue() ) );
         assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
-        assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 6 ) );
+        assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 3 ) );
     }
 
     @Test
@@ -233,178 +221,6 @@ public final class DataserviceImplTest extends RelationalModelTest {
         assertThat( this.dataservice.getChildrenOfType( getTransaction(),
                                                         DataVirtLexicon.ConnectionEntry.NODE_TYPE,
                                                         connectionName ).length,
-                    is( 1 ) );
-    }
-
-    @Test
-    public void shouldAddDdlEntry() throws Exception {
-        final String ddlName = "MyDdl";
-        final DdlEntry entry = this.dataservice.addDdlEntry( getTransaction(), ddlName );
-        assertThat( entry.getReference( getTransaction() ), is( nullValue() ) );
-        assertThat( this.dataservice.getDdlEntries( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getDdlEntries( getTransaction(), ddlName ).length, is( 1 ) );
-        assertThat( this.dataservice.getDdlFiles( getTransaction() ).length, is( 0 ) );
-        assertThat( this.dataservice.getDdlPlan( getTransaction() ).length, is( 0 ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), ddlName ), is( true ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), ddlName, DataVirtLexicon.ResourceEntry.DDL_ENTRY_NODE_TYPE ),
-                    is( true ) );
-        assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
-        assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildren( getTransaction(), ddlName ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ResourceEntry.DDL_ENTRY_NODE_TYPE ).length,
-                    is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ResourceEntry.DDL_ENTRY_NODE_TYPE,
-                                                        ddlName ).length,
-                    is( 1 ) );
-    }
-
-    @Test
-    public void shouldAddDdlFile() throws Exception {
-        final String ddlName = "MyDdl";
-        final byte[] content = "this is my DDL content".getBytes();
-        final DdlFile ddl = this.mgr.createDdlFile( getTransaction(), null, ddlName, content );
-        commit(); // needed so that searching for reference will work
-
-        final DdlEntry entry = this.dataservice.addDdlFile( getTransaction(), ddl );
-        assertThat( entry.getReference( getTransaction() ), is( notNullValue() ) );
-        assertThat( entry.getReference( getTransaction() ), is( instanceOf( DdlFile.class ) ) );
-        assertThat( entry.getReference( getTransaction() ).getContent( getTransaction() ), is( notNullValue() ) );
-        assertThat( entry.getReference( getTransaction() ).export( getTransaction(), null ), is( content ) );
-
-        assertThat( this.dataservice.getDdlEntries( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getDdlEntries( getTransaction(), ddlName ).length, is( 1 ) );
-        assertThat( this.dataservice.getDdlPlan( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getDdlPlan( getTransaction() )[ 0 ], is( ddl.getAbsolutePath() ) );
-        assertThat( this.dataservice.getDdlFiles( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getDdlFiles( getTransaction() )[ 0 ].getName( getTransaction() ), is( ddlName ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), ddlName ), is( true ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), ddlName, DataVirtLexicon.ResourceEntry.DDL_ENTRY_NODE_TYPE ),
-                    is( true ) );
-        assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
-        assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildren( getTransaction(), ddlName ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ResourceEntry.DDL_ENTRY_NODE_TYPE ).length,
-                    is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ResourceEntry.DDL_ENTRY_NODE_TYPE,
-                                                        ddlName ).length,
-                    is( 1 ) );
-    }
-
-    @Test
-    public void shouldAddResourceEntry() throws Exception {
-        final String resourceName = "MyResource";
-        final ResourceEntry entry = this.dataservice.addResourceEntry( getTransaction(), resourceName );
-        assertThat( entry.getReference( getTransaction() ), is( nullValue() ) );
-        assertThat( this.dataservice.getResourceEntries( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getResourceEntries( getTransaction(), resourceName ).length, is( 1 ) );
-        assertThat( this.dataservice.getResourceFiles( getTransaction() ).length, is( 0 ) );
-        assertThat( this.dataservice.getResourcePlan( getTransaction() ).length, is( 0 ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), resourceName ), is( true ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), resourceName, DataVirtLexicon.ResourceEntry.NODE_TYPE ),
-                    is( true ) );
-        assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
-        assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildren( getTransaction(), resourceName ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(), DataVirtLexicon.ResourceEntry.NODE_TYPE ).length,
-                    is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ResourceEntry.NODE_TYPE,
-                                                        resourceName ).length,
-                    is( 1 ) );
-    }
-
-    @Test
-    public void shouldAddResourceFile() throws Exception {
-        final String resourceName = "MyResource";
-        final byte[] content = "this is my resource content".getBytes();
-        final ResourceFile resource = this.mgr.createResourceFile( getTransaction(), null, resourceName, content );
-        commit(); // needed so that searching for reference will work
-
-        final ResourceEntry entry = this.dataservice.addResourceFile( getTransaction(), resource );
-        assertThat( entry.getReference( getTransaction() ), is( notNullValue() ) );
-        assertThat( entry.getReference( getTransaction() ), is( instanceOf( ResourceFile.class ) ) );
-        assertThat( entry.getReference( getTransaction() ).getContent( getTransaction() ), is( notNullValue() ) );
-        assertThat( entry.getReference( getTransaction() ).export( getTransaction(), null ), is( content ) );
-
-        assertThat( this.dataservice.getResourceEntries( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getResourceEntries( getTransaction(), resourceName ).length, is( 1 ) );
-        assertThat( this.dataservice.getResourceFiles( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getResourceFiles( getTransaction() )[ 0 ].getName( getTransaction() ), is( resourceName ) );
-        assertThat( this.dataservice.getResourcePlan( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getResourcePlan( getTransaction() )[ 0 ], is( resource.getAbsolutePath() ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), resourceName ), is( true ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), resourceName, DataVirtLexicon.ResourceEntry.NODE_TYPE ),
-                    is( true ) );
-        assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
-        assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildren( getTransaction(), resourceName ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(), DataVirtLexicon.ResourceEntry.NODE_TYPE ).length,
-                    is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ResourceEntry.NODE_TYPE,
-                                                        resourceName ).length,
-                    is( 1 ) );
-    }
-
-    @Test
-    public void shouldAddUdfEntry() throws Exception {
-        final String udfName = "MyUdf";
-        final UdfEntry entry = this.dataservice.addUdfEntry( getTransaction(), udfName );
-        assertThat( entry.getReference( getTransaction() ), is( nullValue() ) );
-        assertThat( this.dataservice.getUdfEntries( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getUdfEntries( getTransaction(), udfName ).length, is( 1 ) );
-        assertThat( this.dataservice.getUdfFiles( getTransaction() ).length, is( 0 ) );
-        assertThat( this.dataservice.getUdfPlan( getTransaction() ).length, is( 0 ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), udfName ), is( true ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), udfName, DataVirtLexicon.ResourceEntry.UDF_ENTRY_NODE_TYPE ),
-                    is( true ) );
-        assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
-        assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildren( getTransaction(), udfName ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ResourceEntry.UDF_ENTRY_NODE_TYPE ).length,
-                    is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ResourceEntry.UDF_ENTRY_NODE_TYPE,
-                                                        udfName ).length,
-                    is( 1 ) );
-    }
-
-    @Test
-    public void shouldAddUdfFile() throws Exception {
-        final String udfName = "MyUdf";
-        final byte[] content = "this is my UDF content".getBytes();
-        final UdfFile udf = this.mgr.createUdfFile( getTransaction(), null, udfName, content );
-        commit(); // needed so that searching for reference will work
-
-        final UdfEntry entry = this.dataservice.addUdfFile( getTransaction(), udf );
-        assertThat( entry.getReference( getTransaction() ), is( notNullValue() ) );
-        assertThat( entry.getReference( getTransaction() ), is( instanceOf( UdfFile.class ) ) );
-        assertThat( entry.getReference( getTransaction() ).getContent( getTransaction() ), is( notNullValue() ) );
-        assertThat( entry.getReference( getTransaction() ).export( getTransaction(), null ), is( content ) );
-
-        assertThat( this.dataservice.getUdfEntries( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getUdfEntries( getTransaction(), udfName ).length, is( 1 ) );
-        assertThat( this.dataservice.getUdfFiles( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getUdfFiles( getTransaction() )[ 0 ].getName( getTransaction() ), is( udfName ) );
-        assertThat( this.dataservice.getUdfPlan( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getUdfPlan( getTransaction() )[ 0 ], is( udf.getAbsolutePath() ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), udfName ), is( true ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), udfName, DataVirtLexicon.ResourceEntry.UDF_ENTRY_NODE_TYPE ),
-                    is( true ) );
-        assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
-        assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildren( getTransaction(), udfName ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ResourceEntry.UDF_ENTRY_NODE_TYPE ).length,
-                    is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ResourceEntry.UDF_ENTRY_NODE_TYPE,
-                                                        udfName ).length,
                     is( 1 ) );
     }
 
@@ -633,36 +449,6 @@ public final class DataserviceImplTest extends RelationalModelTest {
                      "product-view-vdb.xml",
                      DataVirtLexicon.ServiceVdbEntry.NODE_TYPE,
                      VdbLexicon.Vdb.VIRTUAL_DATABASE,
-                     paths );
-        assertEntry( theDataService,
-                     "firstDdl.ddl",
-                     DataVirtLexicon.ResourceEntry.DDL_ENTRY_NODE_TYPE,
-                     DataVirtLexicon.ResourceFile.DDL_FILE_NODE_TYPE,
-                     paths );
-        assertEntry( theDataService,
-                     "secondDdl.ddl",
-                     DataVirtLexicon.ResourceEntry.DDL_ENTRY_NODE_TYPE,
-                     DataVirtLexicon.ResourceFile.DDL_FILE_NODE_TYPE,
-                     paths );
-        assertEntry( theDataService,
-                     "firstResource.xml",
-                     DataVirtLexicon.ResourceEntry.NODE_TYPE,
-                     DataVirtLexicon.ResourceFile.NODE_TYPE,
-                     paths );
-        assertEntry( theDataService,
-                     "secondResource.xml",
-                     DataVirtLexicon.ResourceEntry.NODE_TYPE,
-                     DataVirtLexicon.ResourceFile.NODE_TYPE,
-                     paths );
-        assertEntry( theDataService,
-                     "firstUdf.jar",
-                     DataVirtLexicon.ResourceEntry.UDF_ENTRY_NODE_TYPE,
-                     null, // publish policy is NEVER
-                     paths );
-        assertEntry( theDataService,
-                     "secondUdf.jar",
-                     DataVirtLexicon.ResourceEntry.UDF_ENTRY_NODE_TYPE,
-                     DataVirtLexicon.ResourceFile.UDF_FILE_NODE_TYPE,
                      paths );
         assertEntry( theDataService,
                      "books-connection.xml",

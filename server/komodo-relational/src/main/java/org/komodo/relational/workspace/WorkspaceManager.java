@@ -31,15 +31,11 @@ import org.komodo.relational.connection.Connection;
 import org.komodo.relational.connection.internal.ConnectionImpl;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.internal.DataserviceImpl;
-import org.komodo.relational.folder.Folder;
 import org.komodo.relational.internal.AdapterFactory;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Schema;
 import org.komodo.relational.model.internal.ModelImpl;
 import org.komodo.relational.model.internal.SchemaImpl;
-import org.komodo.relational.resource.DdlFile;
-import org.komodo.relational.resource.ResourceFile;
-import org.komodo.relational.resource.UdfFile;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.spi.KEvent;
@@ -68,7 +64,7 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
      */
     private static final KomodoType[] CHILD_TYPES = new KomodoType[] { Connection.IDENTIFIER, Vdb.IDENTIFIER,
                                                                        Schema.IDENTIFIER,
-                                                                       Dataservice.IDENTIFIER, Folder.IDENTIFIER };
+                                                                       Dataservice.IDENTIFIER };
 
     /**
      * The type identifier.
@@ -316,70 +312,6 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
 
     /**
      * @param uow
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param parent
-     *        the parent of the DDL file object being created (can be <code>null</code>)
-     * @param ddlFileName
-     *        the name of the DDL file to create (cannot be empty)
-     * @param content
-     *        the file content (cannot be <code>null</code>)
-     * @return the DDL file object (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    public DdlFile createDdlFile( final UnitOfWork uow,
-                                  final KomodoObject parent,
-                                  final String ddlFileName,
-                                  final byte[] content ) throws KException {
-        final KomodoObject kobjParent = ( ( parent == null ) ? getRepository().komodoWorkspace( uow ) : parent );
-        return RelationalModelFactory.createDdlFile( uow, getRepository(), kobjParent, ddlFileName, content );
-    }
-
-    /**
-     * @param uow
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param parent
-     *        the parent of the folder object being created (can be <code>null</code>)
-     * @param folderName
-     *        the name of the folder to create (cannot be empty)
-     * @return the Folder object (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    public Folder createFolder( final UnitOfWork uow,
-                                final KomodoObject parent,
-                                final String folderName ) throws KException {
-        final String path = ( ( parent == null ) ? getRepository().komodoWorkspace( uow ).getAbsolutePath()
-            : parent.getAbsolutePath() );
-        return RelationalModelFactory.createFolder( uow, getRepository(), path, folderName );
-    }
-
-    /**
-     * @param uow
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param parent
-     *        the parent of the resource file object being created (can be <code>null</code>)
-     * @param resourceFileName
-     *        the name of the resource file to create (cannot be empty)
-     * @param content
-     *        the file content (cannot be <code>null</code>)
-     * @return the resource file object (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    public ResourceFile createResourceFile( final UnitOfWork uow,
-                                            final KomodoObject parent,
-                                            final String resourceFileName,
-                                            final byte[] content ) throws KException {
-        final KomodoObject kobjParent = ( ( parent == null ) ? getRepository().komodoWorkspace( uow ) : parent );
-        return RelationalModelFactory.createResourceFile( uow, getRepository(), kobjParent, resourceFileName, content );
-    }
-
-    /**
-     * @param uow
      *        the transaction (cannot be <code>null</code> or have a state that is not
      *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
      * @param parent
@@ -396,28 +328,6 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
         final String path = ( ( parent == null ) ? getRepository().komodoWorkspace( uow ).getAbsolutePath()
                                                  : parent.getAbsolutePath() );
          return RelationalModelFactory.createSchema( uow, getRepository(), path, schemaName );
-    }
-
-    /**
-     * @param uow
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param parent
-     *        the parent of the UDF file object being created (can be <code>null</code>)
-     * @param udfFileName
-     *        the name of the UDF file to create (cannot be empty)
-     * @param content
-     *        the file content (cannot be <code>null</code>)
-     * @return the resource file object (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    public UdfFile createUdfFile( final UnitOfWork uow,
-                                  final KomodoObject parent,
-                                  final String udfFileName,
-                                  final byte[] content ) throws KException {
-        final KomodoObject kobjParent = ( ( parent == null ) ? getRepository().komodoWorkspace( uow ) : parent );
-        return RelationalModelFactory.createUdfFile( uow, getRepository(), kobjParent, udfFileName, content );
     }
 
     /**

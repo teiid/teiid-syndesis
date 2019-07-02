@@ -24,7 +24,6 @@ import org.komodo.core.AbstractLocalRepositoryTest;
 import org.komodo.core.KomodoLexicon;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.folder.Folder;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Schema;
 import org.komodo.relational.model.Table;
@@ -146,24 +145,6 @@ public class RelationalModelTest extends AbstractLocalRepositoryTest {
         assertThat( ds.getPrimaryType( getTransaction() ).getName(), is( DataVirtLexicon.Connection.NODE_TYPE ) );
         assertThat( ds.getName( getTransaction() ), is( dsName ) );
         return ds;
-    }
-
-    protected Folder createFolder() throws Exception {
-        return createFolder( getDefaultFolderName() );
-    }
-
-    protected Folder createFolder( final String folderName ) throws Exception {
-        return createFolder( folderName, null );
-    }
-
-    protected Folder createFolder( final String folderName,
-                                             final KomodoObject parent ) throws Exception {
-        final WorkspaceManager mgr = WorkspaceManager.getInstance(_repo, getTransaction());
-        final Folder folder = mgr.createFolder( getTransaction(), parent, folderName );
-
-        assertThat( folder.getPrimaryType( getTransaction() ).getName(), is( KomodoLexicon.Folder.NODE_TYPE ) );
-        assertThat( folder.getName( getTransaction() ), is( folderName ) );
-        return folder;
     }
 
     protected String getDefaultModelName() {

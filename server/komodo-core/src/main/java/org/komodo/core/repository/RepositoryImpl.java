@@ -31,7 +31,6 @@ import org.komodo.core.KomodoLexicon;
 import org.komodo.core.KomodoLexicon.Environment;
 import org.komodo.core.KomodoLexicon.Komodo;
 import org.komodo.core.KomodoLexicon.LibraryComponent;
-import org.komodo.core.KomodoLexicon.Search;
 import org.komodo.core.repository.validation.ValidationManagerImpl;
 import org.komodo.spi.KClient;
 import org.komodo.spi.KEvent;
@@ -456,12 +455,6 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     private static final String WORKSPACE_ROOT = (KOMODO_ROOT + FORWARD_SLASH + Komodo.WORKSPACE);
 
     /**
-     * The root path of the Komodo repository workspace searches area.
-     * This remains a sibling of the user home directories so that searches can be shared by users.
-     */
-    public static final String SEARCHES_ROOT = WORKSPACE_ROOT + FORWARD_SLASH + Search.GROUP_NODE;
-
-    /**
      * @param transaction
      *       the transaction (cannot be <code>null</code> or have a state that is not
     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
@@ -536,7 +529,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
             path = path.substring(0, path.length() - 1);
 
         if (KOMODO_ROOT.equals(path) || LIBRARY_ROOT.equals(path) || ENV_ROOT.equals(path)
-                || SEARCHES_ROOT.equals(path) || VALIDATION_ROOT.equals(path) || PROFILES_ROOT.equals(path)
+                || VALIDATION_ROOT.equals(path) || PROFILES_ROOT.equals(path)
                 || WORKSPACE_ROOT.equals(path))
             return true;
 
@@ -558,7 +551,6 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
         paths.add(KOMODO_ROOT);
         paths.add(LIBRARY_ROOT);
         paths.add(ENV_ROOT);
-        paths.add(SEARCHES_ROOT);
         paths.add(VALIDATION_ROOT);
         paths.add(PROFILES_ROOT);
         paths.add(WORKSPACE_ROOT);
@@ -665,9 +657,6 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
                     return; // Read the contents of the user's profile
                 }
 
-                if (nodePath.startsWith(SEARCHES_ROOT))
-                    return; // Read the contents of the searches
-
                 throw new KException(Messages.getString(
                                                         Messages.Komodo.READ_NOT_ALLOWED,
                                                         nodePath, transaction.getUserName() ));
@@ -684,9 +673,6 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
                 if (nodePath.startsWith(userProfile))
                     return; // Add/Remove children in the user's profile
 
-                if (nodePath.startsWith(SEARCHES_ROOT))
-                    return; // Add/Remove searches from the searches location
-
                 throw new KException(Messages.getString(
                                                         Messages.Komodo.ADD_REMOVE_CHILD_NOT_ALLOWED,
                                                         nodePath, transaction.getUserName() ));
@@ -701,9 +687,6 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
                 if(nodePath.startsWith(userProfile) && ! userProfile.equals(nodePath))
                     return; // Can modify contents of user profile
 
-                if (nodePath.startsWith(SEARCHES_ROOT))
-                    return; // Can modify searches in the search location
-
                 throw new KException(Messages.getString(
                                                              Messages.Komodo.SET_PROPERTY_NOT_ALLOWED,
                                                              nodePath, transaction.getUserName() ));
@@ -717,9 +700,6 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
 
                 if(nodePath.startsWith(userProfile) && ! userProfile.equals(nodePath))
                     return; // Can remove contents of user profile
-
-                if (nodePath.startsWith(SEARCHES_ROOT))
-                    return; // Can remove searches in the search location
 
                 throw new KException(Messages.getString(
                                                         Messages.Komodo.REMOVE_NOT_ALLOWED,

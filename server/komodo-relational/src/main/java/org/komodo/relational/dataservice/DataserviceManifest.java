@@ -309,32 +309,6 @@ public class DataserviceManifest implements Exportable {
                 }
             }
 
-            { // metadata entries
-                final DdlEntry[] entries = this.dataService.getDdlEntries( transaction );
-
-                if ( entries.length != 0 ) {
-                    writeNewLine( xsw );
-                    writeTab( xsw );
-                    writeStartElement( xsw, DataVirtLexicon.DataServiceManifestId.METADATA );
-
-                    for ( final DdlEntry entry : entries ) {
-                        writeNewLine( xsw );
-                        writeTab( xsw );
-                        writeTab( xsw );
-                        writeStartElement( xsw, DataVirtLexicon.DataServiceManifestId.DDL_FILE );
-                        writeAttribute( xsw, DataVirtLexicon.DataServiceManifestId.PATH, entry.getEntryPath( transaction ) );
-                        writeAttribute( xsw,
-                                        DataVirtLexicon.DataServiceManifestId.PUBLISH,
-                                        entry.getPublishPolicy( transaction ).toXml() );
-                        writeEndElement( xsw );
-                    }
-
-                    writeNewLine( xsw );
-                    writeTab( xsw );
-                    writeEndElement( xsw );
-                }
-            }
-
             { // connection entries
                 final ConnectionEntry[] entries = this.dataService.getConnectionEntries( transaction );
 
@@ -353,32 +327,6 @@ public class DataserviceManifest implements Exportable {
                                         DataVirtLexicon.DataServiceManifestId.PUBLISH,
                                         entry.getPublishPolicy( transaction ).toXml() );
                         writeAttribute( xsw, DataVirtLexicon.DataServiceManifestId.JNDI_NAME, entry.getJndiName( transaction ) );
-                        writeEndElement( xsw );
-                    }
-
-                    writeNewLine( xsw );
-                    writeTab( xsw );
-                    writeEndElement( xsw );
-                }
-            }
-
-            { // udf entries
-                final UdfEntry[] entries = this.dataService.getUdfEntries( transaction );
-
-                if ( entries.length != 0 ) {
-                    writeNewLine( xsw );
-                    writeTab( xsw );
-                    writeStartElement( xsw, DataVirtLexicon.DataServiceManifestId.UDFS );
-
-                    for ( final UdfEntry entry : entries ) {
-                        writeNewLine( xsw );
-                        writeTab( xsw );
-                        writeTab( xsw );
-                        writeStartElement( xsw, DataVirtLexicon.DataServiceManifestId.UDF_FILE );
-                        writeAttribute( xsw, DataVirtLexicon.DataServiceManifestId.PATH, entry.getEntryPath( transaction ) );
-                        writeAttribute( xsw,
-                                        DataVirtLexicon.DataServiceManifestId.PUBLISH,
-                                        entry.getPublishPolicy( transaction ).toXml() );
                         writeEndElement( xsw );
                     }
 
@@ -409,32 +357,6 @@ public class DataserviceManifest implements Exportable {
                         writeAttribute( xsw,
                                         DataVirtLexicon.DataServiceManifestId.VDB_VERSION,
                                         entry.getVdbVersion( transaction ) );
-                        writeEndElement( xsw );
-                    }
-
-                    writeNewLine( xsw );
-                    writeTab( xsw );
-                    writeEndElement( xsw );
-                }
-            }
-
-            { // resource entries
-                final ResourceEntry[] entries = this.dataService.getResourceEntries( transaction );
-
-                if ( entries.length != 0 ) {
-                    writeNewLine( xsw );
-                    writeTab( xsw );
-                    writeStartElement( xsw, DataVirtLexicon.DataServiceManifestId.RESOURCES );
-
-                    for ( final ResourceEntry entry : entries ) {
-                        writeNewLine( xsw );
-                        writeTab( xsw );
-                        writeTab( xsw );
-                        writeStartElement( xsw, DataVirtLexicon.DataServiceManifestId.RESOURCE_FILE );
-                        writeAttribute( xsw, DataVirtLexicon.DataServiceManifestId.PATH, entry.getEntryPath( transaction ) );
-                        writeAttribute( xsw,
-                                        DataVirtLexicon.DataServiceManifestId.PUBLISH,
-                                        entry.getPublishPolicy( transaction ).toXml() );
                         writeEndElement( xsw );
                     }
 

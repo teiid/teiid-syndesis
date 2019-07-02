@@ -32,10 +32,7 @@ import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.ConnectionEntry;
 import org.komodo.relational.dataservice.DataServiceEntry;
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.dataservice.DdlEntry;
-import org.komodo.relational.dataservice.ResourceEntry;
 import org.komodo.relational.dataservice.ServiceVdbEntry;
-import org.komodo.relational.dataservice.UdfEntry;
 import org.komodo.relational.dataservice.VdbEntry;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.model.Model;
@@ -43,9 +40,6 @@ import org.komodo.relational.model.Model.Type;
 import org.komodo.relational.profile.Profile;
 import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.relational.profile.ViewEditorState;
-import org.komodo.relational.resource.DdlFile;
-import org.komodo.relational.resource.ResourceFile;
-import org.komodo.relational.resource.UdfFile;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.relational.workspace.WorkspaceManager;
@@ -72,10 +66,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
      * The allowed child types.
      */
     private static final KomodoType[] CHILD_TYPES = new KomodoType[] { VdbEntry.IDENTIFIER,
-                                                                       ConnectionEntry.IDENTIFIER,
-                                                                       DdlEntry.IDENTIFIER,
-                                                                       ResourceEntry.IDENTIFIER,
-                                                                       UdfEntry.IDENTIFIER };
+                                                                       ConnectionEntry.IDENTIFIER };
 
     private static < T extends Exportable & RelationalObject > String[] getPathsOfReferences( final UnitOfWork transaction,
                                                                                               final DataServiceEntry< T >[] entries ) throws KException {
@@ -172,27 +163,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
             return kids[ 0 ];
         }
 
-        // check DDL files
-        kids = getDdlEntries( transaction, name );
-
-        if ( kids.length != 0 ) {
-            return kids[ 0 ];
-        }
-
-        // check resources
-        kids = getResourceEntries( transaction, name );
-
-        if ( kids.length != 0 ) {
-            return kids[ 0 ];
-        }
-
-        // check UDFs
-        kids = getUdfEntries( transaction, name );
-
-        if ( kids.length != 0 ) {
-            return kids[ 0 ];
-        }
-
         // child does not exist
         throw new KException( Messages.getString( org.komodo.core.repository.Messages.Komodo.CHILD_NOT_FOUND,
                                                   name,
@@ -226,24 +196,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
             if ( entries.length != 0 ) {
                 return entries[ 0 ];
             }
-        } else if ( DataVirtLexicon.ResourceEntry.DDL_ENTRY_NODE_TYPE.equals( typeName ) ) {
-            final DdlEntry[] entries = getDdlEntries( transaction, name );
-
-            if ( entries.length != 0 ) {
-                return entries[ 0 ];
-            }
-        } else if ( DataVirtLexicon.ResourceEntry.NODE_TYPE.equals( typeName ) ) {
-            final ResourceEntry[] entries = getResourceEntries( transaction, name );
-
-            if ( entries.length != 0 ) {
-                return entries[ 0 ];
-            }
-        } else if ( DataVirtLexicon.ResourceEntry.UDF_ENTRY_NODE_TYPE.equals( typeName ) ) {
-            final UdfEntry[] entries = getUdfEntries( transaction, name );
-
-            if ( entries.length != 0 ) {
-                return entries[ 0 ];
-            }
         } else if ( DataVirtLexicon.ServiceVdbEntry.NODE_TYPE.equals( typeName ) ) {
             return getServiceVdbEntry( transaction );
         }
@@ -269,29 +221,12 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
         final ServiceVdbEntry serviceVdb = getServiceVdbEntry( transaction );
         final VdbEntry[] vdbs = getVdbEntries( transaction, namePatterns );
         final ConnectionEntry[] connections = getConnectionEntries( transaction, namePatterns );
-        final DdlEntry[] ddls = getDdlEntries( transaction, namePatterns );
-        final ResourceEntry[] resources = getResourceEntries( transaction, namePatterns );
-        final UdfEntry[] udfs = getUdfEntries( transaction, namePatterns );
 
         final DataServiceEntry< ? >[] result = new DataServiceEntry< ? >[ ( ( serviceVdb == null ) ? 0 : 1 )
                                                                           + vdbs.length
-                                                                          + connections.length
-                                                                          + ddls.length
-                                                                          + resources.length
-                                                                          + udfs.length ];
+                                                                          + connections.length];
         System.arraycopy( vdbs, 0, result, 0, vdbs.length );
         System.arraycopy( connections, 0, result, vdbs.length, connections.length );
-        System.arraycopy( ddls, 0, result, vdbs.length + connections.length, ddls.length );
-        System.arraycopy( resources,
-                          0,
-                          result,
-                          vdbs.length + connections.length + ddls.length,
-                          resources.length );
-        System.arraycopy( udfs,
-                          0,
-                          result,
-                          vdbs.length + connections.length + ddls.length + resources.length,
-                          udfs.length );
 
         if ( serviceVdb != null ) {
             result[ result.length - 1 ] = serviceVdb;
@@ -331,18 +266,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
             return getConnectionEntries( transaction, namePatterns );
         }
 
-        if ( DataVirtLexicon.ResourceEntry.DDL_ENTRY_NODE_TYPE.equals( type ) ) {
-            return getDdlEntries( transaction, namePatterns );
-        }
-
-        if ( DataVirtLexicon.ResourceEntry.NODE_TYPE.equals( type ) ) {
-            return getResourceEntries( transaction, namePatterns );
-        }
-
-        if ( DataVirtLexicon.ResourceEntry.UDF_ENTRY_NODE_TYPE.equals( type ) ) {
-            return getUdfEntries( transaction, namePatterns );
-        }
-
         return VdbEntry.NO_ENTRIES;
     }
 
@@ -362,10 +285,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
         return ( ( ( getServiceVdbEntry( transaction ) != null )
                    && name.equals( getServiceVdbEntry( transaction ).getName( transaction ) ) )
                  || ( getVdbEntries( transaction, name ).length != 0 )
-                 || ( getConnectionEntries( transaction, name ).length != 0 )
-                 || ( getDdlEntries( transaction, name ).length != 0 )
-                 || ( getResourceEntries( transaction, name ).length != 0 )
-                 || ( getUdfEntries( transaction, name ).length != 0 ) );
+                 || ( getConnectionEntries( transaction, name ).length != 0 ));
     }
 
     /**
@@ -396,18 +316,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
             return (getConnectionEntries(transaction, name).length != 0);
         }
 
-        if ( DataVirtLexicon.ResourceEntry.DDL_ENTRY_NODE_TYPE.equals( typeName ) ) {
-            return ( getDdlEntries( transaction, name ).length != 0 );
-        }
-
-        if ( DataVirtLexicon.ResourceEntry.NODE_TYPE.equals( typeName ) ) {
-            return ( getResourceEntries( transaction, name ).length != 0 );
-        }
-
-        if ( DataVirtLexicon.ResourceEntry.UDF_ENTRY_NODE_TYPE.equals( typeName ) ) {
-            return ( getUdfEntries( transaction, name ).length != 0 );
-        }
-
         return false;
     }
 
@@ -420,10 +328,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
     public boolean hasChildren( final UnitOfWork transaction ) throws KException {
         return ( ( getServiceVdbEntry( transaction ) != null )
                  || ( getVdbEntries( transaction ).length != 0 )
-                 || ( getConnectionEntries( transaction ).length != 0 )
-                 || ( getDdlEntries( transaction ).length != 0 )
-                 || ( getResourceEntries( transaction ).length != 0 )
-                 || ( getUdfEntries( transaction ).length != 0 ) );
+                 || ( getConnectionEntries( transaction ).length != 0 ));
     }
 
     @Override
@@ -515,97 +420,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
     public ConnectionEntry addConnectionEntry( final UnitOfWork transaction,
                                                final String connectionEntryName ) throws KException {
         return RelationalModelFactory.createConnectionEntry( transaction, getRepository(), this, connectionEntryName );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.dataservice.Dataservice#addDdlEntry(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String)
-     */
-    @Override
-    public DdlEntry addDdlEntry( final UnitOfWork transaction,
-                                 final String ddlEntryName ) throws KException {
-        return RelationalModelFactory.createDdlEntry( transaction, getRepository(), this, ddlEntryName );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.dataservice.Dataservice#addDdlFile(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      org.komodo.relational.resource.DdlFile)
-     */
-    @Override
-    public DdlEntry addDdlFile( final UnitOfWork uow,
-                                final DdlFile ddlFile ) throws KException {
-        final DdlEntry entry = RelationalModelFactory.createDdlEntry( uow,
-                                                                      getRepository(),
-                                                                      this,
-                                                                      Objects.requireNonNull( ddlFile, "ddlFile" ) //$NON-NLS-1$
-                                                                             .getName( uow ) );
-        entry.setReference( uow, ddlFile );
-        return entry;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.dataservice.Dataservice#addResourceEntry(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String)
-     */
-    @Override
-    public ResourceEntry addResourceEntry( final UnitOfWork transaction,
-                                           final String resourceEntryName ) throws KException {
-        return RelationalModelFactory.createResourceEntry( transaction, getRepository(), this, resourceEntryName );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.dataservice.Dataservice#addResourceFile(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      org.komodo.relational.resource.ResourceFile)
-     */
-    @Override
-    public ResourceEntry addResourceFile( final UnitOfWork uow,
-                                          final ResourceFile resourceFile ) throws KException {
-        final ResourceEntry entry = RelationalModelFactory.createResourceEntry( uow,
-                                                                                getRepository(),
-                                                                                this,
-                                                                                Objects.requireNonNull( resourceFile,
-                                                                                                        "resourceFile" ) //$NON-NLS-1$
-                                                                                       .getName( uow ) );
-        entry.setReference( uow, resourceFile );
-        return entry;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.dataservice.Dataservice#addUdfEntry(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String)
-     */
-    @Override
-    public UdfEntry addUdfEntry( final UnitOfWork transaction,
-                                 final String udfEntryName ) throws KException {
-        return RelationalModelFactory.createUdfEntry( transaction, getRepository(), this, udfEntryName );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.dataservice.Dataservice#addUdfFile(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      org.komodo.relational.resource.UdfFile)
-     */
-    @Override
-    public UdfEntry addUdfFile( final UnitOfWork uow,
-                                final UdfFile udfFile ) throws KException {
-        final UdfEntry entry = RelationalModelFactory.createUdfEntry( uow,
-                                                                      getRepository(),
-                                                                      this,
-                                                                      Objects.requireNonNull( udfFile, "udfFile" ) //$NON-NLS-1$
-                                                                             .getName( uow ) );
-        entry.setReference( uow, udfFile );
-        return entry;
     }
 
     /**
@@ -713,78 +527,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.dataservice.Dataservice#getDdlEntries(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String[])
-     */
-    @Override
-    public DdlEntry[] getDdlEntries( final UnitOfWork transaction,
-                                     final String... namePatterns ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-
-        final List< DdlEntry > result = new ArrayList<>();
-
-        for ( final KomodoObject kobject : super.getChildrenOfType( transaction,
-                                                                    DataVirtLexicon.ResourceEntry.DDL_ENTRY_NODE_TYPE,
-                                                                    namePatterns ) ) {
-            final DdlEntry entry = new DdlEntryImpl( transaction, getRepository(), kobject.getAbsolutePath() );
-            result.add( entry );
-        }
-
-        if ( result.isEmpty() ) {
-            return DdlEntry.NO_ENTRIES;
-        }
-
-        return result.toArray( new DdlEntry[ result.size() ] );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.dataservice.Dataservice#getDdlFiles(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String[])
-     */
-    @Override
-    public DdlFile[] getDdlFiles( final UnitOfWork transaction,
-                                  final String... namePatterns ) throws KException {
-        final DdlEntry[] entries = getDdlEntries( transaction, namePatterns );
-
-        if ( entries.length == 0 ) {
-            return DdlFile.NO_DDLS;
-        }
-
-        final List< DdlFile > ddls = new ArrayList<>( entries.length );
-
-        for ( final DdlEntry entry : entries ) {
-            DdlFile ref = null;
-
-            if ( ( ref = entry.getReference( transaction ) ) != null ) {
-                ddls.add( ref );
-            }
-        }
-
-        return ddls.toArray( new DdlFile[ ddls.size() ] );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.dataservice.Dataservice#getDdlPlan(org.komodo.spi.repository.Repository.UnitOfWork)
-     */
-    @Override
-    public String[] getDdlPlan( final UnitOfWork transaction ) throws KException {
-        final DdlEntry[] entries = getDdlEntries( transaction );
-
-        if ( entries.length == 0 ) {
-            return StringConstants.EMPTY_ARRAY;
-        }
-
-        return getPathsOfReferences( transaction, entries );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
      * @see org.komodo.relational.dataservice.Dataservice#getDescription(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
@@ -824,76 +566,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.dataservice.Dataservice#getResourceEntries(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String[])
-     */
-    @Override
-    public ResourceEntry[] getResourceEntries( final UnitOfWork uow,
-                                               final String... namePatterns ) throws KException {
-        ArgCheck.isNotNull( uow, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( uow.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-
-        final List< ResourceEntry > result = new ArrayList<>();
-
-        for ( final KomodoObject kobject : super.getChildrenOfType( uow, DataVirtLexicon.ResourceEntry.NODE_TYPE, namePatterns ) ) {
-            final ResourceEntry entry = new ResourceEntryImpl( uow, getRepository(), kobject.getAbsolutePath() );
-            result.add( entry );
-        }
-
-        if ( result.isEmpty() ) {
-            return ResourceEntry.NO_ENTRIES;
-        }
-
-        return result.toArray( new ResourceEntry[ result.size() ] );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.dataservice.Dataservice#getResourceFiles(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String[])
-     */
-    @Override
-    public ResourceFile[] getResourceFiles( final UnitOfWork transaction,
-                                            final String... namePatterns ) throws KException {
-        final ResourceEntry[] entries = getResourceEntries( transaction, namePatterns );
-
-        if ( entries.length == 0 ) {
-            return ResourceFile.NO_RESOURCES;
-        }
-
-        final List< ResourceFile > resources = new ArrayList<>( entries.length );
-
-        for ( final ResourceEntry entry : entries ) {
-            ResourceFile ref = null;
-
-            if ( ( ref = entry.getReference( transaction ) ) != null ) {
-                resources.add( ref );
-            }
-        }
-
-        return resources.toArray( new ResourceFile[ resources.size() ] );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.dataservice.Dataservice#getResourcePlan(org.komodo.spi.repository.Repository.UnitOfWork)
-     */
-    @Override
-    public String[] getResourcePlan( final UnitOfWork transaction ) throws KException {
-        final ResourceEntry[] entries = getResourceEntries( transaction );
-
-        if ( entries.length == 0 ) {
-            return StringConstants.EMPTY_ARRAY;
-        }
-
-        return getPathsOfReferences( transaction, entries );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
      * @see org.komodo.relational.dataservice.Dataservice#getServiceVdbEntry(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
@@ -908,76 +580,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
         }
 
         return new ServiceVdbEntryImpl( uow, getRepository(), kobjects[ 0 ].getAbsolutePath() );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.dataservice.Dataservice#getUdfEntries(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String[])
-     */
-    @Override
-    public UdfEntry[] getUdfEntries( final UnitOfWork uow,
-                                     final String... namePatterns ) throws KException {
-        ArgCheck.isNotNull( uow, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( uow.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-
-        final List< UdfEntry > result = new ArrayList<>();
-
-        for ( final KomodoObject kobject : super.getChildrenOfType( uow, DataVirtLexicon.ResourceEntry.UDF_ENTRY_NODE_TYPE, namePatterns ) ) {
-            final UdfEntry entry = new UdfEntryImpl( uow, getRepository(), kobject.getAbsolutePath() );
-            result.add( entry );
-        }
-
-        if ( result.isEmpty() ) {
-            return UdfEntry.NO_ENTRIES;
-        }
-
-        return result.toArray( new UdfEntry[ result.size() ] );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.dataservice.Dataservice#getUdfFiles(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String[])
-     */
-    @Override
-    public UdfFile[] getUdfFiles( final UnitOfWork transaction,
-                                  final String... namePatterns ) throws KException {
-        final UdfEntry[] entries = getUdfEntries( transaction, namePatterns );
-
-        if ( entries.length == 0 ) {
-            return UdfFile.NO_UDFS;
-        }
-
-        final List< UdfFile > udfs = new ArrayList<>( entries.length );
-
-        for ( final UdfEntry entry : entries ) {
-            UdfFile ref = null;
-
-            if ( ( ref = entry.getReference( transaction ) ) != null ) {
-                udfs.add( ref );
-            }
-        }
-
-        return udfs.toArray( new UdfFile[ udfs.size() ] );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.dataservice.Dataservice#getUdfPlan(org.komodo.spi.repository.Repository.UnitOfWork)
-     */
-    @Override
-    public String[] getUdfPlan( final UnitOfWork transaction ) throws KException {
-        final UdfEntry[] entries = getUdfEntries( transaction );
-
-        if ( entries.length == 0 ) {
-            return StringConstants.EMPTY_ARRAY;
-        }
-
-        return getPathsOfReferences( transaction, entries );
     }
 
     /**
@@ -1134,36 +736,12 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
             RepositoryTools.copyProperties(transaction, vdbEntry, entry);
         }
 
-        for (UdfEntry udfEntry : getUdfEntries(transaction)) {
-            UdfEntry entry = RelationalModelFactory.createUdfEntry(transaction,
-                                                                          getRepository(),
-                                                                          dataservice,
-                                                                          udfEntry.getName(transaction));
-            RepositoryTools.copyProperties(transaction, udfEntry, entry);
-        }
-
         for (ConnectionEntry connEntry : getConnectionEntries(transaction)) {
             ConnectionEntry entry = RelationalModelFactory.createConnectionEntry(transaction,
                                                                           getRepository(),
                                                                           dataservice,
                                                                           connEntry.getName(transaction));
             RepositoryTools.copyProperties(transaction, connEntry, entry);
-        }
-
-        for (DdlEntry ddlEntry : getDdlEntries(transaction)) {
-            DdlEntry entry = RelationalModelFactory.createDdlEntry(transaction,
-                                                                          getRepository(),
-                                                                          dataservice,
-                                                                          ddlEntry.getName(transaction));
-            RepositoryTools.copyProperties(transaction, ddlEntry, entry);
-        }
-
-        for (ResourceEntry resourceEntry : getResourceEntries(transaction)) {
-            ResourceEntry entry = RelationalModelFactory.createResourceEntry(transaction,
-                                                                          getRepository(),
-                                                                          dataservice,
-                                                                          resourceEntry.getName(transaction));
-            RepositoryTools.copyProperties(transaction, resourceEntry, entry);
         }
 
         ServiceVdbEntry serviceVdbEntry = getServiceVdbEntry(transaction);

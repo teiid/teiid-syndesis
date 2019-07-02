@@ -70,7 +70,6 @@ import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.connection.RestConnection;
 import org.komodo.rest.relational.connection.RestSchemaNode;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
-import org.komodo.rest.relational.request.KomodoFileAttributes;
 import org.komodo.rest.relational.request.KomodoQueryAttribute;
 import org.komodo.rest.relational.request.PublishRequestPayload;
 import org.komodo.rest.relational.response.KomodoStatusObject;
@@ -97,7 +96,6 @@ import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
-import org.komodo.spi.runtime.ConnectionDriver;
 import org.komodo.spi.runtime.SyndesisDataSource;
 import org.komodo.spi.runtime.TeiidDataSource;
 import org.komodo.spi.runtime.TeiidPropertyDefinition;
@@ -227,40 +225,6 @@ public class KomodoMetadataService extends KomodoService {
                                                                   RelationalMessages.getString(
                                                                                                RelationalMessages.Error.VDB_SAMPLE_IMPORT_TIMEOUT));
         return Response.status(Status.FORBIDDEN).entity(responseEntity).build();
-    }
-
-    private Response checkFileAttributes(KomodoFileAttributes kfa, List<MediaType> mediaTypes) throws Exception {
-        if (kfa == null || (kfa.getName() == null && kfa.getContent() == null))
-            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.METADATA_SERVICE_FILE_ATTRIB_NO_PARAMETERS);
-
-        if (kfa.getName() == null)
-            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.METADATA_SERVICE_FILE_ATTRIB_NO_NAME);
-
-        if (kfa.getContent() == null)
-            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.METADATA_SERVICE_FILE_ATTRIB_NO_CONTENT);
-
-        return Response.ok().build();
-    }
-
-    private boolean hasDriver(String driverName) throws Exception {
-        boolean hasDriver = false;
-
-        try {
-            Collection<ConnectionDriver> drivers = getMetadataInstance().getDataSourceDrivers();
-            for (ConnectionDriver driver : drivers) {
-                if (driver.getName().startsWith(driverName)) {
-                    hasDriver = true;
-                    break;
-                }
-            }
-
-            return hasDriver;
-
-        } catch (KException ex) {
-            this.kengine.getErrorHandler().error(ex);
-
-            throw ex;
-        }
     }
 
     private boolean hasDynamicVdb(String vdbName) throws Exception {

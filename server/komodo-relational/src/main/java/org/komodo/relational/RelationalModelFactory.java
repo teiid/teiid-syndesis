@@ -25,21 +25,13 @@ import org.komodo.relational.connection.Connection;
 import org.komodo.relational.connection.internal.ConnectionImpl;
 import org.komodo.relational.dataservice.ConnectionEntry;
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.dataservice.DdlEntry;
-import org.komodo.relational.dataservice.ResourceEntry;
 import org.komodo.relational.dataservice.ServiceVdbEntry;
-import org.komodo.relational.dataservice.UdfEntry;
 import org.komodo.relational.dataservice.VdbEntry;
 import org.komodo.relational.dataservice.VdbEntryContainer;
 import org.komodo.relational.dataservice.internal.ConnectionEntryImpl;
 import org.komodo.relational.dataservice.internal.DataserviceImpl;
-import org.komodo.relational.dataservice.internal.DdlEntryImpl;
-import org.komodo.relational.dataservice.internal.ResourceEntryImpl;
 import org.komodo.relational.dataservice.internal.ServiceVdbEntryImpl;
-import org.komodo.relational.dataservice.internal.UdfEntryImpl;
 import org.komodo.relational.dataservice.internal.VdbEntryImpl;
-import org.komodo.relational.folder.Folder;
-import org.komodo.relational.folder.internal.FolderImpl;
 import org.komodo.relational.model.AbstractProcedure;
 import org.komodo.relational.model.AccessPattern;
 import org.komodo.relational.model.Column;
@@ -93,12 +85,6 @@ import org.komodo.relational.profile.internal.SqlProjectedColumnImpl;
 import org.komodo.relational.profile.internal.StateCommandAggregateImpl;
 import org.komodo.relational.profile.internal.ViewDefinitionImpl;
 import org.komodo.relational.profile.internal.ViewEditorStateImpl;
-import org.komodo.relational.resource.DdlFile;
-import org.komodo.relational.resource.ResourceFile;
-import org.komodo.relational.resource.UdfFile;
-import org.komodo.relational.resource.internal.DdlFileImpl;
-import org.komodo.relational.resource.internal.ResourceFileImpl;
-import org.komodo.relational.resource.internal.UdfFileImpl;
 import org.komodo.relational.template.Template;
 import org.komodo.relational.template.TemplateEntry;
 import org.komodo.relational.template.internal.TemplateEntryImpl;
@@ -431,73 +417,6 @@ public final class RelationalModelFactory {
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param repository
      *        the repository where the model object will be created (cannot be <code>null</code>)
-     * @param dataService
-     *        the data service where the DDL file entry is being created (cannot be <code>null</code>)
-     * @param ddlEntryName
-     *        the name of the DDL file entry to create (cannot be empty)
-     * @return the DDL file entry model object (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    public static DdlEntry createDdlEntry( final UnitOfWork transaction,
-                                           final Repository repository,
-                                           final Dataservice dataService,
-                                           final String ddlEntryName ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( repository, "repository" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( dataService, "dataService" ); //$NON-NLS-1$
-        ArgCheck.isNotEmpty( ddlEntryName, "ddlEntryName" ); //$NON-NLS-1$
-
-        final KomodoObject kobject = repository.add( transaction,
-                                                     dataService.getAbsolutePath(),
-                                                     ddlEntryName,
-                                                     DataVirtLexicon.ResourceEntry.DDL_ENTRY_NODE_TYPE );
-        final DdlEntry result = new DdlEntryImpl( transaction, repository, kobject.getAbsolutePath() );
-        return result;
-    }
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param repository
-     *        the repository where the model object will be created (cannot be <code>null</code>)
-     * @param parent
-     *        the parent where the resource file is being created (cannot be <code>null</code>)
-     * @param ddlFileName
-     *        the name of the DDL file to create (cannot be empty)
-     * @param content
-     *        the file content (cannot be <code>null</code>)
-     * @return the DDL file model object (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    public static DdlFile createDdlFile( final UnitOfWork transaction,
-                                         final Repository repository,
-                                         final KomodoObject parent,
-                                         final String ddlFileName,
-                                         final byte[] content ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( repository, "repository" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( parent, "parent" ); //$NON-NLS-1$
-        ArgCheck.isNotEmpty( ddlFileName, "ddlName" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( content, "content" ); //$NON-NLS-1$
-
-        final KomodoObject kobject = repository.add( transaction,
-                                                     parent.getAbsolutePath(),
-                                                     ddlFileName,
-                                                     DataVirtLexicon.ResourceFile.DDL_FILE_NODE_TYPE );
-        final DdlFile result = new DdlFileImpl( transaction, repository, kobject.getAbsolutePath() );
-        result.setContent( transaction, content );
-        return result;
-    }
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param repository
-     *        the repository where the model object will be created (cannot be <code>null</code>)
      * @param parentVdb
      *        the VDB where the entry model object is being created (cannot be <code>null</code>)
      * @param entryName
@@ -532,43 +451,6 @@ public final class RelationalModelFactory {
         } catch ( final Exception e ) {
             throw handleError( e );
         }
-    }
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param repository
-     *        the repository where the model object will be created (cannot be <code>null</code>)
-     * @param parentWorkspacePath
-     *        the parent path (can be empty)
-     * @param folderName
-     *        the name of the folder to create (cannot be empty)
-     * @return the Folder object (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    public static Folder createFolder( final UnitOfWork transaction,
-                                       final Repository repository,
-                                       final String parentWorkspacePath,
-                                       final String folderName ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( repository, "repository" ); //$NON-NLS-1$
-        ArgCheck.isNotEmpty( folderName, "folderName" ); //$NON-NLS-1$
-
-        // make sure path is in the workspace
-        String parentPath = parentWorkspacePath;
-        final String workspacePath = repository.komodoWorkspace( transaction ).getAbsolutePath();
-
-        if ( StringUtils.isBlank( parentWorkspacePath ) ) {
-            parentPath = workspacePath;
-        } else if ( !parentPath.startsWith( workspacePath ) ) {
-            parentPath = ( workspacePath + parentPath );
-        }
-
-        final KomodoObject kobject = repository.add( transaction, parentPath, folderName, KomodoLexicon.Folder.NODE_TYPE );
-        final Folder result = new FolderImpl( transaction, repository, kobject.getAbsolutePath() );
-        return result;
     }
 
     /**
@@ -873,73 +755,6 @@ public final class RelationalModelFactory {
         kobject.setProperty( transaction, Constraint.TYPE, PrimaryKey.CONSTRAINT_TYPE.toValue() );
 
         final PrimaryKey result = new PrimaryKeyImpl( transaction, repository, kobject.getAbsolutePath() );
-        return result;
-    }
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param repository
-     *        the repository where the model object will be created (cannot be <code>null</code>)
-     * @param dataService
-     *        the data service where the resource file entry is being created (cannot be <code>null</code>)
-     * @param resourceEntryName
-     *        the name of the resource file entry to create (cannot be empty)
-     * @return the resource file entry model object (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    public static ResourceEntry createResourceEntry( final UnitOfWork transaction,
-                                                     final Repository repository,
-                                                     final Dataservice dataService,
-                                                     final String resourceEntryName ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( repository, "repository" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( dataService, "dataService" ); //$NON-NLS-1$
-        ArgCheck.isNotEmpty( resourceEntryName, "resourceEntryName" ); //$NON-NLS-1$
-
-        final KomodoObject kobject = repository.add( transaction,
-                                                     dataService.getAbsolutePath(),
-                                                     resourceEntryName,
-                                                     DataVirtLexicon.ResourceEntry.NODE_TYPE );
-        final ResourceEntry result = new ResourceEntryImpl( transaction, repository, kobject.getAbsolutePath() );
-        return result;
-    }
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param repository
-     *        the repository where the model object will be created (cannot be <code>null</code>)
-     * @param parent
-     *        the parent where the resource file is being created (cannot be <code>null</code>)
-     * @param resourceFileName
-     *        the name of the resource file to create (cannot be empty)
-     * @param content
-     *        the file content (cannot be <code>null</code>)
-     * @return the resource file model object (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    public static ResourceFile createResourceFile( final UnitOfWork transaction,
-                                                   final Repository repository,
-                                                   final KomodoObject parent,
-                                                   final String resourceFileName,
-                                                   final byte[] content ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( repository, "repository" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( parent, "parent" ); //$NON-NLS-1$
-        ArgCheck.isNotEmpty( resourceFileName, "resourceFileName" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( content, "content" ); //$NON-NLS-1$
-
-        final KomodoObject kobject = repository.add( transaction,
-                                                     parent.getAbsolutePath(),
-                                                     resourceFileName,
-                                                     DataVirtLexicon.ResourceFile.NODE_TYPE );
-        final ResourceFile result = new ResourceFileImpl( transaction, repository, kobject.getAbsolutePath() );
-        result.setContent( transaction, content );
         return result;
     }
 
@@ -1274,73 +1089,6 @@ public final class RelationalModelFactory {
         } catch ( final Exception e ) {
             throw handleError( e );
         }
-    }
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param repository
-     *        the repository where the model object will be created (cannot be <code>null</code>)
-     * @param dataService
-     *        the data service where the UDF file entry is being created (cannot be <code>null</code>)
-     * @param udfEntryName
-     *        the name of the UDF file entry to create (cannot be empty)
-     * @return the UDF file entry model object (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    public static UdfEntry createUdfEntry( final UnitOfWork transaction,
-                                           final Repository repository,
-                                           final Dataservice dataService,
-                                           final String udfEntryName ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( repository, "repository" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( dataService, "dataService" ); //$NON-NLS-1$
-        ArgCheck.isNotEmpty( udfEntryName, "udfEntryName" ); //$NON-NLS-1$
-
-        final KomodoObject kobject = repository.add( transaction,
-                                                     dataService.getAbsolutePath(),
-                                                     udfEntryName,
-                                                     DataVirtLexicon.ResourceEntry.UDF_ENTRY_NODE_TYPE );
-        final UdfEntry result = new UdfEntryImpl( transaction, repository, kobject.getAbsolutePath() );
-        return result;
-    }
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param repository
-     *        the repository where the model object will be created (cannot be <code>null</code>)
-     * @param parent
-     *        the parent where the UDF file is being created (cannot be <code>null</code>)
-     * @param udfFileName
-     *        the name of the UDF file to create (cannot be empty)
-     * @param content
-     *        the file content (cannot be <code>null</code>)
-     * @return the UDF file model object (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    public static UdfFile createUdfFile( final UnitOfWork transaction,
-                                         final Repository repository,
-                                         final KomodoObject parent,
-                                         final String udfFileName,
-                                         final byte[] content ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( repository, "repository" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( parent, "parent" ); //$NON-NLS-1$
-        ArgCheck.isNotEmpty( udfFileName, "udfFileName" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( content, "content" ); //$NON-NLS-1$
-
-        final KomodoObject kobject = repository.add( transaction,
-                                                     parent.getAbsolutePath(),
-                                                     udfFileName,
-                                                     DataVirtLexicon.ResourceFile.UDF_FILE_NODE_TYPE );
-        final UdfFile result = new UdfFileImpl( transaction, repository, kobject.getAbsolutePath() );
-        result.setContent( transaction, content );
-        return result;
     }
 
     /**

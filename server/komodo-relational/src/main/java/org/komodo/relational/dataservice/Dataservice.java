@@ -25,9 +25,6 @@ import org.komodo.relational.RelationalObject;
 import org.komodo.relational.TypeResolver;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.internal.DataserviceImpl;
-import org.komodo.relational.resource.DdlFile;
-import org.komodo.relational.resource.ResourceFile;
-import org.komodo.relational.resource.UdfFile;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.spi.KException;
 import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
@@ -240,84 +237,6 @@ public interface Dataservice extends Exportable, RelationalObject, VdbEntryConta
                                         final String connectionEntryName ) throws KException;
 
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param ddlEntryName
-     *        the name of the DDL entry to create (cannot be empty)
-     * @return the DDL entry that was created (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    DdlEntry addDdlEntry( final UnitOfWork transaction,
-                          final String ddlEntryName ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param ddlFile
-     *        the DDL file being added to the data service (cannot be <code>null</code>)
-     * @return the DDL entry that was created (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    DdlEntry addDdlFile( final UnitOfWork transaction,
-                         final DdlFile ddlFile ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param resourceFile
-     *        the resource file being added to the data service (cannot be <code>null</code>)
-     * @return the resource entry that was created (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    ResourceEntry addResourceFile( final UnitOfWork transaction,
-                                   final ResourceFile resourceFile ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param resourceEntryName
-     *        the name of the resource entry to create (cannot be empty)
-     * @return the resource entry that was created (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    ResourceEntry addResourceEntry( final UnitOfWork transaction,
-                                    final String resourceEntryName ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param udfEntryName
-     *        the name of the UDF entry to create (cannot be empty)
-     * @return the UDF entry that was created (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    UdfEntry addUdfEntry( final UnitOfWork transaction,
-                          final String udfEntryName ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param udfFile
-     *        the UDF being added to the data service (cannot be empty)
-     * @return the UDF entry that was created (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    UdfEntry addUdfFile( final UnitOfWork transaction,
-                         final UdfFile udfFile ) throws KException;
-
-    /**
      * {@inheritDoc}
      *
      * @see org.komodo.spi.repository.KomodoObject#getChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
@@ -396,42 +315,6 @@ public interface Dataservice extends Exportable, RelationalObject, VdbEntryConta
 
     /**
      * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param namePatterns
-     *        optional name patterns (can be <code>null</code> or empty but cannot have <code>null</code> or empty elements)
-     * @return the DDL entries (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    DdlEntry[] getDdlEntries( final UnitOfWork transaction,
-                              final String... namePatterns ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param namePatterns
-     *        optional name patterns (can be <code>null</code> or empty but cannot have <code>null</code> or empty elements)
-     * @return the DDL files referenced by the entries (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    DdlFile[] getDdlFiles( final UnitOfWork transaction,
-                           final String... namePatterns ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @return the paths of the DDL file resources referenced by the entries (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    String[] getDdlPlan( final UnitOfWork transaction ) throws KException;
-
-    /**
-     * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
      *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
      * @return the value of the <code>description</code> property (can be empty)
@@ -459,78 +342,6 @@ public interface Dataservice extends Exportable, RelationalObject, VdbEntryConta
      *         if an error occurs
      */
     String getModifiedBy( final UnitOfWork transaction ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @return the paths of the miscellaneous resources referenced by the entries (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    String[] getResourcePlan( final UnitOfWork transaction ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param namePatterns
-     *        optional name patterns (can be <code>null</code> or empty but cannot have <code>null</code> or empty elements)
-     * @return the resource entries (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    ResourceEntry[] getResourceEntries( final UnitOfWork transaction,
-                                        final String... namePatterns ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param namePatterns
-     *        optional name patterns (can be <code>null</code> or empty but cannot have <code>null</code> or empty elements)
-     * @return the resource files referenced by the entries (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    ResourceFile[] getResourceFiles( final UnitOfWork transaction,
-                                     final String... namePatterns ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @return the paths of the UDF resources referenced by the entries (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    String[] getUdfPlan( final UnitOfWork transaction ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param namePatterns
-     *        optional name patterns (can be <code>null</code> or empty but cannot have <code>null</code> or empty elements)
-     * @return the UDF entries (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    UdfEntry[] getUdfEntries( final UnitOfWork transaction,
-                              final String... namePatterns ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param namePatterns
-     *        optional name patterns (can be <code>null</code> or empty but cannot have <code>null</code> or empty elements)
-     * @return the UDF files referenced by the entries (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    UdfFile[] getUdfFiles( final UnitOfWork transaction,
-                           final String... namePatterns ) throws KException;
 
     /**
      * @param transaction

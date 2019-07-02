@@ -1,27 +1,14 @@
 package org.komodo.rest;
 
-import java.text.MessageFormat;
-import java.util.Collection;
-
 import org.komodo.core.KEngine;
-import org.komodo.relational.DeployStatus;
-import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.model.Model;
-import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
-import org.komodo.rest.relational.response.metadata.RestSyndesisSourceStatus;
 import org.komodo.spi.KException;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
-import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
-import org.komodo.spi.runtime.ConnectionDriver;
-import org.komodo.spi.runtime.TeiidDataSource;
-import org.komodo.spi.runtime.TeiidVdb;
 import org.komodo.utils.KLog;
 
 public abstract class AbstractKomodoMetadataService implements V1Constants {

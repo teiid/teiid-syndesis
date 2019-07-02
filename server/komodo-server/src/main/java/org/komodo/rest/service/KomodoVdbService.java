@@ -21,7 +21,6 @@ import static org.komodo.rest.Messages.General.GET_OPERATION_NAME;
 import static org.komodo.rest.relational.RelationalMessages.Error.VDB_DATA_SOURCE_NAME_EXISTS;
 import static org.komodo.rest.relational.RelationalMessages.Error.VDB_NAME_EXISTS;
 import static org.komodo.rest.relational.RelationalMessages.Error.VDB_NAME_VALIDATION_ERROR;
-import static org.komodo.rest.relational.RelationalMessages.Error.VDB_SERVICE_DEFINE_VIEWS_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.VDB_SERVICE_GET_COLUMNS_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.VDB_SERVICE_GET_CONDITIONS_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.VDB_SERVICE_GET_CONDITION_ERROR;
@@ -51,10 +50,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -67,14 +63,12 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.OptionKeys;
-import org.komodo.relational.ViewDdlBuilder;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.importer.vdb.VdbImporter;
 import org.komodo.relational.model.Column;
@@ -101,7 +95,6 @@ import org.komodo.rest.RestProperty;
 import org.komodo.rest.relational.KomodoProperties;
 import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
-import org.komodo.rest.relational.request.KomodoViewsInfo;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.RestVdb;
 import org.komodo.rest.relational.response.RestVdbCondition;
@@ -4311,22 +4304,6 @@ public final class KomodoVdbService extends KomodoService {
 
             return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.VDB_SERVICE_DELETE_VDB_MODEL_VIEW_ERROR);
         }
-    }
-
-    /*
-     * Checks the supplied views info
-     *  - view names, table paths and modelSource paths are required
-     */
-    private Response checkViewsInfo(KomodoViewsInfo viewsInfo,
-                                    List<MediaType> mediaTypes) throws Exception {
-
-        if (viewsInfo == null || viewsInfo.getViewNames() == null || viewsInfo.getViewNames().size() ==0
-	                          || viewsInfo.getTablePaths() == null || viewsInfo.getTablePaths().size() == 0
-                              || viewsInfo.getModelSourcePaths() == null || viewsInfo.getModelSourcePaths().size() == 0 ) {
-            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_MISSING_PARAMETER_ERROR);
-        }
-
-        return Response.ok().build();
     }
 
 }

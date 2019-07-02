@@ -40,12 +40,8 @@ import org.komodo.rest.relational.json.connection.ConnectionSchemaSerializer;
 import org.komodo.rest.relational.json.connection.ConnectionSerializer;
 import org.komodo.rest.relational.json.connection.MetadataConnectionSerializer;
 import org.komodo.rest.relational.request.KomodoConnectionAttributes;
-import org.komodo.rest.relational.request.KomodoFileAttributes;
 import org.komodo.rest.relational.request.KomodoPathAttribute;
 import org.komodo.rest.relational.request.KomodoQueryAttribute;
-import org.komodo.rest.relational.request.KomodoSearcherAttributes;
-import org.komodo.rest.relational.request.KomodoTeiidAttributes;
-import org.komodo.rest.relational.request.KomodoViewsInfo;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.KomodoStorageAttributes;
 import org.komodo.rest.relational.response.RestConnectionSummary;
@@ -54,7 +50,6 @@ import org.komodo.rest.relational.response.RestQueryResult;
 import org.komodo.rest.relational.response.RestQueryRow;
 import org.komodo.rest.relational.response.RestStorageType;
 import org.komodo.rest.relational.response.RestStorageTypeDescriptor;
-import org.komodo.rest.relational.response.RestSyndesisDataSource;
 import org.komodo.rest.relational.response.RestVdb;
 import org.komodo.rest.relational.response.RestVdbCondition;
 import org.komodo.rest.relational.response.RestVdbDataRole;
@@ -114,9 +109,6 @@ public final class KomodoJsonMarshaller {
         final GsonBuilder temp = new GsonBuilder().registerTypeAdapter( RestLink.class, new LinkSerializer())
                                                   .registerTypeAdapter(KomodoStatusObject.class, new StatusObjectSerializer())
                                                   .registerTypeAdapter(KomodoPathAttribute.class, new PathAttributeSerializer<KomodoPathAttribute>())
-                                                  .registerTypeAdapter(KomodoSearcherAttributes.class, new SearcherAttributesSerializer())
-                                                  .registerTypeAdapter(KomodoTeiidAttributes.class, new TeiidAttributesSerializer())
-                                                  .registerTypeAdapter(KomodoViewsInfo.class, new ViewsInfoSerializer())
                                                   .registerTypeAdapter(RestProperty.class, new RestPropertySerializer())
                                                   .registerTypeAdapter(RestVdb.class, new VdbSerializer())
                                                   .registerTypeAdapter(RestVdbModel.class, new VdbModelSerializer())
@@ -144,13 +136,11 @@ public final class KomodoJsonMarshaller {
                                                   .registerTypeAdapter(RestMetadataVdbStatusVdb.class, new MetadataVdbStatusVdbSerializer())
                                                   .registerTypeAdapter(RestMetadataConnection.class, new MetadataConnectionSerializer())
                                                   .registerTypeAdapter(RestMetadataVdbTranslator.class, new MetadataVdbTranslatorSerializer())
-                                                  .registerTypeAdapter(RestSyndesisDataSource.class, new ServiceCatalogDataSourceSerializer())
                                                   .registerTypeAdapter(ConnectionSchema.class, new ConnectionSchemaSerializer())
                                                   .registerTypeAdapter(ConnectionSchemaPropertyListSerializer.class, new ConnectionSchemaPropertyListSerializer())
                                                   .registerTypeAdapter(ConnectionSchemaPairProperty.class, new ConnectionSchemaPropertyPairPropertySerializer())
                                                   .registerTypeAdapter(ConnectionSchemaProperty.class, new ConnectionSchemaPropertySerializer())
                                                   .registerTypeAdapter(KomodoStorageAttributes.class, new StorageAttributesSerializer())
-                                                  .registerTypeAdapter(KomodoFileAttributes.class, new FileAttributesSerializer())
                                                   .registerTypeAdapter(RestStorageType.class, new StorageTypeSerializer())
                                                   .registerTypeAdapter(RestStorageTypeDescriptor.class, new StorageTypeDescriptorSerializer())
                                                   .registerTypeAdapter(KomodoQueryAttribute.class, new QueryAttributeSerializer())

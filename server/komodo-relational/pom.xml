@@ -58,11 +58,6 @@
     </dependency>
     
     <dependency>
-      <groupId>org.teiid.modeshape</groupId>
-      <artifactId>teiid-modeshape-sequencer-dataservice</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>org.teiid</groupId>
       <artifactId>komodo-utils</artifactId>
       <type>test-jar</type>

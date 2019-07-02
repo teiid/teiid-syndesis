@@ -25,7 +25,6 @@ import java.util.Map;
 import org.komodo.relational.TypeResolver;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.folder.Folder;
 import org.komodo.relational.model.AccessPattern;
 import org.komodo.relational.model.Column;
 import org.komodo.relational.model.DataTypeResultSet;
@@ -104,8 +103,6 @@ public class TypeResolverRegistry {
         index(KomodoType.CONNECTION, Connection.RESOLVER);
 
         index(KomodoType.DATA_TYPE_RESULT_SET, DataTypeResultSet.RESOLVER);
-
-        index(KomodoType.FOLDER, Folder.RESOLVER);
 
         index(KomodoType.FOREIGN_KEY, ForeignKey.RESOLVER);
 
