@@ -128,7 +128,7 @@ public interface TeiidDdlConstants extends DdlConstants {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.foundation.lexicon.ddl.teiid.teiid.modeshape.sequencer.ddl.TeiidDdlConstants.DdlElement#toDdl()
+         * @see org.komodo.spi.lexicon.ddl.teiid.TeiidDdlConstants.DdlElement#toDdl()
          */
         @Override
         public String toDdl() {
@@ -207,7 +207,7 @@ public interface TeiidDdlConstants extends DdlConstants {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.foundation.lexicon.ddl.teiid.teiid.modeshape.sequencer.ddl.TeiidDdlConstants.DdlElement#toDdl()
+         * @see org.komodo.spi.lexicon.ddl.teiid.TeiidDdlConstants.DdlElement#toDdl()
          */
         @Override
         public String toDdl() {
@@ -442,7 +442,7 @@ public interface TeiidDdlConstants extends DdlConstants {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.foundation.lexicon.ddl.teiid.teiid.modeshape.sequencer.ddl.TeiidDdlConstants.DdlElement#toDdl()
+         * @see org.komodo.spi.lexicon.ddl.teiid.TeiidDdlConstants.DdlElement#toDdl()
          */
         @Override
         public String toDdl() {
@@ -618,7 +618,7 @@ public interface TeiidDdlConstants extends DdlConstants {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.foundation.lexicon.ddl.teiid.teiid.modeshape.sequencer.ddl.TeiidDdlConstants.DdlElement#toDdl()
+         * @see org.komodo.spi.lexicon.ddl.teiid.TeiidDdlConstants.DdlElement#toDdl()
          */
         @Override
         public String toDdl() {
@@ -637,7 +637,7 @@ public interface TeiidDdlConstants extends DdlConstants {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.foundation.lexicon.ddl.teiid.teiid.modeshape.sequencer.ddl.TeiidDdlConstants.DdlElement#toDdl()
+         * @see org.komodo.spi.lexicon.ddl.teiid.TeiidDdlConstants.DdlElement#toDdl()
          */
         @Override
         public String toDdl() {

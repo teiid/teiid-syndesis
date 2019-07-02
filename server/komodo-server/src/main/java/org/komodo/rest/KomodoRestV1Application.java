@@ -505,11 +505,6 @@ public class KomodoRestV1Application implements SystemConstants {
         String STATUS_SEGMENT = "status"; //$NON-NLS-1$
 
         /**
-         * The name of the resource used for importing and exporting artifacts
-         */
-        String IMPORT_EXPORT_SEGMENT = "importexport"; //$NON-NLS-1$
-
-        /**
          * The export operation of the import export service
          */
         String EXPORT = "export"; //$NON-NLS-1$

@@ -46,8 +46,6 @@ import org.komodo.rest.relational.request.KomodoQueryAttribute;
 import org.komodo.rest.relational.request.KomodoSearcherAttributes;
 import org.komodo.rest.relational.request.KomodoTeiidAttributes;
 import org.komodo.rest.relational.request.KomodoViewsInfo;
-import org.komodo.rest.relational.response.ImportExportStatus;
-import org.komodo.rest.relational.response.KomodoSavedSearcher;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.KomodoStorageAttributes;
 import org.komodo.rest.relational.response.RestConnectionSummary;
@@ -115,7 +113,6 @@ public final class KomodoJsonMarshaller {
     static {
         final GsonBuilder temp = new GsonBuilder().registerTypeAdapter( RestLink.class, new LinkSerializer())
                                                   .registerTypeAdapter(KomodoStatusObject.class, new StatusObjectSerializer())
-                                                  .registerTypeAdapter(KomodoSavedSearcher.class, new SavedSearcherSerializer())
                                                   .registerTypeAdapter(KomodoPathAttribute.class, new PathAttributeSerializer<KomodoPathAttribute>())
                                                   .registerTypeAdapter(KomodoSearcherAttributes.class, new SearcherAttributesSerializer())
                                                   .registerTypeAdapter(KomodoTeiidAttributes.class, new TeiidAttributesSerializer())
@@ -154,7 +151,6 @@ public final class KomodoJsonMarshaller {
                                                   .registerTypeAdapter(ConnectionSchemaProperty.class, new ConnectionSchemaPropertySerializer())
                                                   .registerTypeAdapter(KomodoStorageAttributes.class, new StorageAttributesSerializer())
                                                   .registerTypeAdapter(KomodoFileAttributes.class, new FileAttributesSerializer())
-                                                  .registerTypeAdapter(ImportExportStatus.class, new ImportExportStatusSerializer())
                                                   .registerTypeAdapter(RestStorageType.class, new StorageTypeSerializer())
                                                   .registerTypeAdapter(RestStorageTypeDescriptor.class, new StorageTypeDescriptorSerializer())
                                                   .registerTypeAdapter(KomodoQueryAttribute.class, new QueryAttributeSerializer())

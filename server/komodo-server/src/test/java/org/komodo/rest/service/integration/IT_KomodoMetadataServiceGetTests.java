@@ -64,18 +64,13 @@ public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServ
 
     @Override
     protected int getTestTotalInClass() {
-        return 14;
+        return 13;
     }
 
     @Test
     public void testVersion() throws Exception {
         ApplicationInfo info = ApplicationInfo.getInstance();
         assertEquals(new DefaultMetadataVersion(info.getReleaseNumber()), getMetadataInstance().getVersion());
-    }
-
-    @Test
-    public void shouldLoadSampleVdb() throws Exception {
-        loadSample();
     }
 
     @Test

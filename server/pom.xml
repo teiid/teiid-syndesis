@@ -194,7 +194,6 @@
     <module>komodo-utils</module>
     <module>komodo-metadata</module>
     <module>komodo-core</module>
-    <module>komodo-storage</module>
     <module>komodo-importer</module>
     <module>komodo-relational</module>
     <module>komodo-server</module>
@@ -281,11 +280,6 @@
       <dependency>
         <groupId>org.teiid</groupId>
         <artifactId>komodo-core</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.teiid</groupId>
-        <artifactId>komodo-storage</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>

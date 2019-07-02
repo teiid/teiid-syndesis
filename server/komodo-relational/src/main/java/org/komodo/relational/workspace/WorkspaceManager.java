@@ -17,17 +17,12 @@
  */
 package org.komodo.relational.workspace;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import org.komodo.core.KomodoLexicon;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.RepositoryImpl;
-import org.komodo.importer.ImportMessages;
-import org.komodo.importer.ImportOptions;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.RelationalModelFactory;
@@ -35,12 +30,8 @@ import org.komodo.relational.RelationalObject;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.connection.internal.ConnectionImpl;
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.dataservice.internal.DataserviceConveyor;
 import org.komodo.relational.dataservice.internal.DataserviceImpl;
 import org.komodo.relational.folder.Folder;
-import org.komodo.relational.importer.connection.ConnectionImporter;
-import org.komodo.relational.importer.ddl.DdlImporter;
-import org.komodo.relational.importer.vdb.VdbImporter;
 import org.komodo.relational.internal.AdapterFactory;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Schema;
@@ -56,21 +47,14 @@ import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
-import org.komodo.spi.metadata.MetadataInstance;
-import org.komodo.spi.repository.DocumentType;
-import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.State;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.RepositoryObserver;
-import org.komodo.spi.storage.StorageConnector;
-import org.komodo.spi.storage.StorageReference;
-import org.komodo.spi.storage.StorageService;
 import org.komodo.spi.utils.KeyInValueMap;
 import org.komodo.spi.utils.KeyInValueMap.KeyFromValueAdapter;
-import org.komodo.storage.StorageServiceProvider;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
 
@@ -813,131 +797,6 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
 
         if (!kobject.getAbsolutePath().startsWith(getRepository().komodoWorkspace(uow).getAbsolutePath())) {
             throw new KException(Messages.getString(Relational.OBJECT_BEING_DELETED_HAS_NULL_PARENT, kobject.getAbsolutePath()));
-        }
-    }
-
-    /**
-    *
-    * @param transaction
-    *        the transaction (cannot be <code>null</code> or have a state that is not
-    *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-    * @param parent the parent of the imported vdb
-    * @param storageRef the reference to the destination within the storage
-    * @return the import messages (never <code>null</code>)
-    * @throws KException if error occurs
-    */
-    public ImportMessages importArtifact(final UnitOfWork transaction,
-                                         final KomodoObject parent,
-                                         StorageReference storageRef) throws KException {
-        
-        return importArtifact(transaction,parent,storageRef,new ImportOptions());
-    }
-    
-    /**
-     *
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param parent the parent of the imported vdb
-     * @param storageRef the reference to the destination within the storage
-     * @param importOptions options for the import
-     * @return the import messages (never <code>null</code>)
-     * @throws KException if error occurs
-     */
-    public ImportMessages importArtifact(final UnitOfWork transaction,
-                                         final KomodoObject parent, 
-                                         StorageReference storageRef,
-                                         ImportOptions importOptions) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
-                         "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotNull(parent, "parent"); //$NON-NLS-1$
-        ArgCheck.isNotNull(storageRef, "storageRef"); //$NON-NLS-1$
-
-        StorageConnector connector = null;
-        InputStream stream = null;
-        try {
-            StorageService storageService = StorageServiceProvider.getInstance().getStorageService(storageRef.getStorageType());
-            if (storageService == null)
-                throw new KException(Messages.getString(Relational.STORAGE_TYPE_INVALID,
-                                                        storageRef.getStorageType()));
-
-            connector = storageService.getConnector(storageRef.getParameters());
-            stream = connector.read(storageRef.getParameters());
-
-            ImportMessages importMessages = new ImportMessages();
-
-            if (DocumentType.VDB_XML.equals(storageRef.getDocumentType())) {
-                VdbImporter importer = new VdbImporter(getRepository());
-                importer.importVdb(transaction, stream, parent, importOptions, importMessages);
-            }
-            else if (DocumentType.CONNECTION.equals(storageRef.getDocumentType())) {
-                ConnectionImporter importer = new ConnectionImporter(getRepository());
-                importer.importDS(transaction, stream, parent, importOptions, importMessages);
-            }
-            else if (DocumentType.DDL.equals(storageRef.getDocumentType())) {
-                DdlImporter importer = new DdlImporter(getRepository());
-                importer.importDdl(transaction, stream, parent, importOptions, importMessages);
-            }
-            else if (DocumentType.ZIP.equals(storageRef.getDocumentType())) {
-            	MetadataInstance metadata = getRepository().getMetadataInstance();
-                DataserviceConveyor conveyor = new DataserviceConveyor(getRepository(), metadata);
-                conveyor.dsImport(transaction, stream, parent, importOptions, importMessages);
-            }
-            else {
-                throw new KException(Messages.getString(Relational.STORAGE_DOCUMENT_TYPE_INVALID,
-                                                        storageRef.getDocumentType()));
-            }
-
-            return importMessages;
-
-        } catch (Exception e) {
-            throw handleError(e);
-        } finally {
-            if (stream != null) {
-                try {
-                    stream.close();
-                } catch (IOException e) {
-                    // Nothing required
-                }
-            }
-
-            if (connector != null) {
-                connector.dispose();
-            }
-        }
-    }
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param artifact the vdb to be exported
-     * @param storageType the type of storage to export to
-     * @param parameters the parameters for the storage, appropriate to the storage type
-     *
-     * @return a path to the downloadable file if appropriate for the defined storage type.
-     *                  Otherwise <code>null</code>
-     * @throws KException if error occurs
-     */
-    public String exportArtifact(final UnitOfWork transaction, final Exportable artifact,
-                                       final String storageType, final Properties parameters) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
-                         "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotNull(artifact, "artifact"); //$NON-NLS-1$
-
-        try {
-            StorageService storageService = StorageServiceProvider.getInstance().getStorageService(storageType);
-            if (storageService == null)
-                throw new KException(Messages.getString(Relational.STORAGE_TYPE_INVALID, storageType));
-
-            StorageConnector connector = storageService.getConnector(parameters);
-            connector.write(artifact, transaction, parameters);
-            return parameters.getProperty(StorageConnector.DOWNLOADABLE_PATH_PROPERTY);
-
-        } catch (Exception e) {
-            throw handleError(e);
         }
     }
 }

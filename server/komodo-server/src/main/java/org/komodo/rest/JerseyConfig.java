@@ -7,7 +7,6 @@ import org.komodo.rest.cors.KCorsFilter;
 import org.komodo.rest.cors.KCorsHandler;
 import org.komodo.rest.service.KomodoConnectionService;
 import org.komodo.rest.service.KomodoDataserviceService;
-import org.komodo.rest.service.KomodoImportExportService;
 import org.komodo.rest.service.KomodoMetadataService;
 import org.komodo.rest.service.KomodoUtilService;
 import org.komodo.rest.service.KomodoVdbService;
@@ -49,7 +48,6 @@ public class JerseyConfig extends ResourceConfig {
        register(KomodoConnectionService.class);
        register(KomodoVdbService.class);
        register(KomodoMetadataService.class);
-       register(KomodoImportExportService.class);
        register(AuthHandlingFilter.class);
 
        KCorsFilter corsHandler =  new KCorsFilter();

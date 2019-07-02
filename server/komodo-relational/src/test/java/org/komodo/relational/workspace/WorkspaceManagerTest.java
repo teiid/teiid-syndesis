@@ -70,12 +70,10 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.VdbImport;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
-import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.storage.StorageConnector;
-import org.komodo.spi.storage.StorageReference;
 import org.komodo.test.utils.TestUtilities;
 import org.komodo.utils.FileUtils;
 
@@ -648,59 +646,6 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
         ObjectImpl tableObj = new ObjectImpl(_repo, table.getAbsolutePath(), 0);
         Table table2 = wsMgr.resolve(getTransaction(), tableObj, Table.class);
         assertNotNull(table2);
-    }
-
-    @Test
-    public void shouldExportVdb() throws Exception {
-        String tmpDirPath = System.getProperty("java.io.tmpdir");
-        File tmpDir = new File(tmpDirPath);
-
-        long timestamp = System.currentTimeMillis();
-        myFileDir = new File(tmpDir, "myfile-" + timestamp);
-        assertTrue(myFileDir.mkdir());
-
-        File vdbDestFile = new File(myFileDir, "vdbFile.xml");
-
-        Properties parameters = new Properties();
-        parameters.setProperty("files-home-path-property", myFileDir.getAbsolutePath());
-        parameters.setProperty("file-path-property", vdbDestFile.getName());
-
-        Vdb vdb = mock(Vdb.class);
-        String sampleExample = TestUtilities.streamToString(TestUtilities.sampleExample());
-        when(vdb.export(getTransaction(), parameters)).thenReturn(sampleExample.getBytes());
-        when(vdb.getName(getTransaction())).thenReturn(TestUtilities.SAMPLE_VDB_FILE);
-
-        wsMgr.exportArtifact(getTransaction(), vdb, StorageConnector.Types.FILE.id(), parameters);
-
-        File cmpFile = TestUtilities.createTempFile("sampleExampleFile", XML_SUFFIX);
-
-        FileUtils.write(TestUtilities.sampleExample(), cmpFile);
-        TestUtilities.compareFileContents(cmpFile, vdbDestFile);
-    }
-
-    @Test
-    public void shouldImportVdb() throws Exception {
-        String tmpDirPath = System.getProperty("java.io.tmpdir");
-        File tmpDir = new File(tmpDirPath);
-
-        long timestamp = System.currentTimeMillis();
-        myFileDir = new File(tmpDir, "myfile-" + timestamp);
-        assertTrue(myFileDir.mkdir());
-
-        File vdbSrcFile = new File(myFileDir, "vdbFile.xml");
-        String sampleExample = TestUtilities.streamToString(TestUtilities.sampleExample());
-        FileUtils.write(sampleExample.getBytes(), vdbSrcFile);
-        assertTrue(vdbSrcFile.exists());
-
-        Properties parameters = new Properties();
-        parameters.setProperty(StorageConnector.FILES_HOME_PATH_PROPERTY, myFileDir.getAbsolutePath());
-        parameters.setProperty(StorageConnector.FILE_PATH_PROPERTY, vdbSrcFile.getName());
-
-        KomodoObject parent = _repo.komodoWorkspace(getTransaction());
-        StorageReference reference = new StorageReference(StorageConnector.Types.FILE.id(), parameters, DocumentType.VDB_XML);
-        wsMgr.importArtifact(getTransaction(), parent, reference);
-
-        assertTrue(parent.hasChild(getTransaction(), TestUtilities.SAMPLE_VDB_NAME));
     }
 
 }
