@@ -17,18 +17,17 @@
  */
 package org.komodo.relational.workspace;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
 import org.komodo.core.KomodoLexicon;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
-import org.komodo.importer.ImportOptions.OptionKeys;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.RelationalModelFactory;
@@ -48,10 +47,8 @@ import org.komodo.relational.model.Schema;
 import org.komodo.relational.model.internal.ModelImpl;
 import org.komodo.relational.model.internal.SchemaImpl;
 import org.komodo.relational.resource.DdlFile;
-import org.komodo.relational.resource.Driver;
 import org.komodo.relational.resource.ResourceFile;
 import org.komodo.relational.resource.UdfFile;
-import org.komodo.relational.resource.internal.DriverImpl;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.spi.KEvent;
@@ -353,47 +350,6 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
                                   final byte[] content ) throws KException {
         final KomodoObject kobjParent = ( ( parent == null ) ? getRepository().komodoWorkspace( uow ) : parent );
         return RelationalModelFactory.createDdlFile( uow, getRepository(), kobjParent, ddlFileName, content );
-    }
-
-    /**
-     * @param uow
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param parent
-     *        the parent of the driver object being created (can be <code>null</code>)
-     * @param driverName
-     *        the name of the driver to create (cannot be empty)
-     * @param content
-     *        the file content (cannot be <code>null</code>)
-     * @return the Driver object (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    public Driver createDriver( UnitOfWork uow,
-                                KomodoObject parent,
-                                String driverName,
-                                final byte[] content ) throws KException {
-        parent = ( ( parent == null ) ? getRepository().komodoWorkspace( uow ) : parent );
-        return RelationalModelFactory.createDriver( uow, getRepository(), parent, driverName, content );
-    }
-
-    /**
-     * @param uow
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param parent
-     *        the parent of the driver object being created (can be <code>null</code>)
-     * @param driverName
-     *        the name of the driver to create (cannot be empty)
-     * @return the Driver object (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    public Driver createDriver( UnitOfWork uow,
-                                KomodoObject parent,
-                                String driverName) throws KException {
-        parent = ( ( parent == null ) ? getRepository().komodoWorkspace( uow ) : parent );
-        return RelationalModelFactory.createDriver( uow, getRepository(), parent, driverName);
     }
 
     /**
@@ -753,36 +709,6 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
      *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @return all {@link Driver}s in the workspace
-     * @throws KException
-     *         if an error occurs
-     */
-    public Driver[] findDrivers( UnitOfWork transaction ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
-                         "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-
-        final String[] paths = findByType(transaction, DataVirtLexicon.ResourceFile.DRIVER_FILE_NODE_TYPE);
-        Driver[] result = null;
-
-        if (paths.length == 0) {
-            result = Driver.NO_DRIVERS;
-        } else {
-            result = new Driver[paths.length];
-            int i = 0;
-
-            for (final String path : paths) {
-                result[i++] = new DriverImpl(transaction, getRepository(), path);
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
      * @return all {@link Vdb}s in the workspace (never <code>null</code> but can be empty)
      * @throws KException
      *         if an error occurs
@@ -957,32 +883,6 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
             	MetadataInstance metadata = getRepository().getMetadataInstance();
                 DataserviceConveyor conveyor = new DataserviceConveyor(getRepository(), metadata);
                 conveyor.dsImport(transaction, stream, parent, importOptions, importMessages);
-            }
-            else if (DocumentType.JAR.equals(storageRef.getDocumentType())) {
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                final byte[] buf = new byte[8192];
-                int length;
-
-                while ((length = stream.read(buf, 0, buf.length)) >= 0) {
-                    bos.write(buf, 0, length);
-                }
-
-                byte[] content = bos.toByteArray();
-                
-                String driverName = storageRef.getParameters().getProperty(StorageReference.DRIVER_NAME_KEY);
-                if(StringUtils.isBlank(driverName)) {
-                    driverName = StorageReference.DRIVER_NAME_DEFAULT;
-                }
-
-                importOptions.setOption(OptionKeys.NAME, driverName);
-                boolean doImport = DataserviceConveyor.handleExistingNode(transaction, parent, importOptions, importMessages);
-                if (! doImport) {
-                    // Handling existing node advises not to continue
-                    return importMessages;
-                }
-
-                Driver driver = RelationalModelFactory.createDriver(transaction, getRepository(), parent, driverName);
-                driver.setContent(transaction, content);
             }
             else {
                 throw new KException(Messages.getString(Relational.STORAGE_DOCUMENT_TYPE_INVALID,

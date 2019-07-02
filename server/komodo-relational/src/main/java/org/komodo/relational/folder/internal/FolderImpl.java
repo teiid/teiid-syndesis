@@ -19,6 +19,7 @@ package org.komodo.relational.folder.internal;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.komodo.core.KomodoLexicon;
 import org.komodo.relational.RelationalModelFactory;
 import org.komodo.relational.connection.Connection;
@@ -29,8 +30,6 @@ import org.komodo.relational.folder.Folder;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.model.Schema;
 import org.komodo.relational.model.internal.SchemaImpl;
-import org.komodo.relational.resource.Driver;
-import org.komodo.relational.resource.internal.DriverImpl;
 import org.komodo.relational.template.Template;
 import org.komodo.relational.template.internal.TemplateImpl;
 import org.komodo.relational.vdb.Translator;
@@ -38,6 +37,8 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.internal.TranslatorImpl;
 import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.spi.KException;
+import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
+import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository;
@@ -47,8 +48,6 @@ import org.komodo.spi.runtime.EventManager;
 import org.komodo.spi.runtime.ExecutionConfigurationEvent;
 import org.komodo.spi.runtime.ExecutionConfigurationListener;
 import org.komodo.utils.ArgCheck;
-import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
 
 /**
  * Implementation of Folder instance model
@@ -59,7 +58,7 @@ public class FolderImpl extends RelationalObjectImpl implements Folder, EventMan
      * The allowed child types.
      */
     private static final KomodoType[] CHILD_TYPES = new KomodoType[] { Connection.IDENTIFIER, Vdb.IDENTIFIER, Schema.IDENTIFIER, 
-                                                                       Dataservice.IDENTIFIER, Translator.IDENTIFIER, Driver.IDENTIFIER, 
+                                                                       Dataservice.IDENTIFIER, Translator.IDENTIFIER,  
                                                                        Folder.IDENTIFIER };
     
     /**
@@ -225,26 +224,6 @@ public class FolderImpl extends RelationalObjectImpl implements Folder, EventMan
     }
 
     @Override
-    public Driver[] getDrivers( final UnitOfWork transaction,
-                                final String... namePatterns ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-
-        final List< Driver > result = new ArrayList< Driver >();
-
-        for ( final KomodoObject kobject : super.getChildrenOfType( transaction, DataVirtLexicon.ResourceFile.DRIVER_FILE_NODE_TYPE, namePatterns ) ) {
-            final DriverImpl driver = new DriverImpl( transaction, getRepository(), kobject.getAbsolutePath() );
-            result.add( driver );
-        }
-
-        if ( result.isEmpty() ) {
-            return Driver.NO_DRIVERS;
-        }
-
-        return result.toArray( new Driver[ result.size() ] );
-    }
-
-    @Override
     public Template[] getTemplates( final UnitOfWork transaction,
                                         final String... namePatterns ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
@@ -311,8 +290,6 @@ public class FolderImpl extends RelationalObjectImpl implements Folder, EventMan
             result = getVdbs( transaction, namePatterns );
         } else if ( VdbLexicon.Translator.TRANSLATOR.equals( type ) ) {
             result = getTranslators( transaction, namePatterns );
-        } else if ( DataVirtLexicon.ResourceFile.DRIVER_FILE_NODE_TYPE.equals( type ) ) {
-            result = getDrivers( transaction, namePatterns );
         } else if ( DataVirtLexicon.Template.NODE_TYPE.equals( type ) ) {
             result = getTemplates( transaction, namePatterns );
         } else {

@@ -54,14 +54,12 @@ import org.komodo.relational.dataservice.DataServiceEntry;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.DataserviceManifest;
 import org.komodo.relational.dataservice.DdlEntry;
-import org.komodo.relational.dataservice.DriverEntry;
 import org.komodo.relational.dataservice.ResourceEntry;
 import org.komodo.relational.dataservice.ServiceVdbEntry;
 import org.komodo.relational.dataservice.UdfEntry;
 import org.komodo.relational.dataservice.VdbEntry;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.resource.DdlFile;
-import org.komodo.relational.resource.Driver;
 import org.komodo.relational.resource.ResourceFile;
 import org.komodo.relational.resource.UdfFile;
 import org.komodo.relational.vdb.Vdb;
@@ -166,20 +164,18 @@ public final class DataserviceImplTest extends RelationalModelTest {
 
         this.dataservice.addConnectionEntry( getTransaction(), "connection" );
         this.dataservice.addDdlEntry( getTransaction(), "ddl" );
-        this.dataservice.addDriverEntry( getTransaction(), "driver" );
         this.dataservice.addResourceEntry( getTransaction(), "resource" );
         this.dataservice.addUdfEntry( getTransaction(), "udf" );
         this.dataservice.addVdbEntry( getTransaction(), "vdb" );
 
         assertThat( this.dataservice.getConnectionEntries( getTransaction() ).length, is( 1 ) );
         assertThat( this.dataservice.getDdlEntries( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getDriverEntries( getTransaction() ).length, is( 1 ) );
         assertThat( this.dataservice.getResourceEntries( getTransaction() ).length, is( 1 ) );
         assertThat( this.dataservice.getUdfEntries( getTransaction() ).length, is( 1 ) );
         assertThat( this.dataservice.getVdbEntries( getTransaction() ).length, is( 1 ) );
         assertThat( this.dataservice.getServiceVdbEntry( getTransaction() ), is( notNullValue() ) );
         assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
-        assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 7 ) );
+        assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 6 ) );
     }
 
     @Test
@@ -295,68 +291,6 @@ public final class DataserviceImplTest extends RelationalModelTest {
         assertThat( this.dataservice.getChildrenOfType( getTransaction(),
                                                         DataVirtLexicon.ResourceEntry.DDL_ENTRY_NODE_TYPE,
                                                         ddlName ).length,
-                    is( 1 ) );
-    }
-
-    @Test
-    public void shouldAddDriver() throws Exception {
-        final String driverName = "MyDriver";
-        final byte[] content = "this is my driver content".getBytes();
-        final Driver driver = this.mgr.createDriver( getTransaction(), null, driverName, content );
-        commit(); // needed so that searching for reference will work
-
-        final DriverEntry entry = this.dataservice.addDriverFile( getTransaction(), driver );
-        assertThat( entry.getReference( getTransaction() ), is( notNullValue() ) );
-        assertThat( entry.getReference( getTransaction() ), is( instanceOf( Driver.class ) ) );
-        assertThat( entry.getReference( getTransaction() ).getContent( getTransaction() ), is( notNullValue() ) );
-        assertThat( entry.getReference( getTransaction() ).export( getTransaction(), null ), is( content ) );
-
-        assertThat( this.dataservice.getDriverEntries( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getDriverEntries( getTransaction(), driverName ).length, is( 1 ) );
-        assertThat( this.dataservice.getDrivers( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getDrivers( getTransaction() )[ 0 ].getName( getTransaction() ), is( driverName ) );
-        assertThat( this.dataservice.getDriverPlan( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getDriverPlan( getTransaction() )[ 0 ], is( driver.getAbsolutePath() ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), driverName ), is( true ) );
-        assertThat( this.dataservice.hasChild( getTransaction(),
-                                               driverName,
-                                               DataVirtLexicon.ResourceEntry.DRIVER_ENTRY_NODE_TYPE ),
-                    is( true ) );
-        assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
-        assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildren( getTransaction(), driverName ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ResourceEntry.DRIVER_ENTRY_NODE_TYPE ).length,
-                    is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ResourceEntry.DRIVER_ENTRY_NODE_TYPE,
-                                                        driverName ).length,
-                    is( 1 ) );
-    }
-
-    @Test
-    public void shouldAddDriverEntry() throws Exception {
-        final String driverName = "MyDriver";
-        final DriverEntry entry = this.dataservice.addDriverEntry( getTransaction(), driverName );
-        assertThat( entry.getReference( getTransaction() ), is( nullValue() ) );
-        assertThat( this.dataservice.getDriverEntries( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getDriverEntries( getTransaction(), driverName ).length, is( 1 ) );
-        assertThat( this.dataservice.getDriverPlan( getTransaction() ).length, is( 0 ) );
-        assertThat( this.dataservice.getDrivers( getTransaction() ).length, is( 0 ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), driverName ), is( true ) );
-        assertThat( this.dataservice.hasChild( getTransaction(),
-                                               driverName,
-                                               DataVirtLexicon.ResourceEntry.DRIVER_ENTRY_NODE_TYPE ),
-                    is( true ) );
-        assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
-        assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildren( getTransaction(), driverName ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ResourceEntry.DRIVER_ENTRY_NODE_TYPE ).length,
-                    is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ResourceEntry.DRIVER_ENTRY_NODE_TYPE,
-                                                        driverName ).length,
                     is( 1 ) );
     }
 
@@ -699,21 +633,6 @@ public final class DataserviceImplTest extends RelationalModelTest {
                      "product-view-vdb.xml",
                      DataVirtLexicon.ServiceVdbEntry.NODE_TYPE,
                      VdbLexicon.Vdb.VIRTUAL_DATABASE,
-                     paths );
-        assertEntry( theDataService,
-                     "books-driver-1.jar",
-                     DataVirtLexicon.ResourceEntry.DRIVER_ENTRY_NODE_TYPE,
-                     DataVirtLexicon.ResourceFile.DRIVER_FILE_NODE_TYPE,
-                     paths );
-        assertEntry( theDataService,
-                     "books-driver-2.jar",
-                     DataVirtLexicon.ResourceEntry.DRIVER_ENTRY_NODE_TYPE,
-                     DataVirtLexicon.ResourceFile.DRIVER_FILE_NODE_TYPE,
-                     paths );
-        assertEntry( theDataService,
-                     "portfolio-driver.jar",
-                     DataVirtLexicon.ResourceEntry.DRIVER_ENTRY_NODE_TYPE,
-                     DataVirtLexicon.ResourceFile.DRIVER_FILE_NODE_TYPE,
                      paths );
         assertEntry( theDataService,
                      "firstDdl.ddl",

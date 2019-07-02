@@ -24,7 +24,6 @@ import static org.junit.Assert.fail;
 
 import java.io.InputStream;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -34,15 +33,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.komodo.core.KEngine;
-import org.komodo.core.internal.repository.search.ComparisonOperator;
-import org.komodo.core.internal.repository.search.ObjectSearcher;
 import org.komodo.core.repository.SynchronousCallback;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.importer.vdb.VdbImporter;
-import org.komodo.relational.resource.Driver;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.RestLink;
 import org.komodo.rest.RestLink.LinkType;
@@ -51,8 +47,6 @@ import org.komodo.rest.relational.KomodoRestUriBuilder;
 import org.komodo.rest.relational.response.RestVdb;
 import org.komodo.rest.service.AbstractServiceTest;
 import org.komodo.rest.service.ServiceTestUtilities;
-import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository;
@@ -121,10 +115,6 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
         for (Vdb vdb : vdbs)
             logObjectPath(vdb.getAbsolutePath());
 
-        Driver[] drivers = dataservice.getDrivers(uow);
-        for (Driver driver : drivers)
-            logObjectPath(driver.getAbsolutePath());
-
         Connection[] connections = dataservice.getConnections(uow);
         for (Connection connection : connections)
             logObjectPath(connection.getAbsolutePath());
@@ -151,10 +141,6 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
         Vdb vdb = serviceTestUtilities.getVdb(USER_NAME, TestUtilities.US_STATES_VDB_NAME);
         if (vdb != null)
             serviceTestUtilities.deleteObject(vdb.getAbsolutePath(), USER_NAME);
-
-        Driver driver = serviceTestUtilities.getDriver(USER_NAME, TestUtilities.US_STATES_DRIVER_NAME);
-        if (driver != null)
-            serviceTestUtilities.deleteObject(driver.getAbsolutePath(), USER_NAME);
     }
 
     protected void removeSampleService() throws Exception {
@@ -177,10 +163,6 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
 
             serviceTestUtilities.deleteObject(vdb.getAbsolutePath(), USER_NAME);
         }
-
-        Driver driver = serviceTestUtilities.getDriver(USER_NAME, TestUtilities.US_STATES_DRIVER_NAME);
-        if (driver != null)
-            serviceTestUtilities.deleteObject(driver.getAbsolutePath(), USER_NAME);
     }
 
     protected void loadStatesServiceSourceVdb() throws Exception {
@@ -227,11 +209,6 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
         return connection.getAbsolutePath();
     }
 
-    protected void createDriver( String driverName ) throws Exception {
-        serviceTestUtilities.createDriver(driverName);
-        Assert.assertNotNull(serviceTestUtilities.getDriver(USER_NAME, driverName));
-    }
-
     protected void createVdb( String vdbName ) throws Exception {
         serviceTestUtilities.createVdb(vdbName, USER_NAME);
         Assert.assertNotNull(serviceTestUtilities.getVdb(USER_NAME, vdbName));
@@ -245,53 +222,6 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
     protected void createVdbModelView( String vdbName, String modelName, String viewName ) throws Exception {
         serviceTestUtilities.createVdbModelView(vdbName, modelName, viewName, USER_NAME);
         Assert.assertNotNull(serviceTestUtilities.getVdbModelView(USER_NAME, vdbName, modelName, viewName));
-    }
-
-    protected List<String> loadSampleSearches() throws Exception {
-        List<String> searchNames = new ArrayList<>();
-        Repository repository = this.engine.getDefaultRepository();
-
-        SynchronousCallback callback = new SynchronousCallback();
-        UnitOfWork uow = repository.createTransaction(USER_NAME,
-                                                      getClass().getSimpleName() + COLON + "SaveSearchInWorkspace" + COLON + System.currentTimeMillis(),
-                                                      false, callback, USER_NAME);
-
-        ObjectSearcher vdbsSearch = new ObjectSearcher(repository);
-        vdbsSearch.setFromType(VdbLexicon.Vdb.VIRTUAL_DATABASE, "vdbs");
-        String vdbSearchName = "Vdbs Search";
-        vdbsSearch.write(uow, vdbSearchName);
-
-        ObjectSearcher columnsSearch = new ObjectSearcher(repository);
-        columnsSearch.setFromType(TeiidDdlLexicon.CreateTable.TABLE_ELEMENT, "c");
-        String columnSearchName = "Columns Search";
-        columnsSearch.write(uow, columnSearchName);
-
-        ObjectSearcher columnsWithParamSearch = new ObjectSearcher(repository);
-        columnsWithParamSearch.setFromType(TeiidDdlLexicon.CreateTable.TABLE_ELEMENT, "c");
-        columnsWithParamSearch.addWhereCompareClause(null, "c", "mode:localName", ComparisonOperator.LIKE, "{valueParam}");
-        String columnsWithParamSearchName = "Columns Search With Where Parameter";
-        columnsWithParamSearch.write(uow, columnsWithParamSearchName);
-
-        ObjectSearcher fromParameterSearch = new ObjectSearcher(repository);
-        fromParameterSearch.setFromType("{fromTypeParam}", "c");
-        String fromParamSearchName = "From Parameter Search";
-        fromParameterSearch.write(uow, fromParamSearchName);
-
-        uow.commit();
-
-        if (!callback.await(3, TimeUnit.MINUTES)) {
-            throw new Exception("Timed out while loading saved searches");
-        }
-
-        if (callback.error() != null)
-            throw new Exception(callback.error());
-
-        searchNames.add(vdbSearchName);
-        searchNames.add(columnSearchName);
-        searchNames.add(columnsWithParamSearchName);
-        searchNames.add(fromParamSearchName);
-
-        return searchNames;
     }
 
     protected void assertPortfolio(RestVdb vdb) throws Exception {

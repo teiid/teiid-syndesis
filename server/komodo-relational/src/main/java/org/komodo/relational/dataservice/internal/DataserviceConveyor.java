@@ -30,6 +30,7 @@ import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
+
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.ExistingNodeOptions;
@@ -41,10 +42,8 @@ import org.komodo.relational.dataservice.ConnectionEntry;
 import org.komodo.relational.dataservice.DataServiceEntry;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.DataserviceManifest;
-import org.komodo.relational.dataservice.DriverEntry;
 import org.komodo.relational.dataservice.ServiceVdbEntry;
 import org.komodo.relational.dataservice.VdbEntry;
-import org.komodo.relational.resource.Driver;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.spi.KException;
@@ -52,7 +51,6 @@ import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
 import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
 import org.komodo.spi.metadata.MetadataInstance;
-import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
@@ -363,23 +361,6 @@ public class DataserviceConveyor implements StringConstants {
                                                        connectionName ) );
     }
 
-    private void deployDriver( final UnitOfWork uow,
-                               final Driver driver,
-                               final DeployStatus status ) throws Exception {
-        final String driverName = driver.getName( uow );
-        status.addProgressMessage( Messages.getString( Messages.DataserviceConveyor.DATA_SERVICE_DRIVER_START_DEPLOY,
-                                                       driverName ) );
-
-        final InputStream content = driver.getContent( uow );
-        final DocumentType driverType = driver.getDocumentType( uow );
-        final File driverFile = File.createTempFile( driverName, driverType.toString() );
-        FileUtils.write( content, driverFile );
-
-        metadataInstance.deployDataSourceDriver( driverName, driverFile );
-        status.addProgressMessage( Messages.getString( Messages.DataserviceConveyor.DATA_SERVICE_DRIVER_SUCCESSFULLY_DEPLOYED,
-                                                       driverName ) );
-    }
-
     private void deployVdb( final UnitOfWork uow,
                             final VdbEntry entry,
                             final DeployStatus status ) throws Exception {
@@ -460,37 +441,6 @@ public class DataserviceConveyor implements StringConstants {
             // TODO deploy resources
             // TODO deploy metadata files
             // TODO deploy UDFs
-
-            { // Deploy the drivers
-                final DriverEntry[] entries = dataservice.getDriverEntries( transaction );
-
-                if ( entries.length != 0 ) {
-                    for ( final DriverEntry entry : entries ) {
-                        if ( entry.getReference( transaction ) == null ) {
-                            continue; // nothing to deploy
-                        }
-
-                        boolean deploy = false;
-
-                        switch ( entry.getPublishPolicy( transaction ) ) {
-                            case ALWAYS:
-                                deploy = true;
-                                break;
-                            case IF_MISSING:
-                                deploy = true; // TODO determine if not already deployed
-                                break;
-                            case NEVER:
-                            default:
-                                break;
-                        }
-
-                        if ( deploy ) {
-                            final Driver driver = entry.getReference( transaction );
-                            deployDriver( transaction, driver, status );
-                        }
-                    }
-                }
-            }
 
             { // Deploy the connections
                 final ConnectionEntry[] entries = dataservice.getConnectionEntries( transaction );

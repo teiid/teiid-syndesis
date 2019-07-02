@@ -25,7 +25,6 @@ import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.folder.internal.FolderImpl;
 import org.komodo.relational.model.Schema;
-import org.komodo.relational.resource.Driver;
 import org.komodo.relational.template.Template;
 import org.komodo.relational.vdb.Translator;
 import org.komodo.relational.vdb.Vdb;
@@ -236,19 +235,6 @@ public interface Folder extends RelationalObject {
      */
     Translator[] getTranslators( final UnitOfWork uow,
                                  final String... namePatterns ) throws KException;
-
-    /**
-     * @param uow
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param namePatterns
-     *        optional name patterns (can be <code>null</code> or empty but cannot have <code>null</code> or empty elements)
-     * @return the drivers (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    Driver[] getDrivers( final UnitOfWork uow,
-                         final String... namePatterns ) throws KException;
 
     /**
      * @param uow

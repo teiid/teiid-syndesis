@@ -19,16 +19,13 @@ package org.komodo.rest.service.unit;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -44,32 +41,6 @@ public class KomodoDriverServiceTestInSuite extends AbstractKomodoServiceTest {
 
     @Rule
     public TestName testName = new TestName();
-
-    @Test
-    @Ignore
-    public void shouldGetDrivers() throws Exception {
-        String driverName = "shouldGetDrivers";
-        createDriver(driverName);
-
-        // get
-        URI uri = uriBuilder().workspaceDriversUri();
-        HttpGet request = jsonRequest(uri, RequestType.GET);
-        HttpResponse response = executeOk(request);
-
-
-        String entities = extractResponse(response);
-        assertNotNull(entities);
-
-        assertThat(entities, is(notNullValue()));
-
-        // System.out.println("Response:\n" + entities);
-        // make sure the Driver JSON document is returned for each driver
-        RestConnectionDriver[] driver = KomodoJsonMarshaller.unmarshallArray(entities, RestConnectionDriver[].class);
-
-        assertEquals(1, driver.length);
-        RestConnectionDriver myDriver = driver[0];
-        assertTrue(driverName.equals(myDriver.getName()));
-    }
 
     @Test
     public void shouldReturnEmptyListWhenNoDriversInWorkspace() throws Exception {

@@ -91,16 +91,6 @@ public interface DataVirtLexicon {
         String DESCRIPTION = "description";
 
         /**
-         * The XML element tag for a driver file. Value is {@value}.
-         */
-        String DRIVER_FILE = "driver-file";
-
-        /**
-         * The XML element tag for the collection of driver files. Value is {@value}.
-         */
-        String DRIVERS = "drivers";
-
-        /**
          * The name of the XML attribute containing the name of the connection JNDI name. Value is {@value}.
          */
         String JNDI_NAME = "jndiName";
@@ -504,11 +494,6 @@ public interface DataVirtLexicon {
          * The name of the DDL metadata file node type. Value is {@value}.
          */
         String DDL_FILE_NODE_TYPE = Namespace.PREFIX + ":ddlFile";
-
-        /**
-         * The name of the driver file node type. Value is {@value}.
-         */
-        String DRIVER_FILE_NODE_TYPE = Namespace.PREFIX + ":driverFile";
 
         /**
          * The name of the UDF file node type. Value is {@value}.

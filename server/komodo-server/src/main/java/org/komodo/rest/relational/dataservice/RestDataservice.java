@@ -24,7 +24,6 @@ import org.komodo.core.KomodoLexicon;
 import org.komodo.openshift.BuildStatus;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.resource.Driver;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.KomodoService;
 import org.komodo.rest.RestBasicEntity;
@@ -64,11 +63,6 @@ public final class RestDataservice extends RestBasicEntity {
      * Label used to describe dataservice vdbVersion
      */
     public static final String DATASERVICE_VDB_VERSION_LABEL = "serviceVdbVersion"; //$NON-NLS-1$
-
-    /**
-     * Label used to describe dataservice driver total
-     */
-    public static final String DATASERVICE_DRIVER_TOTAL_LABEL = "drivers"; //$NON-NLS-1$
 
     /**
      * Label used to describe dataservice connection total
@@ -144,9 +138,6 @@ public final class RestDataservice extends RestBasicEntity {
         Connection[] connections = dataService.getConnections(uow);
         setConnectionTotal(connections != null ? connections.length : 0);
 
-        Driver[] drivers = dataService.getDrivers(uow);
-        setDriverTotal(drivers != null ? drivers.length : 0);
-        
         // Initialize the published state to NOTFOUND
         setPublishedState(BuildStatus.Status.NOTFOUND.name());
 
@@ -246,21 +237,6 @@ public final class RestDataservice extends RestBasicEntity {
         tuples.put(DATASERVICE_CONNECTION_TOTAL_LABEL, total);
     }
 
-    /**
-     * @return the number of drivers (can be empty)
-     */
-    public int getDriverTotal() {
-        Object total = tuples.get(DATASERVICE_DRIVER_TOTAL_LABEL);
-        return total != null ? Integer.parseInt(total.toString()) : 0;
-    }
-
-    /**
-     * @param total the number of drivers
-     */
-    public void setDriverTotal(int total) {
-        tuples.put(DATASERVICE_DRIVER_TOTAL_LABEL, total);
-    }
-    
     /**
      * @return the service published state (never empty)
      */

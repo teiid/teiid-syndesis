@@ -357,55 +357,6 @@ public interface Repository {
     List<KomodoObject> query(UnitOfWork transaction, String query) throws KException;
 
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param type
-     *        the type of node to base the search on
-     * @param property
-     *        the property which will contain the keywords
-     * @param keywordCriteria
-     *        the search criteria (can be <code>null</code> if the default criteria should be used)
-     * @param keywords
-     *        words that should be matched to words found in the description (can be empty)
-     *
-     * @return the {@link KomodoObject}s resulting from the search
-     *
-     * @throws KException
-     *         if parent path does not exist or an error occurs
-     */
-    List<KomodoObject> searchByKeyword( UnitOfWork transaction, String type, String property,
-                                                                     KeywordCriteria keywordCriteria, String... keywords) throws KException;
-
-    /**
-     *
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param types the primary or mixin types to search for
-     *
-     * @return the {@link KomodoObject}s resulting from the search
-     *
-     * @throws KException
-     *         if parent path does not exist or an error occurs
-     */
-    List<KomodoObject> searchByType( UnitOfWork transaction, String... types) throws KException;
-
-    /**
-    *
-    * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-    * @param path the path to search for
-    *
-    * @return the {@link KomodoObject}s resulting from the search
-    *
-    * @throws KException
-    *         if parent path does not exist or an error occurs
-    */
-    List<KomodoObject> searchByPath( UnitOfWork transaction, String path) throws KException;
-
-    /**
      * Get an object from the workspace part of the repository.
      *
      * The path can be workspace relative or absolute.
@@ -538,18 +489,6 @@ public interface Repository {
      */
     void unpublish( final UnitOfWork transaction,
                     final String... artifactPaths ) throws KException;
-
-    /**
-     * The komodo workspace searches group in the repository, ie. /tko:komodo/tko:workspace/tko:searches
-     *
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     *
-     * @return the komodo workspace searches group
-     * @throws KException if an error occurs
-     */
-    KomodoObject komodoSearches( final UnitOfWork transaction) throws KException;
 
     /**
      * The root of the Komodo environment area in the repository (i.e., /tko:komodo/tko:environment).

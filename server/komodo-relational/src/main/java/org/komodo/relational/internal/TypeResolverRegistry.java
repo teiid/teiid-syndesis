@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.komodo.relational.TypeResolver;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
@@ -45,9 +46,7 @@ import org.komodo.relational.model.UserDefinedFunction;
 import org.komodo.relational.model.View;
 import org.komodo.relational.model.VirtualProcedure;
 import org.komodo.relational.model.internal.AccessPatternImpl;
-import org.komodo.relational.profile.GitRepository;
 import org.komodo.relational.profile.Profile;
-import org.komodo.relational.resource.Driver;
 import org.komodo.relational.template.Template;
 import org.komodo.relational.template.TemplateEntry;
 import org.komodo.relational.vdb.Condition;
@@ -106,13 +105,9 @@ public class TypeResolverRegistry {
 
         index(KomodoType.DATA_TYPE_RESULT_SET, DataTypeResultSet.RESOLVER);
 
-        index(KomodoType.DRIVER, Driver.RESOLVER);
-
         index(KomodoType.FOLDER, Folder.RESOLVER);
 
         index(KomodoType.FOREIGN_KEY, ForeignKey.RESOLVER);
-
-        index(KomodoType.GIT_REPOSITORY, GitRepository.RESOLVER);
 
         index(KomodoType.INDEX, Index.RESOLVER);
 

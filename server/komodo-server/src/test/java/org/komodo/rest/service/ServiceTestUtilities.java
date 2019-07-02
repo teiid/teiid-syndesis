@@ -18,15 +18,8 @@
 package org.komodo.rest.service;
 
 import static org.junit.Assert.assertNotNull;
-import static org.komodo.spi.storage.git.GitStorageConnectorConstants.AUTHOR_EMAIL_PROPERTY;
-import static org.komodo.spi.storage.git.GitStorageConnectorConstants.AUTHOR_NAME_PROPERTY;
-import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_BRANCH_PROPERTY;
-import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_PASSWORD;
-import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_PATH_PROPERTY;
-import static org.komodo.spi.storage.git.GitStorageConnectorConstants.REPO_USERNAME;
 
 import java.io.InputStream;
-import java.net.URL;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -45,16 +38,13 @@ import org.komodo.relational.importer.vdb.VdbImporter;
 import org.komodo.relational.internal.AdapterFactory;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.View;
-import org.komodo.relational.profile.GitRepository;
 import org.komodo.relational.profile.Profile;
 import org.komodo.relational.profile.SqlComposition;
 import org.komodo.relational.profile.StateCommandAggregate;
 import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.relational.profile.ViewEditorState;
-import org.komodo.relational.resource.Driver;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
-import org.komodo.rest.relational.response.KomodoStorageAttributes;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
@@ -485,61 +475,6 @@ public final class ServiceTestUtilities implements StringConstants {
     }
 
     /**
-     * Create a Driver in the komodo engine
-     *
-     * @param driverName the driver name
-     * @throws Exception if error occurs
-     */
-    public void createDriver(String driverName) throws Exception {
-        SynchronousCallback callback = new SynchronousCallback();
-        UnitOfWork uow = repository.createTransaction(Repository.SYSTEM_USER, "Create Driver", false, callback, Repository.SYSTEM_USER); //$NON-NLS-1$
-    
-        WorkspaceManager wsMgr = WorkspaceManager.getInstance(repository, uow);
-        Driver driver = wsMgr.createDriver(uow, null, driverName);
-    
-        uow.commit();
-        callback.await(3, TimeUnit.MINUTES);
-        logObjectPath(driver.getAbsolutePath());
-    }
-
-    /**
-     * @param user initiating call
-     * @param name of the driver to find
-     *
-     * @return the driver directly from the kEngine
-     * @throws Exception if error occurs
-     */
-    public Driver getDriver(String user, String driverName) throws Exception {
-    
-        UnitOfWork uow = repository.createTransaction(user, "Find driver " + driverName, true, null, user); //$NON-NLS-1$
-        WorkspaceManager mgr = WorkspaceManager.getInstance(repository, uow);
-        Driver[] drivers = mgr.findDrivers(uow);
-        Driver theDriver = null;
-        for(Driver driver : drivers) {
-            if (driverName.equals(driver.getName(uow))) {
-                theDriver = driver;
-                break;
-            }
-        }
-        uow.commit();
-    
-        return theDriver;
-    }
-
-    /**
-     * @return the drivers directly from the kEngine
-     * @throws Exception if error occurs
-     */
-    public Driver[] getDrivers() throws Exception {
-        UnitOfWork uow = repository.createTransaction(Repository.SYSTEM_USER, "Find drivers", true, null,Repository.SYSTEM_USER); //$NON-NLS-1$
-        WorkspaceManager mgr = WorkspaceManager.getInstance(repository, uow);
-        Driver[] drivers = mgr.findDrivers(uow);
-        uow.commit();
-    
-        return drivers;
-    }
-
-    /**
      * @param user
      * @return the absolute path of the workspace of the given user
      * @throws Exception
@@ -548,27 +483,6 @@ public final class ServiceTestUtilities implements StringConstants {
         UnitOfWork uow = repository.createTransaction(user, "Get Workspace", true, null, user); //$NON-NLS-1$
         KomodoObject workspace = repository.komodoWorkspace(uow);
         return workspace.getAbsolutePath();
-    }
-
-    public GitRepository addGitRepositoryConfig(String user, String repoName, KomodoStorageAttributes sta) throws Exception {
-        UnitOfWork uow = repository.createTransaction(user, "Create Git Repository Config", false, null, user); //$NON-NLS-1$
-        KomodoObject profileObj = repository.komodoProfile(uow);
-        assertNotNull(profileObj);
-
-        Profile profile = new AdapterFactory().adapt(uow, profileObj, Profile.class);
-        Map<String, String> parameters = sta.getParameters();
-
-        URL url = new URL(parameters.get(REPO_PATH_PROPERTY));
-        GitRepository gitRepository = profile.addGitRepository(uow, repoName, url,
-                                                                                                                           parameters.get(REPO_USERNAME),
-                                                                                                                           parameters.get(REPO_PASSWORD));
-        gitRepository.setBranch(uow, parameters.get(REPO_BRANCH_PROPERTY));
-        gitRepository.setCommitAuthor(uow, parameters.get(AUTHOR_NAME_PROPERTY));
-        gitRepository.setCommitEmail(uow, parameters.get(AUTHOR_EMAIL_PROPERTY));
-
-        uow.commit();
-
-        return gitRepository;
     }
 
     public ViewEditorState addViewEditorState(String user, String stateId,

@@ -19,6 +19,7 @@ package org.komodo.rest.relational.json;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import org.komodo.rest.KRestEntity;
 import org.komodo.rest.RestBasicEntity;
 import org.komodo.rest.RestLink;
@@ -50,7 +51,6 @@ import org.komodo.rest.relational.response.KomodoSavedSearcher;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.KomodoStorageAttributes;
 import org.komodo.rest.relational.response.RestConnectionSummary;
-import org.komodo.rest.relational.response.RestGitRepository;
 import org.komodo.rest.relational.response.RestQueryColumn;
 import org.komodo.rest.relational.response.RestQueryResult;
 import org.komodo.rest.relational.response.RestQueryRow;
@@ -91,6 +91,7 @@ import org.komodo.rest.schema.json.TeiidXsdReader;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -161,7 +162,6 @@ public final class KomodoJsonMarshaller {
                                                   .registerTypeAdapter(RestQueryColumn.class, new QueryColumnSerializer())
                                                   .registerTypeAdapter(RestQueryRow.class, new QueryRowSerializer())
                                                   .registerTypeAdapter(KomodoConnectionAttributes.class, new ConnectionAttributesSerializer())
-                                                  .registerTypeAdapter(RestGitRepository.class, new GitRepositorySerializer())
                                                   .registerTypeAdapter(RestViewEditorState.class, new ViewEditorStateSerializer())
                                                   .registerTypeAdapter(RestViewDefinition.class, new ViewDefinitionSerializer())
                                                   .registerTypeAdapter(RestSqlComposition.class, new SqlCompositionSerializer())

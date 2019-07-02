@@ -362,32 +362,6 @@ public class DataserviceManifest implements Exportable {
                 }
             }
 
-            { // driver entries
-                final DriverEntry[] entries = this.dataService.getDriverEntries( transaction );
-
-                if ( entries.length != 0 ) {
-                    writeNewLine( xsw );
-                    writeTab( xsw );
-                    writeStartElement( xsw, DataVirtLexicon.DataServiceManifestId.DRIVERS );
-
-                    for ( final DriverEntry entry : entries ) {
-                        writeNewLine( xsw );
-                        writeTab( xsw );
-                        writeTab( xsw );
-                        writeStartElement( xsw, DataVirtLexicon.DataServiceManifestId.DRIVER_FILE );
-                        writeAttribute( xsw, DataVirtLexicon.DataServiceManifestId.PATH, entry.getEntryPath( transaction ) );
-                        writeAttribute( xsw,
-                                        DataVirtLexicon.DataServiceManifestId.PUBLISH,
-                                        entry.getPublishPolicy( transaction ).toXml() );
-                        writeEndElement( xsw );
-                    }
-
-                    writeNewLine( xsw );
-                    writeTab( xsw );
-                    writeEndElement( xsw );
-                }
-            }
-
             { // udf entries
                 final UdfEntry[] entries = this.dataService.getUdfEntries( transaction );
 

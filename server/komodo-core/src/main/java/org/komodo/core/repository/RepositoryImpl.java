@@ -18,19 +18,20 @@
 package org.komodo.core.repository;
 
 import static org.komodo.core.repository.Messages.Komodo.ERROR_REPO_HAS_CHANGES;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
 import org.komodo.core.KEngine;
 import org.komodo.core.KomodoLexicon;
 import org.komodo.core.KomodoLexicon.Environment;
 import org.komodo.core.KomodoLexicon.Komodo;
 import org.komodo.core.KomodoLexicon.LibraryComponent;
 import org.komodo.core.KomodoLexicon.Search;
-import org.komodo.core.internal.repository.search.ObjectSearcher;
 import org.komodo.core.repository.validation.ValidationManagerImpl;
 import org.komodo.spi.KClient;
 import org.komodo.spi.KEvent;
@@ -43,12 +44,12 @@ import org.komodo.spi.repository.ArtifactDescriptor;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KObjectFactory;
 import org.komodo.spi.repository.KPropertyFactory;
-import org.komodo.spi.repository.UnitOfWorkDelegate;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.RepositoryClientEvent;
 import org.komodo.spi.repository.RepositoryObserver;
+import org.komodo.spi.repository.UnitOfWorkDelegate;
 import org.komodo.spi.repository.ValidationManager;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
@@ -884,96 +885,6 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Repository#searchByKeyword(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String, java.lang.String, org.komodo.spi.repository.Repository.KeywordCriteria, java.lang.String[])
-     */
-    @Override
-    public List< KomodoObject > searchByKeyword( final UnitOfWork transaction,
-                                                 final String type,
-                                                 final String property,
-                                                 KeywordCriteria keywordCriteria,
-                                                 final String... keywords ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
-        "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotEmpty(keywords, "Search by keyword requires keywords"); //$NON-NLS-1$
-
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("find: transaction = {0}, keywords = {1}", //$NON-NLS-1$
-                         transaction.getName(),
-                         keywords);
-        }
-
-        if (keywordCriteria == null)
-            keywordCriteria = KeywordCriteria.getDefault();
-
-        ObjectSearcher searcher = new ObjectSearcher(this);
-        String typeAlias = "k1"; // where clauses need an alias so assign one to the type //$NON-NLS-1$
-        searcher.setFromType(type, typeAlias);
-        searcher.addWhereContainsClause(null, typeAlias, property, keywordCriteria, keywords);
-        List<KomodoObject> searchObjects = searcher.searchObjects(transaction);
-
-        return searchObjects;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.spi.repository.Repository#searchByType(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
-     */
-    @Override
-    public List< KomodoObject > searchByType( final UnitOfWork transaction,
-                                              final String... types ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
-        "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotEmpty(types, "types"); //$NON-NLS-1$
-
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("find: transaction = {0}, types = {1}", //$NON-NLS-1$
-                         transaction.getName(),
-                         types);
-        }
-
-        ObjectSearcher searcher = new ObjectSearcher(this);
-        for (String type : types) {
-            searcher.setFromType(type);
-        }
-
-        List<KomodoObject> searchObjects = searcher.searchObjects(transaction);
-        return searchObjects;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.spi.repository.Repository#searchByPath(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
-     */
-    @Override
-    public List< KomodoObject > searchByPath( final UnitOfWork transaction,
-                                              final String path ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
-        "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotEmpty(path, "path"); //$NON-NLS-1$
-
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("find: transaction = {0}, path = {1}", //$NON-NLS-1$
-                         transaction.getName(),
-                         path);
-        }
-
-        ObjectSearcher searcher = new ObjectSearcher(this);
-        String typeAlias = "k1"; // where clauses need an alias so assign one to the type //$NON-NLS-1$
-        searcher.setFromType("nt:base", typeAlias);
-        searcher.addWherePathClause(null, typeAlias, path);
-
-        List<KomodoObject> searchObjects = searcher.searchObjects(transaction);
-        return searchObjects;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
      * @see org.komodo.spi.repository.Repository#getFromWorkspace(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
@@ -1454,15 +1365,6 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     public KomodoObject komodoProfile(final UnitOfWork uow) throws KException {
         komodoProfiles(uow);
         return create(uow, komodoProfilePath(uow), KomodoLexicon.Profile.NODE_TYPE);
-    }
-
-    @Override
-    public KomodoObject komodoSearches(UnitOfWork transaction) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
-        "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        komodoWorkspace( transaction );
-        return create( transaction, SEARCHES_ROOT, KomodoLexicon.Search.GROUP_NODE );
     }
 
     @Override

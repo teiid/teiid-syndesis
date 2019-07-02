@@ -33,7 +33,6 @@ import org.komodo.relational.dataservice.ConnectionEntry;
 import org.komodo.relational.dataservice.DataServiceEntry;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.DdlEntry;
-import org.komodo.relational.dataservice.DriverEntry;
 import org.komodo.relational.dataservice.ResourceEntry;
 import org.komodo.relational.dataservice.ServiceVdbEntry;
 import org.komodo.relational.dataservice.UdfEntry;
@@ -45,7 +44,6 @@ import org.komodo.relational.profile.Profile;
 import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.resource.DdlFile;
-import org.komodo.relational.resource.Driver;
 import org.komodo.relational.resource.ResourceFile;
 import org.komodo.relational.resource.UdfFile;
 import org.komodo.relational.vdb.Vdb;
@@ -75,7 +73,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
      */
     private static final KomodoType[] CHILD_TYPES = new KomodoType[] { VdbEntry.IDENTIFIER,
                                                                        ConnectionEntry.IDENTIFIER,
-                                                                       DriverEntry.IDENTIFIER,
                                                                        DdlEntry.IDENTIFIER,
                                                                        ResourceEntry.IDENTIFIER,
                                                                        UdfEntry.IDENTIFIER };
@@ -175,13 +172,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
             return kids[ 0 ];
         }
 
-        // check drivers
-        kids = getDriverEntries( transaction, name );
-
-        if ( kids.length != 0 ) {
-            return kids[ 0 ];
-        }
-
         // check DDL files
         kids = getDdlEntries( transaction, name );
 
@@ -236,12 +226,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
             if ( entries.length != 0 ) {
                 return entries[ 0 ];
             }
-        } else if ( DataVirtLexicon.ResourceEntry.DRIVER_ENTRY_NODE_TYPE.equals( typeName ) ) {
-            final DriverEntry[] entries = getDriverEntries( transaction, name );
-
-            if ( entries.length != 0 ) {
-                return entries[ 0 ];
-            }
         } else if ( DataVirtLexicon.ResourceEntry.DDL_ENTRY_NODE_TYPE.equals( typeName ) ) {
             final DdlEntry[] entries = getDdlEntries( transaction, name );
 
@@ -285,7 +269,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
         final ServiceVdbEntry serviceVdb = getServiceVdbEntry( transaction );
         final VdbEntry[] vdbs = getVdbEntries( transaction, namePatterns );
         final ConnectionEntry[] connections = getConnectionEntries( transaction, namePatterns );
-        final DriverEntry[] drivers = getDriverEntries( transaction, namePatterns );
         final DdlEntry[] ddls = getDdlEntries( transaction, namePatterns );
         final ResourceEntry[] resources = getResourceEntries( transaction, namePatterns );
         final UdfEntry[] udfs = getUdfEntries( transaction, namePatterns );
@@ -293,23 +276,21 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
         final DataServiceEntry< ? >[] result = new DataServiceEntry< ? >[ ( ( serviceVdb == null ) ? 0 : 1 )
                                                                           + vdbs.length
                                                                           + connections.length
-                                                                          + drivers.length
                                                                           + ddls.length
                                                                           + resources.length
                                                                           + udfs.length ];
         System.arraycopy( vdbs, 0, result, 0, vdbs.length );
         System.arraycopy( connections, 0, result, vdbs.length, connections.length );
-        System.arraycopy( drivers, 0, result, vdbs.length + connections.length, drivers.length );
-        System.arraycopy( ddls, 0, result, vdbs.length + connections.length + drivers.length, ddls.length );
+        System.arraycopy( ddls, 0, result, vdbs.length + connections.length, ddls.length );
         System.arraycopy( resources,
                           0,
                           result,
-                          vdbs.length + connections.length + drivers.length + ddls.length,
+                          vdbs.length + connections.length + ddls.length,
                           resources.length );
         System.arraycopy( udfs,
                           0,
                           result,
-                          vdbs.length + connections.length + drivers.length + ddls.length + resources.length,
+                          vdbs.length + connections.length + ddls.length + resources.length,
                           udfs.length );
 
         if ( serviceVdb != null ) {
@@ -350,10 +331,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
             return getConnectionEntries( transaction, namePatterns );
         }
 
-        if ( DataVirtLexicon.ResourceEntry.DRIVER_ENTRY_NODE_TYPE.equals( type ) ) {
-            return getDriverEntries( transaction, namePatterns );
-        }
-
         if ( DataVirtLexicon.ResourceEntry.DDL_ENTRY_NODE_TYPE.equals( type ) ) {
             return getDdlEntries( transaction, namePatterns );
         }
@@ -386,7 +363,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
                    && name.equals( getServiceVdbEntry( transaction ).getName( transaction ) ) )
                  || ( getVdbEntries( transaction, name ).length != 0 )
                  || ( getConnectionEntries( transaction, name ).length != 0 )
-                 || ( getDriverEntries( transaction, name ).length != 0 )
                  || ( getDdlEntries( transaction, name ).length != 0 )
                  || ( getResourceEntries( transaction, name ).length != 0 )
                  || ( getUdfEntries( transaction, name ).length != 0 ) );
@@ -420,10 +396,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
             return (getConnectionEntries(transaction, name).length != 0);
         }
 
-        if (DataVirtLexicon.ResourceEntry.DRIVER_ENTRY_NODE_TYPE.equals(typeName)) {
-            return (getDriverEntries(transaction, name).length != 0);
-        }
-
         if ( DataVirtLexicon.ResourceEntry.DDL_ENTRY_NODE_TYPE.equals( typeName ) ) {
             return ( getDdlEntries( transaction, name ).length != 0 );
         }
@@ -449,7 +421,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
         return ( ( getServiceVdbEntry( transaction ) != null )
                  || ( getVdbEntries( transaction ).length != 0 )
                  || ( getConnectionEntries( transaction ).length != 0 )
-                 || ( getDriverEntries( transaction ).length != 0 )
                  || ( getDdlEntries( transaction ).length != 0 )
                  || ( getResourceEntries( transaction ).length != 0 )
                  || ( getUdfEntries( transaction ).length != 0 ) );
@@ -573,36 +544,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
                                                                       Objects.requireNonNull( ddlFile, "ddlFile" ) //$NON-NLS-1$
                                                                              .getName( uow ) );
         entry.setReference( uow, ddlFile );
-        return entry;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.dataservice.Dataservice#addDriverEntry(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String)
-     */
-    @Override
-    public DriverEntry addDriverEntry( final UnitOfWork transaction,
-                                       final String driverEntryName ) throws KException {
-        return RelationalModelFactory.createDriverEntry( transaction, getRepository(), this, driverEntryName );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.dataservice.Dataservice#addDriverFile(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      org.komodo.relational.resource.Driver)
-     */
-    @Override
-    public DriverEntry addDriverFile( final UnitOfWork uow,
-                                      final Driver driverFile ) throws KException {
-        final DriverEntry entry = RelationalModelFactory.createDriverEntry( uow,
-                                                                            getRepository(),
-                                                                            this,
-                                                                            Objects.requireNonNull( driverFile, "driverFile" ) //$NON-NLS-1$
-                                                                                   .getName( uow ) );
-        entry.setReference( uow, driverFile );
         return entry;
     }
 
@@ -852,76 +793,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
                                   PropertyValueType.STRING,
                                   "getDescription", //$NON-NLS-1$
                                   DataVirtLexicon.DataService.DESCRIPTION );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.dataservice.Dataservice#getDriverEntries(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String[])
-     */
-    @Override
-    public DriverEntry[] getDriverEntries( final UnitOfWork uow,
-                                           final String... namePatterns ) throws KException {
-        ArgCheck.isNotNull( uow, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( uow.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-
-        final List< DriverEntry > result = new ArrayList<>();
-
-        for ( final KomodoObject kobject : super.getChildrenOfType( uow, DataVirtLexicon.ResourceEntry.DRIVER_ENTRY_NODE_TYPE, namePatterns ) ) {
-            final DriverEntry entry = new DriverEntryImpl( uow, getRepository(), kobject.getAbsolutePath() );
-            result.add( entry );
-        }
-
-        if ( result.isEmpty() ) {
-            return DriverEntry.NO_ENTRIES;
-        }
-
-        return result.toArray( new DriverEntry[ result.size() ] );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.dataservice.Dataservice#getDriverPlan(org.komodo.spi.repository.Repository.UnitOfWork)
-     */
-    @Override
-    public String[] getDriverPlan( final UnitOfWork transaction ) throws KException {
-        final DriverEntry[] entries = getDriverEntries( transaction );
-
-        if ( entries.length == 0 ) {
-            return StringConstants.EMPTY_ARRAY;
-        }
-
-        return getPathsOfReferences( transaction, entries );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.dataservice.Dataservice#getDrivers(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String[])
-     */
-    @Override
-    public Driver[] getDrivers( final UnitOfWork transaction,
-                                    final String... namePatterns ) throws KException {
-        final DriverEntry[] entries = getDriverEntries( transaction, namePatterns );
-
-        if ( entries.length == 0 ) {
-            return Driver.NO_DRIVERS;
-        }
-
-        final List< Driver > drivers = new ArrayList<>( entries.length );
-
-        for ( final DriverEntry entry : entries ) {
-            Driver ref = null;
-
-            if ( ( ref = entry.getReference( transaction ) ) != null ) {
-                drivers.add( ref );
-            }
-        }
-
-        return drivers.toArray( new Driver[ drivers.size() ] );
     }
 
     /**
@@ -1293,14 +1164,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
                                                                           dataservice,
                                                                           resourceEntry.getName(transaction));
             RepositoryTools.copyProperties(transaction, resourceEntry, entry);
-        }
-
-        for (DriverEntry driverEntry : getDriverEntries(transaction)) {
-            DriverEntry entry = RelationalModelFactory.createDriverEntry(transaction,
-                                                                          getRepository(),
-                                                                          dataservice,
-                                                                          driverEntry.getName(transaction));
-            RepositoryTools.copyProperties(transaction, driverEntry, entry);
         }
 
         ServiceVdbEntry serviceVdbEntry = getServiceVdbEntry(transaction);

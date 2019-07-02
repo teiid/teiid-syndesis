@@ -31,7 +31,6 @@ import org.junit.Test;
 import org.komodo.openshift.BuildStatus;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.resource.Driver;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.relational.dataservice.RestDataservice;
 import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
@@ -75,7 +74,6 @@ public final class RestDataserviceTest {
         copy.setServiceVdbVersion(this.dataservice.getServiceVdbVersion());
         copy.setServiceViewModel(this.dataservice.getServiceViewModel());
         copy.setViewDefinitionNames(this.dataservice.getViewDefinitionNames());
-        copy.setDriverTotal(this.dataservice.getDriverTotal());
         copy.setConnectionTotal(this.dataservice.getConnectionTotal());
         copy.setPublishedState(this.dataservice.getPublishedState());
 
@@ -106,7 +104,6 @@ public final class RestDataserviceTest {
         Mockito.when(theDataservice.getPropertyDescriptors(transaction)).thenReturn(new PropertyDescriptor[0]);
         Mockito.when(theDataservice.getParent(transaction)).thenReturn(workspace);
         Mockito.when(theDataservice.getServiceVdb(transaction)).thenReturn(serviceVdb);
-        Mockito.when(theDataservice.getDrivers(transaction)).thenReturn(new Driver[0]);
         Mockito.when(theDataservice.getConnections(transaction)).thenReturn(new Connection[0]);
 
         this.dataservice = new RestDataservice(BASE_URI, theDataservice, false, transaction);

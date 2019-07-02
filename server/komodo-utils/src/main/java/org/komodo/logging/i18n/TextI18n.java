@@ -22,7 +22,7 @@ import java.util.Locale;
 import org.komodo.logging.util.StringUtil;
 
 /**
- * A pass-through implementation of {@link org.komodo.logging.i18n.modeshape.common.i18n.I18nResource} which uses an underlying text as the real value, ignoring any
+ * A pass-through implementation of {@link org.komodo.logging.i18n.I18nResource} which uses an underlying text as the real value, ignoring any
  * kind of internationalization.
  */
 public final class TextI18n implements I18nResource {

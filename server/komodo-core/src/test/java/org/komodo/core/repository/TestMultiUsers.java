@@ -22,13 +22,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import java.util.List;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.core.AbstractLocalRepositoryTest;
 import org.komodo.core.KomodoLexicon;
-import org.komodo.core.KomodoLexicon.Komodo;
 import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.Descriptor;
@@ -124,25 +123,6 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
     public void shouldCreateUserHomes() throws Exception {
         userWorkspace(ALICE);
         userWorkspace(BOB);
-
-        UnitOfWork sysTx = sysTx();
-        List<KomodoObject> homeDirs = _repo.searchByType(sysTx, KomodoLexicon.Home.NODE_TYPE);
-        assertNotNull(homeDirs);
-        assertEquals(2, homeDirs.size());
-
-        for (KomodoObject ko : homeDirs) {
-            String name = null;
-            if (ko.getName(sysTx).equals(ALICE))
-                name = ALICE;
-            else if (ko.getName(sysTx).equals(BOB))
-                name = BOB;
-            else
-                fail("Failed to find either ALICE or BOB");
-
-            assertEquals(RepositoryImpl.KOMODO_ROOT + FORWARD_SLASH +
-                                    Komodo.WORKSPACE + FORWARD_SLASH + name, 
-                                    ko.getAbsolutePath());
-        }
     }
 
     @Test
@@ -157,37 +137,6 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
         add(BOB, "vdb2", VdbLexicon.Vdb.VIRTUAL_DATABASE);
         add(BOB, "vdb3", VdbLexicon.Vdb.VIRTUAL_DATABASE);
         add(BOB, "vdb4", VdbLexicon.Vdb.VIRTUAL_DATABASE);
-
-        List<KomodoObject> homeDirs = _repo.searchByType(aliceTx, KomodoLexicon.Home.NODE_TYPE);
-        assertNotNull(homeDirs);
-        assertEquals(0, homeDirs.size());
-
-        List<KomodoObject> vdbs = _repo.searchByType(aliceTx, VdbLexicon.Vdb.VIRTUAL_DATABASE);
-        assertNotNull(vdbs);
-        assertEquals(2, vdbs.size());
-
-        homeDirs = _repo.searchByType(bobTx, KomodoLexicon.Home.NODE_TYPE);
-        assertNotNull(homeDirs);
-        assertEquals(0, homeDirs.size());
-
-        vdbs = _repo.searchByType(bobTx, VdbLexicon.Vdb.VIRTUAL_DATABASE);
-        assertNotNull(vdbs);
-        assertEquals(4, vdbs.size()); 
-
-        //
-        // Use sys to confirm both home directories
-        //
-        UnitOfWork sysTx = sysTx();
-        homeDirs = _repo.searchByType(sysTx, KomodoLexicon.Home.NODE_TYPE);
-        assertNotNull(homeDirs);
-        assertEquals(2, homeDirs.size());
-
-        //
-        // Use sys to confirm all the vdbs are there
-        //
-        vdbs = _repo.searchByType(sysTx, VdbLexicon.Vdb.VIRTUAL_DATABASE);
-        assertNotNull(vdbs);
-        assertEquals(6, vdbs.size()); 
     }
 
     @Test
@@ -217,12 +166,6 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
                              alicesHome + "\" is not allowed for the user \"" + BOB + "\"",
                          ex.getMessage());
         }
-
-        UnitOfWork sysTx = sysTx();
-        List<KomodoObject> vdbs = _repo.searchByType(sysTx, VdbLexicon.Vdb.VIRTUAL_DATABASE);
-        assertNotNull(vdbs);
-        assertEquals(0, vdbs.size());
-
     }
 
     @Test
@@ -258,11 +201,6 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
                          "The object at path \"" + aliceVdbPath + "\" is inaccessible for the user \"" + BOB + "\"",
                          ex.getMessage());
         }
-
-        UnitOfWork sysTx = sysTx();
-        List<KomodoObject> vdbs = _repo.searchByType(sysTx, VdbLexicon.Vdb.VIRTUAL_DATABASE);
-        assertNotNull(vdbs);
-        assertEquals(2, vdbs.size());
     }
 
     @Test

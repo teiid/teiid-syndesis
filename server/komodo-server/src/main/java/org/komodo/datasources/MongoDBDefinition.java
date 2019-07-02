@@ -29,15 +29,7 @@ public class MongoDBDefinition extends DataSourceDefinition {
 
     @Override
     public String getPomDendencies() {
-        return  "<dependency>" +
-            "  <groupId>org.mongodb</groupId>" +
-            "  <artifactId>mongo-java-driver</artifactId>" +
-            "  <version>${version.org.mongodb}</version>" +
-            "</dependency>" +
-            "<dependency>" +
-            "  <groupId>org.teiid</groupId>" +
-            "  <artifactId>thorntail-mongodb</artifactId>" +
-            "</dependency>";
+    	throw new UnsupportedOperationException();
     }
 
     @Override
@@ -51,11 +43,6 @@ public class MongoDBDefinition extends DataSourceDefinition {
             return true;
         }
         return false;
-    }
-
-    @Override
-    public boolean isResouceAdapter() {
-        return true;
     }
 
     @Override

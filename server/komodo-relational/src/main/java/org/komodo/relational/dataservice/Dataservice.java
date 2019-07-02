@@ -18,6 +18,7 @@
 package org.komodo.relational.dataservice;
 
 import java.util.Calendar;
+
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.DeployStatus;
 import org.komodo.relational.RelationalObject;
@@ -25,17 +26,16 @@ import org.komodo.relational.TypeResolver;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.internal.DataserviceImpl;
 import org.komodo.relational.resource.DdlFile;
-import org.komodo.relational.resource.Driver;
 import org.komodo.relational.resource.ResourceFile;
 import org.komodo.relational.resource.UdfFile;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.spi.KException;
+import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
-import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 
 /**
  * A model of a dataservice instance
@@ -194,42 +194,6 @@ public interface Dataservice extends Exportable, RelationalObject, VdbEntryConta
     String getServiceViewModelName( UnitOfWork uow ) throws KException;
 
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param namePatterns
-     *        optional name patterns (can be <code>null</code> or empty but cannot have <code>null</code> or empty elements)
-     * @return the driver entries (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    DriverEntry[] getDriverEntries( final UnitOfWork transaction,
-                                    final String... namePatterns ) throws KException;
-
-    /**
-     * @param uow
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @return the paths of the driver files (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    String[] getDriverPlan( UnitOfWork uow ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param namePatterns
-     *        optional name patterns (can be <code>null</code> or empty but cannot have <code>null</code> or empty elements)
-     * @return the driver files referenced by the entries (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    Driver[] getDrivers( final UnitOfWork transaction,
-                         final String... namePatterns ) throws KException;
-
-    /**
      * This does not include the service VDB.
      *
      * @param uow
@@ -300,32 +264,6 @@ public interface Dataservice extends Exportable, RelationalObject, VdbEntryConta
      */
     DdlEntry addDdlFile( final UnitOfWork transaction,
                          final DdlFile ddlFile ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param driverFile
-     *        the driver file being added to the data service (cannot be <code>null</code>)
-     * @return the driver entry that was created (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    DriverEntry addDriverFile( final UnitOfWork transaction,
-                               final Driver driverFile ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param driverEntryName
-     *        the name of the driver entry to create (cannot be empty)
-     * @return the driver entry that was created (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    DriverEntry addDriverEntry( final UnitOfWork transaction,
-                                final String driverEntryName ) throws KException;
 
     /**
      * @param transaction

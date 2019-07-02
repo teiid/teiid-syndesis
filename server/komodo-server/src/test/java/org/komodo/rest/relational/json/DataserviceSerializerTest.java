@@ -44,7 +44,6 @@ public final class DataserviceSerializerTest extends AbstractSerializerTest  {
         "  \"tko__description\": \"my description\"," + NEW_LINE +
         "  \"serviceVdbVersion\": \"1\"," + NEW_LINE +
         "  \"connections\": 0," + NEW_LINE +
-        "  \"drivers\": 0," + NEW_LINE +
         "  \"publishedState\": \"NOTFOUND\"," + NEW_LINE +
         "  \"keng___links\": [" + NEW_LINE +
         "    " + OPEN_BRACE + NEW_LINE +

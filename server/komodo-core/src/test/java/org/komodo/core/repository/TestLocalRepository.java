@@ -264,20 +264,12 @@ public class TestLocalRepository extends AbstractLocalRepositoryTest {
 
         String userWksp = RepositoryImpl.komodoWorkspacePath(tx);
 
-        List<KomodoObject> results = _repo.searchByPath(sysTx(), userWksp);
-        sysCommit();
-        assertTrue(results.isEmpty());
-
         //
         // getFromWorkspace dynamically creates user home
         //
         KomodoObject userHome = _repo.getFromWorkspace(tx, userWksp);
         assertNotNull(userHome);
         commit(tx, State.COMMITTED);
-
-        results = _repo.searchByPath(sysTx(), userWksp);
-        sysCommit();
-        assertFalse(results.isEmpty());
     }
 
     @Test
@@ -289,10 +281,6 @@ public class TestLocalRepository extends AbstractLocalRepositoryTest {
 
         String userWksp = RepositoryImpl.komodoWorkspacePath(tx);
 
-        List<KomodoObject> results = _repo.searchByPath(sysTx(), userWksp);
-        sysCommit();
-        assertTrue(results.isEmpty());
-
         //
         // _repo.checkSettings() dynamically creates user home
         //
@@ -300,10 +288,6 @@ public class TestLocalRepository extends AbstractLocalRepositoryTest {
         KomodoObject vdb = wkspObject.addChild(tx, "testVdb", VdbLexicon.Vdb.VIRTUAL_DATABASE);
         assertNotNull(vdb);
         commit(tx, State.COMMITTED);
-
-        results = _repo.searchByPath(sysTx(), userWksp);
-        sysCommit();
-        assertFalse(results.isEmpty());
     }
 
     @Test
@@ -374,132 +358,4 @@ public class TestLocalRepository extends AbstractLocalRepositoryTest {
         assertThat( nullParent, is( nullValue() ) );
     }
 
-    @Test
-    public void shouldSearchForPrimaryType() throws Exception {
-        KomodoObject komodoWksp = _repo.komodoWorkspace(getTransaction());
-        assertNotNull(komodoWksp);
-
-        // Setup up 10 nodes to find
-        for (int i = 1; i < 6; ++i) {
-            KomodoObject child = komodoWksp.addChild(getTransaction(), "test" + i, KomodoLexicon.VdbModel.NODE_TYPE);
-            child.setProperty(getTransaction(), KomodoLexicon.VdbModel.MODEL_DEFINITION, "DDL");
-        }
-
-        for (int i = 6; i < 11; ++i) {
-            KomodoObject child = komodoWksp.addChild(getTransaction(), "test" + i, KomodoLexicon.VdbModel.NODE_TYPE);
-            child.setProperty(getTransaction(), KomodoLexicon.VdbModel.MODEL_DEFINITION, "TEIIDSQL");
-        }
-
-        KomodoObject[] testNodes = komodoWksp.getChildrenOfType(getTransaction(), KomodoLexicon.VdbModel.NODE_TYPE);
-        assertEquals(10, testNodes.length);
-        for (KomodoObject testKO : testNodes) {
-            Property property = testKO.getProperty(getTransaction(), KomodoLexicon.VdbModel.MODEL_DEFINITION);
-            assertTrue(property.getStringValue(getTransaction()).equals("DDL") || property.getStringValue(getTransaction()).equals("TEIIDSQL"));
-        }
-
-        commit(); // session save needed before query
-
-        // Perform the search
-        List<KomodoObject> results = _repo.searchByType(getTransaction(), KomodoLexicon.VdbModel.NODE_TYPE);
-
-        // Validate the results are as exepcted
-        assertEquals(testNodes.length, results.size());
-        for (KomodoObject searchObject : results) {
-            String name = searchObject.getName(getTransaction());
-            assertTrue(name.startsWith("test"));
-
-            String indexStr = name.substring(4);
-            int index = Integer.parseInt(indexStr);
-            assertTrue(index > 0 && index < 11);
-
-            Property property = searchObject.getProperty(getTransaction(), KomodoLexicon.VdbModel.MODEL_DEFINITION);
-            if (index < 6)
-                assertEquals("DDL", property.getStringValue(getTransaction()));
-            else
-                assertEquals("TEIIDSQL", property.getStringValue(getTransaction()));
-        }
-    }
-
-    @Test
-    public void shouldSearchForKeyword() throws Exception {
-        KomodoObject komodoWksp = _repo.komodoWorkspace(getTransaction());
-        assertNotNull(komodoWksp);
-
-        // Setup up 10 nodes to find
-        for (int i = 1; i < 6; ++i) {
-            KomodoObject child = komodoWksp.addChild(getTransaction(), "test" + i, KomodoLexicon.VdbModel.NODE_TYPE);
-            child.setProperty(getTransaction(), KomodoLexicon.VdbModel.MODEL_DEFINITION, "DDL");
-        }
-
-        for (int i = 6; i < 11; ++i) {
-            KomodoObject child = komodoWksp.addChild(getTransaction(), "test" + i, KomodoLexicon.VdbModel.NODE_TYPE);
-            child.setProperty(getTransaction(), KomodoLexicon.VdbModel.MODEL_DEFINITION, "TEIIDSQL");
-        }
-
-        KomodoObject[] testNodes = komodoWksp.getChildrenOfType(getTransaction(), KomodoLexicon.VdbModel.NODE_TYPE);
-        assertEquals(10, testNodes.length);
-        for (KomodoObject testKO : testNodes) {
-            Property property = testKO.getProperty(getTransaction(), KomodoLexicon.VdbModel.MODEL_DEFINITION);
-            assertTrue(property.getStringValue(getTransaction()).equals("DDL") || property.getStringValue(getTransaction()).equals("TEIIDSQL"));
-        }
-
-        commit(); // session save needed before query
-
-        // Perform the search
-        List<KomodoObject> results = _repo.searchByKeyword(
-                                                           getTransaction(), KomodoLexicon.VdbModel.NODE_TYPE,
-                                                           KomodoLexicon.VdbModel.MODEL_DEFINITION,
-                                                           KeywordCriteria.ANY,
-                                                           "DDL");
-
-        // Validate the results are as expected
-        assertEquals(5, results.size());
-        for (KomodoObject searchObject : results) {
-            String name = searchObject.getName(getTransaction());
-            assertTrue(name.startsWith("test"));
-
-            String indexStr = name.substring(4);
-            int index = Integer.parseInt(indexStr);
-            assertTrue(index > 0 && index < 11);
-
-            Property property = searchObject.getProperty(getTransaction(), KomodoLexicon.VdbModel.MODEL_DEFINITION);
-            if (index < 6)
-                assertEquals("DDL", property.getStringValue(getTransaction()));
-        }
-    }
-
-    @Test
-    public void shouldSearchForPath() throws Exception {
-        KomodoObject komodoWksp = _repo.komodoWorkspace(getTransaction());
-        assertNotNull(komodoWksp);
-
-        // Setup up 10 nodes to find
-        for (int i = 1; i <= 5; ++i) {
-            KomodoObject child = komodoWksp.addChild(getTransaction(), "test" + i, KomodoLexicon.VdbModel.NODE_TYPE);
-            child.setProperty(getTransaction(), KomodoLexicon.VdbModel.MODEL_DEFINITION, "DDL");
-        }
-
-        KomodoObject[] testNodes = komodoWksp.getChildrenOfType(getTransaction(), KomodoLexicon.VdbModel.NODE_TYPE);
-        assertEquals(5, testNodes.length);
-        for (KomodoObject testKO : testNodes) {
-            Property property = testKO.getProperty(getTransaction(), KomodoLexicon.VdbModel.MODEL_DEFINITION);
-            assertTrue(property.getStringValue(getTransaction()).equals("DDL") || property.getStringValue(getTransaction()).equals("TEIIDSQL"));
-        }
-
-        commit(); // session save needed before query
-
-        // Perform the search
-        for (int i = 1; i <= 5; ++i) {
-            List<KomodoObject> results = _repo.searchByPath(getTransaction(),
-                                                           komodoWksp.getAbsolutePath() + FORWARD_SLASH + "test" + i);
-            // Validate the results are as expected
-            assertEquals(1, results.size());
-            KomodoObject searchObject = results.iterator().next();
-            String name = searchObject.getName(getTransaction());
-            assertEquals("test" + i, name);
-
-            Property property = searchObject.getProperty(getTransaction(), KomodoLexicon.VdbModel.MODEL_DEFINITION);
-            assertEquals("DDL", property.getStringValue(getTransaction()));
-        }
-    }
 }

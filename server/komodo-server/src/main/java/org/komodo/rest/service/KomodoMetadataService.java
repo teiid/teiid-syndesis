@@ -17,8 +17,6 @@
  */
 package org.komodo.rest.service;
 
-import java.io.File;
-import java.io.InputStream;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -26,10 +24,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -58,7 +55,6 @@ import org.komodo.relational.model.Column;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.internal.OptionContainerUtils;
-import org.komodo.relational.resource.Driver;
 import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.VdbImport;
@@ -75,11 +71,9 @@ import org.komodo.rest.relational.connection.RestConnection;
 import org.komodo.rest.relational.connection.RestSchemaNode;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.request.KomodoFileAttributes;
-import org.komodo.rest.relational.request.KomodoPathAttribute;
 import org.komodo.rest.relational.request.KomodoQueryAttribute;
 import org.komodo.rest.relational.request.PublishRequestPayload;
 import org.komodo.rest.relational.response.KomodoStatusObject;
-import org.komodo.rest.relational.response.RestConnectionDriver;
 import org.komodo.rest.relational.response.RestQueryResult;
 import org.komodo.rest.relational.response.RestSyndesisDataSource;
 import org.komodo.rest.relational.response.RestVdb;
@@ -109,14 +103,10 @@ import org.komodo.spi.runtime.TeiidDataSource;
 import org.komodo.spi.runtime.TeiidPropertyDefinition;
 import org.komodo.spi.runtime.TeiidTranslator;
 import org.komodo.spi.runtime.TeiidVdb;
-import org.komodo.utils.FileUtils;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -151,28 +141,6 @@ public class KomodoMetadataService extends KomodoService {
 
     private static final String SCHEMA_MODEL_NAME_PATTERN = "{0}schemamodel"; //$NON-NLS-1$
     private static final String SCHEMA_VDB_NAME_PATTERN = "{0}schemavdb"; //$NON-NLS-1$
-
-    /**
-     * Default translator mappings for different drivers
-     */
-    private final static String DRIVER_TRANSLATOR_MAPPING_FILE = "driverTranslatorMappings.xml"; //$NON-NLS-1$
-
-    /**
-     * Default translator mappings for connection URL content
-     */
-    private final static String URLCONTENT_TRANSLATOR_MAPPING_FILE = "urlContentTranslatorMappings.xml"; //$NON-NLS-1$
-
-    /**
-     * Translator mapping file elements and attributes
-     */
-    private final static String ELEM_TRANSLATOR = "translator"; //$NON-NLS-1$
-    private final static String ATTR_DRIVER = "driver"; //$NON-NLS-1$
-    private final static String ATTR_URLCONTENT = "urlcontent"; //$NON-NLS-1$
-
-    /**
-     * Unknown translator
-     */
-    private final static String UNKNOWN_TRANSLATOR = "unknown"; //$NON-NLS-1$
 
     /**
      * fqn table option key
@@ -232,16 +200,6 @@ public class KomodoMetadataService extends KomodoService {
         }
     }
 
-    /**
-     * Mapping of driverName to default translator
-     */
-    private Map<String, String> driverTranslatorMap = new HashMap<String,String>();
-
-    /**
-     * Mapping of urlContent to default translator
-     */
-    private Map<String, String> urlContentTranslatorMap = new HashMap<String,String>();
-
     @Autowired
     private TeiidOpenShiftClient openshiftClient;
 
@@ -253,9 +211,6 @@ public class KomodoMetadataService extends KomodoService {
      *         if there is a problem obtaining the {@link WorkspaceManager workspace manager}
      */
     public KomodoMetadataService() throws WebApplicationException {
-        // Loads default translator mappings
-        loadDriverTranslatorMap();
-        loadUrlContentTranslatorMap();
     }
 
     private synchronized MetadataInstance getMetadataInstance() throws KException {
@@ -937,92 +892,6 @@ public class KomodoMetadataService extends KomodoService {
     }
 
     /**
-     * Return the default translator to be used for a Connection
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
-     * @param connectionName
-     *        the id of the Connection being retrieved (cannot be empty)
-     * @return the translator for the connection (never <code>null</code>)
-     * @throws KomodoRestException
-     *         if there is a problem finding the specified connection
-     */
-    @GET
-    @Path( V1Constants.CONNECTIONS_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.CONNECTION_PLACEHOLDER
-           + StringConstants.FORWARD_SLASH + V1Constants.TRANSLATOR_DEFAULT_SEGMENT)
-    @Produces( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
-    @ApiOperation(value = "Get the default translator recommended for a connection")
-    @ApiResponses(value = {
-        @ApiResponse(code = 404, message = "No Connection could be found with name"),
-        @ApiResponse(code = 406, message = "Only JSON or XML is returned by this operation"),
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-    public Response getConnectionDefaultTranslator( final @Context HttpHeaders headers,
-                                                    final @Context UriInfo uriInfo,
-                                                    @ApiParam(value = "Id of the connection", required = true)
-                                                    final @PathParam( "connectionName" ) String connectionName) throws KomodoRestException {
-
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
-
-        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        UnitOfWork uow = null;
-
-        try {
-            // find Connection
-            uow = createTransaction(principal, "getConnectionDefaultTranslator-" + connectionName, true); //$NON-NLS-1$
-            TeiidDataSource dataSource = getMetadataInstance().getDataSource(connectionName);
-            if (dataSource == null)
-                return commitNoConnectionFound(uow, mediaTypes, connectionName);
-
-            // Get the driver name for the source
-            String driverName = dataSource.getType();
-
-            // Get the translator name from the default driver - translator mappings
-            String translatorName = driverTranslatorMap.get(driverName);
-
-            // If translator not found using driver mappings, use the connection url if available.
-            // The urlContentTranslatorMap keys are unique strings within the connection url which would identify the required translator
-            if(translatorName==null) {
-                String connectionUrl = dataSource.getPropertyValue("connection-url"); //$NON-NLS-1$
-                // No connection url property - unknown translator
-                if(connectionUrl == null || connectionUrl.isEmpty()) {
-                    translatorName = UNKNOWN_TRANSLATOR;
-                // Connection url property found - use mappings to get translator, if possible
-                } else {
-                    for(String contentKey : urlContentTranslatorMap.keySet()) {
-                        if(connectionUrl.contains(contentKey)) {
-                            translatorName = urlContentTranslatorMap.get(contentKey);
-                            break;
-                        }
-                    }
-                    if(translatorName==null) {
-                        translatorName = UNKNOWN_TRANSLATOR;
-                    }
-                }
-            }
-
-            // Return a status object with the translator
-            KomodoStatusObject kso = new KomodoStatusObject();
-            kso.addAttribute("Translator", translatorName); //$NON-NLS-1$
-
-            return commit(uow, mediaTypes, kso);
-        } catch ( final Exception e ) {
-            if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
-                uow.rollback();
-            }
-
-            if ( e instanceof KomodoRestException ) {
-                throw ( KomodoRestException )e;
-            }
-
-            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.METADATA_SERVICE_GET_DATA_SOURCE_TRANSLATOR_ERROR, connectionName);
-        }
-    }
-
-    /**
      * Copy  connections from the server into the workspace that are not present in the workspace
      * @param headers
      *        the request headers (never <code>null</code>)
@@ -1093,266 +962,6 @@ public class KomodoMetadataService extends KomodoService {
             }
 
             return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.CONNECTION_TO_REPO_IMPORT_ERROR);
-        }
-    }
-
-    /**
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
-     * @return a JSON document representing all the drivers deployed to teiid (never <code>null</code>)
-     * @throws KomodoRestException
-     *         if there is a problem constructing the JSON document
-     */
-    @GET
-    @Path(V1Constants.DRIVERS_SEGMENT)
-    @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Display the collection of drivers available in teiid",
-                            response = RestConnectionDriver[].class)
-    @ApiResponses(value = {
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-    public Response getDrivers(final @Context HttpHeaders headers,
-                               final @Context UriInfo uriInfo) throws KomodoRestException {
-
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
-
-        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        UnitOfWork uow = null;
-
-        try {
-            // find drivers
-            uow = createTransaction(principal, "getDrivers", true); //$NON-NLS-1$
-
-            Collection<ConnectionDriver> drivers = getMetadataInstance().getDataSourceDrivers();
-            LOGGER.debug("getDrivers:found '{0}' Drivers", drivers.size()); //$NON-NLS-1$
-
-            final List<RestConnectionDriver> entities = new ArrayList<>();
-
-            for (ConnectionDriver driver : drivers) {
-                RestConnectionDriver entity = new RestConnectionDriver();
-                entity.setName(driver.getName());
-                entities.add(entity);
-                LOGGER.debug("getDrivers:Driver '{0}' entity was constructed", driver.getName()); //$NON-NLS-1$
-            }
-
-            // create response
-            return commit(uow, mediaTypes, entities);
-        } catch (CallbackTimeoutException ex) {
-            return createTimeoutResponse(mediaTypes);
-        } catch (Throwable e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
-                uow.rollback();
-            }
-
-            if ( e instanceof KomodoRestException ) {
-                throw ( KomodoRestException )e;
-            }
-
-            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.METADATA_SERVICE_GET_DRIVERS_ERROR);
-        }
-    }
-
-    /**
-     * Adds (deploys) a Driver to the server
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
-     * @param driverAttributes
-     *        the file attributes (never <code>null</code>)
-     * @return a JSON representation of the status (never <code>null</code>)
-     * @throws KomodoRestException
-     *         if there is an error adding the Driver
-     */
-    @POST
-    @Path(V1Constants.METADATA_DRIVER)
-    @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Add a driver to the teiid server")
-    @ApiResponses(value = {
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-    public Response addDriver(final @Context HttpHeaders headers,
-                                   final @Context UriInfo uriInfo,
-                                   @ApiParam(
-                                             value = "" +
-                                                     "JSON of the properties of the driver to add:<br>" +
-                                                     OPEN_PRE_TAG +
-                                                     OPEN_BRACE + BR +
-                                                     NBSP + "name: \"name of the driver\"" + COMMA + BR +
-                                                     NBSP + "content: \"Base64-encoded byte data of the" + COMMA + BR +
-                                                     NBSP + "driver file\"" + BR +
-                                                     CLOSE_BRACE +
-                                                     CLOSE_PRE_TAG,
-                                             required = true
-                                   )
-                                   final String driverAttributes) throws KomodoRestException {
-
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
-
-        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
-            return notAcceptableMediaTypesBuilder().build();
-
-        UnitOfWork uow = null;
-        String driverName = null;
-        byte[] driverContent = null;
-
-        try {
-        	Repository repo = this.kengine.getDefaultRepository();
-            uow = createTransaction(principal, "deployTeiidDriver", false); //$NON-NLS-1$
-
-            if (driverAttributes.contains(KomodoPathAttribute.PATH_LABEL)) {
-                // Is a workspace path to a driver
-                try {
-                    KomodoPathAttribute kpa = KomodoJsonMarshaller.unmarshall(driverAttributes, KomodoPathAttribute.class);
-                    if (kpa.getPath() == null) {
-                        return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.METADATA_SERVICE_DRIVER_MISSING_PATH);
-                    }
-
-                    List<KomodoObject> results = repo.searchByPath(uow, kpa.getPath());
-                    if (results.size() == 0) {
-                        return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.METADATA_SERVICE_NO_DRIVER_FOUND_IN_WKSP, kpa.getPath());
-                    }
-
-                    Driver driver = getWorkspaceManager(uow).resolve(uow, results.get(0), Driver.class);
-                    if (driver == null) {
-                        return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.METADATA_SERVICE_NO_DRIVER_FOUND_IN_WKSP, kpa.getPath());
-                    }
-
-                    driverName = driver.getName(uow);
-                    driverContent = FileUtils.streamToByteArray(driver.getContent(uow));
-
-                } catch (Exception ex) {
-                    return createErrorResponseWithForbidden(mediaTypes, ex, RelationalMessages.Error.METADATA_SERVICE_REQUEST_PARSING_ERROR);
-                }
-
-            } else {
-                // Is a set of file attributes for file-based with content encoded
-                try {
-                    KomodoFileAttributes kfa = KomodoJsonMarshaller.unmarshall(driverAttributes, KomodoFileAttributes.class);
-                    Response response = checkFileAttributes(kfa, mediaTypes);
-                    if (response.getStatus() != Status.OK.getStatusCode())
-                        return response;
-
-                    driverName = kfa.getName();
-                    driverContent = decode(kfa.getContent());
-
-                } catch (Exception ex) {
-                    return createErrorResponseWithForbidden(mediaTypes, ex, RelationalMessages.Error.METADATA_SERVICE_REQUEST_PARSING_ERROR);
-                }
-            }
-
-            if (driverName == null || driverContent == null) {
-                return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.METADATA_SERVICE_DRIVER_ATTRIBUTES_MISSING);
-            }
-
-            String tempDir = FileUtils.tempDirectory();
-            String fileName = driverContent.hashCode() + DOT + driverName;
-            File driverFile = new File(tempDir, fileName);
-            FileUtils.write(driverContent, driverFile);
-
-            getMetadataInstance().deployDataSourceDriver(driverName, driverFile);
-
-            // Await the deployment to end
-            Thread.sleep(DEPLOYMENT_WAIT_TIME);
-
-            String title = RelationalMessages.getString(RelationalMessages.Info.DRIVER_DEPLOYMENT_STATUS_TITLE);
-            KomodoStatusObject status = new KomodoStatusObject(title);
-            status.addAttribute("deploymentSuccess", Boolean.FALSE.toString()); //$NON-NLS-1$
-
-            if (hasDriver(driverName)) {
-                status.addAttribute("deploymentSuccess", Boolean.TRUE.toString()); //$NON-NLS-1$
-                status.addAttribute(driverName,
-                                    RelationalMessages.getString(RelationalMessages.Info.DRIVER_SUCCESSFULLY_DEPLOYED));
-            } else
-                status.addAttribute(driverName,
-                                    RelationalMessages.getString(RelationalMessages.Info.DRIVER_SUCCESSFULLY_UPLOADED));
-
-           return commit(uow, mediaTypes, status);
-
-        } catch (final Exception e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
-                uow.rollback();
-            }
-
-            if (e instanceof KomodoRestException) {
-                throw (KomodoRestException)e;
-            }
-
-            return createErrorResponse(Status.FORBIDDEN, mediaTypes, e, RelationalMessages.Error.METADATA_SERVICE_DEPLOY_DRIVER_ERROR, driverName);
-        }
-    }
-
-    /**
-     * Remove a Driver from the server
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
-     * @param driverName
-     *        the driver name (never <code>null</code>)
-     * @return a JSON representation of the status (never <code>null</code>)
-     * @throws KomodoRestException
-     *         if there is an error removing the Driver
-     */
-    @DELETE
-    @Path(V1Constants.METADATA_DRIVER + StringConstants.FORWARD_SLASH +
-                  V1Constants.METADATA_DRIVER_PLACEHOLDER)
-    @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Removes a driver from the teiid server")
-    @ApiResponses(value = {
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-    public Response removeDriver(final @Context HttpHeaders headers,
-                                   final @Context UriInfo uriInfo,
-                                   @ApiParam(value = "Name of the driver to be removed", required = true)
-                                    final @PathParam( "driverName" ) String driverName) throws KomodoRestException {
-
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
-
-        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
-            return notAcceptableMediaTypesBuilder().build();
-
-        UnitOfWork uow = null;
-
-        try {
-            uow = createTransaction(principal, "unDeployTeiidDriver", false); //$NON-NLS-1$
-
-            getMetadataInstance().undeployDataSourceDriver(driverName);
-
-            // Await the undeployment to end
-            Thread.sleep(DEPLOYMENT_WAIT_TIME);
-
-            String title = RelationalMessages.getString(RelationalMessages.Info.DRIVER_DEPLOYMENT_STATUS_TITLE);
-            KomodoStatusObject status = new KomodoStatusObject(title);
-            if (! hasDriver(driverName)) {
-                status.addAttribute(driverName,
-                                    RelationalMessages.getString(RelationalMessages.Info.DRIVER_SUCCESSFULLY_UNDEPLOYED));
-            } else
-                status.addAttribute(driverName,
-                                    RelationalMessages.getString(RelationalMessages.Info.DRIVER_UNDEPLOYMENT_REQUEST_SENT));
-
-           return commit(uow, mediaTypes, status);
-
-        } catch (final Exception e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
-                uow.rollback();
-            }
-
-            if (e instanceof KomodoRestException) {
-                throw (KomodoRestException)e;
-            }
-
-            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.METADATA_SERVICE_UNDEPLOY_DRIVER_ERROR, driverName);
         }
     }
 
@@ -1446,250 +1055,6 @@ public class KomodoMetadataService extends KomodoService {
             }
         }
    }
-
-    /**
-     * Adds (deploys) a Dataservice to the server
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
-     * @param pathAttribute
-     *        the path (never <code>null</code>)
-     * @return a JSON representation of the status (never <code>null</code>)
-     * @throws KomodoRestException
-     *         if there is an error adding the Dataservice
-     */
-    @SuppressWarnings( "nls" )
-    @POST
-    @Path(V1Constants.DATA_SERVICE_SEGMENT)
-    @Produces( MediaType.APPLICATION_JSON )
-    @Consumes ( { MediaType.APPLICATION_JSON } )
-    @ApiOperation(value = "Deploy the data service to the teiid server")
-    @ApiResponses(value = {
-        @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-    public Response addDataservice(final @Context HttpHeaders headers,
-                                   final @Context UriInfo uriInfo,
-                                   @ApiParam(
-                                             value = "" +
-                                                     "JSON of the properties of the data service:<br>" +
-                                                     OPEN_PRE_TAG +
-                                                     OPEN_BRACE + BR +
-                                                     NBSP + "path: \"location of the data service in the workspace\"" + BR +
-                                                     CLOSE_BRACE +
-                                                     CLOSE_PRE_TAG,
-                                             required = true
-                                   )
-                                   final String pathAttribute)
-                                   throws KomodoRestException {
-
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
-
-        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
-            return notAcceptableMediaTypesBuilder().build();
-
-        //
-        // Error if there is no path attribute defined
-        //
-        KomodoPathAttribute kpa;
-        try {
-            kpa = KomodoJsonMarshaller.unmarshall(pathAttribute, KomodoPathAttribute.class);
-            if (kpa.getPath() == null) {
-                return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.METADATA_SERVICE_DATA_SERVICE_MISSING_PATH);
-            }
-        } catch (Exception ex) {
-            return createErrorResponseWithForbidden(mediaTypes, ex, RelationalMessages.Error.METADATA_SERVICE_REQUEST_PARSING_ERROR);
-        }
-
-        UnitOfWork uow = null;
-
-        try {
-        	Repository repo = this.kengine.getDefaultRepository();
-            uow = createTransaction(principal, "deployTeiidDataservice", false); //$NON-NLS-1$
-
-            List<KomodoObject> dataServices = repo.searchByPath(uow, kpa.getPath());
-            if (dataServices.size() == 0) {
-                return createErrorResponseWithForbidden(mediaTypes,
-                                                        RelationalMessages.Error.METADATA_SERVICE_NO_DATA_SERVICE_FOUND,
-                                                        StringUtils.getLastToken(kpa.getPath(), FORWARD_SLASH));
-            }
-
-            Dataservice dataService = getWorkspaceManager(uow).resolve(uow, dataServices.get(0), Dataservice.class);
-            if (dataService == null) {
-                return createErrorResponseWithForbidden(mediaTypes,
-                                                        RelationalMessages.Error.METADATA_SERVICE_NO_DATA_SERVICE_FOUND,
-                                                        StringUtils.getLastToken(kpa.getPath(), FORWARD_SLASH));
-            }
-
-            //
-            // Deploy the data service
-            //
-            DeployStatus deployStatus = dataService.deploy(uow);
-
-            // Await the deployment to end
-            Thread.sleep(DEPLOYMENT_WAIT_TIME);
-
-            String title = RelationalMessages.getString(RelationalMessages.Info.DATA_SERVICE_DEPLOYMENT_STATUS_TITLE);
-            KomodoStatusObject status = new KomodoStatusObject(title);
-
-            List<String> progressMessages = deployStatus.getProgressMessages();
-            for (int i = 0; i < progressMessages.size(); ++i) {
-                status.addAttribute("ProgressMessage" + (i + 1), progressMessages.get(i));
-            }
-
-            if (deployStatus.ok()) {
-                status.addAttribute("deploymentSuccess", Boolean.TRUE.toString());
-                status.addAttribute(dataService.getName(uow),
-                                    RelationalMessages.getString(RelationalMessages.Info.DATA_SERVICE_SUCCESSFULLY_DEPLOYED));
-            } else {
-                status.addAttribute("deploymentSuccess", Boolean.FALSE.toString());
-                List<String> errorMessages = deployStatus.getErrorMessages();
-                for (int i = 0; i < errorMessages.size(); ++i) {
-                    status.addAttribute("ErrorMessage" + (i + 1), errorMessages.get(i));
-                }
-
-                status.addAttribute(dataService.getName(uow),
-                                    RelationalMessages.getString(RelationalMessages.Info.DATA_SERVICE_DEPLOYED_WITH_ERRORS));
-            }
-
-           return commit(uow, mediaTypes, status);
-
-        } catch (final Exception e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
-                uow.rollback();
-            }
-
-            if (e instanceof KomodoRestException) {
-                throw (KomodoRestException)e;
-            }
-
-            return createErrorResponse(Status.FORBIDDEN, mediaTypes, e, RelationalMessages.Error.METADATA_SERVICE_DEPLOY_DATA_SERVICE_ERROR);
-        }
-    }
-
-    /**
-     * Adds (deploys) a Connection to the server
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
-     * @param pathAttribute
-     *        the path (never <code>null</code>)
-     * @return a JSON representation of the status (never <code>null</code>)
-     * @throws KomodoRestException
-     *         if there is an error adding the Connection
-     */
-    @SuppressWarnings( "nls" )
-    @POST
-    @Path(V1Constants.CONNECTION_SEGMENT)
-    @Produces( MediaType.APPLICATION_JSON )
-    @Consumes ( { MediaType.APPLICATION_JSON } )
-    @ApiOperation(value = "Deploy the connection to the teiid server")
-    @ApiResponses(value = {
-        @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-    public Response addConnection( final @Context HttpHeaders headers,
-                                   final @Context UriInfo uriInfo,
-                                   @ApiParam(
-                                             value = "" +
-                                                     "JSON of the properties of the connection:<br>" +
-                                                     OPEN_PRE_TAG +
-                                                     OPEN_BRACE + BR +
-                                                     NBSP + "path: \"location of the connection in the workspace\"" + BR +
-                                                     CLOSE_BRACE +
-                                                     CLOSE_PRE_TAG,
-                                             required = true
-                                   )
-                                   final String pathAttribute)
-                                   throws KomodoRestException {
-
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
-
-        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
-            return notAcceptableMediaTypesBuilder().build();
-
-        //
-        // Error if there is no path attribute defined
-        //
-        KomodoPathAttribute kpa;
-        try {
-            kpa = KomodoJsonMarshaller.unmarshall(pathAttribute, KomodoPathAttribute.class);
-            if (kpa.getPath() == null) {
-                return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.METADATA_SERVICE_CONNECTION_MISSING_PATH);
-            }
-        } catch (Exception ex) {
-            return createErrorResponseWithForbidden(mediaTypes, ex, RelationalMessages.Error.METADATA_SERVICE_REQUEST_PARSING_ERROR);
-        }
-
-        UnitOfWork uow = null;
-
-        try {
-        	Repository repo = this.kengine.getDefaultRepository();
-            uow = createTransaction(principal, "deployTeiidConnection", false); //$NON-NLS-1$
-
-            List<KomodoObject> connections = repo.searchByPath(uow, kpa.getPath());
-            if (connections.size() == 0) {
-                return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.METADATA_SERVICE_NO_CONNECTION_FOUND);
-            }
-
-            Connection connection = getWorkspaceManager(uow).resolve(uow, connections.get(0), Connection.class);
-            if (connection == null) {
-                return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.METADATA_SERVICE_NO_CONNECTION_FOUND);
-            }
-
-            //
-            // Deploy the connection
-            //
-            DeployStatus deployStatus = connection.deploy(uow);
-
-            // Await the deployment to end
-            Thread.sleep(DEPLOYMENT_WAIT_TIME);
-
-            String title = RelationalMessages.getString(RelationalMessages.Info.CONNECTION_DEPLOYMENT_STATUS_TITLE);
-            KomodoStatusObject status = new KomodoStatusObject(title);
-
-            List<String> progressMessages = deployStatus.getProgressMessages();
-            for (int i = 0; i < progressMessages.size(); ++i) {
-                status.addAttribute("ProgressMessage" + (i + 1), progressMessages.get(i));
-            }
-
-            if (deployStatus.ok()) {
-                status.addAttribute("deploymentSuccess", Boolean.TRUE.toString());
-                status.addAttribute(connection.getName(uow),
-                                    RelationalMessages.getString(RelationalMessages.Info.CONNECTION_SUCCESSFULLY_DEPLOYED));
-            } else {
-                status.addAttribute("deploymentSuccess", Boolean.FALSE.toString());
-                List<String> errorMessages = deployStatus.getErrorMessages();
-                for (int i = 0; i < errorMessages.size(); ++i) {
-                    status.addAttribute("ErrorMessage" + (i + 1), errorMessages.get(i));
-                }
-
-                status.addAttribute(connection.getName(uow),
-                                    RelationalMessages.getString(RelationalMessages.Info.CONNECTION_DEPLOYED_WITH_ERRORS));
-            }
-
-           return commit(uow, mediaTypes, status);
-
-        } catch (final Exception e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
-                uow.rollback();
-            }
-
-            if (e instanceof KomodoRestException) {
-                throw (KomodoRestException)e;
-            }
-
-            return createErrorResponse(Status.FORBIDDEN, mediaTypes, e, RelationalMessages.Error.METADATA_SERVICE_DEPLOY_CONNECTION_ERROR, kpa.getPath());
-        }
-    }
 
 //
 //    TODO
@@ -1838,125 +1203,6 @@ public class KomodoMetadataService extends KomodoService {
 //            return createErrorResponse(Status.FORBIDDEN, mediaTypes, e, RelationalMessages.Error.METADATA_SERVICE_DEPLOY_DATA_SOURCE_ERROR);
 //        }
 //    }
-
-    /**
-     * Adds (deploys) a VDB to the server
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
-     * @param pathAttribute
-     *        the path attribute (never <code>null</code>)
-     * @return a JSON representation of the status (never <code>null</code>)
-     * @throws KomodoRestException
-     *         if there is an error adding the VDB
-     */
-    @SuppressWarnings( "nls" )
-    @POST
-    @Path(V1Constants.VDB_SEGMENT)
-    @Produces( MediaType.APPLICATION_JSON )
-    @Consumes ( { MediaType.APPLICATION_JSON } )
-    @ApiOperation(value = "Deploy the Vdb to the metadata server")
-    @ApiResponses(value = {
-        @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-    public Response addVdb(final @Context HttpHeaders headers,
-                           final @Context UriInfo uriInfo,
-                           @ApiParam(
-                                     value = "" +
-                                             "JSON of the properties of the vdb:<br>" +
-                                             OPEN_PRE_TAG +
-                                             OPEN_BRACE + BR +
-                                             NBSP + "path: \"location of the data service in the workspace\"" + BR +
-                                             CLOSE_BRACE +
-                                             CLOSE_PRE_TAG,
-                                     required = true
-                           )
-                           final String pathAttribute)
-                           throws KomodoRestException {
-
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
-
-        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
-            return notAcceptableMediaTypesBuilder().build();
-
-        //
-        // Error if there is no path attribute defined
-        //
-        KomodoPathAttribute kpa;
-        try {
-            kpa = KomodoJsonMarshaller.unmarshall(pathAttribute, KomodoPathAttribute.class);
-            if (kpa.getPath() == null) {
-                return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.METADATA_SERVICE_VDB_MISSING_PATH);
-            }
-        } catch (Exception ex) {
-            return createErrorResponseWithForbidden(mediaTypes, ex, RelationalMessages.Error.METADATA_SERVICE_REQUEST_PARSING_ERROR);
-        }
-
-        UnitOfWork uow = null;
-        try {
-        	Repository repo = this.kengine.getDefaultRepository();
-            uow = createTransaction(principal, "deployVdb", false); //$NON-NLS-1$
-
-            List<KomodoObject> vdbs = repo.searchByPath(uow, kpa.getPath());
-            if (vdbs.size() == 0) {
-                return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.METADATA_SERVICE_NO_VDB_FOUND);
-            }
-
-            Vdb vdb = getWorkspaceManager(uow).resolve(uow, vdbs.get(0), Vdb.class);
-            if (vdb == null) {
-                return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.METADATA_SERVICE_NO_VDB_FOUND);
-            }
-
-            //
-            // Deploy the VDB
-            //
-            DeployStatus deployStatus = vdb.deploy(uow);
-
-            // Await the deployment to end
-            Thread.sleep(DEPLOYMENT_WAIT_TIME);
-
-            String title = RelationalMessages.getString(RelationalMessages.Info.VDB_DEPLOYMENT_STATUS_TITLE);
-            KomodoStatusObject status = new KomodoStatusObject(title);
-
-            List<String> progressMessages = deployStatus.getProgressMessages();
-            for (int i = 0; i < progressMessages.size(); ++i) {
-                status.addAttribute("ProgressMessage" + (i + 1), progressMessages.get(i));
-            }
-
-            if (deployStatus.ok()) {
-                status.addAttribute("deploymentSuccess", Boolean.TRUE.toString());
-                status.addAttribute(vdb.getName(uow),
-                                    RelationalMessages.getString(RelationalMessages.Info.VDB_SUCCESSFULLY_DEPLOYED));
-            } else {
-                status.addAttribute("deploymentSuccess", Boolean.FALSE.toString());
-                List<String> errorMessages = deployStatus.getErrorMessages();
-                for (int i = 0; i < errorMessages.size(); ++i) {
-                    status.addAttribute("ErrorMessage" + (i + 1), errorMessages.get(i));
-                }
-
-                status.addAttribute(vdb.getName(uow),
-                                    RelationalMessages.getString(RelationalMessages.Info.VDB_DEPLOYED_WITH_ERRORS));
-            }
-
-           return commit(uow, mediaTypes, status);
-
-        } catch (final Exception e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
-                uow.rollback();
-            }
-
-            if (e instanceof KomodoRestException) {
-                throw (KomodoRestException)e;
-            }
-
-            return createErrorResponse(Status.FORBIDDEN, mediaTypes, e, RelationalMessages.Error.METADATA_SERVICE_DEPLOY_VDB_ERROR);
-        }
-    }
 
     /**
      * Refresh the preview Vdb with the supplied name
@@ -2231,84 +1477,6 @@ public class KomodoMetadataService extends KomodoService {
             }
 
             return createErrorResponse(Status.FORBIDDEN, mediaTypes, RelationalMessages.Error.METADATA_SERVICE_QUERY_ERROR, e.getLocalizedMessage());
-        }
-    }
-
-    /*
-     * Loads driver name - translator mappings from resource file
-     */
-    private void loadDriverTranslatorMap() {
-        InputStream inputStream = getClass().getClassLoader().getResourceAsStream( DRIVER_TRANSLATOR_MAPPING_FILE );
-
-        if(inputStream==null) {
-            LOGGER.error(RelationalMessages.getString(RelationalMessages.Error.METADATA_SERVICE_DEFAULT_TRANSLATOR_MAPPINGS_NOT_FOUND_ERROR));
-            return;
-        }
-
-        driverTranslatorMap.clear();
-
-        // Load the mappings file
-        Document doc;
-        try {
-            String mappingXml = FileUtils.streamToString(inputStream);
-            doc = FileUtils.createDocument(mappingXml);
-        } catch (Exception ex) {
-            LOGGER.error(RelationalMessages.getString(RelationalMessages.Error.METADATA_SERVICE_LOAD_DEFAULT_TRANSLATOR_MAPPINGS_ERROR, ex.getLocalizedMessage()));
-            return;
-        }
-
-        // Single child node contains the mappings
-        final Node mappingsNode = doc.getChildNodes().item(0);
-        if ( mappingsNode.getNodeType() != Node.ELEMENT_NODE ) {
-            return;
-        }
-
-        // Iterate the doc nodes and populate the default translator map
-        final NodeList translatorNodes = ((Element)mappingsNode).getElementsByTagName( ELEM_TRANSLATOR );
-        for(int i=0; i<translatorNodes.getLength(); i++) {
-            final Node translatorNode = translatorNodes.item(i);
-            String driver = translatorNode.getAttributes().getNamedItem( ATTR_DRIVER ).getTextContent();
-            String translator = translatorNode.getTextContent();
-            driverTranslatorMap.put(driver, translator);
-        }
-    }
-
-    /*
-     * Loads URL content - translator mappings from resource file
-     */
-    private void loadUrlContentTranslatorMap() {
-        InputStream inputStream = getClass().getClassLoader().getResourceAsStream( URLCONTENT_TRANSLATOR_MAPPING_FILE );
-
-        if(inputStream==null) {
-            LOGGER.error(RelationalMessages.getString(RelationalMessages.Error.METADATA_SERVICE_DEFAULT_TRANSLATOR_MAPPINGS_NOT_FOUND_ERROR));
-            return;
-        }
-
-        urlContentTranslatorMap.clear();
-
-        // Load the mappings file
-        Document doc;
-        try {
-            String mappingXml = FileUtils.streamToString(inputStream);
-            doc = FileUtils.createDocument(mappingXml);
-        } catch (Exception ex) {
-            LOGGER.error(RelationalMessages.getString(RelationalMessages.Error.METADATA_SERVICE_LOAD_DEFAULT_TRANSLATOR_MAPPINGS_ERROR, ex.getLocalizedMessage()));
-            return;
-        }
-
-        // Single child node contains the mappings
-        final Node mappingsNode = doc.getChildNodes().item(0);
-        if ( mappingsNode.getNodeType() != Node.ELEMENT_NODE ) {
-            return;
-        }
-
-        // Iterate the doc nodes and populate the default translator map
-        final NodeList translatorNodes = ((Element)mappingsNode).getElementsByTagName( ELEM_TRANSLATOR );
-        for(int i=0; i<translatorNodes.getLength(); i++) {
-            final Node translatorNode = translatorNodes.item(i);
-            String urlContent = translatorNode.getAttributes().getNamedItem( ATTR_URLCONTENT ).getTextContent();
-            String translator = translatorNode.getTextContent();
-            urlContentTranslatorMap.put(urlContent, translator);
         }
     }
 
