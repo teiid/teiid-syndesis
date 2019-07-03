@@ -21,7 +21,6 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Properties;
 import javax.ws.rs.core.UriBuilder;
-import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.vdb.Translator;
 import org.komodo.relational.vdb.Vdb;
@@ -341,16 +340,6 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
         return UriBuilder.fromUri(this.baseUri)
                                      .path(METADATA_SEGMENT)
                                      .path(TRANSLATORS_SEGMENT)
-                                     .build();
-    }
-
-    /**
-     * @return the URI to use when requesting the metadata server templates collection  (never <code>null</code>)
-     */
-    public URI mServerTemplatesUri() {
-        return UriBuilder.fromUri(this.baseUri)
-                                     .path(METADATA_SEGMENT)
-                                     .path(TEMPLATES_SEGMENT)
                                      .build();
     }
 
@@ -966,44 +955,6 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
                 break;
             case PARENT:
                 result = parentUri;
-                break;
-            case TEMPLATE_ENTRIES:
-                result = UriBuilder.fromUri(parentUri)
-                                                .path(templateName)
-                                                .path(TEMPLATE_ENTRIES_SEGMENT)
-                                                .build();
-                break;
-            default:
-                throw new RuntimeException("LinkType " + linkType + " not handled"); //$NON-NLS-1$ //$NON-NLS-2$
-        }
-
-        assert(result != null);
-        return result;
-    }
-
-    /**
-     * @param linkType
-     * @param settings
-     * @return the connection URI for the given link type and settings
-     */
-    public URI templateEntryUri(LinkType linkType, Properties settings) {
-        ArgCheck.isNotNull(linkType, "linkType"); //$NON-NLS-1$
-        ArgCheck.isNotNull(settings, "settings"); //$NON-NLS-1$)
-
-        URI result = null;
-
-        String templateName = setting(settings, SettingNames.TEMPLATE_NAME);
-        String templateEntryName = setting(settings, SettingNames.TEMPLATE_ENTRY_NAME);
-
-        URI templateUri = UriBuilder.fromUri(mServerTemplatesUri())
-                                            .path(TEMPLATES_SEGMENT).path(templateName).build();
-
-        switch (linkType) {
-            case SELF:
-                result = UriBuilder.fromUri(templateUri).path(TEMPLATE_ENTRIES_SEGMENT).path(templateEntryName).build();
-                break;
-            case PARENT:
-                result = UriBuilder.fromUri(templateUri).build();
                 break;
             default:
                 throw new RuntimeException("LinkType " + linkType + " not handled"); //$NON-NLS-1$ //$NON-NLS-2$

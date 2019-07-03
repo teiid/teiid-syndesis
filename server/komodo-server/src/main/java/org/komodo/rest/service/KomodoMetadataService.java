@@ -20,12 +20,10 @@ package org.komodo.rest.service;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -77,8 +75,6 @@ import org.komodo.rest.relational.response.RestVdb;
 import org.komodo.rest.relational.response.RestVdbModelTableColumn;
 import org.komodo.rest.relational.response.RestVdbTranslator;
 import org.komodo.rest.relational.response.metadata.RestMetadataStatus;
-import org.komodo.rest.relational.response.metadata.RestMetadataTemplate;
-import org.komodo.rest.relational.response.metadata.RestMetadataTemplateEntry;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdb;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatus;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbTranslator;
@@ -1172,210 +1168,6 @@ public class KomodoMetadataService extends KomodoService {
             }
 
             return createErrorResponse(Status.FORBIDDEN, mediaTypes, RelationalMessages.Error.METADATA_SERVICE_QUERY_ERROR, e.getLocalizedMessage());
-        }
-    }
-
-    /**
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
-     * @return a JSON document representing all the connection templates available in teiid (never <code>null</code>)
-     * @throws KomodoRestException
-     *         if there is a problem constructing the Templates JSON document
-     */
-    @GET
-    @Path(V1Constants.TEMPLATES_SEGMENT)
-    @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Display the collection of templates",
-                            response = RestMetadataTemplate[].class)
-    @ApiResponses(value = {
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-    public Response getConnectionTemplates(final @Context HttpHeaders headers,
-                                                   final @Context UriInfo uriInfo) throws KomodoRestException {
-
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
-
-        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        UnitOfWork uow = null;
-
-        try {
-        	Repository repo = this.kengine.getDefaultRepository();
-            // find templates
-            uow = createTransaction(principal, "getTemplates", true); //$NON-NLS-1$
-
-            Set<String> templateNames = getMetadataInstance().getDataSourceTemplateNames();
-            LOGGER.debug("getTemplates:found '{0}' Templates", templateNames.size()); //$NON-NLS-1$
-
-            final List<RestMetadataTemplate> entities = new ArrayList<RestMetadataTemplate>();
-
-            for (String template : templateNames) {
-                Collection<TeiidPropertyDefinition> propertyDefns = getMetadataInstance().getTemplatePropertyDefns(template);
-                RestMetadataTemplate entity = entityFactory.createMetadataTemplate(uow, repo, template, propertyDefns, uriInfo.getBaseUri());
-                entities.add(entity);
-                LOGGER.debug("getTemplates:Template '{0}' entity was constructed", template); //$NON-NLS-1$
-            }
-
-            // create response
-            return commit(uow, mediaTypes, entities);
-        } catch (CallbackTimeoutException ex) {
-                return createTimeoutResponse(mediaTypes);
-        } catch (Throwable e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
-                uow.rollback();
-            }
-
-            if ( e instanceof KomodoRestException ) {
-                throw ( KomodoRestException )e;
-            }
-
-            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.METADATA_SERVICE_GET_TEMPLATES_ERROR);
-        }
-    }
-
-    /**
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
-     * @return a JSON document representing all the connection templates available in teiid (never <code>null</code>)
-     * @throws KomodoRestException
-     *         if there is a problem constructing the Templates JSON document
-     */
-    @GET
-    @Path(V1Constants.TEMPLATES_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.TEMPLATE_PLACEHOLDER)
-    @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Find connection template by name",
-                            response = RestMetadataTemplate.class)
-    @ApiResponses(value = {
-        @ApiResponse(code = 404, message = "No template could be found with name"),
-        @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-    public Response getConnectionTemplate(final @Context HttpHeaders headers,
-                                          final @Context UriInfo uriInfo,
-                                          @ApiParam(value = "Name of the template", required = true)
-                                          final @PathParam( "templateName" ) String templateName) throws KomodoRestException {
-
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
-
-        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        UnitOfWork uow = null;
-
-        try {
-        	Repository repo = this.kengine.getDefaultRepository();
-            // find template
-            uow = createTransaction(principal, "getTemplates", true); //$NON-NLS-1$
-
-            Set<String> templateNames = getMetadataInstance().getDataSourceTemplateNames();
-            if (templateNames == null || templateNames.isEmpty())
-                return commitNoTemplateFound(uow, mediaTypes, templateName);
-
-            if (! templateNames.contains(templateName))
-                return commitNoTemplateFound(uow, mediaTypes, templateName);
-
-            Collection<TeiidPropertyDefinition> propertyDefns = getMetadataInstance().getTemplatePropertyDefns(templateName);
-            RestMetadataTemplate restTemplate = entityFactory.createMetadataTemplate(uow, repo, templateName, propertyDefns, uriInfo.getBaseUri());
-            LOGGER.debug("getConnectionTemplate:Template '{0}' entity was constructed", templateName); //$NON-NLS-1$
-            return commit( uow, mediaTypes, restTemplate );
-
-        } catch (CallbackTimeoutException ex) {
-                return createTimeoutResponse(mediaTypes);
-        } catch (Throwable e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
-                uow.rollback();
-            }
-
-            if ( e instanceof KomodoRestException ) {
-                throw ( KomodoRestException )e;
-            }
-
-            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.METADATA_SERVICE_GET_TEMPLATE_ERROR);
-        }
-    }
-
-    /**
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
-     * @return a JSON document representing all the entry properties available in a teiid template (never <code>null</code>)
-     * @throws KomodoRestException
-     *         if there is a problem constructing the TemplateEntry JSON document
-     */
-    @GET
-    @Path(V1Constants.TEMPLATES_SEGMENT + StringConstants.FORWARD_SLASH +
-                  V1Constants.TEMPLATE_PLACEHOLDER + StringConstants.FORWARD_SLASH +
-                  V1Constants.TEMPLATE_ENTRIES_SEGMENT)
-    @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Find the template entries of the named template",
-                            response = RestMetadataTemplateEntry[].class)
-    @ApiResponses(value = {
-        @ApiResponse(code = 404, message = "No template could be found with name"),
-        @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-    public Response getConnectionTemplateEntries(final @Context HttpHeaders headers,
-                                                 final @Context UriInfo uriInfo,
-                                                 @ApiParam(value = "Name of the template", required = true)
-                                                 final @PathParam( "templateName" ) String templateName) throws KomodoRestException {
-
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
-
-        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        UnitOfWork uow = null;
-
-        try {
-        	Repository repo = this.kengine.getDefaultRepository();
-            // find template
-            uow = createTransaction(principal, "getTemplateEntries", true); //$NON-NLS-1$
-
-            Set<String> templateNames = getMetadataInstance().getDataSourceTemplateNames();
-            if (templateNames == null || templateNames.isEmpty())
-                return commitNoTemplateFound(uow, mediaTypes, templateName);
-
-            if (! templateNames.contains(templateName))
-                return commitNoTemplateFound(uow, mediaTypes, templateName);
-
-            List<TeiidPropertyDefinition> propertyDefns = new ArrayList<>();
-            propertyDefns.addAll(getMetadataInstance().getTemplatePropertyDefns(templateName));
-
-            Collections.sort(propertyDefns, new TeiidPropertyDefinitionComparator());
-            List<String> priorityNames = Arrays.asList(PRIORITY_TEMPLATE_NAMES);
-
-            List<RestMetadataTemplateEntry> entities = entityFactory.createMetadataTemplateEntry(uow, repo, propertyDefns, uriInfo.getBaseUri());
-
-            for (RestMetadataTemplateEntry entity : entities) {
-                if (priorityNames.contains(entity.getId())) {
-                    //
-                    // Appears some properties are being flagged as not required when they really should be,
-                    // eg. derbyclient.jar -> connection-url
-                    //
-                    entity.setRequired(true);
-                }
-            }
-
-            return commit(uow, mediaTypes, entities);
-
-        } catch (CallbackTimeoutException ex) {
-                return createTimeoutResponse(mediaTypes);
-        } catch (Throwable e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
-                uow.rollback();
-            }
-
-            if ( e instanceof KomodoRestException ) {
-                throw ( KomodoRestException )e;
-            }
-
-            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.METADATA_SERVICE_GET_TEMPLATE_ENTRIES_ERROR);
         }
     }
 

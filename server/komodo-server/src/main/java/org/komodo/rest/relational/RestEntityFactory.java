@@ -20,9 +20,6 @@ package org.komodo.rest.relational;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
 
@@ -34,8 +31,6 @@ import org.komodo.relational.model.Column;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.View;
-import org.komodo.relational.template.Template;
-import org.komodo.relational.template.TemplateEntry;
 import org.komodo.relational.vdb.Condition;
 import org.komodo.relational.vdb.DataRole;
 import org.komodo.relational.vdb.Mask;
@@ -62,26 +57,21 @@ import org.komodo.rest.relational.response.RestVdbModelTableColumn;
 import org.komodo.rest.relational.response.RestVdbModelView;
 import org.komodo.rest.relational.response.RestVdbPermission;
 import org.komodo.rest.relational.response.RestVdbTranslator;
-import org.komodo.rest.relational.response.metadata.RestMetadataConnection;
-import org.komodo.rest.relational.response.metadata.RestMetadataTemplate;
-import org.komodo.rest.relational.response.metadata.RestMetadataTemplateEntry;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdb;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbTranslator;
 import org.komodo.rest.relational.response.virtualization.RestVirtualizationStatus;
 import org.komodo.spi.KException;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.spi.runtime.SyndesisDataSource;
-import org.komodo.spi.runtime.TeiidDataSource;
-import org.komodo.spi.runtime.TeiidPropertyDefinition;
 import org.komodo.spi.runtime.TeiidTranslator;
 import org.komodo.spi.runtime.TeiidVdb;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
+import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 /**
  *
@@ -253,122 +243,6 @@ public class RestEntityFactory implements V1Constants {
         return new RestMetadataVdbTranslator(baseUri, translator, transaction);
     }
 
-    /*
-     * Get the default value for the Managed ConnectionFactory class
-     * @param propDefns the collection of property definitions
-     * @return default value of the ManagedConnectionFactory, null if not found.
-     */
-    private String getManagedConnectionFactoryClassDefault (Collection<TeiidPropertyDefinition> propDefns) {
-        String resultValue = null;
-        for(TeiidPropertyDefinition pDefn : propDefns) {
-            if(pDefn.getName().equalsIgnoreCase(Template.CONN_FACTORY_CLASS_KEY)) {
-                resultValue=(String)pDefn.getDefaultValue();
-                break;
-            }
-        }
-        return resultValue;
-    }
-        
-    private TemplateEntry createMetadataTemplateEntry(UnitOfWork transaction, Template template, String factoryClass,
-                           TeiidPropertyDefinition definition) throws KException {
-
-        TemplateEntry templateEntry = template.addEntry(transaction, definition.getName());
-        templateEntry.setDescription(transaction, definition.getDescription());
-        templateEntry.setDisplayName(transaction, definition.getDisplayName());
-    
-        Collection<String> allowedValues = definition.getAllowedValues();
-        if (allowedValues != null && ! allowedValues.isEmpty()) {
-            List<Object> valuesList = new ArrayList<Object>();
-            for (String value : allowedValues)
-                valuesList.add(value);
-    
-            templateEntry.setAllowedValues(transaction, valuesList);
-        }
-    
-        templateEntry.setCategory(transaction, definition.getCategory());
-        templateEntry.setDefaultValue(transaction, definition.getDefaultValue());
-        templateEntry.setTypeClassName(transaction, definition.getPropertyTypeClassName());
-        templateEntry.setConstrainedToAllowedValues(transaction, definition.isConstrainedToAllowedValues());
-        templateEntry.setAdvanced(transaction, definition.isAdvanced());
-        templateEntry.setMasked(transaction, definition.isMasked());
-        templateEntry.setModifiable(transaction, definition.isModifiable());
-        templateEntry.setRequired(transaction, definition.isRequired());
-        templateEntry.setCustomProperties(transaction, definition.getProperties());
-    
-        // Copy the 'managedconnectionfactory-class' default value into the 'class-name' default value
-        if(definition.getName().equals(Template.CLASSNAME_KEY)) {
-            templateEntry.setDefaultValue(transaction, factoryClass);
-            templateEntry.setRequired(transaction, true);
-            templateEntry.setModifiable(transaction, false);
-        }
-
-        return templateEntry;
-    }
-
-    /**
-     * Create RestMetadataTemplate
-     * @param transaction the transaction
-     * @param repository the repo
-     * @param templateName the template name
-     * @param propertyDefns collection of property definitions
-     * @param baseUri the uri
-     * @return RestMetadataTemplate
-     * @throws Exception if error occurs
-     */
-    public RestMetadataTemplate createMetadataTemplate(UnitOfWork transaction, 
-                                                       Repository repository,
-                                                       String templateName,
-                                                       Collection<TeiidPropertyDefinition> propertyDefns,
-                                                       URI baseUri) throws Exception {
-        checkTransaction(transaction);
-        ArgCheck.isTrue(transaction.isRollbackOnly(), "transaction should be rollback-only"); //$NON-NLS-1$
-
-        KomodoObject parent = createTemporaryParent(transaction, repository, null);
-
-        Template template = RelationalModelFactory.createTemplate(transaction, repository, parent, templateName);
-
-        // Get the Managed connection factory class for rars
-        String factoryClass = getManagedConnectionFactoryClassDefault(propertyDefns);
-
-        for (TeiidPropertyDefinition definition : propertyDefns) {
-            createMetadataTemplateEntry(transaction, template, factoryClass, definition);
-        }
-
-        return new RestMetadataTemplate(baseUri, template, transaction);
-    }
-
-    /**
-     * Create RestMetadataTemplateEntry
-     * @param transaction the transaction
-     * @param repository the repo
-     * @param propertyDefns collection of property definitions
-     * @param baseUri the uri
-     * @return RestMetadataTemplateEntry
-     * @throws Exception if error occurs
-     */
-    public List<RestMetadataTemplateEntry> createMetadataTemplateEntry(UnitOfWork transaction, 
-                                                                       Repository repository,
-                                                                       Collection<TeiidPropertyDefinition> propertyDefns,
-                                                                       URI baseUri) throws Exception {
-        checkTransaction(transaction);
-        ArgCheck.isTrue(transaction.isRollbackOnly(), "transaction should be rollback-only"); //$NON-NLS-1$
-
-        KomodoObject parent = createTemporaryParent(transaction, repository, null);
-        Template template = RelationalModelFactory.createTemplate(transaction, repository, parent, "tempTemplate"); //$NON-NLS-1$
-        
-        // Get the Managed connection factory class for rars
-        String factoryClass = getManagedConnectionFactoryClassDefault(propertyDefns);
-
-        List<RestMetadataTemplateEntry> restEntries = new ArrayList<>();
-        for (TeiidPropertyDefinition definition : propertyDefns) {
-            TemplateEntry entry = createMetadataTemplateEntry(transaction, template, factoryClass, definition);
-           RestMetadataTemplateEntry restEntry = new RestMetadataTemplateEntry(baseUri, entry, transaction);
-           restEntries.add(restEntry);
-        }
-
-        return restEntries;
-    }
-    
 	/**
 	 * Create RestSyndesis data source
 	 * @param transaction the transaction

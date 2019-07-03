@@ -41,8 +41,6 @@ import org.komodo.rest.RestLink;
 import org.komodo.rest.cors.CorsHeaders;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.response.metadata.RestMetadataStatus;
-import org.komodo.rest.relational.response.metadata.RestMetadataTemplate;
-import org.komodo.rest.relational.response.metadata.RestMetadataTemplateEntry;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdb;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatus;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatusVdb;
@@ -312,69 +310,6 @@ public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServ
         for (RestMetadataVdbTranslator translator : translators) {
             assertNotNull(translator.getId());
             assertEquals(2, translator.getLinks().size());
-        }
-    }
-
-    @Test
-    public void shouldGetConnectionTemplates() throws Exception {
-        URI uri = UriBuilder.fromUri(getUriBuilder().baseUri())
-                                          .path(V1Constants.METADATA_SEGMENT)
-                                          .path(V1Constants.TEMPLATES_SEGMENT)
-                                          .build();
-
-        HttpGet request = jsonRequest(uri, RequestType.GET);
-        HttpResponse response = executeOk(request);
-
-        String entity = extractResponse(response);
-        RestMetadataTemplate[] templates = KomodoJsonMarshaller.unmarshallArray(entity, RestMetadataTemplate[].class);
-        assertTrue(templates.length > 0);
-
-        for (RestMetadataTemplate template : templates) {
-            assertNotNull(template.getId());
-            assertFalse(template.getEntries().isEmpty());
-            assertEquals(3, template.getLinks().size());
-        }
-    }
-
-    @Test
-    public void shouldGetConnectionTemplate() throws Exception {
-        URI uri = UriBuilder.fromUri(getUriBuilder().baseUri())
-                                          .path(V1Constants.METADATA_SEGMENT)
-                                          .path(V1Constants.TEMPLATES_SEGMENT)
-                                          .path("teiid")
-                                          .build();
-
-        HttpGet request = jsonRequest(uri, RequestType.GET);
-        HttpResponse response = executeOk(request);
-
-        String entity = extractResponse(response);
-        RestMetadataTemplate template = KomodoJsonMarshaller.unmarshall(entity, RestMetadataTemplate.class);
-        assertNotNull(template);
-
-        assertNotNull(template.getId());
-        assertFalse(template.getEntries().isEmpty());
-        assertEquals(3, template.getLinks().size());
-    }
-
-    @Test
-    public void shouldGetConnectionTemplateEntries() throws Exception {
-        URI uri = UriBuilder.fromUri(getUriBuilder().baseUri())
-                                          .path(V1Constants.METADATA_SEGMENT)
-                                          .path(V1Constants.TEMPLATES_SEGMENT)
-                                          .path("teiid")
-                                          .path(V1Constants.TEMPLATE_ENTRIES_SEGMENT)
-                                          .build();
-
-        HttpGet request = jsonRequest(uri, RequestType.GET);
-        HttpResponse response = executeOk(request);
-
-        String entity = extractResponse(response);
-        RestMetadataTemplateEntry[] templateEntries = KomodoJsonMarshaller.unmarshallArray(entity, RestMetadataTemplateEntry[].class);
-        assertTrue(templateEntries.length > 0);
-
-        for (RestMetadataTemplateEntry entry : templateEntries) {
-            assertNotNull(entry.getId());
-            assertEquals(2, entry.getLinks().size());
         }
     }
 

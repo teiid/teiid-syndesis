@@ -63,8 +63,6 @@ import org.komodo.rest.relational.response.RestVdbTranslator;
 import org.komodo.rest.relational.response.metadata.RestMetadataConnection;
 import org.komodo.rest.relational.response.metadata.RestMetadataConnectionStatus;
 import org.komodo.rest.relational.response.metadata.RestMetadataStatus;
-import org.komodo.rest.relational.response.metadata.RestMetadataTemplate;
-import org.komodo.rest.relational.response.metadata.RestMetadataTemplateEntry;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdb;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatus;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatusVdb;
@@ -125,8 +123,6 @@ public final class KomodoJsonMarshaller {
                                                   .registerTypeAdapter(RestConnectionSummary.class, new ConnectionSummarySerializer())
                                                   .registerTypeAdapter(RestSyndesisSourceStatus.class, new SyndesisSourceStatusSerializer())
                                                   .registerTypeAdapter(RestMetadataConnectionStatus.class, new MetadataConnectionStatusSerializer())
-                                                  .registerTypeAdapter(RestMetadataTemplate.class, new MetadataTemplateSerializer())
-                                                  .registerTypeAdapter(RestMetadataTemplateEntry.class, new MetadataTemplateEntrySerializer())
                                                   .registerTypeAdapter(RestBasicEntity.class, new BasicEntitySerializer<RestBasicEntity>())
                                                   .registerTypeAdapter(RestMetadataStatus.class, new MetadataStatusSerializer())
                                                   .registerTypeAdapter(RestMetadataVdb.class, new MetadataVdbSerializer())

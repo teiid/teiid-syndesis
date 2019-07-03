@@ -46,8 +46,6 @@ import org.komodo.relational.model.View;
 import org.komodo.relational.model.VirtualProcedure;
 import org.komodo.relational.model.internal.AccessPatternImpl;
 import org.komodo.relational.profile.Profile;
-import org.komodo.relational.template.Template;
-import org.komodo.relational.template.TemplateEntry;
 import org.komodo.relational.vdb.Condition;
 import org.komodo.relational.vdb.DataRole;
 import org.komodo.relational.vdb.Entry;
@@ -127,10 +125,6 @@ public class TypeResolverRegistry {
         index(KomodoType.TABLE, Table.RESOLVER);
 
         index(KomodoType.TABULAR_RESULT_SET, TabularResultSet.RESOLVER);
-
-        index(KomodoType.TEMPLATE, Template.RESOLVER);
-
-        index(KomodoType.TEMPLATE_ENTRY, TemplateEntry.RESOLVER);
 
         index(KomodoType.RESULT_SET_COLUMN, ResultSetColumn.RESOLVER);
 
