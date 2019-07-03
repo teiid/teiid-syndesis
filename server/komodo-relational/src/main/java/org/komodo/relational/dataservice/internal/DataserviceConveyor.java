@@ -31,6 +31,12 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.StartElement;
+
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.ExistingNodeOptions;
@@ -60,8 +66,6 @@ import org.komodo.spi.runtime.TeiidVdb;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.FileUtils;
 import org.komodo.utils.StringUtils;
-import org.teiid.modeshape.sequencer.dataservice.DataServiceManifest;
-import org.teiid.modeshape.sequencer.dataservice.DataServiceManifestReader;
 
 /**
  * Handles importing and exporting of {@link Dataservice data services}.
@@ -166,11 +170,13 @@ public class DataserviceConveyor implements StringConstants {
 
                     byte[] content = bos.toByteArray();
                     ByteArrayInputStream entryStream = new ByteArrayInputStream(content);
-
-                    DataServiceManifestReader reader = new DataServiceManifestReader();
-                    DataServiceManifest manifest = reader.read(entryStream);
-                    return manifest.getName();
-
+                    
+                    XMLEventReader reader = XMLInputFactory.newInstance().createXMLEventReader(entryStream);
+                    StartElement event = reader.nextTag().asStartElement();
+                    Attribute attribute = event.getAttributeByName(new QName("name"));
+                    if (attribute != null) {
+                    	return attribute.getValue();
+                    }
                 } finally {
                     if (bos != null)
                         bos.close();

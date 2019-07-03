@@ -18,15 +18,18 @@
 package org.komodo.relational.dataservice;
 
 import static org.komodo.spi.constants.StringConstants.COLON;
+
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
+
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+
 import org.komodo.core.KomodoLexicon;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
@@ -42,7 +45,6 @@ import org.komodo.utils.ArgCheck;
 import org.komodo.utils.FileUtils;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
-import org.teiid.modeshape.sequencer.dataservice.DataServiceManifest;
 import org.w3c.dom.Document;
 
 /**
@@ -56,7 +58,7 @@ public class DataserviceManifest implements Exportable {
                                                                         DataVirtLexicon.Namespace.PREFIX + COLON,
                                                                         KomodoLexicon.Namespace.PREFIX + COLON };
 
-    private static final SimpleDateFormat FORMATTER = new SimpleDateFormat( DataServiceManifest.DATE_PATTERN );
+    private static final SimpleDateFormat FORMATTER = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss" ); //$NON-NLS-1$
 
     /**
      * The data service manifest archive entry path. Value is {@value}.

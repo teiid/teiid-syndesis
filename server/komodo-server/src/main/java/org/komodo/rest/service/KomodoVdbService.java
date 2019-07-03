@@ -45,8 +45,6 @@ import static org.komodo.rest.relational.RelationalMessages.Error.VDB_SERVICE_GE
 import static org.komodo.rest.relational.RelationalMessages.Error.VIEW_NAME_EXISTS;
 import static org.komodo.rest.relational.RelationalMessages.Error.VIEW_NAME_VALIDATION_ERROR;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,11 +64,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.komodo.core.repository.ObjectImpl;
-import org.komodo.importer.ImportMessages;
-import org.komodo.importer.ImportOptions;
-import org.komodo.importer.ImportOptions.OptionKeys;
 import org.komodo.relational.connection.Connection;
-import org.komodo.relational.importer.vdb.VdbImporter;
 import org.komodo.relational.model.Column;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Model.Type;
@@ -112,7 +106,6 @@ import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.StringNameValidator;
@@ -375,127 +368,6 @@ public final class KomodoVdbService extends KomodoService {
             }
 
             return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.VDB_SERVICE_UPDATE_VDB_ERROR);
-        }
-    }
-
-    /**
-     * Clone a Vdb in the komodo repository
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
-     * @param vdbName
-     *        the Vdb name (cannot be empty)
-     * @param newVdbName
-     *        the new Vdb name (cannot be empty)
-     * @return a JSON representation of the new Vdb (never <code>null</code>)
-     * @throws KomodoRestException
-     *         if there is an error creating the Vdb
-     */
-    @POST
-    @Path( StringConstants.FORWARD_SLASH + V1Constants.CLONE_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.VDB_PLACEHOLDER )
-    @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Clone a VDB in the workspace")
-    @ApiResponses(value = {
-        @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-    public Response cloneVdb( final @Context HttpHeaders headers,
-                              final @Context UriInfo uriInfo,
-                              @ApiParam(
-                                        value = "Name of the Vdb to be cloned",
-                                        required = true
-                              )
-                              final @PathParam( "vdbName" ) String vdbName,
-                              @ApiParam(
-                                        value = "name of the new Vdb",
-                                        required = true
-                              )
-                              final String newVdbName) throws KomodoRestException {
-
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
-
-        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
-            return notAcceptableMediaTypesBuilder().build();
-
-        // Error if the Vdb name is missing
-        if (StringUtils.isBlank( vdbName )) {
-            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_CLONE_MISSING_NAME);
-        }
-
-        // Error if the new Vdb name is missing
-        if ( StringUtils.isBlank( newVdbName ) ) {
-            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_CLONE_MISSING_NEW_NAME);
-        }
-
-        // Error if the name parameter and new name are the same
-        final boolean namesMatch = vdbName.equals( newVdbName );
-        if ( namesMatch ) {
-            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_CLONE_SAME_NAME_ERROR, newVdbName);
-        }
-
-        UnitOfWork uow = null;
-
-        try {
-            uow = createTransaction(principal, "cloneVdb", false ); //$NON-NLS-1$
-
-            WorkspaceManager wMgr = getWorkspaceManager(uow);
-            // Error if the repo already contains a vdb with the supplied name.
-            if ( wMgr.hasChild( uow, newVdbName ) ) {
-                return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_CLONE_ALREADY_EXISTS);
-            }
-
-            // Get the existing VDB to clone
-            final KomodoObject kobject = wMgr.getChild( uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE );
-            final Vdb oldVdb = wMgr.resolve( uow, kobject, Vdb.class );
-
-            // Get VDB content
-            oldVdb.setVdbName(uow, newVdbName);  // Change VDBName to new name so xml has desired new name
-            boolean oldHadDeploymentProperty = oldVdb.hasProperty(uow, "deployment-name"); //$NON-NLS-1$
-            if(oldHadDeploymentProperty) {
-                oldVdb.setProperty(uow, "deployment-name", newVdbName + "-vdb.xml");  //$NON-NLS-1$ //$NON-NLS-2$
-            }
-
-            byte[] vdbXml = oldVdb.export(uow, null);
-            InputStream vdbStream = new ByteArrayInputStream(vdbXml);
-            oldVdb.setVdbName(uow, vdbName);     // Change VDBName back to original name (TODO fix importer to handle this)
-            if(oldHadDeploymentProperty) {
-                oldVdb.setProperty(uow, "deployment-name", vdbName + "-vdb.xml");  //$NON-NLS-1$ //$NON-NLS-2$
-            }
-
-            Repository repo = this.kengine.getDefaultRepository();
-            // Import to create a new Vdb in the workspace
-            VdbImporter importer = new VdbImporter(repo);
-            final ImportOptions importOptions = new ImportOptions();
-            importOptions.setOption( OptionKeys.NAME, newVdbName );
-            ImportMessages importMessages = new ImportMessages();
-            importer.importVdb(uow, vdbStream, repo.komodoWorkspace(uow), importOptions, importMessages);
-
-            if(importMessages.hasError()) {
-                LOGGER.debug("cloneVDB for '{0}' failed", newVdbName); //$NON-NLS-1$
-                return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_CLONE_VDB_ERROR, vdbName);
-            }
-
-            // Get the newly created VDB
-            final KomodoObject kobject2 = wMgr.getChild( uow, newVdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE );
-            final Vdb vdb = wMgr.resolve( uow, kobject2, Vdb.class );
-
-            final RestVdb entity = entityFactory.create(vdb, uriInfo.getBaseUri(), uow );
-            final Response response = commit( uow, mediaTypes, entity );
-            return response;
-        } catch (final Exception e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
-                uow.rollback();
-            }
-
-            if (e instanceof KomodoRestException) {
-                throw (KomodoRestException)e;
-            }
-
-            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.VDB_SERVICE_CLONE_VDB_ERROR, vdbName);
         }
     }
 

@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -37,16 +36,9 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
-import org.komodo.core.repository.SynchronousCallback;
-import org.komodo.importer.ImportMessages;
-import org.komodo.importer.ImportOptions;
-import org.komodo.importer.ImportOptions.ExistingNodeOptions;
-import org.komodo.importer.ImportOptions.OptionKeys;
-import org.komodo.relational.importer.vdb.VdbImporter;
 import org.komodo.relational.profile.Profile;
 import org.komodo.relational.profile.SqlComposition;
 import org.komodo.relational.profile.SqlProjectedColumn;
@@ -70,7 +62,6 @@ import org.komodo.rest.relational.response.vieweditorstate.RestViewDefinition;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewDefinitionStatus;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.Id;
@@ -214,92 +205,6 @@ public final class KomodoUtilService extends KomodoService {
                                                      RelationalMessages.Error.VDB_SAMPLE_CONTENT_SUCCESS, sampleName));
 
         return fileStream;
-    }
-
-    /**
-     * Attempt to import the sample data into the engine
-     *
-     * @return the response indicating the sample data load has been attempted
-     */
-    @SuppressWarnings( "nls" )
-    @POST
-    @Path(V1Constants.SAMPLE_DATA)
-    @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Import sample data into VdbBuilder and display the status of the operation",
-                             response = KomodoStatusObject.class)
-    @ApiResponses(value = {
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-    public Response importSampleData(final @Context HttpHeaders headers,
-                                                                       final @Context UriInfo uriInfo) {
-
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
-
-        KomodoStatusObject status = new KomodoStatusObject("Sample Vdb Import");
-
-        for (String sampleName : SAMPLES) {
-            InputStream sampleStream = getVdbSample(sampleName);
-            if (sampleStream == null) {
-                status.addAttribute(sampleName, RelationalMessages.getString(
-                                                          RelationalMessages.Error.VDB_SAMPLE_CONTENT_FAILURE, sampleName));
-                continue;
-            }
-
-            UnitOfWork uow = null;
-            try {
-                SynchronousCallback callback = new SynchronousCallback();
-                uow = createTransaction(principal, "Import vdb " + sampleName, false, callback); //$NON-NLS-1$
-
-                String msg = null;
-
-                ImportOptions importOptions = new ImportOptions();
-                importOptions.setOption(OptionKeys.HANDLE_EXISTING, ExistingNodeOptions.RETURN);
-                ImportMessages importMessages = new ImportMessages();
-
-                Repository repo = this.kengine.getDefaultRepository();
-                KomodoObject workspace = repo.komodoWorkspace(uow);
-                VdbImporter importer = new VdbImporter(repo);
-                importer.importVdb(uow, sampleStream, workspace, importOptions, importMessages);
-                uow.commit();
-
-                List<String> errorMsgs = importMessages.getErrorMessages();
-                if (errorMsgs.isEmpty()) {
-                    msg = RelationalMessages.getString(
-                                                       RelationalMessages.Error.VDB_SAMPLE_IMPORT_SUCCESS,
-                                                                                                              sampleName);
-                } else if (errorMsgs.iterator().next().contains("node already exists")) {
-                    msg = RelationalMessages.getString(
-                                                       RelationalMessages.Error.VDB_SAMPLE_IMPORT_VDB_EXISTS,
-                                                                                                              sampleName);
-                } else {
-                    String errMsg = StringUtils.toCommaSeparatedList(errorMsgs.toArray());
-                    msg = RelationalMessages.getString(
-                                                           RelationalMessages.Error.VDB_SAMPLE_IMPORT_ERRORS,
-                                                                                                               sampleName, errMsg);
-                }
-
-                if (callback.await(3, TimeUnit.MINUTES)) {
-                    status.addAttribute(sampleName, msg);
-                } else {
-                    status.addAttribute(sampleName, RelationalMessages.getString(
-                                                                                 RelationalMessages.Error.VDB_SAMPLE_IMPORT_TIMEOUT,
-                                                                                 sampleName, msg));
-                }
-
-            } catch ( final Exception e ) {
-                if ( ( uow != null ) && ( uow.getState() != State.COMMITTED ) ) {
-                    uow.rollback();
-                }
-
-                status.addAttribute(sampleName, RelationalMessages.getString(
-                                                                             RelationalMessages.Error.VDB_SERVICE_LOAD_SAMPLE_ERROR, sampleName, e));
-            }
-        }
-
-        ResponseBuilder builder = Response.ok( KomodoJsonMarshaller.marshall(status, true), MediaType.APPLICATION_JSON );
-        return builder.build();
     }
 
     /**
