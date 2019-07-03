@@ -48,8 +48,6 @@ import org.komodo.rest.relational.response.RestConnectionSummary;
 import org.komodo.rest.relational.response.RestQueryColumn;
 import org.komodo.rest.relational.response.RestQueryResult;
 import org.komodo.rest.relational.response.RestQueryRow;
-import org.komodo.rest.relational.response.RestStorageType;
-import org.komodo.rest.relational.response.RestStorageTypeDescriptor;
 import org.komodo.rest.relational.response.RestVdb;
 import org.komodo.rest.relational.response.RestVdbCondition;
 import org.komodo.rest.relational.response.RestVdbDataRole;
@@ -141,8 +139,6 @@ public final class KomodoJsonMarshaller {
                                                   .registerTypeAdapter(ConnectionSchemaPairProperty.class, new ConnectionSchemaPropertyPairPropertySerializer())
                                                   .registerTypeAdapter(ConnectionSchemaProperty.class, new ConnectionSchemaPropertySerializer())
                                                   .registerTypeAdapter(KomodoStorageAttributes.class, new StorageAttributesSerializer())
-                                                  .registerTypeAdapter(RestStorageType.class, new StorageTypeSerializer())
-                                                  .registerTypeAdapter(RestStorageTypeDescriptor.class, new StorageTypeDescriptorSerializer())
                                                   .registerTypeAdapter(KomodoQueryAttribute.class, new QueryAttributeSerializer())
                                                   .registerTypeAdapter(RestQueryResult.class, new QueryResultSerializer())
                                                   .registerTypeAdapter(RestQueryColumn.class, new QueryColumnSerializer())

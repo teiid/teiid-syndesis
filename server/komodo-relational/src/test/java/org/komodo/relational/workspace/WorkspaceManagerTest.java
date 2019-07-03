@@ -72,7 +72,6 @@ import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.storage.StorageConnector;
 import org.komodo.test.utils.TestUtilities;
 import org.komodo.utils.FileUtils;
 
