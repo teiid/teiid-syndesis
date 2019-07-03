@@ -21,15 +21,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
+
 import javax.jcr.Binary;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.Property;
 import javax.jcr.Session;
-import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
+
 import org.modeshape.common.text.ParsingException;
 import org.modeshape.common.util.IoUtil;
 import org.teiid.modeshape.sequencer.ddl.DdlParser;
+import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
 import org.teiid.modeshape.sequencer.ddl.TeiidDdlParser;
 import org.teiid.modeshape.sequencer.ddl.TeiidDdlSequencer;
 import org.teiid.modeshape.sequencer.ddl.node.AstNode;

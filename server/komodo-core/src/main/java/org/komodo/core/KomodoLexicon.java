@@ -19,7 +19,7 @@ package org.komodo.core;
 
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
-import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon;
+import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
 
 /**
  * Constants for the JCR names of node types and properties related to the Komodo engine.

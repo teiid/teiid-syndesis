@@ -31,7 +31,7 @@ import org.komodo.relational.model.Table;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
+import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public final class StatementOptionImplTest extends RelationalModelTest {

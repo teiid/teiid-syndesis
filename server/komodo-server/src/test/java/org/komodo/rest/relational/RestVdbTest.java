@@ -32,7 +32,7 @@ import org.junit.Test;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.relational.response.RestVdb;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
+import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;

@@ -27,7 +27,7 @@ import org.komodo.rest.RestLink;
 import org.komodo.rest.RestLink.LinkType;
 import org.komodo.rest.relational.KomodoRestUriBuilder.SettingNames;
 import org.komodo.spi.KException;
-import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
+import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 
 /**
@@ -85,13 +85,10 @@ public class RestConnection extends RestBasicEntity {
 
         setJndiName(connection.getJndiName(uow));
         setDriverName(connection.getDriverName(uow));
-        setJdbc(connection.isJdbc(uow));
 
         addExecutionProperties(uow, connection);
 
         Properties settings = getUriBuilder().createSettings(SettingNames.CONNECTION_NAME, getId());
-        URI parentUri = getUriBuilder().connectionParentUri(connection, uow);
-        getUriBuilder().addSetting(settings, SettingNames.PARENT_PATH, parentUri);
 
         addLink(new RestLink(LinkType.SELF, getUriBuilder().connectionUri(LinkType.SELF, settings)));
         addLink(new RestLink(LinkType.PARENT, getUriBuilder().connectionUri(LinkType.PARENT, settings)));
@@ -128,21 +125,6 @@ public class RestConnection extends RestBasicEntity {
      */
     public void setDriverName(final String driver) {
         tuples.put(DRIVER_NAME_LABEL, driver);
-    }
-
-    /**
-     * @return whether connection is JDBC
-     */
-    public boolean isJdbc() {
-        Object jdbc = tuples.get(JDBC_LABEL);
-        return jdbc != null ? Boolean.parseBoolean(jdbc.toString()) : false;
-    }
-
-    /**
-     * @param jdbc
-     */
-    public void setJdbc(boolean jdbc) {
-        tuples.put(JDBC_LABEL, jdbc);
     }
 
 }

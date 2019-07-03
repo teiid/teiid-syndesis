@@ -67,7 +67,7 @@ import org.komodo.rest.relational.response.RestVdbPermission;
 import org.komodo.rest.relational.response.RestVdbTranslator;
 import org.komodo.rest.service.AbstractServiceTest;
 import org.komodo.rest.service.KomodoVdbService;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
+import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.test.utils.TestUtilities;
 
@@ -817,13 +817,6 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
 
     @Test
     public void shouldGetVdbModelSource() throws Exception {
-
-        //
-        // Create the connection in the repository to ensure the model source
-        // returns an origin reference to it
-        //
-        String connectionPath = createConnection(TestUtilities.PORTFOLIO_CONNECTION_NAME);
-
         // get
         Properties settings = uriBuilder().createSettings(SettingNames.VDB_NAME, TestUtilities.PORTFOLIO_VDB_NAME);
         uriBuilder().addSetting(settings, SettingNames.VDB_PARENT_PATH, uriBuilder().workspaceVdbsUri());
@@ -843,7 +836,6 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
         assertEquals(KomodoType.VDB_MODEL_SOURCE, source.getkType());
         assertEquals("java:/excel-file", source.getJndiName());
         assertEquals("excel", source.getTranslator());
-        assertEquals(connectionPath, source.getConnection());
 
         Collection<RestLink> links = source.getLinks();
         assertEquals(3, links.size());
@@ -1520,20 +1512,6 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
     }
 
     @Test
-    public void shouldFailNameValidationWhenConnectionWithSameNameExists() throws Exception {
-        String sourceName = "elvis";
-        createConnection(sourceName);
-
-        // try and validate the same name of an existing VDB
-        URI vdbUri = uriBuilder().workspaceVdbsUri();
-        URI uri = UriBuilder.fromUri(vdbUri).path(V1Constants.NAME_VALIDATION_SEGMENT).path(sourceName).build();
-        HttpGet request = request(uri, RequestType.GET, MediaType.TEXT_PLAIN_TYPE);
-        HttpResponse response = executeOk(request);
-
-        extractResponse(response);
-    }
-
-    @Test
     public void shouldFailNameValidationWhenNameHasInvalidCharacters() throws Exception {
         URI vdbUri = uriBuilder().workspaceVdbsUri();
         URI uri = UriBuilder.fromUri(vdbUri).path(V1Constants.NAME_VALIDATION_SEGMENT).path("InvalidN@me").build();
@@ -1541,16 +1519,6 @@ public class KomodoVdbServiceTestInSuite extends AbstractKomodoServiceTest {
         HttpResponse response = executeOk(request);
 
         extractResponse(response);
-    }
-
-    @Test
-    public void shouldFailNameValidationWhenNameIsEmpty() throws Exception {
-        URI vdbUri = uriBuilder().workspaceConnectionsUri();
-        URI uri = UriBuilder.fromUri(vdbUri).path(V1Constants.NAME_VALIDATION_SEGMENT).path("").build();
-        HttpGet request = request(uri, RequestType.GET, MediaType.TEXT_PLAIN_TYPE);
-        HttpResponse response = execute(request);
-
-        assertResponse(response, HttpStatus.SC_INTERNAL_SERVER_ERROR);
     }
 
     @Test

@@ -40,7 +40,6 @@ import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.RestLink;
 import org.komodo.rest.cors.CorsHeaders;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
-import org.komodo.rest.relational.response.metadata.RestMetadataConnection;
 import org.komodo.rest.relational.response.metadata.RestMetadataStatus;
 import org.komodo.rest.relational.response.metadata.RestMetadataTemplate;
 import org.komodo.rest.relational.response.metadata.RestMetadataTemplateEntry;
@@ -314,27 +313,6 @@ public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServ
             assertNotNull(translator.getId());
             assertEquals(2, translator.getLinks().size());
         }
-    }
-
-    @Test
-    public void shouldGetConnections() throws Exception {
-        URI uri = UriBuilder.fromUri(getUriBuilder().baseUri())
-                                          .path(V1Constants.METADATA_SEGMENT)
-                                          .path(V1Constants.CONNECTIONS_SEGMENT)
-                                          .build();
-
-        HttpGet request = jsonRequest(uri, RequestType.GET);
-        HttpResponse response = executeOk(request);
-
-        String entity = extractResponse(response);
-        RestMetadataConnection[] connections = KomodoJsonMarshaller.unmarshallArray(entity, RestMetadataConnection[].class);
-        //
-        // TODO
-        // No connections currently deployed.
-        // If this becomes a major issue then may need to deploy one specially
-        // just to ensure something tangible is returned
-        //
-        assertNotNull(connections);
     }
 
     @Test

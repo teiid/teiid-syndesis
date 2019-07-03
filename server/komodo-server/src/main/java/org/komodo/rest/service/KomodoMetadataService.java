@@ -49,7 +49,6 @@ import org.komodo.openshift.BuildStatus;
 import org.komodo.openshift.PublishConfiguration;
 import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.relational.DeployStatus;
-import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.model.Column;
 import org.komodo.relational.model.Model;
@@ -67,7 +66,6 @@ import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
 import org.komodo.rest.relational.KomodoProperties;
 import org.komodo.rest.relational.RelationalMessages;
-import org.komodo.rest.relational.connection.RestConnection;
 import org.komodo.rest.relational.connection.RestSchemaNode;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.request.KomodoQueryAttribute;
@@ -78,7 +76,6 @@ import org.komodo.rest.relational.response.RestSyndesisDataSource;
 import org.komodo.rest.relational.response.RestVdb;
 import org.komodo.rest.relational.response.RestVdbModelTableColumn;
 import org.komodo.rest.relational.response.RestVdbTranslator;
-import org.komodo.rest.relational.response.metadata.RestMetadataConnection;
 import org.komodo.rest.relational.response.metadata.RestMetadataStatus;
 import org.komodo.rest.relational.response.metadata.RestMetadataTemplate;
 import org.komodo.rest.relational.response.metadata.RestMetadataTemplateEntry;
@@ -89,7 +86,6 @@ import org.komodo.rest.relational.response.metadata.RestSyndesisSourceStatus;
 import org.komodo.rest.relational.response.virtualization.RestVirtualizationStatus;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.query.QSResult;
 import org.komodo.spi.repository.KomodoObject;
@@ -104,6 +100,7 @@ import org.komodo.spi.runtime.TeiidVdb;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -539,79 +536,6 @@ public class KomodoMetadataService extends KomodoService {
     }
 
     /**
-     * Remove a Connection from the server
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
-     * @param connectionName
-     *        the Connection name (never <code>null</code>)
-     * @return a JSON representation of the status (never <code>null</code>)
-     * @throws KomodoRestException
-     *         if there is an error removing the Connection
-     */
-    @DELETE
-    @Path( V1Constants.CONNECTIONS_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.CONNECTION_PLACEHOLDER )
-    @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Removes a Connection from the teiid server")
-    @ApiResponses(value = {
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-    public Response removeConnection(final @Context HttpHeaders headers,
-                                     final @Context UriInfo uriInfo,
-                                     @ApiParam(value = "Name of the connection to be removed", required = true)
-                                     final @PathParam( "connectionName" ) String connectionName) throws KomodoRestException {
-
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
-
-        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
-            return notAcceptableMediaTypesBuilder().build();
-
-        UnitOfWork uow = null;
-
-        String title = RelationalMessages.getString(RelationalMessages.Info.CONNECTION_DEPLOYMENT_STATUS_TITLE);
-        KomodoStatusObject status = new KomodoStatusObject(title);
-
-        try {
-            uow = createTransaction(principal, "removeConnection", false); //$NON-NLS-1$
-
-            if (! getMetadataInstance().dataSourceExists(connectionName)) {
-                status.addAttribute(connectionName,
-                                    RelationalMessages.getString(RelationalMessages.Error.METADATA_SERVICE_NO_CONNECTION_FOUND, connectionName));
-                return commit(uow, mediaTypes, status);
-            }
-
-            getMetadataInstance().deleteDataSource(connectionName);
-
-            // Await the undeployment to end
-            Thread.sleep(DEPLOYMENT_WAIT_TIME);
-
-            if (! hasDataSource(connectionName)) {
-                status.addAttribute(connectionName,
-                                    RelationalMessages.getString(RelationalMessages.Info.CONNECTION_SUCCESSFULLY_UNDEPLOYED, connectionName));
-            } else
-                status.addAttribute(connectionName,
-                                    RelationalMessages.getString(RelationalMessages.Info.CONNECTION_UNDEPLOYMENT_REQUEST_SENT, connectionName));
-
-           return commit(uow, mediaTypes, status);
-
-        } catch (final Exception e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
-                uow.rollback();
-            }
-
-            if (e instanceof KomodoRestException) {
-                throw (KomodoRestException)e;
-            }
-
-            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.METADATA_SERVICE_UNDEPLOY_CONNECTION_ERROR, connectionName);
-        }
-    }
-
-    /**
      * Get the schema for a model in a deployed VDB
      * @param headers
      *        the request headers (never <code>null</code>)
@@ -733,199 +657,6 @@ public class KomodoMetadataService extends KomodoService {
             }
 
             return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.METADATA_SERVICE_GET_TRANSLATORS_ERROR);
-        }
-    }
-
-    /**
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
-     * @return a JSON document representing all the connections deployed to teiid (never <code>null</code>)
-     * @throws KomodoRestException
-     *         if there is a problem constructing the JSON document
-     */
-    @GET
-    @Path(V1Constants.CONNECTIONS_SEGMENT)
-    @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Display the collection of connections",
-                            response = RestConnection[].class)
-    @ApiResponses(value = {
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-    public Response getConnections(final @Context HttpHeaders headers,
-                                   final @Context UriInfo uriInfo) throws KomodoRestException {
-
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
-
-        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        UnitOfWork uow = null;
-
-        try {
-        	Repository repo = this.kengine.getDefaultRepository();
-            uow = createTransaction(principal, "getConnections", true); //$NON-NLS-1$
-
-            // Get teiid datasources
-            Collection<TeiidDataSource> dataSources = getMetadataInstance().getDataSources();
-            LOGGER.debug("getConnections:found '{0}' DataSources", dataSources.size()); //$NON-NLS-1$
-
-            final List<RestMetadataConnection> entities = new ArrayList<>();
-
-            for (TeiidDataSource dataSource : dataSources) {
-                RestMetadataConnection entity = entityFactory.createMetadataDataSource(uow, repo, dataSource, uriInfo.getBaseUri());
-                entities.add(entity);
-                LOGGER.debug("getConnections:Data Source '{0}' entity was constructed", dataSource.getName()); //$NON-NLS-1$
-            }
-
-            // create response
-            return commit(uow, mediaTypes, entities);
-        } catch (CallbackTimeoutException ex) {
-            return createTimeoutResponse(mediaTypes);
-        } catch (Throwable e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
-                uow.rollback();
-            }
-
-            if ( e instanceof KomodoRestException ) {
-                throw ( KomodoRestException )e;
-            }
-
-            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.METADATA_SERVICE_GET_DATA_SOURCES_ERROR);
-        }
-    }
-
-    /**
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
-     * @param connectionName
-     *        the id of the Connection being retrieved (cannot be empty)
-     * @return the JSON representation of the Connection (never <code>null</code>)
-     * @throws KomodoRestException
-     *         if there is a problem finding the specified connection or constructing the JSON representation
-     */
-    @GET
-    @Path( V1Constants.CONNECTIONS_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.CONNECTION_PLACEHOLDER )
-    @Produces( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
-    @ApiOperation(value = "Find connection by name", response = RestConnection.class)
-    @ApiResponses(value = {
-        @ApiResponse(code = 404, message = "No connection could be found with name"),
-        @ApiResponse(code = 406, message = "Only JSON or XML is returned by this operation"),
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-    public Response getConnection( final @Context HttpHeaders headers,
-                                   final @Context UriInfo uriInfo,
-                                   @ApiParam(value = "Name of the connection", required = true)
-                                   final @PathParam( "connectionName" ) String connectionName) throws KomodoRestException {
-
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
-
-        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-
-        UnitOfWork uow = null;
-        try {
-        	Repository repo = this.kengine.getDefaultRepository();
-            // find DataSource
-            uow = createTransaction(principal, "getConnection-" + connectionName, true); //$NON-NLS-1$
-            TeiidDataSource dataSource = getMetadataInstance().getDataSource(connectionName);
-            if (dataSource == null)
-                return commitNoConnectionFound(uow, mediaTypes, connectionName);
-
-            final RestMetadataConnection restDataSource = entityFactory.createMetadataDataSource(uow, repo, dataSource, uriInfo.getBaseUri());
-            LOGGER.debug("getConnection:Datasource '{0}' entity was constructed", dataSource.getName()); //$NON-NLS-1$
-            return commit( uow, mediaTypes, restDataSource );
-
-        } catch (CallbackTimeoutException ex) {
-            return createTimeoutResponse(mediaTypes);
-        } catch ( final Throwable e ) {
-            if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
-                uow.rollback();
-            }
-
-            if ( e instanceof KomodoRestException ) {
-                throw ( KomodoRestException )e;
-            }
-
-            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.METADATA_SERVICE_GET_DATA_SOURCE_ERROR, connectionName);
-        }
-    }
-
-    /**
-     * Copy  connections from the server into the workspace that are not present in the workspace
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
-     * @return a JSON representation of the status of the copying (never <code>null</code>)
-     * @throws KomodoRestException
-     *         if there is an error copying the connections
-     */
-    @POST
-    @Path( V1Constants.CONNECTIONS_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.CONNECTIONS_FROM_TEIID )
-    @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Copy Connections from the server into the workspace")
-    @ApiResponses(value = {
-        @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-    public Response copyConnectionsIntoRepo( final @Context HttpHeaders headers,
-                                      final @Context UriInfo uriInfo) throws KomodoRestException {
-
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
-
-        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
-            return notAcceptableMediaTypesBuilder().build();
-
-        UnitOfWork uow = null;
-
-        try {
-        	Repository repo = this.kengine.getDefaultRepository();
-            // find Connections
-            uow = createTransaction(principal, "connectionsFromTeiid", false); //$NON-NLS-1$
-            Collection<TeiidDataSource> teiidConns = getMetadataInstance().getDataSources();
-
-            // Get current list of workspace Connections
-            final WorkspaceManager mgr = getWorkspaceManager(uow);
-            Connection[] workspaceConns = mgr.findConnections( uow );
-            List<String> workspaceConnNames = new ArrayList<String>(workspaceConns.length);
-
-            String title = RelationalMessages.getString(RelationalMessages.Info.CONNECTION_TO_REPO_STATUS_TITLE);
-            KomodoStatusObject status = new KomodoStatusObject(title);
-
-            // Copy the teiid connection into the workspace, if no workspace connection with the same name
-            for(TeiidDataSource teiidConn : teiidConns) {
-                String name = teiidConn.getName();
-
-                if(workspaceConnNames.contains(name))
-                    continue;
-
-                final Connection connection = getWorkspaceManager(uow).createConnection( uow, null, name);
-                final RestMetadataConnection teiidConnEntity = entityFactory.createMetadataDataSource(uow, repo, teiidConn, uriInfo.getBaseUri());
-
-                setProperties(uow, connection, teiidConnEntity);
-            }
-
-            status.addAttribute("copyConnsToRepo", RelationalMessages.getString(RelationalMessages.Info.CONNECTION_TO_REPO_SUCCESS)); //$NON-NLS-1$
-           return commit(uow, mediaTypes, status);
-
-        } catch (final Exception e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
-                uow.rollback();
-            }
-
-            if (e instanceof KomodoRestException) {
-                throw (KomodoRestException)e;
-            }
-
-            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.CONNECTION_TO_REPO_IMPORT_ERROR);
         }
     }
 

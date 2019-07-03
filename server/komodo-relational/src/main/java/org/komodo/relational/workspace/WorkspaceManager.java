@@ -41,8 +41,8 @@ import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.spi.KEvent;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
+import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
+import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository;
@@ -288,26 +288,6 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
         final String path = ( ( parent == null ) ? getRepository().komodoWorkspace( uow ).getAbsolutePath()
                                                  : parent.getAbsolutePath() );
          return RelationalModelFactory.createDataservice( uow, getRepository(), path, serviceName );
-    }
-
-    /**
-     * @param uow
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param parent
-     *        the parent of the connection object being created (can be <code>null</code>)
-     * @param sourceName
-     *        the name of the connection to create (cannot be empty)
-     * @return the connection object (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    public Connection createConnection( final UnitOfWork uow,
-                                        final KomodoObject parent,
-                                        final String sourceName ) throws KException {
-        final String path = ( ( parent == null ) ? getRepository().komodoWorkspace( uow ).getAbsolutePath()
-                                                 : parent.getAbsolutePath() );
-         return RelationalModelFactory.createConnection( uow, getRepository(), path, sourceName );
     }
 
     /**
@@ -569,36 +549,6 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
         return result;
     }
 
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @return all {@link Connection}s in the workspace
-     * @throws KException
-     *         if an error occurs
-     */
-    public Connection[] findConnections( UnitOfWork transaction ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
-                         "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-
-        final String[] paths = findByType(transaction, DataVirtLexicon.Connection.NODE_TYPE);
-        Connection[] result = null;
-
-        if (paths.length == 0) {
-            result = Connection.NO_CONNECTIONS;
-        } else {
-            result = new Connection[paths.length];
-            int i = 0;
-
-            for (final String path : paths) {
-                result[i++] = new ConnectionImpl(transaction, getRepository(), path);
-            }
-        }
-
-        return result;
-    }
-    
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not

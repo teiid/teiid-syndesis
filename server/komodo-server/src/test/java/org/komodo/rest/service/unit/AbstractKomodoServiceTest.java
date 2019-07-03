@@ -202,13 +202,6 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
         Assert.assertNotNull(serviceTestUtilities.getDataservice(USER_NAME, serviceName));
     }
 
-    protected String createConnection( String connectionName ) throws Exception {
-        serviceTestUtilities.createConnection(connectionName, USER_NAME);
-        Connection connection = serviceTestUtilities.getConnection(USER_NAME, connectionName);
-        Assert.assertNotNull(connection);
-        return connection.getAbsolutePath();
-    }
-
     protected void createVdb( String vdbName ) throws Exception {
         serviceTestUtilities.createVdb(vdbName, USER_NAME);
         Assert.assertNotNull(serviceTestUtilities.getVdb(USER_NAME, vdbName));

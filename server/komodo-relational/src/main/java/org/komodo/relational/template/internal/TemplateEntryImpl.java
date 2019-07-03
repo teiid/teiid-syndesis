@@ -26,7 +26,7 @@ import java.util.Properties;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.template.TemplateEntry;
 import org.komodo.spi.KException;
-import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
+import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.PropertyValueType;

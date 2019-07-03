@@ -18,7 +18,7 @@
 package org.komodo.rest.relational.connection;
 
 import org.komodo.rest.KomodoService;
-import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
+import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 
 public class ConnectionSchemaProperty {
 

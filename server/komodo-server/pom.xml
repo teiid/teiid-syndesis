@@ -150,7 +150,7 @@
     </dependency>
     <dependency>
       <groupId>org.teiid</groupId>
-      <artifactId>komodo-utils</artifactId>
+      <artifactId>komodo-spi</artifactId>
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>

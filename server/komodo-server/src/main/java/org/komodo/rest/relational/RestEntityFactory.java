@@ -69,7 +69,7 @@ import org.komodo.rest.relational.response.metadata.RestMetadataVdb;
 import org.komodo.rest.relational.response.metadata.RestMetadataVdbTranslator;
 import org.komodo.rest.relational.response.virtualization.RestVirtualizationStatus;
 import org.komodo.spi.KException;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
+import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository;
@@ -251,38 +251,6 @@ public class RestEntityFactory implements V1Constants {
         }
 
         return new RestMetadataVdbTranslator(baseUri, translator, transaction);
-    }
-
-    /**
-     * Create RestMetadataConnection
-     * @param transaction the transaction
-     * @param repository the repo
-     * @param teiidDataSource the teiid data source
-     * @param baseUri the uri
-     * @return RestMetadataConnection
-     * @throws Exception if error occurs
-     */
-    public RestMetadataConnection createMetadataDataSource(UnitOfWork transaction, 
-                                                           Repository repository,
-                                                           TeiidDataSource teiidDataSource, 
-                                                           URI baseUri) throws Exception {
-        checkTransaction(transaction);
-
-        KomodoObject parent = createTemporaryParent(transaction, repository, null);
-        Connection connection = RelationalModelFactory.createConnection(transaction, repository,parent.getAbsolutePath(), teiidDataSource.getName());
-        connection.setDriverName(transaction, teiidDataSource.getType());
-        connection.setJndiName(transaction, teiidDataSource.getJndiName());
-
-        for (Entry<Object, Object> property : teiidDataSource.getProperties().entrySet()) {
-            String key = property.getKey().toString();
-            if (TeiidDataSource.DATASOURCE_DRIVERNAME.equals(key) ||
-                    TeiidDataSource.DATASOURCE_JNDINAME.equals(key))
-                continue; // Already set as explicit fields
-
-            connection.setProperty(transaction, key, property.getValue());
-        }
-
-        return new RestMetadataConnection(baseUri, connection, transaction);
     }
 
     /*

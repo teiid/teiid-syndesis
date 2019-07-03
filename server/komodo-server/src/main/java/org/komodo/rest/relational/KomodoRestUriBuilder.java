@@ -28,7 +28,7 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.KomodoRestV1Application;
 import org.komodo.rest.RestLink.LinkType;
 import org.komodo.spi.KException;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
+import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository.UnitOfWork;
@@ -298,15 +298,6 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
     }
 
     /**
-     * @return the URI to use when requesting a collection of Connections in the workspace (never <code>null</code>)
-     */
-    public URI workspaceConnectionsUri() {
-        return UriBuilder.fromUri(this.baseUri)
-                                   .path(WORKSPACE_SEGMENT)
-                                   .path(CONNECTIONS_SEGMENT).build();
-    }
-
-    /**
      * @return the URI to use when requesting a collection of Drivers in the workspace (never <code>null</code>)
      */
     public URI workspaceDriversUri() {
@@ -360,16 +351,6 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
         return UriBuilder.fromUri(this.baseUri)
                                      .path(METADATA_SEGMENT)
                                      .path(TEMPLATES_SEGMENT)
-                                     .build();
-    }
-
-    /**
-     * @return the URI to use when requesting the metadata server connections collection  (never <code>null</code>)
-     */
-    public URI mServerConnectionsUri() {
-        return UriBuilder.fromUri(this.baseUri)
-                                     .path(METADATA_SEGMENT)
-                                     .path(CONNECTIONS_SEGMENT)
                                      .build();
     }
 
@@ -934,16 +915,6 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
 
         assert(result != null);
         return result;
-    }
-
-    /**
-     * @param connection the connection whose parent URI is being requested (cannot be <code>null</code>)
-     * @param uow
-     * @return the URI of the parent of the given connection
-     * @throws KException
-     */
-    public URI connectionParentUri(Connection connection, UnitOfWork uow) throws KException {
-        return workspaceConnectionsUri();
     }
 
     /**

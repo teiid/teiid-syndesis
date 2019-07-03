@@ -34,19 +34,9 @@
 
     <dependency>
       <groupId>org.teiid</groupId>
-      <artifactId>komodo-utils</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.teiid</groupId>
       <artifactId>komodo-core</artifactId>
     </dependency>
 
-    <dependency>
-      <groupId>org.teiid</groupId>
-      <artifactId>komodo-importer</artifactId>
-    </dependency>
-    
     <dependency>
         <groupId>xml-apis</groupId>
         <artifactId>xml-apis</artifactId>
@@ -54,12 +44,7 @@
         
     <dependency>
       <groupId>org.teiid</groupId>
-      <artifactId>komodo-metadata</artifactId>
-    </dependency>
-    
-    <dependency>
-      <groupId>org.teiid</groupId>
-      <artifactId>komodo-utils</artifactId>
+      <artifactId>komodo-spi</artifactId>
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>

@@ -24,7 +24,6 @@ import java.util.Objects;
 import java.util.Properties;
 
 import org.komodo.core.repository.RepositoryTools;
-import org.komodo.relational.DeployStatus;
 import org.komodo.relational.Messages;
 import org.komodo.relational.RelationalModelFactory;
 import org.komodo.relational.RelationalObject;
@@ -45,8 +44,6 @@ import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
-import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.KomodoObject;
@@ -56,6 +53,7 @@ import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
+import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 
 /**
  * Implementation of data service instance model.
@@ -113,8 +111,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
      */
     @Override
     public byte[] export(UnitOfWork transaction, Properties exportProperties) throws KException {
-    	MetadataInstance metadata = getRepository().getMetadataInstance();
-        DataserviceConveyor conveyor = new DataserviceConveyor(getRepository(), metadata);
+        DataserviceConveyor conveyor = new DataserviceConveyor(getRepository());
         return conveyor.export(transaction, this, exportProperties);
     }
 
@@ -351,13 +348,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
     public Vdb getServiceVdb( final UnitOfWork transaction ) throws KException {
         final ServiceVdbEntry entry = getServiceVdbEntry( transaction );
         return ( ( entry == null ) ? null : entry.getReference( transaction ) );
-    }
-
-    @Override
-    public DeployStatus deploy(UnitOfWork uow) throws KException {
-    	MetadataInstance metadata = getRepository().getMetadataInstance();
-        DataserviceConveyor conveyor = new DataserviceConveyor(getRepository(), metadata);
-        return conveyor.deploy(uow, this);
     }
 
     /* (non-Javadoc)

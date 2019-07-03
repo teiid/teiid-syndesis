@@ -24,7 +24,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
@@ -41,31 +40,20 @@ import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.ExistingNodeOptions;
 import org.komodo.importer.ImportOptions.OptionKeys;
-import org.komodo.relational.DeployStatus;
-import org.komodo.relational.Messages;
-import org.komodo.relational.connection.Connection;
-import org.komodo.relational.dataservice.ConnectionEntry;
 import org.komodo.relational.dataservice.DataServiceEntry;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.DataserviceManifest;
-import org.komodo.relational.dataservice.ServiceVdbEntry;
-import org.komodo.relational.dataservice.VdbEntry;
-import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
 import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
-import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
-import org.komodo.spi.runtime.TeiidDataSource;
-import org.komodo.spi.runtime.TeiidVdb;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.FileUtils;
-import org.komodo.utils.StringUtils;
 
 /**
  * Handles importing and exporting of {@link Dataservice data services}.
@@ -79,14 +67,11 @@ public class DataserviceConveyor implements StringConstants {
 
     private final Repository repository;
 
-    private final MetadataInstance metadataInstance;
-
     /**
      * @param repository the associated repository (cannot be <code>null</code>)
      */
-    public DataserviceConveyor(Repository repository, MetadataInstance metadataInstance) {
+    public DataserviceConveyor(Repository repository) {
         this.repository = Objects.requireNonNull( repository, "repository" ); //$NON-NLS-1$
-        this.metadataInstance = metadataInstance;
     }
 
     protected WorkspaceManager getWorkspaceManager(UnitOfWork transaction) throws KException {
@@ -341,213 +326,5 @@ public class DataserviceConveyor implements StringConstants {
         }
     }
 
-    private void deployConnection( final UnitOfWork uow,
-                                   final ConnectionEntry entry,
-                                   final DeployStatus status ) throws Exception {
-        final Connection connection = entry.getReference( uow );
-        final String connectionName = connection.getName( uow );
-        status.addProgressMessage( Messages.getString( Messages.DataserviceConveyor.DATA_SERVICE_CONNECTION_START_DEPLOY,
-                                                       connectionName ) );
 
-        final String jndiName = entry.getJndiName( uow );
-        final String sourceType = connection.getDriverName( uow );
-        final Properties properties = connection.getPropertiesForServerDeployment( uow );
-
-        final TeiidDataSource teiidDataSrc = metadataInstance.getOrCreateDataSource( connectionName,
-                                                                                  jndiName,
-                                                                                  sourceType,
-                                                                                  properties );
-        if ( teiidDataSrc == null ) {
-            String errorMsg = Messages.getString( Messages.DataserviceConveyor.DATA_SERVICE_DATA_SOURCE_FAILED_TO_DEPLOY,
-                                                  connectionName );
-            status.addErrorMessage( errorMsg );
-        }
-
-        status.addProgressMessage( Messages.getString( Messages.DataserviceConveyor.DATA_SERVICE_CONNECTION_SUCCESSFULLY_DEPLOYED,
-                                                       connectionName ) );
-    }
-
-    private void deployVdb( final UnitOfWork uow,
-                            final VdbEntry entry,
-                            final DeployStatus status ) throws Exception {
-        final Vdb vdb = entry.getReference( uow );
-        final String vdbName = vdb.getName( uow );
-        status.addProgressMessage( Messages.getString( Messages.DataserviceConveyor.DATA_SERVICE_VDB_START_DEPLOY, vdbName ) );
-
-        // Get VDB content
-        final byte[] vdbXml = vdb.export( uow, null );
-
-        if ( ( vdbXml == null ) || ( vdbXml.length == 0 ) ) {
-            String errorMsg = Messages.getString( Messages.DataserviceConveyor.DATA_SERVICE_VDB_CONTENTS_FAILURE, vdbName );
-            status.addErrorMessage( errorMsg );
-            return;
-        }
-
-        // Get Vdb deployment name
-        String vdbDeploymentName = null;
-        if ( vdb.hasProperty( uow, "deployment-name" ) ) { //$NON-NLS-1$
-            vdbDeploymentName = vdb.getProperty( uow, "deployment-name" ).getStringValue( uow ); //$NON-NLS-1$
-        }
-        if(StringUtils.isEmpty(vdbDeploymentName)) {
-        	vdbDeploymentName = vdb.getName(uow) + TeiidVdb.DYNAMIC_VDB_SUFFIX;
-        }
-
-        final InputStream stream = new ByteArrayInputStream( vdbXml );
-        metadataInstance.deployDynamicVdb(vdb.getName(uow), vdbDeploymentName, stream );
-
-        status.addProgressMessage( Messages.getString( Messages.DataserviceConveyor.DATA_SERVICE_VDB_SUCCESSFULLY_DEPLOYED,
-                                                       vdbName ) );
-
-        
-        TeiidVdb teiidVdb = metadataInstance.getVdb( vdbDeploymentName );
-        if ( teiidVdb == null ) {
-            status.addProgressMessage( "Warning: Vdb " + vdbName + " not yet completed deployment" );
-            return;
-        }
-
-        if ( teiidVdb.isActive() ) {
-            status.addProgressMessage( "Vdb " + vdbName + " deployed to teiid and is active" );
-        } else if ( teiidVdb.isLoading() ) {
-            status.addProgressMessage( "Vdb " + vdbName + " deployed but still loading" );
-        }
-
-        List< String > vdbErrors = teiidVdb.getValidityErrors();
-        if ( vdbErrors.isEmpty() )
-            status.addProgressMessage( "Vdb " + vdbName + " deployed and is valid" );
-        else
-            status.addProgressMessage( "Vdb " + vdbName + " deployed but has validity errors" );
-
-        for ( String vdbError : vdbErrors ) {
-            status.addErrorMessage( vdbError );
-        }
-    }
-
-    /**
-     * Deploy the {@link Dataservice} to the teiid instance
-     *
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of {@link State#NOT_STARTED})
-     * @param dataservice
-     *        the data service to be deployed (cannot be <code>null</code>)
-     * @param teiid
-     *        the Teiid being deployed to (cannot be <code>null</code>)
-     * @return the deployment status (never <code>null</code>)
-     */
-    public DeployStatus deploy(UnitOfWork transaction, Dataservice dataservice) {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotNull(dataservice, "dataservice"); //$NON-NLS-1$
-
-        DeployStatus status = new DeployStatus();
-
-        try {
-            final String dsName = dataservice.getName( transaction );
-            status.addProgressMessage( Messages.getString( Messages.DataserviceConveyor.DATA_SERVICE_START_DEPLOY, dsName ) );
-
-            // TODO deploy resources
-            // TODO deploy metadata files
-            // TODO deploy UDFs
-
-            { // Deploy the connections
-                final ConnectionEntry[] entries = dataservice.getConnectionEntries( transaction );
-
-                if ( entries.length != 0 ) {
-                    for ( final ConnectionEntry entry : entries ) {
-                        if ( entry.getReference( transaction ) == null ) {
-                            continue; // nothing to deploy
-                        }
-
-                        boolean deploy = false;
-
-                        switch ( entry.getPublishPolicy( transaction ) ) {
-                            case ALWAYS:
-                                deploy = true;
-                                break;
-                            case IF_MISSING:
-                                deploy = true; // TODO determine if not already deployed
-                                break;
-                            case NEVER:
-                            default:
-                                break;
-                        }
-
-                        if ( deploy ) {
-                            deployConnection( transaction, entry, status );
-                        }
-                    }
-                }
-            }
-
-            { // deploy service VDB
-                final Vdb serviceVdb = dataservice.getServiceVdb( transaction );
-
-                if ( serviceVdb != null ) {
-                    final ServiceVdbEntry entry = dataservice.getServiceVdbEntry( transaction );
-                    boolean deploy = false;
-
-                    switch ( entry.getPublishPolicy( transaction ) ) {
-                        case ALWAYS:
-                            deploy = true;
-                            break;
-                        case IF_MISSING:
-                            deploy = true; // TODO determine if not already deployed
-                            break;
-                        case NEVER:
-                        default:
-                            break;
-                    }
-
-                    if ( deploy ) {
-                        deployVdb( transaction, entry, status );
-                    }
-                // No Service VDB - log error
-                } else {
-                    String errorMsg = Messages.getString(Messages.DataserviceConveyor.DATA_SERVICE_VDB_NOT_FOUND,dsName);
-                    status.addErrorMessage(errorMsg);
-                    return status;
-                }
-                
-            }
-
-            //
-            // TODO need to guarantee the ordering of the vdbs
-            //
-            { // Deploy the VDBs
-                final VdbEntry[] entries = dataservice.getVdbEntries( transaction );
-
-                if ( entries.length != 0 ) {
-                    for ( final VdbEntry entry : entries ) {
-                        if ( entry.getReference( transaction ) == null ) {
-                            continue; // nothing to deploy
-                        }
-
-                        boolean deploy = false;
-
-                        switch ( entry.getPublishPolicy( transaction ) ) {
-                            case ALWAYS:
-                                deploy = true;
-                                break;
-                            case IF_MISSING:
-                                deploy = true; // TODO determine if not already deployed
-                                break;
-                            case NEVER:
-                            default:
-                                break;
-                        }
-
-                        if ( deploy ) {
-                            deployVdb( transaction, entry, status );
-                        }
-                    }
-                }
-            }
-
-            status.addProgressMessage( Messages.getString( Messages.DataserviceConveyor.DATA_SERVICE_SUCCESSFULLY_DEPLOYED,
-                                                           dsName ) );
-        } catch (Exception ex) {
-            status.addErrorMessage(ex);
-        }
-
-        return status;
-    }
 }

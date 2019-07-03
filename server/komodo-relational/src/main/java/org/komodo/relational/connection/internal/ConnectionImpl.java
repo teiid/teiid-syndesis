@@ -19,15 +19,16 @@ package org.komodo.relational.connection.internal;
 
 import java.util.Collection;
 import java.util.Properties;
+
 import org.komodo.core.KomodoLexicon;
 import org.komodo.relational.DeployStatus;
-import org.komodo.relational.ExcludeQNamesFilter;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.PropertyValueType;
@@ -41,18 +42,12 @@ import org.komodo.spi.runtime.TeiidDataSource;
 import org.komodo.spi.runtime.TeiidPropertyDefinition;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
-import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
-import org.komodo.spi.metadata.MetadataInstance;
+import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 
 /**
  * Implementation of connection instance model
  */
 public class ConnectionImpl extends RelationalObjectImpl implements Connection, EventManager {
-
-    /**
-     * A filter to exclude specific, readonly properties.
-     */
-    private static final Filter PROPS_FILTER = new ExcludeQNamesFilter( DataVirtLexicon.Connection.CLASS_NAME );
 
     /**
      * @param uow
@@ -163,25 +158,6 @@ public class ConnectionImpl extends RelationalObjectImpl implements Connection, 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.connection.Connection#isJdbc(org.komodo.spi.repository.Repository.UnitOfWork)
-     */
-    @Override
-    public boolean isJdbc(UnitOfWork uow) throws KException {
-        final String connectionType = getObjectProperty(uow,
-                                                        PropertyValueType.STRING,
-                                                        "isJdbc", //$NON-NLS-1$
-                                                        DataVirtLexicon.Connection.TYPE);
-
-        if ( connectionType == null ) {
-            return Connection.DEFAULT_JDBC;
-        }
-
-        return ( DataVirtLexicon.Connection.JDBC_TYPE_CONSTANT.equals(connectionType) );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
      * @see org.komodo.relational.connection.Connection#setDriverName(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
@@ -234,31 +210,8 @@ public class ConnectionImpl extends RelationalObjectImpl implements Connection, 
         setObjectProperty( uow, "setClassName", DataVirtLexicon.Connection.CLASS_NAME, className ); //$NON-NLS-1$
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.connection.Connection#setJdbc(org.komodo.spi.repository.Repository.UnitOfWork, boolean)
-     */
-    @Override
-    public void setJdbc(UnitOfWork uow,
-                        boolean isJdbc) throws KException {
-        final String connectionType = ( isJdbc ? DataVirtLexicon.Connection.JDBC_TYPE_CONSTANT 
-                                               : DataVirtLexicon.Connection.RESOURCE_TYPE_CONSTANT );
-        setObjectProperty( uow, "setJdbc", DataVirtLexicon.Connection.TYPE, connectionType ); //$NON-NLS-1$
-        updatePropFilters(uow);
-    }
-
     private void updatePropFilters(UnitOfWork uow) throws KException {
-        // If JDBC, do not show the "class-name" property
-        if(isJdbc(uow)) {
-            // add in filter to hide the constraint type
-            final Filter[] updatedFilters = new Filter[ DEFAULT_FILTERS.length + 1 ];
-            System.arraycopy( DEFAULT_FILTERS, 0, updatedFilters, 0, DEFAULT_FILTERS.length );
-            updatedFilters[ DEFAULT_FILTERS.length ] = PROPS_FILTER;
-            setFilters( updatedFilters );
-        } else {
-            setFilters( DEFAULT_FILTERS );
-        }
+        setFilters( DEFAULT_FILTERS );
     }
 
     /* (non-Javadoc)
@@ -284,14 +237,11 @@ public class ConnectionImpl extends RelationalObjectImpl implements Connection, 
         }
         sourceProps.setProperty(TeiidDataSource.DATASOURCE_JNDINAME, jndiName);
 
-        // Non-jdbc className is needed.
-        if(!isJdbc(transaction)) {
-            String className = getClassName(transaction);
-            if(StringUtils.isBlank(className)) {
-                throw new Exception( Messages.getString( Relational.CONNECTION_CLASSNAME_NOT_DEFINED ) );
-            }
-            sourceProps.setProperty(TeiidDataSource.DATASOURCE_CLASSNAME, className);
+        String className = getClassName(transaction);
+        if(StringUtils.isBlank(className)) {
+            throw new Exception( Messages.getString( Relational.CONNECTION_CLASSNAME_NOT_DEFINED ) );
         }
+        sourceProps.setProperty(TeiidDataSource.DATASOURCE_CLASSNAME, className);
 
         // Iterate the datasource properties.  Compare them against the valid properties for the server source type.
         String[] propNames = getPropertyNames(transaction);

@@ -18,19 +18,20 @@
 package org.komodo.relational.connection;
 
 import java.util.Properties;
+
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.DeployStatus;
 import org.komodo.relational.RelationalObject;
 import org.komodo.relational.TypeResolver;
 import org.komodo.relational.connection.internal.ConnectionImpl;
 import org.komodo.spi.KException;
-import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 
 /**
  * A model of a connection instance
@@ -223,22 +224,6 @@ public interface Connection extends Exportable, RelationalObject {
      * @throws KException if error occurs
      */
     void setClassName(UnitOfWork transaction, String className) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @return 'true' if a JDBC source, 'false' if not.
-     * @throws KException if error occurs
-     */
-    boolean isJdbc(UnitOfWork transaction) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param isJdbc 'true' if source is JDBC, 'false' if not.
-     * @throws KException if error occurs
-     */
-    void setJdbc(UnitOfWork transaction, boolean isJdbc) throws KException;
 
     /**
      * @param transaction

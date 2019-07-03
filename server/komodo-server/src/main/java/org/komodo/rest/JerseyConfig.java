@@ -5,7 +5,6 @@ import javax.annotation.PostConstruct;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.komodo.rest.cors.KCorsFilter;
 import org.komodo.rest.cors.KCorsHandler;
-import org.komodo.rest.service.KomodoConnectionService;
 import org.komodo.rest.service.KomodoDataserviceService;
 import org.komodo.rest.service.KomodoMetadataService;
 import org.komodo.rest.service.KomodoUtilService;
@@ -41,11 +40,9 @@ public class JerseyConfig extends ResourceConfig {
     private String context;
 
 	public JerseyConfig() {
-	   register(KomodoConnectionService.class);
        register(KomodoExceptionMapper.class);
        register(KomodoUtilService.class);
        register(KomodoDataserviceService.class);
-       register(KomodoConnectionService.class);
        register(KomodoVdbService.class);
        register(KomodoMetadataService.class);
        register(AuthHandlingFilter.class);

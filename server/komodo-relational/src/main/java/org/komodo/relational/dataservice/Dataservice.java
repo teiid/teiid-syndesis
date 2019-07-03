@@ -20,19 +20,18 @@ package org.komodo.relational.dataservice;
 import java.util.Calendar;
 
 import org.komodo.core.repository.ObjectImpl;
-import org.komodo.relational.DeployStatus;
 import org.komodo.relational.RelationalObject;
 import org.komodo.relational.TypeResolver;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.internal.DataserviceImpl;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.spi.KException;
-import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 
 /**
  * A model of a dataservice instance
@@ -201,14 +200,6 @@ public interface Dataservice extends Exportable, RelationalObject, VdbEntryConta
      *         if an error occurs
      */
     String[] getVdbPlan( UnitOfWork uow ) throws KException;
-
-    /**
-     * @param uow
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @return the deployment status of this data service
-     */
-    DeployStatus deploy( UnitOfWork uow) throws KException;
 
     /**
      * @param transaction

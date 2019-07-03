@@ -78,8 +78,6 @@ public class RestSyndesisDataSource extends RestBasicEntity implements SyndesisD
         setTranslatorName(datasource.getTranslatorName());
 
         Properties settings = getUriBuilder().createSettings(SettingNames.CONNECTION_NAME, getId());
-        URI parentUri = getUriBuilder().mServerConnectionsUri();
-        getUriBuilder().addSetting(settings, SettingNames.PARENT_PATH, parentUri);
 
         addLink(new RestLink(LinkType.SELF, getUriBuilder().connectionUri(LinkType.SELF, settings)));
         addLink(new RestLink(LinkType.PARENT, getUriBuilder().connectionUri(LinkType.PARENT, settings)));

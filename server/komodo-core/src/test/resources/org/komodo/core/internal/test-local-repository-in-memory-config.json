@@ -74,9 +74,6 @@
             "DDL Sequencer" : {
                 "classname" : "org.komodo.core.internal.sequencer.KDdlSequencer"
             },
-            "Connection Sequencer" : {
-				"classname" : "org.teiid.modeshape.sequencer.dataservice.ConnectionSequencer"
-			},
             "Data Service Sequencer" : {
 				"classname" : "org.teiid.modeshape.sequencer.dataservice.DataServiceSequencer"
 			},

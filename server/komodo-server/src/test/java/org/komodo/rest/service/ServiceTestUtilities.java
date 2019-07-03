@@ -47,7 +47,7 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
+import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
@@ -99,7 +99,7 @@ public final class ServiceTestUtilities implements StringConstants {
         ImportMessages importMessages = new ImportMessages();
     
         KomodoObject workspace = repository.komodoWorkspace(uow);
-        DataserviceConveyor dsConveyor = new DataserviceConveyor(repository, metadataInstance);
+        DataserviceConveyor dsConveyor = new DataserviceConveyor(repository);
         dsConveyor.dsImport(uow, dsStream, workspace, importOptions, importMessages);
         uow.commit();
         callback.await(3, TimeUnit.MINUTES);
@@ -394,25 +394,6 @@ public final class ServiceTestUtilities implements StringConstants {
     }
 
     /**
-     * Create a connection in the komodo engine
-     *
-     * @param connectionName the connection name
-     * @param user initiating call
-     * @throws Exception if error occurs
-     */
-    public void createConnection(String connectionName, String user) throws Exception {
-        SynchronousCallback callback = new SynchronousCallback();
-        UnitOfWork uow = repository.createTransaction(user, "Create Connection", false, callback, user); //$NON-NLS-1$
-    
-        WorkspaceManager wsMgr = WorkspaceManager.getInstance(repository, uow);
-        Connection connection = wsMgr.createConnection(uow, null, connectionName);
-
-        uow.commit();
-        callback.await(3, TimeUnit.MINUTES);
-        logObjectPath(connection.getAbsolutePath());
-    }
-
-    /**
      * Remove an object directly from the repostory
      *
      * @param absPath the absolute path of the object in the repository
@@ -432,46 +413,6 @@ public final class ServiceTestUtilities implements StringConstants {
     
         uow.commit();
         callback.await(3, TimeUnit.MINUTES);
-    }
-
-    /**
-     * @param user initiating call
-     * @param name of the connection to find
-     *
-     * @return the connection directly from the kEngine
-     * @throws Exception if error occurs
-     */
-    public Connection getConnection(String user, String connectionName) throws Exception {
-    
-        UnitOfWork uow = repository.createTransaction(user, "Find connection " + connectionName, true, null, user); //$NON-NLS-1$
-        WorkspaceManager mgr = WorkspaceManager.getInstance(repository, uow);
-        Connection[] connections = mgr.findConnections(uow);
-        Connection theConnection = null;
-        for(Connection connection : connections) {
-            if (connectionName.equals(connection.getName(uow))) {
-                theConnection = connection;
-                break;
-            }
-        }
-        uow.commit();
-    
-        return theConnection;
-    }
-
-    /**
-     * @param user initiating call
-     *
-     * @return the connections directly from the kEngine
-     * @throws Exception if error occurs
-     */
-    public Connection[] getConnections(String user) throws Exception {
-    
-        UnitOfWork uow = repository.createTransaction(user, "Find connections", true, null, user); //$NON-NLS-1$
-        WorkspaceManager mgr = WorkspaceManager.getInstance(repository, uow);
-        Connection[] sources = mgr.findConnections(uow);
-        uow.commit();
-    
-        return sources;
     }
 
     /**

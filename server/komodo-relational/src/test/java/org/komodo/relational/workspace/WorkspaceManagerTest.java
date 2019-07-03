@@ -24,13 +24,9 @@ import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Before;
@@ -68,12 +64,11 @@ import org.komodo.relational.vdb.Translator;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.VdbImport;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.test.utils.TestUtilities;
 import org.komodo.utils.FileUtils;
+import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 @SuppressWarnings( {"javadoc", "nls"} )
 public final class WorkspaceManagerTest extends RelationalModelTest {
@@ -94,13 +89,6 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
 
         if (myFileDir != null)
             FileUtils.removeDirectoryAndChildren(myFileDir);
-    }
-
-    @Test
-    public void shouldCreateConnection() throws Exception {
-        final Connection connection = this.wsMgr.createConnection( getTransaction(), null, "ds" );
-        assertThat( connection, is( notNullValue() ) );
-        assertThat( _repo.getFromWorkspace( getTransaction(), connection.getAbsolutePath() ), is( ( KomodoObject )connection ) );
     }
 
     @Test
@@ -389,13 +377,6 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
         final DataRole dataRole = vdb.addDataRole(getTransaction(), "dataRole");
         final KomodoObject kobject = new ObjectImpl(_repo, dataRole.getAbsolutePath(), dataRole.getIndex());
         assertThat(this.wsMgr.resolve(getTransaction(), kobject, DataRole.class), is(instanceOf(DataRole.class)));
-    }
-
-    @Test
-    public void shouldResolveConnection() throws Exception {
-        final Connection connection = this.wsMgr.createConnection(getTransaction(), null, "source");
-        final KomodoObject kobject = new ObjectImpl(_repo, connection.getAbsolutePath(), connection.getIndex());
-        assertThat(this.wsMgr.resolve(getTransaction(), kobject, Connection.class), is(instanceOf(Connection.class)));
     }
 
     @Test

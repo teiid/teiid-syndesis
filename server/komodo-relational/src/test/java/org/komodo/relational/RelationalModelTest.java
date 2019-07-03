@@ -22,16 +22,15 @@ import static org.junit.Assert.assertThat;
 
 import org.komodo.core.AbstractLocalRepositoryTest;
 import org.komodo.core.KomodoLexicon;
-import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Schema;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
-import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
+import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
+import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public class RelationalModelTest extends AbstractLocalRepositoryTest {
@@ -126,24 +125,6 @@ public class RelationalModelTest extends AbstractLocalRepositoryTest {
 
         assertThat( ds.getPrimaryType( getTransaction() ).getName(), is( DataVirtLexicon.DataService.NODE_TYPE ) );
         assertThat( ds.getName( getTransaction() ), is( serviceName ) );
-        return ds;
-    }
-
-    protected Connection createConnection() throws Exception {
-        return createConnection( getDefaultConnectionName() );
-    }
-
-    protected Connection createConnection( final String dsName ) throws Exception {
-        return createConnection( dsName, null );
-    }
-
-    protected Connection createConnection( final String dsName,
-                                           final KomodoObject parent ) throws Exception {
-        final WorkspaceManager mgr = WorkspaceManager.getInstance(_repo, getTransaction());
-        final Connection ds = mgr.createConnection( getTransaction(), parent, dsName );
-
-        assertThat( ds.getPrimaryType( getTransaction() ).getName(), is( DataVirtLexicon.Connection.NODE_TYPE ) );
-        assertThat( ds.getName( getTransaction() ), is( dsName ) );
         return ds;
     }
 

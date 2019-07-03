@@ -164,11 +164,6 @@ public class KomodoDataserviceServiceTestInSuite extends AbstractKomodoServiceTe
         for (RestLink link : links) {
             LinkType rel = link.getRel();
             assertTrue(LinkType.SELF.equals(rel) || LinkType.PARENT.equals(rel) || LinkType.CHILDREN.equals(rel));
-
-            if (LinkType.SELF.equals(rel)) {
-                String href = uriBuilder().workspaceConnectionsUri() + FORWARD_SLASH + connection.getId();
-                assertEquals(href, link.getHref().toString());
-            }
         }
     }
 

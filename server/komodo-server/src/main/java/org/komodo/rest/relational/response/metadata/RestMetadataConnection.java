@@ -63,13 +63,10 @@ public final class RestMetadataConnection extends RestConnection {
         setHasChildren(connection.hasChildren(uow));
         setJndiName(connection.getJndiName(uow));
         setDriverName(connection.getDriverName(uow));
-        setJdbc(connection.isJdbc(uow));
 
         addExecutionProperties(uow, connection);
 
         Properties settings = getUriBuilder().createSettings(SettingNames.CONNECTION_NAME, getId());
-        URI parentUri = getUriBuilder().mServerConnectionsUri();
-        getUriBuilder().addSetting(settings, SettingNames.PARENT_PATH, parentUri);
 
         addLink(new RestLink(LinkType.SELF, getUriBuilder().connectionUri(LinkType.SELF, settings)));
         addLink(new RestLink(LinkType.PARENT, getUriBuilder().connectionUri(LinkType.PARENT, settings)));

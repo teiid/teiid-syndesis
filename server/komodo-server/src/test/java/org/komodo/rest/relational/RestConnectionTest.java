@@ -71,7 +71,6 @@ public final class RestConnectionTest implements V1Constants {
         this.connection = new RestConnection();
         this.connection.setId(NAME);
         this.connection.setDriverName(DRIVER_NAME);
-        this.connection.setJdbc(true);
         this.connection.setJndiName(JNDI_NAME);
     }
 
@@ -81,7 +80,6 @@ public final class RestConnectionTest implements V1Constants {
         thatConnection.setId(this.connection.getId());
         thatConnection.setDriverName(this.connection.getDriverName());
         thatConnection.setJndiName(this.connection.getJndiName());
-        thatConnection.setJdbc(this.connection.isJdbc());
         thatConnection.setLinks( this.connection.getLinks() );
 
         assertThat( this.connection, is( thatConnection ) );
@@ -100,7 +98,6 @@ public final class RestConnectionTest implements V1Constants {
         assertThat( empty.getId(), is( nullValue() ) );
         assertThat( empty.getDriverName(), is( nullValue() ) );
         assertThat( empty.getJndiName(), is( nullValue() ) );
-        assertThat( empty.isJdbc(), is( false ) );
         assertThat( empty.getProperties().isEmpty(), is( true ) );
         assertThat( empty.getLinks().size(), is( 0 ) );
     }
@@ -111,7 +108,6 @@ public final class RestConnectionTest implements V1Constants {
         thatConnection.setId(this.connection.getId());
         thatConnection.setDriverName(this.connection.getDriverName());
         thatConnection.setJndiName(this.connection.getJndiName());
-        thatConnection.setJdbc(this.connection.isJdbc());
         thatConnection.setProperties( this.connection.getProperties() );
         thatConnection.setLinks( this.connection.getLinks() );
 
@@ -124,7 +120,6 @@ public final class RestConnectionTest implements V1Constants {
         thatConnection.setId(this.connection.getId() + "blah");
         thatConnection.setDriverName(this.connection.getDriverName());
         thatConnection.setJndiName(this.connection.getJndiName());
-        thatConnection.setJdbc(this.connection.isJdbc());
         thatConnection.setProperties( this.connection.getProperties() );
         thatConnection.setLinks( this.connection.getLinks() );
 
@@ -138,7 +133,6 @@ public final class RestConnectionTest implements V1Constants {
         thatConnection.setId(this.connection.getId());
         thatConnection.setDriverName(this.connection.getDriverName());
         thatConnection.setJndiName(this.connection.getJndiName());
-        thatConnection.setJdbc(this.connection.isJdbc());
         thatConnection.setLinks( this.connection.getLinks() );
 
         List<RestProperty> props = new ArrayList<>();
@@ -156,7 +150,6 @@ public final class RestConnectionTest implements V1Constants {
         thatConnection.setId(this.connection.getId());
         thatConnection.setDriverName(this.connection.getDriverName());
         thatConnection.setJndiName(this.connection.getJndiName() + "blah");
-        thatConnection.setJdbc(this.connection.isJdbc());
         thatConnection.setProperties( this.connection.getProperties() );
         thatConnection.setLinks( this.connection.getLinks() );
 

@@ -44,11 +44,9 @@ import org.junit.Test;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.OptionKeys;
-import org.komodo.metadata.DefaultMetadataInstance;
 import org.komodo.metadata.TeiidConnectionProvider;
 import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.RelationalObject.Filter;
-import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.ConnectionEntry;
 import org.komodo.relational.dataservice.DataServiceEntry;
 import org.komodo.relational.dataservice.Dataservice;
@@ -58,13 +56,13 @@ import org.komodo.relational.dataservice.VdbEntry;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
-import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Property;
 import org.komodo.test.utils.TestUtilities;
 import org.mockito.Mockito;
+import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
+import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 import org.w3c.dom.Document;
 
 @SuppressWarnings( { "javadoc", "nls" } )
@@ -164,39 +162,6 @@ public final class DataserviceImplTest extends RelationalModelTest {
         assertThat( this.dataservice.getServiceVdbEntry( getTransaction() ), is( notNullValue() ) );
         assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
         assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 3 ) );
-    }
-
-    @Test
-    public void shouldAddConnection() throws Exception {
-        final String connectionName = "MyConnection";
-        final String jndiName = "jndiNameGoesHere";
-        final Connection connection = this.mgr.createConnection( getTransaction(), null, connectionName );
-        connection.setJndiName( getTransaction(), jndiName );
-        commit(); // needed so that searching for reference will work
-
-        final ConnectionEntry entry = this.dataservice.addConnection( getTransaction(), connection );
-        assertThat( entry.getJndiName( getTransaction() ), is( jndiName ) );
-        assertThat( entry.getReference( getTransaction() ), is( notNullValue() ) );
-        assertThat( entry.getReference( getTransaction() ), is( instanceOf( Connection.class ) ) );
-
-        assertThat( this.dataservice.getConnectionEntries( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getConnectionEntries( getTransaction(), connectionName ).length, is( 1 ) );
-        assertThat( this.dataservice.getConnectionPlan( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getConnectionPlan( getTransaction() )[ 0 ], is( connection.getAbsolutePath() ) );
-        assertThat( this.dataservice.getConnections( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getConnections( getTransaction() )[ 0 ].getName( getTransaction() ), is( connectionName ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), connectionName ), is( true ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), connectionName, DataVirtLexicon.ConnectionEntry.NODE_TYPE ),
-                    is( true ) );
-        assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
-        assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildren( getTransaction(), connectionName ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(), DataVirtLexicon.ConnectionEntry.NODE_TYPE ).length,
-                    is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ConnectionEntry.NODE_TYPE,
-                                                        connectionName ).length,
-                    is( 1 ) );
     }
 
     @Test
@@ -433,7 +398,7 @@ public final class DataserviceImplTest extends RelationalModelTest {
         importOptions.setOption( OptionKeys.NAME, "MyDataService" );
 
         TeiidConnectionProvider provider = Mockito.mock(TeiidConnectionProvider.class);
-        DataserviceConveyor conveyor = new DataserviceConveyor( _repo, new DefaultMetadataInstance(provider));
+        DataserviceConveyor conveyor = new DataserviceConveyor( _repo);
         KomodoObject parent = _repo.komodoWorkspace( getTransaction() );
         conveyor.dsImport( getTransaction(), importStream, parent, importOptions, importMessages );
         assertThat( importMessages.hasError(), is( false ) );
@@ -540,7 +505,7 @@ public final class DataserviceImplTest extends RelationalModelTest {
         importOptions.setOption( OptionKeys.NAME, "MyDataService" );
         
         TeiidConnectionProvider provider = Mockito.mock(TeiidConnectionProvider.class);
-        DataserviceConveyor conveyor = new DataserviceConveyor( _repo, new DefaultMetadataInstance(provider));
+        DataserviceConveyor conveyor = new DataserviceConveyor( _repo);
         KomodoObject parent = _repo.komodoWorkspace( getTransaction() );
         conveyor.dsImport( getTransaction(), importStream, parent, importOptions, importMessages );
         assertThat( importMessages.hasError(), is( false ) );

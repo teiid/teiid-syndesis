@@ -31,7 +31,7 @@ import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.utils.StringUtils;
-import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
+import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 
 /**
  * Visitor that will walk a Connection node and convert it to Connection xml
@@ -111,8 +111,7 @@ public class ConnectionNodeVisitor implements StringConstants {
         // -----------------------------------------------------------------
         // Data source element
         // -----------------------------------------------------------------
-        final String dsType = ( connection.isJdbc( uow ) ? DataVirtLexicon.ConnectionXmlId.JDBC_CONNECTION
-                                                         : DataVirtLexicon.ConnectionXmlId.RESOURCE_CONNECTION );
+        final String dsType = DataVirtLexicon.ConnectionXmlId.RESOURCE_CONNECTION;
         writeStartElement( dsType );
         // Name attribute
         writeAttribute(DataVirtLexicon.ConnectionXmlId.NAME_ATTR, connection.getName(uow));
@@ -155,15 +154,13 @@ public class ConnectionNodeVisitor implements StringConstants {
         }
 
         // driver class element
-        if ( !connection.isJdbc( uow ) ) {
-            if ( this.showTabs ) {
-                writeTab( TAB1 );
-            }
-
-            writeStartElement( DataVirtLexicon.ConnectionXmlId.CLASSNAME );
-            writeCharacters( connection.getClassName( uow ) );
-            writeEndElement();
+        if ( this.showTabs ) {
+            writeTab( TAB1 );
         }
+
+        writeStartElement( DataVirtLexicon.ConnectionXmlId.CLASSNAME );
+        writeCharacters( connection.getClassName( uow ) );
+        writeEndElement();
 
         // -----------------------------------------------------------------
         // End Data source element

@@ -108,19 +108,19 @@ import org.komodo.relational.vdb.internal.TranslatorImpl;
 import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.relational.vdb.internal.VdbImportImpl;
 import org.komodo.spi.KException;
-import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
-import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
-import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon.Constraint;
-import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon.CreateProcedure;
-import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon.CreateTable;
-import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon.SchemaElement;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
+import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
+import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
+import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.Constraint;
+import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.CreateProcedure;
+import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.CreateTable;
+import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.SchemaElement;
+import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 /**
  * A factory for {@link RelationalObject relational model objects}.
@@ -344,43 +344,6 @@ public final class RelationalModelFactory {
 
         final KomodoObject kobject = repository.add( transaction, parentPath, serviceName, DataVirtLexicon.DataService.NODE_TYPE );
         final Dataservice result = new DataserviceImpl( transaction, repository, kobject.getAbsolutePath() );
-        return result;
-    }
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param repository
-     *        the repository where the model object will be created (cannot be <code>null</code>)
-     * @param parentWorkspacePath
-     *        the parent path (can be empty)
-     * @param connectionName
-     *        the name of the connection fragment to create (cannot be empty)
-     * @return the connection model object (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    public static Connection createConnection( final UnitOfWork transaction,
-                                               final Repository repository,
-                                               final String parentWorkspacePath,
-                                               final String connectionName ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( repository, "repository" ); //$NON-NLS-1$
-        ArgCheck.isNotEmpty( connectionName, "connectionName" ); //$NON-NLS-1$
-
-        // make sure path is in the library
-        String parentPath = parentWorkspacePath;
-        final String workspacePath = repository.komodoWorkspace( transaction ).getAbsolutePath();
-
-        if ( StringUtils.isBlank( parentWorkspacePath ) ) {
-            parentPath = workspacePath;
-        } else if ( !parentPath.startsWith( workspacePath ) ) {
-            parentPath = ( workspacePath + parentPath );
-        }
-
-        final KomodoObject kobject = repository.add( transaction, parentPath, connectionName, DataVirtLexicon.Connection.NODE_TYPE );
-        final Connection result = new ConnectionImpl( transaction, repository, kobject.getAbsolutePath() );
         return result;
     }
 

@@ -22,7 +22,6 @@ import static org.komodo.rest.relational.RelationalMessages.Error.DATASERVICE_SE
 import static org.komodo.rest.relational.RelationalMessages.Error.DATASERVICE_SERVICE_DELETE_DATASERVICE_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.DATASERVICE_SERVICE_FIND_SOURCE_VDB_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.DATASERVICE_SERVICE_FIND_VIEW_INFO_ERROR;
-import static org.komodo.rest.relational.RelationalMessages.Error.DATASERVICE_SERVICE_GET_CONNECTIONS_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.DATASERVICE_SERVICE_GET_DATASERVICES_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.DATASERVICE_SERVICE_GET_DATASERVICE_ERROR;
 import static org.komodo.rest.relational.RelationalMessages.Error.DATASERVICE_SERVICE_NAME_EXISTS;
@@ -62,7 +61,6 @@ import org.komodo.openshift.ProtocolType;
 import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.relational.ServiceVdbGenerator;
 import org.komodo.relational.ViewBuilderCriteriaPredicate;
-import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.model.Column;
 import org.komodo.relational.model.Model;
@@ -79,7 +77,6 @@ import org.komodo.rest.KomodoService;
 import org.komodo.rest.Messages;
 import org.komodo.rest.relational.KomodoProperties;
 import org.komodo.rest.relational.RelationalMessages;
-import org.komodo.rest.relational.connection.RestConnection;
 import org.komodo.rest.relational.dataservice.RestDataservice;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.response.KomodoStatusObject;
@@ -87,9 +84,7 @@ import org.komodo.rest.relational.response.RestDataserviceViewInfo;
 import org.komodo.rest.relational.response.RestVdb;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 import org.komodo.spi.lexicon.sql.teiid.TeiidSqlConstants;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
@@ -98,6 +93,8 @@ import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.teiid.language.SQLConstants;
+import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
+import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -839,69 +836,6 @@ public final class KomodoDataserviceService extends KomodoService
             }
 
             return createErrorResponseWithForbidden(mediaTypes, e, DATASERVICE_SERVICE_DELETE_DATASERVICE_ERROR);
-        }
-    }
-    /**
-     * @param headers
-     *            the request headers (never <code>null</code>)
-     * @param uriInfo
-     *            the request URI information (never <code>null</code>)
-     * @param dataserviceName
-     *            the id of the Dataservice of the connections being retrieved
-     *            (cannot be empty)
-     * @return the JSON representation of the Connections (never <code>null</code>)
-     * @throws KomodoRestException
-     *             if there is a problem finding the specified workspace Dataservice
-     *             connections or constructing the JSON representation
-     */
-    @GET @Path(V1Constants.DATA_SERVICE_PLACEHOLDER+FORWARD_SLASH+V1Constants.CONNECTIONS_SEGMENT)@Produces({MediaType.APPLICATION_JSON})@ApiOperation(value="Find a dataservice's connections ",response=RestDataservice.class)@ApiResponses(value={
-
-    @ApiResponse(code = 404, message = "No Dataservice could be found with name"),
-        @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-    public Response getConnections( final @Context HttpHeaders headers,
-                                    final @Context UriInfo uriInfo,
-                                    @ApiParam(
-                                              value = "Name of the data service containing the required connections",
-                                              required = true
-                                    )
-                                    final @PathParam( "dataserviceName" ) String dataserviceName) throws KomodoRestException {
-
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
-
-        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        UnitOfWork uow = null;
-
-        try {
-            uow = createTransaction(principal, "getDataservice", true ); //$NON-NLS-1$
-
-            Dataservice dataservice = findDataservice(uow, dataserviceName);
-            if (dataservice == null)
-                return commitNoDataserviceFound(uow, mediaTypes, dataserviceName);
-
-            Connection[] connections = dataservice.getConnections(uow);
-            List<RestConnection> restConnections = new ArrayList<>(connections.length);
-            for (Connection connection : connections) {
-                RestConnection entity = entityFactory.create(connection, uriInfo.getBaseUri(), uow);
-                restConnections.add(entity);
-                LOGGER.debug("getConnections:Connections from Dataservice '{0}' entity was constructed", dataserviceName); //$NON-NLS-1$
-            }
-
-            return commit( uow, mediaTypes, restConnections);
-
-        } catch ( final Exception e ) {
-            if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
-                uow.rollback();
-            }
-
-            if ( e instanceof KomodoRestException ) {
-                throw ( KomodoRestException )e;
-            }
-
-            return createErrorResponseWithForbidden(mediaTypes, e, DATASERVICE_SERVICE_GET_CONNECTIONS_ERROR, dataserviceName);
         }
     }
 
