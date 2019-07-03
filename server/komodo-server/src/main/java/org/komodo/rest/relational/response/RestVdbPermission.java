@@ -129,7 +129,7 @@ public final class RestVdbPermission extends RestBasicEntity {
      * @throws KException if error occurs
      */
     public RestVdbPermission(URI baseUri, Permission permission, UnitOfWork uow) throws KException {
-        super(baseUri, permission, uow, false);
+        super(baseUri, permission, uow);
 
         setName(permission.getName(uow));
         setAllowAlter(permission.isAllowAlter(uow));
@@ -155,7 +155,6 @@ public final class RestVdbPermission extends RestBasicEntity {
 
         addLink(new RestLink(LinkType.SELF, getUriBuilder().vdbPermissionUri(LinkType.SELF, settings)));
         addLink(new RestLink(LinkType.PARENT, getUriBuilder().vdbPermissionUri(LinkType.PARENT, settings)));
-        createChildLink();
         addLink(new RestLink(LinkType.CONDITIONS, getUriBuilder().vdbPermissionUri(LinkType.CONDITIONS, settings)));
         addLink(new RestLink(LinkType.MASKS, getUriBuilder().vdbPermissionUri(LinkType.MASKS, settings)));
     }

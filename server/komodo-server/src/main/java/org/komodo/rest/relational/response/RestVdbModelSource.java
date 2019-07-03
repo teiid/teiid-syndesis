@@ -69,7 +69,7 @@ public final class RestVdbModelSource extends RestBasicEntity {
      * @throws KException if error occurs
      */
     public RestVdbModelSource(URI baseUri, ModelSource source, UnitOfWork uow) throws KException {
-        super(baseUri, source, uow, false);
+        super(baseUri, source, uow);
 
         setJndiName(source.getJndiName(uow));
         String translatorName = source.getTranslatorName(uow);
@@ -95,7 +95,6 @@ public final class RestVdbModelSource extends RestBasicEntity {
 
         addLink(new RestLink(LinkType.SELF, getUriBuilder().vdbModelSourceUri(LinkType.SELF, settings)));
         addLink(new RestLink(LinkType.PARENT, getUriBuilder().vdbModelSourceUri(LinkType.PARENT, settings)));
-        createChildLink();
 
         Translator[] translators = vdb.getTranslators(uow, translatorName);
         if (translators != null && translators.length == 1) {

@@ -90,16 +90,6 @@ public final class RestDataservice extends RestBasicEntity {
     public static final String DATASERVICE_ODATA_HOST_NAME = "odataHostName"; //$NON-NLS-1$
 
     /**
-     * fqn table option key
-     */
-    private final static String TABLE_OPTION_FQN = "teiid_rel:fqn"; //$NON-NLS-1$
-
-    /**
-     * schema model suffix
-     */
-    private final static String SCHEMA_MODEL_SUFFIX = "schemamodel"; //$NON-NLS-1$
-    
-    /**
      * Constructor for use when deserializing
      */
     public RestDataservice() {
@@ -117,7 +107,7 @@ public final class RestDataservice extends RestBasicEntity {
      * @throws KException if error occurs
      */
     public RestDataservice(URI baseUri, Dataservice dataService, boolean exportXml, UnitOfWork uow) throws KException {
-        super(baseUri, dataService, uow, false);
+        super(baseUri, dataService, uow);
 
         setDescription(dataService.getDescription(uow));
 
@@ -143,7 +133,6 @@ public final class RestDataservice extends RestBasicEntity {
 
         addLink(new RestLink(LinkType.SELF, getUriBuilder().dataserviceUri(LinkType.SELF, settings)));
         addLink(new RestLink(LinkType.PARENT, getUriBuilder().dataserviceUri(LinkType.PARENT, settings)));
-        createChildLink();
         addLink(new RestLink(LinkType.VDBS, getUriBuilder().dataserviceUri(LinkType.VDBS, settings)));
         addLink(new RestLink(LinkType.CONNECTIONS, getUriBuilder().dataserviceUri(LinkType.CONNECTIONS, settings)));
     }

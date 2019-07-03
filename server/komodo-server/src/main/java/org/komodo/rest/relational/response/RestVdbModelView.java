@@ -51,7 +51,7 @@ public final class RestVdbModelView extends RestBasicEntity {
      * @throws KException if error occurs
      */
     public RestVdbModelView(URI baseUri, View view, UnitOfWork uow) throws KException {
-        super(baseUri, view, uow, false);
+        super(baseUri, view, uow);
 
         Model model = ancestor(view, Model.class, uow);
         ArgCheck.isNotNull(model);
@@ -68,6 +68,5 @@ public final class RestVdbModelView extends RestBasicEntity {
 
         addLink(new RestLink(LinkType.SELF, getUriBuilder().vdbModelViewUri(LinkType.SELF, settings)));
         addLink(new RestLink(LinkType.PARENT, getUriBuilder().vdbModelViewUri(LinkType.PARENT, settings)));
-        createChildLink();
     }
 }

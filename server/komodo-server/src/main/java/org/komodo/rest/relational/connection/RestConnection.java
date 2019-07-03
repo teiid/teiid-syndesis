@@ -81,7 +81,7 @@ public class RestConnection extends RestBasicEntity {
      * @throws KException if error occurs
      */
     public RestConnection(URI baseUri, Connection connection, UnitOfWork uow) throws KException {
-        super(baseUri, connection, uow, false);
+        super(baseUri, connection, uow);
 
         setJndiName(connection.getJndiName(uow));
         setDriverName(connection.getDriverName(uow));
@@ -92,7 +92,6 @@ public class RestConnection extends RestBasicEntity {
 
         addLink(new RestLink(LinkType.SELF, getUriBuilder().connectionUri(LinkType.SELF, settings)));
         addLink(new RestLink(LinkType.PARENT, getUriBuilder().connectionUri(LinkType.PARENT, settings)));
-        createChildLink();
     }
 
     /**

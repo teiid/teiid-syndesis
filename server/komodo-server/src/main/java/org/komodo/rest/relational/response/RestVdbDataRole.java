@@ -152,7 +152,7 @@ public final class RestVdbDataRole extends RestBasicEntity {
      * @throws KException if error occurs
      */
     public RestVdbDataRole(URI baseUri, DataRole dataRole, UnitOfWork uow) throws KException {
-        super(baseUri, dataRole, uow, false);
+        super(baseUri, dataRole, uow);
 
         setName(dataRole.getName(uow));
         setDescription(dataRole.getDescription(uow));
@@ -189,7 +189,6 @@ public final class RestVdbDataRole extends RestBasicEntity {
 
         addLink(new RestLink(LinkType.SELF, getUriBuilder().vdbDataRoleUri(LinkType.SELF, settings)));
         addLink(new RestLink(LinkType.PARENT, getUriBuilder().vdbDataRoleUri(LinkType.PARENT, settings)));
-        createChildLink();
         addLink(new RestLink(LinkType.PERMISSIONS, getUriBuilder().vdbDataRoleUri(LinkType.PERMISSIONS, settings)));
     }
 

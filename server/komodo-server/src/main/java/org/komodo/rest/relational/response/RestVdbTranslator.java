@@ -91,7 +91,7 @@ public class RestVdbTranslator extends RestBasicEntity {
      * @throws KException if error occurs
      */
     public RestVdbTranslator(URI baseUri, Translator translator, UnitOfWork uow) throws KException {
-        super(baseUri, translator, uow, false);
+        super(baseUri, translator, uow);
 
         setDescription(translator.getDescription(uow));
         setType(translator.getType(uow));
@@ -110,7 +110,6 @@ public class RestVdbTranslator extends RestBasicEntity {
 
         addLink(new RestLink(LinkType.SELF, getUriBuilder().vdbTranslatorUri(LinkType.SELF, settings)));
         addLink(new RestLink(LinkType.PARENT, getUriBuilder().vdbTranslatorUri(LinkType.PARENT, settings)));
-        createChildLink();
     }
 
     /**

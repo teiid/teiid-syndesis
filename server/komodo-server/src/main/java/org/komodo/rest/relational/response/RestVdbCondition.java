@@ -68,7 +68,7 @@ public final class RestVdbCondition extends RestBasicEntity {
      * @throws KException if error occurs
      */
     public RestVdbCondition(URI baseUri, Condition condition, UnitOfWork uow) throws KException {
-        super(baseUri, condition, uow, false);
+        super(baseUri, condition, uow);
 
         setName(condition.getName(uow));
         setConstraint(condition.isConstraint(uow));
@@ -97,7 +97,6 @@ public final class RestVdbCondition extends RestBasicEntity {
                              .vdbPermissionChildUri(LinkType.SELF, settings)));
         addLink(new RestLink(LinkType.PARENT, getUriBuilder()
                              .vdbPermissionChildUri(LinkType.PARENT, settings)));
-        createChildLink();
     }
 
     /**

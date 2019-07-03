@@ -57,7 +57,7 @@ public final class RestVdbModelTableColumn extends RestBasicEntity {
      * @throws KException if error occurs
      */
     public RestVdbModelTableColumn(URI baseUri, Column column, UnitOfWork uow) throws KException {
-        super(baseUri, column, uow, false);
+        super(baseUri, column, uow);
 
         setDatatypeName(column.getDatatypeName(uow));
         
@@ -81,7 +81,6 @@ public final class RestVdbModelTableColumn extends RestBasicEntity {
 
         addLink(new RestLink(LinkType.SELF, getUriBuilder().vdbModelTableColumnUri(LinkType.SELF, settings)));
         addLink(new RestLink(LinkType.PARENT, getUriBuilder().vdbModelTableColumnUri(LinkType.PARENT, settings)));
-        createChildLink();
     }
 
     /**

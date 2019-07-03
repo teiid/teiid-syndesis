@@ -68,7 +68,7 @@ public final class RestVdbMask extends RestBasicEntity {
      * @throws KException if error occurs
      */
     public RestVdbMask(URI baseUri, Mask mask, UnitOfWork uow) throws KException {
-        super(baseUri, mask, uow, false);
+        super(baseUri, mask, uow);
 
         setName(mask.getName(uow));
         setOrder(mask.getOrder(uow));
@@ -96,7 +96,6 @@ public final class RestVdbMask extends RestBasicEntity {
                              .vdbPermissionChildUri(LinkType.SELF, settings)));
         addLink(new RestLink(LinkType.PARENT, getUriBuilder()
                              .vdbPermissionChildUri(LinkType.PARENT, settings)));
-        createChildLink();
     }
 
     /**

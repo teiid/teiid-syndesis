@@ -56,7 +56,7 @@ public final class RestVdbModelTable extends RestBasicEntity {
      * @throws KException if error occurs
      */
     public RestVdbModelTable(URI baseUri, Table table, UnitOfWork uow) throws KException {
-        super(baseUri, table, uow, false);
+        super(baseUri, table, uow);
 
         setCardinality(table.getCardinality(uow));
         
@@ -75,7 +75,6 @@ public final class RestVdbModelTable extends RestBasicEntity {
 
         addLink(new RestLink(LinkType.SELF, getUriBuilder().vdbModelTableUri(LinkType.SELF, settings)));
         addLink(new RestLink(LinkType.PARENT, getUriBuilder().vdbModelTableUri(LinkType.PARENT, settings)));
-        createChildLink();
     }
 
     /**

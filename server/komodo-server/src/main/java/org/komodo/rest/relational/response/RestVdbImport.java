@@ -82,7 +82,7 @@ public final class RestVdbImport extends RestBasicEntity {
      * @throws KException if error occurs
      */
     public RestVdbImport(URI baseUri, VdbImport vdbImport, UnitOfWork uow) throws KException {
-        super(baseUri, vdbImport, uow, false);
+        super(baseUri, vdbImport, uow);
 
         setName(vdbImport.getName(uow));
         setVersion(vdbImport.getVersion(uow));
@@ -98,7 +98,6 @@ public final class RestVdbImport extends RestBasicEntity {
 
         addLink(new RestLink(LinkType.SELF, getUriBuilder().vdbImportUri(LinkType.SELF, settings)));
         addLink(new RestLink(LinkType.PARENT, getUriBuilder().vdbImportUri(LinkType.PARENT, settings)));
-        createChildLink();
     }
 
     /**

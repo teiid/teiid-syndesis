@@ -74,7 +74,7 @@ public final class RestVdbModel extends RestBasicEntity {
      * @throws KException if error occurs
      */
     public RestVdbModel(URI baseUri, Model model, UnitOfWork uow) throws KException {
-        super(baseUri, model, uow, false);
+        super(baseUri, model, uow);
 
         setDescription(model.getDescription(uow));
         setModelType(model.getModelType(uow));
@@ -103,7 +103,6 @@ public final class RestVdbModel extends RestBasicEntity {
 
         addLink(new RestLink(LinkType.SELF, getUriBuilder().vdbModelUri(LinkType.SELF, settings)));
         addLink(new RestLink(LinkType.PARENT, getUriBuilder().vdbModelUri(LinkType.PARENT, settings)));
-        createChildLink();
         addLink(new RestLink(LinkType.SOURCES, getUriBuilder().vdbModelUri(LinkType.SOURCES, settings)));
     }
 

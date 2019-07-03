@@ -42,7 +42,6 @@ import org.komodo.rest.RestLink;
 import org.komodo.rest.RestLink.LinkType;
 import org.komodo.rest.RestProperty;
 import org.komodo.rest.relational.response.RestVdbTranslator;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyDescriptor;
@@ -52,6 +51,7 @@ import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.spi.repository.Repository.UnitOfWorkListener;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
+import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public final class RestVdbTranslatorTest implements V1Constants {
@@ -245,7 +245,7 @@ public final class RestVdbTranslatorTest implements V1Constants {
         RestVdbTranslator restTranslator = new RestVdbTranslator(MY_BASE_URI, translator, transaction);
 
         Collection<RestLink> links = restTranslator.getLinks();
-        assertEquals(3, links.size());
+        assertEquals(2, links.size());
 
         int linkCounter = 0;
         for (RestLink link : links) {
@@ -259,11 +259,9 @@ public final class RestVdbTranslatorTest implements V1Constants {
             } else if (LinkType.PARENT.equals(link.getRel())) {
                 linkCounter++;
                 assertEquals(BASE_URI_PREFIX + WKSP_VDB_DATA_PATH, href);
-            } else if (LinkType.CHILDREN.equals(link.getRel())) {
-                linkCounter++;
             }
         }
 
-        assertEquals(3, linkCounter);
+        assertEquals(2, linkCounter);
     }
 }

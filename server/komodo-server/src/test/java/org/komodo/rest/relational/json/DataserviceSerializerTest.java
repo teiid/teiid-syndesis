@@ -55,10 +55,6 @@ public final class DataserviceSerializerTest extends AbstractSerializerTest  {
         "      \"href\": \"" + BASE_URI_PREFIX + "/workspace/dataservices\"" + NEW_LINE +
         "    " + CLOSE_BRACE + COMMA + NEW_LINE +
         "    " + OPEN_BRACE + NEW_LINE +
-        "      \"rel\": \"children\"," + NEW_LINE +
-        "      \"href\": \"" + BASE_URI_PREFIX + SEARCH + "parent\\u003d" + DATASERVICE_DATA_PATH + "\"" + NEW_LINE +
-        "    " + CLOSE_BRACE + COMMA + NEW_LINE +
-        "    " + OPEN_BRACE + NEW_LINE +
         "      \"rel\": \"vdbs\"," + NEW_LINE +
         "      \"href\": \"" + BASE_URI_PREFIX + DATASERVICE_DATA_PATH + "/Vdbs\"" + NEW_LINE +
         "    " + CLOSE_BRACE + COMMA + NEW_LINE +
@@ -103,7 +99,7 @@ public final class DataserviceSerializerTest extends AbstractSerializerTest  {
         final RestDataservice descriptor = KomodoJsonMarshaller.unmarshall( JSON, RestDataservice.class );
         assertEquals(DATASERVICE_NAME, descriptor.getId());
         assertEquals(DESCRIPTION, descriptor.getDescription());
-        assertEquals(5, descriptor.getLinks().size());
+        assertEquals(4, descriptor.getLinks().size());
         assertEquals(true, descriptor.getProperties().isEmpty());
     }
 

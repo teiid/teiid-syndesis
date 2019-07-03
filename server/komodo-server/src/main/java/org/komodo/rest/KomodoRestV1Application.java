@@ -205,16 +205,6 @@ public class KomodoRestV1Application implements SystemConstants {
         String SERVICE_VIEW_INFO = "serviceViewInfo"; //$NON-NLS-1$
 
         /**
-         * The name of the URI path segment for connections.
-         */
-        String CONNECTIONS_SEGMENT = "connections"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI path segment for a connection.
-         */
-        String CONNECTION_SEGMENT = "connection"; //$NON-NLS-1$
-
-        /**
          * Placeholder added to an URI to allow a specific connection id
          */
         String CONNECTION_PLACEHOLDER = "{connectionName}"; //$NON-NLS-1$
@@ -400,51 +390,6 @@ public class KomodoRestV1Application implements SystemConstants {
         String VALIDATE_PLACEHOLDER = "{validateValue}"; //$NON-NLS-1$
 
         /**
-         * The name of the URI path segment for searching the workspace
-         */
-        String SEARCH_SEGMENT = "search"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI search saved search parameter
-         */
-        String SEARCH_SAVED_NAME_PARAMETER = "searchName"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI search contains parameter
-         */
-        String SEARCH_CONTAINS_PARAMETER = "contains"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI search name parameter
-         */
-        String SEARCH_OBJECT_NAME_PARAMETER = "objectName"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI search path parameter
-         */
-        String SEARCH_PATH_PARAMETER = "path"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI search path parameter
-         */
-        String SEARCH_TYPE_PARAMETER = "type"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI search parent parameter
-         */
-        String SEARCH_PARENT_PARAMETER = "parent"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI search ancestor parameter
-         */
-        String SEARCH_ANCESTOR_PARAMETER = "ancestor"; //$NON-NLS-1$
-
-        /**
-         * The URI path for the collection of saved searches
-         */
-        String SAVED_SEARCHES_SEGMENT = "savedSearches"; //$NON-NLS-1$
-
-        /**
          * The name of the URI vdb name parameter
          */
         String VDB_NAME_PARAMETER = "name"; //$NON-NLS-1$
@@ -478,26 +423,6 @@ public class KomodoRestV1Application implements SystemConstants {
          * The teiid status path segment
          */
         String STATUS_SEGMENT = "status"; //$NON-NLS-1$
-
-        /**
-         * The export operation of the import export service
-         */
-        String EXPORT = "export"; //$NON-NLS-1$
-
-        /**
-         * The import operation of the import export service
-         */
-        String IMPORT = "import"; //$NON-NLS-1$
-
-        /**
-         * The export-to-git operation of the import export service
-         */
-        String EXPORT_TO_GIT = "exportToGit"; //$NON-NLS-1$
-
-        /**
-         * The available storage types of the import export service
-         */
-        String STORAGE_TYPES = "availableStorageTypes"; //$NON-NLS-1$
 
         /**
          * The teiid segment for running a query against the teiid server
