@@ -934,7 +934,8 @@ public class TeiidOpenShiftClient implements StringConstants {
         return p;
     }
 
-    private Service createService(OpenShiftClient client, String namespace, String vdbName, String type, int port) {    	
+	private Service createService(OpenShiftClient client, String namespace, String vdbName, String type, int srcPort,
+			int exposedPort) {
         String serviceName = vdbName+"-"+type;
         debug(vdbName, "Creating the Service of Type " + type + " for VDB "+vdbName);
         Service service = client.services().inNamespace(namespace).withName(serviceName).get();
@@ -950,7 +951,7 @@ public class TeiidOpenShiftClient implements StringConstants {
                 .addToSelector("application", vdbName)
                 .addNewPort()
                   .withName(type)
-                  .withPort(port)
+                  .withPort(exposedPort)
                   .withNewTargetPort()
                     .withStrVal(type)
                   .endTargetPort()
@@ -1070,8 +1071,8 @@ public class TeiidOpenShiftClient implements StringConstants {
     private void createServices(final OpenShiftClient client, final String namespace,
             final String vdbName) {
         createODataService(client, namespace, vdbName, ProtocolType.ODATA.id(), 8080);
-        createService(client, namespace, vdbName, ProtocolType.JDBC.id(), 31000);
-        createService(client, namespace, vdbName, ProtocolType.PG.id(), 35432);
+        createService(client, namespace, vdbName, ProtocolType.JDBC.id(), 31000, 31000);
+        createService(client, namespace, vdbName, ProtocolType.PG.id(), 35432, 5432);
         if (!this.config.isExposeVia3scale()) {
         	createRoute(client, namespace, vdbName, ProtocolType.ODATA.id());
         }
@@ -1499,11 +1500,15 @@ public class TeiidOpenShiftClient implements StringConstants {
                         //
                         ProtocolType[] types = { ProtocolType.ODATA, ProtocolType.JDBC, ProtocolType.PG };
                         for (ProtocolType type : types) {
-                            RouteStatus route = getRoute(vdbName, type);
-                            if (route == null)
-                                continue;
-
-                            status.addRoute(route);
+                        	try {
+	                            RouteStatus route = getRoute(vdbName, type);
+	                            if (route == null) {
+	                                continue;
+	                            }
+	                            status.addRoute(route);
+                        	} catch(KubernetesClientException e) {
+                        		// ignore..
+                        	}
                         }
                     }
                     
