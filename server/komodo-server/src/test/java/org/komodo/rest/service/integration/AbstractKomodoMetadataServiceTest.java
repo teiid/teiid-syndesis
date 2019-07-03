@@ -25,7 +25,6 @@ import static org.junit.Assert.assertTrue;
 import java.net.URI;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import javax.ws.rs.core.UriBuilder;
@@ -37,14 +36,12 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.runner.RunWith;
-import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.TeiidMetadataInstance;
 import org.komodo.rest.relational.KomodoRestUriBuilder;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.request.KomodoPathAttribute;
 import org.komodo.rest.relational.request.KomodoQueryAttribute;
-import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.RestQueryResult;
 import org.komodo.rest.relational.response.RestQueryRow;
 import org.komodo.rest.service.AbstractServiceTest;
@@ -200,7 +197,9 @@ public abstract class AbstractKomodoMetadataServiceTest extends AbstractServiceT
         KomodoPathAttribute pathAttribute = new KomodoPathAttribute();
         pathAttribute.setPath(samplePath);
 
-        URI uri = UriBuilder.fromUri(getUriBuilder().baseUri())
+        //TODO
+        
+        /*URI uri = UriBuilder.fromUri(getUriBuilder().baseUri())
                                     .path(V1Constants.METADATA_SEGMENT)
                                     .path(V1Constants.VDB_SEGMENT).build();
 
@@ -208,7 +207,7 @@ public abstract class AbstractKomodoMetadataServiceTest extends AbstractServiceT
         addJsonConsumeContentType(request);
         addBody(request, pathAttribute);
 
-        executeOk(request);
+        executeOk(request);*/
     }
 
     @Before
@@ -240,36 +239,6 @@ public abstract class AbstractKomodoMetadataServiceTest extends AbstractServiceT
                 wait(2);
             } catch (Exception ex) {
                 ex.printStackTrace(); // show in console but avoid failing the test
-            }
-        }
-    }
-
-    protected void deployDataService() throws Exception {
-        KomodoPathAttribute pathAttr = new KomodoPathAttribute();
-        String path = RepositoryImpl.komodoWorkspacePath(null) + FORWARD_SLASH +
-                                        USER_NAME + FORWARD_SLASH + "UsStatesService";
-        pathAttr.setPath(path);
-
-        //
-        // Deploy the data service
-        //
-        URI uri = UriBuilder.fromUri(getUriBuilder().baseUri())
-                                    .path(V1Constants.METADATA_SEGMENT)
-                                    .path(V1Constants.DATA_SERVICE_SEGMENT)
-                                    .build();
-
-        HttpPost request = jsonRequest(uri, RequestType.POST);
-        addBody(request, pathAttr);
-        HttpResponse response = executeOk(request);
-
-        String entity = extractResponse(response);
-        KomodoStatusObject status = KomodoJsonMarshaller.unmarshall(entity, KomodoStatusObject.class);
-        assertNotNull(status);
-
-        Map<String, String> attributes = status.getAttributes();
-        for (Map.Entry<String, String> attribute : attributes.entrySet()) {
-            if (attribute.getKey().startsWith("ErrorMessage")) {
-                org.junit.Assert.fail("failed deployment");
             }
         }
     }

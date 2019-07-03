@@ -20,7 +20,6 @@ package org.komodo.relational.workspace;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.komodo.core.KomodoLexicon;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.Messages;
@@ -28,21 +27,15 @@ import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.RelationalModelFactory;
 import org.komodo.relational.RelationalObject;
 import org.komodo.relational.connection.Connection;
-import org.komodo.relational.connection.internal.ConnectionImpl;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.internal.DataserviceImpl;
 import org.komodo.relational.internal.AdapterFactory;
-import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Schema;
-import org.komodo.relational.model.internal.ModelImpl;
-import org.komodo.relational.model.internal.SchemaImpl;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.spi.KEvent;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
-import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository;
@@ -53,6 +46,8 @@ import org.komodo.spi.utils.KeyInValueMap;
 import org.komodo.spi.utils.KeyInValueMap.KeyFromValueAdapter;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
+import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
+import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 /**
  *
@@ -256,24 +251,6 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
      * @param uow
      *        the transaction (cannot be <code>null</code> or have a state that is not
      *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param vdb
-     *        the parent of the model object being created (cannot be <code>null</code>)
-     * @param modelName
-     *        the name of the model to create (cannot be empty)
-     * @return the model object (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    public Model createModel( final UnitOfWork uow,
-                              final Vdb vdb,
-                              final String modelName ) throws KException {
-        return RelationalModelFactory.createModel( uow, getRepository(), vdb, modelName );
-    }
-
-    /**
-     * @param uow
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
      * @param parent
      *        the parent of the dataservice object being created (can be <code>null</code>)
      * @param serviceName
@@ -457,66 +434,6 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
                                 final String type,
                                 boolean includeSubTypes) throws KException {
         return findByType( transaction, type, RepositoryImpl.komodoWorkspacePath(transaction), null, includeSubTypes );
-    }
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @return all {@link Model}s in the workspace (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    public Model[] findModels( final UnitOfWork transaction ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
-                         "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-
-        final String[] paths = findByType(transaction, VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        Model[] result = null;
-
-        if (paths.length == 0) {
-            result = Model.NO_MODELS;
-        } else {
-            result = new Model[paths.length];
-            int i = 0;
-
-            for (final String path : paths) {
-                result[i++] = new ModelImpl(transaction, getRepository(), path);
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @return all {@link Model}s in the workspace (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    public Schema[] findSchemas( final UnitOfWork transaction ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
-                         "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-
-        final String[] paths = findByType(transaction, KomodoLexicon.Schema.NODE_TYPE);
-        Schema[] result = null;
-
-        if (paths.length == 0) {
-            result = Schema.NO_SCHEMAS;
-        } else {
-            result = new Schema[paths.length];
-            int i = 0;
-
-            for (final String path : paths) {
-                result[i++] = new SchemaImpl(transaction, getRepository(), path);
-            }
-        }
-
-        return result;
     }
 
     /**

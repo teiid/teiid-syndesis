@@ -44,7 +44,6 @@ import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KObjectFactory;
 import org.komodo.spi.repository.KPropertyFactory;
 import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.RepositoryClientEvent;
 import org.komodo.spi.repository.RepositoryObserver;
@@ -789,33 +788,6 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
         this.observers.add(observer);
     }
 
-    private void copy( final UnitOfWork uow,
-                       final KomodoObject src,
-                       final KomodoObject target) throws Exception {
-        copyProperties(uow, src, target);
-
-        for (final KomodoObject child : src.getChildren(uow)) {
-            final KomodoObject childNode = target.addChild(uow, child.getName(uow), child.getPrimaryType(uow).getName());
-            copy(uow, child, childNode);
-        }
-    }
-
-    private void copyProperties( final UnitOfWork uow,
-                                 final KomodoObject src,
-                                 final KomodoObject target) throws Exception {
-        for (final String name : src.getPropertyNames(uow)) {
-            final Property prop = src.getProperty(uow, name);
-
-            if (prop.getDescriptor(uow).isMultiple()) {
-                Object[] values = prop.getValues(uow);
-                target.setProperty(uow, name, values);
-            } else {
-                Object value = prop.getValue(uow);
-                target.setProperty(uow, name, value);
-            }
-        }
-    }
-
     private KomodoObject create( final UnitOfWork transaction,
                                  final String absolutePath, final String nodeType ) throws KException {
         try {
@@ -1069,63 +1041,6 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
             } catch (final Exception ex) {
                 this.kEngine.getErrorHandler().error(Messages.getString(Messages.LocalRepository.General_Exception), ex);
             }
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.spi.repository.Repository#publish(org.komodo.spi.repository.Repository.UnitOfWork, boolean,
-     *      org.komodo.spi.repository.ArtifactDescriptor, org.komodo.spi.repository.KomodoObject)
-     */
-    @Override
-    public void publish( final UnitOfWork transaction,
-                         final boolean overwrite,
-                         final ArtifactDescriptor descriptor,
-                         final KomodoObject komodoObject ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
-        "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotNull(descriptor, "descriptor"); //$NON-NLS-1$
-        ArgCheck.isNotNull(komodoObject, "komodoObject"); //$NON-NLS-1$
-
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("publish: overwrite = {0}, name = {1}, library path = {2}, transaction = {3}", //$NON-NLS-1$
-                         overwrite,
-                         komodoObject,
-                         descriptor.getPath(),
-                         transaction.getName());
-        }
-
-        try {
-            final boolean exists = getObjectFactory().hasNode(transaction, descriptor.getPath());
-            KomodoObject node;
-
-            if (exists) {
-                if (!overwrite) {
-                    throw new KException(Messages.getString(Messages.Komodo.ARTIFACT_EXISTS_ERROR, descriptor.getPath()));
-                }
-
-                node = getObjectFactory().getNode(transaction, this, descriptor.getPath());
-                node.remove(transaction);
-            }
-
-            node = getObjectFactory().create(transaction, this, descriptor.getPath(), descriptor.getArtifactType());
-            node.addDescriptor(transaction, LibraryComponent.MIXIN_TYPE);
-
-            node.setProperty(transaction, LibraryComponent.DESCRIPTION, descriptor.getDescription());
-            node.setPrimaryType(transaction, descriptor.getArtifactType());
-
-            // TODO not sure how version works??
-
-            // copy node
-            copy(transaction, komodoObject, node);
-        } catch (final Exception e) {
-            if (e instanceof KException) {
-                throw (KException)e;
-            }
-
-            throw new KException(Messages.getString(Messages.Komodo.ERROR_ADDING_ARTIFACT, komodoObject, descriptor.getPath()), e);
         }
     }
 

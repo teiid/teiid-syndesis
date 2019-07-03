@@ -20,15 +20,17 @@ package org.komodo.rest.relational.json;
 import static org.komodo.rest.Messages.Error.INCOMPLETE_JSON;
 import static org.komodo.rest.Messages.Error.UNEXPECTED_JSON_TOKEN;
 import static org.komodo.rest.relational.json.KomodoJsonMarshaller.BUILDER;
+
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import org.komodo.rest.Messages;
 import org.komodo.rest.json.JsonConstants;
-import org.komodo.rest.relational.response.RestVdbImport;
 import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate;
 import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate.RestStateCommand;
+
 import com.google.gson.TypeAdapter;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
@@ -71,7 +73,7 @@ public class ViewEditorStateCommandSerializer extends TypeAdapter<RestStateComma
             in.endObject();
 
             if ( !isComplete(unit) ) {
-                throw new IOException( Messages.getString( INCOMPLETE_JSON, RestVdbImport.class.getSimpleName() ) );
+                throw new IOException( Messages.getString( INCOMPLETE_JSON, ViewEditorStateCommandSerializer.class.getSimpleName() ) );
             }
 
             return unit;

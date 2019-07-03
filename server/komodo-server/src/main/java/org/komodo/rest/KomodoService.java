@@ -743,27 +743,4 @@ public abstract class KomodoService implements V1Constants {
                                            Messages.getString( GET_OPERATION_NAME)));
     }
 
-    protected Response commitNoTableFound(UnitOfWork uow, List<MediaType> mediaTypes, String tableName, String modelName, String vdbName) throws Exception {
-        return commit(uow, mediaTypes,
-                      new ResourceNotFound(uri(vdbName, MODELS_SEGMENT, modelName, TABLES_SEGMENT, tableName),
-                                           Messages.getString( GET_OPERATION_NAME)));
-    }
-
-    protected Response commitNoDataRoleFound(UnitOfWork uow, List<MediaType> mediaTypes, String dataRoleId, String vdbName) throws Exception {
-        LOGGER.debug("No data role '{0}' found for vdb '{1}'", dataRoleId, vdbName); //$NON-NLS-1$
-        return commit(uow, mediaTypes, new ResourceNotFound(
-                                                     uri(vdbName, DATA_ROLES_SEGMENT, dataRoleId),
-                                                     Messages.getString( GET_OPERATION_NAME)));
-    }
-
-    protected Response commitNoPermissionFound(UnitOfWork uow, List<MediaType> mediaTypes, String permissionId, String dataRoleId, String vdbName) throws Exception {
-        LOGGER.debug("No permission '{0}' for data role '{1}' found for vdb '{2}'", //$NON-NLS-1$
-                                                                     permissionId, dataRoleId, vdbName);
-        return commit(uow, mediaTypes, new ResourceNotFound(
-                                                     uri(vdbName, DATA_ROLES_SEGMENT,
-                                                          dataRoleId, PERMISSIONS_SEGMENT,
-                                                          permissionId),
-                                                     Messages.getString( GET_OPERATION_NAME)));
-    }
-
 }

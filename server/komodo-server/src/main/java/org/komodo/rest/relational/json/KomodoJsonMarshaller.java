@@ -38,7 +38,6 @@ import org.komodo.rest.relational.json.connection.ConnectionSchemaPropertyPairPr
 import org.komodo.rest.relational.json.connection.ConnectionSchemaPropertySerializer;
 import org.komodo.rest.relational.json.connection.ConnectionSchemaSerializer;
 import org.komodo.rest.relational.json.connection.ConnectionSerializer;
-import org.komodo.rest.relational.json.connection.MetadataConnectionSerializer;
 import org.komodo.rest.relational.request.KomodoConnectionAttributes;
 import org.komodo.rest.relational.request.KomodoPathAttribute;
 import org.komodo.rest.relational.request.KomodoQueryAttribute;
@@ -49,24 +48,12 @@ import org.komodo.rest.relational.response.RestQueryColumn;
 import org.komodo.rest.relational.response.RestQueryResult;
 import org.komodo.rest.relational.response.RestQueryRow;
 import org.komodo.rest.relational.response.RestVdb;
-import org.komodo.rest.relational.response.RestVdbCondition;
-import org.komodo.rest.relational.response.RestVdbDataRole;
-import org.komodo.rest.relational.response.RestVdbImport;
-import org.komodo.rest.relational.response.RestVdbMask;
 import org.komodo.rest.relational.response.RestVdbModel;
 import org.komodo.rest.relational.response.RestVdbModelSource;
 import org.komodo.rest.relational.response.RestVdbModelTable;
 import org.komodo.rest.relational.response.RestVdbModelTableColumn;
 import org.komodo.rest.relational.response.RestVdbModelView;
-import org.komodo.rest.relational.response.RestVdbPermission;
-import org.komodo.rest.relational.response.RestVdbTranslator;
-import org.komodo.rest.relational.response.metadata.RestMetadataConnection;
 import org.komodo.rest.relational.response.metadata.RestMetadataConnectionStatus;
-import org.komodo.rest.relational.response.metadata.RestMetadataStatus;
-import org.komodo.rest.relational.response.metadata.RestMetadataVdb;
-import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatus;
-import org.komodo.rest.relational.response.metadata.RestMetadataVdbStatusVdb;
-import org.komodo.rest.relational.response.metadata.RestMetadataVdbTranslator;
 import org.komodo.rest.relational.response.metadata.RestSyndesisSourceStatus;
 import org.komodo.rest.relational.response.vieweditorstate.RestSqlComposition;
 import org.komodo.rest.relational.response.vieweditorstate.RestSqlProjectedColumn;
@@ -112,24 +99,12 @@ public final class KomodoJsonMarshaller {
                                                   .registerTypeAdapter(RestVdbModelTable.class, new VdbModelTableSerializer())
                                                   .registerTypeAdapter(RestVdbModelTableColumn.class, new VdbModelTableColumnSerializer())
                                                   .registerTypeAdapter(RestVdbModelView.class, new VdbModelViewSerializer())
-                                                  .registerTypeAdapter(RestVdbDataRole.class, new VdbDataRoleSerializer())
-                                                  .registerTypeAdapter(RestVdbImport.class, new VdbImportSerializer())
-                                                  .registerTypeAdapter(RestVdbPermission.class, new VdbPermissionSerializer())
-                                                  .registerTypeAdapter(RestVdbCondition.class, new VdbConditionSerializer())
-                                                  .registerTypeAdapter(RestVdbMask.class, new VdbMaskSerializer())
-                                                  .registerTypeAdapter(RestVdbTranslator.class, new VdbTranslatorSerializer())
                                                   .registerTypeAdapter(RestDataservice.class, new DataserviceSerializer())
                                                   .registerTypeAdapter(RestConnection.class, new ConnectionSerializer())
                                                   .registerTypeAdapter(RestConnectionSummary.class, new ConnectionSummarySerializer())
                                                   .registerTypeAdapter(RestSyndesisSourceStatus.class, new SyndesisSourceStatusSerializer())
                                                   .registerTypeAdapter(RestMetadataConnectionStatus.class, new MetadataConnectionStatusSerializer())
                                                   .registerTypeAdapter(RestBasicEntity.class, new BasicEntitySerializer<RestBasicEntity>())
-                                                  .registerTypeAdapter(RestMetadataStatus.class, new MetadataStatusSerializer())
-                                                  .registerTypeAdapter(RestMetadataVdb.class, new MetadataVdbSerializer())
-                                                  .registerTypeAdapter(RestMetadataVdbStatus.class, new MetadataVdbStatusSerializer())
-                                                  .registerTypeAdapter(RestMetadataVdbStatusVdb.class, new MetadataVdbStatusVdbSerializer())
-                                                  .registerTypeAdapter(RestMetadataConnection.class, new MetadataConnectionSerializer())
-                                                  .registerTypeAdapter(RestMetadataVdbTranslator.class, new MetadataVdbTranslatorSerializer())
                                                   .registerTypeAdapter(ConnectionSchema.class, new ConnectionSchemaSerializer())
                                                   .registerTypeAdapter(ConnectionSchemaPropertyListSerializer.class, new ConnectionSchemaPropertyListSerializer())
                                                   .registerTypeAdapter(ConnectionSchemaPairProperty.class, new ConnectionSchemaPropertyPairPropertySerializer())

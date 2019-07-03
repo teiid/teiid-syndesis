@@ -120,19 +120,9 @@ public class KomodoRestV1Application implements SystemConstants {
         String SCHEMA_SEGMENT = "schema"; //$NON-NLS-1$
 
         /**
-         * The name of the URI path segment for the VDB manifest XML resource.
-         */
-        String VDB_MANIFEST_SEGMENT = "manifest"; //$NON-NLS-1$
-
-        /**
          * The about segment
          */
         String ABOUT = "about"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI path segment for a Vdb in the Komodo workspace.
-         */
-        String VDB_SEGMENT = "vdb"; //$NON-NLS-1$
 
         /**
          * The name of the URI path segment for the collection of VDBs in the Komodo workspace.
@@ -145,39 +135,9 @@ public class KomodoRestV1Application implements SystemConstants {
         String VDB_PLACEHOLDER = "{vdbName}"; //$NON-NLS-1$
 
         /**
-         * The name of the URI path segment for clone.
-         */
-        String CLONE_SEGMENT = "clone"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI path segment for refresh of the preview vdb.
-         */
-        String REFRESH_PREVIEW_VDB_SEGMENT = "refreshPreviewVdb"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI path segment for creating workspace VDBs from teiid
-         */
-        String VDBS_FROM_TEIID = "VdbsFromTeiid"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI path segment for creating workspace connections from teiid
-         */
-        String CONNECTIONS_FROM_TEIID = "connectionsFromTeiid"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI path segment for undeploy.
-         */
-        String UNDEPLOY = "undeploy"; //$NON-NLS-1$
-
-        /**
          * The name of the URI path segment for the collection of DataServices in the Komodo workspace.
          */
         String DATA_SERVICES_SEGMENT = "dataservices"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI path segment for a DataService in the Komodo workspace.
-         */
-        String DATA_SERVICE_SEGMENT = "dataservice"; //$NON-NLS-1$
 
         /**
          * Placeholder added to an URI to allow a specific data service id
@@ -185,19 +145,9 @@ public class KomodoRestV1Application implements SystemConstants {
         String DATA_SERVICE_PLACEHOLDER = "{dataserviceName}"; //$NON-NLS-1$
 
         /**
-         * The name of the URI path segment for DataService deployable status
-         */
-        String DEPLOYABLE_STATUS_SEGMENT = "deployableStatus"; //$NON-NLS-1$
-
-        /**
          * The name of the URI path segment for validating a data service or connection name.
          */
         String NAME_VALIDATION_SEGMENT = "nameValidation"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI path segment for finding source vdb matches for a DataService
-         */
-        String SOURCE_VDB_MATCHES = "sourceVdbMatches"; //$NON-NLS-1$
 
         /**
          * The name of the URI path segment for finding service view info for a DataService
@@ -220,41 +170,6 @@ public class KomodoRestV1Application implements SystemConstants {
         String REFRESH_SCHEMA_SEGMENT = "refresh-schema"; //$NON-NLS-1$
 
         /**
-         * The name of the URI path segment for service catalog.
-         */
-        String SERVICE_CATALOG_SEGMENT = "serviceCatalog"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI path segment for a setting a dataservice's service vdb for single source table views
-         */
-        String SERVICE_VDB_FOR_SINGLE_SOURCE_TABLES = "ServiceVdbForSingleSourceTables"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI path segment for a setting a dataservice's service vdb for join view
-         */
-        String SERVICE_VDB_FOR_JOIN_TABLES = "ServiceVdbForJoinTables"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI path segment for getting the DDL for single table view
-         */
-        String SERVICE_VIEW_DDL_FOR_SINGLE_TABLE = "ServiceViewDdlForSingleTable"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI path segment for getting the DDL for join view
-         */
-        String SERVICE_VIEW_DDL_FOR_JOIN_TABLES = "ServiceViewDdlForJoinTables"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI path segment for getting the join criteria given two tables
-         */
-        String CRITERIA_FOR_JOIN_TABLES = "CriteriaForJoinTables"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI path segment for the collection of Drivers in the Komodo workspace.
-         */
-        String DRIVERS_SEGMENT = "drivers"; //$NON-NLS-1$
-
-        /**
          * The name of the URI path segment for the collection of models of a vdb
          */
         String MODELS_SEGMENT = "Models"; //$NON-NLS-1$
@@ -263,11 +178,6 @@ public class KomodoRestV1Application implements SystemConstants {
          * Placeholder added to an URI to allow a specific model id
          */
         String MODEL_PLACEHOLDER = "{modelName}"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI path segment for the collection of sources of a model
-         */
-        String SOURCES_SEGMENT = "VdbModelSources"; //$NON-NLS-1$
 
         /**
          * Placeholder added to an URI to allow a specific source id
@@ -285,59 +195,9 @@ public class KomodoRestV1Application implements SystemConstants {
         String VIEW_PLACEHOLDER = "{viewName}"; //$NON-NLS-1$
 
         /**
-         * The name of the URI path segment for the collection of catalogs
-         */
-        String JDBC_CATALOG_SCHEMA_SEGMENT = "JdbcCatalogSchema"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI path segment for the jdbc info
-         */
-        String JDBC_INFO_SEGMENT = "JdbcInfo"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI path segment for the collection of tables of a model
-         */
-        String TABLES_SEGMENT = "Tables"; //$NON-NLS-1$
-
-        /**
          * Placeholder added to an URI to allow a specific table id
          */
         String TABLE_PLACEHOLDER = "{tableName}"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI path segment for the collection of columns of a table
-         */
-        String COLUMNS_SEGMENT = "Columns"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI path segment for default translator
-         */
-        String TRANSLATOR_DEFAULT_SEGMENT = "TranslatorDefault"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI path segment for the collection of translators of a vdb
-         */
-        String TRANSLATORS_SEGMENT = "VdbTranslators"; //$NON-NLS-1$
-
-        /**
-         * Placeholder added to an URI to allow a specific translator id
-         */
-        String TRANSLATOR_PLACEHOLDER = "{translatorName}"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI path segment for the collection of imports of a vdb
-         */
-        String IMPORTS_SEGMENT = "VdbImports"; //$NON-NLS-1$
-
-        /**
-         * Placeholder added to an URI to allow a specific import id
-         */
-        String IMPORT_PLACEHOLDER = "{importName}"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI path segment for the collection of data roles of a vdb
-         */
-        String DATA_ROLES_SEGMENT = "VdbDataRoles"; //$NON-NLS-1$
 
         /**
          * Placeholder added to an URI to allow a specific data role id
@@ -345,19 +205,9 @@ public class KomodoRestV1Application implements SystemConstants {
         String DATA_ROLE_PLACEHOLDER = "{dataRoleId}"; //$NON-NLS-1$
 
         /**
-         * The name of the URI path segment for the collection of data role permissions
-         */
-        String PERMISSIONS_SEGMENT = "VdbPermissions"; //$NON-NLS-1$
-
-        /**
          * Placeholder added to an URI to allow a specific permission id
          */
         String PERMISSION_PLACEHOLDER = "{permissionId}"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI path segment for the collection of permission's conditions
-         */
-        String CONDITIONS_SEGMENT = "VdbConditions"; //$NON-NLS-1$
 
         /**
          * Placeholder added to an URI to allow a specific condition id
@@ -365,24 +215,9 @@ public class KomodoRestV1Application implements SystemConstants {
         String CONDITION_PLACEHOLDER = "{conditionId}"; //$NON-NLS-1$
 
         /**
-         * The name of the URI path segment for the collection of permission's masks
-         */
-        String MASKS_SEGMENT = "VdbMasks"; //$NON-NLS-1$
-
-        /**
          * Placeholder added to an URI to allow a specific mask id
          */
         String MASK_PLACEHOLDER = "{maskId}"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI path segment for loading of the sample vdb data
-         */
-        String SAMPLE_DATA = "samples"; //$NON-NLS-1$
-
-        /**
-         * The name of the URI path segment for validating a value
-         */
-        String VALIDATE_SEGMENT = "validate"; //$NON-NLS-1$
 
         /**
          * Placeholder added to an URI for validation of the value
@@ -418,11 +253,6 @@ public class KomodoRestV1Application implements SystemConstants {
          * Placeholder added to an URI to allow a specific teiid driver id
          */
         String METADATA_DRIVER_PLACEHOLDER = "{driverName}"; //$NON-NLS-1$
-
-        /**
-         * The teiid status path segment
-         */
-        String STATUS_SEGMENT = "status"; //$NON-NLS-1$
 
         /**
          * The teiid segment for running a query against the teiid server

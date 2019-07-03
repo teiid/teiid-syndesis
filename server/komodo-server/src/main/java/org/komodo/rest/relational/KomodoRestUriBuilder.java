@@ -18,20 +18,21 @@
 package org.komodo.rest.relational;
 
 import java.net.URI;
-import java.util.Map;
 import java.util.Properties;
+
 import javax.ws.rs.core.UriBuilder;
+
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.vdb.Translator;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.KomodoRestV1Application;
 import org.komodo.rest.RestLink.LinkType;
 import org.komodo.spi.KException;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
+import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 /**
  * Komodo REST URI builder.
@@ -297,15 +298,6 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
     }
 
     /**
-     * @return the URI to use when requesting a collection of Drivers in the workspace (never <code>null</code>)
-     */
-    public URI workspaceDriversUri() {
-        return UriBuilder.fromUri(this.baseUri)
-                                   .path(WORKSPACE_SEGMENT)
-                                   .path(DRIVERS_SEGMENT).build();
-    }
-
-    /**
      * @return the URI to use when requesting a collection of VDBs in the workspace (never <code>null</code>)
      */
     public URI workspaceVdbsUri() {
@@ -320,47 +312,6 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
     public URI mServerUri() {
         return UriBuilder.fromUri(this.baseUri)
                                      .path(METADATA_SEGMENT)
-                                     .build();
-    }
-
-    /**
-     * @return the URI to use when requesting the metadata server vdbs collection  (never <code>null</code>)
-     */
-    public URI mServerVdbsUri() {
-        return UriBuilder.fromUri(this.baseUri)
-                                     .path(METADATA_SEGMENT)
-                                     .path(VDBS_SEGMENT)
-                                     .build();
-    }
-
-    /**
-     * @return the URI to use when requesting the metadata server translators collection  (never <code>null</code>)
-     */
-    public URI mServerTranslatorsUri() {
-        return UriBuilder.fromUri(this.baseUri)
-                                     .path(METADATA_SEGMENT)
-                                     .path(TRANSLATORS_SEGMENT)
-                                     .build();
-    }
-
-    /**
-     * @return the URI to use when requesting the metadata status  (never <code>null</code>)
-     */
-    public URI mServerStatusUri() {
-        return UriBuilder.fromUri(this.baseUri)
-                                     .path(METADATA_SEGMENT)
-                                     .path(STATUS_SEGMENT)
-                                     .build();
-    }
-
-    /**
-     * @return the URI to use when requesting the teiid cache  (never <code>null</code>)
-     */
-    public URI mServerVdbStatusUri() {
-        return UriBuilder.fromUri(this.baseUri)
-                                     .path(METADATA_SEGMENT)
-                                     .path(STATUS_SEGMENT)
-                                     .path(VDBS_SEGMENT)
                                      .build();
     }
 
@@ -630,44 +581,6 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
         }
 
         throw new KException("Translator has an invalid parent");
-    }
-
-    /**
-     * @param linkType
-     *        the type of URI being created (cannot be <code>null</code>)
-     * @param settings
-     *        configuration settings for this uri
-     * @return the VDB model URI for the specified VDB (never <code>null</code>)
-     */
-    public URI vdbTranslatorUri(LinkType linkType, final Properties settings) {
-        ArgCheck.isNotNull(linkType, "linkType"); //$NON-NLS-1$
-        ArgCheck.isNotNull(settings, "settings"); //$NON-NLS-1$)
-
-        URI result = null;
-        URI parentUri = parentUri(settings);
-
-        switch (linkType) {
-            case SELF:
-                String name = setting(settings, SettingNames.TRANSLATOR_NAME);
-                // Adds translators segment if supplied.
-                if(settings.containsKey(SettingNames.ADD_TRANSLATORS_SEGMENT.name())) {
-                    result = UriBuilder.fromUri(parentUri)
-                    .path(TRANSLATORS_SEGMENT)
-                    .path(name).build();
-                } else {
-                    result = UriBuilder.fromUri(parentUri)
-                    .path(name).build();
-                }
-                break;
-            case PARENT:
-                result = parentUri;
-                break;
-            default:
-                throw new RuntimeException("LinkType " + linkType + " not handled"); //$NON-NLS-1$ //$NON-NLS-2$
-        }
-
-        assert(result != null);
-        return result;
     }
 
     /**

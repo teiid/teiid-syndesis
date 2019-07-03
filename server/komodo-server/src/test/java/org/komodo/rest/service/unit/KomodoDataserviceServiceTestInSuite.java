@@ -40,7 +40,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.komodo.relational.ViewBuilderCriteriaPredicate;
@@ -494,51 +493,6 @@ public class KomodoDataserviceServiceTestInSuite extends AbstractKomodoServiceTe
 
         String errorMsg = extractResponse(response);
         assertThat(errorMsg, is("")); // no error message since name was valid
-    }
-
-    @Test
-    public void shouldCloneDataservice() throws Exception {
-        String dataserviceName = "shouldCloneDataservice";
-        createDataservice(dataserviceName);
-        URI dataservicesUri = uriBuilder().workspaceDataservicesUri();
-        URI uri = UriBuilder.fromUri(dataservicesUri).path(V1Constants.CLONE_SEGMENT).path(dataserviceName).build();
-
-        HttpPost request = jsonRequest(uri, RequestType.POST);
-        addJsonConsumeContentType(request);
-        String clonedDataservice = "clonedDataservice";
-        addBody(request, clonedDataservice);
-
-        HttpResponse response = execute(request);
-
-        okResponse(response);
-        String entity = extractResponse(response);
-        assertThat(entity, is(notNullValue()));
-
-        RestDataservice dataservice = KomodoJsonMarshaller.unmarshall(entity, RestDataservice.class);
-        assertNotNull(dataservice);
-
-        logObjectPath(dataservice.getDataPath());
-        logObjectPath(serviceTestUtilities.getWorkspace(USER_NAME) + FORWARD_SLASH + clonedDataservice + "VDB");
-        assertEquals(dataservice.getId(), clonedDataservice);
-    }
-
-    @Test
-    public void shouldNotCloneDataservice() throws Exception {
-        String dataserviceName = "shouldNotCloneDataservice";
-        createDataservice(dataserviceName);
-        URI dataservicesUri = uriBuilder().workspaceDataservicesUri();
-        URI uri = UriBuilder.fromUri(dataservicesUri).path(V1Constants.CLONE_SEGMENT).path(dataserviceName).build();
-
-        // Attempt to clone using the same service name should fail...
-        HttpPost request = jsonRequest(uri, RequestType.POST);
-        addJsonConsumeContentType(request);
-        addBody(request, dataserviceName);
-
-        HttpResponse response = execute(request);
-
-        assertResponse(response, HttpStatus.SC_FORBIDDEN);
-        String entity = extractResponse(response);
-        assertTrue(entity.contains("cannot be the same"));
     }
 
     @Test

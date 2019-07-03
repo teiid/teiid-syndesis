@@ -20,25 +20,16 @@ package org.komodo.rest.relational;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Map.Entry;
-import java.util.Properties;
 
 import org.komodo.openshift.BuildStatus;
-import org.komodo.relational.RelationalModelFactory;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.model.Column;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.View;
-import org.komodo.relational.vdb.Condition;
-import org.komodo.relational.vdb.DataRole;
-import org.komodo.relational.vdb.Mask;
 import org.komodo.relational.vdb.ModelSource;
-import org.komodo.relational.vdb.Permission;
-import org.komodo.relational.vdb.Translator;
 import org.komodo.relational.vdb.Vdb;
-import org.komodo.relational.vdb.VdbImport;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.RestBasicEntity;
@@ -46,19 +37,11 @@ import org.komodo.rest.relational.connection.RestConnection;
 import org.komodo.rest.relational.dataservice.RestDataservice;
 import org.komodo.rest.relational.response.RestSyndesisDataSource;
 import org.komodo.rest.relational.response.RestVdb;
-import org.komodo.rest.relational.response.RestVdbCondition;
-import org.komodo.rest.relational.response.RestVdbDataRole;
-import org.komodo.rest.relational.response.RestVdbImport;
-import org.komodo.rest.relational.response.RestVdbMask;
 import org.komodo.rest.relational.response.RestVdbModel;
 import org.komodo.rest.relational.response.RestVdbModelSource;
 import org.komodo.rest.relational.response.RestVdbModelTable;
 import org.komodo.rest.relational.response.RestVdbModelTableColumn;
 import org.komodo.rest.relational.response.RestVdbModelView;
-import org.komodo.rest.relational.response.RestVdbPermission;
-import org.komodo.rest.relational.response.RestVdbTranslator;
-import org.komodo.rest.relational.response.metadata.RestMetadataVdb;
-import org.komodo.rest.relational.response.metadata.RestMetadataVdbTranslator;
 import org.komodo.rest.relational.response.virtualization.RestVirtualizationStatus;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
@@ -67,11 +50,8 @@ import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.spi.runtime.SyndesisDataSource;
-import org.komodo.spi.runtime.TeiidTranslator;
-import org.komodo.spi.runtime.TeiidVdb;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 /**
  *
@@ -106,20 +86,6 @@ public class RestEntityFactory implements V1Constants {
                 Vdb vdb = wsMgr.resolve(transaction, kObject, Vdb.class);
                 Boolean exportXml = properties.getProperty(VDB_EXPORT_XML_PROPERTY, Boolean.FALSE);
                 return (T)new RestVdb(baseUri, vdb, exportXml, transaction);
-            case VDB_CONDITION:
-                Condition condition = wsMgr.resolve(transaction, kObject, Condition.class);
-                return (T)new RestVdbCondition(baseUri, condition, transaction);
-            case VDB_DATA_ROLE:
-                DataRole dataRole = (kObject instanceof DataRole) ? (DataRole)kObject : wsMgr.resolve(transaction,
-                                                                                                      kObject,
-                                                                                                      DataRole.class);
-                return (T)new RestVdbDataRole(baseUri, dataRole, transaction);
-            case VDB_IMPORT:
-                VdbImport vdbImport = wsMgr.resolve(transaction, kObject, VdbImport.class);
-                return (T)new RestVdbImport(baseUri, vdbImport, transaction);
-            case VDB_MASK:
-                Mask mask = wsMgr.resolve(transaction, kObject, Mask.class);
-                return (T)new RestVdbMask(baseUri, mask, transaction);
             case MODEL:
                 Model model = wsMgr.resolve(transaction, kObject, Model.class);
                 return (T)new RestVdbModel(baseUri, model, transaction);
@@ -135,12 +101,6 @@ public class RestEntityFactory implements V1Constants {
             case COLUMN:
                 Column column = wsMgr.resolve(transaction, kObject, Column.class);
                 return (T)new RestVdbModelTableColumn(baseUri, column, transaction);
-            case VDB_PERMISSION:
-                Permission permission = wsMgr.resolve(transaction, kObject, Permission.class);
-                return (T)new RestVdbPermission(baseUri, permission, transaction);
-            case VDB_TRANSLATOR:
-                Translator translator = wsMgr.resolve(transaction, kObject, Translator.class);
-                return (T)new RestVdbTranslator(baseUri, translator, transaction);
             case CONNECTION:
                 Connection connection = wsMgr.resolve(transaction, kObject, Connection.class);
                 return (T)new RestConnection(baseUri, connection, transaction);
@@ -189,61 +149,6 @@ public class RestEntityFactory implements V1Constants {
     }
 
     /**
-     * Create RestMetadataVdb
-     * @param transaction the transaction
-     * @param repository the repo
-     * @param teiidVdb the teiid vdb
-     * @param baseUri the uri
-     * @return RestMetadataVdb
-     * @throws Exception if error occurs
-     */
-    public RestMetadataVdb createMetadataVdb(UnitOfWork transaction, 
-                                             Repository repository, 
-                                             TeiidVdb teiidVdb, 
-                                             URI baseUri) throws Exception {
-        checkTransaction(transaction);
-        ArgCheck.isTrue(transaction.isRollbackOnly(), "transaction should be rollback-only"); //$NON-NLS-1$
-
-        KomodoObject parent = createTemporaryParent(transaction, repository, null);
-        KomodoObject vdbObj = parent.getObjectFactory().exportTeiidVdb(transaction, parent, teiidVdb);
-        WorkspaceManager wsMgr = WorkspaceManager.getInstance(repository, transaction);
-        Vdb vdb = wsMgr.resolve(transaction, vdbObj, Vdb.class);
-
-        return new RestMetadataVdb(baseUri, vdb, transaction, false);
-    }
-
-    /**
-     * Create RestMetadataVdbTranslator
-     * @param transaction the transaction
-     * @param repository the repo
-     * @param teiidTranslator the teiid translator
-     * @param baseUri the uri
-     * @return RestMetadataVdbTranslator
-     * @throws Exception if error occurs
-     */
-    public RestMetadataVdbTranslator createMetadataTranslator(UnitOfWork transaction, 
-                                                              Repository repository,
-                                                              TeiidTranslator teiidTranslator, URI baseUri) throws Exception {
-        checkTransaction(transaction);
-        ArgCheck.isTrue(transaction.isRollbackOnly(), "transaction should be rollback-only"); //$NON-NLS-1$
-
-        KomodoObject parent = createTemporaryParent(transaction, repository, VdbLexicon.Vdb.VIRTUAL_DATABASE);
-        WorkspaceManager mgr = WorkspaceManager.getInstance(repository, transaction);
-        Vdb parentVdb = mgr.resolve(transaction, parent, Vdb.class);
-
-        String type = teiidTranslator.getType() != null ? teiidTranslator.getType() : teiidTranslator.getName();
-        Translator translator = RelationalModelFactory.createTranslator(transaction, repository, parentVdb, teiidTranslator.getName(), type);
-
-        translator.setDescription(transaction, teiidTranslator.getDescription());
-        Properties props = teiidTranslator.getProperties();
-        for (Entry<Object, Object> entry : props.entrySet()) {
-            translator.setProperty(transaction, entry.getKey().toString(), entry.getValue());
-        }
-
-        return new RestMetadataVdbTranslator(baseUri, translator, transaction);
-    }
-
-	/**
 	 * Create RestSyndesis data source
 	 * @param transaction the transaction
 	 * @param repository the repo

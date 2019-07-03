@@ -34,17 +34,14 @@ import javax.ws.rs.core.UriBuilder;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.junit.Test;
-import org.komodo.importer.ImportMessages;
 import org.komodo.relational.profile.StateCommandAggregate;
 import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
 import org.komodo.rest.cors.CorsHeaders;
-import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.vieweditorstate.RestSqlComposition;
@@ -137,63 +134,6 @@ public class KomodoUtilServiceTestInSuite extends AbstractKomodoServiceTest {
         // This are generated on build from maven variables so check they are listed
         assertTrue(entity.contains(KomodoUtilService.USER_NAME));
         assertTrue(entity.contains(KomodoUtilService.WORKSPACE));
-    }
-
-    @Test
-    public void shouldLoadSampleData() throws Exception {
-
-        serviceTestUtilities.deleteVdbs(USER_NAME);
-
-        // get
-        URI uri = UriBuilder.fromUri(uriBuilder().baseUri()).path(V1Constants.SERVICE_SEGMENT).path(V1Constants.SAMPLE_DATA).build();
-
-        HttpPost request = jsonRequest(uri, RequestType.POST);
-        HttpResponse response = executeOk(request);
-
-        String entity = extractResponse(response);
-        // System.out.println("Response from uri " + uri + ":\n" + entity);
-
-        KomodoStatusObject status = KomodoJsonMarshaller.unmarshall(entity, KomodoStatusObject.class);
-        assertNotNull(status);
-
-        assertEquals("Sample Vdb Import", status.getTitle());
-        Map<String, String> attributes = status.getAttributes();
-
-        for (String sample : KomodoUtilService.SAMPLES) {
-            String message = attributes.get(sample);
-            assertNotNull(message);
-            assertTrue(message.startsWith("The sample vdb"));
-        }
-    }
-
-    @Test
-    public void shouldLoadSamplesDataAlreadyExists() throws Exception {
-        serviceTestUtilities.deleteVdbs(USER_NAME);
-        ImportMessages msgs = importVdb(KomodoUtilService.getVdbSample(KomodoUtilService.SAMPLES[0]), USER_NAME);
-        assertTrue(msgs.getErrorMessages().isEmpty());
-
-        // get
-        URI uri = UriBuilder.fromUri(uriBuilder().baseUri())
-                                                    .path(V1Constants.SERVICE_SEGMENT)
-                                                    .path(V1Constants.SAMPLE_DATA).build();
-
-        HttpPost request = jsonRequest(uri, RequestType.POST);
-        HttpResponse response = executeOk(request);
-
-        String entity = extractResponse(response);
-        // System.out.println("Response from uri " + uri + ":\n" + entity);
-
-        KomodoStatusObject status = KomodoJsonMarshaller.unmarshall(entity, KomodoStatusObject.class);
-        assertNotNull(status);
-
-        assertEquals("Sample Vdb Import", status.getTitle());
-        Map<String, String> attributes = status.getAttributes();
-
-        String message = attributes.get(KomodoUtilService.SAMPLES[0]);
-        assertNotNull(message);
-
-        assertEquals(RelationalMessages.getString(RelationalMessages.Error.VDB_SAMPLE_IMPORT_VDB_EXISTS,
-                                                  KomodoUtilService.SAMPLES[0]), message);
     }
 
     @Test

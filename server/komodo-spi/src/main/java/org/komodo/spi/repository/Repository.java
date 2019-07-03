@@ -426,24 +426,6 @@ public interface Repository {
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
      *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param overwrite
-     *        <code>true</code> if existing artifacts should be updated
-     * @param descriptor
-     *        the artifact descriptor (cannot be <code>null</code>)
-     * @param komodoObject
-     *        the Komodo object being added to the library (cannot be <code>null</code>)
-     * @throws KException
-     *         if artifact already exists and not in overwrite mode or an error occurs
-     */
-    void publish( final UnitOfWork transaction,
-                  final boolean overwrite,
-                  final ArtifactDescriptor descriptor,
-                  final KomodoObject komodoObject ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
      * @param paths
      *        the paths of the workspace objects being removed (cannot be <code>null</code> or empty)
      * @throws KException

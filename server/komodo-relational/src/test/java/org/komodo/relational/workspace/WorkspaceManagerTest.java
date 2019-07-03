@@ -99,14 +99,6 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
     }
 
     @Test
-    public void shouldCreateModel() throws Exception {
-        final Vdb vdb = createVdb();
-        final Model model = this.wsMgr.createModel( getTransaction(), vdb, "model" );
-        assertThat( model, is( notNullValue() ) );
-        assertThat( _repo.getFromWorkspace( getTransaction(), model.getAbsolutePath() ), is( ( KomodoObject )model ) );
-    }
-
-    @Test
     public void shouldCreateSchema() throws Exception {
         final Schema schema = this.wsMgr.createSchema( getTransaction(), null, "schema" );
         assertThat( schema, is( notNullValue() ) );
@@ -126,13 +118,6 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
         final Vdb vdb = this.wsMgr.createVdb(getTransaction(), null, this.name.getMethodName(), "externalFilePath");
         assertThat(vdb, is(notNullValue()));
         assertThat(vdb.getParent(getTransaction()), is(_repo.komodoWorkspace(getTransaction())));
-    }
-
-    @Test
-    public void shouldDeleteModel() throws Exception {
-        final Model model = createModel();
-        this.wsMgr.delete(getTransaction(), model);
-        assertThat(this.wsMgr.findModels(getTransaction()).length, is(0));
     }
 
     @Test
@@ -212,32 +197,6 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
         assertThat( this.wsMgr.findByType( getTransaction(), VdbLexicon.Vdb.VIRTUAL_DATABASE, null, "*o*", false ).length, is( 3 ) );
         assertThat( this.wsMgr.findByType( getTransaction(), VdbLexicon.Vdb.VIRTUAL_DATABASE, null, "pa%l", false ).length, is( 1 ) );
         assertThat( this.wsMgr.findByType( getTransaction(), VdbLexicon.Vdb.VIRTUAL_DATABASE, null, "a*", false ).length, is( 0 ) );
-    }
-
-    @Test
-    public void shouldFindModels() throws Exception {
-        Vdb parent = createVdb();
-        final String prefix = this.name.getMethodName();
-        int suffix = 0;
-
-        // create at root
-        for (int i = 0; i < 5; ++i) {
-            parent.addModel(getTransaction(), (prefix + ++suffix));
-        }
-
-        // create under a folder
-        final KomodoObject folder = _repo.add(getTransaction(), parent.getAbsolutePath(), "folder", null);
-        assertNotNull(_repo.getFromWorkspace(getTransaction(), folder.getAbsolutePath()));
-
-        for (int i = 0; i < 7; ++i) {
-            suffix++;
-            parent = createVdb( "vdb" + suffix, folder, (VDB_PATH + i) );
-            parent.addModel(getTransaction(), (prefix + suffix));
-        }
-
-        commit(); // must save before running a query
-
-        assertThat(this.wsMgr.findModels(getTransaction()).length, is(suffix));
     }
 
     @Test
@@ -324,21 +283,6 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
     @Test( expected = UnsupportedOperationException.class )
     public void shouldNotAllowRename() throws Exception {
         this.wsMgr.rename( getTransaction(), "newName" );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldNotAllowCreateModelWithNullParent() throws Exception {
-        this.wsMgr.createModel( getTransaction(), null, "model" );
-    }
-
-    @Test
-    public void shouldNotFindModelsWhenWorkspaceIsEmpty() throws Exception {
-        assertThat(this.wsMgr.findModels(getTransaction()).length, is(0));
-    }
-
-    @Test
-    public void shouldNotFindSchemasWhenWorkspaceIsEmpty() throws Exception {
-        assertThat(this.wsMgr.findSchemas(getTransaction()).length, is(0));
     }
 
     @Test

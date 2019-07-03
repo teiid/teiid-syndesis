@@ -59,10 +59,6 @@ public final class VdbSerializerTest extends AbstractSerializerTest  {
         "      \"href\": \"" + BASE_URI_PREFIX + "/workspace/vdbs\"" + NEW_LINE +
         "    " + CLOSE_BRACE + COMMA + NEW_LINE +
         "    " + OPEN_BRACE + NEW_LINE +
-        "      \"rel\": \"children\"," + NEW_LINE +
-        "      \"href\": \"" + BASE_URI_PREFIX + SEARCH + "parent\\u003d" + VDB_DATA_PATH + "\"" + NEW_LINE +
-        "    " + CLOSE_BRACE + COMMA + NEW_LINE +
-        "    " + OPEN_BRACE + NEW_LINE +
         "      \"rel\": \"imports\"," + NEW_LINE +
         "      \"href\": \"" + BASE_URI_PREFIX + VDB_DATA_PATH + "/VdbImports\"" + NEW_LINE +
         "    " + CLOSE_BRACE + COMMA + NEW_LINE +
@@ -116,7 +112,7 @@ public final class VdbSerializerTest extends AbstractSerializerTest  {
         assertEquals(VDB_NAME, descriptor.getName());
         assertEquals(DESCRIPTION, descriptor.getDescription());
         assertEquals(ORIGINAL_FILE, descriptor.getOriginalFilePath());
-        assertEquals(7, descriptor.getLinks().size());
+        assertEquals(6, descriptor.getLinks().size());
         assertEquals(true, descriptor.getProperties().isEmpty());
     }
 
