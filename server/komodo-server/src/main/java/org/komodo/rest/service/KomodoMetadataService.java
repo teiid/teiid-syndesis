@@ -46,7 +46,6 @@ import org.komodo.openshift.PublishConfiguration;
 import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.relational.DeployStatus;
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.model.Column;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.internal.OptionContainerUtils;
@@ -67,7 +66,6 @@ import org.komodo.rest.relational.request.PublishRequestPayload;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.RestQueryResult;
 import org.komodo.rest.relational.response.RestSyndesisDataSource;
-import org.komodo.rest.relational.response.RestVdbModelTableColumn;
 import org.komodo.rest.relational.response.metadata.RestSyndesisSourceStatus;
 import org.komodo.rest.relational.response.virtualization.RestVirtualizationStatus;
 import org.komodo.spi.KException;
@@ -87,8 +85,6 @@ import org.springframework.stereotype.Component;
 import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -813,104 +809,6 @@ public class KomodoMetadataService extends KomodoService {
             }
 
             return commit( uow, mediaTypes, rootNodes ); 
-        } catch ( final Exception e ) {
-            if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
-                uow.rollback();
-            }
-
-            if ( e instanceof KomodoRestException ) {
-                throw ( KomodoRestException )e;
-            }
-
-            return createErrorResponseWithForbidden( mediaTypes, e, RelationalMessages.Error.CONNECTION_SERVICE_GET_TABLES_ERROR );
-        }
-    }
-
-    /**
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
-     * @param syndesisSourceName
-     *        the name of the syndesis source whose schemaColumns are being requested (cannot be empty)
-     * @return the JSON representation of the columns collection (never <code>null</code>)
-     * @throws KomodoRestException
-     *         if there is a problem finding the specified syndesis source or constructing the JSON representation
-     */
-    @GET
-    @Path( "{syndesisSourceName}/schema-columns" )
-    @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation( value = "Get the native schema for the syndesis source",
-                   response = RestVdbModelTableColumn[].class )
-    @ApiResponses( value = {
-        @ApiResponse( code = 403, message = "An error has occurred." ),
-        @ApiResponse( code = 404, message = "No syndesis source could be found with the specified name" ),
-        @ApiResponse( code = 406, message = "Only JSON is returned by this operation" )
-    } )
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-                name = "tableOption",
-                value = "tableOption of the table to get columns.",
-                required = true,
-                dataType = "string",
-                paramType = "query")
-        })
-    public Response getSchemaColumns( @Context final HttpHeaders headers,
-                                      final @Context UriInfo uriInfo,
-                                      @ApiParam( value = "Name of the syndesis source",
-                                                 required = true )
-                                      @PathParam( "syndesisSourceName" )
-                                      final String syndesisSourceName)  throws KomodoRestException {
-        final SecurityPrincipal principal = checkSecurityContext( headers );
-
-        if ( principal.hasErrorResponse() ) {
-            return principal.getErrorResponse();
-        }
-
-        final List< MediaType > mediaTypes = headers.getAcceptableMediaTypes();
-        UnitOfWork uow = null;
-
-        try {
-            final String tableOption = uriInfo.getQueryParameters().getFirst( "tableOption" ); //$NON-NLS-1$
-            
-            uow = createTransaction( principal, "getSchemaColumns?syndesisSourceName=" + syndesisSourceName, true ); //$NON-NLS-1$
-
-            // Find the bound teiid source corresponding to the syndesis source
-            TeiidDataSource teiidSource = this.findTeiidSource(syndesisSourceName);
-
-            if (teiidSource == null)
-                return commitNoConnectionFound(uow, mediaTypes, syndesisSourceName);
-
-            final Model schemaModel = findSchemaModel( uow, teiidSource );
-
-            // Get the columns for the table with the supplied tableOption path
-            Column[] columns = null;
-            if ( schemaModel != null ) {
-                Table resultTable = null;
-                final Table[] tables = schemaModel.getTables( uow );
-                for (Table table: tables) {
-                    final String option = OptionContainerUtils.getOption( uow, table, TABLE_OPTION_FQN );
-                    if( option != null && option.equals(tableOption)) {
-                        resultTable = table;
-                    }                   
-                }
-                if( resultTable != null ) {
-                    columns = resultTable.getColumns(uow);
-                }
-            }
-
-            // No columns found - set to empty array
-            if (columns == null)
-                columns = new Column[0];
-
-            List<RestVdbModelTableColumn> restColumns = new ArrayList<>(columns.length);
-            for (Column column : columns) {
-                RestVdbModelTableColumn entity = entityFactory.create(column, uriInfo.getBaseUri(), uow);
-                restColumns.add(entity);
-                LOGGER.debug("getSchemaColumns: columns were constructed"); //$NON-NLS-1$
-            }
-
-            return commit( uow, mediaTypes, restColumns );
         } catch ( final Exception e ) {
             if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
                 uow.rollback();

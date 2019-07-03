@@ -44,11 +44,9 @@ import org.junit.Test;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.OptionKeys;
-import org.komodo.metadata.TeiidConnectionProvider;
 import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.RelationalObject.Filter;
 import org.komodo.relational.dataservice.ConnectionEntry;
-import org.komodo.relational.dataservice.DataServiceEntry;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.DataserviceManifest;
 import org.komodo.relational.dataservice.ServiceVdbEntry;
@@ -58,9 +56,7 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.Property;
 import org.komodo.test.utils.TestUtilities;
-import org.mockito.Mockito;
 import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 import org.w3c.dom.Document;
@@ -173,7 +169,6 @@ public final class DataserviceImplTest extends RelationalModelTest {
 
         assertThat( this.dataservice.getConnectionEntries( getTransaction() ).length, is( 1 ) );
         assertThat( this.dataservice.getConnectionEntries( getTransaction(), connectionName ).length, is( 1 ) );
-        assertThat( this.dataservice.getConnectionPlan( getTransaction() ).length, is( 0 ) );
         assertThat( this.dataservice.getConnections( getTransaction() ).length, is( 0 ) );
         assertThat( this.dataservice.hasChild( getTransaction(), connectionName ), is( true ) );
         assertThat( this.dataservice.hasChild( getTransaction(), connectionName, DataVirtLexicon.ConnectionEntry.NODE_TYPE ),
@@ -206,10 +201,6 @@ public final class DataserviceImplTest extends RelationalModelTest {
 
         assertThat( this.dataservice.getVdbEntries( getTransaction() ).length, is( 1 ) );
         assertThat( this.dataservice.getVdbEntries( getTransaction(), vdbName ).length, is( 1 ) );
-        assertThat( this.dataservice.getVdbPlan( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getVdbPlan( getTransaction() )[ 0 ], is( vdb.getAbsolutePath() ) );
-        assertThat( this.dataservice.getVdbs( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getVdbs( getTransaction() )[ 0 ].getName( getTransaction() ), is( vdbName ) );
         assertThat( this.dataservice.hasChild( getTransaction(), vdbName ), is( true ) );
         assertThat( this.dataservice.hasChild( getTransaction(), vdbName, DataVirtLexicon.VdbEntry.NODE_TYPE ),
                     is( true ) );
@@ -231,8 +222,6 @@ public final class DataserviceImplTest extends RelationalModelTest {
         assertThat( entry.getReference( getTransaction() ), is( nullValue() ) );
         assertThat( this.dataservice.getVdbEntries( getTransaction() ).length, is( 1 ) );
         assertThat( this.dataservice.getVdbEntries( getTransaction(), vdbName ).length, is( 1 ) );
-        assertThat( this.dataservice.getVdbPlan( getTransaction() ).length, is( 0 ) );
-        assertThat( this.dataservice.getVdbs( getTransaction() ).length, is( 0 ) );
         assertThat( this.dataservice.hasChild( getTransaction(), vdbName ), is( true ) );
         assertThat( this.dataservice.hasChild( getTransaction(), vdbName, DataVirtLexicon.VdbEntry.NODE_TYPE ), is( true ) );
         assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
@@ -397,7 +386,6 @@ public final class DataserviceImplTest extends RelationalModelTest {
         ImportOptions importOptions = new ImportOptions();
         importOptions.setOption( OptionKeys.NAME, "MyDataService" );
 
-        TeiidConnectionProvider provider = Mockito.mock(TeiidConnectionProvider.class);
         DataserviceConveyor conveyor = new DataserviceConveyor( _repo);
         KomodoObject parent = _repo.komodoWorkspace( getTransaction() );
         conveyor.dsImport( getTransaction(), importStream, parent, importOptions, importMessages );
@@ -495,50 +483,4 @@ public final class DataserviceImplTest extends RelationalModelTest {
         }
     }
 
-    @Test
-    public void shouldCloneDataservice() throws Exception {
-        InputStream importStream = TestUtilities.sampleDataserviceExample();
-        assertThat( importStream, is( notNullValue() ) );
-
-        ImportMessages importMessages = new ImportMessages();
-        ImportOptions importOptions = new ImportOptions();
-        importOptions.setOption( OptionKeys.NAME, "MyDataService" );
-        
-        TeiidConnectionProvider provider = Mockito.mock(TeiidConnectionProvider.class);
-        DataserviceConveyor conveyor = new DataserviceConveyor( _repo);
-        KomodoObject parent = _repo.komodoWorkspace( getTransaction() );
-        conveyor.dsImport( getTransaction(), importStream, parent, importOptions, importMessages );
-        assertThat( importMessages.hasError(), is( false ) );
-        commit();
-
-        final String dataServiceName = "MyDataService";
-        assertThat( parent.hasChild( getTransaction(), dataServiceName ), is( true ) );
-        KomodoObject dsObject = parent.getChild( getTransaction(), dataServiceName );
-        Dataservice theDataService = mgr.resolve(getTransaction(), dsObject, Dataservice.class);
-
-        Dataservice copy = this.mgr.createDataservice(getTransaction(), null, SERVICE_NAME + "Copy");
-        theDataService.clone(getTransaction(), copy);
-
-        assertEquals(theDataService.getDescription(getTransaction()), copy.getDescription(getTransaction()));
-        assertEquals(theDataService.getLastModified(getTransaction()), copy.getLastModified(getTransaction()));
-        assertEquals(theDataService.getModifiedBy(getTransaction()), copy.getModifiedBy(getTransaction()));
-
-        DataServiceEntry<?>[] srcChildren = theDataService.getChildren(getTransaction());
-        DataServiceEntry<?>[] tgtChildren = copy.getChildren(getTransaction());
-        assertEquals(srcChildren.length, tgtChildren.length);
-
-        for (DataServiceEntry<?> srcChild : srcChildren) {
-            String childName = srcChild.getName(getTransaction());
-            assertTrue(copy.hasChild(getTransaction(), childName));
-            DataServiceEntry<?> tgtChild = copy.getChild(getTransaction(), childName);
-
-            String[] propNames = srcChild.getPropertyNames(getTransaction());
-            for (String propName : propNames) {
-                Property srcProperty = srcChild.getProperty(getTransaction(), propName);
-                assertTrue(tgtChild.hasProperty(getTransaction(), propName));
-                Property tgtProperty = tgtChild.getProperty(getTransaction(), propName);
-                assertEquals(srcProperty.getValue(getTransaction()), tgtProperty.getValue(getTransaction()));
-            }
-        }
-    }
 }

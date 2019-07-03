@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
-import org.komodo.core.repository.RepositoryTools;
 import org.komodo.relational.Messages;
 import org.komodo.relational.RelationalModelFactory;
 import org.komodo.relational.RelationalObject;
@@ -111,7 +110,11 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
      */
     @Override
     public byte[] export(UnitOfWork transaction, Properties exportProperties) throws KException {
-        DataserviceConveyor conveyor = new DataserviceConveyor(getRepository());
+        if (true) {
+        	throw new AssertionError();
+        }
+    	
+    	DataserviceConveyor conveyor = new DataserviceConveyor(getRepository());
         return conveyor.export(transaction, this, exportProperties);
     }
 
@@ -328,17 +331,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
                  || ( getConnectionEntries( transaction ).length != 0 ));
     }
 
-    @Override
-    public String[] getVdbPlan(UnitOfWork transaction) throws KException {
-        final VdbEntry[] entries = getVdbEntries( transaction );
-
-        if ( entries.length == 0 ) {
-            return StringConstants.EMPTY_ARRAY;
-        }
-
-        return getPathsOfReferences( transaction, entries );
-    }
-
     /**
      * {@inheritDoc}
      *
@@ -501,22 +493,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.dataservice.Dataservice#getConnectionPlan(org.komodo.spi.repository.Repository.UnitOfWork)
-     */
-    @Override
-    public String[] getConnectionPlan( final UnitOfWork transaction ) throws KException {
-        final ConnectionEntry[] entries = getConnectionEntries( transaction );
-
-        if ( entries.length == 0 ) {
-            return StringConstants.EMPTY_ARRAY;
-        }
-
-        return getPathsOfReferences( transaction, entries );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
      * @see org.komodo.relational.dataservice.Dataservice#getDescription(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
@@ -596,34 +572,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
         }
 
         return result.toArray( new VdbEntry[ result.size() ] );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.dataservice.Dataservice#getVdbs(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String[])
-     */
-    @Override
-    public Vdb[] getVdbs( final UnitOfWork transaction,
-                          final String... namePatterns ) throws KException {
-        final VdbEntry[] entries = getVdbEntries( transaction, namePatterns );
-
-        if ( entries.length == 0 ) {
-            return Vdb.NO_VDBS;
-        }
-
-        final List< Vdb > vdbs = new ArrayList<>( entries.length );
-
-        for ( final VdbEntry entry : entries ) {
-            Vdb ref = null;
-
-            if ( ( ref = entry.getReference( transaction ) ) != null ) {
-                vdbs.add( ref );
-            }
-        }
-
-        return vdbs.toArray( new Vdb[ vdbs.size() ] );
     }
 
     /**
@@ -710,36 +658,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
         }
 
         return oldServiceVdb;
-    }
-
-    @Override
-    public void clone(UnitOfWork transaction, Dataservice dataservice) throws KException {
-        dataservice.setDescription(transaction, getDescription(transaction));
-        dataservice.setModifiedBy(transaction, getModifiedBy(transaction));
-        dataservice.setLastModified(transaction, getLastModified(transaction));
-
-        for (VdbEntry vdbEntry : getVdbEntries(transaction)) {
-            VdbEntry entry = RelationalModelFactory.createVdbEntry(transaction,
-                                                                          getRepository(),
-                                                                          dataservice,
-                                                                           vdbEntry.getName(transaction));
-            RepositoryTools.copyProperties(transaction, vdbEntry, entry);
-        }
-
-        for (ConnectionEntry connEntry : getConnectionEntries(transaction)) {
-            ConnectionEntry entry = RelationalModelFactory.createConnectionEntry(transaction,
-                                                                          getRepository(),
-                                                                          dataservice,
-                                                                          connEntry.getName(transaction));
-            RepositoryTools.copyProperties(transaction, connEntry, entry);
-        }
-
-        ServiceVdbEntry serviceVdbEntry = getServiceVdbEntry(transaction);
-        ServiceVdbEntry entry = RelationalModelFactory.createServiceVdbEntry(transaction,
-                                                                                    getRepository(),
-                                                                                    dataservice,
-                                                                                    serviceVdbEntry.getName(transaction));
-        RepositoryTools.copyProperties(transaction, serviceVdbEntry, entry);
     }
 
     /**

@@ -40,7 +40,6 @@ import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.TeiidMetadataInstance;
 import org.komodo.rest.relational.KomodoRestUriBuilder;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
-import org.komodo.rest.relational.request.KomodoPathAttribute;
 import org.komodo.rest.relational.request.KomodoQueryAttribute;
 import org.komodo.rest.relational.response.RestQueryResult;
 import org.komodo.rest.relational.response.RestQueryRow;
@@ -190,16 +189,16 @@ public abstract class AbstractKomodoMetadataServiceTest extends AbstractServiceT
     protected void loadSample() throws Exception {
         deleteSample();
 
+        //TODO
+        
         //
         // DEPLOY SAMPLE TO METADATA SERVER
         //
-        String samplePath = "/tko:komodo/tko:workspace/" + USER_NAME + "/sample";
+        /*String samplePath = "/tko:komodo/tko:workspace/" + USER_NAME + "/sample";
         KomodoPathAttribute pathAttribute = new KomodoPathAttribute();
         pathAttribute.setPath(samplePath);
 
-        //TODO
-        
-        /*URI uri = UriBuilder.fromUri(getUriBuilder().baseUri())
+        URI uri = UriBuilder.fromUri(getUriBuilder().baseUri())
                                     .path(V1Constants.METADATA_SEGMENT)
                                     .path(V1Constants.VDB_SEGMENT).build();
 

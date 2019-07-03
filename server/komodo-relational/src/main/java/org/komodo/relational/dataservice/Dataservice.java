@@ -190,18 +190,6 @@ public interface Dataservice extends Exportable, RelationalObject, VdbEntryConta
     String getServiceViewModelName( UnitOfWork uow ) throws KException;
 
     /**
-     * This does not include the service VDB.
-     *
-     * @param uow
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @return the paths of the VDB resources referenced by the entries (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    String[] getVdbPlan( UnitOfWork uow ) throws KException;
-
-    /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> and must have a state of
      *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
@@ -296,16 +284,6 @@ public interface Dataservice extends Exportable, RelationalObject, VdbEntryConta
 
     /**
      * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @return the paths of the connections referenced by the entries (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    String[] getConnectionPlan( final UnitOfWork transaction ) throws KException;
-
-    /**
-     * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
      *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
      * @return the value of the <code>description</code> property (can be empty)
@@ -349,19 +327,6 @@ public interface Dataservice extends Exportable, RelationalObject, VdbEntryConta
 
     /**
      * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param namePatterns
-     *        optional name patterns (can be <code>null</code> or empty but cannot have <code>null</code> or empty elements)
-     * @return the VDBs referenced by the entries (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    Vdb[] getVdbs( final UnitOfWork transaction,
-                   final String... namePatterns ) throws KException;
-
-    /**
-     * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param newDescription
      *        the new value of the <code>description</code> property
@@ -392,17 +357,5 @@ public interface Dataservice extends Exportable, RelationalObject, VdbEntryConta
      */
     void setModifiedBy( final UnitOfWork transaction,
                         final String newModifiedBy ) throws KException;
-
-    /**
-     * Copies the {@link Dataservice}'s properties to the given {@link Dataservice}
-     *
-     * @param transaction
-     *          the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param dataservice
-     *          the destination data service
-     * @throws KException
-     *          if an error occurs
-     */
-    void clone(UnitOfWork transaction, Dataservice dataservice) throws KException;
 
 }

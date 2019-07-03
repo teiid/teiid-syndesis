@@ -22,26 +22,12 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import org.komodo.openshift.BuildStatus;
-import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.model.Column;
-import org.komodo.relational.model.Model;
-import org.komodo.relational.model.Table;
-import org.komodo.relational.model.View;
-import org.komodo.relational.vdb.ModelSource;
-import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.RestBasicEntity;
-import org.komodo.rest.relational.connection.RestConnection;
 import org.komodo.rest.relational.dataservice.RestDataservice;
 import org.komodo.rest.relational.response.RestSyndesisDataSource;
-import org.komodo.rest.relational.response.RestVdb;
-import org.komodo.rest.relational.response.RestVdbModel;
-import org.komodo.rest.relational.response.RestVdbModelSource;
-import org.komodo.rest.relational.response.RestVdbModelTable;
-import org.komodo.rest.relational.response.RestVdbModelTableColumn;
-import org.komodo.rest.relational.response.RestVdbModelView;
 import org.komodo.rest.relational.response.virtualization.RestVirtualizationStatus;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
@@ -82,28 +68,6 @@ public class RestEntityFactory implements V1Constants {
         KomodoType kType = kObject.getTypeIdentifier(transaction);
 
         switch (kType) {
-            case VDB:
-                Vdb vdb = wsMgr.resolve(transaction, kObject, Vdb.class);
-                Boolean exportXml = properties.getProperty(VDB_EXPORT_XML_PROPERTY, Boolean.FALSE);
-                return (T)new RestVdb(baseUri, vdb, exportXml, transaction);
-            case MODEL:
-                Model model = wsMgr.resolve(transaction, kObject, Model.class);
-                return (T)new RestVdbModel(baseUri, model, transaction);
-            case VDB_MODEL_SOURCE:
-                ModelSource source = wsMgr.resolve(transaction, kObject, ModelSource.class);
-                return (T)new RestVdbModelSource(baseUri, source, transaction);
-            case VIEW:
-                View view = wsMgr.resolve(transaction, kObject, View.class);
-                return (T)new RestVdbModelView(baseUri, view, transaction);
-            case TABLE:
-                Table table = wsMgr.resolve(transaction, kObject, Table.class);
-                return (T)new RestVdbModelTable(baseUri, table, transaction);
-            case COLUMN:
-                Column column = wsMgr.resolve(transaction, kObject, Column.class);
-                return (T)new RestVdbModelTableColumn(baseUri, column, transaction);
-            case CONNECTION:
-                Connection connection = wsMgr.resolve(transaction, kObject, Connection.class);
-                return (T)new RestConnection(baseUri, connection, transaction);
             case DATASERVICE:
                 Dataservice dataService = wsMgr.resolve(transaction, kObject, Dataservice.class);
                 return (T)new RestDataservice(baseUri, dataService, false, transaction);
@@ -112,17 +76,6 @@ public class RestEntityFactory implements V1Constants {
             default:
                 return (T)new RestBasicEntity(baseUri, kObject, transaction);
         }
-    }
-
-    /**
-     * @param kObject the object
-     * @param baseUri the base uri
-     * @param transaction the transaction
-     * @return the rest object for the given kObject
-     * @throws KException if error occurs
-     */
-    public <T extends RestBasicEntity> T create(KomodoObject kObject, URI baseUri, UnitOfWork transaction) throws KException {
-        return create(kObject, baseUri, transaction, new KomodoProperties());
     }
 
     /**
