@@ -160,6 +160,12 @@
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>komodo-relational</artifactId>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
 
     <!-- Required for unit testing the rest resources rather than integration testing -->
     <dependency>

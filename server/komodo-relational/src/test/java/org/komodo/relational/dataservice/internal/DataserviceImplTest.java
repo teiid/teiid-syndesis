@@ -46,7 +46,6 @@ import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.OptionKeys;
 import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.RelationalObject.Filter;
-import org.komodo.relational.dataservice.ConnectionEntry;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.DataserviceManifest;
 import org.komodo.relational.dataservice.ServiceVdbEntry;
@@ -150,38 +149,13 @@ public final class DataserviceImplTest extends RelationalModelTest {
         entry.addDependencyEntry( getTransaction(), "B" );
         assertThat( entry.getDependencies( getTransaction() ).length, is( 2 ) );
 
-        this.dataservice.addConnectionEntry( getTransaction(), "connection" );
         this.dataservice.addVdbEntry( getTransaction(), "vdb" );
 
-        assertThat( this.dataservice.getConnectionEntries( getTransaction() ).length, is( 1 ) );
+        assertThat( this.dataservice.getConnectionEntries( getTransaction() ).length, is( 0 ) );
         assertThat( this.dataservice.getVdbEntries( getTransaction() ).length, is( 1 ) );
         assertThat( this.dataservice.getServiceVdbEntry( getTransaction() ), is( notNullValue() ) );
         assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
-        assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 3 ) );
-    }
-
-    @Test
-    public void shouldAddConnectionEntry() throws Exception {
-        final String connectionName = "MyConnection";
-        final ConnectionEntry entry = this.dataservice.addConnectionEntry( getTransaction(), connectionName );
-        assertThat( entry.getJndiName( getTransaction() ), is( nullValue() ) );
-        assertThat( entry.getReference( getTransaction() ), is( nullValue() ) );
-
-        assertThat( this.dataservice.getConnectionEntries( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getConnectionEntries( getTransaction(), connectionName ).length, is( 1 ) );
-        assertThat( this.dataservice.getConnections( getTransaction() ).length, is( 0 ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), connectionName ), is( true ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), connectionName, DataVirtLexicon.ConnectionEntry.NODE_TYPE ),
-                    is( true ) );
-        assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
-        assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildren( getTransaction(), connectionName ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(), DataVirtLexicon.ConnectionEntry.NODE_TYPE ).length,
-                    is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ConnectionEntry.NODE_TYPE,
-                                                        connectionName ).length,
-                    is( 1 ) );
+        assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 2 ) );
     }
 
     @Test

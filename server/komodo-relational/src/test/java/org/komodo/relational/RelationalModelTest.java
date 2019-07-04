@@ -21,10 +21,8 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 import org.komodo.core.AbstractLocalRepositoryTest;
-import org.komodo.core.KomodoLexicon;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.model.Model;
-import org.komodo.relational.model.Schema;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
@@ -90,24 +88,6 @@ public class RelationalModelTest extends AbstractLocalRepositoryTest {
         assertThat( vdb.getName( getTransaction() ), is( vdbName ) );
         assertThat( vdb.getOriginalFilePath( getTransaction() ), is( originalFilePath ) );
         return vdb;
-    }
-
-    protected Schema createSchema() throws Exception {
-        return createSchema( getDefaultSchemaName() );
-    }
-
-    protected Schema createSchema( final String schemaName ) throws Exception {
-        return createSchema( schemaName, null );
-    }
-
-    protected Schema createSchema( final String schemaName,
-                                   final KomodoObject parent ) throws Exception {
-        final WorkspaceManager mgr = WorkspaceManager.getInstance(_repo, getTransaction());
-        final Schema schema = mgr.createSchema( getTransaction(), parent, schemaName );
-
-        assertThat( schema.getPrimaryType( getTransaction() ).getName(), is( KomodoLexicon.Schema.NODE_TYPE ) );
-        assertThat( schema.getName( getTransaction() ), is( schemaName ) );
-        return schema;
     }
 
     protected Dataservice createDataservice() throws Exception {

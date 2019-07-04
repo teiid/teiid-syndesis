@@ -25,7 +25,6 @@ import java.util.Properties;
 
 import org.komodo.relational.Messages;
 import org.komodo.relational.RelationalModelFactory;
-import org.komodo.relational.RelationalObject;
 import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.ConnectionEntry;
 import org.komodo.relational.dataservice.DataServiceEntry;
@@ -42,9 +41,7 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.DocumentType;
-import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyValueType;
@@ -64,25 +61,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
      */
     private static final KomodoType[] CHILD_TYPES = new KomodoType[] { VdbEntry.IDENTIFIER,
                                                                        ConnectionEntry.IDENTIFIER };
-
-    private static < T extends Exportable & RelationalObject > String[] getPathsOfReferences( final UnitOfWork transaction,
-                                                                                              final DataServiceEntry< T >[] entries ) throws KException {
-        if ( entries.length == 0 ) {
-            return StringConstants.EMPTY_ARRAY;
-        }
-
-        final List< String > paths = new ArrayList<>( entries.length );
-
-        for ( final DataServiceEntry< T > entry : entries ) {
-            T ref = null;
-
-            if ( ( ref = entry.getReference( transaction ) ) != null ) {
-                paths.add( ref.getAbsolutePath() );
-            }
-        }
-
-        return paths.toArray( new String[ paths.size() ] );
-    }
 
     /**
      * @param transaction
@@ -110,10 +88,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
      */
     @Override
     public byte[] export(UnitOfWork transaction, Properties exportProperties) throws KException {
-        if (true) {
-        	throw new AssertionError();
-        }
-    	
     	DataserviceConveyor conveyor = new DataserviceConveyor(getRepository());
         return conveyor.export(transaction, this, exportProperties);
     }
@@ -370,38 +344,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
             }
         }
         return viewModelName;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.dataservice.Dataservice#addConnection(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      org.komodo.relational.connection.Connection)
-     */
-    @Override
-    public ConnectionEntry addConnection( final UnitOfWork uow,
-                                          final Connection connection ) throws KException {
-        final ConnectionEntry entry = RelationalModelFactory.createConnectionEntry( uow,
-                                                                                    getRepository(),
-                                                                                    this,
-                                                                                    Objects.requireNonNull( connection,
-                                                                                                            "connection" ) //$NON-NLS-1$
-                                                                                           .getName( uow ) );
-        entry.setReference( uow, connection );
-        entry.setJndiName( uow, connection.getJndiName( uow ) );
-        return entry;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.dataservice.Dataservice#addConnectionEntry(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String)
-     */
-    @Override
-    public ConnectionEntry addConnectionEntry( final UnitOfWork transaction,
-                                               final String connectionEntryName ) throws KException {
-        return RelationalModelFactory.createConnectionEntry( transaction, getRepository(), this, connectionEntryName );
     }
 
     /**

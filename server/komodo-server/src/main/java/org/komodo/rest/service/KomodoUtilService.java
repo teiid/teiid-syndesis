@@ -17,8 +17,6 @@
  */
 package org.komodo.rest.service;
 
-import static org.komodo.rest.relational.RelationalMessages.Error.SCHEMA_SERVICE_GET_SCHEMA_ERROR;
-
 import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -31,12 +29,10 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.komodo.relational.profile.Profile;
@@ -62,7 +58,6 @@ import org.komodo.rest.relational.response.vieweditorstate.RestViewDefinition;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewDefinitionStatus;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.Id;
 import org.komodo.spi.repository.Repository.UnitOfWork;

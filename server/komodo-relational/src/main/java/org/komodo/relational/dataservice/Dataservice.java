@@ -190,32 +190,6 @@ public interface Dataservice extends Exportable, RelationalObject, VdbEntryConta
     String getServiceViewModelName( UnitOfWork uow ) throws KException;
 
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param connection
-     *        the connection being added to the data service (cannot be <code>null</code> or empty)
-     * @return the connection entry (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    ConnectionEntry addConnection( final UnitOfWork transaction,
-                                   final Connection connection ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param connectionEntryName
-     *        the name of the connection entry to create (cannot be <code>null</code> or empty)
-     * @return the connection entry (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    ConnectionEntry addConnectionEntry( final UnitOfWork transaction,
-                                        final String connectionEntryName ) throws KException;
-
-    /**
      * {@inheritDoc}
      *
      * @see org.komodo.spi.repository.KomodoObject#getChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)

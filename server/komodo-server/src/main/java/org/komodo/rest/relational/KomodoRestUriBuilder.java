@@ -23,7 +23,6 @@ import java.util.Properties;
 import javax.ws.rs.core.UriBuilder;
 
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.vdb.Translator;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.KomodoRestV1Application;
 import org.komodo.rest.RestLink.LinkType;
@@ -565,22 +564,6 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
 
         assert(result != null);
         return result;
-    }
-
-    /**
-     * @param translator
-     * @param uow
-     * @return the uri of the parent of the given translator
-     * @throws KException
-     */
-    public URI vdbTranslatorParentUri(Translator translator, UnitOfWork uow) throws KException {
-        KomodoObject parent = translator.getParent(uow);
-        if (isVdb(uow, parent)) {
-            String vdbName = parent.getName(uow);
-            return vdbUri(workspaceVdbsUri(), vdbName);
-        }
-
-        throw new KException("Translator has an invalid parent");
     }
 
     /**

@@ -272,26 +272,6 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
      *        the transaction (cannot be <code>null</code> or have a state that is not
      *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
      * @param parent
-     *        the parent of the schema object being created (can be <code>null</code>)
-     * @param schemaName
-     *        the name of the schema to create (cannot be empty)
-     * @return the schema object (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    public Schema createSchema( final UnitOfWork uow,
-                                final KomodoObject parent,
-                                final String schemaName ) throws KException {
-        final String path = ( ( parent == null ) ? getRepository().komodoWorkspace( uow ).getAbsolutePath()
-                                                 : parent.getAbsolutePath() );
-         return RelationalModelFactory.createSchema( uow, getRepository(), path, schemaName );
-    }
-
-    /**
-     * @param uow
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param parent
      *        the parent of the model object being created (can be <code>null</code> if VDB should be created at the workspace
      *        root)
      * @param vdbName
