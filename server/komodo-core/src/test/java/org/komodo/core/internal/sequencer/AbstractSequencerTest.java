@@ -178,9 +178,7 @@ public abstract class AbstractSequencerTest extends MultiUseAbstractTest impleme
                 node.setPrimaryType(VdbLexicon.Vdb.DECLARATIVE_MODEL);
                 node.setProperty(VdbLexicon.Model.MODEL_DEFINITION, text);
                 break;
-            case VDB:
-            case DATA_SERVICE:
-            case CONNECTION:
+            default:
                 throw new UnsupportedOperationException("Not tested by these sequencer tests");
         }
 
