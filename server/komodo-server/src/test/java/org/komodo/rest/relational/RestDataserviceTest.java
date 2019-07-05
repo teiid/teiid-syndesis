@@ -29,17 +29,16 @@ import javax.ws.rs.core.UriBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.openshift.BuildStatus;
-import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.relational.dataservice.RestDataservice;
-import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyDescriptor;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.mockito.Mockito;
+import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 
 @SuppressWarnings( {"javadoc", "nls"} )
 public final class RestDataserviceTest {
@@ -74,7 +73,6 @@ public final class RestDataserviceTest {
         copy.setServiceVdbVersion(this.dataservice.getServiceVdbVersion());
         copy.setServiceViewModel(this.dataservice.getServiceViewModel());
         copy.setViewDefinitionNames(this.dataservice.getViewDefinitionNames());
-        copy.setConnectionTotal(this.dataservice.getConnectionTotal());
         copy.setPublishedState(this.dataservice.getPublishedState());
 
         return copy;
@@ -104,7 +102,6 @@ public final class RestDataserviceTest {
         Mockito.when(theDataservice.getPropertyDescriptors(transaction)).thenReturn(new PropertyDescriptor[0]);
         Mockito.when(theDataservice.getParent(transaction)).thenReturn(workspace);
         Mockito.when(theDataservice.getServiceVdb(transaction)).thenReturn(serviceVdb);
-        Mockito.when(theDataservice.getConnections(transaction)).thenReturn(new Connection[0]);
 
         this.dataservice = new RestDataservice(BASE_URI, theDataservice, false, transaction);
         this.dataservice.setId(DATASERVICE_NAME);

@@ -65,7 +65,6 @@ import org.komodo.rest.relational.request.KomodoQueryAttribute;
 import org.komodo.rest.relational.request.PublishRequestPayload;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.RestQueryResult;
-import org.komodo.rest.relational.response.RestSyndesisDataSource;
 import org.komodo.rest.relational.response.metadata.RestSyndesisSourceStatus;
 import org.komodo.rest.relational.response.virtualization.RestVirtualizationStatus;
 import org.komodo.spi.KException;
@@ -430,121 +429,6 @@ public class KomodoMetadataService extends KomodoService {
 
             return createErrorResponse(Status.FORBIDDEN, mediaTypes, RelationalMessages.Error.METADATA_SERVICE_QUERY_ERROR, e.getLocalizedMessage());
         }
-    }
-
-    /**
-     * Get the syndesis sources
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
-     * @return a JSON document representing all syndesis connections (never <code>null</code>)
-     * @throws KomodoRestException
-     *         if there is a problem constructing the JSON document
-     */
-	@GET
-	@Path(V1Constants.SYNDESIS_SOURCES)
-	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "Display the collection of syndesis sources", response = RestSyndesisDataSource[].class)
-	@ApiResponses(value = { @ApiResponse(code = 403, message = "An error has occurred.") })
-	public Response getSyndesisSources(final @Context HttpHeaders headers, final @Context UriInfo uriInfo)
-			throws KomodoRestException {
-
-		SecurityPrincipal principal = checkSecurityContext(headers);
-		if (principal.hasErrorResponse())
-			return principal.getErrorResponse();
-
-		List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-		UnitOfWork uow = null;
-
-		try {
-			Repository repo = this.kengine.getDefaultRepository();
-			uow = createTransaction(principal, "getSyndesisSources", true); //$NON-NLS-1$
-
-			// Get OpenShift based syndesis sources
-			Collection<DefaultSyndesisDataSource> dataSources = this.openshiftClient.getSyndesisSources(getAuthenticationToken());
-			LOGGER.info("syndesisSources - '{0}' Sources", dataSources.size()); //$NON-NLS-1$
-
-			final List<RestSyndesisDataSource> entities = new ArrayList<>();
-
-			for (SyndesisDataSource dataSource : dataSources) {
-				RestSyndesisDataSource entity = entityFactory.createSyndesisDataSource(uow, 
-				                                                                       repo,
-						                                                               dataSource, 
-						                                                               uriInfo.getBaseUri());
-				entities.add(entity);
-				LOGGER.info("syndesisSources:Source '{0}' entity was constructed", dataSource.getName()); //$NON-NLS-1$
-			}
-			// create response
-			return commit(uow, mediaTypes, entities);
-		} catch (CallbackTimeoutException ex) {
-			return createTimeoutResponse(mediaTypes);
-		} catch (Throwable e) {
-			if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
-				uow.rollback();
-			}
-			if (e instanceof KomodoRestException) {
-				throw (KomodoRestException) e;
-			}
-			return createErrorResponseWithForbidden(mediaTypes, e,
-					RelationalMessages.Error.METADATA_GET_SYNDESIS_SOURCES_ERROR);
-		}
-	}
-
-	/**
-	 * Bind a Syndesis source - creates a corresponding connection in the teiid engine.
-	 *
-	 * @param headers
-	 *            the request headers (never <code>null</code>)
-	 * @param uriInfo
-	 *            the request URI information (never <code>null</code>)
-	 * @param payload
-	 *            the payload that contains the name of the service (never
-	 *            <code>null</code>)
-	 * @return a JSON representation of the status (never <code>null</code>)
-	 * @throws KomodoRestException
-	 *             if there is an error adding the Connection
-	 */
-	@POST
-	@Path(V1Constants.SYNDESIS_SOURCE+V1Constants.FORWARD_SLASH+V1Constants.SYNDESIS_SOURCE_PLACEHOLDER)
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes({ MediaType.APPLICATION_JSON })
-	@ApiOperation(value = "Create a connection in the teiid engine for a Syndesis source")
-	@ApiResponses(value = { @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
-			@ApiResponse(code = 403, message = "An error has occurred.") })
-	public Response bindSyndesisSource(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
-            @ApiParam( value = "Name of the syndesis source",
-            required = true )
-			final @PathParam( "syndesisSourceName" ) String syndesisSourceName)
-			throws KomodoRestException {
-
-		SecurityPrincipal principal = checkSecurityContext(headers);
-		if (principal.hasErrorResponse())
-			return principal.getErrorResponse();
-
-		List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-		if (!isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
-			return notAcceptableMediaTypesBuilder().build();
-
-		UnitOfWork uow = null;
-
-		try {
-			uow = createTransaction(principal, "bindSyndesisSource", false); //$NON-NLS-1$
-			this.openshiftClient.bindToSyndesisSource(getAuthenticationToken(), syndesisSourceName);
-			String title = RelationalMessages.getString(
-					RelationalMessages.Info.METADATA_SYNDESIS_SOURCE_BIND_TITLE, syndesisSourceName);
-			KomodoStatusObject status = new KomodoStatusObject(title);
-			return commit(uow, mediaTypes, status);
-		} catch (final Exception e) {
-			if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
-				uow.rollback();
-			}
-			if (e instanceof KomodoRestException) {
-				throw (KomodoRestException) e;
-			}
-			return createErrorResponse(Status.FORBIDDEN, mediaTypes, e,
-					RelationalMessages.Error.METADATA_SYNDESIS_SOURCE_BIND_ERROR, e, syndesisSourceName);
-		   }
     }
 
     /**

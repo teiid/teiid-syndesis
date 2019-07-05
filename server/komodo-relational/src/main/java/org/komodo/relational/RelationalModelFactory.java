@@ -21,12 +21,10 @@ import java.util.Map;
 
 import org.komodo.core.KomodoLexicon;
 import org.komodo.core.repository.RepositoryTools;
-import org.komodo.relational.dataservice.ConnectionEntry;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.ServiceVdbEntry;
 import org.komodo.relational.dataservice.VdbEntry;
 import org.komodo.relational.dataservice.VdbEntryContainer;
-import org.komodo.relational.dataservice.internal.ConnectionEntryImpl;
 import org.komodo.relational.dataservice.internal.DataserviceImpl;
 import org.komodo.relational.dataservice.internal.ServiceVdbEntryImpl;
 import org.komodo.relational.dataservice.internal.VdbEntryImpl;
@@ -235,37 +233,6 @@ public final class RelationalModelFactory {
         } catch ( final Exception e ) {
             throw handleError( e );
         }
-    }
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of {@link State#NOT_STARTED})
-     * @param repository
-     *        the repository where the model object will be created (cannot be <code>null</code>)
-     * @param dataService
-     *        the data service where the connection entry is being created (cannot be <code>null</code>)
-     * @param connectionEntryName
-     *        the name of the connection entry to create (cannot be empty)
-     * @return the connection entry model object (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    public static ConnectionEntry createConnectionEntry( final UnitOfWork transaction,
-                                                         final Repository repository,
-                                                         final Dataservice dataService,
-                                                         final String connectionEntryName ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( repository, "repository" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( dataService, "dataService" ); //$NON-NLS-1$
-        ArgCheck.isNotEmpty( connectionEntryName, "connectionEntryName" ); //$NON-NLS-1$
-
-        final KomodoObject kobject = repository.add( transaction,
-                                                     dataService.getAbsolutePath(),
-                                                     connectionEntryName,
-                                                     DataVirtLexicon.ConnectionEntry.NODE_TYPE );
-        final ConnectionEntry result = new ConnectionEntryImpl( transaction, repository, kobject.getAbsolutePath() );
-        return result;
     }
 
     /**

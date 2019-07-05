@@ -311,33 +311,6 @@ public class DataserviceManifest implements Exportable {
                 }
             }
 
-            { // connection entries
-                final ConnectionEntry[] entries = this.dataService.getConnectionEntries( transaction );
-
-                if ( entries.length != 0 ) {
-                    writeNewLine( xsw );
-                    writeTab( xsw );
-                    writeStartElement( xsw, DataVirtLexicon.DataServiceManifestId.CONNECTIONS );
-
-                    for ( final ConnectionEntry entry : entries ) {
-                        writeNewLine( xsw );
-                        writeTab( xsw );
-                        writeTab( xsw );
-                        writeStartElement( xsw, DataVirtLexicon.DataServiceManifestId.CONNECTION_FILE );
-                        writeAttribute( xsw, DataVirtLexicon.DataServiceManifestId.PATH, entry.getEntryPath( transaction ) );
-                        writeAttribute( xsw,
-                                        DataVirtLexicon.DataServiceManifestId.PUBLISH,
-                                        entry.getPublishPolicy( transaction ).toXml() );
-                        writeAttribute( xsw, DataVirtLexicon.DataServiceManifestId.JNDI_NAME, entry.getJndiName( transaction ) );
-                        writeEndElement( xsw );
-                    }
-
-                    writeNewLine( xsw );
-                    writeTab( xsw );
-                    writeEndElement( xsw );
-                }
-            }
-
             { // vdb entries
                 final VdbEntry[] entries = this.dataService.getVdbEntries( transaction );
 

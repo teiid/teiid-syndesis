@@ -18,8 +18,6 @@
 package org.komodo.rest.relational;
 
 import java.net.URI;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 import org.komodo.openshift.BuildStatus;
 import org.komodo.relational.dataservice.Dataservice;
@@ -27,15 +25,12 @@ import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.RestBasicEntity;
 import org.komodo.rest.relational.dataservice.RestDataservice;
-import org.komodo.rest.relational.response.RestSyndesisDataSource;
 import org.komodo.rest.relational.response.virtualization.RestVirtualizationStatus;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
-import org.komodo.spi.runtime.SyndesisDataSource;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 
@@ -94,33 +89,6 @@ public class RestEntityFactory implements V1Constants {
             return null;
         }
     }
-
-    private KomodoObject createTemporaryParent(UnitOfWork transaction, Repository repository, String primaryType) throws KException {
-        String wkspPath = repository.komodoWorkspace(transaction).getAbsolutePath();
-        String timeNow = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss-SSS")); //$NON-NLS-1$
-        return repository.add(transaction, wkspPath, timeNow, primaryType);
-    }
-
-    /**
-	 * Create RestSyndesis data source
-	 * @param transaction the transaction
-	 * @param repository the repo
-	 * @param datasource syndesis data source
-	 * @param baseUri the uri
-	 * @return the rest source
-	 * @throws Exception if error occurs
-	 */
-	public RestSyndesisDataSource createSyndesisDataSource(UnitOfWork transaction, 
-	                                                       Repository repository,
-			                                               SyndesisDataSource datasource, 
-			                                               URI baseUri) throws Exception {
-        checkTransaction(transaction);
-        ArgCheck.isTrue(transaction.isRollbackOnly(), "transaction should be rollback-only"); //$NON-NLS-1$
-        
-        // TODO:  phantomjinx what needs to be done here?
-        KomodoObject parent = createTemporaryParent(transaction, repository, null);
-        return new RestSyndesisDataSource(baseUri, parent, datasource, transaction);
-	}
 
     /**
      * Create RestVirtualizationStatus

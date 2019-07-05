@@ -26,7 +26,6 @@ import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.RelationalModelFactory;
 import org.komodo.relational.RelationalObject;
-import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.internal.DataserviceImpl;
 import org.komodo.relational.internal.AdapterFactory;
@@ -57,7 +56,7 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
     /**
      * The allowed child types.
      */
-    private static final KomodoType[] CHILD_TYPES = new KomodoType[] { Connection.IDENTIFIER, Vdb.IDENTIFIER,
+    private static final KomodoType[] CHILD_TYPES = new KomodoType[] { Vdb.IDENTIFIER,
                                                                        Schema.IDENTIFIER,
                                                                        Dataservice.IDENTIFIER };
 

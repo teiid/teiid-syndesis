@@ -27,11 +27,8 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.KomodoRestV1Application;
 import org.komodo.rest.RestLink.LinkType;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.Descriptor;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 /**
  * Komodo REST URI builder.
@@ -162,14 +159,6 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
     public KomodoRestUriBuilder(final URI baseUri) {
         ArgCheck.isNotNull(baseUri, "baseUri"); //$NON-NLS-1$
         this.baseUri = baseUri;
-    }
-
-    private boolean isVdb(UnitOfWork uow, KomodoObject kObject) throws KException {
-        if (kObject == null)
-            return false;
-
-        Descriptor type = kObject.getPrimaryType(uow);
-        return VdbLexicon.Vdb.VIRTUAL_DATABASE.equals(type.getName());
     }
 
     private String setting(final Properties settings, SettingNames settingName) {
@@ -753,8 +742,6 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
             }
             case SOURCE_VDB_MATCHES:
             case SERVICE_VIEW_INFO:
-            case CONNECTIONS:
-            case DRIVERS:
             case VDBS:
             {
                 String dataserviceName = dataserviceName(settings);

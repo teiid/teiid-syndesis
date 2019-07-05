@@ -70,23 +70,11 @@ public abstract class KomodoService implements V1Constants {
 
     public static final String ENCRYPTED_PREFIX = "ENCRYPTED-";
 
-    protected static final String ENCRYPTION_ALGORITHM = "Blowfish";
-
     protected static final KLog LOGGER = KLog.getLogger();
 
     protected static final StringNameValidator VALIDATOR = new StringNameValidator();
 
     protected static final int ALL_AVAILABLE = -1;
-
-    /**
-     * VDB properties for DSB
-     */
-    protected final static String DSB_PROP_OWNER = "dsbOwner"; //$NON-NLS-1$
-    protected final static String DSB_PROP_SERVICE_SOURCE = "dsbServiceSource"; //$NON-NLS-1$
-    protected final static String DSB_PROP_SOURCE_CONNECTION = "dsbSourceConnection"; //$NON-NLS-1$
-    protected final static String DSB_PROP_SOURCE_TRANSLATOR = "dsbSourceTranslator"; //$NON-NLS-1$
-    protected final static String DSB_PROP_METADATA_STATUS = "dsbMetadataStatus"; //$NON-NLS-1$
-    protected final static String DSB_PROP_METADATA_STATUS_MSG = "dsbMetadataStatusMessage"; //$NON-NLS-1$
 
     private static final int TIMEOUT = 30;
     private static final TimeUnit UNIT = TimeUnit.SECONDS;

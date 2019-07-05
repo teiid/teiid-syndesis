@@ -43,7 +43,6 @@ public final class DataserviceSerializerTest extends AbstractSerializerTest  {
         "  \"keng__hasChildren\": true," + NEW_LINE +
         "  \"tko__description\": \"my description\"," + NEW_LINE +
         "  \"serviceVdbVersion\": \"1\"," + NEW_LINE +
-        "  \"connections\": 0," + NEW_LINE +
         "  \"publishedState\": \"NOTFOUND\"," + NEW_LINE +
         "  \"keng___links\": [" + NEW_LINE +
         "    " + OPEN_BRACE + NEW_LINE +
@@ -57,10 +56,6 @@ public final class DataserviceSerializerTest extends AbstractSerializerTest  {
         "    " + OPEN_BRACE + NEW_LINE +
         "      \"rel\": \"vdbs\"," + NEW_LINE +
         "      \"href\": \"" + BASE_URI_PREFIX + DATASERVICE_DATA_PATH + "/Vdbs\"" + NEW_LINE +
-        "    " + CLOSE_BRACE + COMMA + NEW_LINE +
-        "    " + OPEN_BRACE + NEW_LINE +
-        "      \"rel\": \"connections\"," + NEW_LINE +
-        "      \"href\": \"" + BASE_URI_PREFIX + DATASERVICE_DATA_PATH + "/connections\"" + NEW_LINE +
         "    " + CLOSE_BRACE + NEW_LINE +
         "  " + CLOSE_SQUARE_BRACKET + NEW_LINE +
         CLOSE_BRACE;
@@ -99,7 +94,7 @@ public final class DataserviceSerializerTest extends AbstractSerializerTest  {
         final RestDataservice descriptor = KomodoJsonMarshaller.unmarshall( JSON, RestDataservice.class );
         assertEquals(DATASERVICE_NAME, descriptor.getId());
         assertEquals(DESCRIPTION, descriptor.getDescription());
-        assertEquals(4, descriptor.getLinks().size());
+        assertEquals(3, descriptor.getLinks().size());
         assertEquals(true, descriptor.getProperties().isEmpty());
     }
 

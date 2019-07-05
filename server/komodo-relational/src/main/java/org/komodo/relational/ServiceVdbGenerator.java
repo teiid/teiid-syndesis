@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.komodo.relational.connection.Connection;
 import org.komodo.relational.model.Column;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Model.Type;
@@ -207,10 +206,6 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
 	            // set the jndi name and translator name
 	            tgtModelSource.setJndiName(uow, srcModelSource.getJndiName(uow));
 	            tgtModelSource.setTranslatorName(uow, srcModelSource.getTranslatorName(uow));
-	            Connection connection = srcModelSource.getOriginConnection(uow);
-	            if (connection != null) {
-	            	tgtModelSource.setAssociatedConnection(uow, connection);
-	            }
             }
         }
     }

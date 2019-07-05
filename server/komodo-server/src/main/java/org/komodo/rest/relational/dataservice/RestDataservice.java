@@ -22,7 +22,6 @@ import java.util.Properties;
 
 import org.komodo.core.KomodoLexicon;
 import org.komodo.openshift.BuildStatus;
-import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.KomodoService;
@@ -125,16 +124,12 @@ public final class RestDataservice extends RestBasicEntity {
             setViewDefinitionNames(dataService.getViewDefinitionNames(uow));
         }
 
-        Connection[] connections = dataService.getConnections(uow);
-        setConnectionTotal(connections != null ? connections.length : 0);
-
         // Initialize the published state to NOTFOUND
         setPublishedState(BuildStatus.Status.NOTFOUND.name());
 
         addLink(new RestLink(LinkType.SELF, getUriBuilder().dataserviceUri(LinkType.SELF, settings)));
         addLink(new RestLink(LinkType.PARENT, getUriBuilder().dataserviceUri(LinkType.PARENT, settings)));
         addLink(new RestLink(LinkType.VDBS, getUriBuilder().dataserviceUri(LinkType.VDBS, settings)));
-        addLink(new RestLink(LinkType.CONNECTIONS, getUriBuilder().dataserviceUri(LinkType.CONNECTIONS, settings)));
     }
 
     /**
@@ -209,21 +204,6 @@ public final class RestDataservice extends RestBasicEntity {
      */
     public void setServiceVdbVersion( final String version) {
         tuples.put(DATASERVICE_VDB_VERSION_LABEL, version);
-    }
-
-    /**
-     * @return the number of connections (can be empty)
-     */
-    public int getConnectionTotal() {
-        Object total = tuples.get(DATASERVICE_CONNECTION_TOTAL_LABEL);
-        return total != null ? Integer.parseInt(total.toString()) : 0;
-    }
-
-    /**
-     * @param total the number of connections
-     */
-    public void setConnectionTotal(int total) {
-        tuples.put(DATASERVICE_CONNECTION_TOTAL_LABEL, total);
     }
 
     /**

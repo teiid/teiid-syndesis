@@ -11,7 +11,6 @@ import org.komodo.rest.service.KomodoUtilService;
 import org.komodo.rest.service.KomodoVdbService;
 import org.komodo.rest.swagger.RestDataserviceConverter;
 import org.komodo.rest.swagger.RestPropertyConverter;
-import org.komodo.rest.swagger.RestServiceCatalogDataSourceConverter;
 import org.komodo.rest.swagger.RestVirtualisationStatusConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -71,7 +70,6 @@ public class JerseyConfig extends ResourceConfig {
         ModelConverters converters = ModelConverters.getInstance();
         converters.addConverter(new RestPropertyConverter());
         converters.addConverter(new RestDataserviceConverter());
-        converters.addConverter(new RestServiceCatalogDataSourceConverter());
         converters.addConverter(new RestVirtualisationStatusConverter());
     }
 }

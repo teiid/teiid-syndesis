@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.komodo.relational.TypeResolver;
-import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.model.AccessPattern;
 import org.komodo.relational.model.Column;
@@ -97,8 +96,6 @@ public class TypeResolverRegistry {
         index(KomodoType.COLUMN, Column.RESOLVER);
 
         index(KomodoType.DATASERVICE, Dataservice.RESOLVER);
-
-        index(KomodoType.CONNECTION, Connection.RESOLVER);
 
         index(KomodoType.DATA_TYPE_RESULT_SET, DataTypeResultSet.RESOLVER);
 

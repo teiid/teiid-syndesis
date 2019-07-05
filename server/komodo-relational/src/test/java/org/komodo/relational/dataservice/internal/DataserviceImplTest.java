@@ -151,7 +151,6 @@ public final class DataserviceImplTest extends RelationalModelTest {
 
         this.dataservice.addVdbEntry( getTransaction(), "vdb" );
 
-        assertThat( this.dataservice.getConnectionEntries( getTransaction() ).length, is( 0 ) );
         assertThat( this.dataservice.getVdbEntries( getTransaction() ).length, is( 1 ) );
         assertThat( this.dataservice.getServiceVdbEntry( getTransaction() ), is( notNullValue() ) );
         assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
@@ -376,16 +375,6 @@ public final class DataserviceImplTest extends RelationalModelTest {
                      "product-view-vdb.xml",
                      DataVirtLexicon.ServiceVdbEntry.NODE_TYPE,
                      VdbLexicon.Vdb.VIRTUAL_DATABASE,
-                     paths );
-        assertEntry( theDataService,
-                     "books-connection.xml",
-                     DataVirtLexicon.ConnectionEntry.NODE_TYPE,
-                     DataVirtLexicon.Connection.NODE_TYPE,
-                     paths );
-        assertEntry( theDataService,
-                     "portfolio-connection.xml",
-                     DataVirtLexicon.ConnectionEntry.NODE_TYPE,
-                     DataVirtLexicon.Connection.NODE_TYPE,
                      paths );
         assertEntry( theDataService,
                      "books-vdb.xml",

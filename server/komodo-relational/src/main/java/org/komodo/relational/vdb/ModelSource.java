@@ -20,7 +20,6 @@ package org.komodo.relational.vdb;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.RelationalObject;
 import org.komodo.relational.TypeResolver;
-import org.komodo.relational.connection.Connection;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.vdb.internal.ModelSourceImpl;
 import org.komodo.spi.KException;
@@ -134,15 +133,6 @@ public interface ModelSource extends RelationalObject {
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @return the Connection referenced by this model source or null
-     * @throws KException
-     *         if an error occurs
-     */
-    Connection getOriginConnection( final UnitOfWork transaction ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param newJndiName
      *        the new value of the <code>JNDI name</code> property (can only be empty when removing)
      * @throws KException
@@ -162,14 +152,4 @@ public interface ModelSource extends RelationalObject {
     void setTranslatorName( final UnitOfWork transaction,
                             final String newTranslatorName ) throws KException;
 
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param connection
-     *        the connection that this model source references
-     * @throws KException
-     *         if an error occurs
-     */
-    void setAssociatedConnection( final UnitOfWork transaction,
-                            final Connection connection ) throws KException;
 }

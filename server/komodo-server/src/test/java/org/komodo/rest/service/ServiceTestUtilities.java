@@ -31,7 +31,6 @@ import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.ExistingNodeOptions;
 import org.komodo.importer.ImportOptions.OptionKeys;
-import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.internal.DataserviceConveyor;
 import org.komodo.relational.importer.vdb.VdbImporter;
@@ -47,23 +46,19 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
-import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
+import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 public final class ServiceTestUtilities implements StringConstants {
 
     private final Repository repository;
 
-    private final MetadataInstance metadataInstance;
-
     private Set<String> objectPaths = new LinkedHashSet<String>();
 
     public ServiceTestUtilities(KEngine kEngine) throws Exception {
         this.repository = kEngine.getDefaultRepository();
-        this.metadataInstance = kEngine.getMetadataInstance();
     }
 
     public void logObjectPath(String objectPath) {

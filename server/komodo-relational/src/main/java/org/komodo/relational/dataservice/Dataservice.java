@@ -22,7 +22,6 @@ import java.util.Calendar;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.RelationalObject;
 import org.komodo.relational.TypeResolver;
-import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.internal.DataserviceImpl;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.spi.KException;
@@ -229,32 +228,6 @@ public interface Dataservice extends Exportable, RelationalObject, VdbEntryConta
     DataServiceEntry< ? >[] getChildrenOfType( final UnitOfWork transaction,
                                                final String type,
                                                final String... namePatterns ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param namePatterns
-     *        optional name patterns (can be <code>null</code> or empty but cannot have <code>null</code> or empty elements)
-     * @return the connection entries (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    ConnectionEntry[] getConnectionEntries( final UnitOfWork transaction,
-                                            final String... namePatterns ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param namePatterns
-     *        optional name patterns (can be <code>null</code> or empty but cannot have <code>null</code> or empty elements)
-     * @return the connections referenced by the entries (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    Connection[] getConnections( final UnitOfWork transaction,
-                                 final String... namePatterns ) throws KException;
 
     /**
      * @param transaction

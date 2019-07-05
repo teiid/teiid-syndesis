@@ -25,8 +25,6 @@ import java.util.Properties;
 
 import org.komodo.relational.Messages;
 import org.komodo.relational.RelationalModelFactory;
-import org.komodo.relational.connection.Connection;
-import org.komodo.relational.dataservice.ConnectionEntry;
 import org.komodo.relational.dataservice.DataServiceEntry;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.ServiceVdbEntry;
@@ -59,8 +57,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
     /**
      * The allowed child types.
      */
-    private static final KomodoType[] CHILD_TYPES = new KomodoType[] { VdbEntry.IDENTIFIER,
-                                                                       ConnectionEntry.IDENTIFIER };
+    private static final KomodoType[] CHILD_TYPES = new KomodoType[] { VdbEntry.IDENTIFIER };
 
     /**
      * @param transaction
@@ -130,13 +127,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
             return kids[ 0 ];
         }
 
-        // check connections
-        kids = getConnectionEntries( transaction, name );
-
-        if ( kids.length != 0 ) {
-            return kids[ 0 ];
-        }
-
         // child does not exist
         throw new KException( Messages.getString( org.komodo.core.repository.Messages.Komodo.CHILD_NOT_FOUND,
                                                   name,
@@ -160,12 +150,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
 
         if ( DataVirtLexicon.VdbEntry.NODE_TYPE.equals( typeName ) ) {
             final VdbEntry[] entries = getVdbEntries( transaction, name );
-
-            if ( entries.length != 0 ) {
-                return entries[ 0 ];
-            }
-        } else if ( DataVirtLexicon.ConnectionEntry.NODE_TYPE.equals( typeName ) ) {
-            final ConnectionEntry[] entries = getConnectionEntries( transaction, name );
 
             if ( entries.length != 0 ) {
                 return entries[ 0 ];
@@ -194,13 +178,10 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
 
         final ServiceVdbEntry serviceVdb = getServiceVdbEntry( transaction );
         final VdbEntry[] vdbs = getVdbEntries( transaction, namePatterns );
-        final ConnectionEntry[] connections = getConnectionEntries( transaction, namePatterns );
 
         final DataServiceEntry< ? >[] result = new DataServiceEntry< ? >[ ( ( serviceVdb == null ) ? 0 : 1 )
-                                                                          + vdbs.length
-                                                                          + connections.length];
+                                                                          + vdbs.length];
         System.arraycopy( vdbs, 0, result, 0, vdbs.length );
-        System.arraycopy( connections, 0, result, vdbs.length, connections.length );
 
         if ( serviceVdb != null ) {
             result[ result.length - 1 ] = serviceVdb;
@@ -236,10 +217,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
             return getVdbEntries( transaction, namePatterns );
         }
 
-        if ( DataVirtLexicon.ConnectionEntry.NODE_TYPE.equals( type ) ) {
-            return getConnectionEntries( transaction, namePatterns );
-        }
-
         return VdbEntry.NO_ENTRIES;
     }
 
@@ -258,8 +235,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
 
         return ( ( ( getServiceVdbEntry( transaction ) != null )
                    && name.equals( getServiceVdbEntry( transaction ).getName( transaction ) ) )
-                 || ( getVdbEntries( transaction, name ).length != 0 )
-                 || ( getConnectionEntries( transaction, name ).length != 0 ));
+                 || ( getVdbEntries( transaction, name ).length != 0 ));
     }
 
     /**
@@ -286,10 +262,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
             return (getVdbEntries(transaction, name).length != 0);
         }
 
-        if (DataVirtLexicon.ConnectionEntry.NODE_TYPE.equals(typeName)) {
-            return (getConnectionEntries(transaction, name).length != 0);
-        }
-
         return false;
     }
 
@@ -301,8 +273,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
     @Override
     public boolean hasChildren( final UnitOfWork transaction ) throws KException {
         return ( ( getServiceVdbEntry( transaction ) != null )
-                 || ( getVdbEntries( transaction ).length != 0 )
-                 || ( getConnectionEntries( transaction ).length != 0 ));
+                 || ( getVdbEntries( transaction ).length != 0 ));
     }
 
     /**
@@ -375,61 +346,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
     public VdbEntry addVdbEntry( final UnitOfWork transaction,
                             final String vdbEntryName ) throws KException {
         return RelationalModelFactory.createVdbEntry( transaction, getRepository(), this, vdbEntryName );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.dataservice.Dataservice#getConnectionEntries(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
-     */
-    @Override
-    public ConnectionEntry[] getConnectionEntries( final UnitOfWork transaction,
-                                                   final String... namePatterns ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-
-        final List< ConnectionEntry > result = new ArrayList<>();
-
-        for ( final KomodoObject kobject : super.getChildrenOfType( transaction,
-                                                                    DataVirtLexicon.ConnectionEntry.NODE_TYPE,
-                                                                    namePatterns ) ) {
-            final ConnectionEntry entry = new ConnectionEntryImpl( transaction, getRepository(), kobject.getAbsolutePath() );
-            result.add( entry );
-        }
-
-        if ( result.isEmpty() ) {
-            return ConnectionEntry.NO_ENTRIES;
-        }
-
-        return result.toArray( new ConnectionEntry[ result.size() ] );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.dataservice.Dataservice#getConnections(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String[])
-     */
-    @Override
-    public Connection[] getConnections( final UnitOfWork transaction,
-                                        final String... namePatterns ) throws KException {
-        final ConnectionEntry[] entries = getConnectionEntries( transaction, namePatterns );
-
-        if ( entries.length == 0 ) {
-            return Connection.NO_CONNECTIONS;
-        }
-
-        final List< Connection > connections = new ArrayList<>( entries.length );
-
-        for ( final ConnectionEntry entry : entries ) {
-            Connection ref = null;
-
-            if ( ( ref = entry.getReference( transaction ) ) != null ) {
-                connections.add( ref );
-            }
-        }
-
-        return connections.toArray( new Connection[ connections.size() ] );
     }
 
     /**

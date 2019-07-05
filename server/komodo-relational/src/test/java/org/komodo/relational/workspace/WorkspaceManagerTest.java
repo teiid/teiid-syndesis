@@ -33,7 +33,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.RelationalModelTest;
-import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.model.AccessPattern;
 import org.komodo.relational.model.DataTypeResultSet;
@@ -226,7 +225,7 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
 
     @Test
     public void shouldHaveCorrectChildTypes() {
-        KomodoType[] types = { Connection.IDENTIFIER, Dataservice.IDENTIFIER, Vdb.IDENTIFIER, Schema.IDENTIFIER};
+        KomodoType[] types = { Dataservice.IDENTIFIER, Vdb.IDENTIFIER, Schema.IDENTIFIER};
         assertThat( Arrays.asList( this.wsMgr.getChildTypes() ), hasItems( types ) );
         assertThat( this.wsMgr.getChildTypes().length, is( types.length ) );
     }
