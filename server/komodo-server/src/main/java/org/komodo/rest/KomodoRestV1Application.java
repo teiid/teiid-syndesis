@@ -135,6 +135,11 @@ public class KomodoRestV1Application implements SystemConstants {
         String VDB_PLACEHOLDER = "{vdbName}"; //$NON-NLS-1$
 
         /**
+         * The name of the URI path segment for refresh of the preview vdb.
+         */
+        String REFRESH_PREVIEW_VDB_SEGMENT = "refreshPreviewVdb"; //$NON-NLS-1$
+
+        /**
          * The name of the URI path segment for the collection of DataServices in the Komodo workspace.
          */
         String DATA_SERVICES_SEGMENT = "dataservices"; //$NON-NLS-1$
