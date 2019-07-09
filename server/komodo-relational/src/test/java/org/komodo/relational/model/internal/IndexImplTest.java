@@ -24,7 +24,9 @@ import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
+
 import java.util.Arrays;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.relational.RelationalModelFactory;
@@ -37,8 +39,8 @@ import org.komodo.relational.model.Table;
 import org.komodo.relational.model.TableConstraint;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon;
 import org.komodo.spi.repository.KomodoType;
+import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public final class IndexImplTest extends RelationalModelTest {

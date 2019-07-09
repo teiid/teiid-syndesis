@@ -18,21 +18,23 @@
 package org.komodo.relational.dataservice;
 
 import static org.komodo.spi.constants.StringConstants.COLON;
+
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
+
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+
 import org.komodo.core.KomodoLexicon;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
 import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
-import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.Property;
@@ -42,7 +44,7 @@ import org.komodo.utils.ArgCheck;
 import org.komodo.utils.FileUtils;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
-import org.teiid.modeshape.sequencer.dataservice.DataServiceManifest;
+import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 import org.w3c.dom.Document;
 
 /**
@@ -56,7 +58,7 @@ public class DataserviceManifest implements Exportable {
                                                                         DataVirtLexicon.Namespace.PREFIX + COLON,
                                                                         KomodoLexicon.Namespace.PREFIX + COLON };
 
-    private static final SimpleDateFormat FORMATTER = new SimpleDateFormat( DataServiceManifest.DATE_PATTERN );
+    private static final SimpleDateFormat FORMATTER = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss" ); //$NON-NLS-1$
 
     /**
      * The data service manifest archive entry path. Value is {@value}.
@@ -309,111 +311,6 @@ public class DataserviceManifest implements Exportable {
                 }
             }
 
-            { // metadata entries
-                final DdlEntry[] entries = this.dataService.getDdlEntries( transaction );
-
-                if ( entries.length != 0 ) {
-                    writeNewLine( xsw );
-                    writeTab( xsw );
-                    writeStartElement( xsw, DataVirtLexicon.DataServiceManifestId.METADATA );
-
-                    for ( final DdlEntry entry : entries ) {
-                        writeNewLine( xsw );
-                        writeTab( xsw );
-                        writeTab( xsw );
-                        writeStartElement( xsw, DataVirtLexicon.DataServiceManifestId.DDL_FILE );
-                        writeAttribute( xsw, DataVirtLexicon.DataServiceManifestId.PATH, entry.getEntryPath( transaction ) );
-                        writeAttribute( xsw,
-                                        DataVirtLexicon.DataServiceManifestId.PUBLISH,
-                                        entry.getPublishPolicy( transaction ).toXml() );
-                        writeEndElement( xsw );
-                    }
-
-                    writeNewLine( xsw );
-                    writeTab( xsw );
-                    writeEndElement( xsw );
-                }
-            }
-
-            { // connection entries
-                final ConnectionEntry[] entries = this.dataService.getConnectionEntries( transaction );
-
-                if ( entries.length != 0 ) {
-                    writeNewLine( xsw );
-                    writeTab( xsw );
-                    writeStartElement( xsw, DataVirtLexicon.DataServiceManifestId.CONNECTIONS );
-
-                    for ( final ConnectionEntry entry : entries ) {
-                        writeNewLine( xsw );
-                        writeTab( xsw );
-                        writeTab( xsw );
-                        writeStartElement( xsw, DataVirtLexicon.DataServiceManifestId.CONNECTION_FILE );
-                        writeAttribute( xsw, DataVirtLexicon.DataServiceManifestId.PATH, entry.getEntryPath( transaction ) );
-                        writeAttribute( xsw,
-                                        DataVirtLexicon.DataServiceManifestId.PUBLISH,
-                                        entry.getPublishPolicy( transaction ).toXml() );
-                        writeAttribute( xsw, DataVirtLexicon.DataServiceManifestId.JNDI_NAME, entry.getJndiName( transaction ) );
-                        writeEndElement( xsw );
-                    }
-
-                    writeNewLine( xsw );
-                    writeTab( xsw );
-                    writeEndElement( xsw );
-                }
-            }
-
-            { // driver entries
-                final DriverEntry[] entries = this.dataService.getDriverEntries( transaction );
-
-                if ( entries.length != 0 ) {
-                    writeNewLine( xsw );
-                    writeTab( xsw );
-                    writeStartElement( xsw, DataVirtLexicon.DataServiceManifestId.DRIVERS );
-
-                    for ( final DriverEntry entry : entries ) {
-                        writeNewLine( xsw );
-                        writeTab( xsw );
-                        writeTab( xsw );
-                        writeStartElement( xsw, DataVirtLexicon.DataServiceManifestId.DRIVER_FILE );
-                        writeAttribute( xsw, DataVirtLexicon.DataServiceManifestId.PATH, entry.getEntryPath( transaction ) );
-                        writeAttribute( xsw,
-                                        DataVirtLexicon.DataServiceManifestId.PUBLISH,
-                                        entry.getPublishPolicy( transaction ).toXml() );
-                        writeEndElement( xsw );
-                    }
-
-                    writeNewLine( xsw );
-                    writeTab( xsw );
-                    writeEndElement( xsw );
-                }
-            }
-
-            { // udf entries
-                final UdfEntry[] entries = this.dataService.getUdfEntries( transaction );
-
-                if ( entries.length != 0 ) {
-                    writeNewLine( xsw );
-                    writeTab( xsw );
-                    writeStartElement( xsw, DataVirtLexicon.DataServiceManifestId.UDFS );
-
-                    for ( final UdfEntry entry : entries ) {
-                        writeNewLine( xsw );
-                        writeTab( xsw );
-                        writeTab( xsw );
-                        writeStartElement( xsw, DataVirtLexicon.DataServiceManifestId.UDF_FILE );
-                        writeAttribute( xsw, DataVirtLexicon.DataServiceManifestId.PATH, entry.getEntryPath( transaction ) );
-                        writeAttribute( xsw,
-                                        DataVirtLexicon.DataServiceManifestId.PUBLISH,
-                                        entry.getPublishPolicy( transaction ).toXml() );
-                        writeEndElement( xsw );
-                    }
-
-                    writeNewLine( xsw );
-                    writeTab( xsw );
-                    writeEndElement( xsw );
-                }
-            }
-
             { // vdb entries
                 final VdbEntry[] entries = this.dataService.getVdbEntries( transaction );
 
@@ -435,32 +332,6 @@ public class DataserviceManifest implements Exportable {
                         writeAttribute( xsw,
                                         DataVirtLexicon.DataServiceManifestId.VDB_VERSION,
                                         entry.getVdbVersion( transaction ) );
-                        writeEndElement( xsw );
-                    }
-
-                    writeNewLine( xsw );
-                    writeTab( xsw );
-                    writeEndElement( xsw );
-                }
-            }
-
-            { // resource entries
-                final ResourceEntry[] entries = this.dataService.getResourceEntries( transaction );
-
-                if ( entries.length != 0 ) {
-                    writeNewLine( xsw );
-                    writeTab( xsw );
-                    writeStartElement( xsw, DataVirtLexicon.DataServiceManifestId.RESOURCES );
-
-                    for ( final ResourceEntry entry : entries ) {
-                        writeNewLine( xsw );
-                        writeTab( xsw );
-                        writeTab( xsw );
-                        writeStartElement( xsw, DataVirtLexicon.DataServiceManifestId.RESOURCE_FILE );
-                        writeAttribute( xsw, DataVirtLexicon.DataServiceManifestId.PATH, entry.getEntryPath( transaction ) );
-                        writeAttribute( xsw,
-                                        DataVirtLexicon.DataServiceManifestId.PUBLISH,
-                                        entry.getPublishPolicy( transaction ).toXml() );
                         writeEndElement( xsw );
                     }
 

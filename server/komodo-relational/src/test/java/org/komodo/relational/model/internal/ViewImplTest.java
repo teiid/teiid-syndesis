@@ -20,17 +20,13 @@ package org.komodo.relational.model.internal;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.RelationalObject.Filter;
-import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.model.Model;
-import org.komodo.relational.model.Table;
 import org.komodo.relational.model.View;
-import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 
@@ -45,43 +41,6 @@ public final class ViewImplTest extends RelationalModelTest {
         this.model = createModel();
         this.view = this.model.addView( getTransaction(), "view" );
         commit();
-    }
-
-    @Test
-    public void shouldFailConstructionIfNotView() {
-        if ( RelationalObjectImpl.VALIDATE_INITIAL_STATE ) {
-            try {
-                new ViewImpl( getTransaction(), _repo, _repo.komodoLibrary( getTransaction() ).getAbsolutePath() );
-                fail();
-            } catch ( final KException e ) {
-                // expected
-            }
-        }
-    }
-
-    @Test( expected = UnsupportedOperationException.class )
-    public void shouldFailWhenAddingForeignKey() throws KException {
-        this.view.addForeignKey( getTransaction(), "blah", mock( Table.class ) );
-    }
-
-    @Test( expected = UnsupportedOperationException.class )
-    public void shouldFailWhenAddingUniqueConstraint() throws KException {
-        this.view.addUniqueConstraint( getTransaction(), "blah" );
-    }
-
-    @Test( expected = UnsupportedOperationException.class )
-    public void shouldFailWhenRemovingForeignKey() throws KException {
-        this.view.removeForeignKey( getTransaction(), "blah" );
-    }
-
-    @Test( expected = UnsupportedOperationException.class )
-    public void shouldFailWhenRemovingUniqueConstraint() throws KException {
-        this.view.removeUniqueConstraint( getTransaction(), "blah" );
-    }
-
-    @Test( expected = UnsupportedOperationException.class )
-    public void shouldFailWhenSettingPrimaryKey() throws KException {
-        this.view.setPrimaryKey( getTransaction(), "blah" );
     }
 
     @Test

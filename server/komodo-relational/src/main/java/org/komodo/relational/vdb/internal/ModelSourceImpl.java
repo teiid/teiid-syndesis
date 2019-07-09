@@ -17,15 +17,10 @@
  */
 package org.komodo.relational.vdb.internal;
 
-import org.komodo.relational.connection.Connection;
-import org.komodo.relational.connection.internal.ConnectionImpl;
 import org.komodo.relational.internal.RelationalChildRestrictedObject;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.vdb.ModelSource;
-import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.spi.KException;
-import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyValueType;
@@ -33,6 +28,7 @@ import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
+import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 /**
  * An implementation of a VDB model source.
@@ -98,27 +94,6 @@ public final class ModelSourceImpl extends RelationalChildRestrictedObject imple
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.vdb.ModelSource#getOriginConnection(org.komodo.spi.repository.Repository.UnitOfWork)
-     */
-    @Override
-    public Connection getOriginConnection(final UnitOfWork uow) throws KException {
-        if (hasProperty(uow, VdbLexicon.Source.ORIGIN_CONNECTION)) {
-            final String connName = getProperty(uow, VdbLexicon.Source.ORIGIN_CONNECTION).getStringValue(uow);
-            WorkspaceManager manager = WorkspaceManager.getInstance(getRepository(), uow);
-            String[] connPaths = manager.findByType(uow, DataVirtLexicon.Connection.NODE_TYPE, EMPTY_STRING, connName, false);
-            if (connPaths == null || connPaths.length == 0) {
-                return null;
-            }
-
-            return new ConnectionImpl(uow, getRepository(), connPaths[0]);
-        }
-
-        return null;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
      * @see org.komodo.spi.repository.KomodoObject#getTypeId()
      */
     @Override
@@ -147,18 +122,6 @@ public final class ModelSourceImpl extends RelationalChildRestrictedObject imple
     public void setTranslatorName( final UnitOfWork uow,
                                    final String newTranslatorName ) throws KException {
         setObjectProperty( uow, "setTranslatorName", VdbLexicon.Source.TRANSLATOR, newTranslatorName ); //$NON-NLS-1$
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.vdb.ModelSource#setAssociatedConnection(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      org.komodo.relational.Connection)
-     */
-    @Override
-    public void setAssociatedConnection( final UnitOfWork uow,
-                                   final Connection connection ) throws KException {
-        setObjectProperty( uow, "setAssociatedConnection", VdbLexicon.Source.ORIGIN_CONNECTION, connection.getName(uow)); //$NON-NLS-1$
     }
 
 }

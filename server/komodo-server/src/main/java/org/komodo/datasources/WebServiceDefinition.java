@@ -29,21 +29,12 @@ public class WebServiceDefinition extends DataSourceDefinition {
 
     @Override
     public String getPomDendencies() {
-        return
-            "<dependency>" +
-            "  <groupId>org.teiid</groupId>" +
-            "  <artifactId>thorntail-ws</artifactId>" +
-            "</dependency>";
+    	throw new UnsupportedOperationException();
     }
 
     @Override
     public String getTranslatorName() {
         return "ws";
-    }
-    
-    @Override
-    public boolean isResouceAdapter() {
-        return true;
     }
 
     @Override

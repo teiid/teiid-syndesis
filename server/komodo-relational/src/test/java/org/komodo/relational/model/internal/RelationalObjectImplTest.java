@@ -54,7 +54,6 @@ public final class RelationalObjectImplTest extends RelationalModelTest {
 
     @Test
     public void shouldFilterJcrNamespace() throws Exception {
-        this.robject.setFilters( new RelationalObject.Filter[] { RelationalObject.JCR_FILTER } );
 
         for ( final PropertyDescriptor descriptor : this.robject.getPropertyDescriptors( getTransaction() ) ) {
             if ( descriptor.getName().startsWith( JcrLexicon.Namespace.PREFIX ) ) {
@@ -65,7 +64,6 @@ public final class RelationalObjectImplTest extends RelationalModelTest {
 
     @Test
     public void shouldFilterResidual() throws Exception {
-        this.robject.setFilters( new RelationalObject.Filter[] { RelationalObject.RESIDUAL_FILTER } );
 
         for ( final PropertyDescriptor descriptor : this.robject.getPropertyDescriptors( getTransaction() ) ) {
             if ( "*".equals( descriptor.getName() ) ) {

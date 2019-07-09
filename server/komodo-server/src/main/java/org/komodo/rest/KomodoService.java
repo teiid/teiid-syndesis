@@ -21,12 +21,9 @@ import static org.komodo.rest.Messages.Error.COMMIT_TIMEOUT;
 import static org.komodo.rest.Messages.Error.RESOURCE_NOT_FOUND;
 import static org.komodo.rest.Messages.General.GET_OPERATION_NAME;
 
-import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import javax.crypto.Cipher;
-import javax.crypto.spec.SecretKeySpec;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -40,7 +37,6 @@ import javax.ws.rs.core.Variant.VariantListBuilder;
 import org.komodo.core.KEngine;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.core.repository.SynchronousCallback;
-import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.profile.Profile;
 import org.komodo.relational.profile.ViewEditorState;
@@ -51,12 +47,9 @@ import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.RestBasicEntity.ResourceNotFound;
 import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.RestEntityFactory;
-import org.komodo.rest.relational.connection.RestConnection;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.SystemConstants;
-import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
@@ -65,6 +58,8 @@ import org.komodo.utils.KLog;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
+import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 import com.google.gson.Gson;
 
@@ -75,23 +70,11 @@ public abstract class KomodoService implements V1Constants {
 
     public static final String ENCRYPTED_PREFIX = "ENCRYPTED-";
 
-    protected static final String ENCRYPTION_ALGORITHM = "Blowfish";
-
     protected static final KLog LOGGER = KLog.getLogger();
 
     protected static final StringNameValidator VALIDATOR = new StringNameValidator();
 
     protected static final int ALL_AVAILABLE = -1;
-
-    /**
-     * VDB properties for DSB
-     */
-    protected final static String DSB_PROP_OWNER = "dsbOwner"; //$NON-NLS-1$
-    protected final static String DSB_PROP_SERVICE_SOURCE = "dsbServiceSource"; //$NON-NLS-1$
-    protected final static String DSB_PROP_SOURCE_CONNECTION = "dsbSourceConnection"; //$NON-NLS-1$
-    protected final static String DSB_PROP_SOURCE_TRANSLATOR = "dsbSourceTranslator"; //$NON-NLS-1$
-    protected final static String DSB_PROP_METADATA_STATUS = "dsbMetadataStatus"; //$NON-NLS-1$
-    protected final static String DSB_PROP_METADATA_STATUS_MSG = "dsbMetadataStatusMessage"; //$NON-NLS-1$
 
     private static final int TIMEOUT = 30;
     private static final TimeUnit UNIT = TimeUnit.SECONDS;
@@ -240,28 +223,6 @@ public abstract class KomodoService implements V1Constants {
 		                             headers.getAcceptableMediaTypes(), RelationalMessages.Error.SECURITY_FAILURE_ERROR));
     }
 
-    /**
-     * @param content
-     * @return a base64 encoded version of the given content
-     */
-    protected String encode(byte[] content) {
-        if (content == null)
-            return null;
-
-        return Base64.getEncoder().encodeToString(content);
-    }
-
-    /**
-     * @param content
-     * @return a decoded version of the given base64-encoded content
-     */
-    protected byte[] decode(String content) {
-        if (content == null)
-            return null;
-
-        return Base64.getDecoder().decode(content);
-    }
-
     protected WorkspaceManager getWorkspaceManager(UnitOfWork transaction) throws KException {
     	Repository repo = this.kengine.getDefaultRepository();
         return WorkspaceManager.getInstance(repo, transaction);
@@ -327,40 +288,6 @@ public abstract class KomodoService implements V1Constants {
         }
 
         return viewEditorStates;
-    }
-
-    protected String encryptSensitiveData(final HttpHeaders headers, String user, String plainText) {
-        String authorization = headers.getHeaderString(HttpHeaders.AUTHORIZATION);
-        if (authorization == null)
-            return null;
-
-        try {
-            SecretKeySpec skeyspec=new SecretKeySpec(authorization.getBytes(),ENCRYPTION_ALGORITHM);
-            Cipher cipher = Cipher.getInstance(ENCRYPTION_ALGORITHM);
-            cipher.init(Cipher.ENCRYPT_MODE, skeyspec);
-            byte[] encrypted = cipher.doFinal(plainText.getBytes());
-            return new String(encrypted);
-        } catch (Exception ex) {
-            KLog.getLogger().error(RelationalMessages.getString(RelationalMessages.Error.ENCRYPT_FAILURE, user), ex);
-            return null;
-        }
-    }
-
-    protected String decryptSensitiveData(final HttpHeaders headers, String user, String encrypted) {
-        String authorization = headers.getHeaderString(HttpHeaders.AUTHORIZATION);
-        if (authorization == null)
-            return null;
-
-        try {
-            SecretKeySpec skeyspec=new SecretKeySpec(authorization.getBytes(),ENCRYPTION_ALGORITHM);
-            Cipher cipher = Cipher.getInstance(ENCRYPTION_ALGORITHM);
-            cipher.init(Cipher.DECRYPT_MODE, skeyspec);
-            byte[] plainText = cipher.doFinal(encrypted.getBytes());
-            return new String(plainText);
-        } catch (Exception ex) {
-            KLog.getLogger().error(RelationalMessages.getString(RelationalMessages.Error.DECRYPT_FAILURE, user), ex);
-            return null;
-        }
     }
 
     protected Object createErrorResponseEntity(List<MediaType> acceptableMediaTypes, String errorMessage) {
@@ -690,18 +617,6 @@ public abstract class KomodoService implements V1Constants {
         return dataservice;
     }
 
-    protected Connection findConnection(UnitOfWork uow, String connectionName) throws KException {
-        if (! getWorkspaceManager(uow).hasChild( uow, connectionName, DataVirtLexicon.Connection.NODE_TYPE ) ) {
-            return null;
-        }
-
-        final KomodoObject kobject = getWorkspaceManager(uow).getChild( uow, connectionName, DataVirtLexicon.Connection.NODE_TYPE );
-        final Connection connection = getWorkspaceManager(uow).resolve( uow, kobject, Connection.class );
-
-        LOGGER.debug( "Connection '{0}' was found", connectionName ); //$NON-NLS-1$
-        return connection;
-    }
-
     protected String uri(String... segments) {
         StringBuffer buffer = new StringBuffer();
         for (int i = 0; i < segments.length; ++i) {
@@ -718,11 +633,6 @@ public abstract class KomodoService implements V1Constants {
         return commit( uow, mediaTypes, new ResourceNotFound( vdbName, Messages.getString( GET_OPERATION_NAME ) ) );
     }
 
-    protected Response commitNoSourceVdbFound(UnitOfWork uow, List<MediaType> mediaTypes) throws Exception {
-        LOGGER.debug( "sourceVDB was not found" ); //$NON-NLS-1$
-        return commit( uow, mediaTypes, new ResourceNotFound( "sourceVdb", Messages.getString( GET_OPERATION_NAME ) ) );
-    }
-
     protected Response commitNoDataserviceFound(UnitOfWork uow, List<MediaType> mediaTypes, String dataserviceName) throws Exception {
         LOGGER.debug( "Dataservice '{0}' was not found", dataserviceName ); //$NON-NLS-1$
         return commit( uow, mediaTypes, new ResourceNotFound( dataserviceName, Messages.getString( GET_OPERATION_NAME ) ) );
@@ -733,69 +643,10 @@ public abstract class KomodoService implements V1Constants {
         return commit( uow, mediaTypes, new ResourceNotFound( connectionName, Messages.getString( GET_OPERATION_NAME ) ) );
     }
 
-    protected Response commitNoTemplateFound(UnitOfWork uow, List<MediaType> mediaTypes, String templateName) throws Exception {
-        LOGGER.debug( "Template '{0}' was not found", templateName ); //$NON-NLS-1$
-        return commit( uow, mediaTypes, new ResourceNotFound( templateName, Messages.getString( GET_OPERATION_NAME ) ) );
-    }
-
     protected Response commitNoModelFound(UnitOfWork uow, List<MediaType> mediaTypes, String modelName, String vdbName) throws Exception {
         return commit(uow, mediaTypes,
                       new ResourceNotFound(uri(vdbName, MODELS_SEGMENT, modelName),
                                            Messages.getString( GET_OPERATION_NAME)));
     }
 
-    protected Response commitNoTableFound(UnitOfWork uow, List<MediaType> mediaTypes, String tableName, String modelName, String vdbName) throws Exception {
-        return commit(uow, mediaTypes,
-                      new ResourceNotFound(uri(vdbName, MODELS_SEGMENT, modelName, TABLES_SEGMENT, tableName),
-                                           Messages.getString( GET_OPERATION_NAME)));
-    }
-
-    protected Response commitNoDataRoleFound(UnitOfWork uow, List<MediaType> mediaTypes, String dataRoleId, String vdbName) throws Exception {
-        LOGGER.debug("No data role '{0}' found for vdb '{1}'", dataRoleId, vdbName); //$NON-NLS-1$
-        return commit(uow, mediaTypes, new ResourceNotFound(
-                                                     uri(vdbName, DATA_ROLES_SEGMENT, dataRoleId),
-                                                     Messages.getString( GET_OPERATION_NAME)));
-    }
-
-    protected Response commitNoPermissionFound(UnitOfWork uow, List<MediaType> mediaTypes, String permissionId, String dataRoleId, String vdbName) throws Exception {
-        LOGGER.debug("No permission '{0}' for data role '{1}' found for vdb '{2}'", //$NON-NLS-1$
-                                                                     permissionId, dataRoleId, vdbName);
-        return commit(uow, mediaTypes, new ResourceNotFound(
-                                                     uri(vdbName, DATA_ROLES_SEGMENT,
-                                                          dataRoleId, PERMISSIONS_SEGMENT,
-                                                          permissionId),
-                                                     Messages.getString( GET_OPERATION_NAME)));
-    }
-
-    // Sets Connection properties using the supplied RestConnection object
-    protected void setProperties(final UnitOfWork uow, Connection connection, RestConnection restConnection) throws KException {
-        // 'New' = requested RestConnection properties
-        String newJndiName = restConnection.getJndiName();
-        String newDriverName = restConnection.getDriverName();
-        boolean newJdbc = restConnection.isJdbc();
-
-        // 'Old' = current Connection properties
-        String oldJndiName = connection.getJndiName(uow);
-        String oldDriverName = connection.getDriverName(uow);
-        boolean oldJdbc = connection.isJdbc(uow);
-
-        // JndiName
-        if ( !StringUtils.equals(newJndiName, oldJndiName) ) {
-            connection.setJndiName( uow, newJndiName );
-        }
-        // DriverName
-        if ( !StringUtils.equals(newDriverName, oldDriverName) ) {
-            connection.setDriverName( uow, newDriverName );
-        }
-        // jdbc
-        if ( newJdbc != oldJdbc ) {
-            connection.setJdbc( uow, newJdbc );
-        }
-
-        // Additional properties
-        List<RestProperty> properties = restConnection.getProperties();
-        for (RestProperty property : properties) {
-            connection.setProperty(uow, property.getName(), property.getValue());
-        }
-    }
 }

@@ -42,11 +42,6 @@ public class SalesforceDefinition extends DataSourceDefinition {
     }
 
     @Override
-    public boolean isResouceAdapter() {
-        return true;
-    }
-    
-    @Override
     public boolean isTypeOf(Map<String, String> properties) {
         if ((properties != null) && (properties.get("SALESFORCE_URL") != null)) {
             return true;

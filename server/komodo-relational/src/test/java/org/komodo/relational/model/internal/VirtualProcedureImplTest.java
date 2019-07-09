@@ -21,6 +21,7 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.relational.RelationalModelTest;
@@ -31,8 +32,8 @@ import org.komodo.relational.model.SchemaElement.SchemaElementType;
 import org.komodo.relational.model.VirtualProcedure;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon;
 import org.komodo.spi.repository.KomodoType;
+import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public final class VirtualProcedureImplTest extends RelationalModelTest {

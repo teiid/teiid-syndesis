@@ -21,6 +21,7 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.relational.RelationalModelTest;
@@ -31,9 +32,9 @@ import org.komodo.relational.model.PrimaryKey;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.TableConstraint;
 import org.komodo.spi.KException;
-import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon;
-import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon.Constraint;
 import org.komodo.spi.repository.KomodoType;
+import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
+import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.Constraint;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public final class PrimaryKeyImplTest extends RelationalModelTest {

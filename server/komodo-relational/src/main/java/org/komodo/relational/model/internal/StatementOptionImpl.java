@@ -25,7 +25,7 @@ import org.komodo.relational.Messages;
 import org.komodo.relational.internal.RelationalChildRestrictedObject;
 import org.komodo.relational.model.StatementOption;
 import org.komodo.spi.KException;
-import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
+import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyDescriptor;

@@ -56,11 +56,6 @@ public final class RestLink {
         REFERENCE,
 
         /**
-         * A link to the search resource.
-         */
-        SEARCH,
-
-        /**
          * A link to a VDB resource
          */
         VDBS(KomodoType.VDB),
@@ -129,16 +124,6 @@ public final class RestLink {
          * Service vdb view info
          */
         SERVICE_VIEW_INFO,
-
-        /**
-         * A link to a data service's connections
-         */
-        CONNECTIONS,
-
-        /**
-         * A link to a data service's connections
-         */
-        DRIVERS,
 
         /**
          * A link to a connection template's entries resource

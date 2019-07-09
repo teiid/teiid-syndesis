@@ -58,15 +58,15 @@ import org.komodo.metadata.TeiidConnectionProvider;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
 import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
-import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
-import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.runtime.version.MetadataVersion;
 import org.komodo.spi.type.DataTypeService;
 import org.komodo.utils.KLog;
 import org.mockito.Mockito;
 import org.modeshape.jcr.api.observation.Event;
 import org.modeshape.jcr.api.observation.Event.Sequencing;
+import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
+import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
+import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 /**
  * Class which serves as base for various sequencer unit tests. In addition to this, it uses the sequencing events fired by
@@ -178,9 +178,7 @@ public abstract class AbstractSequencerTest extends MultiUseAbstractTest impleme
                 node.setPrimaryType(VdbLexicon.Vdb.DECLARATIVE_MODEL);
                 node.setProperty(VdbLexicon.Model.MODEL_DEFINITION, text);
                 break;
-            case VDB:
-            case DATA_SERVICE:
-            case CONNECTION:
+            default:
                 throw new UnsupportedOperationException("Not tested by these sequencer tests");
         }
 

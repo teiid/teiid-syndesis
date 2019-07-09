@@ -18,19 +18,15 @@
 package org.komodo.rest.relational;
 
 import java.net.URI;
-import java.util.Map;
 import java.util.Properties;
+
 import javax.ws.rs.core.UriBuilder;
-import org.komodo.relational.connection.Connection;
+
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.vdb.Translator;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.KomodoRestV1Application;
 import org.komodo.rest.RestLink.LinkType;
 import org.komodo.spi.KException;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
-import org.komodo.spi.repository.Descriptor;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
 
@@ -165,14 +161,6 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
         this.baseUri = baseUri;
     }
 
-    private boolean isVdb(UnitOfWork uow, KomodoObject kObject) throws KException {
-        if (kObject == null)
-            return false;
-
-        Descriptor type = kObject.getPrimaryType(uow);
-        return VdbLexicon.Vdb.VIRTUAL_DATABASE.equals(type.getName());
-    }
-
     private String setting(final Properties settings, SettingNames settingName) {
         String value = settings.getProperty(settingName.name());
         ArgCheck.isNotEmpty(value, settingName.name());
@@ -298,24 +286,6 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
     }
 
     /**
-     * @return the URI to use when requesting a collection of Connections in the workspace (never <code>null</code>)
-     */
-    public URI workspaceConnectionsUri() {
-        return UriBuilder.fromUri(this.baseUri)
-                                   .path(WORKSPACE_SEGMENT)
-                                   .path(CONNECTIONS_SEGMENT).build();
-    }
-
-    /**
-     * @return the URI to use when requesting a collection of Drivers in the workspace (never <code>null</code>)
-     */
-    public URI workspaceDriversUri() {
-        return UriBuilder.fromUri(this.baseUri)
-                                   .path(WORKSPACE_SEGMENT)
-                                   .path(DRIVERS_SEGMENT).build();
-    }
-
-    /**
      * @return the URI to use when requesting a collection of VDBs in the workspace (never <code>null</code>)
      */
     public URI workspaceVdbsUri() {
@@ -331,100 +301,6 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
         return UriBuilder.fromUri(this.baseUri)
                                      .path(METADATA_SEGMENT)
                                      .build();
-    }
-
-    /**
-     * @return the URI to use when requesting the metadata server vdbs collection  (never <code>null</code>)
-     */
-    public URI mServerVdbsUri() {
-        return UriBuilder.fromUri(this.baseUri)
-                                     .path(METADATA_SEGMENT)
-                                     .path(VDBS_SEGMENT)
-                                     .build();
-    }
-
-    /**
-     * @return the URI to use when requesting the metadata server translators collection  (never <code>null</code>)
-     */
-    public URI mServerTranslatorsUri() {
-        return UriBuilder.fromUri(this.baseUri)
-                                     .path(METADATA_SEGMENT)
-                                     .path(TRANSLATORS_SEGMENT)
-                                     .build();
-    }
-
-    /**
-     * @return the URI to use when requesting the metadata server templates collection  (never <code>null</code>)
-     */
-    public URI mServerTemplatesUri() {
-        return UriBuilder.fromUri(this.baseUri)
-                                     .path(METADATA_SEGMENT)
-                                     .path(TEMPLATES_SEGMENT)
-                                     .build();
-    }
-
-    /**
-     * @return the URI to use when requesting the metadata server connections collection  (never <code>null</code>)
-     */
-    public URI mServerConnectionsUri() {
-        return UriBuilder.fromUri(this.baseUri)
-                                     .path(METADATA_SEGMENT)
-                                     .path(CONNECTIONS_SEGMENT)
-                                     .build();
-    }
-
-    /**
-     * @return the URI to use when requesting the metadata status  (never <code>null</code>)
-     */
-    public URI mServerStatusUri() {
-        return UriBuilder.fromUri(this.baseUri)
-                                     .path(METADATA_SEGMENT)
-                                     .path(STATUS_SEGMENT)
-                                     .build();
-    }
-
-    /**
-     * @return the URI to use when requesting the teiid cache  (never <code>null</code>)
-     */
-    public URI mServerVdbStatusUri() {
-        return UriBuilder.fromUri(this.baseUri)
-                                     .path(METADATA_SEGMENT)
-                                     .path(STATUS_SEGMENT)
-                                     .path(VDBS_SEGMENT)
-                                     .build();
-    }
-
-    /**
-     * @param properties the search parameter properties
-     * @return the URI to use when searching the workspace
-     */
-    public URI searchUri(KomodoProperties properties) {
-        UriBuilder builder = UriBuilder.fromUri(this.baseUri)
-                                    .path(WORKSPACE_SEGMENT)
-                                    .path(SEARCH_SEGMENT);
-
-        for (Map.Entry<String, Object> entry : properties.entrySet()) {
-            builder.queryParam(entry.getKey(), entry.getValue().toString());
-        }
-
-        return builder.build();
-    }
-
-    /**
-     * @param properties the search paramater properties
-     * @return the URI to use where requesting the collection of saved searches
-     */
-    public URI savedSearchCollectionUri(KomodoProperties properties) {
-        UriBuilder builder = UriBuilder.fromUri(this.baseUri)
-                                                      .path(WORKSPACE_SEGMENT)
-                                                      .path(SEARCH_SEGMENT)
-                                                      .path(SAVED_SEARCHES_SEGMENT);
-
-        for (Map.Entry<String, Object> entry : properties.entrySet()) {
-            builder.queryParam(entry.getKey(), entry.getValue().toString());
-        }
-
-        return builder.build();
     }
 
     /**
@@ -680,60 +556,6 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
     }
 
     /**
-     * @param translator
-     * @param uow
-     * @return the uri of the parent of the given translator
-     * @throws KException
-     */
-    public URI vdbTranslatorParentUri(Translator translator, UnitOfWork uow) throws KException {
-        KomodoObject parent = translator.getParent(uow);
-        if (isVdb(uow, parent)) {
-            String vdbName = parent.getName(uow);
-            return vdbUri(workspaceVdbsUri(), vdbName);
-        }
-
-        throw new KException("Translator has an invalid parent");
-    }
-
-    /**
-     * @param linkType
-     *        the type of URI being created (cannot be <code>null</code>)
-     * @param settings
-     *        configuration settings for this uri
-     * @return the VDB model URI for the specified VDB (never <code>null</code>)
-     */
-    public URI vdbTranslatorUri(LinkType linkType, final Properties settings) {
-        ArgCheck.isNotNull(linkType, "linkType"); //$NON-NLS-1$
-        ArgCheck.isNotNull(settings, "settings"); //$NON-NLS-1$)
-
-        URI result = null;
-        URI parentUri = parentUri(settings);
-
-        switch (linkType) {
-            case SELF:
-                String name = setting(settings, SettingNames.TRANSLATOR_NAME);
-                // Adds translators segment if supplied.
-                if(settings.containsKey(SettingNames.ADD_TRANSLATORS_SEGMENT.name())) {
-                    result = UriBuilder.fromUri(parentUri)
-                    .path(TRANSLATORS_SEGMENT)
-                    .path(name).build();
-                } else {
-                    result = UriBuilder.fromUri(parentUri)
-                    .path(name).build();
-                }
-                break;
-            case PARENT:
-                result = parentUri;
-                break;
-            default:
-                throw new RuntimeException("LinkType " + linkType + " not handled"); //$NON-NLS-1$ //$NON-NLS-2$
-        }
-
-        assert(result != null);
-        return result;
-    }
-
-    /**
      * @param linkType
      *        the type of URI being created (cannot be <code>null</code>)
      * @param settings
@@ -920,8 +742,6 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
             }
             case SOURCE_VDB_MATCHES:
             case SERVICE_VIEW_INFO:
-            case CONNECTIONS:
-            case DRIVERS:
             case VDBS:
             {
                 String dataserviceName = dataserviceName(settings);
@@ -934,16 +754,6 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
 
         assert(result != null);
         return result;
-    }
-
-    /**
-     * @param connection the connection whose parent URI is being requested (cannot be <code>null</code>)
-     * @param uow
-     * @return the URI of the parent of the given connection
-     * @throws KException
-     */
-    public URI connectionParentUri(Connection connection, UnitOfWork uow) throws KException {
-        return workspaceConnectionsUri();
     }
 
     /**
@@ -995,44 +805,6 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
                 break;
             case PARENT:
                 result = parentUri;
-                break;
-            case TEMPLATE_ENTRIES:
-                result = UriBuilder.fromUri(parentUri)
-                                                .path(templateName)
-                                                .path(TEMPLATE_ENTRIES_SEGMENT)
-                                                .build();
-                break;
-            default:
-                throw new RuntimeException("LinkType " + linkType + " not handled"); //$NON-NLS-1$ //$NON-NLS-2$
-        }
-
-        assert(result != null);
-        return result;
-    }
-
-    /**
-     * @param linkType
-     * @param settings
-     * @return the connection URI for the given link type and settings
-     */
-    public URI templateEntryUri(LinkType linkType, Properties settings) {
-        ArgCheck.isNotNull(linkType, "linkType"); //$NON-NLS-1$
-        ArgCheck.isNotNull(settings, "settings"); //$NON-NLS-1$)
-
-        URI result = null;
-
-        String templateName = setting(settings, SettingNames.TEMPLATE_NAME);
-        String templateEntryName = setting(settings, SettingNames.TEMPLATE_ENTRY_NAME);
-
-        URI templateUri = UriBuilder.fromUri(mServerTemplatesUri())
-                                            .path(TEMPLATES_SEGMENT).path(templateName).build();
-
-        switch (linkType) {
-            case SELF:
-                result = UriBuilder.fromUri(templateUri).path(TEMPLATE_ENTRIES_SEGMENT).path(templateEntryName).build();
-                break;
-            case PARENT:
-                result = UriBuilder.fromUri(templateUri).build();
                 break;
             default:
                 throw new RuntimeException("LinkType " + linkType + " not handled"); //$NON-NLS-1$ //$NON-NLS-2$

@@ -44,35 +44,20 @@ import org.junit.Test;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.OptionKeys;
-import org.komodo.metadata.DefaultMetadataInstance;
-import org.komodo.metadata.TeiidConnectionProvider;
 import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.RelationalObject.Filter;
-import org.komodo.relational.connection.Connection;
-import org.komodo.relational.dataservice.ConnectionEntry;
-import org.komodo.relational.dataservice.DataServiceEntry;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.DataserviceManifest;
-import org.komodo.relational.dataservice.DdlEntry;
-import org.komodo.relational.dataservice.DriverEntry;
-import org.komodo.relational.dataservice.ResourceEntry;
 import org.komodo.relational.dataservice.ServiceVdbEntry;
-import org.komodo.relational.dataservice.UdfEntry;
 import org.komodo.relational.dataservice.VdbEntry;
 import org.komodo.relational.model.Model;
-import org.komodo.relational.resource.DdlFile;
-import org.komodo.relational.resource.Driver;
-import org.komodo.relational.resource.ResourceFile;
-import org.komodo.relational.resource.UdfFile;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
-import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.Property;
 import org.komodo.test.utils.TestUtilities;
-import org.mockito.Mockito;
+import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
+import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 import org.w3c.dom.Document;
 
 @SuppressWarnings( { "javadoc", "nls" } )
@@ -164,314 +149,12 @@ public final class DataserviceImplTest extends RelationalModelTest {
         entry.addDependencyEntry( getTransaction(), "B" );
         assertThat( entry.getDependencies( getTransaction() ).length, is( 2 ) );
 
-        this.dataservice.addConnectionEntry( getTransaction(), "connection" );
-        this.dataservice.addDdlEntry( getTransaction(), "ddl" );
-        this.dataservice.addDriverEntry( getTransaction(), "driver" );
-        this.dataservice.addResourceEntry( getTransaction(), "resource" );
-        this.dataservice.addUdfEntry( getTransaction(), "udf" );
         this.dataservice.addVdbEntry( getTransaction(), "vdb" );
 
-        assertThat( this.dataservice.getConnectionEntries( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getDdlEntries( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getDriverEntries( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getResourceEntries( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getUdfEntries( getTransaction() ).length, is( 1 ) );
         assertThat( this.dataservice.getVdbEntries( getTransaction() ).length, is( 1 ) );
         assertThat( this.dataservice.getServiceVdbEntry( getTransaction() ), is( notNullValue() ) );
         assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
-        assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 7 ) );
-    }
-
-    @Test
-    public void shouldAddConnection() throws Exception {
-        final String connectionName = "MyConnection";
-        final String jndiName = "jndiNameGoesHere";
-        final Connection connection = this.mgr.createConnection( getTransaction(), null, connectionName );
-        connection.setJndiName( getTransaction(), jndiName );
-        commit(); // needed so that searching for reference will work
-
-        final ConnectionEntry entry = this.dataservice.addConnection( getTransaction(), connection );
-        assertThat( entry.getJndiName( getTransaction() ), is( jndiName ) );
-        assertThat( entry.getReference( getTransaction() ), is( notNullValue() ) );
-        assertThat( entry.getReference( getTransaction() ), is( instanceOf( Connection.class ) ) );
-
-        assertThat( this.dataservice.getConnectionEntries( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getConnectionEntries( getTransaction(), connectionName ).length, is( 1 ) );
-        assertThat( this.dataservice.getConnectionPlan( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getConnectionPlan( getTransaction() )[ 0 ], is( connection.getAbsolutePath() ) );
-        assertThat( this.dataservice.getConnections( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getConnections( getTransaction() )[ 0 ].getName( getTransaction() ), is( connectionName ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), connectionName ), is( true ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), connectionName, DataVirtLexicon.ConnectionEntry.NODE_TYPE ),
-                    is( true ) );
-        assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
-        assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildren( getTransaction(), connectionName ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(), DataVirtLexicon.ConnectionEntry.NODE_TYPE ).length,
-                    is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ConnectionEntry.NODE_TYPE,
-                                                        connectionName ).length,
-                    is( 1 ) );
-    }
-
-    @Test
-    public void shouldAddConnectionEntry() throws Exception {
-        final String connectionName = "MyConnection";
-        final ConnectionEntry entry = this.dataservice.addConnectionEntry( getTransaction(), connectionName );
-        assertThat( entry.getJndiName( getTransaction() ), is( nullValue() ) );
-        assertThat( entry.getReference( getTransaction() ), is( nullValue() ) );
-
-        assertThat( this.dataservice.getConnectionEntries( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getConnectionEntries( getTransaction(), connectionName ).length, is( 1 ) );
-        assertThat( this.dataservice.getConnectionPlan( getTransaction() ).length, is( 0 ) );
-        assertThat( this.dataservice.getConnections( getTransaction() ).length, is( 0 ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), connectionName ), is( true ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), connectionName, DataVirtLexicon.ConnectionEntry.NODE_TYPE ),
-                    is( true ) );
-        assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
-        assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildren( getTransaction(), connectionName ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(), DataVirtLexicon.ConnectionEntry.NODE_TYPE ).length,
-                    is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ConnectionEntry.NODE_TYPE,
-                                                        connectionName ).length,
-                    is( 1 ) );
-    }
-
-    @Test
-    public void shouldAddDdlEntry() throws Exception {
-        final String ddlName = "MyDdl";
-        final DdlEntry entry = this.dataservice.addDdlEntry( getTransaction(), ddlName );
-        assertThat( entry.getReference( getTransaction() ), is( nullValue() ) );
-        assertThat( this.dataservice.getDdlEntries( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getDdlEntries( getTransaction(), ddlName ).length, is( 1 ) );
-        assertThat( this.dataservice.getDdlFiles( getTransaction() ).length, is( 0 ) );
-        assertThat( this.dataservice.getDdlPlan( getTransaction() ).length, is( 0 ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), ddlName ), is( true ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), ddlName, DataVirtLexicon.ResourceEntry.DDL_ENTRY_NODE_TYPE ),
-                    is( true ) );
-        assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
-        assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildren( getTransaction(), ddlName ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ResourceEntry.DDL_ENTRY_NODE_TYPE ).length,
-                    is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ResourceEntry.DDL_ENTRY_NODE_TYPE,
-                                                        ddlName ).length,
-                    is( 1 ) );
-    }
-
-    @Test
-    public void shouldAddDdlFile() throws Exception {
-        final String ddlName = "MyDdl";
-        final byte[] content = "this is my DDL content".getBytes();
-        final DdlFile ddl = this.mgr.createDdlFile( getTransaction(), null, ddlName, content );
-        commit(); // needed so that searching for reference will work
-
-        final DdlEntry entry = this.dataservice.addDdlFile( getTransaction(), ddl );
-        assertThat( entry.getReference( getTransaction() ), is( notNullValue() ) );
-        assertThat( entry.getReference( getTransaction() ), is( instanceOf( DdlFile.class ) ) );
-        assertThat( entry.getReference( getTransaction() ).getContent( getTransaction() ), is( notNullValue() ) );
-        assertThat( entry.getReference( getTransaction() ).export( getTransaction(), null ), is( content ) );
-
-        assertThat( this.dataservice.getDdlEntries( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getDdlEntries( getTransaction(), ddlName ).length, is( 1 ) );
-        assertThat( this.dataservice.getDdlPlan( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getDdlPlan( getTransaction() )[ 0 ], is( ddl.getAbsolutePath() ) );
-        assertThat( this.dataservice.getDdlFiles( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getDdlFiles( getTransaction() )[ 0 ].getName( getTransaction() ), is( ddlName ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), ddlName ), is( true ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), ddlName, DataVirtLexicon.ResourceEntry.DDL_ENTRY_NODE_TYPE ),
-                    is( true ) );
-        assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
-        assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildren( getTransaction(), ddlName ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ResourceEntry.DDL_ENTRY_NODE_TYPE ).length,
-                    is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ResourceEntry.DDL_ENTRY_NODE_TYPE,
-                                                        ddlName ).length,
-                    is( 1 ) );
-    }
-
-    @Test
-    public void shouldAddDriver() throws Exception {
-        final String driverName = "MyDriver";
-        final byte[] content = "this is my driver content".getBytes();
-        final Driver driver = this.mgr.createDriver( getTransaction(), null, driverName, content );
-        commit(); // needed so that searching for reference will work
-
-        final DriverEntry entry = this.dataservice.addDriverFile( getTransaction(), driver );
-        assertThat( entry.getReference( getTransaction() ), is( notNullValue() ) );
-        assertThat( entry.getReference( getTransaction() ), is( instanceOf( Driver.class ) ) );
-        assertThat( entry.getReference( getTransaction() ).getContent( getTransaction() ), is( notNullValue() ) );
-        assertThat( entry.getReference( getTransaction() ).export( getTransaction(), null ), is( content ) );
-
-        assertThat( this.dataservice.getDriverEntries( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getDriverEntries( getTransaction(), driverName ).length, is( 1 ) );
-        assertThat( this.dataservice.getDrivers( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getDrivers( getTransaction() )[ 0 ].getName( getTransaction() ), is( driverName ) );
-        assertThat( this.dataservice.getDriverPlan( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getDriverPlan( getTransaction() )[ 0 ], is( driver.getAbsolutePath() ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), driverName ), is( true ) );
-        assertThat( this.dataservice.hasChild( getTransaction(),
-                                               driverName,
-                                               DataVirtLexicon.ResourceEntry.DRIVER_ENTRY_NODE_TYPE ),
-                    is( true ) );
-        assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
-        assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildren( getTransaction(), driverName ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ResourceEntry.DRIVER_ENTRY_NODE_TYPE ).length,
-                    is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ResourceEntry.DRIVER_ENTRY_NODE_TYPE,
-                                                        driverName ).length,
-                    is( 1 ) );
-    }
-
-    @Test
-    public void shouldAddDriverEntry() throws Exception {
-        final String driverName = "MyDriver";
-        final DriverEntry entry = this.dataservice.addDriverEntry( getTransaction(), driverName );
-        assertThat( entry.getReference( getTransaction() ), is( nullValue() ) );
-        assertThat( this.dataservice.getDriverEntries( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getDriverEntries( getTransaction(), driverName ).length, is( 1 ) );
-        assertThat( this.dataservice.getDriverPlan( getTransaction() ).length, is( 0 ) );
-        assertThat( this.dataservice.getDrivers( getTransaction() ).length, is( 0 ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), driverName ), is( true ) );
-        assertThat( this.dataservice.hasChild( getTransaction(),
-                                               driverName,
-                                               DataVirtLexicon.ResourceEntry.DRIVER_ENTRY_NODE_TYPE ),
-                    is( true ) );
-        assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
-        assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildren( getTransaction(), driverName ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ResourceEntry.DRIVER_ENTRY_NODE_TYPE ).length,
-                    is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ResourceEntry.DRIVER_ENTRY_NODE_TYPE,
-                                                        driverName ).length,
-                    is( 1 ) );
-    }
-
-    @Test
-    public void shouldAddResourceEntry() throws Exception {
-        final String resourceName = "MyResource";
-        final ResourceEntry entry = this.dataservice.addResourceEntry( getTransaction(), resourceName );
-        assertThat( entry.getReference( getTransaction() ), is( nullValue() ) );
-        assertThat( this.dataservice.getResourceEntries( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getResourceEntries( getTransaction(), resourceName ).length, is( 1 ) );
-        assertThat( this.dataservice.getResourceFiles( getTransaction() ).length, is( 0 ) );
-        assertThat( this.dataservice.getResourcePlan( getTransaction() ).length, is( 0 ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), resourceName ), is( true ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), resourceName, DataVirtLexicon.ResourceEntry.NODE_TYPE ),
-                    is( true ) );
-        assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
-        assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildren( getTransaction(), resourceName ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(), DataVirtLexicon.ResourceEntry.NODE_TYPE ).length,
-                    is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ResourceEntry.NODE_TYPE,
-                                                        resourceName ).length,
-                    is( 1 ) );
-    }
-
-    @Test
-    public void shouldAddResourceFile() throws Exception {
-        final String resourceName = "MyResource";
-        final byte[] content = "this is my resource content".getBytes();
-        final ResourceFile resource = this.mgr.createResourceFile( getTransaction(), null, resourceName, content );
-        commit(); // needed so that searching for reference will work
-
-        final ResourceEntry entry = this.dataservice.addResourceFile( getTransaction(), resource );
-        assertThat( entry.getReference( getTransaction() ), is( notNullValue() ) );
-        assertThat( entry.getReference( getTransaction() ), is( instanceOf( ResourceFile.class ) ) );
-        assertThat( entry.getReference( getTransaction() ).getContent( getTransaction() ), is( notNullValue() ) );
-        assertThat( entry.getReference( getTransaction() ).export( getTransaction(), null ), is( content ) );
-
-        assertThat( this.dataservice.getResourceEntries( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getResourceEntries( getTransaction(), resourceName ).length, is( 1 ) );
-        assertThat( this.dataservice.getResourceFiles( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getResourceFiles( getTransaction() )[ 0 ].getName( getTransaction() ), is( resourceName ) );
-        assertThat( this.dataservice.getResourcePlan( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getResourcePlan( getTransaction() )[ 0 ], is( resource.getAbsolutePath() ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), resourceName ), is( true ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), resourceName, DataVirtLexicon.ResourceEntry.NODE_TYPE ),
-                    is( true ) );
-        assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
-        assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildren( getTransaction(), resourceName ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(), DataVirtLexicon.ResourceEntry.NODE_TYPE ).length,
-                    is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ResourceEntry.NODE_TYPE,
-                                                        resourceName ).length,
-                    is( 1 ) );
-    }
-
-    @Test
-    public void shouldAddUdfEntry() throws Exception {
-        final String udfName = "MyUdf";
-        final UdfEntry entry = this.dataservice.addUdfEntry( getTransaction(), udfName );
-        assertThat( entry.getReference( getTransaction() ), is( nullValue() ) );
-        assertThat( this.dataservice.getUdfEntries( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getUdfEntries( getTransaction(), udfName ).length, is( 1 ) );
-        assertThat( this.dataservice.getUdfFiles( getTransaction() ).length, is( 0 ) );
-        assertThat( this.dataservice.getUdfPlan( getTransaction() ).length, is( 0 ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), udfName ), is( true ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), udfName, DataVirtLexicon.ResourceEntry.UDF_ENTRY_NODE_TYPE ),
-                    is( true ) );
-        assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
-        assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildren( getTransaction(), udfName ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ResourceEntry.UDF_ENTRY_NODE_TYPE ).length,
-                    is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ResourceEntry.UDF_ENTRY_NODE_TYPE,
-                                                        udfName ).length,
-                    is( 1 ) );
-    }
-
-    @Test
-    public void shouldAddUdfFile() throws Exception {
-        final String udfName = "MyUdf";
-        final byte[] content = "this is my UDF content".getBytes();
-        final UdfFile udf = this.mgr.createUdfFile( getTransaction(), null, udfName, content );
-        commit(); // needed so that searching for reference will work
-
-        final UdfEntry entry = this.dataservice.addUdfFile( getTransaction(), udf );
-        assertThat( entry.getReference( getTransaction() ), is( notNullValue() ) );
-        assertThat( entry.getReference( getTransaction() ), is( instanceOf( UdfFile.class ) ) );
-        assertThat( entry.getReference( getTransaction() ).getContent( getTransaction() ), is( notNullValue() ) );
-        assertThat( entry.getReference( getTransaction() ).export( getTransaction(), null ), is( content ) );
-
-        assertThat( this.dataservice.getUdfEntries( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getUdfEntries( getTransaction(), udfName ).length, is( 1 ) );
-        assertThat( this.dataservice.getUdfFiles( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getUdfFiles( getTransaction() )[ 0 ].getName( getTransaction() ), is( udfName ) );
-        assertThat( this.dataservice.getUdfPlan( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getUdfPlan( getTransaction() )[ 0 ], is( udf.getAbsolutePath() ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), udfName ), is( true ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), udfName, DataVirtLexicon.ResourceEntry.UDF_ENTRY_NODE_TYPE ),
-                    is( true ) );
-        assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
-        assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildren( getTransaction(), udfName ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ResourceEntry.UDF_ENTRY_NODE_TYPE ).length,
-                    is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.ResourceEntry.UDF_ENTRY_NODE_TYPE,
-                                                        udfName ).length,
-                    is( 1 ) );
+        assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 2 ) );
     }
 
     @Test
@@ -491,10 +174,6 @@ public final class DataserviceImplTest extends RelationalModelTest {
 
         assertThat( this.dataservice.getVdbEntries( getTransaction() ).length, is( 1 ) );
         assertThat( this.dataservice.getVdbEntries( getTransaction(), vdbName ).length, is( 1 ) );
-        assertThat( this.dataservice.getVdbPlan( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getVdbPlan( getTransaction() )[ 0 ], is( vdb.getAbsolutePath() ) );
-        assertThat( this.dataservice.getVdbs( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getVdbs( getTransaction() )[ 0 ].getName( getTransaction() ), is( vdbName ) );
         assertThat( this.dataservice.hasChild( getTransaction(), vdbName ), is( true ) );
         assertThat( this.dataservice.hasChild( getTransaction(), vdbName, DataVirtLexicon.VdbEntry.NODE_TYPE ),
                     is( true ) );
@@ -516,8 +195,6 @@ public final class DataserviceImplTest extends RelationalModelTest {
         assertThat( entry.getReference( getTransaction() ), is( nullValue() ) );
         assertThat( this.dataservice.getVdbEntries( getTransaction() ).length, is( 1 ) );
         assertThat( this.dataservice.getVdbEntries( getTransaction(), vdbName ).length, is( 1 ) );
-        assertThat( this.dataservice.getVdbPlan( getTransaction() ).length, is( 0 ) );
-        assertThat( this.dataservice.getVdbs( getTransaction() ).length, is( 0 ) );
         assertThat( this.dataservice.hasChild( getTransaction(), vdbName ), is( true ) );
         assertThat( this.dataservice.hasChild( getTransaction(), vdbName, DataVirtLexicon.VdbEntry.NODE_TYPE ), is( true ) );
         assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
@@ -682,8 +359,7 @@ public final class DataserviceImplTest extends RelationalModelTest {
         ImportOptions importOptions = new ImportOptions();
         importOptions.setOption( OptionKeys.NAME, "MyDataService" );
 
-        TeiidConnectionProvider provider = Mockito.mock(TeiidConnectionProvider.class);
-        DataserviceConveyor conveyor = new DataserviceConveyor( _repo, new DefaultMetadataInstance(provider));
+        DataserviceConveyor conveyor = new DataserviceConveyor( _repo);
         KomodoObject parent = _repo.komodoWorkspace( getTransaction() );
         conveyor.dsImport( getTransaction(), importStream, parent, importOptions, importMessages );
         assertThat( importMessages.hasError(), is( false ) );
@@ -699,61 +375,6 @@ public final class DataserviceImplTest extends RelationalModelTest {
                      "product-view-vdb.xml",
                      DataVirtLexicon.ServiceVdbEntry.NODE_TYPE,
                      VdbLexicon.Vdb.VIRTUAL_DATABASE,
-                     paths );
-        assertEntry( theDataService,
-                     "books-driver-1.jar",
-                     DataVirtLexicon.ResourceEntry.DRIVER_ENTRY_NODE_TYPE,
-                     DataVirtLexicon.ResourceFile.DRIVER_FILE_NODE_TYPE,
-                     paths );
-        assertEntry( theDataService,
-                     "books-driver-2.jar",
-                     DataVirtLexicon.ResourceEntry.DRIVER_ENTRY_NODE_TYPE,
-                     DataVirtLexicon.ResourceFile.DRIVER_FILE_NODE_TYPE,
-                     paths );
-        assertEntry( theDataService,
-                     "portfolio-driver.jar",
-                     DataVirtLexicon.ResourceEntry.DRIVER_ENTRY_NODE_TYPE,
-                     DataVirtLexicon.ResourceFile.DRIVER_FILE_NODE_TYPE,
-                     paths );
-        assertEntry( theDataService,
-                     "firstDdl.ddl",
-                     DataVirtLexicon.ResourceEntry.DDL_ENTRY_NODE_TYPE,
-                     DataVirtLexicon.ResourceFile.DDL_FILE_NODE_TYPE,
-                     paths );
-        assertEntry( theDataService,
-                     "secondDdl.ddl",
-                     DataVirtLexicon.ResourceEntry.DDL_ENTRY_NODE_TYPE,
-                     DataVirtLexicon.ResourceFile.DDL_FILE_NODE_TYPE,
-                     paths );
-        assertEntry( theDataService,
-                     "firstResource.xml",
-                     DataVirtLexicon.ResourceEntry.NODE_TYPE,
-                     DataVirtLexicon.ResourceFile.NODE_TYPE,
-                     paths );
-        assertEntry( theDataService,
-                     "secondResource.xml",
-                     DataVirtLexicon.ResourceEntry.NODE_TYPE,
-                     DataVirtLexicon.ResourceFile.NODE_TYPE,
-                     paths );
-        assertEntry( theDataService,
-                     "firstUdf.jar",
-                     DataVirtLexicon.ResourceEntry.UDF_ENTRY_NODE_TYPE,
-                     null, // publish policy is NEVER
-                     paths );
-        assertEntry( theDataService,
-                     "secondUdf.jar",
-                     DataVirtLexicon.ResourceEntry.UDF_ENTRY_NODE_TYPE,
-                     DataVirtLexicon.ResourceFile.UDF_FILE_NODE_TYPE,
-                     paths );
-        assertEntry( theDataService,
-                     "books-connection.xml",
-                     DataVirtLexicon.ConnectionEntry.NODE_TYPE,
-                     DataVirtLexicon.Connection.NODE_TYPE,
-                     paths );
-        assertEntry( theDataService,
-                     "portfolio-connection.xml",
-                     DataVirtLexicon.ConnectionEntry.NODE_TYPE,
-                     DataVirtLexicon.Connection.NODE_TYPE,
                      paths );
         assertEntry( theDataService,
                      "books-vdb.xml",
@@ -825,50 +446,4 @@ public final class DataserviceImplTest extends RelationalModelTest {
         }
     }
 
-    @Test
-    public void shouldCloneDataservice() throws Exception {
-        InputStream importStream = TestUtilities.sampleDataserviceExample();
-        assertThat( importStream, is( notNullValue() ) );
-
-        ImportMessages importMessages = new ImportMessages();
-        ImportOptions importOptions = new ImportOptions();
-        importOptions.setOption( OptionKeys.NAME, "MyDataService" );
-        
-        TeiidConnectionProvider provider = Mockito.mock(TeiidConnectionProvider.class);
-        DataserviceConveyor conveyor = new DataserviceConveyor( _repo, new DefaultMetadataInstance(provider));
-        KomodoObject parent = _repo.komodoWorkspace( getTransaction() );
-        conveyor.dsImport( getTransaction(), importStream, parent, importOptions, importMessages );
-        assertThat( importMessages.hasError(), is( false ) );
-        commit();
-
-        final String dataServiceName = "MyDataService";
-        assertThat( parent.hasChild( getTransaction(), dataServiceName ), is( true ) );
-        KomodoObject dsObject = parent.getChild( getTransaction(), dataServiceName );
-        Dataservice theDataService = mgr.resolve(getTransaction(), dsObject, Dataservice.class);
-
-        Dataservice copy = this.mgr.createDataservice(getTransaction(), null, SERVICE_NAME + "Copy");
-        theDataService.clone(getTransaction(), copy);
-
-        assertEquals(theDataService.getDescription(getTransaction()), copy.getDescription(getTransaction()));
-        assertEquals(theDataService.getLastModified(getTransaction()), copy.getLastModified(getTransaction()));
-        assertEquals(theDataService.getModifiedBy(getTransaction()), copy.getModifiedBy(getTransaction()));
-
-        DataServiceEntry<?>[] srcChildren = theDataService.getChildren(getTransaction());
-        DataServiceEntry<?>[] tgtChildren = copy.getChildren(getTransaction());
-        assertEquals(srcChildren.length, tgtChildren.length);
-
-        for (DataServiceEntry<?> srcChild : srcChildren) {
-            String childName = srcChild.getName(getTransaction());
-            assertTrue(copy.hasChild(getTransaction(), childName));
-            DataServiceEntry<?> tgtChild = copy.getChild(getTransaction(), childName);
-
-            String[] propNames = srcChild.getPropertyNames(getTransaction());
-            for (String propName : propNames) {
-                Property srcProperty = srcChild.getProperty(getTransaction(), propName);
-                assertTrue(tgtChild.hasProperty(getTransaction(), propName));
-                Property tgtProperty = tgtChild.getProperty(getTransaction(), propName);
-                assertEquals(srcProperty.getValue(getTransaction()), tgtProperty.getValue(getTransaction()));
-            }
-        }
-    }
 }

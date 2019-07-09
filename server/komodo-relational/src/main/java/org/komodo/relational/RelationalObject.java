@@ -19,11 +19,11 @@ package org.komodo.relational;
 
 import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
 import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
-import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.PropertyDescriptor;
 import org.komodo.utils.ArgCheck;
+import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
 
 /**
  * A {@link KomodoObject} related to a relational model.

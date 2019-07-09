@@ -25,15 +25,15 @@ import org.komodo.relational.model.Column;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.TableConstraint;
 import org.komodo.spi.KException;
-import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon;
-import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon.Constraint;
-import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon.CreateTable;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
+import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
+import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.Constraint;
+import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.CreateTable;
 
 /**
  * A base implementation of a relational model table constraint.

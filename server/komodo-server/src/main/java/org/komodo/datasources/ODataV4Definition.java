@@ -29,11 +29,7 @@ public class ODataV4Definition extends DataSourceDefinition {
 
     @Override
     public String getPomDendencies() {
-        return
-            "<dependency>" +
-            "  <groupId>org.teiid</groupId>" +
-            "  <artifactId>thorntail-odata-v4</artifactId>" +
-            "</dependency>";
+    	throw new UnsupportedOperationException();
     }
 
     @Override
@@ -41,11 +37,6 @@ public class ODataV4Definition extends DataSourceDefinition {
         return "odata4";
     }
     
-    @Override
-    public boolean isResouceAdapter() {
-        return true;
-    }
-
     @Override
     public boolean isTypeOf(Map<String, String> properties) {
         if ((properties != null) && (properties.get("URL") != null)) {

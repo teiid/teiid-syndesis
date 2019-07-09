@@ -21,9 +21,6 @@ package org.komodo.spi.lexicon.sql.teiid;
 import org.komodo.spi.constants.StringConstants;
 
 
-/**
- * @generated using org.komodo.modeshape.teiid.generators.TeiidCndGenerator
- */
 @SuppressWarnings( { "javadoc", "nls" })
 public class TeiidSqlLexicon implements StringConstants {
 

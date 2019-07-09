@@ -20,16 +20,12 @@ package org.komodo.rest.service.unit;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -40,22 +36,14 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.komodo.relational.ViewBuilderCriteriaPredicate;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
-import org.komodo.rest.RestLink;
 import org.komodo.rest.RestLink.LinkType;
 import org.komodo.rest.relational.KomodoRestUriBuilder.SettingNames;
-import org.komodo.rest.relational.connection.RestConnection;
 import org.komodo.rest.relational.dataservice.RestDataservice;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
-import org.komodo.rest.relational.response.RestConnectionDriver;
-import org.komodo.rest.relational.response.RestDataserviceViewInfo;
-import org.komodo.rest.relational.response.RestVdb;
 import org.komodo.rest.service.KomodoVdbService;
-import org.komodo.test.utils.TestUtilities;
 
 @SuppressWarnings( {"javadoc", "nls"} )
 public class KomodoDataserviceServiceTestInSuite extends AbstractKomodoServiceTest {
@@ -129,267 +117,7 @@ public class KomodoDataserviceServiceTestInSuite extends AbstractKomodoServiceTe
 
     }
 
-    @Test
-    public void shouldGetDataserviceConnections() throws Exception {
-        loadStatesDataService();
-
-        // get
-        String dsName = TestUtilities.US_STATES_DATA_SERVICE_NAME;
-        Properties settings = uriBuilder().createSettings(SettingNames.DATA_SERVICE_NAME, dsName);
-        uriBuilder().addSetting(settings, SettingNames.DATA_SERVICE_PARENT_PATH, uriBuilder().workspaceDataservicesUri());
-
-        URI uri = uriBuilder().dataserviceUri(LinkType.CONNECTIONS, settings);
-        HttpGet request = jsonRequest(uri, RequestType.GET);
-        HttpResponse response = execute(request);
-
-        okResponse(response);
-        String entity = extractResponse(response);
-        assertThat(entity, is(notNullValue()));
-
-        //        System.out.println("Response:\n" + entity);
-
-        RestConnection[] connections = KomodoJsonMarshaller.unmarshallArray(entity, RestConnection[].class);
-        assertNotNull(connections);
-        assertEquals(1, connections.length);
-
-        RestConnection connection = connections[0];
-        assertEquals("USStatesConnection", connection.getId());
-        assertEquals("java:/USStatesSource", connection.getJndiName());
-        assertEquals("h2", connection.getDriverName());
-
-        Collection<RestLink> links = connection.getLinks();
-        assertNotNull(links);
-        assertEquals(3, links.size());
-
-        for (RestLink link : links) {
-            LinkType rel = link.getRel();
-            assertTrue(LinkType.SELF.equals(rel) || LinkType.PARENT.equals(rel) || LinkType.CHILDREN.equals(rel));
-
-            if (LinkType.SELF.equals(rel)) {
-                String href = uriBuilder().workspaceConnectionsUri() + FORWARD_SLASH + connection.getId();
-                assertEquals(href, link.getHref().toString());
-            }
-        }
-    }
-
-    @Test
-    public void shouldGetDataserviceDrivers() throws Exception {
-        loadStatesDataService();
-
-        // get
-        String dsName = TestUtilities.US_STATES_DATA_SERVICE_NAME;
-        Properties settings = uriBuilder().createSettings(SettingNames.DATA_SERVICE_NAME, dsName);
-        uriBuilder().addSetting(settings, SettingNames.DATA_SERVICE_PARENT_PATH, uriBuilder().workspaceDataservicesUri());
-
-        URI uri = uriBuilder().dataserviceUri(LinkType.DRIVERS, settings);
-        HttpGet request = jsonRequest(uri, RequestType.GET);
-        HttpResponse response = execute(request);
-
-        okResponse(response);
-        String entity = extractResponse(response);
-        assertThat(entity, is(notNullValue()));
-
-        //        System.out.println("Response:\n" + entity);
-
-        RestConnectionDriver[] drivers = KomodoJsonMarshaller.unmarshallArray(entity, RestConnectionDriver[].class);
-        assertNotNull(drivers);
-        assertEquals(1, drivers.length);
-
-        RestConnectionDriver connectionDriver = drivers[0];
-        assertEquals("mysql-connector-java-5.1.39-bin.jar", connectionDriver.getName());
-    }
-
-    @Test
-    public void shouldGetViewInfoForSingleSourceDataService() throws Exception {
-        loadDsbSingleSourceDataService();
-
-        // get
-        String dsName = TestUtilities.PARTS_SINGLE_SOURCE_SERVICE_NAME;
-        Properties settings = uriBuilder().createSettings(SettingNames.DATA_SERVICE_NAME, dsName);
-        uriBuilder().addSetting(settings, SettingNames.DATA_SERVICE_PARENT_PATH, uriBuilder().workspaceDataservicesUri());
-
-        URI uri = uriBuilder().dataserviceUri(LinkType.SERVICE_VIEW_INFO, settings);
-        HttpGet request = jsonRequest(uri, RequestType.GET);
-        HttpResponse response = execute(request);
-
-        okResponse(response);
-        String entity = extractResponse(response);
-        assertThat(entity, is(notNullValue()));
-
-        RestDataserviceViewInfo[] viewInfos = KomodoJsonMarshaller.unmarshallArray(entity, RestDataserviceViewInfo[].class);
-        assertEquals(2, viewInfos.length);
-
-        for (int i = 0; i < viewInfos.length; i++) {
-            String infoType = viewInfos[i].getInfoType();
-            if (infoType.equals(RestDataserviceViewInfo.LH_TABLE_INFO)) {
-                assertEquals("OracleParts", viewInfos[i].getSourceVdbName());
-                assertEquals("SUPPLIER", viewInfos[i].getTableName());
-                List<String> colList = Arrays.asList(viewInfos[i].getColumnNames());
-                assertTrue(colList.contains("SUPPLIER_ID"));
-                assertTrue(colList.contains("SUPPLIER_NAME"));
-                assertTrue(colList.contains("SUPPLIER_STATUS"));
-                assertTrue(colList.contains("SUPPLIER_CITY"));
-                assertTrue(colList.contains("SUPPLIER_STATE"));
-            } else if (infoType.equals(RestDataserviceViewInfo.DDL_INFO)) {
-                assertEquals(true, viewInfos[i].isViewEditable());
-                assertEquals("CREATE VIEW PartsSingleSourceView (\n\tSUPPLIER_ID string,\n\tSUPPLIER_NAME string,\n\tSUPPLIER_STATUS bigdecimal,\n\tSUPPLIER_CITY string,\n\tSUPPLIER_STATE string,\n\tPRIMARY KEY(SUPPLIER_ID)\n)\nAS\nSELECT SUPPLIER_ID, SUPPLIER_NAME, SUPPLIER_STATUS, SUPPLIER_CITY, SUPPLIER_STATE FROM OracleParts.SUPPLIER;\n",
-                             viewInfos[i].getViewDdl());
-            }
-        }
-    }
-
-    @Test
-    public void shouldGetViewInfoForJoinSameTableNamesDataService() throws Exception {
-        loadDsbJoinSameTableNamesDataService();
-
-        // get
-        String dsName = TestUtilities.JOIN_SAME_TABLE_NAMES_SERVICE_NAME;
-        Properties settings = uriBuilder().createSettings(SettingNames.DATA_SERVICE_NAME, dsName);
-        uriBuilder().addSetting(settings, SettingNames.DATA_SERVICE_PARENT_PATH, uriBuilder().workspaceDataservicesUri());
-
-        URI uri = uriBuilder().dataserviceUri(LinkType.SERVICE_VIEW_INFO, settings);
-        HttpGet request = jsonRequest(uri, RequestType.GET);
-        HttpResponse response = execute(request);
-
-        okResponse(response);
-        String entity = extractResponse(response);
-        assertThat(entity, is(notNullValue()));
-
-        RestDataserviceViewInfo[] viewInfos = KomodoJsonMarshaller.unmarshallArray(entity, RestDataserviceViewInfo[].class);
-        assertEquals(4, viewInfos.length);
-
-        for (int i = 0; i < viewInfos.length; i++) {
-            String infoType = viewInfos[i].getInfoType();
-            if (infoType.equals(RestDataserviceViewInfo.LH_TABLE_INFO)) {
-                assertEquals("BQTOracle", viewInfos[i].getSourceVdbName());
-                assertEquals("SMALLA", viewInfos[i].getTableName());
-                List<String> colList = Arrays.asList(viewInfos[i].getColumnNames());
-                assertTrue(colList.contains("INTKEY"));
-                assertTrue(colList.contains("STRINGKEY"));
-            } else if (infoType.equals(RestDataserviceViewInfo.RH_TABLE_INFO)) {
-                assertEquals("BQTOracle2", viewInfos[i].getSourceVdbName());
-                assertEquals("SMALLA", viewInfos[i].getTableName());
-                List<String> colList = Arrays.asList(viewInfos[i].getColumnNames());
-                assertTrue(colList.contains("STRINGKEY"));
-                assertTrue(colList.contains("INTNUM"));
-            } else if (infoType.equals(RestDataserviceViewInfo.CRITERIA_INFO)) {
-                assertEquals("INNER", viewInfos[i].getJoinType());
-                List<ViewBuilderCriteriaPredicate> colList = viewInfos[i].getCriteriaPredicates();
-                assertEquals(1, colList.size());
-                ViewBuilderCriteriaPredicate predicate = colList.get(0);
-                assertEquals("INTKEY", predicate.getLhColumn());
-                assertEquals("INTKEY", predicate.getRhColumn());
-                assertEquals("=", predicate.getOperator());
-            } else if (infoType.equals(RestDataserviceViewInfo.DDL_INFO)) {
-                assertEquals(true, viewInfos[i].isViewEditable());
-                assertEquals("CREATE VIEW JoinServiceSameTableNamesView (\n\tRowId integer,\n\tINTKEY bigdecimal,\n\tA_STRINGKEY string,\n\tB_STRINGKEY string,\n\tINTNUM bigdecimal,\n\tPRIMARY KEY(RowId)\n)\nAS\nSELECT ROW_NUMBER() OVER (ORDER BY A.INTKEY), A.INTKEY, A.STRINGKEY, B.STRINGKEY, B.INTNUM FROM BQTOracle.SMALLA AS A INNER JOIN BQTOracle2.SMALLA AS B ON A.INTKEY = B.INTKEY;\n",
-                             viewInfos[i].getViewDdl());
-            }
-        }
-    }
-
-    @Test
-    public void shouldGetViewInfoForJoinDifferentTableNamesDataService() throws Exception {
-        loadDsbJoinDifferentTableNamesDataService();
-
-        // get
-        String dsName = TestUtilities.JOIN_DIFFERENT_TABLE_NAMES_SERVICE_NAME;
-        Properties settings = uriBuilder().createSettings(SettingNames.DATA_SERVICE_NAME, dsName);
-        uriBuilder().addSetting(settings, SettingNames.DATA_SERVICE_PARENT_PATH, uriBuilder().workspaceDataservicesUri());
-
-        URI uri = uriBuilder().dataserviceUri(LinkType.SERVICE_VIEW_INFO, settings);
-        HttpGet request = jsonRequest(uri, RequestType.GET);
-        HttpResponse response = execute(request);
-
-        okResponse(response);
-        String entity = extractResponse(response);
-        assertThat(entity, is(notNullValue()));
-
-        RestDataserviceViewInfo[] viewInfos = KomodoJsonMarshaller.unmarshallArray(entity, RestDataserviceViewInfo[].class);
-        assertEquals(4, viewInfos.length);
-
-        for (int i = 0; i < viewInfos.length; i++) {
-            String infoType = viewInfos[i].getInfoType();
-            if (infoType.equals(RestDataserviceViewInfo.LH_TABLE_INFO)) {
-                assertEquals("BQTOracle", viewInfos[i].getSourceVdbName());
-                assertEquals("SMALLA", viewInfos[i].getTableName());
-                List<String> colList = Arrays.asList(viewInfos[i].getColumnNames());
-                assertTrue(colList.contains("INTKEY"));
-                assertTrue(colList.contains("STRINGKEY"));
-            } else if (infoType.equals(RestDataserviceViewInfo.RH_TABLE_INFO)) {
-                assertEquals("BQTOracle2", viewInfos[i].getSourceVdbName());
-                assertEquals("SMALLB", viewInfos[i].getTableName());
-                List<String> colList = Arrays.asList(viewInfos[i].getColumnNames());
-                assertTrue(colList.contains("STRINGKEY"));
-                assertTrue(colList.contains("INTNUM"));
-            } else if (infoType.equals(RestDataserviceViewInfo.CRITERIA_INFO)) {
-                assertEquals("INNER", viewInfos[i].getJoinType());
-                List<ViewBuilderCriteriaPredicate> colList = viewInfos[i].getCriteriaPredicates();
-                assertEquals(1, colList.size());
-                ViewBuilderCriteriaPredicate predicate = colList.get(0);
-                assertEquals("INTKEY", predicate.getLhColumn());
-                assertEquals("INTKEY", predicate.getRhColumn());
-                assertEquals("=", predicate.getOperator());
-            } else if (infoType.equals(RestDataserviceViewInfo.DDL_INFO)) {
-                assertEquals(true, viewInfos[i].isViewEditable());
-                assertEquals("CREATE VIEW JoinServiceDifferentTableNamesView (\n\tRowId integer,\n\tINTKEY bigdecimal,\n\tA_STRINGKEY string,\n\tB_STRINGKEY string,\n\tINTNUM bigdecimal,\n\tPRIMARY KEY(RowId)\n)\nAS\nSELECT ROW_NUMBER() OVER (ORDER BY A.INTKEY), A.INTKEY, A.STRINGKEY, B.STRINGKEY, B.INTNUM FROM BQTOracle.SMALLA AS A INNER JOIN BQTOracle2.SMALLB AS B ON A.INTKEY = B.INTKEY;\n",
-                             viewInfos[i].getViewDdl());
-            }
-        }
-    }
-
-    @Test
-    public void shouldGetWorkspaceSourceVdbForDataService() throws Exception {
-        loadStatesServiceSourceVdb();
-        loadStatesDataService();
-
-        // get
-        String dsName = TestUtilities.US_STATES_DATA_SERVICE_NAME;
-        Properties settings = uriBuilder().createSettings(SettingNames.DATA_SERVICE_NAME, dsName);
-        uriBuilder().addSetting(settings, SettingNames.DATA_SERVICE_PARENT_PATH, uriBuilder().workspaceDataservicesUri());
-
-        URI uri = uriBuilder().dataserviceUri(LinkType.SOURCE_VDB_MATCHES, settings);
-        HttpGet request = jsonRequest(uri, RequestType.GET);
-        HttpResponse response = execute(request);
-
-        okResponse(response);
-        String entity = extractResponse(response);
-        assertThat(entity, is(notNullValue()));
-
-        RestVdb[] vdbs = KomodoJsonMarshaller.unmarshallArray(entity, RestVdb[].class);
-        assertNotNull(vdbs);
-        assertEquals(1, vdbs.length);
-
-        RestVdb vdb = vdbs[0];
-        assertEquals("ServiceSource", vdb.getId());
-
-    }
-
-    @Test
-    public void shouldNotGetWorkspaceSourceVdbForDataService() throws Exception {
-        loadStatesDataService();
-
-        // get
-        String dsName = TestUtilities.US_STATES_DATA_SERVICE_NAME;
-        Properties settings = uriBuilder().createSettings(SettingNames.DATA_SERVICE_NAME, dsName);
-        uriBuilder().addSetting(settings, SettingNames.DATA_SERVICE_PARENT_PATH, uriBuilder().workspaceDataservicesUri());
-
-        URI uri = uriBuilder().dataserviceUri(LinkType.SOURCE_VDB_MATCHES, settings);
-        HttpGet request = jsonRequest(uri, RequestType.GET);
-        HttpResponse response = execute(request);
-
-        okResponse(response);
-        String entity = extractResponse(response);
-        assertThat(entity, is(notNullValue()));
-
-        RestVdb[] vdbs = KomodoJsonMarshaller.unmarshallArray(entity, RestVdb[].class);
-        assertNotNull(vdbs);
-        for (RestVdb v : vdbs) {
-            assertNotEquals(TestUtilities.US_STATES_VDB_NAME, v.getId());
-        }
-    }
-
-    @Test
+	    @Test
     public void shouldFailNameValidationWhenNameAlreadyExists() throws Exception {
         String dataserviceName = "shouldFailNameValidationWhenNameAlreadyExists";
         // create a data service first
@@ -499,51 +227,6 @@ public class KomodoDataserviceServiceTestInSuite extends AbstractKomodoServiceTe
 
         String errorMsg = extractResponse(response);
         assertThat(errorMsg, is("")); // no error message since name was valid
-    }
-
-    @Test
-    public void shouldCloneDataservice() throws Exception {
-        String dataserviceName = "shouldCloneDataservice";
-        createDataservice(dataserviceName);
-        URI dataservicesUri = uriBuilder().workspaceDataservicesUri();
-        URI uri = UriBuilder.fromUri(dataservicesUri).path(V1Constants.CLONE_SEGMENT).path(dataserviceName).build();
-
-        HttpPost request = jsonRequest(uri, RequestType.POST);
-        addJsonConsumeContentType(request);
-        String clonedDataservice = "clonedDataservice";
-        addBody(request, clonedDataservice);
-
-        HttpResponse response = execute(request);
-
-        okResponse(response);
-        String entity = extractResponse(response);
-        assertThat(entity, is(notNullValue()));
-
-        RestDataservice dataservice = KomodoJsonMarshaller.unmarshall(entity, RestDataservice.class);
-        assertNotNull(dataservice);
-
-        logObjectPath(dataservice.getDataPath());
-        logObjectPath(serviceTestUtilities.getWorkspace(USER_NAME) + FORWARD_SLASH + clonedDataservice + "VDB");
-        assertEquals(dataservice.getId(), clonedDataservice);
-    }
-
-    @Test
-    public void shouldNotCloneDataservice() throws Exception {
-        String dataserviceName = "shouldNotCloneDataservice";
-        createDataservice(dataserviceName);
-        URI dataservicesUri = uriBuilder().workspaceDataservicesUri();
-        URI uri = UriBuilder.fromUri(dataservicesUri).path(V1Constants.CLONE_SEGMENT).path(dataserviceName).build();
-
-        // Attempt to clone using the same service name should fail...
-        HttpPost request = jsonRequest(uri, RequestType.POST);
-        addJsonConsumeContentType(request);
-        addBody(request, dataserviceName);
-
-        HttpResponse response = execute(request);
-
-        assertResponse(response, HttpStatus.SC_FORBIDDEN);
-        String entity = extractResponse(response);
-        assertTrue(entity.contains("cannot be the same"));
     }
 
     @Test

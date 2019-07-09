@@ -25,7 +25,7 @@ import java.util.Properties;
  */
 public abstract class DataSourceDefinition {
     /**
-     * Returns the type of the database. Matches with name of driver in WildFlySwarm
+     * Returns the type of the database. Matches with the translator name
      * @return name of the source type
      */
     public abstract String getType();
@@ -66,30 +66,10 @@ public abstract class DataSourceDefinition {
      */
     public abstract Properties getPublishedImageDataSourceProperties(DefaultSyndesisDataSource datasource);
 
-    /**
-     * Returns true if the data source type is a resource adapter, otherwise false.
-     * @return true if resource adapter
-     */
-    public boolean isResouceAdapter() {
-        return false;
-    }
-
     protected void ds(Properties props, DefaultSyndesisDataSource scd, String key, String value) {
-        if (scd.getDefinition().isResouceAdapter()) {
-            props.setProperty(
-                "swarm.resource-adapters.resource-adapters."
-                        + scd.getName()
-                        + ".connection-definitions."
-                        + scd.getName()
-                        + ".config-properties."
-                        + key
-                        + ".value",
-                    value);
-        } else {
-            props.setProperty(
-                    "spring.datasource." + scd.getName() + "." + key,
-                    value);
-        }
+        props.setProperty(
+                "spring.datasource." + scd.getName() + "." + key,
+                value);
     }
 
     protected Properties setupResourceAdapter(String dsName, String moduleName, String className, String jndiName) {

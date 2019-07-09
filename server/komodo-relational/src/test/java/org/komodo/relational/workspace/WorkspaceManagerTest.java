@@ -21,28 +21,19 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+
 import java.io.File;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.core.repository.ObjectImpl;
-import org.komodo.core.repository.RepositoryImpl;
-import org.komodo.core.repository.SynchronousCallback;
 import org.komodo.relational.RelationalModelTest;
-import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.folder.Folder;
 import org.komodo.relational.model.AccessPattern;
 import org.komodo.relational.model.DataTypeResultSet;
 import org.komodo.relational.model.ForeignKey;
@@ -62,27 +53,14 @@ import org.komodo.relational.model.UniqueConstraint;
 import org.komodo.relational.model.UserDefinedFunction;
 import org.komodo.relational.model.View;
 import org.komodo.relational.model.VirtualProcedure;
-import org.komodo.relational.vdb.Condition;
-import org.komodo.relational.vdb.DataRole;
-import org.komodo.relational.vdb.Entry;
-import org.komodo.relational.vdb.Mask;
 import org.komodo.relational.vdb.ModelSource;
-import org.komodo.relational.vdb.Permission;
-import org.komodo.relational.vdb.Translator;
 import org.komodo.relational.vdb.Vdb;
-import org.komodo.relational.vdb.VdbImport;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
-import org.komodo.spi.storage.StorageConnector;
-import org.komodo.spi.storage.StorageReference;
-import org.komodo.test.utils.TestUtilities;
 import org.komodo.utils.FileUtils;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
+import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 @SuppressWarnings( {"javadoc", "nls"} )
 public final class WorkspaceManagerTest extends RelationalModelTest {
@@ -106,39 +84,10 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
     }
 
     @Test
-    public void shouldCreateConnection() throws Exception {
-        final Connection connection = this.wsMgr.createConnection( getTransaction(), null, "ds" );
-        assertThat( connection, is( notNullValue() ) );
-        assertThat( _repo.getFromWorkspace( getTransaction(), connection.getAbsolutePath() ), is( ( KomodoObject )connection ) );
-    }
-
-    @Test
     public void shouldCreateDataservice() throws Exception {
         final Dataservice dataservice = this.wsMgr.createDataservice( getTransaction(), null, "service" );
         assertThat( dataservice, is( notNullValue() ) );
         assertThat( _repo.getFromWorkspace( getTransaction(), dataservice.getAbsolutePath() ), is( ( KomodoObject )dataservice ) );
-    }
-
-    @Test
-    public void shouldCreateFolder() throws Exception {
-        final Folder folder = this.wsMgr.createFolder( getTransaction(), null, "model" );
-        assertThat( folder, is( notNullValue() ) );
-        assertThat( _repo.getFromWorkspace( getTransaction(), folder.getAbsolutePath() ), is( ( KomodoObject )folder ) );
-    }
-
-    @Test
-    public void shouldCreateModel() throws Exception {
-        final Vdb vdb = createVdb();
-        final Model model = this.wsMgr.createModel( getTransaction(), vdb, "model" );
-        assertThat( model, is( notNullValue() ) );
-        assertThat( _repo.getFromWorkspace( getTransaction(), model.getAbsolutePath() ), is( ( KomodoObject )model ) );
-    }
-
-    @Test
-    public void shouldCreateSchema() throws Exception {
-        final Schema schema = this.wsMgr.createSchema( getTransaction(), null, "schema" );
-        assertThat( schema, is( notNullValue() ) );
-        assertThat( _repo.getFromWorkspace( getTransaction(), schema.getAbsolutePath() ), is( ( KomodoObject )schema ) );
     }
 
     @Test
@@ -154,13 +103,6 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
         final Vdb vdb = this.wsMgr.createVdb(getTransaction(), null, this.name.getMethodName(), "externalFilePath");
         assertThat(vdb, is(notNullValue()));
         assertThat(vdb.getParent(getTransaction()), is(_repo.komodoWorkspace(getTransaction())));
-    }
-
-    @Test
-    public void shouldDeleteModel() throws Exception {
-        final Model model = createModel();
-        this.wsMgr.delete(getTransaction(), model);
-        assertThat(this.wsMgr.findModels(getTransaction()).length, is(0));
     }
 
     @Test
@@ -243,32 +185,6 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
     }
 
     @Test
-    public void shouldFindModels() throws Exception {
-        Vdb parent = createVdb();
-        final String prefix = this.name.getMethodName();
-        int suffix = 0;
-
-        // create at root
-        for (int i = 0; i < 5; ++i) {
-            parent.addModel(getTransaction(), (prefix + ++suffix));
-        }
-
-        // create under a folder
-        final KomodoObject folder = _repo.add(getTransaction(), parent.getAbsolutePath(), "folder", null);
-        assertNotNull(_repo.getFromWorkspace(getTransaction(), folder.getAbsolutePath()));
-
-        for (int i = 0; i < 7; ++i) {
-            suffix++;
-            parent = createVdb( "vdb" + suffix, folder, (VDB_PATH + i) );
-            parent.addModel(getTransaction(), (prefix + suffix));
-        }
-
-        commit(); // must save before running a query
-
-        assertThat(this.wsMgr.findModels(getTransaction()).length, is(suffix));
-    }
-
-    @Test
     public void shouldFindVdbs() throws Exception {
         final String prefix = this.name.getMethodName();
         int suffix = 0;
@@ -309,7 +225,7 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
 
     @Test
     public void shouldHaveCorrectChildTypes() {
-        KomodoType[] types = { Folder.IDENTIFIER, Connection.IDENTIFIER, Dataservice.IDENTIFIER, Vdb.IDENTIFIER, Schema.IDENTIFIER};
+        KomodoType[] types = { Dataservice.IDENTIFIER, Vdb.IDENTIFIER, Schema.IDENTIFIER};
         assertThat( Arrays.asList( this.wsMgr.getChildTypes() ), hasItems( types ) );
         assertThat( this.wsMgr.getChildTypes().length, is( types.length ) );
     }
@@ -354,21 +270,6 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
         this.wsMgr.rename( getTransaction(), "newName" );
     }
 
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldNotAllowCreateModelWithNullParent() throws Exception {
-        this.wsMgr.createModel( getTransaction(), null, "model" );
-    }
-
-    @Test
-    public void shouldNotFindModelsWhenWorkspaceIsEmpty() throws Exception {
-        assertThat(this.wsMgr.findModels(getTransaction()).length, is(0));
-    }
-
-    @Test
-    public void shouldNotFindSchemasWhenWorkspaceIsEmpty() throws Exception {
-        assertThat(this.wsMgr.findSchemas(getTransaction()).length, is(0));
-    }
-
     @Test
     public void shouldNotFindVdbsWhenWorkspaceIsEmpty() throws Exception {
         assertThat(this.wsMgr.findVdbs(getTransaction()).length, is(0));
@@ -390,31 +291,6 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
     }
 
     @Test
-    public void shouldResolveCondition() throws Exception {
-        final Vdb vdb = createVdb();
-        final DataRole dataRole = vdb.addDataRole(getTransaction(), "dataRole");
-        final Permission permission = dataRole.addPermission(getTransaction(), "permission");
-        final Condition condition = permission.addCondition(getTransaction(), "condition");
-        final KomodoObject kobject = new ObjectImpl(_repo, condition.getAbsolutePath(), condition.getIndex());
-        assertThat(this.wsMgr.resolve(getTransaction(), kobject, Condition.class), is(instanceOf(Condition.class)));
-    }
-
-    @Test
-    public void shouldResolveDataRole() throws Exception {
-        final Vdb vdb = createVdb();
-        final DataRole dataRole = vdb.addDataRole(getTransaction(), "dataRole");
-        final KomodoObject kobject = new ObjectImpl(_repo, dataRole.getAbsolutePath(), dataRole.getIndex());
-        assertThat(this.wsMgr.resolve(getTransaction(), kobject, DataRole.class), is(instanceOf(DataRole.class)));
-    }
-
-    @Test
-    public void shouldResolveConnection() throws Exception {
-        final Connection connection = this.wsMgr.createConnection(getTransaction(), null, "source");
-        final KomodoObject kobject = new ObjectImpl(_repo, connection.getAbsolutePath(), connection.getIndex());
-        assertThat(this.wsMgr.resolve(getTransaction(), kobject, Connection.class), is(instanceOf(Connection.class)));
-    }
-
-    @Test
     public void shouldResolveDataservice() throws Exception {
         final Dataservice service = this.wsMgr.createDataservice(getTransaction(), null, "service");
         final KomodoObject kobject = new ObjectImpl(_repo, service.getAbsolutePath(), service.getIndex());
@@ -428,21 +304,6 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
         final ProcedureResultSet resultSet = procedure.setResultSet(getTransaction(), DataTypeResultSet.class);
         final KomodoObject kobject = new ObjectImpl(_repo, resultSet.getAbsolutePath(), resultSet.getIndex());
         assertThat(this.wsMgr.resolve(getTransaction(), kobject, DataTypeResultSet.class), is(instanceOf(DataTypeResultSet.class)));
-    }
-
-    @Test
-    public void shouldResolveEntry() throws Exception {
-        final Vdb vdb = createVdb();
-        final Entry entry = vdb.addEntry(getTransaction(), "entry", "path");
-        final KomodoObject kobject = new ObjectImpl(_repo, entry.getAbsolutePath(), entry.getIndex());
-        assertThat(this.wsMgr.resolve(getTransaction(), kobject, Entry.class), is(instanceOf(Entry.class)));
-    }
-
-    @Test
-    public void shouldResolveFolder() throws Exception {
-        final Folder folder = this.wsMgr.createFolder(getTransaction(), null, "folder");
-        final KomodoObject kobject = new ObjectImpl(_repo, folder.getAbsolutePath(), folder.getIndex());
-        assertThat(this.wsMgr.resolve(getTransaction(), kobject, Folder.class), is(instanceOf(Folder.class)));
     }
 
     @Test
@@ -460,16 +321,6 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
         final Index index = table.addIndex(getTransaction(), "index");
         final KomodoObject kobject = new ObjectImpl(_repo, index.getAbsolutePath(), index.getIndex());
         assertThat(this.wsMgr.resolve(getTransaction(), kobject, Index.class), is(instanceOf(Index.class)));
-    }
-
-    @Test
-    public void shouldResolveMask() throws Exception {
-        final Vdb vdb = createVdb();
-        final DataRole dataRole = vdb.addDataRole(getTransaction(), "dataRole");
-        final Permission permission = dataRole.addPermission(getTransaction(), "permission");
-        final Mask mask = permission.addMask(getTransaction(), "mask");
-        final KomodoObject kobject = new ObjectImpl(_repo, mask.getAbsolutePath(), mask.getIndex());
-        assertThat(this.wsMgr.resolve(getTransaction(), kobject, Mask.class), is(instanceOf(Mask.class)));
     }
 
     @Test
@@ -497,15 +348,6 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
     }
 
     @Test
-    public void shouldResolvePermission() throws Exception {
-        final Vdb vdb = createVdb();
-        final DataRole dataRole = vdb.addDataRole(getTransaction(), "dataRole");
-        final Permission permission = dataRole.addPermission(getTransaction(), "permission");
-        final KomodoObject kobject = new ObjectImpl(_repo, permission.getAbsolutePath(), permission.getIndex());
-        assertThat(this.wsMgr.resolve(getTransaction(), kobject, Permission.class), is(instanceOf(Permission.class)));
-    }
-
-    @Test
     public void shouldResolvePrimaryKey() throws Exception {
         final Table table = createTable();
         final PrimaryKey pk = table.setPrimaryKey(getTransaction(), "pk");
@@ -519,13 +361,6 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
         final Function function = model.addPushdownFunction(getTransaction(), "function");
         final KomodoObject kobject = new ObjectImpl(_repo, function.getAbsolutePath(), function.getIndex());
         assertThat(this.wsMgr.resolve(getTransaction(), kobject, PushdownFunction.class), is(instanceOf(PushdownFunction.class)));
-    }
-
-    @Test
-    public void shouldResolveSchema() throws Exception {
-        final Schema schema = createSchema();
-        final KomodoObject kobject = new ObjectImpl(_repo, schema.getAbsolutePath(), schema.getIndex());
-        assertThat(this.wsMgr.resolve(getTransaction(), kobject, Schema.class), is(instanceOf(Schema.class)));
     }
 
     @Test
@@ -550,14 +385,6 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
         final Table table = createTable();
         final KomodoObject kobject = new ObjectImpl(_repo, table.getAbsolutePath(), table.getIndex());
         assertThat(this.wsMgr.resolve(getTransaction(), kobject, Table.class), is(instanceOf(Table.class)));
-    }
-
-    @Test
-    public void shouldResolveTranslator() throws Exception {
-        final Vdb vdb = createVdb();
-        final Translator translator = vdb.addTranslator(getTransaction(), "translator", "oracle");
-        final KomodoObject kobject = new ObjectImpl(_repo, translator.getAbsolutePath(), translator.getIndex());
-        assertThat(this.wsMgr.resolve(getTransaction(), kobject, Translator.class), is(instanceOf(Translator.class)));
     }
 
     @Test
@@ -588,14 +415,6 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
         final Vdb vdb = createVdb();
         final KomodoObject kobject = new ObjectImpl(_repo, vdb.getAbsolutePath(), vdb.getIndex());
         assertThat(this.wsMgr.resolve(getTransaction(), kobject, Exportable.class), is(instanceOf(Exportable.class)));
-    }
-
-    @Test
-    public void shouldResolveVdbImport() throws Exception {
-        final Vdb vdb = createVdb();
-        final VdbImport vdbImport = vdb.addImport(getTransaction(), "vdbImport");
-        final KomodoObject kobject = new ObjectImpl(_repo, vdbImport.getAbsolutePath(), vdbImport.getIndex());
-        assertThat(this.wsMgr.resolve(getTransaction(), kobject, VdbImport.class), is(instanceOf(VdbImport.class)));
     }
 
     @Test
@@ -655,80 +474,4 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
         assertNotNull(table2);
     }
 
-    @Test
-    public void shouldExportVdb() throws Exception {
-        String tmpDirPath = System.getProperty("java.io.tmpdir");
-        File tmpDir = new File(tmpDirPath);
-
-        long timestamp = System.currentTimeMillis();
-        myFileDir = new File(tmpDir, "myfile-" + timestamp);
-        assertTrue(myFileDir.mkdir());
-
-        File vdbDestFile = new File(myFileDir, "vdbFile.xml");
-
-        Properties parameters = new Properties();
-        parameters.setProperty("files-home-path-property", myFileDir.getAbsolutePath());
-        parameters.setProperty("file-path-property", vdbDestFile.getName());
-
-        Vdb vdb = mock(Vdb.class);
-        String sampleExample = TestUtilities.streamToString(TestUtilities.sampleExample());
-        when(vdb.export(getTransaction(), parameters)).thenReturn(sampleExample.getBytes());
-        when(vdb.getName(getTransaction())).thenReturn(TestUtilities.SAMPLE_VDB_FILE);
-
-        wsMgr.exportArtifact(getTransaction(), vdb, StorageConnector.Types.FILE.id(), parameters);
-
-        File cmpFile = TestUtilities.createTempFile("sampleExampleFile", XML_SUFFIX);
-
-        FileUtils.write(TestUtilities.sampleExample(), cmpFile);
-        TestUtilities.compareFileContents(cmpFile, vdbDestFile);
-    }
-
-    @Test
-    public void shouldImportVdb() throws Exception {
-        String tmpDirPath = System.getProperty("java.io.tmpdir");
-        File tmpDir = new File(tmpDirPath);
-
-        long timestamp = System.currentTimeMillis();
-        myFileDir = new File(tmpDir, "myfile-" + timestamp);
-        assertTrue(myFileDir.mkdir());
-
-        File vdbSrcFile = new File(myFileDir, "vdbFile.xml");
-        String sampleExample = TestUtilities.streamToString(TestUtilities.sampleExample());
-        FileUtils.write(sampleExample.getBytes(), vdbSrcFile);
-        assertTrue(vdbSrcFile.exists());
-
-        Properties parameters = new Properties();
-        parameters.setProperty(StorageConnector.FILES_HOME_PATH_PROPERTY, myFileDir.getAbsolutePath());
-        parameters.setProperty(StorageConnector.FILE_PATH_PROPERTY, vdbSrcFile.getName());
-
-        KomodoObject parent = _repo.komodoWorkspace(getTransaction());
-        StorageReference reference = new StorageReference(StorageConnector.Types.FILE.id(), parameters, DocumentType.VDB_XML);
-        wsMgr.importArtifact(getTransaction(), parent, reference);
-
-        assertTrue(parent.hasChild(getTransaction(), TestUtilities.SAMPLE_VDB_NAME));
-    }
-
-    @Test
-    public void shouldCreateWorkspaceForNewUser() throws Exception {
-            String newUser = "newUser";
-
-            SynchronousCallback callback = new TestTransactionListener();
-            UnitOfWork tx = createTransaction(newUser, (this.name.getMethodName()), false, callback);
-
-            String userWksp = RepositoryImpl.komodoWorkspacePath(tx);
-
-            List<KomodoObject> results = _repo.searchByPath(sysTx(), userWksp);
-            sysCommit();
-            assertTrue(results.isEmpty());
-
-            WorkspaceManager wksp = WorkspaceManager.getInstance(_repo, tx);
-            boolean hasChild = wksp.hasChild(tx, "someNode");
-            assertFalse(hasChild);
-            commit(tx, State.COMMITTED);
-
-            results = _repo.searchByPath(sysTx(), userWksp);
-            sysCommit();
-            assertFalse(results.isEmpty());
-            assertEquals(1, results.size());
-    }
 }

@@ -18,12 +18,12 @@
 package org.komodo.core.internal.sequencer;
 
 import static org.junit.Assert.assertNotNull;
+
 import javax.jcr.Node;
+
 import org.junit.Test;
 import org.komodo.core.internal.repository.AbstractTSqlSequencerTest;
 import org.komodo.core.repository.KSequencerController.SequencerType;
-import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
-import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon;
 import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon.AbstractCompareCriteria;
 import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon.CompareCriteria;
 import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon.ElementSymbol;
@@ -34,6 +34,8 @@ import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon.MultipleElementSymbol;
 import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon.Query;
 import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon.Select;
 import org.komodo.spi.query.JoinTypeTypes;
+import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
+import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
 
 /**
  *

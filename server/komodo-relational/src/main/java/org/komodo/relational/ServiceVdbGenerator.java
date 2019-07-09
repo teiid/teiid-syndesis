@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.komodo.relational.connection.Connection;
 import org.komodo.relational.model.Column;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Model.Type;
@@ -39,14 +38,14 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
 import org.komodo.spi.lexicon.sql.teiid.TeiidSqlConstants;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.utils.PathUtils;
 import org.komodo.utils.StringUtils;
+import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
+import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 /**
  * This class provides methods to generate data service vdbs containing a view model
@@ -207,10 +206,6 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
 	            // set the jndi name and translator name
 	            tgtModelSource.setJndiName(uow, srcModelSource.getJndiName(uow));
 	            tgtModelSource.setTranslatorName(uow, srcModelSource.getTranslatorName(uow));
-	            Connection connection = srcModelSource.getOriginConnection(uow);
-	            if (connection != null) {
-	            	tgtModelSource.setAssociatedConnection(uow, connection);
-	            }
             }
         }
     }
