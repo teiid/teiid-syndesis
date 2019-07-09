@@ -42,12 +42,7 @@ public interface KSequencerController {
         /**
          * Data Service Sequencer
          */
-        DATA_SERVICE("Data Service Sequencer"), //$NON-NLS-1$
-
-        /**
-         * Teiid SQL Sequencer
-         */
-        TSQL("Teiid SQL Sequencer"); //$NON-NLS-1$
+        DATA_SERVICE("Data Service Sequencer"); //$NON-NLS-1$
 
         private String id;
 

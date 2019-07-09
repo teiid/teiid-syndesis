@@ -82,7 +82,6 @@ import org.komodo.spi.runtime.TeiidVdb;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -434,14 +433,12 @@ public class KomodoMetadataService extends KomodoService {
 
             WorkspaceManager wMgr = getWorkspaceManager(uow);
 
+            Vdb previewVdb = wMgr.findVdb(uow, vdbName);
+            
             // if workspace does not have preview vdb, then create it.
-            if ( !wMgr.hasChild( uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE ) ) {
-            	wMgr.createVdb( uow, null, vdbName, vdbName );
+            if (previewVdb == null ) {
+            	previewVdb = wMgr.createVdb( uow, null, vdbName, vdbName );
             }
-
-            // Get the preview VDB.
-            final KomodoObject kobject = wMgr.getChild( uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE );
-            Vdb previewVdb = wMgr.resolve( uow, kobject, Vdb.class );
 
             // Get the list of current preview VDB import names
             List<String> currentVdbImportNames = new ArrayList<String>();
@@ -452,7 +449,7 @@ public class KomodoMetadataService extends KomodoService {
 
             // Get the current workspace connection VDB names
             List<String> connectionVdbNames = new ArrayList<String>();
-            KomodoObject[] connVdbObjs = wMgr.getChildrenOfType(uow, VdbLexicon.Vdb.VIRTUAL_DATABASE, "*btlconn"); //$NON-NLS-1$
+            KomodoObject[] connVdbObjs = wMgr.findVdbs(uow, "*btlconn"); //$NON-NLS-1$
             for( KomodoObject kObj: connVdbObjs) {
            		connectionVdbNames.add(kObj.getName(uow));
             }
@@ -1752,7 +1749,7 @@ public class KomodoMetadataService extends KomodoService {
                 if ( schemaModel.hasChildren( uow ) ) {
                     // assume sequencer ran successfully
                     status.setSchemaState( RestSyndesisSourceStatus.EntityState.ACTIVE );
-                } else if ( schemaModel.hasProperty( uow, VdbLexicon.Model.MODEL_DEFINITION ) ) {
+                } else if ( schemaModel.getModelDefinition(uow) != null) {
                     // assume sequencer is running but could have failed
                     status.setSchemaState( RestSyndesisSourceStatus.EntityState.LOADING );
                 }

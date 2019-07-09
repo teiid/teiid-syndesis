@@ -20,7 +20,6 @@ package org.komodo.rest.relational;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.when;
 
 import java.net.URI;
 
@@ -32,13 +31,11 @@ import org.komodo.openshift.BuildStatus;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.relational.dataservice.RestDataservice;
-import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyDescriptor;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.mockito.Mockito;
-import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 
 @SuppressWarnings( {"javadoc", "nls"} )
 public final class RestDataserviceTest {
@@ -85,15 +82,11 @@ public final class RestDataserviceTest {
         KomodoObject workspace = Mockito.mock(KomodoObject.class);
         Mockito.when(workspace.getAbsolutePath()).thenReturn(WORKSPACE_DATA_PATH);
 
-        Descriptor dataserviceType = Mockito.mock(Descriptor.class);
-        when(dataserviceType.getName()).thenReturn(DataVirtLexicon.DataService.NODE_TYPE);
-
         Vdb serviceVdb = Mockito.mock(Vdb.class);
         Mockito.when(serviceVdb.getName(transaction)).thenReturn("ServiceVdb");
         Mockito.when(serviceVdb.getVersion(transaction)).thenReturn(1);
 
         Dataservice theDataservice = Mockito.mock(Dataservice.class);
-        Mockito.when(theDataservice.getPrimaryType(transaction)).thenReturn(dataserviceType);
         Mockito.when(theDataservice.getName(transaction)).thenReturn(DATASERVICE_NAME);
         Mockito.when(theDataservice.getAbsolutePath()).thenReturn(DATASERVICE_DATA_PATH);
         Mockito.when(theDataservice.getTypeIdentifier(transaction)).thenReturn(kType);

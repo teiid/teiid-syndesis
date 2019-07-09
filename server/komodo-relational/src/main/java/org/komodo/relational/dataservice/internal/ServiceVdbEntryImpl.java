@@ -17,33 +17,34 @@
  */
 package org.komodo.relational.dataservice.internal;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.Properties;
 
-import org.komodo.relational.RelationalModelFactory;
+import org.komodo.relational.Messages;
+import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.dataservice.ServiceVdbEntry;
-import org.komodo.relational.dataservice.VdbEntry;
+import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.vdb.Vdb;
+import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
+import org.komodo.spi.repository.PropertyValueType;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
-import org.komodo.utils.ArgCheck;
 import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
+import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 /**
  * An implementation of a Service VDB entry in a data service.
  */
-public class ServiceVdbEntryImpl extends VdbEntryImpl implements ServiceVdbEntry {
+public class ServiceVdbEntryImpl extends RelationalObjectImpl implements ServiceVdbEntry {
 
     /**
      * The allowed child types.
      */
-    private static final KomodoType[] CHILD_TYPES = new KomodoType[] { VdbEntry.IDENTIFIER };
+    private static final KomodoType[] CHILD_TYPES = new KomodoType[] { ServiceVdbEntry.IDENTIFIER };
 
     /**
      * @param uow
@@ -58,39 +59,7 @@ public class ServiceVdbEntryImpl extends VdbEntryImpl implements ServiceVdbEntry
     public ServiceVdbEntryImpl( final UnitOfWork uow,
                                 final Repository repository,
                                 final String path ) throws KException {
-        super( uow, repository, path );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.dataservice.ServiceVdbEntry#addDependency(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      org.komodo.relational.vdb.Vdb)
-     */
-    @Override
-    public VdbEntry addDependency( final UnitOfWork uow,
-                                   final Vdb dependency ) throws KException {
-        final VdbEntry entry = RelationalModelFactory.createVdbEntry( uow,
-                                                                      getRepository(),
-                                                                      this,
-                                                                      Objects.requireNonNull( dependency, "dependency" ) //$NON-NLS-1$
-                                                                             .getName( uow ) );
-        entry.setVdbName( uow, dependency.getName( uow ) );
-        entry.setVdbVersion( uow, Integer.toString( dependency.getVersion( uow ) ) );
-        entry.setReference( uow, dependency );
-        return entry;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.dataservice.ServiceVdbEntry#addDependencyEntry(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String)
-     */
-    @Override
-    public VdbEntry addDependencyEntry( final UnitOfWork uow,
-                                        final String dependencyEntryName ) throws KException {
-        return RelationalModelFactory.createVdbEntry( uow, getRepository(), this, dependencyEntryName );
+    	super( uow, repository, path );
     }
 
     /**
@@ -112,29 +81,95 @@ public class ServiceVdbEntryImpl extends VdbEntryImpl implements ServiceVdbEntry
     public KomodoType[] getChildTypes() {
         return CHILD_TYPES;
     }
+    
+    /**
+     * {@inheritDoc}
+     *
+     * @see org.komodo.spi.repository.Exportable#export(org.komodo.spi.repository.Repository.UnitOfWork, java.util.Properties)
+     */
+    @Override
+    public byte[] export( final UnitOfWork uow,
+                          final Properties properties ) throws KException {
+        final Vdb vdb = getReference( uow );
+
+        if ( vdb == null ) {
+            throw new KException( Messages.getString( Relational.EXPORT_FAILED_NO_CONTENT, getAbsolutePath() ) );
+        }
+
+        return vdb.export( uow, properties );
+    }
 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.dataservice.ServiceVdbEntry#getDependencies(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.relational.dataservice.DataServiceEntry#getReference(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public VdbEntry[] getDependencies( final UnitOfWork uow ) throws KException {
-        ArgCheck.isNotNull( uow, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( uow.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+    public Vdb getReference( final UnitOfWork uow ) throws KException {
+        if ( hasProperty( uow, DataVirtLexicon.VdbEntry.VDB_REF ) ) {
+            final String refId = getProperty( uow, DataVirtLexicon.VdbEntry.VDB_REF ).getStringValue( uow );
+            final KomodoObject kobj = getRepository().getUsingId( uow, refId );
 
-        final List< VdbEntry > result = new ArrayList<>();
+            if ( kobj == null ) {
+                throw new KException( Messages.getString( Messages.Relational.REFERENCED_RESOURCE_NOT_FOUND,
+                                                          VdbLexicon.Vdb.VIRTUAL_DATABASE,
+                                                          refId ) );
+            }
 
-        for ( final KomodoObject kobject : super.getChildrenOfType( uow, DataVirtLexicon.VdbEntry.NODE_TYPE ) ) {
-            final VdbEntry entry = new VdbEntryImpl( uow, getRepository(), kobject.getAbsolutePath() );
-            result.add( entry );
+            return new VdbImpl( uow, getRepository(), kobj.getAbsolutePath() );
         }
 
-        if ( result.isEmpty() ) {
-            return VdbEntry.NO_ENTRIES;
-        }
+        return null;
+    }
 
-        return result.toArray( new VdbEntry[ result.size() ] );
+    /**
+     * {@inheritDoc}
+     *
+     * @see org.komodo.relational.dataservice.VdbEntry#getVdbName(org.komodo.spi.repository.Repository.UnitOfWork)
+     */
+    @Override
+    public String getVdbName( final UnitOfWork transaction ) throws KException {
+        return getObjectProperty( transaction,
+                                  PropertyValueType.STRING,
+                                  "getVdbName", //$NON-NLS-1$
+                                  DataVirtLexicon.VdbEntry.VDB_NAME );
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see org.komodo.relational.dataservice.VdbEntry#getVdbVersion(org.komodo.spi.repository.Repository.UnitOfWork)
+     */
+    @Override
+    public String getVdbVersion( final UnitOfWork transaction ) throws KException {
+        return getObjectProperty( transaction,
+                                  PropertyValueType.STRING,
+                                  "getVdbVersion", //$NON-NLS-1$
+                                  DataVirtLexicon.VdbEntry.VDB_VERSION );
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see org.komodo.relational.dataservice.VdbEntry#setVdbName(org.komodo.spi.repository.Repository.UnitOfWork,
+     *      java.lang.String)
+     */
+    @Override
+    public void setVdbName( final UnitOfWork transaction,
+                            final String vdbName ) throws KException {
+        setObjectProperty( transaction, "setVdbName", DataVirtLexicon.VdbEntry.VDB_NAME, vdbName ); //$NON-NLS-1$
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see org.komodo.relational.dataservice.VdbEntry#setVdbVersion(org.komodo.spi.repository.Repository.UnitOfWork,
+     *      java.lang.String)
+     */
+    @Override
+    public void setVdbVersion( final UnitOfWork transaction,
+                               final String vdbVersion ) throws KException {
+        setObjectProperty( transaction, "setVdbVersion", DataVirtLexicon.VdbEntry.VDB_VERSION, vdbVersion ); //$NON-NLS-1$
     }
 
 }

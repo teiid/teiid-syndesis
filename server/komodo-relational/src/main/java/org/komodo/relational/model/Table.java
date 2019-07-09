@@ -211,18 +211,6 @@ public interface Table extends Exportable, OptionContainer, RelationalObject, Sc
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param accessPatternName
-     *        the name of the access pattern being added (cannot be empty)
-     * @return the new access pattern (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    AccessPattern addAccessPattern( final UnitOfWork transaction,
-                                    final String accessPatternName ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param columnName
      *        the name of the column being added (cannot be empty)
      * @return the new column (never <code>null</code>)
@@ -250,18 +238,6 @@ public interface Table extends Exportable, OptionContainer, RelationalObject, Sc
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param indexName
-     *        the name of the index being added (cannot be empty)
-     * @return the new index (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    Index addIndex( final UnitOfWork transaction,
-                    final String indexName ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param constraintName
      *        the name of the unique constraint being added (cannot be empty)
      * @return the new unique constraint (never <code>null</code>)
@@ -270,18 +246,6 @@ public interface Table extends Exportable, OptionContainer, RelationalObject, Sc
      */
     UniqueConstraint addUniqueConstraint( final UnitOfWork transaction,
                                           final String constraintName ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param namePatterns
-     *        optional name patterns (can be <code>null</code> or empty but cannot have <code>null</code> or empty elements)
-     * @return the access patterns (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    AccessPattern[] getAccessPatterns( final UnitOfWork transaction,
-                                       final String... namePatterns ) throws KException;
 
     /**
      * @param transaction
@@ -325,18 +289,6 @@ public interface Table extends Exportable, OptionContainer, RelationalObject, Sc
      */
     ForeignKey[] getForeignKeys( final UnitOfWork transaction,
                                  final String... namePatterns ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param namePatterns
-     *        optional name patterns (can be <code>null</code> or empty but cannot have <code>null</code> or empty elements)
-     * @return the indexes (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    Index[] getIndexes( final UnitOfWork transaction,
-                        final String... namePatterns ) throws KException;
 
     /**
      * @param transaction
@@ -436,17 +388,6 @@ public interface Table extends Exportable, OptionContainer, RelationalObject, Sc
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param accessPatternToRemove
-     *        the name of the access pattern being removed (cannot be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    void removeAccessPattern( final UnitOfWork transaction,
-                              final String accessPatternToRemove ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param columnToRemove
      *        the name of the column being removed (cannot be empty)
      * @throws KException
@@ -465,17 +406,6 @@ public interface Table extends Exportable, OptionContainer, RelationalObject, Sc
      */
     void removeForeignKey( final UnitOfWork transaction,
                            final String foreignKeyToRemove ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param indexToRemove
-     *        the name of the index being removed (cannot be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    void removeIndex( final UnitOfWork transaction,
-                      final String indexToRemove ) throws KException;
 
     /**
      * @param transaction

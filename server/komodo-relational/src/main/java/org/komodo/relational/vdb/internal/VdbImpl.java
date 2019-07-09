@@ -22,8 +22,10 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
+
 import org.komodo.core.repository.DescriptorImpl;
 import org.komodo.core.repository.PropertyDescriptorImpl;
 import org.komodo.core.visitor.VdbNodeVisitor;
@@ -34,15 +36,12 @@ import org.komodo.relational.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.internal.ModelImpl;
-import org.komodo.relational.vdb.DataRole;
-import org.komodo.relational.vdb.Entry;
 import org.komodo.relational.vdb.Translator;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.VdbImport;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.ExportConstants;
 import org.komodo.spi.constants.StringConstants;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.DocumentType;
@@ -56,6 +55,7 @@ import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.FileUtils;
+import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 import org.w3c.dom.Document;
 
 /**
@@ -66,7 +66,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
     /**
      * The allowed child types.
      */
-    private static final KomodoType[] CHILD_TYPES = new KomodoType[] { DataRole.IDENTIFIER, Entry.IDENTIFIER, Model.IDENTIFIER,
+    private static final KomodoType[] CHILD_TYPES = new KomodoType[] { Model.IDENTIFIER,
                                                                          Translator.IDENTIFIER, VdbImport.IDENTIFIER };
 
 	/**
@@ -132,7 +132,6 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
     private static final int GSS_PATTERN = 2;
     private static final int PASSWORD_PATTERN = 3;
     private static final int QUERY_TIMEOUT = 4;
-    private static final int SECURITY_DOMAIN = 5;
 
     private final SpecialProperty[] specialProperties = new SpecialProperty[] {
         new SpecialProperty(ALLOWED_LANGUAGES_TEIIDNAME), //$NON-NLS-1$
@@ -225,30 +224,6 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
     @Override
     public KomodoType getTypeIdentifier(UnitOfWork uow) {
         return Vdb.IDENTIFIER;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.vdb.Vdb#addDataRole(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
-     */
-    @Override
-    public DataRole addDataRole( final UnitOfWork transaction,
-                                 final String dataRoleName ) throws KException {
-        return RelationalModelFactory.createDataRole( transaction, getRepository(), this, dataRoleName );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.vdb.Vdb#addEntry(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
-     *      java.lang.String)
-     */
-    @Override
-    public Entry addEntry( final UnitOfWork transaction,
-                           final String entryName,
-                           final String entryPath ) throws KException {
-        return RelationalModelFactory.createEntry( transaction, getRepository(), this, entryName, entryPath );
     }
 
     /**
@@ -351,22 +326,8 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
     @Override
     public KomodoObject getChild( final UnitOfWork transaction,
                                   final String name ) throws KException {
-        // check data roles
-        KomodoObject[] kids = getDataRoles( transaction, name );
-
-        if ( kids.length != 0 ) {
-            return kids[ 0 ];
-        }
-
-        // check entries
-        kids = getEntries( transaction, name );
-
-        if ( kids.length != 0 ) {
-            return kids[ 0 ];
-        }
-
         // check models
-        kids = getModels( transaction, name );
+    	KomodoObject[] kids = getModels( transaction, name );
 
         if ( kids.length != 0 ) {
             return kids[ 0 ];
@@ -406,19 +367,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         ArgCheck.isNotEmpty( name, "name" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( typeName, "typeName" ); //$NON-NLS-1$
 
-        if ( VdbLexicon.DataRole.DATA_ROLE.equals( typeName ) ) {
-            final KomodoObject[] dataRoles = getDataRoles( transaction, name );
-
-            if ( dataRoles.length != 0 ) {
-                return dataRoles[ 0 ];
-            }
-        } else if ( VdbLexicon.Entry.ENTRY.equals( typeName ) ) {
-            final KomodoObject[] entries = getEntries( transaction, name );
-
-            if ( entries.length != 0 ) {
-                return entries[ 0 ];
-            }
-        } else if ( VdbLexicon.ImportVdb.IMPORT_VDB.equals( typeName ) ) {
+        if ( VdbLexicon.ImportVdb.IMPORT_VDB.equals( typeName ) ) {
             final KomodoObject[] imports = getImports( transaction, name );
 
             if ( imports.length != 0 ) {
@@ -456,22 +405,18 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
-        final DataRole[] dataRoles = getDataRoles( transaction, namePatterns );
-        final Entry[] entries = getEntries( transaction, namePatterns );
         final VdbImport[] imports = getImports( transaction, namePatterns );
         final Model[] models = getModels( transaction, namePatterns );
         final Translator[] translators = getTranslators( transaction, namePatterns );
 
-        final KomodoObject[] result = new KomodoObject[ dataRoles.length + entries.length + imports.length + models.length
+        final KomodoObject[] result = new KomodoObject[ imports.length + models.length
                                                         + translators.length ];
-        System.arraycopy( dataRoles, 0, result, 0, dataRoles.length );
-        System.arraycopy( entries, 0, result, dataRoles.length, entries.length );
-        System.arraycopy( imports, 0, result, dataRoles.length + entries.length, imports.length );
-        System.arraycopy( models, 0, result, dataRoles.length + entries.length + imports.length, models.length );
+        System.arraycopy( imports, 0, result, 0, imports.length );
+        System.arraycopy( models, 0, result, imports.length, models.length );
         System.arraycopy( translators,
                           0,
                           result,
-                          dataRoles.length + entries.length + imports.length + models.length,
+                          imports.length + models.length,
                           translators.length );
 
         return result;
@@ -492,11 +437,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
 
         KomodoObject[] result = null;
 
-        if ( VdbLexicon.DataRole.DATA_ROLE.equals( type ) ) {
-            result = getDataRoles( transaction, namePatterns );
-        } else if ( VdbLexicon.Entry.ENTRY.equals( type ) ) {
-            result = getEntries( transaction, namePatterns );
-        } else if ( VdbLexicon.ImportVdb.IMPORT_VDB.equals( type ) ) {
+        if ( VdbLexicon.ImportVdb.IMPORT_VDB.equals( type ) ) {
             result = getImports( transaction, namePatterns );
         } else if ( VdbLexicon.Vdb.DECLARATIVE_MODEL.equals( type ) ) {
             result = getModels( transaction, namePatterns );
@@ -532,93 +473,11 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.vdb.Vdb#getDataRoles(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
-     */
-    @Override
-    public DataRole[] getDataRoles( final UnitOfWork transaction,
-                                    final String... namePatterns ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-
-        final KomodoObject grouping = getDataRolesGroupingNode( transaction );
-
-        if ( grouping != null ) {
-            final List< DataRole > temp = new ArrayList<>();
-
-            for ( final KomodoObject kobject : grouping.getChildren( transaction, namePatterns ) ) {
-                final DataRole dataRole = new DataRoleImpl( transaction, getRepository(), kobject.getAbsolutePath() );
-                temp.add( dataRole );
-            }
-
-            return temp.toArray( new DataRole[ temp.size() ] );
-        }
-
-        return DataRole.NO_DATA_ROLES;
-    }
-
-    private KomodoObject getDataRolesGroupingNode( final UnitOfWork transaction ) {
-        try {
-            final KomodoObject[] groupings = getRawChildren( transaction, VdbLexicon.Vdb.DATA_ROLES );
-
-            if ( groupings.length == 0 ) {
-                return null;
-            }
-
-            return groupings[ 0 ];
-        } catch ( final KException e ) {
-            return null;
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     *
      * @see org.komodo.relational.vdb.Vdb#getDescription(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public String getDescription( final UnitOfWork uow ) throws KException {
         return getObjectProperty(uow, PropertyValueType.STRING, "getDescription", VdbLexicon.Vdb.DESCRIPTION); //$NON-NLS-1$
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.vdb.Vdb#getEntries(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
-     */
-    @Override
-    public Entry[] getEntries( final UnitOfWork transaction,
-                               final String... namePatterns ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-
-        final KomodoObject grouping = getEntriesGroupingNode( transaction);
-
-        if ( grouping != null ) {
-            final List< Entry > temp = new ArrayList<>();
-
-            for ( final KomodoObject kobject : grouping.getChildren( transaction, namePatterns ) ) {
-                final Entry entry = new EntryImpl( transaction, getRepository(), kobject.getAbsolutePath() );
-                temp.add( entry );
-            }
-
-            return temp.toArray( new Entry[ temp.size() ] );
-        }
-
-        return Entry.NO_ENTRIES;
-    }
-
-    private KomodoObject getEntriesGroupingNode( final UnitOfWork transaction ) {
-        try {
-            final KomodoObject[] groupings = getRawChildren( transaction, VdbLexicon.Vdb.ENTRIES );
-
-            if ( groupings.length == 0 ) {
-                return null;
-            }
-
-            return groupings[ 0 ];
-        } catch ( final KException e ) {
-            return null;
-        }
     }
 
     /**
@@ -769,19 +628,6 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.vdb.Vdb#getSecurityDomain(org.komodo.spi.repository.Repository.UnitOfWork)
-     */
-    @Override
-    public String getSecurityDomain( final UnitOfWork transaction ) throws KException {
-        return getObjectProperty( transaction,
-                                  PropertyValueType.STRING,
-                                  "getSecurityDomain", //$NON-NLS-1$
-                                  specialProperties[SECURITY_DOMAIN].toTeiidName() );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
      * @see org.komodo.relational.vdb.Vdb#getTranslators(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
      */
     @Override
@@ -863,9 +709,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( name, "name" ); //$NON-NLS-1$
 
-        return ( ( getDataRoles( transaction, name ).length != 0 )
-                 || ( getEntries( transaction, name ).length != 0 )
-                 || ( getImports( transaction, name ).length != 0 )
+        return ( ( getImports( transaction, name ).length != 0 )
                  || ( getModels( transaction, name ).length != 0 )
                  || ( getTranslators( transaction, name ).length != 0 ) );
     }
@@ -884,14 +728,6 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( name, "name" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( typeName, "typeName" ); //$NON-NLS-1$
-
-        if ( VdbLexicon.DataRole.DATA_ROLE.equals( typeName ) ) {
-            return ( getDataRoles( transaction, name ).length != 0 );
-        }
-
-        if ( VdbLexicon.Entry.ENTRY.equals( typeName ) ) {
-            return ( getEntries( transaction, name ).length != 0 );
-        }
 
         if ( VdbLexicon.ImportVdb.IMPORT_VDB.equals( typeName ) ) {
             return ( getImports( transaction, name ).length != 0 );
@@ -916,9 +752,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
     @Override
     public boolean hasChildren( final UnitOfWork transaction ) throws KException {
         if ( super.hasChildren( transaction ) ) {
-            return ( ( getDataRoles( transaction ).length != 0 )
-            || ( getEntries( transaction ).length != 0 )
-            || ( getImports( transaction ).length != 0 )
+            return ( ( getImports( transaction ).length != 0 )
             || ( getModels( transaction ).length != 0 )
             || ( getTranslators( transaction ).length != 0 ) );
         }
@@ -934,50 +768,6 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
     @Override
     public boolean isPreview( final UnitOfWork uow ) throws KException {
         return getObjectProperty(uow, PropertyValueType.BOOLEAN, "isPreview", VdbLexicon.Vdb.PREVIEW); //$NON-NLS-1$
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.vdb.Vdb#removeDataRole(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
-     */
-    @Override
-    public void removeDataRole( final UnitOfWork transaction,
-                                final String dataRoleToRemove ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotEmpty( dataRoleToRemove, "dataRoleToRemove" ); //$NON-NLS-1$
-
-        final DataRole[] dataRoles = getDataRoles( transaction, dataRoleToRemove );
-
-        if ( dataRoles.length == 0 ) {
-            throw new KException( Messages.getString( Relational.DATA_ROLE_NOT_FOUND_TO_REMOVE, dataRoleToRemove ) );
-        }
-
-        // remove first occurrence
-        dataRoles[ 0 ].remove( transaction );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.vdb.Vdb#removeEntry(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
-     */
-    @Override
-    public void removeEntry( final UnitOfWork transaction,
-                             final String entryToRemove ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotEmpty( entryToRemove, "entryToRemove" ); //$NON-NLS-1$
-
-        final Entry[] entries = getEntries( transaction, entryToRemove );
-
-        if ( entries.length == 0 ) {
-            throw new KException( Messages.getString( Relational.ENTRY_NOT_FOUND_TO_REMOVE, entryToRemove ) );
-        }
-
-        // remove first occurrence
-        entries[ 0 ].remove( transaction );
     }
 
     /**
@@ -1182,17 +972,6 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.vdb.Vdb#setSecurityDomain(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
-     */
-    @Override
-    public void setSecurityDomain( final UnitOfWork transaction,
-                                   final String newSecurityDomain ) throws KException {
-        setObjectProperty( transaction, "setSecurityDomain", specialProperties[SECURITY_DOMAIN].toTeiidName(), newSecurityDomain ); //$NON-NLS-1$
-    }
-
-    /**
-     * {@inheritDoc}
-     *
      * @see org.komodo.relational.vdb.Vdb#setVdbName(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
@@ -1249,6 +1028,21 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
 
         
         return status;
+    }
+    
+    @Override
+    public Model getModel(UnitOfWork transaction, String name) throws KException {
+    	ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+
+        if (!hasChild(transaction, name, VdbLexicon.Vdb.DECLARATIVE_MODEL)) {
+        	return null;
+        }
+        
+        final KomodoObject kobject = super.getChild( transaction,
+                                                                    VdbLexicon.Vdb.DECLARATIVE_MODEL,
+                                                                    name );
+        return new ModelImpl( transaction, getRepository(), kobject.getAbsolutePath() );
     }
     
 }

@@ -6,8 +6,7 @@
     },
     "node-types" :
     [
-        "config/komodo.cnd",
-        "config/TeiidSql.cnd"
+        "config/komodo.cnd"
     ],
     "workspaces" : {
         "default" : "komodoLocalWorkspace",
@@ -76,9 +75,6 @@
             },
             "Data Service Sequencer" : {
 				"classname" : "org.teiid.modeshape.sequencer.dataservice.DataServiceSequencer"
-			},
-            "Teiid SQL Sequencer" : {
-                "classname" : "org.komodo.core.internal.sequencer.TeiidSqlSequencer"
-            }
+			}
         }
     }}

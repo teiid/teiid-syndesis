@@ -34,25 +34,13 @@ import org.junit.Test;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.model.AccessPattern;
-import org.komodo.relational.model.DataTypeResultSet;
 import org.komodo.relational.model.ForeignKey;
-import org.komodo.relational.model.Function;
-import org.komodo.relational.model.Index;
 import org.komodo.relational.model.Model;
-import org.komodo.relational.model.Parameter;
 import org.komodo.relational.model.PrimaryKey;
-import org.komodo.relational.model.Procedure;
-import org.komodo.relational.model.ProcedureResultSet;
-import org.komodo.relational.model.PushdownFunction;
 import org.komodo.relational.model.Schema;
-import org.komodo.relational.model.StoredProcedure;
 import org.komodo.relational.model.Table;
-import org.komodo.relational.model.TabularResultSet;
 import org.komodo.relational.model.UniqueConstraint;
-import org.komodo.relational.model.UserDefinedFunction;
 import org.komodo.relational.model.View;
-import org.komodo.relational.model.VirtualProcedure;
 import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.spi.constants.StringConstants;
@@ -283,27 +271,10 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
     }
 
     @Test
-    public void shouldResolveAccessPattern() throws Exception {
-        final Table table = createTable();
-        final AccessPattern accessPattern = table.addAccessPattern(getTransaction(), "accessPattern");
-        final KomodoObject kobject = new ObjectImpl(_repo, accessPattern.getAbsolutePath(), accessPattern.getIndex());
-        assertThat(this.wsMgr.resolve(getTransaction(), kobject, AccessPattern.class), is(instanceOf(AccessPattern.class)));
-    }
-
-    @Test
     public void shouldResolveDataservice() throws Exception {
         final Dataservice service = this.wsMgr.createDataservice(getTransaction(), null, "service");
         final KomodoObject kobject = new ObjectImpl(_repo, service.getAbsolutePath(), service.getIndex());
         assertThat(this.wsMgr.resolve(getTransaction(), kobject, Dataservice.class), is(instanceOf(Dataservice.class)));
-    }
-
-    @Test
-    public void shouldResolveDataTypeResultSet() throws Exception {
-        final Model model = createModel();
-        final StoredProcedure procedure = model.addStoredProcedure(getTransaction(), "procedure");
-        final ProcedureResultSet resultSet = procedure.setResultSet(getTransaction(), DataTypeResultSet.class);
-        final KomodoObject kobject = new ObjectImpl(_repo, resultSet.getAbsolutePath(), resultSet.getIndex());
-        assertThat(this.wsMgr.resolve(getTransaction(), kobject, DataTypeResultSet.class), is(instanceOf(DataTypeResultSet.class)));
     }
 
     @Test
@@ -313,14 +284,6 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
         final ForeignKey foreignKey = table.addForeignKey(getTransaction(), "foreignKey", refTable);
         final KomodoObject kobject = new ObjectImpl(_repo, foreignKey.getAbsolutePath(), foreignKey.getIndex());
         assertThat(this.wsMgr.resolve(getTransaction(), kobject, ForeignKey.class), is(instanceOf(ForeignKey.class)));
-    }
-
-    @Test
-    public void shouldResolveIndex() throws Exception {
-        final Table table = createTable();
-        final Index index = table.addIndex(getTransaction(), "index");
-        final KomodoObject kobject = new ObjectImpl(_repo, index.getAbsolutePath(), index.getIndex());
-        assertThat(this.wsMgr.resolve(getTransaction(), kobject, Index.class), is(instanceOf(Index.class)));
     }
 
     @Test
@@ -339,45 +302,11 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
     }
 
     @Test
-    public void shouldResolveParameter() throws Exception {
-        final Model model = createModel();
-        final Procedure procedure = model.addVirtualProcedure(getTransaction(), "procedure");
-        final Parameter param = procedure.addParameter(getTransaction(), "param");
-        final KomodoObject kobject = new ObjectImpl(_repo, param.getAbsolutePath(), param.getIndex());
-        assertThat(this.wsMgr.resolve(getTransaction(), kobject, Parameter.class), is(instanceOf(Parameter.class)));
-    }
-
-    @Test
     public void shouldResolvePrimaryKey() throws Exception {
         final Table table = createTable();
         final PrimaryKey pk = table.setPrimaryKey(getTransaction(), "pk");
         final KomodoObject kobject = new ObjectImpl(_repo, pk.getAbsolutePath(), pk.getIndex());
         assertThat(this.wsMgr.resolve(getTransaction(), kobject, PrimaryKey.class), is(instanceOf(PrimaryKey.class)));
-    }
-
-    @Test
-    public void shouldResolvePushdownFunction() throws Exception {
-        final Model model = createModel();
-        final Function function = model.addPushdownFunction(getTransaction(), "function");
-        final KomodoObject kobject = new ObjectImpl(_repo, function.getAbsolutePath(), function.getIndex());
-        assertThat(this.wsMgr.resolve(getTransaction(), kobject, PushdownFunction.class), is(instanceOf(PushdownFunction.class)));
-    }
-
-    @Test
-    public void shouldResolveStoredProcedure() throws Exception {
-        final Model model = createModel();
-        final Procedure procedure = model.addStoredProcedure(getTransaction(), "procedure");
-        final KomodoObject kobject = new ObjectImpl(_repo, procedure.getAbsolutePath(), procedure.getIndex());
-        assertThat(this.wsMgr.resolve(getTransaction(), kobject, StoredProcedure.class), is(instanceOf(StoredProcedure.class)));
-    }
-
-    @Test
-    public void shouldResolveTabularResultSet() throws Exception {
-        final Model model = createModel();
-        final StoredProcedure procedure = model.addStoredProcedure(getTransaction(), "procedure");
-        final ProcedureResultSet resultSet = procedure.setResultSet(getTransaction(), TabularResultSet.class);
-        final KomodoObject kobject = new ObjectImpl(_repo, resultSet.getAbsolutePath(), resultSet.getIndex());
-        assertThat(this.wsMgr.resolve(getTransaction(), kobject, TabularResultSet.class), is(instanceOf(TabularResultSet.class)));
     }
 
     @Test
@@ -393,14 +322,6 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
         final UniqueConstraint uniqueConstraint = table.addUniqueConstraint(getTransaction(), "uniqueConstraint");
         final KomodoObject kobject = new ObjectImpl(_repo, uniqueConstraint.getAbsolutePath(), uniqueConstraint.getIndex());
         assertThat(this.wsMgr.resolve(getTransaction(), kobject, UniqueConstraint.class), is(instanceOf(UniqueConstraint.class)));
-    }
-
-    @Test
-    public void shouldResolveUserDefinedFunction() throws Exception {
-        final Model model = createModel();
-        final Function function = model.addUserDefinedFunction(getTransaction(), "function");
-        final KomodoObject kobject = new ObjectImpl(_repo, function.getAbsolutePath(), function.getIndex());
-        assertThat(this.wsMgr.resolve(getTransaction(), kobject, UserDefinedFunction.class), is(instanceOf(UserDefinedFunction.class)));
     }
 
     @Test
@@ -423,14 +344,6 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
         final View view = model.addView(getTransaction(), "view");
         final KomodoObject kobject = new ObjectImpl(_repo, view.getAbsolutePath(), view.getIndex());
         assertThat(this.wsMgr.resolve(getTransaction(), kobject, View.class), is(instanceOf(View.class)));
-    }
-
-    @Test
-    public void shouldResolveVirtualProcedure() throws Exception {
-        final Model model = createModel();
-        final Procedure procedure = model.addVirtualProcedure(getTransaction(), "procedure");
-        final KomodoObject kobject = new ObjectImpl(_repo, procedure.getAbsolutePath(), procedure.getIndex());
-        assertThat(this.wsMgr.resolve(getTransaction(), kobject, VirtualProcedure.class), is(instanceOf(VirtualProcedure.class)));
     }
 
     @Test

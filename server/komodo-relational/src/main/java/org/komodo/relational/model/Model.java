@@ -150,54 +150,6 @@ public interface Model extends Exportable, RelationalObject {
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param functionName
-     *        the name of the function to create (cannot be empty)
-     * @return the new function (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    PushdownFunction addPushdownFunction( final UnitOfWork transaction,
-                                          final String functionName ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param procedureName
-     *        the name of the procedure to create (cannot be empty)
-     * @return the new procedure (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    StoredProcedure addStoredProcedure( final UnitOfWork transaction,
-                                        final String procedureName ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param functionName
-     *        the name of the function to create (cannot be empty)
-     * @return the new function (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    UserDefinedFunction addUserDefinedFunction( final UnitOfWork transaction,
-                                                final String functionName ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param procedureName
-     *        the name of the procedure to create (cannot be empty)
-     * @return the new procedure (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    VirtualProcedure addVirtualProcedure( final UnitOfWork transaction,
-                                          final String procedureName ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param sourceName
      *        the name of the model source to create (cannot be empty)
      * @return the new model source (never <code>null</code>)
@@ -242,18 +194,6 @@ public interface Model extends Exportable, RelationalObject {
 
     /**
      * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param namePatterns
-     *        optional name patterns (can be <code>null</code> or empty but cannot have <code>null</code> or empty elements)
-     * @return the functions found in this model (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    Function[] getFunctions( final UnitOfWork transaction,
-                             final String... namePatterns ) throws KException;
-
-    /**
-     * @param transaction
      *        the transaction (cannot be <code>null</code> and its state must be {@link State#NOT_STARTED})
      * @return the metadata type (can be empty if there is no model definition)
      * @throws KException
@@ -280,20 +220,6 @@ public interface Model extends Exportable, RelationalObject {
      * @see Type#DEFAULT_VALUE
      */
     Type getModelType( final UnitOfWork transaction ) throws KException;
-
-    /**
-     * No functions are returned.
-     *
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param namePatterns
-     *        optional name patterns (can be <code>null</code> or empty but cannot have <code>null</code> or empty elements)
-     * @return the procedures found in this model (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    Procedure[] getProcedures( final UnitOfWork transaction,
-                               final String... namePatterns ) throws KException;
 
     /**
      * @param transaction
@@ -340,28 +266,6 @@ public interface Model extends Exportable, RelationalObject {
      * @see #DEFAULT_VISIBLE
      */
     boolean isVisible( final UnitOfWork transaction ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param functionName
-     *        the name of the function being deleted (cannot be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    void removeFunction( final UnitOfWork transaction,
-                         final String functionName ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param procedureName
-     *        the name of the procedure being deleted (cannot be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    void removeProcedure( final UnitOfWork transaction,
-                          final String procedureName ) throws KException;
 
     /**
      * @param transaction

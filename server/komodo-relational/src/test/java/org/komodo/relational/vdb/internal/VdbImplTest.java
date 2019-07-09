@@ -22,14 +22,17 @@ import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.importer.ImportMessages;
@@ -40,8 +43,6 @@ import org.komodo.relational.RelationalObject.Filter;
 import org.komodo.relational.importer.vdb.VdbImporter;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.model.Model;
-import org.komodo.relational.vdb.DataRole;
-import org.komodo.relational.vdb.Entry;
 import org.komodo.relational.vdb.Translator;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.Vdb.VdbManifest;
@@ -70,48 +71,6 @@ public final class VdbImplTest extends RelationalModelTest {
     @Before
     public void init() throws Exception {
         this.vdb = createVdb( VDB_NAME, PATH );
-    }
-
-    @Test
-    public void shouldAddDataRole() throws Exception {
-        final String name = "dataRole";
-        final DataRole dataRole = this.vdb.addDataRole( getTransaction(), name );
-        assertThat( dataRole, is( notNullValue() ) );
-        assertThat( this.vdb.getDataRoles( getTransaction() ).length, is( 1 ) );
-
-        final DataRole added = this.vdb.getDataRoles( getTransaction() )[0];
-        assertThat( added, is( dataRole ) );
-        assertThat( added.getName( getTransaction() ), is( name ) );
-        assertThat( added.getPrimaryType( getTransaction() ).getName(), is( VdbLexicon.DataRole.DATA_ROLE ) );
-        assertThat( this.vdb.getChildren( getTransaction() )[0], is( instanceOf( DataRole.class ) ) );
-
-        assertThat( this.vdb.hasChild( getTransaction(), name ), is( true ) );
-        assertThat( this.vdb.hasChild( getTransaction(), name, VdbLexicon.DataRole.DATA_ROLE ), is( true ) );
-        assertThat( this.vdb.hasChildren( getTransaction() ), is( true ) );
-        assertThat( this.vdb.getChild( getTransaction(), name ), is( added ) );
-        assertThat( this.vdb.getChild( getTransaction(), name, VdbLexicon.DataRole.DATA_ROLE ), is( added ) );
-    }
-
-    @Test
-    public void shouldAddEntry() throws Exception {
-        final String name = "entry";
-        final String path = "/my/path";
-        final Entry entry = this.vdb.addEntry( getTransaction(), name, path );
-        assertThat( entry, is( notNullValue() ) );
-        assertThat( this.vdb.getEntries( getTransaction() ).length, is( 1 ) );
-
-        final Entry added = this.vdb.getEntries( getTransaction() )[0];
-        assertThat( added, is( entry ) );
-        assertThat( added.getName( getTransaction() ), is( name ) );
-        assertThat( added.getPrimaryType( getTransaction() ).getName(), is( VdbLexicon.Entry.ENTRY ) );
-        assertThat( added.getPath( getTransaction() ), is( path ) );
-        assertThat( this.vdb.getChildren( getTransaction() )[0], is( instanceOf( Entry.class ) ) );
-
-        assertThat( this.vdb.hasChild( getTransaction(), name ), is( true ) );
-        assertThat( this.vdb.hasChild( getTransaction(), name, VdbLexicon.Entry.ENTRY ), is( true ) );
-        assertThat( this.vdb.hasChildren( getTransaction() ), is( true ) );
-        assertThat( this.vdb.getChild( getTransaction(), name ), is( added ) );
-        assertThat( this.vdb.getChild( getTransaction(), name, VdbLexicon.Entry.ENTRY ), is( added ) );
     }
 
     @Test
@@ -252,7 +211,6 @@ public final class VdbImplTest extends RelationalModelTest {
     @Test( expected = KException.class )
     public void shouldFailGetChildWhenTypeIsWrong() throws Exception {
         final String name = "blah";
-        this.vdb.addDataRole( getTransaction(), name );
         this.vdb.getChild( getTransaction(), name, "bogusType" );
     }
 
@@ -274,12 +232,10 @@ public final class VdbImplTest extends RelationalModelTest {
     @Test
     public void shouldHaveCorrectChildTypes() {
         assertThat( Arrays.asList( this.vdb.getChildTypes() ),
-                    hasItems( DataRole.IDENTIFIER,
-                              Entry.IDENTIFIER,
-                              Model.IDENTIFIER,
+                    hasItems( Model.IDENTIFIER,
                               Translator.IDENTIFIER,
                               VdbImport.IDENTIFIER ) );
-        assertThat(this.vdb.getChildTypes().length, is(5));
+        assertThat(this.vdb.getChildTypes().length, is(3));
     }
 
     @Test
@@ -321,15 +277,11 @@ public final class VdbImplTest extends RelationalModelTest {
 
     @Test
     public void shouldHaveStrongTypedChildren() throws Exception {
-        this.vdb.addDataRole( getTransaction(), "dataRole" );
-        this.vdb.addEntry( getTransaction(), "entry", "path" );
         this.vdb.addImport( getTransaction(), "vdbImport" );
         this.vdb.addModel( getTransaction(), "model" );
-        assertThat( this.vdb.getChildren( getTransaction() ).length, is( 4 ) );
-        assertThat( this.vdb.getChildren( getTransaction() )[0], is( instanceOf( DataRole.class ) ) );
-        assertThat( this.vdb.getChildren( getTransaction() )[1], is( instanceOf( Entry.class ) ) );
-        assertThat( this.vdb.getChildren( getTransaction() )[2], is( instanceOf( VdbImport.class ) ) );
-        assertThat( this.vdb.getChildren( getTransaction() )[3], is( instanceOf( Model.class ) ) );
+        assertThat( this.vdb.getChildren( getTransaction() ).length, is( 2 ) );
+        assertThat( this.vdb.getChildren( getTransaction() )[0], is( instanceOf( VdbImport.class ) ) );
+        assertThat( this.vdb.getChildren( getTransaction() )[1], is( instanceOf( Model.class ) ) );
     }
 
     @Test
@@ -357,16 +309,6 @@ public final class VdbImplTest extends RelationalModelTest {
     }
 
     @Test( expected = IllegalArgumentException.class )
-    public void shouldNotBeAbleToAddEmptyDataRole() throws Exception {
-        this.vdb.addDataRole( getTransaction(), StringConstants.EMPTY_STRING );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldNotBeAbleToAddEmptyEntry() throws Exception {
-        this.vdb.addEntry( getTransaction(), StringConstants.EMPTY_STRING, "blah" );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
     public void shouldNotBeAbleToAddEmptyImport() throws Exception {
         this.vdb.addImport( getTransaction(), StringConstants.EMPTY_STRING );
     }
@@ -379,16 +321,6 @@ public final class VdbImplTest extends RelationalModelTest {
     @Test( expected = IllegalArgumentException.class )
     public void shouldNotBeAbleToAddEmptyTranslator() throws Exception {
         this.vdb.addTranslator( getTransaction(), StringConstants.EMPTY_STRING, "blah" );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldNotBeAbleToAddNullDataRole() throws Exception {
-        this.vdb.addDataRole( getTransaction(), null );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldNotBeAbleToAddNullEntry() throws Exception {
-        this.vdb.addEntry( getTransaction(), null, "blah" );
     }
 
     @Test( expected = IllegalArgumentException.class )
@@ -434,18 +366,6 @@ public final class VdbImplTest extends RelationalModelTest {
     }
 
     @Test
-    public void shouldNotHaveDataRolesAfterConstruction() throws Exception {
-        assertThat( this.vdb.getDataRoles( getTransaction() ), is( notNullValue() ) );
-        assertThat( this.vdb.getDataRoles( getTransaction() ).length, is( 0 ) );
-    }
-
-    @Test
-    public void shouldNotHaveEntriesAfterConstruction() throws Exception {
-        assertThat( this.vdb.getEntries( getTransaction() ), is( notNullValue() ) );
-        assertThat( this.vdb.getEntries( getTransaction() ).length, is( 0 ) );
-    }
-
-    @Test
     public void shouldNotHaveModelsAfterConstruction() throws Exception {
         assertThat( this.vdb.getModels( getTransaction() ), is( notNullValue() ) );
         assertThat( this.vdb.getModels( getTransaction() ).length, is( 0 ) );
@@ -480,26 +400,6 @@ public final class VdbImplTest extends RelationalModelTest {
     }
 
     @Test
-    public void shouldRemoveDataRole() throws Exception {
-        final String name = "dataRole";
-        this.vdb.addDataRole( getTransaction(), name );
-        assertThat( this.vdb.getDataRoles( getTransaction() ).length, is( 1 ) );
-
-        this.vdb.removeDataRole( getTransaction(), name );
-        assertThat( this.vdb.getDataRoles( getTransaction() ).length, is( 0 ) );
-    }
-
-    @Test
-    public void shouldRemoveEntry() throws Exception {
-        final String name = "entry";
-        this.vdb.addEntry( getTransaction(), name, "path" );
-        assertThat( this.vdb.getEntries( getTransaction() ).length, is( 1 ) );
-
-        this.vdb.removeEntry( getTransaction(), name );
-        assertThat( this.vdb.getEntries( getTransaction() ).length, is( 0 ) );
-    }
-
-    @Test
     public void shouldRemoveGssPattern() throws Exception {
         final String newValue = "newGssPattern";
         this.vdb.setGssPattern( getTransaction(), newValue );
@@ -531,14 +431,6 @@ public final class VdbImplTest extends RelationalModelTest {
         this.vdb.setQueryTimeout( getTransaction(), newValue );
         this.vdb.setQueryTimeout( getTransaction(), -100 );
         assertThat( this.vdb.getQueryTimeout( getTransaction() ), is( -1 ) );
-    }
-
-    @Test
-    public void shouldRemoveSecurityDomain() throws Exception {
-        final String newValue = "newSecurityDomain";
-        this.vdb.setSecurityDomain( getTransaction(), newValue );
-        this.vdb.setSecurityDomain( getTransaction(), null );
-        assertThat( this.vdb.getSecurityDomain( getTransaction() ), is( nullValue() ) );
     }
 
     @Test
@@ -733,8 +625,8 @@ public final class VdbImplTest extends RelationalModelTest {
 
                 { // metadata
                     final String ddl = metaDataNode.getTextContent();
-                    final String expected = "CREATE VIEW SvcView ( RowId integer, ProdCode string, SalePrice bigdecimal, PRIMARY KEY(RowId) ) AS SELECT ROW_NUMBER() OVER (ORDER BY ProdCode), ProdCode, SalePrice FROM Prices.dbo.PricesTable; SET NAMESPACE 'http://teiid.org/rest' AS REST; CREATE VIRTUAL PROCEDURE RestProc() RETURNS TABLE (result xml) OPTIONS (\"REST:URI\" 'rest', \"REST:METHOD\" 'GET') AS BEGIN SELECT XMLELEMENT(NAME Elems, XMLAGG(XMLELEMENT(NAME Elem, XMLFOREST(RowId, ProdCode, SalePrice)))) AS result FROM SvcView; END;";
-                    assertThat( ddl, is( expected ) );
+                    final String expected = "CREATE VIEW SvcView ( RowId integer, ProdCode string, SalePrice bigdecimal, PRIMARY KEY(RowId) ) AS SELECT ROW_NUMBER() OVER (ORDER BY ProdCode), ProdCode,SalePrice FROM \"Prices.dbo.PricesTable\"; SET NAMESPACE 'http://teiid.org/rest' AS REST; CREATE VIRTUAL PROCEDURE RestProc() RETURNS TABLE (result xml) OPTIONS (\"REST:URI\" 'rest', \"REST:METHOD\" 'GET') AS BEGIN SELECT XMLELEMENT(NAME Elems, XMLAGG(XMLELEMENT(NAME Elem, XMLFOREST(RowId,ProdCode,SalePrice)))) AS result FROM SvcView; END;;";
+                    assertEquals(expected, ddl);
 
                     // since the actual export will have the CDATA marker make sure by actually doing an export here
                     byte[] exportBytes = importedVdb.export( getTransaction(), null );
@@ -813,13 +705,6 @@ public final class VdbImplTest extends RelationalModelTest {
         final int newValue = 10;
         this.vdb.setQueryTimeout( getTransaction(), newValue );
         assertThat( this.vdb.getQueryTimeout( getTransaction() ), is( newValue ) );
-    }
-
-    @Test
-    public void shouldSetSecurityDomain() throws Exception {
-        final String newValue = "newSecurityDomain";
-        this.vdb.setSecurityDomain( getTransaction(), newValue );
-        assertThat( this.vdb.getSecurityDomain( getTransaction() ), is( newValue ) );
     }
 
     @Test

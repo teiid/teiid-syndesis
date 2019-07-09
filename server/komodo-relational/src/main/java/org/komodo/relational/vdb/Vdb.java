@@ -145,33 +145,6 @@ public interface Vdb extends Exportable, RelationalObject {
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param dataRoleName
-     *        the name of the data role being added (cannot be empty)
-     * @return the new data role (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    DataRole addDataRole( final UnitOfWork transaction,
-                          final String dataRoleName ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param entryName
-     *        the name of the entry being added (cannot be empty)
-     * @param entryPath
-     *        the path of the entry (cannot be empty)
-     * @return the new entry (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    Entry addEntry( final UnitOfWork transaction,
-                    final String entryName,
-                    final String entryPath ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param vdbName
      *        the name of the VDB being imported (cannot be empty)
      * @return the new VDB import (never <code>null</code>)
@@ -247,18 +220,6 @@ public interface Vdb extends Exportable, RelationalObject {
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param namePatterns
-     *        optional name patterns (can be <code>null</code> or empty but cannot have <code>null</code> or empty elements)
-     * @return the data roles (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    DataRole[] getDataRoles( final UnitOfWork transaction,
-                             final String... namePatterns ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @return the value of the <code>description</code> property (can be empty)
      * @throws KException
      *         if an error occurs
@@ -268,23 +229,22 @@ public interface Vdb extends Exportable, RelationalObject {
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param namePatterns
-     *        optional name patterns (can be <code>null</code> or empty but cannot have <code>null</code> or empty elements)
-     * @return the entries (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    Entry[] getEntries( final UnitOfWork transaction,
-                        final String... namePatterns ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @return the GSS pattern (can be empty)
      * @throws KException
      *         if an error occurs
      */
     String getGssPattern( final UnitOfWork transaction ) throws KException;
+    
+    /**
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+     * @param name
+     * @return the VDB model, or null if it does not exist
+     * @throws KException
+     *         if an error occurs
+     */
+    Model getModel( final UnitOfWork transaction,
+                       final String name ) throws KException;
 
     /**
      * @param transaction
@@ -340,15 +300,6 @@ public interface Vdb extends Exportable, RelationalObject {
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @return the security domain (can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    String getSecurityDomain( final UnitOfWork transaction ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param namePatterns
      *        optional name patterns (can be <code>null</code> or empty but cannot have <code>null</code> or empty elements)
      * @return the translators (never <code>null</code> but can be empty)
@@ -388,28 +339,6 @@ public interface Vdb extends Exportable, RelationalObject {
      * @see #DEFAULT_PREVIEW
      */
     boolean isPreview( final UnitOfWork transaction ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param dataRoleToRemove
-     *        the name of the data role being removed (cannot be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    void removeDataRole( final UnitOfWork transaction,
-                         final String dataRoleToRemove ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param entryToRemove
-     *        the name of the entry being removed (cannot be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    void removeEntry( final UnitOfWork transaction,
-                      final String entryToRemove ) throws KException;
 
     /**
      * @param transaction
@@ -543,17 +472,6 @@ public interface Vdb extends Exportable, RelationalObject {
      */
     void setQueryTimeout( final UnitOfWork transaction,
                           final int newQueryTimeout ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param newSecurityDomain
-     *        the new security domain (can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    void setSecurityDomain( final UnitOfWork transaction,
-                            final String newSecurityDomain ) throws KException;
 
     /**
      * Sets the name used by Teiid to reference this VDB.

@@ -18,7 +18,6 @@
 package org.komodo.relational.dataservice.internal;
 
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertEquals;
@@ -49,7 +48,6 @@ import org.komodo.relational.RelationalObject.Filter;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.DataserviceManifest;
 import org.komodo.relational.dataservice.ServiceVdbEntry;
-import org.komodo.relational.dataservice.VdbEntry;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
@@ -145,64 +143,10 @@ public final class DataserviceImplTest extends RelationalModelTest {
         assertThat( oldServiceVdb, is( nullValue() ) );
         final ServiceVdbEntry entry = this.dataservice.getServiceVdbEntry( getTransaction() );
         assertThat( entry, is( notNullValue() ) );
-        entry.addDependencyEntry( getTransaction(), "A" );
-        entry.addDependencyEntry( getTransaction(), "B" );
-        assertThat( entry.getDependencies( getTransaction() ).length, is( 2 ) );
 
-        this.dataservice.addVdbEntry( getTransaction(), "vdb" );
-
-        assertThat( this.dataservice.getVdbEntries( getTransaction() ).length, is( 1 ) );
         assertThat( this.dataservice.getServiceVdbEntry( getTransaction() ), is( notNullValue() ) );
         assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
-        assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 2 ) );
-    }
-
-    @Test
-    public void shouldAddVdb() throws Exception {
-        final String vdbName = "MyVdb";
-        final int vdbVersion = 2;
-        final Vdb vdb = this.mgr.createVdb( getTransaction(), null, vdbName, "externalFilePath" );
-        vdb.setVdbName( getTransaction(), vdbName );
-        vdb.setVersion( getTransaction(), vdbVersion );
-        commit(); // needed so that searching for reference will work
-
-        final VdbEntry entry = this.dataservice.addVdb( getTransaction(), vdb );
-        assertThat( entry.getVdbName( getTransaction() ), is( vdbName ) );
-        assertThat( entry.getVdbVersion( getTransaction() ), is( Integer.toString( vdbVersion ) ) );
-        assertThat( entry.getReference( getTransaction() ), is( notNullValue() ) );
-        assertThat( entry.getReference( getTransaction() ), is( instanceOf( Vdb.class ) ) );
-
-        assertThat( this.dataservice.getVdbEntries( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getVdbEntries( getTransaction(), vdbName ).length, is( 1 ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), vdbName ), is( true ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), vdbName, DataVirtLexicon.VdbEntry.NODE_TYPE ),
-                    is( true ) );
-        assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
         assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildren( getTransaction(), vdbName ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(), DataVirtLexicon.VdbEntry.NODE_TYPE ).length,
-                    is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(),
-                                                        DataVirtLexicon.VdbEntry.NODE_TYPE,
-                                                        vdbName ).length,
-                    is( 1 ) );
-    }
-
-    @Test
-    public void shouldAddVdbEntry() throws Exception {
-        final String vdbName = "MyVdb";
-        final VdbEntry entry = this.dataservice.addVdbEntry( getTransaction(), vdbName );
-        assertThat( entry.getReference( getTransaction() ), is( nullValue() ) );
-        assertThat( this.dataservice.getVdbEntries( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getVdbEntries( getTransaction(), vdbName ).length, is( 1 ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), vdbName ), is( true ) );
-        assertThat( this.dataservice.hasChild( getTransaction(), vdbName, DataVirtLexicon.VdbEntry.NODE_TYPE ), is( true ) );
-        assertThat( this.dataservice.hasChildren( getTransaction() ), is( true ) );
-        assertThat( this.dataservice.getChildren( getTransaction() ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildren( getTransaction(), vdbName ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(), DataVirtLexicon.VdbEntry.NODE_TYPE ).length, is( 1 ) );
-        assertThat( this.dataservice.getChildrenOfType( getTransaction(), DataVirtLexicon.VdbEntry.NODE_TYPE, vdbName ).length,
-                    is( 1 ) );
     }
 
     @Test
@@ -272,12 +216,6 @@ public final class DataserviceImplTest extends RelationalModelTest {
         final String name1 = "childVdb1";
         final String name2 = "childVdb2";
 
-        final Vdb vdb1 = this.mgr.createVdb(getTransaction(), null, name1, "externalFilePath1");
-        final Vdb vdb2 = this.mgr.createVdb(getTransaction(), null, name2, "externalFilePath2");
-
-        this.dataservice.addVdb(getTransaction(), vdb1);
-        this.dataservice.addVdb(getTransaction(), vdb2);
-
         final Vdb serviceVdb = this.mgr.createVdb(getTransaction(), null, SERVICE_NAME, "externalSvcPath");
         this.dataservice.setServiceVdb( getTransaction(), serviceVdb );
         commit(); // needed so that searching for reference will work
@@ -341,7 +279,7 @@ public final class DataserviceImplTest extends RelationalModelTest {
                 }
             }
 
-            assertEquals(4, entries);
+            assertEquals(2, entries);
         } finally {
             if (zipStream != null)
                 zipStream.close();
@@ -374,16 +312,6 @@ public final class DataserviceImplTest extends RelationalModelTest {
         assertEntry( theDataService,
                      "product-view-vdb.xml",
                      DataVirtLexicon.ServiceVdbEntry.NODE_TYPE,
-                     VdbLexicon.Vdb.VIRTUAL_DATABASE,
-                     paths );
-        assertEntry( theDataService,
-                     "books-vdb.xml",
-                     DataVirtLexicon.VdbEntry.NODE_TYPE,
-                     VdbLexicon.Vdb.VIRTUAL_DATABASE,
-                     paths );
-        assertEntry( theDataService,
-                     "Portfolio-vdb.xml",
-                     DataVirtLexicon.VdbEntry.NODE_TYPE,
                      VdbLexicon.Vdb.VIRTUAL_DATABASE,
                      paths );
 

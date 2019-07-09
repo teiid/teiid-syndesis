@@ -20,7 +20,6 @@ package org.komodo.relational.dataservice.internal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Objects;
 import java.util.Properties;
 
 import org.komodo.relational.Messages;
@@ -28,7 +27,6 @@ import org.komodo.relational.RelationalModelFactory;
 import org.komodo.relational.dataservice.DataServiceEntry;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.ServiceVdbEntry;
-import org.komodo.relational.dataservice.VdbEntry;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Model.Type;
@@ -57,7 +55,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
     /**
      * The allowed child types.
      */
-    private static final KomodoType[] CHILD_TYPES = new KomodoType[] { VdbEntry.IDENTIFIER };
+    private static final KomodoType[] CHILD_TYPES = new KomodoType[] { ServiceVdbEntry.IDENTIFIER };
 
     /**
      * @param transaction
@@ -120,13 +118,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
             return entry;
         }
 
-        // check VDBs
-        DataServiceEntry< ? >[] kids = getVdbEntries( transaction, name );
-
-        if ( kids.length != 0 ) {
-            return kids[ 0 ];
-        }
-
         // child does not exist
         throw new KException( Messages.getString( org.komodo.core.repository.Messages.Komodo.CHILD_NOT_FOUND,
                                                   name,
@@ -148,13 +139,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
         ArgCheck.isNotEmpty( name, "name" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( typeName, "typeName" ); //$NON-NLS-1$
 
-        if ( DataVirtLexicon.VdbEntry.NODE_TYPE.equals( typeName ) ) {
-            final VdbEntry[] entries = getVdbEntries( transaction, name );
-
-            if ( entries.length != 0 ) {
-                return entries[ 0 ];
-            }
-        } else if ( DataVirtLexicon.ServiceVdbEntry.NODE_TYPE.equals( typeName ) ) {
+        if ( DataVirtLexicon.ServiceVdbEntry.NODE_TYPE.equals( typeName ) ) {
             return getServiceVdbEntry( transaction );
         }
 
@@ -177,11 +162,8 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         final ServiceVdbEntry serviceVdb = getServiceVdbEntry( transaction );
-        final VdbEntry[] vdbs = getVdbEntries( transaction, namePatterns );
 
-        final DataServiceEntry< ? >[] result = new DataServiceEntry< ? >[ ( ( serviceVdb == null ) ? 0 : 1 )
-                                                                          + vdbs.length];
-        System.arraycopy( vdbs, 0, result, 0, vdbs.length );
+        final DataServiceEntry< ? >[] result = new DataServiceEntry< ? >[ ( ( serviceVdb == null ) ? 0 : 1 )];
 
         if ( serviceVdb != null ) {
             result[ result.length - 1 ] = serviceVdb;
@@ -207,17 +189,13 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
             final ServiceVdbEntry entry = getServiceVdbEntry( transaction );
 
             if ( entry == null ) {
-                return VdbEntry.NO_ENTRIES;
+                return ServiceVdbEntry.NO_ENTRIES;
             }
 
             return new ServiceVdbEntry[] { entry };
         }
 
-        if ( DataVirtLexicon.VdbEntry.NODE_TYPE.equals( type ) ) {
-            return getVdbEntries( transaction, namePatterns );
-        }
-
-        return VdbEntry.NO_ENTRIES;
+        return ServiceVdbEntry.NO_ENTRIES;
     }
 
     /**
@@ -234,8 +212,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
         ArgCheck.isNotEmpty( name, "name" ); //$NON-NLS-1$
 
         return ( ( ( getServiceVdbEntry( transaction ) != null )
-                   && name.equals( getServiceVdbEntry( transaction ).getName( transaction ) ) )
-                 || ( getVdbEntries( transaction, name ).length != 0 ));
+                   && name.equals( getServiceVdbEntry( transaction ).getName( transaction ) ) ));
     }
 
     /**
@@ -258,10 +235,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
                      && name.equals( getServiceVdbEntry( transaction ).getName( transaction ) ) );
         }
 
-        if (DataVirtLexicon.VdbEntry.NODE_TYPE.equals(typeName)) {
-            return (getVdbEntries(transaction, name).length != 0);
-        }
-
         return false;
     }
 
@@ -272,8 +245,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
      */
     @Override
     public boolean hasChildren( final UnitOfWork transaction ) throws KException {
-        return ( ( getServiceVdbEntry( transaction ) != null )
-                 || ( getVdbEntries( transaction ).length != 0 ));
+        return ( ( getServiceVdbEntry( transaction ) != null ));
     }
 
     /**
@@ -315,37 +287,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
             }
         }
         return viewModelName;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.dataservice.Dataservice#addVdb(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      org.komodo.relational.vdb.Vdb)
-     */
-    @Override
-    public VdbEntry addVdb( final UnitOfWork uow,
-                            final Vdb vdb ) throws KException {
-        final VdbEntry entry = RelationalModelFactory.createVdbEntry( uow,
-                                                                      getRepository(),
-                                                                      this,
-                                                                      Objects.requireNonNull( vdb, "vdb" ).getName( uow ) ); //$NON-NLS-1$
-        entry.setVdbName( uow, vdb.getName( uow ) );
-        entry.setVdbVersion( uow, Integer.toString( vdb.getVersion( uow ) ) );
-        entry.setReference( uow, vdb );
-        return entry;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.dataservice.Dataservice#addVdbEntry(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String)
-     */
-    @Override
-    public VdbEntry addVdbEntry( final UnitOfWork transaction,
-                            final String vdbEntryName ) throws KException {
-        return RelationalModelFactory.createVdbEntry( transaction, getRepository(), this, vdbEntryName );
     }
 
     /**
@@ -404,32 +345,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
         }
 
         return new ServiceVdbEntryImpl( uow, getRepository(), kobjects[ 0 ].getAbsolutePath() );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.dataservice.Dataservice#getVdbEntries(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String[])
-     */
-    @Override
-    public VdbEntry[] getVdbEntries( final UnitOfWork uow,
-                                     final String... namePatterns ) throws KException {
-        ArgCheck.isNotNull( uow, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( uow.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-
-        final List< VdbEntry > result = new ArrayList<>();
-
-        for ( final KomodoObject kobject : super.getChildrenOfType( uow, DataVirtLexicon.VdbEntry.NODE_TYPE, namePatterns ) ) {
-            final VdbEntry entry = new VdbEntryImpl( uow, getRepository(), kobject.getAbsolutePath() );
-            result.add( entry );
-        }
-
-        if ( result.isEmpty() ) {
-            return VdbEntry.NO_ENTRIES;
-        }
-
-        return result.toArray( new VdbEntry[ result.size() ] );
     }
 
     /**

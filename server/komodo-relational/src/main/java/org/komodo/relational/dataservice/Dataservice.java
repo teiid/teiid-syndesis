@@ -35,7 +35,7 @@ import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 /**
  * A model of a dataservice instance
  */
-public interface Dataservice extends Exportable, RelationalObject, VdbEntryContainer {
+public interface Dataservice extends Exportable, RelationalObject {
 
     /**
      * The type identifier.
@@ -108,32 +108,6 @@ public interface Dataservice extends Exportable, RelationalObject, VdbEntryConta
         }
 
     };
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param vdb
-     *        the VDB being added (cannot be <code>null</code>)
-     * @return the VDB entry that was created (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    VdbEntry addVdb( final UnitOfWork transaction,
-                     final Vdb vdb ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param vdbEntryName
-     *        the name of the VDB entry to create (cannot be empty)
-     * @return the VDB entry that was created (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    VdbEntry addVdbEntry( final UnitOfWork transaction,
-                          final String vdbEntryName ) throws KException;
 
     /**
      * @param uow
@@ -258,19 +232,6 @@ public interface Dataservice extends Exportable, RelationalObject, VdbEntryConta
      *         if an error occurs
      */
     String getModifiedBy( final UnitOfWork transaction ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param namePatterns
-     *        optional name patterns (can be <code>null</code> or empty but cannot have <code>null</code> or empty elements)
-     * @return the VDB entries (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    VdbEntry[] getVdbEntries( final UnitOfWork transaction,
-                              final String... namePatterns ) throws KException;
 
     /**
      * @param transaction

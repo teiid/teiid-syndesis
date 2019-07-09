@@ -173,11 +173,6 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
         Assert.assertNotNull(serviceTestUtilities.getVdb(USER_NAME, vdbName));
     }
 
-    protected void createVdbModel( String vdbName, String modelName ) throws Exception {
-        serviceTestUtilities.createVdbModel(vdbName, modelName, USER_NAME);
-        Assert.assertNotNull(serviceTestUtilities.getVdbModel(USER_NAME, vdbName, modelName));
-    }
-
     protected void createVdbModelView( String vdbName, String modelName, String viewName ) throws Exception {
         serviceTestUtilities.createVdbModelView(vdbName, modelName, viewName, USER_NAME);
         Assert.assertNotNull(serviceTestUtilities.getVdbModelView(USER_NAME, vdbName, modelName, viewName));

@@ -50,7 +50,6 @@ import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
 import org.springframework.stereotype.Component;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -71,12 +70,7 @@ public final class KomodoVdbService extends KomodoService {
 
     private Model findModel(UnitOfWork uow, List<MediaType> mediaTypes,
                                                 String modelName, Vdb vdb) throws KException {
-        if (! vdb.hasChild(uow, modelName, VdbLexicon.Vdb.DECLARATIVE_MODEL)) {
-            return null;
-        }
-
-        KomodoObject kModel = vdb.getChild(uow, modelName, VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        Model model = getWorkspaceManager(uow).resolve( uow, kModel, Model.class );
+        Model model = getWorkspaceManager(uow).findModel(uow, vdb, modelName);
         LOGGER.debug( "Model '{0}' was found", modelName ); //$NON-NLS-1$
         return model;
     }
@@ -136,7 +130,7 @@ public final class KomodoVdbService extends KomodoService {
             uow = createTransaction(principal, "removeVdbFromWorkspace", false); //$NON-NLS-1$
 
             final WorkspaceManager mgr = getWorkspaceManager(uow);
-            KomodoObject vdb = mgr.getChild(uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE );
+            KomodoObject vdb = mgr.findVdb(uow, vdbName);
 
             if (vdb == null)
                 return Response.noContent().build();

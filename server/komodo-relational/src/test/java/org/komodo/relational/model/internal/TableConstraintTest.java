@@ -43,7 +43,7 @@ public final class TableConstraintTest extends RelationalModelTest {
     @Before
     public void init() throws Exception {
         this.table = createTable();
-        this.constraint = this.table.addAccessPattern( getTransaction(), NAME );
+        this.constraint = this.table.addUniqueConstraint( getTransaction(), NAME );
         commit();
     }
 

@@ -75,10 +75,7 @@
 			},
         	"DDL Sequencer" : {
 				"classname" : "org.komodo.core.internal.sequencer.KDdlSequencer"
-            },
-          	"Teiid SQL Sequencer" : {
-				"classname" : "org.komodo.core.internal.sequencer.TeiidSqlSequencer"
-           	}
+            }
         }
     }
 }

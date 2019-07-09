@@ -20,41 +20,32 @@ package org.komodo.relational.model.internal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
 import org.komodo.core.visitor.DdlNodeVisitor;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
-import org.komodo.relational.model.Function;
 import org.komodo.relational.model.Model;
-import org.komodo.relational.model.Procedure;
-import org.komodo.relational.model.PushdownFunction;
-import org.komodo.relational.model.SchemaElement.SchemaElementType;
-import org.komodo.relational.model.StoredProcedure;
 import org.komodo.relational.model.Table;
-import org.komodo.relational.model.UserDefinedFunction;
 import org.komodo.relational.model.View;
-import org.komodo.relational.model.VirtualProcedure;
 import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.internal.ModelSourceImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.lexicon.LexiconConstants.CoreLexicon;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.CreateProcedure;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.CreateTable;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.SchemaElement;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.PropertyValueType;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
+import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.CreateTable;
+import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 /**
  * An implementation of a relational model.
@@ -64,10 +55,9 @@ public final class ModelImpl extends RelationalObjectImpl implements Model {
     /**
      * The allowed child types.
      */
-    private static final KomodoType[] CHILD_TYPES = new KomodoType[] { PushdownFunction.IDENTIFIER, ModelSource.IDENTIFIER,
-                                                                      StoredProcedure.IDENTIFIER, Table.IDENTIFIER,
-                                                                      UserDefinedFunction.IDENTIFIER, View.IDENTIFIER,
-                                                                      VirtualProcedure.IDENTIFIER };
+    private static final KomodoType[] CHILD_TYPES = new KomodoType[] { ModelSource.IDENTIFIER,
+                                                                      Table.IDENTIFIER,
+                                                                      View.IDENTIFIER };
 
     /**
      * @param uow
@@ -88,54 +78,6 @@ public final class ModelImpl extends RelationalObjectImpl implements Model {
     @Override
     public KomodoType getTypeIdentifier( UnitOfWork uow ) {
         return Model.IDENTIFIER;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.model.Model#addPushdownFunction(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String)
-     */
-    @Override
-    public PushdownFunction addPushdownFunction( final UnitOfWork transaction,
-                                                 final String functionName ) throws KException {
-        return RelationalModelFactory.createPushdownFunction( transaction, getRepository(), this, functionName );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.model.Model#addUserDefinedFunction(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String)
-     */
-    @Override
-    public UserDefinedFunction addUserDefinedFunction( final UnitOfWork transaction,
-                                                       final String functionName ) throws KException {
-        return RelationalModelFactory.createUserDefinedFunction( transaction, getRepository(), this, functionName );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.model.Model#addStoredProcedure(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String)
-     */
-    @Override
-    public StoredProcedure addStoredProcedure( final UnitOfWork transaction,
-                                               final String procedureName ) throws KException {
-        return RelationalModelFactory.createStoredProcedure( transaction, getRepository(), this, procedureName );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.model.Model#addVirtualProcedure(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String)
-     */
-    @Override
-    public VirtualProcedure addVirtualProcedure( final UnitOfWork transaction,
-                                                 final String procedureName ) throws KException {
-        return RelationalModelFactory.createVirtualProcedure( transaction, getRepository(), this, procedureName );
     }
 
     /**
@@ -215,18 +157,6 @@ public final class ModelImpl extends RelationalObjectImpl implements Model {
             if ( sources.length != 0 ) {
                 return sources[ 0 ];
             }
-        } else if (CreateProcedure.FUNCTION_STATEMENT.equals( typeName )) {
-            final KomodoObject[] functions = getFunctions( transaction, name );
-
-            if ( functions.length != 0 ) {
-                return functions[ 0 ];
-            }
-        } else if (CreateProcedure.PROCEDURE_STATEMENT.equals( typeName )) {
-            final KomodoObject[] procedures = getProcedures( transaction, name );
-
-            if ( procedures.length != 0 ) {
-                return procedures[ 0 ];
-            }
         } else if (CreateTable.TABLE_STATEMENT.equals( typeName )) {
             final KomodoObject[] tables = getTables( transaction, name );
 
@@ -259,22 +189,16 @@ public final class ModelImpl extends RelationalObjectImpl implements Model {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
-        final KomodoObject[] functions = getFunctions( transaction, namePatterns );
         final KomodoObject[] sources = getSources( transaction, namePatterns );
-        final KomodoObject[] procedures = getProcedures( transaction, namePatterns );
         final KomodoObject[] tables = getTables( transaction, namePatterns );
         final KomodoObject[] views = getViews( transaction, namePatterns );
 
-        final KomodoObject[] result = new KomodoObject[ functions.length
-                                                        + sources.length
-                                                        + procedures.length
+        final KomodoObject[] result = new KomodoObject[ sources.length
                                                         + tables.length
                                                         + views.length ];
-        System.arraycopy( functions, 0, result, 0, functions.length );
-        System.arraycopy( sources, 0, result, functions.length, sources.length );
-        System.arraycopy( procedures, 0, result, functions.length + sources.length, procedures.length );
-        System.arraycopy( tables, 0, result, functions.length + sources.length + procedures.length, tables.length );
-        System.arraycopy( views, 0, result, functions.length + sources.length + procedures.length + tables.length, views.length );
+        System.arraycopy( sources, 0, result, 0, sources.length );
+        System.arraycopy( tables, 0, result, sources.length, tables.length );
+        System.arraycopy( views, 0, result, sources.length + tables.length, views.length );
 
         return result;
     }
@@ -297,45 +221,6 @@ public final class ModelImpl extends RelationalObjectImpl implements Model {
     @Override
     public String getDescription( final UnitOfWork transaction ) throws KException {
         return getObjectProperty( transaction, PropertyValueType.STRING, "getDescription", VdbLexicon.Vdb.DESCRIPTION ); //$NON-NLS-1$
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.model.Model#getFunctions(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
-     */
-    @Override
-    public Function[] getFunctions( final UnitOfWork transaction,
-                                    final String... namePatterns ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-
-        final List< Function > result = new ArrayList< Function >();
-
-        for ( final KomodoObject kobject : super.getChildrenOfType( transaction,
-                                                                    CreateProcedure.FUNCTION_STATEMENT,
-                                                                    namePatterns ) ) {
-            final Property prop = kobject.getProperty( transaction, SchemaElement.TYPE );
-            assert ( prop != null );
-
-            final String value = prop.getStringValue( transaction );
-            final SchemaElementType schemaType = SchemaElementType.fromValue( value );
-            Function function = null;
-
-            if ( schemaType == SchemaElementType.FOREIGN ) {
-                function = new PushdownFunctionImpl( transaction, getRepository(), kobject.getAbsolutePath() );
-            } else if ( schemaType == SchemaElementType.VIRTUAL ) {
-                function = new UserDefinedFunctionImpl( transaction, getRepository(), kobject.getAbsolutePath() );
-            }
-
-            result.add( function );
-        }
-
-        if ( result.isEmpty() ) {
-            return Function.NO_FUNCTIONS;
-        }
-
-        return result.toArray( new Function[ result.size() ] );
     }
 
     /**
@@ -378,45 +263,6 @@ public final class ModelImpl extends RelationalObjectImpl implements Model {
                                                 CoreLexicon.MODEL_TYPE );
         final Type modelType = ( ( value == null ) ? null : Type.valueOf( value ) );
         return ( ( modelType == null ) ? Type.DEFAULT_VALUE : modelType );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.model.Model#getProcedures(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
-     */
-    @Override
-    public Procedure[] getProcedures( final UnitOfWork transaction,
-                                      final String... namePatterns ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-
-        final List< Procedure > result = new ArrayList< Procedure >();
-
-        for ( final KomodoObject kobject : super.getChildrenOfType( transaction,
-                                                                    CreateProcedure.PROCEDURE_STATEMENT,
-                                                                    namePatterns ) ) {
-            final Property prop = kobject.getProperty( transaction, SchemaElement.TYPE );
-            assert ( prop != null );
-
-            final String value = prop.getStringValue( transaction );
-            final SchemaElementType schemaType = SchemaElementType.fromValue( value );
-            Procedure procedure = null;
-
-            if ( schemaType == SchemaElementType.FOREIGN ) {
-                procedure = new StoredProcedureImpl( transaction, getRepository(), kobject.getAbsolutePath() );
-            } else {
-                procedure = new VirtualProcedureImpl( transaction, getRepository(), kobject.getAbsolutePath() );
-            }
-
-            result.add( procedure );
-        }
-
-        if ( result.isEmpty() ) {
-            return Procedure.NO_PROCEDURES;
-        }
-
-        return result.toArray( new Procedure[ result.size() ] );
     }
 
     /**
@@ -592,50 +438,6 @@ public final class ModelImpl extends RelationalObjectImpl implements Model {
         }
 
         return value;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.model.Model#removeFunction(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
-     */
-    @Override
-    public void removeFunction( final UnitOfWork transaction,
-                                final String functionName ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotEmpty( functionName, "functionName" ); //$NON-NLS-1$
-
-        final Function[] functions = getFunctions( transaction, functionName );
-
-        if ( functions.length == 0 ) {
-            throw new KException( Messages.getString( Relational.FUNCTION_NOT_FOUND_TO_REMOVE, functionName ) );
-        }
-
-        // remove first occurrence
-        functions[ 0 ].remove( transaction );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.model.Model#removeProcedure(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
-     */
-    @Override
-    public void removeProcedure( final UnitOfWork transaction,
-                                 final String procedureName ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotEmpty( procedureName, "procedureName" ); //$NON-NLS-1$
-
-        final Procedure[] procedures = getProcedures( transaction, procedureName );
-
-        if ( procedures.length == 0 ) {
-            throw new KException( Messages.getString( Relational.PROCEDURE_NOT_FOUND_TO_REMOVE, procedureName ) );
-        }
-
-        // remove first occurrence
-        procedures[ 0 ].remove( transaction );
     }
 
     /**

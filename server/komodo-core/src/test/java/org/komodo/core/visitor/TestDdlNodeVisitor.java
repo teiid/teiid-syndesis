@@ -255,7 +255,7 @@ public class TestDdlNodeVisitor extends AbstractLocalRepositoryTest {
                 NEW_LINE +
                 "CREATE VIRTUAL PROCEDURE FOO(IN P1 integer) RETURNS TABLE (e1 integer, e2 string)" + NEW_LINE +
                 "AS" + NEW_LINE +
-                "SELECT * FROM PM1.G1;";
+                "SELECT * FROM PM1.G1;;";
 
         helpTest(ddl, ddl, SEQUENCE_DDL_PATH + "V1\\/tsql:query", SEQUENCE_DDL_PATH + "FOO\\/tsql:query");
     }

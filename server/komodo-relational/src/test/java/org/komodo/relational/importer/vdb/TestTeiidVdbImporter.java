@@ -40,15 +40,12 @@ import org.komodo.importer.Messages;
 import org.komodo.relational.AbstractImporterTest;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Model.Type;
-import org.komodo.relational.vdb.DataRole;
 import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Translator;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.spi.lexicon.LexiconConstants.CoreLexicon;
 import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
-import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon;
-import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon.Symbol;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
@@ -140,7 +137,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
                                                         "XMLTABLE('results' passing JSONTOXML('myxml', w.result) columns " +
                                                         "created_on string PATH 'created_at', from_user string PATH 'from_user', " +
                                                         "to_user string PATH 'to_user', profile_image_url string PATH 'profile_image_url', " +
-                                                        "source string PATH 'source', text string PATH 'text') AS tweet; " +
+                                                        "source string PATH 'source', text string PATH 'text') AS tweet;; " +
                                                         "CREATE VIEW Tweet AS select * FROM twitterview.getTweets;";
 
     private static final String TWEET_EXAMPLE_REIMPORT_DDL = EMPTY_STRING +
@@ -369,18 +366,6 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
         verifyProperty(getTransaction(), twitterView, VdbLexicon.Model.METADATA_TYPE, "DDL");
         verifyProperty(getTransaction(), twitterView, VdbLexicon.Model.VISIBLE, Boolean.TRUE.toString());
         verifyProperty(getTransaction(), twitterView, VdbLexicon.Model.MODEL_DEFINITION, modelDefinition);
-
-        if (TWITTER_VIEW_MODEL.equals(model2Name)) {
-            // Only the twitterview version of the import data has the VIRTUAL PROCEDURE
-            // which creates the getTweets node
-            KomodoObject getTweets = verify(getTransaction(), twitterView, "getTweets");
-            KomodoObject getTweetsQuery = verify(getTransaction(), getTweets, TeiidSqlLexicon.Query.ID);
-            verify(getTransaction(), getTweetsQuery, TeiidSqlLexicon.From.ID, TeiidSqlLexicon.From.ID);
-        }
-
-        KomodoObject tweet = verify(getTransaction(), twitterView, "Tweet");
-        KomodoObject tweetQuery = verify(getTransaction(), tweet, TeiidSqlLexicon.Query.ID);
-        verify(getTransaction(), tweetQuery, TeiidSqlLexicon.From.ID, TeiidSqlLexicon.From.ID);
     }
 
     @Test
@@ -514,10 +499,6 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
         verifyProperty(getTransaction(), twitterView, VdbLexicon.Model.METADATA_TYPE, "DDL");
         verifyProperty(getTransaction(), twitterView, VdbLexicon.Model.VISIBLE, Boolean.TRUE.toString());
         verifyProperty(getTransaction(), twitterView, VdbLexicon.Model.MODEL_DEFINITION, TWEET_EXAMPLE_REIMPORT_DDL);
-
-        KomodoObject tweet = verify(getTransaction(), twitterView, "Tweet");
-        KomodoObject tweetQuery = verify(getTransaction(), tweet, TeiidSqlLexicon.Query.ID);
-        verify(getTransaction(), tweetQuery, TeiidSqlLexicon.From.ID, TeiidSqlLexicon.From.ID);
     }
 
     @Test
@@ -547,12 +528,6 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
 
         assertFalse(importMessages.hasError());
 //        traverse(getTransaction(), tweet.getAbsolutePath());
-
-        KomodoObject tweetQuery = verify(getTransaction(), tweet, TeiidSqlLexicon.Query.ID);
-        verify(getTransaction(), tweetQuery, TeiidSqlLexicon.From.ID, TeiidSqlLexicon.From.ID);
-        KomodoObject selectStmt = verify(getTransaction(), tweetQuery, TeiidSqlLexicon.Select.ID, TeiidSqlLexicon.Select.ID);
-        KomodoObject symbolsStmt = verify(getTransaction(), selectStmt, TeiidSqlLexicon.Select.SYMBOLS_REF_NAME, TeiidSqlLexicon.ElementSymbol.ID);
-        verifyProperty(getTransaction(), symbolsStmt, Symbol.NAME_PROP_NAME, "title");
     }
 
     @Test
@@ -829,12 +804,6 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
         KomodoObject permission4 = verify(getTransaction(), permissions, "javascript",
                                                                               VdbLexicon.DataRole.Permission.PERMISSION, null);
         verifyProperty(getTransaction(), permission4, VdbLexicon.DataRole.Permission.ALLOW_LANGUAGE, Boolean.TRUE.toString());
-
-        KomodoObject test = verify(getTransaction(), modelTwo, "Test");
-
-        KomodoObject testQuery = verify(getTransaction(), test, TeiidSqlLexicon.Query.ID);
-        verify(getTransaction(), testQuery, TeiidSqlLexicon.From.ID, TeiidSqlLexicon.From.ID);
-
     }
 
     @Test
@@ -908,14 +877,6 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
         assertEquals("USERPASSWORD", vdb.getProperty(getTransaction(), "authentication-type").getValue(getTransaction()).toString());
 
         assertEquals(2, vdb.getModels(getTransaction()).length);
-
-        assertEquals(1, vdb.getDataRoles(getTransaction()).length);
-        DataRole dataRole = WorkspaceManager.getInstance(_repo, getTransaction()).resolve(getTransaction(),  vdb.getDataRoles(getTransaction())[0], DataRole.class);
-    	assertEquals("publishers-only", dataRole.getName(getTransaction()));
-    	assertNotNull(dataRole.getProperty(getTransaction(), "vdb:grantAll"));
-        assertEquals("true", dataRole.getProperty(getTransaction(), "vdb:grantAll").getValue(getTransaction()).toString());
-        assertEquals(8, dataRole.getPermissions(getTransaction()).length);
-        assertEquals(2, dataRole.getMappedRoles(getTransaction()).length);
 
         assertEquals(1, vdb.getTranslators(getTransaction()).length);
         Translator translator = WorkspaceManager.getInstance(_repo, getTransaction()).resolve(getTransaction(),  vdb.getTranslators(getTransaction())[0], Translator.class);
@@ -1059,7 +1020,6 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
 
         assertEquals(1, vdb.getModels(getTransaction()).length);
         assertNotNull("BooksSource", vdb.getModels(getTransaction())[0].getName(getTransaction()));
-        assertEquals(1, vdb.getDataRoles(getTransaction()).length);
     	/*
 	        <data-role name="publishers-only" any-authenticated="false" allow-create-temporary-tables="false" grant-all="true">
 		        <description>publishers can both read and update book info</description>
@@ -1091,13 +1051,6 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
 		        </permission>
 		    </data-role>
         */
-
-        DataRole dataRole = WorkspaceManager.getInstance(_repo, getTransaction()).resolve(getTransaction(),  vdb.getDataRoles(getTransaction())[0], DataRole.class);
-    	assertEquals("publishers-only", dataRole.getName(getTransaction()));
-    	assertNotNull(dataRole.getProperty(getTransaction(), "vdb:grantAll"));
-        assertEquals("true", dataRole.getProperty(getTransaction(), "vdb:grantAll").getValue(getTransaction()).toString());
-        assertEquals(8, dataRole.getPermissions(getTransaction()).length);
-        assertEquals(2, dataRole.getMappedRoles(getTransaction()).length);
     }
 
     @Test
@@ -1135,8 +1088,6 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
 
         assertEquals(1, vdb.getModels(getTransaction()).length);
         assertNotNull("BooksView", vdb.getModels(getTransaction())[0].getName(getTransaction()));
-        assertEquals(0, vdb.getDataRoles(getTransaction()).length);
-
     }
 
     @Test
