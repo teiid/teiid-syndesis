@@ -23,21 +23,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.komodo.relational.TypeResolver;
-import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.model.Column;
-import org.komodo.relational.model.ForeignKey;
-import org.komodo.relational.model.Model;
-import org.komodo.relational.model.PrimaryKey;
-import org.komodo.relational.model.Schema;
-import org.komodo.relational.model.StatementOption;
-import org.komodo.relational.model.Table;
-import org.komodo.relational.model.UniqueConstraint;
-import org.komodo.relational.model.View;
-import org.komodo.relational.profile.Profile;
-import org.komodo.relational.vdb.ModelSource;
-import org.komodo.relational.vdb.Translator;
-import org.komodo.relational.vdb.Vdb;
-import org.komodo.relational.vdb.VdbImport;
+import org.komodo.relational.dataservice.internal.DataserviceImpl;
+import org.komodo.relational.model.internal.ColumnImpl;
+import org.komodo.relational.model.internal.ForeignKeyImpl;
+import org.komodo.relational.model.internal.ModelImpl;
+import org.komodo.relational.model.internal.PrimaryKeyImpl;
+import org.komodo.relational.model.internal.SchemaImpl;
+import org.komodo.relational.model.internal.StatementOptionImpl;
+import org.komodo.relational.model.internal.TableImpl;
+import org.komodo.relational.model.internal.UniqueConstraintImpl;
+import org.komodo.relational.model.internal.ViewImpl;
+import org.komodo.relational.profile.internal.ProfileImpl;
+import org.komodo.relational.vdb.internal.ModelSourceImpl;
+import org.komodo.relational.vdb.internal.TranslatorImpl;
+import org.komodo.relational.vdb.internal.VdbImpl;
+import org.komodo.relational.vdb.internal.VdbImportImpl;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.utils.KeyInValueMap;
@@ -61,7 +61,7 @@ public class TypeResolverRegistry {
     /**
      * @return singleton instance
      */
-    public static TypeResolverRegistry getInstance() {
+    public static final TypeResolverRegistry getInstance() {
         if (instance == null)
             instance = new TypeResolverRegistry();
 
@@ -76,35 +76,35 @@ public class TypeResolverRegistry {
 
     private TypeResolverRegistry() {
 
-        index(KomodoType.COLUMN, Column.RESOLVER);
+        index(KomodoType.COLUMN, ColumnImpl.RESOLVER);
 
-        index(KomodoType.DATASERVICE, Dataservice.RESOLVER);
+        index(KomodoType.DATASERVICE, DataserviceImpl.RESOLVER);
 
-        index(KomodoType.FOREIGN_KEY, ForeignKey.RESOLVER);
+        index(KomodoType.FOREIGN_KEY, ForeignKeyImpl.RESOLVER);
 
-        index(KomodoType.MODEL, Model.RESOLVER);
+        index(KomodoType.MODEL, ModelImpl.RESOLVER);
 
-        index(KomodoType.PRIMARY_KEY, PrimaryKey.RESOLVER);
+        index(KomodoType.PRIMARY_KEY, PrimaryKeyImpl.RESOLVER);
 
-        index(KomodoType.PROFILE, Profile.RESOLVER);
+        index(KomodoType.PROFILE, ProfileImpl.RESOLVER);
 
-        index(KomodoType.SCHEMA, Schema.RESOLVER);
+        index(KomodoType.SCHEMA, SchemaImpl.RESOLVER);
 
-        index(KomodoType.STATEMENT_OPTION, StatementOption.RESOLVER);
+        index(KomodoType.STATEMENT_OPTION, StatementOptionImpl.RESOLVER);
 
-        index(KomodoType.TABLE, Table.RESOLVER);
+        index(KomodoType.TABLE, TableImpl.RESOLVER);
 
-        index(KomodoType.UNIQUE_CONSTRAINT, UniqueConstraint.RESOLVER);
+        index(KomodoType.UNIQUE_CONSTRAINT, UniqueConstraintImpl.RESOLVER);
 
-        index(KomodoType.VDB, Vdb.RESOLVER);
+        index(KomodoType.VDB, VdbImpl.RESOLVER);
 
-        index(KomodoType.VDB_IMPORT, VdbImport.RESOLVER);
+        index(KomodoType.VDB_IMPORT, VdbImportImpl.RESOLVER);
 
-        index(KomodoType.VDB_MODEL_SOURCE, ModelSource.RESOLVER);
+        index(KomodoType.VDB_MODEL_SOURCE, ModelSourceImpl.RESOLVER);
 
-        index(KomodoType.VDB_TRANSLATOR, Translator.RESOLVER);
+        index(KomodoType.VDB_TRANSLATOR, TranslatorImpl.RESOLVER);
 
-        index(KomodoType.VIEW, View.RESOLVER);
+        index(KomodoType.VIEW, ViewImpl.RESOLVER);
     }
 
     @SuppressWarnings( "unchecked" )

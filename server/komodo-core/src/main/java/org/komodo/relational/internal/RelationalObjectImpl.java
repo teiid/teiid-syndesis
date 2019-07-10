@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.komodo.core.LexiconConstants.JcrLexicon;
+import org.komodo.core.LexiconConstants.NTLexicon;
 import org.komodo.core.repository.Messages;
 import org.komodo.core.repository.Messages.Komodo;
 import org.komodo.core.repository.ObjectImpl;
@@ -41,11 +43,96 @@ import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
 import org.modeshape.jcr.api.JcrConstants;
+import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
 
 /**
  * A base implementation of a relational object.
  */
 public abstract class RelationalObjectImpl extends ObjectImpl implements RelationalObject {
+	
+    /**
+     * A filter to use when deciding which properties and descriptors apply to an object.
+     */
+    public interface Filter {
+
+        /**
+         * @param descriptorName
+         *        the name of the descriptor being checked (cannot be empty)
+         * @return <code>true</code> if the descriptor should be reject
+         */
+        boolean rejectDescriptor( final String descriptorName );
+
+        /**
+         * @param propName
+         *        the name of the property being checked (cannot be empty)
+         * @return <code>true</code> if this property should be rejected
+         */
+        boolean rejectProperty( final String propName );
+
+    }
+
+    /**
+     * A filter to exclude specific DDL-namespaced properties and type descriptors.
+     */
+    static final Filter DDL_QNAMES_FILTER = new ExcludeQNamesFilter( StandardDdlLexicon.DDL_EXPRESSION,
+                                                        StandardDdlLexicon.DDL_LENGTH,
+                                                        StandardDdlLexicon.DEFAULT_PRECISION,
+                                                        StandardDdlLexicon.DEFAULT_OPTION,
+                                                        StandardDdlLexicon.DDL_ORIGINAL_EXPRESSION,
+                                                        StandardDdlLexicon.DDL_START_CHAR_INDEX,
+                                                        StandardDdlLexicon.DDL_START_COLUMN_NUMBER,
+                                                        StandardDdlLexicon.DDL_START_LINE_NUMBER );
+
+    /**
+     * A filter to exclude JCR-namespaced properties and type descriptors.
+     */
+    static final Filter JCR_FILTER = new ExcludeNamespaceFilter( JcrLexicon.Namespace.PREFIX, JcrLexicon.Namespace.URI );
+
+    /**
+     * An empty collection of filters.
+     */
+    Filter[] NO_FILTERS = new Filter[ 0 ];
+
+    /**
+     * A filter to exclude NT-namespaced properties and type descriptors.
+     */
+    static final Filter NT_FILTER = new ExcludeNamespaceFilter( NTLexicon.Namespace.PREFIX, NTLexicon.Namespace.URI );
+
+    /**
+     * A filter to exclude residual properties and type descriptors.
+     */
+    static final Filter RESIDUAL_FILTER = new Filter() {
+
+        private String NAME = "*"; //$NON-NLS-1$
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.RelationalObject.Filter#rejectProperty(java.lang.String)
+         */
+        @Override
+        public boolean rejectProperty( final String propName ) {
+            ArgCheck.isNotEmpty( propName, "propName" ); //$NON-NLS-1$
+            return NAME.equals( propName );
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.RelationalObject.Filter#rejectDescriptor(java.lang.String)
+         */
+        @Override
+        public boolean rejectDescriptor( final String descriptorName ) {
+            ArgCheck.isNotEmpty( descriptorName, "descriptorName" ); //$NON-NLS-1$
+            return NAME.equals( descriptorName );
+        }
+
+    };
+
+    /**
+     * The default set of filters for restricting which properties and descriptors apply to relational objects.
+     */
+    protected static final Filter[] DEFAULT_FILTERS = new Filter[] { DDL_QNAMES_FILTER, JCR_FILTER, NT_FILTER, RESIDUAL_FILTER };
 
     private static TypeResolverRegistry _resolverRegistry;
 
@@ -240,11 +327,9 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.RelationalObject#getFilters()
+     * @return the filters to use when deciding which {@link PropertyDescriptor properties} and {@link Descriptor descriptors} are
+     *         valid for this object (never <code>null</code> but can be empty)
      */
-    @Override
     public Filter[] getFilters() {
         assert (this.filters != null);
         return this.filters;
@@ -573,13 +658,12 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.RelationalObject#setFilters(org.komodo.relational.RelationalObject.Filter[])
+     * @param newFilters
+     *        the new set of filters to use when deciding which {@link PropertyDescriptor properties} and {@link Descriptor
+     *        descriptors} are valid for this object (can be <code>null</code>)
      */
-    @Override
     public void setFilters( final Filter[] newFilters ) {
-        this.filters = ( ( newFilters == null ) ? RelationalObject.NO_FILTERS : newFilters );
+        this.filters = ( ( newFilters == null ) ? NO_FILTERS : newFilters );
     }
 
     /**
@@ -678,5 +762,5 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
         }
 
     }
-
+    
 }

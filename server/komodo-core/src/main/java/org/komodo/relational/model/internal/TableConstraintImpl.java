@@ -17,9 +17,9 @@
  */
 package org.komodo.relational.model.internal;
 
-import org.komodo.relational.ExcludeQNamesFilter;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
+import org.komodo.relational.internal.ExcludeQNamesFilter;
 import org.komodo.relational.internal.RelationalChildRestrictedObject;
 import org.komodo.relational.model.Column;
 import org.komodo.relational.model.Table;

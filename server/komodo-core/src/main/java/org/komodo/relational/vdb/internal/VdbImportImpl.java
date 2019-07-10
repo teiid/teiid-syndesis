@@ -17,6 +17,8 @@
  */
 package org.komodo.relational.vdb.internal;
 
+import org.komodo.core.repository.ObjectImpl;
+import org.komodo.relational.TypeResolver;
 import org.komodo.relational.internal.RelationalChildRestrictedObject;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.VdbImport;
@@ -34,6 +36,61 @@ import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
  * An implementation of a referenced VDB.
  */
 public class VdbImportImpl extends RelationalChildRestrictedObject implements VdbImport {
+	
+    /**
+     * The resolver of a {@link VdbImport}.
+     */
+    public static final TypeResolver< VdbImport > RESOLVER = new TypeResolver< VdbImport >() {
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#identifier()
+         */
+        @Override
+        public KomodoType identifier() {
+            return IDENTIFIER;
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#owningClass()
+         */
+        @Override
+        public Class< VdbImportImpl > owningClass() {
+            return VdbImportImpl.class;
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
+         *      org.komodo.spi.repository.KomodoObject)
+         */
+        @Override
+        public boolean resolvable( final UnitOfWork transaction,
+                                   final KomodoObject kobject ) throws KException {
+            return ObjectImpl.validateType( transaction, kobject.getRepository(), kobject, VdbLexicon.ImportVdb.IMPORT_VDB );
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
+         *      org.komodo.spi.repository.KomodoObject)
+         */
+        @Override
+        public VdbImport resolve( final UnitOfWork transaction,
+                                  final KomodoObject kobject ) throws KException {
+            if ( kobject.getTypeId() == VdbImport.TYPE_ID ) {
+                return ( VdbImport )kobject;
+            }
+
+            return new VdbImportImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
+        }
+
+    };
 
     /**
      * @param uow
@@ -67,7 +124,7 @@ public class VdbImportImpl extends RelationalChildRestrictedObject implements Vd
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
 
         final KomodoObject grouping = super.getParent( transaction );
-        final Vdb result = Vdb.RESOLVER.resolve( transaction, grouping.getParent( transaction ) );
+        final Vdb result = VdbImpl.RESOLVER.resolve( transaction, grouping.getParent( transaction ) );
         return result;
     }
 

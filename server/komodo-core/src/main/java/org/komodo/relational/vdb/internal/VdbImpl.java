@@ -27,12 +27,14 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.komodo.core.repository.DescriptorImpl;
+import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.PropertyDescriptorImpl;
 import org.komodo.core.visitor.VdbNodeVisitor;
 import org.komodo.relational.DeployStatus;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
-import org.komodo.relational.RelationalModelFactory;
+import org.komodo.relational.TypeResolver;
+import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.internal.ModelImpl;
@@ -62,6 +64,61 @@ import org.w3c.dom.Document;
  * An implementation of a virtual database manifest.
  */
 public class VdbImpl extends RelationalObjectImpl implements Vdb {
+	
+    /**
+     * The resolver of a {@link Vdb}.
+     */
+    public static final TypeResolver< Vdb > RESOLVER = new TypeResolver< Vdb >() {
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#identifier()
+         */
+        @Override
+        public KomodoType identifier() {
+            return IDENTIFIER;
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#owningClass()
+         */
+        @Override
+        public Class< VdbImpl > owningClass() {
+            return VdbImpl.class;
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
+         *      org.komodo.spi.repository.KomodoObject)
+         */
+        @Override
+        public boolean resolvable( final UnitOfWork transaction,
+                                   final KomodoObject kobject ) throws KException {
+            return ObjectImpl.validateType( transaction, kobject.getRepository(), kobject, VdbLexicon.Vdb.VIRTUAL_DATABASE );
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
+         *      org.komodo.spi.repository.KomodoObject)
+         */
+        @Override
+        public Vdb resolve( final UnitOfWork transaction,
+                            final KomodoObject kobject ) throws KException {
+            if ( kobject.getTypeId() == Vdb.TYPE_ID ) {
+                return ( Vdb )kobject;
+            }
+
+            return new VdbImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
+        }
+
+    };
 
     /**
      * The allowed child types.

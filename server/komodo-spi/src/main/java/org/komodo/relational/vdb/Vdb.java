@@ -18,19 +18,15 @@
 package org.komodo.relational.vdb;
 
 import java.util.Properties;
-import org.komodo.core.repository.ObjectImpl;
+
 import org.komodo.relational.DeployStatus;
 import org.komodo.relational.RelationalObject;
-import org.komodo.relational.TypeResolver;
 import org.komodo.relational.model.Model;
-import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.Exportable;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 import org.w3c.dom.Document;
 
 /**
@@ -86,61 +82,6 @@ public interface Vdb extends Exportable, RelationalObject {
     String GSS_PATTERN_TEIIDNAME = "gss-pattern";
     String AUTHENTICATION_TYPE_TEIIDNAME = "authentication-type";
     String ALLOWED_LANGUAGES_TEIIDNAME = "allowed-languages";
-
-    /**
-     * The resolver of a {@link Vdb}.
-     */
-    TypeResolver< Vdb > RESOLVER = new TypeResolver< Vdb >() {
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#identifier()
-         */
-        @Override
-        public KomodoType identifier() {
-            return IDENTIFIER;
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#owningClass()
-         */
-        @Override
-        public Class< VdbImpl > owningClass() {
-            return VdbImpl.class;
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
-         */
-        @Override
-        public boolean resolvable( final UnitOfWork transaction,
-                                   final KomodoObject kobject ) throws KException {
-            return ObjectImpl.validateType( transaction, kobject.getRepository(), kobject, VdbLexicon.Vdb.VIRTUAL_DATABASE );
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
-         */
-        @Override
-        public Vdb resolve( final UnitOfWork transaction,
-                            final KomodoObject kobject ) throws KException {
-            if ( kobject.getTypeId() == Vdb.TYPE_ID ) {
-                return ( Vdb )kobject;
-            }
-
-            return new VdbImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
-        }
-
-    };
 
     /**
      * @param transaction

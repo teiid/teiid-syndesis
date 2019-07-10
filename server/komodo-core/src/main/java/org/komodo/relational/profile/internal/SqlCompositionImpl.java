@@ -18,6 +18,8 @@
 package org.komodo.relational.profile.internal;
 
 import org.komodo.core.KomodoLexicon;
+import org.komodo.core.repository.ObjectImpl;
+import org.komodo.relational.TypeResolver;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.profile.SqlComposition;
 import org.komodo.relational.profile.ViewDefinition;
@@ -34,6 +36,60 @@ import org.komodo.utils.ArgCheck;
  * An implementation of an view definition
  */
 public class SqlCompositionImpl  extends RelationalObjectImpl implements SqlComposition {
+	
+    /**
+     * The resolver of a {@link SqlComposition}.
+     */
+    public static final TypeResolver<SqlComposition> RESOLVER = new TypeResolver<SqlComposition>() {
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#identifier()
+         */
+        @Override
+        public KomodoType identifier() {
+            return IDENTIFIER;
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#owningClass()
+         */
+        @Override
+        public Class<SqlCompositionImpl> owningClass() {
+            return SqlCompositionImpl.class;
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
+         *      org.komodo.spi.repository.KomodoObject)
+         */
+        @Override
+        public boolean resolvable(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
+            return ObjectImpl.validateType(transaction, kobject.getRepository(), kobject, KomodoLexicon.SqlComposition.NODE_TYPE);
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
+         *      org.komodo.spi.repository.KomodoObject)
+         */
+        @Override
+        public SqlComposition resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
+            if (kobject.getTypeId() == SqlComposition.TYPE_ID) {
+                return (SqlComposition)kobject;
+            }
+
+            return new SqlCompositionImpl(transaction, kobject.getRepository(), kobject.getAbsolutePath());
+        }
+
+    };
+
     /**
      * The allowed child types.
      */
@@ -69,7 +125,7 @@ public class SqlCompositionImpl  extends RelationalObjectImpl implements SqlComp
         ArgCheck.isTrue((transaction.getState() == State.NOT_STARTED), "transaction state must be NOT_STARTED"); //$NON-NLS-1$
 
         final KomodoObject grouping = super.getParent(transaction);
-        final ViewDefinition result = ViewDefinition.RESOLVER.resolve(transaction, grouping.getParent(transaction));
+        final ViewDefinition result = ViewDefinitionImpl.RESOLVER.resolve(transaction, grouping.getParent(transaction));
         return result;
     }
 

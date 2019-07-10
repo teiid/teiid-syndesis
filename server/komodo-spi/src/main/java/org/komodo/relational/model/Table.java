@@ -17,14 +17,9 @@
  */
 package org.komodo.relational.model;
 
-import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.RelationalObject;
-import org.komodo.relational.TypeResolver;
-import org.komodo.relational.model.internal.TableImpl;
 import org.komodo.spi.KException;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.CreateTable;
 import org.komodo.spi.repository.Exportable;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
@@ -152,61 +147,6 @@ public interface Table extends Exportable, OptionContainer, RelationalObject, Sc
      */
     @Override
     Model getParent( final UnitOfWork transaction ) throws KException;
-
-    /**
-     * The resolver of a {@link Table}.
-     */
-    TypeResolver< Table > RESOLVER = new TypeResolver< Table >() {
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#identifier()
-         */
-        @Override
-        public KomodoType identifier() {
-            return IDENTIFIER;
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#owningClass()
-         */
-        @Override
-        public Class< TableImpl > owningClass() {
-            return TableImpl.class;
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
-         */
-        @Override
-        public boolean resolvable( final UnitOfWork transaction,
-                                   final KomodoObject kobject ) throws KException {
-            return ObjectImpl.validateType( transaction, kobject.getRepository(), kobject, CreateTable.TABLE_STATEMENT );
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
-         */
-        @Override
-        public Table resolve( final UnitOfWork transaction,
-                              final KomodoObject kobject ) throws KException {
-            if ( kobject.getTypeId() == Table.TYPE_ID ) {
-                return ( Table )kobject;
-            }
-
-            return new TableImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
-        }
-
-    };
 
     /**
      * @param transaction

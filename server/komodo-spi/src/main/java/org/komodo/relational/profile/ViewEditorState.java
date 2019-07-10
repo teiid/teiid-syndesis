@@ -17,14 +17,9 @@
  */
 package org.komodo.relational.profile;
 
-import org.komodo.core.KomodoLexicon;
-import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.RelationalObject;
-import org.komodo.relational.TypeResolver;
-import org.komodo.relational.profile.internal.ViewEditorStateImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
@@ -49,58 +44,6 @@ public interface ViewEditorState extends RelationalObject, StringConstants {
      */
     ViewEditorState[] NO_VIEW_EDITOR_STATES = new ViewEditorState[0];
 
-    /**
-     * The resolver of a {@link ViewEditorState}.
-     */
-    TypeResolver<ViewEditorState> RESOLVER = new TypeResolver<ViewEditorState>() {
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#identifier()
-         */
-        @Override
-        public KomodoType identifier() {
-            return IDENTIFIER;
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#owningClass()
-         */
-        @Override
-        public Class<ViewEditorStateImpl> owningClass() {
-            return ViewEditorStateImpl.class;
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
-         */
-        @Override
-        public boolean resolvable(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
-            return ObjectImpl.validateType(transaction, kobject.getRepository(), kobject, KomodoLexicon.ViewEditorState.NODE_TYPE);
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
-         */
-        @Override
-        public ViewEditorState resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
-            if (kobject.getTypeId() == ViewEditorState.TYPE_ID) {
-                return (ViewEditorState)kobject;
-            }
-
-            return new ViewEditorStateImpl(transaction, kobject.getRepository(), kobject.getAbsolutePath());
-        }
-
-    };
 
     /**
      * @param transaction

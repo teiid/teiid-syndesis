@@ -17,18 +17,13 @@
  */
 package org.komodo.relational.model;
 
-import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.RelationalConstants;
 import org.komodo.relational.RelationalConstants.Nullable;
 import org.komodo.relational.RelationalObject;
-import org.komodo.relational.TypeResolver;
-import org.komodo.relational.model.internal.ColumnImpl;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.CreateTable;
 
 /**
  * Represents a relational model column.
@@ -144,61 +139,6 @@ public interface Column extends OptionContainer, RelationalObject {
      */
     @Override
     Table getParent( final UnitOfWork transaction ) throws KException;
-
-    /**
-     * The resolver of a {@link Column}.
-     */
-    TypeResolver< Column > RESOLVER = new TypeResolver< Column >() {
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#identifier()
-         */
-        @Override
-        public KomodoType identifier() {
-            return IDENTIFIER;
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#owningClass()
-         */
-        @Override
-        public Class< ColumnImpl > owningClass() {
-            return ColumnImpl.class;
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
-         */
-        @Override
-        public boolean resolvable( final UnitOfWork transaction,
-                                   final KomodoObject kobject ) throws KException {
-            return ObjectImpl.validateType( transaction, kobject.getRepository(), kobject, CreateTable.TABLE_ELEMENT );
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
-         */
-        @Override
-        public Column resolve( final UnitOfWork transaction,
-                               final KomodoObject kobject ) throws KException {
-            if ( kobject.getTypeId() == Column.TYPE_ID ) {
-                return ( Column )kobject;
-            }
-
-            return new ColumnImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
-        }
-
-    };
 
     /**
      * @param transaction

@@ -29,10 +29,12 @@ import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
+import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.PropertyValueType;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.utils.StringUtils;
 import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 
 /**
@@ -170,5 +172,70 @@ public class ServiceVdbEntryImpl extends RelationalObjectImpl implements Service
                                final String vdbVersion ) throws KException {
         setObjectProperty( transaction, "setVdbVersion", DataVirtLexicon.VdbEntry.VDB_VERSION, vdbVersion ); //$NON-NLS-1$
     }
+    
+    @Override
+    public String getEntryPath( final UnitOfWork transaction ) throws KException {
+        if ( hasProperty( transaction, DataVirtLexicon.ResourceEntry.PATH ) ) {
+            return getProperty( transaction, DataVirtLexicon.ResourceEntry.PATH ).getStringValue( transaction );
+        }
+
+        final Vdb file = getReference( transaction );
+        String folder = getArchiveFolder();
+
+        if ( StringUtils.isBlank( folder ) ) {
+            if ( folder == null ) {
+                folder = StringConstants.EMPTY_STRING;
+            }
+        } else if ( !folder.endsWith( StringConstants.FORWARD_SLASH ) ) {
+            folder += StringConstants.FORWARD_SLASH;
+        }
+
+        if ( file != null ) {
+            return ( folder + file.getDocumentType( transaction ).fileName( file.getName( transaction ) ) );
+        }
+
+        return ( folder + getName( transaction ) );
+    }
+    
+    @Override
+    public PublishPolicy getPublishPolicy( final UnitOfWork transaction ) throws KException {
+        if ( hasProperty( transaction, DataVirtLexicon.DataServiceEntry.PUBLISH_POLICY ) ) {
+            final String value = getProperty( transaction,
+                                              DataVirtLexicon.DataServiceEntry.PUBLISH_POLICY ).getStringValue( transaction );
+            return PublishPolicy.valueOf( value );
+        }
+
+        return PublishPolicy.DEFAULT;
+    }
+    
+    @Override
+    public void setEntryPath( final UnitOfWork transaction,
+            final String newEntryPath ) throws KException {
+    	setProperty( transaction, DataVirtLexicon.DataServiceEntry.PATH, newEntryPath );
+	}
+    
+    @Override
+    public void setPublishPolicy( final UnitOfWork transaction,
+            final PublishPolicy newPublishPolicy ) throws KException {
+		String value = ( ( newPublishPolicy == null ) ? null : newPublishPolicy.name() );
+		setProperty( transaction, DataVirtLexicon.DataServiceEntry.PUBLISH_POLICY, value );
+	}
+    
+	@Override
+	public void setReference(final UnitOfWork transaction, final Vdb reference) throws KException {
+		String refId = null;
+
+		if (reference != null) {
+			Property uuidProperty = getObjectFactory().getId(transaction, reference);
+			if (uuidProperty == null) {
+				String msg = Messages.getString(Messages.Relational.NO_UUID_PROPERTY, reference.getName(transaction));
+				throw new KException(msg);
+			}
+
+			refId = uuidProperty.getStringValue(transaction);
+		}
+
+		setProperty(transaction, DataVirtLexicon.DataServiceEntry.SOURCE_RESOURCE, refId);
+	}
 
 }

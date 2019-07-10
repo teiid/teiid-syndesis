@@ -17,19 +17,14 @@
  */
 package org.komodo.relational.model;
 
-import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.RelationalObject;
-import org.komodo.relational.TypeResolver;
-import org.komodo.relational.model.internal.ModelImpl;
 import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.Exportable;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 /**
  * Represents a relational model.
@@ -91,62 +86,7 @@ public interface Model extends Exportable, RelationalObject {
      * An empty array of models.
      */
     Model[] NO_MODELS = new Model[0];
-
-    /**
-     * The resolver of a {@link Model}.
-     */
-    TypeResolver< Model > RESOLVER = new TypeResolver< Model >() {
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#identifier()
-         */
-        @Override
-        public KomodoType identifier() {
-            return IDENTIFIER;
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#owningClass()
-         */
-        @Override
-        public Class< ModelImpl > owningClass() {
-            return ModelImpl.class;
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
-         */
-        @Override
-        public boolean resolvable( final UnitOfWork transaction,
-                                   final KomodoObject kobject ) throws KException {
-            return ObjectImpl.validateType( transaction, kobject.getRepository(), kobject, VdbLexicon.Vdb.DECLARATIVE_MODEL );
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
-         */
-        @Override
-        public Model resolve( final UnitOfWork transaction,
-                              final KomodoObject kobject ) throws KException {
-            if ( kobject.getTypeId() == Model.TYPE_ID ) {
-                return ( Model )kobject;
-            }
-
-            return new ModelImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
-        }
-
-    };
-
+    
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})

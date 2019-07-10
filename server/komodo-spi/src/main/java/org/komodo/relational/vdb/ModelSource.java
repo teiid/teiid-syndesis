@@ -15,89 +15,81 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.relational.model;
+package org.komodo.relational.vdb;
 
 import org.komodo.relational.RelationalObject;
+import org.komodo.relational.model.Model;
 import org.komodo.spi.KException;
+import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
-import org.teiid.modeshape.sequencer.ddl.DdlConstants;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlConstants;
 
 /**
- * Represents a relational model table constraint.
+ * Represents a VDB model source.
  */
-public interface TableConstraint extends RelationalObject {
+public interface ModelSource extends RelationalObject {
 
     /**
-     * The types of table constraints.
+     * The type identifier.
      */
-    enum ConstraintType {
+    int TYPE_ID = ModelSource.class.hashCode();
 
-        ACCESS_PATTERN( TeiidDdlConstants.TeiidNonReservedWord.ACCESSPATTERN.toDdl() ),
-        FOREIGN_KEY( DdlConstants.FOREIGN_KEY ),
-        INDEX( TeiidDdlConstants.TeiidNonReservedWord.INDEX.toDdl() ),
-        PRIMARY_KEY( DdlConstants.PRIMARY_KEY ),
-        UNIQUE( TeiidDdlConstants.TeiidReservedWord.UNIQUE.toDdl() );
+    /**
+     * Identifier of this object
+     */
+    KomodoType IDENTIFIER = KomodoType.VDB_MODEL_SOURCE;
 
-        final String type;
+    /**
+     * An empty array of model sources.
+     */
+    ModelSource[] NO_SOURCES = new ModelSource[0];
 
-        private ConstraintType( final String constraintType ) {
-            this.type = constraintType;
-        }
-
-        /**
-         * @return the Teiid value (never empty)
-         */
-        public String toValue() {
-            return this.type;
-        }
-
-    }
+    /**
+     * {@inheritDoc}
+     *
+     * @see org.komodo.spi.repository.KNode#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
+     */
+    @Override
+    Model getParent( final UnitOfWork transaction ) throws KException;
 
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param columnToAdd
-     *        the column being added (cannot be <code>null</code>)
+     * @return the value of the <code>JNDI name</code> property (can be empty)
      * @throws KException
      *         if an error occurs
      */
-    void addColumn( final UnitOfWork transaction,
-                    final Column columnToAdd ) throws KException;
+    String getJndiName( final UnitOfWork transaction ) throws KException;
 
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @return the columns contained in this key (never <code>null</code> but can be empty)
+     * @return the value of the <code>translator name</code> property (can be empty)
      * @throws KException
      *         if an error occurs
      */
-    Column[] getColumns( final UnitOfWork transaction ) throws KException;
-
-    /**
-     * @return the constraint type (never <code>null</code>)
-     */
-    ConstraintType getConstraintType();
+    String getTranslatorName( final UnitOfWork transaction ) throws KException;
 
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @return the value of the parent <code>table</code> (never <code>null</code>)
+     * @param newJndiName
+     *        the new value of the <code>JNDI name</code> property (can only be empty when removing)
      * @throws KException
      *         if an error occurs
      */
-    Table getTable( final UnitOfWork transaction ) throws KException;
+    void setJndiName( final UnitOfWork transaction,
+                      final String newJndiName ) throws KException;
 
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param columnToRemove
-     *        the column being removed (cannot be <code>null</code>)
+     * @param newTranslatorName
+     *        the new value of the <code>translator name</code> property (can only be empty when removing)
      * @throws KException
      *         if an error occurs
      */
-    void removeColumn( final UnitOfWork transaction,
-                       final Column columnToRemove ) throws KException;
+    void setTranslatorName( final UnitOfWork transaction,
+                            final String newTranslatorName ) throws KException;
 
 }

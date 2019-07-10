@@ -21,10 +21,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.visitor.DdlNodeVisitor;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
-import org.komodo.relational.RelationalModelFactory;
+import org.komodo.relational.TypeResolver;
+import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Table;
@@ -32,6 +34,7 @@ import org.komodo.relational.model.View;
 import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.internal.ModelSourceImpl;
+import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.DocumentType;
@@ -51,6 +54,62 @@ import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
  * An implementation of a relational model.
  */
 public final class ModelImpl extends RelationalObjectImpl implements Model {
+	
+    /**
+     * The resolver of a {@link Model}.
+     */
+    public static final TypeResolver< Model > RESOLVER = new TypeResolver< Model >() {
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#identifier()
+         */
+        @Override
+        public KomodoType identifier() {
+            return IDENTIFIER;
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#owningClass()
+         */
+        @Override
+        public Class< ModelImpl > owningClass() {
+            return ModelImpl.class;
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
+         *      org.komodo.spi.repository.KomodoObject)
+         */
+        @Override
+        public boolean resolvable( final UnitOfWork transaction,
+                                   final KomodoObject kobject ) throws KException {
+            return ObjectImpl.validateType( transaction, kobject.getRepository(), kobject, VdbLexicon.Vdb.DECLARATIVE_MODEL );
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
+         *      org.komodo.spi.repository.KomodoObject)
+         */
+        @Override
+        public Model resolve( final UnitOfWork transaction,
+                              final KomodoObject kobject ) throws KException {
+            if ( kobject.getTypeId() == Model.TYPE_ID ) {
+                return ( Model )kobject;
+            }
+
+            return new ModelImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
+        }
+
+    };
+
 
     /**
      * The allowed child types.
@@ -377,7 +436,7 @@ public final class ModelImpl extends RelationalObjectImpl implements Model {
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
 
         final KomodoObject parent = super.getParent( transaction );
-        final Vdb result = Vdb.RESOLVER.resolve( transaction, parent );
+        final Vdb result = VdbImpl.RESOLVER.resolve( transaction, parent );
         return result;
     }
 

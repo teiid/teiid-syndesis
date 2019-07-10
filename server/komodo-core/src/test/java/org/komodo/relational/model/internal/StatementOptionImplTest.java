@@ -20,12 +20,13 @@ package org.komodo.relational.model.internal;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+
 import org.junit.Before;
 import org.junit.Test;
-import org.komodo.relational.RelationalModelFactory;
 import org.komodo.relational.RelationalModelTest;
-import org.komodo.relational.RelationalObject.Filter;
+import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
+import org.komodo.relational.internal.RelationalObjectImpl.Filter;
 import org.komodo.relational.model.StatementOption;
 import org.komodo.relational.model.Table;
 import org.komodo.spi.KException;
@@ -104,7 +105,7 @@ public final class StatementOptionImplTest extends RelationalModelTest {
     @Test
     public void shouldNotContainFilteredProperties() throws Exception {
         final String[] filteredProps = this.option.getPropertyNames( getTransaction() );
-        final Filter[] filters = this.option.getFilters();
+        final Filter[] filters = ((StatementOptionImpl)this.option).getFilters();
 
         for ( final String name : filteredProps ) {
             for ( final Filter filter : filters ) {

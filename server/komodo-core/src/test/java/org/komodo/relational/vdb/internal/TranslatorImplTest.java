@@ -23,11 +23,12 @@ import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.relational.RelationalModelTest;
-import org.komodo.relational.RelationalObject.Filter;
 import org.komodo.relational.internal.RelationalObjectImpl;
+import org.komodo.relational.internal.RelationalObjectImpl.Filter;
 import org.komodo.relational.vdb.Translator;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.spi.KException;
@@ -111,7 +112,7 @@ public final class TranslatorImplTest extends RelationalModelTest {
     @Test
     public void shouldNotContainFilteredProperties() throws Exception {
         final String[] filteredProps = this.translator.getPropertyNames( getTransaction() );
-        final Filter[] filters = this.translator.getFilters();
+        final Filter[] filters = ((TranslatorImpl)this.translator).getFilters();
 
         for ( final String name : filteredProps ) {
             for ( final Filter filter : filters ) {

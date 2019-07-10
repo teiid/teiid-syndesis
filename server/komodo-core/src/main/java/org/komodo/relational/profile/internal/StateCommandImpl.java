@@ -19,10 +19,14 @@ package org.komodo.relational.profile.internal;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import org.komodo.core.KomodoLexicon;
+import org.komodo.core.repository.ObjectImpl;
+import org.komodo.relational.TypeResolver;
 import org.komodo.relational.internal.RelationalChildRestrictedObject;
 import org.komodo.relational.profile.StateCommand;
 import org.komodo.spi.KException;
+import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyValueType;
 import org.komodo.spi.repository.Repository;
@@ -33,6 +37,59 @@ import org.komodo.spi.repository.Repository.UnitOfWork.State;
  * An implementation of a view editor state object.
  */
 public class StateCommandImpl extends RelationalChildRestrictedObject implements StateCommand {
+	
+    /**
+     * The resolver of a {@link StateCommand}.
+     */
+    public static final TypeResolver<StateCommand> RESOLVER = new TypeResolver<StateCommand>() {
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#identifier()
+         */
+        @Override
+        public KomodoType identifier() {
+            return IDENTIFIER;
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#owningClass()
+         */
+        @Override
+        public Class<StateCommandImpl> owningClass() {
+            return StateCommandImpl.class;
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
+         *      org.komodo.spi.repository.KomodoObject)
+         */
+        @Override
+        public boolean resolvable(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
+            return ObjectImpl.validateType(transaction, kobject.getRepository(), kobject, KomodoLexicon.StateCommand.NODE_TYPE);
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
+         *      org.komodo.spi.repository.KomodoObject)
+         */
+        @Override
+        public StateCommand resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
+            if (kobject.getTypeId() == StateCommand.TYPE_ID) {
+                return (StateCommand)kobject;
+            }
+
+            return new StateCommandImpl(transaction, kobject.getRepository(), kobject.getAbsolutePath());
+        }
+
+    };
 
     /**
      * @param uow

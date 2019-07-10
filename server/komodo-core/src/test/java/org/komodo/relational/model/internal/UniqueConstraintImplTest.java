@@ -25,8 +25,8 @@ import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.relational.RelationalModelTest;
-import org.komodo.relational.RelationalObject.Filter;
 import org.komodo.relational.internal.RelationalObjectImpl;
+import org.komodo.relational.internal.RelationalObjectImpl.Filter;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.TableConstraint;
 import org.komodo.relational.model.UniqueConstraint;
@@ -104,7 +104,7 @@ public final class UniqueConstraintImplTest extends RelationalModelTest {
     @Test
     public void shouldNotContainFilteredProperties() throws Exception {
         final String[] filteredProps = this.uniqueConstraint.getPropertyNames( getTransaction() );
-        final Filter[] filters = this.uniqueConstraint.getFilters();
+        final Filter[] filters = ((UniqueConstraintImpl)this.uniqueConstraint).getFilters();
 
         for ( final String name : filteredProps ) {
             for ( final Filter filter : filters ) {

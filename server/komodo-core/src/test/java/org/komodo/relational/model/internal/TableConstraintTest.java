@@ -23,9 +23,9 @@ import static org.mockito.Mockito.mock;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.komodo.relational.RelationalModelFactory;
 import org.komodo.relational.RelationalModelTest;
-import org.komodo.relational.RelationalObject.Filter;
+import org.komodo.relational.internal.RelationalModelFactory;
+import org.komodo.relational.internal.RelationalObjectImpl.Filter;
 import org.komodo.relational.model.Column;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.TableConstraint;
@@ -101,7 +101,7 @@ public final class TableConstraintTest extends RelationalModelTest {
     @Test
     public void shouldNotContainFilteredProperties() throws Exception {
         final String[] filteredProps = this.constraint.getPropertyNames( getTransaction() );
-        final Filter[] filters = this.constraint.getFilters();
+        final Filter[] filters = ((TableConstraintImpl)this.constraint).getFilters();
 
         for ( final String name : filteredProps ) {
             for ( final Filter filter : filters ) {

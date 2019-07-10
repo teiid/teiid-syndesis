@@ -20,8 +20,11 @@ package org.komodo.relational.model.internal;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.RelationalConstants;
 import org.komodo.relational.RelationalConstants.Nullable;
+import org.komodo.relational.TypeResolver;
 import org.komodo.relational.internal.RelationalChildRestrictedObject;
 import org.komodo.relational.model.Column;
 import org.komodo.relational.model.StatementOption;
@@ -45,6 +48,61 @@ import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.CreateTable;
  * An implementation of a relational model column.
  */
 public final class ColumnImpl extends RelationalChildRestrictedObject implements Column {
+	
+    /**
+     * The resolver of a {@link Column}.
+     */
+    public static final TypeResolver< Column > RESOLVER = new TypeResolver< Column >() {
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#identifier()
+         */
+        @Override
+        public KomodoType identifier() {
+            return IDENTIFIER;
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#owningClass()
+         */
+        @Override
+        public Class< ColumnImpl > owningClass() {
+            return ColumnImpl.class;
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
+         *      org.komodo.spi.repository.KomodoObject)
+         */
+        @Override
+        public boolean resolvable( final UnitOfWork transaction,
+                                   final KomodoObject kobject ) throws KException {
+            return ObjectImpl.validateType( transaction, kobject.getRepository(), kobject, CreateTable.TABLE_ELEMENT );
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
+         *      org.komodo.spi.repository.KomodoObject)
+         */
+        @Override
+        public Column resolve( final UnitOfWork transaction,
+                               final KomodoObject kobject ) throws KException {
+            if ( kobject.getTypeId() == Column.TYPE_ID ) {
+                return ( Column )kobject;
+            }
+
+            return new ColumnImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
+        }
+
+    };
 
     private enum StandardOption {
 
@@ -491,7 +549,7 @@ public final class ColumnImpl extends RelationalChildRestrictedObject implements
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
 
         final KomodoObject parent = super.getParent( transaction );
-        final Table result = Table.RESOLVER.resolve( transaction, parent );
+        final Table result = TableImpl.RESOLVER.resolve( transaction, parent );
         return result;
     }
 

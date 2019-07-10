@@ -21,11 +21,13 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.Messages;
-import org.komodo.relational.RelationalModelFactory;
+import org.komodo.relational.TypeResolver;
 import org.komodo.relational.dataservice.DataServiceEntry;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.ServiceVdbEntry;
+import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Model.Type;
@@ -49,6 +51,64 @@ import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
  * Implementation of data service instance model.
  */
 public class DataserviceImpl extends RelationalObjectImpl implements Dataservice {
+	
+    /**
+     * The resolver of a {@link Dataservice}.
+     */
+    public static final TypeResolver< Dataservice > RESOLVER = new TypeResolver< Dataservice >() {
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#identifier()
+         */
+        @Override
+        public KomodoType identifier() {
+            return IDENTIFIER;
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#owningClass()
+         */
+        @Override
+        public Class< DataserviceImpl > owningClass() {
+            return DataserviceImpl.class;
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
+         *      org.komodo.spi.repository.KomodoObject)
+         */
+        @Override
+        public boolean resolvable( final UnitOfWork transaction,
+                                   final KomodoObject kobject ) throws KException {
+            return ObjectImpl.validateType( transaction,
+                                            kobject.getRepository(),
+                                            kobject,
+                                            DataVirtLexicon.DataService.NODE_TYPE );
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
+         *      org.komodo.spi.repository.KomodoObject)
+         */
+        @Override
+        public Dataservice resolve( final UnitOfWork transaction,
+                                    final KomodoObject kobject ) throws KException {
+            if ( kobject.getTypeId() == Dataservice.TYPE_ID ) {
+                return ( Dataservice )kobject;
+            }
+            return new DataserviceImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
+        }
+
+    };
+
 
     /**
      * The allowed child types.

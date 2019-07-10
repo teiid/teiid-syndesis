@@ -17,14 +17,9 @@
  */
 package org.komodo.relational.profile;
 
-import org.komodo.core.KomodoLexicon;
-import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.RelationalObject;
-import org.komodo.relational.TypeResolver;
-import org.komodo.relational.profile.internal.SqlProjectedColumnImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
@@ -49,60 +44,6 @@ public interface SqlProjectedColumn  extends RelationalObject, StringConstants {
      */
     SqlProjectedColumn[] NO_SQL_PROJECTED_COLUMNS = new SqlProjectedColumn[0];
 
-
-    /**
-     * The resolver of a {@link SqlProjectedColumn}.
-     */
-    TypeResolver<SqlProjectedColumn> RESOLVER = new TypeResolver<SqlProjectedColumn>() {
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#identifier()
-         */
-        @Override
-        public KomodoType identifier() {
-            return IDENTIFIER;
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#owningClass()
-         */
-        @Override
-        public Class<SqlProjectedColumnImpl> owningClass() {
-            return SqlProjectedColumnImpl.class;
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
-         */
-        @Override
-        public boolean resolvable(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
-            return ObjectImpl.validateType(transaction, kobject.getRepository(), kobject, KomodoLexicon.SqlComposition.NODE_TYPE);
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
-         */
-        @Override
-        public SqlProjectedColumn resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
-            if (kobject.getTypeId() == SqlProjectedColumn.TYPE_ID) {
-                return (SqlProjectedColumn)kobject;
-            }
-
-            return new SqlProjectedColumnImpl(transaction, kobject.getRepository(), kobject.getAbsolutePath());
-        }
-
-    };
-    
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})

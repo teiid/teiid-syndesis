@@ -17,6 +17,8 @@
  */
 package org.komodo.relational.vdb.internal;
 
+import org.komodo.core.repository.ObjectImpl;
+import org.komodo.relational.TypeResolver;
 import org.komodo.relational.internal.RelationalChildRestrictedObject;
 import org.komodo.relational.vdb.Translator;
 import org.komodo.spi.KException;
@@ -34,6 +36,62 @@ import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
  * An implementation of a VDB translator.
  */
 public final class TranslatorImpl extends RelationalChildRestrictedObject implements Translator {
+	
+    /**
+     * The resolver of a {@link Translator}.
+     */
+	public static final TypeResolver< Translator > RESOLVER = new TypeResolver< Translator >() {
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#identifier()
+         */
+        @Override
+        public KomodoType identifier() {
+            return IDENTIFIER;
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#owningClass()
+         */
+        @Override
+        public Class< TranslatorImpl > owningClass() {
+            return TranslatorImpl.class;
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
+         *      org.komodo.spi.repository.KomodoObject)
+         */
+        @Override
+        public boolean resolvable( final UnitOfWork transaction,
+                                   final KomodoObject kobject ) throws KException {
+            return ObjectImpl.validateType( transaction, kobject.getRepository(), kobject, VdbLexicon.Translator.TRANSLATOR );
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
+         *      org.komodo.spi.repository.KomodoObject)
+         */
+        @Override
+        public Translator resolve( final UnitOfWork transaction,
+                                   final KomodoObject kobject ) throws KException {
+            if ( kobject.getTypeId() == Translator.TYPE_ID ) {
+                return ( Translator )kobject;
+            }
+
+            return new TranslatorImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
+        }
+
+    };
+
 
     /**
      * @param uow

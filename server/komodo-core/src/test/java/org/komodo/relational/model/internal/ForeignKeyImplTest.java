@@ -29,10 +29,10 @@ import java.util.Arrays;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.komodo.relational.RelationalModelFactory;
 import org.komodo.relational.RelationalModelTest;
-import org.komodo.relational.RelationalObject.Filter;
+import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
+import org.komodo.relational.internal.RelationalObjectImpl.Filter;
 import org.komodo.relational.model.Column;
 import org.komodo.relational.model.ForeignKey;
 import org.komodo.relational.model.Model;
@@ -155,7 +155,7 @@ public final class ForeignKeyImplTest extends RelationalModelTest {
     @Test
     public void shouldNotContainFilteredProperties() throws Exception {
         final String[] filteredProps = this.foreignKey.getPropertyNames( getTransaction() );
-        final Filter[] filters = this.foreignKey.getFilters();
+        final Filter[] filters = ((ForeignKeyImpl)this.foreignKey).getFilters();
 
         for ( final String name : filteredProps ) {
             for ( final Filter filter : filters ) {

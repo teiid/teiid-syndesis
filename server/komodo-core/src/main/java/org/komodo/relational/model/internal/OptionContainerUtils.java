@@ -25,7 +25,7 @@ import org.komodo.core.repository.DescriptorImpl;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
-import org.komodo.relational.RelationalModelFactory;
+import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.model.OptionContainer;
 import org.komodo.relational.model.StatementOption;
 import org.komodo.spi.KException;

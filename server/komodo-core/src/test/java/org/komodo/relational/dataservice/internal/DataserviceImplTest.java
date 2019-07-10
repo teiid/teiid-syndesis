@@ -27,9 +27,9 @@ import java.util.Calendar;
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.relational.RelationalModelTest;
-import org.komodo.relational.RelationalObject.Filter;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.ServiceVdbEntry;
+import org.komodo.relational.internal.RelationalObjectImpl.Filter;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
@@ -66,7 +66,7 @@ public final class DataserviceImplTest extends RelationalModelTest {
     @Test
     public void shouldNotContainFilteredProperties() throws Exception {
         final String[] filteredProps = this.dataservice.getPropertyNames( getTransaction() );
-        final Filter[] filters = this.dataservice.getFilters();
+        final Filter[] filters = ((DataserviceImpl)this.dataservice).getFilters();
 
         for ( final String name : filteredProps ) {
             for ( final Filter filter : filters ) {

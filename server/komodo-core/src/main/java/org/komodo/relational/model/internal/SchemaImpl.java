@@ -18,13 +18,17 @@
 package org.komodo.relational.model.internal;
 
 import java.util.Properties;
+
 import org.komodo.core.KomodoLexicon;
+import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.visitor.DdlNodeVisitor;
+import org.komodo.relational.TypeResolver;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.model.Schema;
 import org.komodo.spi.KException;
 import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.DocumentType;
+import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyValueType;
 import org.komodo.spi.repository.Repository;
@@ -36,6 +40,61 @@ import org.komodo.utils.ArgCheck;
  * A named schema fragment
  */
 public class SchemaImpl extends RelationalObjectImpl implements Schema {
+	
+    /**
+     * The resolver of a {@link Schema}.
+     */
+    public static final TypeResolver< Schema > RESOLVER = new TypeResolver< Schema >() {
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#identifier()
+         */
+        @Override
+        public KomodoType identifier() {
+            return IDENTIFIER;
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#owningClass()
+         */
+        @Override
+        public Class< SchemaImpl > owningClass() {
+            return SchemaImpl.class;
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
+         *      org.komodo.spi.repository.KomodoObject)
+         */
+        @Override
+        public boolean resolvable( final UnitOfWork transaction,
+                                   final KomodoObject kobject ) throws KException {
+            return ObjectImpl.validateType( transaction, kobject.getRepository(), kobject, KomodoLexicon.Schema.NODE_TYPE );
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
+         *      org.komodo.spi.repository.KomodoObject)
+         */
+        @Override
+        public Schema resolve( final UnitOfWork transaction,
+                               final KomodoObject kobject ) throws KException {
+            if ( kobject.getTypeId() == Schema.TYPE_ID ) {
+                return ( Schema )kobject;
+            }
+
+            return new SchemaImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
+        }
+
+    };
 
     /**
      * @param uow

@@ -39,9 +39,9 @@ import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.OptionKeys;
 import org.komodo.relational.RelationalModelTest;
-import org.komodo.relational.RelationalObject.Filter;
 import org.komodo.relational.importer.vdb.VdbImporter;
 import org.komodo.relational.internal.RelationalObjectImpl;
+import org.komodo.relational.internal.RelationalObjectImpl.Filter;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.vdb.Translator;
 import org.komodo.relational.vdb.Vdb;
@@ -351,7 +351,7 @@ public final class VdbImplTest extends RelationalModelTest {
     @Test
     public void shouldNotContainFilteredProperties() throws Exception {
         final String[] filteredProps = this.vdb.getPropertyNames( getTransaction() );
-        final Filter[] filters = this.vdb.getFilters();
+        final Filter[] filters = ((VdbImpl)this.vdb).getFilters();
 
         for ( final String name : filteredProps ) {
             for ( final Filter filter : filters ) {

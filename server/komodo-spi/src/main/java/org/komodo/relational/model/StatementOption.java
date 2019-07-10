@@ -17,17 +17,12 @@
  */
 package org.komodo.relational.model;
 
-import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.RelationalObject;
-import org.komodo.relational.TypeResolver;
-import org.komodo.relational.model.internal.StatementOptionImpl;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
-import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
 
 /**
  * Represents a DDL statement option from a relational model.
@@ -48,64 +43,6 @@ public interface StatementOption extends Property, RelationalObject {
      * The type identifier.
      */
     int TYPE_ID = StatementOption.class.hashCode();
-
-    /**
-     * The resolver of a {@link StatementOption}.
-     */
-    TypeResolver< StatementOption > RESOLVER = new TypeResolver< StatementOption >() {
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#identifier()
-         */
-        @Override
-        public KomodoType identifier() {
-            return IDENTIFIER;
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#owningClass()
-         */
-        @Override
-        public Class< StatementOptionImpl > owningClass() {
-            return StatementOptionImpl.class;
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
-         */
-        @Override
-        public boolean resolvable( final UnitOfWork transaction,
-                                   final KomodoObject kobject ) throws KException {
-            return ObjectImpl.validateType( transaction,
-                                            kobject.getRepository(),
-                                            kobject,
-                                            StandardDdlLexicon.TYPE_STATEMENT_OPTION );
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
-         */
-        @Override
-        public StatementOption resolve( final UnitOfWork transaction,
-                                        final KomodoObject kobject ) throws KException {
-            if ( kobject.getTypeId() == StatementOption.TYPE_ID ) {
-                return ( StatementOption )kobject;
-            }
-
-            return new StatementOptionImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
-        }
-
-    };
 
     /**
      * @param transaction

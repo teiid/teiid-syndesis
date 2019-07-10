@@ -15,12 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.relational;
+package org.komodo.relational.internal;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.xml.namespace.QName;
-import org.komodo.relational.RelationalObject.Filter;
+
+import org.komodo.relational.internal.RelationalObjectImpl.Filter;
 import org.komodo.utils.ArgCheck;
 
 /**

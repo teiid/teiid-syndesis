@@ -24,11 +24,11 @@ import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
-import org.komodo.relational.RelationalModelFactory;
 import org.komodo.relational.RelationalObject;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.internal.DataserviceImpl;
 import org.komodo.relational.internal.AdapterFactory;
+import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Schema;
 import org.komodo.relational.vdb.Vdb;
@@ -193,16 +193,6 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
     @Override
     public KomodoType[] getChildTypes() {
         return CHILD_TYPES;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.RelationalObject#getFilters()
-     */
-    @Override
-    public Filter[] getFilters() {
-        return RelationalObject.NO_FILTERS;
     }
 
     /**
@@ -552,16 +542,6 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
 
         T kobject = adapterFactory.adapt(transaction, object, resolvedClass);
         return kobject;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.RelationalObject#setFilters(org.komodo.relational.RelationalObject.Filter[])
-     */
-    @Override
-    public void setFilters( Filter[] newFilters ) {
-        // filters not allowed
     }
 
     private void validateWorkspaceMember( final UnitOfWork uow,

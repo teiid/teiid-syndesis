@@ -19,10 +19,13 @@ package org.komodo.relational.profile.internal;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.komodo.core.KomodoLexicon;
+import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
-import org.komodo.relational.RelationalModelFactory;
+import org.komodo.relational.TypeResolver;
+import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.profile.SqlComposition;
 import org.komodo.relational.profile.SqlProjectedColumn;
@@ -43,6 +46,60 @@ import org.komodo.utils.ArgCheck;
  * An implementation of an view definition
  */
 public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefinition {
+	
+    /**
+     * The resolver of a {@link ViewDefinition}.
+     */
+    public static final TypeResolver<ViewDefinition> RESOLVER = new TypeResolver<ViewDefinition>() {
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#identifier()
+         */
+        @Override
+        public KomodoType identifier() {
+            return IDENTIFIER;
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#owningClass()
+         */
+        @Override
+        public Class<ViewDefinitionImpl> owningClass() {
+            return ViewDefinitionImpl.class;
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
+         *      org.komodo.spi.repository.KomodoObject)
+         */
+        @Override
+        public boolean resolvable(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
+            return ObjectImpl.validateType(transaction, kobject.getRepository(), kobject, KomodoLexicon.ViewDefinition.NODE_TYPE);
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
+         *      org.komodo.spi.repository.KomodoObject)
+         */
+        @Override
+        public ViewDefinition resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
+            if (kobject.getTypeId() == ViewDefinition.TYPE_ID) {
+                return (ViewDefinition)kobject;
+            }
+
+            return new ViewDefinitionImpl(transaction, kobject.getRepository(), kobject.getAbsolutePath());
+        }
+
+    };
+    
     /**
      * The allowed child types.
      */
@@ -78,7 +135,7 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
         ArgCheck.isTrue((transaction.getState() == State.NOT_STARTED), "transaction state must be NOT_STARTED"); //$NON-NLS-1$
 
         final KomodoObject grouping = super.getParent(transaction);
-        final ViewEditorState result = ViewEditorState.RESOLVER.resolve(transaction, grouping.getParent(transaction));
+        final ViewEditorState result = ViewEditorStateImpl.RESOLVER.resolve(transaction, grouping.getParent(transaction));
         return result;
     }
 

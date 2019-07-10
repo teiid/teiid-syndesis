@@ -17,6 +17,8 @@
  */
 package org.komodo.relational.model.internal;
 
+import org.komodo.core.repository.ObjectImpl;
+import org.komodo.relational.TypeResolver;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.UniqueConstraint;
 import org.komodo.spi.KException;
@@ -26,11 +28,72 @@ import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
+import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.Constraint;
 
 /**
  * An implementation of a relational model unique constraint.
  */
 public final class UniqueConstraintImpl extends TableConstraintImpl implements UniqueConstraint {
+	
+    /**
+     * The resolver of a {@link UniqueConstraint}.
+     */
+    public static final TypeResolver< UniqueConstraint > RESOLVER = new TypeResolver< UniqueConstraint >() {
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#identifier()
+         */
+        @Override
+        public KomodoType identifier() {
+            return IDENTIFIER;
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#owningClass()
+         */
+        @Override
+        public Class< UniqueConstraintImpl > owningClass() {
+            return UniqueConstraintImpl.class;
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
+         *      org.komodo.spi.repository.KomodoObject)
+         */
+        @Override
+        public boolean resolvable( final UnitOfWork transaction,
+                                   final KomodoObject kobject ) throws KException {
+            return ObjectImpl.validateType( transaction, kobject.getRepository(), kobject, Constraint.TABLE_ELEMENT )
+                   && ObjectImpl.validatePropertyValue( transaction,
+                                                        kobject.getRepository(),
+                                                        kobject,
+                                                        Constraint.TYPE,
+                                                        CONSTRAINT_TYPE.toValue() );
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
+         *      org.komodo.spi.repository.KomodoObject)
+         */
+        @Override
+        public UniqueConstraint resolve( final UnitOfWork transaction,
+                                         final KomodoObject kobject ) throws KException {
+            if ( kobject.getTypeId() == UniqueConstraint.TYPE_ID ) {
+                return ( UniqueConstraint )kobject;
+            }
+
+            return new UniqueConstraintImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
+        }
+
+    };
 
     /**
      * @param uow
@@ -84,7 +147,7 @@ public final class UniqueConstraintImpl extends TableConstraintImpl implements U
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
 
         final KomodoObject parent = super.getParent( transaction );
-        final Table result = Table.RESOLVER.resolve( transaction, parent );
+        final Table result = TableImpl.RESOLVER.resolve( transaction, parent );
         return result;
     }
 

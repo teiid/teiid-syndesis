@@ -15,12 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.relational;
+package org.komodo.relational.internal;
 
 import java.util.Map;
 
 import org.komodo.core.KomodoLexicon;
 import org.komodo.core.repository.RepositoryTools;
+import org.komodo.relational.RelationalObject;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.ServiceVdbEntry;
 import org.komodo.relational.dataservice.internal.DataserviceImpl;
@@ -52,6 +53,7 @@ import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.profile.internal.SqlCompositionImpl;
 import org.komodo.relational.profile.internal.SqlProjectedColumnImpl;
 import org.komodo.relational.profile.internal.StateCommandAggregateImpl;
+import org.komodo.relational.profile.internal.StateCommandImpl;
 import org.komodo.relational.profile.internal.ViewDefinitionImpl;
 import org.komodo.relational.profile.internal.ViewEditorStateImpl;
 import org.komodo.relational.vdb.ModelSource;
@@ -781,7 +783,7 @@ public final class RelationalModelFactory {
 
            KomodoObject stateCmdObject = stateCommandAgg.addChild(transaction, stateCommandType,
                                                                               KomodoLexicon.StateCommand.NODE_TYPE);
-           StateCommand stateCmd = StateCommand.RESOLVER.resolve(transaction, stateCmdObject);
+           StateCommand stateCmd = StateCommandImpl.RESOLVER.resolve(transaction, stateCmdObject);
            stateCmd.setId(transaction, commandId);
            stateCmd.setArguments(transaction, arguments);
            return stateCmd;

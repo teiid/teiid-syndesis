@@ -24,7 +24,7 @@ import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.relational.RelationalModelTest;
-import org.komodo.relational.RelationalObject.Filter;
+import org.komodo.relational.internal.RelationalObjectImpl.Filter;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.View;
 import org.komodo.spi.repository.KomodoObject;
@@ -64,7 +64,7 @@ public final class ViewImplTest extends RelationalModelTest {
     @Test
     public void shouldNotContainFilteredProperties() throws Exception {
         final String[] filteredProps = this.view.getPropertyNames( getTransaction() );
-        final Filter[] filters = this.view.getFilters();
+        final Filter[] filters = ((ViewImpl)this.view).getFilters();
 
         for ( final String name : filteredProps ) {
             for ( final Filter filter : filters ) {

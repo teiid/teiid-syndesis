@@ -35,8 +35,8 @@ import org.junit.Test;
 import org.komodo.relational.RelationalConstants;
 import org.komodo.relational.RelationalConstants.Nullable;
 import org.komodo.relational.RelationalModelTest;
-import org.komodo.relational.RelationalObject.Filter;
 import org.komodo.relational.internal.RelationalObjectImpl;
+import org.komodo.relational.internal.RelationalObjectImpl.Filter;
 import org.komodo.relational.model.Column;
 import org.komodo.relational.model.Column.Searchable;
 import org.komodo.relational.model.StatementOption;
@@ -286,7 +286,7 @@ public final class ColumnImplTest extends RelationalModelTest {
     @Test
     public void shouldNotContainFilteredProperties() throws Exception {
         final String[] filteredProps = this.column.getPropertyNames( getTransaction() );
-        final Filter[] filters = this.column.getFilters();
+        final Filter[] filters = ((ColumnImpl)this.column).getFilters();
 
         for ( final String name : filteredProps ) {
             for ( final Filter filter : filters ) {

@@ -21,9 +21,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.komodo.core.KomodoLexicon;
+import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
-import org.komodo.relational.RelationalModelFactory;
+import org.komodo.relational.TypeResolver;
+import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.profile.Profile;
 import org.komodo.relational.profile.ViewEditorState;
@@ -39,6 +41,61 @@ import org.komodo.utils.ArgCheck;
  * An implementation of an user profile.
  */
 public class ProfileImpl extends RelationalObjectImpl implements Profile {
+	
+    /**
+     * The resolver of a {@link Profile}.
+     */
+    public static final TypeResolver< Profile > RESOLVER = new TypeResolver< Profile >() {
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#identifier()
+         */
+        @Override
+        public KomodoType identifier() {
+            return IDENTIFIER;
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#owningClass()
+         */
+        @Override
+        public Class< ProfileImpl > owningClass() {
+            return ProfileImpl.class;
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
+         *      org.komodo.spi.repository.KomodoObject)
+         */
+        @Override
+        public boolean resolvable( final UnitOfWork transaction,
+                                   final KomodoObject kobject ) throws KException {
+            return ObjectImpl.validateType( transaction, kobject.getRepository(), kobject, KomodoLexicon.Profile.NODE_TYPE );
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
+         *      org.komodo.spi.repository.KomodoObject)
+         */
+        @Override
+        public Profile resolve( final UnitOfWork transaction,
+                            final KomodoObject kobject ) throws KException {
+            if ( kobject.getTypeId() == Profile.TYPE_ID ) {
+                return ( Profile )kobject;
+            }
+
+            return new ProfileImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
+        }
+    };
+
 
     /**
      * The allowed child types.
@@ -111,20 +168,6 @@ public class ProfileImpl extends RelationalObjectImpl implements Profile {
     @Override
     public KomodoType[] getChildTypes() {
         return CHILD_TYPES;
-    }
-
-    private KomodoObject getGitRepositoriesGroupingNode( final UnitOfWork transaction ) {
-        try {
-            final KomodoObject[] groupings = getRawChildren( transaction, KomodoLexicon.Profile.GIT_REPOSITORIES );
-
-            if ( groupings.length == 0 ) {
-                return null;
-            }
-
-            return groupings[ 0 ];
-        } catch ( final KException e ) {
-            return null;
-        }
     }
 
     @Override

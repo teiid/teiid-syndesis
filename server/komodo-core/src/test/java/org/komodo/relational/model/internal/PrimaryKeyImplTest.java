@@ -25,8 +25,8 @@ import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.relational.RelationalModelTest;
-import org.komodo.relational.RelationalObject.Filter;
 import org.komodo.relational.internal.RelationalObjectImpl;
+import org.komodo.relational.internal.RelationalObjectImpl.Filter;
 import org.komodo.relational.model.Column;
 import org.komodo.relational.model.PrimaryKey;
 import org.komodo.relational.model.Table;
@@ -125,7 +125,7 @@ public final class PrimaryKeyImplTest extends RelationalModelTest {
     @Test
     public void shouldNotContainFilteredProperties() throws Exception {
         final String[] filteredProps = this.primaryKey.getPropertyNames( getTransaction() );
-        final Filter[] filters = this.primaryKey.getFilters();
+        final Filter[] filters = ((PrimaryKeyImpl)this.primaryKey).getFilters();
 
         for ( final String name : filteredProps ) {
             for ( final Filter filter : filters ) {

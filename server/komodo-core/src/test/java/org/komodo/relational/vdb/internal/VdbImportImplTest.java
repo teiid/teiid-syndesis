@@ -21,11 +21,12 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.relational.RelationalModelTest;
-import org.komodo.relational.RelationalObject.Filter;
 import org.komodo.relational.internal.RelationalObjectImpl;
+import org.komodo.relational.internal.RelationalObjectImpl.Filter;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.VdbImport;
 import org.komodo.spi.KException;
@@ -101,7 +102,7 @@ public final class VdbImportImplTest extends RelationalModelTest {
     @Test
     public void shouldNotContainFilteredProperties() throws Exception {
         final String[] filteredProps = this.vdbImport.getPropertyNames( getTransaction() );
-        final Filter[] filters = this.vdbImport.getFilters();
+        final Filter[] filters = ((VdbImportImpl)this.vdbImport).getFilters();
 
         for ( final String name : filteredProps ) {
             for ( final Filter filter : filters ) {

@@ -17,8 +17,11 @@
  */
 package org.komodo.relational.vdb.internal;
 
+import org.komodo.core.repository.ObjectImpl;
+import org.komodo.relational.TypeResolver;
 import org.komodo.relational.internal.RelationalChildRestrictedObject;
 import org.komodo.relational.model.Model;
+import org.komodo.relational.model.internal.ModelImpl;
 import org.komodo.relational.vdb.ModelSource;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
@@ -34,6 +37,61 @@ import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
  * An implementation of a VDB model source.
  */
 public final class ModelSourceImpl extends RelationalChildRestrictedObject implements ModelSource {
+	
+    /**
+     * The resolver of a {@link ModelSource}.
+     */
+	public static final TypeResolver< ModelSource > RESOLVER = new TypeResolver< ModelSource >() {
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#identifier()
+         */
+        @Override
+        public KomodoType identifier() {
+            return IDENTIFIER;
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#owningClass()
+         */
+        @Override
+        public Class< ModelSourceImpl > owningClass() {
+            return ModelSourceImpl.class;
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
+         *      org.komodo.spi.repository.KomodoObject)
+         */
+        @Override
+        public boolean resolvable( final UnitOfWork transaction,
+                                   final KomodoObject kobject ) throws KException {
+            return ObjectImpl.validateType( transaction, kobject.getRepository(), kobject, VdbLexicon.Source.SOURCE );
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
+         *      org.komodo.spi.repository.KomodoObject)
+         */
+        @Override
+        public ModelSource resolve( final UnitOfWork transaction,
+                                    final KomodoObject kobject ) throws KException {
+            if ( kobject.getTypeId() == ModelSource.TYPE_ID ) {
+                return ( ModelSource )kobject;
+            }
+
+            return new ModelSourceImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
+        }
+
+    };
 
     /**
      * @param uow
@@ -77,7 +135,7 @@ public final class ModelSourceImpl extends RelationalChildRestrictedObject imple
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
 
         final KomodoObject grouping = super.getParent( transaction );
-        final Model result = Model.RESOLVER.resolve( transaction, grouping.getParent( transaction ) );
+        final Model result = ModelImpl.RESOLVER.resolve( transaction, grouping.getParent( transaction ) );
         return result;
     }
 

@@ -17,14 +17,9 @@
  */
 package org.komodo.relational.profile;
 
-import org.komodo.core.KomodoLexicon;
-import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.RelationalObject;
-import org.komodo.relational.TypeResolver;
-import org.komodo.relational.profile.internal.SqlCompositionImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
@@ -50,59 +45,6 @@ public interface SqlComposition  extends RelationalObject, StringConstants {
     SqlComposition[] NO_SQL_COMPOSITIONS = new SqlComposition[0];
 
 
-    /**
-     * The resolver of a {@link SqlComposition}.
-     */
-    TypeResolver<SqlComposition> RESOLVER = new TypeResolver<SqlComposition>() {
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#identifier()
-         */
-        @Override
-        public KomodoType identifier() {
-            return IDENTIFIER;
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#owningClass()
-         */
-        @Override
-        public Class<SqlCompositionImpl> owningClass() {
-            return SqlCompositionImpl.class;
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
-         */
-        @Override
-        public boolean resolvable(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
-            return ObjectImpl.validateType(transaction, kobject.getRepository(), kobject, KomodoLexicon.SqlComposition.NODE_TYPE);
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
-         */
-        @Override
-        public SqlComposition resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
-            if (kobject.getTypeId() == SqlComposition.TYPE_ID) {
-                return (SqlComposition)kobject;
-            }
-
-            return new SqlCompositionImpl(transaction, kobject.getRepository(), kobject.getAbsolutePath());
-        }
-
-    };
-    
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})

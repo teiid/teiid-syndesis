@@ -17,13 +17,8 @@
  */
 package org.komodo.relational.profile;
 
-import org.komodo.core.KomodoLexicon;
-import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.RelationalObject;
-import org.komodo.relational.TypeResolver;
-import org.komodo.relational.profile.internal.ProfileImpl;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
@@ -47,60 +42,6 @@ public interface Profile extends RelationalObject {
      * An empty array of Profiles
      */
     Profile[] NO_PROFILES = new Profile[0];
-
-    /**
-     * The resolver of a {@link Profile}.
-     */
-    TypeResolver< Profile > RESOLVER = new TypeResolver< Profile >() {
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#identifier()
-         */
-        @Override
-        public KomodoType identifier() {
-            return IDENTIFIER;
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#owningClass()
-         */
-        @Override
-        public Class< ProfileImpl > owningClass() {
-            return ProfileImpl.class;
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
-         */
-        @Override
-        public boolean resolvable( final UnitOfWork transaction,
-                                   final KomodoObject kobject ) throws KException {
-            return ObjectImpl.validateType( transaction, kobject.getRepository(), kobject, KomodoLexicon.Profile.NODE_TYPE );
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
-         */
-        @Override
-        public Profile resolve( final UnitOfWork transaction,
-                            final KomodoObject kobject ) throws KException {
-            if ( kobject.getTypeId() == Profile.TYPE_ID ) {
-                return ( Profile )kobject;
-            }
-
-            return new ProfileImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
-        }
-    };
 
     /**
      *
