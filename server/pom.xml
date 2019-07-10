@@ -192,7 +192,6 @@
   <modules>
     <module>komodo-spi</module>
     <module>komodo-core</module>
-    <module>komodo-relational</module>
     <module>komodo-server</module>
   </modules>
 
@@ -273,18 +272,6 @@
         <groupId>org.teiid</groupId>
         <artifactId>komodo-core</artifactId>
         <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.teiid</groupId>
-        <artifactId>komodo-relational</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.teiid</groupId>
-        <artifactId>komodo-relational</artifactId>
-        <version>${project.version}</version>
-        <type>test-jar</type>
-        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
