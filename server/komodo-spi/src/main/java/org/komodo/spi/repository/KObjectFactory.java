@@ -18,10 +18,10 @@
 package org.komodo.spi.repository;
 
 import java.util.Collection;
+
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.runtime.TeiidVdb;
 
 public interface KObjectFactory extends StringConstants, RepositoryConstants {
 
@@ -288,15 +288,4 @@ public interface KObjectFactory extends StringConstants, RepositoryConstants {
      * @throws KException 
      */
     String getNamespaceURI(UnitOfWork transaction, String prefix) throws KException;
-
-    /**
-     * @param uow a transaction that expects to be rolled back since {@link KomodoObject}s created
-     *                  by this method are meant to be transient and thrown away once properties have been
-     *                  extracted from them.
-     * @param parent
-     * @param teiidVdb
-     * @return a transient Vdb {@link KomodoObject}
-     * @throws KException 
-     */
-    KomodoObject exportTeiidVdb(UnitOfWork uow, KomodoObject parent, TeiidVdb teiidVdb) throws KException;
 }

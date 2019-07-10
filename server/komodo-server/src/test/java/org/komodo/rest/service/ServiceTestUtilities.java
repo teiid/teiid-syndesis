@@ -49,7 +49,6 @@ import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 public final class ServiceTestUtilities implements StringConstants {
 
@@ -236,16 +235,12 @@ public final class ServiceTestUtilities implements StringConstants {
         importer.importVdb(uow, portSampleStream, wkspace, importOptions, importMessages);
         importer.importVdb(uow, nwindSampleStream, wkspace, importOptions, importMessages);
     
-        KomodoObject pfSampleObj = wkspace.getChild(uow, "Portfolio");
-        Vdb pfVdb = wsMgr.resolve(uow, pfSampleObj, Vdb.class);
-    
         KomodoObject nwSampleObj = wkspace.getChild(uow, "Northwind");
         Vdb nwVdb = wsMgr.resolve(uow, nwSampleObj, Vdb.class);
     
         Dataservice dataservice = wsMgr.createDataservice(uow, wkspace, dataserviceName);
         dataservice.setDescription(uow, "This is my dataservice");
     
-        dataservice.addVdb(uow, pfVdb);
         dataservice.setServiceVdb(uow, nwVdb);
 
         uow.commit();
@@ -264,7 +259,7 @@ public final class ServiceTestUtilities implements StringConstants {
     
         UnitOfWork uow = repository.createTransaction(user, "Find dataservice " + dataserviceName, true, null, user); //$NON-NLS-1$
         WorkspaceManager mgr = WorkspaceManager.getInstance(repository, uow);
-        Dataservice[] dataservices = mgr.findDataservices(uow);
+        Dataservice[] dataservices = mgr.findDataservices(uow, null);
         Dataservice theDataservice = null;
         for(Dataservice ds : dataservices) {
             if (dataserviceName.equals(ds.getName(uow))) {
@@ -287,7 +282,7 @@ public final class ServiceTestUtilities implements StringConstants {
     
         UnitOfWork uow = repository.createTransaction(user, "Find dataservices", true, null, user); //$NON-NLS-1$
         WorkspaceManager mgr = WorkspaceManager.getInstance(repository, uow);
-        Dataservice[] services = mgr.findDataservices(uow);
+        Dataservice[] services = mgr.findDataservices(uow, null);
         uow.commit();
     
         return services;
@@ -314,33 +309,6 @@ public final class ServiceTestUtilities implements StringConstants {
     }
 
     /**
-     * Create a Model within a vdb in the komodo engine
-     *
-     * @param vdbName the vdb name
-     * @param modelName the vdb name
-     * @param user initiating call
-     * @throws Exception if error occurs
-     */
-    public void createVdbModel(String vdbName, String modelName, String user) throws Exception {
-    
-        SynchronousCallback callback = new SynchronousCallback();
-        UnitOfWork uow = repository.createTransaction(user, "Create Model", false, callback, user); //$NON-NLS-1$
-    
-        WorkspaceManager wsMgr = WorkspaceManager.getInstance(repository, uow);
-        if(!wsMgr.hasChild(uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE)) {
-            wsMgr.createVdb(uow, null, vdbName, vdbName);
-        }
-        
-        KomodoObject kobj = wsMgr.getChild(uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE);
-        Vdb vdb = Vdb.RESOLVER.resolve(uow, kobj);
-        
-        vdb.addModel(uow, modelName);
-    
-        uow.commit();
-        callback.await(3, TimeUnit.MINUTES);
-    }
-
-    /**
      * Create a View within a vdb model in the komodo engine
      *
      * @param vdbName the vdb name
@@ -353,21 +321,21 @@ public final class ServiceTestUtilities implements StringConstants {
     
         SynchronousCallback callback = new SynchronousCallback();
         UnitOfWork uow = repository.createTransaction(user, "Create View", false, callback, user); //$NON-NLS-1$
-    
+
         WorkspaceManager wsMgr = WorkspaceManager.getInstance(repository, uow);
-        if(!wsMgr.hasChild(uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE)) {
-            wsMgr.createVdb(uow, null, vdbName, vdbName);
+
+        Vdb vdb = wsMgr.findVdb(uow, vdbName);
+        
+        if(vdb == null) {
+            vdb = wsMgr.createVdb(uow, null, vdbName, vdbName);
         }
         
-        KomodoObject kobj = wsMgr.getChild(uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE);
-        Vdb vdb = Vdb.RESOLVER.resolve(uow, kobj);
-        
-        if(!vdb.hasChild(uow, modelName, VdbLexicon.Vdb.DECLARATIVE_MODEL)) {
-        	vdb.addModel(uow, modelName);
+        Model model = vdb.getModel(uow, modelName);
+        if (model == null) {
+        	model = vdb.addModel(uow, modelName);
         }
         
-        Model[] models = vdb.getModels(uow, modelName);
-        models[0].addView(uow, viewName);
+        model.addView(uow, viewName);
     
         uow.commit();
         callback.await(3, TimeUnit.MINUTES);

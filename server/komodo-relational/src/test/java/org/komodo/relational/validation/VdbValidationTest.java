@@ -20,32 +20,17 @@ package org.komodo.relational.validation;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.junit.Assert.assertThat;
+
 import org.junit.Test;
-import org.komodo.relational.model.AccessPattern;
 import org.komodo.relational.model.Column;
-import org.komodo.relational.model.DataTypeResultSet;
 import org.komodo.relational.model.ForeignKey;
-import org.komodo.relational.model.Index;
 import org.komodo.relational.model.Model;
-import org.komodo.relational.model.Parameter;
-import org.komodo.relational.model.Parameter.Direction;
 import org.komodo.relational.model.PrimaryKey;
-import org.komodo.relational.model.PushdownFunction;
-import org.komodo.relational.model.ResultSetColumn;
 import org.komodo.relational.model.SchemaElement;
-import org.komodo.relational.model.StoredProcedure;
 import org.komodo.relational.model.Table;
-import org.komodo.relational.model.TabularResultSet;
 import org.komodo.relational.model.UniqueConstraint;
-import org.komodo.relational.model.UserDefinedFunction;
 import org.komodo.relational.model.View;
-import org.komodo.relational.model.VirtualProcedure;
-import org.komodo.relational.vdb.Condition;
-import org.komodo.relational.vdb.DataRole;
-import org.komodo.relational.vdb.Entry;
-import org.komodo.relational.vdb.Mask;
 import org.komodo.relational.vdb.ModelSource;
-import org.komodo.relational.vdb.Permission;
 import org.komodo.relational.vdb.Translator;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.VdbImport;
@@ -79,51 +64,6 @@ public final class VdbValidationTest extends RelationalValidationTest {
     }
 
     @Test
-    public void shouldGetValidRulesForDataRole() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        DataRole dataRole = addDataRole(vdb,"1myDataRole");
-
-        final Rule[] rules = _repo.getValidationManager().getRules(getTransaction(),dataRole);
-        assertThat( rules.length, is( 1 ) );
-        assertThat( getRuleNames( rules ), hasItems( "default.dataRole.nodeName" ) );
-    }
-
-    @Test
-    public void shouldGetValidRulesForPermission() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        DataRole dataRole = addDataRole(vdb,"myDataRole");
-        Permission permission = addPermission(dataRole,"myPermission");
-
-        final Rule[] rules = _repo.getValidationManager().getRules(getTransaction(),permission);
-        assertThat( rules.length, is( 1 ) );
-        assertThat( getRuleNames( rules ), hasItems( "default.permission.nodeName" ) );
-    }
-
-    @Test
-    public void shouldGetValidRulesForMask() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        DataRole dataRole = addDataRole(vdb,"myDataRole");
-        Permission permission = addPermission(dataRole,"myPermission");
-        Mask mask = addMask(permission,"myMask");
-
-        final Rule[] rules = _repo.getValidationManager().getRules(getTransaction(),mask);
-        assertThat( rules.length, is( 1 ) );
-        assertThat( getRuleNames( rules ), hasItems( "default.mask.nodeName" ) );
-    }
-
-    @Test
-    public void shouldGetValidRulesForCondition() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        DataRole dataRole = addDataRole(vdb,"myDataRole");
-        Permission permission = addPermission(dataRole,"myPermission");
-        Condition condition = addCondition(permission,"myCondition");
-
-        final Rule[] rules = _repo.getValidationManager().getRules(getTransaction(),condition);
-        assertThat( rules.length, is( 1 ) );
-        assertThat( getRuleNames( rules ), hasItems( "default.condition.nodeName" ) );
-    }
-
-    @Test
     public void shouldGetValidRulesForTranslator() throws Exception {
         Vdb vdb = createVdb("myVDB");
         Translator translator = addTranslator(vdb,"myTranslator","transType");
@@ -131,16 +71,6 @@ public final class VdbValidationTest extends RelationalValidationTest {
         final Rule[] rules = _repo.getValidationManager().getRules(getTransaction(),translator);
         assertThat( rules.length, is( 1 ) );
         assertThat( getRuleNames( rules ), hasItems( "default.translator.nodeName" ) );
-    }
-
-    @Test
-    public void shouldGetValidRulesForEntry() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Entry entry = addEntry(vdb,"myEntry");
-
-        final Rule[] rules = _repo.getValidationManager().getRules(getTransaction(),entry);
-        assertThat( rules.length, is( 1 ) );
-        assertThat( getRuleNames( rules ), hasItems( "default.entry.nodeName" ) );
     }
 
     @Test
@@ -199,78 +129,6 @@ public final class VdbValidationTest extends RelationalValidationTest {
         final Rule[] rules = _repo.getValidationManager().getRules(getTransaction(),modelSource);
         assertThat( rules.length, is( 1 ) );
         assertThat( getRuleNames( rules ), hasItems( "default.modelSource.nodeName" ) );
-    }
-
-    @Test
-    public void shouldGetValidRulesForPushdownFunction() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        PushdownFunction pf = addPushdownFunction(model,"myPF");
-
-        final Rule[] rules = _repo.getValidationManager().getRules(getTransaction(),pf);
-        assertThat( rules.length, is( 1 ) );
-        assertThat( getRuleNames( rules ), hasItems( "default.pushdownFunction.nodeName" ) );
-    }
-
-    @Test
-    public void shouldGetValidRulesForUserDefinedFunction() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        UserDefinedFunction udf = addUserDefinedFunction(model,"myUDF");
-
-        final Rule[] rules = _repo.getValidationManager().getRules(getTransaction(),udf);
-        assertThat( rules.length, is( 5 ) );
-        assertThat( getRuleNames( rules ), hasItems( "default.userDefinedFunction.nodeName",
-                                                     "default.userDefinedFunction.returnParameterCount",
-                                                     "default.userDefinedFunction.category.propertyValue",
-                                                     "default.userDefinedFunction.javaClass.propertyValue",
-                                                     "default.userDefinedFunction.javaMethod.propertyValue" ) );
-    }
-
-    @Test
-    public void shouldGetValidRulesForVirtualProc() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        VirtualProcedure vp = addVirtualProcedure(model,"myVP");
-
-        final Rule[] rules = _repo.getValidationManager().getRules(getTransaction(),vp);
-        assertThat( rules.length, is( 1 ) );
-        assertThat( getRuleNames( rules ), hasItems( "default.virtualProcedure.nodeName" ) );
-    }
-
-    @Test
-    public void shouldGetValidRulesForStoredProc() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        StoredProcedure sp = addStoredProcedure(model,"mySP");
-
-        final Rule[] rules = _repo.getValidationManager().getRules(getTransaction(),sp);
-        assertThat( rules.length, is( 1 ) );
-        assertThat( getRuleNames( rules ), hasItems( "default.storedProcedure.nodeName" ) );
-    }
-
-    @Test
-    public void shouldGetValidRulesForAccessPattern() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        Table table = addTable(model,"myTable");
-        AccessPattern ap = addAccessPattern(table,"myAP");
-
-        final Rule[] rules = _repo.getValidationManager().getRules(getTransaction(),ap);
-        assertThat( rules.length, is( 1 ) );
-        assertThat( getRuleNames( rules ), hasItems( "default.accessPattern.nodeName" ) );
-    }
-
-    @Test
-    public void shouldGetValidRulesForIndex() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        Table table = addTable(model,"myTable");
-        Index index = addIndex(table,"myIndex");
-
-        final Rule[] rules = _repo.getValidationManager().getRules(getTransaction(),index);
-        assertThat( rules.length, is( 1 ) );
-        assertThat( getRuleNames( rules ), hasItems( "default.index.nodeName" ) );
     }
 
     @Test
@@ -351,55 +209,6 @@ public final class VdbValidationTest extends RelationalValidationTest {
         assertThat( getRuleNames( rules ), hasItems( "default.column.nodeName",
                                                      "default.column.datatype.propertyValue",
                                                      "default.column.numericDatatype.precisionPropertyValue" ) );
-    }
-
-    @Test
-    public void shouldGetValidRulesForParameter() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        StoredProcedure sp = addStoredProcedure(model,"mySP");
-        Parameter param = addParameter(sp,"myParam");
-
-        final Rule[] rules = _repo.getValidationManager().getRules(getTransaction(),param);
-        assertThat( rules.length, is( 1 ) );
-        assertThat( getRuleNames( rules ), hasItems( "default.parameter.nodeName" ) );
-    }
-
-    @Test
-    public void shouldGetValidRulesForDataTypeResultSet() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        StoredProcedure sp = addStoredProcedure(model,"mySP");
-        DataTypeResultSet rs = addDataTypeResultSet(sp);
-
-        final Rule[] rules = _repo.getValidationManager().getRules(getTransaction(),rs);
-        assertThat( rules.length, is( 1 ) );
-        assertThat( getRuleNames( rules ), hasItems( "default.dataTypeResultSet.nodeName" ) );
-    }
-
-    @Test
-    public void shouldGetValidRulesForTabularResultSet() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        StoredProcedure sp = addStoredProcedure(model,"mySP");
-        TabularResultSet rs = addTabularResultSet(sp);
-
-        final Rule[] rules = _repo.getValidationManager().getRules(getTransaction(),rs);
-        assertThat( rules.length, is( 1 ) );
-        assertThat( getRuleNames( rules ), hasItems( "default.tabularResultSet.nodeName" ) );
-    }
-
-    @Test
-    public void shouldGetValidRulesForResultSetColumn() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        StoredProcedure sp = addStoredProcedure(model,"mySP");
-        TabularResultSet rs = addTabularResultSet(sp);
-        ResultSetColumn rsCol = addResultSetColumn(rs,"myRsCol");
-
-        final Rule[] rules = _repo.getValidationManager().getRules(getTransaction(),rsCol);
-        assertThat( rules.length, is( 1 ) );
-        assertThat( getRuleNames( rules ), hasItems( "default.resultSetColumn.nodeName" ) );
     }
 
     @Test
@@ -506,119 +315,25 @@ public final class VdbValidationTest extends RelationalValidationTest {
     // DataRole Validation Rules
     // ==============================================================================================
 
-    @Test
-    public void shouldTestDataRoleNodeNameValidationSuccess() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        DataRole dataRole = addDataRole(vdb,"myDataRole");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), dataRole, "default.dataRole.nodeName");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.dataRole.nodeName" ) );
-        assertThat( results[0].isOK(), is( true ));
-    }
-
-    @Test
-    public void shouldTestDataRoleNodeNameValidationFailure() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        DataRole dataRole = addDataRole(vdb,"1myDataRole");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), dataRole, "default.dataRole.nodeName");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.dataRole.nodeName" ) );
-        assertThat( results[0].isOK(), is( false ));
-        assertThat( results[0].getLevel(), is( Level.ERROR));
-    }
+    
 
     // ==============================================================================================
     // Permission Validation Rules
     // ==============================================================================================
 
-    @Test
-    public void shouldTestPermissionNodeNameValidationSuccess() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        DataRole dataRole = addDataRole(vdb,"myDataRole");
-        Permission permission = addPermission(dataRole,"myPermission");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), permission, "default.permission.nodeName");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.permission.nodeName" ) );
-        assertThat( results[0].isOK(), is( true ));
-    }
-
-    @Test
-    public void shouldTestPermissionNodeNameValidationFailure() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        DataRole dataRole = addDataRole(vdb,"myDataRole");
-        Permission permission = addPermission(dataRole,"1myPermission");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), permission, "default.permission.nodeName");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.permission.nodeName" ) );
-        assertThat( results[0].isOK(), is( false ));
-        assertThat( results[0].getLevel(), is( Level.ERROR));
-    }
+    
 
     // ==============================================================================================
     // Mask Validation Rules
     // ==============================================================================================
 
-    @Test
-    public void shouldTestMaskNodeNameValidationSuccess() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        DataRole dataRole = addDataRole(vdb,"myDataRole");
-        Permission permission = addPermission(dataRole,"myPermission");
-        Mask mask = addMask(permission,"myMask");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), mask, "default.mask.nodeName");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.mask.nodeName" ) );
-        assertThat( results[0].isOK(), is( true ));
-    }
-
-    @Test
-    public void shouldTestMaskNodeNameValidationFailure() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        DataRole dataRole = addDataRole(vdb,"myDataRole");
-        Permission permission = addPermission(dataRole,"myPermission");
-        Mask mask = addMask(permission,"1myMask");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), mask, "default.mask.nodeName");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.mask.nodeName" ) );
-        assertThat( results[0].isOK(), is( false ));
-        assertThat( results[0].getLevel(), is( Level.ERROR));
-    }
+    
 
     // ==============================================================================================
     // Condition Validation Rules
     // ==============================================================================================
 
-    @Test
-    public void shouldTestConditionNodeNameValidationSuccess() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        DataRole dataRole = addDataRole(vdb,"myDataRole");
-        Permission permission = addPermission(dataRole,"myPermission");
-        Condition condition = addCondition(permission,"myCondition");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), condition, "default.condition.nodeName");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.condition.nodeName" ) );
-        assertThat( results[0].isOK(), is( true ));
-    }
-
-    @Test
-    public void shouldTestConditionNodeNameValidationFailure() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        DataRole dataRole = addDataRole(vdb,"myDataRole");
-        Permission permission = addPermission(dataRole,"myPermission");
-        Condition condition = addCondition(permission,"1myCondition");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), condition, "default.condition.nodeName");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.condition.nodeName" ) );
-        assertThat( results[0].isOK(), is( false ));
-        assertThat( results[0].getLevel(), is( Level.ERROR));
-    }
+    
 
     // ==============================================================================================
     // Translator Validation Rules
@@ -651,28 +366,7 @@ public final class VdbValidationTest extends RelationalValidationTest {
     // Entry Validation Rules
     // ==============================================================================================
 
-    @Test
-    public void shouldTestEntryNodeNameValidationSuccess() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Entry entry = addEntry(vdb,"myEntry");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), entry, "default.entry.nodeName");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.entry.nodeName" ) );
-        assertThat( results[0].isOK(), is( true ));
-    }
-
-    @Test
-    public void shouldTestEntryNodeNameValidationFailure() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Entry entry = addEntry(vdb,"1myEntry");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), entry, "default.entry.nodeName");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.entry.nodeName" ) );
-        assertThat( results[0].isOK(), is( false ));
-        assertThat( results[0].getLevel(), is( Level.ERROR));
-    }
+    
 
     // ==============================================================================================
     // VdbImport Validation Rules
@@ -990,299 +684,37 @@ public final class VdbValidationTest extends RelationalValidationTest {
     // PushdownFunction Validation Rules
     // ==============================================================================================
 
-    @Test
-    public void shouldTestPushdownFunctionNodeNameValidationSuccess() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        PushdownFunction pf = addPushdownFunction(model,"myPF");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), pf, "default.pushdownFunction.nodeName");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.pushdownFunction.nodeName" ) );
-        assertThat( results[0].isOK(), is( true ));
-    }
-
-    @Test
-    public void shouldTestPushdownFunctionNodeNameValidationFailure() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        PushdownFunction pf = addPushdownFunction(model,"1myPF");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), pf, "default.pushdownFunction.nodeName");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.pushdownFunction.nodeName" ) );
-        assertThat( results[0].isOK(), is( false ));
-        assertThat( results[0].getLevel(), is( Level.ERROR));
-    }
+    
 
     // ==============================================================================================
     // UserDefinedFunction Validation Rules
     // ==============================================================================================
 
-    @Test
-    public void shouldTestUserDefinedFunctionNodeNameValidationSuccess() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        UserDefinedFunction udf = addUserDefinedFunction(model,"myUDF");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), udf, "default.userDefinedFunction.nodeName");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.userDefinedFunction.nodeName" ) );
-        assertThat( results[0].isOK(), is( true ));
-    }
-
-    @Test
-    public void shouldTestUserDefinedFunctionNodeNameValidationFailure() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        UserDefinedFunction udf = addUserDefinedFunction(model,"1myUDF");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), udf, "default.userDefinedFunction.nodeName");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.userDefinedFunction.nodeName" ) );
-        assertThat( results[0].isOK(), is( false ));
-        assertThat( results[0].getLevel(), is( Level.ERROR));
-    }
-
-    @Test
-    public void shouldTestUserDefinedFunctionCategoryValidationSuccess() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        UserDefinedFunction udf = addUserDefinedFunction(model,"myUDF");
-        udf.setCategory(getTransaction(), "aCategory");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), udf, "default.userDefinedFunction.category.propertyValue");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.userDefinedFunction.category.propertyValue" ) );
-        assertThat( results[0].isOK(), is( true ));
-    }
-
-    @Test
-    public void shouldTestUserDefinedFunctionCategoryValidationFailure() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        UserDefinedFunction udf = addUserDefinedFunction(model,"1myUDF");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), udf, "default.userDefinedFunction.category.propertyValue");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.userDefinedFunction.category.propertyValue" ) );
-        assertThat( results[0].isOK(), is( false ));
-        assertThat( results[0].getLevel(), is( Level.ERROR));
-    }
-
-    @Test
-    public void shouldTestUserDefinedFunctionJavaClassValidationSuccess() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        UserDefinedFunction udf = addUserDefinedFunction(model,"myUDF");
-        udf.setJavaClass(getTransaction(), "aClass");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), udf, "default.userDefinedFunction.javaClass.propertyValue");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.userDefinedFunction.javaClass.propertyValue" ) );
-        assertThat( results[0].isOK(), is( true ));
-    }
-
-    @Test
-    public void shouldTestUserDefinedFunctionJavaClassValidationFailure() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        UserDefinedFunction udf = addUserDefinedFunction(model,"1myUDF");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), udf, "default.userDefinedFunction.javaClass.propertyValue");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.userDefinedFunction.javaClass.propertyValue" ) );
-        assertThat( results[0].isOK(), is( false ));
-        assertThat( results[0].getLevel(), is( Level.ERROR));
-    }
-
-    @Test
-    public void shouldTestUserDefinedFunctionJavaMethodValidationSuccess() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        UserDefinedFunction udf = addUserDefinedFunction(model,"myUDF");
-        udf.setJavaMethod(getTransaction(), "aMethod");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), udf, "default.userDefinedFunction.javaMethod.propertyValue");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.userDefinedFunction.javaMethod.propertyValue" ) );
-        assertThat( results[0].isOK(), is( true ));
-    }
-
-    @Test
-    public void shouldTestUserDefinedFunctionJavaMethodValidationFailure() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        UserDefinedFunction udf = addUserDefinedFunction(model,"1myUDF");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), udf, "default.userDefinedFunction.javaMethod.propertyValue");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.userDefinedFunction.javaMethod.propertyValue" ) );
-        assertThat( results[0].isOK(), is( false ));
-        assertThat( results[0].getLevel(), is( Level.ERROR));
-    }
-
-    @Test
-    public void shouldTestUserDefinedFunctionReturnParameterValidationSuccess() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        UserDefinedFunction udf = addUserDefinedFunction(model,"myUDF");
-        Parameter param = addParameter(udf,"returnParam");
-        param.setDirection(getTransaction(), Direction.OUT);
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), udf, "default.userDefinedFunction.returnParameterCount");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.userDefinedFunction.returnParameterCount" ) );
-        assertThat( results[0].isOK(), is( true ));
-    }
-
-    @Test
-    public void shouldTestUserDefinedFunctionReturnParameterValidationFailureWrongNumberParams() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        UserDefinedFunction udf = addUserDefinedFunction(model,"myUDF");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), udf, "default.userDefinedFunction.returnParameterCount");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.userDefinedFunction.returnParameterCount" ) );
-        assertThat( results[0].isOK(), is( false ));
-        assertThat( results[0].getLevel(), is( Level.ERROR));
-    }
-
-    @Test
-    public void shouldTestUserDefinedFunctionReturnParameterValidationFailureWrongTypeParam() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        UserDefinedFunction udf = addUserDefinedFunction(model,"myUDF");
-        Parameter param = addParameter(udf,"aParam");
-        param.setDirection(getTransaction(), Direction.IN);
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), udf, "default.userDefinedFunction.returnParameterCount");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.userDefinedFunction.returnParameterCount" ) );
-        assertThat( results[0].isOK(), is( false ));
-        assertThat( results[0].getLevel(), is( Level.ERROR));
-    }
+    
 
     // ==============================================================================================
     // VirtualProcedure Validation Rules
     // ==============================================================================================
 
-    @Test
-    public void shouldTestVirtualProcNodeNameValidationSuccess() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        VirtualProcedure vp = addVirtualProcedure(model,"myVP");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), vp, "default.virtualProcedure.nodeName");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.virtualProcedure.nodeName" ) );
-        assertThat( results[0].isOK(), is( true ));
-    }
-
-    @Test
-    public void shouldTestVirtualProcNodeNameValidationFailure() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        VirtualProcedure vp = addVirtualProcedure(model,"1myVP");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), vp, "default.virtualProcedure.nodeName");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.virtualProcedure.nodeName" ) );
-        assertThat( results[0].isOK(), is( false ));
-        assertThat( results[0].getLevel(), is( Level.ERROR));
-    }
+    
 
     // ==============================================================================================
     // StoredProcedure Validation Rules
     // ==============================================================================================
 
-    @Test
-    public void shouldTestStoredProcNodeNameValidationSuccess() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        StoredProcedure sp = addStoredProcedure(model,"mySP");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), sp, "default.storedProcedure.nodeName");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.storedProcedure.nodeName" ) );
-        assertThat( results[0].isOK(), is( true ));
-    }
-
-    @Test
-    public void shouldTestStoredProcNodeNameValidationFailure() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        StoredProcedure sp = addStoredProcedure(model,"1mySP");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), sp, "default.storedProcedure.nodeName");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.storedProcedure.nodeName" ) );
-        assertThat( results[0].isOK(), is( false ));
-        assertThat( results[0].getLevel(), is( Level.ERROR));
-    }
+    
 
     // ==============================================================================================
     // AccessPattern Validation Rules
     // ==============================================================================================
 
-    @Test
-    public void shouldTestAccessPatternNodeNameValidationSuccess() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        Table table = addTable(model,"myTable");
-        AccessPattern ap = addAccessPattern(table,"myAP");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), ap, "default.accessPattern.nodeName");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.accessPattern.nodeName" ) );
-        assertThat( results[0].isOK(), is( true ));
-    }
-
-    @Test
-    public void shouldTestAccessPatternNodeNameValidationFailure() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        Table table = addTable(model,"myTable");
-        AccessPattern ap = addAccessPattern(table,"1myAP");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), ap, "default.accessPattern.nodeName");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.accessPattern.nodeName" ) );
-        assertThat( results[0].isOK(), is( false ));
-        assertThat( results[0].getLevel(), is( Level.ERROR));
-    }
+    
 
     // ==============================================================================================
     // Index Validation Rules
     // ==============================================================================================
 
-    @Test
-    public void shouldTestIndexNodeNameValidationSuccess() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        Table table = addTable(model,"myTable");
-        Index index = addIndex(table,"myIndex");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), index, "default.index.nodeName");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.index.nodeName" ) );
-        assertThat( results[0].isOK(), is( true ));
-    }
-
-    @Test
-    public void shouldTestIndexNodeNameValidationFailure() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        Table table = addTable(model,"myTable");
-        Index index = addIndex(table,"1myIndex");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), index, "default.index.nodeName");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.index.nodeName" ) );
-        assertThat( results[0].isOK(), is( false ));
-        assertThat( results[0].getLevel(), is( Level.ERROR));
-    }
+    
 
     // ==============================================================================================
     // PrimaryKey Validation Rules
@@ -1534,97 +966,19 @@ public final class VdbValidationTest extends RelationalValidationTest {
     // Parameter Validation Rules
     // ==============================================================================================
 
-    @Test
-    public void shouldTestParameterNodeNameValidationSuccess() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        StoredProcedure sp = addStoredProcedure(model,"mySP");
-        Parameter param = addParameter(sp,"myParam");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), param, "default.parameter.nodeName");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.parameter.nodeName" ) );
-        assertThat( results[0].isOK(), is( true ));
-    }
-
-    @Test
-    public void shouldTestParameterNodeNameValidationFailure() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        StoredProcedure sp = addStoredProcedure(model,"mySP");
-        Parameter param = addParameter(sp,"1myParam");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), param, "default.parameter.nodeName");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.parameter.nodeName" ) );
-        assertThat( results[0].isOK(), is( false ));
-        assertThat( results[0].getLevel(), is( Level.ERROR));
-    }
 
     // ==============================================================================================
     // DataTypeResultSet Validation Rules
     // ==============================================================================================
 
-    @Test
-    public void shouldTestDataTypeResultSetNodeNameValidationSuccess() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        StoredProcedure sp = addStoredProcedure(model,"mySP");
-        DataTypeResultSet rs = addDataTypeResultSet(sp);
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), rs, "default.dataTypeResultSet.nodeName");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.dataTypeResultSet.nodeName" ) );
-        assertThat( results[0].isOK(), is( true ));
-    }
 
     // ==============================================================================================
     // TabularResultSet Validation Rules
     // ==============================================================================================
 
-    @Test
-    public void shouldTestTabularResultSetNodeNameValidationSuccess() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        StoredProcedure sp = addStoredProcedure(model,"mySP");
-        TabularResultSet rs = addTabularResultSet(sp);
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), rs, "default.tabularResultSet.nodeName");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.tabularResultSet.nodeName" ) );
-        assertThat( results[0].isOK(), is( true ));
-    }
 
     // ==============================================================================================
     // ResultSetColumn Validation Rules
     // ==============================================================================================
 
-    @Test
-    public void shouldTestResultSetColumnNodeNameValidationSuccess() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        StoredProcedure sp = addStoredProcedure(model,"mySP");
-        TabularResultSet rs = addTabularResultSet(sp);
-        ResultSetColumn rsCol = addResultSetColumn(rs,"myRsCol");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), rsCol, "default.resultSetColumn.nodeName");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.resultSetColumn.nodeName" ) );
-        assertThat( results[0].isOK(), is( true ));
-    }
-
-    @Test
-    public void shouldTestResultSetColumnNodeNameValidationFailure() throws Exception {
-        Vdb vdb = createVdb("myVDB");
-        Model model = addModel(vdb,"myModel");
-        StoredProcedure sp = addStoredProcedure(model,"mySP");
-        TabularResultSet rs = addTabularResultSet(sp);
-        ResultSetColumn rsCol = addResultSetColumn(rs,"1myRsCol");
-
-        final Result[] results = _repo.getValidationManager().evaluate(getTransaction(), rsCol, "default.resultSetColumn.nodeName");
-        assertThat( results.length, is( 1 ) );
-        assertThat( results[0].getRuleId(), is( "default.resultSetColumn.nodeName" ) );
-        assertThat( results[0].isOK(), is( false ));
-        assertThat( results[0].getLevel(), is( Level.ERROR));
-    }
 }

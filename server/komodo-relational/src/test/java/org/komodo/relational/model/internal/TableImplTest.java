@@ -38,10 +38,8 @@ import org.komodo.relational.RelationalModelFactory;
 import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.RelationalObject.Filter;
 import org.komodo.relational.internal.RelationalObjectImpl;
-import org.komodo.relational.model.AccessPattern;
 import org.komodo.relational.model.Column;
 import org.komodo.relational.model.ForeignKey;
-import org.komodo.relational.model.Index;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.PrimaryKey;
 import org.komodo.relational.model.SchemaElement.SchemaElementType;
@@ -76,16 +74,6 @@ public final class TableImplTest extends RelationalModelTest {
     }
 
     @Test
-    public void shouldAddAccessPattern() throws Exception {
-        final String name = "accesspattern";
-        final AccessPattern accessPattern = this.table.addAccessPattern( getTransaction(), name );
-        assertThat( accessPattern, is( notNullValue() ) );
-        assertThat( accessPattern.getName( getTransaction() ), is( name ) );
-        assertThat( this.table.getChildren( getTransaction() ).length, is( 1 ) );
-        assertThat( this.table.getChildren( getTransaction() )[0], is( instanceOf( AccessPattern.class ) ) );
-    }
-
-    @Test
     public void shouldAddColumn() throws Exception {
         final String name = "column";
         final Column column = this.table.addColumn( getTransaction(), name );
@@ -106,17 +94,6 @@ public final class TableImplTest extends RelationalModelTest {
         assertThat( foreignKey.getName( getTransaction() ), is( name ) );
         assertThat( this.table.getChildren( getTransaction() ).length, is( 1 ) );
         assertThat( this.table.getChildren( getTransaction() )[0], is( instanceOf( ForeignKey.class ) ) );
-    }
-
-    @Test
-    public void shouldAddIndex() throws Exception {
-        final String name = "index";
-        final Index index = this.table.addIndex( getTransaction(), name );
-
-        assertThat( index, is( notNullValue() ) );
-        assertThat( index.getName( getTransaction() ), is( name ) );
-        assertThat( this.table.getChildren( getTransaction() ).length, is( 1 ) );
-        assertThat( this.table.getChildren( getTransaction() )[0], is( instanceOf( Index.class ) ) );
     }
 
     @Test
@@ -167,17 +144,10 @@ public final class TableImplTest extends RelationalModelTest {
 
     @Test
     public void shouldCountChildren() throws Exception {
-        this.table.addAccessPattern( getTransaction(), "accessPattern" );
         this.table.addColumn( getTransaction(), "column" );
-        this.table.addIndex( getTransaction(), "index" );
         this.table.addUniqueConstraint( getTransaction(), "uniqueConstraint" );
         this.table.setPrimaryKey( getTransaction(), "primaryKey" );
-        assertThat( this.table.getChildren( getTransaction() ).length, is( 5 ) );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldFailAddingEmptyAccessPatternName() throws Exception {
-        this.table.addAccessPattern( getTransaction(), StringConstants.EMPTY_STRING );
+        assertThat( this.table.getChildren( getTransaction() ).length, is( 3 ) );
     }
 
     @Test( expected = IllegalArgumentException.class )
@@ -191,11 +161,6 @@ public final class TableImplTest extends RelationalModelTest {
     }
 
     @Test( expected = IllegalArgumentException.class )
-    public void shouldFailAddingEmptyIndexName() throws Exception {
-        this.table.addIndex( getTransaction(), StringConstants.EMPTY_STRING );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
     public void shouldFailAddingEmptyStatementOptionName() throws Exception {
         this.table.setStatementOption( getTransaction(), StringConstants.EMPTY_STRING, "blah" );
     }
@@ -206,11 +171,6 @@ public final class TableImplTest extends RelationalModelTest {
     }
 
     @Test( expected = IllegalArgumentException.class )
-    public void shouldFailAddingNullAccessPatternName() throws Exception {
-        this.table.addAccessPattern( getTransaction(), null );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
     public void shouldFailAddingNullColumnName() throws Exception {
         this.table.addColumn( getTransaction(), null );
     }
@@ -218,11 +178,6 @@ public final class TableImplTest extends RelationalModelTest {
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailAddingNullForeignKeyName() throws Exception {
         this.table.addForeignKey( getTransaction(), null, mock( Table.class ) );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldFailAddingNullIndexName() throws Exception {
-        this.table.addIndex( getTransaction(), null );
     }
 
     @Test( expected = IllegalArgumentException.class )
@@ -303,11 +258,6 @@ public final class TableImplTest extends RelationalModelTest {
     }
 
     @Test( expected = IllegalArgumentException.class )
-    public void shouldFailTryingToRemoveEmptyAccessPatternName() throws Exception {
-        this.table.removeAccessPattern( getTransaction(), StringConstants.EMPTY_STRING );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
     public void shouldFailTryingToRemoveEmptyColumnName() throws Exception {
         this.table.removeColumn( getTransaction(), StringConstants.EMPTY_STRING );
     }
@@ -315,11 +265,6 @@ public final class TableImplTest extends RelationalModelTest {
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailTryingToRemoveEmptyForeignKeyName() throws Exception {
         this.table.removeForeignKey( getTransaction(), StringConstants.EMPTY_STRING );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldFailTryingToRemoveEmptyIndexName() throws Exception {
-        this.table.removeIndex( getTransaction(), StringConstants.EMPTY_STRING );
     }
 
     @Test( expected = IllegalArgumentException.class )
@@ -338,11 +283,6 @@ public final class TableImplTest extends RelationalModelTest {
     }
 
     @Test( expected = IllegalArgumentException.class )
-    public void shouldFailTryingToRemoveNullAccessPatternName() throws Exception {
-        this.table.removeAccessPattern( getTransaction(), null );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
     public void shouldFailTryingToRemoveNullColumnName() throws Exception {
         this.table.removeColumn( getTransaction(), null );
     }
@@ -350,11 +290,6 @@ public final class TableImplTest extends RelationalModelTest {
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailTryingToRemoveNullForeignKeyName() throws Exception {
         this.table.removeForeignKey( getTransaction(), null );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldFailTryingToRemoveNullIndexName() throws Exception {
-        this.table.removeIndex( getTransaction(), null );
     }
 
     @Test( expected = IllegalArgumentException.class )
@@ -368,11 +303,6 @@ public final class TableImplTest extends RelationalModelTest {
     }
 
     @Test( expected = KException.class )
-    public void shouldFailTryingToRemoveUnknownAccessPattern() throws Exception {
-        this.table.removeAccessPattern( getTransaction(), "unknown" );
-    }
-
-    @Test( expected = KException.class )
     public void shouldFailTryingToRemoveUnknownColumn() throws Exception {
         this.table.removeColumn( getTransaction(), "unknown" );
     }
@@ -383,11 +313,6 @@ public final class TableImplTest extends RelationalModelTest {
     }
 
     @Test( expected = KException.class )
-    public void shouldFailTryingToRemoveUnknownIndex() throws Exception {
-        this.table.removeIndex( getTransaction(), "unknown" );
-    }
-
-    @Test( expected = KException.class )
     public void shouldFailTryingToRemoveUnknownStatementOption() throws Exception {
         this.table.removeStatementOption( getTransaction(), "unknown" );
     }
@@ -395,17 +320,6 @@ public final class TableImplTest extends RelationalModelTest {
     @Test( expected = KException.class )
     public void shouldFailTryingToRemoveUnknownUniqueConstraint() throws Exception {
         this.table.removeUniqueConstraint( getTransaction(), "unknown" );
-    }
-
-    @Test
-    public void shouldGetAccessPatterns() throws Exception {
-        final int numAccessPatterns = 5;
-
-        for ( int i = 0; i < numAccessPatterns; ++i ) {
-            this.table.addAccessPattern( getTransaction(), "accesspattern" + i );
-        }
-
-        assertThat( this.table.getAccessPatterns( getTransaction() ).length, is( numAccessPatterns ) );
     }
 
     @Test
@@ -432,17 +346,6 @@ public final class TableImplTest extends RelationalModelTest {
     }
 
     @Test
-    public void shouldGetIndexes() throws Exception {
-        final int numIndexes = 5;
-
-        for ( int i = 0; i < numIndexes; ++i ) {
-            this.table.addIndex( getTransaction(), "index" + i );
-        }
-
-        assertThat( this.table.getIndexes( getTransaction() ).length, is( numIndexes ) );
-    }
-
-    @Test
     public void shouldGetStatementOptions() throws Exception {
         final int numStatementOptions = 5;
 
@@ -462,18 +365,6 @@ public final class TableImplTest extends RelationalModelTest {
         }
 
         assertThat( this.table.getUniqueConstraints( getTransaction() ).length, is( numUniqueConstraints ) );
-    }
-
-    @Test
-    public void shouldHaveCorrectChildTypes() {
-        assertThat( Arrays.asList( this.table.getChildTypes() ),
-                    hasItems( AccessPattern.IDENTIFIER,
-                              Column.IDENTIFIER,
-                              ForeignKey.IDENTIFIER,
-                              Index.IDENTIFIER,
-                              PrimaryKey.IDENTIFIER,
-                              UniqueConstraint.IDENTIFIER ) );
-        assertThat( this.table.getChildTypes().length, is( 6 ) );
     }
 
     @Test
@@ -768,14 +659,6 @@ public final class TableImplTest extends RelationalModelTest {
     }
 
     @Test
-    public void shouldRemoveAccessPattern() throws Exception {
-        final String name = "accesspattern";
-        this.table.addAccessPattern( getTransaction(), name );
-        this.table.removeAccessPattern( getTransaction(), name );
-        assertThat( this.table.getAccessPatterns( getTransaction() ).length, is( 0 ) );
-    }
-
-    @Test
     public void shouldRemoveColumn() throws Exception {
         final String name = "column";
         this.table.addColumn( getTransaction(), name );
@@ -791,15 +674,6 @@ public final class TableImplTest extends RelationalModelTest {
         this.table.removeForeignKey( getTransaction(), name );
 
         assertThat( this.table.getForeignKeys( getTransaction() ).length, is( 0 ) );
-    }
-
-    @Test
-    public void shouldRemoveIndex() throws Exception {
-        final String name = "index";
-        this.table.addIndex( getTransaction(), name );
-        this.table.removeIndex( getTransaction(), name );
-
-        assertThat( this.table.getIndexes( getTransaction() ).length, is( 0 ) );
     }
 
     @Test

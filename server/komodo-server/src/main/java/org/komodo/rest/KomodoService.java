@@ -58,8 +58,6 @@ import org.komodo.utils.KLog;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 import com.google.gson.Gson;
 
@@ -561,15 +559,7 @@ public abstract class KomodoService implements V1Constants {
     }
 
     protected Vdb findVdb(UnitOfWork uow, String vdbName) throws KException {
-        if (! getWorkspaceManager(uow).hasChild( uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE ) ) {
-            return null;
-        }
-
-        final KomodoObject kobject = getWorkspaceManager(uow).getChild( uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE );
-        final Vdb vdb = getWorkspaceManager(uow).resolve( uow, kobject, Vdb.class );
-
-        LOGGER.debug( "VDB '{0}' was found", vdbName ); //$NON-NLS-1$
-        return vdb;
+        return getWorkspaceManager(uow).findVdb(uow, vdbName);
     }
 
     protected UnitOfWork systemTx(String description, boolean rollback) throws KException {
@@ -606,15 +596,7 @@ public abstract class KomodoService implements V1Constants {
     }
 
     protected Dataservice findDataservice(UnitOfWork uow, String dataserviceName) throws KException {
-        if (! getWorkspaceManager(uow).hasChild( uow, dataserviceName, DataVirtLexicon.DataService.NODE_TYPE ) ) {
-            return null;
-        }
-
-        final KomodoObject kobject = getWorkspaceManager(uow).getChild( uow, dataserviceName, DataVirtLexicon.DataService.NODE_TYPE );
-        final Dataservice dataservice = getWorkspaceManager(uow).resolve( uow, kobject, Dataservice.class );
-
-        LOGGER.debug( "Dataservice '{0}' was found", dataserviceName ); //$NON-NLS-1$
-        return dataservice;
+    	return getWorkspaceManager(uow).findDataservice(uow, dataserviceName);
     }
 
     protected String uri(String... segments) {

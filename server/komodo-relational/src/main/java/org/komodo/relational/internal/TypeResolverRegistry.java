@@ -24,33 +24,17 @@ import java.util.Map;
 
 import org.komodo.relational.TypeResolver;
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.model.AccessPattern;
 import org.komodo.relational.model.Column;
-import org.komodo.relational.model.DataTypeResultSet;
 import org.komodo.relational.model.ForeignKey;
-import org.komodo.relational.model.Index;
 import org.komodo.relational.model.Model;
-import org.komodo.relational.model.Parameter;
 import org.komodo.relational.model.PrimaryKey;
-import org.komodo.relational.model.PushdownFunction;
-import org.komodo.relational.model.ResultSetColumn;
 import org.komodo.relational.model.Schema;
 import org.komodo.relational.model.StatementOption;
-import org.komodo.relational.model.StoredProcedure;
 import org.komodo.relational.model.Table;
-import org.komodo.relational.model.TabularResultSet;
 import org.komodo.relational.model.UniqueConstraint;
-import org.komodo.relational.model.UserDefinedFunction;
 import org.komodo.relational.model.View;
-import org.komodo.relational.model.VirtualProcedure;
-import org.komodo.relational.model.internal.AccessPatternImpl;
 import org.komodo.relational.profile.Profile;
-import org.komodo.relational.vdb.Condition;
-import org.komodo.relational.vdb.DataRole;
-import org.komodo.relational.vdb.Entry;
-import org.komodo.relational.vdb.Mask;
 import org.komodo.relational.vdb.ModelSource;
-import org.komodo.relational.vdb.Permission;
 import org.komodo.relational.vdb.Translator;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.VdbImport;
@@ -58,6 +42,7 @@ import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.utils.KeyInValueMap;
 import org.komodo.spi.utils.KeyInValueMap.KeyFromValueAdapter;
+import org.teiid.query.resolver.util.AccessPattern;
 
 /**
  *
@@ -91,61 +76,31 @@ public class TypeResolverRegistry {
 
     private TypeResolverRegistry() {
 
-        index(KomodoType.ACCESS_PATTERN, AccessPattern.RESOLVER);
-
         index(KomodoType.COLUMN, Column.RESOLVER);
 
         index(KomodoType.DATASERVICE, Dataservice.RESOLVER);
 
-        index(KomodoType.DATA_TYPE_RESULT_SET, DataTypeResultSet.RESOLVER);
-
         index(KomodoType.FOREIGN_KEY, ForeignKey.RESOLVER);
 
-        index(KomodoType.INDEX, Index.RESOLVER);
-
         index(KomodoType.MODEL, Model.RESOLVER);
-
-        index(KomodoType.PARAMETER, Parameter.RESOLVER);
 
         index(KomodoType.PRIMARY_KEY, PrimaryKey.RESOLVER);
 
         index(KomodoType.PROFILE, Profile.RESOLVER);
 
-        index(KomodoType.PUSHDOWN_FUNCTION, PushdownFunction.RESOLVER);
-
         index(KomodoType.SCHEMA, Schema.RESOLVER);
 
         index(KomodoType.STATEMENT_OPTION, StatementOption.RESOLVER);
 
-        index(KomodoType.STORED_PROCEDURE, StoredProcedure.RESOLVER);
-
         index(KomodoType.TABLE, Table.RESOLVER);
-
-        index(KomodoType.TABULAR_RESULT_SET, TabularResultSet.RESOLVER);
-
-        index(KomodoType.RESULT_SET_COLUMN, ResultSetColumn.RESOLVER);
 
         index(KomodoType.UNIQUE_CONSTRAINT, UniqueConstraint.RESOLVER);
 
-        index(KomodoType.USER_DEFINED_FUNCTION, UserDefinedFunction.RESOLVER);
-
-        index(KomodoType.VIRTUAL_PROCEDURE, VirtualProcedure.RESOLVER);
-
         index(KomodoType.VDB, Vdb.RESOLVER);
-
-        index(KomodoType.VDB_CONDITION, Condition.RESOLVER);
-
-        index(KomodoType.VDB_DATA_ROLE, DataRole.RESOLVER);
-
-        index(KomodoType.VDB_ENTRY, Entry.RESOLVER);
 
         index(KomodoType.VDB_IMPORT, VdbImport.RESOLVER);
 
-        index(KomodoType.VDB_MASK, Mask.RESOLVER);
-
         index(KomodoType.VDB_MODEL_SOURCE, ModelSource.RESOLVER);
-
-        index(KomodoType.VDB_PERMISSION, Permission.RESOLVER);
 
         index(KomodoType.VDB_TRANSLATOR, Translator.RESOLVER);
 

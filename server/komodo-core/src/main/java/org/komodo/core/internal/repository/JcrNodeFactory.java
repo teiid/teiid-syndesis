@@ -49,11 +49,9 @@ import org.komodo.spi.repository.PropertyDescriptor;
 import org.komodo.spi.repository.PropertyValueType;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.runtime.TeiidVdb;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
 import org.modeshape.jcr.api.JcrTools;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 public class JcrNodeFactory extends AbstractJcrFactory implements KObjectFactory {
 
@@ -589,36 +587,6 @@ public class JcrNodeFactory extends AbstractJcrFactory implements KObjectFactory
         checkTransaction(transaction);
         try {
             return getSession(transaction).getNamespaceURI(prefix);
-        } catch (Exception ex) {
-            throw handleError(ex);
-        }
-    }
-
-    @Override
-    public KomodoObject exportTeiidVdb(UnitOfWork transaction, KomodoObject parent, TeiidVdb teiidVdb) throws KException {
-        checkTransaction(transaction);
-        ArgCheck.isNotNull(teiidVdb, "teiidVdb");
-        ArgCheck.isTrue(transaction.isRollbackOnly(), "transaction should be rollback only");
-
-        try {
-            String vdbContent = teiidVdb.export();
-            Session session = getSession(transaction);
-
-            if (!(session instanceof org.modeshape.jcr.api.Session))
-                throw new UnsupportedOperationException(); // Very unlikely to happen ... ... hopefully!!
-
-            org.modeshape.jcr.api.Session mSession = (org.modeshape.jcr.api.Session)session;
-
-            KomodoObject vdb = parent.addChild(transaction, teiidVdb.getName(), VdbLexicon.Vdb.VIRTUAL_DATABASE);
-            KomodoObject fileNode = vdb.addChild(transaction, JcrLexicon.JCR_CONTENT, null);
-            fileNode.setProperty(transaction, JcrLexicon.JCR_DATA, vdbContent);
-
-            Property dataProperty = fileNode.getProperty(transaction, JcrLexicon.JCR_DATA);
-
-            javax.jcr.Property inputProperty = session.getProperty(dataProperty.getAbsolutePath());
-            Node outputNode = session.getNode(vdb.getAbsolutePath());
-            mSession.sequence("VDB Dynamic Sequencer", inputProperty, outputNode);
-            return vdb;
         } catch (Exception ex) {
             throw handleError(ex);
         }

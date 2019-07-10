@@ -22,7 +22,7 @@
                     to_user string PATH 'to_user',
                     profile_image_url string PATH 'profile_image_url',
                     source string PATH 'source',
-                    text string PATH 'text') AS tweet;
+                    text string PATH 'text') AS tweet;;
                 CREATE VIEW Tweet AS select * FROM twitterview.getTweets;
         ]]> </metadata>
     </model>

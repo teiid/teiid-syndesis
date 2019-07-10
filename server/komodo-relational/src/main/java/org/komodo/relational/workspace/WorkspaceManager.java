@@ -29,6 +29,7 @@ import org.komodo.relational.RelationalObject;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.internal.DataserviceImpl;
 import org.komodo.relational.internal.AdapterFactory;
+import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Schema;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.internal.VdbImpl;
@@ -44,6 +45,7 @@ import org.komodo.spi.repository.RepositoryObserver;
 import org.komodo.spi.utils.KeyInValueMap;
 import org.komodo.spi.utils.KeyInValueMap.KeyFromValueAdapter;
 import org.komodo.utils.ArgCheck;
+import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
 import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
@@ -52,6 +54,8 @@ import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
  *
  */
 public class WorkspaceManager extends ObjectImpl implements RelationalObject {
+	
+	protected static final KLog LOGGER = KLog.getLogger();
 
     /**
      * The allowed child types.
@@ -135,6 +139,9 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
                                                                         new KeyInValueMap< CacheKey, WorkspaceManager >(adapter);
 
     private final String owner;
+    
+    private AdapterFactory adapterFactory = new AdapterFactory( );
+    
 
     /**
      * @param repository
@@ -419,16 +426,17 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
      *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @return all {@link Dataservice}s in the workspace
+     * @param searchPattern pattern to match.  If blank, will match all. 
+     * @return {@link Dataservice}s in the workspace
      * @throws KException
      *         if an error occurs
      */
-    public Dataservice[] findDataservices( UnitOfWork transaction ) throws KException {
+    public Dataservice[] findDataservices( UnitOfWork transaction, String searchPattern ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
                          "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
-        final String[] paths = findByType(transaction, DataVirtLexicon.DataService.NODE_TYPE);
+        final String[] paths = findByType(transaction, DataVirtLexicon.DataService.NODE_TYPE, null, searchPattern, false);
         Dataservice[] result = null;
 
         if (paths.length == 0) {
@@ -442,6 +450,8 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
             }
         }
 
+        LOGGER.debug("getDataservices:found '{0}' DataServices using pattern '{1}'", result.length, //$NON-NLS-1$
+                searchPattern);
         return result;
     }
 
@@ -453,12 +463,25 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    public Vdb[] findVdbs( final UnitOfWork transaction ) throws KException {
+    public Vdb[] findVdbs( final UnitOfWork transaction) throws KException {
+    	return findVdbs(transaction, null);
+    }
+
+    /**
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not
+     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     * @param searchPattern regex search pattern, if blank all are returned
+     * @return {@link Vdb}s in the workspace (never <code>null</code> but can be empty)
+     * @throws KException
+     *         if an error occurs
+     */
+    public Vdb[] findVdbs( final UnitOfWork transaction, String searchPattern ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
                          "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
-        final String[] paths = findByType(transaction, VdbLexicon.Vdb.VIRTUAL_DATABASE, false);
+        final String[] paths = findByType(transaction, VdbLexicon.Vdb.VIRTUAL_DATABASE, null, searchPattern, false);
         Vdb[] result = null;
 
         if (paths.length == 0) {
@@ -527,8 +550,7 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
         ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
                          "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
-        AdapterFactory adapter = new AdapterFactory( );
-        T kobject = adapter.adapt(transaction, object, resolvedClass);
+        T kobject = adapterFactory.adapt(transaction, object, resolvedClass);
         return kobject;
     }
 
@@ -555,4 +577,37 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
             throw new KException(Messages.getString(Relational.OBJECT_BEING_DELETED_HAS_NULL_PARENT, kobject.getAbsolutePath()));
         }
     }
+    
+    public Dataservice findDataservice(UnitOfWork uow, String dataserviceName) throws KException {
+        if (! hasChild( uow, dataserviceName, DataVirtLexicon.DataService.NODE_TYPE ) ) {
+            return null;
+        }
+
+        final KomodoObject kobject = getChild( uow, dataserviceName, DataVirtLexicon.DataService.NODE_TYPE );
+        final Dataservice dataservice = resolve( uow, kobject, Dataservice.class );
+
+        LOGGER.debug( "Dataservice '{0}' was found", dataserviceName ); //$NON-NLS-1$
+        return dataservice;
+    }
+    
+    public Vdb findVdb(UnitOfWork uow, String vdbName) throws KException {
+        if (! hasChild( uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE ) ) {
+            return null;
+        }
+
+        final KomodoObject kobject = getChild( uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE );
+        final Vdb vdb = resolve( uow, kobject, Vdb.class );
+
+        LOGGER.debug( "VDB '{0}' was found", vdbName ); //$NON-NLS-1$
+        return vdb;
+    }
+
+	public Model findModel(UnitOfWork uow, Vdb vdb, String modelName) throws KException {
+		if (! vdb.hasChild(uow, modelName, VdbLexicon.Vdb.DECLARATIVE_MODEL)) {
+            return null;
+        }
+
+		KomodoObject kModel = vdb.getChild(uow, modelName, VdbLexicon.Vdb.DECLARATIVE_MODEL);
+        return resolve( uow, kModel, Model.class );
+	}
 }

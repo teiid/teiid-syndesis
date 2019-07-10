@@ -33,6 +33,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -48,6 +49,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -58,12 +60,12 @@ import javax.xml.validation.SchemaFactory;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.LexiconConstants.CoreLexicon;
-import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.FileUtils;
+import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
+import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -149,7 +151,7 @@ public class TestUtilities implements StringConstants {
                             "XMLTABLE('results' passing JSONTOXML('myxml', w.result) columns " +
                             "created_on string PATH 'created_at', from_user string PATH 'from_user', " +
                             "to_user string PATH 'to_user', profile_image_url string PATH 'profile_image_url', " +
-                            "source string PATH 'source', text string PATH 'text') AS tweet; " +
+                            "source string PATH 'source', text string PATH 'text') AS tweet;; " +
                             "CREATE VIEW Tweet AS select * FROM twitterview.getTweets;";
 
     /**
@@ -1003,7 +1005,7 @@ public class TestUtilities implements StringConstants {
                                 .append("XMLTABLE('results' passing JSONTOXML('myxml', w.result) columns ")
                                 .append("created_on string PATH 'created_at', from_user string PATH 'from_user', ")
                                 .append("to_user string PATH 'to_user', profile_image_url string PATH 'profile_image_url', ")
-                                .append("source string PATH 'source', text string PATH 'text') AS tweet; ")
+                                .append("source string PATH 'source', text string PATH 'text') AS tweet;; ")
                                 .append("CREATE VIEW Tweet AS select * FROM twitterview.getTweets;");
         twitterView.setProperty(uow, VdbLexicon.Model.MODEL_DEFINITION, modelDefinition.toString());
     
@@ -1464,21 +1466,25 @@ public class TestUtilities implements StringConstants {
 
         return false;
     }
+    
+    public static String toString(Document document) throws TransformerException {
+    	TransformerFactory tf = TransformerFactory.newInstance();
+    	Transformer trans = tf.newTransformer();
+    	StringWriter sw = new StringWriter();
+    	trans.transform(new DOMSource(document), new StreamResult(sw));
+    	return sw.toString();
+    }
 
-    /**
-     * Compare two documents
-     *
-     * @param document1 first document
-     * @param document2 second document
-     */
-    public static void compareDocuments(Document document1, Document document2) {
+    public static void compareDocuments(Document document1, Document document2) throws TransformerException {
         assertNotNull(document1);
         assertNotNull(document2);
         assertEquals(document1.getNodeType(), document2.getNodeType());
 
         StringBuilder errorMessages = new StringBuilder();
-        if (! compareNodes(document1.getDocumentElement(), document2.getDocumentElement(), errorMessages))
+        if (! compareNodes(document1.getDocumentElement(), document2.getDocumentElement(), errorMessages)) {
+        	assertEquals(toString(document1), toString(document2));
             fail(errorMessages.toString());
+        }
     }
 
     /**

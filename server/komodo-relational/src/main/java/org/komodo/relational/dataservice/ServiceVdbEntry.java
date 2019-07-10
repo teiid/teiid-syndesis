@@ -19,46 +19,63 @@ package org.komodo.relational.dataservice;
 
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.spi.KException;
+import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
+import org.komodo.spi.repository.Repository.UnitOfWork.State;
 
 /**
  * Represents a data service entry for a Service VDB.
  */
-public interface ServiceVdbEntry extends VdbEntry, VdbEntryContainer {
+public interface ServiceVdbEntry extends DataServiceEntry< Vdb > {
+
+    /**
+     * The type identifier.
+     */
+    KomodoType IDENTIFIER = KomodoType.VDB_DATA_SERVICE_ENTRY;
+
+    /**
+     * An empty collection of VDB entries.
+     */
+    ServiceVdbEntry[] NO_ENTRIES = new ServiceVdbEntry[ 0 ];
 
     /**
      * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param dependency
-     *        the VDB dependency being added (cannot be <code>null</code>)
-     * @return the VDB dependency entry that was created (never <code>null</code>)
+     *        the transaction (cannot be <code>null</code> and must have a state of {@link State#NOT_STARTED})
+     * @return the VDB name (can be <code>null</code> or empty)
      * @throws KException
      *         if an error occurs
      */
-    VdbEntry addDependency( final UnitOfWork transaction,
-                            final Vdb dependency ) throws KException;
+    String getVdbName( final UnitOfWork transaction ) throws KException;
 
     /**
      * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param dependencyEntryName
-     *        the name of the VDB dependency entry to create (cannot be empty)
-     * @return the VDB dependency entry that was created (never <code>null</code>)
+     *        the transaction (cannot be <code>null</code> and must have a state of {@link State#NOT_STARTED})
+     * @return the VDB version (can be <code>null</code> or empty)
      * @throws KException
      *         if an error occurs
      */
-    VdbEntry addDependencyEntry( final UnitOfWork transaction,
-                                 final String dependencyEntryName ) throws KException;
+    String getVdbVersion( final UnitOfWork transaction ) throws KException;
 
     /**
      * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @return the entries corresponding to VDB dependency entries (never <code>null</code> but can be empty)
+     *        the transaction (cannot be <code>null</code> and must have a state of {@link State#NOT_STARTED})
+     * @param vdbName
+     *        the value to use to set the VDB name of the entry (can be <code>null</code> or empty)
      * @throws KException
      *         if an error occurs
      */
-    VdbEntry[] getDependencies( final UnitOfWork transaction ) throws KException;
+    void setVdbName( final UnitOfWork transaction,
+                     final String vdbName ) throws KException;
+
+    /**
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> and must have a state of {@link State#NOT_STARTED})
+     * @param vdbVersion
+     *        the value to use to set the VDB version of the entry (can be <code>null</code> or empty)
+     * @throws KException
+     *         if an error occurs
+     */
+    void setVdbVersion( final UnitOfWork transaction,
+                        final String vdbVersion ) throws KException;
+
 }

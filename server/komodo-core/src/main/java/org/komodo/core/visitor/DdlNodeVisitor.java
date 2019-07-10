@@ -726,8 +726,8 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
 
         if (TableType.GLOBAL_TEMP_TABLE != context.getTableType()) {
             if (context.isVirtual()) {
-                TeiidSqlNodeVisitor visitor = new TeiidSqlNodeVisitor(getVersion(), getDataTypeService());
-                String teiidSql = visitor.getTeiidSql(transaction, tabulation);
+            	Property p = tabulation.getProperty(transaction, TeiidDdlLexicon.CreateTable.QUERY_EXPRESSION);
+                String teiidSql = p.getStringValue(transaction); 
                 append(NEW_LINE).append(AS).append(NEW_LINE).append(teiidSql);
             }
             append(SEMI_COLON);
@@ -870,8 +870,8 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
         //block
         if (context.isVirtual()) {
             append(NEW_LINE).append(AS).append(NEW_LINE);
-            TeiidSqlNodeVisitor visitor = new TeiidSqlNodeVisitor(getVersion(), getDataTypeService());
-            String teiidSql = visitor.getTeiidSql(transaction, procedure);
+            Property p = procedure.getProperty(transaction, TeiidDdlLexicon.CreateProcedure.STATEMENT);
+            String teiidSql = p.getStringValue(transaction);
             append(teiidSql);
             append(SEMI_COLON);
         }
