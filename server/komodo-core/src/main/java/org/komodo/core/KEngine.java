@@ -34,12 +34,12 @@ import org.komodo.spi.KEvent.Type;
 import org.komodo.spi.KException;
 import org.komodo.spi.KObserver;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.constants.SystemConstants;
 import org.komodo.spi.metadata.MetadataClientEvent;
 import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.RepositoryClientEvent;
 import org.komodo.utils.ArgCheck;
-import org.komodo.utils.KEnvironment;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
 import org.komodo.utils.observer.KLatchObserver;
@@ -52,6 +52,18 @@ import org.teiid.query.sql.LanguageObject;
 public final class KEngine implements KClient, StringConstants {
 
     private static final String PREFIX = KEngine.class.getSimpleName() + DOT;
+    
+    /**
+     * Check the engine data directory property has a legitimate value
+     */
+    public static void checkDataDirProperty() {
+        // Initialize default data directory system property if necessary
+        if ( ! StringUtils.isBlank( System.getProperty( SystemConstants.ENGINE_DATA_DIR ) ) )
+            return;
+
+        final String defaultValue = ( System.getProperty( "user.home", "/" ) + "/.komodo" ); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        System.setProperty( SystemConstants.ENGINE_DATA_DIR, defaultValue );
+    }
 
     /**
      * @return engine started event
@@ -80,7 +92,7 @@ public final class KEngine implements KClient, StringConstants {
     private final Set<KObserver> observers = new HashSet<>();
 
     public KEngine() {
-        KEnvironment.checkDataDirProperty();
+        checkDataDirProperty();
 
         // Initialize the logging system
         try {

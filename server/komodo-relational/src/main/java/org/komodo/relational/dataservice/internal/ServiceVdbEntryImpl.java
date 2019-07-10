@@ -34,7 +34,6 @@ import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 /**
  * An implementation of a Service VDB entry in a data service.
@@ -112,7 +111,7 @@ public class ServiceVdbEntryImpl extends RelationalObjectImpl implements Service
 
             if ( kobj == null ) {
                 throw new KException( Messages.getString( Messages.Relational.REFERENCED_RESOURCE_NOT_FOUND,
-                                                          VdbLexicon.Vdb.VIRTUAL_DATABASE,
+                		DataVirtLexicon.VdbEntry.VDB_REF,
                                                           refId ) );
             }
 

@@ -24,14 +24,12 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.komodo.core.KEngine;
 import org.komodo.core.KomodoLexicon;
 import org.komodo.core.KomodoLexicon.Environment;
 import org.komodo.core.KomodoLexicon.Komodo;
 import org.komodo.core.KomodoLexicon.LibraryComponent;
-import org.komodo.core.repository.validation.ValidationManagerImpl;
 import org.komodo.spi.KClient;
 import org.komodo.spi.KEvent;
 import org.komodo.spi.KException;
@@ -48,7 +46,6 @@ import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.RepositoryClientEvent;
 import org.komodo.spi.repository.RepositoryObserver;
 import org.komodo.spi.repository.UnitOfWorkDelegate;
-import org.komodo.spi.repository.ValidationManager;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 
@@ -562,7 +559,6 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     private final Id id;
     private final Set< RepositoryObserver > observers = new HashSet< >();
     private final Type type;
-    private ValidationManager validationMgr;
     protected KEngine kEngine;
 
     /**
@@ -975,37 +971,6 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
 
             throw new KException(e);
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.spi.repository.Repository#getValidationManager()
-     */
-    @Override
-    public ValidationManager getValidationManager() throws KException {
-        if ( this.validationMgr == null ) {
-            // the ValidationManager loads validation rules when it is constructed so we need a transaction to save those rules
-            final SynchronousCallback callback = new SynchronousCallback();
-            final UnitOfWork transaction = createTransaction(SYSTEM_USER, "getValidationManager", false, callback, SYSTEM_USER); //$NON-NLS-1$
-            this.validationMgr = new ValidationManagerImpl( transaction, this );
-            transaction.commit();
-
-            try {
-                // wait for transaction to commit before returning
-                if ( !callback.await( 30, TimeUnit.SECONDS ) ) {
-                    throw new KException( Messages.getString( Messages.Komodo.ERROR_CONSTRUCTING_VALIDATION_MANAGER ) );
-                }
-            } catch ( final Exception e ) {
-                if ( !( e instanceof KException ) ) {
-                    throw new KException( e );
-                }
-
-                throw ( KException )e;
-            }
-        }
-
-        return this.validationMgr;
     }
 
     /**

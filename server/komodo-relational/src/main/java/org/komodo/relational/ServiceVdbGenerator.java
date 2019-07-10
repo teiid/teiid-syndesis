@@ -39,13 +39,11 @@ import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.sql.teiid.TeiidSqlConstants;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.utils.PathUtils;
 import org.komodo.utils.StringUtils;
 import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 /**
  * This class provides methods to generate data service vdbs containing a view model
@@ -592,13 +590,8 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
      */
     private Vdb findSchemaVdb(final UnitOfWork uow, final String connectionName) throws KException {
 		final String schemaVdbName = getSchemaVdbName(connectionName);
-        final KomodoObject vdb = this.wsManager.getChild( uow, schemaVdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE );
-
-		if (vdb != null) {
-	        return this.wsManager.resolve(uow, vdb, Vdb.class);
-		}
-
-		return null;
+		
+		return this.wsManager.findVdb(uow, schemaVdbName);
 	}
 
     private static String getSchemaVdbName(final String connectionName) {

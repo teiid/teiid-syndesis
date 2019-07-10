@@ -25,7 +25,6 @@ import org.komodo.relational.TypeResolver;
 import org.komodo.relational.dataservice.internal.DataserviceImpl;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
@@ -35,7 +34,7 @@ import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 /**
  * A model of a dataservice instance
  */
-public interface Dataservice extends Exportable, RelationalObject {
+public interface Dataservice extends RelationalObject {
 
     /**
      * The type identifier.

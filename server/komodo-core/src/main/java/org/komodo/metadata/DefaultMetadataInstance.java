@@ -43,7 +43,6 @@ import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.metadata.MetadataClientEvent;
 import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.metadata.MetadataObserver;
-import org.komodo.spi.outcome.Outcome;
 import org.komodo.spi.query.QSColumn;
 import org.komodo.spi.query.QSResult;
 import org.komodo.spi.query.QSRow;
@@ -195,11 +194,6 @@ public class DefaultMetadataInstance implements MetadataInstance {
     @Override
     public DataTypeService getDataTypeService() {
         return dataTypeService();
-    }
-
-    @Override
-    public Outcome ping(ConnectivityType connectivityType) {
-    	return this.connectionProvider.ping(connectivityType);
     }
 
     @Override

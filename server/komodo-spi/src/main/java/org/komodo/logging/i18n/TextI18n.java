@@ -19,7 +19,7 @@
 package org.komodo.logging.i18n;
 
 import java.util.Locale;
-import org.komodo.logging.util.StringUtil;
+import org.komodo.utils.StringUtils;
 
 /**
  * A pass-through implementation of {@link org.komodo.logging.i18n.I18nResource} which uses an underlying text as the real value, ignoring any
@@ -31,17 +31,17 @@ public final class TextI18n implements I18nResource {
     private final String text;
 
     public TextI18n( String text ) {
-        this.text = StringUtil.isBlank(text) ? BLANK : text;
+        this.text = StringUtils.isBlank(text) ? BLANK : text;
     }
 
     @Override
     public String text( Object... arguments ) {
-        return StringUtil.createString(text, arguments);
+        return StringUtils.createString(text, arguments);
     }
 
     @Override
     public String text( Locale locale,
                         Object... arguments ) {
-        return StringUtil.createString(text, arguments);
+        return StringUtils.createString(text, arguments);
     }
 }

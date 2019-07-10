@@ -404,13 +404,6 @@ public interface Repository {
     Type getType();
 
     /**
-     * @return the validation manager (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    ValidationManager getValidationManager() throws KException;
-
-    /**
      * Notify the repository of the given {@link RepositoryClientEvent}
      *
      * @param event

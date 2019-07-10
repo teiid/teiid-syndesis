@@ -30,7 +30,6 @@ import org.komodo.relational.model.ForeignKey;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.OptionContainer;
 import org.komodo.relational.model.PrimaryKey;
-import org.komodo.relational.model.Schema;
 import org.komodo.relational.model.StatementOption;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.UniqueConstraint;
@@ -39,7 +38,6 @@ import org.komodo.relational.model.internal.ColumnImpl;
 import org.komodo.relational.model.internal.ForeignKeyImpl;
 import org.komodo.relational.model.internal.ModelImpl;
 import org.komodo.relational.model.internal.PrimaryKeyImpl;
-import org.komodo.relational.model.internal.SchemaImpl;
 import org.komodo.relational.model.internal.StatementOptionImpl;
 import org.komodo.relational.model.internal.TableImpl;
 import org.komodo.relational.model.internal.UniqueConstraintImpl;
@@ -295,43 +293,6 @@ public final class RelationalModelFactory {
         kobject.setProperty( transaction, Constraint.TYPE, PrimaryKey.CONSTRAINT_TYPE.toValue() );
 
         final PrimaryKey result = new PrimaryKeyImpl( transaction, repository, kobject.getAbsolutePath() );
-        return result;
-    }
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param repository
-     *        the repository where the model object will be created (cannot be <code>null</code>)
-     * @param parentWorkspacePath
-     *        the parent path (can be empty)
-     * @param schemaName
-     *        the name of the schema fragment to create (cannot be empty)
-     * @return the Schema model object (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    public static Schema createSchema( final UnitOfWork transaction,
-                                       final Repository repository,
-                                       final String parentWorkspacePath,
-                                       final String schemaName ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( repository, "repository" ); //$NON-NLS-1$
-        ArgCheck.isNotEmpty( schemaName, "schemaName" ); //$NON-NLS-1$
-
-        // make sure path is in the library
-        String parentPath = parentWorkspacePath;
-        final String workspacePath = repository.komodoWorkspace( transaction ).getAbsolutePath();
-
-        if ( StringUtils.isBlank( parentWorkspacePath ) ) {
-            parentPath = workspacePath;
-        } else if ( !parentPath.startsWith( workspacePath ) ) {
-            parentPath = ( workspacePath + parentPath );
-        }
-
-        final KomodoObject kobject = repository.add( transaction, parentPath, schemaName, KomodoLexicon.Schema.NODE_TYPE );
-        final Schema result = new SchemaImpl( transaction, repository, kobject.getAbsolutePath() );
         return result;
     }
 

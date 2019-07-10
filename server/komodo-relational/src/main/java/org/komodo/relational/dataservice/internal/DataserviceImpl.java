@@ -20,7 +20,6 @@ package org.komodo.relational.dataservice.internal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Properties;
 
 import org.komodo.relational.Messages;
 import org.komodo.relational.RelationalModelFactory;
@@ -37,7 +36,6 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyValueType;
@@ -76,20 +74,6 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
     @Override
     public KomodoType getTypeIdentifier(UnitOfWork transaction) {
         return Dataservice.IDENTIFIER;
-    }
-
-    /* (non-Javadoc)
-     * @see org.komodo.spi.repository.Exportable#export(org.komodo.spi.repository.Repository.UnitOfWork, java.util.Properties)
-     */
-    @Override
-    public byte[] export(UnitOfWork transaction, Properties exportProperties) throws KException {
-    	DataserviceConveyor conveyor = new DataserviceConveyor(getRepository());
-        return conveyor.export(transaction, this, exportProperties);
-    }
-
-    @Override
-    public DocumentType getDocumentType(UnitOfWork transaction) {
-        return DocumentType.ZIP;
     }
 
     /**

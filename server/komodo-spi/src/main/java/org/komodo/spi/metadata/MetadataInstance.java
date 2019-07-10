@@ -23,9 +23,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.outcome.Outcome;
 import org.komodo.spi.query.QSResult;
 import org.komodo.spi.runtime.ConnectionDriver;
 import org.komodo.spi.runtime.TeiidDataSource;
@@ -76,16 +76,6 @@ public interface MetadataInstance extends StringConstants {
      * The default protocol for the metadata instance
      */
     String DEFAULT_INSTANCE_PROTOCOL = "mms"; //$NON-NLS-1$
-
-    /**
-     * VDB name for the ping test
-     */
-    String PING_VDB_NAME = "ping"; //$NON-NLS-1$
-
-    /**
-     * VDB file name for the ping test
-     */
-    String PING_VDB = PING_VDB_NAME + VDB_DEPLOYMENT_SUFFIX;
 
     /**
      * Type of connectivity
@@ -183,16 +173,6 @@ public interface MetadataInstance extends StringConstants {
      * @return the data type service
      */
     DataTypeService getDataTypeService();
-
-    /**
-     * Ping the metadata instance to determine whether it is still connected
-     * @param connectivityType
-     *
-     * @return {@link Outcome} describing state of ping
-     * 
-     * @throws KException 
-     */
-    Outcome ping(ConnectivityType connectivityType);
 
     /**
      * Query the vdb with given name

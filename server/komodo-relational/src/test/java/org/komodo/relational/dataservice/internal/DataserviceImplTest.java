@@ -20,43 +20,21 @@ package org.komodo.relational.dataservice.internal;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
-import java.util.Properties;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.komodo.importer.ImportMessages;
-import org.komodo.importer.ImportOptions;
-import org.komodo.importer.ImportOptions.OptionKeys;
 import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.RelationalObject.Filter;
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.dataservice.DataserviceManifest;
 import org.komodo.relational.dataservice.ServiceVdbEntry;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.test.utils.TestUtilities;
 import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
-import org.w3c.dom.Document;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public final class DataserviceImplTest extends RelationalModelTest {
@@ -209,169 +187,6 @@ public final class DataserviceImplTest extends RelationalModelTest {
         assertThat( this.dataservice.getServiceVdb( getTransaction() ), is( notNullValue() ) );
         assertThat( this.dataservice.getServiceViewModelName( getTransaction() ), is( serviceViewModel ) );
         assertThat( this.dataservice.getViewDefinitionNames( getTransaction() ), is( serviceViews ) );
-    }
-
-    @Test
-    public void shouldExport() throws Exception {
-        final String name1 = "childVdb1";
-        final String name2 = "childVdb2";
-
-        final Vdb serviceVdb = this.mgr.createVdb(getTransaction(), null, SERVICE_NAME, "externalSvcPath");
-        this.dataservice.setServiceVdb( getTransaction(), serviceVdb );
-        commit(); // needed so that searching for reference will work
-        
-        byte[] dsBytes = this.dataservice.export(getTransaction(), new Properties());
-        assertNotNull(dsBytes);
-
-        ByteArrayInputStream is = null;
-        ZipInputStream zipStream = null;
-        try {
-            is = new ByteArrayInputStream(dsBytes);
-            zipStream = new ZipInputStream(is);
-
-            assertTrue(zipStream.available() > 0);
-
-            int entries = 0;
-            ZipEntry entry;
-            while ((entry = zipStream.getNextEntry()) != null) {
-                ByteArrayOutputStream bos = null;
-
-                try {
-                    String name = entry.getName();
-                    if (DataserviceManifest.MANIFEST.equals(name) ||
-                        name.startsWith("vdbs/" + name1) ||
-                        name.startsWith("vdbs/" + name2) ||
-                        name.startsWith(SERVICE_NAME)) {
-                            entries++;
-                    }
-
-                    bos = new ByteArrayOutputStream();
-                    final byte[] buf = new byte[DataserviceConveyor.BUFFER_SIZE];
-                    int length;
-
-                    while ((length = zipStream.read(buf, 0, buf.length)) >= 0) {
-                        bos.write(buf, 0, length);
-                    }
-
-                    byte[] contentBytes = bos.toByteArray();
-                    assertNotNull(contentBytes);
-
-                    String content = new String(contentBytes);
-                    assertNotNull(content);
-
-                    InputStream contentStream = null;
-                    try {
-                        contentStream = new ByteArrayInputStream(content.getBytes());
-                        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-                        DocumentBuilder builder = factory.newDocumentBuilder();
-                        Document document = builder.parse(contentStream);
-                        assertNotNull(document);
-                    } finally {
-                        if (contentStream != null)
-                            contentStream.close();
-                    }
-
-                } finally {
-                    if (bos != null)
-                        bos.close();
-
-                    zipStream.closeEntry();
-                }
-            }
-
-            assertEquals(2, entries);
-        } finally {
-            if (zipStream != null)
-                zipStream.close();
-            if (is != null)
-                is.close();
-        }
-    }
-
-    @Test
-    public void shouldRoundTripDataService() throws Exception {
-        InputStream importStream = TestUtilities.sampleDataserviceExample();
-        assertThat( importStream, is( notNullValue() ) );
-
-        ImportMessages importMessages = new ImportMessages();
-        ImportOptions importOptions = new ImportOptions();
-        importOptions.setOption( OptionKeys.NAME, "MyDataService" );
-
-        DataserviceConveyor conveyor = new DataserviceConveyor( _repo);
-        KomodoObject parent = _repo.komodoWorkspace( getTransaction() );
-        conveyor.dsImport( getTransaction(), importStream, parent, importOptions, importMessages );
-        assertThat( importMessages.hasError(), is( false ) );
-        commit();
-
-        final String dataServiceName = "MyDataService";
-        assertThat( parent.hasChild( getTransaction(), dataServiceName ), is( true ) );
-        KomodoObject theDataService = parent.getChild( getTransaction(), dataServiceName );
-        final List< String > paths = new ArrayList<>();
-
-        // children (entries)
-        assertEntry( theDataService,
-                     "product-view-vdb.xml",
-                     DataVirtLexicon.ServiceVdbEntry.NODE_TYPE,
-                     VdbLexicon.Vdb.VIRTUAL_DATABASE,
-                     paths );
-
-        WorkspaceManager mgr = WorkspaceManager.getInstance( _repo, getTransaction() );
-        Dataservice ds = mgr.resolve( getTransaction(), theDataService, Dataservice.class );
-        assertThat( ds, is( notNullValue() ) );
-
-        String vdbName = ds.getServiceVdb( getTransaction() ).getVdbName( getTransaction() );
-        assertThat( vdbName, is( "DynamicProducts" ) );
-
-        // round trip
-        final byte[] dsBytes = ds.export( getTransaction(), null );
-        assertThat( dsBytes, is( notNullValue() ) );
-
-        final int numPaths = ( paths.size() + 1 ); // add one for the manifest as it is not persisted
-        int numEntries = 0;
-
-        try ( final ZipInputStream zis = new ZipInputStream( new ByteArrayInputStream( dsBytes ) ) ) {
-            ZipEntry entry = null;
-
-            while ( ( entry = zis.getNextEntry() ) != null ) {
-                final String entryName = entry.getName();
-
-                if ( entry.isDirectory() ) {
-                    continue;
-                } else {
-                    paths.remove( entryName );
-                    ++numEntries;
-                }
-            }
-        }
-
-        assertThat( paths.isEmpty(), is( true ) );
-        assertThat( numPaths, is( numEntries ) );
-    }
-
-    private void assertEntry( final KomodoObject dataService,
-                              final String entryName,
-                              final String entryNodeType,
-                              final String referenceNodeType,
-                              final List< String > paths ) throws Exception {
-        assertThat( dataService.hasChild( getTransaction(), entryName ), is( true ) );
-
-        final KomodoObject entry = dataService.getChild( getTransaction(), entryName );
-        assertThat( entry.getPrimaryType( getTransaction() ).getName(), is( entryNodeType ) );
-
-        // paths will be compared to exported entry paths
-        paths.add( entry.getProperty( getTransaction(), DataVirtLexicon.DataServiceEntry.PATH )
-                        .getStringValue( getTransaction() ) );
-
-        if ( referenceNodeType != null ) {
-            assertThat( entry.hasProperty( getTransaction(), DataVirtLexicon.DataServiceEntry.SOURCE_RESOURCE ), is( true ) );
-
-            // find reference
-            final String refId = entry.getProperty( getTransaction(), DataVirtLexicon.DataServiceEntry.SOURCE_RESOURCE )
-                                      .getStringValue( getTransaction() );
-            final KomodoObject ref = _repo.getUsingId( getTransaction(), refId );
-            assertThat( ref, is( notNullValue() ) );
-            assertThat( ref.getPrimaryType( getTransaction() ).getName(), is( referenceNodeType ) );
-        }
     }
 
 }

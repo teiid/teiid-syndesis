@@ -90,15 +90,6 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
         serviceTestUtilities.logObjectPath(objectPath);
     }
 
-    protected void loadStatesDataService() throws Exception {
-        removeStatesDataService();
-
-        serviceTestUtilities.importDataservice(TestUtilities.usStatesDataserviceExample(), USER_NAME);
-
-        Dataservice dataservice = serviceTestUtilities.getDataservice(USER_NAME, TestUtilities.US_STATES_DATA_SERVICE_NAME);
-        Assert.assertNotNull(dataservice);
-    }
-
     protected void removeStatesDataService() throws Exception {
         Dataservice dataservice = serviceTestUtilities.getDataservice(USER_NAME, TestUtilities.US_STATES_DATA_SERVICE_NAME);
         if (dataservice != null)
@@ -138,29 +129,6 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
         Vdb vdb = serviceTestUtilities.getVdb(USER_NAME, TestUtilities.USSTATES_SOURCE_VDB_NAME);
         Assert.assertNotNull(vdb);
         logObjectPath(vdb.getAbsolutePath());
-    }
-
-    protected void loadDsbSingleSourceDataService() throws Exception {
-        serviceTestUtilities.importDataservice(TestUtilities.dsbDataserviceSingleSourceParts(), USER_NAME);
-        Dataservice dataservice = serviceTestUtilities.getDataservice(USER_NAME, TestUtilities.PARTS_SINGLE_SOURCE_SERVICE_NAME);
-        Assert.assertNotNull(dataservice);
-        logObjectPath(dataservice.getAbsolutePath());
-    }
-
-    protected void loadDsbJoinDifferentTableNamesDataService() throws Exception {
-        serviceTestUtilities.importDataservice(TestUtilities.dsbDataserviceJoinDifferentTableNames(), USER_NAME);
-        Dataservice dataservice = serviceTestUtilities.getDataservice(USER_NAME, TestUtilities.JOIN_DIFFERENT_TABLE_NAMES_SERVICE_NAME);
-        Assert.assertNotNull(dataservice);
-        logObjectPath(dataservice.getAbsolutePath());
-        logObjectPath(serviceTestUtilities.getWorkspace(USER_NAME) + FORWARD_SLASH + TestUtilities.JOIN_DIFFERENT_TABLE_NAMES_SERVICE_NAME + "VDB");
-    }
-
-    protected void loadDsbJoinSameTableNamesDataService() throws Exception {
-        serviceTestUtilities.importDataservice(TestUtilities.dsbDataserviceJoinSameTableNames(), USER_NAME);
-        Dataservice dataservice = serviceTestUtilities.getDataservice(USER_NAME, TestUtilities.JOIN_SAME_TABLE_NAMES_SERVICE_NAME);
-        Assert.assertNotNull(dataservice);
-        logObjectPath(dataservice.getAbsolutePath());
-        logObjectPath(serviceTestUtilities.getWorkspace(USER_NAME) + FORWARD_SLASH + TestUtilities.JOIN_SAME_TABLE_NAMES_SERVICE_NAME + "VDB");
     }
 
     protected void createDataservice( String serviceName ) throws Exception {
