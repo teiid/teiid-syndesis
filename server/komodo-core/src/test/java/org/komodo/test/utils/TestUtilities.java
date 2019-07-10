@@ -59,12 +59,12 @@ import javax.xml.validation.SchemaFactory;
 
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.lexicon.LexiconConstants.CoreLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.FileUtils;
 import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
+import org.teiid.modeshape.sequencer.vdb.lexicon.CoreLexicon;
 import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -459,7 +459,7 @@ public class TestUtilities implements StringConstants {
          *          @model-prop=model-value-override
          */
         KomodoObject modelOne = myVdbExample.addChild(uow, "model-one", VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        modelOne.setProperty(uow, CoreLexicon.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
+        modelOne.setProperty(uow, CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
         modelOne.setProperty(uow, VdbLexicon.Vdb.DESCRIPTION, "model description");
         modelOne.setProperty(uow, VdbLexicon.Model.VISIBLE, false);
         modelOne.setProperty(uow, "model-prop", "model-value-override");
@@ -490,7 +490,7 @@ public class TestUtilities implements StringConstants {
          *          @model-prop=model-value
          */
         KomodoObject modelTwo = myVdbExample.addChild(uow, "model-two", VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        modelTwo.setProperty(uow, CoreLexicon.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
+        modelTwo.setProperty(uow, CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
         modelTwo.setProperty(uow, VdbLexicon.Model.VISIBLE, true);
         modelTwo.setProperty(uow, "model-prop", "model-value");
         modelTwo.setProperty(uow, VdbLexicon.Model.METADATA_TYPE, "DDL");
@@ -716,7 +716,7 @@ public class TestUtilities implements StringConstants {
          *          @vdb:sourceJndiName=java:/twitterDS
          */
         KomodoObject twitter = tweetExample.addChild(uow, TWITTER_MODEL, VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        twitter.setProperty(uow, CoreLexicon.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
+        twitter.setProperty(uow, CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
         twitter.setProperty(uow, VdbLexicon.Model.VISIBLE, true);
         twitter.setProperty(uow, VdbLexicon.Model.METADATA_TYPE, "DDL");
     
@@ -747,7 +747,7 @@ public class TestUtilities implements StringConstants {
          *          @vdb:modelDefinition=CREATE VIRTUAL PROCEDURE getTweets(query varchar) RETURNS (created_on varchar(25), from_user varchar(25), to_user varchar(25), profile_image_url varchar(25), source varchar(25), text varchar(140)) AS select tweet.* from (call twitter.invokeHTTP(action => 'GET', endpoint =>querystring('',query as "q"))) w, XMLTABLE('results' passing JSONTOXML('myxml', w.result) columns created_on string PATH 'created_at', from_user string PATH 'from_user', to_user string PATH 'to_user', profile_image_url string PATH 'profile_image_url', source string PATH 'source', text string PATH 'text') tweet; CREATE VIEW Tweet AS select * FROM twitterview.getTweets;
          */
         KomodoObject twitterView = tweetExample.addChild(uow, TWITTER_VIEW_MODEL, VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        twitterView.setProperty(uow, CoreLexicon.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
+        twitterView.setProperty(uow, CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
         twitterView.setProperty(uow, VdbLexicon.Model.METADATA_TYPE, "DDL");
         twitterView.setProperty(uow, VdbLexicon.Model.VISIBLE, true);
         twitterView.setProperty(uow, VdbLexicon.Model.MODEL_DEFINITION, TWITTER_VIEW_MODEL_DDL);
@@ -802,7 +802,7 @@ public class TestUtilities implements StringConstants {
         KomodoObject patientsModel = patientsVdb.addChild(uow,
                                                                                     PATIENTS_MODEL,
                                                                                     VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        patientsModel.setProperty(uow, CoreLexicon.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
+        patientsModel.setProperty(uow, CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
         patientsModel.setProperty(uow,  VdbLexicon.Model.DESCRIPTION, "Example Patient Service");
         patientsModel.setProperty(uow, VdbLexicon.Model.VISIBLE, true);
         patientsModel.setProperty(uow, VdbLexicon.Model.METADATA_TYPE, "DDL");
@@ -842,7 +842,7 @@ public class TestUtilities implements StringConstants {
         KomodoObject patientSourceModel = patientsVdb.addChild(uow,
                                                                                     PATIENTS_SOURCE,
                                                                                     VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        patientSourceModel.setProperty(uow, CoreLexicon.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
+        patientSourceModel.setProperty(uow, CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
         patientSourceModel.setProperty(uow, VdbLexicon.Model.VISIBLE, true);
         patientSourceModel.setProperty(uow, VdbLexicon.Model.METADATA_TYPE, "DDL");
 
@@ -953,7 +953,7 @@ public class TestUtilities implements StringConstants {
         KomodoObject twitter = tweetExample.addChild(uow,
                                                                                     TWITTER_MODEL,
                                                                                     VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        twitter.setProperty(uow, CoreLexicon.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
+        twitter.setProperty(uow, CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
         twitter.setProperty(uow, VdbLexicon.Model.VISIBLE, true);
         twitter.setProperty(uow, VdbLexicon.Model.METADATA_TYPE, "DDL");
     
@@ -991,7 +991,7 @@ public class TestUtilities implements StringConstants {
         KomodoObject twitterView = tweetExample.addChild(uow,
                                                                                            TWITTER_VIEW_MODEL,
                                                                                            VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        twitterView.setProperty(uow, CoreLexicon.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
+        twitterView.setProperty(uow, CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
         twitterView.setProperty(uow, VdbLexicon.Model.METADATA_TYPE, "DDL");
         twitterView.setProperty(uow, VdbLexicon.Model.VISIBLE, true);
     

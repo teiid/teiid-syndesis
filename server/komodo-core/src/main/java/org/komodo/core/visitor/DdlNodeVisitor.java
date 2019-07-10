@@ -27,7 +27,6 @@ import java.util.Set;
 
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.ddl.TeiidDDLConstants;
 import org.komodo.spi.lexicon.sql.teiid.TeiidSqlConstants;
 import org.komodo.spi.lexicon.sql.teiid.TeiidSqlConstants.NonReserved;
 import org.komodo.spi.lexicon.sql.teiid.TeiidSqlConstants.Reserved;
@@ -52,7 +51,8 @@ import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
  */
 public class DdlNodeVisitor extends AbstractNodeVisitor
     implements Reserved, NonReserved, MetadataNamespaces {
-
+	
+	private static final String NOT_NULL = "NOT NULL";//$NON-NLS-1$
     private static final String UNDEFINED = "undefined"; //$NON-NLS-1$
 
     /**
@@ -203,7 +203,7 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
          * @return is not null
          */
         public boolean isNotNull() {
-            return TeiidDDLConstants.NOT_NULL.equals(nullType);
+            return NOT_NULL.equals(nullType);
         }
 
         /**
@@ -448,7 +448,7 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
             }
 
             if (context.isNotNull()) {
-                append(SPACE).append(TeiidDDLConstants.NOT_NULL);
+                append(SPACE).append(NOT_NULL);
             }
         }
     }

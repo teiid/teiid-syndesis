@@ -37,11 +37,11 @@ import org.junit.Test;
 import org.komodo.core.AbstractLocalRepositoryTest;
 import org.komodo.metadata.DefaultMetadataInstance;
 import org.komodo.metadata.TeiidConnectionProvider;
-import org.komodo.spi.lexicon.LexiconConstants.CoreLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
 import org.komodo.test.utils.TestUtilities;
 import org.mockito.Mockito;
+import org.teiid.modeshape.sequencer.vdb.lexicon.CoreLexicon;
 import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.Document;
@@ -290,7 +290,7 @@ public class TestVdbExport extends AbstractLocalRepositoryTest {
         KomodoObject furtherPatientsModel = patientsExample.addChild(getTransaction(),
                                                                                     furtherPatientsModelName,
                                                                                     VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        furtherPatientsModel.setProperty(getTransaction(), CoreLexicon.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
+        furtherPatientsModel.setProperty(getTransaction(), CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
         furtherPatientsModel.setProperty(getTransaction(),  VdbLexicon.Model.DESCRIPTION, "Further Patients View");
         furtherPatientsModel.setProperty(getTransaction(), VdbLexicon.Model.VISIBLE, true);
         furtherPatientsModel.setProperty(getTransaction(), VdbLexicon.Model.METADATA_TYPE, "DDL");

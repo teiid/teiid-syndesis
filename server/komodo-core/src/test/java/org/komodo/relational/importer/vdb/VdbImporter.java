@@ -21,8 +21,10 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.komodo.importer.AbstractImporter;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
@@ -33,12 +35,12 @@ import org.komodo.importer.Messages;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.spi.KException;
-import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
+import org.modeshape.jcr.api.JcrConstants;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -68,8 +70,8 @@ public class VdbImporter extends AbstractImporter {
         String vdbFilePath = importOptions.getOption(OptionKeys.VDB_FILE_PATH).toString();
 
         Vdb vdb = getWorkspaceManager(transaction).createVdb(transaction, parentObject, vdbName, vdbFilePath);
-        KomodoObject fileNode = vdb.addChild(transaction, JcrLexicon.JCR_CONTENT, null);
-        fileNode.setProperty(transaction, JcrLexicon.JCR_DATA, content);
+        KomodoObject fileNode = vdb.addChild(transaction, JcrConstants.JCR_CONTENT, null);
+        fileNode.setProperty(transaction, JcrConstants.JCR_DATA, content);
     }
 
     protected WorkspaceManager getWorkspaceManager(UnitOfWork transaction) throws KException {

@@ -44,15 +44,15 @@ import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Translator;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
-import org.komodo.spi.lexicon.LexiconConstants.CoreLexicon;
-import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.test.utils.TestUtilities;
 import org.komodo.utils.KLog;
+import org.modeshape.jcr.api.JcrConstants;
 import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
+import org.teiid.modeshape.sequencer.vdb.lexicon.CoreLexicon;
 import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 /**
@@ -332,7 +332,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
          *          @vdb:sourceJndiName=java:/twitterDS
          */
         KomodoObject twitter = verify(getTransaction(), tweetNode, model1Name, VdbLexicon.Vdb.DECLARATIVE_MODEL, null);
-        verifyProperty(getTransaction(), twitter, CoreLexicon.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
+        verifyProperty(getTransaction(), twitter, CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
         verifyProperty(getTransaction(), twitter, VdbLexicon.Model.VISIBLE, Boolean.TRUE.toString());
         verifyProperty(getTransaction(), twitter, VdbLexicon.Model.METADATA_TYPE, "DDL");
 
@@ -362,7 +362,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
          *          @vdb:modelDefinition=CREATE VIRTUAL PROCEDURE getTweets(query varchar) RETURNS (created_on varchar(25), from_user varchar(25), to_user varchar(25), profile_image_url varchar(25), source varchar(25), text varchar(140)) AS select tweet.* from (call twitter.invokeHTTP(action => 'GET', endpoint =>querystring('',query as "q"))) w, XMLTABLE('results' passing JSONTOXML('myxml', w.result) columns created_on string PATH 'created_at', from_user string PATH 'from_user', to_user string PATH 'to_user', profile_image_url string PATH 'profile_image_url', source string PATH 'source', text string PATH 'text') tweet; CREATE VIEW Tweet AS select * FROM twitterview.getTweets;
          */
         KomodoObject twitterView = verify(getTransaction(), tweetNode, model2Name, VdbLexicon.Vdb.DECLARATIVE_MODEL, null);
-        verifyProperty(getTransaction(), twitterView, CoreLexicon.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
+        verifyProperty(getTransaction(), twitterView, CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
         verifyProperty(getTransaction(), twitterView, VdbLexicon.Model.METADATA_TYPE, "DDL");
         verifyProperty(getTransaction(), twitterView, VdbLexicon.Model.VISIBLE, Boolean.TRUE.toString());
         verifyProperty(getTransaction(), twitterView, VdbLexicon.Model.MODEL_DEFINITION, modelDefinition);
@@ -495,7 +495,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
          *          @vdb:modelDefinition=CREATE VIRTUAL PROCEDURE getTweets(query varchar) RETURNS (created_on varchar(25), from_user varchar(25), to_user varchar(25), profile_image_url varchar(25), source varchar(25), text varchar(140)) AS select tweet.* from (call twitter.invokeHTTP(action => 'GET', endpoint =>querystring('',query as "q"))) w, XMLTABLE('results' passing JSONTOXML('myxml', w.result) columns created_on string PATH 'created_at', from_user string PATH 'from_user', to_user string PATH 'to_user', profile_image_url string PATH 'profile_image_url', source string PATH 'source', text string PATH 'text') tweet; CREATE VIEW Tweet AS select * FROM twitterview.getTweets;
          */
         verifyPrimaryType(getTransaction(), twitterView, VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        verifyProperty(getTransaction(), twitterView, CoreLexicon.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
+        verifyProperty(getTransaction(), twitterView, CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
         verifyProperty(getTransaction(), twitterView, VdbLexicon.Model.METADATA_TYPE, "DDL");
         verifyProperty(getTransaction(), twitterView, VdbLexicon.Model.VISIBLE, Boolean.TRUE.toString());
         verifyProperty(getTransaction(), twitterView, VdbLexicon.Model.MODEL_DEFINITION, TWEET_EXAMPLE_REIMPORT_DDL);
@@ -620,7 +620,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
          *          @vdb:visible=false
          */
         KomodoObject modelOne = verify(getTransaction(), myVdbExample, "model-one", VdbLexicon.Vdb.DECLARATIVE_MODEL, null);
-        verifyProperty(getTransaction(), modelOne, CoreLexicon.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
+        verifyProperty(getTransaction(), modelOne, CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
         verifyProperty(getTransaction(), modelOne, VdbLexicon.Vdb.DESCRIPTION, "model description");
         verifyProperty(getTransaction(), modelOne, VdbLexicon.Model.VISIBLE, Boolean.FALSE.toString());
 
@@ -648,7 +648,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
          *          @vdb:visible=true
          */
         KomodoObject modelTwo = verify(getTransaction(), myVdbExample, "model-two", VdbLexicon.Vdb.DECLARATIVE_MODEL, null);
-        verifyProperty(getTransaction(), modelTwo, CoreLexicon.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
+        verifyProperty(getTransaction(), modelTwo, CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
         verifyProperty(getTransaction(), modelTwo, VdbLexicon.Model.VISIBLE, Boolean.TRUE.toString());
         verifyProperty(getTransaction(), modelTwo, VdbLexicon.Model.METADATA_TYPE, "DDL");
 
@@ -1369,13 +1369,13 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
         WorkspaceManager manager = WorkspaceManager.getInstance(_repo, getTransaction());
         Vdb vdb = manager.resolve(getTransaction(), vdbNode, Vdb.class);
 
-        KomodoObject[] jcrContent = vdb.getRawChildren(getTransaction(), JcrLexicon.JCR_CONTENT);
+        KomodoObject[] jcrContent = vdb.getRawChildren(getTransaction(), JcrConstants.JCR_CONTENT);
         assertTrue(jcrContent != null && jcrContent.length == 1);
 
         //
         // Setting data property should remove all the vdb properties
         //
-        jcrContent[0].setProperty(getTransaction(), JcrLexicon.JCR_DATA, EMPTY_STRING);
+        jcrContent[0].setProperty(getTransaction(), JcrConstants.JCR_DATA, EMPTY_STRING);
 
         commit();
 

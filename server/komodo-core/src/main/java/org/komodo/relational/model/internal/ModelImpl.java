@@ -33,7 +33,6 @@ import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.internal.ModelSourceImpl;
 import org.komodo.spi.KException;
-import org.komodo.spi.lexicon.LexiconConstants.CoreLexicon;
 import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.KomodoObject;
@@ -45,6 +44,7 @@ import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
 import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.CreateTable;
+import org.teiid.modeshape.sequencer.vdb.lexicon.CoreLexicon;
 import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 /**
@@ -260,7 +260,7 @@ public final class ModelImpl extends RelationalObjectImpl implements Model {
     @Override
     public Type getModelType( final UnitOfWork uow ) throws KException {
         final String value = getObjectProperty( uow, PropertyValueType.STRING, "getModelType", //$NON-NLS-1$
-                                                CoreLexicon.MODEL_TYPE );
+                                                CoreLexicon.JcrId.MODEL_TYPE );
         final Type modelType = ( ( value == null ) ? null : Type.valueOf( value ) );
         return ( ( modelType == null ) ? Type.DEFAULT_VALUE : modelType );
     }
@@ -568,7 +568,7 @@ public final class ModelImpl extends RelationalObjectImpl implements Model {
     public void setModelType( final UnitOfWork uow,
                               final Type newModelType ) throws KException {
         final Type modelType = ( ( newModelType == null ) ? Type.DEFAULT_VALUE : newModelType );
-        setObjectProperty( uow, "setModelType", CoreLexicon.MODEL_TYPE, modelType.name() ); //$NON-NLS-1$
+        setObjectProperty( uow, "setModelType", CoreLexicon.JcrId.MODEL_TYPE, modelType.name() ); //$NON-NLS-1$
     }
 
     /**

@@ -15,21 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.spi.repository;
+package org.komodo.core.repository;
 
-/**
- * The Komodo library artifact.
- */
-public interface Artifact {
+import java.util.List;
+import org.komodo.spi.KException;
+import org.komodo.spi.repository.KomodoObject;
+import org.komodo.spi.repository.Repository;
+import org.komodo.spi.repository.Repository.UnitOfWork;
 
-    /**
-     * @return the artifact's Komodo object (never <code>null</code>)
-     */
-    KomodoObject get();
+public interface KQueryManager {
 
     /**
-     * @return the artifact descriptor (never <code>null</code>)
+     * @param transaction
+     * @param repository
+     * @param queryStmt
+     * @return the {@link KomodoObject}s that result from the query statement
+     * @throws KException 
      */
-    ArtifactDescriptor getDescriptor();
+    List<KomodoObject> execute(UnitOfWork transaction, Repository repository, String queryStmt) throws KException;
 
 }

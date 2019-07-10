@@ -20,8 +20,6 @@ package org.komodo.metadata;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.komodo.spi.metadata.MetadataInstance.ConnectivityType;
-import org.komodo.spi.outcome.Outcome;
 import org.teiid.adminapi.Admin;
 import org.teiid.adminapi.AdminException;
 
@@ -31,8 +29,6 @@ public interface TeiidConnectionProvider {
 	
 	Connection getConnection(String vdb, String version) throws SQLException;
 	
-	Outcome ping(ConnectivityType connectivityType);
-
 	void reconnect() throws Exception;
 
 	void onStart();

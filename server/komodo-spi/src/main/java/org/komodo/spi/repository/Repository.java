@@ -445,19 +445,6 @@ public interface Repository {
      *        the transaction (cannot be <code>null</code> or have a state that is not
      *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
      * @param artifactPaths
-     *        the paths of the artifacts being requested (cannot be <code>null</code> or empty)
-     * @return the requested artifacts (never <code>null</code>)
-     * @throws KException
-     *         if an artifact does not exist or an error occurs
-     */
-    Artifact[] retrieve( final UnitOfWork transaction,
-                         final String... artifactPaths ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param artifactPaths
      *        the paths of the the artifacts being removed (cannot be <code>null</code> or empty)
      * @throws KException
      *         if an artifact does not exist in the library or an error occurs

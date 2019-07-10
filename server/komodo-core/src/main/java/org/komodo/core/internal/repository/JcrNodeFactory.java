@@ -32,14 +32,13 @@ import javax.jcr.nodetype.PropertyDefinition;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryResult;
 
+import org.komodo.core.LexiconConstants.JcrLexicon;
 import org.komodo.core.repository.DescriptorImpl;
 import org.komodo.core.repository.Messages;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.PropertyDescriptorImpl;
 import org.komodo.core.repository.PropertyImpl;
 import org.komodo.spi.KException;
-import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
-import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KObjectFactory;
 import org.komodo.spi.repository.KPropertyFactory;
@@ -51,6 +50,7 @@ import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
+import org.modeshape.jcr.api.JcrConstants;
 import org.modeshape.jcr.api.JcrTools;
 
 public class JcrNodeFactory extends AbstractJcrFactory implements KObjectFactory {
@@ -124,7 +124,7 @@ public class JcrNodeFactory extends AbstractJcrFactory implements KObjectFactory
         ArgCheck.isNotNull(kObject, "kObject");
     
         try {
-            String type = (StringUtils.isBlank(typeName) ? NTLexicon.NT_UNSTRUCTURED : typeName);
+            String type = (StringUtils.isBlank(typeName) ? JcrConstants.NT_UNSTRUCTURED : typeName);
             node(transaction, kObject).setPrimaryType(type);
         } catch (Exception ex) {
             throw handleError(ex);
@@ -299,7 +299,7 @@ public class JcrNodeFactory extends AbstractJcrFactory implements KObjectFactory
 
     @Override
     public KomodoObject addChild(UnitOfWork transaction, KomodoObject parent, String nodeName) throws KException {
-        return addChild(transaction, parent, nodeName, NTLexicon.NT_UNSTRUCTURED);
+        return addChild(transaction, parent, nodeName, JcrConstants.NT_UNSTRUCTURED);
     }
 
     @Override

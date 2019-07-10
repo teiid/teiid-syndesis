@@ -37,6 +37,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestName;
+import org.komodo.core.LexiconConstants.JcrLexicon;
 import org.komodo.core.repository.LocalRepository;
 import org.komodo.core.repository.LocalRepository.LocalRepositoryId;
 import org.komodo.core.repository.ObjectImpl;
@@ -48,8 +49,6 @@ import org.komodo.metadata.TeiidConnectionProvider;
 import org.komodo.spi.KClient;
 import org.komodo.spi.KEvent;
 import org.komodo.spi.KException;
-import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
-import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.Repository;
@@ -60,6 +59,7 @@ import org.komodo.spi.repository.RepositoryClientEvent;
 import org.komodo.utils.KLog;
 import org.komodo.utils.observer.KLatchRepositoryObserver;
 import org.mockito.Mockito;
+import org.modeshape.jcr.api.JcrConstants;
 
 /**
  * Provides framework for testing an instance of the local repository
@@ -490,7 +490,7 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
     }
 
     protected void verifyPrimaryType( UnitOfWork uow, KomodoObject node, String expectedValue ) throws KException {
-        verifyProperty(uow, node, JcrLexicon.JCR_PRIMARY_TYPE, expectedValue);
+        verifyProperty(uow, node, JcrConstants.JCR_PRIMARY_TYPE, expectedValue);
     }
 
     protected void verifyMixinType( UnitOfWork uow, KomodoObject node, String expectedValue ) throws KException {
@@ -533,11 +533,11 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
     }
 
     protected KomodoObject verify(UnitOfWork uow, KomodoObject parentNode, String relativePath, String mixinType) throws Exception {
-        return verify(uow, parentNode, relativePath, -1, NTLexicon.NT_UNSTRUCTURED, mixinType);
+        return verify(uow, parentNode, relativePath, -1, JcrConstants.NT_UNSTRUCTURED, mixinType);
     }
 
     protected KomodoObject verify(UnitOfWork uow, KomodoObject parentNode, String relativePath) throws Exception {
-        return verify(uow, parentNode, relativePath, -1, NTLexicon.NT_UNSTRUCTURED, null);
+        return verify(uow, parentNode, relativePath, -1, JcrConstants.NT_UNSTRUCTURED, null);
     }
 
     protected static class TestTransactionListener extends SynchronousCallback {

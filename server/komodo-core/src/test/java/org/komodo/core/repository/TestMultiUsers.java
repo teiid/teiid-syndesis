@@ -28,7 +28,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.komodo.core.AbstractLocalRepositoryTest;
 import org.komodo.core.KomodoLexicon;
-import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoObjectVisitor;
@@ -37,6 +36,7 @@ import org.komodo.spi.repository.PropertyDescriptor;
 import org.komodo.spi.repository.Repository.OperationType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.modeshape.jcr.api.JcrConstants;
 import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 @SuppressWarnings( {"javadoc", "nls"} )
@@ -608,7 +608,7 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
         String bobVdbName = "bobVdb";
         String bobModelName = "bobModel1";
         String nodeType = "mix:created";
-        String property = JcrLexicon.JCR_PRIMARY_TYPE;
+        String property = JcrConstants.JCR_PRIMARY_TYPE;
 
         KomodoObject bobVdbObject = add(BOB, bobVdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE);
         ObjectImpl bobVdb = convert(bobVdbObject);

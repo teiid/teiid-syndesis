@@ -17,8 +17,8 @@
  */
 package org.komodo.relational;
 
-import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
-import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
+import org.komodo.core.LexiconConstants.JcrLexicon;
+import org.komodo.core.LexiconConstants.NTLexicon;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.PropertyDescriptor;
