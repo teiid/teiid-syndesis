@@ -26,14 +26,11 @@ import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.komodo.core.internal.repository.search.ObjectSearcher;
 import org.komodo.core.repository.SynchronousCallback;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
@@ -50,17 +47,16 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.spi.lexicon.LexiconConstants.CoreLexicon;
 import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
-import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
-import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon;
 import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon;
 import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon.Symbol;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.test.utils.TestUtilities;
 import org.komodo.utils.KLog;
+import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
+import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 /**
  * Test Class to test Teiid VDB import
@@ -1284,11 +1280,6 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
         Model[] models = vdb.getModels(getTransaction());
         assertEquals(2, models.length);
         for (Model model : models) {
-            //
-            // model definition is filtered by default
-            //
-            model.setFilters(null);
-
             verifyProperty(getTransaction(), model, VdbLexicon.Model.METADATA_TYPE, "DDL");
 
             if ("PartsViewModel".equals(model.getName(getTransaction()))) {
@@ -1469,29 +1460,11 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
      * @throws Exception
      */
     @Test
-    public void testImportAndSearch() throws Exception {
+    public void testImport() throws Exception {
         importVdb(TestUtilities.allElementsExample());
         importVdb(TestUtilities.portfolioExample());
         importVdb(TestUtilities.partsExample());
         importVdb(TestUtilities.tweetExample());
-
-//        SELECT [jcr:path], [mode:localName]
-//        FROM [nt:unstructured] AS nt
-//        WHERE (CONTAINS(nt.*, 'view')
-
-        ObjectSearcher os = new ObjectSearcher(_repo);
-        String ALIAS = "nt";
-        os.setFromType(NTLexicon.NT_UNSTRUCTURED, ALIAS);
-        String whereSql = "(CONTAINS(nt.*, '*view*'))";
-        os.setCustomWhereClause(whereSql);
-
-        List<KomodoObject> results = os.searchObjects(getTransaction());
-        List<String> paths = new ArrayList<>(results.size());
-        for (KomodoObject ko : results)
-            paths.add(ko.getAbsolutePath());
-        Collections.sort(paths);
-
-        assertEquals(22, results.size());
     }
 
     @Test

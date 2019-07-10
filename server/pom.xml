@@ -152,8 +152,7 @@
     <version.org.jboss.spec.jboss-javaee-7.0>1.0.4.Final</version.org.jboss.spec.jboss-javaee-7.0>
     <version.org.jboss.xnio>3.5.4.Final</version.org.jboss.xnio>
 
-    <version.modeshape>5.4.1.Final</version.modeshape>
-    <version.teiid.modeshape>1.0.1.Final</version.teiid.modeshape>
+    <version.teiid.modeshape>1.0.2-SNAPSHOT</version.teiid.modeshape>
     <version.postgresql>42.1.4</version.postgresql>
     <version.xerces>2.11.0</version.xerces>
     
@@ -192,11 +191,7 @@
 
   <modules>
     <module>komodo-spi</module>
-    <module>komodo-utils</module>
-    <module>komodo-metadata</module>
     <module>komodo-core</module>
-    <module>komodo-storage</module>
-    <module>komodo-importer</module>
     <module>komodo-relational</module>
     <module>komodo-server</module>
   </modules>
@@ -271,11 +266,6 @@
       </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
-        <artifactId>komodo-utils</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.teiid</groupId>
         <artifactId>komodo-metadata</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -286,18 +276,15 @@
       </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
-        <artifactId>komodo-storage</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.teiid</groupId>
-        <artifactId>komodo-importer</artifactId>
+        <artifactId>komodo-relational</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
         <artifactId>komodo-relational</artifactId>
         <version>${project.version}</version>
+        <type>test-jar</type>
+        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
@@ -306,7 +293,7 @@
       </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
-        <artifactId>komodo-utils</artifactId>
+        <artifactId>komodo-spi</artifactId>
         <version>${project.version}</version>
         <type>test-jar</type>
         <scope>test</scope>
@@ -406,19 +393,14 @@
         <scope>test</scope>
       </dependency>
       <dependency>
-        <groupId>org.modeshape</groupId>
-        <artifactId>modeshape-common</artifactId>
-        <version>${version.modeshape}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.modeshape</groupId>
+        <groupId>org.teiid.modeshape</groupId>
         <artifactId>modeshape-jcr-api</artifactId>
-        <version>${version.modeshape}</version>
+        <version>${version.teiid.modeshape}</version>
       </dependency>
       <dependency>
-        <groupId>org.modeshape</groupId>
+        <groupId>org.teiid.modeshape</groupId>
         <artifactId>modeshape-jcr</artifactId>
-        <version>${version.modeshape}</version>
+        <version>${version.teiid.modeshape}</version>
       </dependency>
       <dependency>
         <groupId>org.postgresql</groupId>

@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
 import javax.jcr.AccessDeniedException;
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.Node;
@@ -35,19 +36,20 @@ import javax.jcr.observation.Event;
 import javax.jcr.observation.EventIterator;
 import javax.jcr.observation.EventListener;
 import javax.jcr.observation.ObservationManager;
+
 import org.komodo.core.KomodoLexicon;
 import org.komodo.core.Messages;
 import org.komodo.core.repository.KSequencerController;
 import org.komodo.core.repository.KSequencerListener;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
-import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
-import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
-import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon;
 import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.UnitOfWorkDelegate;
 import org.komodo.utils.KLog;
+import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
+import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
+import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
+import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 
 /**
@@ -164,35 +166,6 @@ public class KSequencers implements StringConstants, EventListener, KSequencerCo
         }
     }
 
-    private boolean isConnectionSequenceable(Node node, String propertyName) {
-        try {
-            if ( !propertyName.equals( JcrLexicon.JCR_DATA ) ) {
-                return false;
-            }
-
-            if ( !node.getName().equals( JcrLexicon.JCR_CONTENT ) ) {
-                return false;
-            }
-
-            // make sure output node is a connection node
-            final Node parentNode = node.getParent();
-
-            return ( ( parentNode != null )
-                     && parentNode.getPrimaryNodeType().getName().equals( DataVirtLexicon.Connection.NODE_TYPE ) );
-        } catch ( final RepositoryException e ) {
-            KLog.getLogger().error( "KSequencers.isConnectionSequenceable", e ); //$NON-NLS-1$
-            return false;
-        }
-    }
-
-    private boolean isConnectionSequenceable( final Property property ) {
-        try {
-            return isConnectionSequenceable(property.getParent(), property.getName());
-        } catch (RepositoryException ex) {
-            return false;
-        }
-    }
-
     private boolean isDataServiceSequenceable( Node node, String propertyName ) {
         try {
             if ( !propertyName.equals( JcrLexicon.JCR_DATA ) ) {
@@ -289,10 +262,6 @@ public class KSequencers implements StringConstants, EventListener, KSequencerCo
             return SequencerType.DATA_SERVICE;
         }
 
-        if (isConnectionSequenceable(node, propertyName)) {
-            return SequencerType.CONNECTION;
-        }
-
         return null;
     }
 
@@ -314,10 +283,6 @@ public class KSequencers implements StringConstants, EventListener, KSequencerCo
             return SequencerType.DATA_SERVICE;
         }
 
-        if ( isConnectionSequenceable( property ) ) {
-            return SequencerType.CONNECTION;
-        }
-
         return null;
     }
 
@@ -328,8 +293,6 @@ public class KSequencers implements StringConstants, EventListener, KSequencerCo
             case DDL:
             case TSQL:
                 return RepositoryUtils.childrenCount(oldNode) < RepositoryUtils.childrenCount(newNode);
-            case CONNECTION:
-                return newNode.hasProperty( DataVirtLexicon.Connection.TYPE );
             case DATA_SERVICE:
                 return newNode.hasNodes();
             default:
@@ -378,7 +341,6 @@ public class KSequencers implements StringConstants, EventListener, KSequencerCo
                 }
                 case TSQL:
                 case DATA_SERVICE:
-                case CONNECTION:
                 {
                     Node parent = session.getNode(outputNode.getPath());
                     NodeIterator children = parent.getNodes();
@@ -497,7 +459,6 @@ public class KSequencers implements StringConstants, EventListener, KSequencerCo
         throws ItemNotFoundException, AccessDeniedException, RepositoryException {
         switch (sequencerType) {
             case VDB:
-            case CONNECTION:
             case DATA_SERVICE:
                 outputNode = outputNode.getParent();
                 break;

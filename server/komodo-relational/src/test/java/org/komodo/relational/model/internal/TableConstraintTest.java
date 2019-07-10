@@ -20,6 +20,7 @@ package org.komodo.relational.model.internal;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.relational.RelationalModelFactory;
@@ -29,7 +30,7 @@ import org.komodo.relational.model.Column;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.TableConstraint;
 import org.komodo.spi.KException;
-import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon;
+import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public final class TableConstraintTest extends RelationalModelTest {

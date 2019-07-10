@@ -25,7 +25,9 @@ import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+
 import java.util.Arrays;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.relational.RelationalConstants;
@@ -40,11 +42,11 @@ import org.komodo.relational.model.Parameter.Direction;
 import org.komodo.relational.model.StatementOption;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
-import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon;
-import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon.CreateProcedure;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyDescriptor;
+import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
+import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
+import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.CreateProcedure;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public final class ParameterImplTest extends RelationalModelTest {

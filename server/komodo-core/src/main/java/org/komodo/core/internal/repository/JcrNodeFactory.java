@@ -20,6 +20,7 @@ package org.komodo.core.internal.repository;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.PropertyIterator;
@@ -30,6 +31,7 @@ import javax.jcr.nodetype.NodeTypeManager;
 import javax.jcr.nodetype.PropertyDefinition;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryResult;
+
 import org.komodo.core.repository.DescriptorImpl;
 import org.komodo.core.repository.Messages;
 import org.komodo.core.repository.ObjectImpl;
@@ -38,7 +40,6 @@ import org.komodo.core.repository.PropertyImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
 import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
-import org.komodo.spi.lexicon.vdb.VdbLexicon;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KObjectFactory;
 import org.komodo.spi.repository.KPropertyFactory;
@@ -52,6 +53,7 @@ import org.komodo.spi.runtime.TeiidVdb;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
 import org.modeshape.jcr.api.JcrTools;
+import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 public class JcrNodeFactory extends AbstractJcrFactory implements KObjectFactory {
 

@@ -18,18 +18,19 @@
 package org.komodo.relational.dataservice;
 
 import java.util.Properties;
+
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.lexicon.datavirt.DataVirtLexicon;
 import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.StringUtils;
+import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 
 /**
  * Represents an entry in a data service archive.

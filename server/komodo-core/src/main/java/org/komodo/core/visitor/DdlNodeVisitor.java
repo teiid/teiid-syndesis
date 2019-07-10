@@ -24,11 +24,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.ddl.TeiidDDLConstants;
-import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
-import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon;
 import org.komodo.spi.lexicon.sql.teiid.TeiidSqlConstants;
 import org.komodo.spi.lexicon.sql.teiid.TeiidSqlConstants.NonReserved;
 import org.komodo.spi.lexicon.sql.teiid.TeiidSqlConstants.Reserved;
@@ -44,6 +43,8 @@ import org.komodo.spi.type.DataTypeService;
 import org.komodo.spi.type.DataTypeService.DataTypeName;
 import org.komodo.spi.utils.KeyInValueMap;
 import org.komodo.utils.StringUtils;
+import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
+import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
 
 /**
  * Visitor that will walk a ddl kObject tree and convert it to

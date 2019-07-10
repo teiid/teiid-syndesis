@@ -80,7 +80,7 @@
     <dependency>
         <groupId>org.teiid</groupId>
         <artifactId>komodo-relational</artifactId>
-    </dependency>  
+    </dependency>
     <dependency>
       <groupId>com.sun.xsom</groupId>
       <artifactId>xsom</artifactId>
@@ -133,6 +133,10 @@
       <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-core</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.zaxxer</groupId>
+      <artifactId>HikariCP</artifactId>
+    </dependency>
     <!-- data source driver dependencies -->
     <dependency>
       <groupId>mysql</groupId>
@@ -146,13 +150,19 @@
     </dependency>
     <dependency>
       <groupId>org.teiid</groupId>
-      <artifactId>komodo-utils</artifactId>
+      <artifactId>komodo-spi</artifactId>
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.teiid</groupId>
       <artifactId>komodo-core</artifactId>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>komodo-relational</artifactId>
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>

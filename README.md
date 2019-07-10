@@ -36,7 +36,7 @@ tools/bin/syndesis install --setup --grant developer --cluster --project syndesi
 # Build syndesis templates with Komodo images
 install/generator/run.sh
 
-# build the Syndesis operrator project to pick up the new template with Komodo Image
+# build the Syndesis operator project to pick up the new template with Komodo Image
 tools/bin/syndesis build -m operator -i
 
 # invoke the operator with new template, replace will replace previous duplicate ones

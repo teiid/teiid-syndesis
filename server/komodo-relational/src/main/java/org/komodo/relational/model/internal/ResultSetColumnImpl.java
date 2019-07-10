@@ -35,7 +35,7 @@ import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.StringUtils;
-import org.komodo.spi.lexicon.ddl.StandardDdlLexicon;
+import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
 
 /**
  * An implementation of a relational model tabular result set column.

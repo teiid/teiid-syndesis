@@ -17,7 +17,6 @@
  */
 package org.komodo.relational.profile;
 
-import java.net.URL;
 import org.komodo.core.KomodoLexicon;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.RelationalObject;
@@ -102,47 +101,6 @@ public interface Profile extends RelationalObject {
             return new ProfileImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
         }
     };
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param repoName
-     *        the name of the git repository being added (cannot be empty)
-     * @param url
-     *        the url of the git repository
-     * @param user
-     *        the user name required to connect to the repository
-     * @param password
-     *        the password required to connect to the repository
-     * @return the new git repository (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    GitRepository addGitRepository( final UnitOfWork transaction, String repoName,
-                                    URL url, String user, String password ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param namePatterns
-     *        optional name patterns (can be <code>null</code> or empty but cannot have <code>null</code> or empty elements)
-     *
-     * @return the git repostiories (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    GitRepository[] getGitRepositories( final UnitOfWork transaction, final String... namePatterns ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param gitRepoToRemove
-     *        the name of the git repository being removed (cannot be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    void removeGitRepository( final UnitOfWork transaction,
-                         final String gitRepoToRemove ) throws KException;
 
     /**
      *

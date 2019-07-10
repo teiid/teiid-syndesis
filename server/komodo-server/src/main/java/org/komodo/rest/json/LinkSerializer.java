@@ -19,12 +19,15 @@ package org.komodo.rest.json;
 
 import static org.komodo.rest.Messages.Error.INCOMPLETE_JSON;
 import static org.komodo.rest.Messages.Error.UNEXPECTED_JSON_TOKEN;
+
 import java.io.IOException;
+
 import javax.ws.rs.core.UriBuilder;
+
 import org.komodo.rest.Messages;
 import org.komodo.rest.RestLink;
 import org.komodo.rest.RestLink.LinkType;
-import org.komodo.rest.relational.response.RestVdbImport;
+
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
@@ -68,7 +71,7 @@ public final class LinkSerializer extends TypeAdapter< RestLink > {
         in.endObject();
 
         if ( !isComplete( link ) ) {
-            throw new IOException( Messages.getString( INCOMPLETE_JSON, RestVdbImport.class.getSimpleName() ) );
+            throw new IOException( Messages.getString( INCOMPLETE_JSON, LinkSerializer.class.getSimpleName() ) );
         }
 
         return link;

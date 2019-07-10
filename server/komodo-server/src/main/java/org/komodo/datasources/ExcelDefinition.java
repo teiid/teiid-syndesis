@@ -29,11 +29,7 @@ public class ExcelDefinition extends DataSourceDefinition {
 
     @Override
     public String getPomDendencies() {
-        return
-            "<dependency>" +
-            "  <groupId>org.teiid</groupId>" +
-            "  <artifactId>thorntail-excel</artifactId>" +
-            "</dependency>";
+    	throw new UnsupportedOperationException();
     }
 
     @Override
@@ -41,11 +37,6 @@ public class ExcelDefinition extends DataSourceDefinition {
         return "excel";
     }
     
-    @Override
-    public boolean isResouceAdapter() {
-        return true;
-    }
-
     @Override
     public boolean isTypeOf(Map<String, String> properties) {
         if ((properties != null) && (properties.get("PARENT_DIRECTORY") != null)) {

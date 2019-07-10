@@ -22,9 +22,7 @@ import java.util.Properties;
 
 import org.komodo.core.KomodoLexicon;
 import org.komodo.openshift.BuildStatus;
-import org.komodo.relational.connection.Connection;
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.resource.Driver;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.KomodoService;
 import org.komodo.rest.RestBasicEntity;
@@ -66,11 +64,6 @@ public final class RestDataservice extends RestBasicEntity {
     public static final String DATASERVICE_VDB_VERSION_LABEL = "serviceVdbVersion"; //$NON-NLS-1$
 
     /**
-     * Label used to describe dataservice driver total
-     */
-    public static final String DATASERVICE_DRIVER_TOTAL_LABEL = "drivers"; //$NON-NLS-1$
-
-    /**
      * Label used to describe dataservice connection total
      */
     public static final String DATASERVICE_CONNECTION_TOTAL_LABEL = "connections"; //$NON-NLS-1$
@@ -96,16 +89,6 @@ public final class RestDataservice extends RestBasicEntity {
     public static final String DATASERVICE_ODATA_HOST_NAME = "odataHostName"; //$NON-NLS-1$
 
     /**
-     * fqn table option key
-     */
-    private final static String TABLE_OPTION_FQN = "teiid_rel:fqn"; //$NON-NLS-1$
-
-    /**
-     * schema model suffix
-     */
-    private final static String SCHEMA_MODEL_SUFFIX = "schemamodel"; //$NON-NLS-1$
-    
-    /**
      * Constructor for use when deserializing
      */
     public RestDataservice() {
@@ -123,7 +106,7 @@ public final class RestDataservice extends RestBasicEntity {
      * @throws KException if error occurs
      */
     public RestDataservice(URI baseUri, Dataservice dataService, boolean exportXml, UnitOfWork uow) throws KException {
-        super(baseUri, dataService, uow, false);
+        super(baseUri, dataService, uow);
 
         setDescription(dataService.getDescription(uow));
 
@@ -141,20 +124,12 @@ public final class RestDataservice extends RestBasicEntity {
             setViewDefinitionNames(dataService.getViewDefinitionNames(uow));
         }
 
-        Connection[] connections = dataService.getConnections(uow);
-        setConnectionTotal(connections != null ? connections.length : 0);
-
-        Driver[] drivers = dataService.getDrivers(uow);
-        setDriverTotal(drivers != null ? drivers.length : 0);
-        
         // Initialize the published state to NOTFOUND
         setPublishedState(BuildStatus.Status.NOTFOUND.name());
 
         addLink(new RestLink(LinkType.SELF, getUriBuilder().dataserviceUri(LinkType.SELF, settings)));
         addLink(new RestLink(LinkType.PARENT, getUriBuilder().dataserviceUri(LinkType.PARENT, settings)));
-        createChildLink();
         addLink(new RestLink(LinkType.VDBS, getUriBuilder().dataserviceUri(LinkType.VDBS, settings)));
-        addLink(new RestLink(LinkType.CONNECTIONS, getUriBuilder().dataserviceUri(LinkType.CONNECTIONS, settings)));
     }
 
     /**
@@ -231,36 +206,6 @@ public final class RestDataservice extends RestBasicEntity {
         tuples.put(DATASERVICE_VDB_VERSION_LABEL, version);
     }
 
-    /**
-     * @return the number of connections (can be empty)
-     */
-    public int getConnectionTotal() {
-        Object total = tuples.get(DATASERVICE_CONNECTION_TOTAL_LABEL);
-        return total != null ? Integer.parseInt(total.toString()) : 0;
-    }
-
-    /**
-     * @param total the number of connections
-     */
-    public void setConnectionTotal(int total) {
-        tuples.put(DATASERVICE_CONNECTION_TOTAL_LABEL, total);
-    }
-
-    /**
-     * @return the number of drivers (can be empty)
-     */
-    public int getDriverTotal() {
-        Object total = tuples.get(DATASERVICE_DRIVER_TOTAL_LABEL);
-        return total != null ? Integer.parseInt(total.toString()) : 0;
-    }
-
-    /**
-     * @param total the number of drivers
-     */
-    public void setDriverTotal(int total) {
-        tuples.put(DATASERVICE_DRIVER_TOTAL_LABEL, total);
-    }
-    
     /**
      * @return the service published state (never empty)
      */

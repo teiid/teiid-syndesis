@@ -23,7 +23,7 @@ import org.komodo.relational.model.Column;
 import org.komodo.relational.model.ForeignKey;
 import org.komodo.relational.model.Table;
 import org.komodo.spi.KException;
-import org.komodo.spi.lexicon.ddl.teiid.TeiidDdlLexicon.Constraint;
+import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.Constraint;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Property;

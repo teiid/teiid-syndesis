@@ -29,21 +29,12 @@ public class AmazonS3Definition extends DataSourceDefinition {
 
     @Override
     public String getPomDendencies() {
-        return
-            "<dependency>" +
-            "  <groupId>org.teiid</groupId>" +
-            "  <artifactId>thorntail-amazon-s3</artifactId>" +
-            "</dependency>";
+    	throw new UnsupportedOperationException();
     }
 
     @Override
     public String getTranslatorName() {
         return "amazon-s3";
-    }
-
-    @Override
-    public boolean isResouceAdapter() {
-        return true;
     }
 
     @Override
