@@ -28,11 +28,9 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.komodo.core.LexiconConstants.JcrLexicon;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.lexicon.LexiconConstants.CoreLexicon;
-import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
-import org.komodo.spi.lexicon.LexiconConstants.ModeshapeLexicon;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KObjectFactory;
 import org.komodo.spi.repository.KomodoObject;
@@ -41,6 +39,8 @@ import org.komodo.spi.repository.Repository.OperationType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.runtime.version.MetadataVersion;
 import org.komodo.spi.type.DataTypeService;
+import org.modeshape.jcr.api.JcrConstants;
+import org.teiid.modeshape.sequencer.vdb.lexicon.CoreLexicon;
 import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 /**
@@ -489,7 +489,7 @@ public class VdbNodeVisitor extends AbstractNodeVisitor implements StringConstan
 
         writeAttribute(VdbLexicon.ManifestIds.NAME, kObject.getName(transaction));
 
-        Property typeProp = property(transaction, kObject, CoreLexicon.MODEL_TYPE);
+        Property typeProp = property(transaction, kObject, CoreLexicon.JcrId.MODEL_TYPE);
         writeAttribute(VdbLexicon.ManifestIds.TYPE, toString(transaction, typeProp));
 
         Property pathProp = property(transaction, kObject, VdbLexicon.Model.PATH_IN_VDB);
@@ -506,7 +506,7 @@ public class VdbNodeVisitor extends AbstractNodeVisitor implements StringConstan
         writeNewLine();
         description(transaction, kObject, ElementTabValue.MODEL_DESCRIPTION);
 
-        Properties exportableProps = filterExportableProperties(transaction, kObject, CoreLexicon.MODEL_TYPE);
+        Properties exportableProps = filterExportableProperties(transaction, kObject, CoreLexicon.JcrId.MODEL_TYPE);
 
         // Find sources associated connections and add them to the model's exportable properties
         Properties assocConnProps = sourceConnections(transaction, kObject);
@@ -681,7 +681,7 @@ public class VdbNodeVisitor extends AbstractNodeVisitor implements StringConstan
                                                                 VdbLexicon.Vdb.VERSION,
                                                                 NodeTypeName.DESCRIPTION.getId(),
                                                                 VdbLexicon.Vdb.CONNECTION_TYPE,
-                                                                ModeshapeLexicon.MODE_SHA1);
+                                                                JcrConstants.MODE_SHA1);
 
         properties(transaction, kObject, ElementTabValue.VDB_PROPERTY, exportableProps);
 

@@ -39,12 +39,13 @@ import javax.jcr.observation.ObservationManager;
 
 import org.komodo.core.KomodoLexicon;
 import org.komodo.core.Messages;
+import org.komodo.core.LexiconConstants.JcrLexicon;
 import org.komodo.core.repository.KSequencerController;
 import org.komodo.core.repository.KSequencerListener;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
 import org.komodo.spi.repository.UnitOfWorkDelegate;
 import org.komodo.utils.KLog;
+import org.modeshape.jcr.api.JcrConstants;
 import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
 import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
@@ -140,10 +141,10 @@ public class KSequencers implements StringConstants, EventListener, KSequencerCo
 
     private boolean isVdbSequenceable(Node node, String propertyName) {
         try {
-            if (! propertyName.equals(JcrLexicon.JCR_DATA))
+            if (! propertyName.equals(JcrConstants.JCR_DATA))
                 return false;
 
-            if (! node.getName().equals(JcrLexicon.JCR_CONTENT))
+            if (! node.getName().equals(JcrConstants.JCR_CONTENT))
                 return false;
 
             Node parentNode = node.getParent();
@@ -167,11 +168,11 @@ public class KSequencers implements StringConstants, EventListener, KSequencerCo
 
     private boolean isDataServiceSequenceable( Node node, String propertyName ) {
         try {
-            if ( !propertyName.equals( JcrLexicon.JCR_DATA ) ) {
+            if ( !propertyName.equals( JcrConstants.JCR_DATA ) ) {
                 return false;
             }
 
-            if ( !node.getName().equals( JcrLexicon.JCR_CONTENT ) ) {
+            if ( !node.getName().equals( JcrConstants.JCR_CONTENT ) ) {
                 return false;
             }
 

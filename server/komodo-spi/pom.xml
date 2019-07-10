@@ -40,18 +40,6 @@
 			<scope>test</scope>
 		</dependency>
 		
-		<dependency>
-			<groupId>org.teiid.modeshape</groupId>
-			<artifactId>teiid-modeshape-sequencer-vdb</artifactId>
-			<scope>test</scope>
-		</dependency>
-		
-		<dependency>
-			<groupId>org.teiid.modeshape</groupId>
-			<artifactId>teiid-modeshape-sequencer-dataservice</artifactId>
-			<scope>test</scope>
-		</dependency>
-		
 	</dependencies>
 
 	<build>

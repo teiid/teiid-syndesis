@@ -22,9 +22,6 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import org.komodo.metadata.TeiidConnectionProvider;
-import org.komodo.spi.metadata.MetadataInstance.ConnectivityType;
-import org.komodo.spi.outcome.Outcome;
-import org.komodo.spi.outcome.OutcomeFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.teiid.adminapi.Admin;
@@ -57,20 +54,6 @@ public class TeiidConnectionProviderImpl implements TeiidConnectionProvider {
 		Properties props = new Properties();
 		//TODO: when security working the user name needs to be passed in we need to work delegation model for security
 		return server.getDriver().connect("jdbc:teiid:"+vdb+"."+version, props);
-	}
-
-	@Override
-	public Outcome ping(ConnectivityType connectivityType) {
-		try {
-			if (connectivityType == ConnectivityType.ADMIN) {
-				getAdmin().getSessions();
-			} else {
-			    server.getDriver().connect("jdbc:teiid:ping", new Properties());
-			}
-		} catch (AdminException | SQLException e) {
-			return OutcomeFactory.getInstance().createError(e.getLocalizedMessage(), e);
-		}
-		return OutcomeFactory.getInstance().createOK();
 	}
 
 	@Override

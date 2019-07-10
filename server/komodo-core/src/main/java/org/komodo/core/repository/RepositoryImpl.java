@@ -24,23 +24,16 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.komodo.core.KEngine;
 import org.komodo.core.KomodoLexicon;
 import org.komodo.core.KomodoLexicon.Environment;
 import org.komodo.core.KomodoLexicon.Komodo;
-import org.komodo.core.KomodoLexicon.LibraryComponent;
-import org.komodo.core.repository.validation.ValidationManagerImpl;
 import org.komodo.spi.KClient;
 import org.komodo.spi.KEvent;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.metadata.MetadataInstance;
-import org.komodo.spi.query.KQueryManager;
-import org.komodo.spi.repository.Artifact;
-import org.komodo.spi.repository.ArtifactDescriptor;
-import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KObjectFactory;
 import org.komodo.spi.repository.KPropertyFactory;
 import org.komodo.spi.repository.KomodoObject;
@@ -48,7 +41,6 @@ import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.RepositoryClientEvent;
 import org.komodo.spi.repository.RepositoryObserver;
 import org.komodo.spi.repository.UnitOfWorkDelegate;
-import org.komodo.spi.repository.ValidationManager;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 
@@ -56,124 +48,6 @@ import org.komodo.utils.KLog;
  * A {@link Repository} implementation.
  */
 public abstract class RepositoryImpl implements Repository, StringConstants {
-
-    private class ArtifactDescriptorImpl implements ArtifactDescriptor {
-
-        private final String description;
-        private final String path;
-        private final boolean readOnly;
-        private final Repository repository;
-        private final String type;
-        private final String version;
-
-        ArtifactDescriptorImpl( final String artifactType,
-                                final String artifactDescription,
-                                final String artifactPath,
-                                final Repository artifactRepository,
-                                final String artifactVersion,
-                                final boolean artifactReadOnly ) {
-            this.type = artifactType;
-            this.description = artifactDescription;
-            this.path = artifactPath;
-            this.repository = artifactRepository;
-            this.version = artifactVersion;
-            this.readOnly = true;
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.spi.repository.ArtifactDescriptor#getArtifactType()
-         */
-        @Override
-        public String getArtifactType() {
-            return this.type;
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.spi.repository.ArtifactDescriptor#getDescription()
-         */
-        @Override
-        public String getDescription() {
-            return this.description;
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.spi.repository.ArtifactDescriptor#getPath()
-         */
-        @Override
-        public String getPath() {
-            return this.path;
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.spi.repository.ArtifactDescriptor#getRepository()
-         */
-        @Override
-        public Repository getRepository() {
-            return this.repository;
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.spi.repository.ArtifactDescriptor#getVersion()
-         */
-        @Override
-        public String getVersion() {
-            return this.version;
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.spi.repository.ArtifactDescriptor#isReadOnly()
-         */
-        @Override
-        public boolean isReadOnly() {
-            return this.readOnly;
-        }
-
-    }
-
-    private class ArtifactImpl implements Artifact {
-
-        private final ArtifactDescriptor descriptor;
-        private final KomodoObject komodoObject;
-
-        ArtifactImpl( final ArtifactDescriptor descriptor,
-                      final KomodoObject komodoObject ) {
-            this.descriptor = descriptor;
-            this.komodoObject = komodoObject;
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.spi.repository.Artifact#get()
-         */
-        @Override
-        public KomodoObject get() {
-            return this.komodoObject;
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.spi.repository.Artifact#getDescriptor()
-         */
-        @Override
-        public ArtifactDescriptor getDescriptor() {
-            return this.descriptor;
-        }
-
-    }
 
     /**
      * A unit of work analogous to a transaction.
@@ -562,7 +436,6 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     private final Id id;
     private final Set< RepositoryObserver > observers = new HashSet< >();
     private final Type type;
-    private ValidationManager validationMgr;
     protected KEngine kEngine;
 
     /**
@@ -980,37 +853,6 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Repository#getValidationManager()
-     */
-    @Override
-    public ValidationManager getValidationManager() throws KException {
-        if ( this.validationMgr == null ) {
-            // the ValidationManager loads validation rules when it is constructed so we need a transaction to save those rules
-            final SynchronousCallback callback = new SynchronousCallback();
-            final UnitOfWork transaction = createTransaction(SYSTEM_USER, "getValidationManager", false, callback, SYSTEM_USER); //$NON-NLS-1$
-            this.validationMgr = new ValidationManagerImpl( transaction, this );
-            transaction.commit();
-
-            try {
-                // wait for transaction to commit before returning
-                if ( !callback.await( 30, TimeUnit.SECONDS ) ) {
-                    throw new KException( Messages.getString( Messages.Komodo.ERROR_CONSTRUCTING_VALIDATION_MANAGER ) );
-                }
-            } catch ( final Exception e ) {
-                if ( !( e instanceof KException ) ) {
-                    throw new KException( e );
-                }
-
-                throw ( KException )e;
-            }
-        }
-
-        return this.validationMgr;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
      * @see org.komodo.spi.repository.Repository#notify(org.komodo.spi.repository.RepositoryClientEvent)
      */
     @Override
@@ -1122,57 +964,6 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     public void removeObserver( final RepositoryObserver observer ) {
         ArgCheck.isNotNull(observer, "observer"); //$NON-NLS-1$
         this.observers.remove(observer);
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.spi.repository.Repository#retrieve(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
-     */
-    @Override
-    public Artifact[] retrieve( final UnitOfWork transaction,
-                                final String... artifactPaths ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
-        "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotEmpty(artifactPaths, "artifactPaths"); //$NON-NLS-1$
-
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("retrieve: paths = {0}, transaction = {1}", //$NON-NLS-1$
-                         Arrays.asList(artifactPaths),
-                         transaction.getName());
-        }
-
-        final Artifact[] artifacts = new Artifact[artifactPaths.length];
-        int i = 0;
-
-        try {
-            for (final String path : artifactPaths) {
-                ArgCheck.isNotNull(path, "path"); //$NON-NLS-1$
-                final String absPath = getAbsoluteLibraryPath(path);
-
-                if (getObjectFactory().hasNode(transaction, absPath)) {
-                    final KomodoObject node = getObjectFactory().getNode(transaction, this, absPath);
-                    final String description = node.getProperty(transaction, LibraryComponent.DESCRIPTION).getStringValue(transaction);
-                    Descriptor type = getObjectFactory().getType(transaction, node);
-                    final ArtifactDescriptor descriptor = new ArtifactDescriptorImpl(type.getName(),
-                                                                                     description, path, this, "1", // TODO figure out version //$NON-NLS-1$
-                                                                                     true); // TODO figure out how to tell if readonly
-                    final KomodoObject komodoObject = new ObjectImpl(this, path, node.getIndex());
-                    artifacts[i++] = new ArtifactImpl(descriptor, komodoObject);
-                } else {
-                    throw new KException(Messages.getString(Messages.Komodo.ARTIFACT_DOES_NOT_EXIST_ERROR, path));
-                }
-            }
-
-            return artifacts;
-        } catch (final Exception e) {
-            if (e instanceof KException) {
-                throw (KException)e;
-            }
-
-            throw new KException(e);
-        }
     }
 
     /**

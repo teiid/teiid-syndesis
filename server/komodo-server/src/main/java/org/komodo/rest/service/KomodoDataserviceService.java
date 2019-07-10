@@ -45,8 +45,8 @@ import org.komodo.openshift.BuildStatus;
 import org.komodo.openshift.BuildStatus.RouteStatus;
 import org.komodo.openshift.ProtocolType;
 import org.komodo.openshift.TeiidOpenShiftClient;
-import org.komodo.relational.ServiceVdbGenerator;
 import org.komodo.relational.dataservice.Dataservice;
+import org.komodo.relational.internal.ServiceVdbGenerator;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Model.Type;
 import org.komodo.relational.profile.ViewEditorState;
@@ -392,8 +392,7 @@ public final class KomodoDataserviceService extends KomodoService
                 svcVdbObj.remove(uow);
             }
 
-            KomodoObject vdbObj = wkspMgr.createVdb(uow, null, serviceVdbName, serviceVdbName);
-            Vdb serviceVdb = Vdb.RESOLVER.resolve(uow, vdbObj);
+            Vdb serviceVdb = wkspMgr.createVdb(uow, null, serviceVdbName, serviceVdbName);
 
             // Add to the ServiceVdb a virtual model for the View
             Model viewModel = serviceVdb.addModel(uow, SERVICE_VDB_VIEW_MODEL);

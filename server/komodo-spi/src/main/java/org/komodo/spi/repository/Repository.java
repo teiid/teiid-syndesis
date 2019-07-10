@@ -404,13 +404,6 @@ public interface Repository {
     Type getType();
 
     /**
-     * @return the validation manager (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    ValidationManager getValidationManager() throws KException;
-
-    /**
      * Notify the repository of the given {@link RepositoryClientEvent}
      *
      * @param event
@@ -446,19 +439,6 @@ public interface Repository {
      *        the observer to be removed
      */
     void removeObserver( RepositoryObserver observer );
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param artifactPaths
-     *        the paths of the artifacts being requested (cannot be <code>null</code> or empty)
-     * @return the requested artifacts (never <code>null</code>)
-     * @throws KException
-     *         if an artifact does not exist or an error occurs
-     */
-    Artifact[] retrieve( final UnitOfWork transaction,
-                         final String... artifactPaths ) throws KException;
 
     /**
      * @param transaction

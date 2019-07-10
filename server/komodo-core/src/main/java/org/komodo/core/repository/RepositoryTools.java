@@ -18,9 +18,9 @@
 package org.komodo.core.repository;
 
 import java.io.PrintStream;
+
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoObjectVisitor;
 import org.komodo.spi.repository.Property;
@@ -30,6 +30,7 @@ import org.komodo.spi.repository.Repository.OperationType;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
+import org.modeshape.jcr.api.JcrConstants;
 import org.modeshape.jcr.api.JcrTools;
 
 /**
@@ -91,7 +92,7 @@ public class RepositoryTools implements StringConstants {
                 if (komodoObjectType != null) {
                     komodoObject = komodoObject.addChild(transaction, pathSegmentWithNoIndex, komodoObjectType);
                 } else {
-                    komodoObject = komodoObject.addChild(transaction, pathSegmentWithNoIndex, NTLexicon.NT_UNSTRUCTURED);
+                    komodoObject = komodoObject.addChild(transaction, pathSegmentWithNoIndex, JcrConstants.NT_UNSTRUCTURED);
                 }
             }
         }

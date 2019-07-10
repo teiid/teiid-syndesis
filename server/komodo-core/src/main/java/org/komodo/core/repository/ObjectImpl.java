@@ -28,7 +28,6 @@ import java.util.Set;
 import org.komodo.core.repository.KomodoTypeRegistry.TypeIdentifier;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KObjectFactory;
 import org.komodo.spi.repository.KPropertyFactory;
@@ -45,6 +44,7 @@ import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
+import org.modeshape.jcr.api.JcrConstants;
 import org.teiid.modeshape.sequencer.ddl.DdlConstants;
 import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
 import org.teiid.modeshape.sequencer.ddl.TeiidDdlConstants;
@@ -241,7 +241,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
                          primaryType);
         }
 
-        final String type = (StringUtils.isBlank(primaryType) ? NTLexicon.NT_UNSTRUCTURED : primaryType);
+        final String type = (StringUtils.isBlank(primaryType) ? JcrConstants.NT_UNSTRUCTURED : primaryType);
 
         try {
             KomodoObject result = getObjectFactory().addChild(transaction, this, name, type);
@@ -1261,7 +1261,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
         }
 
         try {
-            final String type = (StringUtils.isBlank(typeName) ? NTLexicon.NT_UNSTRUCTURED : typeName);
+            final String type = (StringUtils.isBlank(typeName) ? JcrConstants.NT_UNSTRUCTURED : typeName);
             getObjectFactory().setType(transaction, this, type);
         } catch (final Exception e) {
             throw handleError( e );

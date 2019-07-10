@@ -79,7 +79,7 @@
 	</dependency>      
     <dependency>
         <groupId>org.teiid</groupId>
-        <artifactId>komodo-relational</artifactId>
+        <artifactId>komodo-core</artifactId>
     </dependency>
     <dependency>
       <groupId>com.sun.xsom</groupId>
@@ -157,12 +157,6 @@
     <dependency>
       <groupId>org.teiid</groupId>
       <artifactId>komodo-core</artifactId>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.teiid</groupId>
-      <artifactId>komodo-relational</artifactId>
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
