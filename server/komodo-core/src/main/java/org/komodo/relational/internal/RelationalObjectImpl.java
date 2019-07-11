@@ -28,7 +28,6 @@ import org.komodo.core.repository.Messages.Komodo;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.RelationalObject;
-import org.komodo.relational.TypeResolver;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KObjectFactory;

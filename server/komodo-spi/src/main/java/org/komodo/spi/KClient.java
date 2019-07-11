@@ -17,7 +17,7 @@
  */
 package org.komodo.spi;
 
-import org.komodo.spi.metadata.MetadataObserver;
+import org.komodo.metadata.MetadataObserver;
 import org.komodo.spi.repository.RepositoryObserver;
 
 /**

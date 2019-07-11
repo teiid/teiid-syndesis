@@ -19,9 +19,10 @@ package org.komodo.spi.repository;
 
 import java.net.URL;
 import java.util.List;
+
+import org.komodo.metadata.MetadataInstance;
 import org.komodo.spi.KClient;
 import org.komodo.spi.KException;
-import org.komodo.spi.metadata.MetadataInstance;
 
 /**
  * A repository is a data store containing artifacts generated while modeling VDBs

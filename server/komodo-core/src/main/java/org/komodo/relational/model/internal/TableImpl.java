@@ -27,11 +27,12 @@ import java.util.Properties;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.visitor.DdlNodeVisitor;
 import org.komodo.core.visitor.DdlNodeVisitor.VisitorExclusions;
+import org.komodo.metadata.MetadataInstance;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
-import org.komodo.relational.TypeResolver;
 import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
+import org.komodo.relational.internal.TypeResolver;
 import org.komodo.relational.model.Column;
 import org.komodo.relational.model.ForeignKey;
 import org.komodo.relational.model.Model;
@@ -40,10 +41,8 @@ import org.komodo.relational.model.StatementOption;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.UniqueConstraint;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.ExportConstants;
-import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.Descriptor;
-import org.komodo.spi.repository.DocumentType;
+import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Property;
@@ -72,7 +71,7 @@ public class TableImpl extends RelationalObjectImpl implements Table {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#identifier()
+         * @see org.komodo.relational.internal.TypeResolver#identifier()
          */
         @Override
         public KomodoType identifier() {
@@ -82,7 +81,7 @@ public class TableImpl extends RelationalObjectImpl implements Table {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#owningClass()
+         * @see org.komodo.relational.internal.TypeResolver#owningClass()
          */
         @Override
         public Class< TableImpl > owningClass() {
@@ -92,7 +91,7 @@ public class TableImpl extends RelationalObjectImpl implements Table {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
@@ -104,7 +103,7 @@ public class TableImpl extends RelationalObjectImpl implements Table {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
@@ -970,12 +969,12 @@ public class TableImpl extends RelationalObjectImpl implements Table {
     private String exportDdl(UnitOfWork transaction, Properties exportProperties) throws Exception {
         List<VisitorExclusions> exclusions = new ArrayList<VisitorExclusions>();
         if( exportProperties != null && !exportProperties.isEmpty() ) {
-            if(exportProperties.containsKey(ExportConstants.EXCLUDE_TABLE_CONSTRAINTS_KEY)) {
+            if(exportProperties.containsKey(Exportable.EXCLUDE_TABLE_CONSTRAINTS_KEY)) {
                 exclusions.add(VisitorExclusions.EXCLUDE_TABLE_CONSTRAINTS);
             }
         }
         MetadataInstance metadata = getRepository().getMetadataInstance();
-        DdlNodeVisitor visitor = new DdlNodeVisitor(metadata.getVersion(), metadata.getDataTypeService(), false, exclusions.toArray(new VisitorExclusions[0]));
+        DdlNodeVisitor visitor = new DdlNodeVisitor(metadata.getDataTypeService(), false, exclusions.toArray(new VisitorExclusions[0]));
         visitor.visit(transaction, this);
 
         String result = visitor.getDdl();
@@ -1011,8 +1010,4 @@ public class TableImpl extends RelationalObjectImpl implements Table {
         }
     }
 
-    @Override
-    public DocumentType getDocumentType(UnitOfWork transaction) throws KException {
-        return DocumentType.DDL;
-    }
 }

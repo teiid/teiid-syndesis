@@ -18,8 +18,8 @@
 package org.komodo.relational.vdb.internal;
 
 import org.komodo.core.repository.ObjectImpl;
-import org.komodo.relational.TypeResolver;
 import org.komodo.relational.internal.RelationalChildRestrictedObject;
+import org.komodo.relational.internal.TypeResolver;
 import org.komodo.relational.vdb.Translator;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.Descriptor;
@@ -45,7 +45,7 @@ public final class TranslatorImpl extends RelationalChildRestrictedObject implem
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#identifier()
+         * @see org.komodo.relational.internal.TypeResolver#identifier()
          */
         @Override
         public KomodoType identifier() {
@@ -55,7 +55,7 @@ public final class TranslatorImpl extends RelationalChildRestrictedObject implem
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#owningClass()
+         * @see org.komodo.relational.internal.TypeResolver#owningClass()
          */
         @Override
         public Class< TranslatorImpl > owningClass() {
@@ -65,7 +65,7 @@ public final class TranslatorImpl extends RelationalChildRestrictedObject implem
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
@@ -77,7 +77,7 @@ public final class TranslatorImpl extends RelationalChildRestrictedObject implem
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override

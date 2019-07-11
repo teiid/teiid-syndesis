@@ -23,12 +23,12 @@ import java.util.List;
 
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.Messages;
-import org.komodo.relational.TypeResolver;
 import org.komodo.relational.dataservice.DataServiceEntry;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.ServiceVdbEntry;
 import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
+import org.komodo.relational.internal.TypeResolver;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Model.Type;
 import org.komodo.relational.profile.Profile;
@@ -60,7 +60,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#identifier()
+         * @see org.komodo.relational.internal.TypeResolver#identifier()
          */
         @Override
         public KomodoType identifier() {
@@ -70,7 +70,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#owningClass()
+         * @see org.komodo.relational.internal.TypeResolver#owningClass()
          */
         @Override
         public Class< DataserviceImpl > owningClass() {
@@ -80,7 +80,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
@@ -95,7 +95,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override

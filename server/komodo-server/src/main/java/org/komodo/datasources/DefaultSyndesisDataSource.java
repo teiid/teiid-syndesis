@@ -20,7 +20,7 @@ package org.komodo.datasources;
 import java.util.Map;
 import java.util.Properties;
 
-import org.komodo.spi.runtime.SyndesisDataSource;
+import org.komodo.metadata.runtime.SyndesisDataSource;
 
 public class DefaultSyndesisDataSource implements SyndesisDataSource {
 	private String id;

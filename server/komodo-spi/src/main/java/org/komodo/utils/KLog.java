@@ -18,7 +18,6 @@
 package org.komodo.utils;
 
 import org.apache.commons.logging.LogFactory;
-import org.komodo.logging.i18n.TextI18n;
 
 public class KLog {
 

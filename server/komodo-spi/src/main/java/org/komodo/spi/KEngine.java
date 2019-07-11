@@ -18,8 +18,8 @@
 
 package org.komodo.spi;
 
+import org.komodo.metadata.MetadataInstance;
 import org.komodo.relational.WorkspaceManager;
-import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 

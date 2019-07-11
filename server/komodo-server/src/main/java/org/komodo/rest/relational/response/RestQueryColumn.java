@@ -18,8 +18,9 @@
 package org.komodo.rest.relational.response;
 
 import javax.ws.rs.core.MediaType;
+
+import org.komodo.metadata.query.QSColumn;
 import org.komodo.rest.KRestEntity;
-import org.komodo.spi.query.QSColumn;
 
 public class RestQueryColumn implements KRestEntity {
 

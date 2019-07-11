@@ -19,6 +19,7 @@ package org.komodo.relational.dataservice.internal;
 
 import java.util.Properties;
 
+import org.komodo.metadata.internal.DocumentType;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.dataservice.ServiceVdbEntry;
@@ -106,7 +107,7 @@ public class ServiceVdbEntryImpl extends RelationalObjectImpl implements Service
      * @see org.komodo.relational.dataservice.DataServiceEntry#getReference(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public Vdb getReference( final UnitOfWork uow ) throws KException {
+    public VdbImpl getReference( final UnitOfWork uow ) throws KException {
         if ( hasProperty( uow, DataVirtLexicon.VdbEntry.VDB_REF ) ) {
             final String refId = getProperty( uow, DataVirtLexicon.VdbEntry.VDB_REF ).getStringValue( uow );
             final KomodoObject kobj = getRepository().getUsingId( uow, refId );
@@ -179,7 +180,7 @@ public class ServiceVdbEntryImpl extends RelationalObjectImpl implements Service
             return getProperty( transaction, DataVirtLexicon.ResourceEntry.PATH ).getStringValue( transaction );
         }
 
-        final Vdb file = getReference( transaction );
+        final VdbImpl file = getReference( transaction );
         String folder = getArchiveFolder();
 
         if ( StringUtils.isBlank( folder ) ) {
@@ -191,7 +192,7 @@ public class ServiceVdbEntryImpl extends RelationalObjectImpl implements Service
         }
 
         if ( file != null ) {
-            return ( folder + file.getDocumentType( transaction ).fileName( file.getName( transaction ) ) );
+            return ( folder + DocumentType.VDB_XML.fileName( file.getName( transaction ) ) );
         }
 
         return ( folder + getName( transaction ) );

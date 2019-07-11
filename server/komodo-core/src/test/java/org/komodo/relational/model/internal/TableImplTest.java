@@ -49,8 +49,8 @@ import org.komodo.relational.model.Table.OnCommit;
 import org.komodo.relational.model.Table.TemporaryType;
 import org.komodo.relational.model.UniqueConstraint;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.ExportConstants;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyDescriptor;
@@ -849,7 +849,7 @@ public final class TableImplTest extends RelationalModelTest {
 
         // Export the table
         Properties exportProps = new Properties();
-        exportProps.put( ExportConstants.EXCLUDE_TABLE_CONSTRAINTS_KEY, true );
+        exportProps.put( Exportable.EXCLUDE_TABLE_CONSTRAINTS_KEY, true );
         byte[] bytes = this.table.export(getTransaction(), exportProps);
         String exportedDdl = new String(bytes);
         

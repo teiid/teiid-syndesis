@@ -35,8 +35,8 @@ import javax.xml.xpath.XPathFactory;
 
 import org.junit.Test;
 import org.komodo.core.AbstractLocalRepositoryTest;
-import org.komodo.metadata.DefaultMetadataInstance;
-import org.komodo.spi.metadata.TeiidConnectionProvider;
+import org.komodo.metadata.TeiidConnectionProvider;
+import org.komodo.metadata.internal.DefaultMetadataInstance;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
 import org.komodo.test.utils.TestUtilities;
@@ -100,7 +100,7 @@ public class TestVdbExport extends AbstractLocalRepositoryTest {
 
         TeiidConnectionProvider provider = Mockito.mock(TeiidConnectionProvider.class);
         DefaultMetadataInstance instance = new DefaultMetadataInstance(provider);
-        return new VdbNodeVisitor(instance.getVersion(),instance.getDataTypeService(), xtw);
+        return new VdbNodeVisitor(instance.getDataTypeService(), xtw);
     }
 
     @Test(timeout=3000000)

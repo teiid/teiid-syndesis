@@ -21,9 +21,9 @@ import java.util.Map;
 
 import org.komodo.core.KomodoLexicon;
 import org.komodo.core.repository.ObjectImpl;
-import org.komodo.relational.TypeResolver;
 import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
+import org.komodo.relational.internal.TypeResolver;
 import org.komodo.relational.profile.StateCommand;
 import org.komodo.relational.profile.StateCommandAggregate;
 import org.komodo.spi.KException;
@@ -47,7 +47,7 @@ public class StateCommandAggregateImpl extends RelationalObjectImpl implements S
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#identifier()
+         * @see org.komodo.relational.internal.TypeResolver#identifier()
          */
         @Override
         public KomodoType identifier() {
@@ -57,7 +57,7 @@ public class StateCommandAggregateImpl extends RelationalObjectImpl implements S
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#owningClass()
+         * @see org.komodo.relational.internal.TypeResolver#owningClass()
          */
         @Override
         public Class<StateCommandAggregateImpl> owningClass() {
@@ -67,7 +67,7 @@ public class StateCommandAggregateImpl extends RelationalObjectImpl implements S
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
@@ -78,7 +78,7 @@ public class StateCommandAggregateImpl extends RelationalObjectImpl implements S
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override

@@ -27,8 +27,8 @@ import java.util.Properties;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.komodo.spi.runtime.TeiidDataSource;
-import org.komodo.spi.runtime.TeiidVdb;
+import org.komodo.metadata.runtime.TeiidDataSource;
+import org.komodo.metadata.runtime.TeiidVdb;
 import org.komodo.test.utils.TestUtilities;
 
 public class IT_KomodoMetadataServiceCreateTests extends AbstractKomodoMetadataServiceTest {

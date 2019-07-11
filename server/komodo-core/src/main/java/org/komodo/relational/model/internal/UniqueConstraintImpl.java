@@ -18,7 +18,7 @@
 package org.komodo.relational.model.internal;
 
 import org.komodo.core.repository.ObjectImpl;
-import org.komodo.relational.TypeResolver;
+import org.komodo.relational.internal.TypeResolver;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.UniqueConstraint;
 import org.komodo.spi.KException;
@@ -43,7 +43,7 @@ public final class UniqueConstraintImpl extends TableConstraintImpl implements U
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#identifier()
+         * @see org.komodo.relational.internal.TypeResolver#identifier()
          */
         @Override
         public KomodoType identifier() {
@@ -53,7 +53,7 @@ public final class UniqueConstraintImpl extends TableConstraintImpl implements U
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#owningClass()
+         * @see org.komodo.relational.internal.TypeResolver#owningClass()
          */
         @Override
         public Class< UniqueConstraintImpl > owningClass() {
@@ -63,7 +63,7 @@ public final class UniqueConstraintImpl extends TableConstraintImpl implements U
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
@@ -80,7 +80,7 @@ public final class UniqueConstraintImpl extends TableConstraintImpl implements U
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override

@@ -30,6 +30,7 @@ import javax.transaction.TransactionManager;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
+import org.komodo.metadata.MetadataInstance;
 import org.komodo.openshift.EncryptionComponent;
 import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.rest.connections.SyndesisConnectionMonitor;
@@ -37,7 +38,6 @@ import org.komodo.rest.connections.SyndesisConnectionSynchronizer;
 import org.komodo.spi.KEngine;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.SystemConstants;
-import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.ApplicationProperties;
 import org.komodo.spi.repository.PersistenceType;
 import org.komodo.spi.repository.Repository;

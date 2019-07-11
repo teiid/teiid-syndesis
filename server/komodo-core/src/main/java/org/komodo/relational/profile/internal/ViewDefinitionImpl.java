@@ -24,9 +24,9 @@ import org.komodo.core.KomodoLexicon;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
-import org.komodo.relational.TypeResolver;
 import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
+import org.komodo.relational.internal.TypeResolver;
 import org.komodo.relational.profile.SqlComposition;
 import org.komodo.relational.profile.SqlProjectedColumn;
 import org.komodo.relational.profile.ViewDefinition;
@@ -55,7 +55,7 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#identifier()
+         * @see org.komodo.relational.internal.TypeResolver#identifier()
          */
         @Override
         public KomodoType identifier() {
@@ -65,7 +65,7 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#owningClass()
+         * @see org.komodo.relational.internal.TypeResolver#owningClass()
          */
         @Override
         public Class<ViewDefinitionImpl> owningClass() {
@@ -75,7 +75,7 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
@@ -86,7 +86,7 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override

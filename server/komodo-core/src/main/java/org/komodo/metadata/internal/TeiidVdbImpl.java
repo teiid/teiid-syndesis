@@ -24,8 +24,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import org.komodo.spi.metadata.Messages;
-import org.komodo.spi.runtime.TeiidVdb;
+import org.komodo.metadata.Messages;
+import org.komodo.metadata.runtime.TeiidVdb;
 import org.teiid.adminapi.Model;
 import org.teiid.adminapi.VDB;
 import org.teiid.adminapi.VDB.Status;

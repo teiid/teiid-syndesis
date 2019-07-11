@@ -17,7 +17,6 @@
  */
 package org.komodo.relational.internal;
 
-import org.komodo.relational.TypeResolver;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Repository.UnitOfWork;

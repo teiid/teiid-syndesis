@@ -24,8 +24,8 @@ import java.util.Date;
 
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.relational.Messages;
-import org.komodo.relational.TypeResolver;
 import org.komodo.relational.internal.RelationalChildRestrictedObject;
+import org.komodo.relational.internal.TypeResolver;
 import org.komodo.relational.model.StatementOption;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.Descriptor;
@@ -53,7 +53,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#identifier()
+         * @see org.komodo.relational.internal.TypeResolver#identifier()
          */
         @Override
         public KomodoType identifier() {
@@ -63,7 +63,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#owningClass()
+         * @see org.komodo.relational.internal.TypeResolver#owningClass()
          */
         @Override
         public Class< StatementOptionImpl > owningClass() {
@@ -73,7 +73,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
@@ -88,7 +88,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override

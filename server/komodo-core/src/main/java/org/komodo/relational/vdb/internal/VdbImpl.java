@@ -30,23 +30,23 @@ import org.komodo.core.repository.DescriptorImpl;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.PropertyDescriptorImpl;
 import org.komodo.core.visitor.VdbNodeVisitor;
+import org.komodo.metadata.MetadataInstance;
+import org.komodo.metadata.internal.DocumentType;
 import org.komodo.relational.DeployStatus;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
-import org.komodo.relational.TypeResolver;
 import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
+import org.komodo.relational.internal.TypeResolver;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.internal.ModelImpl;
 import org.komodo.relational.vdb.Translator;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.VdbImport;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.ExportConstants;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.Descriptor;
-import org.komodo.spi.repository.DocumentType;
+import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.KPropertyFactory;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
@@ -73,7 +73,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#identifier()
+         * @see org.komodo.relational.internal.TypeResolver#identifier()
          */
         @Override
         public KomodoType identifier() {
@@ -83,7 +83,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#owningClass()
+         * @see org.komodo.relational.internal.TypeResolver#owningClass()
          */
         @Override
         public Class< VdbImpl > owningClass() {
@@ -93,7 +93,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
@@ -105,7 +105,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
@@ -211,9 +211,9 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
                 final XMLOutputFactory xof = XMLOutputFactory.newInstance();
                 final XMLStreamWriter xsw = xof.createXMLStreamWriter(writer);
                 MetadataInstance metadata = getRepository().getMetadataInstance();
-                final VdbNodeVisitor visitor = new VdbNodeVisitor(metadata.getVersion(), metadata.getDataTypeService(), xsw);
+                final VdbNodeVisitor visitor = new VdbNodeVisitor(metadata.getDataTypeService(), xsw);
                 if( exportProperties != null && !exportProperties.isEmpty() ) {
-                	boolean useTabs = exportProperties.containsKey(ExportConstants.USE_TABS_PROP_KEY);
+                	boolean useTabs = exportProperties.containsKey(Exportable.USE_TABS_PROP_KEY);
                 	visitor.setShowTabs(useTabs);
                 }
                 visitor.visit(transaction, vdb);
@@ -256,10 +256,6 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
             return this.xml == null ? new byte[0] : this.xml.getBytes();
         }
 
-        @Override
-        public DocumentType getDocumentType(UnitOfWork transaction) throws KException {
-            return DocumentType.VDB_XML;
-        }
     }
 
     /**
@@ -1048,11 +1044,6 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         setObjectProperty(uow, "setVersion", VdbLexicon.Vdb.VERSION, newVersion); //$NON-NLS-1$
     }
 
-    @Override
-    public DocumentType getDocumentType(UnitOfWork transaction) throws KException {
-        return DocumentType.VDB_XML;
-    }
-    
     @Override
     public DeployStatus deploy(UnitOfWork uow) {
         ArgCheck.isNotNull( uow, "transaction" ); //$NON-NLS-1$
