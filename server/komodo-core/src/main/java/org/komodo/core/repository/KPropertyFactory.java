@@ -15,13 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.spi.repository;
+package org.komodo.core.repository;
 
 import java.io.InputStream;
 import java.util.Calendar;
 import java.util.Date;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
+import org.komodo.spi.repository.KomodoObject;
+import org.komodo.spi.repository.Property;
+import org.komodo.spi.repository.PropertyDescriptor;
+import org.komodo.spi.repository.PropertyValueType;
+import org.komodo.spi.repository.RepositoryConstants;
+import org.komodo.spi.repository.UnitOfWork;
 
 public interface KPropertyFactory extends StringConstants, RepositoryConstants {
 

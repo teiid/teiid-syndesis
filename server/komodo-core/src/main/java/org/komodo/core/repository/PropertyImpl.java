@@ -22,7 +22,6 @@ import java.util.Calendar;
 
 import org.komodo.core.internal.repository.Repository;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KPropertyFactory;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.PropertyDescriptor;
@@ -75,7 +74,6 @@ public class PropertyImpl implements Property {
         this(propertyRepository, nodePath + KPropertyFactory.DELIMITER + propertyName);
     }
 
-    @Override
     public KPropertyFactory getPropertyFactory() {
         return this.repository.getPropertyFactory();
     }

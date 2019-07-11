@@ -37,7 +37,6 @@ import org.komodo.metadata.MetadataInstance;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
 import org.komodo.spi.SystemConstants;
-import org.komodo.spi.repository.KPropertyFactory;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.OperationType;
 import org.komodo.spi.repository.UnitOfWork;

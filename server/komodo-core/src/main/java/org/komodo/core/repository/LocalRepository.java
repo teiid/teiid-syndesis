@@ -29,7 +29,6 @@ import org.komodo.core.internal.repository.JcrEngine;
 import org.komodo.core.internal.repository.KObjectFactory;
 import org.komodo.core.internal.repository.Repository;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KPropertyFactory;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWorkDelegate;
 import org.komodo.spi.repository.UnitOfWorkListener;

@@ -25,11 +25,6 @@ import org.komodo.spi.KException;
 public interface Descriptor {
 
     /**
-     * @return the property factory
-     */
-    KPropertyFactory getPropertyFactory();
-
-    /**
      * @return the type name (never empty)
      */
     String getName();

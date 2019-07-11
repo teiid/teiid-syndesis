@@ -28,6 +28,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.DescriptorImpl;
+import org.komodo.core.repository.KPropertyFactory;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.PropertyDescriptorImpl;
 import org.komodo.core.repository.RepositoryImpl;
@@ -48,7 +49,6 @@ import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.Exportable;
-import org.komodo.spi.repository.KPropertyFactory;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyDescriptor;

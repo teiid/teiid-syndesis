@@ -19,10 +19,10 @@ package org.komodo.core.internal.repository;
 
 import java.util.Collection;
 
+import org.komodo.core.repository.KPropertyFactory;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.Descriptor;
-import org.komodo.spi.repository.KPropertyFactory;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.PropertyDescriptor;

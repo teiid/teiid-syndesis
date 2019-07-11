@@ -24,6 +24,7 @@ import java.util.List;
 import org.komodo.core.LexiconConstants.JcrLexicon;
 import org.komodo.core.LexiconConstants.NTLexicon;
 import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.repository.KPropertyFactory;
 import org.komodo.core.repository.Messages;
 import org.komodo.core.repository.Messages.Komodo;
 import org.komodo.core.repository.ObjectImpl;
@@ -31,7 +32,6 @@ import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.Descriptor;
-import org.komodo.spi.repository.KPropertyFactory;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.PropertyDescriptor;
@@ -713,11 +713,6 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
 
         FilteredDescriptor( final Descriptor delegate ) {
             this.delegate = delegate;
-        }
-
-        @Override
-        public KPropertyFactory getPropertyFactory() {
-            return delegate.getPropertyFactory();
         }
 
         /**

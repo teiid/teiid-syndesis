@@ -33,12 +33,12 @@ import javax.jcr.Value;
 import javax.jcr.ValueFactory;
 import javax.jcr.nodetype.PropertyDefinition;
 
+import org.komodo.core.repository.KPropertyFactory;
 import org.komodo.core.repository.Messages;
 import org.komodo.core.repository.Messages.Komodo;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.PropertyDescriptorImpl;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KPropertyFactory;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.PropertyDescriptor;

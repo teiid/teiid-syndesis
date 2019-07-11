@@ -23,7 +23,6 @@ import org.komodo.core.internal.repository.KObjectFactory;
 import org.komodo.core.internal.repository.Repository;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.Descriptor;
-import org.komodo.spi.repository.KPropertyFactory;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.PropertyDescriptor;
 import org.komodo.spi.repository.UnitOfWork;
@@ -57,7 +56,6 @@ public class DescriptorImpl implements Descriptor {
         return this.repository.getObjectFactory();
     }
 
-    @Override
     public KPropertyFactory getPropertyFactory() {
         return this.repository.getPropertyFactory();
     }

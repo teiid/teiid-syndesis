@@ -34,13 +34,13 @@ import javax.jcr.query.QueryResult;
 
 import org.komodo.core.LexiconConstants.JcrLexicon;
 import org.komodo.core.repository.DescriptorImpl;
+import org.komodo.core.repository.KPropertyFactory;
 import org.komodo.core.repository.Messages;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.PropertyDescriptorImpl;
 import org.komodo.core.repository.PropertyImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.Descriptor;
-import org.komodo.spi.repository.KPropertyFactory;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.PropertyDescriptor;

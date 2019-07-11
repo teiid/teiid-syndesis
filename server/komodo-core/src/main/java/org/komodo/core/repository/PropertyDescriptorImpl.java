@@ -18,7 +18,6 @@
 package org.komodo.core.repository;
 
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KPropertyFactory;
 import org.komodo.spi.repository.PropertyDescriptor;
 import org.komodo.spi.repository.PropertyValueType;
 import org.komodo.utils.ArgCheck;

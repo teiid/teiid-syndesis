@@ -31,7 +31,6 @@ import org.komodo.core.repository.KomodoTypeRegistry.TypeIdentifier;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.Descriptor;
-import org.komodo.spi.repository.KPropertyFactory;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoObjectVisitor;
 import org.komodo.spi.repository.KomodoType;
@@ -190,7 +189,6 @@ public class ObjectImpl implements KomodoObject, StringConstants {
         return this.repository.getObjectFactory();
     }
 
-    @Override
     public KPropertyFactory getPropertyFactory() {
         return this.repository.getPropertyFactory();
     }

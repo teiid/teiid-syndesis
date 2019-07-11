@@ -30,11 +30,6 @@ public interface KomodoObject extends KNode {
     KomodoObject[] EMPTY_ARRAY = new KomodoObject[ 0 ];
 
     /**
-     * @return the property factory instance
-     */
-    KPropertyFactory getPropertyFactory();
-
-    /**
      * Adds a child with the supplied name and primary type.
      *
      * @param transaction

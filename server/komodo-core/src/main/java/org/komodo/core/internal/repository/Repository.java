@@ -22,10 +22,10 @@ import java.util.List;
 
 import org.komodo.core.KEngineImpl;
 import org.komodo.core.KObserver;
+import org.komodo.core.repository.KPropertyFactory;
 import org.komodo.core.repository.RepositoryClientEvent;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KPropertyFactory;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.OperationType;
 import org.komodo.spi.repository.UnitOfWork;

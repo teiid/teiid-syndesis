@@ -32,11 +32,6 @@ public interface Property extends KNode {
     Property[] NO_PROPS = {};
 
     /**
-     * @return the property factory instance
-     */
-    KPropertyFactory getPropertyFactory();
-
-    /**
      * @param uow
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @return the value type of the value contained in this property
