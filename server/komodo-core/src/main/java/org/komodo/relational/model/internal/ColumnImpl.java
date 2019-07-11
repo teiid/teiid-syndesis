@@ -53,7 +53,7 @@ public final class ColumnImpl extends RelationalChildRestrictedObject implements
     /**
      * The resolver of a {@link Column}.
      */
-    public static final TypeResolver< Column > RESOLVER = new TypeResolver< Column >() {
+    public static final TypeResolver< ColumnImpl > RESOLVER = new TypeResolver< ColumnImpl >() {
 
         /**
          * {@inheritDoc}
@@ -94,10 +94,10 @@ public final class ColumnImpl extends RelationalChildRestrictedObject implements
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
-        public Column resolve( final UnitOfWork transaction,
+        public ColumnImpl resolve( final UnitOfWork transaction,
                                final KomodoObject kobject ) throws KException {
             if ( kobject.getTypeId() == Column.TYPE_ID ) {
-                return ( Column )kobject;
+                return ( ColumnImpl )kobject;
             }
 
             return new ColumnImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
@@ -408,21 +408,6 @@ public final class ColumnImpl extends RelationalChildRestrictedObject implements
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.internal.RelationalObjectImpl#getPropertyDescriptor(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String)
-     */
-    @Override
-    public PropertyDescriptor getPropertyDescriptor( final UnitOfWork transaction,
-                                                     final String propName ) throws KException {
-        return OptionContainerUtils.getPropertyDescriptor( transaction,
-                                                           this,
-                                                           propName,
-                                                           super.getPropertyDescriptor( transaction, propName ) );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
      * @see org.komodo.relational.internal.RelationalObjectImpl#getPropertyNames(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
@@ -545,12 +530,12 @@ public final class ColumnImpl extends RelationalChildRestrictedObject implements
      * @see org.komodo.relational.internal.RelationalObjectImpl#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public Table getParent( final UnitOfWork transaction ) throws KException {
+    public TableImpl getParent( final UnitOfWork transaction ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
 
         final KomodoObject parent = super.getParent( transaction );
-        final Table result = TableImpl.RESOLVER.resolve( transaction, parent );
+        final TableImpl result = TableImpl.RESOLVER.resolve( transaction, parent );
         return result;
     }
 

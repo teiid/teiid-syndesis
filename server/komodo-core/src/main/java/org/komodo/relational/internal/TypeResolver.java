@@ -29,7 +29,7 @@ import org.komodo.spi.repository.UnitOfWork;
  * @param <T>
  *        the {@link RelationalObject} subclass
  */
-public interface TypeResolver< T extends RelationalObject > {
+public interface TypeResolver< T extends RelationalObjectImpl > {
 
     /**
      * @return the identifier associated with this resolver (never <code>null</code>)

@@ -48,7 +48,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
     /**
      * The resolver of a {@link StatementOption}.
      */
-    public static final TypeResolver< StatementOption > RESOLVER = new TypeResolver< StatementOption >() {
+    public static final TypeResolver< StatementOptionImpl > RESOLVER = new TypeResolver< StatementOptionImpl >() {
 
         /**
          * {@inheritDoc}
@@ -91,10 +91,10 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
-        public StatementOption resolve( final UnitOfWork transaction,
+        public StatementOptionImpl resolve( final UnitOfWork transaction,
                                         final KomodoObject kobject ) throws KException {
             if ( kobject.getTypeId() == StatementOption.TYPE_ID ) {
-                return ( StatementOption )kobject;
+                return ( StatementOptionImpl )kobject;
             }
 
             return new StatementOptionImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );

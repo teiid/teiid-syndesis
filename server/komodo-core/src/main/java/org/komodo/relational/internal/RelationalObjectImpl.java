@@ -18,13 +18,11 @@
 package org.komodo.relational.internal;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.komodo.core.LexiconConstants.JcrLexicon;
 import org.komodo.core.LexiconConstants.NTLexicon;
 import org.komodo.core.internal.repository.Repository;
-import org.komodo.core.repository.KPropertyFactory;
 import org.komodo.core.repository.Messages;
 import org.komodo.core.repository.Messages.Komodo;
 import org.komodo.core.repository.ObjectImpl;
@@ -346,10 +344,10 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
         KomodoObject result = super.getParent( transaction );
 
         if ( result != null ) {
-            result = resolveType( transaction, result );
+            return resolveType( transaction, result );
         }
 
-        return result;
+        return null;
     }
 
     /**
@@ -370,25 +368,6 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
         }
 
         return result;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.core.repository.ObjectImpl#getPropertyDescriptor(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
-     */
-    @Override
-    public PropertyDescriptor getPropertyDescriptor( final UnitOfWork transaction,
-                                                     final String propName ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotEmpty( propName, "propName" ); //$NON-NLS-1$
-
-        if (isPropertyFiltered( propName )) {
-            return null;
-        }
-
-        return super.getPropertyDescriptor( transaction, propName );
     }
 
     /**
@@ -608,35 +587,6 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
         return false;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.core.repository.ObjectImpl#removeDescriptor(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
-     */
-    @Override
-    public void removeDescriptor( final UnitOfWork transaction,
-                                  final String... descriptorNames ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotEmpty( descriptorNames, "descriptorNames" ); //$NON-NLS-1$
-
-        if ( LOGGER.isDebugEnabled() ) {
-            LOGGER.debug( "relationalobjectimpl-removeDescriptor: transaction = {0}, mixins = {1}", //$NON-NLS-1$
-                          transaction.getName(),
-                          Arrays.asList( descriptorNames ) );
-        }
-
-        for ( final String typeName : descriptorNames ) {
-            ArgCheck.isNotEmpty( typeName, "typeName" ); //$NON-NLS-1$
-
-            if ( isDescriptorFiltered( typeName ) ) {
-                throw new KException( Messages.getString( Komodo.DESCRIPTOR_NOT_FOUND, typeName, getAbsolutePath() ) );
-            }
-
-            super.removeDescriptor( transaction, typeName );
-        }
-    }
-
     protected KomodoObject resolveType( final UnitOfWork transaction,
                                         final KomodoObject kobject ) throws KException {
         TypeResolver< ? > resolver = getResolverRegistry().getResolver(kobject.getTypeIdentifier(transaction));
@@ -652,7 +602,7 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
             }
         }
 
-        return kobject;
+        return (KomodoObject)kobject;
     }
 
     /**
@@ -749,6 +699,25 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
             return result.toArray( new PropertyDescriptor[ result.size() ] );
         }
 
+    }
+    
+    @Override
+    public String getPropertyValue(UnitOfWork transaction, String name) throws KException {
+    	Property p = getProperty(transaction, name);
+    	if (p != null) {
+    		return p.getStringValue(transaction);
+    	}
+    	return null;
+    }
+    
+    @Override
+    public void setPropertyValue(UnitOfWork transaction, String name, String value) throws KException {
+    	this.setProperty(transaction, name, value);
+    }
+    
+    @Override
+    public RelationalObjectImpl getRelationalParent(UnitOfWork transaction) throws KException {
+    	return (RelationalObjectImpl)this.getParent(transaction);
     }
     
 }

@@ -542,24 +542,6 @@ public final class TableImplTest extends RelationalModelTest {
     }
 
     @Test
-    public void shouldObtainPropertyDescriptorOfCustomOption() throws Exception {
-        final String custom = "sledge";
-        this.table.setStatementOption( getTransaction(), custom, "hammer" );
-
-        assertThat( this.table.getPropertyDescriptor( getTransaction(), custom ), is( notNullValue() ) );
-        assertThat( this.table.getPropertyDescriptor( getTransaction(), custom ).getName(), is( custom ) );
-    }
-
-    @Test
-    public void shouldObtainPropertyDescriptorOfStandardOption() throws Exception {
-        final String standard = this.table.getStandardOptions().keySet().iterator().next();
-        this.table.setStatementOption( getTransaction(), standard, "blah" );
-
-        assertThat( this.table.getPropertyDescriptor( getTransaction(), standard ), is( notNullValue() ) );
-        assertThat( this.table.getPropertyDescriptor( getTransaction(), standard ).getName(), is( standard ) );
-    }
-
-    @Test
     public void shouldObtainStatementOptionNames() throws Exception {
         final String custom = "blah";
         this.table.setStatementOption( getTransaction(), custom, "sledge" );

@@ -46,7 +46,7 @@ public class ViewEditorStateImpl extends RelationalObjectImpl implements ViewEdi
     /**
      * The resolver of a {@link ViewEditorState}.
      */
-    public static final TypeResolver<ViewEditorState> RESOLVER = new TypeResolver<ViewEditorState>() {
+    public static final TypeResolver<ViewEditorStateImpl> RESOLVER = new TypeResolver<ViewEditorStateImpl>() {
 
         /**
          * {@inheritDoc}
@@ -86,9 +86,9 @@ public class ViewEditorStateImpl extends RelationalObjectImpl implements ViewEdi
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
-        public ViewEditorState resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
+        public ViewEditorStateImpl resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
             if (kobject.getTypeId() == ViewEditorState.TYPE_ID) {
-                return (ViewEditorState)kobject;
+                return (ViewEditorStateImpl)kobject;
             }
 
             return new ViewEditorStateImpl(transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath());
@@ -127,12 +127,12 @@ public class ViewEditorStateImpl extends RelationalObjectImpl implements ViewEdi
      * @see org.komodo.relational.internal.RelationalObjectImpl#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public Profile getParent(final UnitOfWork transaction) throws KException {
+    public ProfileImpl getParent(final UnitOfWork transaction) throws KException {
         ArgCheck.isNotNull(transaction, "transaction"); //$NON-NLS-1$
         ArgCheck.isTrue((transaction.getState() == State.NOT_STARTED), "transaction state must be NOT_STARTED"); //$NON-NLS-1$
 
         final KomodoObject grouping = super.getParent(transaction);
-        final Profile result = ProfileImpl.RESOLVER.resolve(transaction, grouping.getParent(transaction));
+        final ProfileImpl result = ProfileImpl.RESOLVER.resolve(transaction, grouping.getParent(transaction));
         return result;
     }
 

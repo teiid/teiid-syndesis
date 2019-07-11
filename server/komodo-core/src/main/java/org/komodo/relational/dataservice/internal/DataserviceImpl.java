@@ -25,7 +25,6 @@ import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.Messages;
-import org.komodo.relational.dataservice.DataServiceEntry;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.ServiceVdbEntry;
 import org.komodo.relational.internal.RelationalModelFactory;
@@ -56,7 +55,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
     /**
      * The resolver of a {@link Dataservice}.
      */
-    public static final TypeResolver< Dataservice > RESOLVER = new TypeResolver< Dataservice >() {
+    public static final TypeResolver< DataserviceImpl > RESOLVER = new TypeResolver< DataserviceImpl >() {
 
         /**
          * {@inheritDoc}
@@ -99,10 +98,10 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
-        public Dataservice resolve( final UnitOfWork transaction,
+        public DataserviceImpl resolve( final UnitOfWork transaction,
                                     final KomodoObject kobject ) throws KException {
             if ( kobject.getTypeId() == Dataservice.TYPE_ID ) {
-                return ( Dataservice )kobject;
+                return ( DataserviceImpl )kobject;
             }
             return new DataserviceImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
         }
@@ -153,7 +152,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
      *      java.lang.String)
      */
     @Override
-    public DataServiceEntry< ? > getChild( final UnitOfWork transaction,
+    public ServiceVdbEntry getChild( final UnitOfWork transaction,
                                            final String name ) throws KException {
         // check service VDB
         final ServiceVdbEntry entry = getServiceVdbEntry( transaction );
@@ -175,7 +174,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
      *      java.lang.String, java.lang.String)
      */
     @Override
-    public DataServiceEntry< ? > getChild( final UnitOfWork transaction,
+    public ServiceVdbEntryImpl getChild( final UnitOfWork transaction,
                                            final String name,
                                            final String typeName ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
@@ -200,14 +199,14 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
      *      java.lang.String[])
      */
     @Override
-    public DataServiceEntry< ? >[] getChildren( final UnitOfWork transaction,
+    public ServiceVdbEntry[] getChildren( final UnitOfWork transaction,
                                                 final String... namePatterns ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         final ServiceVdbEntry serviceVdb = getServiceVdbEntry( transaction );
 
-        final DataServiceEntry< ? >[] result = new DataServiceEntry< ? >[ ( ( serviceVdb == null ) ? 0 : 1 )];
+        final ServiceVdbEntry[] result = new ServiceVdbEntry[ ( ( serviceVdb == null ) ? 0 : 1 )];
 
         if ( serviceVdb != null ) {
             result[ result.length - 1 ] = serviceVdb;
@@ -223,7 +222,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
      *      java.lang.String, java.lang.String[])
      */
     @Override
-    public DataServiceEntry< ? >[] getChildrenOfType( final UnitOfWork transaction,
+    public ServiceVdbEntry[] getChildrenOfType( final UnitOfWork transaction,
                                                       final String type,
                                                       final String... namePatterns ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
@@ -378,7 +377,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
      * @see org.komodo.relational.dataservice.Dataservice#getServiceVdbEntry(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public ServiceVdbEntry getServiceVdbEntry( final UnitOfWork uow ) throws KException {
+    public ServiceVdbEntryImpl getServiceVdbEntry( final UnitOfWork uow ) throws KException {
         ArgCheck.isNotNull( uow, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( uow.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 

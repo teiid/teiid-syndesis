@@ -24,7 +24,6 @@ import org.komodo.core.KEvent;
 import org.komodo.core.KObserver;
 import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.internal.repository.Repository.State;
-import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
@@ -34,9 +33,11 @@ import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.internal.DataserviceImpl;
 import org.komodo.relational.internal.AdapterFactory;
 import org.komodo.relational.internal.RelationalModelFactory;
+import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.internal.ServiceVdbGenerator;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Schema;
+import org.komodo.relational.model.internal.ModelImpl;
 import org.komodo.relational.profile.Profile;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.vdb.Vdb;
@@ -58,7 +59,9 @@ import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 /**
  *
  */
-public class WorkspaceManagerImpl extends ObjectImpl implements RelationalObject, WorkspaceManager {
+public class WorkspaceManagerImpl extends RelationalObjectImpl implements RelationalObject, WorkspaceManager {
+	
+	static final Filter[] NO_FILTERS = new Filter[0];
 	
 	protected static final KLog LOGGER = KLog.getLogger();
 
@@ -203,6 +206,16 @@ public class WorkspaceManagerImpl extends ObjectImpl implements RelationalObject
     /**
      * {@inheritDoc}
      *
+     * @see org.komodo.relational.RelationalObject#getFilters()
+     */
+    @Override
+    public Filter[] getFilters() {
+        return NO_FILTERS;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
      * @see org.komodo.core.repository.ObjectImpl#getTypeId()
      */
     @Override
@@ -228,7 +241,7 @@ public class WorkspaceManagerImpl extends ObjectImpl implements RelationalObject
     }
 
     private WorkspaceManagerImpl(Repository repository, UnitOfWork uow ) throws KException {
-        super( repository, RepositoryImpl.komodoWorkspacePath(uow), 0 );
+    	super(uow, repository, RepositoryImpl.komodoWorkspacePath(uow), 0 );
         this.owner = uow.getRepositoryUser();
 
         repository.addObserver(new KObserver() {
@@ -248,6 +261,11 @@ public class WorkspaceManagerImpl extends ObjectImpl implements RelationalObject
         });
     }
 
+    @Override
+    public Dataservice createDataservice(UnitOfWork uow, String serviceName) throws KException {
+    	return createDataservice(uow, null, serviceName);
+    }
+    
     /**
      * @param uow
      *        the transaction (cannot be <code>null</code> or have a state that is not
@@ -260,13 +278,17 @@ public class WorkspaceManagerImpl extends ObjectImpl implements RelationalObject
      * @throws KException
      *         if an error occurs
      */
-    @Override
     public Dataservice createDataservice( final UnitOfWork uow,
                                         final KomodoObject parent,
                                         final String serviceName ) throws KException {
         final String path = ( ( parent == null ) ? getRepository().komodoWorkspace( uow ).getAbsolutePath()
                                                  : parent.getAbsolutePath() );
          return RelationalModelFactory.createDataservice( uow, getRepository(), path, serviceName );
+    }
+
+    @Override
+    public Vdb createVdb(UnitOfWork uow, String vdbName, String externalFilePath) throws KException {
+    	return createVdb(uow, null, vdbName, externalFilePath);
     }
 
     /**
@@ -284,7 +306,6 @@ public class WorkspaceManagerImpl extends ObjectImpl implements RelationalObject
      * @throws KException
      *         if an error occurs
      */
-    @Override
     public Vdb createVdb( final UnitOfWork uow,
                           final KomodoObject parent,
                           final String vdbName,
@@ -303,7 +324,6 @@ public class WorkspaceManagerImpl extends ObjectImpl implements RelationalObject
      * @throws KException
      *         if an error occurs or if an object does not exist
      */
-    @Override
     public void delete( final UnitOfWork transaction,
                         final KomodoObject... kobjects ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
@@ -316,6 +336,16 @@ public class WorkspaceManagerImpl extends ObjectImpl implements RelationalObject
             validateWorkspaceMember( transaction, kobject );
             kobject.remove( transaction );
         }
+    }
+    
+    @Override
+    public void deleteDataservice(UnitOfWork transaction, Dataservice dataservice) throws KException {
+    	delete(transaction, dataservice);
+    }
+    
+    @Override
+    public void deleteVdb(UnitOfWork transaction, Vdb vdb) throws KException {
+    	delete(transaction, vdb);
     }
 
     /**
@@ -552,6 +582,16 @@ public class WorkspaceManagerImpl extends ObjectImpl implements RelationalObject
         return kobject;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @see org.komodo.relational.RelationalObject#setFilters(org.komodo.relational.RelationalObject.Filter[])
+     */
+    @Override
+    public void setFilters( Filter[] newFilters ) {
+        // filters not allowed
+    }
+
     private void validateWorkspaceMember( final UnitOfWork uow,
                                           final KomodoObject kobject ) throws KException {
         RepositoryImpl repository = RepositoryImpl.getRepository(uow);
@@ -624,6 +664,12 @@ public class WorkspaceManagerImpl extends ObjectImpl implements RelationalObject
 	@Override
 	public String getKomodoWorkspaceAbsolutePath(UnitOfWork uow) throws KException {
 		return getRepository().komodoWorkspace(uow).getAbsolutePath();
+	}
+	
+	@Override
+	public boolean isSchemaLoading(UnitOfWork uow, Model schemaModel) throws KException {
+        // if model has children the DDL has been sequenced
+        return ((ModelImpl)schemaModel).hasChildren( uow );
 	}
 
 }

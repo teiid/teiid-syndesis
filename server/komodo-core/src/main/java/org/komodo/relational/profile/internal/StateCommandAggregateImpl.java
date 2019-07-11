@@ -43,7 +43,7 @@ public class StateCommandAggregateImpl extends RelationalObjectImpl implements S
     /**
      * The resolver of a {@link StateCommandAggregate}.
      */
-    public static final TypeResolver<StateCommandAggregate> RESOLVER = new TypeResolver<StateCommandAggregate>() {
+    public static final TypeResolver<StateCommandAggregateImpl> RESOLVER = new TypeResolver<StateCommandAggregateImpl>() {
 
         /**
          * {@inheritDoc}
@@ -83,9 +83,9 @@ public class StateCommandAggregateImpl extends RelationalObjectImpl implements S
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
-        public StateCommandAggregate resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
+        public StateCommandAggregateImpl resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
             if (kobject.getTypeId() == StateCommandAggregate.TYPE_ID) {
-                return (StateCommandAggregate)kobject;
+                return (StateCommandAggregateImpl)kobject;
             }
 
             return new StateCommandAggregateImpl(transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath());

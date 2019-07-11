@@ -113,7 +113,7 @@ public interface DataServiceEntry< T extends Exportable & RelationalObject > ext
 
         if ( resource == null ) {
             if ( getPublishPolicy( transaction ) != PublishPolicy.NEVER ) {
-                throw new KException( Messages.getString( Relational.EXPORT_FAILED_NO_CONTENT, getAbsolutePath() ) );
+                throw new KException( Messages.getString( Relational.EXPORT_FAILED_NO_CONTENT, getName(transaction)) );
             }
 
             return NO_CONTENT;

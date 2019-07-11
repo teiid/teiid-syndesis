@@ -41,7 +41,7 @@ public class VdbImportImpl extends RelationalChildRestrictedObject implements Vd
     /**
      * The resolver of a {@link VdbImport}.
      */
-    public static final TypeResolver< VdbImport > RESOLVER = new TypeResolver< VdbImport >() {
+    public static final TypeResolver< VdbImportImpl > RESOLVER = new TypeResolver< VdbImportImpl >() {
 
         /**
          * {@inheritDoc}
@@ -82,10 +82,10 @@ public class VdbImportImpl extends RelationalChildRestrictedObject implements Vd
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
-        public VdbImport resolve( final UnitOfWork transaction,
+        public VdbImportImpl resolve( final UnitOfWork transaction,
                                   final KomodoObject kobject ) throws KException {
             if ( kobject.getTypeId() == VdbImport.TYPE_ID ) {
-                return ( VdbImport )kobject;
+                return ( VdbImportImpl )kobject;
             }
 
             return new VdbImportImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
@@ -120,12 +120,12 @@ public class VdbImportImpl extends RelationalChildRestrictedObject implements Vd
      * @see org.komodo.relational.internal.RelationalObjectImpl#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public Vdb getParent( final UnitOfWork transaction ) throws KException {
+    public VdbImpl getParent( final UnitOfWork transaction ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
 
         final KomodoObject grouping = super.getParent( transaction );
-        final Vdb result = VdbImpl.RESOLVER.resolve( transaction, grouping.getParent( transaction ) );
+        final VdbImpl result = VdbImpl.RESOLVER.resolve( transaction, grouping.getParent( transaction ) );
         return result;
     }
 

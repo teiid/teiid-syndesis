@@ -39,11 +39,6 @@ public interface ModelSource extends RelationalObject {
     KomodoType IDENTIFIER = KomodoType.VDB_MODEL_SOURCE;
 
     /**
-     * An empty array of model sources.
-     */
-    ModelSource[] NO_SOURCES = new ModelSource[0];
-
-    /**
      * {@inheritDoc}
      *
      * @see org.komodo.spi.repository.KNode#getParent(org.komodo.spi.repository.Repository.UnitOfWork)

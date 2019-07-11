@@ -17,12 +17,57 @@
  */
 package org.komodo.relational;
 
+import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 
-/**
- * A {@link KomodoObject} related to a relational model.
- */
 public interface RelationalObject extends KomodoObject {
-
-
+	
+	/**
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> and must have a state of
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED}
+     * @return the parent RelationalObject (can be <code>null</code> if at the Komodo root)
+     * @throws KException
+     *         if an error occurs
+     */
+	RelationalObject getRelationalParent( final UnitOfWork transaction ) throws KException;
+	
+    /**
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> and must have a state of
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED}
+     * @return the last segment of the absolute path (never empty)
+     * @throws KException
+     *         if an error occurs
+     * @see #getAbsolutePath()
+     */
+	String getName(UnitOfWork transaction) throws KException;
+	
+	/**
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED}))
+     * @param name
+     *        the name of property being requested (cannot be empty)
+     * @return the property string or <code>null</code> if the property doesn't exist
+     * @throws KException
+     *         if an error occurs
+     */
+    String getPropertyValue( final UnitOfWork transaction,
+                          final String name ) throws KException;
+    
+    /**
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED}))
+     * @param name
+     *        the name of property being set (cannot be empty)
+     * @param value
+     *        the property string or <code>null</code> if the property doesn't exist
+     * @throws KException
+     *         if an error occurs
+     */
+    void setPropertyValue( final UnitOfWork transaction,
+            final String name, String value ) throws KException;
+	
 }

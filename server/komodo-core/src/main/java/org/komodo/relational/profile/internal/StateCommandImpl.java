@@ -41,7 +41,7 @@ public class StateCommandImpl extends RelationalChildRestrictedObject implements
     /**
      * The resolver of a {@link StateCommand}.
      */
-    public static final TypeResolver<StateCommand> RESOLVER = new TypeResolver<StateCommand>() {
+    public static final TypeResolver<StateCommandImpl> RESOLVER = new TypeResolver<StateCommandImpl>() {
 
         /**
          * {@inheritDoc}
@@ -81,9 +81,9 @@ public class StateCommandImpl extends RelationalChildRestrictedObject implements
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
-        public StateCommand resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
+        public StateCommandImpl resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
             if (kobject.getTypeId() == StateCommand.TYPE_ID) {
-                return (StateCommand)kobject;
+                return (StateCommandImpl)kobject;
             }
 
             return new StateCommandImpl(transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath());

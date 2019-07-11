@@ -21,7 +21,6 @@ import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.internal.TypeResolver;
-import org.komodo.relational.model.Model;
 import org.komodo.relational.model.View;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
@@ -39,7 +38,7 @@ public final class ViewImpl extends TableImpl implements View {
     /**
      * The resolver of a {@link View}.
      */
-    public static final TypeResolver< View > RESOLVER = new TypeResolver< View >() {
+    public static final TypeResolver< ViewImpl > RESOLVER = new TypeResolver< ViewImpl >() {
 
         /**
          * {@inheritDoc}
@@ -80,10 +79,10 @@ public final class ViewImpl extends TableImpl implements View {
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
-        public View resolve( final UnitOfWork transaction,
+        public ViewImpl resolve( final UnitOfWork transaction,
                              final KomodoObject kobject ) throws KException {
             if ( kobject.getTypeId() == View.TYPE_ID ) {
-                return ( View )kobject;
+                return ( ViewImpl )kobject;
             }
 
             return new ViewImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
@@ -118,12 +117,12 @@ public final class ViewImpl extends TableImpl implements View {
      * @see org.komodo.relational.internal.RelationalObjectImpl#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public Model getParent( final UnitOfWork transaction ) throws KException {
+    public ModelImpl getParent( final UnitOfWork transaction ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
 
         final KomodoObject parent = super.getParent( transaction );
-        final Model result = ModelImpl.RESOLVER.resolve( transaction, parent );
+        final ModelImpl result = ModelImpl.RESOLVER.resolve( transaction, parent );
         return result;
     }
 

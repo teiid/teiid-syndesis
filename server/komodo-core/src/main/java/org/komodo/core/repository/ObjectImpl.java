@@ -601,36 +601,6 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#getPropertyDescriptor(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String)
-     */
-    @Override
-    public PropertyDescriptor getPropertyDescriptor( final UnitOfWork transaction,
-                                                     final String propName ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotEmpty( propName, "propName" ); //$NON-NLS-1$
-
-        provision(transaction, OperationType.READ_OPERATION);
-
-        if ( RepositoryImpl.isReservedPath(getAbsolutePath() ) ) {
-            return null;
-        }
-
-        for ( final Descriptor typeDescriptor : getAllDescriptors( transaction, this ) ) {
-            for ( final PropertyDescriptor propDescriptor : typeDescriptor.getPropertyDescriptors( transaction ) ) {
-                if ( ( propDescriptor != null ) && propName.equals( propDescriptor.getName() ) ) {
-                    return propDescriptor;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
      * @see org.komodo.spi.repository.KomodoObject#getPropertyDescriptors(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
@@ -1161,34 +1131,6 @@ public class ObjectImpl implements KomodoObject, StringConstants {
                     throw new KException(Messages.getString(Messages.Komodo.UNABLE_TO_REMOVE_CHILD, names, getAbsolutePath()));
                 }
             }
-        } catch (final Exception e) {
-            throw handleError( e );
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.spi.repository.KomodoObject#removeDescriptor(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String[])
-     */
-    @Override
-    public void removeDescriptor( final UnitOfWork transaction,
-                                  final String... descriptorNames ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotEmpty(descriptorNames, "descriptorNames"); //$NON-NLS-1$
-
-        provision(transaction, OperationType.MODIFY_OPERATION);
-
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("objectimpl-removeDescriptor: transaction = {0}, mixins = {1}", //$NON-NLS-1$
-                         transaction.getName(),
-                         Arrays.asList(descriptorNames));
-        }
-
-        try {
-            getObjectFactory().removeDescriptor(transaction, this, descriptorNames);
         } catch (final Exception e) {
             throw handleError( e );
         }

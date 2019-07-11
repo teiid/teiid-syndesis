@@ -39,7 +39,7 @@ public final class UniqueConstraintImpl extends TableConstraintImpl implements U
     /**
      * The resolver of a {@link UniqueConstraint}.
      */
-    public static final TypeResolver< UniqueConstraint > RESOLVER = new TypeResolver< UniqueConstraint >() {
+    public static final TypeResolver< UniqueConstraintImpl > RESOLVER = new TypeResolver< UniqueConstraintImpl >() {
 
         /**
          * {@inheritDoc}
@@ -85,10 +85,10 @@ public final class UniqueConstraintImpl extends TableConstraintImpl implements U
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
-        public UniqueConstraint resolve( final UnitOfWork transaction,
+        public UniqueConstraintImpl resolve( final UnitOfWork transaction,
                                          final KomodoObject kobject ) throws KException {
             if ( kobject.getTypeId() == UniqueConstraint.TYPE_ID ) {
-                return ( UniqueConstraint )kobject;
+                return ( UniqueConstraintImpl )kobject;
             }
 
             return new UniqueConstraintImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
@@ -143,12 +143,12 @@ public final class UniqueConstraintImpl extends TableConstraintImpl implements U
      * @see org.komodo.relational.internal.RelationalObjectImpl#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public Table getParent( final UnitOfWork transaction ) throws KException {
+    public TableImpl getParent( final UnitOfWork transaction ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
 
         final KomodoObject parent = super.getParent( transaction );
-        final Table result = TableImpl.RESOLVER.resolve( transaction, parent );
+        final TableImpl result = TableImpl.RESOLVER.resolve( transaction, parent );
         return result;
     }
 

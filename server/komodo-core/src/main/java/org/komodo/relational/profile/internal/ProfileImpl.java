@@ -46,7 +46,7 @@ public class ProfileImpl extends RelationalObjectImpl implements Profile {
     /**
      * The resolver of a {@link Profile}.
      */
-    public static final TypeResolver< Profile > RESOLVER = new TypeResolver< Profile >() {
+    public static final TypeResolver< ProfileImpl > RESOLVER = new TypeResolver< ProfileImpl >() {
 
         /**
          * {@inheritDoc}
@@ -87,10 +87,10 @@ public class ProfileImpl extends RelationalObjectImpl implements Profile {
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
-        public Profile resolve( final UnitOfWork transaction,
+        public ProfileImpl resolve( final UnitOfWork transaction,
                             final KomodoObject kobject ) throws KException {
             if ( kobject.getTypeId() == Profile.TYPE_ID ) {
-                return ( Profile )kobject;
+                return ( ProfileImpl )kobject;
             }
 
             return new ProfileImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );

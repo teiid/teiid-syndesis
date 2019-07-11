@@ -41,7 +41,7 @@ public class SqlProjectedColumnImpl  extends RelationalObjectImpl implements Sql
     /**
      * The resolver of a {@link SqlProjectedColumn}.
      */
-    public static final TypeResolver<SqlProjectedColumn> RESOLVER = new TypeResolver<SqlProjectedColumn>() {
+    public static final TypeResolver<SqlProjectedColumnImpl> RESOLVER = new TypeResolver<SqlProjectedColumnImpl>() {
 
         /**
          * {@inheritDoc}
@@ -81,9 +81,9 @@ public class SqlProjectedColumnImpl  extends RelationalObjectImpl implements Sql
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
-        public SqlProjectedColumn resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
+        public SqlProjectedColumnImpl resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
             if (kobject.getTypeId() == SqlProjectedColumn.TYPE_ID) {
-                return (SqlProjectedColumn)kobject;
+                return (SqlProjectedColumnImpl)kobject;
             }
 
             return new SqlProjectedColumnImpl(transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath());
@@ -121,12 +121,12 @@ public class SqlProjectedColumnImpl  extends RelationalObjectImpl implements Sql
      * @see org.komodo.relational.internal.RelationalObjectImpl#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public ViewDefinition getParent(final UnitOfWork transaction) throws KException {
+    public ViewDefinitionImpl getParent(final UnitOfWork transaction) throws KException {
         ArgCheck.isNotNull(transaction, "transaction"); //$NON-NLS-1$
         ArgCheck.isTrue((transaction.getState() == State.NOT_STARTED), "transaction state must be NOT_STARTED"); //$NON-NLS-1$
 
         final KomodoObject grouping = super.getParent(transaction);
-        final ViewDefinition result = ViewDefinitionImpl.RESOLVER.resolve(transaction, grouping.getParent(transaction));
+        final ViewDefinitionImpl result = ViewDefinitionImpl.RESOLVER.resolve(transaction, grouping.getParent(transaction));
         return result;
     }
 

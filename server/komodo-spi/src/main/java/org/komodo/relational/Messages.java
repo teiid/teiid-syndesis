@@ -22,7 +22,6 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 import org.komodo.spi.StringConstants;
-import org.komodo.spi.repository.KomodoObject;
 
 /**
  * Messages for the org.komodo.relationa plugin

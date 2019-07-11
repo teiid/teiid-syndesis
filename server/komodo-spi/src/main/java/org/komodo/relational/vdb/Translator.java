@@ -43,11 +43,6 @@ public interface Translator extends RelationalObject {
     String DEFAULT_TYPE = "oracle"; //$NON-NLS-1$
 
     /**
-     * An empty array of translators.
-     */
-    Translator[] NO_TRANSLATORS = new Translator[0];
-
-    /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @return the value of the <code>description</code> property (can be empty)

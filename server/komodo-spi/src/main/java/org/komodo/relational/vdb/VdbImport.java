@@ -43,11 +43,6 @@ public interface VdbImport extends RelationalObject {
     boolean DEFAULT_IMPORT_DATA_POLICIES = true;
 
     /**
-     * An empty array of VDB imports.
-     */
-    VdbImport[] NO_IMPORTS = new VdbImport[0];
-
-    /**
      * {@inheritDoc}
      *
      * @see org.komodo.spi.repository.KNode#getParent(org.komodo.spi.repository.Repository.UnitOfWork)

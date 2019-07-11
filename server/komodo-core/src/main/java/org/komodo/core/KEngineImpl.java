@@ -33,7 +33,7 @@ import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
 import org.komodo.metadata.internal.MetadataClientEvent;
-import org.komodo.relational.WorkspaceManager;
+import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.workspace.WorkspaceManagerImpl;
 import org.komodo.spi.KEngine;
 import org.komodo.spi.KException;
@@ -482,7 +482,7 @@ public class KEngineImpl implements KEngine, KObserver, StringConstants {
     }
 
 	@Override
-	public WorkspaceManager getWorkspaceManager(UnitOfWork transaction) throws KException {
+	public WorkspaceManagerImpl getWorkspaceManager(UnitOfWork transaction) throws KException {
 		return WorkspaceManagerImpl.getInstance(getDefaultRepository(), transaction);
 	}
 
@@ -493,7 +493,12 @@ public class KEngineImpl implements KEngine, KObserver, StringConstants {
 	}
 
 	@Override
-	public KomodoObject getFromWorkspace(UnitOfWork uow, String dsPath) throws KException {
-		return getDefaultRepository().getFromWorkspace(uow, dsPath);
+	public Dataservice findDataserviceByPath(UnitOfWork uow, String dsPath) throws KException {
+		Repository repo = getDefaultRepository();
+        KomodoObject dsObject = repo.getFromWorkspace(uow, dsPath);
+        if (dsObject == null)
+            return null; // Not a path in the workspace
+
+        return getWorkspaceManager(uow).resolve(uow, dsObject, Dataservice.class);
 	}
 }

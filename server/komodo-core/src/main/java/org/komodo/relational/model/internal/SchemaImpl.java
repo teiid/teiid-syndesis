@@ -44,7 +44,7 @@ public class SchemaImpl extends RelationalObjectImpl implements Schema {
     /**
      * The resolver of a {@link Schema}.
      */
-    public static final TypeResolver< Schema > RESOLVER = new TypeResolver< Schema >() {
+    public static final TypeResolver< SchemaImpl > RESOLVER = new TypeResolver< SchemaImpl >() {
 
         /**
          * {@inheritDoc}
@@ -85,10 +85,10 @@ public class SchemaImpl extends RelationalObjectImpl implements Schema {
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
-        public Schema resolve( final UnitOfWork transaction,
+        public SchemaImpl resolve( final UnitOfWork transaction,
                                final KomodoObject kobject ) throws KException {
             if ( kobject.getTypeId() == Schema.TYPE_ID ) {
-                return ( Schema )kobject;
+                return ( SchemaImpl )kobject;
             }
 
             return new SchemaImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );

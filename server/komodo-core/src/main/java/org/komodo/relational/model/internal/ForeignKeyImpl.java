@@ -43,7 +43,7 @@ public final class ForeignKeyImpl extends TableConstraintImpl implements Foreign
     /**
      * The resolver of a {@link ForeignKey}.
      */
-    public static final TypeResolver< ForeignKey > RESOLVER = new TypeResolver< ForeignKey >() {
+    public static final TypeResolver< ForeignKeyImpl > RESOLVER = new TypeResolver< ForeignKeyImpl >() {
 
         /**
          * {@inheritDoc}
@@ -89,10 +89,10 @@ public final class ForeignKeyImpl extends TableConstraintImpl implements Foreign
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
-        public ForeignKey resolve( final UnitOfWork transaction,
+        public ForeignKeyImpl resolve( final UnitOfWork transaction,
                                    final KomodoObject kobject ) throws KException {
             if ( kobject.getTypeId() == ForeignKey.TYPE_ID ) {
-                return ( ForeignKey )kobject;
+                return ( ForeignKeyImpl )kobject;
             }
 
             return new ForeignKeyImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
@@ -241,12 +241,12 @@ public final class ForeignKeyImpl extends TableConstraintImpl implements Foreign
      * @see org.komodo.relational.internal.RelationalObjectImpl#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public Table getParent( final UnitOfWork transaction ) throws KException {
+    public TableImpl getParent( final UnitOfWork transaction ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
 
         final KomodoObject parent = super.getParent( transaction );
-        final Table result = TableImpl.RESOLVER.resolve( transaction, parent );
+        final TableImpl result = TableImpl.RESOLVER.resolve( transaction, parent );
         return result;
     }
 

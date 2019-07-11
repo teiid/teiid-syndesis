@@ -41,7 +41,7 @@ public class SqlCompositionImpl  extends RelationalObjectImpl implements SqlComp
     /**
      * The resolver of a {@link SqlComposition}.
      */
-    public static final TypeResolver<SqlComposition> RESOLVER = new TypeResolver<SqlComposition>() {
+    public static final TypeResolver<SqlCompositionImpl> RESOLVER = new TypeResolver<SqlCompositionImpl>() {
 
         /**
          * {@inheritDoc}
@@ -81,9 +81,9 @@ public class SqlCompositionImpl  extends RelationalObjectImpl implements SqlComp
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
-        public SqlComposition resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
+        public SqlCompositionImpl resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
             if (kobject.getTypeId() == SqlComposition.TYPE_ID) {
-                return (SqlComposition)kobject;
+                return (SqlCompositionImpl)kobject;
             }
 
             return new SqlCompositionImpl(transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath());
@@ -121,12 +121,12 @@ public class SqlCompositionImpl  extends RelationalObjectImpl implements SqlComp
      * @see org.komodo.relational.internal.RelationalObjectImpl#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public ViewDefinition getParent(final UnitOfWork transaction) throws KException {
+    public ViewDefinitionImpl getParent(final UnitOfWork transaction) throws KException {
         ArgCheck.isNotNull(transaction, "transaction"); //$NON-NLS-1$
         ArgCheck.isTrue((transaction.getState() == State.NOT_STARTED), "transaction state must be NOT_STARTED"); //$NON-NLS-1$
 
         final KomodoObject grouping = super.getParent(transaction);
-        final ViewDefinition result = ViewDefinitionImpl.RESOLVER.resolve(transaction, grouping.getParent(transaction));
+        final ViewDefinitionImpl result = ViewDefinitionImpl.RESOLVER.resolve(transaction, grouping.getParent(transaction));
         return result;
     }
 

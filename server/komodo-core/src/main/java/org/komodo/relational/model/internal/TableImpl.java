@@ -67,7 +67,7 @@ public class TableImpl extends RelationalObjectImpl implements Table {
     /**
      * The resolver of a {@link Table}.
      */
-    public static final TypeResolver< Table > RESOLVER = new TypeResolver< Table >() {
+    public static final TypeResolver< TableImpl > RESOLVER = new TypeResolver< TableImpl >() {
 
         /**
          * {@inheritDoc}
@@ -108,10 +108,10 @@ public class TableImpl extends RelationalObjectImpl implements Table {
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
-        public Table resolve( final UnitOfWork transaction,
+        public TableImpl resolve( final UnitOfWork transaction,
                               final KomodoObject kobject ) throws KException {
             if ( kobject.getTypeId() == Table.TYPE_ID ) {
-                return ( Table )kobject;
+                return ( TableImpl )kobject;
             }
 
             return new TableImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
@@ -437,21 +437,6 @@ public class TableImpl extends RelationalObjectImpl implements Table {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.internal.RelationalObjectImpl#getPropertyDescriptor(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String)
-     */
-    @Override
-    public PropertyDescriptor getPropertyDescriptor( final UnitOfWork transaction,
-                                                     final String propName ) throws KException {
-        return OptionContainerUtils.getPropertyDescriptor( transaction,
-                                                           this,
-                                                           propName,
-                                                           super.getPropertyDescriptor( transaction, propName ) );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
      * @see org.komodo.relational.internal.RelationalObjectImpl#getPropertyNames(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
@@ -601,12 +586,12 @@ public class TableImpl extends RelationalObjectImpl implements Table {
      * @see org.komodo.relational.internal.RelationalObjectImpl#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public Model getParent( final UnitOfWork transaction ) throws KException {
+    public ModelImpl getParent( final UnitOfWork transaction ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
 
         final KomodoObject parent = super.getParent( transaction );
-        final Model result = ModelImpl.RESOLVER.resolve( transaction, parent );
+        final ModelImpl result = ModelImpl.RESOLVER.resolve( transaction, parent );
         return result;
     }
 

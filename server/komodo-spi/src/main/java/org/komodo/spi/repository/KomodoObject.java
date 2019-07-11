@@ -176,18 +176,6 @@ public interface KomodoObject extends KNode {
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED}))
-     * @param propName
-     *        the name of the property whose descriptor is being requested (cannot be empty)
-     * @return the property descriptor (can be <code>null</code> if not found)
-     * @throws KException
-     *         if an error occurs
-     */
-    PropertyDescriptor getPropertyDescriptor( final UnitOfWork transaction,
-                                              final String propName ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED}))
      * @return the property descriptors from the primary type descriptor and the mixin descriptors (never <code>null</code> but
      *         can be empty)
      * @throws KException
@@ -463,17 +451,6 @@ public interface KomodoObject extends KNode {
      */
     void removeChild( final UnitOfWork transaction,
                       final String... names ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED}))
-     * @param descriptorNames
-     *        the mixin(s) being removed (cannot be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    void removeDescriptor( final UnitOfWork transaction,
-                           final String... descriptorNames ) throws KException;
 
     /**
      * @param transaction

@@ -104,11 +104,14 @@ public final class RestDataservice extends RestBasicEntity {
      * @throws KException if error occurs
      */
     public RestDataservice(URI baseUri, Dataservice dataService, boolean exportXml, UnitOfWork uow) throws KException {
-        super(baseUri, dataService, uow);
+        super(baseUri);
+        
+        setId(dataService.getName(uow));
+        setDataPath(dataService.getAbsolutePath());
+        setkType(dataService.getTypeIdentifier(uow));
+        setHasChildren(dataService.hasChildren(uow));
 
         setDescription(dataService.getDescription(uow));
-
-        addExecutionProperties(uow, dataService);
 
         Properties settings = getUriBuilder().createSettings(SettingNames.DATA_SERVICE_NAME, getId());
         URI parentUri = getUriBuilder().dataserviceParentUri(dataService, uow);

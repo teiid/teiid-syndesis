@@ -18,17 +18,9 @@
 package org.komodo.rest;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
 
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.Property;
-import org.komodo.spi.repository.PropertyDescriptor;
-import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
 
 /**
@@ -98,24 +90,6 @@ public class RestBasicEntity extends AbstractKEntity {
     }
 
     /**
-     * @param baseUri the base uri of the REST request
-     * @param kObject the kObject
-     * @param uow the transaction
-     * @throws KException if error occurs
-     */
-    public RestBasicEntity(URI baseUri, KomodoObject kObject, UnitOfWork uow) throws KException {
-        this(baseUri);
-
-        ArgCheck.isNotNull(kObject, "kObject"); //$NON-NLS-1$
-        ArgCheck.isNotNull(uow, "uow"); //$NON-NLS-1$
-
-        setId(kObject.getName(uow));
-        setDataPath(kObject.getAbsolutePath());
-        setkType(kObject.getTypeIdentifier(uow));
-        setHasChildren(kObject.hasChildren(uow));
-    }
-
-    /**
      * @return the id
      */
     public String getId() {
@@ -173,55 +147,6 @@ public class RestBasicEntity extends AbstractKEntity {
      */
     public void setHasChildren(boolean hasChildren) {
         tuples.put(HAS_CHILDREN, hasChildren);
-    }
-
-    protected boolean hasPrefix(String name) {
-        return name.matches(PREFIX_PATTERN);
-    }
-
-    /**
-     * Derives execution properties from the given {@link KomodoObject}
-     * and adds them to this entity
-     *
-     * @param uow transaction required for fetching the properties from the {@link KomodoObject}
-     * @param kObject the source {@link KomodoObject}
-     * @throws KException if error occurs
-     */
-    public void addExecutionProperties(UnitOfWork uow, KomodoObject kObject) throws KException {
-        final List<String> propNames = new ArrayList<>(Arrays.asList(kObject.getPropertyNames(uow))); // props with values
-        final PropertyDescriptor[] descriptors = kObject.getPropertyDescriptors(uow);
-
-        if (descriptors.length != 0) {
-            for (PropertyDescriptor descriptor : descriptors) {
-                String name = descriptor.getName();
-                if (!propNames.contains(name)) {
-                    propNames.add(name);
-                }
-            }
-        }
-
-        //
-        // Execution properties are stored in komodo object without a prefix
-        //
-        Iterator<String> propIter = propNames.iterator();
-        while(propIter.hasNext()) {
-            String propName = propIter.next();
-
-            if (hasPrefix(propName))
-                continue;
-
-            Property attribute = kObject.getProperty(uow, propName);
-            if (attribute == null)
-                continue;
-
-            if (attribute.isMultiple(uow)) {
-                Object[] values = attribute.getValues(uow);
-                addProperty(propName, values);
-            } else {
-                Object value = attribute.getValue(uow);
-                addProperty(propName, value);
-            }
-        }
     }
 
     @SuppressWarnings( "nls" )

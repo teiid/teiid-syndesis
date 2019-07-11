@@ -37,11 +37,6 @@ public interface View extends Table {
     KomodoType IDENTIFIER = KomodoType.VIEW;
 
     /**
-     * An empty array of views.
-     */
-    View[] NO_VIEWS = new View[0];
-
-    /**
      * {@inheritDoc}
      *
      * @see org.komodo.spi.repository.KNode#getParent(org.komodo.spi.repository.Repository.UnitOfWork)

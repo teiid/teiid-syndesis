@@ -24,7 +24,6 @@ import org.komodo.relational.profile.Profile;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.UnitOfWork;
 
 public interface WorkspaceManager {
@@ -37,20 +36,24 @@ public interface WorkspaceManager {
 
 	Dataservice[] findDataservices(UnitOfWork uow, String searchPattern) throws KException;
 
-	KomodoObject[] findVdbs(UnitOfWork uow, String string) throws KException;
+	Vdb[] findVdbs(UnitOfWork uow, String string) throws KException;
 
 	Vdb[] findVdbs(UnitOfWork uow) throws KException;
 
 	Model findModel(UnitOfWork uow, Vdb vdb, String modelName) throws KException;
 
-	void delete(UnitOfWork transaction, KomodoObject... kobjects) throws KException;
+	void deleteVdb(UnitOfWork transaction, Vdb vdb) throws KException;
+	
+	void deleteDataservice(UnitOfWork transaction, Dataservice dataservice) throws KException;
 
-	Dataservice createDataservice(UnitOfWork uow, KomodoObject parent, String serviceName) throws KException;
+	Dataservice createDataservice(UnitOfWork uow, String serviceName) throws KException;
 
-	Vdb createVdb(UnitOfWork uow, KomodoObject parent, String vdbName, String externalFilePath) throws KException;
+	Vdb createVdb(UnitOfWork uow, String vdbName, String externalFilePath) throws KException;
 
 	void refreshServiceVdb(UnitOfWork uow, Vdb serviceVdb, ViewEditorState[] editorStates) throws KException;
 
 	String getKomodoWorkspaceAbsolutePath(UnitOfWork uow) throws KException;
+
+	boolean isSchemaLoading(UnitOfWork uow, Model schemaModel) throws KException;
 
 }

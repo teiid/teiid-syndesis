@@ -20,7 +20,7 @@ package org.komodo.spi;
 
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.relational.WorkspaceManager;
-import org.komodo.spi.repository.KomodoObject;
+import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWorkListener;
 
@@ -49,6 +49,6 @@ public interface KEngine {
 	UnitOfWork createTransaction(String userName, String name, boolean rollbackOnly, UnitOfWorkListener callback,
 			String repoUser) throws KException;
 
-	KomodoObject getFromWorkspace(UnitOfWork uow, String dsPath) throws KException;
+	Dataservice findDataserviceByPath(UnitOfWork uow, String dsPath) throws KException;
 
 }

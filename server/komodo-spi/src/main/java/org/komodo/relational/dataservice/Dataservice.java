@@ -98,44 +98,17 @@ public interface Dataservice extends RelationalObject {
      */
     String getServiceViewModelName( UnitOfWork uow ) throws KException;
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.spi.repository.KomodoObject#getChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
-     */
-    @Override
-    DataServiceEntry< ? > getChild( final UnitOfWork transaction,
+    ServiceVdbEntry getChild( final UnitOfWork transaction,
                                     final String name ) throws KException;
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.spi.repository.KomodoObject#getChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
-     *      java.lang.String)
-     */
-    @Override
-    DataServiceEntry< ? > getChild( final UnitOfWork transaction,
+    ServiceVdbEntry getChild( final UnitOfWork transaction,
                                     final String name,
                                     final String typeName ) throws KException;
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.spi.repository.KomodoObject#getChildren(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String[])
-     */
-    @Override
-    DataServiceEntry< ? >[] getChildren( final UnitOfWork transaction,
+    ServiceVdbEntry[] getChildren( final UnitOfWork transaction,
                                          final String... namePatterns ) throws KException;
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.spi.repository.KomodoObject#getChildrenOfType(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String, java.lang.String[])
-     */
-    @Override
-    DataServiceEntry< ? >[] getChildrenOfType( final UnitOfWork transaction,
+    ServiceVdbEntry[] getChildrenOfType( final UnitOfWork transaction,
                                                final String type,
                                                final String... namePatterns ) throws KException;
 

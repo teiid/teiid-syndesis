@@ -41,7 +41,7 @@ public final class TranslatorImpl extends RelationalChildRestrictedObject implem
     /**
      * The resolver of a {@link Translator}.
      */
-	public static final TypeResolver< Translator > RESOLVER = new TypeResolver< Translator >() {
+	public static final TypeResolver< TranslatorImpl > RESOLVER = new TypeResolver< TranslatorImpl >() {
 
         /**
          * {@inheritDoc}
@@ -82,10 +82,10 @@ public final class TranslatorImpl extends RelationalChildRestrictedObject implem
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
-        public Translator resolve( final UnitOfWork transaction,
+        public TranslatorImpl resolve( final UnitOfWork transaction,
                                    final KomodoObject kobject ) throws KException {
             if ( kobject.getTypeId() == Translator.TYPE_ID ) {
-                return ( Translator )kobject;
+                return ( TranslatorImpl )kobject;
             }
 
             return new TranslatorImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );

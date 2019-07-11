@@ -32,7 +32,6 @@ import org.komodo.relational.internal.TypeResolver;
 import org.komodo.relational.profile.SqlComposition;
 import org.komodo.relational.profile.SqlProjectedColumn;
 import org.komodo.relational.profile.ViewDefinition;
-import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.KomodoObject;
@@ -51,7 +50,7 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
     /**
      * The resolver of a {@link ViewDefinition}.
      */
-    public static final TypeResolver<ViewDefinition> RESOLVER = new TypeResolver<ViewDefinition>() {
+    public static final TypeResolver<ViewDefinitionImpl> RESOLVER = new TypeResolver<ViewDefinitionImpl>() {
 
         /**
          * {@inheritDoc}
@@ -91,9 +90,9 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
-        public ViewDefinition resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
+        public ViewDefinitionImpl resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
             if (kobject.getTypeId() == ViewDefinition.TYPE_ID) {
-                return (ViewDefinition)kobject;
+                return (ViewDefinitionImpl)kobject;
             }
 
             return new ViewDefinitionImpl(transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath());
@@ -131,12 +130,12 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
      * @see org.komodo.relational.internal.RelationalObjectImpl#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public ViewEditorState getParent(final UnitOfWork transaction) throws KException {
+    public ViewEditorStateImpl getParent(final UnitOfWork transaction) throws KException {
         ArgCheck.isNotNull(transaction, "transaction"); //$NON-NLS-1$
         ArgCheck.isTrue((transaction.getState() == State.NOT_STARTED), "transaction state must be NOT_STARTED"); //$NON-NLS-1$
 
         final KomodoObject grouping = super.getParent(transaction);
-        final ViewEditorState result = ViewEditorStateImpl.RESOLVER.resolve(transaction, grouping.getParent(transaction));
+        final ViewEditorStateImpl result = ViewEditorStateImpl.RESOLVER.resolve(transaction, grouping.getParent(transaction));
         return result;
     }
 

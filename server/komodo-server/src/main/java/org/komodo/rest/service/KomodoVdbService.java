@@ -134,7 +134,7 @@ public final class KomodoVdbService extends KomodoService {
             if (vdb == null)
                 return Response.noContent().build();
 
-            mgr.delete(uow, vdb);
+            mgr.deleteVdb(uow, vdb);
 
             KomodoStatusObject kso = new KomodoStatusObject("Delete Status"); //$NON-NLS-1$
             kso.addAttribute(vdbName, "Successfully deleted"); //$NON-NLS-1$

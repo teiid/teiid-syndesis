@@ -82,11 +82,6 @@ public interface Model extends Exportable, RelationalObject {
     }
 
     /**
-     * An empty array of models.
-     */
-    Model[] NO_MODELS = new Model[0];
-    
-    /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param sourceName

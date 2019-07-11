@@ -135,11 +135,6 @@ public interface Table extends Exportable, OptionContainer, RelationalObject, Sc
     boolean DEFAULT_UPDATABLE = true;
 
     /**
-     * An empty array of tables.
-     */
-    Table[] NO_TABLES = new Table[0];
-
-    /**
      * {@inheritDoc}
      *
      * @see org.komodo.spi.repository.KNode#getParent(org.komodo.spi.repository.Repository.UnitOfWork)

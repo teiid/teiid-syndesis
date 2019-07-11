@@ -29,9 +29,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.komodo.openshift.BuildStatus;
 import org.komodo.relational.dataservice.Dataservice;
+import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.relational.dataservice.RestDataservice;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyDescriptor;
 import org.komodo.spi.repository.UnitOfWork;
@@ -79,7 +79,7 @@ public final class RestDataserviceTest {
     public void init() throws Exception {
         UnitOfWork transaction = Mockito.mock(UnitOfWork.class);
 
-        KomodoObject workspace = Mockito.mock(KomodoObject.class);
+        RelationalObjectImpl workspace = Mockito.mock(RelationalObjectImpl.class);
         Mockito.when(workspace.getAbsolutePath()).thenReturn(WORKSPACE_DATA_PATH);
 
         Vdb serviceVdb = Mockito.mock(Vdb.class);

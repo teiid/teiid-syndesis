@@ -676,24 +676,6 @@ public final class ColumnImplTest extends RelationalModelTest {
     }
 
     @Test
-    public void shouldObtainPropertyDescriptorOfCustomOption() throws Exception {
-        final String custom = "sledge";
-        this.column.setStatementOption( getTransaction(), custom, "hammer" );
-
-        assertThat( this.column.getPropertyDescriptor( getTransaction(), custom ), is( notNullValue() ) );
-        assertThat( this.column.getPropertyDescriptor( getTransaction(), custom ).getName(), is( custom ) );
-    }
-
-    @Test
-    public void shouldObtainPropertyDescriptorOfStandardOption() throws Exception {
-        final String standard = this.column.getStandardOptions().keySet().iterator().next();
-        this.column.setStatementOption( getTransaction(), standard, "blah" );
-
-        assertThat( this.column.getPropertyDescriptor( getTransaction(), standard ), is( notNullValue() ) );
-        assertThat( this.column.getPropertyDescriptor( getTransaction(), standard ).getName(), is( standard ) );
-    }
-
-    @Test
     public void shouldObtainStatementOptionNames() throws Exception {
         final String custom = "blah";
         this.column.setStatementOption( getTransaction(), custom, "sledge" );
