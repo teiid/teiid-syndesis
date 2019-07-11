@@ -15,21 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.rest;
+package org.komodo.spi.metadata;
 
-import org.komodo.metadata.DefaultMetadataInstance;
-import org.komodo.metadata.TeiidConnectionProvider;
+import java.sql.Connection;
+import java.sql.SQLException;
+
 import org.teiid.adminapi.Admin;
 import org.teiid.adminapi.AdminException;
 
-public class TeiidMetadataInstance extends DefaultMetadataInstance {
+public interface TeiidConnectionProvider {
 
-    public TeiidMetadataInstance(TeiidConnectionProvider connectionProvider) {
-        super(connectionProvider);
-    }
+	Admin getAdmin() throws AdminException;
+	
+	Connection getConnection(String vdb, String version) throws SQLException;
+	
+	void reconnect() throws Exception;
 
-    @Override
-    public Admin admin() throws AdminException {
-        return super.admin();
-    }
+	void onStart();
+	
+	void onShutdown();
 }

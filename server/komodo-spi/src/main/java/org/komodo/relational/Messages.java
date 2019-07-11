@@ -38,7 +38,7 @@ public class Messages implements StringConstants {
      * Messages relating to the relational model.
      */
     public enum Relational {
-
+    	
         /**
          * An error message indicating the object lacks a UUID property, implying its not referenceable,
          * ie. does not extend mix:referenceable

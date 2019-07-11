@@ -25,12 +25,16 @@ import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.RelationalObject;
+import org.komodo.relational.WorkspaceManager;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.internal.DataserviceImpl;
 import org.komodo.relational.internal.AdapterFactory;
 import org.komodo.relational.internal.RelationalModelFactory;
+import org.komodo.relational.internal.ServiceVdbGenerator;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Schema;
+import org.komodo.relational.profile.Profile;
+import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.spi.KEvent;
@@ -53,7 +57,7 @@ import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 /**
  *
  */
-public class WorkspaceManager extends ObjectImpl implements RelationalObject {
+public class WorkspaceManagerImpl extends ObjectImpl implements RelationalObject, WorkspaceManager {
 	
 	protected static final KLog LOGGER = KLog.getLogger();
 
@@ -67,7 +71,7 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
     /**
      * The type identifier.
      */
-    public static final int TYPE_ID = WorkspaceManager.class.hashCode();
+    public static final int TYPE_ID = WorkspaceManagerImpl.class.hashCode();
 
     // @formatter:off
     private static final String FIND_ALL_QUERY_PATTERN = "SELECT [jcr:path] FROM [%s]" //$NON-NLS-1$
@@ -122,10 +126,10 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
         }
     }
 
-    private static class WskpMgrAdapter implements KeyFromValueAdapter< CacheKey, WorkspaceManager > {
+    private static class WskpMgrAdapter implements KeyFromValueAdapter< CacheKey, WorkspaceManagerImpl > {
 
         @Override
-        public CacheKey getKey( WorkspaceManager value ) {
+        public CacheKey getKey( WorkspaceManagerImpl value ) {
             Repository repository = value.getRepository();
             String user = value.getOwner();
 
@@ -133,10 +137,10 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
         }
     }
 
-    private static KeyFromValueAdapter< CacheKey, WorkspaceManager > adapter = new WskpMgrAdapter();
+    private static KeyFromValueAdapter< CacheKey, WorkspaceManagerImpl > adapter = new WskpMgrAdapter();
 
-    private static KeyInValueMap< CacheKey, WorkspaceManager > instances = 
-                                                                        new KeyInValueMap< CacheKey, WorkspaceManager >(adapter);
+    private static KeyInValueMap< CacheKey, WorkspaceManagerImpl > instances = 
+                                                                        new KeyInValueMap< CacheKey, WorkspaceManagerImpl >(adapter);
 
     private final String owner;
     
@@ -154,7 +158,7 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
      * @throws KException
      *         if there is an error obtaining the workspace manager
      */
-    public static WorkspaceManager getInstance( Repository repository, UnitOfWork transaction) throws KException {
+    public static WorkspaceManagerImpl getInstance( Repository repository, UnitOfWork transaction) throws KException {
         boolean txNotProvided = transaction == null;
 
         if (txNotProvided) {
@@ -162,12 +166,12 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
 					Repository.SYSTEM_USER);
         }
 
-        WorkspaceManager instance = instances.get(new CacheKey(repository.getId(), transaction.getRepositoryUser()));
+        WorkspaceManagerImpl instance = instances.get(new CacheKey(repository.getId(), transaction.getRepositoryUser()));
 
         if ( instance == null ) {
             // We must create a transaction here so that it can be passed on to the constructor. Since the
             // node associated with the WorkspaceManager always exists we don't have to create it.
-            instance = new WorkspaceManager(repository, transaction);
+            instance = new WorkspaceManagerImpl(repository, transaction);
 
             if (txNotProvided)
                 transaction.commit();
@@ -222,7 +226,7 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
         instances.remove(new CacheKey(repository.getId(), owner));
     }
 
-    private WorkspaceManager(Repository repository, UnitOfWork uow ) throws KException {
+    private WorkspaceManagerImpl(Repository repository, UnitOfWork uow ) throws KException {
         super( repository, RepositoryImpl.komodoWorkspacePath(uow), 0 );
         this.owner = uow.getRepositoryUser();
 
@@ -232,7 +236,7 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
             public void eventOccurred(KEvent<?> event) {
                 // Disposal observer
                 if (getRepository() == null || State.NOT_REACHABLE == getRepository().getState() || !(getRepository().ping())) {
-                    instances.remove(adapter.getKey(WorkspaceManager.this));
+                    instances.remove(adapter.getKey(WorkspaceManagerImpl.this));
                 }
             }
 
@@ -255,6 +259,7 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
      * @throws KException
      *         if an error occurs
      */
+    @Override
     public Dataservice createDataservice( final UnitOfWork uow,
                                         final KomodoObject parent,
                                         final String serviceName ) throws KException {
@@ -278,6 +283,7 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
      * @throws KException
      *         if an error occurs
      */
+    @Override
     public Vdb createVdb( final UnitOfWork uow,
                           final KomodoObject parent,
                           final String vdbName,
@@ -296,6 +302,7 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
      * @throws KException
      *         if an error occurs or if an object does not exist
      */
+    @Override
     public void delete( final UnitOfWork transaction,
                         final KomodoObject... kobjects ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
@@ -558,6 +565,7 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
         }
     }
     
+    @Override
     public Dataservice findDataservice(UnitOfWork uow, String dataserviceName) throws KException {
         if (! hasChild( uow, dataserviceName, DataVirtLexicon.DataService.NODE_TYPE ) ) {
             return null;
@@ -570,6 +578,7 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
         return dataservice;
     }
     
+    @Override
     public Vdb findVdb(UnitOfWork uow, String vdbName) throws KException {
         if (! hasChild( uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE ) ) {
             return null;
@@ -582,6 +591,7 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
         return vdb;
     }
 
+    @Override
 	public Model findModel(UnitOfWork uow, Vdb vdb, String modelName) throws KException {
 		if (! vdb.hasChild(uow, modelName, VdbLexicon.Vdb.DECLARATIVE_MODEL)) {
             return null;
@@ -590,4 +600,23 @@ public class WorkspaceManager extends ObjectImpl implements RelationalObject {
 		KomodoObject kModel = vdb.getChild(uow, modelName, VdbLexicon.Vdb.DECLARATIVE_MODEL);
         return resolve( uow, kModel, Model.class );
 	}
+	
+	@Override
+	public Profile getUserProfile(UnitOfWork transaction) throws KException {
+        Repository repo = getRepository();
+        KomodoObject userProfileObj = repo.komodoProfile(transaction);
+        Profile userProfile = resolve(transaction, userProfileObj, Profile.class);
+        if (userProfile == null) {
+            String msg = Messages.getString(Messages.Relational.NO_USER_PROFILE, transaction.getUserName());
+            throw new KException(msg);
+        }
+
+        return userProfile;
+    }
+
+	@Override
+	public void refreshServiceVdb(UnitOfWork uow, Vdb serviceVdb, ViewEditorState[] editorStates) throws KException {
+		new ServiceVdbGenerator(this).refreshServiceVdb(uow, serviceVdb, editorStates);
+	}
+
 }

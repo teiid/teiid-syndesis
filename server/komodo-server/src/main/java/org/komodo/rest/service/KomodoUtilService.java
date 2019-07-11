@@ -46,7 +46,6 @@ import org.komodo.rest.KomodoRestException;
 import org.komodo.rest.KomodoRestV1Application;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
-import org.komodo.rest.TeiidMetadataInstance;
 import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.response.KomodoStatusObject;
@@ -533,7 +532,7 @@ public final class KomodoUtilService extends KomodoService {
 				MetadataFactory mf = new MetadataFactory("PreviewVdb", 1,SystemMetadata.getInstance().getRuntimeTypeMap(),m);
 	        	parser.parseDDL(mf, restViewDefinition.getDdl());
 	        	
-				VDBMetaData vdb = (VDBMetaData) ((TeiidMetadataInstance) this.kengine.getMetadataInstance()).admin()
+				VDBMetaData vdb = (VDBMetaData) this.kengine.getMetadataInstance().admin()
 						.getVDB("PreviewVdb", "1");
 				TransformationMetadata qmi = vdb.getAttachment(TransformationMetadata.class);
 	        	

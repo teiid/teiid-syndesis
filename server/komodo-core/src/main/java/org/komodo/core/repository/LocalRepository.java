@@ -35,10 +35,12 @@ import org.komodo.spi.repository.UnitOfWorkDelegate;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
+import org.springframework.stereotype.Component;
 
 /**
  * A repository installed on the local machine, using the modeshape engine and repository.
  */
+@Component
 public class LocalRepository extends RepositoryImpl {
 
     private static String LOCAL_REPOSITORY_CONFIG = "local-repository-config.json"; //$NON-NLS-1$

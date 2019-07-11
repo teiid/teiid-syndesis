@@ -20,11 +20,9 @@ package org.komodo.rest.relational.dataservice;
 import java.net.URI;
 import java.util.Properties;
 
-import org.komodo.core.KomodoLexicon;
 import org.komodo.openshift.BuildStatus;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.vdb.Vdb;
-import org.komodo.rest.KomodoService;
 import org.komodo.rest.RestBasicEntity;
 import org.komodo.rest.RestLink;
 import org.komodo.rest.RestLink.LinkType;
@@ -41,7 +39,7 @@ public final class RestDataservice extends RestBasicEntity {
     /**
      * Label used to describe description
      */
-    public static final String DESCRIPTION_LABEL = KomodoService.protectPrefix(KomodoLexicon.LibraryComponent.DESCRIPTION);
+    public static final String DESCRIPTION_LABEL = "tko__description";
 
     /**
      * Label used to describe dataservice view modelName

@@ -36,7 +36,7 @@ import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.internal.VdbImpl;
-import org.komodo.relational.workspace.WorkspaceManager;
+import org.komodo.relational.workspace.WorkspaceManagerImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
@@ -485,7 +485,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
         ArgCheck.isTrue( ( uow.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         KomodoObject userProfileObj = getRepository().komodoProfile(uow);
-        WorkspaceManager wkspMgr = WorkspaceManager.getInstance(getRepository(), uow);
+        WorkspaceManagerImpl wkspMgr = WorkspaceManagerImpl.getInstance(getRepository(), uow);
         
         Profile userProfile = wkspMgr.resolve(uow, userProfileObj, Profile.class);
         ViewEditorState[] editorStates = null;

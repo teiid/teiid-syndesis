@@ -15,13 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.spi.lexicon.sql.teiid;
+package org.komodo.spi.constants;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import org.komodo.spi.constants.StringConstants;
 
 public abstract class TeiidSqlConstants {
 

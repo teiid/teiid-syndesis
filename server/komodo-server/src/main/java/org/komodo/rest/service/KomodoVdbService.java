@@ -33,10 +33,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import org.komodo.relational.WorkspaceManager;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.View;
 import org.komodo.relational.vdb.Vdb;
-import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.rest.KomodoRestException;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
@@ -44,7 +44,6 @@ import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.utils.StringNameValidator;
@@ -130,7 +129,7 @@ public final class KomodoVdbService extends KomodoService {
             uow = createTransaction(principal, "removeVdbFromWorkspace", false); //$NON-NLS-1$
 
             final WorkspaceManager mgr = getWorkspaceManager(uow);
-            KomodoObject vdb = mgr.findVdb(uow, vdbName);
+            Vdb vdb = mgr.findVdb(uow, vdbName);
 
             if (vdb == null)
                 return Response.noContent().build();

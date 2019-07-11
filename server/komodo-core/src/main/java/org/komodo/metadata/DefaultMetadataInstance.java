@@ -17,9 +17,6 @@
  */
 package org.komodo.metadata;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -40,13 +37,14 @@ import org.komodo.metadata.internal.DataTypeServiceImpl;
 import org.komodo.metadata.internal.MetaArtifactFactory;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.metadata.Messages;
 import org.komodo.spi.metadata.MetadataClientEvent;
 import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.metadata.MetadataObserver;
+import org.komodo.spi.metadata.TeiidConnectionProvider;
 import org.komodo.spi.query.QSColumn;
 import org.komodo.spi.query.QSResult;
 import org.komodo.spi.query.QSRow;
-import org.komodo.spi.runtime.ConnectionDriver;
 import org.komodo.spi.runtime.TeiidDataSource;
 import org.komodo.spi.runtime.TeiidPropertyDefinition;
 import org.komodo.spi.runtime.TeiidTranslator;
@@ -57,6 +55,8 @@ import org.komodo.spi.type.DataTypeService;
 import org.komodo.spi.type.DataTypeService.DataTypeName;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.teiid.adminapi.Admin;
 import org.teiid.adminapi.AdminException;
 import org.teiid.adminapi.PropertyDefinition;
@@ -67,6 +67,7 @@ import org.teiid.core.util.ApplicationInfo;
 import org.teiid.query.parser.QueryParser;
 import org.teiid.query.sql.LanguageObject;
 
+@Component
 public class DefaultMetadataInstance implements MetadataInstance {
 
     private static DataTypeServiceImpl dataTypeService;
@@ -113,6 +114,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
     private TeiidConnectionProvider connectionProvider;
 
+    @Autowired
     public DefaultMetadataInstance(TeiidConnectionProvider connectionProvider) {
         this.connectionProvider = connectionProvider;
     }
@@ -281,68 +283,6 @@ public class DefaultMetadataInstance implements MetadataInstance {
             } catch (SQLException e1) {
                 // ignore
             }
-        }
-    }
-
-    @Override
-    public Collection<ConnectionDriver> getDataSourceDrivers() throws KException {
-        checkStarted();
-
-        List<ConnectionDriver> drivers = new ArrayList<ConnectionDriver>();
-        Set<String> templateNames = getDataSourceTemplateNames();
-        for (String templateName : templateNames) {
-            if (templateName == null)
-                continue; // Seems to be a null driver installed in wildfly 10.0.1 by default
-            
-            drivers.add(new ConnectionDriver(templateName));
-        }
-        return drivers;
-    }
-
-    @Override
-    public void deployDataSourceDriver(String driverName, File driverFile) throws KException {
-        checkStarted();
-        ArgCheck.isNotNull(driverName, "driverName"); //$NON-NLS-1$
-        
-        if (!driverFile.exists())
-            throw new KException(Messages.getString(Messages.MetadataServer.jarDeploymentJarNotFound, driverFile.getPath()));
-
-        if (!driverFile.canRead())
-            throw new KException(Messages.getString(Messages.MetadataServer.jarDeploymentJarNotReadable, driverFile.getPath()));
-
-        InputStream iStream = null;
-        try {
-            iStream = new FileInputStream(driverFile);
-        } catch (FileNotFoundException ex) {
-            throw handleError(ex);
-        }
-
-        try {
-            admin().deploy(driverName, iStream);
-
-            // Give a 0.5 sec pause for the driver to finish loading.
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                // ignore
-            }
-
-        } catch (Exception ex) {
-            // Jar deployment failed
-            throw handleError(ex);
-        }
-    }
-
-    @Override
-    public void undeployDataSourceDriver(String driverName) throws KException {
-        checkStarted();
-        ArgCheck.isNotNull(driverName, "driverName"); //$NON-NLS-1$
-
-        try {
-            admin().undeploy(driverName);
-        } catch (Exception ex) {
-            // Jar deployment failed
-            throw handleError(ex);
         }
     }
 

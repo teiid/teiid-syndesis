@@ -25,7 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.komodo.core.KEngine;
+import org.komodo.core.KEngineImpl;
 import org.komodo.core.KomodoLexicon;
 import org.komodo.core.KomodoLexicon.Environment;
 import org.komodo.core.KomodoLexicon.Komodo;
@@ -436,7 +436,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     private final Id id;
     private final Set< RepositoryObserver > observers = new HashSet< >();
     private final Type type;
-    protected KEngine kEngine;
+    protected KEngineImpl kEngine;
 
     /**
      * @param type
@@ -461,11 +461,11 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
 
     protected abstract KQueryManager getQueryManager();
 
-    public void registerKEngine(KEngine engine) {
+    public void registerKEngine(KEngineImpl engine) {
     	this.kEngine = engine;
     }
     
-    public KEngine getKEngine() {
+    public KEngineImpl getKEngine() {
     	return this.kEngine;
     }    
     

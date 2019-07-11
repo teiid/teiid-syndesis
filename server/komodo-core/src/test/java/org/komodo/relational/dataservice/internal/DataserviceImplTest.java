@@ -32,7 +32,7 @@ import org.komodo.relational.dataservice.ServiceVdbEntry;
 import org.komodo.relational.internal.RelationalObjectImpl.Filter;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.vdb.Vdb;
-import org.komodo.relational.workspace.WorkspaceManager;
+import org.komodo.relational.workspace.WorkspaceManagerImpl;
 import org.komodo.spi.repository.KomodoType;
 import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 
@@ -42,12 +42,12 @@ public final class DataserviceImplTest extends RelationalModelTest {
     private static final String SERVICE_NAME = "myService";
 
     protected Dataservice dataservice;
-    private WorkspaceManager mgr;
+    private WorkspaceManagerImpl mgr;
 
     @Before
     public void init() throws Exception {
         this.dataservice = createDataservice( SERVICE_NAME );
-        this.mgr = WorkspaceManager.getInstance( _repo, getTransaction() );
+        this.mgr = WorkspaceManagerImpl.getInstance( _repo, getTransaction() );
 
     }
 
@@ -162,7 +162,7 @@ public final class DataserviceImplTest extends RelationalModelTest {
     public void shouldGetServiceVdbViewModelAndView() throws Exception {
         final String name = "childVdb";
         final int version = 2;
-        final WorkspaceManager mgr = WorkspaceManager.getInstance( _repo, getTransaction() );
+        final WorkspaceManagerImpl mgr = WorkspaceManagerImpl.getInstance( _repo, getTransaction() );
         final Vdb serviceVdb = mgr.createVdb( getTransaction(), null, name, "externalFilePath" );
         serviceVdb.setVersion( getTransaction(), version );
 

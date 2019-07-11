@@ -21,13 +21,13 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import org.komodo.metadata.TeiidConnectionProvider;
+import org.komodo.spi.metadata.TeiidConnectionProvider;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 import org.teiid.adminapi.Admin;
 import org.teiid.adminapi.AdminException;
 
-@Configuration
+@Component
 public class TeiidConnectionProviderImpl implements TeiidConnectionProvider {
 
     @Autowired

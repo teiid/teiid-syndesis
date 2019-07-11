@@ -42,12 +42,12 @@ import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.OptionKeys;
 import org.komodo.relational.importer.vdb.VdbImporter;
 import org.komodo.relational.vdb.Vdb;
-import org.komodo.relational.workspace.WorkspaceManager;
+import org.komodo.relational.workspace.WorkspaceManagerImpl;
 import org.komodo.rest.AuthHandlingFilter;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoConfigurationProperties;
-import org.komodo.rest.TeiidMetadataInstance;
 import org.komodo.spi.KException;
+import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.KomodoObject;
 import org.mockito.Mockito;
 import org.teiid.core.util.ObjectConverterUtil;
@@ -73,7 +73,7 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
 
     private TeiidOpenShiftClient testDataSetup() throws KException {
         AuthHandlingFilter.threadOAuthCredentials.set(new OAuthCredentials("token", "user"));
-        TeiidMetadataInstance metadata = Mockito.mock(TeiidMetadataInstance.class);
+        MetadataInstance metadata = Mockito.mock(MetadataInstance.class);
 
         HashSet<DefaultSyndesisDataSource> sources = new HashSet<>();
         sources.add(getMySQLDS());
@@ -145,7 +145,7 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
     public void testGeneratePomXML() throws Exception {
         TeiidOpenShiftClient generator = testDataSetup();
 
-        final Vdb[] vdbs = WorkspaceManager.getInstance( _repo, getTransaction() ).findVdbs( getTransaction() );
+        final Vdb[] vdbs = WorkspaceManagerImpl.getInstance( _repo, getTransaction() ).findVdbs( getTransaction() );
         assertThat( vdbs.length, is(1));
 
         final OAuthCredentials authToken = AuthHandlingFilter.threadOAuthCredentials.get();
@@ -157,7 +157,7 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
     public void testGenerateDataSource() throws Exception {
         TeiidOpenShiftClient generator = testDataSetup();
 
-        final Vdb[] vdbs = WorkspaceManager.getInstance( _repo, getTransaction() ).findVdbs( getTransaction() );
+        final Vdb[] vdbs = WorkspaceManagerImpl.getInstance( _repo, getTransaction() ).findVdbs( getTransaction() );
         assertThat( vdbs.length, is(1));
 
         InputStream dsIs = generator.buildDataSourceBuilders(vdbs[0], getTransaction());
@@ -169,7 +169,7 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
     public void testGenerateDeploymentYML() throws Exception {
         TeiidOpenShiftClient generator = testDataSetup();
 
-        final Vdb[] vdbs = WorkspaceManager.getInstance( _repo, getTransaction() ).findVdbs( getTransaction() );
+        final Vdb[] vdbs = WorkspaceManagerImpl.getInstance( _repo, getTransaction() ).findVdbs( getTransaction() );
         assertThat( vdbs.length, is(1));
 
         final OAuthCredentials authToken = AuthHandlingFilter.threadOAuthCredentials.get();

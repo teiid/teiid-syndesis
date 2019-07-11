@@ -28,8 +28,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.runner.RunWith;
-import org.komodo.core.KEngine;
-import org.komodo.core.repository.SynchronousCallback;
+import org.komodo.core.KEngineImpl;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.relational.dataservice.Dataservice;
@@ -41,6 +40,7 @@ import org.komodo.rest.service.ServiceTestUtilities;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
+import org.komodo.spi.repository.SynchronousCallback;
 import org.komodo.test.utils.TestUtilities;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
@@ -57,7 +57,7 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
     TestRestTemplate web;
 
     @Autowired
-    KEngine engine;
+    KEngineImpl engine;
 
     @LocalServerPort
     private int port;

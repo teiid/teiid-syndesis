@@ -15,23 +15,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.metadata;
 
-import java.sql.Connection;
-import java.sql.SQLException;
+package org.komodo.spi;
 
-import org.teiid.adminapi.Admin;
-import org.teiid.adminapi.AdminException;
+import org.komodo.relational.WorkspaceManager;
+import org.komodo.spi.metadata.MetadataInstance;
+import org.komodo.spi.repository.Repository;
+import org.komodo.spi.repository.Repository.UnitOfWork;
 
-public interface TeiidConnectionProvider {
+public interface KEngine {
 
-	Admin getAdmin() throws AdminException;
-	
-	Connection getConnection(String vdb, String version) throws SQLException;
-	
-	void reconnect() throws Exception;
+	MetadataInstance getMetadataInstance() throws KException;
 
-	void onStart();
-	
-	void onShutdown();
+	Repository getDefaultRepository() throws KException;
+
+	KErrorHandler getErrorHandler();
+
+	boolean startAndWait() throws Exception;
+
+	WorkspaceManager getWorkspaceManager(UnitOfWork transaction) throws KException;
+
+	void setDefaultRepository(Repository repository) throws Exception;
+
+	void setMetadataInstance(MetadataInstance metadataInstance);
+
 }

@@ -22,7 +22,7 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 import org.komodo.metadata.DefaultMetadataInstance;
-import org.komodo.metadata.TeiidConnectionProvider;
+import org.komodo.spi.metadata.TeiidConnectionProvider;
 import org.komodo.spi.runtime.version.MetadataVersion;
 import org.komodo.spi.type.DataTypeService;
 import org.mockito.Mockito;

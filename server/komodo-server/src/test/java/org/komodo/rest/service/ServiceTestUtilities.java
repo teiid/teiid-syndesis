@@ -25,12 +25,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.komodo.core.KEngine;
-import org.komodo.core.repository.SynchronousCallback;
+import org.komodo.core.KEngineImpl;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.ExistingNodeOptions;
 import org.komodo.importer.ImportOptions.OptionKeys;
+import org.komodo.relational.WorkspaceManager;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.importer.vdb.VdbImporter;
 import org.komodo.relational.internal.AdapterFactory;
@@ -42,12 +42,13 @@ import org.komodo.relational.profile.StateCommandAggregate;
 import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.vdb.Vdb;
-import org.komodo.relational.workspace.WorkspaceManager;
+import org.komodo.relational.workspace.WorkspaceManagerImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
+import org.komodo.spi.repository.SynchronousCallback;
 
 public final class ServiceTestUtilities implements StringConstants {
 
@@ -55,7 +56,7 @@ public final class ServiceTestUtilities implements StringConstants {
 
     private Set<String> objectPaths = new LinkedHashSet<String>();
 
-    public ServiceTestUtilities(KEngine kEngine) throws Exception {
+    public ServiceTestUtilities(KEngineImpl kEngine) throws Exception {
         this.repository = kEngine.getDefaultRepository();
     }
 
@@ -96,7 +97,7 @@ public final class ServiceTestUtilities implements StringConstants {
     public Vdb getVdb(String user, String vdbName) throws Exception {
     
         UnitOfWork uow = repository.createTransaction(user, "Find vdb " + vdbName, true, null, user); //$NON-NLS-1$
-        WorkspaceManager mgr = WorkspaceManager.getInstance(repository, uow);
+        WorkspaceManager mgr = WorkspaceManagerImpl.getInstance(repository, uow);
         Vdb[] vdbs = mgr.findVdbs(uow);
         Vdb theVdb = null;
         for(Vdb vdb : vdbs) {
@@ -119,7 +120,7 @@ public final class ServiceTestUtilities implements StringConstants {
     public Vdb[] getVdbs(String user) throws Exception {
     
         UnitOfWork uow = repository.createTransaction(user, "Find vdbs", true, null, user); //$NON-NLS-1$
-        WorkspaceManager mgr = WorkspaceManager.getInstance(repository, uow);
+        WorkspaceManager mgr = WorkspaceManagerImpl.getInstance(repository, uow);
         Vdb[] vdbs = mgr.findVdbs(uow);
     
         uow.commit();
@@ -197,7 +198,7 @@ public final class ServiceTestUtilities implements StringConstants {
         UnitOfWork uow = repository.createTransaction(user, "Create Dataservice", false, callback, user); //$NON-NLS-1$
     
         KomodoObject wkspace = repository.komodoWorkspace(uow);
-        WorkspaceManager wsMgr = WorkspaceManager.getInstance(repository, uow);
+        WorkspaceManagerImpl wsMgr = WorkspaceManagerImpl.getInstance(repository, uow);
     
         VdbImporter importer = new VdbImporter(repository);
         ImportMessages importMessages = new ImportMessages();
@@ -235,7 +236,7 @@ public final class ServiceTestUtilities implements StringConstants {
     public Dataservice getDataservice(String user, String dataserviceName) throws Exception {
     
         UnitOfWork uow = repository.createTransaction(user, "Find dataservice " + dataserviceName, true, null, user); //$NON-NLS-1$
-        WorkspaceManager mgr = WorkspaceManager.getInstance(repository, uow);
+        WorkspaceManager mgr = WorkspaceManagerImpl.getInstance(repository, uow);
         Dataservice[] dataservices = mgr.findDataservices(uow, null);
         Dataservice theDataservice = null;
         for(Dataservice ds : dataservices) {
@@ -258,7 +259,7 @@ public final class ServiceTestUtilities implements StringConstants {
     public Dataservice[] getDataservices(String user) throws Exception {
     
         UnitOfWork uow = repository.createTransaction(user, "Find dataservices", true, null, user); //$NON-NLS-1$
-        WorkspaceManager mgr = WorkspaceManager.getInstance(repository, uow);
+        WorkspaceManager mgr = WorkspaceManagerImpl.getInstance(repository, uow);
         Dataservice[] services = mgr.findDataservices(uow, null);
         uow.commit();
     
@@ -277,7 +278,7 @@ public final class ServiceTestUtilities implements StringConstants {
         SynchronousCallback callback = new SynchronousCallback();
         UnitOfWork uow = repository.createTransaction(user, "Create VDB", false, callback, user); //$NON-NLS-1$
     
-        WorkspaceManager wsMgr = WorkspaceManager.getInstance(repository, uow);
+        WorkspaceManager wsMgr = WorkspaceManagerImpl.getInstance(repository, uow);
         Vdb vdb = wsMgr.createVdb(uow, null, vdbName, vdbName);
     
         uow.commit();
@@ -299,7 +300,7 @@ public final class ServiceTestUtilities implements StringConstants {
         SynchronousCallback callback = new SynchronousCallback();
         UnitOfWork uow = repository.createTransaction(user, "Create View", false, callback, user); //$NON-NLS-1$
 
-        WorkspaceManager wsMgr = WorkspaceManager.getInstance(repository, uow);
+        WorkspaceManager wsMgr = WorkspaceManagerImpl.getInstance(repository, uow);
 
         Vdb vdb = wsMgr.findVdb(uow, vdbName);
         
@@ -323,7 +324,7 @@ public final class ServiceTestUtilities implements StringConstants {
         SynchronousCallback callback = new SynchronousCallback();
         UnitOfWork uow = repository.createTransaction(user, "Delete vdbs", false, callback, user); //$NON-NLS-1$
         
-        WorkspaceManager wsMgr = WorkspaceManager.getInstance(repository, uow);
+        WorkspaceManager wsMgr = WorkspaceManagerImpl.getInstance(repository, uow);
         Vdb[] vdbs = wsMgr.findVdbs(uow);
         for (Vdb vdb : vdbs) {
             wsMgr.delete(uow, vdb);
@@ -345,7 +346,7 @@ public final class ServiceTestUtilities implements StringConstants {
         SynchronousCallback callback = new SynchronousCallback();
         UnitOfWork uow = repository.createTransaction(user, "Delete object at path " + absPath, false, callback, user); //$NON-NLS-1$
         
-        WorkspaceManager wsMgr = WorkspaceManager.getInstance(repository, uow);
+        WorkspaceManager wsMgr = WorkspaceManagerImpl.getInstance(repository, uow);
         KomodoObject kObject = repository.getFromWorkspace(uow, absPath);
         if (kObject != null) {
             wsMgr.delete(uow, kObject);

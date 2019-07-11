@@ -22,8 +22,8 @@ import java.util.Properties;
 
 import javax.ws.rs.core.Application;
 
-import org.komodo.core.KEngine;
 import org.komodo.rest.json.JsonConstants;
+import org.komodo.spi.KEngine;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.SystemConstants;
 import org.komodo.spi.repository.Repository;
