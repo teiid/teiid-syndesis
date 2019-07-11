@@ -21,8 +21,7 @@ import java.util.Collections;
 import java.util.Map;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * Indicates the implementing class may have {@link StatementOption options}.

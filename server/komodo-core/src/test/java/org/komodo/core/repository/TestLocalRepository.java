@@ -33,15 +33,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.komodo.core.AbstractLocalRepositoryTest;
 import org.komodo.core.KomodoLexicon;
+import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.internal.repository.Repository.Id;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.SynchronousCallback;
-import org.komodo.spi.repository.Repository.Id;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
-import org.komodo.spi.repository.Repository.UnitOfWorkListener;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWorkListener;
 import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 @SuppressWarnings( {"javadoc", "nls"} )
@@ -240,11 +240,6 @@ public class TestLocalRepository extends AbstractLocalRepositoryTest {
     public void shouldGetNullWhenWorkspaceItemDoesNotExist() throws Exception {
         final KomodoObject doesNotExist = _repo.getFromWorkspace(getTransaction(), "shouldGetNullWhenWorkspaceItemDoesNotExist");
         assertThat(doesNotExist, is(nullValue()));
-    }
-
-    @Test
-    public void shouldGetType() {
-        assertThat(_repo.getType(), is(Repository.Type.LOCAL));
     }
 
     @Test

@@ -26,12 +26,13 @@ import java.util.Properties;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.DescriptorImpl;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.PropertyDescriptorImpl;
+import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.core.visitor.VdbNodeVisitor;
 import org.komodo.metadata.MetadataInstance;
-import org.komodo.metadata.internal.DocumentType;
 import org.komodo.relational.DeployStatus;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
@@ -52,9 +53,8 @@ import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyDescriptor;
 import org.komodo.spi.repository.PropertyValueType;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.FileUtils;
 import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
@@ -99,7 +99,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         @Override
         public boolean resolvable( final UnitOfWork transaction,
                                    final KomodoObject kobject ) throws KException {
-            return ObjectImpl.validateType( transaction, kobject.getRepository(), kobject, VdbLexicon.Vdb.VIRTUAL_DATABASE );
+            return ObjectImpl.validateType( transaction, kobject, VdbLexicon.Vdb.VIRTUAL_DATABASE );
         }
 
         /**
@@ -115,7 +115,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
                 return ( Vdb )kobject;
             }
 
-            return new VdbImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
+            return new VdbImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
         }
 
     };

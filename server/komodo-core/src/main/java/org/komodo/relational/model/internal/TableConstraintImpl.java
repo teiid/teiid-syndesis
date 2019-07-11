@@ -17,6 +17,7 @@
  */
 package org.komodo.relational.model.internal;
 
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.internal.ExcludeQNamesFilter;
@@ -27,9 +28,8 @@ import org.komodo.relational.model.TableConstraint;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
 import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.Constraint;

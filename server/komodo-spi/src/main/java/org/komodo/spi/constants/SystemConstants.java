@@ -95,4 +95,9 @@ public interface SystemConstants extends StringConstants {
      * The default value of the password for connection to the persistence database
      */
     String REPOSITORY_PERSISTENCE_CONNECTION_PASSWORD_DEFAULT = "komodo";
+
+	/**
+	 * System user for transactions to be executed internally
+	 */
+	String SYSTEM_USER = "SYSTEM";
 }

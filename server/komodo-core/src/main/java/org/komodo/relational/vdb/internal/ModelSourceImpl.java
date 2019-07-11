@@ -17,7 +17,9 @@
  */
 package org.komodo.relational.vdb.internal;
 
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.ObjectImpl;
+import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.internal.RelationalChildRestrictedObject;
 import org.komodo.relational.internal.TypeResolver;
 import org.komodo.relational.model.Model;
@@ -27,9 +29,8 @@ import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyValueType;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
@@ -72,7 +73,7 @@ public final class ModelSourceImpl extends RelationalChildRestrictedObject imple
         @Override
         public boolean resolvable( final UnitOfWork transaction,
                                    final KomodoObject kobject ) throws KException {
-            return ObjectImpl.validateType( transaction, kobject.getRepository(), kobject, VdbLexicon.Source.SOURCE );
+            return ObjectImpl.validateType( transaction, kobject, VdbLexicon.Source.SOURCE );
         }
 
         /**
@@ -88,7 +89,7 @@ public final class ModelSourceImpl extends RelationalChildRestrictedObject imple
                 return ( ModelSource )kobject;
             }
 
-            return new ModelSourceImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
+            return new ModelSourceImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
         }
 
     };

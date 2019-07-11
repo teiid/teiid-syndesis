@@ -15,13 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.spi.repository;
+package org.komodo.core.internal.repository;
 
 import java.util.Collection;
 
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.repository.Repository.UnitOfWork;
+import org.komodo.spi.repository.Descriptor;
+import org.komodo.spi.repository.KPropertyFactory;
+import org.komodo.spi.repository.KomodoObject;
+import org.komodo.spi.repository.Property;
+import org.komodo.spi.repository.PropertyDescriptor;
+import org.komodo.spi.repository.RepositoryConstants;
+import org.komodo.spi.repository.UnitOfWork;
 
 public interface KObjectFactory extends StringConstants, RepositoryConstants {
 

@@ -20,8 +20,6 @@ package org.komodo.spi.repository;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.komodo.spi.repository.Repository.UnitOfWorkListener;
-
 /**
  * Makes an asynchronous transaction commit operation synchronous.
  *

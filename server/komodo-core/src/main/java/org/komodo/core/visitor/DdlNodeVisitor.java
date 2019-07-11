@@ -25,6 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.komodo.core.internal.repository.KObjectFactory;
+import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.metadata.DataTypeService;
 import org.komodo.metadata.DataTypeService.DataTypeName;
 import org.komodo.metadata.MetadataNamespaces;
@@ -33,12 +36,10 @@ import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.constants.TeiidSqlConstants;
 import org.komodo.spi.constants.TeiidSqlConstants.NonReserved;
 import org.komodo.spi.constants.TeiidSqlConstants.Reserved;
-import org.komodo.spi.repository.KObjectFactory;
 import org.komodo.spi.repository.KomodoObject;
+import org.komodo.spi.repository.OperationType;
 import org.komodo.spi.repository.Property;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.OperationType;
-import org.komodo.spi.repository.Repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.utils.KeyInValueMap;
 import org.komodo.utils.StringUtils;
 import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
@@ -489,7 +490,7 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
             // The prefix represents a modeshape prefix so need the original uri
             // from the modeshape namespace registry
             //
-            KObjectFactory objectFactory = stmtOption.getRepository().getObjectFactory();
+            KObjectFactory objectFactory = RepositoryImpl.getRepository(transaction).getObjectFactory();
             String mURI = objectFactory.getNamespaceURI(transaction, prefix);
             URI uri = null;
             if (mURI != null) {
@@ -600,7 +601,7 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
         if (!hasMixinType(transaction, constraint, expectedType))
             return;
 
-        Repository repository = constraint.getRepository();
+        Repository repository = RepositoryImpl.getRepository(transaction);
 
         append(COMMA).append(NEW_LINE).append(TAB);
 

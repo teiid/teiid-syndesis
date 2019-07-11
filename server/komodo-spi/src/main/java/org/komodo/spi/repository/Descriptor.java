@@ -18,18 +18,11 @@
 package org.komodo.spi.repository;
 
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
 
 /**
  * A {@link KomodoObject Komodo object} type definition.
  */
 public interface Descriptor {
-
-    /**
-     * @return the node factory
-     */
-    KObjectFactory getNodeFactory();
 
     /**
      * @return the property factory

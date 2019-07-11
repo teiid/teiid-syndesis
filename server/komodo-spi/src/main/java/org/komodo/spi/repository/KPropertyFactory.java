@@ -22,7 +22,6 @@ import java.util.Calendar;
 import java.util.Date;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.repository.Repository.UnitOfWork;
 
 public interface KPropertyFactory extends StringConstants, RepositoryConstants {
 

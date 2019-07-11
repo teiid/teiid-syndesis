@@ -32,11 +32,11 @@ import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoObjectVisitor;
 import org.komodo.spi.repository.KomodoType;
+import org.komodo.spi.repository.OperationType;
 import org.komodo.spi.repository.PropertyDescriptor;
 import org.komodo.spi.repository.SynchronousCallback;
-import org.komodo.spi.repository.Repository.OperationType;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 import org.modeshape.jcr.api.JcrConstants;
 import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
@@ -117,7 +117,7 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
     }
 
     private ObjectImpl convert(KomodoObject obj) throws Exception {
-        return new ObjectImpl(obj.getRepository(), obj.getAbsolutePath(), obj.getIndex());
+        return new ObjectImpl(((ObjectImpl)obj).getRepository(), obj.getAbsolutePath(), obj.getIndex());
     }
 
     @Test

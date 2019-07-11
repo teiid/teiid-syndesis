@@ -26,6 +26,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.metadata.MetadataClientEvent;
 import org.komodo.metadata.MetadataInstance;
@@ -40,22 +41,42 @@ import org.komodo.spi.KException;
 import org.komodo.spi.KObserver;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.constants.SystemConstants;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
+import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.RepositoryClientEvent;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWorkListener;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
 import org.komodo.utils.observer.KLatchObserver;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.teiid.query.parser.QueryParser;
 import org.teiid.query.sql.LanguageObject;
 
 /**
  * The Komodo engine. It is responsible for persisting and retriever user session data and Teiid artifacts.
  */
+@Component
 public final class KEngineImpl implements KEngine, KClient, StringConstants {
 
     private static final String PREFIX = KEngineImpl.class.getSimpleName() + DOT;
+    
+    /**
+     * @param repository added
+     * @return repository added event
+     */
+    public static KEvent<Repository> repositoryAddedEvent(Repository repository) {
+        return new KEvent<Repository>(repository, Type.REPOSITORY_ADDED);
+    }
+
+    /**
+     * @param repository removed
+     * @return repository removed event
+     */
+    public static KEvent<Repository> repositoryRemovedEvent(Repository repository) {
+        return new KEvent<Repository>(repository, Type.REPOSITORY_REMOVED);
+    }
     
     /**
      * Check the engine data directory property has a legitimate value
@@ -87,14 +108,15 @@ public final class KEngineImpl implements KEngine, KClient, StringConstants {
 
     private State state = State.SHUTDOWN;
 
-    private Repository defaultRepository;
+    private RepositoryImpl defaultRepository;
 
     private KomodoErrorHandler errorHandler = new KomodoErrorHandler();
 
     private MetadataInstance metadataInstance;
 
     private final Set<KObserver> observers = new HashSet<>();
-
+    
+    
     public KEngineImpl() {
         checkDataDirProperty();
 
@@ -116,57 +138,23 @@ public final class KEngineImpl implements KEngine, KClient, StringConstants {
      * @return the defaultRepository
      */
     public Repository getDefaultRepository() throws KException {
-        if (this.defaultRepository == null) {        	
-            throw new KException(Messages.getString(Messages.KEngine.No_Repository));
-        }
         return this.defaultRepository;
     }
-
-    /**
-     * Sets the default repository.
-     *
-     * Note: This should hardly ever be called except in testing.
-     *
-     * To use correctly a test harness should:
-     * 1. Call this with a valid repository before calling {{@link #start()}
-     * 2. When tests are completed, shutdown the engine
-     * 3. Call this again with a value of null to clear the default repository field
-     *
-     * @param repository the default repository
-     * @throws Exception if an error occurs
-     */
-    @Override
-    public void setDefaultRepository(Repository repository) throws Exception {
-        ArgCheck.isTrue(State.SHUTDOWN.equals(getState()), "Engine should be shutdown before calling setDefaultRepository"); //$NON-NLS-1$
-
-        boolean clearingRepo = repository == null;
-        boolean settingNewRepo = repository != null && defaultRepository == null;
-        String failMsg = "Can only call setDefaultRepository with a null argument or if the default repository is already null"; //$NON-NLS-1$
-        ArgCheck.isTrue(clearingRepo || settingNewRepo, failMsg);
-
-        if (defaultRepository != null)
-            remove(defaultRepository); // Remove the old repository
-
-        // Set the new repository
-        defaultRepository = repository;
-        if (repository != null) {
-            add(defaultRepository);
-            ((RepositoryImpl) repository).registerKEngine(this);
-        }
+    
+    @Autowired
+    public void setDefaultRepository(RepositoryImpl repository) throws Exception {
+    	ArgCheck.isTrue(State.SHUTDOWN.equals(getState()), "Engine should be shutdown before calling setDefaultRepository"); //$NON-NLS-1$
+    	this.defaultRepository = repository;
     }
 
     public MetadataInstance getMetadataInstance() throws KException {
-        if (this.metadataInstance == null) {
-        	throw new KException(Messages.getString(Messages.KEngine.No_Metadata_Instance));
-        }
         return this.metadataInstance;
     }
     
-    @Override
+    @Autowired
     public void setMetadataInstance(MetadataInstance instance) {
-    	assert instance != null;
+    	ArgCheck.isTrue(State.SHUTDOWN.equals(getState()), "Engine should be shutdown before calling setDefaultRepository"); //$NON-NLS-1$
     	this.metadataInstance = instance;
-    	metadataInstance.addObserver(this);
     }
 
     /**
@@ -181,7 +169,7 @@ public final class KEngineImpl implements KEngine, KClient, StringConstants {
         if (this.repositories.add(repository)) {
             repository.addClient(this);
             KLog.getLogger().debug(Messages.getString(Messages.KEngine.Added_Repository, PREFIX, repository.getId().getUrl()));
-            notifyObservers(KEvent.repositoryAddedEvent(repository));
+            notifyObservers(repositoryAddedEvent(repository));
 
             // Notify this repository if it has started
             if (State.STARTED == state)
@@ -234,7 +222,7 @@ public final class KEngineImpl implements KEngine, KClient, StringConstants {
         if (this.repositories.remove(repository)) {
             repository.removeClient(this);
             KLog.getLogger().debug(Messages.getString(Messages.KEngine.Removed_Repository, PREFIX, repository.getId().getUrl()));
-            notifyObservers(KEvent.repositoryRemovedEvent(repository));
+            notifyObservers(repositoryRemovedEvent(repository));
         } else {
             throw new KException(Messages.getString(Messages.KEngine.Removed_Repository_Failure, repository.getId().getUrl()));
         }
@@ -328,10 +316,19 @@ public final class KEngineImpl implements KEngine, KClient, StringConstants {
     public void start() throws KException {
         try {
             // Initialise the local repository
-            getDefaultRepository();
+        	if (this.defaultRepository == null) {        	
+                throw new KException(Messages.getString(Messages.KEngine.No_Repository));
+            }
 
             // Initialise the metadata instance
-            getMetadataInstance();
+            if (this.metadataInstance == null) {
+            	throw new KException(Messages.getString(Messages.KEngine.No_Metadata_Instance));
+            }
+            
+            add(defaultRepository);
+            defaultRepository.registerKEngine(this);
+        	
+        	metadataInstance.addObserver(this);
 
             // TODO implement start (read any saved session state, connect to repos if auto-connect, etc.)
             this.state = State.STARTED;
@@ -357,11 +354,10 @@ public final class KEngineImpl implements KEngine, KClient, StringConstants {
      *
      * @throws Exception if start fails
      */
-    @Override
     public boolean startAndWait() throws Exception {
+    	ArgCheck.isTrue(State.SHUTDOWN.equals(getState()), "Engine should be shutdown before calling setDefaultRepository"); //$NON-NLS-1$
 
-        KLatchObserver observer = new KLatchObserver(Type.REPOSITORY_STARTED,
-                                                                                                 Type.ENGINE_STARTED);
+        KLatchObserver observer = new KLatchObserver(Type.REPOSITORY_STARTED, Type.ENGINE_STARTED);
 
         addObserver(observer);
 
@@ -470,5 +466,16 @@ public final class KEngineImpl implements KEngine, KClient, StringConstants {
 	@Override
 	public WorkspaceManager getWorkspaceManager(UnitOfWork transaction) throws KException {
 		return WorkspaceManagerImpl.getInstance(getDefaultRepository(), transaction);
+	}
+
+	@Override
+	public UnitOfWork createTransaction(String userName, String name, boolean rollbackOnly, UnitOfWorkListener callback,
+			String repoUser) throws KException {
+        return getDefaultRepository().createTransaction(userName, name, rollbackOnly, callback, repoUser);
+	}
+
+	@Override
+	public KomodoObject getFromWorkspace(UnitOfWork uow, String dsPath) throws KException {
+		return getDefaultRepository().getFromWorkspace(uow, dsPath);
 	}
 }

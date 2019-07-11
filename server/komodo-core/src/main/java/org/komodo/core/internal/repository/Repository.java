@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.spi.repository;
+package org.komodo.core.internal.repository;
 
 import java.net.URL;
 import java.util.List;
@@ -23,43 +23,18 @@ import java.util.List;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.spi.KClient;
 import org.komodo.spi.KException;
+import org.komodo.spi.KObserver;
+import org.komodo.spi.repository.KPropertyFactory;
+import org.komodo.spi.repository.KomodoObject;
+import org.komodo.spi.repository.OperationType;
+import org.komodo.spi.repository.RepositoryClientEvent;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWorkListener;
 
 /**
  * A repository is a data store containing artifacts generated while modeling VDBs
  */
 public interface Repository {
-
-    /**
-     * System user for transactions to be executed internally
-     */
-    String SYSTEM_USER = "SYSTEM";
-
-    /**
-     * The nature of the operation being conducted
-     * and to be vetted by the security system
-     */
-    enum OperationType {
-        /**
-         * Can read a node's attributes and get its children
-         */
-        READ_OPERATION,
-
-        /**
-         * Can add/remove children from a node but
-         * cannot modify the node itself
-         */
-        CHILD_OPERATION,
-
-        /**
-         * Can modify a node's attributes
-         */
-        MODIFY_OPERATION,
-
-        /**
-         * Can a node be removed
-         */
-        REMOVE_OPERATION
-    }
 
     /**
      * A repository identifier.
@@ -84,35 +59,6 @@ public interface Repository {
     }
 
     /**
-     * Library and workspace searches using keywords will use one of these criteria.
-     */
-    enum KeywordCriteria {
-
-        /**
-         * All keywords must be present in the search result.
-         */
-        ALL,
-
-        /**
-         * At least one of the keywords must be present in the search result. This is the default.
-         */
-        ANY,
-
-        /**
-         * None of the keywords may be present in the search result.
-         */
-        NONE;
-
-        /**
-         * @return the default keyword to use (never <code>null</code>)
-         */
-        public static KeywordCriteria getDefault() {
-            return ANY;
-        }
-
-    }
-
-    /**
      * The repository state.
      */
     enum State {
@@ -130,153 +76,13 @@ public interface Repository {
     }
 
     /**
-     * The repository type.
-     */
-    enum Type {
-
-        /**
-         * The local workspace repository.
-         */
-        LOCAL,
-
-        /**
-         * A shared repository.
-         */
-        SHARED
-
-    }
-
-    /**
-     * Represents one or more operations grouped together forming a {@link Repository repository} transaction.
-     */
-    interface UnitOfWork {
-
-        /**
-         * The transaction states.
-         */
-        public enum State {
-
-            /**
-             * The transaction has been committed.
-             */
-            COMMITTED,
-
-            /**
-             * There was an error running the transaction.
-             */
-            ERROR,
-
-            /**
-             * The transaction has not been run (neither commit or rollback has been called).
-             */
-            NOT_STARTED,
-
-            /**
-             * The transaction has been rolled back.
-             */
-            ROLLED_BACK,
-
-            /**
-             * The transaction is currently being committed or rolled back.
-             */
-            RUNNING;
-
-            /**
-             * @return <code>true</code> if this state is the final, not intermediate, state
-             */
-            public boolean isFinal() {
-                return ( ( this == COMMITTED ) || ( this == ERROR ) || ( this == ROLLED_BACK ) );
-            }
-
-        }
-
-        /**
-         * Saves all changes made during the transaction. If this is a roll back transaction then {@link #rollback()} is called.
-         */
-        void commit();
-
-        /**
-         * @return the listener being notified when the transaction is finished (can be <code>null</code>)
-         */
-        UnitOfWorkListener getCallback();
-
-        /**
-         * @return the session delegate of this transaction
-         */
-        UnitOfWorkDelegate getDelegate();
-
-        /**
-         * @return an error caught during the transaction (can be <code>null</code>)
-         * @see State#ERROR
-         */
-        KException getError();
-
-        /**
-         * @return the name of the user who initiated the transaction (never <code>null</code>)
-         */
-        String getUserName();
-
-        /**
-         * @return the name of the transaction (never <code>null</code>)
-         */
-        String getName();
-
-        /**
-         * @return the transaction state (never <code>null</code>)
-         */
-        State getState();
-
-        /**
-         * @return <code>true</code> if the transaction contains operations that change the state of the repository
-         * @throws KException
-         *         if there is an error determining if there are unsaved changeds
-         */
-        boolean hasChanges() throws KException;
-
-        /**
-         * @return <code>true</code> if only rollback is allowed
-         */
-        boolean isRollbackOnly();
-
-        /**
-         * Discards all current changes made during this transaction.
-         */
-        void rollback();
-        
-        /**
-         * repository user. Always SYSTEM
-         * @return
-         */
-        String getRepositoryUser();
-    }
-
-    /**
-     * A listener notified when a unit of work completes.
-     */
-    public interface UnitOfWorkListener {
-
-        /**
-         * @param error
-         *        the error that occurred processing the transaction (never <code>null</code>)
-         */
-        void errorOccurred( final Throwable error );
-
-        /**
-         * @param results
-         *        the results of the work (can be <code>null</code>)
-         */
-        void respond( final Object results );
-
-    }
-
-    /**
      * Prepares the given object to be acted upon by the transaction, including testing if
      * such operation violates any security constraints and ensuring that a user-space is
      * available in the workspace.
      *
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      *
      * @param object the object to be acted upon
      * @param requestType the nature of the request being submitted, eg. read-only or writeable.
@@ -298,7 +104,7 @@ public interface Repository {
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @param parentPath
      *        the parent path where the workspace object is created (can be empty if adding at the root of the workspace)
      * @param name
@@ -325,7 +131,7 @@ public interface Repository {
      * @param observer
      *        the observer to be added
      */
-    void addObserver( RepositoryObserver observer );
+    void addObserver( KObserver observer );
 
     /**
      * @param userName
@@ -348,7 +154,7 @@ public interface Repository {
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @param query
      *        the SQL query
      *
@@ -364,7 +170,7 @@ public interface Repository {
      *
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @param path
      *        the path to the workspace object being requested (can be empty if the workspace root)
      * @return the requested workspace Komodo object (can be <code>null</code> if it does not exist)
@@ -379,7 +185,7 @@ public interface Repository {
      *
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @param jcrUuid
      *        the value of the <code>jcr:uuid</code> property (cannot be empty)
      * @return the requested workspace Komodo object or <code>null</code> if not found
@@ -400,11 +206,6 @@ public interface Repository {
     State getState();
 
     /**
-     * @return the repository's type (never <code>null</code>)
-     */
-    Type getType();
-
-    /**
      * Notify the repository of the given {@link RepositoryClientEvent}
      *
      * @param event
@@ -419,7 +220,7 @@ public interface Repository {
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @param paths
      *        the paths of the workspace objects being removed (cannot be <code>null</code> or empty)
      * @throws KException
@@ -439,12 +240,12 @@ public interface Repository {
      * @param observer
      *        the observer to be removed
      */
-    void removeObserver( RepositoryObserver observer );
+    void removeObserver( KObserver observer );
 
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @param artifactPaths
      *        the paths of the the artifacts being removed (cannot be <code>null</code> or empty)
      * @throws KException
@@ -458,7 +259,7 @@ public interface Repository {
      *
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @return the Komodo environment root (never <code>null</code>)
      * @throws KException
      *         if an error occurs
@@ -470,7 +271,7 @@ public interface Repository {
      *
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      *
      * @return the komodo library
      * @throws KException if an error occurs
@@ -483,7 +284,7 @@ public interface Repository {
      *
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      *
      * @return the komodo user workspace
      * @throws KException if an error occurs
@@ -496,7 +297,7 @@ public interface Repository {
      *
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      *
      * @return the komodo user profile
      * @throws KException if an error occurs
@@ -507,7 +308,7 @@ public interface Repository {
      *
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      *
      * @return the komodo validation root
      * @throws KException if an error occurs
@@ -518,7 +319,7 @@ public interface Repository {
     *
     * @param transaction
     *        the transaction (cannot be <code>null</code> or have a state that is not
-    *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+    *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
     *
     * @return the komodo user profiles node
     * @throws KException if an error occurs

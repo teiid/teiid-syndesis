@@ -19,7 +19,6 @@ package org.komodo.spi.repository;
 
 import java.util.Properties;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.Repository.UnitOfWork;
 
 /**
  * Indicates the object has a string representation that can be exported. In many cases this is an XML represention.

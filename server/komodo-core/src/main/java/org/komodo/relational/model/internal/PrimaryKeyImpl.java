@@ -17,16 +17,17 @@
  */
 package org.komodo.relational.model.internal;
 
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.ObjectImpl;
+import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.internal.TypeResolver;
 import org.komodo.relational.model.PrimaryKey;
 import org.komodo.relational.model.Table;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.Constraint;
 
@@ -69,9 +70,9 @@ public final class PrimaryKeyImpl extends TableConstraintImpl implements Primary
         @Override
         public boolean resolvable( final UnitOfWork transaction,
                                    final KomodoObject kobject ) throws KException {
-            return ObjectImpl.validateType( transaction, kobject.getRepository(), kobject, Constraint.TABLE_ELEMENT )
+            return ObjectImpl.validateType( transaction, kobject, Constraint.TABLE_ELEMENT )
                    && ObjectImpl.validatePropertyValue( transaction,
-                                                        kobject.getRepository(),
+                		   RepositoryImpl.getRepository(transaction),
                                                         kobject,
                                                         Constraint.TYPE,
                                                         CONSTRAINT_TYPE.toValue() );
@@ -90,7 +91,7 @@ public final class PrimaryKeyImpl extends TableConstraintImpl implements Primary
                 return ( PrimaryKey )kobject;
             }
 
-            return new PrimaryKeyImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
+            return new PrimaryKeyImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
         }
 
     };

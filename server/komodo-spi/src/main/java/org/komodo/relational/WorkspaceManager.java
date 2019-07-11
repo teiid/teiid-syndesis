@@ -25,7 +25,7 @@ import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.repository.Repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork;
 
 public interface WorkspaceManager {
 
@@ -50,5 +50,7 @@ public interface WorkspaceManager {
 	Vdb createVdb(UnitOfWork uow, KomodoObject parent, String vdbName, String externalFilePath) throws KException;
 
 	void refreshServiceVdb(UnitOfWork uow, Vdb serviceVdb, ViewEditorState[] editorStates) throws KException;
+
+	String getKomodoWorkspaceAbsolutePath(UnitOfWork uow) throws KException;
 
 }

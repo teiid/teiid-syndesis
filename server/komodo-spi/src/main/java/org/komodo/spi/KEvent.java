@@ -17,8 +17,6 @@
  */
 package org.komodo.spi;
 
-import org.komodo.spi.repository.Repository;
-
 /**
  * A Komodo event.
  *
@@ -108,19 +106,4 @@ public class KEvent<T> {
         return "KEvent [source=" + source + ", type=" + type + "]";
     }
 
-    /**
-     * @param repository added
-     * @return repository added event
-     */
-    public static KEvent<Repository> repositoryAddedEvent(Repository repository) {
-        return new KEvent<Repository>(repository, Type.REPOSITORY_ADDED);
-    }
-
-    /**
-     * @param repository removed
-     * @return repository removed event
-     */
-    public static KEvent<Repository> repositoryRemovedEvent(Repository repository) {
-        return new KEvent<Repository>(repository, Type.REPOSITORY_REMOVED);
-    }
 }

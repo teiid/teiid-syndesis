@@ -18,8 +18,6 @@
 package org.komodo.spi.repository;
 
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
 
 /**
  * Represents a Komodo object.
@@ -30,11 +28,6 @@ public interface KomodoObject extends KNode {
      * An empty Komodo object array.
      */
     KomodoObject[] EMPTY_ARRAY = new KomodoObject[ 0 ];
-
-    /**
-     * @return the node factory instance
-     */
-    KObjectFactory getObjectFactory();
 
     /**
      * @return the property factory instance
@@ -261,7 +254,7 @@ public interface KomodoObject extends KNode {
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED}
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED}
      * @return the physical parent {@link KomodoObject Komodo object} (can be <code>null</code> if at the Komodo root)
      * @throws KException
      *         if an error occurs

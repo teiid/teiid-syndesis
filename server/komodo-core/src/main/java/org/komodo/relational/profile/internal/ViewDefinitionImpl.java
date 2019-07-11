@@ -21,7 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.komodo.core.KomodoLexicon;
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.ObjectImpl;
+import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.internal.RelationalModelFactory;
@@ -37,9 +39,8 @@ import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.PropertyValueType;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 
 /**
@@ -80,7 +81,7 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
          */
         @Override
         public boolean resolvable(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
-            return ObjectImpl.validateType(transaction, kobject.getRepository(), kobject, KomodoLexicon.ViewDefinition.NODE_TYPE);
+            return ObjectImpl.validateType(transaction, kobject, KomodoLexicon.ViewDefinition.NODE_TYPE);
         }
 
         /**
@@ -95,7 +96,7 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
                 return (ViewDefinition)kobject;
             }
 
-            return new ViewDefinitionImpl(transaction, kobject.getRepository(), kobject.getAbsolutePath());
+            return new ViewDefinitionImpl(transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath());
         }
 
     };

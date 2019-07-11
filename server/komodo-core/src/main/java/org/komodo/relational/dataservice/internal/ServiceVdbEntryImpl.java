@@ -19,6 +19,7 @@ package org.komodo.relational.dataservice.internal;
 
 import java.util.Properties;
 
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.metadata.internal.DocumentType;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
@@ -32,9 +33,7 @@ import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.PropertyValueType;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.utils.StringUtils;
 import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 

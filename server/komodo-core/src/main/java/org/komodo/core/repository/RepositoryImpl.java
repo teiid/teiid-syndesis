@@ -29,18 +29,22 @@ import org.komodo.core.KEngineImpl;
 import org.komodo.core.KomodoLexicon;
 import org.komodo.core.KomodoLexicon.Environment;
 import org.komodo.core.KomodoLexicon.Komodo;
+import org.komodo.core.internal.repository.KObjectFactory;
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.spi.KClient;
 import org.komodo.spi.KEvent;
 import org.komodo.spi.KException;
+import org.komodo.spi.KObserver;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.repository.KObjectFactory;
+import org.komodo.spi.constants.SystemConstants;
 import org.komodo.spi.repository.KPropertyFactory;
 import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.repository.Repository;
+import org.komodo.spi.repository.OperationType;
 import org.komodo.spi.repository.RepositoryClientEvent;
-import org.komodo.spi.repository.RepositoryObserver;
+import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWorkDelegate;
+import org.komodo.spi.repository.UnitOfWorkListener;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 
@@ -48,11 +52,15 @@ import org.komodo.utils.KLog;
  * A {@link Repository} implementation.
  */
 public abstract class RepositoryImpl implements Repository, StringConstants {
+	
+    public static RepositoryImpl getRepository(UnitOfWork unitOfWork) {
+    	return ((UnitOfWorkImpl)unitOfWork).repository;
+    }
 
     /**
      * A unit of work analogous to a transaction.
      */
-    public static class UnitOfWorkImpl implements UnitOfWork {
+    public class UnitOfWorkImpl implements UnitOfWork {
 
         protected final UnitOfWorkListener callback;
         protected KException error;
@@ -62,6 +70,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
         protected UnitOfWorkDelegate uowDelegate;
         protected State state = State.NOT_STARTED;
         protected String repositoryUser;
+        RepositoryImpl repository = RepositoryImpl.this;
 
         /**
          * @param userName
@@ -101,7 +110,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.spi.repository.Repository.UnitOfWork#commit()
+         * @see org.komodo.spi.repository.UnitOfWork#commit()
          */
         @Override
         public void commit() {
@@ -154,7 +163,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.spi.repository.Repository.UnitOfWork#getCallback()
+         * @see org.komodo.spi.repository.UnitOfWork#getCallback()
          */
         @Override
         public UnitOfWorkListener getCallback() {
@@ -164,7 +173,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.spi.repository.Repository.UnitOfWork#getError()
+         * @see org.komodo.spi.repository.UnitOfWork#getError()
          */
         @Override
         public KException getError() {
@@ -174,7 +183,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.spi.repository.Repository.UnitOfWork#getUserName()
+         * @see org.komodo.spi.repository.UnitOfWork#getUserName()
          */
         @Override
         public String getUserName() {
@@ -189,7 +198,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.spi.repository.Repository.UnitOfWork#getName()
+         * @see org.komodo.spi.repository.UnitOfWork#getName()
          */
         @Override
         public String getName() {
@@ -206,7 +215,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.spi.repository.Repository.UnitOfWork#getState()
+         * @see org.komodo.spi.repository.UnitOfWork#getState()
          */
         @Override
         public State getState() {
@@ -216,7 +225,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.spi.repository.Repository.UnitOfWork#hasChanges()
+         * @see org.komodo.spi.repository.UnitOfWork#hasChanges()
          */
         @Override
         public boolean hasChanges() throws KException {
@@ -234,7 +243,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.spi.repository.Repository.UnitOfWork#isRollbackOnly()
+         * @see org.komodo.spi.repository.UnitOfWork#isRollbackOnly()
          */
         @Override
         public boolean isRollbackOnly() {
@@ -244,7 +253,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.spi.repository.Repository.UnitOfWork#rollback()
+         * @see org.komodo.spi.repository.UnitOfWork#rollback()
          */
         @Override
         public void rollback() {
@@ -284,7 +293,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
                     this.uowDelegate = null;
                 }
             }
-        }
+        }        
     }
 
     protected static final KLog LOGGER = KLog.getLogger();
@@ -330,7 +339,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     /**
      * @param transaction
      *       the transaction (cannot be <code>null</code> or have a state that is not
-    *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+    *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
     *
      * @return true if the given transaction is a system transaction
      */
@@ -341,7 +350,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
         //
         // Transactions should always have a user name but just in case one sneaked through
         //
-        return SYSTEM_USER.equals(transaction.getRepositoryUser());
+        return SystemConstants.SYSTEM_USER.equals(transaction.getRepositoryUser());
     }
 
     /**
@@ -350,7 +359,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
      *
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      *
      * @return the workspace path for the user who owns the transaction
      */
@@ -371,7 +380,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
      *
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      *
      * @return the profile path for the user who owns the transaction
      */
@@ -434,8 +443,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
 
     private final Set< KClient > clients = new HashSet< >();
     private final Id id;
-    private final Set< RepositoryObserver > observers = new HashSet< >();
-    private final Type type;
+    private final Set< KObserver > observers = new HashSet< >();
     protected KEngineImpl kEngine;
 
     /**
@@ -444,12 +452,9 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
      * @param id
      *        the repository identifier (cannot be <code>null</code>)
      */
-    public RepositoryImpl( final Type type,
-                           final Id id) {
-        ArgCheck.isNotNull(type, "type"); //$NON-NLS-1$
+    public RepositoryImpl( final Id id) {
         ArgCheck.isNotNull(id, "id"); //$NON-NLS-1$
 
-        this.type = type;
         this.id = id;
     }
 
@@ -582,7 +587,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     @Override
     public void provision(UnitOfWork transaction, KomodoObject object, OperationType operationType) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.UnitOfWork.State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotNull(object, "object not found");
 
         String nodePath = object.getAbsolutePath();
@@ -592,7 +597,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Repository#add(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
+     * @see org.komodo.core.internal.repository.Repository#add(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
      *      java.lang.String, java.lang.String)
      */
     @Override
@@ -601,7 +606,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
                              final String name,
                              final String primaryType ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.UnitOfWork.State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty(name, "name"); //$NON-NLS-1$
 
         if (LOGGER.isDebugEnabled()) {
@@ -641,7 +646,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Repository#addClient(org.komodo.spi.KClient)
+     * @see org.komodo.core.internal.repository.Repository#addClient(org.komodo.spi.KClient)
      */
     @Override
     public void addClient( final KClient client ) {
@@ -653,10 +658,10 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Repository#addObserver(org.komodo.spi.repository.RepositoryObserver)
+     * @see org.komodo.core.internal.repository.Repository#addObserver(org.komodo.spi.repository.RepositoryObserver)
      */
     @Override
-    public void addObserver( final RepositoryObserver observer ) {
+    public void addObserver( final KObserver observer ) {
         ArgCheck.isNotNull(observer, "observer"); //$NON-NLS-1$
         this.observers.add(observer);
     }
@@ -677,13 +682,13 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Repository#query(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.core.internal.repository.Repository#query(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
     public List< KomodoObject > query( final UnitOfWork transaction,
                                        final String queryStatement ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
+        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.UnitOfWork.State.NOT_STARTED ),
         "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty(queryStatement, "Query statement cannot be empty"); //$NON-NLS-1$
 
@@ -710,13 +715,13 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Repository#getFromWorkspace(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.core.internal.repository.Repository#getFromWorkspace(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
     public KomodoObject getFromWorkspace( final UnitOfWork transaction,
                                           final String path ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
+        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.UnitOfWork.State.NOT_STARTED ),
         "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         if (LOGGER.isDebugEnabled()) {
@@ -796,12 +801,6 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
         return nodePath;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.spi.repository.Repository#getId()
-     */
-    @Override
     public Id getId() {
         return this.id;
     }
@@ -809,23 +808,13 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Repository#getType()
-     */
-    @Override
-    public Type getType() {
-        return this.type;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.spi.repository.Repository#getUsingId(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.core.internal.repository.Repository#getUsingId(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
     public KomodoObject getUsingId( final UnitOfWork transaction,
                                     final String jcrUuid ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.UnitOfWork.State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty(jcrUuid, "jcrUuid"); //$NON-NLS-1$
 
         if (LOGGER.isDebugEnabled()) {
@@ -853,7 +842,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Repository#notify(org.komodo.spi.repository.RepositoryClientEvent)
+     * @see org.komodo.core.internal.repository.Repository#notify(org.komodo.spi.repository.RepositoryClientEvent)
      */
     @Override
     public void notify( final RepositoryClientEvent event ) {
@@ -861,9 +850,9 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     }
 
     protected void notifyObservers(KEvent<?> event) {
-        final Set<RepositoryObserver> copy = new HashSet<>(this.observers);
+        final Set<KObserver> copy = new HashSet<>(this.observers);
 
-        for (final RepositoryObserver observer : copy) {
+        for (final KObserver observer : copy) {
             try {
                 // Ensure all observers are informed even if one throws an exception
                 observer.eventOccurred(event);
@@ -874,9 +863,9 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     }
 
     protected void errorObservers(Throwable e) {
-        final Set<RepositoryObserver> copy = new HashSet<>(this.observers);
+        final Set<KObserver> copy = new HashSet<>(this.observers);
 
-        for (final RepositoryObserver observer : copy) {
+        for (final KObserver observer : copy) {
             try {
                 // Ensure all observers are informed even if one throws an exception
                 observer.errorOccurred(e);
@@ -889,13 +878,13 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Repository#remove(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
+     * @see org.komodo.core.internal.repository.Repository#remove(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
      */
     @Override
     public void remove( final UnitOfWork transaction,
                         final String... paths ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
+        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.UnitOfWork.State.NOT_STARTED ),
         "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( paths, "paths" ); //$NON-NLS-1$
 
@@ -947,7 +936,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Repository#removeClient(org.komodo.spi.KClient)
+     * @see org.komodo.core.internal.repository.Repository#removeClient(org.komodo.spi.KClient)
      */
     @Override
     public void removeClient( final KClient client ) {
@@ -958,10 +947,10 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Repository#removeObserver(org.komodo.spi.repository.RepositoryObserver)
+     * @see org.komodo.core.internal.repository.Repository#removeObserver(org.komodo.spi.repository.RepositoryObserver)
      */
     @Override
-    public void removeObserver( final RepositoryObserver observer ) {
+    public void removeObserver( final KObserver observer ) {
         ArgCheck.isNotNull(observer, "observer"); //$NON-NLS-1$
         this.observers.remove(observer);
     }
@@ -969,13 +958,13 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Repository#unpublish(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
+     * @see org.komodo.core.internal.repository.Repository#unpublish(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
      */
     @Override
     public void unpublish( final UnitOfWork transaction,
                            final String... artifactPaths ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
+        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.UnitOfWork.State.NOT_STARTED ),
         "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty(artifactPaths, "artifactPaths"); //$NON-NLS-1$
 
@@ -1023,12 +1012,12 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Repository#komodoEnvironment(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.internal.repository.Repository#komodoEnvironment(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public KomodoObject komodoEnvironment( final UnitOfWork transaction ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
+        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.UnitOfWork.State.NOT_STARTED ),
         "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         komodoRoot( transaction );
         return create( transaction, ENV_ROOT, KomodoLexicon.Environment.NODE_TYPE );
@@ -1056,7 +1045,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     @Override
     public KomodoObject komodoProfiles(UnitOfWork transaction) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
+        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.UnitOfWork.State.NOT_STARTED ),
         "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         komodoEnvironment(transaction);
@@ -1066,7 +1055,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     @Override
     public KomodoObject komodoValidationRoot(final UnitOfWork transaction) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
+        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.UnitOfWork.State.NOT_STARTED ),
         "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         komodoEnvironment(transaction);

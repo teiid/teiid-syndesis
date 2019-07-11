@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.komodo.core.KEngineImpl;
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.ExistingNodeOptions;
@@ -46,9 +47,8 @@ import org.komodo.relational.workspace.WorkspaceManagerImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.SynchronousCallback;
+import org.komodo.spi.repository.UnitOfWork;
 
 public final class ServiceTestUtilities implements StringConstants {
 

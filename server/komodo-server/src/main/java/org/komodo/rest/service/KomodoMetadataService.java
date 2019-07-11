@@ -76,9 +76,8 @@ import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -88,7 +87,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-
 /**
  * A Komodo REST service for obtaining information from a metadata instance.
  */
@@ -529,8 +527,7 @@ public class KomodoMetadataService extends KomodoService {
     }
 
     private String extractServiceVdbName(UnitOfWork uow, WorkspaceManager mgr, String dsPath) throws KException {
-    	Repository repo = this.kengine.getDefaultRepository();
-        KomodoObject dsObject = repo.getFromWorkspace(uow, dsPath);
+        KomodoObject dsObject = this.kengine.getFromWorkspace(uow, dsPath);
         if (dsObject == null)
             return null; // Not a path in the workspace
 
@@ -1366,9 +1363,8 @@ public class KomodoMetadataService extends KomodoService {
         String vdbName = getWorkspaceSourceVdbName( sourceName );
         
         // VDB is created in the repository.  If it already exists, delete it
-        Repository repo = this.kengine.getDefaultRepository();
         final WorkspaceManager mgr = this.kengine.getWorkspaceManager(uow);
-        String repoPath = repo.komodoWorkspace( uow ).getAbsolutePath();
+        String repoPath = mgr.getKomodoWorkspaceAbsolutePath(uow);
         
         final Vdb existingVdb = findVdb( uow, vdbName );
 

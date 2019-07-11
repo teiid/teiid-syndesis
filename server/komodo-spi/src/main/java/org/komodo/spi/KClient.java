@@ -18,12 +18,11 @@
 package org.komodo.spi;
 
 import org.komodo.metadata.MetadataObserver;
-import org.komodo.spi.repository.RepositoryObserver;
 
 /**
  *
  */
-public interface KClient extends RepositoryObserver, MetadataObserver {
+public interface KClient extends MetadataObserver {
 
     /**
      * The client state.

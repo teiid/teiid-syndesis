@@ -21,14 +21,15 @@ import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.core.LexiconConstants.JcrLexicon;
+import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.RelationalObject;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.PropertyDescriptor;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public final class RelationalObjectImplTest extends RelationalModelTest {
@@ -48,7 +49,7 @@ public final class RelationalObjectImplTest extends RelationalModelTest {
     @Before
     public void init() throws Exception {
         final KomodoObject model = createModel();
-        this.robject = new RelationalTestObject( getTransaction(), model.getRepository(), model.getAbsolutePath() );
+        this.robject = new RelationalTestObject( getTransaction(), RepositoryImpl.getRepository(getTransaction()), model.getAbsolutePath() );
         commit();
     }
 

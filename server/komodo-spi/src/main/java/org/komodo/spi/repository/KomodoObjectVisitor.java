@@ -17,9 +17,6 @@
  */
 package org.komodo.spi.repository;
 
-import org.komodo.spi.repository.Repository.OperationType;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-
 /**
  *
  */
@@ -36,7 +33,7 @@ public interface KomodoObjectVisitor {
      *
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @param object the object to be visited
      * @return an object according to implementation
      * @throws Exception if error in visiting occurs

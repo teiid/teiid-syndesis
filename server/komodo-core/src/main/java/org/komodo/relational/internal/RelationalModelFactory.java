@@ -20,6 +20,8 @@ package org.komodo.relational.internal;
 import java.util.Map;
 
 import org.komodo.core.KomodoLexicon;
+import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.core.repository.RepositoryTools;
 import org.komodo.relational.RelationalObject;
 import org.komodo.relational.dataservice.Dataservice;
@@ -66,9 +68,8 @@ import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.relational.vdb.internal.VdbImportImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
 import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
@@ -428,7 +429,7 @@ public final class RelationalModelFactory {
                                                                              VdbLexicon.Vdb.TRANSLATORS,
                                                                              VdbLexicon.Vdb.TRANSLATORS );
             final KomodoObject kobject = grouping.addChild( transaction, translatorName, VdbLexicon.Translator.TRANSLATOR );
-            final Translator result = new TranslatorImpl( transaction, grouping.getRepository(), kobject.getAbsolutePath() );
+            final Translator result = new TranslatorImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
             result.setType( transaction, translatorType );
             return result;
         } catch ( final Exception e ) {

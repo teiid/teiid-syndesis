@@ -23,8 +23,7 @@ import org.komodo.relational.RelationalObject;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * A model of a dataservice instance
@@ -49,7 +48,7 @@ public interface Dataservice extends RelationalObject {
     /**
      * @param uow
      *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @param serviceVdb
      *        the service VDB being set (can be <code>null</code> when deleting current value)
      * @return the service VDB being replaced or <code>null</code> if one is not being replaced
@@ -62,7 +61,7 @@ public interface Dataservice extends RelationalObject {
     /**
      * @param uow
      *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @return the service VDB (may be <code>null</code> if not defined)
      * @throws KException
      *         if an error occurs
@@ -72,7 +71,7 @@ public interface Dataservice extends RelationalObject {
     /**
      * @param uow
      *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @return the service VDB entry (may be <code>null</code> if not defined)
      * @throws KException
      *         if an error occurs
@@ -82,7 +81,7 @@ public interface Dataservice extends RelationalObject {
     /**
      * @param uow
      *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @return the names of the ViewDefinitions for the dataservice (may be empty if not found)
      * @throws KException
      *         if an error occurs
@@ -92,7 +91,7 @@ public interface Dataservice extends RelationalObject {
     /**
      * @param uow
      *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @return the name of the dataservice view model (may be <code>null</code> if not found)
      * @throws KException
      *         if an error occurs
@@ -143,7 +142,7 @@ public interface Dataservice extends RelationalObject {
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @return the value of the <code>description</code> property (can be empty)
      * @throws KException
      *         if an error occurs
@@ -153,7 +152,7 @@ public interface Dataservice extends RelationalObject {
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @return the last time the manifest was modified (can be <code>null</code>)
      * @throws KException
      *         if an error occurs
@@ -163,7 +162,7 @@ public interface Dataservice extends RelationalObject {
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @return the name of the user who last modified the data service (can be <code>null</code> or empty)
      * @throws KException
      *         if an error occurs

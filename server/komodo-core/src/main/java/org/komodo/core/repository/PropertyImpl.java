@@ -19,15 +19,16 @@ package org.komodo.core.repository;
 
 import java.io.InputStream;
 import java.util.Calendar;
+
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KPropertyFactory;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.PropertyDescriptor;
 import org.komodo.spi.repository.PropertyValueType;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 
 /**
@@ -372,7 +373,6 @@ public class PropertyImpl implements Property {
      *
      * @see org.komodo.spi.repository.KNode#getRepository()
      */
-    @Override
     public Repository getRepository() {
         return this.repository;
     }

@@ -18,15 +18,16 @@
 package org.komodo.core.repository;
 
 import java.util.Collection;
+
+import org.komodo.core.internal.repository.KObjectFactory;
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.Descriptor;
-import org.komodo.spi.repository.KObjectFactory;
 import org.komodo.spi.repository.KPropertyFactory;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.PropertyDescriptor;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 
 /**
@@ -52,7 +53,6 @@ public class DescriptorImpl implements Descriptor {
         this.name = descriptorName;
     }
 
-    @Override
     public KObjectFactory getNodeFactory() {
         return this.repository.getObjectFactory();
     }

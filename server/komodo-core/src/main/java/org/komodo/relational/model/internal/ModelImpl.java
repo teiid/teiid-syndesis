@@ -21,7 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.ObjectImpl;
+import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.core.visitor.DdlNodeVisitor;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.relational.Messages;
@@ -40,9 +42,8 @@ import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyValueType;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
 import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.CreateTable;
@@ -88,7 +89,7 @@ public final class ModelImpl extends RelationalObjectImpl implements Model {
         @Override
         public boolean resolvable( final UnitOfWork transaction,
                                    final KomodoObject kobject ) throws KException {
-            return ObjectImpl.validateType( transaction, kobject.getRepository(), kobject, VdbLexicon.Vdb.DECLARATIVE_MODEL );
+            return ObjectImpl.validateType( transaction, kobject, VdbLexicon.Vdb.DECLARATIVE_MODEL );
         }
 
         /**
@@ -104,7 +105,7 @@ public final class ModelImpl extends RelationalObjectImpl implements Model {
                 return ( Model )kobject;
             }
 
-            return new ModelImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
+            return new ModelImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
         }
 
     };

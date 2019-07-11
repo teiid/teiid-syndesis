@@ -17,10 +17,8 @@
  */
 package org.komodo.spi;
 
-import org.komodo.spi.repository.Repository;
-
 /**
- * An observer for listening to events from an implementation of {@link Repository}
+ * An observer for listening to {@link KEvent}s
  */
 public interface KObserver {
 

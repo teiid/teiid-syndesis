@@ -20,8 +20,6 @@ package org.komodo.spi.repository;
 import java.io.InputStream;
 import java.util.Calendar;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
 
 /**
  * Represents a {@link KomodoObject Komodo object} property.

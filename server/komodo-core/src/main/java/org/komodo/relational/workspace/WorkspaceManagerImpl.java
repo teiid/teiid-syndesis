@@ -20,6 +20,8 @@ package org.komodo.relational.workspace;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.internal.repository.Repository.State;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.Messages;
@@ -39,18 +41,17 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.spi.KEvent;
 import org.komodo.spi.KException;
+import org.komodo.spi.KObserver;
 import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.constants.SystemConstants;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.State;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.RepositoryObserver;
+import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 import org.komodo.utils.KeyInValueMap;
-import org.komodo.utils.StringUtils;
 import org.komodo.utils.KeyInValueMap.KeyFromValueAdapter;
+import org.komodo.utils.StringUtils;
 import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
@@ -162,8 +163,8 @@ public class WorkspaceManagerImpl extends ObjectImpl implements RelationalObject
         boolean txNotProvided = transaction == null;
 
         if (txNotProvided) {
-			transaction = repository.createTransaction(Repository.SYSTEM_USER, "createWorkspaceManager", false, null, //$NON-NLS-1$
-					Repository.SYSTEM_USER);
+			transaction = repository.createTransaction(SystemConstants.SYSTEM_USER, "createWorkspaceManager", false, null, //$NON-NLS-1$
+					SystemConstants.SYSTEM_USER);
         }
 
         WorkspaceManagerImpl instance = instances.get(new CacheKey(repository.getId(), transaction.getRepositoryUser()));
@@ -230,7 +231,7 @@ public class WorkspaceManagerImpl extends ObjectImpl implements RelationalObject
         super( repository, RepositoryImpl.komodoWorkspacePath(uow), 0 );
         this.owner = uow.getRepositoryUser();
 
-        repository.addObserver(new RepositoryObserver() {
+        repository.addObserver(new KObserver() {
 
             @Override
             public void eventOccurred(KEvent<?> event) {
@@ -250,7 +251,7 @@ public class WorkspaceManagerImpl extends ObjectImpl implements RelationalObject
     /**
      * @param uow
      *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @param parent
      *        the parent of the dataservice object being created (can be <code>null</code>)
      * @param serviceName
@@ -271,7 +272,7 @@ public class WorkspaceManagerImpl extends ObjectImpl implements RelationalObject
     /**
      * @param uow
      *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @param parent
      *        the parent of the model object being created (can be <code>null</code> if VDB should be created at the workspace
      *        root)
@@ -296,7 +297,7 @@ public class WorkspaceManagerImpl extends ObjectImpl implements RelationalObject
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @param kobjects
      *        the object(s) being deleted (cannot be <code>null</code>, empty, or have a <code>null</code> element)
      * @throws KException
@@ -306,7 +307,7 @@ public class WorkspaceManagerImpl extends ObjectImpl implements RelationalObject
     public void delete( final UnitOfWork transaction,
                         final KomodoObject... kobjects ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
+        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.UnitOfWork.State.NOT_STARTED ),
                          "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( kobjects, "kobjects" ); //$NON-NLS-1$
 
@@ -320,7 +321,7 @@ public class WorkspaceManagerImpl extends ObjectImpl implements RelationalObject
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @param type
      *        the lexicon node type name of objects being found (cannot be empty)
      * @param parentPath
@@ -340,7 +341,7 @@ public class WorkspaceManagerImpl extends ObjectImpl implements RelationalObject
                                 final String namePattern,
                                 boolean includeSubTypes) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
+        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.UnitOfWork.State.NOT_STARTED ),
                          "transaction state must be NOT_STARTED and was " + transaction.getState() ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( type, "type" ); //$NON-NLS-1$
 
@@ -389,7 +390,7 @@ public class WorkspaceManagerImpl extends ObjectImpl implements RelationalObject
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @param type
      *        the lexicon node type name of objects being found
      * @return the paths of all the objects in the workspace with the specified type (never <code>null</code> but can be empty)
@@ -404,7 +405,7 @@ public class WorkspaceManagerImpl extends ObjectImpl implements RelationalObject
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @param type
      *        the lexicon node type name of objects being found
      * @param includeSubTypes
@@ -422,7 +423,7 @@ public class WorkspaceManagerImpl extends ObjectImpl implements RelationalObject
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @param searchPattern pattern to match.  If blank, will match all. 
      * @return {@link Dataservice}s in the workspace
      * @throws KException
@@ -430,7 +431,7 @@ public class WorkspaceManagerImpl extends ObjectImpl implements RelationalObject
      */
     public Dataservice[] findDataservices( UnitOfWork transaction, String searchPattern ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
+        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.UnitOfWork.State.NOT_STARTED ),
                          "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         final String[] paths = findByType(transaction, DataVirtLexicon.DataService.NODE_TYPE, null, searchPattern, false);
@@ -455,7 +456,7 @@ public class WorkspaceManagerImpl extends ObjectImpl implements RelationalObject
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @return all {@link Vdb}s in the workspace (never <code>null</code> but can be empty)
      * @throws KException
      *         if an error occurs
@@ -467,7 +468,7 @@ public class WorkspaceManagerImpl extends ObjectImpl implements RelationalObject
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @param searchPattern regex search pattern, if blank all are returned
      * @return {@link Vdb}s in the workspace (never <code>null</code> but can be empty)
      * @throws KException
@@ -475,7 +476,7 @@ public class WorkspaceManagerImpl extends ObjectImpl implements RelationalObject
      */
     public Vdb[] findVdbs( final UnitOfWork transaction, String searchPattern ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
+        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.UnitOfWork.State.NOT_STARTED ),
                          "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         final String[] paths = findByType(transaction, VdbLexicon.Vdb.VIRTUAL_DATABASE, null, searchPattern, false);
@@ -531,7 +532,7 @@ public class WorkspaceManagerImpl extends ObjectImpl implements RelationalObject
      *        the desired outcome class
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @param object
      *        the object being resolved
      * @param resolvedClass
@@ -544,7 +545,7 @@ public class WorkspaceManagerImpl extends ObjectImpl implements RelationalObject
                                                  final Object object,
                                                  final Class<T> resolvedClass ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
+        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.UnitOfWork.State.NOT_STARTED ),
                          "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         T kobject = adapterFactory.adapt(transaction, object, resolvedClass);
@@ -553,10 +554,11 @@ public class WorkspaceManagerImpl extends ObjectImpl implements RelationalObject
 
     private void validateWorkspaceMember( final UnitOfWork uow,
                                           final KomodoObject kobject ) throws KException {
-        if (!getRepository().equals(kobject.getRepository())) {
+        RepositoryImpl repository = RepositoryImpl.getRepository(uow);
+		if (!getRepository().equals(repository)) {
             throw new KException(Messages.getString(Relational.OBJECT_BEING_DELETED_HAS_WRONG_REPOSITORY,
                                                     kobject.getAbsolutePath(),
-                                                    kobject.getRepository().getId().getUrl(),
+                                                    repository.getId().getUrl(),
                                                     getRepository().getId().getUrl()));
         }
 
@@ -617,6 +619,11 @@ public class WorkspaceManagerImpl extends ObjectImpl implements RelationalObject
 	@Override
 	public void refreshServiceVdb(UnitOfWork uow, Vdb serviceVdb, ViewEditorState[] editorStates) throws KException {
 		new ServiceVdbGenerator(this).refreshServiceVdb(uow, serviceVdb, editorStates);
+	}
+	
+	@Override
+	public String getKomodoWorkspaceAbsolutePath(UnitOfWork uow) throws KException {
+		return getRepository().komodoWorkspace(uow).getAbsolutePath();
 	}
 
 }

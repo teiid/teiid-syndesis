@@ -25,13 +25,15 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.komodo.core.internal.repository.JcrEngine;
+import org.komodo.core.internal.repository.KObjectFactory;
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.spi.KEvent;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KObjectFactory;
 import org.komodo.spi.repository.KPropertyFactory;
-import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.RepositoryClientEvent;
+import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWorkDelegate;
+import org.komodo.spi.repository.UnitOfWorkListener;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
@@ -137,7 +139,7 @@ public class LocalRepository extends RepositoryImpl {
      */
     public LocalRepository( final URL configPathUrl,
                             final String workspaceName) {
-        super(Type.LOCAL, new LocalRepositoryId(configPathUrl, workspaceName));
+        super(new LocalRepositoryId(configPathUrl, workspaceName));
     }
 
     /**
@@ -146,7 +148,7 @@ public class LocalRepository extends RepositoryImpl {
      * @param repositoryId repository configuration of the instance
      */
     public LocalRepository(LocalRepositoryId repositoryId) {
-        super(Type.LOCAL, repositoryId);
+        super(repositoryId);
     }
 
     /**
@@ -265,7 +267,7 @@ public class LocalRepository extends RepositoryImpl {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Repository#createTransaction(java.lang.String, boolean,
+     * @see org.komodo.core.internal.repository.Repository#createTransaction(java.lang.String, boolean,
      *      org.komodo.spi.repository.Repository.UnitOfWorkListener)
      */
     @Override

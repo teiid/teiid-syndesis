@@ -18,7 +18,9 @@
 package org.komodo.relational.profile.internal;
 
 import org.komodo.core.KomodoLexicon;
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.ObjectImpl;
+import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.internal.TypeResolver;
 import org.komodo.relational.profile.SqlComposition;
@@ -27,9 +29,8 @@ import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyValueType;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 
 /**
@@ -70,7 +71,7 @@ public class SqlCompositionImpl  extends RelationalObjectImpl implements SqlComp
          */
         @Override
         public boolean resolvable(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
-            return ObjectImpl.validateType(transaction, kobject.getRepository(), kobject, KomodoLexicon.SqlComposition.NODE_TYPE);
+            return ObjectImpl.validateType(transaction, kobject, KomodoLexicon.SqlComposition.NODE_TYPE);
         }
 
         /**
@@ -85,7 +86,7 @@ public class SqlCompositionImpl  extends RelationalObjectImpl implements SqlComp
                 return (SqlComposition)kobject;
             }
 
-            return new SqlCompositionImpl(transaction, kobject.getRepository(), kobject.getAbsolutePath());
+            return new SqlCompositionImpl(transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath());
         }
 
     };

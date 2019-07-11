@@ -18,10 +18,11 @@
 package org.komodo.core.repository;
 
 import java.util.List;
+
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork;
 
 public interface KQueryManager {
 

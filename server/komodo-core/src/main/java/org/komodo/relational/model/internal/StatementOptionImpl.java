@@ -22,7 +22,9 @@ import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.ObjectImpl;
+import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.Messages;
 import org.komodo.relational.internal.RelationalChildRestrictedObject;
 import org.komodo.relational.internal.TypeResolver;
@@ -33,9 +35,7 @@ import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyDescriptor;
 import org.komodo.spi.repository.PropertyValueType;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
 import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
@@ -80,7 +80,6 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
         public boolean resolvable( final UnitOfWork transaction,
                                    final KomodoObject kobject ) throws KException {
             return ObjectImpl.validateType( transaction,
-                                            kobject.getRepository(),
                                             kobject,
                                             StandardDdlLexicon.TYPE_STATEMENT_OPTION );
         }
@@ -98,7 +97,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
                 return ( StatementOption )kobject;
             }
 
-            return new StatementOptionImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
+            return new StatementOptionImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
         }
 
     };

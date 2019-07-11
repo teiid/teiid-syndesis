@@ -21,7 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.komodo.core.KomodoLexicon;
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.ObjectImpl;
+import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.internal.RelationalModelFactory;
@@ -32,9 +34,8 @@ import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 
 /**
@@ -76,7 +77,7 @@ public class ProfileImpl extends RelationalObjectImpl implements Profile {
         @Override
         public boolean resolvable( final UnitOfWork transaction,
                                    final KomodoObject kobject ) throws KException {
-            return ObjectImpl.validateType( transaction, kobject.getRepository(), kobject, KomodoLexicon.Profile.NODE_TYPE );
+            return ObjectImpl.validateType( transaction, kobject, KomodoLexicon.Profile.NODE_TYPE );
         }
 
         /**
@@ -92,7 +93,7 @@ public class ProfileImpl extends RelationalObjectImpl implements Profile {
                 return ( Profile )kobject;
             }
 
-            return new ProfileImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
+            return new ProfileImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
         }
     };
 

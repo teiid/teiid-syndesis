@@ -25,22 +25,22 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.komodo.core.internal.repository.KObjectFactory;
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.KomodoTypeRegistry.TypeIdentifier;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.repository.Descriptor;
-import org.komodo.spi.repository.KObjectFactory;
 import org.komodo.spi.repository.KPropertyFactory;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoObjectVisitor;
 import org.komodo.spi.repository.KomodoType;
+import org.komodo.spi.repository.OperationType;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.PropertyDescriptor;
 import org.komodo.spi.repository.PropertyValueType;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.OperationType;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
@@ -128,8 +128,6 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @param repository
-     *        the repository where the object is located (cannot be <code>null</code>)
      * @param kobject
      *        the object whose type is being validated (cannot be empty)
      * @param types
@@ -140,12 +138,10 @@ public class ObjectImpl implements KomodoObject, StringConstants {
      *         if an error occurs or if object does not have all the specified types
      */
     public static boolean validateType( final UnitOfWork transaction,
-                                        final Repository repository,
                                         final KomodoObject kobject,
                                         final String... types ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( repository, "repository" ); //$NON-NLS-1$
         ArgCheck.isNotNull( kobject, "kobject" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( types, "types" ); //$NON-NLS-1$
 
@@ -190,7 +186,6 @@ public class ObjectImpl implements KomodoObject, StringConstants {
         getRepository().provision(transaction, this, operationType);
     }
 
-    @Override
     public KObjectFactory getObjectFactory() {
         return this.repository.getObjectFactory();
     }
@@ -805,7 +800,6 @@ public class ObjectImpl implements KomodoObject, StringConstants {
      *
      * @see org.komodo.spi.repository.KNode#getRepository()
      */
-    @Override
     public Repository getRepository() {
         return this.repository;
     }

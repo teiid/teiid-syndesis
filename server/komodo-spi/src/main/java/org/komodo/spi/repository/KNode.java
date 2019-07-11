@@ -18,7 +18,6 @@
 package org.komodo.spi.repository;
 
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.Repository.UnitOfWork;
 
 /**
  * A Komodo object.
@@ -33,7 +32,7 @@ public interface KNode {
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED}
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED}
      * @return the last segment of the absolute path (never empty)
      * @throws KException
      *         if an error occurs
@@ -44,18 +43,11 @@ public interface KNode {
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED}
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED}
      * @return the parent {@link KomodoObject Komodo object} (can be <code>null</code> if at the Komodo root)
      * @throws KException
      *         if an error occurs
      */
     KomodoObject getParent( final UnitOfWork transaction ) throws KException;
-
-    /**
-     * @return the repository where this object is found (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    Repository getRepository() throws KException;
 
 }

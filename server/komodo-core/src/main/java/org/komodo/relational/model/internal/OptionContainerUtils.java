@@ -21,8 +21,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import org.komodo.core.repository.DescriptorImpl;
 import org.komodo.core.repository.ObjectImpl;
+import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.internal.RelationalModelFactory;
@@ -30,16 +32,16 @@ import org.komodo.relational.model.OptionContainer;
 import org.komodo.relational.model.StatementOption;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
-import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.PropertyDescriptor;
 import org.komodo.spi.repository.PropertyValueType;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
+import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
 
 /**
  * Utilities for retrieving and updating standard and custom statement options.
@@ -158,7 +160,7 @@ public final class OptionContainerUtils {
         PrimaryTypeDescriptor( final UnitOfWork transaction,
                                final OptionContainer optionContainer,
                                final Descriptor descriptor ) throws KException {
-            super( optionContainer.getRepository(), optionContainer.getName( transaction ) );
+            super( RepositoryImpl.getRepository(transaction), optionContainer.getName( transaction ) );
             ArgCheck.isNotNull( descriptor, "descriptor" ); //$NON-NLS-1$
 
             this.container = optionContainer;
@@ -367,12 +369,12 @@ public final class OptionContainerUtils {
         ArgCheck.isNotNull( container, "container" ); //$NON-NLS-1$
 
         // must create a generic KomodoObject here so that we can get to the getChildrenOfType that does not filter result
-        final KomodoObject same = new ObjectImpl( container.getRepository(), container.getAbsolutePath(), container.getIndex() );
+        final KomodoObject same = new ObjectImpl( RepositoryImpl.getRepository(transaction), container.getAbsolutePath(), container.getIndex() );
         final List< StatementOption > result = new ArrayList< StatementOption >();
 
         for ( final KomodoObject kobject : same.getChildrenOfType( transaction, StandardDdlLexicon.TYPE_STATEMENT_OPTION ) ) {
             final StatementOption option = new StatementOptionImpl( transaction,
-                                                                    container.getRepository(),
+            		RepositoryImpl.getRepository(transaction),
                                                                     kobject.getAbsolutePath() );
             result.add( option );
         }
@@ -652,7 +654,7 @@ public final class OptionContainerUtils {
 
         if ( result == null ) {
             result = RelationalModelFactory.createStatementOption( transaction,
-                                                                   container.getRepository(),
+            		RepositoryImpl.getRepository(transaction),
                                                                    container,
                                                                    optionName,
                                                                    optionValue );
