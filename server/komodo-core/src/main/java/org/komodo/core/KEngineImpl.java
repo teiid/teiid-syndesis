@@ -27,7 +27,10 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.komodo.core.repository.RepositoryImpl;
+import org.komodo.relational.WorkspaceManager;
+import org.komodo.relational.workspace.WorkspaceManagerImpl;
 import org.komodo.spi.KClient;
+import org.komodo.spi.KEngine;
 import org.komodo.spi.KErrorHandler;
 import org.komodo.spi.KEvent;
 import org.komodo.spi.KEvent.Type;
@@ -38,6 +41,7 @@ import org.komodo.spi.constants.SystemConstants;
 import org.komodo.spi.metadata.MetadataClientEvent;
 import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.Repository;
+import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.RepositoryClientEvent;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
@@ -49,9 +53,9 @@ import org.teiid.query.sql.LanguageObject;
 /**
  * The Komodo engine. It is responsible for persisting and retriever user session data and Teiid artifacts.
  */
-public final class KEngine implements KClient, StringConstants {
+public final class KEngineImpl implements KEngine, KClient, StringConstants {
 
-    private static final String PREFIX = KEngine.class.getSimpleName() + DOT;
+    private static final String PREFIX = KEngineImpl.class.getSimpleName() + DOT;
     
     /**
      * Check the engine data directory property has a legitimate value
@@ -68,15 +72,15 @@ public final class KEngine implements KClient, StringConstants {
     /**
      * @return engine started event
      */
-    private static KEvent<KEngine> engineStartedEvent(KEngine engine) {
-        return new KEvent<KEngine>(engine, Type.ENGINE_STARTED);
+    private static KEvent<KEngineImpl> engineStartedEvent(KEngineImpl engine) {
+        return new KEvent<KEngineImpl>(engine, Type.ENGINE_STARTED);
     }
 
     /**
      * @return engine shutdown event
      */
-    private static KEvent<KEngine> engineShutdownEvent(KEngine engine) {
-        return new KEvent<KEngine>(engine, Type.ENGINE_SHUTDOWN);
+    private static KEvent<KEngineImpl> engineShutdownEvent(KEngineImpl engine) {
+        return new KEvent<KEngineImpl>(engine, Type.ENGINE_SHUTDOWN);
     }
 
     private final Set<Repository> repositories = new HashSet<Repository>();
@@ -91,7 +95,7 @@ public final class KEngine implements KClient, StringConstants {
 
     private final Set<KObserver> observers = new HashSet<>();
 
-    public KEngine() {
+    public KEngineImpl() {
         checkDataDirProperty();
 
         // Initialize the logging system
@@ -131,6 +135,7 @@ public final class KEngine implements KClient, StringConstants {
      * @param repository the default repository
      * @throws Exception if an error occurs
      */
+    @Override
     public void setDefaultRepository(Repository repository) throws Exception {
         ArgCheck.isTrue(State.SHUTDOWN.equals(getState()), "Engine should be shutdown before calling setDefaultRepository"); //$NON-NLS-1$
 
@@ -146,7 +151,7 @@ public final class KEngine implements KClient, StringConstants {
         defaultRepository = repository;
         if (repository != null) {
             add(defaultRepository);
-            ((RepositoryImpl)defaultRepository).registerKEngine(this);
+            ((RepositoryImpl) repository).registerKEngine(this);
         }
     }
 
@@ -157,6 +162,7 @@ public final class KEngine implements KClient, StringConstants {
         return this.metadataInstance;
     }
     
+    @Override
     public void setMetadataInstance(MetadataInstance instance) {
     	assert instance != null;
     	this.metadataInstance = instance;
@@ -273,12 +279,12 @@ public final class KEngine implements KClient, StringConstants {
 
                 boolean shutdown = false;
                 while(!shutdown) {
-                    if (! KClient.State.SHUTDOWN.equals(KEngine.this.getState())) {
+                    if (! KClient.State.SHUTDOWN.equals(KEngineImpl.this.getState())) {
                         Thread.sleep(5);
                         continue;
                     }
 
-                    if (MetadataInstance.Condition.REACHABLE.equals(KEngine.this.getMetadataInstance().getCondition())) {
+                    if (MetadataInstance.Condition.REACHABLE.equals(KEngineImpl.this.getMetadataInstance().getCondition())) {
                         Thread.sleep(5);
                         continue;
                     }
@@ -351,6 +357,7 @@ public final class KEngine implements KClient, StringConstants {
      *
      * @throws Exception if start fails
      */
+    @Override
     public boolean startAndWait() throws Exception {
 
         KLatchObserver observer = new KLatchObserver(Type.REPOSITORY_STARTED,
@@ -459,4 +466,9 @@ public final class KEngine implements KClient, StringConstants {
     public LanguageObject parse(String sql) throws Exception {
         return QueryParser.getQueryParser().parseDesignerCommand(sql);
     }
+
+	@Override
+	public WorkspaceManager getWorkspaceManager(UnitOfWork transaction) throws KException {
+		return WorkspaceManagerImpl.getInstance(getDefaultRepository(), transaction);
+	}
 }

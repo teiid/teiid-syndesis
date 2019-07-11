@@ -36,7 +36,7 @@ import javax.xml.xpath.XPathFactory;
 import org.junit.Test;
 import org.komodo.core.AbstractLocalRepositoryTest;
 import org.komodo.metadata.DefaultMetadataInstance;
-import org.komodo.metadata.TeiidConnectionProvider;
+import org.komodo.spi.metadata.TeiidConnectionProvider;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
 import org.komodo.test.utils.TestUtilities;

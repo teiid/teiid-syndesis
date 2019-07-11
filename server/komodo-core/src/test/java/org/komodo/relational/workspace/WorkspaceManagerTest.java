@@ -53,18 +53,18 @@ import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 @SuppressWarnings( {"javadoc", "nls"} )
 public final class WorkspaceManagerTest extends RelationalModelTest {
 
-    private WorkspaceManager wsMgr;
+    private WorkspaceManagerImpl wsMgr;
 
     private File myFileDir;
 
     @Before
     public void obtainWorkspaceManager() throws Exception {
-        wsMgr = WorkspaceManager.getInstance(_repo, getTransaction());
+        wsMgr = WorkspaceManagerImpl.getInstance(_repo, getTransaction());
     }
 
     @After
     public void uncacheWorkspaceManager() {
-        WorkspaceManager.uncacheInstance(_repo, getTransaction().getUserName());
+        WorkspaceManagerImpl.uncacheInstance(_repo, getTransaction().getUserName());
         wsMgr = null;
 
         if (myFileDir != null)

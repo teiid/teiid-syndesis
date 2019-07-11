@@ -33,7 +33,7 @@ import org.komodo.relational.profile.Profile;
 import org.komodo.relational.profile.StateCommand;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.profile.StateCommandAggregate;
-import org.komodo.relational.workspace.WorkspaceManager;
+import org.komodo.relational.workspace.WorkspaceManagerImpl;
 import org.komodo.spi.repository.KomodoObject;
 
 @SuppressWarnings( { "javadoc", "nls" } )
@@ -42,7 +42,7 @@ public final class ProfileImplTest extends RelationalModelTest {
     private Profile profile;
 
     private Profile createProfile() throws Exception {
-        final WorkspaceManager mgr = WorkspaceManager.getInstance(_repo, getTransaction());
+        final WorkspaceManagerImpl mgr = WorkspaceManagerImpl.getInstance(_repo, getTransaction());
         KomodoObject userProfileObj = _repo.komodoProfile(getTransaction());
         Profile profile = mgr.resolve(getTransaction(), userProfileObj, Profile.class);
         assertNotNull(profile);

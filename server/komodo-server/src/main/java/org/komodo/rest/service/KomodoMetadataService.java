@@ -17,6 +17,7 @@
  */
 package org.komodo.rest.service;
 
+import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,15 +46,13 @@ import org.komodo.openshift.BuildStatus;
 import org.komodo.openshift.PublishConfiguration;
 import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.relational.DeployStatus;
+import org.komodo.relational.WorkspaceManager;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Table;
-import org.komodo.relational.model.internal.OptionContainerUtils;
 import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.VdbImport;
-import org.komodo.relational.vdb.internal.VdbImpl;
-import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.CallbackTimeoutException;
 import org.komodo.rest.KomodoRestException;
@@ -73,6 +72,7 @@ import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.query.QSResult;
 import org.komodo.spi.repository.KomodoObject;
+import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.Repository;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
@@ -534,7 +534,7 @@ public class KomodoMetadataService extends KomodoService {
         if (dsObject == null)
             return null; // Not a path in the workspace
 
-        Dataservice dService = mgr.resolve(uow, dsObject, Dataservice.class);
+        Dataservice dService = this.getWorkspaceManager(uow).findDataservice(uow, dsObject.getName(uow));
         if (dService == null)
             return null; // Not a data service
 
@@ -1094,7 +1094,7 @@ public class KomodoMetadataService extends KomodoService {
             final List<RestVirtualizationStatus> entityList = new ArrayList<>();
             Collection<BuildStatus> statuses = this.openshiftClient.getVirtualizations(includeInProgressServices);
             for (BuildStatus status : statuses) {
-                entityList.add(entityFactory.createBuildStatus(status, uriInfo.getBaseUri()));
+                entityList.add(createBuildStatus(status, uriInfo.getBaseUri()));
             }
             return commit(uow, mediaTypes, entityList);
         } catch (CallbackTimeoutException ex) {
@@ -1134,7 +1134,7 @@ public class KomodoMetadataService extends KomodoService {
             uow = createTransaction(principal, "publish", true); //$NON-NLS-1$
             BuildStatus status = this.openshiftClient.getVirtualizationStatus(vdbName);
 
-            return commit(uow, mediaTypes, entityFactory.createBuildStatus(status, uriInfo.getBaseUri()));
+            return commit(uow, mediaTypes, createBuildStatus(status, uriInfo.getBaseUri()));
         } catch (CallbackTimeoutException ex) {
             return createTimeoutResponse(mediaTypes);
         } catch (Throwable e) {
@@ -1187,6 +1187,17 @@ public class KomodoMetadataService extends KomodoService {
             return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.PUBLISH_ERROR);
         }
     }
+    
+    /**
+     * Create RestVirtualizationStatus
+     * @param status the build status
+     * @param baseUri the base uri
+     * @return RestVirtualizationStatus
+     * @throws Exception if error occurs
+     */
+    public RestVirtualizationStatus createBuildStatus(BuildStatus status, URI baseUri) throws Exception {
+        return new RestVirtualizationStatus(baseUri, status);
+    }
 
     @DELETE
     @Path(V1Constants.PUBLISH + StringConstants.FORWARD_SLASH + V1Constants.VDB_PLACEHOLDER)
@@ -1210,7 +1221,7 @@ public class KomodoMetadataService extends KomodoService {
         try {
             uow = createTransaction(principal, "publish", true); //$NON-NLS-1$
             BuildStatus status = this.openshiftClient.deleteVirtualization(vdbName);
-            return commit(uow, mediaTypes, entityFactory.createBuildStatus(status, uriInfo.getBaseUri()));
+            return commit(uow, mediaTypes, createBuildStatus(status, uriInfo.getBaseUri()));
         } catch (CallbackTimeoutException ex) {
             return createTimeoutResponse(mediaTypes);
         } catch (Throwable e) {
@@ -1284,12 +1295,21 @@ public class KomodoMetadataService extends KomodoService {
             KomodoStatusObject status = new KomodoStatusObject();
             status.addAttribute("Publishing", "Operation initiated");  //$NON-NLS-1$//$NON-NLS-2$
 
-            final String vdbPath = vdb.getAbsolutePath();
             final OAuthCredentials creds = getAuthenticationToken();
 
             UnitOfWork publishUow = createTransaction(principal, "publish", true); //$NON-NLS-1$
-            Vdb theVdb = new VdbImpl(publishUow, kengine.getDefaultRepository(), vdbPath);
+            
+            //look the vdb backup with a new transaction
+            Vdb theVdb = findVdb(uow, payload.getName());
+            if (theVdb == null) {
+                Dataservice dataservice = findDataservice(uow, payload.getName());
+                if (dataservice == null) {
+                    return createErrorResponse(Status.NOT_FOUND, mediaTypes, RelationalMessages.Error.VDB_NOT_FOUND);
+                }
 
+                vdb = dataservice.getServiceVdb(uow);
+            }
+            
             // the properties in this class can be exposed for user input
             PublishConfiguration config = new PublishConfiguration();
             config.setVDB(theVdb);
@@ -1347,7 +1367,7 @@ public class KomodoMetadataService extends KomodoService {
         
         // VDB is created in the repository.  If it already exists, delete it
         Repository repo = this.kengine.getDefaultRepository();
-        final WorkspaceManager mgr = WorkspaceManager.getInstance( repo, uow );
+        final WorkspaceManager mgr = this.kengine.getWorkspaceManager(uow);
         String repoPath = repo.komodoWorkspace( uow ).getAbsolutePath();
         
         final Vdb existingVdb = findVdb( uow, vdbName );
@@ -1576,7 +1596,11 @@ public class KomodoMetadataService extends KomodoService {
 
         for(final Table table : tables) {
             // Use the fqn table option do determine native structure
-            final String option = OptionContainerUtils.getOption( uow, table, TABLE_OPTION_FQN );
+            Property pOption = table.getProperty(uow, TABLE_OPTION_FQN );
+            if (pOption == null) {
+            	continue;
+            }
+            String option = pOption.getStringValue(uow);
             if( option != null ) {
                 // Break fqn into segments (segment starts at root, eg "schema=public/table=customer")
                 String[] segments = option.split(FORWARD_SLASH);

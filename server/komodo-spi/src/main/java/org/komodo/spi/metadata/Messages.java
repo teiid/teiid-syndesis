@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.metadata;
+package org.komodo.spi.metadata;
 
 import java.text.MessageFormat;
 import java.util.MissingResourceException;

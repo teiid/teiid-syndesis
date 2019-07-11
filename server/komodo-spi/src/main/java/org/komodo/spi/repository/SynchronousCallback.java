@@ -15,10 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.core.repository;
+package org.komodo.spi.repository;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
 import org.komodo.spi.repository.Repository.UnitOfWorkListener;
 
 /**

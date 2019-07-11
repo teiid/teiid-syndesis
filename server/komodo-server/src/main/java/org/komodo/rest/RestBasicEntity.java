@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
@@ -114,25 +113,6 @@ public class RestBasicEntity extends AbstractKEntity {
         setDataPath(kObject.getAbsolutePath());
         setkType(kObject.getTypeIdentifier(uow));
         setHasChildren(kObject.hasChildren(uow));
-    }
-
-    /**
-     * @param kObject the object
-     * @param parentClass the class of the desired parent
-     * @return the ancestor of the object with the given class
-     */
-    protected <T extends KomodoObject> T ancestor(KomodoObject kObject, Class<T> parentClass, UnitOfWork uow) throws KException {
-        WorkspaceManager wsMgr = WorkspaceManager.getInstance(kObject.getRepository(), uow);
-        KomodoObject parent = kObject.getParent(uow);
-        while (parent != null) {
-            T resolvedParent = wsMgr.resolve(uow, parent, parentClass);
-            if (resolvedParent != null)
-                return resolvedParent;
-
-            parent = parent.getParent(uow);
-        }
-
-        return null;
     }
 
     /**

@@ -29,6 +29,10 @@
 	<description>System Interfaces for Komodo modules</description>
 
 	<dependencies>
+	    <dependency>
+	      <groupId>org.teiid</groupId>
+	      <artifactId>teiid-api</artifactId>
+	    </dependency>
 		<dependency>
 			<groupId>commons-logging</groupId>
 			<artifactId>commons-logging</artifactId>

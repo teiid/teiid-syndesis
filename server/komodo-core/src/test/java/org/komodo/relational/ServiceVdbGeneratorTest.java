@@ -35,7 +35,7 @@ import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
-import org.komodo.relational.workspace.WorkspaceManager;
+import org.komodo.relational.workspace.WorkspaceManagerImpl;
 import org.komodo.spi.KException;
 import org.komodo.utils.StringUtils;
 
@@ -208,7 +208,7 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     }
     
     private String helpGenerateDdlForWithJoinType(String secondSourceTablePath, String joinType, boolean singleConnection, boolean useAll) throws KException {
-        ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(WorkspaceManager.getInstance(_repo, getTransaction()));
+        ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(WorkspaceManagerImpl.getInstance(_repo, getTransaction()));
 
         String[] sourceTablePaths = { sourceTablePath1, secondSourceTablePath };
         boolean twoTables = secondSourceTablePath != null && StringUtils.areDifferent(sourceTablePath1, secondSourceTablePath);
@@ -369,7 +369,7 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     public void shouldGenerateOdataViewDDL_WithSingleSourceViewDefinition_NoJoinOneTable() throws Exception {
     	String EXPECTED_DDL = EXPECTED_NO_JOIN_SQL_SINGE_SOURCE;
     	
-    	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(WorkspaceManager.getInstance(_repo, getTransaction()));
+    	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(WorkspaceManagerImpl.getInstance(_repo, getTransaction()));
 
         String[] sourceTablePaths = { sourceTablePath1 };
         ViewDefinition viewDef = mock(ViewDefinition.class);
@@ -397,7 +397,7 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     public void shouldGenerateOdataViewDDL_WithSingleSourceViewDefinition_NoJoinOneTable_withKeywordCol() throws Exception {
     	String EXPECTED_DDL = EXPECTED_NO_JOIN_SQL_SINGE_SOURCE_WITH_KEYWORD;
     	
-    	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(WorkspaceManager.getInstance(_repo, getTransaction()));
+    	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(WorkspaceManagerImpl.getInstance(_repo, getTransaction()));
 
         String[] sourceTablePaths = { sourceTablePath1b };
         ViewDefinition viewDef = mock(ViewDefinition.class);
@@ -568,7 +568,7 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     @Test
     public void shouldRefreshServiceVdb_SingleSource() throws Exception {
     	ViewEditorState[] states = helpCreateViewEditorState(1);
-    	Vdb[] vdbs = WorkspaceManager.getInstance(_repo, getTransaction()).findVdbs(getTransaction());
+    	Vdb[] vdbs = WorkspaceManagerImpl.getInstance(_repo, getTransaction()).findVdbs(getTransaction());
     	
     	Vdb serviceVdb = null;
     	for( Vdb vdb : vdbs ) {
@@ -578,7 +578,7 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     		}
     	}
     	
-    	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(WorkspaceManager.getInstance(_repo, getTransaction()));
+    	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(WorkspaceManagerImpl.getInstance(_repo, getTransaction()));
     	
     	vdbGenerator.refreshServiceVdb(getTransaction(), serviceVdb, states);
     	
@@ -608,7 +608,7 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     @Test
     public void shouldRefreshServiceVdb_TwoSources() throws Exception {
     	ViewEditorState[] states = helpCreateViewEditorState(2);
-    	Vdb[] vdbs = WorkspaceManager.getInstance(_repo, getTransaction()).findVdbs(getTransaction());
+    	Vdb[] vdbs = WorkspaceManagerImpl.getInstance(_repo, getTransaction()).findVdbs(getTransaction());
     	
     	Vdb serviceVdb = null;
     	for( Vdb vdb : vdbs ) {
@@ -618,7 +618,7 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     		}
     	}
     	
-    	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(WorkspaceManager.getInstance(_repo, getTransaction()));
+    	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(WorkspaceManagerImpl.getInstance(_repo, getTransaction()));
     	
     	vdbGenerator.refreshServiceVdb(getTransaction(), serviceVdb, states);
     	

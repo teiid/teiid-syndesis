@@ -27,7 +27,7 @@ import org.komodo.spi.KObserver;
 
 /**
  * A {@link KObserver} containing a latch that can be used to hold
- * a thread until a state change in the {@link KEngine} has occurred
+ * a thread until a state change in the {@link KEngineImpl} has occurred
  */
 public class KLatchObserver implements KObserver {
 

@@ -27,9 +27,9 @@ import java.util.Set;
 
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.lexicon.sql.teiid.TeiidSqlConstants;
-import org.komodo.spi.lexicon.sql.teiid.TeiidSqlConstants.NonReserved;
-import org.komodo.spi.lexicon.sql.teiid.TeiidSqlConstants.Reserved;
+import org.komodo.spi.constants.TeiidSqlConstants;
+import org.komodo.spi.constants.TeiidSqlConstants.NonReserved;
+import org.komodo.spi.constants.TeiidSqlConstants.Reserved;
 import org.komodo.spi.metadata.MetadataNamespaces;
 import org.komodo.spi.repository.KObjectFactory;
 import org.komodo.spi.repository.KomodoObject;

@@ -17,7 +17,6 @@
  */
 package org.komodo.spi.metadata;
 
-import java.io.File;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
@@ -27,13 +26,14 @@ import java.util.Set;
 import org.komodo.spi.KException;
 import org.komodo.spi.constants.StringConstants;
 import org.komodo.spi.query.QSResult;
-import org.komodo.spi.runtime.ConnectionDriver;
 import org.komodo.spi.runtime.TeiidDataSource;
 import org.komodo.spi.runtime.TeiidPropertyDefinition;
 import org.komodo.spi.runtime.TeiidTranslator;
 import org.komodo.spi.runtime.TeiidVdb;
 import org.komodo.spi.runtime.version.MetadataVersion;
 import org.komodo.spi.type.DataTypeService;
+import org.teiid.adminapi.Admin;
+import org.teiid.adminapi.AdminException;
 
 public interface MetadataInstance extends StringConstants {
 
@@ -291,31 +291,6 @@ public interface MetadataInstance extends StringConstants {
     TeiidTranslator getTranslator(String translatorName) throws KException;
 
     /**
-     * @return the collection of data source drivers resident on the server
-     * @throws KException
-     */
-    Collection<ConnectionDriver> getDataSourceDrivers() throws KException;
-
-    /**
-     * Deploys a driver (jar or rar) to the related metadata instance
-     * 
-     * @param driverName the deployment name to use for the driver
-     * @param driverFile the file to deploy
-     * 
-     * @throws KException if deployment fails
-     */
-    void deployDataSourceDriver(String driverName, File driverFile) throws KException;
-
-    /**
-     * Undeploy the named driver
-     *
-     * @param driver
-     *
-     * @throws KException if undeployment fails
-     */
-    void undeployDataSourceDriver(String driver) throws KException;
-
-    /**
      * @return the collection of data sources
      * @throws KException 
      */
@@ -379,4 +354,6 @@ public interface MetadataInstance extends StringConstants {
      * @throws KException 
      */
     void refresh() throws KException;
+
+	Admin admin() throws AdminException;
 }

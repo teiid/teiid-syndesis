@@ -25,7 +25,7 @@ import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.vdb.Vdb;
-import org.komodo.relational.workspace.WorkspaceManager;
+import org.komodo.relational.workspace.WorkspaceManagerImpl;
 import org.komodo.spi.repository.KomodoObject;
 import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
@@ -42,7 +42,7 @@ public class RelationalModelTest extends AbstractLocalRepositoryTest {
     protected Model createModel( final String vdbName,
                                  final String vdbPath,
                                  final String modelName ) throws Exception {
-        final WorkspaceManager mgr = WorkspaceManager.getInstance(_repo, getTransaction());
+        final WorkspaceManagerImpl mgr = WorkspaceManagerImpl.getInstance(_repo, getTransaction());
         final Vdb vdb = mgr.createVdb( getTransaction(), null, vdbName, vdbPath );
         final Model model = vdb.addModel( getTransaction(), modelName );
 
@@ -59,7 +59,7 @@ public class RelationalModelTest extends AbstractLocalRepositoryTest {
                                  final String vdbPath,
                                  final String modelName,
                                  final String tableName ) throws Exception {
-        final WorkspaceManager mgr = WorkspaceManager.getInstance(_repo, getTransaction());
+        final WorkspaceManagerImpl mgr = WorkspaceManagerImpl.getInstance(_repo, getTransaction());
         final Vdb vdb = mgr.createVdb( getTransaction(), null, vdbName, vdbPath );
         final Model model = vdb.addModel( getTransaction(), modelName );
         return model.addTable( getTransaction(), tableName );
@@ -81,7 +81,7 @@ public class RelationalModelTest extends AbstractLocalRepositoryTest {
     protected Vdb createVdb( final String vdbName,
                              final KomodoObject parent,
                              final String originalFilePath ) throws Exception {
-        final WorkspaceManager mgr = WorkspaceManager.getInstance(_repo, getTransaction());
+        final WorkspaceManagerImpl mgr = WorkspaceManagerImpl.getInstance(_repo, getTransaction());
         final Vdb vdb = mgr.createVdb( getTransaction(), parent, vdbName, originalFilePath );
 
         assertThat( vdb.getPrimaryType( getTransaction() ).getName(), is( VdbLexicon.Vdb.VIRTUAL_DATABASE ) );
@@ -100,7 +100,7 @@ public class RelationalModelTest extends AbstractLocalRepositoryTest {
 
     protected Dataservice createDataservice( final String serviceName,
                                              final KomodoObject parent ) throws Exception {
-        final WorkspaceManager mgr = WorkspaceManager.getInstance(_repo, getTransaction());
+        final WorkspaceManagerImpl mgr = WorkspaceManagerImpl.getInstance(_repo, getTransaction());
         final Dataservice ds = mgr.createDataservice( getTransaction(), parent, serviceName );
 
         assertThat( ds.getPrimaryType( getTransaction() ).getName(), is( DataVirtLexicon.DataService.NODE_TYPE ) );

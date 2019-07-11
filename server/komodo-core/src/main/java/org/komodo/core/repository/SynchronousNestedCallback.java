@@ -17,6 +17,7 @@
  */
 package org.komodo.core.repository;
 
+import org.komodo.spi.repository.SynchronousCallback;
 import org.komodo.spi.repository.Repository.UnitOfWorkListener;
 
 /**

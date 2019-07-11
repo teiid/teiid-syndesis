@@ -37,18 +37,16 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestName;
-import org.komodo.core.LexiconConstants.JcrLexicon;
 import org.komodo.core.repository.LocalRepository;
 import org.komodo.core.repository.LocalRepository.LocalRepositoryId;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.core.repository.RepositoryTools;
-import org.komodo.core.repository.SynchronousCallback;
 import org.komodo.metadata.DefaultMetadataInstance;
-import org.komodo.metadata.TeiidConnectionProvider;
 import org.komodo.spi.KClient;
 import org.komodo.spi.KEvent;
 import org.komodo.spi.KException;
+import org.komodo.spi.metadata.TeiidConnectionProvider;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.Repository;
@@ -56,6 +54,7 @@ import org.komodo.spi.repository.Repository.State;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWorkListener;
 import org.komodo.spi.repository.RepositoryClientEvent;
+import org.komodo.spi.repository.SynchronousCallback;
 import org.komodo.utils.KLog;
 import org.komodo.utils.observer.KLatchRepositoryObserver;
 import org.mockito.Mockito;
@@ -96,7 +95,7 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
         assertThat(_repo.getState(), is(State.NOT_REACHABLE));
         assertThat(_repo.ping(), is(false));
 
-    	KEngine engine = new KEngine();
+    	KEngineImpl engine = new KEngineImpl();
     	TeiidConnectionProvider provider = Mockito.mock(TeiidConnectionProvider.class);
     	DefaultMetadataInstance metadata = new DefaultMetadataInstance(provider);
     	engine.setMetadataInstance(metadata);
@@ -560,7 +559,7 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.core.repository.SynchronousCallback#errorOccurred(java.lang.Throwable)
+         * @see org.komodo.spi.repository.SynchronousCallback#errorOccurred(java.lang.Throwable)
          */
         @Override
         public void errorOccurred( final Throwable error ) {
@@ -571,7 +570,7 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.core.repository.SynchronousCallback#respond(java.lang.Object)
+         * @see org.komodo.spi.repository.SynchronousCallback#respond(java.lang.Object)
          */
         @Override
         public void respond( final Object results ) {

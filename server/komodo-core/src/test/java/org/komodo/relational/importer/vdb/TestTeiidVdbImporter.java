@@ -31,7 +31,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.komodo.core.repository.SynchronousCallback;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.ExistingNodeOptions;
@@ -43,9 +42,10 @@ import org.komodo.relational.model.Model.Type;
 import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Translator;
 import org.komodo.relational.vdb.Vdb;
-import org.komodo.relational.workspace.WorkspaceManager;
+import org.komodo.relational.workspace.WorkspaceManagerImpl;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Repository;
+import org.komodo.spi.repository.SynchronousCallback;
 import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.Repository.UnitOfWork.State;
 import org.komodo.test.utils.TestUtilities;
@@ -469,7 +469,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
 
         KomodoObject vdbNode = _repo.getFromWorkspace(getTransaction(), TestUtilities.TWEET_EXAMPLE_VDB_NAME);
         assertNotNull(vdbNode);
-        WorkspaceManager wkspManager = WorkspaceManager.getInstance(_repo, getTransaction());
+        WorkspaceManagerImpl wkspManager = WorkspaceManagerImpl.getInstance(_repo, getTransaction());
 
         KomodoObject twitterView = vdbNode.getChild(getTransaction(), TWITTER_VIEW_MODEL);
         Model model = wkspManager.resolve(getTransaction(), twitterView, Model.class);
@@ -861,7 +861,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
 
         assertNotNull(vdbNode);
 
-        Vdb vdb = WorkspaceManager.getInstance(_repo, getTransaction()).resolve(getTransaction(), vdbNode, Vdb.class);
+        Vdb vdb = WorkspaceManagerImpl.getInstance(_repo, getTransaction()).resolve(getTransaction(), vdbNode, Vdb.class);
 
         assertNotNull(vdb);
         String desc = vdb.getDescription(getTransaction());
@@ -879,7 +879,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
         assertEquals(2, vdb.getModels(getTransaction()).length);
 
         assertEquals(1, vdb.getTranslators(getTransaction()).length);
-        Translator translator = WorkspaceManager.getInstance(_repo, getTransaction()).resolve(getTransaction(),  vdb.getTranslators(getTransaction())[0], Translator.class);
+        Translator translator = WorkspaceManagerImpl.getInstance(_repo, getTransaction()).resolve(getTransaction(),  vdb.getTranslators(getTransaction())[0], Translator.class);
     	assertEquals("books_db2", translator.getName(getTransaction()));
     	assertEquals("db2", translator.getType(getTransaction()));
     	assertNotNull(translator.getProperty(getTransaction(), "requiresCriteria"));
@@ -918,7 +918,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
         assertEquals(importOptions.getOption(OptionKeys.NAME), vdbName);
         assertNotNull(vdbNode);
 
-        Vdb vdb = WorkspaceManager.getInstance(_repo, getTransaction()).resolve(getTransaction(), vdbNode, Vdb.class);
+        Vdb vdb = WorkspaceManagerImpl.getInstance(_repo, getTransaction()).resolve(getTransaction(), vdbNode, Vdb.class);
 
         assertNotNull(vdb);
         String desc = vdb.getDescription(getTransaction());
@@ -975,7 +975,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
         assertEquals(importOptions.getOption(OptionKeys.NAME), vdbName);
         assertNotNull(vdbNode);
 
-        Vdb vdb = WorkspaceManager.getInstance(_repo, getTransaction()).resolve(getTransaction(), vdbNode, Vdb.class);
+        Vdb vdb = WorkspaceManagerImpl.getInstance(_repo, getTransaction()).resolve(getTransaction(), vdbNode, Vdb.class);
 
         assertNotNull(vdb);
         String desc = vdb.getDescription(getTransaction());
@@ -1012,7 +1012,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
         assertEquals(importOptions.getOption(OptionKeys.NAME), vdbName);
         assertNotNull(vdbNode);
 
-        Vdb vdb = WorkspaceManager.getInstance(_repo, getTransaction()).resolve(getTransaction(), vdbNode, Vdb.class);
+        Vdb vdb = WorkspaceManagerImpl.getInstance(_repo, getTransaction()).resolve(getTransaction(), vdbNode, Vdb.class);
 
         assertNotNull(vdb);
         String desc = vdb.getDescription(getTransaction());
@@ -1079,7 +1079,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
         assertEquals(importOptions.getOption(OptionKeys.NAME), vdbName);
         assertNotNull(vdbNode);
 
-        Vdb vdb = WorkspaceManager.getInstance(_repo, getTransaction()).resolve(getTransaction(), vdbNode, Vdb.class);
+        Vdb vdb = WorkspaceManagerImpl.getInstance(_repo, getTransaction()).resolve(getTransaction(), vdbNode, Vdb.class);
 
         assertNotNull(vdb);
         assertEquals("BooksVirtualModelOnly", vdb.getVdbName(getTransaction()));
@@ -1116,7 +1116,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
         assertEquals(importOptions.getOption(OptionKeys.NAME), vdbName);
         assertNotNull(vdbNode);
 
-        Vdb vdb = WorkspaceManager.getInstance(_repo, getTransaction()).resolve(getTransaction(), vdbNode, Vdb.class);
+        Vdb vdb = WorkspaceManagerImpl.getInstance(_repo, getTransaction()).resolve(getTransaction(), vdbNode, Vdb.class);
 
         /*
 		    <description>Sample vdb containing only a tranlator override element</description>
@@ -1133,7 +1133,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
 
         assertEquals(0, vdb.getModels(getTransaction()).length);
         assertEquals(1, vdb.getTranslators(getTransaction()).length);
-        Translator translator = WorkspaceManager.getInstance(_repo, getTransaction()).resolve(getTransaction(),  vdb.getTranslators(getTransaction())[0], Translator.class);
+        Translator translator = WorkspaceManagerImpl.getInstance(_repo, getTransaction()).resolve(getTransaction(),  vdb.getTranslators(getTransaction())[0], Translator.class);
     	assertEquals("books_db2", translator.getName(getTransaction()));
     	assertEquals("db2", translator.getType(getTransaction()));
 
@@ -1173,7 +1173,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
 
         assertNotNull(vdbNode);
 
-        Vdb vdb = WorkspaceManager.getInstance(_repo, getTransaction()).resolve(getTransaction(), vdbNode, Vdb.class);
+        Vdb vdb = WorkspaceManagerImpl.getInstance(_repo, getTransaction()).resolve(getTransaction(), vdbNode, Vdb.class);
 
         assertNotNull(vdb);
         String desc = vdb.getDescription(getTransaction());
@@ -1222,7 +1222,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
 
         assertNotNull(vdbNode);
 
-        Vdb vdb = WorkspaceManager.getInstance(_repo, getTransaction()).resolve(getTransaction(), vdbNode, Vdb.class);
+        Vdb vdb = WorkspaceManagerImpl.getInstance(_repo, getTransaction()).resolve(getTransaction(), vdbNode, Vdb.class);
 
         assertNotNull(vdb);
         String connType = vdb.getConnectionType(getTransaction());
@@ -1276,7 +1276,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
 
         assertNotNull(vdbNode);
 
-        WorkspaceManager manager = WorkspaceManager.getInstance(_repo, getTransaction());
+        WorkspaceManagerImpl manager = WorkspaceManagerImpl.getInstance(_repo, getTransaction());
         Vdb vdb = manager.resolve(getTransaction(), vdbNode, Vdb.class);
 
         assertNotNull(vdb);
@@ -1317,7 +1317,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
         KomodoObject vdbNode = workspace.getChild(getTransaction(),TestUtilities.PORTFOLIO_VDB_NAME, VdbLexicon.Vdb.VIRTUAL_DATABASE);
         assertNotNull("Failed - No Vdb Created ", vdbNode);
 
-        WorkspaceManager manager = WorkspaceManager.getInstance(_repo, getTransaction());
+        WorkspaceManagerImpl manager = WorkspaceManagerImpl.getInstance(_repo, getTransaction());
         Vdb vdb = manager.resolve(getTransaction(), vdbNode, Vdb.class);
 
         Model[] models = vdb.getModels(getTransaction(), "PersonalValuations");
@@ -1366,7 +1366,7 @@ public class TestTeiidVdbImporter extends AbstractImporterTest {
         KomodoObject vdbNode = workspace.getChild(getTransaction(),TestUtilities.PORTFOLIO_VDB_NAME, VdbLexicon.Vdb.VIRTUAL_DATABASE);
         assertNotNull("Failed - No Vdb Created ", vdbNode);
 
-        WorkspaceManager manager = WorkspaceManager.getInstance(_repo, getTransaction());
+        WorkspaceManagerImpl manager = WorkspaceManagerImpl.getInstance(_repo, getTransaction());
         Vdb vdb = manager.resolve(getTransaction(), vdbNode, Vdb.class);
 
         KomodoObject[] jcrContent = vdb.getRawChildren(getTransaction(), JcrConstants.JCR_CONTENT);

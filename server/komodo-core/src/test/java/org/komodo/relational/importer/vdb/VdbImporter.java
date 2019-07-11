@@ -33,7 +33,7 @@ import org.komodo.importer.ImportOptions.OptionKeys;
 import org.komodo.importer.ImportType;
 import org.komodo.importer.Messages;
 import org.komodo.relational.vdb.Vdb;
-import org.komodo.relational.workspace.WorkspaceManager;
+import org.komodo.relational.workspace.WorkspaceManagerImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
@@ -74,8 +74,8 @@ public class VdbImporter extends AbstractImporter {
         fileNode.setProperty(transaction, JcrConstants.JCR_DATA, content);
     }
 
-    protected WorkspaceManager getWorkspaceManager(UnitOfWork transaction) throws KException {
-        return WorkspaceManager.getInstance( getRepository(), transaction );
+    protected WorkspaceManagerImpl getWorkspaceManager(UnitOfWork transaction) throws KException {
+        return WorkspaceManagerImpl.getInstance( getRepository(), transaction );
     }
 
     @Override

@@ -28,7 +28,7 @@ import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.Session;
 
-import org.komodo.core.KEngine;
+import org.komodo.core.KEngineImpl;
 import org.komodo.core.KomodoLexicon.Environment;
 import org.komodo.core.KomodoLexicon.Komodo;
 import org.komodo.core.repository.KQueryManager;
@@ -118,7 +118,7 @@ public class JcrEngine extends Thread implements RepoEngine {
 
     private KSequencerController sequencers;
 
-    private KEngine kEngine;
+    private KEngineImpl kEngine;
 
     /**
      * Create this thread and give it a name
@@ -126,7 +126,7 @@ public class JcrEngine extends Thread implements RepoEngine {
      * @param repoId
      *        information identifying the repository (cannot be <code>null</code>)
      */
-    public JcrEngine( final Repository.Id repoId , KEngine kEngine) {
+    public JcrEngine( final Repository.Id repoId , KEngineImpl kEngine) {
         super("Modeshape Engine Thread"); //$NON-NLS-1$
         this.repoId = repoId;
         this.identifier = new WorkspaceIdentifier(repoId.getWorkspaceName());
