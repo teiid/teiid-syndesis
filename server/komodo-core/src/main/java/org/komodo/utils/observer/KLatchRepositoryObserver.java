@@ -17,7 +17,7 @@
  */
 package org.komodo.utils.observer;
 
-import org.komodo.spi.KEvent.Type;
+import org.komodo.core.KEvent.Type;
 
 /**
  * A {@link RepositoryObserver} containing a latch that can be used to hold

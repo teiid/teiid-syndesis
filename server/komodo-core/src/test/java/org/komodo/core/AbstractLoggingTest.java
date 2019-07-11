@@ -21,7 +21,7 @@ import java.nio.file.Path;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.StringConstants;
 import org.komodo.utils.FileUtils;
 import org.komodo.utils.TestKLog;
 

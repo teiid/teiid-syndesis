@@ -23,7 +23,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.komodo.metadata.DataTypeService;
-import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoObjectVisitor;

@@ -49,7 +49,7 @@ import org.komodo.relational.model.Table.OnCommit;
 import org.komodo.relational.model.Table.TemporaryType;
 import org.komodo.relational.model.UniqueConstraint;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;

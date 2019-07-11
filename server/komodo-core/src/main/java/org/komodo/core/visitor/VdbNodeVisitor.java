@@ -33,7 +33,7 @@ import org.komodo.core.internal.repository.KObjectFactory;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.metadata.DataTypeService;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.OperationType;

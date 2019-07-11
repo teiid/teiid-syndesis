@@ -26,23 +26,20 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import org.komodo.core.KEvent.Type;
 import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.repository.RepositoryClientEvent;
 import org.komodo.core.repository.RepositoryImpl;
-import org.komodo.metadata.MetadataClientEvent;
 import org.komodo.metadata.MetadataInstance;
+import org.komodo.metadata.internal.DefaultMetadataInstance;
+import org.komodo.metadata.internal.MetadataClientEvent;
 import org.komodo.relational.WorkspaceManager;
 import org.komodo.relational.workspace.WorkspaceManagerImpl;
-import org.komodo.spi.KClient;
 import org.komodo.spi.KEngine;
-import org.komodo.spi.KErrorHandler;
-import org.komodo.spi.KEvent;
-import org.komodo.spi.KEvent.Type;
 import org.komodo.spi.KException;
-import org.komodo.spi.KObserver;
-import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.constants.SystemConstants;
+import org.komodo.spi.StringConstants;
+import org.komodo.spi.SystemConstants;
 import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.repository.RepositoryClientEvent;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWorkListener;
 import org.komodo.utils.ArgCheck;
@@ -58,7 +55,29 @@ import org.teiid.query.sql.LanguageObject;
  * The Komodo engine. It is responsible for persisting and retriever user session data and Teiid artifacts.
  */
 @Component
-public final class KEngineImpl implements KEngine, KClient, StringConstants {
+public class KEngineImpl implements KEngine, KObserver, StringConstants {
+	
+    /**
+     * The client state.
+     */
+    public static enum State {
+
+        /**
+         * Client has been successfully started.
+         */
+        STARTED,
+
+        /**
+         * Client is shutdown.
+         */
+        SHUTDOWN,
+
+        /**
+         * There was an error starting or shutting down the client.
+         */
+        ERROR
+
+    }
 
     private static final String PREFIX = KEngineImpl.class.getSimpleName() + DOT;
     
@@ -112,7 +131,7 @@ public final class KEngineImpl implements KEngine, KClient, StringConstants {
 
     private KomodoErrorHandler errorHandler = new KomodoErrorHandler();
 
-    private MetadataInstance metadataInstance;
+    private DefaultMetadataInstance metadataInstance;
 
     private final Set<KObserver> observers = new HashSet<>();
     
@@ -152,7 +171,7 @@ public final class KEngineImpl implements KEngine, KClient, StringConstants {
     }
     
     @Autowired
-    public void setMetadataInstance(MetadataInstance instance) {
+    public void setMetadataInstance(DefaultMetadataInstance instance) {
     	ArgCheck.isTrue(State.SHUTDOWN.equals(getState()), "Engine should be shutdown before calling setDefaultRepository"); //$NON-NLS-1$
     	this.metadataInstance = instance;
     }
@@ -163,7 +182,7 @@ public final class KEngineImpl implements KEngine, KClient, StringConstants {
      * @param repository the repository being added (cannot be <code>null</code>)
      * @throws KException if error occurs
      */
-    public void add(final Repository repository) throws KException {
+    public void add(final RepositoryImpl repository) throws KException {
         ArgCheck.isNotNull(repository, "repository"); //$NON-NLS-1$
 
         if (this.repositories.add(repository)) {
@@ -178,7 +197,6 @@ public final class KEngineImpl implements KEngine, KClient, StringConstants {
         }
     }
 
-    @Override
     public State getState() {
         return this.state;
     }
@@ -208,7 +226,7 @@ public final class KEngineImpl implements KEngine, KClient, StringConstants {
     private void notifyMetadataServer(final MetadataClientEvent event) throws KException {
         ArgCheck.isNotNull(event);
 
-        getMetadataInstance().notify(event);
+        metadataInstance.notify(event);
     }
 
     /**
@@ -267,7 +285,7 @@ public final class KEngineImpl implements KEngine, KClient, StringConstants {
 
                 boolean shutdown = false;
                 while(!shutdown) {
-                    if (! KClient.State.SHUTDOWN.equals(KEngineImpl.this.getState())) {
+                    if (! KEngineImpl.State.SHUTDOWN.equals(KEngineImpl.this.getState())) {
                         Thread.sleep(5);
                         continue;
                     }

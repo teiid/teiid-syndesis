@@ -18,7 +18,7 @@
 package org.komodo.core.repository;
 
 import org.komodo.core.internal.repository.KObjectFactory;
-import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.KPropertyFactory;
 
 public interface RepoEngine extends StringConstants {

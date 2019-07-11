@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.komodo.rest.relational.response.RestQueryColumn;
 import org.komodo.rest.relational.response.RestQueryResult;
 import org.komodo.rest.relational.response.RestQueryRow;
-import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.StringConstants;
 
 public class QueryResultSerializerTest implements StringConstants {
 

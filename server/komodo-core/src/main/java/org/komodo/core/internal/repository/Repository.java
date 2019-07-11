@@ -20,14 +20,14 @@ package org.komodo.core.internal.repository;
 import java.net.URL;
 import java.util.List;
 
+import org.komodo.core.KEngineImpl;
+import org.komodo.core.KObserver;
+import org.komodo.core.repository.RepositoryClientEvent;
 import org.komodo.metadata.MetadataInstance;
-import org.komodo.spi.KClient;
 import org.komodo.spi.KException;
-import org.komodo.spi.KObserver;
 import org.komodo.spi.repository.KPropertyFactory;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.OperationType;
-import org.komodo.spi.repository.RepositoryClientEvent;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWorkListener;
 
@@ -119,13 +119,6 @@ public interface Repository {
                       final String parentPath,
                       final String name,
                       final String primaryType ) throws KException;
-
-    /**
-     * Add an {@link KClient} to send/receive notifications to/from
-     *
-     * @param client
-     */
-    void addClient( KClient client );
 
     /**
      * @param observer
@@ -234,7 +227,7 @@ public interface Repository {
      *
      * @param client
      */
-    void removeClient( KClient client );
+    void removeClient( KEngineImpl client );
 
     /**
      * @param observer

@@ -43,7 +43,7 @@ import org.komodo.rest.KomodoService;
 import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.StringNameValidator;

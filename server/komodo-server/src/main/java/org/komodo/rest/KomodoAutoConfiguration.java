@@ -36,7 +36,7 @@ import org.komodo.rest.connections.SyndesisConnectionMonitor;
 import org.komodo.rest.connections.SyndesisConnectionSynchronizer;
 import org.komodo.spi.KEngine;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.SystemConstants;
+import org.komodo.spi.SystemConstants;
 import org.komodo.spi.repository.ApplicationProperties;
 import org.komodo.spi.repository.PersistenceType;
 import org.springframework.beans.factory.annotation.Autowired;

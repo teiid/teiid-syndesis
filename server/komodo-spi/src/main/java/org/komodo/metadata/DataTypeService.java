@@ -1,7 +1,8 @@
 package org.komodo.metadata;
 
 import java.util.Set;
-import org.komodo.spi.constants.StringConstants;
+
+import org.komodo.spi.StringConstants;
 
 /**
  *

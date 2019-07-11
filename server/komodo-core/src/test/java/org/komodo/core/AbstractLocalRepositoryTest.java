@@ -40,18 +40,16 @@ import org.junit.rules.TestName;
 import org.komodo.core.internal.repository.Repository.State;
 import org.komodo.core.repository.LocalRepository;
 import org.komodo.core.repository.LocalRepository.LocalRepositoryId;
-import org.komodo.metadata.TeiidConnectionProvider;
-import org.komodo.metadata.internal.DefaultMetadataInstance;
 import org.komodo.core.repository.ObjectImpl;
+import org.komodo.core.repository.RepositoryClientEvent;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.core.repository.RepositoryTools;
-import org.komodo.spi.KClient;
-import org.komodo.spi.KEvent;
+import org.komodo.metadata.TeiidConnectionProvider;
+import org.komodo.metadata.internal.DefaultMetadataInstance;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.SystemConstants;
+import org.komodo.spi.SystemConstants;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
-import org.komodo.spi.repository.RepositoryClientEvent;
 import org.komodo.spi.repository.SynchronousCallback;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWorkListener;
@@ -133,7 +131,7 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
         KLatchRepositoryObserver _repoShutdownObserver = new KLatchRepositoryObserver(KEvent.Type.REPOSITORY_STOPPED);
         _repo.addObserver(_repoShutdownObserver);
 
-        KClient client = mock(KClient.class);
+        KEngineImpl client = mock(KEngineImpl.class);
         RepositoryClientEvent event = RepositoryClientEvent.createShuttingDownEvent(client);
         _repo.notify(event);
 
@@ -215,7 +213,7 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
             KLatchRepositoryObserver _repoClearObserver = new KLatchRepositoryObserver(KEvent.Type.REPOSITORY_CLEARED);
             _repo.addObserver(_repoClearObserver);
 
-            KClient client = mock( KClient.class );
+            KEngineImpl client = mock( KEngineImpl.class );
             RepositoryClientEvent event = RepositoryClientEvent.createClearEvent( client );
             _repo.notify( event );
 

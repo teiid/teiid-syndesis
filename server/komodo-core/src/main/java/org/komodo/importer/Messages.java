@@ -20,7 +20,8 @@ package org.komodo.importer;
 import java.text.MessageFormat;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-import org.komodo.spi.constants.StringConstants;
+
+import org.komodo.spi.StringConstants;
 
 /**
  * Messages for the importer plugin

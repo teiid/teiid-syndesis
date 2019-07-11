@@ -18,7 +18,8 @@
 package org.komodo.metadata;
 
 import java.util.Map;
-import org.komodo.spi.constants.StringConstants;
+
+import org.komodo.spi.StringConstants;
 import org.komodo.utils.KeyInValueMap;
 import org.komodo.utils.KeyInValueMap.KeyFromValueAdapter;
 

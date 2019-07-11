@@ -26,22 +26,20 @@ import java.util.List;
 import java.util.Set;
 
 import org.komodo.core.KEngineImpl;
+import org.komodo.core.KEvent;
+import org.komodo.core.KObserver;
 import org.komodo.core.KomodoLexicon;
 import org.komodo.core.KomodoLexicon.Environment;
 import org.komodo.core.KomodoLexicon.Komodo;
 import org.komodo.core.internal.repository.KObjectFactory;
 import org.komodo.core.internal.repository.Repository;
 import org.komodo.metadata.MetadataInstance;
-import org.komodo.spi.KClient;
-import org.komodo.spi.KEvent;
 import org.komodo.spi.KException;
-import org.komodo.spi.KObserver;
-import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.constants.SystemConstants;
+import org.komodo.spi.StringConstants;
+import org.komodo.spi.SystemConstants;
 import org.komodo.spi.repository.KPropertyFactory;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.OperationType;
-import org.komodo.spi.repository.RepositoryClientEvent;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWorkDelegate;
 import org.komodo.spi.repository.UnitOfWorkListener;
@@ -441,7 +439,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
         return paths.toArray(new String[0]);
     }
 
-    private final Set< KClient > clients = new HashSet< >();
+    private final Set< KEngineImpl > clients = new HashSet< >();
     private final Id id;
     private final Set< KObserver > observers = new HashSet< >();
     protected KEngineImpl kEngine;
@@ -648,8 +646,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
      *
      * @see org.komodo.core.internal.repository.Repository#addClient(org.komodo.spi.KClient)
      */
-    @Override
-    public void addClient( final KClient client ) {
+    public void addClient( final KEngineImpl client ) {
         ArgCheck.isNotNull(client, "client"); //$NON-NLS-1$
         this.clients.add(client);
         addObserver(client);
@@ -842,7 +839,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.core.internal.repository.Repository#notify(org.komodo.spi.repository.RepositoryClientEvent)
+     * @see org.komodo.core.internal.repository.Repository#notify(org.komodo.core.repository.RepositoryClientEvent)
      */
     @Override
     public void notify( final RepositoryClientEvent event ) {
@@ -939,7 +936,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
      * @see org.komodo.core.internal.repository.Repository#removeClient(org.komodo.spi.KClient)
      */
     @Override
-    public void removeClient( final KClient client ) {
+    public void removeClient( final KEngineImpl client ) {
         ArgCheck.isNotNull(client, "client"); //$NON-NLS-1$
         this.clients.remove(client);
     }

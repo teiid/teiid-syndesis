@@ -33,8 +33,12 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
+import org.komodo.core.KObserver;
 import org.komodo.metadata.DataTypeService;
 import org.komodo.metadata.DataTypeService.DataTypeName;
+import org.komodo.metadata.Messages;
+import org.komodo.metadata.MetadataInstance;
+import org.komodo.metadata.TeiidConnectionProvider;
 import org.komodo.metadata.query.QSColumn;
 import org.komodo.metadata.query.QSResult;
 import org.komodo.metadata.query.QSRow;
@@ -42,13 +46,8 @@ import org.komodo.metadata.runtime.TeiidDataSource;
 import org.komodo.metadata.runtime.TeiidPropertyDefinition;
 import org.komodo.metadata.runtime.TeiidTranslator;
 import org.komodo.metadata.runtime.TeiidVdb;
-import org.komodo.metadata.Messages;
-import org.komodo.metadata.MetadataClientEvent;
-import org.komodo.metadata.MetadataInstance;
-import org.komodo.metadata.MetadataObserver;
-import org.komodo.metadata.TeiidConnectionProvider;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.StringConstants;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,7 +89,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
         }
     }
 
-    private final Set<MetadataObserver> observers = new HashSet<>();
+    private final Set<KObserver> observers = new HashSet<>();
 
     private final MetaArtifactFactory factory = new MetaArtifactFactory();
 
@@ -149,7 +148,6 @@ public class DefaultMetadataInstance implements MetadataInstance {
         }
     }
 
-    @Override
     public void notify( MetadataClientEvent event ) {
         this.addObserver(event.getSource());
 
@@ -160,14 +158,12 @@ public class DefaultMetadataInstance implements MetadataInstance {
         }
     }
 
-    @Override
-    public void addObserver(MetadataObserver observer) {
+    public void addObserver(KObserver observer) {
         ArgCheck.isNotNull(observer, "observer"); //$NON-NLS-1$
         this.observers.add(observer);
     }
 
-    @Override
-    public void removeObserver(MetadataObserver observer) {
+    public void removeObserver(KObserver observer) {
         ArgCheck.isNotNull(observer, "observer"); //$NON-NLS-1$
         this.observers.remove(observer);
     }

@@ -46,7 +46,7 @@ import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.spi.KEngine;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.SystemConstants;
+import org.komodo.spi.SystemConstants;
 import org.komodo.spi.repository.SynchronousCallback;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWorkListener;

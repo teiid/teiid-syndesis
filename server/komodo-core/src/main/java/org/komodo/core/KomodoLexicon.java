@@ -17,7 +17,7 @@
  */
 package org.komodo.core;
 
-import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.StringConstants;
 import org.modeshape.jcr.api.JcrConstants;
 import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
 

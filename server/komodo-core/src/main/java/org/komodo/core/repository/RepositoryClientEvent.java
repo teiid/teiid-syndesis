@@ -15,40 +15,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.metadata;
+package org.komodo.core.repository;
 
-import org.komodo.spi.KClient;
+import org.komodo.core.KEngineImpl;
 
 /**
  * Event sent by a repository client
  */
-public final class MetadataClientEvent {
+public final class RepositoryClientEvent {
 
     /**
      * Event types describing the repository client
      */
     public enum EventType {
         /**
-         * Sent when an {@link KomodoClient} has just started
+         * Sent when an {@link RepositoryClient} has just started
          */
         STARTED,
 
         /**
-         * Sent just prior to an {@link KomodoClient} shutting down
+         * Sent just prior to an {@link RepositoryClient} shutting down
          */
         SHUTTING_DOWN,
+
+        /**
+         * Sent in order to clear the repository of all user-created objects
+         */
+        CLEAR;
     }
 
     private final EventType eventType;
 
-    private final KClient source;
+    private final KEngineImpl source;
 
     /**
      * @param eventType type of this event
      * @param source the source of this event
      *
      */
-    public MetadataClientEvent(EventType eventType, KClient source) {
+    public RepositoryClientEvent(EventType eventType, KEngineImpl source) {
         this.eventType = eventType;
         this.source = source;
     }
@@ -63,7 +68,7 @@ public final class MetadataClientEvent {
     /**
      * @return the source
      */
-    public KClient getSource() {
+    public KEngineImpl getSource() {
         return this.source;
     }
 
@@ -72,8 +77,8 @@ public final class MetadataClientEvent {
      *
      * @return event representing the given client has started
      */
-    public static MetadataClientEvent createStartedEvent(KClient source) {
-        return new MetadataClientEvent(EventType.STARTED, source);
+    public static RepositoryClientEvent createStartedEvent(KEngineImpl source) {
+        return new RepositoryClientEvent(EventType.STARTED, source);
     }
 
     /**
@@ -81,8 +86,17 @@ public final class MetadataClientEvent {
      *
      * @return event representing the given client has shut down (never <code>null</code>)
      */
-    public static MetadataClientEvent createShuttingDownEvent(KClient source) {
-        return new MetadataClientEvent(EventType.SHUTTING_DOWN, source);
+    public static RepositoryClientEvent createShuttingDownEvent(KEngineImpl source) {
+        return new RepositoryClientEvent(EventType.SHUTTING_DOWN, source);
+    }
+
+    /**
+     * @param source the source of the new event
+     *
+     * @return event representing the given client should be cleared (never <code>null</code>)
+     */
+    public static RepositoryClientEvent createClearEvent(KEngineImpl source) {
+        return new RepositoryClientEvent(EventType.CLEAR, source);
     }
 
 }

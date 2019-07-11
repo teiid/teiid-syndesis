@@ -19,7 +19,8 @@ package org.komodo.relational;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.komodo.spi.constants.StringConstants;
+
+import org.komodo.spi.StringConstants;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
 

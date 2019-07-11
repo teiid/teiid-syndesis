@@ -19,7 +19,7 @@ package org.komodo.relational.internal;
 
 import org.komodo.core.LexiconConstants.JcrLexicon;
 import org.komodo.relational.internal.RelationalObjectImpl.Filter;
-import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.StringConstants;
 import org.komodo.utils.ArgCheck;
 
 /**

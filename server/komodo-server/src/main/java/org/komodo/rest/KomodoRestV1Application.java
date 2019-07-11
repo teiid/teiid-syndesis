@@ -25,7 +25,7 @@ import javax.ws.rs.core.Application;
 import org.komodo.rest.json.JsonConstants;
 import org.komodo.spi.KEngine;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.SystemConstants;
+import org.komodo.spi.SystemConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

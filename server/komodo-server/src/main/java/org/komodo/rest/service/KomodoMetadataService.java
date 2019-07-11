@@ -73,7 +73,7 @@ import org.komodo.rest.relational.response.RestQueryResult;
 import org.komodo.rest.relational.response.metadata.RestSyndesisSourceStatus;
 import org.komodo.rest.relational.response.virtualization.RestVirtualizationStatus;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.UnitOfWork;
@@ -151,21 +151,15 @@ public class KomodoMetadataService extends KomodoService {
     private boolean hasDynamicVdb(String vdbName) throws Exception {
         boolean hasVdb = false;
 
-        try {
-            Collection<TeiidVdb> vdbs = getMetadataInstance().getVdbs();
-            for (TeiidVdb vdb : vdbs) {
-                if (vdb.getName().startsWith(vdbName)) {
-                    hasVdb = true;
-                    break;
-                }
+        Collection<TeiidVdb> vdbs = getMetadataInstance().getVdbs();
+        for (TeiidVdb vdb : vdbs) {
+            if (vdb.getName().startsWith(vdbName)) {
+                hasVdb = true;
+                break;
             }
-
-            return hasVdb;
-
-        } catch (KException ex) {
-            this.kengine.getErrorHandler().error(ex);
-            throw ex;
         }
+
+        return hasVdb;
     }    
     
     /**

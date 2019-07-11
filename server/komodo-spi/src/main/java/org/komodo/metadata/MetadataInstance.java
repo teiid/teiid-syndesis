@@ -29,7 +29,7 @@ import org.komodo.metadata.runtime.TeiidPropertyDefinition;
 import org.komodo.metadata.runtime.TeiidTranslator;
 import org.komodo.metadata.runtime.TeiidVdb;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.StringConstants;
 import org.teiid.adminapi.Admin;
 import org.teiid.adminapi.AdminException;
 
@@ -142,25 +142,6 @@ public interface MetadataInstance extends StringConstants {
      * @return the condition of the server
      */
     Condition getCondition();
-
-    /**
-     * Notify this metadata instance of a client event
-     *
-     * @param event
-     */
-    void notify(MetadataClientEvent event);
-
-    /**
-     * @param observer
-     *        the observer to be added
-     */
-    void addObserver(MetadataObserver observer);
-
-    /**
-     * @param observer
-     *        the observer to be removed
-     */
-    void removeObserver(MetadataObserver observer);
 
     /**
      * @return the data type service

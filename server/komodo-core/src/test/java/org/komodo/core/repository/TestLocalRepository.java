@@ -36,7 +36,7 @@ import org.komodo.core.KomodoLexicon;
 import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.internal.repository.Repository.Id;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.SynchronousCallback;
 import org.komodo.spi.repository.UnitOfWork;

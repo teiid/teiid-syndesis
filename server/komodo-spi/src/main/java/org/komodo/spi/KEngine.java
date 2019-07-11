@@ -28,8 +28,6 @@ public interface KEngine {
 	
 	MetadataInstance getMetadataInstance() throws KException;
 
-	KErrorHandler getErrorHandler();
-
 	boolean startAndWait() throws Exception;
 
 	WorkspaceManager getWorkspaceManager(UnitOfWork transaction) throws KException;

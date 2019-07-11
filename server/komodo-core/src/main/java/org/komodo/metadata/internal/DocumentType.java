@@ -17,7 +17,7 @@
  */
 package org.komodo.metadata.internal;
 
-import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.StringConstants;
 
 public class DocumentType implements StringConstants {
 

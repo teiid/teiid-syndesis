@@ -56,7 +56,7 @@ import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggre
 import org.komodo.rest.relational.response.vieweditorstate.RestViewDefinition;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewDefinitionStatus;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
-import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.StringUtils;

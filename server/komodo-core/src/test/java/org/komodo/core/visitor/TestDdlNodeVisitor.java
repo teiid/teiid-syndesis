@@ -30,7 +30,7 @@ import org.junit.Test;
 import org.komodo.core.AbstractLocalRepositoryTest;
 import org.komodo.metadata.TeiidConnectionProvider;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
-import org.komodo.spi.constants.TeiidSqlConstants;
+import org.komodo.spi.TeiidSqlConstants;
 import org.komodo.spi.repository.KomodoObject;
 import org.mockito.Mockito;
 import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;

@@ -31,7 +31,7 @@ import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.model.OptionContainer;
 import org.komodo.relational.model.StatementOption;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
