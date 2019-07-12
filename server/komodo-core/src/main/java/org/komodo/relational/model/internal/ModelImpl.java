@@ -22,7 +22,9 @@ import java.util.List;
 import java.util.Properties;
 
 import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.ObjectImpl;
+import org.komodo.core.repository.PropertyValueType;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.core.visitor.DdlNodeVisitor;
 import org.komodo.metadata.MetadataInstance;
@@ -38,9 +40,7 @@ import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.internal.ModelSourceImpl;
 import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.PropertyValueType;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
@@ -52,7 +52,7 @@ import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 /**
  * An implementation of a relational model.
  */
-public final class ModelImpl extends RelationalObjectImpl implements Model {
+public class ModelImpl extends RelationalObjectImpl implements Model {
     /**
      * An empty array of tables.
      */
@@ -97,7 +97,7 @@ public final class ModelImpl extends RelationalObjectImpl implements Model {
          * {@inheritDoc}
          *
          * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
+         *      org.komodo.core.repository.KomodoObject)
          */
         @Override
         public boolean resolvable( final UnitOfWork transaction,
@@ -109,7 +109,7 @@ public final class ModelImpl extends RelationalObjectImpl implements Model {
          * {@inheritDoc}
          *
          * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
+         *      org.komodo.core.repository.KomodoObject)
          */
         @Override
         public ModelImpl resolve( final UnitOfWork transaction,
@@ -158,7 +158,7 @@ public final class ModelImpl extends RelationalObjectImpl implements Model {
      * @see org.komodo.relational.model.Model#addSource(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
-    public ModelSource addSource( final UnitOfWork transaction,
+    public ModelSourceImpl addSource( final UnitOfWork transaction,
                                   final String sourceName ) throws KException {
         return RelationalModelFactory.createModelSource( transaction, getRepository(), this, sourceName );
     }
@@ -169,7 +169,7 @@ public final class ModelImpl extends RelationalObjectImpl implements Model {
      * @see org.komodo.relational.model.Model#addTable(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
-    public Table addTable( final UnitOfWork transaction,
+    public TableImpl addTable( final UnitOfWork transaction,
                            final String tableName ) throws KException {
         return RelationalModelFactory.createTable( transaction, getRepository(), this, tableName );
     }
@@ -180,7 +180,7 @@ public final class ModelImpl extends RelationalObjectImpl implements Model {
      * @see org.komodo.relational.model.Model#addView(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
-    public View addView( final UnitOfWork transaction,
+    public ViewImpl addView( final UnitOfWork transaction,
                          final String viewName ) throws KException {
         return RelationalModelFactory.createView( transaction, getRepository(), this, viewName );
     }
@@ -406,7 +406,7 @@ public final class ModelImpl extends RelationalObjectImpl implements Model {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#getTypeId()
+     * @see org.komodo.core.repository.KomodoObject#getTypeId()
      */
     @Override
     public int getTypeId() {
@@ -524,7 +524,7 @@ public final class ModelImpl extends RelationalObjectImpl implements Model {
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( sourceToRemove, "sourceToRemove" ); //$NON-NLS-1$
 
-        final ModelSource[] sources = getSources( transaction, sourceToRemove );
+        final ModelSourceImpl[] sources = getSources( transaction, sourceToRemove );
 
         if ( sources.length == 0 ) {
             throw new KException( Messages.getString( Relational.MODEL_SOURCE_NOT_FOUND_TO_REMOVE, sourceToRemove ) );
@@ -546,7 +546,7 @@ public final class ModelImpl extends RelationalObjectImpl implements Model {
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( tableName, "tableName" ); //$NON-NLS-1$
 
-        final Table[] tables = getTables( transaction, tableName );
+        final TableImpl[] tables = getTables( transaction, tableName );
 
         if ( tables.length == 0 ) {
             throw new KException( Messages.getString( Relational.TABLE_NOT_FOUND_TO_REMOVE, tableName ) );
@@ -568,7 +568,7 @@ public final class ModelImpl extends RelationalObjectImpl implements Model {
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( viewName, "viewName" ); //$NON-NLS-1$
 
-        final View[] views = getViews( transaction, viewName );
+        final ViewImpl[] views = getViews( transaction, viewName );
 
         if ( views.length == 0 ) {
             throw new KException( Messages.getString( Relational.VIEW_NOT_FOUND_TO_REMOVE, viewName ) );
@@ -690,6 +690,11 @@ public final class ModelImpl extends RelationalObjectImpl implements Model {
         } catch (final Exception e) {
             throw handleError(e);
         }
+    }
+    
+    @Override
+    public VdbImpl getRelationalParent(UnitOfWork transaction) throws KException {
+    	return this.getParent(transaction);
     }
 
 }

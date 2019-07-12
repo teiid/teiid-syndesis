@@ -29,7 +29,7 @@ import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.internal.RelationalObjectImpl.Filter;
 import org.komodo.relational.model.Model;
-import org.komodo.relational.vdb.ModelSource;
+import org.komodo.relational.model.internal.ModelImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.KomodoType;
@@ -38,11 +38,11 @@ import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 @SuppressWarnings( { "javadoc", "nls" } )
 public final class ModelSourceImplTest extends RelationalModelTest {
 
-    private ModelSource source;
+    private ModelSourceImpl source;
 
     @Before
     public void init() throws Exception {
-        final Model model = createModel();
+        final ModelImpl model = createModel();
         this.source = model.addSource( getTransaction(), "source" );
         commit();
     }
@@ -111,7 +111,7 @@ public final class ModelSourceImplTest extends RelationalModelTest {
 
     @Test
     public void shouldHaveParentModel() throws Exception {
-        assertThat( this.source.getParent( getTransaction() ), is( instanceOf( Model.class ) ) );
+        assertThat( this.source.getParent( getTransaction() ), is( instanceOf( ModelImpl.class ) ) );
     }
 
     @Test( expected = UnsupportedOperationException.class )

@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.komodo.core.KEvent.Type;
 import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.RepositoryClientEvent;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.metadata.MetadataInstance;
@@ -39,7 +40,6 @@ import org.komodo.spi.KEngine;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
 import org.komodo.spi.SystemConstants;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWorkListener;
 import org.komodo.utils.ArgCheck;

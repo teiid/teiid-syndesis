@@ -18,13 +18,12 @@
 package org.komodo.relational.model.internal;
 
 import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.internal.TypeResolver;
-import org.komodo.relational.model.Table;
 import org.komodo.relational.model.UniqueConstraint;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWork.State;
@@ -65,7 +64,7 @@ public final class UniqueConstraintImpl extends TableConstraintImpl implements U
          * {@inheritDoc}
          *
          * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
+         *      org.komodo.core.repository.KomodoObject)
          */
         @Override
         public boolean resolvable( final UnitOfWork transaction,
@@ -82,7 +81,7 @@ public final class UniqueConstraintImpl extends TableConstraintImpl implements U
          * {@inheritDoc}
          *
          * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
+         *      org.komodo.core.repository.KomodoObject)
          */
         @Override
         public UniqueConstraintImpl resolve( final UnitOfWork transaction,
@@ -130,7 +129,7 @@ public final class UniqueConstraintImpl extends TableConstraintImpl implements U
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#getTypeId()
+     * @see org.komodo.core.repository.KomodoObject#getTypeId()
      */
     @Override
     public int getTypeId() {
@@ -150,6 +149,11 @@ public final class UniqueConstraintImpl extends TableConstraintImpl implements U
         final KomodoObject parent = super.getParent( transaction );
         final TableImpl result = TableImpl.RESOLVER.resolve( transaction, parent );
         return result;
+    }
+    
+    @Override
+    public TableImpl getRelationalParent(UnitOfWork transaction) throws KException {
+    	return this.getParent(transaction);
     }
 
 }

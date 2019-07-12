@@ -21,19 +21,14 @@ import java.util.Map;
 
 import org.komodo.core.KomodoLexicon;
 import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.core.repository.RepositoryTools;
 import org.komodo.relational.RelationalObject;
-import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.dataservice.ServiceVdbEntry;
 import org.komodo.relational.dataservice.internal.DataserviceImpl;
 import org.komodo.relational.dataservice.internal.ServiceVdbEntryImpl;
-import org.komodo.relational.model.Column;
 import org.komodo.relational.model.ForeignKey;
-import org.komodo.relational.model.Model;
-import org.komodo.relational.model.OptionContainer;
 import org.komodo.relational.model.PrimaryKey;
-import org.komodo.relational.model.StatementOption;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.UniqueConstraint;
 import org.komodo.relational.model.View;
@@ -45,29 +40,22 @@ import org.komodo.relational.model.internal.StatementOptionImpl;
 import org.komodo.relational.model.internal.TableImpl;
 import org.komodo.relational.model.internal.UniqueConstraintImpl;
 import org.komodo.relational.model.internal.ViewImpl;
-import org.komodo.relational.profile.Profile;
 import org.komodo.relational.profile.SqlComposition;
 import org.komodo.relational.profile.SqlProjectedColumn;
 import org.komodo.relational.profile.StateCommand;
-import org.komodo.relational.profile.StateCommandAggregate;
-import org.komodo.relational.profile.ViewDefinition;
-import org.komodo.relational.profile.ViewEditorState;
+import org.komodo.relational.profile.internal.ProfileImpl;
 import org.komodo.relational.profile.internal.SqlCompositionImpl;
 import org.komodo.relational.profile.internal.SqlProjectedColumnImpl;
 import org.komodo.relational.profile.internal.StateCommandAggregateImpl;
 import org.komodo.relational.profile.internal.StateCommandImpl;
 import org.komodo.relational.profile.internal.ViewDefinitionImpl;
 import org.komodo.relational.profile.internal.ViewEditorStateImpl;
-import org.komodo.relational.vdb.ModelSource;
-import org.komodo.relational.vdb.Translator;
 import org.komodo.relational.vdb.Vdb;
-import org.komodo.relational.vdb.VdbImport;
 import org.komodo.relational.vdb.internal.ModelSourceImpl;
 import org.komodo.relational.vdb.internal.TranslatorImpl;
 import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.relational.vdb.internal.VdbImportImpl;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
@@ -113,9 +101,9 @@ public final class RelationalModelFactory {
      * @throws KException
      *         if an error occurs
      */
-    public static Column createColumn( final UnitOfWork transaction,
+    public static ColumnImpl createColumn( final UnitOfWork transaction,
                                        final Repository repository,
-                                       final Table table,
+                                       final TableImpl table,
                                        final String columnName ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
@@ -126,7 +114,7 @@ public final class RelationalModelFactory {
         final KomodoObject kobject = repository.add( transaction, table.getAbsolutePath(), columnName, null );
         kobject.addDescriptor( transaction, CreateTable.TABLE_ELEMENT );
 
-        final Column result = new ColumnImpl( transaction, repository, kobject.getAbsolutePath() );
+        final ColumnImpl result = new ColumnImpl( transaction, repository, kobject.getAbsolutePath() );
         return result;
     }
 
@@ -143,7 +131,7 @@ public final class RelationalModelFactory {
      * @throws KException
      *         if an error occurs
      */
-    public static Dataservice createDataservice( final UnitOfWork transaction,
+    public static DataserviceImpl createDataservice( final UnitOfWork transaction,
                                                  final Repository repository,
                                                  final String parentWorkspacePath,
                                                  final String serviceName ) throws KException {
@@ -163,7 +151,7 @@ public final class RelationalModelFactory {
         }
 
         final KomodoObject kobject = repository.add( transaction, parentPath, serviceName, DataVirtLexicon.DataService.NODE_TYPE );
-        final Dataservice result = new DataserviceImpl( transaction, repository, kobject.getAbsolutePath() );
+        final DataserviceImpl result = new DataserviceImpl( transaction, repository, kobject.getAbsolutePath() );
         return result;
     }
 
@@ -182,9 +170,9 @@ public final class RelationalModelFactory {
      * @throws KException
      *         if an error occurs
      */
-    public static ForeignKey createForeignKey( final UnitOfWork transaction,
+    public static ForeignKeyImpl createForeignKey( final UnitOfWork transaction,
                                                final Repository repository,
-                                               final Table parentTable,
+                                               final TableImpl parentTable,
                                                final String foreignKeyName,
                                                final Table tableReference ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
@@ -198,7 +186,7 @@ public final class RelationalModelFactory {
         kobject.addDescriptor( transaction, Constraint.FOREIGN_KEY_CONSTRAINT );
         kobject.setProperty( transaction, Constraint.TYPE, ForeignKey.CONSTRAINT_TYPE.toValue() );
 
-        final ForeignKey fk = new ForeignKeyImpl( transaction, repository, kobject.getAbsolutePath() );
+        final ForeignKeyImpl fk = new ForeignKeyImpl( transaction, repository, kobject.getAbsolutePath() );
         fk.setReferencesTable( transaction, tableReference );
         return fk;
     }
@@ -216,9 +204,9 @@ public final class RelationalModelFactory {
      * @throws KException
      *         if an error occurs
      */
-    public static Model createModel( final UnitOfWork transaction,
+    public static ModelImpl createModel( final UnitOfWork transaction,
                                      final Repository repository,
-                                     final Vdb vdb,
+                                     final VdbImpl vdb,
                                      final String modelName ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
@@ -227,7 +215,7 @@ public final class RelationalModelFactory {
         ArgCheck.isNotEmpty( modelName, "modelName" ); //$NON-NLS-1$
 
         final KomodoObject kobject = vdb.addChild( transaction, modelName, VdbLexicon.Vdb.DECLARATIVE_MODEL );
-        final Model result = new ModelImpl( transaction, repository, kobject.getAbsolutePath() );
+        final ModelImpl result = new ModelImpl( transaction, repository, kobject.getAbsolutePath() );
 
         return result;
     }
@@ -245,9 +233,9 @@ public final class RelationalModelFactory {
      * @throws KException
      *         if an error occurs
      */
-    public static ModelSource createModelSource( final UnitOfWork transaction,
+    public static ModelSourceImpl createModelSource( final UnitOfWork transaction,
                                                  final Repository repository,
-                                                 final Model parentModel,
+                                                 final ModelImpl parentModel,
                                                  final String sourceName ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
@@ -261,7 +249,7 @@ public final class RelationalModelFactory {
                                                                              VdbLexicon.Vdb.SOURCES,
                                                                              VdbLexicon.Vdb.SOURCES );
             final KomodoObject kobject = grouping.addChild( transaction, sourceName, VdbLexicon.Source.SOURCE );
-            final ModelSource result = new ModelSourceImpl( transaction, repository, kobject.getAbsolutePath() );
+            final ModelSourceImpl result = new ModelSourceImpl( transaction, repository, kobject.getAbsolutePath() );
             return result;
         } catch ( final Exception e ) {
             throw handleError( e );
@@ -281,9 +269,9 @@ public final class RelationalModelFactory {
      * @throws KException
      *         if an error occurs
      */
-    public static PrimaryKey createPrimaryKey( final UnitOfWork transaction,
+    public static PrimaryKeyImpl createPrimaryKey( final UnitOfWork transaction,
                                                final Repository repository,
-                                               final Table parentTable,
+                                               final TableImpl parentTable,
                                                final String primaryKeyName ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
@@ -295,7 +283,7 @@ public final class RelationalModelFactory {
         kobject.addDescriptor( transaction, Constraint.TABLE_ELEMENT );
         kobject.setProperty( transaction, Constraint.TYPE, PrimaryKey.CONSTRAINT_TYPE.toValue() );
 
-        final PrimaryKey result = new PrimaryKeyImpl( transaction, repository, kobject.getAbsolutePath() );
+        final PrimaryKeyImpl result = new PrimaryKeyImpl( transaction, repository, kobject.getAbsolutePath() );
         return result;
     }
 
@@ -312,9 +300,9 @@ public final class RelationalModelFactory {
      * @throws KException
      *         if an error occurs
      */
-    public static ServiceVdbEntry createServiceVdbEntry( final UnitOfWork transaction,
+    public static ServiceVdbEntryImpl createServiceVdbEntry( final UnitOfWork transaction,
                                                          final Repository repository,
-                                                         final Dataservice dataService,
+                                                         final DataserviceImpl dataService,
                                                          final String serviceVdbEntryName ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
@@ -326,7 +314,7 @@ public final class RelationalModelFactory {
                                                      dataService.getAbsolutePath(),
                                                      serviceVdbEntryName,
                                                      DataVirtLexicon.ServiceVdbEntry.NODE_TYPE );
-        final ServiceVdbEntry result = new ServiceVdbEntryImpl( transaction, repository, kobject.getAbsolutePath() );
+        final ServiceVdbEntryImpl result = new ServiceVdbEntryImpl( transaction, repository, kobject.getAbsolutePath() );
         return result;
     }
 
@@ -345,7 +333,7 @@ public final class RelationalModelFactory {
      * @throws KException
      *         if an error occurs
      */
-    public static StatementOption createStatementOption( final UnitOfWork transaction,
+    public static StatementOptionImpl createStatementOption( final UnitOfWork transaction,
                                                          final Repository repository,
                                                          final OptionContainer optionContainer,
                                                          final String optionName,
@@ -360,7 +348,7 @@ public final class RelationalModelFactory {
         final KomodoObject kobject = repository.add( transaction, optionContainer.getAbsolutePath(), optionName, null );
         kobject.addDescriptor( transaction, StandardDdlLexicon.TYPE_STATEMENT_OPTION );
 
-        final StatementOption result = new StatementOptionImpl( transaction, repository, kobject.getAbsolutePath() );
+        final StatementOptionImpl result = new StatementOptionImpl( transaction, repository, kobject.getAbsolutePath() );
         result.setOption( transaction, optionValue );
         return result;
     }
@@ -378,9 +366,9 @@ public final class RelationalModelFactory {
      * @throws KException
      *         if an error occurs
      */
-    public static Table createTable( final UnitOfWork transaction,
+    public static TableImpl createTable( final UnitOfWork transaction,
                                      final Repository repository,
-                                     final Model parentModel,
+                                     final ModelImpl parentModel,
                                      final String tableName ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
@@ -392,7 +380,7 @@ public final class RelationalModelFactory {
         kobject.addDescriptor( transaction, CreateTable.TABLE_STATEMENT );
         setCreateStatementProperties( transaction, kobject );
 
-        final Table result = new TableImpl( transaction, repository, kobject.getAbsolutePath() );
+        final TableImpl result = new TableImpl( transaction, repository, kobject.getAbsolutePath() );
         return result;
     }
 
@@ -411,9 +399,9 @@ public final class RelationalModelFactory {
      * @throws KException
      *         if an error occurs
      */
-    public static Translator createTranslator( final UnitOfWork transaction,
+    public static TranslatorImpl createTranslator( final UnitOfWork transaction,
                                                final Repository repository,
-                                               final Vdb parentVdb,
+                                               final VdbImpl parentVdb,
                                                final String translatorName,
                                                final String translatorType ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
@@ -429,7 +417,7 @@ public final class RelationalModelFactory {
                                                                              VdbLexicon.Vdb.TRANSLATORS,
                                                                              VdbLexicon.Vdb.TRANSLATORS );
             final KomodoObject kobject = grouping.addChild( transaction, translatorName, VdbLexicon.Translator.TRANSLATOR );
-            final Translator result = new TranslatorImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
+            final TranslatorImpl result = new TranslatorImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
             result.setType( transaction, translatorType );
             return result;
         } catch ( final Exception e ) {
@@ -450,9 +438,9 @@ public final class RelationalModelFactory {
      * @throws KException
      *         if an error occurs
      */
-    public static UniqueConstraint createUniqueConstraint( final UnitOfWork transaction,
+    public static UniqueConstraintImpl createUniqueConstraint( final UnitOfWork transaction,
                                                            final Repository repository,
-                                                           final Table parentTable,
+                                                           final TableImpl parentTable,
                                                            final String uniqueConstraintName ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
@@ -464,7 +452,7 @@ public final class RelationalModelFactory {
         kobject.addDescriptor( transaction, Constraint.TABLE_ELEMENT );
         kobject.setProperty( transaction, Constraint.TYPE, UniqueConstraint.CONSTRAINT_TYPE.toValue() );
 
-        final UniqueConstraint result = new UniqueConstraintImpl( transaction, repository, kobject.getAbsolutePath() );
+        final UniqueConstraintImpl result = new UniqueConstraintImpl( transaction, repository, kobject.getAbsolutePath() );
         return result;
     }
 
@@ -483,7 +471,7 @@ public final class RelationalModelFactory {
      * @throws KException
      *         if an error occurs
      */
-    public static Vdb createVdb( final UnitOfWork transaction,
+    public static VdbImpl createVdb( final UnitOfWork transaction,
                                  final Repository repository,
                                  final String parentWorkspacePath,
                                  final String vdbName,
@@ -505,7 +493,7 @@ public final class RelationalModelFactory {
         }
 
         final KomodoObject kobject = repository.add( transaction, parentPath, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE );
-        final Vdb result = new VdbImpl( transaction, repository, kobject.getAbsolutePath() );
+        final VdbImpl result = new VdbImpl( transaction, repository, kobject.getAbsolutePath() );
         result.setOriginalFilePath( transaction, externalFilePath );
         result.setVdbName( transaction, vdbName );
         return result;
@@ -524,9 +512,9 @@ public final class RelationalModelFactory {
      * @throws KException
      *         if an error occurs
      */
-    public static VdbImport createVdbImport( final UnitOfWork transaction,
+    public static VdbImportImpl createVdbImport( final UnitOfWork transaction,
                                              final Repository repository,
-                                             final Vdb parentVdb,
+                                             final VdbImpl parentVdb,
                                              final String vdbName ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
@@ -540,7 +528,7 @@ public final class RelationalModelFactory {
                                                                              VdbLexicon.Vdb.IMPORT_VDBS,
                                                                              VdbLexicon.Vdb.IMPORT_VDBS );
             final KomodoObject kobject = grouping.addChild( transaction, vdbName, VdbLexicon.ImportVdb.IMPORT_VDB );
-            final VdbImport result = new VdbImportImpl( transaction, repository, kobject.getAbsolutePath() );
+            final VdbImportImpl	 result = new VdbImportImpl( transaction, repository, kobject.getAbsolutePath() );
             result.setVersion( transaction, Vdb.DEFAULT_VERSION );
             return result;
         } catch ( final Exception e ) {
@@ -561,9 +549,9 @@ public final class RelationalModelFactory {
      * @throws KException
      *         if an error occurs
      */
-    public static View createView( final UnitOfWork transaction,
+    public static ViewImpl createView( final UnitOfWork transaction,
                                    final Repository repository,
-                                   final Model parentModel,
+                                   final ModelImpl parentModel,
                                    final String viewName ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
@@ -575,7 +563,7 @@ public final class RelationalModelFactory {
         kobject.addDescriptor( transaction, CreateTable.VIEW_STATEMENT );
         setCreateStatementProperties( transaction, kobject );
 
-        final View result = new ViewImpl( transaction, repository, kobject.getAbsolutePath() );
+        final ViewImpl result = new ViewImpl( transaction, repository, kobject.getAbsolutePath() );
         return result;
     }
 
@@ -593,7 +581,7 @@ public final class RelationalModelFactory {
      * @throws KException
      *        if an error occurs
      */
-    public static ViewEditorState createViewEditorState(UnitOfWork transaction, Repository repository, Profile profile,
+    public static ViewEditorStateImpl createViewEditorState(UnitOfWork transaction, Repository repository, ProfileImpl profile,
                                                                                                    String stateId) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
@@ -606,7 +594,7 @@ public final class RelationalModelFactory {
                                                                              KomodoLexicon.Profile.VIEW_EDITOR_STATES,
                                                                              KomodoLexicon.Profile.VIEW_EDITOR_STATES );
             final KomodoObject kobject = grouping.addChild( transaction, stateId, KomodoLexicon.ViewEditorState.NODE_TYPE );
-            final ViewEditorState result = new ViewEditorStateImpl( transaction, repository, kobject.getAbsolutePath() );
+            final ViewEditorStateImpl result = new ViewEditorStateImpl( transaction, repository, kobject.getAbsolutePath() );
             return result;
         } catch ( final Exception e ) {
             throw handleError( e );
@@ -627,20 +615,20 @@ public final class RelationalModelFactory {
     * @throws KException
     *        if an error occurs
     */
-   public static ViewDefinition createViewDefinition(UnitOfWork transaction, Repository repository, ViewEditorState viewEditorState) throws KException {
+   public static ViewDefinitionImpl createViewDefinition(UnitOfWork transaction, Repository repository, ViewEditorStateImpl viewEditorState) throws KException {
        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
        ArgCheck.isNotNull( repository, "repository" ); //$NON-NLS-1$
 
        try {
-   		   // If a ViewDefinition already exists, remove it first
-           final ViewDefinition viewDefn = viewEditorState.getViewDefinition(transaction);
+   		   // If a ViewDefinitionImpl already exists, remove it first
+           final ViewDefinitionImpl viewDefn = viewEditorState.getViewDefinition(transaction);
            if (viewDefn != null) {
            	viewDefn.remove(transaction);
            }
 
     	   final KomodoObject kobject = viewEditorState.addChild(transaction, KomodoLexicon.ViewEditorState.VIEW_DEFINITION, KomodoLexicon.ViewEditorState.VIEW_DEFINITION);
-           final ViewDefinition result = new ViewDefinitionImpl( transaction, repository, kobject.getAbsolutePath() );
+           final ViewDefinitionImpl result = new ViewDefinitionImpl( transaction, repository, kobject.getAbsolutePath() );
            return result;
        } catch ( final Exception e ) {
            throw handleError( e );
@@ -663,7 +651,7 @@ public final class RelationalModelFactory {
    */
 	public static SqlComposition createSqlComposition(UnitOfWork transaction, 
 			                                          Repository repository, 
-			                                          ViewDefinition viewDefinition, 
+			                                          ViewDefinitionImpl viewDefinition, 
 			                                          String compositionName) throws KException {
 		
 	       ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
@@ -698,7 +686,7 @@ public final class RelationalModelFactory {
 	 */
 	public static SqlProjectedColumn createSqlProjectedColumn(UnitOfWork transaction, 
 	                                                          Repository repository, 
-	                                                          ViewDefinition viewDefinition, 
+	                                                          ViewDefinitionImpl viewDefinition, 
 	                                                          String columnName) throws KException {
 
 	    ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
@@ -729,8 +717,8 @@ public final class RelationalModelFactory {
      * @throws KException
      *        if an error occurs
      */
-    public static StateCommandAggregate createStateCommandAggregate (UnitOfWork transaction, Repository repository,
-                                                                     ViewEditorState viewEditorState) throws KException {
+    public static StateCommandAggregateImpl createStateCommandAggregate (UnitOfWork transaction, Repository repository,
+                                                                     ViewEditorStateImpl viewEditorState) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotNull( repository, "repository" ); //$NON-NLS-1$
@@ -741,7 +729,7 @@ public final class RelationalModelFactory {
             String aggName = KomodoLexicon.StateCommandAggregate.NAME_PREFIX + index;
             final KomodoObject kobject = viewEditorState.addChild(transaction, aggName,
                                                                   KomodoLexicon.StateCommandAggregate.NODE_TYPE);
-            final StateCommandAggregate result = new StateCommandAggregateImpl(transaction, repository, kobject.getAbsolutePath());
+            final StateCommandAggregateImpl result = new StateCommandAggregateImpl(transaction, repository, kobject.getAbsolutePath());
             return result;
         } catch ( final Exception e ) {
             throw handleError( e );
@@ -767,7 +755,7 @@ public final class RelationalModelFactory {
     *        if an error occurs
     */
    public static StateCommand createStateCommand(UnitOfWork transaction, Repository repository,
-                                                 StateCommandAggregate stateCommandAgg,
+                                                 StateCommandAggregateImpl stateCommandAgg,
                                                  String stateCommandType,
                                                  String commandId,
                                                  Map<String, String> arguments) throws KException {

@@ -17,8 +17,8 @@
  */
 package org.komodo.relational.internal;
 
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.relational.RelationalObject;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWork.State;

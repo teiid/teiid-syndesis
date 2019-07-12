@@ -39,11 +39,6 @@ public interface SqlProjectedColumn  extends RelationalObject, StringConstants {
     KomodoType IDENTIFIER = KomodoType.SQL_PROJECTED_COLUMN;
     
     /**
-     * An empty array of sql compositions.
-     */
-    SqlProjectedColumn[] NO_SQL_PROJECTED_COLUMNS = new SqlProjectedColumn[0];
-
-    /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param name

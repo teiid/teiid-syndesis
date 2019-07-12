@@ -24,11 +24,10 @@ import static org.junit.Assert.fail;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.internal.RelationalObjectImpl.Filter;
-import org.komodo.relational.model.Column;
-import org.komodo.relational.model.PrimaryKey;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.TableConstraint;
 import org.komodo.spi.KException;
@@ -41,8 +40,8 @@ public final class PrimaryKeyImplTest extends RelationalModelTest {
 
     private static final String NAME = "primaryKey";
 
-    private PrimaryKey primaryKey;
-    private Table table;
+    private PrimaryKeyImpl primaryKey;
+    private TableImpl table;
 
     @Before
     public void init() throws Exception {
@@ -53,7 +52,7 @@ public final class PrimaryKeyImplTest extends RelationalModelTest {
 
     @Test
     public void shouldAddColumnReference() throws Exception {
-        final Column column = this.table.addColumn( getTransaction(), "MyColumn" );
+        final ColumnImpl column = this.table.addColumn( getTransaction(), "MyColumn" );
         this.primaryKey.addColumn( getTransaction(), column );
         commit();
 
@@ -62,7 +61,7 @@ public final class PrimaryKeyImplTest extends RelationalModelTest {
         assertThat( this.primaryKey.getProperty( getTransaction(), Constraint.REFERENCES ).getValues( getTransaction() ).length, is( 1 ) );
         assertThat( this.primaryKey.getProperty( getTransaction(), Constraint.REFERENCES ).getValues( getTransaction() )[0].toString(),
                     // TODO Is this worth creating a getId() API method??
-                    is( ((ColumnImpl)column).getObjectFactory().getId(getTransaction(), column).getStringValue( getTransaction() ) ) );
+                    is( ((ColumnImpl)column).getObjectFactory().getId(getTransaction(), (KomodoObject)column).getStringValue( getTransaction() ) ) );
     }
 
     @Test

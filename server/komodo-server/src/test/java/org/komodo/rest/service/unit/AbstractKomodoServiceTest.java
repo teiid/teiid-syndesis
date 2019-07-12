@@ -30,15 +30,15 @@ import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.komodo.core.KEngineImpl;
 import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
-import org.komodo.relational.dataservice.Dataservice;
+import org.komodo.relational.dataservice.internal.DataserviceImpl;
 import org.komodo.relational.importer.vdb.VdbImporter;
-import org.komodo.relational.vdb.Vdb;
+import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.rest.relational.KomodoRestUriBuilder;
 import org.komodo.rest.service.AbstractServiceTest;
 import org.komodo.rest.service.ServiceTestUtilities;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.SynchronousCallback;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.test.utils.TestUtilities;
@@ -91,17 +91,17 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
     }
 
     protected void removeStatesDataService() throws Exception {
-        Dataservice dataservice = serviceTestUtilities.getDataservice(USER_NAME, TestUtilities.US_STATES_DATA_SERVICE_NAME);
+        DataserviceImpl dataservice = serviceTestUtilities.getDataservice(USER_NAME, TestUtilities.US_STATES_DATA_SERVICE_NAME);
         if (dataservice != null)
             serviceTestUtilities.deleteObject(dataservice.getAbsolutePath(), USER_NAME);
 
-        Vdb vdb = serviceTestUtilities.getVdb(USER_NAME, TestUtilities.US_STATES_VDB_NAME);
+        VdbImpl vdb = serviceTestUtilities.getVdb(USER_NAME, TestUtilities.US_STATES_VDB_NAME);
         if (vdb != null)
             serviceTestUtilities.deleteObject(vdb.getAbsolutePath(), USER_NAME);
     }
 
     protected void removeSampleService() throws Exception {
-        Dataservice dataservice = serviceTestUtilities.getDataservice(USER_NAME, TestUtilities.SAMPLE_DATA_SERVICE_NAME);
+        DataserviceImpl dataservice = serviceTestUtilities.getDataservice(USER_NAME, TestUtilities.SAMPLE_DATA_SERVICE_NAME);
         if (dataservice != null)
             serviceTestUtilities.deleteObject(dataservice.getAbsolutePath(), USER_NAME);
 
@@ -114,7 +114,7 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
                                                  TestUtilities.TWEET_EXAMPLE_VDB_NAME};
 
         for (String vdbName : vdbNames) {
-            Vdb vdb = serviceTestUtilities.getVdb(USER_NAME, vdbName);
+            VdbImpl vdb = serviceTestUtilities.getVdb(USER_NAME, vdbName);
             if (vdb == null)
                 continue;
 
@@ -126,7 +126,7 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
         ImportMessages msgs = importVdb(TestUtilities.usStatesSourceExample(), USER_NAME);
         Assert.assertTrue(msgs.getErrorMessages().isEmpty());
 
-        Vdb vdb = serviceTestUtilities.getVdb(USER_NAME, TestUtilities.USSTATES_SOURCE_VDB_NAME);
+        VdbImpl vdb = serviceTestUtilities.getVdb(USER_NAME, TestUtilities.USSTATES_SOURCE_VDB_NAME);
         Assert.assertNotNull(vdb);
         logObjectPath(vdb.getAbsolutePath());
     }

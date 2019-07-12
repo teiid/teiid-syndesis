@@ -22,10 +22,6 @@ import java.util.Calendar;
 
 import org.komodo.core.internal.repository.Repository;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.repository.Property;
-import org.komodo.spi.repository.PropertyDescriptor;
-import org.komodo.spi.repository.PropertyValueType;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
@@ -81,7 +77,7 @@ public class PropertyImpl implements Property {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getAbsolutePath()
+     * @see org.komodo.core.repository.Property#getAbsolutePath()
      */
     @Override
     public String getAbsolutePath() {
@@ -91,7 +87,7 @@ public class PropertyImpl implements Property {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getBinaryValue(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getBinaryValue(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public InputStream getBinaryValue( final UnitOfWork transaction ) throws KException {
@@ -117,7 +113,7 @@ public class PropertyImpl implements Property {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getBooleanValue(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getBooleanValue(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public Boolean getBooleanValue( final UnitOfWork transaction ) throws KException {
@@ -138,7 +134,7 @@ public class PropertyImpl implements Property {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getBooleanValues(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getBooleanValues(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public Boolean[] getBooleanValues( final UnitOfWork transaction ) throws KException {
@@ -159,7 +155,7 @@ public class PropertyImpl implements Property {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getDateValue(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getDateValue(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public Calendar getDateValue( final UnitOfWork transaction ) throws KException {
@@ -180,7 +176,7 @@ public class PropertyImpl implements Property {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getDateValues(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getDateValues(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public Calendar[] getDateValues( final UnitOfWork transaction ) throws KException {
@@ -201,7 +197,7 @@ public class PropertyImpl implements Property {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getDoubleValue(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getDoubleValue(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public Double getDoubleValue( final UnitOfWork transaction ) throws KException {
@@ -222,7 +218,7 @@ public class PropertyImpl implements Property {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getDoubleValues(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getDoubleValues(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public Double[] getDoubleValues( final UnitOfWork transaction ) throws KException {
@@ -243,7 +239,7 @@ public class PropertyImpl implements Property {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getIntegerValue(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getIntegerValue(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public Integer getIntegerValue( final UnitOfWork transaction ) throws KException {
@@ -264,7 +260,7 @@ public class PropertyImpl implements Property {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getIntegerValues(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getIntegerValues(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public Integer[] getIntegerValues( final UnitOfWork transaction ) throws KException {
@@ -285,7 +281,7 @@ public class PropertyImpl implements Property {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getLongValue(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getLongValue(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public Long getLongValue( final UnitOfWork transaction ) throws KException {
@@ -306,7 +302,7 @@ public class PropertyImpl implements Property {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getLongValues(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getLongValues(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public Long[] getLongValues( final UnitOfWork transaction ) throws KException {
@@ -327,7 +323,7 @@ public class PropertyImpl implements Property {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KNode#getName(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.KNode#getName(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public String getName( final UnitOfWork transaction ) throws KException {
@@ -348,7 +344,7 @@ public class PropertyImpl implements Property {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KNode#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.KNode#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public KomodoObject getParent( final UnitOfWork transaction ) throws KException {
@@ -369,7 +365,7 @@ public class PropertyImpl implements Property {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KNode#getRepository()
+     * @see org.komodo.core.repository.KNode#getRepository()
      */
     public Repository getRepository() {
         return this.repository;
@@ -378,7 +374,7 @@ public class PropertyImpl implements Property {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getStringValue(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getStringValue(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public String getStringValue( final UnitOfWork transaction ) throws KException {
@@ -399,7 +395,7 @@ public class PropertyImpl implements Property {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getStringValues(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getStringValues(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public String[] getStringValues( final UnitOfWork transaction ) throws KException {
@@ -420,7 +416,7 @@ public class PropertyImpl implements Property {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getValue(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getValue(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public Object getValue( final UnitOfWork transaction ) throws KException {
@@ -441,7 +437,7 @@ public class PropertyImpl implements Property {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getValues(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getValues(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public Object[] getValues( final UnitOfWork transaction ) throws KException {
@@ -462,7 +458,7 @@ public class PropertyImpl implements Property {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getDescriptor(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getDescriptor(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public PropertyDescriptor getDescriptor( final UnitOfWork transaction ) throws KException {
@@ -483,7 +479,7 @@ public class PropertyImpl implements Property {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getValueType(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getValueType(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public PropertyValueType getValueType( final UnitOfWork transaction ) throws KException {
@@ -496,7 +492,7 @@ public class PropertyImpl implements Property {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#isMultiple(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#isMultiple(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public boolean isMultiple( final UnitOfWork transaction ) throws KException {
@@ -517,7 +513,7 @@ public class PropertyImpl implements Property {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#set(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.Object[])
+     * @see org.komodo.core.repository.Property#set(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.Object[])
      */
     @Override
     public void set( final UnitOfWork transaction,

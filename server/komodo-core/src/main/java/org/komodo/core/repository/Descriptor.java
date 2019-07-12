@@ -15,56 +15,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.spi.repository;
+package org.komodo.core.repository;
 
-import java.util.Date;
+import org.komodo.spi.KException;
+import org.komodo.spi.repository.UnitOfWork;
 
 /**
- * The types of property value
+ * A {@link KomodoObject Komodo object} type definition.
  */
-public enum PropertyValueType {
-    /**
-     * Binary type
-     */
-    BINARY,
+public interface Descriptor {
 
     /**
-     * {@link String} type
+     * @return the type name (never empty)
      */
-    STRING,
+    String getName();
 
     /**
-     * {@link Long} type
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+     * @return the {@link KomodoObject Komodo object's} {@link Property property} {@link PropertyDescriptor descriptors} (never
+     *         <code>null</code> but can be empty)
+     * @throws KException
+     *         if an error occurs
      */
-    LONG,
-
-    /**
-     * {@link Integer} type
-     */
-    INTEGER,
-
-    /**
-     * {@link Double} type
-     */
-    DOUBLE,
-
-    /**
-     * {@link Boolean} type
-     */
-    BOOLEAN,
-
-    /**
-     * {@link Date} type
-     */
-    DATE,
-
-    /**
-     * reference type
-     */
-    REFERENCE,
-
-    /**
-     * undefined type
-     */
-    UNDEFINED
+    PropertyDescriptor[] getPropertyDescriptors( final UnitOfWork transaction ) throws KException;
 }

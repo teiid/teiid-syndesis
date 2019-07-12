@@ -21,12 +21,12 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 import org.komodo.core.AbstractLocalRepositoryTest;
-import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.model.Model;
-import org.komodo.relational.model.Table;
-import org.komodo.relational.vdb.Vdb;
+import org.komodo.core.repository.KomodoObject;
+import org.komodo.relational.dataservice.internal.DataserviceImpl;
+import org.komodo.relational.model.internal.ModelImpl;
+import org.komodo.relational.model.internal.TableImpl;
+import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.relational.workspace.WorkspaceManagerImpl;
-import org.komodo.spi.repository.KomodoObject;
 import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
@@ -35,54 +35,54 @@ public class RelationalModelTest extends AbstractLocalRepositoryTest {
 
     protected static final String VDB_PATH = "/vdb/path/vdb.vdb";
 
-    protected Model createModel() throws Exception {
+    protected ModelImpl createModel() throws Exception {
         return createModel( this.name.getMethodName() + "-VDB", VDB_PATH, this.name.getMethodName() + "-Model" );
     }
 
-    protected Model createModel( final String vdbName,
+    protected ModelImpl createModel( final String vdbName,
                                  final String vdbPath,
                                  final String modelName ) throws Exception {
         final WorkspaceManagerImpl mgr = WorkspaceManagerImpl.getInstance(_repo, getTransaction());
-        final Vdb vdb = mgr.createVdb( getTransaction(), null, vdbName, vdbPath );
-        final Model model = vdb.addModel( getTransaction(), modelName );
+        final VdbImpl vdb = mgr.createVdb( getTransaction(), null, vdbName, vdbPath );
+        final ModelImpl model = vdb.addModel( getTransaction(), modelName );
 
         assertThat( model.getPrimaryType( getTransaction() ).getName(), is( VdbLexicon.Vdb.DECLARATIVE_MODEL ) );
         assertThat( model.getName( getTransaction() ), is( modelName ) );
         return model;
     }
 
-    protected Table createTable() throws Exception {
+    protected TableImpl createTable() throws Exception {
         return createTable( getDefaultVdbName(), VDB_PATH, getDefaultModelName(), getDefaultTableName() );
     }
 
-    protected Table createTable( final String vdbName,
+    protected TableImpl createTable( final String vdbName,
                                  final String vdbPath,
                                  final String modelName,
                                  final String tableName ) throws Exception {
         final WorkspaceManagerImpl mgr = WorkspaceManagerImpl.getInstance(_repo, getTransaction());
-        final Vdb vdb = mgr.createVdb( getTransaction(), null, vdbName, vdbPath );
-        final Model model = vdb.addModel( getTransaction(), modelName );
+        final VdbImpl vdb = mgr.createVdb( getTransaction(), null, vdbName, vdbPath );
+        final ModelImpl model = vdb.addModel( getTransaction(), modelName );
         return model.addTable( getTransaction(), tableName );
     }
 
-    protected Vdb createVdb() throws Exception {
+    protected VdbImpl createVdb() throws Exception {
         return createVdb( getDefaultVdbName(), VDB_PATH );
     }
 
-    protected Vdb createVdb( final String vdbName ) throws Exception {
+    protected VdbImpl createVdb( final String vdbName ) throws Exception {
         return createVdb( vdbName, VDB_PATH );
     }
 
-    protected Vdb createVdb( final String vdbName,
+    protected VdbImpl createVdb( final String vdbName,
                              final String originalFilePath ) throws Exception {
         return createVdb(vdbName, null, originalFilePath);
     }
 
-    protected Vdb createVdb( final String vdbName,
+    protected VdbImpl createVdb( final String vdbName,
                              final KomodoObject parent,
                              final String originalFilePath ) throws Exception {
         final WorkspaceManagerImpl mgr = WorkspaceManagerImpl.getInstance(_repo, getTransaction());
-        final Vdb vdb = mgr.createVdb( getTransaction(), parent, vdbName, originalFilePath );
+        final VdbImpl vdb = mgr.createVdb( getTransaction(), parent, vdbName, originalFilePath );
 
         assertThat( vdb.getPrimaryType( getTransaction() ).getName(), is( VdbLexicon.Vdb.VIRTUAL_DATABASE ) );
         assertThat( vdb.getName( getTransaction() ), is( vdbName ) );
@@ -90,18 +90,18 @@ public class RelationalModelTest extends AbstractLocalRepositoryTest {
         return vdb;
     }
 
-    protected Dataservice createDataservice() throws Exception {
+    protected DataserviceImpl createDataservice() throws Exception {
         return createDataservice( getDefaultDataserviceName() );
     }
 
-    protected Dataservice createDataservice( final String serviceName ) throws Exception {
+    protected DataserviceImpl createDataservice( final String serviceName ) throws Exception {
         return createDataservice( serviceName, null );
     }
 
-    protected Dataservice createDataservice( final String serviceName,
+    protected DataserviceImpl createDataservice( final String serviceName,
                                              final KomodoObject parent ) throws Exception {
         final WorkspaceManagerImpl mgr = WorkspaceManagerImpl.getInstance(_repo, getTransaction());
-        final Dataservice ds = mgr.createDataservice( getTransaction(), parent, serviceName );
+        final DataserviceImpl ds = mgr.createDataservice( getTransaction(), parent, serviceName );
 
         assertThat( ds.getPrimaryType( getTransaction() ).getName(), is( DataVirtLexicon.DataService.NODE_TYPE ) );
         assertThat( ds.getName( getTransaction() ), is( serviceName ) );

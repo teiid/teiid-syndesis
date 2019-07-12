@@ -23,16 +23,16 @@ import java.util.List;
 import org.komodo.core.LexiconConstants.JcrLexicon;
 import org.komodo.core.LexiconConstants.NTLexicon;
 import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.repository.Descriptor;
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.Messages;
 import org.komodo.core.repository.Messages.Komodo;
 import org.komodo.core.repository.ObjectImpl;
+import org.komodo.core.repository.Property;
+import org.komodo.core.repository.PropertyDescriptor;
 import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.Descriptor;
-import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.repository.Property;
-import org.komodo.spi.repository.PropertyDescriptor;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
@@ -44,7 +44,7 @@ import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
 /**
  * A base implementation of a relational object.
  */
-public abstract class RelationalObjectImpl extends ObjectImpl implements RelationalObject {
+public abstract class RelationalObjectImpl extends ObjectImpl implements RelationalObject, KomodoObject {
 	
     /**
      * A filter to use when deciding which properties and descriptors apply to an object.
@@ -668,7 +668,7 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.spi.repository.Descriptor#getName()
+         * @see org.komodo.core.repository.Descriptor#getName()
          */
         @Override
         public String getName() {
@@ -678,7 +678,7 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.spi.repository.Descriptor#getPropertyDescriptors(org.komodo.spi.repository.Repository.UnitOfWork)
+         * @see org.komodo.core.repository.Descriptor#getPropertyDescriptors(org.komodo.spi.repository.Repository.UnitOfWork)
          */
         @Override
         public PropertyDescriptor[] getPropertyDescriptors( final UnitOfWork transaction ) throws KException {

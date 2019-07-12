@@ -34,11 +34,10 @@ import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.internal.RelationalObjectImpl.Filter;
 import org.komodo.relational.model.Column;
-import org.komodo.relational.model.ForeignKey;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.TableConstraint;
-import org.komodo.relational.vdb.Vdb;
+import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoType;
 import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
@@ -49,17 +48,17 @@ public final class ForeignKeyImplTest extends RelationalModelTest {
 
     private static final String NAME = "foreignKey";
 
-    private ForeignKey foreignKey;
-    private Table parentTable;
-    private Table refTable;
+    private ForeignKeyImpl foreignKey;
+    private TableImpl parentTable;
+    private TableImpl refTable;
 
     @Before
     public void init() throws Exception {
-        final Vdb vdb = createVdb();
-        final Model model = createModel();
+        final VdbImpl vdb = createVdb();
+        final ModelImpl model = createModel();
         this.parentTable = model.addTable( getTransaction(), "parentTable" );
 
-        final Model refModel = vdb.addModel( getTransaction(), "refModel" );
+        final ModelImpl refModel = vdb.addModel( getTransaction(), "refModel" );
         this.refTable = refModel.addTable( getTransaction(), "refTable" );
 
         this.foreignKey = this.parentTable.addForeignKey( getTransaction(), NAME, this.refTable );
@@ -68,10 +67,10 @@ public final class ForeignKeyImplTest extends RelationalModelTest {
 
     @Test
     public void shouldAddReferencesColumns() throws Exception {
-        final Column columnA = RelationalModelFactory.createColumn( getTransaction(), _repo, this.refTable, "columnRefA" );
+        final ColumnImpl columnA = RelationalModelFactory.createColumn( getTransaction(), _repo, this.refTable, "columnRefA" );
         this.foreignKey.addReferencesColumn( getTransaction(), columnA );
 
-        final Column columnB = RelationalModelFactory.createColumn( getTransaction(), _repo, this.refTable, "columnRefB" );
+        final ColumnImpl columnB = RelationalModelFactory.createColumn( getTransaction(), _repo, this.refTable, "columnRefB" );
         this.foreignKey.addReferencesColumn( getTransaction(), columnB );
 
         commit(); // must commit so that query used in getReferencesColumns will work
@@ -178,7 +177,7 @@ public final class ForeignKeyImplTest extends RelationalModelTest {
 
     @Test
     public void shouldRemoveReferencesColumn() throws Exception {
-        final Column columnA = RelationalModelFactory.createColumn( getTransaction(), _repo, this.refTable, "removeRefColumnA" );
+        final ColumnImpl columnA = RelationalModelFactory.createColumn( getTransaction(), _repo, this.refTable, "removeRefColumnA" );
         this.foreignKey.addReferencesColumn( getTransaction(), columnA );
         commit(); // must commit so that query used in next method will work
 
@@ -195,7 +194,7 @@ public final class ForeignKeyImplTest extends RelationalModelTest {
 
     @Test
     public void shouldSetTableReference() throws Exception {
-        final Table newTable = RelationalModelFactory.createTable( getTransaction(), _repo, mock( Model.class ), "newTable" );
+        final TableImpl newTable = RelationalModelFactory.createTable( getTransaction(), _repo, mock( ModelImpl.class ), "newTable" );
         this.foreignKey.setReferencesTable( getTransaction(), newTable );
         commit(); // must commit so that query used in next method will work
 

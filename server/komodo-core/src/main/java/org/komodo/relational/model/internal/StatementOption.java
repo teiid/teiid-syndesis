@@ -15,28 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.relational.model;
+package org.komodo.relational.model.internal;
 
+import org.komodo.core.repository.Property;
 import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * Represents a DDL statement option from a relational model.
  */
-public interface StatementOption extends Property, RelationalObject {
+public interface StatementOption extends RelationalObject, Property {
 
     /**
      * Identifier of this object
      */
     KomodoType IDENTIFIER = KomodoType.STATEMENT_OPTION;
-
-    /**
-     * An empty collection of index constraints.
-     */
-    StatementOption[] NO_OPTIONS = new StatementOption[0];
 
     /**
      * The type identifier.

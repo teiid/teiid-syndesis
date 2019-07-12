@@ -22,22 +22,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.repository.Descriptor;
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.ObjectImpl;
+import org.komodo.core.repository.Property;
+import org.komodo.core.repository.PropertyValueType;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.RelationalConstants;
 import org.komodo.relational.RelationalConstants.Nullable;
+import org.komodo.relational.internal.OptionContainer;
 import org.komodo.relational.internal.RelationalChildRestrictedObject;
 import org.komodo.relational.internal.TypeResolver;
 import org.komodo.relational.model.Column;
-import org.komodo.relational.model.StatementOption;
-import org.komodo.relational.model.Table;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.Descriptor;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.Property;
-import org.komodo.spi.repository.PropertyDescriptor;
-import org.komodo.spi.repository.PropertyValueType;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
@@ -48,7 +46,7 @@ import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.CreateTable;
 /**
  * An implementation of a relational model column.
  */
-public final class ColumnImpl extends RelationalChildRestrictedObject implements Column {
+public final class ColumnImpl extends RelationalChildRestrictedObject implements Column, OptionContainer {
 	
     /**
      * The resolver of a {@link Column}.
@@ -79,7 +77,7 @@ public final class ColumnImpl extends RelationalChildRestrictedObject implements
          * {@inheritDoc}
          *
          * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
+         *      org.komodo.core.repository.KomodoObject)
          */
         @Override
         public boolean resolvable( final UnitOfWork transaction,
@@ -91,7 +89,7 @@ public final class ColumnImpl extends RelationalChildRestrictedObject implements
          * {@inheritDoc}
          *
          * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
+         *      org.komodo.core.repository.KomodoObject)
          */
         @Override
         public ColumnImpl resolve( final UnitOfWork transaction,
@@ -215,7 +213,7 @@ public final class ColumnImpl extends RelationalChildRestrictedObject implements
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.model.OptionContainer#getCustomOptions(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.relational.internal.OptionContainer#getCustomOptions(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public StatementOption[] getCustomOptions( final UnitOfWork transaction ) throws KException {
@@ -467,7 +465,7 @@ public final class ColumnImpl extends RelationalChildRestrictedObject implements
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.model.OptionContainer#getStandardOptions()
+     * @see org.komodo.relational.internal.OptionContainer#getStandardOptions()
      */
     @Override
     public Map< String, String > getStandardOptions() {
@@ -477,7 +475,7 @@ public final class ColumnImpl extends RelationalChildRestrictedObject implements
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.model.OptionContainer#getStatementOptionNames(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.relational.internal.OptionContainer#getStatementOptionNames(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public String[] getStatementOptionNames( final UnitOfWork transaction ) throws KException {
@@ -487,7 +485,7 @@ public final class ColumnImpl extends RelationalChildRestrictedObject implements
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.model.OptionContainer#getStatementOptions(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.relational.internal.OptionContainer#getStatementOptions(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public StatementOption[] getStatementOptions( final UnitOfWork transaction ) throws KException {
@@ -497,7 +495,7 @@ public final class ColumnImpl extends RelationalChildRestrictedObject implements
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#getTypeId()
+     * @see org.komodo.core.repository.KomodoObject#getTypeId()
      */
     @Override
     public int getTypeId() {
@@ -613,7 +611,7 @@ public final class ColumnImpl extends RelationalChildRestrictedObject implements
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.model.OptionContainer#isCustomOption(org.komodo.spi.repository.Repository.UnitOfWork,
+     * @see org.komodo.relational.internal.OptionContainer#isCustomOption(org.komodo.spi.repository.Repository.UnitOfWork,
      *      java.lang.String)
      */
     @Override
@@ -673,7 +671,7 @@ public final class ColumnImpl extends RelationalChildRestrictedObject implements
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.model.OptionContainer#isStandardOption(java.lang.String)
+     * @see org.komodo.relational.internal.OptionContainer#isStandardOption(java.lang.String)
      */
     @Override
     public boolean isStandardOption( final String name ) {
@@ -699,7 +697,7 @@ public final class ColumnImpl extends RelationalChildRestrictedObject implements
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.model.OptionContainer#removeStatementOption(org.komodo.spi.repository.Repository.UnitOfWork,
+     * @see org.komodo.relational.internal.OptionContainer#removeStatementOption(org.komodo.spi.repository.Repository.UnitOfWork,
      *      java.lang.String)
      */
     @Override
@@ -980,7 +978,7 @@ public final class ColumnImpl extends RelationalChildRestrictedObject implements
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.model.OptionContainer#setStatementOption(org.komodo.spi.repository.Repository.UnitOfWork,
+     * @see org.komodo.relational.internal.OptionContainer#setStatementOption(org.komodo.spi.repository.Repository.UnitOfWork,
      *      java.lang.String, java.lang.String)
      */
     @Override
@@ -1010,6 +1008,11 @@ public final class ColumnImpl extends RelationalChildRestrictedObject implements
     public void setUuid( final UnitOfWork transaction,
                          final String newUuid ) throws KException {
         setStatementOption( transaction, StandardOption.UUID.name(), newUuid );
+    }
+    
+    @Override
+    public TableImpl getRelationalParent(UnitOfWork transaction) throws KException {
+    	return getParent(transaction);
     }
 
 }

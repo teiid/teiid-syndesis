@@ -39,8 +39,8 @@ public final class UniqueConstraintImplTest extends RelationalModelTest {
 
     private static final String NAME = "uniqueconstraint";
 
-    private Table table;
-    private UniqueConstraint uniqueConstraint;
+    private TableImpl table;
+    private UniqueConstraintImpl uniqueConstraint;
 
     @Before
     public void init() throws Exception {

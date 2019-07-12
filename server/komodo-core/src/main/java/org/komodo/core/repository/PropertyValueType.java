@@ -15,18 +15,56 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.spi.repository;
+package org.komodo.core.repository;
 
-public interface RepositoryConstants {
+import java.util.Date;
+
+/**
+ * The types of property value
+ */
+public enum PropertyValueType {
+    /**
+     * Binary type
+     */
+    BINARY,
 
     /**
-     * The name property
+     * {@link String} type
      */
-    String NAME = "name";
+    STRING,
 
     /**
-     * The absolute path property
+     * {@link Long} type
      */
-    String ABSOLUTE_PATH = "absolute-path";
+    LONG,
 
+    /**
+     * {@link Integer} type
+     */
+    INTEGER,
+
+    /**
+     * {@link Double} type
+     */
+    DOUBLE,
+
+    /**
+     * {@link Boolean} type
+     */
+    BOOLEAN,
+
+    /**
+     * {@link Date} type
+     */
+    DATE,
+
+    /**
+     * reference type
+     */
+    REFERENCE,
+
+    /**
+     * undefined type
+     */
+    UNDEFINED
 }

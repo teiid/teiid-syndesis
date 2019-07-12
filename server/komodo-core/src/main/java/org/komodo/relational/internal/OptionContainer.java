@@ -15,12 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.relational.model;
+package org.komodo.relational.internal;
 
 import java.util.Collections;
 import java.util.Map;
+
+import org.komodo.core.repository.KomodoObject;
+import org.komodo.relational.model.internal.StatementOption;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.UnitOfWork;
 
 /**

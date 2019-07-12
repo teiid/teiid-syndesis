@@ -15,11 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.spi.repository;
+package org.komodo.core.repository;
 
 import java.io.InputStream;
 import java.util.Calendar;
 import org.komodo.spi.KException;
+import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * Represents a {@link KomodoObject Komodo object} property.

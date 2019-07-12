@@ -1752,10 +1752,10 @@ public class KomodoMetadataService extends KomodoService {
                 final Model schemaModel = models[ 0 ];
                 status.setSchemaModelName( schemaModelName );
                 
-                if (getWorkspaceManager(uow).isSchemaLoading(uow, schemaModel)) {
-                	status.setSchemaState( RestSyndesisSourceStatus.EntityState.LOADING );
-                } else {
+                if (getWorkspaceManager(uow).isSchemaActive(uow, schemaModel)) {
                 	status.setSchemaState( RestSyndesisSourceStatus.EntityState.ACTIVE );
+                } else if ( schemaModel.getModelDefinition(uow) != null) {
+                	status.setSchemaState( RestSyndesisSourceStatus.EntityState.LOADING );
                 }
             } else {
                 // Since VDB and model are created in the same transaction this should never happen.

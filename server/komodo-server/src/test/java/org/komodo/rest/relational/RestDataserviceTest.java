@@ -27,13 +27,13 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.komodo.core.repository.PropertyDescriptor;
 import org.komodo.openshift.BuildStatus;
-import org.komodo.relational.dataservice.Dataservice;
+import org.komodo.relational.dataservice.internal.DataserviceImpl;
 import org.komodo.relational.internal.RelationalObjectImpl;
-import org.komodo.relational.vdb.Vdb;
+import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.rest.relational.dataservice.RestDataservice;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.PropertyDescriptor;
 import org.komodo.spi.repository.UnitOfWork;
 import org.mockito.Mockito;
 
@@ -82,11 +82,11 @@ public final class RestDataserviceTest {
         RelationalObjectImpl workspace = Mockito.mock(RelationalObjectImpl.class);
         Mockito.when(workspace.getAbsolutePath()).thenReturn(WORKSPACE_DATA_PATH);
 
-        Vdb serviceVdb = Mockito.mock(Vdb.class);
+        VdbImpl serviceVdb = Mockito.mock(VdbImpl.class);
         Mockito.when(serviceVdb.getName(transaction)).thenReturn("ServiceVdb");
         Mockito.when(serviceVdb.getVersion(transaction)).thenReturn(1);
 
-        Dataservice theDataservice = Mockito.mock(Dataservice.class);
+        DataserviceImpl theDataservice = Mockito.mock(DataserviceImpl.class);
         Mockito.when(theDataservice.getName(transaction)).thenReturn(DATASERVICE_NAME);
         Mockito.when(theDataservice.getAbsolutePath()).thenReturn(DATASERVICE_DATA_PATH);
         Mockito.when(theDataservice.getTypeIdentifier(transaction)).thenReturn(kType);

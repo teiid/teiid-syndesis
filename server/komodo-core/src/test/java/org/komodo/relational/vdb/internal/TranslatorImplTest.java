@@ -26,6 +26,7 @@ import static org.junit.Assert.fail;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.internal.RelationalObjectImpl.Filter;
@@ -33,18 +34,17 @@ import org.komodo.relational.vdb.Translator;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public final class TranslatorImplTest extends RelationalModelTest {
 
-    private Translator translator;
+    private TranslatorImpl translator;
 
     @Before
     public void init() throws Exception {
-        final Vdb vdb = createVdb();
+        final VdbImpl vdb = createVdb();
         this.translator = vdb.addTranslator( getTransaction(), "translator", "type" );
         commit();
     }

@@ -34,16 +34,15 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.komodo.core.repository.KomodoObject;
+import org.komodo.core.repository.PropertyDescriptor;
 import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.internal.RelationalObjectImpl.Filter;
 import org.komodo.relational.model.Column;
 import org.komodo.relational.model.ForeignKey;
-import org.komodo.relational.model.Model;
-import org.komodo.relational.model.PrimaryKey;
 import org.komodo.relational.model.SchemaElement.SchemaElementType;
-import org.komodo.relational.model.StatementOption;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.Table.OnCommit;
 import org.komodo.relational.model.Table.TemporaryType;
@@ -51,9 +50,7 @@ import org.komodo.relational.model.UniqueConstraint;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.Exportable;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.PropertyDescriptor;
 import org.komodo.utils.StringUtils;
 import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
 import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
@@ -63,8 +60,8 @@ public final class TableImplTest extends RelationalModelTest {
 
     private static final String NAME = "myTable";
 
-    private Model model;
-    private Table table;
+    private ModelImpl model;
+    private TableImpl table;
 
     @Before
     public void init() throws Exception {
@@ -76,7 +73,7 @@ public final class TableImplTest extends RelationalModelTest {
     @Test
     public void shouldAddColumn() throws Exception {
         final String name = "column";
-        final Column column = this.table.addColumn( getTransaction(), name );
+        final ColumnImpl column = this.table.addColumn( getTransaction(), name );
         assertThat( column, is( notNullValue() ) );
         assertThat( this.table.getColumns( getTransaction() ).length, is( 1 ) );
         assertThat( column.getName( getTransaction() ), is( name ) );
@@ -86,9 +83,9 @@ public final class TableImplTest extends RelationalModelTest {
 
     @Test
     public void shouldAddForeignKey() throws Exception {
-        final Table refTable = RelationalModelFactory.createTable( getTransaction(), _repo, mock( Model.class ), "refTable" );
+        final TableImpl refTable = RelationalModelFactory.createTable( getTransaction(), _repo, mock( ModelImpl.class ), "refTable" );
         final String name = "foreignKey";
-        final ForeignKey foreignKey = this.table.addForeignKey( getTransaction(), name, refTable );
+        final ForeignKeyImpl foreignKey = this.table.addForeignKey( getTransaction(), name, refTable );
 
         assertThat( foreignKey, is( notNullValue() ) );
         assertThat( foreignKey.getName( getTransaction() ), is( name ) );
@@ -109,7 +106,7 @@ public final class TableImplTest extends RelationalModelTest {
     @Test
     public void shouldAddUniqueConstraint() throws Exception {
         final String name = "uniqueConstraint";
-        final UniqueConstraint uniqueConstraint = this.table.addUniqueConstraint( getTransaction(), name );
+        final UniqueConstraintImpl uniqueConstraint = this.table.addUniqueConstraint( getTransaction(), name );
 
         assertThat( uniqueConstraint, is( notNullValue() ) );
         assertThat( uniqueConstraint.getName( getTransaction() ), is( name ) );
@@ -335,7 +332,7 @@ public final class TableImplTest extends RelationalModelTest {
 
     @Test
     public void shouldGetForeignKeys() throws Exception {
-        final Table refTable = RelationalModelFactory.createTable( getTransaction(), _repo, mock( Model.class ), "refTable" );
+        final TableImpl refTable = RelationalModelFactory.createTable( getTransaction(), _repo, mock( ModelImpl.class ), "refTable" );
         final int numForeignKeys = 5;
 
         for ( int i = 0; i < numForeignKeys; ++i ) {
@@ -396,7 +393,7 @@ public final class TableImplTest extends RelationalModelTest {
 
     @Test
     public void shouldHaveParentModel() throws Exception {
-        assertThat( this.table.getParent( getTransaction() ), is( instanceOf( Model.class ) ) );
+        assertThat( this.table.getParent( getTransaction() ), is( instanceOf( ModelImpl.class ) ) );
         assertThat( this.table.getParent( getTransaction() ), is( ( KomodoObject )this.model ) );
     }
 
@@ -650,7 +647,7 @@ public final class TableImplTest extends RelationalModelTest {
 
     @Test
     public void shouldRemoveForeignKey() throws Exception {
-        final Table refTable = RelationalModelFactory.createTable( getTransaction(), _repo, mock( Model.class ), "refTable" );
+        final TableImpl refTable = RelationalModelFactory.createTable( getTransaction(), _repo, mock( ModelImpl.class ), "refTable" );
         final String name = "foreignKey";
         this.table.addForeignKey( getTransaction(), name, refTable );
         this.table.removeForeignKey( getTransaction(), name );
@@ -736,7 +733,7 @@ public final class TableImplTest extends RelationalModelTest {
     @Test
     public void shouldSetPrimaryKey() throws Exception {
         final String name = "primaryKey";
-        final PrimaryKey pk = this.table.setPrimaryKey( getTransaction(), name );
+        final PrimaryKeyImpl pk = this.table.setPrimaryKey( getTransaction(), name );
         assertThat( pk, is( notNullValue() ) );
         assertThat( pk.getName( getTransaction() ), is( name ) );
         assertThat( this.table.hasChild( getTransaction(), name ), is( true ) );
@@ -784,17 +781,17 @@ public final class TableImplTest extends RelationalModelTest {
     @Test
     public void shouldExportDdl() throws Exception {
         // Add columns
-        final Column column1 = this.table.addColumn( getTransaction(), "column1" );
+        final ColumnImpl column1 = this.table.addColumn( getTransaction(), "column1" );
         column1.setDescription( getTransaction(), "Col1 Description" );
         column1.setDatatypeName( getTransaction(), "string" );
         column1.setNameInSource( getTransaction(), "Col1_NIS" );
-        final Column column2 = this.table.addColumn( getTransaction(), "column2" );
+        final ColumnImpl column2 = this.table.addColumn( getTransaction(), "column2" );
         column2.setDescription( getTransaction(), "Col2 Description" );
         column2.setDatatypeName( getTransaction(), "string" );
         column2.setNameInSource( getTransaction(), "Col2_NIS" );
 
         // Add a FK
-        final Table refTable = RelationalModelFactory.createTable( getTransaction(), _repo, mock( Model.class ), "refTable" );
+        final TableImpl refTable = RelationalModelFactory.createTable( getTransaction(), _repo, mock( ModelImpl.class ), "refTable" );
         final String name = "foreignKey";
         this.table.addForeignKey( getTransaction(), name, refTable );
         commit();
@@ -815,17 +812,17 @@ public final class TableImplTest extends RelationalModelTest {
     @Test
     public void shouldExportDdlExcludeConstraints() throws Exception {
         // Add columns
-        final Column column1 = this.table.addColumn( getTransaction(), "column1" );
+        final ColumnImpl column1 = this.table.addColumn( getTransaction(), "column1" );
         column1.setDescription( getTransaction(), "Col1 Description" );
         column1.setDatatypeName( getTransaction(), "string" );
         column1.setNameInSource( getTransaction(), "Col1_NIS" );
-        final Column column2 = this.table.addColumn( getTransaction(), "column2" );
+        final ColumnImpl column2 = this.table.addColumn( getTransaction(), "column2" );
         column2.setDescription( getTransaction(), "Col2 Description" );
         column2.setDatatypeName( getTransaction(), "string" );
         column2.setNameInSource( getTransaction(), "Col2_NIS" );
 
         // Add a FK
-        final Table refTable = RelationalModelFactory.createTable( getTransaction(), _repo, mock( Model.class ), "refTable" );
+        final TableImpl refTable = RelationalModelFactory.createTable( getTransaction(), _repo, mock( ModelImpl.class ), "refTable" );
         final String name = "foreignKey";
         this.table.addForeignKey( getTransaction(), name, refTable );
 

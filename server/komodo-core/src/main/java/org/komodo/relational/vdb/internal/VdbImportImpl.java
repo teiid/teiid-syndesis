@@ -18,16 +18,15 @@
 package org.komodo.relational.vdb.internal;
 
 import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.ObjectImpl;
+import org.komodo.core.repository.PropertyValueType;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.internal.RelationalChildRestrictedObject;
 import org.komodo.relational.internal.TypeResolver;
-import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.VdbImport;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.PropertyValueType;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
@@ -67,7 +66,7 @@ public class VdbImportImpl extends RelationalChildRestrictedObject implements Vd
          * {@inheritDoc}
          *
          * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
+         *      org.komodo.core.repository.KomodoObject)
          */
         @Override
         public boolean resolvable( final UnitOfWork transaction,
@@ -79,7 +78,7 @@ public class VdbImportImpl extends RelationalChildRestrictedObject implements Vd
          * {@inheritDoc}
          *
          * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
+         *      org.komodo.core.repository.KomodoObject)
          */
         @Override
         public VdbImportImpl resolve( final UnitOfWork transaction,
@@ -132,7 +131,7 @@ public class VdbImportImpl extends RelationalChildRestrictedObject implements Vd
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#getTypeId()
+     * @see org.komodo.core.repository.KomodoObject#getTypeId()
      */
     @Override
     public int getTypeId() {
@@ -180,6 +179,11 @@ public class VdbImportImpl extends RelationalChildRestrictedObject implements Vd
     public void setVersion( final UnitOfWork uow,
                             final int newVersion ) throws KException {
         setObjectProperty(uow, "setVersion", VdbLexicon.ImportVdb.VERSION, newVersion); //$NON-NLS-1$
+    }
+    
+    @Override
+    public VdbImpl getRelationalParent(UnitOfWork transaction) throws KException {
+    	return this.getParent(transaction);
     }
 
 }

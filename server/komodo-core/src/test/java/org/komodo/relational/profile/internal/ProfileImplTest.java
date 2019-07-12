@@ -22,29 +22,29 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+
 import java.util.HashMap;
 import java.util.Map;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.core.KomodoLexicon;
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.internal.RelationalModelFactory;
-import org.komodo.relational.profile.Profile;
 import org.komodo.relational.profile.StateCommand;
-import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.profile.StateCommandAggregate;
 import org.komodo.relational.workspace.WorkspaceManagerImpl;
-import org.komodo.spi.repository.KomodoObject;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public final class ProfileImplTest extends RelationalModelTest {
 
-    private Profile profile;
+    private ProfileImpl profile;
 
-    private Profile createProfile() throws Exception {
+    private ProfileImpl createProfile() throws Exception {
         final WorkspaceManagerImpl mgr = WorkspaceManagerImpl.getInstance(_repo, getTransaction());
         KomodoObject userProfileObj = _repo.komodoProfile(getTransaction());
-        Profile profile = mgr.resolve(getTransaction(), userProfileObj, Profile.class);
+        ProfileImpl profile = mgr.resolve(getTransaction(), userProfileObj, ProfileImpl.class);
         assertNotNull(profile);
         return profile;
     }
@@ -58,7 +58,7 @@ public final class ProfileImplTest extends RelationalModelTest {
     @Test
     public void shouldAddViewEditorState() throws Exception {
         String name = "myNewView";
-        ViewEditorState viewEditorState = RelationalModelFactory.createViewEditorState(getTransaction(),
+        ViewEditorStateImpl viewEditorState = RelationalModelFactory.createViewEditorState(getTransaction(),
                                                                                                                                                _repo, profile, name);
         assertTrue(profile.hasChild(getTransaction(), name));
         assertEquals(name, viewEditorState.getName(getTransaction()));
@@ -74,7 +74,7 @@ public final class ProfileImplTest extends RelationalModelTest {
         redoArgs.put("srcName", srcName);
         redoArgs.put("srcPath", srcPath);
 
-        StateCommandAggregate stateCmdAgg = viewEditorState.addCommand(getTransaction());
+        StateCommandAggregateImpl stateCmdAgg = viewEditorState.addCommand(getTransaction());
         StateCommand undoCommand = stateCmdAgg.setUndo(getTransaction(), undoId, undoArgs);
         StateCommand redoCommand = stateCmdAgg.setRedo(getTransaction(), redoId, redoArgs);
 

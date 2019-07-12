@@ -36,11 +36,11 @@ import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 @SuppressWarnings( { "javadoc", "nls" } )
 public final class VdbImportImplTest extends RelationalModelTest {
 
-    private VdbImport vdbImport;
+    private VdbImportImpl vdbImport;
 
     @Before
     public void init() throws Exception {
-        final Vdb vdb = createVdb();
+        final VdbImpl vdb = createVdb();
         this.vdbImport = vdb.addImport( getTransaction(), "vdbToImport" );
         commit();
     }
@@ -91,7 +91,7 @@ public final class VdbImportImplTest extends RelationalModelTest {
 
     @Test
     public void shouldHaveParentVdb() throws Exception {
-        assertThat( this.vdbImport.getParent( getTransaction() ), is( instanceOf( Vdb.class ) ) );
+        assertThat( this.vdbImport.getParent( getTransaction() ), is( instanceOf( VdbImpl.class ) ) );
     }
 
     @Test( expected = UnsupportedOperationException.class )

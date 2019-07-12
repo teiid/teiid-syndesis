@@ -24,6 +24,7 @@ import org.komodo.core.KEvent;
 import org.komodo.core.KObserver;
 import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.internal.repository.Repository.State;
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
@@ -38,14 +39,14 @@ import org.komodo.relational.internal.ServiceVdbGenerator;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Schema;
 import org.komodo.relational.model.internal.ModelImpl;
-import org.komodo.relational.profile.Profile;
 import org.komodo.relational.profile.ViewEditorState;
+import org.komodo.relational.profile.internal.ProfileImpl;
+import org.komodo.relational.profile.internal.ViewEditorStateImpl;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
 import org.komodo.spi.SystemConstants;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
@@ -60,6 +61,16 @@ import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
  *
  */
 public class WorkspaceManagerImpl extends RelationalObjectImpl implements RelationalObject, WorkspaceManager {
+	
+    /**
+     * An empty array of Dataservices.
+     */
+    final static DataserviceImpl[] NO_DATASERVICES = new DataserviceImpl[ 0 ];
+	
+    /**
+     * An empty array of VDBs.
+     */
+    final static VdbImpl[] NO_VDBS = new VdbImpl[0];
 	
 	static final Filter[] NO_FILTERS = new Filter[0];
 	
@@ -278,7 +289,7 @@ public class WorkspaceManagerImpl extends RelationalObjectImpl implements Relati
      * @throws KException
      *         if an error occurs
      */
-    public Dataservice createDataservice( final UnitOfWork uow,
+    public DataserviceImpl createDataservice( final UnitOfWork uow,
                                         final KomodoObject parent,
                                         final String serviceName ) throws KException {
         final String path = ( ( parent == null ) ? getRepository().komodoWorkspace( uow ).getAbsolutePath()
@@ -287,7 +298,7 @@ public class WorkspaceManagerImpl extends RelationalObjectImpl implements Relati
     }
 
     @Override
-    public Vdb createVdb(UnitOfWork uow, String vdbName, String externalFilePath) throws KException {
+    public VdbImpl createVdb(UnitOfWork uow, String vdbName, String externalFilePath) throws KException {
     	return createVdb(uow, null, vdbName, externalFilePath);
     }
 
@@ -306,7 +317,7 @@ public class WorkspaceManagerImpl extends RelationalObjectImpl implements Relati
      * @throws KException
      *         if an error occurs
      */
-    public Vdb createVdb( final UnitOfWork uow,
+    public VdbImpl createVdb( final UnitOfWork uow,
                           final KomodoObject parent,
                           final String vdbName,
                           final String externalFilePath ) throws KException {
@@ -340,12 +351,12 @@ public class WorkspaceManagerImpl extends RelationalObjectImpl implements Relati
     
     @Override
     public void deleteDataservice(UnitOfWork transaction, Dataservice dataservice) throws KException {
-    	delete(transaction, dataservice);
+    	delete(transaction, (DataserviceImpl)dataservice);
     }
     
     @Override
     public void deleteVdb(UnitOfWork transaction, Vdb vdb) throws KException {
-    	delete(transaction, vdb);
+    	delete(transaction, (VdbImpl)vdb);
     }
 
     /**
@@ -459,18 +470,18 @@ public class WorkspaceManagerImpl extends RelationalObjectImpl implements Relati
      * @throws KException
      *         if an error occurs
      */
-    public Dataservice[] findDataservices( UnitOfWork transaction, String searchPattern ) throws KException {
+    public DataserviceImpl[] findDataservices( UnitOfWork transaction, String searchPattern ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.UnitOfWork.State.NOT_STARTED ),
                          "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         final String[] paths = findByType(transaction, DataVirtLexicon.DataService.NODE_TYPE, null, searchPattern, false);
-        Dataservice[] result = null;
+        DataserviceImpl[] result = null;
 
         if (paths.length == 0) {
-            result = Dataservice.NO_DATASERVICES;
+            result = NO_DATASERVICES;
         } else {
-            result = new Dataservice[paths.length];
+            result = new DataserviceImpl[paths.length];
             int i = 0;
 
             for (final String path : paths) {
@@ -491,7 +502,7 @@ public class WorkspaceManagerImpl extends RelationalObjectImpl implements Relati
      * @throws KException
      *         if an error occurs
      */
-    public Vdb[] findVdbs( final UnitOfWork transaction) throws KException {
+    public VdbImpl[] findVdbs( final UnitOfWork transaction) throws KException {
     	return findVdbs(transaction, null);
     }
 
@@ -504,18 +515,18 @@ public class WorkspaceManagerImpl extends RelationalObjectImpl implements Relati
      * @throws KException
      *         if an error occurs
      */
-    public Vdb[] findVdbs( final UnitOfWork transaction, String searchPattern ) throws KException {
+    public VdbImpl[] findVdbs( final UnitOfWork transaction, String searchPattern ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.UnitOfWork.State.NOT_STARTED ),
                          "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         final String[] paths = findByType(transaction, VdbLexicon.Vdb.VIRTUAL_DATABASE, null, searchPattern, false);
-        Vdb[] result = null;
+        VdbImpl[] result = null;
 
         if (paths.length == 0) {
-            result = Vdb.NO_VDBS;
+            result = NO_VDBS;
         } else {
-            result = new Vdb[paths.length];
+            result = new VdbImpl[paths.length];
             int i = 0;
 
             for (final String path : paths) {
@@ -539,7 +550,7 @@ public class WorkspaceManagerImpl extends RelationalObjectImpl implements Relati
     /**
      * <strong><em>Rename is not allowed!!</em></strong>
      *
-     * @see org.komodo.spi.repository.KomodoObject#rename(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.core.repository.KomodoObject#rename(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      * @throws UnsupportedOperationException if called
      */
     @Override
@@ -621,33 +632,34 @@ public class WorkspaceManagerImpl extends RelationalObjectImpl implements Relati
     }
     
     @Override
-    public Vdb findVdb(UnitOfWork uow, String vdbName) throws KException {
+    public VdbImpl findVdb(UnitOfWork uow, String vdbName) throws KException {
         if (! hasChild( uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE ) ) {
             return null;
         }
 
         final KomodoObject kobject = getChild( uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE );
-        final Vdb vdb = resolve( uow, kobject, Vdb.class );
+        final VdbImpl vdb = resolve( uow, kobject, VdbImpl.class );
 
         LOGGER.debug( "VDB '{0}' was found", vdbName ); //$NON-NLS-1$
         return vdb;
     }
 
     @Override
-	public Model findModel(UnitOfWork uow, Vdb vdb, String modelName) throws KException {
-		if (! vdb.hasChild(uow, modelName, VdbLexicon.Vdb.DECLARATIVE_MODEL)) {
+	public ModelImpl findModel(UnitOfWork uow, Vdb vdb, String modelName) throws KException {
+    	VdbImpl vdbImpl = (VdbImpl)vdb;
+		if (! vdbImpl.hasChild(uow, modelName, VdbLexicon.Vdb.DECLARATIVE_MODEL)) {
             return null;
         }
 
-		KomodoObject kModel = vdb.getChild(uow, modelName, VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        return resolve( uow, kModel, Model.class );
+		KomodoObject kModel = vdbImpl.getChild(uow, modelName, VdbLexicon.Vdb.DECLARATIVE_MODEL);
+        return resolve( uow, kModel, ModelImpl.class );
 	}
 	
 	@Override
-	public Profile getUserProfile(UnitOfWork transaction) throws KException {
+	public ProfileImpl getUserProfile(UnitOfWork transaction) throws KException {
         Repository repo = getRepository();
         KomodoObject userProfileObj = repo.komodoProfile(transaction);
-        Profile userProfile = resolve(transaction, userProfileObj, Profile.class);
+        ProfileImpl userProfile = resolve(transaction, userProfileObj, ProfileImpl.class);
         if (userProfile == null) {
             String msg = Messages.getString(Messages.Relational.NO_USER_PROFILE, transaction.getUserName());
             throw new KException(msg);
@@ -658,7 +670,7 @@ public class WorkspaceManagerImpl extends RelationalObjectImpl implements Relati
 
 	@Override
 	public void refreshServiceVdb(UnitOfWork uow, Vdb serviceVdb, ViewEditorState[] editorStates) throws KException {
-		new ServiceVdbGenerator(this).refreshServiceVdb(uow, serviceVdb, editorStates);
+		new ServiceVdbGenerator(this).refreshServiceVdb(uow, (VdbImpl)serviceVdb, (ViewEditorStateImpl[])editorStates);
 	}
 	
 	@Override
@@ -667,7 +679,7 @@ public class WorkspaceManagerImpl extends RelationalObjectImpl implements Relati
 	}
 	
 	@Override
-	public boolean isSchemaLoading(UnitOfWork uow, Model schemaModel) throws KException {
+	public boolean isSchemaActive(UnitOfWork uow, Model schemaModel) throws KException {
         // if model has children the DDL has been sequenced
         return ((ModelImpl)schemaModel).hasChildren( uow );
 	}

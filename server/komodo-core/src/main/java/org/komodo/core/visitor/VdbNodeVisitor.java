@@ -30,14 +30,14 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.komodo.core.LexiconConstants.JcrLexicon;
 import org.komodo.core.internal.repository.KObjectFactory;
+import org.komodo.core.repository.Descriptor;
+import org.komodo.core.repository.KomodoObject;
+import org.komodo.core.repository.OperationType;
+import org.komodo.core.repository.Property;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.metadata.DataTypeService;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
-import org.komodo.spi.repository.Descriptor;
-import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.repository.OperationType;
-import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.UnitOfWork;
 import org.modeshape.jcr.api.JcrConstants;
 import org.teiid.modeshape.sequencer.vdb.lexicon.CoreLexicon;

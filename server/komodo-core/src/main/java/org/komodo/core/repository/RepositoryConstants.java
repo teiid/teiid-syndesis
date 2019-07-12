@@ -15,30 +15,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.spi.repository;
+package org.komodo.core.repository;
 
-/**
- *
- */
-public interface KomodoObjectVisitor {
+public interface RepositoryConstants {
 
     /**
-     * @return whether this visitor is to be used for writing to the
-     *                  artifacts it visits or only reading them
+     * The name property
      */
-    OperationType getRequestType();
+    String NAME = "name";
 
     /**
-     * Visit the given object
-     *
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
-     * @param object the object to be visited
-     * @return an object according to implementation
-     * @throws Exception if error in visiting occurs
+     * The absolute path property
      */
-    Object visit(UnitOfWork transaction,
-                 KomodoObject object) throws Exception;
+    String ABSOLUTE_PATH = "absolute-path";
 
 }

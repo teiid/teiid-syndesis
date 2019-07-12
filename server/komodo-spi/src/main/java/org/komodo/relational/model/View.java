@@ -39,9 +39,9 @@ public interface View extends Table {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KNode#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.KNode#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    Model getParent( final UnitOfWork transaction ) throws KException;
+    Model getRelationalParent( final UnitOfWork transaction ) throws KException;
 
 }

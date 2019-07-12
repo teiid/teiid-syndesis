@@ -22,9 +22,9 @@ import java.io.File;
 import java.io.InputStream;
 import org.komodo.core.AbstractLocalRepositoryTest;
 import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.utils.KLog;
 
 
