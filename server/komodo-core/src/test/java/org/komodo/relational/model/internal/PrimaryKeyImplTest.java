@@ -62,7 +62,7 @@ public final class PrimaryKeyImplTest extends RelationalModelTest {
         assertThat( this.primaryKey.getProperty( getTransaction(), Constraint.REFERENCES ).getValues( getTransaction() ).length, is( 1 ) );
         assertThat( this.primaryKey.getProperty( getTransaction(), Constraint.REFERENCES ).getValues( getTransaction() )[0].toString(),
                     // TODO Is this worth creating a getId() API method??
-                    is( column.getObjectFactory().getId(getTransaction(), column).getStringValue( getTransaction() ) ) );
+                    is( ((ColumnImpl)column).getObjectFactory().getId(getTransaction(), column).getStringValue( getTransaction() ) ) );
     }
 
     @Test

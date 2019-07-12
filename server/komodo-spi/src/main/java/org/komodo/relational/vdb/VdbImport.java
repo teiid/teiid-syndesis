@@ -20,8 +20,7 @@ package org.komodo.relational.vdb;
 import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * Represents a referenced VDB.
@@ -42,11 +41,6 @@ public interface VdbImport extends RelationalObject {
      * The default value indicating if the data policies should be imported. Value is {@value} .
      */
     boolean DEFAULT_IMPORT_DATA_POLICIES = true;
-
-    /**
-     * An empty array of VDB imports.
-     */
-    VdbImport[] NO_IMPORTS = new VdbImport[0];
 
     /**
      * {@inheritDoc}

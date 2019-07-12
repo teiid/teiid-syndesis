@@ -20,18 +20,19 @@ package org.komodo.relational.profile.internal;
 import java.util.Map;
 
 import org.komodo.core.KomodoLexicon;
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.ObjectImpl;
-import org.komodo.relational.TypeResolver;
+import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
+import org.komodo.relational.internal.TypeResolver;
 import org.komodo.relational.profile.StateCommand;
 import org.komodo.relational.profile.StateCommandAggregate;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 
 /**
@@ -42,12 +43,12 @@ public class StateCommandAggregateImpl extends RelationalObjectImpl implements S
     /**
      * The resolver of a {@link StateCommandAggregate}.
      */
-    public static final TypeResolver<StateCommandAggregate> RESOLVER = new TypeResolver<StateCommandAggregate>() {
+    public static final TypeResolver<StateCommandAggregateImpl> RESOLVER = new TypeResolver<StateCommandAggregateImpl>() {
 
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#identifier()
+         * @see org.komodo.relational.internal.TypeResolver#identifier()
          */
         @Override
         public KomodoType identifier() {
@@ -57,7 +58,7 @@ public class StateCommandAggregateImpl extends RelationalObjectImpl implements S
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#owningClass()
+         * @see org.komodo.relational.internal.TypeResolver#owningClass()
          */
         @Override
         public Class<StateCommandAggregateImpl> owningClass() {
@@ -67,27 +68,27 @@ public class StateCommandAggregateImpl extends RelationalObjectImpl implements S
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
         public boolean resolvable(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
-            return ObjectImpl.validateType(transaction, kobject.getRepository(), kobject, KomodoLexicon.StateCommandAggregate.NODE_TYPE);
+            return ObjectImpl.validateType(transaction, kobject, KomodoLexicon.StateCommandAggregate.NODE_TYPE);
         }
 
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
-        public StateCommandAggregate resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
+        public StateCommandAggregateImpl resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
             if (kobject.getTypeId() == StateCommandAggregate.TYPE_ID) {
-                return (StateCommandAggregate)kobject;
+                return (StateCommandAggregateImpl)kobject;
             }
 
-            return new StateCommandAggregateImpl(transaction, kobject.getRepository(), kobject.getAbsolutePath());
+            return new StateCommandAggregateImpl(transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath());
         }
 
     };

@@ -21,8 +21,7 @@ import org.komodo.relational.RelationalObject;
 import org.komodo.relational.model.Model;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * Represents a VDB model source.
@@ -38,11 +37,6 @@ public interface ModelSource extends RelationalObject {
      * Identifier of this object
      */
     KomodoType IDENTIFIER = KomodoType.VDB_MODEL_SOURCE;
-
-    /**
-     * An empty array of model sources.
-     */
-    ModelSource[] NO_SOURCES = new ModelSource[0];
 
     /**
      * {@inheritDoc}

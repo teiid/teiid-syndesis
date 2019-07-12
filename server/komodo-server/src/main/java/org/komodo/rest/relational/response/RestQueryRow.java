@@ -23,8 +23,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.ws.rs.core.MediaType;
+
+import org.komodo.metadata.query.QSRow;
 import org.komodo.rest.KRestEntity;
-import org.komodo.spi.query.QSRow;
 
 public class RestQueryRow implements KRestEntity {
 

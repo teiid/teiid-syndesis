@@ -19,6 +19,8 @@ package org.komodo.relational.dataservice.internal;
 
 import java.util.Properties;
 
+import org.komodo.core.internal.repository.Repository;
+import org.komodo.metadata.internal.DocumentType;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.dataservice.ServiceVdbEntry;
@@ -26,14 +28,12 @@ import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.PropertyValueType;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.utils.StringUtils;
 import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 
@@ -106,7 +106,7 @@ public class ServiceVdbEntryImpl extends RelationalObjectImpl implements Service
      * @see org.komodo.relational.dataservice.DataServiceEntry#getReference(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public Vdb getReference( final UnitOfWork uow ) throws KException {
+    public VdbImpl getReference( final UnitOfWork uow ) throws KException {
         if ( hasProperty( uow, DataVirtLexicon.VdbEntry.VDB_REF ) ) {
             final String refId = getProperty( uow, DataVirtLexicon.VdbEntry.VDB_REF ).getStringValue( uow );
             final KomodoObject kobj = getRepository().getUsingId( uow, refId );
@@ -179,7 +179,7 @@ public class ServiceVdbEntryImpl extends RelationalObjectImpl implements Service
             return getProperty( transaction, DataVirtLexicon.ResourceEntry.PATH ).getStringValue( transaction );
         }
 
-        final Vdb file = getReference( transaction );
+        final VdbImpl file = getReference( transaction );
         String folder = getArchiveFolder();
 
         if ( StringUtils.isBlank( folder ) ) {
@@ -191,7 +191,7 @@ public class ServiceVdbEntryImpl extends RelationalObjectImpl implements Service
         }
 
         if ( file != null ) {
-            return ( folder + file.getDocumentType( transaction ).fileName( file.getName( transaction ) ) );
+            return ( folder + DocumentType.VDB_XML.fileName( file.getName( transaction ) ) );
         }
 
         return ( folder + getName( transaction ) );

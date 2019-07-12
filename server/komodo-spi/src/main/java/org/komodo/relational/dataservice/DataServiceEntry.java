@@ -23,10 +23,8 @@ import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.Exportable;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * Represents an entry in a data service archive.
@@ -115,29 +113,13 @@ public interface DataServiceEntry< T extends Exportable & RelationalObject > ext
 
         if ( resource == null ) {
             if ( getPublishPolicy( transaction ) != PublishPolicy.NEVER ) {
-                throw new KException( Messages.getString( Relational.EXPORT_FAILED_NO_CONTENT, getAbsolutePath() ) );
+                throw new KException( Messages.getString( Relational.EXPORT_FAILED_NO_CONTENT, getName(transaction)) );
             }
 
             return NO_CONTENT;
         }
 
         return resource.export( transaction, properties );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.spi.repository.Exportable#getDocumentType(org.komodo.spi.repository.Repository.UnitOfWork)
-     */
-    @Override
-    default DocumentType getDocumentType( final UnitOfWork transaction ) throws KException {
-        final T ref = getReference( transaction );
-
-        if ( ref == null ) {
-            return DocumentType.UNKNOWN;
-        }
-
-        return ref.getDocumentType( transaction );
     }
 
     /**

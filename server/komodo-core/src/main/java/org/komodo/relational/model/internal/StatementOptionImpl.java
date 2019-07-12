@@ -22,10 +22,12 @@ import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.ObjectImpl;
+import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.Messages;
-import org.komodo.relational.TypeResolver;
 import org.komodo.relational.internal.RelationalChildRestrictedObject;
+import org.komodo.relational.internal.TypeResolver;
 import org.komodo.relational.model.StatementOption;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.Descriptor;
@@ -33,9 +35,7 @@ import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyDescriptor;
 import org.komodo.spi.repository.PropertyValueType;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
 import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
@@ -48,12 +48,12 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
     /**
      * The resolver of a {@link StatementOption}.
      */
-    public static final TypeResolver< StatementOption > RESOLVER = new TypeResolver< StatementOption >() {
+    public static final TypeResolver< StatementOptionImpl > RESOLVER = new TypeResolver< StatementOptionImpl >() {
 
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#identifier()
+         * @see org.komodo.relational.internal.TypeResolver#identifier()
          */
         @Override
         public KomodoType identifier() {
@@ -63,7 +63,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#owningClass()
+         * @see org.komodo.relational.internal.TypeResolver#owningClass()
          */
         @Override
         public Class< StatementOptionImpl > owningClass() {
@@ -73,14 +73,13 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
         public boolean resolvable( final UnitOfWork transaction,
                                    final KomodoObject kobject ) throws KException {
             return ObjectImpl.validateType( transaction,
-                                            kobject.getRepository(),
                                             kobject,
                                             StandardDdlLexicon.TYPE_STATEMENT_OPTION );
         }
@@ -88,17 +87,17 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
-        public StatementOption resolve( final UnitOfWork transaction,
+        public StatementOptionImpl resolve( final UnitOfWork transaction,
                                         final KomodoObject kobject ) throws KException {
             if ( kobject.getTypeId() == StatementOption.TYPE_ID ) {
-                return ( StatementOption )kobject;
+                return ( StatementOptionImpl )kobject;
             }
 
-            return new StatementOptionImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
+            return new StatementOptionImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
         }
 
     };

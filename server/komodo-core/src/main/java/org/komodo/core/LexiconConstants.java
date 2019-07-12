@@ -17,7 +17,7 @@
  */
 package org.komodo.core;
 
-import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.StringConstants;
 
 public interface LexiconConstants extends StringConstants {
 

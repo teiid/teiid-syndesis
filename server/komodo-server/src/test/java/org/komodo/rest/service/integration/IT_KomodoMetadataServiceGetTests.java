@@ -17,7 +17,6 @@
  */
 package org.komodo.rest.service.integration;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -30,9 +29,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.junit.Test;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.cors.CorsHeaders;
-import org.komodo.spi.runtime.version.DefaultMetadataVersion;
 import org.teiid.adminapi.AdminProcessingException;
-import org.teiid.core.util.ApplicationInfo;
 
 @SuppressWarnings( {"javadoc", "nls"} )
 public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServiceTest {
@@ -40,12 +37,6 @@ public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServ
     @Override
     protected int getTestTotalInClass() {
         return 5;
-    }
-
-    @Test
-    public void testVersion() throws Exception {
-        ApplicationInfo info = ApplicationInfo.getInstance();
-        assertEquals(new DefaultMetadataVersion(info.getReleaseNumber()), getMetadataInstance().getVersion());
     }
 
     @Test

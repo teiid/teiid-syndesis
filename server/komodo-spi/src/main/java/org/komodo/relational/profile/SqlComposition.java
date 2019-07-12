@@ -19,10 +19,9 @@ package org.komodo.relational.profile;
 
 import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * Interface for SqlComposition

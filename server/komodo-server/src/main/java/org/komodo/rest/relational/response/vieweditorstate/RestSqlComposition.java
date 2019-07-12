@@ -22,7 +22,7 @@ import java.net.URI;
 import org.komodo.relational.profile.SqlComposition;
 import org.komodo.rest.RestBasicEntity;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.Repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork;
 
 public class RestSqlComposition extends RestBasicEntity {
 	

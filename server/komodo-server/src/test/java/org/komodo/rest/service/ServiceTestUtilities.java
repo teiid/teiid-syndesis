@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.komodo.core.KEngineImpl;
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.ExistingNodeOptions;
@@ -44,11 +45,10 @@ import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManagerImpl;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
 import org.komodo.spi.repository.SynchronousCallback;
+import org.komodo.spi.repository.UnitOfWork;
 
 public final class ServiceTestUtilities implements StringConstants {
 
@@ -279,7 +279,7 @@ public final class ServiceTestUtilities implements StringConstants {
         UnitOfWork uow = repository.createTransaction(user, "Create VDB", false, callback, user); //$NON-NLS-1$
     
         WorkspaceManager wsMgr = WorkspaceManagerImpl.getInstance(repository, uow);
-        Vdb vdb = wsMgr.createVdb(uow, null, vdbName, vdbName);
+        Vdb vdb = wsMgr.createVdb(uow, vdbName, vdbName);
     
         uow.commit();
         callback.await(3, TimeUnit.MINUTES);
@@ -305,7 +305,7 @@ public final class ServiceTestUtilities implements StringConstants {
         Vdb vdb = wsMgr.findVdb(uow, vdbName);
         
         if(vdb == null) {
-            vdb = wsMgr.createVdb(uow, null, vdbName, vdbName);
+            vdb = wsMgr.createVdb(uow, vdbName, vdbName);
         }
         
         Model model = vdb.getModel(uow, modelName);
@@ -327,7 +327,7 @@ public final class ServiceTestUtilities implements StringConstants {
         WorkspaceManager wsMgr = WorkspaceManagerImpl.getInstance(repository, uow);
         Vdb[] vdbs = wsMgr.findVdbs(uow);
         for (Vdb vdb : vdbs) {
-            wsMgr.delete(uow, vdb);
+            wsMgr.deleteVdb(uow, vdb);
         }
     
         uow.commit();
@@ -346,7 +346,7 @@ public final class ServiceTestUtilities implements StringConstants {
         SynchronousCallback callback = new SynchronousCallback();
         UnitOfWork uow = repository.createTransaction(user, "Delete object at path " + absPath, false, callback, user); //$NON-NLS-1$
         
-        WorkspaceManager wsMgr = WorkspaceManagerImpl.getInstance(repository, uow);
+        WorkspaceManagerImpl wsMgr = WorkspaceManagerImpl.getInstance(repository, uow);
         KomodoObject kObject = repository.getFromWorkspace(uow, absPath);
         if (kObject != null) {
             wsMgr.delete(uow, kObject);

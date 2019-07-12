@@ -25,6 +25,7 @@ import java.io.InputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.importer.AbstractImporter;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
@@ -37,8 +38,7 @@ import org.komodo.relational.workspace.WorkspaceManagerImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
 import org.modeshape.jcr.api.JcrConstants;
 import org.w3c.dom.Document;

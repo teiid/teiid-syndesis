@@ -17,7 +17,7 @@
  */
 package org.komodo.rest.json;
 
-import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.StringConstants;
 
 /**
  * Identifiers used in Komodo REST object JSON representations.

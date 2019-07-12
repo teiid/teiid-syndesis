@@ -24,14 +24,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.ObjectImpl;
+import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.core.visitor.DdlNodeVisitor;
 import org.komodo.core.visitor.DdlNodeVisitor.VisitorExclusions;
+import org.komodo.metadata.MetadataInstance;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
-import org.komodo.relational.TypeResolver;
 import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
+import org.komodo.relational.internal.TypeResolver;
 import org.komodo.relational.model.Column;
 import org.komodo.relational.model.ForeignKey;
 import org.komodo.relational.model.Model;
@@ -40,18 +43,15 @@ import org.komodo.relational.model.StatementOption;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.UniqueConstraint;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.ExportConstants;
-import org.komodo.spi.metadata.MetadataInstance;
 import org.komodo.spi.repository.Descriptor;
-import org.komodo.spi.repository.DocumentType;
+import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.PropertyDescriptor;
 import org.komodo.spi.repository.PropertyValueType;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
 import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
@@ -67,12 +67,12 @@ public class TableImpl extends RelationalObjectImpl implements Table {
     /**
      * The resolver of a {@link Table}.
      */
-    public static final TypeResolver< Table > RESOLVER = new TypeResolver< Table >() {
+    public static final TypeResolver< TableImpl > RESOLVER = new TypeResolver< TableImpl >() {
 
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#identifier()
+         * @see org.komodo.relational.internal.TypeResolver#identifier()
          */
         @Override
         public KomodoType identifier() {
@@ -82,7 +82,7 @@ public class TableImpl extends RelationalObjectImpl implements Table {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#owningClass()
+         * @see org.komodo.relational.internal.TypeResolver#owningClass()
          */
         @Override
         public Class< TableImpl > owningClass() {
@@ -92,29 +92,29 @@ public class TableImpl extends RelationalObjectImpl implements Table {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
         public boolean resolvable( final UnitOfWork transaction,
                                    final KomodoObject kobject ) throws KException {
-            return ObjectImpl.validateType( transaction, kobject.getRepository(), kobject, CreateTable.TABLE_STATEMENT );
+            return ObjectImpl.validateType( transaction, kobject, CreateTable.TABLE_STATEMENT );
         }
 
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
-        public Table resolve( final UnitOfWork transaction,
+        public TableImpl resolve( final UnitOfWork transaction,
                               final KomodoObject kobject ) throws KException {
             if ( kobject.getTypeId() == Table.TYPE_ID ) {
-                return ( Table )kobject;
+                return ( TableImpl )kobject;
             }
 
-            return new TableImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
+            return new TableImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
         }
 
     };
@@ -437,21 +437,6 @@ public class TableImpl extends RelationalObjectImpl implements Table {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.internal.RelationalObjectImpl#getPropertyDescriptor(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String)
-     */
-    @Override
-    public PropertyDescriptor getPropertyDescriptor( final UnitOfWork transaction,
-                                                     final String propName ) throws KException {
-        return OptionContainerUtils.getPropertyDescriptor( transaction,
-                                                           this,
-                                                           propName,
-                                                           super.getPropertyDescriptor( transaction, propName ) );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
      * @see org.komodo.relational.internal.RelationalObjectImpl#getPropertyNames(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
@@ -601,12 +586,12 @@ public class TableImpl extends RelationalObjectImpl implements Table {
      * @see org.komodo.relational.internal.RelationalObjectImpl#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public Model getParent( final UnitOfWork transaction ) throws KException {
+    public ModelImpl getParent( final UnitOfWork transaction ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
 
         final KomodoObject parent = super.getParent( transaction );
-        final Model result = ModelImpl.RESOLVER.resolve( transaction, parent );
+        final ModelImpl result = ModelImpl.RESOLVER.resolve( transaction, parent );
         return result;
     }
 
@@ -970,12 +955,12 @@ public class TableImpl extends RelationalObjectImpl implements Table {
     private String exportDdl(UnitOfWork transaction, Properties exportProperties) throws Exception {
         List<VisitorExclusions> exclusions = new ArrayList<VisitorExclusions>();
         if( exportProperties != null && !exportProperties.isEmpty() ) {
-            if(exportProperties.containsKey(ExportConstants.EXCLUDE_TABLE_CONSTRAINTS_KEY)) {
+            if(exportProperties.containsKey(Exportable.EXCLUDE_TABLE_CONSTRAINTS_KEY)) {
                 exclusions.add(VisitorExclusions.EXCLUDE_TABLE_CONSTRAINTS);
             }
         }
         MetadataInstance metadata = getRepository().getMetadataInstance();
-        DdlNodeVisitor visitor = new DdlNodeVisitor(metadata.getVersion(), metadata.getDataTypeService(), false, exclusions.toArray(new VisitorExclusions[0]));
+        DdlNodeVisitor visitor = new DdlNodeVisitor(metadata.getDataTypeService(), false, exclusions.toArray(new VisitorExclusions[0]));
         visitor.visit(transaction, this);
 
         String result = visitor.getDdl();
@@ -1011,8 +996,4 @@ public class TableImpl extends RelationalObjectImpl implements Table {
         }
     }
 
-    @Override
-    public DocumentType getDocumentType(UnitOfWork transaction) throws KException {
-        return DocumentType.DDL;
-    }
 }

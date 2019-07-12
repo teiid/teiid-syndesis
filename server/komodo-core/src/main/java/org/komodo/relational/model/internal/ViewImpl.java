@@ -17,16 +17,16 @@
  */
 package org.komodo.relational.model.internal;
 
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.ObjectImpl;
-import org.komodo.relational.TypeResolver;
-import org.komodo.relational.model.Model;
+import org.komodo.core.repository.RepositoryImpl;
+import org.komodo.relational.internal.TypeResolver;
 import org.komodo.relational.model.View;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.CreateTable;
 
@@ -38,12 +38,12 @@ public final class ViewImpl extends TableImpl implements View {
     /**
      * The resolver of a {@link View}.
      */
-    public static final TypeResolver< View > RESOLVER = new TypeResolver< View >() {
+    public static final TypeResolver< ViewImpl > RESOLVER = new TypeResolver< ViewImpl >() {
 
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#identifier()
+         * @see org.komodo.relational.internal.TypeResolver#identifier()
          */
         @Override
         public KomodoType identifier() {
@@ -53,7 +53,7 @@ public final class ViewImpl extends TableImpl implements View {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#owningClass()
+         * @see org.komodo.relational.internal.TypeResolver#owningClass()
          */
         @Override
         public Class< ViewImpl > owningClass() {
@@ -63,29 +63,29 @@ public final class ViewImpl extends TableImpl implements View {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
         public boolean resolvable( final UnitOfWork transaction,
                                    final KomodoObject kobject ) throws KException {
-            return ObjectImpl.validateType( transaction, kobject.getRepository(), kobject, CreateTable.VIEW_STATEMENT );
+            return ObjectImpl.validateType( transaction, kobject, CreateTable.VIEW_STATEMENT );
         }
 
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
-        public View resolve( final UnitOfWork transaction,
+        public ViewImpl resolve( final UnitOfWork transaction,
                              final KomodoObject kobject ) throws KException {
             if ( kobject.getTypeId() == View.TYPE_ID ) {
-                return ( View )kobject;
+                return ( ViewImpl )kobject;
             }
 
-            return new ViewImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
+            return new ViewImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
         }
 
     };
@@ -117,12 +117,12 @@ public final class ViewImpl extends TableImpl implements View {
      * @see org.komodo.relational.internal.RelationalObjectImpl#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public Model getParent( final UnitOfWork transaction ) throws KException {
+    public ModelImpl getParent( final UnitOfWork transaction ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
 
         final KomodoObject parent = super.getParent( transaction );
-        final Model result = ModelImpl.RESOLVER.resolve( transaction, parent );
+        final ModelImpl result = ModelImpl.RESOLVER.resolve( transaction, parent );
         return result;
     }
 

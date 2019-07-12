@@ -19,7 +19,7 @@ package org.komodo.relational.model;
 
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.Repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * Represents a relational model view.
@@ -35,11 +35,6 @@ public interface View extends Table {
      * Identifier of this object
      */
     KomodoType IDENTIFIER = KomodoType.VIEW;
-
-    /**
-     * An empty array of views.
-     */
-    View[] NO_VIEWS = new View[0];
 
     /**
      * {@inheritDoc}

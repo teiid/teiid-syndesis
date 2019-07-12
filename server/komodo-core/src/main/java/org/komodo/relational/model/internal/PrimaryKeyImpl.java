@@ -17,16 +17,16 @@
  */
 package org.komodo.relational.model.internal;
 
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.ObjectImpl;
-import org.komodo.relational.TypeResolver;
+import org.komodo.core.repository.RepositoryImpl;
+import org.komodo.relational.internal.TypeResolver;
 import org.komodo.relational.model.PrimaryKey;
-import org.komodo.relational.model.Table;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon.Constraint;
 
@@ -38,12 +38,12 @@ public final class PrimaryKeyImpl extends TableConstraintImpl implements Primary
     /**
      * The resolver of a {@link PrimaryKey}.
      */
-    public static final TypeResolver< PrimaryKey > RESOLVER = new TypeResolver< PrimaryKey >() {
+    public static final TypeResolver< PrimaryKeyImpl > RESOLVER = new TypeResolver< PrimaryKeyImpl >() {
 
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#identifier()
+         * @see org.komodo.relational.internal.TypeResolver#identifier()
          */
         @Override
         public KomodoType identifier() {
@@ -53,7 +53,7 @@ public final class PrimaryKeyImpl extends TableConstraintImpl implements Primary
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#owningClass()
+         * @see org.komodo.relational.internal.TypeResolver#owningClass()
          */
         @Override
         public Class< PrimaryKeyImpl > owningClass() {
@@ -63,15 +63,15 @@ public final class PrimaryKeyImpl extends TableConstraintImpl implements Primary
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
         public boolean resolvable( final UnitOfWork transaction,
                                    final KomodoObject kobject ) throws KException {
-            return ObjectImpl.validateType( transaction, kobject.getRepository(), kobject, Constraint.TABLE_ELEMENT )
+            return ObjectImpl.validateType( transaction, kobject, Constraint.TABLE_ELEMENT )
                    && ObjectImpl.validatePropertyValue( transaction,
-                                                        kobject.getRepository(),
+                		   RepositoryImpl.getRepository(transaction),
                                                         kobject,
                                                         Constraint.TYPE,
                                                         CONSTRAINT_TYPE.toValue() );
@@ -80,17 +80,17 @@ public final class PrimaryKeyImpl extends TableConstraintImpl implements Primary
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
-        public PrimaryKey resolve( final UnitOfWork transaction,
+        public PrimaryKeyImpl resolve( final UnitOfWork transaction,
                                    final KomodoObject kobject ) throws KException {
             if ( kobject.getTypeId() == PrimaryKey.TYPE_ID ) {
-                return ( PrimaryKey )kobject;
+                return ( PrimaryKeyImpl )kobject;
             }
 
-            return new PrimaryKeyImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
+            return new PrimaryKeyImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
         }
 
     };
@@ -143,12 +143,12 @@ public final class PrimaryKeyImpl extends TableConstraintImpl implements Primary
      * @see org.komodo.relational.internal.RelationalObjectImpl#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public Table getParent( final UnitOfWork transaction ) throws KException {
+    public TableImpl getParent( final UnitOfWork transaction ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
 
         final KomodoObject parent = super.getParent( transaction );
-        final Table result = TableImpl.RESOLVER.resolve( transaction, parent );
+        final TableImpl result = TableImpl.RESOLVER.resolve( transaction, parent );
         return result;
     }
 

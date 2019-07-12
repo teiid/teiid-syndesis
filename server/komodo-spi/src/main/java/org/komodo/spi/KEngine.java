@@ -18,25 +18,37 @@
 
 package org.komodo.spi;
 
+import org.komodo.metadata.MetadataInstance;
 import org.komodo.relational.WorkspaceManager;
-import org.komodo.spi.metadata.MetadataInstance;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
+import org.komodo.relational.dataservice.Dataservice;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWorkListener;
 
 public interface KEngine {
-
+	
 	MetadataInstance getMetadataInstance() throws KException;
-
-	Repository getDefaultRepository() throws KException;
-
-	KErrorHandler getErrorHandler();
 
 	boolean startAndWait() throws Exception;
 
 	WorkspaceManager getWorkspaceManager(UnitOfWork transaction) throws KException;
 
-	void setDefaultRepository(Repository repository) throws Exception;
+	/**
+     * @param userName
+     *       the user name of the transaction initiator
+     * @param name
+     *        a name for the transaction (cannot be empty)
+     * @param rollbackOnly
+     *        <code>true</code> if the transaction should only be rolled back
+     * @param callback
+     *        a listener that is notified when the transaction is finished (can be <code>null</code>
+     * @param repoUser       
+     * @return a unit of work transaction that must be either committed or rolled back (never <code>null</code>)
+     * @throws KException
+     *         if an error occurs
+     */
+	UnitOfWork createTransaction(String userName, String name, boolean rollbackOnly, UnitOfWorkListener callback,
+			String repoUser) throws KException;
 
-	void setMetadataInstance(MetadataInstance metadataInstance);
+	Dataservice findDataserviceByPath(UnitOfWork uow, String dsPath) throws KException;
 
 }

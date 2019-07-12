@@ -26,35 +26,35 @@ import java.util.Properties;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.DescriptorImpl;
+import org.komodo.core.repository.KPropertyFactory;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.PropertyDescriptorImpl;
+import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.core.visitor.VdbNodeVisitor;
+import org.komodo.metadata.MetadataInstance;
 import org.komodo.relational.DeployStatus;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
-import org.komodo.relational.TypeResolver;
 import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
+import org.komodo.relational.internal.TypeResolver;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.internal.ModelImpl;
 import org.komodo.relational.vdb.Translator;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.VdbImport;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.ExportConstants;
-import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.metadata.MetadataInstance;
+import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.Descriptor;
-import org.komodo.spi.repository.DocumentType;
-import org.komodo.spi.repository.KPropertyFactory;
+import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyDescriptor;
 import org.komodo.spi.repository.PropertyValueType;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.FileUtils;
 import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
@@ -66,14 +66,29 @@ import org.w3c.dom.Document;
 public class VdbImpl extends RelationalObjectImpl implements Vdb {
 	
     /**
+     * An empty array of translators.
+     */
+    static final TranslatorImpl[] NO_TRANSLATORS = new TranslatorImpl[0];
+	
+    /**
+     * An empty array of models.
+     */
+    static final ModelImpl[] NO_MODELS = new ModelImpl[0];
+	
+    /**
+     * An empty array of VDB imports.
+     */
+    static final VdbImportImpl[] NO_IMPORTS = new VdbImportImpl[0];
+	
+    /**
      * The resolver of a {@link Vdb}.
      */
-    public static final TypeResolver< Vdb > RESOLVER = new TypeResolver< Vdb >() {
+    public static final TypeResolver< VdbImpl > RESOLVER = new TypeResolver< VdbImpl >() {
 
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#identifier()
+         * @see org.komodo.relational.internal.TypeResolver#identifier()
          */
         @Override
         public KomodoType identifier() {
@@ -83,7 +98,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#owningClass()
+         * @see org.komodo.relational.internal.TypeResolver#owningClass()
          */
         @Override
         public Class< VdbImpl > owningClass() {
@@ -93,29 +108,29 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
         public boolean resolvable( final UnitOfWork transaction,
                                    final KomodoObject kobject ) throws KException {
-            return ObjectImpl.validateType( transaction, kobject.getRepository(), kobject, VdbLexicon.Vdb.VIRTUAL_DATABASE );
+            return ObjectImpl.validateType( transaction, kobject, VdbLexicon.Vdb.VIRTUAL_DATABASE );
         }
 
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
-        public Vdb resolve( final UnitOfWork transaction,
+        public VdbImpl resolve( final UnitOfWork transaction,
                             final KomodoObject kobject ) throws KException {
             if ( kobject.getTypeId() == Vdb.TYPE_ID ) {
-                return ( Vdb )kobject;
+                return ( VdbImpl )kobject;
             }
 
-            return new VdbImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
+            return new VdbImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
         }
 
     };
@@ -211,9 +226,9 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
                 final XMLOutputFactory xof = XMLOutputFactory.newInstance();
                 final XMLStreamWriter xsw = xof.createXMLStreamWriter(writer);
                 MetadataInstance metadata = getRepository().getMetadataInstance();
-                final VdbNodeVisitor visitor = new VdbNodeVisitor(metadata.getVersion(), metadata.getDataTypeService(), xsw);
+                final VdbNodeVisitor visitor = new VdbNodeVisitor(metadata.getDataTypeService(), xsw);
                 if( exportProperties != null && !exportProperties.isEmpty() ) {
-                	boolean useTabs = exportProperties.containsKey(ExportConstants.USE_TABS_PROP_KEY);
+                	boolean useTabs = exportProperties.containsKey(Exportable.USE_TABS_PROP_KEY);
                 	visitor.setShowTabs(useTabs);
                 }
                 visitor.visit(transaction, vdb);
@@ -256,10 +271,6 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
             return this.xml == null ? new byte[0] : this.xml.getBytes();
         }
 
-        @Override
-        public DocumentType getDocumentType(UnitOfWork transaction) throws KException {
-            return DocumentType.VDB_XML;
-        }
     }
 
     /**
@@ -416,7 +427,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
      * @see org.komodo.relational.internal.RelationalObjectImpl#getChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String, java.lang.String)
      */
     @Override
-    public KomodoObject getChild( final UnitOfWork transaction,
+    public RelationalObjectImpl getChild( final UnitOfWork transaction,
                                   final String name,
                                   final String typeName ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
@@ -425,19 +436,19 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         ArgCheck.isNotEmpty( typeName, "typeName" ); //$NON-NLS-1$
 
         if ( VdbLexicon.ImportVdb.IMPORT_VDB.equals( typeName ) ) {
-            final KomodoObject[] imports = getImports( transaction, name );
+            final VdbImportImpl[] imports = getImports( transaction, name );
 
             if ( imports.length != 0 ) {
                 return imports[ 0 ];
             }
         } else if ( VdbLexicon.Vdb.DECLARATIVE_MODEL.equals( typeName ) ) {
-            final KomodoObject[] models = getModels( transaction, name );
+            final ModelImpl[] models = getModels( transaction, name );
 
             if ( models.length != 0 ) {
                 return models[ 0 ];
             }
         } else if ( VdbLexicon.Translator.TRANSLATOR.equals( typeName ) ) {
-            final KomodoObject[] translators = getTranslators( transaction, name );
+            final TranslatorImpl[] translators = getTranslators( transaction, name );
 
             if ( translators.length != 0 ) {
                 return translators[ 0 ];
@@ -556,7 +567,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
      * @see org.komodo.relational.vdb.Vdb#getImports(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
      */
     @Override
-    public VdbImport[] getImports( final UnitOfWork transaction,
+    public VdbImportImpl[] getImports( final UnitOfWork transaction,
                                    final String... namePatterns ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
@@ -564,17 +575,17 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         final KomodoObject grouping = getImportsGroupingNode( transaction);
 
         if ( grouping != null ) {
-            final List< VdbImport > temp = new ArrayList<>();
+            final List< VdbImportImpl > temp = new ArrayList<>();
 
             for ( final KomodoObject kobject : grouping.getChildren( transaction, namePatterns ) ) {
-                final VdbImport vdbImport = new VdbImportImpl( transaction, getRepository(), kobject.getAbsolutePath() );
+                final VdbImportImpl vdbImport = new VdbImportImpl( transaction, getRepository(), kobject.getAbsolutePath() );
                 temp.add( vdbImport );
             }
 
-            return temp.toArray( new VdbImport[ temp.size() ] );
+            return temp.toArray( new VdbImportImpl[ temp.size() ] );
         }
 
-        return VdbImport.NO_IMPORTS;
+        return NO_IMPORTS;
     }
 
     private KomodoObject getImportsGroupingNode( final UnitOfWork transaction ) {
@@ -597,25 +608,25 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
      * @see org.komodo.relational.vdb.Vdb#getModels(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
      */
     @Override
-    public Model[] getModels( final UnitOfWork transaction,
+    public ModelImpl[] getModels( final UnitOfWork transaction,
                               final String... namePatterns ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
-        final List< Model > result = new ArrayList<>();
+        final List< ModelImpl > result = new ArrayList<>();
 
         for ( final KomodoObject kobject : super.getChildrenOfType( transaction,
                                                                     VdbLexicon.Vdb.DECLARATIVE_MODEL,
                                                                     namePatterns ) ) {
-            final Model model = new ModelImpl( transaction, getRepository(), kobject.getAbsolutePath() );
+            final ModelImpl model = new ModelImpl( transaction, getRepository(), kobject.getAbsolutePath() );
             result.add( model );
         }
 
         if ( result.isEmpty() ) {
-            return Model.NO_MODELS;
+            return NO_MODELS;
         }
 
-        return result.toArray( new Model[ result.size() ] );
+        return result.toArray( new ModelImpl[ result.size() ] );
     }
 
     /**
@@ -639,23 +650,6 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
                                   PropertyValueType.STRING,
                                   "getPasswordPattern", //$NON-NLS-1$
                                   specialProperties[PASSWORD_PATTERN].toTeiidName() );
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.internal.RelationalObjectImpl#getPropertyDescriptor(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String)
-     */
-    @Override
-    public PropertyDescriptor getPropertyDescriptor( final UnitOfWork transaction,
-                                                     final String propName ) throws KException {
-        for (SpecialProperty prop : specialProperties) {
-            if (prop.toTeiidName().equals(propName))
-                return prop.getDescriptor();
-        }
-
-        return super.getPropertyDescriptor( transaction, propName );        
     }
 
     /**
@@ -688,7 +682,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
      * @see org.komodo.relational.vdb.Vdb#getTranslators(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
      */
     @Override
-    public Translator[] getTranslators( final UnitOfWork transaction,
+    public TranslatorImpl[] getTranslators( final UnitOfWork transaction,
                                         final String... namePatterns ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
@@ -696,17 +690,17 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         final KomodoObject grouping = getTranslatorsGroupingNode( transaction );
 
         if ( grouping != null ) {
-            final List< Translator > temp = new ArrayList<>();
+            final List< TranslatorImpl > temp = new ArrayList<>();
 
             for ( final KomodoObject kobject : grouping.getChildren( transaction, namePatterns ) ) {
-                final Translator translator = new TranslatorImpl( transaction, getRepository(), kobject.getAbsolutePath() );
+                final TranslatorImpl translator = new TranslatorImpl( transaction, getRepository(), kobject.getAbsolutePath() );
                 temp.add( translator );
             }
 
-            return temp.toArray( new Translator[ temp.size() ] );
+            return temp.toArray( new TranslatorImpl[ temp.size() ] );
         }
 
-        return Translator.NO_TRANSLATORS;
+        return NO_TRANSLATORS;
     }
 
     private KomodoObject getTranslatorsGroupingNode( final UnitOfWork transaction ) {
@@ -1048,11 +1042,6 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         setObjectProperty(uow, "setVersion", VdbLexicon.Vdb.VERSION, newVersion); //$NON-NLS-1$
     }
 
-    @Override
-    public DocumentType getDocumentType(UnitOfWork transaction) throws KException {
-        return DocumentType.VDB_XML;
-    }
-    
     @Override
     public DeployStatus deploy(UnitOfWork uow) {
         ArgCheck.isNotNull( uow, "transaction" ); //$NON-NLS-1$

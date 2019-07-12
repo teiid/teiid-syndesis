@@ -31,15 +31,14 @@ import javax.jcr.Session;
 import org.komodo.core.KEngineImpl;
 import org.komodo.core.KomodoLexicon.Environment;
 import org.komodo.core.KomodoLexicon.Komodo;
+import org.komodo.core.repository.KPropertyFactory;
 import org.komodo.core.repository.KQueryManager;
 import org.komodo.core.repository.KSequencerController;
 import org.komodo.core.repository.KSequencerListener;
 import org.komodo.core.repository.Messages;
 import org.komodo.core.repository.RepoEngine;
 import org.komodo.core.repository.RepositoryImpl;
-import org.komodo.spi.repository.KObjectFactory;
-import org.komodo.spi.repository.KPropertyFactory;
-import org.komodo.spi.repository.Repository;
+import org.komodo.spi.KException;
 import org.komodo.spi.repository.UnitOfWorkDelegate;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
@@ -125,14 +124,15 @@ public class JcrEngine extends Thread implements RepoEngine {
      *
      * @param repoId
      *        information identifying the repository (cannot be <code>null</code>)
+     * @throws KException 
      */
-    public JcrEngine( final Repository.Id repoId , KEngineImpl kEngine) {
+    public JcrEngine( final Repository.Id repoId , KEngineImpl kEngine) throws KException {
         super("Modeshape Engine Thread"); //$NON-NLS-1$
         this.repoId = repoId;
         this.identifier = new WorkspaceIdentifier(repoId.getWorkspaceName());
         this.kEngine = kEngine;
         setDaemon(true);
-        nodeFactory = new JcrNodeFactory();
+        nodeFactory = new JcrNodeFactory(kEngine.getDefaultRepository());
         propertyFactory = nodeFactory.getPropertyFactory();
         queryManager = new JcrQueryManager((JcrNodeFactory) nodeFactory);
     }

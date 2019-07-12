@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.StringConstants;
 
 /**
  * Enum of all the Komodo types

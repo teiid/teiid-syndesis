@@ -36,32 +36,30 @@ import org.komodo.rest.connections.SyndesisConnectionMonitor;
 import org.komodo.rest.connections.SyndesisConnectionSynchronizer;
 import org.komodo.spi.KEngine;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.SystemConstants;
-import org.komodo.spi.metadata.MetadataInstance;
+import org.komodo.spi.SystemConstants;
 import org.komodo.spi.repository.ApplicationProperties;
 import org.komodo.spi.repository.PersistenceType;
-import org.komodo.spi.repository.Repository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.security.crypto.encrypt.Encryptors;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
-import org.teiid.core.TeiidException;
-import org.teiid.core.util.ReflectionHelper;
 import org.teiid.runtime.EmbeddedConfiguration;
 
 @Configuration
 @EnableConfigurationProperties(KomodoConfigurationProperties.class)
 @ComponentScan(basePackages = {
 		"org.komodo.core",
-		"org.komodo.metadata", 
+		"org.komodo.metadata.internal", 
 		"org.komodo.core.repository",
 		"org.komodo.rest",})
-public class KomodoAutoConfiguration {
+public class KomodoAutoConfiguration implements ApplicationListener<ContextRefreshedEvent> {
 	
     @Value("${encrypt.key}")
     private String encryptKey;
@@ -73,24 +71,15 @@ public class KomodoAutoConfiguration {
     private KomodoConfigurationProperties config;
     
     @Autowired
-    private MetadataInstance metadataInstance;
-    
-    @Autowired
-    private Repository repository;
+    private KEngine kengine;
     
     @Bean
     public TextEncryptor getTextEncryptor() {
         return Encryptors.text(encryptKey, "deadbeef");
     }
-
-    @Bean
-    public KEngine kengine() throws WebApplicationException {
-    	KEngine kengine;
-		try {
-			kengine = (KEngine)ReflectionHelper.create("org.komodo.core.KEngineImpl", null, KomodoAutoConfiguration.class.getClassLoader());
-		} catch (TeiidException e1) {
-			throw new WebApplicationException(e1);
-		}
+    
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
         boolean started;
         try {
             String workingDir = System.getProperty("user.dir");
@@ -102,12 +91,6 @@ public class KomodoAutoConfiguration {
             System.setProperty(SystemConstants.ENGINE_DATA_DIR, workingDir+"/komodo/data"); //$NON-NLS-1$
 
             initPersistenceEnvironment();
-
-            // configure metadata
-            kengine.setMetadataInstance(metadataInstance);
-
-            // configure repository
-            kengine.setDefaultRepository(repository);
 
             started = kengine.startAndWait();
         } catch (Exception e) {
@@ -130,7 +113,6 @@ public class KomodoAutoConfiguration {
                 throw new WebApplicationException( e, Status.INTERNAL_SERVER_ERROR );
             }
         }
-        return kengine;
     }
 
     @Bean

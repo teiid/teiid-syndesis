@@ -17,7 +17,7 @@
  */
 package org.komodo.rest;
 
-import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.StringConstants;
 
 /**
  *

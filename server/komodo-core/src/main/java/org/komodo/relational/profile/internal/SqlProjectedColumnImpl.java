@@ -18,18 +18,19 @@
 package org.komodo.relational.profile.internal;
 
 import org.komodo.core.KomodoLexicon;
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.ObjectImpl;
-import org.komodo.relational.TypeResolver;
+import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.internal.RelationalObjectImpl;
+import org.komodo.relational.internal.TypeResolver;
 import org.komodo.relational.profile.SqlProjectedColumn;
 import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyValueType;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 
 /**
@@ -40,12 +41,12 @@ public class SqlProjectedColumnImpl  extends RelationalObjectImpl implements Sql
     /**
      * The resolver of a {@link SqlProjectedColumn}.
      */
-    public static final TypeResolver<SqlProjectedColumn> RESOLVER = new TypeResolver<SqlProjectedColumn>() {
+    public static final TypeResolver<SqlProjectedColumnImpl> RESOLVER = new TypeResolver<SqlProjectedColumnImpl>() {
 
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#identifier()
+         * @see org.komodo.relational.internal.TypeResolver#identifier()
          */
         @Override
         public KomodoType identifier() {
@@ -55,7 +56,7 @@ public class SqlProjectedColumnImpl  extends RelationalObjectImpl implements Sql
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#owningClass()
+         * @see org.komodo.relational.internal.TypeResolver#owningClass()
          */
         @Override
         public Class<SqlProjectedColumnImpl> owningClass() {
@@ -65,27 +66,27 @@ public class SqlProjectedColumnImpl  extends RelationalObjectImpl implements Sql
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
         public boolean resolvable(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
-            return ObjectImpl.validateType(transaction, kobject.getRepository(), kobject, KomodoLexicon.SqlComposition.NODE_TYPE);
+            return ObjectImpl.validateType(transaction, kobject, KomodoLexicon.SqlComposition.NODE_TYPE);
         }
 
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
-        public SqlProjectedColumn resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
+        public SqlProjectedColumnImpl resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
             if (kobject.getTypeId() == SqlProjectedColumn.TYPE_ID) {
-                return (SqlProjectedColumn)kobject;
+                return (SqlProjectedColumnImpl)kobject;
             }
 
-            return new SqlProjectedColumnImpl(transaction, kobject.getRepository(), kobject.getAbsolutePath());
+            return new SqlProjectedColumnImpl(transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath());
         }
 
     };
@@ -120,12 +121,12 @@ public class SqlProjectedColumnImpl  extends RelationalObjectImpl implements Sql
      * @see org.komodo.relational.internal.RelationalObjectImpl#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public ViewDefinition getParent(final UnitOfWork transaction) throws KException {
+    public ViewDefinitionImpl getParent(final UnitOfWork transaction) throws KException {
         ArgCheck.isNotNull(transaction, "transaction"); //$NON-NLS-1$
         ArgCheck.isTrue((transaction.getState() == State.NOT_STARTED), "transaction state must be NOT_STARTED"); //$NON-NLS-1$
 
         final KomodoObject grouping = super.getParent(transaction);
-        final ViewDefinition result = ViewDefinitionImpl.RESOLVER.resolve(transaction, grouping.getParent(transaction));
+        final ViewDefinitionImpl result = ViewDefinitionImpl.RESOLVER.resolve(transaction, grouping.getParent(transaction));
         return result;
     }
 

@@ -56,11 +56,9 @@ import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggre
 import org.komodo.rest.relational.response.vieweditorstate.RestViewDefinition;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewDefinitionStatus;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
-import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.Id;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.StringConstants;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.StringUtils;
 import org.springframework.stereotype.Component;
 import org.teiid.adminapi.impl.ModelMetaData;
@@ -89,10 +87,6 @@ import io.swagger.annotations.ApiResponses;
 @Path( V1Constants.SERVICE_SEGMENT )
 @Api( tags = {V1Constants.SERVICE_SEGMENT} )
 public final class KomodoUtilService extends KomodoService {
-
-    private static final String REPO_WKSP_LABEL = "Repository Workspace"; //$NON-NLS-1$
-
-    private static final String REPO_CONFIG_LABEL = "Repository Configuration"; //$NON-NLS-1$
 
     private static final String REPO_VDB_TOTAL = "Repository Vdb Total"; //$NON-NLS-1$
 
@@ -151,11 +145,6 @@ public final class KomodoUtilService extends KomodoService {
         List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
         UnitOfWork uow = null;
         try {
-            Repository repo = this.kengine.getDefaultRepository();
-            Id id = repo.getId();
-            repoStatus.addAttribute(REPO_WKSP_LABEL, id.getWorkspaceName());
-            repoStatus.addAttribute(REPO_CONFIG_LABEL, id.getConfiguration().toString());
-
             // find VDBs
             uow = systemTx("getVdbs", true); //$NON-NLS-1$
             Vdb[] vdbs = getWorkspaceManager(uow).findVdbs(uow);

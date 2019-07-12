@@ -25,7 +25,7 @@ import org.komodo.relational.profile.StateCommandAggregate;
 import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.rest.AbstractKEntity;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.Repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork;
 
 public class RestViewEditorState extends AbstractKEntity {
 

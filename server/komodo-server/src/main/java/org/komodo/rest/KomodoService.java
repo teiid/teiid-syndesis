@@ -46,11 +46,10 @@ import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.spi.KEngine;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.SystemConstants;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWorkListener;
+import org.komodo.spi.SystemConstants;
 import org.komodo.spi.repository.SynchronousCallback;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWorkListener;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
@@ -162,7 +161,7 @@ public abstract class KomodoService implements V1Constants {
         return vdbName + '.';
     }
 
-    protected final static SecurityPrincipal SYSTEM_USER = new SecurityPrincipal(Repository.SYSTEM_USER, null);
+    protected final static SecurityPrincipal SYSTEM_USER = new SecurityPrincipal(SystemConstants.SYSTEM_USER, null);
 
     @Autowired
     protected KEngine kengine;
@@ -514,8 +513,7 @@ public abstract class KomodoService implements V1Constants {
      */
     protected UnitOfWork createTransaction(final SecurityPrincipal user, final String name,
                                             final boolean rollbackOnly, final UnitOfWorkListener callback) throws KException {
-    	Repository repo = this.kengine.getDefaultRepository();
-        final UnitOfWork result = repo.createTransaction( user.getUserName(),
+    	final UnitOfWork result = this.kengine.createTransaction( user.getUserName(),
                                                                (getClass().getSimpleName() + COLON + name + COLON + System.currentTimeMillis()),
                                                                rollbackOnly, callback, "anonymous");
         LOGGER.debug( "createTransaction:created '{0}', rollbackOnly = '{1}'", result.getName(), result.isRollbackOnly() ); //$NON-NLS-1$
@@ -535,13 +533,8 @@ public abstract class KomodoService implements V1Constants {
      */
     protected UnitOfWork createTransaction(final SecurityPrincipal user, final String name,
                                             final boolean rollbackOnly ) throws KException {
-    	Repository repo = this.kengine.getDefaultRepository();
-        final SynchronousCallback callback = new SynchronousCallback();
-        final UnitOfWork result = repo.createTransaction(user.getUserName(),
-                                                               (getClass().getSimpleName() + COLON + name + COLON + System.currentTimeMillis()),
-                                                               rollbackOnly, callback, "anonymous");
-        LOGGER.debug( "createTransaction:created '{0}', rollbackOnly = '{1}'", result.getName(), result.isRollbackOnly() ); //$NON-NLS-1$
-        return result;
+    	final SynchronousCallback callback = new SynchronousCallback();
+    	return createTransaction(user, name, rollbackOnly, callback);
     }
 
     protected Vdb findVdb(UnitOfWork uow, String vdbName) throws KException {

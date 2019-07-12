@@ -20,8 +20,7 @@ package org.komodo.relational.vdb;
 import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * Represents a Translator that is either part of a VDB or a Teiid instance.
@@ -42,11 +41,6 @@ public interface Translator extends RelationalObject {
      * The default value for a translator type. Value is {@value} .
      */
     String DEFAULT_TYPE = "oracle"; //$NON-NLS-1$
-
-    /**
-     * An empty array of translators.
-     */
-    Translator[] NO_TRANSLATORS = new Translator[0];
 
     /**
      * @param transaction

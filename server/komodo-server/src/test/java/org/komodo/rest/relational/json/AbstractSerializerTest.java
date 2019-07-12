@@ -18,18 +18,20 @@
 package org.komodo.rest.relational.json;
 
 import java.net.URI;
+
 import javax.ws.rs.core.UriBuilder;
+
 import org.junit.Before;
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.rest.json.JsonConstants;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWorkListener;
 import org.komodo.test.utils.TestUtilities;
-import org.komodo.spi.repository.Repository.UnitOfWorkListener;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -98,7 +100,6 @@ public abstract class AbstractSerializerTest implements JsonConstants {
         Mockito.when(kObject.getAbsolutePath()).thenReturn(dataPath);
         Mockito.when(kObject.getTypeIdentifier(transaction)).thenReturn(kType);
         Mockito.when(kObject.hasChildren(transaction)).thenReturn(hasChildren);
-        Mockito.when(kObject.getRepository()).thenReturn(repository);
 
         if (descriptorName != null) {
             Descriptor primaryDescriptor = Mockito.mock(Descriptor.class);

@@ -42,7 +42,7 @@ import org.komodo.relational.model.Column.Searchable;
 import org.komodo.relational.model.StatementOption;
 import org.komodo.relational.model.Table;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyDescriptor;
@@ -673,24 +673,6 @@ public final class ColumnImplTest extends RelationalModelTest {
 
         assertThat( this.column.getCustomOptions( getTransaction() ).length, is( 2 ) );
         assertThat( Arrays.asList( this.column.getStatementOptionNames( getTransaction() ) ), hasItems( sledge, elvis ) );
-    }
-
-    @Test
-    public void shouldObtainPropertyDescriptorOfCustomOption() throws Exception {
-        final String custom = "sledge";
-        this.column.setStatementOption( getTransaction(), custom, "hammer" );
-
-        assertThat( this.column.getPropertyDescriptor( getTransaction(), custom ), is( notNullValue() ) );
-        assertThat( this.column.getPropertyDescriptor( getTransaction(), custom ).getName(), is( custom ) );
-    }
-
-    @Test
-    public void shouldObtainPropertyDescriptorOfStandardOption() throws Exception {
-        final String standard = this.column.getStandardOptions().keySet().iterator().next();
-        this.column.setStatementOption( getTransaction(), standard, "blah" );
-
-        assertThat( this.column.getPropertyDescriptor( getTransaction(), standard ), is( notNullValue() ) );
-        assertThat( this.column.getPropertyDescriptor( getTransaction(), standard ).getName(), is( standard ) );
     }
 
     @Test

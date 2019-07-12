@@ -21,10 +21,10 @@ import static org.junit.Assert.assertNotNull;
 import java.io.File;
 import java.io.InputStream;
 import org.komodo.core.AbstractLocalRepositoryTest;
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.repository.Repository;
 import org.komodo.utils.KLog;
 
 

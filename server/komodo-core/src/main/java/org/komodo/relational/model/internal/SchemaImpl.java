@@ -20,20 +20,20 @@ package org.komodo.relational.model.internal;
 import java.util.Properties;
 
 import org.komodo.core.KomodoLexicon;
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.ObjectImpl;
+import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.core.visitor.DdlNodeVisitor;
-import org.komodo.relational.TypeResolver;
+import org.komodo.metadata.MetadataInstance;
 import org.komodo.relational.internal.RelationalObjectImpl;
+import org.komodo.relational.internal.TypeResolver;
 import org.komodo.relational.model.Schema;
 import org.komodo.spi.KException;
-import org.komodo.spi.metadata.MetadataInstance;
-import org.komodo.spi.repository.DocumentType;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyValueType;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 
 /**
@@ -44,12 +44,12 @@ public class SchemaImpl extends RelationalObjectImpl implements Schema {
     /**
      * The resolver of a {@link Schema}.
      */
-    public static final TypeResolver< Schema > RESOLVER = new TypeResolver< Schema >() {
+    public static final TypeResolver< SchemaImpl > RESOLVER = new TypeResolver< SchemaImpl >() {
 
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#identifier()
+         * @see org.komodo.relational.internal.TypeResolver#identifier()
          */
         @Override
         public KomodoType identifier() {
@@ -59,7 +59,7 @@ public class SchemaImpl extends RelationalObjectImpl implements Schema {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#owningClass()
+         * @see org.komodo.relational.internal.TypeResolver#owningClass()
          */
         @Override
         public Class< SchemaImpl > owningClass() {
@@ -69,29 +69,29 @@ public class SchemaImpl extends RelationalObjectImpl implements Schema {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
         public boolean resolvable( final UnitOfWork transaction,
                                    final KomodoObject kobject ) throws KException {
-            return ObjectImpl.validateType( transaction, kobject.getRepository(), kobject, KomodoLexicon.Schema.NODE_TYPE );
+            return ObjectImpl.validateType( transaction, kobject, KomodoLexicon.Schema.NODE_TYPE );
         }
 
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
-        public Schema resolve( final UnitOfWork transaction,
+        public SchemaImpl resolve( final UnitOfWork transaction,
                                final KomodoObject kobject ) throws KException {
             if ( kobject.getTypeId() == Schema.TYPE_ID ) {
-                return ( Schema )kobject;
+                return ( SchemaImpl )kobject;
             }
 
-            return new SchemaImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
+            return new SchemaImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
         }
 
     };
@@ -127,7 +127,7 @@ public class SchemaImpl extends RelationalObjectImpl implements Schema {
         try {
             final StringBuffer result = new StringBuffer();
             MetadataInstance metadata = getRepository().getMetadataInstance();
-            final DdlNodeVisitor visitor = new DdlNodeVisitor(metadata.getVersion(), metadata.getDataTypeService(), false );
+            final DdlNodeVisitor visitor = new DdlNodeVisitor(metadata.getDataTypeService(), false );
             visitor.visit(transaction, this);
             result.append( visitor.getDdl() );
 
@@ -181,8 +181,4 @@ public class SchemaImpl extends RelationalObjectImpl implements Schema {
         setObjectProperty( uow, "setRendition", KomodoLexicon.Schema.RENDITION, rendition ); //$NON-NLS-1$
     }
 
-    @Override
-    public DocumentType getDocumentType(UnitOfWork transaction) throws KException {
-        return DocumentType.DDL;
-    }
 }

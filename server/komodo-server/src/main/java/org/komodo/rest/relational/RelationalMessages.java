@@ -17,9 +17,10 @@
  */
 package org.komodo.rest.relational;
 
-import static org.komodo.spi.constants.StringConstants.CLOSE_ANGLE_BRACKET;
-import static org.komodo.spi.constants.StringConstants.DOT;
-import static org.komodo.spi.constants.StringConstants.OPEN_ANGLE_BRACKET;
+import static org.komodo.spi.StringConstants.CLOSE_ANGLE_BRACKET;
+import static org.komodo.spi.StringConstants.DOT;
+import static org.komodo.spi.StringConstants.OPEN_ANGLE_BRACKET;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.MissingResourceException;

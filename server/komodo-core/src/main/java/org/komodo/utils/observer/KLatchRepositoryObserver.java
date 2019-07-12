@@ -17,14 +17,13 @@
  */
 package org.komodo.utils.observer;
 
-import org.komodo.spi.KEvent.Type;
-import org.komodo.spi.repository.RepositoryObserver;
+import org.komodo.core.KEvent.Type;
 
 /**
  * A {@link RepositoryObserver} containing a latch that can be used to hold
  * a thread until a state change in the {@link LocalRepository} has occurred
  */
-public class KLatchRepositoryObserver extends KLatchObserver implements RepositoryObserver {
+public class KLatchRepositoryObserver extends KLatchObserver {
 
     /**
      * Constructor

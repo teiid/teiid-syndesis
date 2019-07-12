@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.komodo.relational.TypeResolver;
 import org.komodo.relational.dataservice.internal.DataserviceImpl;
 import org.komodo.relational.model.internal.ColumnImpl;
 import org.komodo.relational.model.internal.ForeignKeyImpl;
@@ -40,8 +39,8 @@ import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.relational.vdb.internal.VdbImportImpl;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.utils.KeyInValueMap;
-import org.komodo.spi.utils.KeyInValueMap.KeyFromValueAdapter;
+import org.komodo.utils.KeyInValueMap;
+import org.komodo.utils.KeyInValueMap.KeyFromValueAdapter;
 import org.teiid.query.resolver.util.AccessPattern;
 
 /**

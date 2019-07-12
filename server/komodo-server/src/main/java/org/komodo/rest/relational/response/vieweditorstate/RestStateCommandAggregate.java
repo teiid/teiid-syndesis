@@ -25,7 +25,7 @@ import org.komodo.relational.profile.StateCommand;
 import org.komodo.relational.profile.StateCommandAggregate;
 import org.komodo.rest.KRestEntity;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.Repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork;
 
 public class RestStateCommandAggregate implements KRestEntity {
 

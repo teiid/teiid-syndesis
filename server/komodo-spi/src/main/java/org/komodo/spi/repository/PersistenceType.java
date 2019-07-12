@@ -17,7 +17,7 @@
  */
 package org.komodo.spi.repository;
 
-import org.komodo.spi.constants.SystemConstants;
+import org.komodo.spi.SystemConstants;
 
 public enum PersistenceType {
 

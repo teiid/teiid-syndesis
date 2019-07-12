@@ -18,13 +18,15 @@
 package org.komodo.rest.relational.json;
 
 import static org.junit.Assert.assertEquals;
+
 import java.net.URLDecoder;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.relational.dataservice.Dataservice;
+import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.relational.dataservice.RestDataservice;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyDescriptor;
 import org.mockito.Mockito;
@@ -65,7 +67,7 @@ public final class DataserviceSerializerTest extends AbstractSerializerTest  {
 
     @Before
     public void init() throws Exception {
-        KomodoObject workspace = Mockito.mock(KomodoObject.class);
+        RelationalObjectImpl workspace = Mockito.mock(RelationalObjectImpl.class);
         Mockito.when(workspace.getAbsolutePath()).thenReturn(WORKSPACE_DATA_PATH);
 
         Vdb serviceVdb = Mockito.mock(Vdb.class);

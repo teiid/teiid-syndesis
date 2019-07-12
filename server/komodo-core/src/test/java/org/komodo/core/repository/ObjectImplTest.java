@@ -31,12 +31,12 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.komodo.core.AbstractLocalRepositoryTest;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.PropertyDescriptor;
-import org.komodo.spi.repository.Repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork;
 import org.modeshape.jcr.JcrNtLexicon;
 
 @SuppressWarnings( {"javadoc", "nls"} )
@@ -245,21 +245,6 @@ public final class ObjectImplTest extends AbstractLocalRepositoryTest {
     }
 
     @Test
-    public void shouldNotAllowRemovingDescriptorFromObjectWithReservedPath() throws Exception {
-        final String descriptorName = "mix:referenceable";
-
-        for ( final String reservedPath : RepositoryImpl.getReservedPaths(getTransaction()) ) {
-            try {
-                final KomodoObject kobject = new ObjectImpl( _repo, reservedPath, 0 );
-                kobject.removeDescriptor( getTransaction(), descriptorName );
-                fail( "Should not allow removing a descriptor from reserved path " + reservedPath );
-            } catch ( final KException e ) {
-                // expected
-            }
-        }
-    }
-
-    @Test
     public void shouldNotAllowRenamingObjectWithReservedPath() throws Exception {
         for ( final String reservedPath : RepositoryImpl.getReservedPaths(getTransaction()) ) {
             try {
@@ -301,18 +286,6 @@ public final class ObjectImplTest extends AbstractLocalRepositoryTest {
 
             assertThat( kobject.hasProperty( sysTx, propertyName ), is( false ) );
             assertThat( kobject.hasRawProperty( sysTx, propertyName ), is( false ) );
-        }
-    }
-
-    @Test
-    public void shouldNotHavePropertyDescriptorWhenReservedPath() throws Exception {
-        final String propertyName = "jcr:primaryType";
-
-        UnitOfWork sysTx = sysTx();
-        for ( final String reservedPath : RepositoryImpl.getReservedPaths(sysTx) ) {
-            final KomodoObject kobject = new ObjectImpl( _repo, reservedPath, 0 );
-            final PropertyDescriptor descriptor = kobject.getPropertyDescriptor( sysTx, propertyName );
-            assertThat( descriptor, is( nullValue() ) );
         }
     }
 
@@ -408,26 +381,6 @@ public final class ObjectImplTest extends AbstractLocalRepositoryTest {
         KomodoObject kObject = _repo.getFromWorkspace(transaction2, testNodePath);
         assertEquals("Node path should equal " + testNodePath, testNodePath, kObject.getAbsolutePath()); //$NON-NLS-1$
         assertEquals(newTestNode.getAbsolutePath(), kObject.getAbsolutePath());
-    }
-
-    @Test
-    public void shouldRemoveDescriptor() throws Exception {
-        final String descriptorName = "mix:referenceable";
-        this.kobject.addDescriptor( getTransaction(), descriptorName );
-        this.kobject.removeDescriptor( getTransaction(), descriptorName );
-        assertThat( this.kobject.hasDescriptor( getTransaction(), descriptorName ), is( false ) );
-        assertThat( this.kobject.getDescriptors( getTransaction() ).length, is( 0 ) );
-    }
-
-    @Test
-    public void shouldRemoveMultipleDescriptors() throws Exception {
-        final String descriptor1 = "mix:referenceable";
-        final String descriptor2 = "mix:lockable";
-        this.kobject.addDescriptor( getTransaction(), descriptor1, descriptor2 );
-        this.kobject.removeDescriptor( getTransaction(), descriptor1, descriptor2 );
-        assertThat( this.kobject.hasDescriptor( getTransaction(), descriptor1 ), is( false ) );
-        assertThat( this.kobject.hasDescriptor( getTransaction(), descriptor2 ), is( false ) );
-        assertThat( this.kobject.getDescriptors( getTransaction() ).length, is( 0 ) );
     }
 
     @Test

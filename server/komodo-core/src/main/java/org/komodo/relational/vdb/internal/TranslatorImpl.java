@@ -17,18 +17,19 @@
  */
 package org.komodo.relational.vdb.internal;
 
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.ObjectImpl;
-import org.komodo.relational.TypeResolver;
+import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.internal.RelationalChildRestrictedObject;
+import org.komodo.relational.internal.TypeResolver;
 import org.komodo.relational.vdb.Translator;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.PropertyValueType;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
@@ -40,12 +41,12 @@ public final class TranslatorImpl extends RelationalChildRestrictedObject implem
     /**
      * The resolver of a {@link Translator}.
      */
-	public static final TypeResolver< Translator > RESOLVER = new TypeResolver< Translator >() {
+	public static final TypeResolver< TranslatorImpl > RESOLVER = new TypeResolver< TranslatorImpl >() {
 
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#identifier()
+         * @see org.komodo.relational.internal.TypeResolver#identifier()
          */
         @Override
         public KomodoType identifier() {
@@ -55,7 +56,7 @@ public final class TranslatorImpl extends RelationalChildRestrictedObject implem
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#owningClass()
+         * @see org.komodo.relational.internal.TypeResolver#owningClass()
          */
         @Override
         public Class< TranslatorImpl > owningClass() {
@@ -65,29 +66,29 @@ public final class TranslatorImpl extends RelationalChildRestrictedObject implem
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
         public boolean resolvable( final UnitOfWork transaction,
                                    final KomodoObject kobject ) throws KException {
-            return ObjectImpl.validateType( transaction, kobject.getRepository(), kobject, VdbLexicon.Translator.TRANSLATOR );
+            return ObjectImpl.validateType( transaction, kobject, VdbLexicon.Translator.TRANSLATOR );
         }
 
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
+         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
          *      org.komodo.spi.repository.KomodoObject)
          */
         @Override
-        public Translator resolve( final UnitOfWork transaction,
+        public TranslatorImpl resolve( final UnitOfWork transaction,
                                    final KomodoObject kobject ) throws KException {
             if ( kobject.getTypeId() == Translator.TYPE_ID ) {
-                return ( Translator )kobject;
+                return ( TranslatorImpl )kobject;
             }
 
-            return new TranslatorImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
+            return new TranslatorImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
         }
 
     };

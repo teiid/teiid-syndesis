@@ -26,8 +26,8 @@ import java.util.TreeMap;
 
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
-import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.repository.Repository.UnitOfWork;
+import org.komodo.spi.StringConstants;
+import org.komodo.spi.repository.UnitOfWork;
 
 import io.fabric8.kubernetes.api.model.EnvVar;
 

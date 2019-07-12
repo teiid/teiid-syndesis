@@ -60,11 +60,10 @@ import org.komodo.rest.relational.dataservice.RestDataservice;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.constants.TeiidSqlConstants;
-import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.StringConstants;
+import org.komodo.spi.TeiidSqlConstants;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -380,7 +379,7 @@ public final class KomodoDataserviceService extends KomodoService
 
         final String dataserviceName = restDataservice.getId();
         try {
-            final Dataservice dataservice = getWorkspaceManager(uow).createDataservice(uow, null, dataserviceName);
+            final Dataservice dataservice = getWorkspaceManager(uow).createDataservice(uow, dataserviceName);
 
             // Transfers the properties from the rest object to the created komodo service.
             setProperties(uow, dataservice, restDataservice);
@@ -391,12 +390,12 @@ public final class KomodoDataserviceService extends KomodoService
             // Find the service VDB definition for this Dataservice. If one exists already,
             // it is replaced.
             dataservice.setServiceVdb(uow, null);
-            KomodoObject svcVdbObj = wkspMgr.findVdb(uow, serviceVdbName);
+            Vdb svcVdbObj = wkspMgr.findVdb(uow, serviceVdbName);
             if (svcVdbObj != null) {
-                svcVdbObj.remove(uow);
+                wkspMgr.deleteVdb(uow, svcVdbObj);
             }
 
-            Vdb serviceVdb = wkspMgr.createVdb(uow, null, serviceVdbName, serviceVdbName);
+            Vdb serviceVdb = wkspMgr.createVdb(uow, serviceVdbName, serviceVdbName);
 
             // Add to the ServiceVdb a virtual model for the View
             Model viewModel = serviceVdb.addModel(uow, SERVICE_VDB_VIEW_MODEL);
@@ -486,11 +485,11 @@ public final class KomodoDataserviceService extends KomodoService
             String vdbName = serviceVdb.getName(uow);
 
             if (serviceVdb != null) {
-                wkspMgr.delete(uow, serviceVdb);
+                wkspMgr.deleteVdb(uow, serviceVdb);
             }
 
             // Delete the Dataservice
-            wkspMgr.delete(uow, dataservice);
+            wkspMgr.deleteDataservice(uow, dataservice);
 
             KomodoStatusObject kso = new KomodoStatusObject("Delete Status"); //$NON-NLS-1$
             kso.addAttribute(dataserviceName, "Successfully deleted"); //$NON-NLS-1$

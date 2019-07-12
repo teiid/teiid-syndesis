@@ -17,11 +17,11 @@
  */
 package org.komodo.relational.internal;
 
-import org.komodo.relational.TypeResolver;
+import org.komodo.relational.RelationalObject;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 
 /**
@@ -63,7 +63,7 @@ public class AdapterFactory {
         if (adaptedClass.isInstance(object))
             return (T) object;
 
-        KomodoObject result = null;
+        RelationalObject result = null;
 
         try {
             KomodoObject kObject = (KomodoObject) object;

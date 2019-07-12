@@ -37,24 +37,22 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestName;
+import org.komodo.core.internal.repository.Repository.State;
 import org.komodo.core.repository.LocalRepository;
 import org.komodo.core.repository.LocalRepository.LocalRepositoryId;
 import org.komodo.core.repository.ObjectImpl;
+import org.komodo.core.repository.RepositoryClientEvent;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.core.repository.RepositoryTools;
-import org.komodo.metadata.DefaultMetadataInstance;
-import org.komodo.spi.KClient;
-import org.komodo.spi.KEvent;
+import org.komodo.metadata.TeiidConnectionProvider;
+import org.komodo.metadata.internal.DefaultMetadataInstance;
 import org.komodo.spi.KException;
-import org.komodo.spi.metadata.TeiidConnectionProvider;
+import org.komodo.spi.SystemConstants;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.State;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWorkListener;
-import org.komodo.spi.repository.RepositoryClientEvent;
 import org.komodo.spi.repository.SynchronousCallback;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWorkListener;
 import org.komodo.utils.KLog;
 import org.komodo.utils.observer.KLatchRepositoryObserver;
 import org.mockito.Mockito;
@@ -101,24 +99,7 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
     	engine.setMetadataInstance(metadata);
         engine.setDefaultRepository(_repo);
 
-        KLatchRepositoryObserver _repoStartedObserver = new KLatchRepositoryObserver(KEvent.Type.REPOSITORY_STARTED);
-        _repo.addObserver(_repoStartedObserver);
-
-        // Start the repository
-        final KClient client = mock(KClient.class);
-        final RepositoryClientEvent event = RepositoryClientEvent.createStartedEvent(client);
-        _repo.notify(event);
-
-        // Wait for the starting of the repository or timeout of 1 minute
-        if (!_repoStartedObserver.getLatch().await(TIME_TO_WAIT, TimeUnit.MINUTES)) {
-            fail("Test timed-out waiting for local repository to start");
-        }
-
-        Throwable startupError = _repoStartedObserver.getError();
-        if (startupError != null) {
-            startupError.printStackTrace();
-            fail("Repository error occurred on startup: " + startupError.getMessage());
-        }
+        assertTrue(engine.startAndWait());
 
         { // verify initial content (see initialContent.xml)
             UnitOfWork transaction = null;
@@ -150,7 +131,7 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
         KLatchRepositoryObserver _repoShutdownObserver = new KLatchRepositoryObserver(KEvent.Type.REPOSITORY_STOPPED);
         _repo.addObserver(_repoShutdownObserver);
 
-        KClient client = mock(KClient.class);
+        KEngineImpl client = mock(KEngineImpl.class);
         RepositoryClientEvent event = RepositoryClientEvent.createShuttingDownEvent(client);
         _repo.notify(event);
 
@@ -178,7 +159,7 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
         this.uow = createTransaction(callback);
 
         this.sysCallback = new TestTransactionListener();
-        this.sysUow = createTransaction(Repository.SYSTEM_USER, txId(Repository.SYSTEM_USER, "tx"), false, this.sysCallback);
+        this.sysUow = createTransaction(SystemConstants.SYSTEM_USER, txId(SystemConstants.SYSTEM_USER, "tx"), false, this.sysCallback);
         KLog.getLogger().debug( "\n\n ----- Test {0}: createInitialTransactions() finished", this.name.getMethodName() );
     }
 
@@ -232,7 +213,7 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
             KLatchRepositoryObserver _repoClearObserver = new KLatchRepositoryObserver(KEvent.Type.REPOSITORY_CLEARED);
             _repo.addObserver(_repoClearObserver);
 
-            KClient client = mock( KClient.class );
+            KEngineImpl client = mock( KEngineImpl.class );
             RepositoryClientEvent event = RepositoryClientEvent.createClearEvent( client );
             _repo.notify( event );
 
@@ -298,7 +279,7 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
         commit(this.sysUow, this.sysCallback, expectedState);
 
         this.sysCallback = nextCallback;
-        this.sysUow = createTransaction(Repository.SYSTEM_USER, txId(Repository.SYSTEM_USER, "sysTx"), false, sysCallback);
+        this.sysUow = createTransaction(SystemConstants.SYSTEM_USER, txId(SystemConstants.SYSTEM_USER, "sysTx"), false, sysCallback);
     }
 
     protected void sysCommit( final UnitOfWork.State expectedState ) throws Exception {

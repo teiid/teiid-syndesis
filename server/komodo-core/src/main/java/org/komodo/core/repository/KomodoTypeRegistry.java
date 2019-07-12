@@ -22,11 +22,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.komodo.core.KomodoLexicon;
-import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.utils.KeyInValueMap;
-import org.komodo.spi.utils.KeyInValueMap.KeyFromValueAdapter;
 import org.komodo.utils.ArgCheck;
+import org.komodo.utils.KeyInValueMap;
+import org.komodo.utils.KeyInValueMap.KeyFromValueAdapter;
 import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
 import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;

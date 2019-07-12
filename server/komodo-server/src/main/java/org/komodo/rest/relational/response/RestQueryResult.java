@@ -22,10 +22,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.ws.rs.core.MediaType;
+
+import org.komodo.metadata.query.QSColumn;
+import org.komodo.metadata.query.QSResult;
+import org.komodo.metadata.query.QSRow;
 import org.komodo.rest.KRestEntity;
-import org.komodo.spi.query.QSColumn;
-import org.komodo.spi.query.QSResult;
-import org.komodo.spi.query.QSRow;
 
 public class RestQueryResult implements KRestEntity {
 

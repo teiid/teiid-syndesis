@@ -17,8 +17,9 @@
  */
 package org.komodo.metadata;
 
-import org.komodo.spi.metadata.MetadataInstance;
-import org.komodo.spi.metadata.TeiidConnectionProvider;
+import org.komodo.metadata.MetadataInstance;
+import org.komodo.metadata.TeiidConnectionProvider;
+import org.komodo.metadata.internal.DefaultMetadataInstance;
 import org.mockito.Mockito;
 import org.teiid.adminapi.Admin;
 

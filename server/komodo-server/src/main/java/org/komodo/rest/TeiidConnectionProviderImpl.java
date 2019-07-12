@@ -21,7 +21,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import org.komodo.spi.metadata.TeiidConnectionProvider;
+import org.komodo.metadata.TeiidConnectionProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.teiid.adminapi.Admin;

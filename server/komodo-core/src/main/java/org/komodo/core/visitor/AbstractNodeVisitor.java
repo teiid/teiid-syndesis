@@ -21,14 +21,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import org.komodo.spi.constants.StringConstants;
+
+import org.komodo.metadata.DataTypeService;
+import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoObjectVisitor;
 import org.komodo.spi.repository.Property;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.runtime.version.MetadataVersion;
-import org.komodo.spi.type.DataTypeService;
+import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
 
 /**
@@ -36,25 +36,14 @@ import org.komodo.utils.ArgCheck;
  */
 public abstract class AbstractNodeVisitor implements KomodoObjectVisitor {
 
-    private MetadataVersion version;
-
     private DataTypeService dataTypeService;
 
     /**
      * @param version teiid version
      */
-    public AbstractNodeVisitor(MetadataVersion version, DataTypeService dataTypeService) {
-        ArgCheck.isNotNull(version, "version");
+    public AbstractNodeVisitor(DataTypeService dataTypeService) {
         ArgCheck.isNotNull(dataTypeService, "dataTypeService");
-        this.version = version;
         this.dataTypeService = dataTypeService;
-    }
-
-    /**
-     * @return teiid version
-     */
-    public MetadataVersion getVersion() {
-        return version;
     }
 
     /**

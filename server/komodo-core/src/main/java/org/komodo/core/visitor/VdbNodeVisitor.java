@@ -29,16 +29,16 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.komodo.core.LexiconConstants.JcrLexicon;
+import org.komodo.core.internal.repository.KObjectFactory;
+import org.komodo.core.repository.RepositoryImpl;
+import org.komodo.metadata.DataTypeService;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.StringConstants;
+import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.Descriptor;
-import org.komodo.spi.repository.KObjectFactory;
 import org.komodo.spi.repository.KomodoObject;
+import org.komodo.spi.repository.OperationType;
 import org.komodo.spi.repository.Property;
-import org.komodo.spi.repository.Repository.OperationType;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.runtime.version.MetadataVersion;
-import org.komodo.spi.type.DataTypeService;
+import org.komodo.spi.repository.UnitOfWork;
 import org.modeshape.jcr.api.JcrConstants;
 import org.teiid.modeshape.sequencer.vdb.lexicon.CoreLexicon;
 import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
@@ -180,8 +180,8 @@ public class VdbNodeVisitor extends AbstractNodeVisitor implements StringConstan
      * @param dataTypeService the data type service
      * @param writer output for the xml
      */
-    public VdbNodeVisitor(MetadataVersion version, DataTypeService dataTypeService, XMLStreamWriter writer) {
-        super(version, dataTypeService);
+    public VdbNodeVisitor(DataTypeService dataTypeService, XMLStreamWriter writer) {
+        super(dataTypeService);
         this.writer = writer;
     }
 
@@ -517,7 +517,7 @@ public class VdbNodeVisitor extends AbstractNodeVisitor implements StringConstan
         // Sources
         visitFilteredChildren(transaction, kObject, NodeTypeName.SOURCES.getId());
 
-        DdlNodeVisitor visitor = new DdlNodeVisitor(getVersion(), getDataTypeService(), showTabs);
+        DdlNodeVisitor visitor = new DdlNodeVisitor(getDataTypeService(), showTabs);
         visitor.visit(transaction, kObject);
 
         if (!visitor.getDdl().isEmpty()) {
@@ -640,7 +640,7 @@ public class VdbNodeVisitor extends AbstractNodeVisitor implements StringConstan
         // convert JCR qualified name to expanded name
         String prefix = name.substring(0, index);
 
-        KObjectFactory objectFactory = property.getRepository().getObjectFactory();
+        KObjectFactory objectFactory = RepositoryImpl.getRepository(transaction).getObjectFactory();
         String uri = objectFactory.getNamespaceURI(transaction, prefix) ;
         QName expanded = new QName( uri, name.substring( index + 1 ) );
 

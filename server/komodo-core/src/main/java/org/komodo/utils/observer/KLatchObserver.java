@@ -21,9 +21,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import org.komodo.spi.KEvent;
-import org.komodo.spi.KEvent.Type;
-import org.komodo.spi.KObserver;
+
+import org.komodo.core.KEvent;
+import org.komodo.core.KObserver;
+import org.komodo.core.KEvent.Type;
 
 /**
  * A {@link KObserver} containing a latch that can be used to hold

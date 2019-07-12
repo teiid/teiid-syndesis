@@ -52,7 +52,7 @@ import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
 import org.komodo.rest.service.KomodoUtilService;
 import org.komodo.rest.service.KomodoVdbService;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.Repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.test.utils.TestUtilities;
 
 import com.google.common.net.HttpHeaders;

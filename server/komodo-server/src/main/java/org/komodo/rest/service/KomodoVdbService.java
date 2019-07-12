@@ -43,9 +43,9 @@ import org.komodo.rest.KomodoService;
 import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.StringConstants;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
 import org.springframework.stereotype.Component;
@@ -134,7 +134,7 @@ public final class KomodoVdbService extends KomodoService {
             if (vdb == null)
                 return Response.noContent().build();
 
-            mgr.delete(uow, vdb);
+            mgr.deleteVdb(uow, vdb);
 
             KomodoStatusObject kso = new KomodoStatusObject("Delete Status"); //$NON-NLS-1$
             kso.addAttribute(vdbName, "Successfully deleted"); //$NON-NLS-1$
