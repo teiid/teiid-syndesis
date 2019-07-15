@@ -35,10 +35,10 @@ import javax.xml.xpath.XPathFactory;
 
 import org.junit.Test;
 import org.komodo.core.AbstractLocalRepositoryTest;
+import org.komodo.core.repository.KomodoObject;
+import org.komodo.core.repository.Property;
 import org.komodo.metadata.TeiidConnectionProvider;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
-import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.repository.Property;
 import org.komodo.test.utils.TestUtilities;
 import org.mockito.Mockito;
 import org.teiid.modeshape.sequencer.vdb.lexicon.CoreLexicon;

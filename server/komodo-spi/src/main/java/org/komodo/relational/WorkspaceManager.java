@@ -36,7 +36,7 @@ public interface WorkspaceManager {
 
 	Dataservice[] findDataservices(UnitOfWork uow, String searchPattern) throws KException;
 
-	Vdb[] findVdbs(UnitOfWork uow, String string) throws KException;
+	Vdb[] findVdbs(UnitOfWork uow, String searchPattern) throws KException;
 
 	Vdb[] findVdbs(UnitOfWork uow) throws KException;
 
@@ -54,6 +54,6 @@ public interface WorkspaceManager {
 
 	String getKomodoWorkspaceAbsolutePath(UnitOfWork uow) throws KException;
 
-	boolean isSchemaLoading(UnitOfWork uow, Model schemaModel) throws KException;
+	boolean isSchemaActive(UnitOfWork uow, Model schemaModel) throws KException;
 
 }

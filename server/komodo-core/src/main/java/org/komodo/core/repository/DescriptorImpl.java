@@ -22,9 +22,6 @@ import java.util.Collection;
 import org.komodo.core.internal.repository.KObjectFactory;
 import org.komodo.core.internal.repository.Repository;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.Descriptor;
-import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.repository.PropertyDescriptor;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
@@ -78,7 +75,7 @@ public class DescriptorImpl implements Descriptor {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Descriptor#getName()
+     * @see org.komodo.core.repository.Descriptor#getName()
      */
     @Override
     public String getName() {
@@ -88,7 +85,7 @@ public class DescriptorImpl implements Descriptor {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Descriptor#getPropertyDescriptors(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Descriptor#getPropertyDescriptors(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public PropertyDescriptor[] getPropertyDescriptors( final UnitOfWork transaction ) throws KException {

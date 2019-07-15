@@ -23,18 +23,17 @@ import java.util.Calendar;
 import java.util.Date;
 
 import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.repository.Descriptor;
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.ObjectImpl;
+import org.komodo.core.repository.PropertyDescriptor;
+import org.komodo.core.repository.PropertyValueType;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.Messages;
 import org.komodo.relational.internal.RelationalChildRestrictedObject;
 import org.komodo.relational.internal.TypeResolver;
-import org.komodo.relational.model.StatementOption;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.Descriptor;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.PropertyDescriptor;
-import org.komodo.spi.repository.PropertyValueType;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
@@ -74,7 +73,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
          * {@inheritDoc}
          *
          * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
+         *      org.komodo.core.repository.KomodoObject)
          */
         @Override
         public boolean resolvable( final UnitOfWork transaction,
@@ -88,7 +87,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
          * {@inheritDoc}
          *
          * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
+         *      org.komodo.core.repository.KomodoObject)
          */
         @Override
         public StatementOptionImpl resolve( final UnitOfWork transaction,
@@ -128,7 +127,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getBooleanValue(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getBooleanValue(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public Boolean getBooleanValue( final UnitOfWork transaction ) throws KException {
@@ -139,7 +138,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getBooleanValues(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getBooleanValues(org.komodo.spi.repository.Repository.UnitOfWork)
      * @throws UnsupportedOperationException
      *         if called
      */
@@ -151,7 +150,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getDateValue(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getDateValue(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public Calendar getDateValue( final UnitOfWork transaction ) throws KException {
@@ -170,7 +169,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getDateValues(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getDateValues(org.komodo.spi.repository.Repository.UnitOfWork)
      * @throws UnsupportedOperationException
      *         if called
      */
@@ -182,7 +181,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getDescriptor(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getDescriptor(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public PropertyDescriptor getDescriptor( final UnitOfWork transaction ) throws KException {
@@ -205,7 +204,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getDoubleValue(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getDoubleValue(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public Double getDoubleValue( final UnitOfWork transaction ) throws KException {
@@ -216,7 +215,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getDoubleValues(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getDoubleValues(org.komodo.spi.repository.Repository.UnitOfWork)
      * @throws UnsupportedOperationException
      *         if called
      */
@@ -228,7 +227,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getIntegerValue(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getIntegerValue(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public Integer getIntegerValue( final UnitOfWork transaction ) throws KException {
@@ -239,7 +238,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getIntegerValues(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getIntegerValues(org.komodo.spi.repository.Repository.UnitOfWork)
      * @throws UnsupportedOperationException
      *         if called
      */
@@ -251,7 +250,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getLongValue(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getLongValue(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public Long getLongValue( final UnitOfWork transaction ) throws KException {
@@ -262,7 +261,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getLongValues(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getLongValues(org.komodo.spi.repository.Repository.UnitOfWork)
      * @throws UnsupportedOperationException
      *         if called
      */
@@ -274,7 +273,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.model.StatementOption#getOption(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.relational.model.internal.StatementOption#getOption(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public String getOption( final UnitOfWork uow ) throws KException {
@@ -284,7 +283,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getStringValue(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getStringValue(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public String getStringValue( final UnitOfWork transaction ) throws KException {
@@ -294,7 +293,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getStringValues(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getStringValues(org.komodo.spi.repository.Repository.UnitOfWork)
      * @throws UnsupportedOperationException
      *         if called
      */
@@ -316,7 +315,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getValue(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getValue(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public String getValue( final UnitOfWork transaction ) throws KException {
@@ -326,7 +325,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#getValues(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getValues(org.komodo.spi.repository.Repository.UnitOfWork)
      * @throws UnsupportedOperationException
      *         if called
      */
@@ -340,7 +339,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
      * <p>
      * Always returns {@link PropertyValueType#STRING}
      *
-     * @see org.komodo.spi.repository.Property#getValueType(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#getValueType(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public PropertyValueType getValueType( final UnitOfWork transaction ) {
@@ -352,7 +351,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
      * <p>
      * Always returns <code>false</code>
      *
-     * @see org.komodo.spi.repository.Property#isMultiple(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Property#isMultiple(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public boolean isMultiple( final UnitOfWork transaction ) {
@@ -362,7 +361,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.Property#set(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.Object[])
+     * @see org.komodo.core.repository.Property#set(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.Object[])
      */
     @Override
     public void set( final UnitOfWork transaction,
@@ -379,7 +378,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.model.StatementOption#setOption(org.komodo.spi.repository.Repository.UnitOfWork,
+     * @see org.komodo.relational.model.internal.StatementOption#setOption(org.komodo.spi.repository.Repository.UnitOfWork,
      *      java.lang.String)
      */
     @Override

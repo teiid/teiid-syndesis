@@ -23,18 +23,16 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.internal.RelationalObjectImpl.Filter;
-import org.komodo.relational.model.Model;
-import org.komodo.relational.model.View;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public final class ViewImplTest extends RelationalModelTest {
 
-    private Model model;
-    private View view;
+    private ModelImpl model;
+    private ViewImpl view;
 
     @Before
     public void init() throws Exception {
@@ -57,7 +55,7 @@ public final class ViewImplTest extends RelationalModelTest {
 
     @Test
     public void shouldHaveParentModel() throws Exception {
-        assertThat( this.view.getParent( getTransaction() ), is( instanceOf( Model.class ) ) );
+        assertThat( this.view.getParent( getTransaction() ), is( instanceOf( ModelImpl.class ) ) );
         assertThat( this.view.getParent( getTransaction() ), is( ( KomodoObject )this.model ) );
     }
 

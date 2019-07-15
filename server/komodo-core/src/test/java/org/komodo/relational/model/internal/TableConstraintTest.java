@@ -37,8 +37,8 @@ public final class TableConstraintTest extends RelationalModelTest {
 
     private static final String NAME = "tableConstraint";
 
-    private TableConstraint constraint;
-    private Table table;
+    private UniqueConstraintImpl constraint;
+    private TableImpl table;
 
     @Before
     public void init() throws Exception {
@@ -49,7 +49,7 @@ public final class TableConstraintTest extends RelationalModelTest {
 
     @Test
     public void shouldAddColumn() throws Exception {
-        final Column column = RelationalModelFactory.createColumn( getTransaction(), _repo, mock( Table.class ), "column" );
+        final ColumnImpl column = RelationalModelFactory.createColumn( getTransaction(), _repo, mock( TableImpl.class ), "column" );
         this.constraint.addColumn( getTransaction(), column );
 
         assertThat( this.constraint.hasProperty( getTransaction(), TeiidDdlLexicon.Constraint.REFERENCES ), is( true ) );
@@ -67,7 +67,7 @@ public final class TableConstraintTest extends RelationalModelTest {
 
     @Test( expected = KException.class )
     public void shouldFailWhenRemovingColumnThatWasNeverAdded() throws Exception {
-        final Column column = RelationalModelFactory.createColumn( getTransaction(), _repo, mock( Table.class ), "column" );
+        final ColumnImpl column = RelationalModelFactory.createColumn( getTransaction(), _repo, mock( TableImpl.class ), "column" );
         this.constraint.removeColumn( getTransaction(), column );
     }
 
@@ -117,7 +117,7 @@ public final class TableConstraintTest extends RelationalModelTest {
 
     @Test
     public void shouldRemoveColumn() throws Exception {
-        final Column column = RelationalModelFactory.createColumn( getTransaction(), _repo, mock( Table.class ), "column" );
+        final ColumnImpl column = RelationalModelFactory.createColumn( getTransaction(), _repo, mock( TableImpl.class ), "column" );
         this.constraint.addColumn( getTransaction(), column );
         commit(); // must commit so that query used in next method will work
 

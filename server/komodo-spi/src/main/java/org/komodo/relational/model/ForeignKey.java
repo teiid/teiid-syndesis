@@ -42,17 +42,12 @@ public interface ForeignKey extends TableConstraint {
     ConstraintType CONSTRAINT_TYPE = ConstraintType.FOREIGN_KEY;
 
     /**
-     * An empty collection of foreign key constraints.
-     */
-    ForeignKey[] NO_FOREIGN_KEYS = new ForeignKey[0];
-
-    /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KNode#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.KNode#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    Table getParent( final UnitOfWork transaction ) throws KException;
+    Table getRelationalParent( final UnitOfWork transaction ) throws KException;
 
     /**
      * @param transaction

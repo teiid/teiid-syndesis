@@ -1,4 +1,4 @@
-package org.komodo.spi.repository;
+package org.komodo.core.repository;
 
 /**
  * The nature of the operation being conducted

@@ -33,18 +33,19 @@ import javax.jcr.query.Query;
 import javax.jcr.query.QueryResult;
 
 import org.komodo.core.LexiconConstants.JcrLexicon;
+import org.komodo.core.repository.Descriptor;
 import org.komodo.core.repository.DescriptorImpl;
 import org.komodo.core.repository.KPropertyFactory;
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.Messages;
 import org.komodo.core.repository.ObjectImpl;
+import org.komodo.core.repository.Property;
+import org.komodo.core.repository.PropertyDescriptor;
 import org.komodo.core.repository.PropertyDescriptorImpl;
 import org.komodo.core.repository.PropertyImpl;
+import org.komodo.core.repository.PropertyValueType;
+import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.Descriptor;
-import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.repository.Property;
-import org.komodo.spi.repository.PropertyDescriptor;
-import org.komodo.spi.repository.PropertyValueType;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
@@ -76,6 +77,11 @@ public class JcrNodeFactory extends AbstractJcrFactory implements KObjectFactory
         } catch (KException ex) {
             throw handleError(ex);
         }
+    }
+    
+    @Override
+    public Property getId(UnitOfWork transaction, RelationalObject kObject) throws KException {
+    	return getId(transaction, (KomodoObject)kObject);
     }
 
     @Override

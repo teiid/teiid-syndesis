@@ -23,10 +23,10 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.junit.Before;
 import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.repository.Descriptor;
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.rest.json.JsonConstants;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.Descriptor;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWork.State;

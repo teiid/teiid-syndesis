@@ -39,12 +39,6 @@ public interface ViewEditorState extends RelationalObject, StringConstants {
     KomodoType IDENTIFIER = KomodoType.VIEW_EDITOR_STATE;
 
     /**
-     * An empty array of view editor states.
-     */
-    ViewEditorState[] NO_VIEW_EDITOR_STATES = new ViewEditorState[0];
-
-
-    /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      *

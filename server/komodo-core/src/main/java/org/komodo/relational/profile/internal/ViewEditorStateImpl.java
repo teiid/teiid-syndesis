@@ -22,17 +22,15 @@ import java.util.List;
 
 import org.komodo.core.KomodoLexicon;
 import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.internal.TypeResolver;
-import org.komodo.relational.profile.Profile;
 import org.komodo.relational.profile.StateCommandAggregate;
-import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWork.State;
@@ -72,7 +70,7 @@ public class ViewEditorStateImpl extends RelationalObjectImpl implements ViewEdi
          * {@inheritDoc}
          *
          * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
+         *      org.komodo.core.repository.KomodoObject)
          */
         @Override
         public boolean resolvable(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
@@ -83,7 +81,7 @@ public class ViewEditorStateImpl extends RelationalObjectImpl implements ViewEdi
          * {@inheritDoc}
          *
          * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
+         *      org.komodo.core.repository.KomodoObject)
          */
         @Override
         public ViewEditorStateImpl resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
@@ -139,7 +137,7 @@ public class ViewEditorStateImpl extends RelationalObjectImpl implements ViewEdi
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#getTypeId()
+     * @see org.komodo.core.repository.KomodoObject#getTypeId()
      */
     @Override
     public int getTypeId() {
@@ -162,7 +160,7 @@ public class ViewEditorStateImpl extends RelationalObjectImpl implements ViewEdi
      * @see org.komodo.relational.model.Model#addSource(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
-    public StateCommandAggregate addCommand( final UnitOfWork transaction) throws KException {
+    public StateCommandAggregateImpl addCommand( final UnitOfWork transaction) throws KException {
         return RelationalModelFactory.createStateCommandAggregate(transaction, getRepository(), this);
     }
 
@@ -183,13 +181,13 @@ public class ViewEditorStateImpl extends RelationalObjectImpl implements ViewEdi
     
 
 	@Override
-	public ViewDefinition setViewDefinition(UnitOfWork transaction) throws KException {
+	public ViewDefinitionImpl setViewDefinition(UnitOfWork transaction) throws KException {
         // Create the a new ViewDefinition
         return RelationalModelFactory.createViewDefinition(transaction, getRepository(), this);
 	}
 
 	@Override
-	public ViewDefinition getViewDefinition(UnitOfWork transaction) throws KException {
+	public ViewDefinitionImpl getViewDefinition(UnitOfWork transaction) throws KException {
 		KomodoObject[] viewDefs = getChildrenOfType(transaction, KomodoLexicon.ViewDefinition.NODE_TYPE);
 		if (viewDefs == null || viewDefs.length == 0) {
 			return null;

@@ -18,6 +18,8 @@
 package org.komodo.relational.model.internal;
 
 import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.repository.KomodoObject;
+import org.komodo.core.repository.Property;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.internal.ExcludeQNamesFilter;
@@ -26,8 +28,6 @@ import org.komodo.relational.model.Column;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.TableConstraint;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
@@ -129,11 +129,11 @@ abstract class TableConstraintImpl extends RelationalChildRestrictedObject imple
      * @see org.komodo.relational.model.TableConstraint#getTable(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public Table getTable( final UnitOfWork transaction ) throws KException {
+    public TableImpl getTable( final UnitOfWork transaction ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
-        Table result = null;
+        TableImpl result = null;
         final KomodoObject parent = getParent( transaction );
 
         if ( parent.hasDescriptor( transaction, CreateTable.TABLE_STATEMENT ) ) {

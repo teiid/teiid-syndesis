@@ -22,21 +22,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.komodo.core.repository.Descriptor;
 import org.komodo.core.repository.DescriptorImpl;
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.ObjectImpl;
+import org.komodo.core.repository.Property;
+import org.komodo.core.repository.PropertyDescriptor;
+import org.komodo.core.repository.PropertyValueType;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
+import org.komodo.relational.internal.OptionContainer;
 import org.komodo.relational.internal.RelationalModelFactory;
-import org.komodo.relational.model.OptionContainer;
-import org.komodo.relational.model.StatementOption;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
-import org.komodo.spi.repository.Descriptor;
-import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.repository.Property;
-import org.komodo.spi.repository.PropertyDescriptor;
-import org.komodo.spi.repository.PropertyValueType;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
@@ -47,6 +46,11 @@ import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
  * Utilities for retrieving and updating standard and custom statement options.
  */
 public final class OptionContainerUtils {
+	
+    /**
+     * An empty collection of index constraints.
+     */
+    final static StatementOptionImpl[] NO_OPTIONS = new StatementOptionImpl[0];
 
     /**
      * A {@link PropertyDescriptor property descriptor} for an {@link StatementOption option}.
@@ -73,7 +77,7 @@ public final class OptionContainerUtils {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.spi.repository.PropertyDescriptor#getDefaultValues()
+         * @see org.komodo.core.repository.PropertyDescriptor#getDefaultValues()
          */
         @Override
         public Object[] getDefaultValues() {
@@ -83,7 +87,7 @@ public final class OptionContainerUtils {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.spi.repository.PropertyDescriptor#getName()
+         * @see org.komodo.core.repository.PropertyDescriptor#getName()
          */
         @Override
         public String getName() {
@@ -93,7 +97,7 @@ public final class OptionContainerUtils {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.spi.repository.PropertyDescriptor#getType()
+         * @see org.komodo.core.repository.PropertyDescriptor#getType()
          */
         @Override
         public PropertyValueType getType() {
@@ -103,7 +107,7 @@ public final class OptionContainerUtils {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.spi.repository.PropertyDescriptor#isMandatory()
+         * @see org.komodo.core.repository.PropertyDescriptor#isMandatory()
          */
         @Override
         public boolean isMandatory() {
@@ -113,7 +117,7 @@ public final class OptionContainerUtils {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.spi.repository.PropertyDescriptor#isModifiable()
+         * @see org.komodo.core.repository.PropertyDescriptor#isModifiable()
          */
         @Override
         public boolean isModifiable() {
@@ -123,7 +127,7 @@ public final class OptionContainerUtils {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.spi.repository.PropertyDescriptor#isMultiple()
+         * @see org.komodo.core.repository.PropertyDescriptor#isMultiple()
          */
         @Override
         public boolean isMultiple() {
@@ -362,7 +366,7 @@ public final class OptionContainerUtils {
      * @throws KException
      *         if an error occurs
      */
-    public static StatementOption[] getOptions( final UnitOfWork transaction,
+    public static StatementOptionImpl[] getOptions( final UnitOfWork transaction,
                                                 final OptionContainer container ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
@@ -380,10 +384,10 @@ public final class OptionContainerUtils {
         }
 
         if ( result.isEmpty() ) {
-            return StatementOption.NO_OPTIONS;
+            return NO_OPTIONS;
         }
 
-        return result.toArray( new StatementOption[ result.size() ] );
+        return result.toArray( new StatementOptionImpl[ result.size() ] );
     }
 
     /**
@@ -606,10 +610,10 @@ public final class OptionContainerUtils {
         ArgCheck.isNotEmpty( optionToRemove, "optionToRemove" ); //$NON-NLS-1$
 
         boolean found = false;
-        final StatementOption[] options = getOptions( transaction, container );
+        final StatementOptionImpl[] options = getOptions( transaction, container );
 
         if ( options.length != 0 ) {
-            for ( final StatementOption option : options ) {
+            for ( final StatementOptionImpl option : options ) {
                 if ( optionToRemove.equals( option.getName( transaction ) ) ) {
                     option.remove( transaction );
                     found = true;

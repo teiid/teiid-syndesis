@@ -22,12 +22,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.komodo.core.repository.Descriptor;
+import org.komodo.core.repository.KomodoObject;
+import org.komodo.core.repository.KomodoObjectVisitor;
+import org.komodo.core.repository.Property;
 import org.komodo.metadata.DataTypeService;
 import org.komodo.spi.StringConstants;
-import org.komodo.spi.repository.Descriptor;
-import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.repository.KomodoObjectVisitor;
-import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
 

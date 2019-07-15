@@ -18,7 +18,9 @@
 package org.komodo.relational.model.internal;
 
 import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.ObjectImpl;
+import org.komodo.core.repository.Property;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
@@ -27,9 +29,7 @@ import org.komodo.relational.model.Column;
 import org.komodo.relational.model.ForeignKey;
 import org.komodo.relational.model.Table;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
@@ -69,7 +69,7 @@ public final class ForeignKeyImpl extends TableConstraintImpl implements Foreign
          * {@inheritDoc}
          *
          * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
+         *      org.komodo.core.repository.KomodoObject)
          */
         @Override
         public boolean resolvable( final UnitOfWork transaction,
@@ -86,7 +86,7 @@ public final class ForeignKeyImpl extends TableConstraintImpl implements Foreign
          * {@inheritDoc}
          *
          * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
+         *      org.komodo.core.repository.KomodoObject)
          */
         @Override
         public ForeignKeyImpl resolve( final UnitOfWork transaction,
@@ -204,11 +204,11 @@ public final class ForeignKeyImpl extends TableConstraintImpl implements Foreign
      * @see org.komodo.relational.model.ForeignKey#getReferencesTable(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public Table getReferencesTable( final UnitOfWork transaction ) throws KException {
+    public TableImpl getReferencesTable( final UnitOfWork transaction ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
-        Table result = null;
+        TableImpl result = null;
         final Property property = getProperty( transaction, Constraint.TABLE_REFERENCE );
 
         if ( property != null ) {
@@ -228,7 +228,7 @@ public final class ForeignKeyImpl extends TableConstraintImpl implements Foreign
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#getTypeId()
+     * @see org.komodo.core.repository.KomodoObject#getTypeId()
      */
     @Override
     public int getTypeId() {
@@ -307,7 +307,7 @@ public final class ForeignKeyImpl extends TableConstraintImpl implements Foreign
         ArgCheck.isNotNull( newReferencesTable, "newReferencesTable" ); //$NON-NLS-1$
 
         // only set if different
-        final Table current = getReferencesTable( transaction );
+        final TableImpl current = getReferencesTable( transaction );
 
         if ( !newReferencesTable.equals( current ) ) {
             final String tableId = getObjectFactory().getId(transaction, newReferencesTable).getStringValue( transaction );
@@ -318,6 +318,11 @@ public final class ForeignKeyImpl extends TableConstraintImpl implements Foreign
                 setProperty( transaction, Constraint.TABLE_REFERENCE_REFERENCES, ( Object[] )null );
             }
         }
+    }
+    
+    @Override
+    public TableImpl getRelationalParent(UnitOfWork transaction) throws KException {
+    	return getParent(transaction);
     }
 
 }

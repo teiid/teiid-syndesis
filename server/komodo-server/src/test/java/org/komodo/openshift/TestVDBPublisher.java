@@ -34,6 +34,7 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.core.AbstractLocalRepositoryTest;
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.datasources.DefaultSyndesisDataSource;
 import org.komodo.datasources.MySQLDefinition;
 import org.komodo.datasources.PostgreSQLDefinition;
@@ -48,7 +49,6 @@ import org.komodo.rest.AuthHandlingFilter;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoConfigurationProperties;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KomodoObject;
 import org.mockito.Mockito;
 import org.teiid.core.util.ObjectConverterUtil;
 

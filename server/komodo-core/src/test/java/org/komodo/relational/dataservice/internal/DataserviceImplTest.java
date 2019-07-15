@@ -28,10 +28,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.dataservice.ServiceVdbEntry;
 import org.komodo.relational.internal.RelationalObjectImpl.Filter;
 import org.komodo.relational.model.Model;
-import org.komodo.relational.vdb.Vdb;
+import org.komodo.relational.model.internal.ModelImpl;
+import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.relational.workspace.WorkspaceManagerImpl;
 import org.komodo.spi.repository.KomodoType;
 import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
@@ -41,7 +41,7 @@ public final class DataserviceImplTest extends RelationalModelTest {
 
     private static final String SERVICE_NAME = "myService";
 
-    protected Dataservice dataservice;
+    protected DataserviceImpl dataservice;
     private WorkspaceManagerImpl mgr;
 
     @Before
@@ -112,14 +112,14 @@ public final class DataserviceImplTest extends RelationalModelTest {
     public void shouldAddAllChildren() throws Exception {
         final String vdbName = "MyServiceVdb";
         final int vdbVersion = 3;
-        final Vdb serviceVdb = this.mgr.createVdb( getTransaction(), null, vdbName, "externalFilePath" );
+        final VdbImpl serviceVdb = this.mgr.createVdb( getTransaction(), null, vdbName, "externalFilePath" );
         serviceVdb.setVdbName( getTransaction(), vdbName );
         serviceVdb.setVersion( getTransaction(), vdbVersion );
         commit(); // needed so that searching for reference will work
 
-        final Vdb oldServiceVdb = this.dataservice.setServiceVdb( getTransaction(), serviceVdb );
+        final VdbImpl oldServiceVdb = this.dataservice.setServiceVdb( getTransaction(), serviceVdb );
         assertThat( oldServiceVdb, is( nullValue() ) );
-        final ServiceVdbEntry entry = this.dataservice.getServiceVdbEntry( getTransaction() );
+        final ServiceVdbEntryImpl entry = this.dataservice.getServiceVdbEntry( getTransaction() );
         assertThat( entry, is( notNullValue() ) );
 
         assertThat( this.dataservice.getServiceVdbEntry( getTransaction() ), is( notNullValue() ) );
@@ -131,16 +131,16 @@ public final class DataserviceImplTest extends RelationalModelTest {
     public void shouldSetServiceVdb() throws Exception {
         final String vdbName = "MyServiceVdb";
         final int vdbVersion = 3;
-        final Vdb vdb = this.mgr.createVdb( getTransaction(), null, vdbName, "externalFilePath" );
+        final VdbImpl vdb = this.mgr.createVdb( getTransaction(), null, vdbName, "externalFilePath" );
         vdb.setVdbName( getTransaction(), vdbName );
         vdb.setVersion( getTransaction(), vdbVersion );
         commit(); // needed so that searching for reference will work
 
-        final Vdb oldServiceVdb = this.dataservice.setServiceVdb( getTransaction(), vdb );
+        final VdbImpl oldServiceVdb = this.dataservice.setServiceVdb( getTransaction(), vdb );
         assertThat( oldServiceVdb, is( nullValue() ) );
         assertThat( this.dataservice.getServiceVdbEntry( getTransaction() ), is( notNullValue() ) );
 
-        final ServiceVdbEntry entry = this.dataservice.getServiceVdbEntry( getTransaction() );
+        final ServiceVdbEntryImpl entry = this.dataservice.getServiceVdbEntry( getTransaction() );
         assertThat( entry.getVdbName( getTransaction() ), is( vdbName ) );
         assertThat( entry.getVdbVersion( getTransaction() ), is( Integer.toString( vdbVersion ) ) );
 
@@ -163,16 +163,16 @@ public final class DataserviceImplTest extends RelationalModelTest {
         final String name = "childVdb";
         final int version = 2;
         final WorkspaceManagerImpl mgr = WorkspaceManagerImpl.getInstance( _repo, getTransaction() );
-        final Vdb serviceVdb = mgr.createVdb( getTransaction(), null, name, "externalFilePath" );
+        final VdbImpl serviceVdb = mgr.createVdb( getTransaction(), null, name, "externalFilePath" );
         serviceVdb.setVersion( getTransaction(), version );
 
         // Add a physical model
-        final Model physModel = serviceVdb.addModel( getTransaction(), "physicalModel" );
+        final ModelImpl physModel = serviceVdb.addModel( getTransaction(), "physicalModel" );
         physModel.setModelType( getTransaction(), Model.Type.PHYSICAL );
 
         // Add a virtual model
         final String serviceViewModel = "serviceViewModel";
-        final Model virtualModel = serviceVdb.addModel( getTransaction(), serviceViewModel );
+        final ModelImpl virtualModel = serviceVdb.addModel( getTransaction(), serviceViewModel );
         virtualModel.setModelType( getTransaction(), Model.Type.VIRTUAL );
 
         final String[] serviceViews = new String[0];
@@ -180,7 +180,7 @@ public final class DataserviceImplTest extends RelationalModelTest {
         commit(); // need this so that VDB will be found by query that sets reference
 
         // Add VDB to data service
-        final Vdb old = this.dataservice.setServiceVdb( getTransaction(), serviceVdb );
+        final VdbImpl old = this.dataservice.setServiceVdb( getTransaction(), serviceVdb );
         assertThat( old, is( nullValue() ) ); // not replacing
         assertThat( this.dataservice.getServiceVdbEntry( getTransaction() ), is( notNullValue() ) );
         assertThat( this.dataservice.getServiceVdbEntry( getTransaction() ).getName( getTransaction() ), is( name ) );

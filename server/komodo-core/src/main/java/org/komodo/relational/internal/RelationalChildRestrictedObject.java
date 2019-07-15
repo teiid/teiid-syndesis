@@ -18,8 +18,8 @@
 package org.komodo.relational.internal;
 
 import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.UnitOfWork;
 
@@ -115,7 +115,7 @@ public abstract class RelationalChildRestrictedObject extends RelationalObjectIm
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#isChildRestricted()
+     * @see org.komodo.core.repository.KomodoObject#isChildRestricted()
      */
     @Override
     public final boolean isChildRestricted() {

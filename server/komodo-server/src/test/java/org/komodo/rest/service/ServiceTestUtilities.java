@@ -27,12 +27,14 @@ import java.util.concurrent.TimeUnit;
 
 import org.komodo.core.KEngineImpl;
 import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.ExistingNodeOptions;
 import org.komodo.importer.ImportOptions.OptionKeys;
 import org.komodo.relational.WorkspaceManager;
 import org.komodo.relational.dataservice.Dataservice;
+import org.komodo.relational.dataservice.internal.DataserviceImpl;
 import org.komodo.relational.importer.vdb.VdbImporter;
 import org.komodo.relational.internal.AdapterFactory;
 import org.komodo.relational.model.Model;
@@ -43,10 +45,10 @@ import org.komodo.relational.profile.StateCommandAggregate;
 import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.vdb.Vdb;
+import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.relational.workspace.WorkspaceManagerImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.SynchronousCallback;
 import org.komodo.spi.repository.UnitOfWork;
 
@@ -94,18 +96,11 @@ public final class ServiceTestUtilities implements StringConstants {
      * @return the vdb directly from the kEngine
      * @throws Exception if error occurs
      */
-    public Vdb getVdb(String user, String vdbName) throws Exception {
+    public VdbImpl getVdb(String user, String vdbName) throws Exception {
     
         UnitOfWork uow = repository.createTransaction(user, "Find vdb " + vdbName, true, null, user); //$NON-NLS-1$
-        WorkspaceManager mgr = WorkspaceManagerImpl.getInstance(repository, uow);
-        Vdb[] vdbs = mgr.findVdbs(uow);
-        Vdb theVdb = null;
-        for(Vdb vdb : vdbs) {
-            if (vdbName.equals(vdb.getName(uow))) {
-                theVdb = vdb;
-                break;
-            }
-        }
+        WorkspaceManagerImpl mgr = WorkspaceManagerImpl.getInstance(repository, uow);
+        VdbImpl theVdb = mgr.findVdb(uow, vdbName);
         uow.commit();
     
         return theVdb;
@@ -216,7 +211,7 @@ public final class ServiceTestUtilities implements StringConstants {
         KomodoObject nwSampleObj = wkspace.getChild(uow, "Northwind");
         Vdb nwVdb = wsMgr.resolve(uow, nwSampleObj, Vdb.class);
     
-        Dataservice dataservice = wsMgr.createDataservice(uow, wkspace, dataserviceName);
+        DataserviceImpl dataservice = wsMgr.createDataservice(uow, wkspace, dataserviceName);
         dataservice.setDescription(uow, "This is my dataservice");
     
         dataservice.setServiceVdb(uow, nwVdb);
@@ -233,13 +228,13 @@ public final class ServiceTestUtilities implements StringConstants {
      * @return the dataservice directly from the kEngine
      * @throws Exception if error occurs
      */
-    public Dataservice getDataservice(String user, String dataserviceName) throws Exception {
+    public DataserviceImpl getDataservice(String user, String dataserviceName) throws Exception {
     
         UnitOfWork uow = repository.createTransaction(user, "Find dataservice " + dataserviceName, true, null, user); //$NON-NLS-1$
-        WorkspaceManager mgr = WorkspaceManagerImpl.getInstance(repository, uow);
-        Dataservice[] dataservices = mgr.findDataservices(uow, null);
-        Dataservice theDataservice = null;
-        for(Dataservice ds : dataservices) {
+        WorkspaceManagerImpl mgr = WorkspaceManagerImpl.getInstance(repository, uow);
+        DataserviceImpl[] dataservices = mgr.findDataservices(uow, null);
+        DataserviceImpl theDataservice = null;
+        for(DataserviceImpl ds : dataservices) {
             if (dataserviceName.equals(ds.getName(uow))) {
                 theDataservice = ds;
                 break;
@@ -278,8 +273,8 @@ public final class ServiceTestUtilities implements StringConstants {
         SynchronousCallback callback = new SynchronousCallback();
         UnitOfWork uow = repository.createTransaction(user, "Create VDB", false, callback, user); //$NON-NLS-1$
     
-        WorkspaceManager wsMgr = WorkspaceManagerImpl.getInstance(repository, uow);
-        Vdb vdb = wsMgr.createVdb(uow, vdbName, vdbName);
+        WorkspaceManagerImpl wsMgr = WorkspaceManagerImpl.getInstance(repository, uow);
+        VdbImpl vdb = wsMgr.createVdb(uow, vdbName, vdbName);
     
         uow.commit();
         callback.await(3, TimeUnit.MINUTES);

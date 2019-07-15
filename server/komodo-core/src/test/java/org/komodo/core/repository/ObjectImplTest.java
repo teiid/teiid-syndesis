@@ -32,10 +32,7 @@ import org.junit.Test;
 import org.komodo.core.AbstractLocalRepositoryTest;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.Property;
-import org.komodo.spi.repository.PropertyDescriptor;
 import org.komodo.spi.repository.UnitOfWork;
 import org.modeshape.jcr.JcrNtLexicon;
 

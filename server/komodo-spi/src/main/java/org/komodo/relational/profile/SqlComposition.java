@@ -39,12 +39,6 @@ public interface SqlComposition  extends RelationalObject, StringConstants {
     KomodoType IDENTIFIER = KomodoType.SQL_COMPOSITION;
     
     /**
-     * An empty array of sql compositions.
-     */
-    SqlComposition[] NO_SQL_COMPOSITIONS = new SqlComposition[0];
-
-
-    /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param branch

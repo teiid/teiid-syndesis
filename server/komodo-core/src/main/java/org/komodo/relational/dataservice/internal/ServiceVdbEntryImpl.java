@@ -20,6 +20,9 @@ package org.komodo.relational.dataservice.internal;
 import java.util.Properties;
 
 import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.repository.KomodoObject;
+import org.komodo.core.repository.Property;
+import org.komodo.core.repository.PropertyValueType;
 import org.komodo.metadata.internal.DocumentType;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
@@ -29,10 +32,7 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.Property;
-import org.komodo.spi.repository.PropertyValueType;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.utils.StringUtils;
 import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
@@ -91,7 +91,7 @@ public class ServiceVdbEntryImpl extends RelationalObjectImpl implements Service
     @Override
     public byte[] export( final UnitOfWork uow,
                           final Properties properties ) throws KException {
-        final Vdb vdb = getReference( uow );
+        final VdbImpl vdb = getReference( uow );
 
         if ( vdb == null ) {
             throw new KException( Messages.getString( Relational.EXPORT_FAILED_NO_CONTENT, getAbsolutePath() ) );
