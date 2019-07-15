@@ -28,18 +28,17 @@ import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.Session;
 
-import org.komodo.core.KEngine;
+import org.komodo.core.KEngineImpl;
 import org.komodo.core.KomodoLexicon.Environment;
 import org.komodo.core.KomodoLexicon.Komodo;
+import org.komodo.core.repository.KPropertyFactory;
+import org.komodo.core.repository.KQueryManager;
 import org.komodo.core.repository.KSequencerController;
 import org.komodo.core.repository.KSequencerListener;
 import org.komodo.core.repository.Messages;
+import org.komodo.core.repository.RepoEngine;
 import org.komodo.core.repository.RepositoryImpl;
-import org.komodo.spi.query.KQueryManager;
-import org.komodo.spi.repository.KObjectFactory;
-import org.komodo.spi.repository.KPropertyFactory;
-import org.komodo.spi.repository.RepoEngine;
-import org.komodo.spi.repository.Repository;
+import org.komodo.spi.KException;
 import org.komodo.spi.repository.UnitOfWorkDelegate;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
@@ -118,21 +117,22 @@ public class JcrEngine extends Thread implements RepoEngine {
 
     private KSequencerController sequencers;
 
-    private KEngine kEngine;
+    private KEngineImpl kEngine;
 
     /**
      * Create this thread and give it a name
      *
      * @param repoId
      *        information identifying the repository (cannot be <code>null</code>)
+     * @throws KException 
      */
-    public JcrEngine( final Repository.Id repoId , KEngine kEngine) {
+    public JcrEngine( final Repository.Id repoId , KEngineImpl kEngine) throws KException {
         super("Modeshape Engine Thread"); //$NON-NLS-1$
         this.repoId = repoId;
         this.identifier = new WorkspaceIdentifier(repoId.getWorkspaceName());
         this.kEngine = kEngine;
         setDaemon(true);
-        nodeFactory = new JcrNodeFactory();
+        nodeFactory = new JcrNodeFactory(kEngine.getDefaultRepository());
         propertyFactory = nodeFactory.getPropertyFactory();
         queryManager = new JcrQueryManager((JcrNodeFactory) nodeFactory);
     }

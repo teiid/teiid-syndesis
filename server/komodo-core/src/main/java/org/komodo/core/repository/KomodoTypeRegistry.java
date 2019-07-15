@@ -22,12 +22,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.komodo.core.KomodoLexicon;
-import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon;
+import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.utils.KeyInValueMap;
-import org.komodo.spi.utils.KeyInValueMap.KeyFromValueAdapter;
 import org.komodo.utils.ArgCheck;
+import org.komodo.utils.KeyInValueMap;
+import org.komodo.utils.KeyInValueMap.KeyFromValueAdapter;
 import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
 import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
@@ -120,8 +119,6 @@ public class KomodoTypeRegistry implements StringConstants {
 
         index(KomodoType.DATASERVICE, DataVirtLexicon.DataService.NODE_TYPE);
 
-        index(KomodoType.CONNECTION, DataVirtLexicon.Connection.NODE_TYPE);
-
         index(KomodoType.FOREIGN_KEY, TeiidDdlLexicon.Constraint.FOREIGN_KEY_CONSTRAINT);
 
         index(KomodoType.INDEX, TeiidDdlLexicon.Constraint.INDEX_CONSTRAINT);
@@ -152,10 +149,6 @@ public class KomodoTypeRegistry implements StringConstants {
 
         index(KomodoType.TABULAR_RESULT_SET, TeiidDdlLexicon.CreateProcedure.RESULT_COLUMNS);
 
-        index(KomodoType.TEMPLATE, DataVirtLexicon.Template.NODE_TYPE);
-
-        index(KomodoType.TEMPLATE_ENTRY, DataVirtLexicon.TemplateEntry.NODE_TYPE);
-
         index(KomodoType.UNIQUE_CONSTRAINT, TeiidDdlLexicon.Constraint.TABLE_ELEMENT);
 
         index(KomodoType.USER_DEFINED_FUNCTION, TeiidDdlLexicon.CreateProcedure.FUNCTION_STATEMENT);
@@ -185,8 +178,6 @@ public class KomodoTypeRegistry implements StringConstants {
         index(KomodoType.VIEW, TeiidDdlLexicon.CreateTable.VIEW_STATEMENT);
 
         index(KomodoType.DDL_SCHEMA, TeiidDdlLexicon.Namespace.PREFIX);
-
-        index(KomodoType.TSQL_SCHEMA, TeiidSqlLexicon.Namespace.PREFIX);
 
         index(KomodoType.VDB_SCHEMA, VdbLexicon.Namespace.PREFIX);
     }
@@ -220,15 +211,6 @@ public class KomodoTypeRegistry implements StringConstants {
 
         if (! identifiers.isEmpty())
             return identifiers;
-
-        //
-        // We want to return TSQL for Teiid SQL nodes
-        // but do not want to index all of them.
-        //
-        if (lexiconType.startsWith(TeiidSqlLexicon.Namespace.PREFIX)) {
-            identifiers.add(kTypeIndex.get(KomodoType.TSQL_SCHEMA));
-            return identifiers;
-        }
 
         //
         // We want to return DDL for ddl nodes that do not have explicit types

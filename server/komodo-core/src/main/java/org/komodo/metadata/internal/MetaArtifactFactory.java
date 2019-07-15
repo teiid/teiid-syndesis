@@ -21,10 +21,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
-import org.komodo.spi.runtime.TeiidDataSource;
-import org.komodo.spi.runtime.TeiidPropertyDefinition;
-import org.komodo.spi.runtime.TeiidTranslator;
-import org.komodo.spi.runtime.TeiidVdb;
+
+import org.komodo.metadata.runtime.TeiidDataSource;
+import org.komodo.metadata.runtime.TeiidPropertyDefinition;
+import org.komodo.metadata.runtime.TeiidTranslator;
+import org.komodo.metadata.runtime.TeiidVdb;
 import org.teiid.adminapi.PropertyDefinition;
 import org.teiid.adminapi.Translator;
 import org.teiid.adminapi.VDB;

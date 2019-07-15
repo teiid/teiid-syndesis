@@ -28,15 +28,16 @@ import org.junit.Before;
 import org.junit.Test;
 import org.komodo.core.AbstractLocalRepositoryTest;
 import org.komodo.core.KomodoLexicon;
-import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
 import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoObjectVisitor;
 import org.komodo.spi.repository.KomodoType;
+import org.komodo.spi.repository.OperationType;
 import org.komodo.spi.repository.PropertyDescriptor;
-import org.komodo.spi.repository.Repository.OperationType;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.repository.SynchronousCallback;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
+import org.modeshape.jcr.api.JcrConstants;
 import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 @SuppressWarnings( {"javadoc", "nls"} )
@@ -116,7 +117,7 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
     }
 
     private ObjectImpl convert(KomodoObject obj) throws Exception {
-        return new ObjectImpl(obj.getRepository(), obj.getAbsolutePath(), obj.getIndex());
+        return new ObjectImpl(((ObjectImpl)obj).getRepository(), obj.getAbsolutePath(), obj.getIndex());
     }
 
     @Test
@@ -370,18 +371,6 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
         }
 
         //
-        // get property descriptor
-        //
-        try {
-            bobVdb.getPropertyDescriptor(aliceTx, "aproperty");
-            fail(failMsg);
-        } catch (Exception ex) {
-            assertEquals(
-                         expReadErrorMsg,
-                         ex.getMessage());
-        }
-
-        //
         // get property descriptors
         //
         try {
@@ -526,18 +515,6 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
         }
 
         //
-        // remove descriptor
-        //
-        try {
-            bobVdb.removeDescriptor(aliceTx, VdbLexicon.Vdb.DECLARATIVE_MODEL);
-            fail(failMsg);
-        } catch (Exception ex) {
-            assertEquals(
-                         expPropertySetErrorMsg,
-                         ex.getMessage());
-        }
-
-        //
         // rename
         //
         try {
@@ -608,7 +585,7 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
         String bobVdbName = "bobVdb";
         String bobModelName = "bobModel1";
         String nodeType = "mix:created";
-        String property = JcrLexicon.JCR_PRIMARY_TYPE;
+        String property = JcrConstants.JCR_PRIMARY_TYPE;
 
         KomodoObject bobVdbObject = add(BOB, bobVdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE);
         ObjectImpl bobVdb = convert(bobVdbObject);
@@ -709,11 +686,6 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
         assertNotNull(bobVdb.getProperty(sysTx, property));
 
         //
-        // get property descriptor
-        //
-        assertNotNull(bobVdb.getPropertyDescriptor(sysTx, property));
-
-        //
         // get type identifier
         //
         KomodoType type = bobVdb.getTypeIdentifier(sysTx);
@@ -784,11 +756,6 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
 
         bobVdb.accept(sysTx, visitor);
         assertTrue(accept[0]);
-
-        //
-        // remove descriptor
-        //
-        bobVdb.removeDescriptor(sysTx, nodeType);
 
         //
         // remove child

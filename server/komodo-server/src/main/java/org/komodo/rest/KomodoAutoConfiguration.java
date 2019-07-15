@@ -30,31 +30,36 @@ import javax.transaction.TransactionManager;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
-import org.komodo.core.KEngine;
-import org.komodo.core.repository.LocalRepository;
-import org.komodo.metadata.DefaultMetadataInstance;
-import org.komodo.metadata.TeiidConnectionProvider;
 import org.komodo.openshift.EncryptionComponent;
 import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.rest.connections.SyndesisConnectionMonitor;
 import org.komodo.rest.connections.SyndesisConnectionSynchronizer;
+import org.komodo.spi.KEngine;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.SystemConstants;
+import org.komodo.spi.SystemConstants;
 import org.komodo.spi.repository.ApplicationProperties;
 import org.komodo.spi.repository.PersistenceType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.security.crypto.encrypt.Encryptors;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
 import org.teiid.runtime.EmbeddedConfiguration;
 
 @Configuration
 @EnableConfigurationProperties(KomodoConfigurationProperties.class)
-public class KomodoAutoConfiguration {
+@ComponentScan(basePackages = {
+		"org.komodo.core",
+		"org.komodo.metadata.internal", 
+		"org.komodo.core.repository",
+		"org.komodo.rest",})
+public class KomodoAutoConfiguration implements ApplicationListener<ContextRefreshedEvent> {
 	
     @Value("${encrypt.key}")
     private String encryptKey;
@@ -64,30 +69,17 @@ public class KomodoAutoConfiguration {
     
     @Autowired
     private KomodoConfigurationProperties config;
-
+    
+    @Autowired
+    private KEngine kengine;
+    
     @Bean
     public TextEncryptor getTextEncryptor() {
         return Encryptors.text(encryptKey, "deadbeef");
     }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public TeiidConnectionProvider teiidConnectionProvider() {
-        TeiidConnectionProviderImpl connectionProvider = new TeiidConnectionProviderImpl();
-        return connectionProvider;
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public DefaultMetadataInstance metadata(@Autowired TeiidConnectionProvider cp) {
-        TeiidMetadataInstance metadata = new TeiidMetadataInstance(cp);
-        return metadata;
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public KEngine kEngine(@Autowired DefaultMetadataInstance metadata) throws WebApplicationException {
-        final KEngine kengine = new KEngine();
+    
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
         boolean started;
         try {
             String workingDir = System.getProperty("user.dir");
@@ -100,13 +92,6 @@ public class KomodoAutoConfiguration {
 
             initPersistenceEnvironment();
 
-            // configure metadata
-            kengine.setMetadataInstance(metadata);
-
-            // configure repository
-            LocalRepository repository = new LocalRepository();
-            kengine.setDefaultRepository(repository);
-
             started = kengine.startAndWait();
         } catch (Exception e) {
             throw new WebApplicationException( e, Status.INTERNAL_SERVER_ERROR );
@@ -118,7 +103,7 @@ public class KomodoAutoConfiguration {
             try {
 	        	// monitor to track connections from the syndesis
 				TeiidOpenShiftClient TOSClient = new TeiidOpenShiftClient(
-						(TeiidMetadataInstance) kengine.getMetadataInstance(),
+						kengine.getMetadataInstance(),
 						new EncryptionComponent(getTextEncryptor()), this.config);
 	        	SyndesisConnectionSynchronizer sync = new SyndesisConnectionSynchronizer(TOSClient);
 	        	SyndesisConnectionMonitor scm = new SyndesisConnectionMonitor(sync);
@@ -128,7 +113,6 @@ public class KomodoAutoConfiguration {
                 throw new WebApplicationException( e, Status.INTERNAL_SERVER_ERROR );
             }
         }
-        return kengine;
     }
 
     @Bean
@@ -154,7 +138,7 @@ public class KomodoAutoConfiguration {
     @ConditionalOnMissingBean
     public TeiidOpenShiftClient openShiftClient(@Autowired KEngine kengine, @Autowired TextEncryptor enc) {
         try {
-            return new TeiidOpenShiftClient((TeiidMetadataInstance) kengine.getMetadataInstance(),
+            return new TeiidOpenShiftClient(kengine.getMetadataInstance(),
                     new EncryptionComponent(enc), this.config);
         } catch (KException e) {
             throw new RuntimeException(e);

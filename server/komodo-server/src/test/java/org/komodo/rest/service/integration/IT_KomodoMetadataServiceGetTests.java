@@ -17,15 +17,10 @@
  */
 package org.komodo.rest.service.integration;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
 
 import javax.ws.rs.core.UriBuilder;
 
@@ -34,10 +29,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.junit.Test;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.cors.CorsHeaders;
-import org.komodo.spi.runtime.ConnectionDriver;
-import org.komodo.spi.runtime.version.DefaultMetadataVersion;
 import org.teiid.adminapi.AdminProcessingException;
-import org.teiid.core.util.ApplicationInfo;
 
 @SuppressWarnings( {"javadoc", "nls"} )
 public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServiceTest {
@@ -45,12 +37,6 @@ public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServ
     @Override
     protected int getTestTotalInClass() {
         return 5;
-    }
-
-    @Test
-    public void testVersion() throws Exception {
-        ApplicationInfo info = ApplicationInfo.getInstance();
-        assertEquals(new DefaultMetadataVersion(info.getReleaseNumber()), getMetadataInstance().getVersion());
     }
 
     @Test
@@ -74,25 +60,6 @@ public class IT_KomodoMetadataServiceGetTests extends AbstractKomodoMetadataServ
         assertTrue(entity.contains("\"/workspace/vdbs/{vdbName}\""));
         assertTrue(entity.contains("\"keng__id\""));
         assertTrue(entity.contains("\"keng__kType\""));
-    }
-
-    @Test
-    public void shouldGetDataSourceDrivers() throws Exception {
-        Collection<ConnectionDriver> dataSourceDrivers = getMetadataInstance().getDataSourceDrivers();
-        assertTrue(dataSourceDrivers.size() > 0);
-
-        String[] driverNamesArr = {"h2", "teiid"};
-        List<String> driverNames = Arrays.asList(driverNamesArr);
-
-        Iterator<ConnectionDriver> iter = dataSourceDrivers.iterator();
-        int found = 0;
-        while (iter.hasNext()) {
-            ConnectionDriver driver = iter.next();
-            if (driverNames.contains(driver.getName()))
-                found++;
-        }
-
-        assertEquals(driverNamesArr.length, found);
     }
 
     @Test

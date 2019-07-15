@@ -17,8 +17,8 @@
  */
 package org.komodo.core;
 
-import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
+import org.komodo.spi.StringConstants;
+import org.modeshape.jcr.api.JcrConstants;
 import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
 
 /**
@@ -426,11 +426,6 @@ public interface KomodoLexicon extends StringConstants {
         String RENDITION = Namespace.PREFIX + COLON + "rendition"; //$NON-NLS-1$
 
         /**
-         * The name of the language object node type for child node(s). Value is {@value} .
-         */
-        String LANGUAGE_OBJECT = "tsql:languageObject"; //$NON-NLS-1$
-
-        /**
          * The name of the schema node type. Value is {@value} .
          */
         String NODE_TYPE = Namespace.PREFIX + COLON + "schema"; //$NON-NLS-1$
@@ -496,7 +491,7 @@ public interface KomodoLexicon extends StringConstants {
         /**
          * The node type name of the model's file child node. Value is {@value} .
          */
-        String FILE = NTLexicon.NT_FILE;
+        String FILE = JcrConstants.NT_FILE;
 
         /**
          * The name of the metadata property (e.g., DDL). Value is {@value} .
@@ -624,7 +619,7 @@ public interface KomodoLexicon extends StringConstants {
         /**
          * The node type name of the file child node. Value is {@value} .
          */
-        String FILE_NODE_TYPE = NTLexicon.NT_FILE;
+        String FILE_NODE_TYPE = JcrConstants.NT_FILE;
 
         /**
          * The node name of the child node that contains the original imported resource. Value is {@value} .

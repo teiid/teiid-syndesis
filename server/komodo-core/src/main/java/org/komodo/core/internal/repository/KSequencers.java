@@ -39,13 +39,13 @@ import javax.jcr.observation.ObservationManager;
 
 import org.komodo.core.KomodoLexicon;
 import org.komodo.core.Messages;
+import org.komodo.core.LexiconConstants.JcrLexicon;
 import org.komodo.core.repository.KSequencerController;
 import org.komodo.core.repository.KSequencerListener;
-import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
-import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon;
+import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.UnitOfWorkDelegate;
 import org.komodo.utils.KLog;
+import org.modeshape.jcr.api.JcrConstants;
 import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
 import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
 import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
@@ -141,10 +141,10 @@ public class KSequencers implements StringConstants, EventListener, KSequencerCo
 
     private boolean isVdbSequenceable(Node node, String propertyName) {
         try {
-            if (! propertyName.equals(JcrLexicon.JCR_DATA))
+            if (! propertyName.equals(JcrConstants.JCR_DATA))
                 return false;
 
-            if (! node.getName().equals(JcrLexicon.JCR_CONTENT))
+            if (! node.getName().equals(JcrConstants.JCR_CONTENT))
                 return false;
 
             Node parentNode = node.getParent();
@@ -168,11 +168,11 @@ public class KSequencers implements StringConstants, EventListener, KSequencerCo
 
     private boolean isDataServiceSequenceable( Node node, String propertyName ) {
         try {
-            if ( !propertyName.equals( JcrLexicon.JCR_DATA ) ) {
+            if ( !propertyName.equals( JcrConstants.JCR_DATA ) ) {
                 return false;
             }
 
-            if ( !node.getName().equals( JcrLexicon.JCR_CONTENT ) ) {
+            if ( !node.getName().equals( JcrConstants.JCR_CONTENT ) ) {
                 return false;
             }
 
@@ -221,42 +221,12 @@ public class KSequencers implements StringConstants, EventListener, KSequencerCo
         }
     }
 
-    private boolean isTsqlSequenceable(Node node, String propertyName) {
-        try {
-            List<String> nodeTypeNames = RepositoryUtils.getAllNodeTypeNames(node);
-
-            if (propertyName.equals(TeiidDdlLexicon.CreateTable.QUERY_EXPRESSION) &&
-                    (   nodeTypeNames.contains(TeiidDdlLexicon.CreateTable.TABLE_STATEMENT) ||
-                        nodeTypeNames.contains(TeiidDdlLexicon.CreateTable.VIEW_STATEMENT)))
-                return true;
-
-            if (propertyName.equals(TeiidDdlLexicon.CreateProcedure.STATEMENT) &&
-                    nodeTypeNames.contains(TeiidDdlLexicon.CreateProcedure.PROCEDURE_STATEMENT))
-                return true;
-        } catch (RepositoryException ex) {
-            // Not required to be logged since false is returned anyway
-        }
-
-        return false;
-    }
-
-    private boolean isTsqlSequenceable(Property property) {
-        try {
-            return isTsqlSequenceable(property.getParent(), property.getName());
-        } catch (RepositoryException ex) {
-            return false;
-        }
-    }
-
     private SequencerType isSequenceable(Node node, String propertyName) {
         if (isVdbSequenceable(node, propertyName))
             return SequencerType.VDB;
 
         if (isDdlSequenceable(node, propertyName))
             return SequencerType.DDL;
-
-        if (isTsqlSequenceable(node, propertyName))
-            return SequencerType.TSQL;
 
         if (isDataServiceSequenceable(node, propertyName)) {
             return SequencerType.DATA_SERVICE;
@@ -276,9 +246,6 @@ public class KSequencers implements StringConstants, EventListener, KSequencerCo
         if (isDdlSequenceable(property))
             return SequencerType.DDL;
 
-        if (isTsqlSequenceable(property))
-            return SequencerType.TSQL;
-
         if ( isDataServiceSequenceable( property ) ) {
             return SequencerType.DATA_SERVICE;
         }
@@ -291,7 +258,6 @@ public class KSequencers implements StringConstants, EventListener, KSequencerCo
             case VDB:
                 return newNode.hasProperty(VdbLexicon.Vdb.VERSION);
             case DDL:
-            case TSQL:
                 return RepositoryUtils.childrenCount(oldNode) < RepositoryUtils.childrenCount(newNode);
             case DATA_SERVICE:
                 return newNode.hasNodes();
@@ -333,20 +299,6 @@ public class KSequencers implements StringConstants, EventListener, KSequencerCo
                     while(children.hasNext()) {
                         Node child = children.nextNode();
                         if (! RepositoryUtils.hasTypeNamespace(child, TeiidDdlLexicon.Namespace.PREFIX))
-                            continue;
-
-                        child.remove();
-                    }
-                    return;
-                }
-                case TSQL:
-                case DATA_SERVICE:
-                {
-                    Node parent = session.getNode(outputNode.getPath());
-                    NodeIterator children = parent.getNodes();
-                    while(children.hasNext()) {
-                        Node child = children.nextNode();
-                        if (! RepositoryUtils.hasTypeNamespace(child, TeiidSqlLexicon.Namespace.PREFIX))
                             continue;
 
                         child.remove();

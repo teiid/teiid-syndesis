@@ -19,7 +19,8 @@ package org.komodo.utils;
 
 import java.util.Arrays;
 import java.util.TreeMap;
-import org.komodo.spi.constants.StringConstants;
+
+import org.komodo.spi.StringConstants;
 
 
 /**
@@ -555,7 +556,7 @@ public class StringNameValidator {
                 } else {
                     final Object[] params = new Object[] {name};
                     final String msg = Messages.getString(Messages.StringNameValidator.unableMakeNameUnique, params);
-                    throw new KomodoCoreRuntimeException(msg);
+                    throw new RuntimeException(msg);
                 }
             } else {
                 // Simply append the counter ...

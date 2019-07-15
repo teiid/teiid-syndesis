@@ -28,8 +28,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.runner.RunWith;
-import org.komodo.core.KEngine;
-import org.komodo.core.repository.SynchronousCallback;
+import org.komodo.core.KEngineImpl;
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.relational.dataservice.Dataservice;
@@ -39,8 +39,8 @@ import org.komodo.rest.relational.KomodoRestUriBuilder;
 import org.komodo.rest.service.AbstractServiceTest;
 import org.komodo.rest.service.ServiceTestUtilities;
 import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
+import org.komodo.spi.repository.SynchronousCallback;
+import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.test.utils.TestUtilities;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
@@ -57,7 +57,7 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
     TestRestTemplate web;
 
     @Autowired
-    KEngine engine;
+    KEngineImpl engine;
 
     @LocalServerPort
     private int port;
@@ -88,15 +88,6 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
 
     protected void logObjectPath(String objectPath) {
         serviceTestUtilities.logObjectPath(objectPath);
-    }
-
-    protected void loadStatesDataService() throws Exception {
-        removeStatesDataService();
-
-        serviceTestUtilities.importDataservice(TestUtilities.usStatesDataserviceExample(), USER_NAME);
-
-        Dataservice dataservice = serviceTestUtilities.getDataservice(USER_NAME, TestUtilities.US_STATES_DATA_SERVICE_NAME);
-        Assert.assertNotNull(dataservice);
     }
 
     protected void removeStatesDataService() throws Exception {
@@ -140,29 +131,6 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
         logObjectPath(vdb.getAbsolutePath());
     }
 
-    protected void loadDsbSingleSourceDataService() throws Exception {
-        serviceTestUtilities.importDataservice(TestUtilities.dsbDataserviceSingleSourceParts(), USER_NAME);
-        Dataservice dataservice = serviceTestUtilities.getDataservice(USER_NAME, TestUtilities.PARTS_SINGLE_SOURCE_SERVICE_NAME);
-        Assert.assertNotNull(dataservice);
-        logObjectPath(dataservice.getAbsolutePath());
-    }
-
-    protected void loadDsbJoinDifferentTableNamesDataService() throws Exception {
-        serviceTestUtilities.importDataservice(TestUtilities.dsbDataserviceJoinDifferentTableNames(), USER_NAME);
-        Dataservice dataservice = serviceTestUtilities.getDataservice(USER_NAME, TestUtilities.JOIN_DIFFERENT_TABLE_NAMES_SERVICE_NAME);
-        Assert.assertNotNull(dataservice);
-        logObjectPath(dataservice.getAbsolutePath());
-        logObjectPath(serviceTestUtilities.getWorkspace(USER_NAME) + FORWARD_SLASH + TestUtilities.JOIN_DIFFERENT_TABLE_NAMES_SERVICE_NAME + "VDB");
-    }
-
-    protected void loadDsbJoinSameTableNamesDataService() throws Exception {
-        serviceTestUtilities.importDataservice(TestUtilities.dsbDataserviceJoinSameTableNames(), USER_NAME);
-        Dataservice dataservice = serviceTestUtilities.getDataservice(USER_NAME, TestUtilities.JOIN_SAME_TABLE_NAMES_SERVICE_NAME);
-        Assert.assertNotNull(dataservice);
-        logObjectPath(dataservice.getAbsolutePath());
-        logObjectPath(serviceTestUtilities.getWorkspace(USER_NAME) + FORWARD_SLASH + TestUtilities.JOIN_SAME_TABLE_NAMES_SERVICE_NAME + "VDB");
-    }
-
     protected void createDataservice( String serviceName ) throws Exception {
         serviceTestUtilities.createDataservice(serviceName, false, USER_NAME);
         Assert.assertNotNull(serviceTestUtilities.getDataservice(USER_NAME, serviceName));
@@ -171,11 +139,6 @@ public abstract class AbstractKomodoServiceTest extends AbstractServiceTest {
     protected void createVdb( String vdbName ) throws Exception {
         serviceTestUtilities.createVdb(vdbName, USER_NAME);
         Assert.assertNotNull(serviceTestUtilities.getVdb(USER_NAME, vdbName));
-    }
-
-    protected void createVdbModel( String vdbName, String modelName ) throws Exception {
-        serviceTestUtilities.createVdbModel(vdbName, modelName, USER_NAME);
-        Assert.assertNotNull(serviceTestUtilities.getVdbModel(USER_NAME, vdbName, modelName));
     }
 
     protected void createVdbModelView( String vdbName, String modelName, String viewName ) throws Exception {

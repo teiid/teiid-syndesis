@@ -49,9 +49,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.lexicon.LexiconConstants.JcrLexicon;
-import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
+import org.komodo.core.LexiconConstants.JcrLexicon;
+import org.komodo.spi.StringConstants;
 import org.komodo.test.utils.TestUtilities;
 import org.komodo.utils.FileUtils;
 import org.komodo.utils.KLog;
@@ -62,6 +61,7 @@ import org.modeshape.jcr.JcrRepository;
 import org.modeshape.jcr.ModeShapeEngine;
 import org.modeshape.jcr.ModeShapeEngine.State;
 import org.modeshape.jcr.RepositoryConfiguration;
+import org.modeshape.jcr.api.JcrConstants;
 
 /**
  * Mapping of MODE-2463 issue where both a remove and re-add of the same node
@@ -227,7 +227,7 @@ public class TestObjectOperations implements StringConstants {
 //        session1.save();
 //        Session session2 = newSession();
 
-        String queryStmt = "SELECT [jcr:path] FROM [" + NTLexicon.NT_UNSTRUCTURED + "]";
+        String queryStmt = "SELECT [jcr:path] FROM [" + JcrConstants.NT_UNSTRUCTURED + "]";
 
         QueryManager queryMgr = session1.getWorkspace().getQueryManager();
 //        QueryManager queryMgr = session2.getWorkspace().getQueryManager();
@@ -381,14 +381,14 @@ public class TestObjectOperations implements StringConstants {
         Node rootNode = session1.getRootNode();
 
         Node bigDataNode = rootNode.addNode(bigDataName);
-        Node contentNode = bigDataNode.addNode(JcrLexicon.JCR_CONTENT, null);
-        contentNode.setProperty(JcrLexicon.JCR_DATA, bigContent);
-        Property bigDataProperty = contentNode.getProperty(JcrLexicon.JCR_DATA);
+        Node contentNode = bigDataNode.addNode(JcrConstants.JCR_CONTENT, null);
+        contentNode.setProperty(JcrConstants.JCR_DATA, bigContent);
+        Property bigDataProperty = contentNode.getProperty(JcrConstants.JCR_DATA);
 
         Node littleDataNode = rootNode.addNode(littleDataName);
-        contentNode = littleDataNode.addNode(JcrLexicon.JCR_CONTENT, null);
-        contentNode.setProperty(JcrLexicon.JCR_DATA, littleContent);
-        Property littleDataProperty = contentNode.getProperty(JcrLexicon.JCR_DATA);
+        contentNode = littleDataNode.addNode(JcrConstants.JCR_CONTENT, null);
+        contentNode.setProperty(JcrConstants.JCR_DATA, littleContent);
+        Property littleDataProperty = contentNode.getProperty(JcrConstants.JCR_DATA);
 
         //
         // So up until this point both littleDataNode's and bigDataNode's data property

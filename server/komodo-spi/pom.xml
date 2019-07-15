@@ -29,6 +29,10 @@
 	<description>System Interfaces for Komodo modules</description>
 
 	<dependencies>
+	    <dependency>
+	      <groupId>org.teiid</groupId>
+	      <artifactId>teiid-api</artifactId>
+	    </dependency>
 		<dependency>
 			<groupId>commons-logging</groupId>
 			<artifactId>commons-logging</artifactId>
@@ -37,18 +41,6 @@
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<scope>test</scope>
-		</dependency>
-		
-		<dependency>
-			<groupId>org.teiid.modeshape</groupId>
-			<artifactId>teiid-modeshape-sequencer-vdb</artifactId>
-			<scope>test</scope>
-		</dependency>
-		
-		<dependency>
-			<groupId>org.teiid.modeshape</groupId>
-			<artifactId>teiid-modeshape-sequencer-dataservice</artifactId>
 			<scope>test</scope>
 		</dependency>
 		

@@ -28,9 +28,9 @@ import java.util.List;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.komodo.core.AbstractLocalRepositoryTest;
-import org.komodo.metadata.DefaultMetadataInstance;
 import org.komodo.metadata.TeiidConnectionProvider;
-import org.komodo.spi.lexicon.sql.teiid.TeiidSqlConstants;
+import org.komodo.metadata.internal.DefaultMetadataInstance;
+import org.komodo.spi.TeiidSqlConstants;
 import org.komodo.spi.repository.KomodoObject;
 import org.mockito.Mockito;
 import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
@@ -132,7 +132,7 @@ public class TestDdlNodeVisitor extends AbstractLocalRepositoryTest {
 
         TeiidConnectionProvider provider = Mockito.mock(TeiidConnectionProvider.class);
         DefaultMetadataInstance instance = new DefaultMetadataInstance(provider);
-        DdlNodeVisitor visitor = new DdlNodeVisitor(instance.getVersion(), instance.getDataTypeService(), false);
+        DdlNodeVisitor visitor = new DdlNodeVisitor(instance.getDataTypeService(), false);
         visitor.visit(getTransaction(), ddlObject);
 
         compare(expected, visitor);
@@ -255,7 +255,7 @@ public class TestDdlNodeVisitor extends AbstractLocalRepositoryTest {
                 NEW_LINE +
                 "CREATE VIRTUAL PROCEDURE FOO(IN P1 integer) RETURNS TABLE (e1 integer, e2 string)" + NEW_LINE +
                 "AS" + NEW_LINE +
-                "SELECT * FROM PM1.G1;";
+                "SELECT * FROM PM1.G1;;";
 
         helpTest(ddl, ddl, SEQUENCE_DDL_PATH + "V1\\/tsql:query", SEQUENCE_DDL_PATH + "FOO\\/tsql:query");
     }

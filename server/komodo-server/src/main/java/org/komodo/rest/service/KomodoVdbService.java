@@ -33,24 +33,22 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import org.komodo.relational.WorkspaceManager;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.View;
 import org.komodo.relational.vdb.Vdb;
-import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.rest.KomodoRestException;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
 import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
+import org.komodo.spi.StringConstants;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
 import org.springframework.stereotype.Component;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -71,12 +69,7 @@ public final class KomodoVdbService extends KomodoService {
 
     private Model findModel(UnitOfWork uow, List<MediaType> mediaTypes,
                                                 String modelName, Vdb vdb) throws KException {
-        if (! vdb.hasChild(uow, modelName, VdbLexicon.Vdb.DECLARATIVE_MODEL)) {
-            return null;
-        }
-
-        KomodoObject kModel = vdb.getChild(uow, modelName, VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        Model model = getWorkspaceManager(uow).resolve( uow, kModel, Model.class );
+        Model model = getWorkspaceManager(uow).findModel(uow, vdb, modelName);
         LOGGER.debug( "Model '{0}' was found", modelName ); //$NON-NLS-1$
         return model;
     }
@@ -136,12 +129,12 @@ public final class KomodoVdbService extends KomodoService {
             uow = createTransaction(principal, "removeVdbFromWorkspace", false); //$NON-NLS-1$
 
             final WorkspaceManager mgr = getWorkspaceManager(uow);
-            KomodoObject vdb = mgr.getChild(uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE );
+            Vdb vdb = mgr.findVdb(uow, vdbName);
 
             if (vdb == null)
                 return Response.noContent().build();
 
-            mgr.delete(uow, vdb);
+            mgr.deleteVdb(uow, vdb);
 
             KomodoStatusObject kso = new KomodoStatusObject("Delete Status"); //$NON-NLS-1$
             kso.addAttribute(vdbName, "Successfully deleted"); //$NON-NLS-1$

@@ -18,14 +18,9 @@
 package org.komodo.rest.service.integration;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.ws.rs.core.UriBuilder;
 
@@ -36,17 +31,15 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.runner.RunWith;
+import org.komodo.metadata.MetadataInstance;
+import org.komodo.metadata.runtime.TeiidDataSource;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
-import org.komodo.rest.TeiidMetadataInstance;
 import org.komodo.rest.relational.KomodoRestUriBuilder;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.request.KomodoQueryAttribute;
 import org.komodo.rest.relational.response.RestQueryResult;
 import org.komodo.rest.relational.response.RestQueryRow;
 import org.komodo.rest.service.AbstractServiceTest;
-import org.komodo.spi.metadata.MetadataInstance;
-import org.komodo.spi.runtime.ConnectionDriver;
-import org.komodo.spi.runtime.TeiidDataSource;
 import org.komodo.test.utils.TestUtilities;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
@@ -67,7 +60,7 @@ public abstract class AbstractKomodoMetadataServiceTest extends AbstractServiceT
     private int port;
 
     @Autowired
-    private TeiidMetadataInstance instance;
+    private MetadataInstance instance;
 
     protected static final String MYSQL_DRIVER = "mysql-connector";
 
@@ -85,32 +78,6 @@ public abstract class AbstractKomodoMetadataServiceTest extends AbstractServiceT
 
     }
 
-    protected void assertNoMysqlDriver() throws Exception {
-        wait(2);
-
-        Collection<ConnectionDriver> drivers = getMetadataInstance().getDataSourceDrivers();
-        for (ConnectionDriver driver : drivers) {
-            assertFalse(driver.getName().startsWith(MYSQL_DRIVER));
-        }
-    }
-
-    protected void assertMysqlDriver() throws Exception {
-        boolean found = false;
-        for (int i = 0; i < 10 && !found; i++) {
-            wait(3);
-            Collection<ConnectionDriver> drivers = getMetadataInstance().getDataSourceDrivers();
-            for (ConnectionDriver driver : drivers) {
-                // Use startswith rather than equals since the
-                // mysql connector gives up 2 drivers rather than just 1
-                if (driver.getName().startsWith(MYSQL_DRIVER)) {
-                    found = true;
-                    break;
-                }
-            }
-        }
-        assertTrue("Cannot find deployed driver", found);
-    }
-
     protected MetadataInstance getMetadataInstance() throws Exception {
         return instance;
     }
@@ -124,35 +91,6 @@ public abstract class AbstractKomodoMetadataServiceTest extends AbstractServiceT
             Thread.sleep(seconds * 1000);
         } catch (Exception ex) {
             // Nothing required
-        }
-    }
-
-    protected void undeployDrivers() throws Exception {
-        Set<String> undeployDrivers = new HashSet<String>();
-        Collection<ConnectionDriver> drivers = getMetadataInstance().getDataSourceDrivers();
-        for (ConnectionDriver driver : drivers) {
-            if (driver.getName().startsWith(MYSQL_DRIVER)) {
-                String driverName = driver.getName();
-                //
-                // MySQL has 2 drivers so concatenates the class name
-                // to the end of the driver names but means that the driver
-                // cannot be undeployed unless the class name is removed
-                //
-                int endsWithClass = driverName.lastIndexOf(JAR + UNDERSCORE);
-                if (endsWithClass > -1)
-                    driverName = driverName.substring(0, endsWithClass + JAR.length());
-
-                undeployDrivers.add(driverName);
-            }
-        }
-
-        for (String driver : undeployDrivers) {
-            try {
-                getMetadataInstance().undeployDataSourceDriver(driver);
-            } catch (Exception ex) {
-                // Flag as a warning that something in the test is going awry
-                ex.printStackTrace();
-            }
         }
     }
 
@@ -234,7 +172,6 @@ public abstract class AbstractKomodoMetadataServiceTest extends AbstractServiceT
             try {
                 undeployVdbs();
                 undeployDataSources();
-                undeployDrivers();
                 wait(2);
             } catch (Exception ex) {
                 ex.printStackTrace(); // show in console but avoid failing the test

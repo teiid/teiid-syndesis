@@ -17,6 +17,7 @@
  */
 package org.komodo.rest.service;
 
+import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,19 +42,22 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.komodo.datasources.DefaultSyndesisDataSource;
+import org.komodo.metadata.MetadataInstance;
+import org.komodo.metadata.query.QSResult;
+import org.komodo.metadata.runtime.SyndesisDataSource;
+import org.komodo.metadata.runtime.TeiidDataSource;
+import org.komodo.metadata.runtime.TeiidVdb;
 import org.komodo.openshift.BuildStatus;
 import org.komodo.openshift.PublishConfiguration;
 import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.relational.DeployStatus;
+import org.komodo.relational.WorkspaceManager;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Table;
-import org.komodo.relational.model.internal.OptionContainerUtils;
 import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.VdbImport;
-import org.komodo.relational.vdb.internal.VdbImpl;
-import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.CallbackTimeoutException;
 import org.komodo.rest.KomodoRestException;
@@ -69,27 +73,18 @@ import org.komodo.rest.relational.response.RestQueryResult;
 import org.komodo.rest.relational.response.metadata.RestSyndesisSourceStatus;
 import org.komodo.rest.relational.response.virtualization.RestVirtualizationStatus;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.metadata.MetadataInstance;
-import org.komodo.spi.query.QSResult;
-import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWork.State;
-import org.komodo.spi.runtime.SyndesisDataSource;
-import org.komodo.spi.runtime.TeiidDataSource;
-import org.komodo.spi.runtime.TeiidVdb;
+import org.komodo.spi.StringConstants;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-
 /**
  * A Komodo REST service for obtaining information from a metadata instance.
  */
@@ -154,21 +149,15 @@ public class KomodoMetadataService extends KomodoService {
     private boolean hasDynamicVdb(String vdbName) throws Exception {
         boolean hasVdb = false;
 
-        try {
-            Collection<TeiidVdb> vdbs = getMetadataInstance().getVdbs();
-            for (TeiidVdb vdb : vdbs) {
-                if (vdb.getName().startsWith(vdbName)) {
-                    hasVdb = true;
-                    break;
-                }
+        Collection<TeiidVdb> vdbs = getMetadataInstance().getVdbs();
+        for (TeiidVdb vdb : vdbs) {
+            if (vdb.getName().startsWith(vdbName)) {
+                hasVdb = true;
+                break;
             }
-
-            return hasVdb;
-
-        } catch (KException ex) {
-            this.kengine.getErrorHandler().error(ex);
-            throw ex;
         }
+
+        return hasVdb;
     }    
     
     /**
@@ -434,14 +423,12 @@ public class KomodoMetadataService extends KomodoService {
 
             WorkspaceManager wMgr = getWorkspaceManager(uow);
 
+            Vdb previewVdb = wMgr.findVdb(uow, vdbName);
+            
             // if workspace does not have preview vdb, then create it.
-            if ( !wMgr.hasChild( uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE ) ) {
-            	wMgr.createVdb( uow, null, vdbName, vdbName );
+            if (previewVdb == null ) {
+            	previewVdb = wMgr.createVdb( uow, vdbName, vdbName );
             }
-
-            // Get the preview VDB.
-            final KomodoObject kobject = wMgr.getChild( uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE );
-            Vdb previewVdb = wMgr.resolve( uow, kobject, Vdb.class );
 
             // Get the list of current preview VDB import names
             List<String> currentVdbImportNames = new ArrayList<String>();
@@ -452,8 +439,8 @@ public class KomodoMetadataService extends KomodoService {
 
             // Get the current workspace connection VDB names
             List<String> connectionVdbNames = new ArrayList<String>();
-            KomodoObject[] connVdbObjs = wMgr.getChildrenOfType(uow, VdbLexicon.Vdb.VIRTUAL_DATABASE, "*btlconn"); //$NON-NLS-1$
-            for( KomodoObject kObj: connVdbObjs) {
+            Vdb[] connVdbObjs = wMgr.findVdbs(uow, "*btlconn"); //$NON-NLS-1$
+            for( Vdb kObj: connVdbObjs) {
            		connectionVdbNames.add(kObj.getName(uow));
             }
 
@@ -532,12 +519,7 @@ public class KomodoMetadataService extends KomodoService {
     }
 
     private String extractServiceVdbName(UnitOfWork uow, WorkspaceManager mgr, String dsPath) throws KException {
-    	Repository repo = this.kengine.getDefaultRepository();
-        KomodoObject dsObject = repo.getFromWorkspace(uow, dsPath);
-        if (dsObject == null)
-            return null; // Not a path in the workspace
-
-        Dataservice dService = mgr.resolve(uow, dsObject, Dataservice.class);
+    	Dataservice dService = this.kengine.findDataserviceByPath(uow, dsPath);
         if (dService == null)
             return null; // Not a data service
 
@@ -750,7 +732,7 @@ public class KomodoMetadataService extends KomodoService {
                 if ( schemaVdb == null ) {
                     final WorkspaceManager wkspMgr = getWorkspaceManager( uow );
                     final String schemaVdbName = getSchemaVdbName( syndesisSourceName );
-                    schemaVdb = wkspMgr.createVdb( uow, null, schemaVdbName, schemaVdbName );
+                    schemaVdb = wkspMgr.createVdb( uow, schemaVdbName, schemaVdbName );
 
                     // Add schema model to schema vdb
                     schemaModel = addModelToSchemaVdb(uow, schemaVdb, teiidSource, schemaModelName);
@@ -1097,7 +1079,7 @@ public class KomodoMetadataService extends KomodoService {
             final List<RestVirtualizationStatus> entityList = new ArrayList<>();
             Collection<BuildStatus> statuses = this.openshiftClient.getVirtualizations(includeInProgressServices);
             for (BuildStatus status : statuses) {
-                entityList.add(entityFactory.createBuildStatus(status, uriInfo.getBaseUri()));
+                entityList.add(createBuildStatus(status, uriInfo.getBaseUri()));
             }
             return commit(uow, mediaTypes, entityList);
         } catch (CallbackTimeoutException ex) {
@@ -1137,7 +1119,7 @@ public class KomodoMetadataService extends KomodoService {
             uow = createTransaction(principal, "publish", true); //$NON-NLS-1$
             BuildStatus status = this.openshiftClient.getVirtualizationStatus(vdbName);
 
-            return commit(uow, mediaTypes, entityFactory.createBuildStatus(status, uriInfo.getBaseUri()));
+            return commit(uow, mediaTypes, createBuildStatus(status, uriInfo.getBaseUri()));
         } catch (CallbackTimeoutException ex) {
             return createTimeoutResponse(mediaTypes);
         } catch (Throwable e) {
@@ -1190,6 +1172,17 @@ public class KomodoMetadataService extends KomodoService {
             return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.PUBLISH_ERROR);
         }
     }
+    
+    /**
+     * Create RestVirtualizationStatus
+     * @param status the build status
+     * @param baseUri the base uri
+     * @return RestVirtualizationStatus
+     * @throws Exception if error occurs
+     */
+    public RestVirtualizationStatus createBuildStatus(BuildStatus status, URI baseUri) throws Exception {
+        return new RestVirtualizationStatus(baseUri, status);
+    }
 
     @DELETE
     @Path(V1Constants.PUBLISH + StringConstants.FORWARD_SLASH + V1Constants.VDB_PLACEHOLDER)
@@ -1213,7 +1206,7 @@ public class KomodoMetadataService extends KomodoService {
         try {
             uow = createTransaction(principal, "publish", true); //$NON-NLS-1$
             BuildStatus status = this.openshiftClient.deleteVirtualization(vdbName);
-            return commit(uow, mediaTypes, entityFactory.createBuildStatus(status, uriInfo.getBaseUri()));
+            return commit(uow, mediaTypes, createBuildStatus(status, uriInfo.getBaseUri()));
         } catch (CallbackTimeoutException ex) {
             return createTimeoutResponse(mediaTypes);
         } catch (Throwable e) {
@@ -1266,33 +1259,26 @@ public class KomodoMetadataService extends KomodoService {
         UnitOfWork uow = null;
         try {
             uow = createTransaction(principal, "publish-init", true); //$NON-NLS-1$
-            Vdb vdb = findVdb(uow, payload.getName());
-            if (vdb == null) {
-                //
-                // We don't have a vdb so maybe we have a dataservice instead
-                // Find the dataservice's vdb to publish.
-                //
-                Dataservice dataservice = findDataservice(uow, payload.getName());
-                if (dataservice == null) {
-                    return createErrorResponse(Status.NOT_FOUND, mediaTypes, RelationalMessages.Error.VDB_NOT_FOUND);
-                }
-
-                vdb = dataservice.getServiceVdb(uow);
-            }
+            Vdb vdb = findVdbByServiceOrName(payload, mediaTypes, uow);
 
             if (vdb == null) {
-                return createErrorResponse(Status.NOT_FOUND, mediaTypes, RelationalMessages.Error.VDB_NOT_FOUND);
-            }
-
+		        return createErrorResponse(Status.NOT_FOUND, mediaTypes, RelationalMessages.Error.VDB_NOT_FOUND);
+		    }
+            
             KomodoStatusObject status = new KomodoStatusObject();
             status.addAttribute("Publishing", "Operation initiated");  //$NON-NLS-1$//$NON-NLS-2$
 
-            final String vdbPath = vdb.getAbsolutePath();
             final OAuthCredentials creds = getAuthenticationToken();
 
             UnitOfWork publishUow = createTransaction(principal, "publish", true); //$NON-NLS-1$
-            Vdb theVdb = new VdbImpl(publishUow, kengine.getDefaultRepository(), vdbPath);
-
+            
+            //look the vdb backup with a new transaction
+            Vdb theVdb = findVdbByServiceOrName(payload, mediaTypes, publishUow);
+            
+            if (theVdb == null) {
+		        return createErrorResponse(Status.NOT_FOUND, mediaTypes, RelationalMessages.Error.VDB_NOT_FOUND);
+		    }
+            
             // the properties in this class can be exposed for user input
             PublishConfiguration config = new PublishConfiguration();
             config.setVDB(theVdb);
@@ -1327,6 +1313,25 @@ public class KomodoMetadataService extends KomodoService {
         }
     }
 
+	private Vdb findVdbByServiceOrName(final PublishRequestPayload payload, List<MediaType> mediaTypes, UnitOfWork uow)
+			throws KException {
+		Vdb vdb = findVdb(uow, payload.getName());
+		if (vdb == null) {
+		    //
+		    // We don't have a vdb so maybe we have a dataservice instead
+		    // Find the dataservice's vdb to publish.
+		    //
+		    Dataservice dataservice = findDataservice(uow, payload.getName());
+		    if (dataservice == null) {
+		    	return null;
+		    }
+
+		    vdb = dataservice.getServiceVdb(uow);
+		}
+		
+		return vdb;
+	}
+
     /**
      * Deploy / re-deploy a VDB to the metadata instance for the provided teiid data source.
      * @param uow the transaction
@@ -1349,37 +1354,36 @@ public class KomodoMetadataService extends KomodoService {
         String vdbName = getWorkspaceSourceVdbName( sourceName );
         
         // VDB is created in the repository.  If it already exists, delete it
-        Repository repo = this.kengine.getDefaultRepository();
-        final WorkspaceManager mgr = WorkspaceManager.getInstance( repo, uow );
-        String repoPath = repo.komodoWorkspace( uow ).getAbsolutePath();
+        final WorkspaceManager mgr = this.kengine.getWorkspaceManager(uow);
+        String repoPath = mgr.getKomodoWorkspaceAbsolutePath(uow);
         
         final Vdb existingVdb = findVdb( uow, vdbName );
 
         if ( existingVdb != null ) {
-            mgr.delete(uow, existingVdb);
+            mgr.deleteVdb(uow, existingVdb);
         }
         
         // delete schema VDB if it exists
         final Vdb schemaVdb = findWorkspaceSchemaVdb( uow, teiidSource );
 
         if ( schemaVdb != null ) {
-            mgr.delete( uow, schemaVdb );
+            mgr.deleteVdb( uow, schemaVdb );
         }
 
         // Create new VDB
         String vdbPath = repoPath + "/" + vdbName; //$NON-NLS-1$
-        final Vdb vdb = mgr.createVdb( uow, null, vdbName, vdbPath );
+        final Vdb vdb = mgr.createVdb( uow, vdbName, vdbPath );
         vdb.setDescription(uow, "Vdb for source "+teiidSource); //$NON-NLS-1$
                     
         // Add model to the VDB
         Model model = vdb.addModel(uow, getSchemaModelName(sourceName));
         model.setModelType(uow, Model.Type.PHYSICAL);
-        model.setProperty(uow, "importer.TableTypes", "TABLE,VIEW"); //$NON-NLS-1$ //$NON-NLS-2$
-        model.setProperty(uow, "importer.UseQualifiedName", "true");  //$NON-NLS-1$//$NON-NLS-2$
-        model.setProperty(uow, "importer.UseCatalogName", "false");  //$NON-NLS-1$//$NON-NLS-2$
-        model.setProperty(uow, "importer.UseFullSchemaName", "false");  //$NON-NLS-1$//$NON-NLS-2$
+        model.setPropertyValue(uow, "importer.TableTypes", "TABLE,VIEW"); //$NON-NLS-1$ //$NON-NLS-2$
+        model.setPropertyValue(uow, "importer.UseQualifiedName", "true");  //$NON-NLS-1$//$NON-NLS-2$
+        model.setPropertyValue(uow, "importer.UseCatalogName", "false");  //$NON-NLS-1$//$NON-NLS-2$
+        model.setPropertyValue(uow, "importer.UseFullSchemaName", "false");  //$NON-NLS-1$//$NON-NLS-2$
         if (teiidSource.getPropertyValue("schema") != null) {
-        	model.setProperty(uow, "importer.schemaPattern", teiidSource.getPropertyValue("schema"));  //$NON-NLS-1$//$NON-NLS-2$
+        	model.setPropertyValue(uow, "importer.schemaPattern", teiidSource.getPropertyValue("schema"));  //$NON-NLS-1$//$NON-NLS-2$
         }
         
         // Add model source to the model
@@ -1579,7 +1583,7 @@ public class KomodoMetadataService extends KomodoService {
 
         for(final Table table : tables) {
             // Use the fqn table option do determine native structure
-            final String option = OptionContainerUtils.getOption( uow, table, TABLE_OPTION_FQN );
+            String option = table.getPropertyValue(uow, TABLE_OPTION_FQN );
             if( option != null ) {
                 // Break fqn into segments (segment starts at root, eg "schema=public/table=customer")
                 String[] segments = option.split(FORWARD_SLASH);
@@ -1747,14 +1751,11 @@ public class KomodoMetadataService extends KomodoService {
             if ( models.length > 0 ) {
                 final Model schemaModel = models[ 0 ];
                 status.setSchemaModelName( schemaModelName );
-
-                // if model has children the DDL has been sequenced
-                if ( schemaModel.hasChildren( uow ) ) {
-                    // assume sequencer ran successfully
-                    status.setSchemaState( RestSyndesisSourceStatus.EntityState.ACTIVE );
-                } else if ( schemaModel.hasProperty( uow, VdbLexicon.Model.MODEL_DEFINITION ) ) {
-                    // assume sequencer is running but could have failed
-                    status.setSchemaState( RestSyndesisSourceStatus.EntityState.LOADING );
+                
+                if (getWorkspaceManager(uow).isSchemaLoading(uow, schemaModel)) {
+                	status.setSchemaState( RestSyndesisSourceStatus.EntityState.LOADING );
+                } else {
+                	status.setSchemaState( RestSyndesisSourceStatus.EntityState.ACTIVE );
                 }
             } else {
                 // Since VDB and model are created in the same transaction this should never happen.

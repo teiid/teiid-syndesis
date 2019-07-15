@@ -20,8 +20,9 @@ package org.komodo.metadata.internal;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.runtime.TeiidTranslator;
+
+import org.komodo.metadata.runtime.TeiidTranslator;
+import org.komodo.spi.StringConstants;
 import org.teiid.adminapi.AdminObject;
 import org.teiid.adminapi.Translator;
 import org.teiid.core.util.ArgCheck;

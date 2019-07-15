@@ -25,7 +25,6 @@
 <nt='http://www.jcp.org/jcr/nt/1.0'>
 <tko='http://www.teiid.org/komodo/1.0'>
 <dv = "http://www.jboss.org/dv/1.0">
-<tsql='http://www.teiid.org/sql/1.0'>
 <vdb = "http://www.metamatrix.com/metamodels/VirtualDatabase">
 <mmcore = "http://www.metamatrix.com/metamodels/Core">
 
@@ -117,7 +116,6 @@
  */
 [tko:schema] > nt:unstructured, tko:libraryComponent
   - tko:rendition (string)
-  + * (tsql:languageObject) copy sns
 
 /*
  * The VDB grouping node used by the library. Child nodes represent Teiid VDBs.

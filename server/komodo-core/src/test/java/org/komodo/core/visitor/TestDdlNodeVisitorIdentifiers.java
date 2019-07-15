@@ -21,20 +21,14 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
-import org.komodo.metadata.DefaultMetadataInstance;
+import org.komodo.metadata.DataTypeService;
 import org.komodo.metadata.TeiidConnectionProvider;
-import org.komodo.spi.runtime.version.MetadataVersion;
-import org.komodo.spi.type.DataTypeService;
+import org.komodo.metadata.internal.DefaultMetadataInstance;
 import org.mockito.Mockito;
 
 @SuppressWarnings( {"javadoc", "nls"} )
 public class TestDdlNodeVisitorIdentifiers {
-    private DdlNodeVisitor visitor = new DdlNodeVisitor(getMetadataVersion(), getDataTypeService(), true);
-
-    protected MetadataVersion getMetadataVersion() {
-    	TeiidConnectionProvider provider = Mockito.mock(TeiidConnectionProvider.class);
-    	return new DefaultMetadataInstance(provider).getVersion();
-    }
+    private DdlNodeVisitor visitor = new DdlNodeVisitor(getDataTypeService(), true);
 
     protected DataTypeService getDataTypeService() {
     	TeiidConnectionProvider provider = Mockito.mock(TeiidConnectionProvider.class);

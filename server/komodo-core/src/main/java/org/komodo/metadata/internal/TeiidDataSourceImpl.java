@@ -18,7 +18,8 @@
 package org.komodo.metadata.internal;
 
 import java.util.Properties;
-import org.komodo.spi.runtime.TeiidDataSource;
+
+import org.komodo.metadata.runtime.TeiidDataSource;
 import org.teiid.core.util.ArgCheck;
 
 public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, TeiidDataSource {

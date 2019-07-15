@@ -34,32 +34,26 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.Variant;
 import javax.ws.rs.core.Variant.VariantListBuilder;
 
-import org.komodo.core.KEngine;
-import org.komodo.core.repository.RepositoryImpl;
-import org.komodo.core.repository.SynchronousCallback;
+import org.komodo.relational.WorkspaceManager;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.profile.Profile;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.vdb.Vdb;
-import org.komodo.relational.workspace.WorkspaceManager;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.RestBasicEntity.ResourceNotFound;
 import org.komodo.rest.relational.RelationalMessages;
-import org.komodo.rest.relational.RestEntityFactory;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
+import org.komodo.spi.KEngine;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.SystemConstants;
-import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.repository.Repository.UnitOfWorkListener;
+import org.komodo.spi.SystemConstants;
+import org.komodo.spi.repository.SynchronousCallback;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWorkListener;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
-import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 import com.google.gson.Gson;
 
@@ -167,12 +161,10 @@ public abstract class KomodoService implements V1Constants {
         return vdbName + '.';
     }
 
-    protected final static SecurityPrincipal SYSTEM_USER = new SecurityPrincipal(RepositoryImpl.SYSTEM_USER, null);
+    protected final static SecurityPrincipal SYSTEM_USER = new SecurityPrincipal(SystemConstants.SYSTEM_USER, null);
 
     @Autowired
     protected KEngine kengine;
-
-    protected RestEntityFactory entityFactory = new RestEntityFactory();
 
     @Context
     protected SecurityContext securityContext;
@@ -224,20 +216,11 @@ public abstract class KomodoService implements V1Constants {
     }
 
     protected WorkspaceManager getWorkspaceManager(UnitOfWork transaction) throws KException {
-    	Repository repo = this.kengine.getDefaultRepository();
-        return WorkspaceManager.getInstance(repo, transaction);
+    	return this.kengine.getWorkspaceManager(transaction);
     }
 
     protected Profile getUserProfile(UnitOfWork transaction) throws KException {
-        Repository repo = this.kengine.getDefaultRepository();
-        KomodoObject userProfileObj = repo.komodoProfile(transaction);
-        Profile userProfile = getWorkspaceManager(transaction).resolve(transaction, userProfileObj, Profile.class);
-        if (userProfile == null) {
-            String msg = RelationalMessages.getString(RelationalMessages.Error.NO_USER_PROFILE, transaction.getUserName());
-            throw new KException(msg);
-        }
-
-        return userProfile;
+        return getWorkspaceManager(transaction).getUserProfile(transaction);
     }
 
     /**
@@ -530,8 +513,7 @@ public abstract class KomodoService implements V1Constants {
      */
     protected UnitOfWork createTransaction(final SecurityPrincipal user, final String name,
                                             final boolean rollbackOnly, final UnitOfWorkListener callback) throws KException {
-    	Repository repo = this.kengine.getDefaultRepository();
-        final UnitOfWork result = repo.createTransaction( user.getUserName(),
+    	final UnitOfWork result = this.kengine.createTransaction( user.getUserName(),
                                                                (getClass().getSimpleName() + COLON + name + COLON + System.currentTimeMillis()),
                                                                rollbackOnly, callback, "anonymous");
         LOGGER.debug( "createTransaction:created '{0}', rollbackOnly = '{1}'", result.getName(), result.isRollbackOnly() ); //$NON-NLS-1$
@@ -551,25 +533,12 @@ public abstract class KomodoService implements V1Constants {
      */
     protected UnitOfWork createTransaction(final SecurityPrincipal user, final String name,
                                             final boolean rollbackOnly ) throws KException {
-    	Repository repo = this.kengine.getDefaultRepository();
-        final SynchronousCallback callback = new SynchronousCallback();
-        final UnitOfWork result = repo.createTransaction(user.getUserName(),
-                                                               (getClass().getSimpleName() + COLON + name + COLON + System.currentTimeMillis()),
-                                                               rollbackOnly, callback, "anonymous");
-        LOGGER.debug( "createTransaction:created '{0}', rollbackOnly = '{1}'", result.getName(), result.isRollbackOnly() ); //$NON-NLS-1$
-        return result;
+    	final SynchronousCallback callback = new SynchronousCallback();
+    	return createTransaction(user, name, rollbackOnly, callback);
     }
 
     protected Vdb findVdb(UnitOfWork uow, String vdbName) throws KException {
-        if (! getWorkspaceManager(uow).hasChild( uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE ) ) {
-            return null;
-        }
-
-        final KomodoObject kobject = getWorkspaceManager(uow).getChild( uow, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE );
-        final Vdb vdb = getWorkspaceManager(uow).resolve( uow, kobject, Vdb.class );
-
-        LOGGER.debug( "VDB '{0}' was found", vdbName ); //$NON-NLS-1$
-        return vdb;
+        return getWorkspaceManager(uow).findVdb(uow, vdbName);
     }
 
     protected UnitOfWork systemTx(String description, boolean rollback) throws KException {
@@ -606,15 +575,7 @@ public abstract class KomodoService implements V1Constants {
     }
 
     protected Dataservice findDataservice(UnitOfWork uow, String dataserviceName) throws KException {
-        if (! getWorkspaceManager(uow).hasChild( uow, dataserviceName, DataVirtLexicon.DataService.NODE_TYPE ) ) {
-            return null;
-        }
-
-        final KomodoObject kobject = getWorkspaceManager(uow).getChild( uow, dataserviceName, DataVirtLexicon.DataService.NODE_TYPE );
-        final Dataservice dataservice = getWorkspaceManager(uow).resolve( uow, kobject, Dataservice.class );
-
-        LOGGER.debug( "Dataservice '{0}' was found", dataserviceName ); //$NON-NLS-1$
-        return dataservice;
+    	return getWorkspaceManager(uow).findDataservice(uow, dataserviceName);
     }
 
     protected String uri(String... segments) {

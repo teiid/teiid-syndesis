@@ -18,18 +18,18 @@
 package org.komodo.core.repository;
 
 import java.io.PrintStream;
-import org.komodo.spi.KException;
-import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.lexicon.LexiconConstants.NTLexicon;
+
+import org.komodo.core.internal.repository.Repository;
+import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoObjectVisitor;
+import org.komodo.spi.repository.OperationType;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.PropertyValueType;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.OperationType;
-import org.komodo.spi.repository.Repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
+import org.modeshape.jcr.api.JcrConstants;
 import org.modeshape.jcr.api.JcrTools;
 
 /**
@@ -91,25 +91,12 @@ public class RepositoryTools implements StringConstants {
                 if (komodoObjectType != null) {
                     komodoObject = komodoObject.addChild(transaction, pathSegmentWithNoIndex, komodoObjectType);
                 } else {
-                    komodoObject = komodoObject.addChild(transaction, pathSegmentWithNoIndex, NTLexicon.NT_UNSTRUCTURED);
+                    komodoObject = komodoObject.addChild(transaction, pathSegmentWithNoIndex, JcrConstants.NT_UNSTRUCTURED);
                 }
             }
         }
 
         return komodoObject;
-    }
-
-    /**
-     * Get or create a KomodoObject with the specified KomodoObject under the specified parent KomodoObject.
-     * @param transaction the transaction
-     * @param parent the parent KomodoObject. may not be null
-     * @param name the name of the child KomodoObject. may not be null
-     * @return the existing or newly created child KomodoObject
-     * @throws Exception if an error occurs
-     * @throws IllegalArgumentException if either the parent or name argument is null
-     */
-    public static KomodoObject findOrCreateChild(UnitOfWork transaction, KomodoObject parent, String name ) throws Exception {
-        return findOrCreateChild(transaction, parent, name, null);
     }
 
     /**
@@ -131,7 +118,7 @@ public class RepositoryTools implements StringConstants {
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @param repository
      *        the repository where the object can be found (cannot be <code>null</code>)
      * @param id
@@ -144,7 +131,7 @@ public class RepositoryTools implements StringConstants {
                                               final Repository repository,
                                               final String id ) throws Exception {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
+        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.UnitOfWork.State.NOT_STARTED ),
                          "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotNull( repository, "repository" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( id, "id" ); //$NON-NLS-1$
@@ -161,7 +148,7 @@ public class RepositoryTools implements StringConstants {
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @param property
      *        the property whose display value is being requested (cannot be empty)
      * @return String representation including the property name and its values
@@ -169,7 +156,7 @@ public class RepositoryTools implements StringConstants {
     public static String getDisplayNameAndValue(UnitOfWork transaction,
                                                 Property property) {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
+        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.UnitOfWork.State.NOT_STARTED ),
                          "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         StringBuilder sb = new StringBuilder();
@@ -186,7 +173,7 @@ public class RepositoryTools implements StringConstants {
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @param property
      *        the property whose display value is being requested (cannot be empty)
      * @return String representation of property values
@@ -195,7 +182,7 @@ public class RepositoryTools implements StringConstants {
     public static String getDisplayValue(UnitOfWork transaction,
                                          Property property) throws Exception {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
+        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.UnitOfWork.State.NOT_STARTED ),
                          "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         StringBuilder sb = new StringBuilder();
@@ -210,7 +197,7 @@ public class RepositoryTools implements StringConstants {
     			Object value = values[i];
 
                 if ( propIsReference ) {
-                    final String path = findPathOfReference( transaction, property.getRepository(), value.toString() );
+                    final String path = findPathOfReference( transaction, RepositoryImpl.getRepository(transaction), value.toString() );
 
                     if (!StringUtils.isBlank( path )) {
                         value = path;
@@ -229,7 +216,7 @@ public class RepositoryTools implements StringConstants {
     		Object value = property.getValue(transaction);
 
             if ( propIsReference ) {
-                final String path = findPathOfReference( transaction, property.getRepository(), value.toString() );
+                final String path = findPathOfReference( transaction, RepositoryImpl.getRepository(transaction), value.toString() );
 
                 if (!StringUtils.isBlank( path )) {
                     value = path;
@@ -251,7 +238,7 @@ public class RepositoryTools implements StringConstants {
      *
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @param kObject object to be traversed
      * @return string representation of object's graph
      * @throws Exception if error occurs
@@ -259,7 +246,7 @@ public class RepositoryTools implements StringConstants {
     public static String traverse(UnitOfWork transaction,
                                   KomodoObject kObject) throws Exception {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
+        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.UnitOfWork.State.NOT_STARTED ),
                          "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         TraversalOutputVisitor visitor = new TraversalOutputVisitor();
@@ -303,7 +290,7 @@ public class RepositoryTools implements StringConstants {
             //
             // Avoid relational filters of object's children
             //
-            ObjectImpl bareObject = new ObjectImpl(object.getRepository(), object.getAbsolutePath(), object.getIndex());
+            ObjectImpl bareObject = new ObjectImpl(RepositoryImpl.getRepository(transaction), object.getAbsolutePath(), object.getIndex());
             String[] propertyNames = bareObject.getPropertyNames(transaction);
 
             for (String propertyName : propertyNames) {
@@ -317,121 +304,5 @@ public class RepositoryTools implements StringConstants {
 
             return buffer.toString();
         }
-    }
-
-    /**
-     * Copy the properties of the source to the target
-     *
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param source the source object
-     * @param target the target object
-     * @throws KException if error occurs
-     */
-    public static void copyProperties(UnitOfWork transaction, KomodoObject source, final KomodoObject target) throws KException {
-        String[] propertyNames = source.getPropertyNames(transaction);
-        for (String propName : propertyNames) {
-            Property property = source.getProperty(transaction, propName);
-            if (! property.isMultiple(transaction))
-                target.setProperty(transaction, propName, property.getValue(transaction));
-            else
-                target.setProperty(transaction, propName, property.getValues(transaction));
-        }
-    }
-
-    /**
-     * Return true is the object's primary type is has the given name, false otherwise.
-     *
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param kObject the object to test
-     * @param primaryType the primary type required
-     * @return true if object has the primary type or false otherwise
-     * @throws KException if error occurs
-     */
-    public static boolean hasPrimaryType(UnitOfWork transaction, KomodoObject kObject, String primaryType) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
-                         "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-
-        if (kObject == null)
-            return false;
-
-        return kObject.getPrimaryType(transaction).getName().equals(primaryType);
-    }
-
-    /**
-     * Get an object with the same name as the given kObject with the given type,
-     * eg. find the connection with the same name as a vdb model source
-     *
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param kObject object with the name to find
-     * @param type the type of the object to find
-     * @return the object with the same name and given type
-     * @throws KException if error occurs
-     */
-    public static KomodoObject getSameNameObject(UnitOfWork transaction, KomodoObject kObject, String type) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
-                         "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-
-        if (kObject == null || type == null)
-            return null;
-
-        //
-        // Find the object with the same name and given type
-        // from the workspace
-        //
-        String name = kObject.getName(transaction);
-        Repository repository = kObject.getRepository();
-        KomodoObject result = repository.getFromWorkspace(transaction, name);
-        if (! hasPrimaryType(transaction, result, type))
-            return null;
-
-        return result;
-    }
-
-    /**
-     * Find the given property value from the given object, also checking for the non-prefixed version
-     * of the property name.
-     *
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.Repository.UnitOfWork.State#NOT_STARTED})
-     * @param kObject the object containing the property
-     * @param propName the name of the property to find
-     * @return the {@link String} value of the property
-     * @throws KException if error occurs
-     */
-    public static String findPropertyValue(UnitOfWork transaction, KomodoObject kObject, String propName) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.Repository.UnitOfWork.State.NOT_STARTED ),
-                         "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-
-        if (kObject == null || propName == null)
-            return null;
-
-        //
-        // Determine if the object has the property
-        //
-        Property property = null;
-
-        if (kObject.hasRawProperty(transaction, propName)) {
-            property = kObject.getRawProperty(transaction, propName);
-        }
-
-        if (property == null) {
-            // Check there is not a legacy version which has no prefix
-            propName = propName.substring(propName.indexOf(COLON) + 1);
-            if (kObject.hasRawProperty(transaction, propName)) {
-                property = kObject.getRawProperty(transaction, propName);
-            }
-        }
-
-        return property != null ? property.getStringValue(transaction) : null;
     }
 }

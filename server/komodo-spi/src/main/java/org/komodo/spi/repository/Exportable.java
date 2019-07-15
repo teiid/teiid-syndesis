@@ -19,14 +19,16 @@ package org.komodo.spi.repository;
 
 import java.util.Properties;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.Repository.UnitOfWork;
 
 /**
  * Indicates the object has a string representation that can be exported. In many cases this is an XML represention.
  */
 public interface Exportable {
 
-    /**
+    String USE_TABS_PROP_KEY = "useTabs";
+	String EXCLUDE_TABLE_CONSTRAINTS_KEY = "excludeTableConstraints";
+
+	/**
      * @param transaction
      *        the transaction (can be <code>null</code> if update should be automatically committed)
      * @return the name of this exportable
@@ -34,15 +36,6 @@ public interface Exportable {
      *         if an error occurs
      */
     String getName(UnitOfWork transaction) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (can be <code>null</code> if update should be automatically committed)
-     * @return the type of this exportable
-     * @throws KException
-     *         if an error occurs
-     */
-    DocumentType getDocumentType(UnitOfWork transaction) throws KException;
 
     /**
      * @param transaction

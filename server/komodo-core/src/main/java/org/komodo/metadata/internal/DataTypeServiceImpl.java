@@ -18,24 +18,11 @@
 package org.komodo.metadata.internal;
 
 import java.util.Set;
-import org.komodo.spi.runtime.version.MetadataVersion;
-import org.komodo.spi.type.DataTypeService;
+
+import org.komodo.metadata.DataTypeService;
 import org.teiid.core.types.DataTypeManager;
 
 public class DataTypeServiceImpl implements DataTypeService {
-
-    private final MetadataVersion teiidVersion;
-
-    public DataTypeServiceImpl(MetadataVersion teiidVersion) {
-        this.teiidVersion = teiidVersion;
-    }
-
-    /**
-     * @return version
-     */
-    public MetadataVersion getVersion() {
-        return teiidVersion;
-    }
 
     protected boolean isArrayType(String name) {
         return name.endsWith(ARRAY_SUFFIX);

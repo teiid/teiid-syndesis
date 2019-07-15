@@ -25,23 +25,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.komodo.core.internal.repository.KObjectFactory;
+import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.repository.RepositoryImpl;
+import org.komodo.metadata.DataTypeService;
+import org.komodo.metadata.DataTypeService.DataTypeName;
+import org.komodo.metadata.MetadataNamespaces;
 import org.komodo.spi.KException;
-import org.komodo.spi.constants.StringConstants;
-import org.komodo.spi.ddl.TeiidDDLConstants;
-import org.komodo.spi.lexicon.sql.teiid.TeiidSqlConstants;
-import org.komodo.spi.lexicon.sql.teiid.TeiidSqlConstants.NonReserved;
-import org.komodo.spi.lexicon.sql.teiid.TeiidSqlConstants.Reserved;
-import org.komodo.spi.metadata.MetadataNamespaces;
-import org.komodo.spi.repository.KObjectFactory;
+import org.komodo.spi.StringConstants;
+import org.komodo.spi.TeiidSqlConstants;
+import org.komodo.spi.TeiidSqlConstants.NonReserved;
+import org.komodo.spi.TeiidSqlConstants.Reserved;
 import org.komodo.spi.repository.KomodoObject;
+import org.komodo.spi.repository.OperationType;
 import org.komodo.spi.repository.Property;
-import org.komodo.spi.repository.Repository;
-import org.komodo.spi.repository.Repository.OperationType;
-import org.komodo.spi.repository.Repository.UnitOfWork;
-import org.komodo.spi.runtime.version.MetadataVersion;
-import org.komodo.spi.type.DataTypeService;
-import org.komodo.spi.type.DataTypeService.DataTypeName;
-import org.komodo.spi.utils.KeyInValueMap;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.utils.KeyInValueMap;
 import org.komodo.utils.StringUtils;
 import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
 import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
@@ -52,7 +51,8 @@ import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
  */
 public class DdlNodeVisitor extends AbstractNodeVisitor
     implements Reserved, NonReserved, MetadataNamespaces {
-
+	
+	private static final String NOT_NULL = "NOT NULL";//$NON-NLS-1$
     private static final String UNDEFINED = "undefined"; //$NON-NLS-1$
 
     /**
@@ -203,7 +203,7 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
          * @return is not null
          */
         public boolean isNotNull() {
-            return TeiidDDLConstants.NOT_NULL.equals(nullType);
+            return NOT_NULL.equals(nullType);
         }
 
         /**
@@ -245,8 +245,8 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
      * @param startOnNewLine prepend new line to start of ddl string
      * @param exclusions any items that should be excluded from visiting
      */
-    public DdlNodeVisitor(MetadataVersion version, DataTypeService dataTypeService, boolean startOnNewLine, VisitorExclusions... exclusions) {
-        super(version, dataTypeService);
+    public DdlNodeVisitor(DataTypeService dataTypeService, boolean startOnNewLine, VisitorExclusions... exclusions) {
+        super(dataTypeService);
 
         if (exclusions != null) {
             for (VisitorExclusions exclusion : exclusions) {
@@ -448,7 +448,7 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
             }
 
             if (context.isNotNull()) {
-                append(SPACE).append(TeiidDDLConstants.NOT_NULL);
+                append(SPACE).append(NOT_NULL);
             }
         }
     }
@@ -490,7 +490,7 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
             // The prefix represents a modeshape prefix so need the original uri
             // from the modeshape namespace registry
             //
-            KObjectFactory objectFactory = stmtOption.getRepository().getObjectFactory();
+            KObjectFactory objectFactory = RepositoryImpl.getRepository(transaction).getObjectFactory();
             String mURI = objectFactory.getNamespaceURI(transaction, prefix);
             URI uri = null;
             if (mURI != null) {
@@ -601,7 +601,7 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
         if (!hasMixinType(transaction, constraint, expectedType))
             return;
 
-        Repository repository = constraint.getRepository();
+        Repository repository = RepositoryImpl.getRepository(transaction);
 
         append(COMMA).append(NEW_LINE).append(TAB);
 
@@ -726,8 +726,8 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
 
         if (TableType.GLOBAL_TEMP_TABLE != context.getTableType()) {
             if (context.isVirtual()) {
-                TeiidSqlNodeVisitor visitor = new TeiidSqlNodeVisitor(getVersion(), getDataTypeService());
-                String teiidSql = visitor.getTeiidSql(transaction, tabulation);
+            	Property p = tabulation.getProperty(transaction, TeiidDdlLexicon.CreateTable.QUERY_EXPRESSION);
+                String teiidSql = p.getStringValue(transaction); 
                 append(NEW_LINE).append(AS).append(NEW_LINE).append(teiidSql);
             }
             append(SEMI_COLON);
@@ -870,8 +870,8 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
         //block
         if (context.isVirtual()) {
             append(NEW_LINE).append(AS).append(NEW_LINE);
-            TeiidSqlNodeVisitor visitor = new TeiidSqlNodeVisitor(getVersion(), getDataTypeService());
-            String teiidSql = visitor.getTeiidSql(transaction, procedure);
+            Property p = procedure.getProperty(transaction, TeiidDdlLexicon.CreateProcedure.STATEMENT);
+            String teiidSql = p.getStringValue(transaction);
             append(teiidSql);
             append(SEMI_COLON);
         }

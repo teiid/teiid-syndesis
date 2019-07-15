@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+
 import javax.jcr.Binary;
 import javax.jcr.Node;
 import javax.jcr.PropertyType;
@@ -31,27 +32,29 @@ import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
 import javax.jcr.nodetype.PropertyDefinition;
+
+import org.komodo.core.repository.KPropertyFactory;
 import org.komodo.core.repository.Messages;
+import org.komodo.core.repository.Messages.Komodo;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.PropertyDescriptorImpl;
-import org.komodo.core.repository.Messages.Komodo;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KObjectFactory;
-import org.komodo.spi.repository.KPropertyFactory;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
 import org.komodo.spi.repository.PropertyDescriptor;
 import org.komodo.spi.repository.PropertyValueType;
-import org.komodo.spi.repository.Repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.utils.StringUtils;
 import org.teiid.core.util.ArgCheck;
 
 public class JcrPropertyFactory extends AbstractJcrFactory implements KPropertyFactory {
 
     private KObjectFactory nodeFactory;
+    private Repository repository;
 
-    public JcrPropertyFactory(KObjectFactory nodeFactory) {
+    public JcrPropertyFactory(KObjectFactory nodeFactory, Repository repository) {
         this.nodeFactory = nodeFactory;
+        this.repository = repository;
     }
 
     /**
@@ -403,7 +406,7 @@ public class JcrPropertyFactory extends AbstractJcrFactory implements KPropertyF
                 parentPath += FORWARD_SLASH; //$NON-NLS-1$
             }
 
-            return new ObjectImpl(property.getRepository(), parent.getPath(), 0);
+            return new ObjectImpl(repository, parent.getPath(), 0);
         } catch (Exception ex) {
             throw handleError(ex);
         }

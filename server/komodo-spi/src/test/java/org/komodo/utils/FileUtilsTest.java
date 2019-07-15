@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.InputStream;
 
 import org.junit.Test;
-import org.komodo.test.utils.TestUtilities;
 
 public final class FileUtilsTest {
 
@@ -15,7 +14,7 @@ public final class FileUtilsTest {
         destination.mkdir();
         destination.deleteOnExit();
 
-        final InputStream zipStream = TestUtilities.sampleDataserviceExample();
+        final InputStream zipStream = FileUtilsTest.class.getResourceAsStream("/JoinServiceSameTableNames.zip");
         FileUtils.zipExtract( zipStream, destination );
     }
 

@@ -35,15 +35,13 @@ import javax.xml.xpath.XPathFactory;
 
 import org.junit.Test;
 import org.komodo.core.AbstractLocalRepositoryTest;
-import org.komodo.metadata.DefaultMetadataInstance;
 import org.komodo.metadata.TeiidConnectionProvider;
-import org.komodo.spi.lexicon.LexiconConstants.CoreLexicon;
-import org.komodo.spi.lexicon.sql.teiid.TeiidSqlLexicon;
+import org.komodo.metadata.internal.DefaultMetadataInstance;
 import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.Property;
 import org.komodo.test.utils.TestUtilities;
 import org.mockito.Mockito;
-import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
+import org.teiid.modeshape.sequencer.vdb.lexicon.CoreLexicon;
 import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.Document;
@@ -102,7 +100,7 @@ public class TestVdbExport extends AbstractLocalRepositoryTest {
 
         TeiidConnectionProvider provider = Mockito.mock(TeiidConnectionProvider.class);
         DefaultMetadataInstance instance = new DefaultMetadataInstance(provider);
-        return new VdbNodeVisitor(instance.getVersion(),instance.getDataTypeService(), xtw);
+        return new VdbNodeVisitor(instance.getDataTypeService(), xtw);
     }
 
     @Test(timeout=3000000)
@@ -117,8 +115,6 @@ public class TestVdbExport extends AbstractLocalRepositoryTest {
         //
         // Sequencing completed, now verify
         //
-        KomodoObject tweet = verify(getTransaction(), twitterExample,"twitterview/Tweet", TeiidDdlLexicon.CreateTable.VIEW_STATEMENT);
-        verify(getTransaction(), tweet, TeiidSqlLexicon.Query.ID, TeiidSqlLexicon.Query.ID);
 
         //
         // Create node visitor and visit the jcr nodes
@@ -161,8 +157,6 @@ public class TestVdbExport extends AbstractLocalRepositoryTest {
         //
         // Sequencing completed, now verify
         //
-        KomodoObject tweet = verify(getTransaction(), twitterExample,"twitterview/Tweet", TeiidDdlLexicon.CreateTable.VIEW_STATEMENT);
-        verify(getTransaction(), tweet, TeiidSqlLexicon.Query.ID, TeiidSqlLexicon.Query.ID);
 
         //
         // Create node visitor and visit the jcr nodes
@@ -205,8 +199,6 @@ public class TestVdbExport extends AbstractLocalRepositoryTest {
         //
         // Sequencing completed, now verify
         //
-        KomodoObject testNode = verify(getTransaction(), allElements, "model-two/Test", TeiidDdlLexicon.CreateTable.VIEW_STATEMENT);
-        verify(getTransaction(), testNode, TeiidSqlLexicon.Query.ID, TeiidSqlLexicon.Query.ID);
 
         //
         // Create node visitor and visit the jcr nodes
@@ -298,7 +290,7 @@ public class TestVdbExport extends AbstractLocalRepositoryTest {
         KomodoObject furtherPatientsModel = patientsExample.addChild(getTransaction(),
                                                                                     furtherPatientsModelName,
                                                                                     VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        furtherPatientsModel.setProperty(getTransaction(), CoreLexicon.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
+        furtherPatientsModel.setProperty(getTransaction(), CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
         furtherPatientsModel.setProperty(getTransaction(),  VdbLexicon.Model.DESCRIPTION, "Further Patients View");
         furtherPatientsModel.setProperty(getTransaction(), VdbLexicon.Model.VISIBLE, true);
         furtherPatientsModel.setProperty(getTransaction(), VdbLexicon.Model.METADATA_TYPE, "DDL");
