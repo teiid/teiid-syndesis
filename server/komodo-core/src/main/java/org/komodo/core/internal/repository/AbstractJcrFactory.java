@@ -23,8 +23,8 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.nodetype.NodeTypeManager;
 
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.spi.repository.UnitOfWorkDelegate;

@@ -26,7 +26,7 @@ import org.komodo.spi.repository.UnitOfWork;
 /**
  * Represents a relational model table.
  */
-public interface Table extends Exportable, OptionContainer, RelationalObject, SchemaElement {
+public interface Table extends Exportable, RelationalObject, SchemaElement {
 
     /**
      * The type identifier.
@@ -137,10 +137,10 @@ public interface Table extends Exportable, OptionContainer, RelationalObject, Sc
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KNode#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.KNode#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    Model getParent( final UnitOfWork transaction ) throws KException;
+    Model getRelationalParent( final UnitOfWork transaction ) throws KException;
 
     /**
      * @param transaction

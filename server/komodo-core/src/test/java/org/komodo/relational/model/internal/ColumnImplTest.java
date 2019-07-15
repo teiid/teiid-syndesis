@@ -32,6 +32,8 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.komodo.core.repository.KomodoObject;
+import org.komodo.core.repository.PropertyDescriptor;
 import org.komodo.relational.RelationalConstants;
 import org.komodo.relational.RelationalConstants.Nullable;
 import org.komodo.relational.RelationalModelTest;
@@ -39,13 +41,10 @@ import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.internal.RelationalObjectImpl.Filter;
 import org.komodo.relational.model.Column;
 import org.komodo.relational.model.Column.Searchable;
-import org.komodo.relational.model.StatementOption;
 import org.komodo.relational.model.Table;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.PropertyDescriptor;
 import org.komodo.utils.StringUtils;
 import org.teiid.modeshape.sequencer.ddl.StandardDdlLexicon;
 import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
@@ -55,8 +54,8 @@ public final class ColumnImplTest extends RelationalModelTest {
 
     private static final String NAME = "column";
 
-    private Column column;
-    private Table table;
+    private ColumnImpl column;
+    private TableImpl table;
 
     @Before
     public void init() throws Exception {

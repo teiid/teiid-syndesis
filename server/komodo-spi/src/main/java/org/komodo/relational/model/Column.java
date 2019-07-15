@@ -27,7 +27,7 @@ import org.komodo.spi.repository.UnitOfWork;
 /**
  * Represents a relational model column.
  */
-public interface Column extends OptionContainer, RelationalObject {
+public interface Column extends RelationalObject {
 
     /**
      * The type identifier.
@@ -127,17 +127,11 @@ public interface Column extends OptionContainer, RelationalObject {
     boolean DEFAULT_UPDATABLE = true;
 
     /**
-     * An empty array of columns.
-     */
-    Column[] NO_COLUMNS = new Column[0];
-
-    /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KNode#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.KNode#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
      */
-    @Override
-    Table getParent( final UnitOfWork transaction ) throws KException;
+    Table getRelationalParent( final UnitOfWork transaction ) throws KException;
 
     /**
      * @param transaction

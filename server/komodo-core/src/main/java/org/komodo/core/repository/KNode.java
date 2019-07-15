@@ -15,9 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.spi.repository;
+package org.komodo.core.repository;
 
 import org.komodo.spi.KException;
+import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * A Komodo object.

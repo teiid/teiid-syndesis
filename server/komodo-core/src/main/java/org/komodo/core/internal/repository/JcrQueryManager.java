@@ -26,9 +26,9 @@ import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 
 import org.komodo.core.repository.KQueryManager;
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
 import javax.jcr.Session;

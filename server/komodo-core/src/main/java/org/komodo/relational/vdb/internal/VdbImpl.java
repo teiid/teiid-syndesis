@@ -27,10 +27,14 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.repository.Descriptor;
 import org.komodo.core.repository.DescriptorImpl;
 import org.komodo.core.repository.KPropertyFactory;
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.ObjectImpl;
+import org.komodo.core.repository.PropertyDescriptor;
 import org.komodo.core.repository.PropertyDescriptorImpl;
+import org.komodo.core.repository.PropertyValueType;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.core.visitor.VdbNodeVisitor;
 import org.komodo.metadata.MetadataInstance;
@@ -47,12 +51,8 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.VdbImport;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
-import org.komodo.spi.repository.Descriptor;
 import org.komodo.spi.repository.Exportable;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.PropertyDescriptor;
-import org.komodo.spi.repository.PropertyValueType;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
@@ -109,7 +109,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
          * {@inheritDoc}
          *
          * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
+         *      org.komodo.core.repository.KomodoObject)
          */
         @Override
         public boolean resolvable( final UnitOfWork transaction,
@@ -121,7 +121,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
          * {@inheritDoc}
          *
          * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
+         *      org.komodo.core.repository.KomodoObject)
          */
         @Override
         public VdbImpl resolve( final UnitOfWork transaction,
@@ -300,7 +300,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
      * @see org.komodo.relational.vdb.Vdb#addImport(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
-    public VdbImport addImport( final UnitOfWork transaction,
+    public VdbImportImpl addImport( final UnitOfWork transaction,
                                 final String vdbName ) throws KException {
         return RelationalModelFactory.createVdbImport( transaction, getRepository(), this, vdbName );
     }
@@ -311,7 +311,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
      * @see org.komodo.relational.vdb.Vdb#addModel(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
-    public Model addModel( final UnitOfWork transaction,
+    public ModelImpl addModel( final UnitOfWork transaction,
                            final String modelName ) throws KException {
         return RelationalModelFactory.createModel( transaction, getRepository(), this, modelName );
     }
@@ -323,7 +323,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
      *      java.lang.String)
      */
     @Override
-    public Translator addTranslator( final UnitOfWork transaction,
+    public TranslatorImpl addTranslator( final UnitOfWork transaction,
                                      final String translatorName,
                                      final String translatorType ) throws KException {
         return RelationalModelFactory.createTranslator( transaction, getRepository(), this, translatorName, translatorType );
@@ -720,7 +720,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#getTypeId()
+     * @see org.komodo.core.repository.KomodoObject#getTypeId()
      */
     @Override
     public int getTypeId() {
@@ -833,7 +833,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( importToRemove, "importToRemove" ); //$NON-NLS-1$
 
-        final VdbImport[] vdbImports = getImports( transaction, importToRemove );
+        final VdbImportImpl[] vdbImports = getImports( transaction, importToRemove );
 
         if ( vdbImports.length == 0 ) {
             throw new KException( Messages.getString( Relational.VDB_IMPORT_NOT_FOUND_TO_REMOVE, importToRemove ) );
@@ -855,7 +855,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( modelToRemove, "modelToRemove" ); //$NON-NLS-1$
 
-        final Model[] models = getModels( transaction, modelToRemove );
+        final ModelImpl[] models = getModels( transaction, modelToRemove );
 
         if ( models.length == 0 ) {
             throw new KException( Messages.getString( Relational.MODEL_NOT_FOUND_TO_REMOVE, modelToRemove ) );
@@ -877,7 +877,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( translatorToRemove, "translatorToRemove" ); //$NON-NLS-1$
 
-        final Translator[] translators = getTranslators( transaction, translatorToRemove );
+        final TranslatorImpl[] translators = getTranslators( transaction, translatorToRemove );
 
         if ( translators.length == 0 ) {
             throw new KException( Messages.getString( Relational.TRANSLATOR_NOT_FOUND_TO_REMOVE, translatorToRemove ) );
@@ -1077,7 +1077,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
     }
     
     @Override
-    public Model getModel(UnitOfWork transaction, String name) throws KException {
+    public ModelImpl getModel(UnitOfWork transaction, String name) throws KException {
     	ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 

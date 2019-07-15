@@ -35,6 +35,8 @@ import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.komodo.core.repository.KomodoObject;
+import org.komodo.core.repository.PropertyDescriptor;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
 import org.komodo.importer.ImportOptions.OptionKeys;
@@ -43,6 +45,7 @@ import org.komodo.relational.importer.vdb.VdbImporter;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.internal.RelationalObjectImpl.Filter;
 import org.komodo.relational.model.Model;
+import org.komodo.relational.model.internal.ModelImpl;
 import org.komodo.relational.vdb.Translator;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.Vdb.VdbManifest;
@@ -50,9 +53,7 @@ import org.komodo.relational.vdb.VdbImport;
 import org.komodo.relational.workspace.WorkspaceManagerImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.PropertyDescriptor;
 import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -66,7 +67,7 @@ public final class VdbImplTest extends RelationalModelTest {
     private static final String PATH = "/Users/sledge/hammer/MyVdb.vdb";
     private static final String VDB_NAME = "vdb";
 
-    protected Vdb vdb;
+    protected VdbImpl vdb;
 
     @Before
     public void init() throws Exception {
@@ -80,7 +81,7 @@ public final class VdbImplTest extends RelationalModelTest {
         assertThat( vdbImport, is( notNullValue() ) );
         assertThat( this.vdb.getImports( getTransaction() ).length, is( 1 ) );
 
-        final VdbImport added = this.vdb.getImports( getTransaction() )[0];
+        final VdbImportImpl added = this.vdb.getImports( getTransaction() )[0];
         assertThat( added, is( vdbImport ) );
         assertThat( added.getName( getTransaction() ), is( name ) );
         assertThat( added.getPrimaryType( getTransaction() ).getName(), is( VdbLexicon.ImportVdb.IMPORT_VDB ) );
@@ -96,15 +97,15 @@ public final class VdbImplTest extends RelationalModelTest {
     @Test
     public void shouldAddModel() throws Exception {
         final String name = "model";
-        final Model model = this.vdb.addModel( getTransaction(), name );
+        final ModelImpl model = this.vdb.addModel( getTransaction(), name );
         assertThat( model, is( notNullValue() ) );
         assertThat( this.vdb.getModels( getTransaction() ).length, is( 1 ) );
 
-        final Model added = this.vdb.getModels( getTransaction() )[0];
+        final ModelImpl added = this.vdb.getModels( getTransaction() )[0];
         assertThat( added, is( model ) );
         assertThat( added.getName( getTransaction() ), is( name ) );
         assertThat( added.getPrimaryType( getTransaction() ).getName(), is( VdbLexicon.Vdb.DECLARATIVE_MODEL ) );
-        assertThat( this.vdb.getChildren( getTransaction() )[0], is( instanceOf( Model.class ) ) );
+        assertThat( this.vdb.getChildren( getTransaction() )[0], is( instanceOf( ModelImpl.class ) ) );
 
         assertThat( this.vdb.hasChild( getTransaction(), name ), is( true ) );
         assertThat( this.vdb.hasChild( getTransaction(), name, VdbLexicon.Vdb.DECLARATIVE_MODEL ), is( true ) );
@@ -121,7 +122,7 @@ public final class VdbImplTest extends RelationalModelTest {
         assertThat( translator, is( notNullValue() ) );
         assertThat( this.vdb.getTranslators( getTransaction() ).length, is( 1 ) );
 
-        final Translator added = this.vdb.getTranslators( getTransaction() )[0];
+        final TranslatorImpl added = this.vdb.getTranslators( getTransaction() )[0];
         assertThat( added, is( translator ) );
         assertThat( added.getName( getTransaction() ), is( name ) );
         assertThat( added.getPrimaryType( getTransaction() ).getName(), is( VdbLexicon.Translator.TRANSLATOR ) );
@@ -150,13 +151,13 @@ public final class VdbImplTest extends RelationalModelTest {
             this.vdb.setDescription( getTransaction(), "Shows how to call Web Services" );
             this.vdb.setProperty( getTransaction(), "UseConnectorMetadata", "cached" );
 
-            final Model twitter = this.vdb.addModel( getTransaction(), "twitter" );
+            final ModelImpl twitter = this.vdb.addModel( getTransaction(), "twitter" );
             twitter.setModelType( getTransaction(), Model.Type.PHYSICAL );
 
-            final Model twitterview = this.vdb.addModel( getTransaction(), "twitterview" );
+            final ModelImpl twitterview = this.vdb.addModel( getTransaction(), "twitterview" );
             twitterview.setModelType( getTransaction(), Model.Type.VIRTUAL );
 
-            final Translator translator = this.vdb.addTranslator( getTransaction(), "rest", "ws" );
+            final TranslatorImpl translator = this.vdb.addTranslator( getTransaction(), "rest", "ws" );
             translator.setProperty( getTransaction(), "DefaultBinding", "HTTP" );
         }
 
@@ -180,13 +181,13 @@ public final class VdbImplTest extends RelationalModelTest {
             this.vdb.setDescription( getTransaction(), "Shows how to call Web Services" );
             this.vdb.setProperty( getTransaction(), "UseConnectorMetadata", "cached" );
 
-            final Model twitter = this.vdb.addModel( getTransaction(), "twitter" );
+            final ModelImpl twitter = this.vdb.addModel( getTransaction(), "twitter" );
             twitter.setModelType( getTransaction(), Model.Type.PHYSICAL );
 
-            final Model twitterview = this.vdb.addModel( getTransaction(), "twitterview" );
+            final ModelImpl twitterview = this.vdb.addModel( getTransaction(), "twitterview" );
             twitterview.setModelType( getTransaction(), Model.Type.VIRTUAL );
 
-            final Translator translator = this.vdb.addTranslator( getTransaction(), "rest", "ws" );
+            final TranslatorImpl translator = this.vdb.addTranslator( getTransaction(), "rest", "ws" );
             translator.setProperty( getTransaction(), "DefaultBinding", "HTTP" );
         }
 
@@ -281,7 +282,7 @@ public final class VdbImplTest extends RelationalModelTest {
         this.vdb.addModel( getTransaction(), "model" );
         assertThat( this.vdb.getChildren( getTransaction() ).length, is( 2 ) );
         assertThat( this.vdb.getChildren( getTransaction() )[0], is( instanceOf( VdbImport.class ) ) );
-        assertThat( this.vdb.getChildren( getTransaction() )[1], is( instanceOf( Model.class ) ) );
+        assertThat( this.vdb.getChildren( getTransaction() )[1], is( instanceOf( ModelImpl.class ) ) );
     }
 
     @Test
@@ -475,11 +476,11 @@ public final class VdbImplTest extends RelationalModelTest {
 
         commit(); // commit the import
 
-        final Vdb[] vdbs = WorkspaceManagerImpl.getInstance( _repo, getTransaction() ).findVdbs( getTransaction() );
+        final VdbImpl[] vdbs = WorkspaceManagerImpl.getInstance( _repo, getTransaction() ).findVdbs( getTransaction() );
         assertThat( vdbs.length, is( 2 ) );
 
         // find the imported VDB
-        Vdb importedVdb = null;
+        VdbImpl importedVdb = null;
 
         if ( name.equals( vdbs[ 0 ].getName( getTransaction() ) ) ) {
             importedVdb = vdbs[ 0 ];

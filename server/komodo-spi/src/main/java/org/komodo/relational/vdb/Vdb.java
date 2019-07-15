@@ -68,11 +68,6 @@ public interface Vdb extends Exportable, RelationalObject {
     int DEFAULT_VERSION = 1;
 
     /**
-     * An empty array of VDBs.
-     */
-    Vdb[] NO_VDBS = new Vdb[0];
-
-    /**
      * Teiid Names for special properties
      */
     String SECURITY_DOMAIN_TEIIDNAME = "security-domain";

@@ -18,8 +18,6 @@
 package org.komodo.core.repository;
 
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.PropertyDescriptor;
-import org.komodo.spi.repository.PropertyValueType;
 import org.komodo.utils.ArgCheck;
 
 /**
@@ -89,7 +87,7 @@ public class PropertyDescriptorImpl implements PropertyDescriptor {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.PropertyDescriptor#getDefaultValues()
+     * @see org.komodo.core.repository.PropertyDescriptor#getDefaultValues()
      */
     @Override
     public Object[] getDefaultValues() {
@@ -99,7 +97,7 @@ public class PropertyDescriptorImpl implements PropertyDescriptor {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.PropertyDescriptor#getName()
+     * @see org.komodo.core.repository.PropertyDescriptor#getName()
      */
     @Override
     public String getName() {
@@ -109,7 +107,7 @@ public class PropertyDescriptorImpl implements PropertyDescriptor {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.PropertyDescriptor#getType()
+     * @see org.komodo.core.repository.PropertyDescriptor#getType()
      */
     @Override
     public PropertyValueType getType() {
@@ -119,7 +117,7 @@ public class PropertyDescriptorImpl implements PropertyDescriptor {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.PropertyDescriptor#isMandatory()
+     * @see org.komodo.core.repository.PropertyDescriptor#isMandatory()
      */
     @Override
     public boolean isMandatory() {
@@ -129,7 +127,7 @@ public class PropertyDescriptorImpl implements PropertyDescriptor {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.PropertyDescriptor#isModifiable()
+     * @see org.komodo.core.repository.PropertyDescriptor#isModifiable()
      */
     @Override
     public boolean isModifiable() {
@@ -139,7 +137,7 @@ public class PropertyDescriptorImpl implements PropertyDescriptor {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.PropertyDescriptor#isMultiple()
+     * @see org.komodo.core.repository.PropertyDescriptor#isMultiple()
      */
     @Override
     public boolean isMultiple() {

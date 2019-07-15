@@ -42,16 +42,11 @@ public interface UniqueConstraint extends TableConstraint {
     ConstraintType CONSTRAINT_TYPE = ConstraintType.UNIQUE;
 
     /**
-     * An empty collection of unique constraints.
-     */
-    UniqueConstraint[] NO_UNIQUE_CONSTRAINTS = new UniqueConstraint[0];
-
-    /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KNode#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.KNode#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    Table getParent( final UnitOfWork transaction ) throws KException;
+    Table getRelationalParent( final UnitOfWork transaction ) throws KException;
 
 }

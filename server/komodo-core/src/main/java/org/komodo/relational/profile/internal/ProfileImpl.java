@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.komodo.core.KomodoLexicon;
 import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.Messages;
@@ -32,7 +33,6 @@ import org.komodo.relational.internal.TypeResolver;
 import org.komodo.relational.profile.Profile;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWork.State;
@@ -42,6 +42,11 @@ import org.komodo.utils.ArgCheck;
  * An implementation of an user profile.
  */
 public class ProfileImpl extends RelationalObjectImpl implements Profile {
+	
+	/**
+     * An empty array of view editor states.
+     */
+    final static ViewEditorStateImpl[] NO_VIEW_EDITOR_STATES = new ViewEditorStateImpl[0];
 	
     /**
      * The resolver of a {@link Profile}.
@@ -72,7 +77,7 @@ public class ProfileImpl extends RelationalObjectImpl implements Profile {
          * {@inheritDoc}
          *
          * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
+         *      org.komodo.core.repository.KomodoObject)
          */
         @Override
         public boolean resolvable( final UnitOfWork transaction,
@@ -84,7 +89,7 @@ public class ProfileImpl extends RelationalObjectImpl implements Profile {
          * {@inheritDoc}
          *
          * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
+         *      org.komodo.core.repository.KomodoObject)
          */
         @Override
         public ProfileImpl resolve( final UnitOfWork transaction,
@@ -172,7 +177,7 @@ public class ProfileImpl extends RelationalObjectImpl implements Profile {
     }
 
     @Override
-    public ViewEditorState addViewEditorState(UnitOfWork transaction, String stateId) throws KException {
+    public ViewEditorStateImpl addViewEditorState(UnitOfWork transaction, String stateId) throws KException {
         // first delete if already exists
         if ( getViewEditorStates( transaction, stateId ).length != 0 ) {
             removeViewEditorState( transaction, stateId );
@@ -196,24 +201,24 @@ public class ProfileImpl extends RelationalObjectImpl implements Profile {
     }
 
     @Override
-    public ViewEditorState[] getViewEditorStates(UnitOfWork transaction, String... namePatterns) throws KException {
+    public ViewEditorStateImpl[] getViewEditorStates(UnitOfWork transaction, String... namePatterns) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         final KomodoObject grouping = getViewEditorStatesGroupingNode( transaction);
 
         if ( grouping != null ) {
-            final List< ViewEditorState > temp = new ArrayList<>();
+            final List< ViewEditorStateImpl > temp = new ArrayList<>();
 
             for ( final KomodoObject kobject : grouping.getChildren( transaction, namePatterns ) ) {
-                final ViewEditorState gitRepo = new ViewEditorStateImpl( transaction, getRepository(), kobject.getAbsolutePath() );
+                final ViewEditorStateImpl gitRepo = new ViewEditorStateImpl( transaction, getRepository(), kobject.getAbsolutePath() );
                 temp.add( gitRepo );
             }
 
-            return temp.toArray( new ViewEditorState[ temp.size() ] );
+            return temp.toArray( new ViewEditorStateImpl[ temp.size() ] );
         }
 
-        return ViewEditorState.NO_VIEW_EDITOR_STATES;
+        return NO_VIEW_EDITOR_STATES;
     }
 
     @Override
@@ -222,7 +227,7 @@ public class ProfileImpl extends RelationalObjectImpl implements Profile {
         ArgCheck.isTrue((transaction.getState() == State.NOT_STARTED), "transaction state is not NOT_STARTED"); //$NON-NLS-1$
         ArgCheck.isNotEmpty(viewEditorStateId, "viewEditorStateId"); //$NON-NLS-1$
 
-        final ViewEditorState[] states = getViewEditorStates(transaction, viewEditorStateId);
+        final ViewEditorStateImpl[] states = getViewEditorStates(transaction, viewEditorStateId);
 
         if (states.length == 0) {
             throw new KException(Messages.getString(Relational.VIEW_EDITOR_STATE_NOT_FOUND_TO_REMOVE, viewEditorStateId));

@@ -108,8 +108,8 @@ public final class RestDataservice extends RestBasicEntity {
         
         setId(dataService.getName(uow));
         setDataPath(dataService.getAbsolutePath());
-        setkType(dataService.getTypeIdentifier(uow));
-        setHasChildren(dataService.hasChildren(uow));
+        setkType(Dataservice.IDENTIFIER);
+        
 
         setDescription(dataService.getDescription(uow));
 
@@ -123,7 +123,12 @@ public final class RestDataservice extends RestBasicEntity {
             setServiceVdbVersion(Integer.toString(serviceVdb.getVersion( uow )));
             setServiceViewModel(dataService.getServiceViewModelName(uow));
             setViewDefinitionNames(dataService.getViewDefinitionNames(uow));
+            setHasChildren(true);
+        } else {
+        	setHasChildren(false);
         }
+        
+        
 
         // Initialize the published state to NOTFOUND
         setPublishedState(BuildStatus.Status.NOTFOUND.name());

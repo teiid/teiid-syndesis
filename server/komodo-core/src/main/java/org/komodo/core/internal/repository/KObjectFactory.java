@@ -19,14 +19,15 @@ package org.komodo.core.internal.repository;
 
 import java.util.Collection;
 
+import org.komodo.core.repository.Descriptor;
 import org.komodo.core.repository.KPropertyFactory;
+import org.komodo.core.repository.KomodoObject;
+import org.komodo.core.repository.Property;
+import org.komodo.core.repository.PropertyDescriptor;
+import org.komodo.core.repository.RepositoryConstants;
+import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
-import org.komodo.spi.repository.Descriptor;
-import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.repository.Property;
-import org.komodo.spi.repository.PropertyDescriptor;
-import org.komodo.spi.repository.RepositoryConstants;
 import org.komodo.spi.repository.UnitOfWork;
 
 public interface KObjectFactory extends StringConstants, RepositoryConstants {
@@ -75,6 +76,8 @@ public interface KObjectFactory extends StringConstants, RepositoryConstants {
      * @throws KException 
      */
     Property getId(UnitOfWork transaction, KomodoObject kObject) throws KException;
+    
+    Property getId(UnitOfWork transaction, RelationalObject kObject) throws KException;
 
     /**
      * @param transaction

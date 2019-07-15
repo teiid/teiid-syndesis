@@ -26,6 +26,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.importer.AbstractImporter;
 import org.komodo.importer.ImportMessages;
 import org.komodo.importer.ImportOptions;
@@ -33,10 +34,9 @@ import org.komodo.importer.ImportOptions.ExistingNodeOptions;
 import org.komodo.importer.ImportOptions.OptionKeys;
 import org.komodo.importer.ImportType;
 import org.komodo.importer.Messages;
-import org.komodo.relational.vdb.Vdb;
+import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.relational.workspace.WorkspaceManagerImpl;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
@@ -69,7 +69,7 @@ public class VdbImporter extends AbstractImporter {
         String vdbName = importOptions.getOption(OptionKeys.NAME).toString();
         String vdbFilePath = importOptions.getOption(OptionKeys.VDB_FILE_PATH).toString();
 
-        Vdb vdb = getWorkspaceManager(transaction).createVdb(transaction, parentObject, vdbName, vdbFilePath);
+        VdbImpl vdb = getWorkspaceManager(transaction).createVdb(transaction, parentObject, vdbName, vdbFilePath);
         KomodoObject fileNode = vdb.addChild(transaction, JcrConstants.JCR_CONTENT, null);
         fileNode.setProperty(transaction, JcrConstants.JCR_DATA, content);
     }

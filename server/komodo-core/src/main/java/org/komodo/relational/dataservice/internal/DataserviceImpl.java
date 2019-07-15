@@ -22,7 +22,9 @@ import java.util.Calendar;
 import java.util.List;
 
 import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.ObjectImpl;
+import org.komodo.core.repository.PropertyValueType;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.Messages;
 import org.komodo.relational.dataservice.Dataservice;
@@ -32,16 +34,15 @@ import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.internal.TypeResolver;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Model.Type;
-import org.komodo.relational.profile.Profile;
+import org.komodo.relational.model.internal.ModelImpl;
 import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.relational.profile.ViewEditorState;
+import org.komodo.relational.profile.internal.ProfileImpl;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.relational.workspace.WorkspaceManagerImpl;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.PropertyValueType;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
@@ -51,6 +52,11 @@ import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;
  * Implementation of data service instance model.
  */
 public class DataserviceImpl extends RelationalObjectImpl implements Dataservice {
+	
+    /**
+     * An empty collection of VDB entries.
+     */
+    KomodoObject[] NO_ENTRIES = new KomodoObject[ 0 ];
 	
     /**
      * The resolver of a {@link Dataservice}.
@@ -81,7 +87,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
          * {@inheritDoc}
          *
          * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
+         *      org.komodo.core.repository.KomodoObject)
          */
         @Override
         public boolean resolvable( final UnitOfWork transaction,
@@ -95,7 +101,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
          * {@inheritDoc}
          *
          * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.spi.repository.KomodoObject)
+         *      org.komodo.core.repository.KomodoObject)
          */
         @Override
         public DataserviceImpl resolve( final UnitOfWork transaction,
@@ -152,10 +158,10 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
      *      java.lang.String)
      */
     @Override
-    public ServiceVdbEntry getChild( final UnitOfWork transaction,
+    public ServiceVdbEntryImpl getChild( final UnitOfWork transaction,
                                            final String name ) throws KException {
         // check service VDB
-        final ServiceVdbEntry entry = getServiceVdbEntry( transaction );
+        final ServiceVdbEntryImpl entry = getServiceVdbEntry( transaction );
 
         if ( ( entry != null ) && name.equals( entry.getName( transaction ) ) ) {
             return entry;
@@ -199,14 +205,14 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
      *      java.lang.String[])
      */
     @Override
-    public ServiceVdbEntry[] getChildren( final UnitOfWork transaction,
+    public KomodoObject[] getChildren( final UnitOfWork transaction,
                                                 final String... namePatterns ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
-        final ServiceVdbEntry serviceVdb = getServiceVdbEntry( transaction );
+        final ServiceVdbEntryImpl serviceVdb = getServiceVdbEntry( transaction );
 
-        final ServiceVdbEntry[] result = new ServiceVdbEntry[ ( ( serviceVdb == null ) ? 0 : 1 )];
+        final KomodoObject[] result = new KomodoObject[ ( ( serviceVdb == null ) ? 0 : 1 )];
 
         if ( serviceVdb != null ) {
             result[ result.length - 1 ] = serviceVdb;
@@ -222,23 +228,23 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
      *      java.lang.String, java.lang.String[])
      */
     @Override
-    public ServiceVdbEntry[] getChildrenOfType( final UnitOfWork transaction,
+    public KomodoObject[] getChildrenOfType( final UnitOfWork transaction,
                                                       final String type,
                                                       final String... namePatterns ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         if ( DataVirtLexicon.ServiceVdbEntry.NODE_TYPE.equals( type ) ) {
-            final ServiceVdbEntry entry = getServiceVdbEntry( transaction );
+            final ServiceVdbEntryImpl entry = getServiceVdbEntry( transaction );
 
             if ( entry == null ) {
-                return ServiceVdbEntry.NO_ENTRIES;
+                return NO_ENTRIES;
             }
 
-            return new ServiceVdbEntry[] { entry };
+            return new KomodoObject[] { entry };
         }
 
-        return ServiceVdbEntry.NO_ENTRIES;
+        return NO_ENTRIES;
     }
 
     /**
@@ -297,8 +303,8 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
      * @see org.komodo.relational.dataservice.Dataservice#getServiceVdb(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public Vdb getServiceVdb( final UnitOfWork transaction ) throws KException {
-        final ServiceVdbEntry entry = getServiceVdbEntry( transaction );
+    public VdbImpl getServiceVdb( final UnitOfWork transaction ) throws KException {
+        final ServiceVdbEntryImpl entry = getServiceVdbEntry( transaction );
         return ( ( entry == null ) ? null : entry.getReference( transaction ) );
     }
 
@@ -318,10 +324,10 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
         String viewModelName = null;
         // Only ONE virtual model should exist in the dataservice vdb.
         // The returned view model is the first virtual model found - or null if none found.
-        Vdb serviceVdb = getServiceVdb(uow);
+        VdbImpl serviceVdb = getServiceVdb(uow);
         if( serviceVdb != null ) {
-            Model[] models = serviceVdb.getModels(uow);
-            for(Model model : models) {
+            ModelImpl[] models = serviceVdb.getModels(uow);
+            for(ModelImpl model : models) {
                 Model.Type modelType = model.getModelType(uow);
                 if(modelType == Type.VIRTUAL) {
                     viewModelName = model.getName(uow);
@@ -434,17 +440,10 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
                            DataVirtLexicon.DataService.MODIFIED_BY,
                            newModifiedBy );
     }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.dataservice.Dataservice#setServiceVdb(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      org.komodo.relational.vdb.Vdb)
-     */
+    
     @Override
-    public Vdb setServiceVdb( final UnitOfWork uow,
-                              final Vdb serviceVdb ) throws KException {
-        Vdb oldServiceVdb = null;
+    public VdbImpl setServiceVdb(UnitOfWork uow, Vdb serviceVdb) throws KException {
+        VdbImpl oldServiceVdb = null;
         final KomodoObject[] kobjects = getChildrenOfType( uow, DataVirtLexicon.ServiceVdbEntry.NODE_TYPE );
 
         if ( kobjects.length != 0 ) {
@@ -464,7 +463,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
 
         // add new service VDB if necessary
         if ( serviceVdb != null ) {
-            final ServiceVdbEntry entry = RelationalModelFactory.createServiceVdbEntry( uow,
+            final ServiceVdbEntryImpl entry = RelationalModelFactory.createServiceVdbEntry( uow,
                                                                                         getRepository(),
                                                                                         this,
                                                                                         serviceVdb.getName( uow ) );
@@ -477,7 +476,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
     }
 
     /**
-     *  get the ViewDefinition names for the dataservice
+     *  get the ViewDefinitionImpl names for the dataservice
      */
     private String[] getViewDefnNames( final UnitOfWork uow ) throws KException {
         ArgCheck.isNotNull( uow, "transaction" ); //$NON-NLS-1$
@@ -486,7 +485,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
         KomodoObject userProfileObj = getRepository().komodoProfile(uow);
         WorkspaceManagerImpl wkspMgr = WorkspaceManagerImpl.getInstance(getRepository(), uow);
         
-        Profile userProfile = wkspMgr.resolve(uow, userProfileObj, Profile.class);
+        ProfileImpl userProfile = wkspMgr.resolve(uow, userProfileObj, ProfileImpl.class);
         ViewEditorState[] editorStates = null;
         if (userProfile != null) {
         	String svcVdbName = this.getServiceVdb(uow).getName(uow).toLowerCase();

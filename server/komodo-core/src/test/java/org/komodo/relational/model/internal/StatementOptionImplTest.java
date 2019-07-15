@@ -27,8 +27,6 @@ import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.internal.RelationalObjectImpl.Filter;
-import org.komodo.relational.model.StatementOption;
-import org.komodo.relational.model.Table;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.KomodoType;
@@ -39,11 +37,11 @@ public final class StatementOptionImplTest extends RelationalModelTest {
 
     private static final String NAME = "statementoption";
 
-    private StatementOption option;
+    private StatementOptionImpl option;
 
     @Before
     public void init() throws Exception {
-        final Table table = createTable();
+        final TableImpl table = createTable();
         this.option = RelationalModelFactory.createStatementOption( getTransaction(), _repo, table, NAME, "initialValue" );
         commit();
     }

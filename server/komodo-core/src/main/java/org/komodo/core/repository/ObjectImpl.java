@@ -30,14 +30,7 @@ import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.KomodoTypeRegistry.TypeIdentifier;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
-import org.komodo.spi.repository.Descriptor;
-import org.komodo.spi.repository.KomodoObject;
-import org.komodo.spi.repository.KomodoObjectVisitor;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.OperationType;
-import org.komodo.spi.repository.Property;
-import org.komodo.spi.repository.PropertyDescriptor;
-import org.komodo.spi.repository.PropertyValueType;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
@@ -204,7 +197,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#isChildRestricted()
+     * @see org.komodo.core.repository.KomodoObject#isChildRestricted()
      */
     @Override
     public boolean isChildRestricted() {
@@ -214,7 +207,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#addChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
+     * @see org.komodo.core.repository.KomodoObject#addChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
      *      java.lang.String)
      */
     @Override
@@ -252,7 +245,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#addDescriptor(org.komodo.spi.repository.Repository.UnitOfWork,
+     * @see org.komodo.core.repository.KomodoObject#addDescriptor(org.komodo.spi.repository.Repository.UnitOfWork,
      *      java.lang.String[])
      */
     @Override
@@ -294,7 +287,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KNode#getAbsolutePath()
+     * @see org.komodo.core.repository.KNode#getAbsolutePath()
      */
     @Override
     public String getAbsolutePath() {
@@ -304,7 +297,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#getChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.core.repository.KomodoObject#getChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
     public KomodoObject getChild( final UnitOfWork transaction,
@@ -327,7 +320,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#getChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
+     * @see org.komodo.core.repository.KomodoObject#getChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
      *      java.lang.String)
      */
     @Override
@@ -368,7 +361,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#getChildren(org.komodo.spi.repository.Repository.UnitOfWork,
+     * @see org.komodo.core.repository.KomodoObject#getChildren(org.komodo.spi.repository.Repository.UnitOfWork,
      *      java.lang.String[])
      */
     @Override
@@ -384,7 +377,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#getChildrenOfType(org.komodo.spi.repository.Repository.UnitOfWork,
+     * @see org.komodo.core.repository.KomodoObject#getChildrenOfType(org.komodo.spi.repository.Repository.UnitOfWork,
      *      java.lang.String, java.lang.String[])
      */
     @Override
@@ -420,7 +413,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#getChildTypes()
+     * @see org.komodo.core.repository.KomodoObject#getChildTypes()
      */
     @Override
     public KomodoType[] getChildTypes() {
@@ -430,7 +423,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#getDescriptor(org.komodo.spi.repository.Repository.UnitOfWork,
+     * @see org.komodo.core.repository.KomodoObject#getDescriptor(org.komodo.spi.repository.Repository.UnitOfWork,
      *      java.lang.String)
      */
     @Override
@@ -453,7 +446,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#getDescriptors(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.KomodoObject#getDescriptors(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public Descriptor[] getDescriptors( final UnitOfWork transaction ) throws KException {
@@ -467,7 +460,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#getIndex()
+     * @see org.komodo.core.repository.KomodoObject#getIndex()
      */
     @Override
     public int getIndex() {
@@ -477,7 +470,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KNode#getName(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.KNode#getName(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public String getName( final UnitOfWork transaction ) throws KException {
@@ -497,7 +490,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KNode#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.KNode#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public KomodoObject getParent( final UnitOfWork transaction ) throws KException {
@@ -507,7 +500,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#getPrimaryType(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.KomodoObject#getPrimaryType(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public Descriptor getPrimaryType( final UnitOfWork transaction ) throws KException {
@@ -585,7 +578,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#getProperty(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.core.repository.KomodoObject#getProperty(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
     public Property getProperty( final UnitOfWork transaction,
@@ -601,7 +594,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#getPropertyDescriptors(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.KomodoObject#getPropertyDescriptors(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public PropertyDescriptor[] getPropertyDescriptors( final UnitOfWork transaction ) throws KException {
@@ -612,7 +605,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#getPropertyNames(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.KomodoObject#getPropertyNames(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public String[] getPropertyNames( final UnitOfWork transaction ) throws KException {
@@ -623,7 +616,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#getRawChildren(org.komodo.spi.repository.Repository.UnitOfWork,
+     * @see org.komodo.core.repository.KomodoObject#getRawChildren(org.komodo.spi.repository.Repository.UnitOfWork,
      *      java.lang.String[])
      */
     @Override
@@ -645,7 +638,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#getRawDescriptors(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.KomodoObject#getRawDescriptors(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public final Descriptor[] getRawDescriptors( final UnitOfWork transaction ) throws KException {
@@ -665,7 +658,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#getRawParent(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.KomodoObject#getRawParent(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public final KomodoObject getRawParent( final UnitOfWork transaction ) throws KException {
@@ -688,7 +681,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#getRawProperty(org.komodo.spi.repository.Repository.UnitOfWork,
+     * @see org.komodo.core.repository.KomodoObject#getRawProperty(org.komodo.spi.repository.Repository.UnitOfWork,
      *      java.lang.String)
      */
     @Override
@@ -717,7 +710,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#getRawPropertyDescriptors(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.KomodoObject#getRawPropertyDescriptors(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public final PropertyDescriptor[] getRawPropertyDescriptors( final UnitOfWork transaction ) throws KException {
@@ -742,7 +735,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#getRawPropertyNames(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.KomodoObject#getRawPropertyNames(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public final String[] getRawPropertyNames( final UnitOfWork transaction ) throws KException {
@@ -766,7 +759,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KNode#getRepository()
+     * @see org.komodo.core.repository.KNode#getRepository()
      */
     public Repository getRepository() {
         return this.repository;
@@ -775,7 +768,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#getTypeId()
+     * @see org.komodo.core.repository.KomodoObject#getTypeId()
      */
     @Override
     public int getTypeId() {
@@ -785,7 +778,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#getTypeIdentifier(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.KomodoObject#getTypeIdentifier(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public KomodoType getTypeIdentifier( final UnitOfWork transaction ) throws KException {
@@ -872,7 +865,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#hasChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.core.repository.KomodoObject#hasChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
     public boolean hasChild( final UnitOfWork transaction,
@@ -883,7 +876,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#hasChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
+     * @see org.komodo.core.repository.KomodoObject#hasChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
      *      java.lang.String)
      */
     @Override
@@ -896,7 +889,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#hasChildren(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.KomodoObject#hasChildren(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public boolean hasChildren( final UnitOfWork transaction ) throws KException {
@@ -906,7 +899,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#hasDescriptor(org.komodo.spi.repository.Repository.UnitOfWork,
+     * @see org.komodo.core.repository.KomodoObject#hasDescriptor(org.komodo.spi.repository.Repository.UnitOfWork,
      *      java.lang.String)
      */
     @Override
@@ -942,7 +935,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#hasProperties(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.KomodoObject#hasProperties(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public boolean hasProperties( final UnitOfWork transaction ) throws KException {
@@ -952,7 +945,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#hasProperty(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.core.repository.KomodoObject#hasProperty(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
     public boolean hasProperty( final UnitOfWork transaction,
@@ -963,7 +956,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#hasRawChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.core.repository.KomodoObject#hasRawChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
     public final boolean hasRawChild( final UnitOfWork transaction,
@@ -984,7 +977,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#hasRawChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
+     * @see org.komodo.core.repository.KomodoObject#hasRawChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
      *      java.lang.String)
      */
     @Override
@@ -1017,7 +1010,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#hasRawChildren(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.KomodoObject#hasRawChildren(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public final boolean hasRawChildren( UnitOfWork transaction ) throws KException {
@@ -1036,7 +1029,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#hasRawProperty(org.komodo.spi.repository.Repository.UnitOfWork,
+     * @see org.komodo.core.repository.KomodoObject#hasRawProperty(org.komodo.spi.repository.Repository.UnitOfWork,
      *      java.lang.String)
      */
     @Override
@@ -1062,7 +1055,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#print(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.KomodoObject#print(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public void print( final UnitOfWork transaction ) throws KException {
@@ -1081,7 +1074,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#remove(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.KomodoObject#remove(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
     public void remove( final UnitOfWork transaction ) throws KException {
@@ -1104,7 +1097,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#removeChild(org.komodo.spi.repository.Repository.UnitOfWork,
+     * @see org.komodo.core.repository.KomodoObject#removeChild(org.komodo.spi.repository.Repository.UnitOfWork,
      *      java.lang.String[])
      */
     @Override
@@ -1139,7 +1132,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#rename(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.core.repository.KomodoObject#rename(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
     public void rename( final UnitOfWork transaction,
@@ -1179,7 +1172,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#setPrimaryType(org.komodo.spi.repository.Repository.UnitOfWork,
+     * @see org.komodo.core.repository.KomodoObject#setPrimaryType(org.komodo.spi.repository.Repository.UnitOfWork,
      *      java.lang.String)
      */
     @Override
@@ -1233,7 +1226,7 @@ public class ObjectImpl implements KomodoObject, StringConstants {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.spi.repository.KomodoObject#setProperty(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
+     * @see org.komodo.core.repository.KomodoObject#setProperty(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
      *      java.lang.Object[])
      */
     @Override

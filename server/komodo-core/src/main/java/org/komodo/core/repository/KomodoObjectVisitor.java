@@ -15,27 +15,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.spi.repository;
+package org.komodo.core.repository;
 
-import org.komodo.spi.KException;
+import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
 
 /**
- * A {@link KomodoObject Komodo object} type definition.
+ *
  */
-public interface Descriptor {
+public interface KomodoObjectVisitor {
 
     /**
-     * @return the type name (never empty)
+     * @return whether this visitor is to be used for writing to the
+     *                  artifacts it visits or only reading them
      */
-    String getName();
+    OperationType getRequestType();
 
     /**
+     * Visit the given object
+     *
      * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
-     * @return the {@link KomodoObject Komodo object's} {@link Property property} {@link PropertyDescriptor descriptors} (never
-     *         <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
+     *        the transaction (cannot be <code>null</code> or have a state that is not
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
+     * @param object the object to be visited
+     * @return an object according to implementation
+     * @throws Exception if error in visiting occurs
      */
-    PropertyDescriptor[] getPropertyDescriptors( final UnitOfWork transaction ) throws KException;
+    Object visit(UnitOfWork transaction,
+                 KomodoObject object) throws Exception;
+
 }

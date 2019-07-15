@@ -41,11 +41,6 @@ public interface Dataservice extends RelationalObject {
     KomodoType IDENTIFIER = KomodoType.DATASERVICE;
 
     /**
-     * An empty array of Dataservices.
-     */
-    Dataservice[] NO_DATASERVICES = new Dataservice[ 0 ];
-
-    /**
      * @param uow
      *        the transaction (cannot be <code>null</code> and must have a state of
      *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
@@ -97,20 +92,6 @@ public interface Dataservice extends RelationalObject {
      *         if an error occurs
      */
     String getServiceViewModelName( UnitOfWork uow ) throws KException;
-
-    ServiceVdbEntry getChild( final UnitOfWork transaction,
-                                    final String name ) throws KException;
-
-    ServiceVdbEntry getChild( final UnitOfWork transaction,
-                                    final String name,
-                                    final String typeName ) throws KException;
-
-    ServiceVdbEntry[] getChildren( final UnitOfWork transaction,
-                                         final String... namePatterns ) throws KException;
-
-    ServiceVdbEntry[] getChildrenOfType( final UnitOfWork transaction,
-                                               final String type,
-                                               final String... namePatterns ) throws KException;
 
     /**
      * @param transaction
@@ -174,5 +155,11 @@ public interface Dataservice extends RelationalObject {
      */
     void setModifiedBy( final UnitOfWork transaction,
                         final String newModifiedBy ) throws KException;
+    
+    /**
+     * TODO: understand if this path abstraction is needed
+     * @return
+     */
+    String getAbsolutePath();
 
 }

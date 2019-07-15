@@ -57,9 +57,9 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
+import org.komodo.core.repository.KomodoObject;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
-import org.komodo.spi.repository.KomodoObject;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.FileUtils;
@@ -87,7 +87,7 @@ public class TestUtilities implements StringConstants {
     public static final String RESOURCES_DIRECTORY = convertPackageToDirPath(TestUtilities.class.getPackage());
 
     /**
-     * Teiid Vdb Schema xsd
+     * Teiid VdbImpl Schema xsd
      */
     public static final String TEIID_VDB_XSD = "teiid-vdb.xsd";
 
@@ -155,7 +155,7 @@ public class TestUtilities implements StringConstants {
                             "CREATE VIEW Tweet AS select * FROM twitterview.getTweets;";
 
     /**
-     * Dataservice vdb
+     * DataserviceImpl vdb
      */
     public static final String DATASERVICE_VDB_FILE = "myService-vdb.xml";
 
@@ -170,62 +170,62 @@ public class TestUtilities implements StringConstants {
     public static final String SAMPLE_DATA_SERVICE_NAME = "MyDataService";
 
     /**
-     * DSB Single Source Parts Dataservice Zip
+     * DSB Single Source Parts DataserviceImpl Zip
      */
     public static final String PARTS_SINGLE_SOURCE_FILE = "PartsSingleSource.zip";
 
     /**
-     * DSB Join With different table names Dataservice Zip
+     * DSB Join With different table names DataserviceImpl Zip
      */
     public static final String JOIN_DIFFERENT_TABLE_NAMES_FILE = "JoinServiceDifferentTableNames.zip";
 
     /**
-     * DSB Join With same table names Dataservice Zip
+     * DSB Join With same table names DataserviceImpl Zip
      */
     public static final String JOIN_SAME_TABLE_NAMES_FILE = "JoinServiceSameTableNames.zip";
 
     /**
-     * US States Dataservice Example Zip
+     * US States DataserviceImpl Example Zip
      */
     public static final String US_STATES_SQL_FILE = "usstates.sql";
 
     /**
-     * US States Dataservice Example Zip
+     * US States DataserviceImpl Example Zip
      */
     public static final String US_STATES_DATASERVICE_TEIID_FILE = "usstates-dataservice.zip";
 
     /**
-     * US States Dataservice name
+     * US States DataserviceImpl name
      */
     public static final String US_STATES_DATA_SERVICE_NAME = "UsStatesService";
 
     /**
-     * US States Dataservice Example vdb name
+     * US States DataserviceImpl Example vdb name
      */
     public static final String US_STATES_VDB_NAME = "usstates";
 
     /**
-     * US States Dataservice Example data source name
+     * US States DataserviceImpl Example data source name
      */
     public static final String US_STATES_DATA_SOURCE_NAME = "MySqlDS";
 
     /**
-     * US States Dataservice Example data source name
+     * US States DataserviceImpl Example data source name
      */
     public static final String US_STATES_DRIVER_NAME = "mysql-connector-java-5.1.39-bin.jar";
 
     /**
-     * Parts Single source Dataservice name
+     * Parts Single source DataserviceImpl name
      */
     public static final String PARTS_SINGLE_SOURCE_SERVICE_NAME = "PartsSingleSource";
 
     /**
-     * Join different table names Dataservice name
+     * Join different table names DataserviceImpl name
      */
     public static final String JOIN_DIFFERENT_TABLE_NAMES_SERVICE_NAME = "JoinServiceDifferentTableNames";
 
     /**
-     * Join same table names Dataservice name
+     * Join same table names DataserviceImpl name
      */
     public static final String JOIN_SAME_TABLE_NAMES_SERVICE_NAME = "JoinServiceSameTableNames";
 
