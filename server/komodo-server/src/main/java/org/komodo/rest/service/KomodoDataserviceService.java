@@ -32,6 +32,7 @@ import java.util.List;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -681,5 +682,91 @@ public final class KomodoDataserviceService extends KomodoService
             }
     	}
     	return odataHost;
+    }
+
+    /**
+     * Update the specified Dataservice from the komodo repository
+     *
+     * @param headers         the request headers (never <code>null</code>)
+     * @param uriInfo         the request URI information (never <code>null</code>)
+     * @param dataserviceName the dataservice name (cannot be empty)
+     * @param dataserviceJson the dataservice JSON representation (cannot be
+     *                        <code>null</code>)
+     * @return a JSON representation of the new connection (never <code>null</code>)
+     * @throws KomodoRestException if there is an error creating the Connection
+     */
+    @PUT
+    @Path(FORWARD_SLASH + V1Constants.DATA_SERVICE_PLACEHOLDER)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Update data service")
+    @ApiResponses(value = { @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
+            @ApiResponse(code = 403, message = "An error has occurred.") })
+    public Response updateDataservice(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
+            @ApiParam(value = "Name of the data service", required = true) final @PathParam("dataserviceName") String dataserviceName,
+            @ApiParam(value = "" + "JSON of the properties of the new data service:<br>" + OPEN_PRE_TAG + OPEN_BRACE
+                    + BR + NBSP + "keng\\_\\_id: \"id of the data service\"" + COMMA + BR + NBSP + OPEN_PRE_CMT
+                    + "(identical to dataserviceName parameter)" + CLOSE_PRE_CMT + BR + BR + NBSP
+                    + "keng\\_\\_dataPath: \"path of dataservice\"" + COMMA + BR + NBSP
+                    + "tko__description: \"the description\"" + BR + CLOSE_BRACE
+                    + CLOSE_PRE_TAG, required = true) final String dataserviceJson)
+            throws KomodoRestException {
+
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        if (!isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
+            return notAcceptableMediaTypesBuilder().build();
+
+        // Error if the dataservice name is missing
+        if (StringUtils.isBlank(dataserviceName)) {
+            return createErrorResponseWithForbidden(mediaTypes,
+                    RelationalMessages.Error.DATASERVICE_SERVICE_UPDATE_MISSING_NAME);
+        }
+
+        final RestDataservice restDataservice = KomodoJsonMarshaller.unmarshall(dataserviceJson, RestDataservice.class);
+        final String jsonDataserviceName = restDataservice.getId();
+        // Error if the name is missing from the supplied json body
+        if (StringUtils.isBlank(jsonDataserviceName)) {
+            return createErrorResponseWithForbidden(mediaTypes,
+                    RelationalMessages.Error.DATASERVICE_SERVICE_JSON_MISSING_NAME);
+        }
+
+        // Error if the name parameter is different than JSON name
+        final boolean namesMatch = dataserviceName.equals(jsonDataserviceName);
+        if (!namesMatch) {
+            return createErrorResponseWithForbidden(mediaTypes, DATASERVICE_SERVICE_SERVICE_NAME_ERROR, dataserviceName,
+                    jsonDataserviceName);
+        }
+
+        UnitOfWork uow = null;
+
+        try {
+            uow = createTransaction(principal, "updateDataservice", false); //$NON-NLS-1$
+
+            Dataservice dataservice = findDataservice(uow, dataserviceName);
+            if (dataservice == null)
+                return commitNoDataserviceFound(uow, mediaTypes, dataserviceName);
+
+            // Note that intially only the description is available for updating. 
+            dataservice.setDescription(uow, restDataservice.getDescription());
+
+            KomodoStatusObject kso = new KomodoStatusObject("Update Dataservice Status"); //$NON-NLS-1$
+            kso.addAttribute(dataserviceName, "Dataservice successfully updated"); //$NON-NLS-1$
+
+            return commit(uow, mediaTypes, kso);
+        } catch (final Exception e) {
+            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+                uow.rollback();
+            }
+
+            if (e instanceof KomodoRestException) {
+                throw (KomodoRestException) e;
+            }
+
+            return createErrorResponseWithForbidden(mediaTypes, e,
+                    RelationalMessages.Error.DATASERVICE_SERVICE_UPDATE_ERROR, dataserviceName);
+        }
     }
 }

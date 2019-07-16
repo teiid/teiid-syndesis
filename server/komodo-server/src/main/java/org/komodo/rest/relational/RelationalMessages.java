@@ -391,6 +391,12 @@ public final class RelationalMessages {
         DATASERVICE_SERVICE_MISSING_PARAMETER_ERROR,
 
         /**
+         * A message indicating an unexpected error occurred updating data service
+         */
+        DATASERVICE_SERVICE_UPDATE_ERROR,
+
+
+        /**
          * A message indicating that a data service with the given name already exists.
          */
         DATASERVICE_SERVICE_NAME_EXISTS,
