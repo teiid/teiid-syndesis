@@ -207,7 +207,7 @@ public final class ServiceTestUtilities implements StringConstants {
         DataserviceImpl dataservice = wsMgr.createDataservice(uow, wkspace, dataserviceName);
         dataservice.setDescription(uow, "This is my dataservice");
     
-        dataservice.setServiceVdb(uow, nwVdb);
+        dataservice.setServiceVdbName(uow, nwVdb.getVdbName(uow));
 
         uow.commit();
         callback.await(3, TimeUnit.MINUTES);

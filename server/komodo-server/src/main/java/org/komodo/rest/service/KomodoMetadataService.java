@@ -1302,7 +1302,10 @@ public class KomodoMetadataService extends KomodoService {
 		    	return null;
 		    }
 
-		    vdb = dataservice.getServiceVdb(uow);
+		    String name = dataservice.getServiceVdbName(uow);
+		    if (name != null) {
+		    	return findVdb(uow, name);
+		    }
 		}
 		
 		return vdb;
@@ -1522,7 +1525,7 @@ public class KomodoMetadataService extends KomodoService {
      * @param sourceName the source name
      * @return the schema VDB name
      */
-    private String getSchemaVdbName( final String sourceName ) {
+    static String getSchemaVdbName( final String sourceName ) {
         return MessageFormat.format( SCHEMA_VDB_NAME_PATTERN, sourceName.toLowerCase() );
     }
 
@@ -1540,7 +1543,7 @@ public class KomodoMetadataService extends KomodoService {
      * @param sourceName the source name
      * @return the schema VDB model name
      */
-    private String getSchemaModelName( final String sourceName ) {
+    static String getSchemaModelName( final String sourceName ) {
         return MessageFormat.format( SCHEMA_MODEL_NAME_PATTERN, sourceName.toLowerCase() );
     }
     

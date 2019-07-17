@@ -661,4 +661,12 @@ public interface Column extends RelationalObject {
     void setUuid( final UnitOfWork transaction,
                   final String newUuid ) throws KException;
 
+    /**
+     * Get the number or array dimensions or null if this is not an array type
+     * @param uow
+     * @return
+     * @throws KException
+     */
+	Long getArrayDimensions(UnitOfWork uow) throws KException;
+
 }

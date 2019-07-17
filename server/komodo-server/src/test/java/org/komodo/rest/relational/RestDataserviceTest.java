@@ -93,9 +93,9 @@ public final class RestDataserviceTest {
         Mockito.when(theDataservice.getPropertyNames(transaction)).thenReturn(new String[0]);
         Mockito.when(theDataservice.getPropertyDescriptors(transaction)).thenReturn(new PropertyDescriptor[0]);
         Mockito.when(theDataservice.getParent(transaction)).thenReturn(workspace);
-        Mockito.when(theDataservice.getServiceVdb(transaction)).thenReturn(serviceVdb);
+        Mockito.when(theDataservice.getServiceVdbName(transaction)).thenReturn("ServiceVdb");
 
-        this.dataservice = new RestDataservice(BASE_URI, theDataservice, false, transaction);
+        this.dataservice = new RestDataservice(BASE_URI, theDataservice, false, transaction, serviceVdb);
         this.dataservice.setId(DATASERVICE_NAME);
         this.dataservice.setDescription(DESCRIPTION);
         this.dataservice.setServiceVdbName(SERVICE_VDB_NAME);

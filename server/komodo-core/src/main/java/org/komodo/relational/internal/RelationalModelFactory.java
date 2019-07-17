@@ -26,12 +26,10 @@ import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.core.repository.RepositoryTools;
 import org.komodo.relational.RelationalObject;
 import org.komodo.relational.dataservice.internal.DataserviceImpl;
-import org.komodo.relational.dataservice.internal.ServiceVdbEntryImpl;
 import org.komodo.relational.model.ForeignKey;
 import org.komodo.relational.model.PrimaryKey;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.UniqueConstraint;
-import org.komodo.relational.model.View;
 import org.komodo.relational.model.internal.ColumnImpl;
 import org.komodo.relational.model.internal.ForeignKeyImpl;
 import org.komodo.relational.model.internal.ModelImpl;
@@ -284,37 +282,6 @@ public final class RelationalModelFactory {
         kobject.setProperty( transaction, Constraint.TYPE, PrimaryKey.CONSTRAINT_TYPE.toValue() );
 
         final PrimaryKeyImpl result = new PrimaryKeyImpl( transaction, repository, kobject.getAbsolutePath() );
-        return result;
-    }
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of {@link State#NOT_STARTED})
-     * @param repository
-     *        the repository where the model object will be created (cannot be <code>null</code>)
-     * @param dataService
-     *        the data service where the VDB file entry is being created (cannot be <code>null</code>)
-     * @param serviceVdbEntryName
-     *        the name of the service VDB entry to create (cannot be empty)
-     * @return the service VDB entry model object (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    public static ServiceVdbEntryImpl createServiceVdbEntry( final UnitOfWork transaction,
-                                                         final Repository repository,
-                                                         final DataserviceImpl dataService,
-                                                         final String serviceVdbEntryName ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( repository, "repository" ); //$NON-NLS-1$
-        ArgCheck.isNotNull( dataService, "dataService" ); //$NON-NLS-1$
-        ArgCheck.isNotEmpty( serviceVdbEntryName, "serviceVdbEntryName" ); //$NON-NLS-1$
-
-        final KomodoObject kobject = repository.add( transaction,
-                                                     dataService.getAbsolutePath(),
-                                                     serviceVdbEntryName,
-                                                     DataVirtLexicon.ServiceVdbEntry.NODE_TYPE );
-        final ServiceVdbEntryImpl result = new ServiceVdbEntryImpl( transaction, repository, kobject.getAbsolutePath() );
         return result;
     }
 

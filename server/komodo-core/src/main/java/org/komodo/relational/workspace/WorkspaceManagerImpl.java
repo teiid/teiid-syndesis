@@ -35,13 +35,10 @@ import org.komodo.relational.dataservice.internal.DataserviceImpl;
 import org.komodo.relational.internal.AdapterFactory;
 import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
-import org.komodo.relational.internal.ServiceVdbGenerator;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Schema;
 import org.komodo.relational.model.internal.ModelImpl;
-import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.profile.internal.ProfileImpl;
-import org.komodo.relational.profile.internal.ViewEditorStateImpl;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.spi.KException;
@@ -657,11 +654,6 @@ public class WorkspaceManagerImpl extends RelationalObjectImpl implements Relati
         return userProfile;
     }
 
-	@Override
-	public void refreshServiceVdb(UnitOfWork uow, Vdb serviceVdb, ViewEditorState[] editorStates) throws KException {
-		new ServiceVdbGenerator(this).refreshServiceVdb(uow, (VdbImpl)serviceVdb, (ViewEditorStateImpl[])editorStates);
-	}
-	
 	@Override
 	public boolean isSchemaActive(UnitOfWork uow, Model schemaModel) throws KException {
         // if model has children the DDL has been sequenced

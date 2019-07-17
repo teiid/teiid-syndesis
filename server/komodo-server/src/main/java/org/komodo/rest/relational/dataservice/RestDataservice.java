@@ -18,10 +18,18 @@
 package org.komodo.rest.relational.dataservice;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.komodo.openshift.BuildStatus;
+import org.komodo.relational.WorkspaceManager;
 import org.komodo.relational.dataservice.Dataservice;
+import org.komodo.relational.model.Model;
+import org.komodo.relational.model.Model.Type;
+import org.komodo.relational.profile.Profile;
+import org.komodo.relational.profile.ViewDefinition;
+import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.RestBasicEntity;
 import org.komodo.rest.RestLink;
@@ -30,6 +38,8 @@ import org.komodo.rest.relational.KomodoRestUriBuilder.SettingNames;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.State;
+import org.komodo.utils.ArgCheck;
 
 /**
  * A Dataservice that can be used by GSON to build a JSON document representation.
@@ -103,7 +113,7 @@ public final class RestDataservice extends RestBasicEntity {
      *
      * @throws KException if error occurs
      */
-    public RestDataservice(URI baseUri, Dataservice dataService, boolean exportXml, UnitOfWork uow) throws KException {
+    public RestDataservice(URI baseUri, Dataservice dataService, boolean exportXml, UnitOfWork uow, Vdb serviceVdb) throws KException {
         super(baseUri);
         
         setId(dataService.getName(uow));
@@ -115,18 +125,13 @@ public final class RestDataservice extends RestBasicEntity {
         URI parentUri = getUriBuilder().dataserviceParentUri(dataService, uow);
         getUriBuilder().addSetting(settings, SettingNames.DATA_SERVICE_PARENT_PATH, parentUri);
 
-        Vdb serviceVdb = dataService.getServiceVdb(uow);
         if (serviceVdb != null) {
             setServiceVdbName(serviceVdb.getVdbName( uow ));
             setServiceVdbVersion(Integer.toString(serviceVdb.getVersion( uow )));
-            setServiceViewModel(dataService.getServiceViewModelName(uow));
-            setViewDefinitionNames(dataService.getViewDefinitionNames(uow));
             setHasChildren(true);
         } else {
         	setHasChildren(false);
         }
-        
-        
 
         // Initialize the published state to NOTFOUND
         setPublishedState(BuildStatus.Status.NOTFOUND.name());
@@ -268,6 +273,54 @@ public final class RestDataservice extends RestBasicEntity {
      */
     public void setOdataHostName(String odataHostName) {
         tuples.put(DATASERVICE_ODATA_HOST_NAME, odataHostName);
+    }
+    
+    /**
+     * Get the service view name
+     * @param uow
+     * @param serviceVdb
+     * @return
+     * @throws KException
+     */
+    public static String getServiceViewModelName(UnitOfWork uow, Vdb serviceVdb) throws KException {
+        String viewModelName = null;
+        // Only ONE virtual model should exist in the dataservice vdb.
+        // The returned view model is the first virtual model found - or null if none found.
+        if( serviceVdb != null ) {
+            Model[] models = serviceVdb.getModels(uow);
+            for(Model model : models) {
+                Model.Type modelType = model.getModelType(uow);
+                if(modelType == Type.VIRTUAL) {
+                    viewModelName = model.getName(uow);
+                    break;
+                }
+            }
+        }
+        return viewModelName;
+    }
+    
+    /**
+     *  get the ViewDefinitionImpl names for the dataservice
+     */
+    public static String[] getViewDefnNames(final UnitOfWork uow, WorkspaceManager workspaceManager, Vdb serviceVdb) throws KException {
+        ArgCheck.isNotNull( uow, "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( uow.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+
+        Profile userProfile = workspaceManager.getUserProfile(uow);
+        ViewEditorState[] editorStates = null;
+        if (userProfile != null) {
+        	String svcVdbName = serviceVdb.getName(uow).toLowerCase();
+        	String pattern = svcVdbName + "*";
+            editorStates = userProfile.getViewEditorStates(uow, pattern);
+        }
+
+        List<String> viewNames = new ArrayList<String>();
+        for (ViewEditorState editorState: editorStates) {
+        	ViewDefinition viewDefn = editorState.getViewDefinition(uow);
+        	viewNames.add(viewDefn.getViewName(uow));
+        }
+        
+        return viewNames.toArray(new String[0]);
     }
     
 }

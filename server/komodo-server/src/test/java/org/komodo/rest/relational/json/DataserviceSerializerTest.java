@@ -77,9 +77,9 @@ public final class DataserviceSerializerTest extends AbstractSerializerTest  {
         Mockito.when(theService.getPropertyNames(transaction)).thenReturn(new String[0]);
         Mockito.when(theService.getPropertyDescriptors(transaction)).thenReturn(new PropertyDescriptor[0]);
         Mockito.when(theService.getParent(transaction)).thenReturn(workspace);
-        Mockito.when(theService.getServiceVdb(transaction)).thenReturn(serviceVdb);
+        Mockito.when(theService.getServiceVdbName(transaction)).thenReturn("ServiceVdb");
 
-        this.dataservice = new RestDataservice(MY_BASE_URI, theService, false, transaction);
+        this.dataservice = new RestDataservice(MY_BASE_URI, theService, false, transaction, serviceVdb);
         this.dataservice.setDescription(DESCRIPTION);
     }
 

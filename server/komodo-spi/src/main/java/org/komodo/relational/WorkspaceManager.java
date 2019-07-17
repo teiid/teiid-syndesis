@@ -21,7 +21,6 @@ package org.komodo.relational;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.profile.Profile;
-import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.UnitOfWork;
@@ -47,8 +46,6 @@ public interface WorkspaceManager {
 
 
 	Profile getUserProfile(UnitOfWork transaction) throws KException;
-
-	void refreshServiceVdb(UnitOfWork uow, Vdb serviceVdb, ViewEditorState[] editorStates) throws KException;
 
 		
 	boolean isSchemaActive(UnitOfWork uow, Model schemaModel) throws KException;

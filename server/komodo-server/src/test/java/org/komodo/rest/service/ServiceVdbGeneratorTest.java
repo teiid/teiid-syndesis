@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.relational;
+package org.komodo.rest.service;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertNotNull;
@@ -25,15 +25,11 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.komodo.relational.internal.ServiceVdbGenerator;
+import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Model.Type;
 import org.komodo.relational.model.View;
 import org.komodo.relational.model.internal.ModelImpl;
-import org.komodo.relational.profile.SqlComposition;
-import org.komodo.relational.profile.SqlProjectedColumn;
-import org.komodo.relational.profile.ViewDefinition;
-import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.profile.internal.SqlCompositionImpl;
 import org.komodo.relational.profile.internal.SqlProjectedColumnImpl;
 import org.komodo.relational.profile.internal.ViewDefinitionImpl;
@@ -593,7 +589,7 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     	Model[] models = serviceVdb.getModels(getTransaction());
     	
         assertThat(models.length, is(2));
-        ModelImpl viewModel = ServiceVdbGenerator.getViewModel(getTransaction(), serviceVdb);
+        ModelImpl viewModel = (ModelImpl)ServiceVdbGenerator.getViewModel(getTransaction(), serviceVdb);
         assertNotNull(viewModel);
         assertThat(viewModel.getViews(getTransaction()).length, is(1));
     	View view = viewModel.getViews(getTransaction())[0];
@@ -633,7 +629,7 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     	Model[] models = serviceVdb.getModels(getTransaction());
     	
         assertThat(models.length, is(3));
-        ModelImpl viewModel = ServiceVdbGenerator.getViewModel(getTransaction(), serviceVdb);
+        ModelImpl viewModel = (ModelImpl)ServiceVdbGenerator.getViewModel(getTransaction(), serviceVdb);
         assertNotNull(viewModel);
         assertThat(viewModel.getViews(getTransaction()).length, is(1));
     	View view = viewModel.getViews(getTransaction())[0];
