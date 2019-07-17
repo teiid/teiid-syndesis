@@ -396,7 +396,7 @@ public final class KomodoDataserviceService extends KomodoService
                 wkspMgr.deleteVdb(uow, svcVdbObj);
             }
 
-            Vdb serviceVdb = wkspMgr.createVdb(uow, serviceVdbName, serviceVdbName);
+            Vdb serviceVdb = wkspMgr.createVdb(uow, serviceVdbName);
 
             // Add to the ServiceVdb a virtual model for the View
             Model viewModel = serviceVdb.addModel(uow, SERVICE_VDB_VIEW_MODEL);

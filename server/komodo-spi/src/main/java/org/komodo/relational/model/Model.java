@@ -291,4 +291,6 @@ public interface Model extends Exportable, RelationalObject {
     void setVisible( final UnitOfWork transaction,
                      final boolean newVisible ) throws KException;
 
+	View getView(UnitOfWork transaction, String name) throws KException;
+
 }

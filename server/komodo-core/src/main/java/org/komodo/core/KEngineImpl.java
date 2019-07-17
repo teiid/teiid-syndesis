@@ -28,13 +28,11 @@ import java.util.concurrent.TimeUnit;
 
 import org.komodo.core.KEvent.Type;
 import org.komodo.core.internal.repository.Repository;
-import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.RepositoryClientEvent;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
 import org.komodo.metadata.internal.MetadataClientEvent;
-import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.workspace.WorkspaceManagerImpl;
 import org.komodo.spi.KEngine;
 import org.komodo.spi.KException;
@@ -492,13 +490,4 @@ public class KEngineImpl implements KEngine, KObserver, StringConstants {
         return getDefaultRepository().createTransaction(userName, name, rollbackOnly, callback, repoUser);
 	}
 
-	@Override
-	public Dataservice findDataserviceByPath(UnitOfWork uow, String dsPath) throws KException {
-		Repository repo = getDefaultRepository();
-        KomodoObject dsObject = repo.getFromWorkspace(uow, dsPath);
-        if (dsObject == null)
-            return null; // Not a path in the workspace
-
-        return getWorkspaceManager(uow).resolve(uow, dsObject, Dataservice.class);
-	}
 }

@@ -40,7 +40,6 @@ public final class DataserviceSerializerTest extends AbstractSerializerTest  {
     private static final String JSON = OPEN_BRACE + NEW_LINE +
         "  \"" + BASE_URI + "\": \"" + MY_BASE_URI + "\"," + NEW_LINE +
         "  \"keng__id\": \"" + DATASERVICE_NAME + "\"," + NEW_LINE +
-        "  \"keng__dataPath\": \"" + DATASERVICE_DATA_PATH + "\"," + NEW_LINE +
         "  \"keng__kType\": \"Dataservice\"," + NEW_LINE +
         "  \"tko__description\": \"my description\"," + NEW_LINE +
         "  \"serviceVdbVersion\": \"1\"," + NEW_LINE +

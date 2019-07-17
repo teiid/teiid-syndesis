@@ -28,32 +28,29 @@ import org.komodo.spi.repository.UnitOfWork;
 
 public interface WorkspaceManager {
 
+	Vdb createVdb(UnitOfWork uow, String vdbName) throws KException;
+
 	Vdb findVdb(UnitOfWork uow, String vdbName) throws KException;
 
-	Profile getUserProfile(UnitOfWork transaction) throws KException;
+	Vdb[] findVdbs(UnitOfWork uow, String searchPattern) throws KException;
+
+	void deleteVdb(UnitOfWork transaction, Vdb vdb) throws KException;
+	
+
+	Dataservice createDataservice(UnitOfWork uow, String serviceName) throws KException;
 
 	Dataservice findDataservice(UnitOfWork uow, String dataserviceName) throws KException;
 
 	Dataservice[] findDataservices(UnitOfWork uow, String searchPattern) throws KException;
 
-	Vdb[] findVdbs(UnitOfWork uow, String searchPattern) throws KException;
-
-	Vdb[] findVdbs(UnitOfWork uow) throws KException;
-
-	Model findModel(UnitOfWork uow, Vdb vdb, String modelName) throws KException;
-
-	void deleteVdb(UnitOfWork transaction, Vdb vdb) throws KException;
-	
 	void deleteDataservice(UnitOfWork transaction, Dataservice dataservice) throws KException;
 
-	Dataservice createDataservice(UnitOfWork uow, String serviceName) throws KException;
 
-	Vdb createVdb(UnitOfWork uow, String vdbName, String externalFilePath) throws KException;
+	Profile getUserProfile(UnitOfWork transaction) throws KException;
 
 	void refreshServiceVdb(UnitOfWork uow, Vdb serviceVdb, ViewEditorState[] editorStates) throws KException;
 
-	String getKomodoWorkspaceAbsolutePath(UnitOfWork uow) throws KException;
-
+		
 	boolean isSchemaActive(UnitOfWork uow, Model schemaModel) throws KException;
 
 }

@@ -437,6 +437,19 @@ public class ModelImpl extends RelationalObjectImpl implements Model {
 
         return result.toArray( new ViewImpl[ result.size() ] );
     }
+    
+    @Override
+    public ViewImpl getView( final UnitOfWork transaction,
+                            final String name ) throws KException {
+        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        
+        KomodoObject child = super.getChild( transaction, name, CreateTable.VIEW_STATEMENT);
+        if (child != null) {
+            return ViewImpl.RESOLVER.resolve( transaction, child );
+        }
+        return null;
+    }
 
     /**
      * {@inheritDoc}

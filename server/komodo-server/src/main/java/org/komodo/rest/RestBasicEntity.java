@@ -105,21 +105,6 @@ public class RestBasicEntity extends AbstractKEntity {
     }
 
     /**
-     * @return the dataPath
-     */
-    public String getDataPath() {
-        Object path = tuples.get(DATA_PATH);
-        return path != null ? path.toString() : null;
-    }
-
-    /**
-     * @param dataPath the dataPath to set
-     */
-    public void setDataPath(String dataPath) {
-        tuples.put(DATA_PATH, dataPath);
-    }
-
-    /**
      * @return the kType
      */
     public KomodoType getkType() {

@@ -73,7 +73,6 @@ public class KomodoDataserviceServiceTestInSuite extends AbstractKomodoServiceTe
             }
         }
         assertNotNull(myService);
-        assertNotNull(myService.getDataPath());
         assertNotNull(myService.getkType());
 
     }

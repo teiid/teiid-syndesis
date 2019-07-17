@@ -61,7 +61,6 @@ public final class RestDataserviceTest {
         copy.setBaseUri(dataservice.getBaseUri());
         copy.setId(dataservice.getId());
         copy.setDescription(dataservice.getDescription());
-        copy.setDataPath(dataservice.getDataPath());
         copy.setkType(dataservice.getkType());
         copy.setHasChildren(dataservice.hasChildren());
         copy.setLinks(this.dataservice.getLinks());

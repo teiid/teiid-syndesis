@@ -156,10 +156,4 @@ public interface Dataservice extends RelationalObject {
     void setModifiedBy( final UnitOfWork transaction,
                         final String newModifiedBy ) throws KException;
     
-    /**
-     * TODO: understand if this path abstraction is needed
-     * @return
-     */
-    String getAbsolutePath();
-
 }

@@ -427,7 +427,7 @@ public class KomodoMetadataService extends KomodoService {
             
             // if workspace does not have preview vdb, then create it.
             if (previewVdb == null ) {
-            	previewVdb = wMgr.createVdb( uow, vdbName, vdbName );
+            	previewVdb = wMgr.createVdb( uow, vdbName );
             }
 
             // Get the list of current preview VDB import names
@@ -518,18 +518,6 @@ public class KomodoMetadataService extends KomodoService {
         }
     }
 
-    private String extractServiceVdbName(UnitOfWork uow, WorkspaceManager mgr, String dsPath) throws KException {
-    	Dataservice dService = this.kengine.findDataserviceByPath(uow, dsPath);
-        if (dService == null)
-            return null; // Not a data service
-
-        Vdb vdb = dService.getServiceVdb(uow);
-        if (vdb == null)
-            return null;
-
-        return vdb.getVdbName(uow);
-    }
-
     /**
      * Query the teiid server
      * @param headers
@@ -602,22 +590,10 @@ public class KomodoMetadataService extends KomodoService {
 
         try {
             uow = createTransaction(principal, "queryTeiidservice", true); //$NON-NLS-1$
-            WorkspaceManager mgr = getWorkspaceManager(uow);
             String target = kqa.getTarget();
             String query = kqa.getQuery();
 
-            //
-            // Is target a deployed vdb or a dataservice in the workspace that has had its vdbs deployed?
-            //
-            String vdbName = extractServiceVdbName(uow, mgr, target);
-            if (vdbName == null) {
-                //
-                // The target does not reference a data service in the workspace
-                // or the data service has no service vdb. Either way target should
-                // be applied directly to the query.
-                //
-                vdbName = target;
-            }
+            String vdbName = target;
 
             TeiidVdb vdb = getMetadataInstance().getVdb(vdbName);
             if (vdb == null) {
@@ -732,7 +708,7 @@ public class KomodoMetadataService extends KomodoService {
                 if ( schemaVdb == null ) {
                     final WorkspaceManager wkspMgr = getWorkspaceManager( uow );
                     final String schemaVdbName = getSchemaVdbName( syndesisSourceName );
-                    schemaVdb = wkspMgr.createVdb( uow, schemaVdbName, schemaVdbName );
+                    schemaVdb = wkspMgr.createVdb( uow, schemaVdbName );
 
                     // Add schema model to schema vdb
                     schemaModel = addModelToSchemaVdb(uow, schemaVdb, teiidSource, schemaModelName);
@@ -1355,7 +1331,6 @@ public class KomodoMetadataService extends KomodoService {
         
         // VDB is created in the repository.  If it already exists, delete it
         final WorkspaceManager mgr = this.kengine.getWorkspaceManager(uow);
-        String repoPath = mgr.getKomodoWorkspaceAbsolutePath(uow);
         
         final Vdb existingVdb = findVdb( uow, vdbName );
 
@@ -1371,8 +1346,7 @@ public class KomodoMetadataService extends KomodoService {
         }
 
         // Create new VDB
-        String vdbPath = repoPath + "/" + vdbName; //$NON-NLS-1$
-        final Vdb vdb = mgr.createVdb( uow, vdbName, vdbPath );
+        final Vdb vdb = mgr.createVdb( uow, vdbName );
         vdb.setDescription(uow, "Vdb for source "+teiidSource); //$NON-NLS-1$
                     
         // Add model to the VDB

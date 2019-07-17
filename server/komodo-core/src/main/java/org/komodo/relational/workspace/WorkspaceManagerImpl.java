@@ -298,8 +298,8 @@ public class WorkspaceManagerImpl extends RelationalObjectImpl implements Relati
     }
 
     @Override
-    public VdbImpl createVdb(UnitOfWork uow, String vdbName, String externalFilePath) throws KException {
-    	return createVdb(uow, null, vdbName, externalFilePath);
+    public VdbImpl createVdb(UnitOfWork uow, String vdbName) throws KException {
+    	return createVdb(uow, null, vdbName, vdbName);
     }
 
     /**
@@ -644,17 +644,6 @@ public class WorkspaceManagerImpl extends RelationalObjectImpl implements Relati
         return vdb;
     }
 
-    @Override
-	public ModelImpl findModel(UnitOfWork uow, Vdb vdb, String modelName) throws KException {
-    	VdbImpl vdbImpl = (VdbImpl)vdb;
-		if (! vdbImpl.hasChild(uow, modelName, VdbLexicon.Vdb.DECLARATIVE_MODEL)) {
-            return null;
-        }
-
-		KomodoObject kModel = vdbImpl.getChild(uow, modelName, VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        return resolve( uow, kModel, ModelImpl.class );
-	}
-	
 	@Override
 	public ProfileImpl getUserProfile(UnitOfWork transaction) throws KException {
         Repository repo = getRepository();
@@ -671,11 +660,6 @@ public class WorkspaceManagerImpl extends RelationalObjectImpl implements Relati
 	@Override
 	public void refreshServiceVdb(UnitOfWork uow, Vdb serviceVdb, ViewEditorState[] editorStates) throws KException {
 		new ServiceVdbGenerator(this).refreshServiceVdb(uow, (VdbImpl)serviceVdb, (ViewEditorStateImpl[])editorStates);
-	}
-	
-	@Override
-	public String getKomodoWorkspaceAbsolutePath(UnitOfWork uow) throws KException {
-		return getRepository().komodoWorkspace(uow).getAbsolutePath();
 	}
 	
 	@Override

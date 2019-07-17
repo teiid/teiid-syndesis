@@ -147,7 +147,7 @@ public final class KomodoUtilService extends KomodoService {
         try {
             // find VDBs
             uow = systemTx("getVdbs", true); //$NON-NLS-1$
-            Vdb[] vdbs = getWorkspaceManager(uow).findVdbs(uow);
+            Vdb[] vdbs = getWorkspaceManager(uow).findVdbs(uow, null);
             repoStatus.addAttribute(REPO_VDB_TOTAL, Integer.toString(vdbs.length));
 
         } catch (final Exception e) {

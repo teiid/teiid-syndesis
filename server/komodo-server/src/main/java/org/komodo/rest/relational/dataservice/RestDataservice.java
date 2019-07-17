@@ -107,9 +107,7 @@ public final class RestDataservice extends RestBasicEntity {
         super(baseUri);
         
         setId(dataService.getName(uow));
-        setDataPath(dataService.getAbsolutePath());
         setkType(Dataservice.IDENTIFIER);
-        
 
         setDescription(dataService.getDescription(uow));
 
