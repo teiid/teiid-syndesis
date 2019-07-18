@@ -48,6 +48,9 @@ import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.core.repository.RepositoryTools;
 import org.komodo.metadata.DataTypeService;
 import org.komodo.metadata.MetadataInstance;
+import org.komodo.relational.WorkspaceManager;
+import org.komodo.relational.vdb.Vdb;
+import org.komodo.relational.workspace.WorkspaceManagerImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.SystemConstants;
 import org.komodo.spi.repository.SynchronousCallback;
@@ -560,5 +563,13 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
         }
 
     }
+    
+	protected Vdb[] findVdbs() throws KException {
+		return workspaceManager().findVdbs(getTransaction(), null);
+	}
+	
+    protected WorkspaceManager workspaceManager() throws KException {
+		return WorkspaceManagerImpl.getInstance(_repo, getTransaction());
+	}
 
 }

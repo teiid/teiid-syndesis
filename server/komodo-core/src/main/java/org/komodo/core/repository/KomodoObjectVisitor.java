@@ -18,7 +18,6 @@
 package org.komodo.core.repository;
 
 import org.komodo.spi.repository.UnitOfWork;
-import org.komodo.spi.repository.UnitOfWork.State;
 
 /**
  *

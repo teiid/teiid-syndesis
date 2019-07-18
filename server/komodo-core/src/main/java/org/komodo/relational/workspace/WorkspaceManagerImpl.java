@@ -36,7 +36,6 @@ import org.komodo.relational.internal.AdapterFactory;
 import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.model.Model;
-import org.komodo.relational.model.Schema;
 import org.komodo.relational.model.internal.ModelImpl;
 import org.komodo.relational.profile.internal.ProfileImpl;
 import org.komodo.relational.vdb.Vdb;
@@ -77,7 +76,6 @@ public class WorkspaceManagerImpl extends RelationalObjectImpl implements Relati
      * The allowed child types.
      */
     private static final KomodoType[] CHILD_TYPES = new KomodoType[] { Vdb.IDENTIFIER,
-                                                                       Schema.IDENTIFIER,
                                                                        Dataservice.IDENTIFIER };
 
     /**

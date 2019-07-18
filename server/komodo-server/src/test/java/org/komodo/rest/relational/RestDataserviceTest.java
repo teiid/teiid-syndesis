@@ -17,6 +17,7 @@
  */
 package org.komodo.rest.relational;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
@@ -27,13 +28,10 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.komodo.core.repository.PropertyDescriptor;
 import org.komodo.openshift.BuildStatus;
-import org.komodo.relational.dataservice.internal.DataserviceImpl;
-import org.komodo.relational.internal.RelationalObjectImpl;
-import org.komodo.relational.vdb.internal.VdbImpl;
+import org.komodo.relational.dataservice.Dataservice;
+import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.relational.dataservice.RestDataservice;
-import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.UnitOfWork;
 import org.mockito.Mockito;
 
@@ -41,10 +39,7 @@ import org.mockito.Mockito;
 public final class RestDataserviceTest {
 
     private static final URI BASE_URI = UriBuilder.fromUri("http://localhost:8081/v1/").build();
-    private static final String WORKSPACE_DATA_PATH = "/workspace";
     private static final String DATASERVICE_NAME = "MyDataservice";
-    private static final String DATASERVICE_DATA_PATH = "/workspace/dataservices/dataservice1";
-    private static final KomodoType kType = KomodoType.DATASERVICE;
     private static final String DESCRIPTION = "my description";
     private static final String SERVICE_VDB_NAME = "serviceVdbName";
     private static final String SERVICE_VDB_VERSION = "1";
@@ -78,21 +73,12 @@ public final class RestDataserviceTest {
     public void init() throws Exception {
         UnitOfWork transaction = Mockito.mock(UnitOfWork.class);
 
-        RelationalObjectImpl workspace = Mockito.mock(RelationalObjectImpl.class);
-        Mockito.when(workspace.getAbsolutePath()).thenReturn(WORKSPACE_DATA_PATH);
-
-        VdbImpl serviceVdb = Mockito.mock(VdbImpl.class);
+        Vdb serviceVdb = Mockito.mock(Vdb.class);
         Mockito.when(serviceVdb.getName(transaction)).thenReturn("ServiceVdb");
         Mockito.when(serviceVdb.getVersion(transaction)).thenReturn(1);
 
-        DataserviceImpl theDataservice = Mockito.mock(DataserviceImpl.class);
+        Dataservice theDataservice = Mockito.mock(Dataservice.class);
         Mockito.when(theDataservice.getName(transaction)).thenReturn(DATASERVICE_NAME);
-        Mockito.when(theDataservice.getAbsolutePath()).thenReturn(DATASERVICE_DATA_PATH);
-        Mockito.when(theDataservice.getTypeIdentifier(transaction)).thenReturn(kType);
-        Mockito.when(theDataservice.hasChildren(transaction)).thenReturn(true);
-        Mockito.when(theDataservice.getPropertyNames(transaction)).thenReturn(new String[0]);
-        Mockito.when(theDataservice.getPropertyDescriptors(transaction)).thenReturn(new PropertyDescriptor[0]);
-        Mockito.when(theDataservice.getParent(transaction)).thenReturn(workspace);
         Mockito.when(theDataservice.getServiceVdbName(transaction)).thenReturn("ServiceVdb");
 
         this.dataservice = new RestDataservice(BASE_URI, theDataservice, false, transaction, serviceVdb);
@@ -190,8 +176,7 @@ public final class RestDataserviceTest {
     	views[0] = "blah1";
     	views[1] = "blah2";
         this.dataservice.setViewDefinitionNames(views);
-        assertEquals(this.dataservice.getViewDefinitionNames(), views);
+        assertArrayEquals(this.dataservice.getViewDefinitionNames(), views);
     }
-
 
 }

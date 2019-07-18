@@ -1632,18 +1632,6 @@ public class TestUtilities implements StringConstants {
 
     /**
      * @param num
-     * @return string of tabs
-     */
-    public static String tab(int num) {
-        StringBuffer buf = new StringBuffer();
-        for (int i = 0; i < num; ++i)
-            buf.append(TAB);
-
-        return buf.toString();
-    }
-
-    /**
-     * @param num
      * @return string of spaces
      */
     public static String space(int num) {

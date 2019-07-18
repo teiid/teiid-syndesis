@@ -38,7 +38,6 @@ import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.internal.DataserviceImpl;
 import org.komodo.relational.model.ForeignKey;
 import org.komodo.relational.model.PrimaryKey;
-import org.komodo.relational.model.Schema;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.UniqueConstraint;
 import org.komodo.relational.model.View;
@@ -221,7 +220,7 @@ public final class WorkspaceManagerTest extends RelationalModelTest {
 
     @Test
     public void shouldHaveCorrectChildTypes() {
-        KomodoType[] types = { Dataservice.IDENTIFIER, Vdb.IDENTIFIER, Schema.IDENTIFIER};
+        KomodoType[] types = { Dataservice.IDENTIFIER, Vdb.IDENTIFIER};
         assertThat( Arrays.asList( this.wsMgr.getChildTypes() ), hasItems( types ) );
         assertThat( this.wsMgr.getChildTypes().length, is( types.length ) );
     }

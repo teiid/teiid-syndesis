@@ -19,7 +19,6 @@ package org.komodo.rest.service;
 
 import static org.junit.Assert.assertNotNull;
 
-import java.io.InputStream;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -28,14 +27,9 @@ import java.util.concurrent.TimeUnit;
 import org.komodo.core.KEngineImpl;
 import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.KomodoObject;
-import org.komodo.importer.ImportMessages;
-import org.komodo.importer.ImportOptions;
-import org.komodo.importer.ImportOptions.ExistingNodeOptions;
-import org.komodo.importer.ImportOptions.OptionKeys;
 import org.komodo.relational.WorkspaceManager;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.internal.DataserviceImpl;
-import org.komodo.relational.importer.vdb.VdbImporter;
 import org.komodo.relational.internal.AdapterFactory;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.View;
@@ -169,49 +163,6 @@ public final class ServiceTestUtilities implements StringConstants {
         uow.commit();
     
         return theView;
-    }
-
-    /**
-     * Create a dataservice in the komodo engine (used for mostly test purposes)
-     *
-     * @param dataserviceName the service name
-     * @param populateWithSamples true if dataservice should be populated with example vdbs
-     * @param user initiating transaction
-     *
-     * @throws Exception if error occurs
-     */
-    public void createDataservice(String dataserviceName, boolean populateWithSamples, String user) throws Exception {
-    
-        SynchronousCallback callback = new SynchronousCallback();
-        UnitOfWork uow = repository.createTransaction(user, "Create Dataservice", false, callback, user); //$NON-NLS-1$
-    
-        KomodoObject wkspace = repository.komodoWorkspace(uow);
-        WorkspaceManagerImpl wsMgr = WorkspaceManagerImpl.getInstance(repository, uow);
-    
-        VdbImporter importer = new VdbImporter(repository);
-        ImportMessages importMessages = new ImportMessages();
-        ImportOptions importOptions = new ImportOptions();
-        importOptions.setOption(OptionKeys.HANDLE_EXISTING, ExistingNodeOptions.RETURN);
-    
-        String portfolioSample = KomodoUtilService.SAMPLES[1];
-        String nwSample = KomodoUtilService.SAMPLES[4];
-        InputStream portSampleStream = KomodoUtilService.getVdbSample(portfolioSample);
-        InputStream nwindSampleStream = KomodoUtilService.getVdbSample(nwSample);
-    
-        importer.importVdb(uow, portSampleStream, wkspace, importOptions, importMessages);
-        importer.importVdb(uow, nwindSampleStream, wkspace, importOptions, importMessages);
-    
-        KomodoObject nwSampleObj = wkspace.getChild(uow, "Northwind");
-        Vdb nwVdb = wsMgr.resolve(uow, nwSampleObj, Vdb.class);
-    
-        DataserviceImpl dataservice = wsMgr.createDataservice(uow, wkspace, dataserviceName);
-        dataservice.setDescription(uow, "This is my dataservice");
-    
-        dataservice.setServiceVdbName(uow, nwVdb.getVdbName(uow));
-
-        uow.commit();
-        callback.await(3, TimeUnit.MINUTES);
-        logObjectPath(dataservice.getAbsolutePath());
     }
 
     /**

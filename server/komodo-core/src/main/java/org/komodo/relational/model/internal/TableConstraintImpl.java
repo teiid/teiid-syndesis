@@ -25,7 +25,6 @@ import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.internal.ExcludeQNamesFilter;
 import org.komodo.relational.internal.RelationalChildRestrictedObject;
 import org.komodo.relational.model.Column;
-import org.komodo.relational.model.Table;
 import org.komodo.relational.model.TableConstraint;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.UnitOfWork;

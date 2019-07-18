@@ -33,18 +33,14 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.komodo.core.AbstractLocalRepositoryTest;
-import org.komodo.core.repository.KomodoObject;
 import org.komodo.datasources.DefaultSyndesisDataSource;
 import org.komodo.datasources.MySQLDefinition;
 import org.komodo.datasources.PostgreSQLDefinition;
-import org.komodo.importer.ImportMessages;
-import org.komodo.importer.ImportOptions;
-import org.komodo.importer.ImportOptions.OptionKeys;
 import org.komodo.metadata.MetadataInstance;
-import org.komodo.relational.importer.vdb.VdbImporter;
+import org.komodo.relational.RelationalModelTest;
+import org.komodo.relational.model.Model;
+import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
-import org.komodo.relational.workspace.WorkspaceManagerImpl;
 import org.komodo.rest.AuthHandlingFilter;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoConfigurationProperties;
@@ -54,7 +50,7 @@ import org.teiid.core.util.ObjectConverterUtil;
 
 import io.fabric8.kubernetes.api.model.EnvVar;
 
-public class TestVDBPublisher extends AbstractLocalRepositoryTest {
+public class TestVDBPublisher extends RelationalModelTest {
 
     @Before
     public void setup() throws KException, Exception {
@@ -62,16 +58,24 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
         assertThat( vdbStream, is( notNullValue() ) );
 
         final String name = "myservice";
-        final VdbImporter importer = new VdbImporter( _repo );
-        final ImportOptions importOptions = new ImportOptions();
-        importOptions.setOption( OptionKeys.NAME, name );
-        KomodoObject workspace = _repo.komodoWorkspace(getTransaction());
-        importer.importVdb( getTransaction(), vdbStream, workspace, importOptions, new ImportMessages() );
+
+		/*
+		 * <vdb name="myservice" version="1"> <model visible="true" name="accounts">
+		 * <source name="accounts-xyz" translator-name="postgresql"
+		 * connection-jndi-name="java:/accountsDS"/> </model> </vdb>
+		 */
+
+        Vdb vdb = createVdb(name);
+        Model accounts = vdb.addModel(getTransaction(), "accounts");
+        accounts.setVisible(getTransaction(), true);
+        ModelSource source = accounts.addSource(getTransaction(), "accounts-xyz");
+        source.setTranslatorName(getTransaction(), "postgresql");
+        source.setJndiName(getTransaction(), "java:/accountsDS");
 
         commit(); // commit the import
     }
 
-    private TeiidOpenShiftClient testDataSetup() throws KException {
+	private TeiidOpenShiftClient testDataSetup() throws KException {
         AuthHandlingFilter.threadOAuthCredentials.set(new OAuthCredentials("token", "user"));
         MetadataInstance metadata = Mockito.mock(MetadataInstance.class);
 
@@ -145,7 +149,7 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
     public void testGeneratePomXML() throws Exception {
         TeiidOpenShiftClient generator = testDataSetup();
 
-        final Vdb[] vdbs = WorkspaceManagerImpl.getInstance( _repo, getTransaction() ).findVdbs( getTransaction() );
+        final Vdb[] vdbs = findVdbs();
         assertThat( vdbs.length, is(1));
 
         final OAuthCredentials authToken = AuthHandlingFilter.threadOAuthCredentials.get();
@@ -157,7 +161,7 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
     public void testGenerateDataSource() throws Exception {
         TeiidOpenShiftClient generator = testDataSetup();
 
-        final Vdb[] vdbs = WorkspaceManagerImpl.getInstance( _repo, getTransaction() ).findVdbs( getTransaction() );
+        final Vdb[] vdbs = findVdbs();
         assertThat( vdbs.length, is(1));
 
         InputStream dsIs = generator.buildDataSourceBuilders(vdbs[0], getTransaction());
@@ -169,7 +173,7 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
     public void testGenerateDeploymentYML() throws Exception {
         TeiidOpenShiftClient generator = testDataSetup();
 
-        final Vdb[] vdbs = WorkspaceManagerImpl.getInstance( _repo, getTransaction() ).findVdbs( getTransaction() );
+        final Vdb[] vdbs = findVdbs();
         assertThat( vdbs.length, is(1));
 
         final OAuthCredentials authToken = AuthHandlingFilter.threadOAuthCredentials.get();
@@ -197,4 +201,5 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
 
         assertThat(variables, hasItem(new EnvVar("JAVA_OPTIONS", javaOptions, null)));
     }
+
 }

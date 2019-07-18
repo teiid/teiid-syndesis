@@ -22,17 +22,11 @@ import java.net.URI;
 import javax.ws.rs.core.UriBuilder;
 
 import org.junit.Before;
-import org.komodo.core.internal.repository.Repository;
-import org.komodo.core.repository.Descriptor;
-import org.komodo.core.repository.KomodoObject;
 import org.komodo.rest.json.JsonConstants;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWork.State;
-import org.komodo.spi.repository.UnitOfWorkListener;
-import org.komodo.test.utils.TestUtilities;
-import org.mockito.Matchers;
+import org.komodo.utils.StringUtils;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
@@ -56,8 +50,6 @@ public abstract class AbstractSerializerTest implements JsonConstants {
     @Mock
     protected UnitOfWork transaction;
 
-    protected Repository repository;
-
     protected static String q(Object value) {
         return SPEECH_MARK + value + SPEECH_MARK;
     }
@@ -67,7 +59,7 @@ public abstract class AbstractSerializerTest implements JsonConstants {
     }
 
     protected static String tab(int freq) {
-        return TestUtilities.tab(freq);
+        return StringUtils.tab(freq);
     }
 
     protected String pnl(Object value) {
@@ -85,32 +77,6 @@ public abstract class AbstractSerializerTest implements JsonConstants {
 
         UnitOfWork uow = Mockito.mock(UnitOfWork.class);
         Mockito.when(uow.getState()).thenReturn(State.NOT_STARTED);
-
-        repository = Mockito.mock(Repository.class);
-        UnitOfWorkListener listener = Matchers.any();
-        Mockito.when(repository.createTransaction(Matchers.anyString(),
-                                                  Matchers.anyString(),
-                                                  Matchers.anyBoolean(),
-                                                  listener,Matchers.anyString())).thenReturn(uow);
     }
 
-    protected <T extends KomodoObject> T mockObject(Class<T> mockClass, String name, String dataPath, KomodoType kType, boolean hasChildren, String descriptorName) throws KException {
-        T kObject = Mockito.mock(mockClass);
-        Mockito.when(kObject.getName(transaction)).thenReturn(name);
-        Mockito.when(kObject.getAbsolutePath()).thenReturn(dataPath);
-        Mockito.when(kObject.getTypeIdentifier(transaction)).thenReturn(kType);
-        Mockito.when(kObject.hasChildren(transaction)).thenReturn(hasChildren);
-
-        if (descriptorName != null) {
-            Descriptor primaryDescriptor = Mockito.mock(Descriptor.class);
-            Mockito.when(primaryDescriptor.getName()).thenReturn(descriptorName.toString());
-            Mockito.when(kObject.getPrimaryType(transaction)).thenReturn(primaryDescriptor);
-        }
-
-        return kObject;
-    }
-
-    protected <T extends KomodoObject> T mockObject(Class<T> mockClass, String name, String dataPath, KomodoType kType, boolean hasChildren) throws KException {
-        return mockObject(mockClass, name, dataPath, kType, hasChildren, null);
-    }
 }

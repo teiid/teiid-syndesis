@@ -21,10 +21,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
+
 import org.junit.Test;
-import org.komodo.core.KomodoLexicon;
 import org.komodo.relational.profile.SqlComposition;
 import org.komodo.relational.profile.SqlProjectedColumn;
 import org.komodo.relational.profile.StateCommand;
@@ -233,8 +234,7 @@ public class ViewEditorStateSerializerTest extends AbstractSerializerTest {
         when(redoCommand.getArguments(transaction)).thenReturn(redoArgs);
 
         StateCommandAggregate command = mock(StateCommandAggregate.class);
-        when(command.getName(transaction)).thenReturn(
-                                                      KomodoLexicon.StateCommandAggregate.NAME_PREFIX + 0);
+        when(command.getName(transaction)).thenReturn("INDEX_0");
         when(command.getUndo(transaction)).thenReturn(undoCommand);
         when(command.getRedo(transaction)).thenReturn(redoCommand);
 

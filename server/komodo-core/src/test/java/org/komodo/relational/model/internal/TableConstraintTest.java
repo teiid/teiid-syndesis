@@ -26,9 +26,6 @@ import org.junit.Test;
 import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl.Filter;
-import org.komodo.relational.model.Column;
-import org.komodo.relational.model.Table;
-import org.komodo.relational.model.TableConstraint;
 import org.komodo.spi.KException;
 import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
 

@@ -1530,6 +1530,18 @@ public final class StringUtils implements StringConstants {
         }
         return sb.toString();
     }
+    
+    /**
+     * @param num
+     * @return string of tabs
+     */
+    public static String tab(int num) {
+        StringBuffer buf = new StringBuffer();
+        for (int i = 0; i < num; ++i)
+            buf.append(TAB);
+
+        return buf.toString();
+    }
 
     /**
      * Don't allow construction outside of this class.

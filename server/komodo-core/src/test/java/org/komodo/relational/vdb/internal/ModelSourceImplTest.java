@@ -28,7 +28,6 @@ import org.junit.Test;
 import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.internal.RelationalObjectImpl.Filter;
-import org.komodo.relational.model.Model;
 import org.komodo.relational.model.internal.ModelImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
