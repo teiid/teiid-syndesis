@@ -20,10 +20,10 @@ package org.komodo.metadata;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+
 import java.util.Set;
-import org.junit.Before;
+
 import org.junit.Test;
-import org.komodo.metadata.DataTypeService;
 import org.komodo.metadata.DataTypeService.DataSourceTypes;
 import org.komodo.metadata.DataTypeService.DataTypeName;
 
@@ -31,13 +31,9 @@ import org.komodo.metadata.DataTypeService.DataTypeName;
  *
  */
 @SuppressWarnings( {"javadoc", "nls"} )
-public class TestDataTypeManager extends AbstractMetadataInstanceTests {
+public class TestDataTypeManager {
 
-    private DataTypeService manager;
-    @Before
-    public void setup() throws Exception {
-        manager = getMetadataInstance().getDataTypeService();
-    }
+    private DataTypeService manager = new DataTypeService();
 
     @Test
     public void testGetDataType() throws Exception {

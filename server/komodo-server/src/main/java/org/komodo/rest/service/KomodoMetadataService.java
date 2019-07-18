@@ -44,7 +44,6 @@ import javax.ws.rs.core.UriInfo;
 import org.komodo.datasources.DefaultSyndesisDataSource;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.metadata.query.QSResult;
-import org.komodo.metadata.runtime.SyndesisDataSource;
 import org.komodo.metadata.runtime.TeiidDataSource;
 import org.komodo.metadata.runtime.TeiidVdb;
 import org.komodo.openshift.BuildStatus;
@@ -470,7 +469,7 @@ public class KomodoMetadataService extends KomodoService {
                 //
                 // Deploy the VDB
                 //
-                DeployStatus deployStatus = previewVdb.deploy(uow);
+                DeployStatus deployStatus = getMetadataInstance().deploy(uow, previewVdb);
 
                 // Await the deployment to end
                 Thread.sleep(DEPLOYMENT_WAIT_TIME);
@@ -856,7 +855,7 @@ public class KomodoMetadataService extends KomodoService {
             Collection<TeiidDataSource> allTeiidSources = getMetadataInstance().getDataSources();
 
             // Add status summary for each of the syndesis sources.  Determine if there is a matching teiid source
-            for (SyndesisDataSource dataSource : dataSources) {
+            for (DefaultSyndesisDataSource dataSource : dataSources) {
                 for (TeiidDataSource teiidSource : allTeiidSources) {
                     // Syndesis source has a corresponding VDB.  Use VDB for status
                     if (teiidSource.getName().equals(dataSource.getName())) {
@@ -936,7 +935,7 @@ public class KomodoMetadataService extends KomodoService {
             Collection<TeiidDataSource> allTeiidSources = getMetadataInstance().getDataSources();
 
             // Add status summary for each of the syndesis sources.  Determine if there is a matching teiid source
-            for (SyndesisDataSource dataSource : dataSources) {
+            for (DefaultSyndesisDataSource dataSource : dataSources) {
                 RestSyndesisSourceStatus status = new RestSyndesisSourceStatus(dataSource.getName());
                 for (TeiidDataSource teiidSource : allTeiidSources) {
                     // Syndesis source has a corresponding VDB.  Use VDB for status
@@ -1372,7 +1371,7 @@ public class KomodoMetadataService extends KomodoService {
         // modelSource.setAssociatedConnection(uow, connection);
         
         // Deploy the VDB
-        DeployStatus deployStatus = vdb.deploy(uow);
+        DeployStatus deployStatus = getMetadataInstance().deploy(uow, vdb);
         
         // Wait for deployment to complete
         Thread.sleep(DEPLOYMENT_WAIT_TIME);

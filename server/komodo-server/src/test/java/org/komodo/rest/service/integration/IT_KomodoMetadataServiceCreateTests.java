@@ -40,8 +40,6 @@ public class IT_KomodoMetadataServiceCreateTests extends AbstractKomodoMetadataS
 
     @Test
     public void testCreateDataSource() throws Exception {
-        String displayName = "h2-connector";
-        String type = "h2";
         String dsName = "accounts-ds";
         String jndiName = "java:/accounts-ds";
         String connUrl = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1";
@@ -53,14 +51,6 @@ public class IT_KomodoMetadataServiceCreateTests extends AbstractKomodoMetadataS
         Properties properties = new Properties();
         properties.setProperty(TeiidDataSource.DATASOURCE_JNDINAME, jndiName);
         properties.setProperty(TeiidDataSource.DATASOURCE_CONNECTION_URL, connUrl);
-
-        TeiidDataSource accountsDS = getMetadataInstance().getOrCreateDataSource(displayName, dsName, type, properties);
-        assertNotNull(accountsDS);
-
-        assertEquals(dsName, accountsDS.getName());
-        assertEquals(type, accountsDS.getType());
-        assertEquals(jndiName, accountsDS.getPropertyValue(TeiidDataSource.DATASOURCE_JNDINAME));
-        assertEquals(connUrl, accountsDS.getPropertyValue(TeiidDataSource.DATASOURCE_CONNECTION_URL));
 
         getMetadataInstance().deleteDataSource(dsName);
         assertFalse(getMetadataInstance().dataSourceExists(dsName));

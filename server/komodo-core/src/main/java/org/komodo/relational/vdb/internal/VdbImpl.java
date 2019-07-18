@@ -17,7 +17,6 @@
  */
 package org.komodo.relational.vdb.internal;
 
-import java.io.ByteArrayInputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +37,6 @@ import org.komodo.core.repository.PropertyValueType;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.core.visitor.VdbNodeVisitor;
 import org.komodo.metadata.MetadataInstance;
-import org.komodo.relational.DeployStatus;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.internal.RelationalModelFactory;
@@ -1042,40 +1040,6 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
         setObjectProperty(uow, "setVersion", VdbLexicon.Vdb.VERSION, newVersion); //$NON-NLS-1$
     }
 
-    @Override
-    public DeployStatus deploy(UnitOfWork uow) {
-        ArgCheck.isNotNull( uow, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( uow.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-
-        DeployStatus status = new DeployStatus();
-
-        try {
-            String vdbName = getName(uow);
-            status.addProgressMessage("Starting deployment of vdb " + vdbName); //$NON-NLS-1$
-
-            status.addProgressMessage("Attempting to deploy VDB " + vdbName + " to teiid"); //$NON-NLS-1$ //$NON-NLS-2$
-
-            // Get VDB content
-            byte[] vdbXml = export(uow, null);
-            if (vdbXml == null || vdbXml.length == 0) {
-                status.addErrorMessage("VDB " + vdbName + " content is empty"); //$NON-NLS-1$ //$NON-NLS-2$
-                return status;
-            }
-
-            String vdbToDeployName = getName(uow);
-            String vdbDeploymentName = vdbToDeployName + VDB_DEPLOYMENT_SUFFIX;
-            MetadataInstance metadata = getRepository().getMetadataInstance();
-            metadata.deployDynamicVdb(getName(uow), vdbDeploymentName, new ByteArrayInputStream(vdbXml));
-
-            status.addProgressMessage("VDB deployed " + vdbName + " to teiid"); //$NON-NLS-1$ //$NON-NLS-2$
-        } catch (Exception ex) {
-            status.addErrorMessage(ex);
-        }
-
-        
-        return status;
-    }
-    
     @Override
     public ModelImpl getModel(UnitOfWork transaction, String name) throws KException {
     	ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$

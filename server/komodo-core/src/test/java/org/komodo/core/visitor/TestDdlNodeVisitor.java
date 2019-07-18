@@ -29,10 +29,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.komodo.core.AbstractLocalRepositoryTest;
 import org.komodo.core.repository.KomodoObject;
-import org.komodo.metadata.TeiidConnectionProvider;
-import org.komodo.metadata.internal.DefaultMetadataInstance;
+import org.komodo.metadata.DataTypeService;
 import org.komodo.spi.TeiidSqlConstants;
-import org.mockito.Mockito;
 import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 /**
@@ -130,9 +128,7 @@ public class TestDdlNodeVisitor extends AbstractLocalRepositoryTest {
         //
         commit();
 
-        TeiidConnectionProvider provider = Mockito.mock(TeiidConnectionProvider.class);
-        DefaultMetadataInstance instance = new DefaultMetadataInstance(provider);
-        DdlNodeVisitor visitor = new DdlNodeVisitor(instance.getDataTypeService(), false);
+        DdlNodeVisitor visitor = new DdlNodeVisitor(new DataTypeService(), false);
         visitor.visit(getTransaction(), ddlObject);
 
         compare(expected, visitor);

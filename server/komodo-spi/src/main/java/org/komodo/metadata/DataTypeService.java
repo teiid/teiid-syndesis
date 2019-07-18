@@ -3,11 +3,12 @@ package org.komodo.metadata;
 import java.util.Set;
 
 import org.komodo.spi.StringConstants;
+import org.teiid.core.types.DataTypeManager;
 
 /**
  *
  */
-public interface DataTypeService extends StringConstants {
+public class DataTypeService implements StringConstants {
 
     /**
      * The suffix designating an array
@@ -18,7 +19,7 @@ public interface DataTypeService extends StringConstants {
      * Enumerator of data type names supported by the
      * teiid DataTypeManager
      */
-    enum DataTypeName {
+    public enum DataTypeName {
         STRING,                         STRING_ARRAY,
         BOOLEAN,                     BOOLEAN_ARRAY,
         BYTE,                             BYTE_ARRAY,
@@ -147,7 +148,7 @@ public interface DataTypeService extends StringConstants {
     /**
      * Types of data source supported by teiid instances
      */
-    enum DataSourceTypes {
+    public enum DataSourceTypes {
         JDBC("connector-jdbc"), //$NON-NLS-1$
 
         SALESFORCE("salesforce"), //$NON-NLS-1$
@@ -182,7 +183,12 @@ public interface DataTypeService extends StringConstants {
      * 
      * @return data source type name
      */
-    String getDataSourceType(DataSourceTypes dataSourceType);
+    public String getDataSourceType(DataSourceTypes dataSourceType) {
+        if (dataSourceType == null)
+            return DataSourceTypes.UNKNOWN.id();
+
+        return dataSourceType.id();
+    }
 
     /**
      * Get the data type class with the given name.
@@ -192,7 +198,9 @@ public interface DataTypeService extends StringConstants {
      *      
      * @return Data type class
      */
-    Class<?> getDataTypeClass(String name);
+    public Class<?> getDataTypeClass(String name) {
+        return DataTypeManager.getDataTypeClass(name);
+    }
 
     /**
      * Get the runtime data type name for the given data type id
@@ -201,7 +209,30 @@ public interface DataTypeService extends StringConstants {
      *
      * @return runtime type name or null
      */
-    DataTypeName getDataTypeName(String dataTypeId);
+    public DataTypeName getDataTypeName(String dataTypeId) {        
+        if (dataTypeId == null)
+            return DataTypeName.NULL;
+
+        dataTypeId = DataTypeName.correctBigUnderscores(dataTypeId);
+
+        // Should eliminate any aliases
+        Class<?> dataTypeClass = getDataTypeClass(dataTypeId);
+        dataTypeId = DataTypeManager.getDataTypeName(dataTypeClass);
+
+        boolean isArray = isArrayType(dataTypeId);
+
+        if (isArray)
+            dataTypeId = getComponentType(dataTypeId);
+
+        DataTypeName dataType = DataTypeName.findDataTypeName(dataTypeId);
+        if (dataType == null)
+            dataType = DataTypeName.OBJECT;
+
+        if (isArray)
+            return dataType.getArrayType();
+        else
+            return dataType;
+    }
 
     /**
      * Get the runtime type for the given class as a String
@@ -210,7 +241,9 @@ public interface DataTypeService extends StringConstants {
      * 
      * @return runtime type
      */
-    String getDataTypeName(Class<?> typeClass);
+    public String getDataTypeName(Class<?> typeClass) {
+        return DataTypeManager.getDataTypeName(typeClass);
+    }
 
     /**
      * Retrieve the runtime type for the given class as a {@link DataTypeName}
@@ -219,14 +252,19 @@ public interface DataTypeService extends StringConstants {
      * 
      * @return runtime type as a {@link DataTypeName}
      */
-    DataTypeName retrieveDataTypeName(Class<?> typeClass);
+    public DataTypeName retrieveDataTypeName(Class<?> typeClass) {
+        String typeName = getDataTypeName(typeClass);
+        return DataTypeName.findDataTypeName(typeName);
+    }
 
     /**
      * Get a set of all data type names.
      * 
      * @return Set of data type names (String)
      */
-    Set<String> getAllDataTypeNames();
+    public Set<String> getAllDataTypeNames() {
+    	return DataTypeManager.getAllDataTypeNames();
+    }
     
     /**
      * Get the default data class represented by the 
@@ -237,64 +275,27 @@ public interface DataTypeService extends StringConstants {
      * @return class of data type or will throw a runtime exception
      *                if there is no data type.
      */
-    Class<?> getDefaultDataClass(DataTypeName dataTypeName);
-    
-    /**
-     * Is the given source an explicit conversion of the target
-     *
-     * @param sourceTypeName
-     * @param targetTypeName
-     *
-     * @return true if the conversion is explicit
-     */
-    boolean isExplicitConversion(String sourceTypeName, String targetTypeName);
-    
-    /**
-     * Is the given source an implicit conversion of the target
-     *
-     * @param sourceTypeName
-     * @param targetTypeName
-     * 
-     * @return true if the conversion is implicit;
-     */
-    boolean isImplicitConversion(String sourceTypeName, String targetTypeName);
-    
-    /**
-     * Can a value transformation between the sourceType with given name
-     * and the targetType of given name be attained. The Class for source and target type
-     * are not needed to do this lookup.
-     * 
-     * @param sourceTypeName
-     * @param targetTypeName
-     * 
-     * @return true if a transform is possible between the types
-     */
-    boolean isTransformable(String sourceTypeName, String targetTypeName);
+    public Class<?> getDefaultDataClass(DataTypeName dataTypeName) {
+        if (dataTypeName == null)
+            return getDataTypeClass(null);
 
-    /**
-    /**
-     * Transform the given value into the given data type
-     *
-     * @param value
-     * @param dataTypeName
-     * @return transformed value
-     * @throws Exception
-     */
-    <T> T transformValue(Object value, DataTypeName dataTypeName) throws Exception;
-
-    /**
-     * Transform the given value into the given class type
-     *
-     * @param value
-     * @param dataTypeName
-     * @return transformed value
-     * @throws Exception
-     */
-    <T> T transformValue(Object value, Class<?> typeClass) throws Exception;
-
+        return getDataTypeClass(dataTypeName.name());
+    }
+    
     /**
      * @param type
      * @return whether this is a LOB-based class
      */
-    boolean isLOB(Class<?> type);
+    public boolean isLOB(Class<?> type) {
+        return DataTypeManager.isLOB(type);
+    }
+    
+    protected boolean isArrayType(String name) {
+        return name.endsWith(ARRAY_SUFFIX);
+    }
+
+    protected String getComponentType(String name) {
+        return name.substring(0, name.lastIndexOf(ARRAY_SUFFIX));
+    }
+
 }

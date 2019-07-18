@@ -46,8 +46,8 @@ import org.komodo.core.repository.Property;
 import org.komodo.core.repository.RepositoryClientEvent;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.core.repository.RepositoryTools;
-import org.komodo.metadata.TeiidConnectionProvider;
-import org.komodo.metadata.internal.DefaultMetadataInstance;
+import org.komodo.metadata.DataTypeService;
+import org.komodo.metadata.MetadataInstance;
 import org.komodo.spi.KException;
 import org.komodo.spi.SystemConstants;
 import org.komodo.spi.repository.SynchronousCallback;
@@ -94,8 +94,8 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
         assertThat(_repo.ping(), is(false));
 
     	KEngineImpl engine = new KEngineImpl();
-    	TeiidConnectionProvider provider = Mockito.mock(TeiidConnectionProvider.class);
-    	DefaultMetadataInstance metadata = new DefaultMetadataInstance(provider);
+    	MetadataInstance metadata = Mockito.mock(MetadataInstance.class);
+    	Mockito.when(metadata.getDataTypeService()).thenReturn(new DataTypeService());
     	engine.setMetadataInstance(metadata);
         engine.setDefaultRepository(_repo);
 

@@ -19,7 +19,6 @@ package org.komodo.relational.vdb;
 
 import java.util.Properties;
 
-import org.komodo.relational.DeployStatus;
 import org.komodo.relational.RelationalObject;
 import org.komodo.relational.model.Model;
 import org.komodo.spi.KException;
@@ -432,14 +431,5 @@ public interface Vdb extends Exportable, RelationalObject {
      */
     void setVersion( final UnitOfWork transaction,
                      final int newVersion ) throws KException;
-
-    /**
-     * @param uow
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
-     *
-     * @return the deployment status of this vdb
-     */
-    DeployStatus deploy(UnitOfWork uow);
 
 }

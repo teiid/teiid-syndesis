@@ -20,9 +20,7 @@ package org.komodo.datasources;
 import java.util.Map;
 import java.util.Properties;
 
-import org.komodo.metadata.runtime.SyndesisDataSource;
-
-public class DefaultSyndesisDataSource implements SyndesisDataSource {
+public class DefaultSyndesisDataSource {
 	private String id;
     private String name;
     private boolean bound;
@@ -30,22 +28,18 @@ public class DefaultSyndesisDataSource implements SyndesisDataSource {
     private Map<String, String> properties;
     private DataSourceDefinition definition;
     
-    @Override
     public String getId() {
         return id;
     }
     
-    @Override
     public String getName() {
         return name;
     }
 
-    @Override
     public String getType() {
         return definition.getType();
     }
 
-    @Override
     public boolean isBound() {
         return bound;
     }
@@ -62,7 +56,6 @@ public class DefaultSyndesisDataSource implements SyndesisDataSource {
         this.bound = bound;
     }
 
-    @Override
     public String getTranslatorName() {
         return translator;
     }

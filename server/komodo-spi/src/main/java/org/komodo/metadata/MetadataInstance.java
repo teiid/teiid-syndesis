@@ -20,16 +20,15 @@ package org.komodo.metadata;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
-import java.util.Properties;
-import java.util.Set;
 
 import org.komodo.metadata.query.QSResult;
 import org.komodo.metadata.runtime.TeiidDataSource;
-import org.komodo.metadata.runtime.TeiidPropertyDefinition;
-import org.komodo.metadata.runtime.TeiidTranslator;
 import org.komodo.metadata.runtime.TeiidVdb;
+import org.komodo.relational.DeployStatus;
+import org.komodo.relational.vdb.Vdb;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
+import org.komodo.spi.repository.UnitOfWork;
 import org.teiid.adminapi.Admin;
 import org.teiid.adminapi.AdminException;
 
@@ -252,40 +251,10 @@ public interface MetadataInstance extends StringConstants {
     void undeployDynamicVdb(String name) throws KException;
 
     /**
-     * @return the collection of translators
-     * @throws KException 
-     */
-    Collection<TeiidTranslator> getTranslators() throws KException;
-
-    /**
-     * @param translatorName
-     * @return the translator with the given name
-     * @throws KException 
-     */
-    TeiidTranslator getTranslator(String translatorName) throws KException;
-
-    /**
      * @return the collection of data sources
      * @throws KException 
      */
     Collection<TeiidDataSource> getDataSources() throws KException;
-
-    /**
-     * Get the specified DataSource, or create one if it does not exist.  When the datasource is create thru the admin API,
-     * it is given a JNDI name which is the same as the sourceName.  For example if dsName 'mySource' is supplied, then the 
-     * JNDI name is set as 'java:/mySource' (java context is added).  When the sources created by any other user are retrieved 
-     * from the metadata instance, however, it is not guaranteed that the dsName and jndi name will match.
-     * @param displayName the data source display name
-     * @param dsName the data source name
-     * @param typeName the translator type name
-     * @param properties the list of metadata-related connection properties
-     * @return true if data source is created. false if it already exists
-     * @throws KException if data source creation fails
-     */
-     TeiidDataSource getOrCreateDataSource(String displayName,
-                                                          String dsName,
-                                                          String typeName,
-                                                          Properties properties) throws KException;
 
     /**
      * @param sourceName
@@ -309,25 +278,14 @@ public interface MetadataInstance extends StringConstants {
       */
       void deleteDataSource(String dsName) throws KException;
 
-    /**
-     * @param driverName
-     * @return the template property definitions for the given driver
-     * @throws KException 
-     */
-    Collection<TeiidPropertyDefinition> getTemplatePropertyDefns(String driverName) throws KException;
+	Admin getAdmin() throws AdminException;
 
     /**
-     * Get all DataSource template names
-     * @return set of template names
-     * @throws KException
+     * @param uow
+     *        the transaction (cannot be <code>null</code> or have a state that is not
+     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
+     * @param vdb
+     * @return the deployment status of the vdb
      */
-    Set<String> getDataSourceTemplateNames() throws KException;
-
-    /**
-     * Refresh this instance to clear any cached and get the latest metadata.
-     * @throws KException 
-     */
-    void refresh() throws KException;
-
-	Admin admin() throws AdminException;
+	DeployStatus deploy(UnitOfWork uow, Vdb vdb);
 }

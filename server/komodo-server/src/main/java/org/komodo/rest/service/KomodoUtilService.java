@@ -521,7 +521,7 @@ public final class KomodoUtilService extends KomodoService {
 				MetadataFactory mf = new MetadataFactory("PreviewVdb", 1,SystemMetadata.getInstance().getRuntimeTypeMap(),m);
 	        	parser.parseDDL(mf, restViewDefinition.getDdl());
 	        	
-				VDBMetaData vdb = (VDBMetaData) this.kengine.getMetadataInstance().admin()
+				VDBMetaData vdb = (VDBMetaData) this.kengine.getMetadataInstance().getAdmin()
 						.getVDB("PreviewVdb", "1");
 				TransformationMetadata qmi = vdb.getAttachment(TransformationMetadata.class);
 	        	
