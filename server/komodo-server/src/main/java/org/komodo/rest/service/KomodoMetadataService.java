@@ -435,9 +435,11 @@ public class KomodoMetadataService extends KomodoService {
 
             // Get the current workspace connection VDB names
             List<String> connectionVdbNames = new ArrayList<String>();
-            Vdb[] connVdbObjs = wMgr.findVdbs("*btlconn"); //$NON-NLS-1$
-            for( Vdb kObj: connVdbObjs) {
-           		connectionVdbNames.add(kObj.getName());
+            Collection<String> vdbNames = getMetadataInstance().getVdbNames();
+            for( String name: vdbNames) {
+            	if (name.endsWith("btlconn")) {
+            		connectionVdbNames.add(name);
+            	}
             }
 
             // Add import for connectionVdb if it is missing
