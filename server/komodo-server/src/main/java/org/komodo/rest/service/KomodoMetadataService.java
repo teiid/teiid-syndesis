@@ -156,20 +156,6 @@ public class KomodoMetadataService extends KomodoService {
         return Response.status(Status.FORBIDDEN).entity(responseEntity).build();
     }
 
-    private boolean hasDynamicVdb(String vdbName) throws Exception {
-        boolean hasVdb = false;
-
-        Collection<TeiidVdb> vdbs = getMetadataInstance().getVdbs();
-        for (TeiidVdb vdb : vdbs) {
-            if (vdb.getName().startsWith(vdbName)) {
-                hasVdb = true;
-                break;
-            }
-        }
-
-        return hasVdb;
-    }    
-    
     /**
      * Remove a VDB from the server
      * @param headers
@@ -215,7 +201,7 @@ public class KomodoMetadataService extends KomodoService {
             String title = RelationalMessages.getString(RelationalMessages.Info.VDB_DEPLOYMENT_STATUS_TITLE);
             KomodoStatusObject status = new KomodoStatusObject(title);
 
-            if (! hasDynamicVdb(vdbName)) {
+            if (getMetadataInstance().getVdb(vdbName) == null) {
                 status.addAttribute(vdbName,
                                     RelationalMessages.getString(RelationalMessages.Info.VDB_SUCCESSFULLY_UNDEPLOYED));
             } else
