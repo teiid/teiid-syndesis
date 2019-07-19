@@ -1014,5 +1014,16 @@ public final class ColumnImpl extends RelationalChildRestrictedObject implements
     public TableImpl getRelationalParent(UnitOfWork transaction) throws KException {
     	return getParent(transaction);
     }
+    
+    @Override
+    public Long getArrayDimensions(UnitOfWork uow) throws KException {
+    	if (hasRawProperty(uow, StandardDdlLexicon.DATATYPE_ARRAY_DIMENSIONS)) {
+            Property colArrDimsProp = getRawProperty(uow, StandardDdlLexicon.DATATYPE_ARRAY_DIMENSIONS);
+            if (colArrDimsProp != null) {
+            	return colArrDimsProp.getLongValue(uow);
+            }
+    	}
+    	return null;
+    }
 
 }

@@ -47,7 +47,7 @@ public class BasicEntitySerializer<T extends RestBasicEntity> extends AbstractEn
 
     @Override
     protected boolean isComplete(T entity) {
-        return ! StringUtils.isBlank(entity.getId()) && ! StringUtils.isBlank(entity.getDataPath()) &&
+        return ! StringUtils.isBlank(entity.getId()) && 
                        entity.getkType() != null;
     }
 }

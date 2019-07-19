@@ -20,16 +20,31 @@ package org.komodo.spi;
 
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.relational.WorkspaceManager;
-import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWorkListener;
 
 public interface KEngine {
 	
+	/**
+	 * Get the {@link MetadataInstance}
+	 * @return
+	 * @throws KException
+	 */
 	MetadataInstance getMetadataInstance() throws KException;
 
+	/**
+	 * Start and wait for the engine to be ready
+	 * @return true if start was successful
+	 * @throws Exception
+	 */
 	boolean startAndWait() throws Exception;
 
+	/**
+	 * Get the {@link WorkspaceManager} for manipulating the repository
+	 * @param transaction
+	 * @return
+	 * @throws KException
+	 */
 	WorkspaceManager getWorkspaceManager(UnitOfWork transaction) throws KException;
 
 	/**
@@ -48,7 +63,5 @@ public interface KEngine {
      */
 	UnitOfWork createTransaction(String userName, String name, boolean rollbackOnly, UnitOfWorkListener callback,
 			String repoUser) throws KException;
-
-	Dataservice findDataserviceByPath(UnitOfWork uow, String dsPath) throws KException;
 
 }

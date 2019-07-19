@@ -20,7 +20,6 @@ package org.komodo.relational.dataservice;
 import java.util.Calendar;
 
 import org.komodo.relational.RelationalObject;
-import org.komodo.relational.vdb.Vdb;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.UnitOfWork;
@@ -44,54 +43,22 @@ public interface Dataservice extends RelationalObject {
      * @param uow
      *        the transaction (cannot be <code>null</code> and must have a state of
      *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
-     * @param serviceVdb
-     *        the service VDB being set (can be <code>null</code> when deleting current value)
-     * @return the service VDB being replaced or <code>null</code> if one is not being replaced
+     * @param name
+     * @return the service VDB name (may be <code>null</code> if not defined)
      * @throws KException
      *         if an error occurs
      */
-    Vdb setServiceVdb( final UnitOfWork uow,
-                       final Vdb serviceVdb ) throws KException;
+    void setServiceVdbName( final UnitOfWork uow, String name ) throws KException;
 
     /**
      * @param uow
      *        the transaction (cannot be <code>null</code> and must have a state of
      *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
-     * @return the service VDB (may be <code>null</code> if not defined)
+     * @return the service VDB name (may be <code>null</code> if not defined)
      * @throws KException
      *         if an error occurs
      */
-    Vdb getServiceVdb( final UnitOfWork uow ) throws KException;
-
-    /**
-     * @param uow
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
-     * @return the service VDB entry (may be <code>null</code> if not defined)
-     * @throws KException
-     *         if an error occurs
-     */
-    ServiceVdbEntry getServiceVdbEntry( final UnitOfWork uow ) throws KException;
-
-    /**
-     * @param uow
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
-     * @return the names of the ViewDefinitions for the dataservice (may be empty if not found)
-     * @throws KException
-     *         if an error occurs
-     */
-    String[] getViewDefinitionNames( UnitOfWork uow ) throws KException;
-
-    /**
-     * @param uow
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
-     * @return the name of the dataservice view model (may be <code>null</code> if not found)
-     * @throws KException
-     *         if an error occurs
-     */
-    String getServiceViewModelName( UnitOfWork uow ) throws KException;
+    String getServiceVdbName( final UnitOfWork uow ) throws KException;
 
     /**
      * @param transaction
@@ -156,10 +123,4 @@ public interface Dataservice extends RelationalObject {
     void setModifiedBy( final UnitOfWork transaction,
                         final String newModifiedBy ) throws KException;
     
-    /**
-     * TODO: understand if this path abstraction is needed
-     * @return
-     */
-    String getAbsolutePath();
-
 }

@@ -89,7 +89,6 @@ public abstract class RestEntityConverter<T> implements ModelConverter, JsonCons
         model.setName(name);
 
         model.property(ID, requiredProperty(String.class));
-        model.property(DATA_PATH, requiredProperty(String.class));
 
         StringProperty kTypeProperty = new StringProperty();
         kTypeProperty.setRequired(true);

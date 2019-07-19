@@ -116,7 +116,7 @@ public final class ServiceTestUtilities implements StringConstants {
     
         UnitOfWork uow = repository.createTransaction(user, "Find vdbs", true, null, user); //$NON-NLS-1$
         WorkspaceManager mgr = WorkspaceManagerImpl.getInstance(repository, uow);
-        Vdb[] vdbs = mgr.findVdbs(uow);
+        Vdb[] vdbs = mgr.findVdbs(uow, null);
     
         uow.commit();
     
@@ -165,14 +165,7 @@ public final class ServiceTestUtilities implements StringConstants {
             return null;
     
         UnitOfWork uow = repository.createTransaction(user, "Find vdb model view " + viewName, true, null, user); //$NON-NLS-1$
-        View[] views = vdbModel.getViews(uow, viewName);
-        View theView = null;
-        for(View view : views) {
-            if (viewName.equals(view.getName(uow))) {
-                theView = view;
-                break;
-            }
-        }
+        View theView = vdbModel.getView(uow, viewName);
         uow.commit();
     
         return theView;
@@ -214,7 +207,7 @@ public final class ServiceTestUtilities implements StringConstants {
         DataserviceImpl dataservice = wsMgr.createDataservice(uow, wkspace, dataserviceName);
         dataservice.setDescription(uow, "This is my dataservice");
     
-        dataservice.setServiceVdb(uow, nwVdb);
+        dataservice.setServiceVdbName(uow, nwVdb.getVdbName(uow));
 
         uow.commit();
         callback.await(3, TimeUnit.MINUTES);
@@ -274,7 +267,7 @@ public final class ServiceTestUtilities implements StringConstants {
         UnitOfWork uow = repository.createTransaction(user, "Create VDB", false, callback, user); //$NON-NLS-1$
     
         WorkspaceManagerImpl wsMgr = WorkspaceManagerImpl.getInstance(repository, uow);
-        VdbImpl vdb = wsMgr.createVdb(uow, vdbName, vdbName);
+        VdbImpl vdb = wsMgr.createVdb(uow, vdbName);
     
         uow.commit();
         callback.await(3, TimeUnit.MINUTES);
@@ -300,7 +293,7 @@ public final class ServiceTestUtilities implements StringConstants {
         Vdb vdb = wsMgr.findVdb(uow, vdbName);
         
         if(vdb == null) {
-            vdb = wsMgr.createVdb(uow, vdbName, vdbName);
+            vdb = wsMgr.createVdb(uow, vdbName);
         }
         
         Model model = vdb.getModel(uow, modelName);
@@ -320,7 +313,7 @@ public final class ServiceTestUtilities implements StringConstants {
         UnitOfWork uow = repository.createTransaction(user, "Delete vdbs", false, callback, user); //$NON-NLS-1$
         
         WorkspaceManager wsMgr = WorkspaceManagerImpl.getInstance(repository, uow);
-        Vdb[] vdbs = wsMgr.findVdbs(uow);
+        Vdb[] vdbs = wsMgr.findVdbs(uow, null);
         for (Vdb vdb : vdbs) {
             wsMgr.deleteVdb(uow, vdb);
         }

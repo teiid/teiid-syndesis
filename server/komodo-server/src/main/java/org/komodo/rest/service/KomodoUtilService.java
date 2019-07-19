@@ -147,7 +147,7 @@ public final class KomodoUtilService extends KomodoService {
         try {
             // find VDBs
             uow = systemTx("getVdbs", true); //$NON-NLS-1$
-            Vdb[] vdbs = getWorkspaceManager(uow).findVdbs(uow);
+            Vdb[] vdbs = getWorkspaceManager(uow).findVdbs(uow, null);
             repoStatus.addAttribute(REPO_VDB_TOTAL, Integer.toString(vdbs.length));
 
         } catch (final Exception e) {
@@ -521,7 +521,7 @@ public final class KomodoUtilService extends KomodoService {
 				MetadataFactory mf = new MetadataFactory("PreviewVdb", 1,SystemMetadata.getInstance().getRuntimeTypeMap(),m);
 	        	parser.parseDDL(mf, restViewDefinition.getDdl());
 	        	
-				VDBMetaData vdb = (VDBMetaData) this.kengine.getMetadataInstance().admin()
+				VDBMetaData vdb = (VDBMetaData) this.kengine.getMetadataInstance().getAdmin()
 						.getVDB("PreviewVdb", "1");
 				TransformationMetadata qmi = vdb.getAttachment(TransformationMetadata.class);
 	        	

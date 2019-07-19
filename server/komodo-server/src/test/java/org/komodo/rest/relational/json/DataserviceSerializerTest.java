@@ -40,7 +40,6 @@ public final class DataserviceSerializerTest extends AbstractSerializerTest  {
     private static final String JSON = OPEN_BRACE + NEW_LINE +
         "  \"" + BASE_URI + "\": \"" + MY_BASE_URI + "\"," + NEW_LINE +
         "  \"keng__id\": \"" + DATASERVICE_NAME + "\"," + NEW_LINE +
-        "  \"keng__dataPath\": \"" + DATASERVICE_DATA_PATH + "\"," + NEW_LINE +
         "  \"keng__kType\": \"Dataservice\"," + NEW_LINE +
         "  \"tko__description\": \"my description\"," + NEW_LINE +
         "  \"serviceVdbVersion\": \"1\"," + NEW_LINE +
@@ -78,9 +77,9 @@ public final class DataserviceSerializerTest extends AbstractSerializerTest  {
         Mockito.when(theService.getPropertyNames(transaction)).thenReturn(new String[0]);
         Mockito.when(theService.getPropertyDescriptors(transaction)).thenReturn(new PropertyDescriptor[0]);
         Mockito.when(theService.getParent(transaction)).thenReturn(workspace);
-        Mockito.when(theService.getServiceVdb(transaction)).thenReturn(serviceVdb);
+        Mockito.when(theService.getServiceVdbName(transaction)).thenReturn("ServiceVdb");
 
-        this.dataservice = new RestDataservice(MY_BASE_URI, theService, false, transaction);
+        this.dataservice = new RestDataservice(MY_BASE_URI, theService, false, transaction, serviceVdb);
         this.dataservice.setDescription(DESCRIPTION);
     }
 

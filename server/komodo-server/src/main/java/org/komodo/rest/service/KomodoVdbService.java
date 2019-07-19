@@ -69,18 +69,18 @@ public final class KomodoVdbService extends KomodoService {
 
     private Model findModel(UnitOfWork uow, List<MediaType> mediaTypes,
                                                 String modelName, Vdb vdb) throws KException {
-        Model model = getWorkspaceManager(uow).findModel(uow, vdb, modelName);
+        Model model = vdb.getModel(uow, modelName);
         LOGGER.debug( "Model '{0}' was found", modelName ); //$NON-NLS-1$
         return model;
     }
 
     private View findView(UnitOfWork uow, List<MediaType> mediaTypes, String viewName, Model model) throws KException {
-    	View[] views = model.getViews(uow, viewName);
-    	if(views.length == 0) {
+    	View view = model.getView(uow, viewName);
+    	if(view == null) {
     		return null;
     	}
     	LOGGER.debug( "View '{0}' was found", viewName ); //$NON-NLS-1$
-    	return views[0];
+    	return view;
     }
 
     /**

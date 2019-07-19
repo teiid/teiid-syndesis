@@ -35,13 +35,10 @@ import org.komodo.relational.dataservice.internal.DataserviceImpl;
 import org.komodo.relational.internal.AdapterFactory;
 import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
-import org.komodo.relational.internal.ServiceVdbGenerator;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Schema;
 import org.komodo.relational.model.internal.ModelImpl;
-import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.profile.internal.ProfileImpl;
-import org.komodo.relational.profile.internal.ViewEditorStateImpl;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.vdb.internal.VdbImpl;
 import org.komodo.spi.KException;
@@ -298,8 +295,8 @@ public class WorkspaceManagerImpl extends RelationalObjectImpl implements Relati
     }
 
     @Override
-    public VdbImpl createVdb(UnitOfWork uow, String vdbName, String externalFilePath) throws KException {
-    	return createVdb(uow, null, vdbName, externalFilePath);
+    public VdbImpl createVdb(UnitOfWork uow, String vdbName) throws KException {
+    	return createVdb(uow, null, vdbName, vdbName);
     }
 
     /**
@@ -644,17 +641,6 @@ public class WorkspaceManagerImpl extends RelationalObjectImpl implements Relati
         return vdb;
     }
 
-    @Override
-	public ModelImpl findModel(UnitOfWork uow, Vdb vdb, String modelName) throws KException {
-    	VdbImpl vdbImpl = (VdbImpl)vdb;
-		if (! vdbImpl.hasChild(uow, modelName, VdbLexicon.Vdb.DECLARATIVE_MODEL)) {
-            return null;
-        }
-
-		KomodoObject kModel = vdbImpl.getChild(uow, modelName, VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        return resolve( uow, kModel, ModelImpl.class );
-	}
-	
 	@Override
 	public ProfileImpl getUserProfile(UnitOfWork transaction) throws KException {
         Repository repo = getRepository();
@@ -668,16 +654,6 @@ public class WorkspaceManagerImpl extends RelationalObjectImpl implements Relati
         return userProfile;
     }
 
-	@Override
-	public void refreshServiceVdb(UnitOfWork uow, Vdb serviceVdb, ViewEditorState[] editorStates) throws KException {
-		new ServiceVdbGenerator(this).refreshServiceVdb(uow, (VdbImpl)serviceVdb, (ViewEditorStateImpl[])editorStates);
-	}
-	
-	@Override
-	public String getKomodoWorkspaceAbsolutePath(UnitOfWork uow) throws KException {
-		return getRepository().komodoWorkspace(uow).getAbsolutePath();
-	}
-	
 	@Override
 	public boolean isSchemaActive(UnitOfWork uow, Model schemaModel) throws KException {
         // if model has children the DDL has been sequenced

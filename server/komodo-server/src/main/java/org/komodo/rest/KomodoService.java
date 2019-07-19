@@ -546,34 +546,6 @@ public abstract class KomodoService implements V1Constants {
         return createTransaction(SYSTEM_USER, description, rollback, callback); //$NON-NLS-1$
     }
 
-    protected void awaitCallback(UnitOfWork transaction) throws KException {
-        if (transaction == null)
-            return;
-
-        UnitOfWorkListener callback = transaction.getCallback();
-        if (! (callback instanceof SynchronousCallback)) {
-            return;
-        }
-
-        SynchronousCallback syncCallback = (SynchronousCallback) callback;
-        try {
-            if (! syncCallback.await(3, TimeUnit.MINUTES)) {
-                throw new CallbackTimeoutException();
-            }
-
-            if (transaction.getError() != null) {
-                throw new KException(transaction.getError());
-            }
-
-            if (syncCallback.hasError()) {
-                throw new KException(syncCallback.error());
-            }
-
-        } catch (Exception ex) {
-            throw new KException(ex);
-        }
-    }
-
     protected Dataservice findDataservice(UnitOfWork uow, String dataserviceName) throws KException {
     	return getWorkspaceManager(uow).findDataservice(uow, dataserviceName);
     }

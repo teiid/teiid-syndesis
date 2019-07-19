@@ -37,10 +37,8 @@ import org.junit.Test;
 import org.komodo.core.AbstractLocalRepositoryTest;
 import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.Property;
-import org.komodo.metadata.TeiidConnectionProvider;
-import org.komodo.metadata.internal.DefaultMetadataInstance;
+import org.komodo.metadata.DataTypeService;
 import org.komodo.test.utils.TestUtilities;
-import org.mockito.Mockito;
 import org.teiid.modeshape.sequencer.vdb.lexicon.CoreLexicon;
 import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 import org.w3c.dom.CharacterData;
@@ -98,9 +96,7 @@ public class TestVdbExport extends AbstractLocalRepositoryTest {
         XMLStreamWriter xtw = null;
         xtw = xof.createXMLStreamWriter(writer);
 
-        TeiidConnectionProvider provider = Mockito.mock(TeiidConnectionProvider.class);
-        DefaultMetadataInstance instance = new DefaultMetadataInstance(provider);
-        return new VdbNodeVisitor(instance.getDataTypeService(), xtw);
+        return new VdbNodeVisitor(new DataTypeService(), xtw);
     }
 
     @Test(timeout=3000000)

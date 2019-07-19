@@ -57,8 +57,7 @@ import org.teiid.runtime.EmbeddedConfiguration;
 @ComponentScan(basePackages = {
 		"org.komodo.core",
 		"org.komodo.metadata.internal", 
-		"org.komodo.core.repository",
-		"org.komodo.rest",})
+		"org.komodo.core.repository"})
 public class KomodoAutoConfiguration implements ApplicationListener<ContextRefreshedEvent> {
 	
     @Value("${encrypt.key}")

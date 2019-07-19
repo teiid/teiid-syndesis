@@ -28,13 +28,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.komodo.core.KEvent.Type;
 import org.komodo.core.internal.repository.Repository;
-import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.RepositoryClientEvent;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.metadata.MetadataInstance;
-import org.komodo.metadata.internal.DefaultMetadataInstance;
-import org.komodo.metadata.internal.MetadataClientEvent;
-import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.workspace.WorkspaceManagerImpl;
 import org.komodo.spi.KEngine;
 import org.komodo.spi.KException;
@@ -131,7 +127,7 @@ public class KEngineImpl implements KEngine, KObserver, StringConstants {
 
     private KomodoErrorHandler errorHandler = new KomodoErrorHandler();
 
-    private DefaultMetadataInstance metadataInstance;
+    private MetadataInstance metadataInstance;
 
     private final Set<KObserver> observers = new HashSet<>();
     
@@ -166,13 +162,13 @@ public class KEngineImpl implements KEngine, KObserver, StringConstants {
     	this.defaultRepository = repository;
     }
 
+    @Override
     public MetadataInstance getMetadataInstance() throws KException {
         return this.metadataInstance;
     }
     
     @Autowired
-    public void setMetadataInstance(DefaultMetadataInstance instance) {
-    	ArgCheck.isTrue(State.SHUTDOWN.equals(getState()), "Engine should be shutdown before calling setDefaultRepository"); //$NON-NLS-1$
+    public void setMetadataInstance(MetadataInstance instance) {
     	this.metadataInstance = instance;
     }
 
@@ -223,12 +219,6 @@ public class KEngineImpl implements KEngine, KObserver, StringConstants {
         }
     }
 
-    private void notifyMetadataServer(final MetadataClientEvent event) throws KException {
-        ArgCheck.isNotNull(event);
-
-        metadataInstance.notify(event);
-    }
-
     /**
      * @param repository the repository being removed (cannot be <code>null</code>)
      *
@@ -256,9 +246,6 @@ public class KEngineImpl implements KEngine, KObserver, StringConstants {
 
             // Notify any registered repositories that this engine has shutdown
             notifyRepositories(RepositoryClientEvent.createShuttingDownEvent(this));
-
-            // Notify the metadata instance that this engine has shutdown
-            notifyMetadataServer(MetadataClientEvent.createShuttingDownEvent(this));
 
             // Notify any 3rd-party listeners that this engine has shutdown
             notifyObservers(engineShutdownEvent(this));
@@ -346,8 +333,6 @@ public class KEngineImpl implements KEngine, KObserver, StringConstants {
             add(defaultRepository);
             defaultRepository.registerKEngine(this);
         	
-        	metadataInstance.addObserver(this);
-
             // TODO implement start (read any saved session state, connect to repos if auto-connect, etc.)
             this.state = State.STARTED;
             KLog.getLogger().debug("Komodo engine successfully started"); //$NON-NLS-1$
@@ -492,13 +477,4 @@ public class KEngineImpl implements KEngine, KObserver, StringConstants {
         return getDefaultRepository().createTransaction(userName, name, rollbackOnly, callback, repoUser);
 	}
 
-	@Override
-	public Dataservice findDataserviceByPath(UnitOfWork uow, String dsPath) throws KException {
-		Repository repo = getDefaultRepository();
-        KomodoObject dsObject = repo.getFromWorkspace(uow, dsPath);
-        if (dsObject == null)
-            return null; // Not a path in the workspace
-
-        return getWorkspaceManager(uow).resolve(uow, dsObject, Dataservice.class);
-	}
 }
