@@ -313,67 +313,6 @@ public final class KomodoUtilService extends KomodoService {
     }
 
     /**
-     * Get the view editor state with the given id from the user's profile
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
-     * @return a JSON document representing the view editor state in the user profile (never <code>null</code>)
-     * @throws KomodoRestException
-     *         if there is a problem constructing the Connection JSON document
-     */
-    @GET
-    @Path(V1Constants.USER_PROFILE + FORWARD_SLASH +
-                  V1Constants.VIEW_EDITOR_STATE + FORWARD_SLASH +
-                  V1Constants.VIEW_EDITOR_STATE_PLACEHOLDER)
-    @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Returns the view editor state with the given id",
-                  response = RestViewEditorState.class)
-    @ApiResponses(value = {
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-    public Response getViewEditorState( final @Context HttpHeaders headers,
-                                    final @Context UriInfo uriInfo,
-                                    @ApiParam(value = "Name of the view editor state to fetch", required = true)
-                                    final @PathParam( "viewEditorStateId" ) String viewEditorStateId) throws KomodoRestException {
-
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
-
-        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        UnitOfWork uow = null;
-
-        try {
-
-            final String txId = "getViewEditorStates"; //$NON-NLS-1$ //$NON-NLS-2$
-            uow = createTransaction(principal, txId, true );
-            Profile profile = getUserProfile();
-            ViewEditorState viewEditorState = profile.getViewEditorState(viewEditorStateId);
-            LOGGER.debug( "getViewEditorState:found '{0}' ViewEditorStates",
-                              viewEditorState == null ? 0 : 1 ); //$NON-NLS-1$
-
-            if (viewEditorState == null)
-                return Response.noContent().build();
-
-            RestViewEditorState restViewEditorState = new RestViewEditorState(uriInfo.getBaseUri(), viewEditorState);
-            LOGGER.debug("getViewEditorStates:ViewEditorState '{0}' entity was constructed", viewEditorState.getName()); //$NON-NLS-1$
-            return commit( uow, mediaTypes, restViewEditorState );
-
-        } catch ( final Exception e ) {
-            if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
-                uow.rollback();
-            }
-
-            if ( e instanceof KomodoRestException ) {
-                throw ( KomodoRestException )e;
-            }
-
-            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.PROFILE_EDITOR_STATES_GET_ERROR);
-        }
-    }
-
-    /**
      * Stash an array of ViewEditorStates
      * @param headers
      *        the request headers (never <code>null</code>)

@@ -21,7 +21,6 @@ import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -88,6 +87,8 @@ import org.teiid.adminapi.impl.VDBImportMetadata;
 import org.teiid.adminapi.impl.VDBMetaData;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -743,154 +744,110 @@ public class KomodoMetadataService extends KomodoService {
         }
     }
 
+	/**
+	 * @param headers the request headers (never <code>null</code>)
+	 * @param uriInfo the request URI information (never <code>null</code>)
+	 * @return the JSON representation of the schema collection (never
+	 *         <code>null</code>)
+	 * @throws KomodoRestException if there is a problem finding the schema
+	 *                             collection or constructing the JSON
+	 *                             representation
+	 */
+	@GET
+	@Path("connection-schema")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "Get the native schema for connections", response = RestSchemaNode[].class)
+    @ApiImplicitParams({
+      @ApiImplicitParam(
+            name = QueryParamKeys.PATTERN,
+            value = "A regex expression used when searching. If not present, all schema are returned.",
+            required = false,
+            dataType = "string",
+            paramType = "query")
+    })
+	@ApiResponses(value = { @ApiResponse(code = 403, message = "An error has occurred."),
+			@ApiResponse(code = 404, message = "No results found"),
+			@ApiResponse(code = 406, message = "Only JSON is returned by this operation") })
+	public Response getConnectionSchema(@Context final HttpHeaders headers, final @Context UriInfo uriInfo)
+			throws KomodoRestException {
+		final SecurityPrincipal principal = checkSecurityContext(headers);
+
+		if (principal.hasErrorResponse()) {
+			return principal.getErrorResponse();
+		}
+
+		final List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+		UnitOfWork uow = null;
+
+		try {
+			// Get the teiid sources matching the name pattern
+			final String searchPattern = uriInfo.getQueryParameters().getFirst(QueryParamKeys.PATTERN);
+			TeiidDataSource[] teiidSources = getTeiidSources(searchPattern);
+
+			uow = createTransaction(principal, "getConnectionSchema", true); //$NON-NLS-1$
+
+			List<RestSchemaNode> rootNodes = new ArrayList<RestSchemaNode>();
+
+			for (TeiidDataSource teiidSource : teiidSources) {
+				final Model schemaModel = findSchemaModel(teiidSource);
+
+				List<RestSchemaNode> schemaNodes = null;
+				if (schemaModel != null) {
+					final Table[] tables = schemaModel.getTables();
+
+					schemaNodes = this.generateSourceSchema(teiidSource.getName(), tables);
+					if (schemaNodes != null && !schemaNodes.isEmpty()) {
+						RestSchemaNode rootNode = new RestSchemaNode();
+						rootNode.setName(teiidSource.getName());
+						rootNode.setType("root");
+						for (RestSchemaNode sNode : schemaNodes) {
+							rootNode.addChild(sNode);
+						}
+						rootNodes.add(rootNode);
+					}
+				}
+			}
+
+			return commit(uow, mediaTypes, rootNodes);
+		} catch (final Exception e) {
+			if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+				uow.rollback();
+			}
+
+			if (e instanceof KomodoRestException) {
+				throw (KomodoRestException) e;
+			}
+
+			return createErrorResponseWithForbidden(mediaTypes, e,
+					RelationalMessages.Error.CONNECTION_SERVICE_GET_TABLES_ERROR);
+		}
+	}
+    
     /**
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
-     * @param syndesisSourceName
-     *        the name of the syndesisSource whose tables are being requested (cannot be empty)
-     * @return the JSON representation of the tables collection (never <code>null</code>)
-     * @throws KomodoRestException
-     *         if there is a problem finding the specified syndesis source or constructing the JSON representation
+     * Get all of the teiid sources matching the supplied name pattern
      */
-    @GET
-    @Path( "{syndesisSourceName}/schema" )
-    @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation( value = "Get the native schema for the syndesis source",
-                   response = RestSchemaNode[].class )
-    @ApiResponses( value = {
-        @ApiResponse( code = 403, message = "An error has occurred." ),
-        @ApiResponse( code = 404, message = "No syndesis source could be found with the specified name" ),
-        @ApiResponse( code = 406, message = "Only JSON is returned by this operation" )
-    } )
-    public Response getSchema( @Context final HttpHeaders headers,
-                               final @Context UriInfo uriInfo,
-                               @ApiParam( value = "Name of the syndesis source",
-                                          required = true )
-                               @PathParam( "syndesisSourceName" )
-                               final String syndesisSourceName ) throws KomodoRestException {
-        final SecurityPrincipal principal = checkSecurityContext( headers );
+	private TeiidDataSource[] getTeiidSources(final String namePattern) throws KException {
+		// Get all teiid sources
+		Collection<TeiidDataSource> allTeiidSources = getMetadataInstance().getDataSources();
 
-        if ( principal.hasErrorResponse() ) {
-            return principal.getErrorResponse();
-        }
+		final boolean matchPattern = ((namePattern != null) && (namePattern.length() > 0));
+		final List<TeiidDataSource> teiidSources = new ArrayList<>();
 
-        final List< MediaType > mediaTypes = headers.getAcceptableMediaTypes();
-        UnitOfWork uow = null;
+		for (final TeiidDataSource teiidSource : allTeiidSources) {
+			if (matchPattern) {
+				// convert pattern to a regex
+				final String regex = namePattern.replace("*", ".*"); //$NON-NLS-1$ //$NON-NLS-2$
 
-        try {
-            uow = createTransaction( principal, "getSchema?syndesisSourceName=" + syndesisSourceName, true ); //$NON-NLS-1$
+				if (teiidSource.getName().matches(regex)) {
+					teiidSources.add(teiidSource);
+				}
+			} else {
+				teiidSources.add(teiidSource);
+			}
+		}
 
-            // Find the bound teiid source corresponding to the syndesis source
-            TeiidDataSource teiidSource = this.findTeiidSource(syndesisSourceName);
-
-            if (teiidSource == null)
-                return commitNoConnectionFound(uow, mediaTypes, syndesisSourceName);
-
-            final Model schemaModel = findSchemaModel( teiidSource );
-
-            List<RestSchemaNode> schemaNodes = Collections.emptyList();
-            if ( schemaModel != null ) {
-                final Table[] tables = schemaModel.getTables( );
-                
-                schemaNodes = this.generateSourceSchema(syndesisSourceName, tables);
-            }
-
-            return commit( uow, mediaTypes, schemaNodes ); 
-        } catch ( final Exception e ) {
-            if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
-                uow.rollback();
-            }
-
-            if ( e instanceof KomodoRestException ) {
-                throw ( KomodoRestException )e;
-            }
-
-            return createErrorResponseWithForbidden( mediaTypes, e, RelationalMessages.Error.CONNECTION_SERVICE_GET_TABLES_ERROR );
-        }
-    }
-
-    /**
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
-     * @return the JSON representation of the schema collection (never <code>null</code>)
-     * @throws KomodoRestException
-     *         if there is a problem finding the schema collection or constructing the JSON representation
-     */
-    @GET
-    @Path( "connection-schema" )
-    @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation( value = "Get the native schema for all syndesis sources",
-                   response = RestSchemaNode[].class )
-    @ApiResponses( value = {
-        @ApiResponse( code = 403, message = "An error has occurred." ),
-        @ApiResponse( code = 404, message = "No results found" ),
-        @ApiResponse( code = 406, message = "Only JSON is returned by this operation" )
-    } )
-    public Response getAllConnectionSchema( @Context final HttpHeaders headers,
-                                            final @Context UriInfo uriInfo ) throws KomodoRestException {
-        final SecurityPrincipal principal = checkSecurityContext( headers );
-
-        if ( principal.hasErrorResponse() ) {
-            return principal.getErrorResponse();
-        }
-
-        final List< MediaType > mediaTypes = headers.getAcceptableMediaTypes();
-        UnitOfWork uow = null;
-
-        try {
-            uow = createTransaction( principal, "getAllConnectionSchema", true ); //$NON-NLS-1$
-
-            List<RestSchemaNode> rootNodes = new ArrayList<RestSchemaNode>();
-            
-            // Get syndesis sources
-            Collection<DefaultSyndesisDataSource> dataSources = this.openshiftClient.getSyndesisSources(getAuthenticationToken());
-
-            // Get teiid datasources
-            Collection<TeiidDataSource> allTeiidSources = getMetadataInstance().getDataSources();
-
-            // Add status summary for each of the syndesis sources.  Determine if there is a matching teiid source
-            for (DefaultSyndesisDataSource dataSource : dataSources) {
-                for (TeiidDataSource teiidSource : allTeiidSources) {
-                    // Syndesis source has a corresponding VDB.  Use VDB for status
-                    if (teiidSource.getName().equals(dataSource.getName())) {
-                        final Model schemaModel = findSchemaModel( teiidSource );
-
-                        List<RestSchemaNode> schemaNodes = null;
-                        if ( schemaModel != null ) {
-                            final Table[] tables = schemaModel.getTables( );
-                            
-                            schemaNodes = this.generateSourceSchema(dataSource.getName(), tables);
-                            if(schemaNodes != null && !schemaNodes.isEmpty()) {
-                            	RestSchemaNode rootNode = new RestSchemaNode();
-                            	rootNode.setName(dataSource.getName());
-                            	rootNode.setType("root");
-                            	for(RestSchemaNode sNode: schemaNodes) {
-                            		rootNode.addChild(sNode);
-                            	}
-                            	rootNodes.add(rootNode);
-                            }
-                        }
-                    }
-                }
-            }
-
-            return commit( uow, mediaTypes, rootNodes ); 
-        } catch ( final Exception e ) {
-            if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
-                uow.rollback();
-            }
-
-            if ( e instanceof KomodoRestException ) {
-                throw ( KomodoRestException )e;
-            }
-
-            return createErrorResponseWithForbidden( mediaTypes, e, RelationalMessages.Error.CONNECTION_SERVICE_GET_TABLES_ERROR );
-        }
-    }
+		return teiidSources.toArray(new TeiidDataSource[teiidSources.size()]);
+	}
 
     /**
      * Get status for the available syndesis sources.
