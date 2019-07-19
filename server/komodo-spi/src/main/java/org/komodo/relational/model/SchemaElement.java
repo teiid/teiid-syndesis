@@ -18,7 +18,6 @@
 package org.komodo.relational.model;
 
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * Represents an element that has a schema element type.
@@ -73,7 +72,7 @@ public interface SchemaElement {
      *         if an error occurs
      * @see SchemaElementType#DEFAULT_VALUE
      */
-    SchemaElementType getSchemaElementType( final UnitOfWork transaction ) throws KException;
+    SchemaElementType getSchemaElementType( ) throws KException;
 
     /**
      * @param transaction
@@ -84,7 +83,7 @@ public interface SchemaElement {
      *         if an error occurs
      * @see SchemaElementType#DEFAULT_VALUE
      */
-    void setSchemaElementType( final UnitOfWork transaction,
+    void setSchemaElementType( 
                                final SchemaElementType newSchemaElementType ) throws KException;
 
 }

@@ -18,10 +18,10 @@
 package org.komodo.rest.relational.response.vieweditorstate;
 
 import java.net.URI;
+
 import org.komodo.relational.profile.SqlProjectedColumn;
 import org.komodo.rest.RestBasicEntity;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * Rest object for a projected column
@@ -64,19 +64,18 @@ public class RestSqlProjectedColumn extends RestBasicEntity {
      * Constructor
      * @param baseUri base uri
      * @param sqlProjectedColumn the projected column
-     * @param uow transaction
      * @throws KException if error
      */
-    public RestSqlProjectedColumn(URI baseUri, SqlProjectedColumn sqlProjectedColumn, UnitOfWork uow) throws KException {
+    public RestSqlProjectedColumn(URI baseUri, SqlProjectedColumn sqlProjectedColumn) throws KException {
         super(baseUri);
         
-        String value = sqlProjectedColumn.getName(uow);
+        String value = sqlProjectedColumn.getName();
         this.setName(value);
         
-        value = sqlProjectedColumn.getType(uow);
+        value = sqlProjectedColumn.getType();
         this.setType(value);
         
-        boolean bVal = sqlProjectedColumn.isSelected(uow);
+        boolean bVal = sqlProjectedColumn.isSelected();
         this.setSelected(bVal);
     }
 

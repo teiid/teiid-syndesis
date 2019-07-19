@@ -20,7 +20,6 @@ package org.komodo.relational.model.internal;
 import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.ObjectImpl;
-import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.internal.TypeResolver;
 import org.komodo.relational.model.UniqueConstraint;
 import org.komodo.spi.KException;
@@ -63,15 +62,13 @@ public final class UniqueConstraintImpl extends TableConstraintImpl implements U
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.core.repository.KomodoObject)
+         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.core.repository.KomodoObject)
          */
         @Override
-        public boolean resolvable( final UnitOfWork transaction,
-                                   final KomodoObject kobject ) throws KException {
-            return ObjectImpl.validateType( transaction, kobject, Constraint.TABLE_ELEMENT )
-                   && ObjectImpl.validatePropertyValue( transaction,
-                		   RepositoryImpl.getRepository(transaction),
+        public boolean resolvable( final KomodoObject kobject ) throws KException {
+            return ObjectImpl.validateType( kobject, Constraint.TABLE_ELEMENT )
+                   && ObjectImpl.validatePropertyValue( kobject.getTransaction(),
+                		   kobject.getRepository(),
                                                         kobject,
                                                         Constraint.TYPE,
                                                         CONSTRAINT_TYPE.toValue() );
@@ -80,17 +77,15 @@ public final class UniqueConstraintImpl extends TableConstraintImpl implements U
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.core.repository.KomodoObject)
+         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.core.repository.KomodoObject)
          */
         @Override
-        public UniqueConstraintImpl resolve( final UnitOfWork transaction,
-                                         final KomodoObject kobject ) throws KException {
+        public UniqueConstraintImpl resolve( final KomodoObject kobject ) throws KException {
             if ( kobject.getTypeId() == UniqueConstraint.TYPE_ID ) {
                 return ( UniqueConstraintImpl )kobject;
             }
 
-            return new UniqueConstraintImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
+            return new UniqueConstraintImpl( kobject.getTransaction(), kobject.getRepository(), kobject.getAbsolutePath() );
         }
 
     };
@@ -112,7 +107,7 @@ public final class UniqueConstraintImpl extends TableConstraintImpl implements U
     }
 
     @Override
-    public KomodoType getTypeIdentifier(UnitOfWork uow) {
+    public KomodoType getTypeIdentifier() {
         return UniqueConstraint.IDENTIFIER;
     }
 
@@ -139,21 +134,21 @@ public final class UniqueConstraintImpl extends TableConstraintImpl implements U
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.internal.RelationalObjectImpl#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.relational.internal.RelationalObjectImpl#getParent()
      */
     @Override
-    public TableImpl getParent( final UnitOfWork transaction ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
+    public TableImpl getParent() throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
 
-        final KomodoObject parent = super.getParent( transaction );
-        final TableImpl result = TableImpl.RESOLVER.resolve( transaction, parent );
+        final KomodoObject parent = super.getParent( );
+        final TableImpl result = TableImpl.RESOLVER.resolve( parent );
         return result;
     }
     
     @Override
-    public TableImpl getRelationalParent(UnitOfWork transaction) throws KException {
-    	return this.getParent(transaction);
+    public TableImpl getRelationalParent() throws KException {
+    	return this.getParent();
     }
 
 }

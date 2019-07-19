@@ -43,7 +43,6 @@ import org.komodo.core.LexiconConstants.JcrLexicon;
 import org.komodo.core.repository.KSequencerController;
 import org.komodo.core.repository.KSequencerListener;
 import org.komodo.spi.StringConstants;
-import org.komodo.spi.repository.UnitOfWorkDelegate;
 import org.komodo.utils.KLog;
 import org.modeshape.jcr.api.JcrConstants;
 import org.teiid.modeshape.sequencer.dataservice.lexicon.DataVirtLexicon;

@@ -25,7 +25,6 @@ import org.komodo.core.LexiconConstants.JcrLexicon;
 import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.PropertyDescriptor;
-import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.spi.KException;
@@ -49,14 +48,14 @@ public final class RelationalObjectImplTest extends RelationalModelTest {
     @Before
     public void init() throws Exception {
         final KomodoObject model = createModel();
-        this.robject = new RelationalTestObject( getTransaction(), RepositoryImpl.getRepository(getTransaction()), model.getAbsolutePath() );
+        this.robject = new RelationalTestObject( getTransaction(), model.getRepository(), model.getAbsolutePath() );
         commit();
     }
 
     @Test
     public void shouldFilterJcrNamespace() throws Exception {
 
-        for ( final PropertyDescriptor descriptor : this.robject.getPropertyDescriptors( getTransaction() ) ) {
+        for ( final PropertyDescriptor descriptor : this.robject.getPropertyDescriptors( ) ) {
             if ( descriptor.getName().startsWith( JcrLexicon.Namespace.PREFIX ) ) {
                 fail();
             }
@@ -66,7 +65,7 @@ public final class RelationalObjectImplTest extends RelationalModelTest {
     @Test
     public void shouldFilterResidual() throws Exception {
 
-        for ( final PropertyDescriptor descriptor : this.robject.getPropertyDescriptors( getTransaction() ) ) {
+        for ( final PropertyDescriptor descriptor : this.robject.getPropertyDescriptors( ) ) {
             if ( "*".equals( descriptor.getName() ) ) {
                 fail();
             }

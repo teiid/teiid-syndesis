@@ -30,7 +30,6 @@ import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.OperationType;
 import org.komodo.core.repository.Property;
-import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.metadata.DataTypeService;
 import org.komodo.metadata.DataTypeService.DataTypeName;
 import org.komodo.metadata.MetadataNamespaces;
@@ -367,7 +366,7 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
         if (!hasMixinType(transaction, namespace, TeiidDdlLexicon.OptionNamespace.STATEMENT))
             return;
 
-        String prefix = namespace.getName(transaction);
+        String prefix = namespace.getName();
         String uriValue = undefined();
         Property uriProp = property(transaction, namespace, TeiidDdlLexicon.OptionNamespace.URI);
         if (uriProp != null)
@@ -406,7 +405,7 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
 
     private void column(UnitOfWork transaction, KomodoObject column, ColumnContext context, boolean includeName, boolean includeType) throws Exception {
         if (includeName) {
-            append(escapeSinglePart(column.getName(transaction)));
+            append(escapeSinglePart(column.getName()));
         }
 
         if (includeType) {
@@ -469,7 +468,7 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
         if (!hasMixinType(transaction, stmtOption, StandardDdlLexicon.TYPE_STATEMENT_OPTION))
             return;
 
-        String key = stmtOption.getName(transaction);
+        String key = stmtOption.getName();
         String value = undefined();
 
         Property property = property(transaction, stmtOption, StandardDdlLexicon.VALUE);
@@ -490,7 +489,7 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
             // The prefix represents a modeshape prefix so need the original uri
             // from the modeshape namespace registry
             //
-            KObjectFactory objectFactory = RepositoryImpl.getRepository(transaction).getObjectFactory();
+            KObjectFactory objectFactory = stmtOption.getRepository().getObjectFactory();
             String mURI = objectFactory.getNamespaceURI(transaction, prefix);
             URI uri = null;
             if (mURI != null) {
@@ -575,7 +574,7 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
         if (TableType.GLOBAL_TEMP_TABLE == context.getTableType() && columnContext.isAutoIncremented() &&
             columnContext.isNotNull() &&
             DataTypeName.INTEGER.equals(columnContext.getDataTypeName())) {
-            append(escapeSinglePart(tableElement.getName(transaction)));
+            append(escapeSinglePart(tableElement.getName()));
             append(SPACE);
             append(SERIAL);
         } else {
@@ -601,7 +600,7 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
         if (!hasMixinType(transaction, constraint, expectedType))
             return;
 
-        Repository repository = RepositoryImpl.getRepository(transaction);
+        Repository repository = constraint.getRepository();
 
         append(COMMA).append(NEW_LINE).append(TAB);
 
@@ -619,7 +618,7 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
                 Object refValue = valIter.next();
 
                 KomodoObject keyColumn = referenceByUuid(transaction, repository, refValue.toString());
-                append(escapeSinglePart(keyColumn.getName(transaction)));
+                append(escapeSinglePart(keyColumn.getName()));
 
                 if (valIter.hasNext())
                     append(COMMA).append(SPACE);
@@ -637,7 +636,7 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
 
             if (tableRefProp != null) {
                 tableReference = referenceByUuid(transaction, repository, tableRefProp.getStringValue(transaction));
-                append(SPACE).append(tableReference == null ? undefined() : tableReference.getName(transaction));
+                append(SPACE).append(tableReference == null ? undefined() : tableReference.getName());
             }
 
             Property tableRefRefsProp = property(transaction, constraint, TeiidDdlLexicon.Constraint.TABLE_REFERENCE_REFERENCES);
@@ -651,7 +650,7 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
                 while(valIter.hasNext()) {
                     Object refValue = valIter.next();
                     KomodoObject refColumn = referenceByUuid(transaction, repository, refValue.toString());
-                    append(refColumn == null ? undefined() : escapeSinglePart(refColumn.getName(transaction)));
+                    append(refColumn == null ? undefined() : escapeSinglePart(refColumn.getName()));
 
                     if (valIter.hasNext())
                         append(COMMA).append(SPACE);
@@ -683,7 +682,7 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
     }
 
     private void addTableBody(UnitOfWork transaction, KomodoObject kObject, CreateObjectContext context) throws Exception {
-        String name = escapeSinglePart(kObject.getName(transaction));
+        String name = escapeSinglePart(kObject.getName());
         append(name);
 
         Collection<KomodoObject> tableElements = getChildren(transaction, kObject, TeiidDdlLexicon.CreateTable.TABLE_ELEMENT);
@@ -726,7 +725,7 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
 
         if (TableType.GLOBAL_TEMP_TABLE != context.getTableType()) {
             if (context.isVirtual()) {
-            	Property p = tabulation.getProperty(transaction, TeiidDdlLexicon.CreateTable.QUERY_EXPRESSION);
+            	Property p = tabulation.getProperty(TeiidDdlLexicon.CreateTable.QUERY_EXPRESSION);
                 String teiidSql = p.getStringValue(transaction); 
                 append(NEW_LINE).append(AS).append(NEW_LINE).append(teiidSql);
             }
@@ -833,14 +832,14 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
         else
             append(FOREIGN);
 
-        append(SPACE).append(PROCEDURE).append(SPACE).append(escapeSinglePart(procedure.getName(transaction)));
+        append(SPACE).append(PROCEDURE).append(SPACE).append(escapeSinglePart(procedure.getName()));
         append(OPEN_BRACKET);
         procedureParameters(transaction, procedure);
         append(CLOSE_BRACKET);
 
-        boolean hasResultSet = procedure.hasChild(transaction, TeiidDdlLexicon.CreateProcedure.RESULT_SET);
+        boolean hasResultSet = procedure.hasChild(TeiidDdlLexicon.CreateProcedure.RESULT_SET);
         if(hasResultSet) {
-            KomodoObject resultSet = procedure.getChild(transaction, TeiidDdlLexicon.CreateProcedure.RESULT_SET);
+            KomodoObject resultSet = procedure.getChild(TeiidDdlLexicon.CreateProcedure.RESULT_SET);
             // Handle DataType result
             if (hasMixinType(transaction, resultSet, TeiidDdlLexicon.CreateProcedure.RESULT_DATA_TYPE)) {
                 ColumnContext columnContext = createColumnContext(transaction, resultSet);
@@ -870,7 +869,7 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
         //block
         if (context.isVirtual()) {
             append(NEW_LINE).append(AS).append(NEW_LINE);
-            Property p = procedure.getProperty(transaction, TeiidDdlLexicon.CreateProcedure.STATEMENT);
+            Property p = procedure.getProperty(TeiidDdlLexicon.CreateProcedure.STATEMENT);
             String teiidSql = p.getStringValue(transaction);
             append(teiidSql);
             append(SEMI_COLON);
@@ -918,13 +917,13 @@ public class DdlNodeVisitor extends AbstractNodeVisitor
         else
             append(VIRTUAL);
 
-        append(SPACE).append(FUNCTION).append(SPACE).append(escapeSinglePart(function.getName(transaction)));
+        append(SPACE).append(FUNCTION).append(SPACE).append(escapeSinglePart(function.getName()));
 
         append(OPEN_BRACKET);
         functionParameters(transaction, function);
         append(CLOSE_BRACKET);
 
-        KomodoObject resultSet = function.getChild(transaction, TeiidDdlLexicon.CreateProcedure.RESULT_SET);
+        KomodoObject resultSet = function.getChild(TeiidDdlLexicon.CreateProcedure.RESULT_SET);
         if (resultSet != null) {
             ColumnContext columnContext = createColumnContext(transaction, resultSet);
             append(SPACE).append(RETURNS).append(SPACE).

@@ -29,7 +29,6 @@ import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.internal.RelationalObjectImpl.Filter;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.model.TableConstraint;
-import org.komodo.relational.model.UniqueConstraint;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoType;
 import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
@@ -45,7 +44,7 @@ public final class UniqueConstraintImplTest extends RelationalModelTest {
     @Before
     public void init() throws Exception {
         this.table = createTable();
-        this.uniqueConstraint = this.table.addUniqueConstraint( getTransaction(), NAME );
+        this.uniqueConstraint = this.table.addUniqueConstraint( NAME );
         commit();
     }
 
@@ -75,25 +74,25 @@ public final class UniqueConstraintImplTest extends RelationalModelTest {
 
     @Test
     public void shouldHaveCorrectDescriptor() throws Exception {
-        assertThat( this.uniqueConstraint.hasDescriptor( getTransaction(), TeiidDdlLexicon.Constraint.TABLE_ELEMENT ), is( true ) );
+        assertThat( this.uniqueConstraint.hasDescriptor( TeiidDdlLexicon.Constraint.TABLE_ELEMENT ), is( true ) );
     }
 
     @Test
     public void shouldHaveCorrectTypeIdentifier() throws Exception {
-        assertThat(this.uniqueConstraint.getTypeIdentifier( getTransaction() ), is(KomodoType.UNIQUE_CONSTRAINT));
+        assertThat(this.uniqueConstraint.getTypeIdentifier( ), is(KomodoType.UNIQUE_CONSTRAINT));
     }
 
     @Test
     public void shouldHaveMoreRawProperties() throws Exception {
-        final String[] filteredProps = this.uniqueConstraint.getPropertyNames( getTransaction() );
+        final String[] filteredProps = this.uniqueConstraint.getPropertyNames( );
         final String[] rawProps = this.uniqueConstraint.getRawPropertyNames( getTransaction() );
         assertThat( ( rawProps.length > filteredProps.length ), is( true ) );
     }
 
     @Test
     public void shouldHaveParentTableAfterConstruction() throws Exception {
-        assertThat( this.uniqueConstraint.getParent( getTransaction() ), is( instanceOf( Table.class ) ) );
-        assertThat( this.uniqueConstraint.getTable( getTransaction() ), is( this.table ) );
+        assertThat( this.uniqueConstraint.getParent( ), is( instanceOf( Table.class ) ) );
+        assertThat( this.uniqueConstraint.getTable( ), is( this.table ) );
     }
 
     @Test( expected = UnsupportedOperationException.class )
@@ -103,7 +102,7 @@ public final class UniqueConstraintImplTest extends RelationalModelTest {
 
     @Test
     public void shouldNotContainFilteredProperties() throws Exception {
-        final String[] filteredProps = this.uniqueConstraint.getPropertyNames( getTransaction() );
+        final String[] filteredProps = this.uniqueConstraint.getPropertyNames( );
         final Filter[] filters = ((UniqueConstraintImpl)this.uniqueConstraint).getFilters();
 
         for ( final String name : filteredProps ) {
@@ -117,7 +116,7 @@ public final class UniqueConstraintImplTest extends RelationalModelTest {
     public void shouldRename() throws Exception {
         final String newName = "blah";
         this.uniqueConstraint.rename( getTransaction(), newName );
-        assertThat( this.uniqueConstraint.getName( getTransaction() ), is( newName ) );
+        assertThat( this.uniqueConstraint.getName( ), is( newName ) );
     }
 
 }

@@ -24,7 +24,6 @@ import org.komodo.core.KomodoLexicon;
 import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.ObjectImpl;
-import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.internal.RelationalModelFactory;
@@ -76,29 +75,25 @@ public class ProfileImpl extends RelationalObjectImpl implements Profile {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.core.repository.KomodoObject)
+         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.core.repository.KomodoObject)
          */
         @Override
-        public boolean resolvable( final UnitOfWork transaction,
-                                   final KomodoObject kobject ) throws KException {
-            return ObjectImpl.validateType( transaction, kobject, KomodoLexicon.Profile.NODE_TYPE );
+        public boolean resolvable( final KomodoObject kobject ) throws KException {
+            return ObjectImpl.validateType( kobject, KomodoLexicon.Profile.NODE_TYPE );
         }
 
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.core.repository.KomodoObject)
+         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.core.repository.KomodoObject)
          */
         @Override
-        public ProfileImpl resolve( final UnitOfWork transaction,
-                            final KomodoObject kobject ) throws KException {
+        public ProfileImpl resolve( final KomodoObject kobject ) throws KException {
             if ( kobject.getTypeId() == Profile.TYPE_ID ) {
                 return ( ProfileImpl )kobject;
             }
 
-            return new ProfileImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
+            return new ProfileImpl( kobject.getTransaction(), kobject.getRepository(), kobject.getAbsolutePath() );
         }
     };
 
@@ -123,18 +118,17 @@ public class ProfileImpl extends RelationalObjectImpl implements Profile {
     }
 
     @Override
-    public KomodoType getTypeIdentifier(UnitOfWork uow) {
+    public KomodoType getTypeIdentifier() {
         return Profile.IDENTIFIER;
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.internal.RelationalObjectImpl#hasChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.relational.internal.RelationalObjectImpl#hasChild(java.lang.String)
      */
     @Override
-    public boolean hasChild( final UnitOfWork transaction,
-                             final String name ) throws KException {
+    public boolean hasChild( final String name ) throws KException {
         if ( KomodoLexicon.Profile.VIEW_EDITOR_STATES.equals( name ) ) {
             return false; // use hasRawChild
         }
@@ -143,22 +137,21 @@ public class ProfileImpl extends RelationalObjectImpl implements Profile {
             return false; // use hasRawChild
         }
 
-        return ( super.hasChild( transaction, name ) ||
-                            getViewEditorStates( transaction, name ).length != 0 );
+        return ( super.hasChild( name ) ||
+                            getViewEditorState( name ) != null );
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.internal.RelationalObjectImpl#getChildren(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String[])
+     * @see org.komodo.relational.internal.RelationalObjectImpl#getChildren(java.lang.String[])
      */
     @Override
-    public KomodoObject[] getChildren(final UnitOfWork transaction, final String... namePatterns) throws KException {
-        ArgCheck.isNotNull(transaction, "transaction"); //$NON-NLS-1$
-        ArgCheck.isTrue((transaction.getState() == State.NOT_STARTED), "transaction state is not NOT_STARTED"); //$NON-NLS-1$
+    public KomodoObject[] getChildren(final String... namePatterns) throws KException {
+        ArgCheck.isNotNull(getTransaction(), "transaction"); //$NON-NLS-1$
+        ArgCheck.isTrue((getTransaction().getState() == State.NOT_STARTED), "transaction state is not NOT_STARTED"); //$NON-NLS-1$
 
-        final KomodoObject[] viewEditorStates = getViewEditorStates(transaction, namePatterns);
+        final KomodoObject[] viewEditorStates = getViewEditorStates(namePatterns);
 
         final KomodoObject[] result = new KomodoObject[viewEditorStates.length];
         System.arraycopy(viewEditorStates, 0, result, 0, viewEditorStates.length);
@@ -177,18 +170,18 @@ public class ProfileImpl extends RelationalObjectImpl implements Profile {
     }
 
     @Override
-    public ViewEditorStateImpl addViewEditorState(UnitOfWork transaction, String stateId) throws KException {
+    public ViewEditorStateImpl addViewEditorState(String stateId) throws KException {
         // first delete if already exists
-        if ( getViewEditorStates( transaction, stateId ).length != 0 ) {
-            removeViewEditorState( transaction, stateId );
+        if ( getViewEditorState( stateId ) != null ) {
+            removeViewEditorState( stateId );
         }
 
-        return RelationalModelFactory.createViewEditorState( transaction, getRepository(), this, stateId );
+        return RelationalModelFactory.createViewEditorState( getTransaction(), getRepository(), this, stateId );
     }
 
-    private KomodoObject getViewEditorStatesGroupingNode( final UnitOfWork transaction ) {
+    private KomodoObject getViewEditorStatesGroupingNode() {
         try {
-            final KomodoObject[] groupings = getRawChildren( transaction, KomodoLexicon.Profile.VIEW_EDITOR_STATES );
+            final KomodoObject[] groupings = getRawChildren( getTransaction(), KomodoLexicon.Profile.VIEW_EDITOR_STATES );
 
             if ( groupings.length == 0 ) {
                 return null;
@@ -201,17 +194,17 @@ public class ProfileImpl extends RelationalObjectImpl implements Profile {
     }
 
     @Override
-    public ViewEditorStateImpl[] getViewEditorStates(UnitOfWork transaction, String... namePatterns) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+    public ViewEditorStateImpl[] getViewEditorStates(String... namePatterns) throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
-        final KomodoObject grouping = getViewEditorStatesGroupingNode( transaction);
+        final KomodoObject grouping = getViewEditorStatesGroupingNode( );
 
         if ( grouping != null ) {
             final List< ViewEditorStateImpl > temp = new ArrayList<>();
 
-            for ( final KomodoObject kobject : grouping.getChildren( transaction, namePatterns ) ) {
-                final ViewEditorStateImpl gitRepo = new ViewEditorStateImpl( transaction, getRepository(), kobject.getAbsolutePath() );
+            for ( final KomodoObject kobject : grouping.getChildren( namePatterns ) ) {
+                final ViewEditorStateImpl gitRepo = new ViewEditorStateImpl( getTransaction(), getRepository(), kobject.getAbsolutePath() );
                 temp.add( gitRepo );
             }
 
@@ -220,20 +213,35 @@ public class ProfileImpl extends RelationalObjectImpl implements Profile {
 
         return NO_VIEW_EDITOR_STATES;
     }
+    
+    @Override
+    public ViewEditorStateImpl getViewEditorState(String name) throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+
+        final KomodoObject grouping = getViewEditorStatesGroupingNode();
+
+        if ( grouping != null && grouping.hasChild( name ) ) {
+        	KomodoObject kobject = grouping.getChild( name );
+            return new ViewEditorStateImpl( getTransaction(), getRepository(), kobject.getAbsolutePath() );
+        }
+
+        return null;
+    }
 
     @Override
-    public void removeViewEditorState(UnitOfWork transaction, String viewEditorStateId) throws KException {
-        ArgCheck.isNotNull(transaction, "transaction"); //$NON-NLS-1$
-        ArgCheck.isTrue((transaction.getState() == State.NOT_STARTED), "transaction state is not NOT_STARTED"); //$NON-NLS-1$
+    public void removeViewEditorState(String viewEditorStateId) throws KException {
+        ArgCheck.isNotNull(getTransaction(), "transaction"); //$NON-NLS-1$
+        ArgCheck.isTrue((getTransaction().getState() == State.NOT_STARTED), "transaction state is not NOT_STARTED"); //$NON-NLS-1$
         ArgCheck.isNotEmpty(viewEditorStateId, "viewEditorStateId"); //$NON-NLS-1$
 
-        final ViewEditorStateImpl[] states = getViewEditorStates(transaction, viewEditorStateId);
+        ViewEditorStateImpl state = getViewEditorState(viewEditorStateId);
 
-        if (states.length == 0) {
+        if (state == null) {
             throw new KException(Messages.getString(Relational.VIEW_EDITOR_STATE_NOT_FOUND_TO_REMOVE, viewEditorStateId));
         }
 
         // remove first occurrence
-        states[0].remove(transaction);
+        state.remove(getTransaction());
     }
 }

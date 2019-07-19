@@ -102,7 +102,7 @@ public class KomodoAutoConfiguration implements ApplicationListener<ContextRefre
             try {
 	        	// monitor to track connections from the syndesis
 				TeiidOpenShiftClient TOSClient = new TeiidOpenShiftClient(
-						kengine.getMetadataInstance(),
+						kengine.getMetadataInstance(), kengine,
 						new EncryptionComponent(getTextEncryptor()), this.config);
 	        	SyndesisConnectionSynchronizer sync = new SyndesisConnectionSynchronizer(TOSClient);
 	        	SyndesisConnectionMonitor scm = new SyndesisConnectionMonitor(sync);
@@ -137,7 +137,7 @@ public class KomodoAutoConfiguration implements ApplicationListener<ContextRefre
     @ConditionalOnMissingBean
     public TeiidOpenShiftClient openShiftClient(@Autowired KEngine kengine, @Autowired TextEncryptor enc) {
         try {
-            return new TeiidOpenShiftClient(kengine.getMetadataInstance(),
+            return new TeiidOpenShiftClient(kengine.getMetadataInstance(), kengine,
                     new EncryptionComponent(enc), this.config);
         } catch (KException e) {
             throw new RuntimeException(e);

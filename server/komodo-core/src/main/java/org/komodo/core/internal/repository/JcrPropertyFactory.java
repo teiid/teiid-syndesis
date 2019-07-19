@@ -406,7 +406,7 @@ public class JcrPropertyFactory extends AbstractJcrFactory implements KPropertyF
                 parentPath += FORWARD_SLASH; //$NON-NLS-1$
             }
 
-            return new ObjectImpl(repository, parent.getPath(), 0);
+            return new ObjectImpl(transaction, repository, parent.getPath(), 0);
         } catch (Exception ex) {
             throw handleError(ex);
         }

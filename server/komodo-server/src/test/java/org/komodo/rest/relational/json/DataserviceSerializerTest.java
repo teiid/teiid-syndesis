@@ -23,19 +23,15 @@ import java.net.URLDecoder;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.komodo.core.repository.PropertyDescriptor;
-import org.komodo.relational.dataservice.internal.DataserviceImpl;
-import org.komodo.relational.internal.RelationalObjectImpl;
-import org.komodo.relational.vdb.internal.VdbImpl;
+import org.komodo.relational.dataservice.Dataservice;
+import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.relational.dataservice.RestDataservice;
-import org.komodo.spi.repository.KomodoType;
 import org.mockito.Mockito;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public final class DataserviceSerializerTest extends AbstractSerializerTest  {
 
     private static final String DESCRIPTION = "my description";
-    private static final KomodoType kType = KomodoType.DATASERVICE;
 
     private static final String JSON = OPEN_BRACE + NEW_LINE +
         "  \"" + BASE_URI + "\": \"" + MY_BASE_URI + "\"," + NEW_LINE +
@@ -61,25 +57,18 @@ public final class DataserviceSerializerTest extends AbstractSerializerTest  {
         "  " + CLOSE_SQUARE_BRACKET + NEW_LINE +
         CLOSE_BRACE;
 
-
     private RestDataservice dataservice;
 
     @Before
     public void init() throws Exception {
-        RelationalObjectImpl workspace = Mockito.mock(RelationalObjectImpl.class);
-        Mockito.when(workspace.getAbsolutePath()).thenReturn(WORKSPACE_DATA_PATH);
+        Vdb serviceVdb = Mockito.mock(Vdb.class);
+        Mockito.when(serviceVdb.getName()).thenReturn("ServiceVdb");
+        Mockito.when(serviceVdb.getVersion()).thenReturn(1);
 
-        VdbImpl serviceVdb = Mockito.mock(VdbImpl.class);
-        Mockito.when(serviceVdb.getName(transaction)).thenReturn("ServiceVdb");
-        Mockito.when(serviceVdb.getVersion(transaction)).thenReturn(1);
+        Dataservice theService = Mockito.mock(Dataservice.class);
+        Mockito.when(theService.getName()).thenReturn(DATASERVICE_NAME);
 
-        DataserviceImpl theService = mockObject(DataserviceImpl.class, DATASERVICE_NAME, DATASERVICE_DATA_PATH, kType, true);
-        Mockito.when(theService.getPropertyNames(transaction)).thenReturn(new String[0]);
-        Mockito.when(theService.getPropertyDescriptors(transaction)).thenReturn(new PropertyDescriptor[0]);
-        Mockito.when(theService.getParent(transaction)).thenReturn(workspace);
-        Mockito.when(theService.getServiceVdbName(transaction)).thenReturn("ServiceVdb");
-
-        this.dataservice = new RestDataservice(MY_BASE_URI, theService, false, transaction, serviceVdb);
+        this.dataservice = new RestDataservice(MY_BASE_URI, theService, false, serviceVdb);
         this.dataservice.setDescription(DESCRIPTION);
     }
 

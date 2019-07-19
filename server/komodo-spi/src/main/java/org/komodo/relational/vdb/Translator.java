@@ -20,7 +20,6 @@ package org.komodo.relational.vdb;
 import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * Represents a Translator that is either part of a VDB or a Teiid instance.
@@ -49,7 +48,7 @@ public interface Translator extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    String getDescription( final UnitOfWork transaction ) throws KException;
+    String getDescription( ) throws KException;
 
     /**
      * @param transaction
@@ -58,7 +57,7 @@ public interface Translator extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    String getType( final UnitOfWork transaction ) throws KException;
+    String getType( ) throws KException;
 
     /**
      * @param transaction
@@ -68,7 +67,7 @@ public interface Translator extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void setDescription( final UnitOfWork transaction,
+    void setDescription( 
                          final String newDescription ) throws KException;
 
     /**
@@ -79,7 +78,7 @@ public interface Translator extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void setType( final UnitOfWork transaction,
+    void setType( 
                   final String newType ) throws KException;
 
 }

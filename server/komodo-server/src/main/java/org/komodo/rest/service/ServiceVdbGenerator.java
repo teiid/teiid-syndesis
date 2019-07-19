@@ -37,7 +37,6 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
 import org.komodo.spi.TeiidSqlConstants;
-import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.utils.PathUtils;
 import org.komodo.utils.StringUtils;
 
@@ -112,9 +111,9 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
      * @throws KException
      * 		if problem occurs
      */
-    public void refreshServiceVdb(UnitOfWork uow, Vdb serviceVdb, ViewEditorState[] editorStates) throws KException {
+    public void refreshServiceVdb(Vdb serviceVdb, ViewEditorState[] editorStates) throws KException {
         // Reset the viewModel using the valid ViewDefinition
-        Model viewModel = getViewModel(uow, serviceVdb);
+        Model viewModel = getViewModel(serviceVdb);
         // Keep track of unique list of sources needed
     	List<Table> allSourceTables = new ArrayList<Table>();
     	
@@ -123,19 +122,19 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
         	StringBuilder allViewDdl = new StringBuilder();
 
             for ( final ViewEditorState editorState : editorStates ) {
-            	ViewDefinition viewDef = editorState.getViewDefinition(uow);
+            	ViewDefinition viewDef = editorState.getViewDefinition();
             	
             	// If the ViewDefinition is complete, generate view DDL from it and append
-            	if( viewDef.isComplete(uow) ) {
-            		TableInfo[] tableInfos = getSourceTableInfos(uow, viewDef);
+            	if( viewDef.isComplete() ) {
+            		TableInfo[] tableInfos = getSourceTableInfos(viewDef);
 
             		// If the ViewDefinition is not user defined, regen the DDL
             		String viewDdl = null;
-            		if(!viewDef.isUserDefined(uow)) {
-                		viewDdl = getODataViewDdl(uow, viewDef, tableInfos);
-                		viewDef.setDdl(uow, viewDdl);
+            		if(!viewDef.isUserDefined()) {
+                		viewDdl = getODataViewDdl(viewDef, tableInfos);
+                		viewDef.setDdl(viewDdl);
             		} else {
-            			viewDdl = viewDef.getDdl(uow);
+            			viewDdl = viewDef.getDdl();
             		}
             		allViewDdl.append(viewDdl).append(NEW_LINE);
    
@@ -149,18 +148,18 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
             	}
         	}
             // Set the generated DDL on the service VDB view model
-            viewModel.setModelDefinition(uow, allViewDdl.toString());
+            viewModel.setModelDefinition(allViewDdl.toString());
         } else { 
-        	viewModel.setModelDefinition(uow, ""); //$NON-NLS-1$
+        	viewModel.setModelDefinition(""); //$NON-NLS-1$
         }
 
         // remove all source models from current service VDB
-        clearSourceModels(uow, serviceVdb);
+        clearSourceModels(serviceVdb);
 
         // Build a Mapping of the unique schemaModel to it's tables
         Map< Model, List<Table> > schemaTableMap = new HashMap<Model, List<Table>>();
         for ( Table tbl : allSourceTables ) {
-        	Model schemaModel = tbl.getRelationalParent(uow);
+        	Model schemaModel = tbl.getRelationalParent();
         	// Map key doesnt yet exist for the model - add a new tables list
         	if (!schemaTableMap.containsKey(schemaModel)) {
         		List<Table> tbls = new ArrayList<Table>();
@@ -178,7 +177,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
         	StringBuilder sb = new StringBuilder();
         	int iTbls = 0;
         	for ( Table table: schemaTableMap.get(currentSchemaModel) ) {
-    			byte[] ddlBytes = table.export(uow, new Properties());
+    			byte[] ddlBytes = table.export(new Properties());
     			
     			if (iTbls != 0) sb.append(NEW_LINE);
     			sb.append(new String(ddlBytes));
@@ -186,18 +185,18 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
         	}
         	
         	// Create a source model and set the DDL string via setModelDeinition(DDL)
-            Model srcModel = serviceVdb.addModel(uow, currentSchemaModel.getName(uow));
-            srcModel.setModelType(uow, Type.PHYSICAL);
-            srcModel.setModelDefinition(uow, sb.toString());
+            Model srcModel = serviceVdb.addModel(currentSchemaModel.getName());
+            srcModel.setModelType(Type.PHYSICAL);
+            srcModel.setModelDefinition(sb.toString());
         	
             // Add ModelSource based on currentSchemaModel ModelSource info
-            ModelSource[] schemaModelSources = currentSchemaModel.getSources(uow);
+            ModelSource[] schemaModelSources = currentSchemaModel.getSources();
             for( ModelSource srcModelSource : schemaModelSources) {
             	// create the ModelSource
-	            ModelSource tgtModelSource = srcModel.addSource(uow, srcModelSource.getName(uow));
+	            ModelSource tgtModelSource = srcModel.addSource(srcModelSource.getName());
 	            // set the jndi name and translator name
-	            tgtModelSource.setJndiName(uow, srcModelSource.getJndiName(uow));
-	            tgtModelSource.setTranslatorName(uow, srcModelSource.getTranslatorName(uow));
+	            tgtModelSource.setJndiName(srcModelSource.getJndiName());
+	            tgtModelSource.setTranslatorName(srcModelSource.getTranslatorName());
             }
         }
     }
@@ -205,13 +204,13 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
     /*
      * Generates DDL for a view definition based on properties and supplied array of TableInfo from one or more sources
      */
-    private String getODataViewDdl(UnitOfWork uow, ViewDefinition viewDef, TableInfo[] sourceTableInfos) throws KException {
+    private String getODataViewDdl(ViewDefinition viewDef, TableInfo[] sourceTableInfos) throws KException {
 
     	// Need to construct DDL based on
     	//   * 1 or 2 source tables
     	//   * Join criteria in the form of left and right critieria column names
         
-    	String viewName = viewDef.getViewName(uow);
+    	String viewName = viewDef.getViewName();
     	
     	if (sourceTableInfos.length < 1) throw new KException("Error getting the ViewDefinition sources"); //$NON-NLS-1$
     	
@@ -274,11 +273,11 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
         // ---------------------------------------------
         // Generate the View projected columns
         // ---------------------------------------------
-        SqlProjectedColumn[] projectedColumns = viewDef.getProjectedColumns(uow);
+        SqlProjectedColumn[] projectedColumns = viewDef.getProjectedColumns();
         List<String> selectedProjColumnNames = new ArrayList<String>();
         
         // If "SELECT ALL" then include all of the source table columns
-        if( projectedColumns.length == 1 && projectedColumns[0].getName(uow).equalsIgnoreCase("ALL")  ) { //$NON-NLS-1$
+        if( projectedColumns.length == 1 && projectedColumns[0].getName().equalsIgnoreCase("ALL")  ) { //$NON-NLS-1$
             for (int i = 0; i < srcTableColumnNameTypes.size(); i++) {
                 // keep track of projected column names
                 String colName = srcTableColumnNames.get(i);
@@ -295,8 +294,8 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
             // Make list of only the selected columns
             List<SqlProjectedColumn> selectedProjColumns = new ArrayList<SqlProjectedColumn>();
             for (SqlProjectedColumn projCol: projectedColumns) {
-                String colName = projCol.getName(uow);
-                if(projCol.isSelected(uow) && !selectedProjColumnNames.contains(colName)) {
+                String colName = projCol.getName();
+                if(projCol.isSelected() && !selectedProjColumnNames.contains(colName)) {
                     selectedProjColumns.add(projCol);
                     // keep track of projected column names
                     selectedProjColumnNames.add(colName);
@@ -304,7 +303,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
             }
             // generate selected column projection
             for (int i = 0; i < selectedProjColumns.size(); i++) {
-                sb.append(selectedProjColumns.get(i).getName(uow)).append(StringConstants.SPACE).append(selectedProjColumns.get(i).getType(uow));
+                sb.append(selectedProjColumns.get(i).getName()).append(StringConstants.SPACE).append(selectedProjColumns.get(i).getType());
                 if (i < selectedProjColumns.size()-1) {
                     sb.append(StringConstants.COMMA).append(StringConstants.SPACE);
                 }
@@ -312,7 +311,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
         }
 
         sb.append(") "); //$NON-NLS-1$
-        sb.append(getTableAnnotation(viewDef.getDescription(uow)));
+        sb.append(getTableAnnotation(viewDef.getDescription()));
         sb.append("AS \nSELECT "); //$NON-NLS-1$
         sb.append("ROW_NUMBER() OVER (ORDER BY "); //$NON-NLS-1$
         sb.append(srcTableFqnColumnNames.get(0));
@@ -344,8 +343,8 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
 
         	sb.append(lhTableName+StringConstants.SPACE);
         	
-	        SqlComposition comp1 = viewDef.getSqlCompositions(uow)[0];
-	        String joinType = comp1.getType(uow);
+	        SqlComposition comp1 = viewDef.getSqlCompositions()[0];
+	        String joinType = comp1.getType();
 
 
 	        
@@ -363,9 +362,9 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
 	        
 	        sb.append("\nON \n"); //$NON-NLS-1$
 	        
-            String lhColumn = comp1.getLeftCriteriaColumn(uow);
-            String rhColumn = comp1.getRightCriteriaColumn(uow);
-            String operator = getOperator(uow, comp1);
+            String lhColumn = comp1.getLeftCriteriaColumn();
+            String rhColumn = comp1.getRightCriteriaColumn();
+            String operator = getOperator(comp1);
 
         	sb.append(lhTableInfo.getAlias()+StringConstants.DOT).append(lhColumn)
               .append(StringConstants.SPACE+operator+StringConstants.SPACE)
@@ -391,11 +390,11 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
      * @throws KException
      * 		if problem occurs
      */
-    public String getODataViewDdl(UnitOfWork uow, ViewDefinition viewDef) throws KException {
-    	TableInfo[] tableInfos = getSourceTableInfos(uow, viewDef);
+    public String getODataViewDdl(ViewDefinition viewDef) throws KException {
+    	TableInfo[] tableInfos = getSourceTableInfos(viewDef);
     	if (tableInfos.length < 1) throw new KException("Error getting the ViewDefinition sources"); //$NON-NLS-1$
     	
-    	return getODataViewDdl(uow, viewDef, tableInfos);
+    	return getODataViewDdl(viewDef, tableInfos);
     }
 
     /**
@@ -421,9 +420,9 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
      * @throws KException
      *  	if problem occurs
      */
-    public static Model getViewModel(final UnitOfWork uow, Vdb serviceVdb) throws KException {
-    	for( Model model : serviceVdb.getModels(uow) ) {
-    		if( model.getModelType(uow) == Type.VIRTUAL ) {
+    public static Model getViewModel(final Vdb serviceVdb) throws KException {
+    	for( Model model : serviceVdb.getModels() ) {
+    		if( model.getModelType() == Type.VIRTUAL ) {
     			return model;
     		}
     	}
@@ -437,11 +436,11 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
      * @return {@link TableInfo} array
      * @throws KException
      */
-	private TableInfo[] getSourceTableInfos(UnitOfWork uow, ViewDefinition viewDefinition) throws KException {
-		if ( !viewDefinition.isComplete(uow) ) {
+	private TableInfo[] getSourceTableInfos(ViewDefinition viewDefinition) throws KException {
+		if ( !viewDefinition.isComplete() ) {
 			return new TableInfo[0];
 		}
-		String[] sourceTablePaths = viewDefinition.getSourcePaths(uow);
+		String[] sourceTablePaths = viewDefinition.getSourcePaths();
 		ArrayList<TableInfo> sourceTableInfos = new ArrayList<TableInfo>(sourceTablePaths.length);
 
 		// Find and create TableInfo for each source Path
@@ -450,22 +449,22 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
 			String connectionName = PathUtils.getOption(path, "connection"); //$NON-NLS-1$
 
 			// Find schema model based on the connection name (i.e. connection=pgConn)
-			final Model schemaModel = findSchemaModel( uow, connectionName );
+			final Model schemaModel = findSchemaModel( connectionName );
 
 			// Get the tables from the schema and match them with the table name
 			if ( schemaModel != null ) {
-			    final Table[] tables = schemaModel.getTables( uow );
+			    final Table[] tables = schemaModel.getTables( );
 			    String tableOption = PathUtils.getTableOption(path);
 
 			    // Look thru schema tables for table with matching option.
 			    for (Table table: tables) {
-			        final String option = table.getPropertyValue( uow, TABLE_OPTION_FQN );
+			        final String option = table.getPropertyValue( TABLE_OPTION_FQN );
 			        if( option != null ) {
 			            // If table found, create the TableInfo and break
 			            if( option.equals(tableOption) ) {
 			                String alias = (iTable == 0) ? "A" : "B"; //$NON-NLS-1$ //$NON-NLS-2$
 			                // create a new TableInfo object
-			                sourceTableInfos.add(new TableInfo(uow, path, table, alias));
+			                sourceTableInfos.add(new TableInfo(path, table, alias));
 			                iTable++;
 			                break;
 			            }
@@ -481,10 +480,10 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
 	/*
 	 * Simple method that removes all source models from a VDB
 	 */
-    private void clearSourceModels(final UnitOfWork uow, Vdb serviceVdb) throws KException {
-    	for( Model model : serviceVdb.getModels(uow) ) {
-    		if( model.getModelType(uow) == Type.PHYSICAL ) {
-    			serviceVdb.removeModel(uow, model.getName(uow));
+    private void clearSourceModels(final Vdb serviceVdb) throws KException {
+    	for( Model model : serviceVdb.getModels() ) {
+    		if( model.getModelType() == Type.PHYSICAL ) {
+    			serviceVdb.removeModel(model.getName());
     		}
     	}
     }
@@ -494,10 +493,10 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
      * 
      * i.e. "CUSTOMER_ID integer"
      */
-    private String getColumnDatatypeString(UnitOfWork uow, Column col) throws KException {
-    	String typeName = col.getDatatypeName(uow);
+    private String getColumnDatatypeString(Column col) throws KException {
+    	String typeName = col.getDatatypeName();
     	
-    	Long colArrDims = col.getArrayDimensions(uow);
+    	Long colArrDims = col.getArrayDimensions();
     	
     	// Determine if array type
         if (colArrDims != null) {
@@ -512,8 +511,8 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
     /*
      * returns the string value for the operator key from a SqlComposition object
      */
-    private String getOperator(UnitOfWork uow, SqlComposition sqlComposition) throws KException {
-    	String type = sqlComposition.getOperator(uow);
+    private String getOperator(SqlComposition sqlComposition) throws KException {
+    	String type = sqlComposition.getOperator();
         if( EQ_STR.equals(type)) {
             return EQ;
         } else if( LT_STR.equals(type)) {
@@ -557,12 +556,12 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
     /*
      * Finds a schema model for a given connectionName from the workspace manager
      */
-    private Model findSchemaModel(final UnitOfWork uow, final String connectionName) throws KException {
-		final Vdb vdb = findSchemaVdb(uow, connectionName);
+    private Model findSchemaModel(final String connectionName) throws KException {
+		final Vdb vdb = findSchemaVdb(connectionName);
 
 		if (vdb != null) {
 			final String schemaModelName = KomodoMetadataService.getSchemaModelName(connectionName);
-			final Model[] models = vdb.getModels(uow, schemaModelName);
+			final Model[] models = vdb.getModels(schemaModelName);
 
 			if (models.length != 0) {
 				return models[0];
@@ -575,10 +574,10 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
     /*
      * Finds a schema VDB for a given connection from the workspace manager
      */
-    private Vdb findSchemaVdb(final UnitOfWork uow, final String connectionName) throws KException {
+    private Vdb findSchemaVdb(final String connectionName) throws KException {
 		final String schemaVdbName = KomodoMetadataService.getSchemaVdbName(connectionName);
 		
-		return this.wsManager.findVdb(uow, schemaVdbName);
+		return this.wsManager.findVdb(schemaVdbName);
 	}
 
     /*
@@ -594,22 +593,22 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
 
 		private List<ColumnInfo> columnInfos = new ArrayList<ColumnInfo>();
     	
-    	private TableInfo(UnitOfWork uow, String path, Table table, String alias) throws KException {
+    	private TableInfo(String path, Table table, String alias) throws KException {
     		this.path = path;
     		this.alias = alias;
     		this.table = table;
-    		this.name = escapeSQLName(table.getName(uow));
-    		Model schemaModel = table.getRelationalParent(uow);
-    		this.fqname = escapeSQLName(schemaModel.getName(uow)) + DOT + this.name;
-    		createColumnInfos(uow, table);
+    		this.name = escapeSQLName(table.getName());
+    		Model schemaModel = table.getRelationalParent();
+    		this.fqname = escapeSQLName(schemaModel.getName()) + DOT + this.name;
+    		createColumnInfos(table);
     	}
     	
-    	private void createColumnInfos(UnitOfWork uow, Table table) throws KException {
+    	private void createColumnInfos(Table table) throws KException {
     		// Walk through the columns and create an array of column + datatype strings
-    		Column[] cols = table.getColumns(uow);
+    		Column[] cols = table.getColumns();
     		
     		for( Column col : cols) {
-    			this.columnInfos.add(new ColumnInfo(uow, col, getFQName(), this.alias));
+    			this.columnInfos.add(new ColumnInfo(col, getFQName(), this.alias));
     		}
     	}
     	
@@ -651,9 +650,9 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
     	private String aliasedName;
     	private String nameAndType;
     	
-    	private ColumnInfo(UnitOfWork uow, Column column, String tableFqn, String tblAlias) throws KException {
-			this.name = escapeSQLName(column.getName(uow));
-			this.nameAndType =  name + SPACE + getColumnDatatypeString(uow, column);
+    	private ColumnInfo(Column column, String tableFqn, String tblAlias) throws KException {
+			this.name = escapeSQLName(column.getName());
+			this.nameAndType =  name + SPACE + getColumnDatatypeString(column);
 			this.aliasedName = name;
 			if( tblAlias != null ) {
 				this.aliasedName = tblAlias + DOT + name;

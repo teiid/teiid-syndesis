@@ -24,10 +24,10 @@ import javax.jcr.Session;
 import javax.jcr.nodetype.NodeTypeManager;
 
 import org.komodo.core.repository.KomodoObject;
+import org.komodo.core.repository.RepositoryImpl.UnitOfWorkImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWork.State;
-import org.komodo.spi.repository.UnitOfWorkDelegate;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 import org.modeshape.jcr.JcrSession;
@@ -47,12 +47,17 @@ public class AbstractJcrFactory {
 
     Session getSession(UnitOfWork transaction) {
         checkTransaction(transaction);
-    
-        UnitOfWorkDelegate delegate = transaction.getDelegate();
-        if (!(delegate instanceof JcrUowDelegate))
-            throw new UnsupportedOperationException();
-    
-        return ((JcrUowDelegate)delegate).getImplementation();
+        
+        if (transaction instanceof UnitOfWorkImpl) {
+        	UnitOfWorkImpl impl = (UnitOfWorkImpl)transaction;
+            UnitOfWorkDelegate delegate = impl.getDelegate();
+            if (!(delegate instanceof JcrUowDelegate))
+                throw new UnsupportedOperationException();
+        
+            return ((JcrUowDelegate)delegate).getImplementation();
+        }
+        
+        throw new UnsupportedOperationException();
     }
 
     /**

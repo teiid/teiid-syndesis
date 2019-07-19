@@ -20,7 +20,6 @@ package org.komodo.relational.vdb;
 import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * Represents a referenced VDB.
@@ -42,13 +41,8 @@ public interface VdbImport extends RelationalObject {
      */
     boolean DEFAULT_IMPORT_DATA_POLICIES = true;
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.core.repository.KNode#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
-     */
     @Override
-    Vdb getRelationalParent( final UnitOfWork transaction ) throws KException;
+    Vdb getRelationalParent( ) throws KException;
 
 
     /**
@@ -59,7 +53,7 @@ public interface VdbImport extends RelationalObject {
      *         if an error occurs
      * @see Vdb#DEFAULT_VERSION
      */
-    int getVersion( final UnitOfWork transaction ) throws KException;
+    int getVersion( ) throws KException;
 
     /**
      * @param transaction
@@ -69,7 +63,7 @@ public interface VdbImport extends RelationalObject {
      *         if an error occurs
      * @see #DEFAULT_IMPORT_DATA_POLICIES
      */
-    boolean isImportDataPolicies( final UnitOfWork transaction ) throws KException;
+    boolean isImportDataPolicies( ) throws KException;
 
     /**
      * @param transaction
@@ -80,7 +74,7 @@ public interface VdbImport extends RelationalObject {
      *         if an error occurs
      * @see #DEFAULT_IMPORT_DATA_POLICIES
      */
-    void setImportDataPolicies( final UnitOfWork transaction,
+    void setImportDataPolicies( 
                                 final boolean newImportDataPolicies ) throws KException;
 
     /**
@@ -92,7 +86,7 @@ public interface VdbImport extends RelationalObject {
      *         if an error occurs
      * @see Vdb#DEFAULT_VERSION
      */
-    void setVersion( final UnitOfWork transaction,
+    void setVersion( 
                      final int newVersion ) throws KException;
 
 }

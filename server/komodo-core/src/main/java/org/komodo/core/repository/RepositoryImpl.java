@@ -17,8 +17,6 @@
  */
 package org.komodo.core.repository;
 
-import static org.komodo.core.repository.Messages.Komodo.ERROR_REPO_HAS_CHANGES;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -33,13 +31,12 @@ import org.komodo.core.KomodoLexicon.Environment;
 import org.komodo.core.KomodoLexicon.Komodo;
 import org.komodo.core.internal.repository.KObjectFactory;
 import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.internal.repository.UnitOfWorkDelegate;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
 import org.komodo.spi.SystemConstants;
 import org.komodo.spi.repository.UnitOfWork;
-import org.komodo.spi.repository.UnitOfWorkDelegate;
-import org.komodo.spi.repository.UnitOfWorkListener;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 
@@ -48,16 +45,14 @@ import org.komodo.utils.KLog;
  */
 public abstract class RepositoryImpl implements Repository, StringConstants {
 	
-    public static RepositoryImpl getRepository(UnitOfWork unitOfWork) {
-    	return ((UnitOfWorkImpl)unitOfWork).repository;
-    }
-
+	private static ThreadLocal<UnitOfWork> TRANSACTION = new ThreadLocal<>();
+	
     /**
      * A unit of work analogous to a transaction.
      */
-    public class UnitOfWorkImpl implements UnitOfWork {
+    public static abstract class UnitOfWorkImpl implements UnitOfWork {
 
-        protected final UnitOfWorkListener callback;
+        protected final SynchronousCallback callback;
         protected KException error;
         protected final String userName;
         protected final String name;
@@ -65,7 +60,6 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
         protected UnitOfWorkDelegate uowDelegate;
         protected State state = State.NOT_STARTED;
         protected String repositoryUser;
-        RepositoryImpl repository = RepositoryImpl.this;
 
         /**
          * @param userName
@@ -83,7 +77,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
                                final String uowName,
                                final UnitOfWorkDelegate uowDelegate,
                                final boolean uowRollbackOnly,
-                               final UnitOfWorkListener listener,
+                               final SynchronousCallback listener,
                                final String repoUser) {
             ArgCheck.isNotEmpty(userName, "userName"); //$NON-NLS-1$
             ArgCheck.isNotEmpty(uowName, "uowName"); //$NON-NLS-1$
@@ -93,11 +87,10 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
             this.name = uowName;
             this.uowDelegate = uowDelegate;
             this.rollbackOnly = uowRollbackOnly;
-            this.callback = listener;
+            this.callback = listener==null?new SynchronousCallback():listener;
             this.repositoryUser = repoUser;
         }
 
-        @Override
         public UnitOfWorkDelegate getDelegate() {
             return uowDelegate;
         }
@@ -105,72 +98,12 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.spi.repository.UnitOfWork#commit()
-         */
-        @Override
-        public void commit() {
-            if (this.state != State.NOT_STARTED) {
-                this.error = new KException( Messages.getString( Messages.Komodo.ERROR_TRANSACTION_FINISHED,
-                                                                 this.name,
-                                                                 this.state ) );
-                this.state = State.ERROR;
-            } else {
-                LOGGER.debug( "commit transaction {0}", getName() ); //$NON-NLS-1$
-
-                if (this.rollbackOnly) {
-                    rollback();
-                } else {
-                    this.state = State.RUNNING;
-
-                    try {
-                        if (this.uowDelegate == null) {
-                            this.state = State.ERROR;
-                            this.error = new KException( Messages.getString( Messages.Komodo.ERROR_SESSION_IS_CLOSED, this.name ) );
-                        } else {
-                            this.uowDelegate.save();
-
-                            this.state = State.COMMITTED;
-                            LOGGER.debug( "transaction {0} saved", getName() ); //$NON-NLS-1$
-
-                            if (this.callback != null) {
-                                this.callback.respond( this );
-                            }
-                        }
-                    } catch (final Exception e) {
-                        this.state = State.ERROR;
-                        this.error = new KException( e );
-
-                        if (this.callback == null) {
-                            LOGGER.error( Messages.getString( Messages.Komodo.ERROR_TRYING_TO_COMMIT, getName(), e ) );
-                            rollback();
-                            this.state = State.ERROR;
-                        } else {
-                            this.callback.errorOccurred( e );
-                        }
-                    } finally {
-                        if (uowDelegate.isLive()) this.uowDelegate.complete();
-                        this.uowDelegate = null;
-                    }
-                }
-            }
-        }
-
-        /**
-         * {@inheritDoc}
-         *
          * @see org.komodo.spi.repository.UnitOfWork#getCallback()
          */
-        @Override
-        public UnitOfWorkListener getCallback() {
+        public SynchronousCallback getCallback() {
             return this.callback;
         }
 
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.spi.repository.UnitOfWork#getError()
-         */
-        @Override
         public KException getError() {
             return this.error;
         }
@@ -220,24 +153,6 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.spi.repository.UnitOfWork#hasChanges()
-         */
-        @Override
-        public boolean hasChanges() throws KException {
-            if ( this.state == State.NOT_STARTED ) {
-                try {
-                    return ( ( this.uowDelegate != null ) && this.uowDelegate.isLive() && this.uowDelegate.hasPendingChanges() );
-                } catch ( final Exception e ) {
-                    throw new KException( Messages.getString( ERROR_REPO_HAS_CHANGES, this.name ), e );
-                }
-            }
-
-            return false;
-        }
-
-        /**
-         * {@inheritDoc}
-         *
          * @see org.komodo.spi.repository.UnitOfWork#isRollbackOnly()
          */
         @Override
@@ -245,50 +160,6 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
             return this.rollbackOnly;
         }
 
-        /**
-         * {@inheritDoc}
-         *
-         * @see org.komodo.spi.repository.UnitOfWork#rollback()
-         */
-        @Override
-        public void rollback() {
-            if (this.state != State.NOT_STARTED) {
-                this.error = new KException( Messages.getString( Messages.Komodo.ERROR_TRANSACTION_FINISHED,
-                                                                 this.name,
-                                                                 this.state ) );
-                this.state = State.ERROR;
-            } else {
-                this.state = State.RUNNING;
-                LOGGER.debug( "rollback transaction {0}", getName() ); //$NON-NLS-1$
-
-                try {
-                    if (this.uowDelegate == null) {
-                        this.state = State.ERROR;
-                        this.error = new KException( Messages.getString( Messages.Komodo.ERROR_SESSION_IS_CLOSED, this.name ) );
-                    } else {
-                        this.uowDelegate.refresh( false );
-                        this.state = State.ROLLED_BACK;
-                        LOGGER.debug( "transaction {0} rolled back", getName() ); //$NON-NLS-1$
-
-                        if (this.callback != null) {
-                            this.callback.respond( null );
-                        }
-                    }
-                } catch (final Exception e) {
-                    this.state = State.ERROR;
-                    this.error = new KException( e );
-
-                    if (this.callback == null) {
-                        LOGGER.error( Messages.getString( Messages.Komodo.ERROR_TRYING_TO_ROLLBACK, e, getName() ) );
-                    } else {
-                        this.callback.errorOccurred( e );
-                    }
-                } finally {
-                    if (uowDelegate.isLive()) this.uowDelegate.complete();
-                    this.uowDelegate = null;
-                }
-            }
-        }        
     }
 
     protected static final KLog LOGGER = KLog.getLogger();
@@ -728,7 +599,7 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
         try {
             if (getObjectFactory().hasNode(transaction, workspacePath)) {
                 KomodoObject node = getObjectFactory().getNode(transaction, this, workspacePath);
-                result = new ObjectImpl(this, workspacePath, node.getIndex());
+                result = new ObjectImpl(transaction, this, workspacePath, node.getIndex());
             } else if (komodoWorkspacePath(transaction).equals(workspacePath)) {
                 result = komodoWorkspace(transaction);
             }
@@ -1055,4 +926,13 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
         komodoEnvironment(transaction);
         return create(transaction, VALIDATION_ROOT, Environment.VALIDATION);
     }
+    
+	public static void associateTransaction(UnitOfWork uow) {
+		//UnitOfWork old = TRANSACTION.get();
+		TRANSACTION.set(uow);
+	}
+	
+	public static UnitOfWork getTransaction() {
+		return TRANSACTION.get();
+	}
 }

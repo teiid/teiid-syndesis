@@ -28,7 +28,6 @@ import org.komodo.relational.model.internal.ColumnImpl;
 import org.komodo.relational.model.internal.ForeignKeyImpl;
 import org.komodo.relational.model.internal.ModelImpl;
 import org.komodo.relational.model.internal.PrimaryKeyImpl;
-import org.komodo.relational.model.internal.SchemaImpl;
 import org.komodo.relational.model.internal.StatementOptionImpl;
 import org.komodo.relational.model.internal.TableImpl;
 import org.komodo.relational.model.internal.UniqueConstraintImpl;
@@ -86,8 +85,6 @@ public class TypeResolverRegistry {
         index(KomodoType.PRIMARY_KEY, PrimaryKeyImpl.RESOLVER);
 
         index(KomodoType.PROFILE, ProfileImpl.RESOLVER);
-
-        index(KomodoType.SCHEMA, SchemaImpl.RESOLVER);
 
         index(KomodoType.STATEMENT_OPTION, StatementOptionImpl.RESOLVER);
 

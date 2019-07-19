@@ -44,8 +44,6 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.TeiidAdminImpl;
 import org.komodo.rest.TeiidServer;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.UnitOfWork;
-import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +51,6 @@ import org.springframework.stereotype.Component;
 import org.teiid.adminapi.Admin;
 import org.teiid.adminapi.AdminException;
 import org.teiid.adminapi.VDB;
-import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.query.parser.QueryParser;
 import org.teiid.query.sql.LanguageObject;
 
@@ -266,16 +263,6 @@ public class DefaultMetadataInstance implements MetadataInstance {
         }
     }
 
-    private boolean isDynamic(VDB vdb) {
-        if (vdb == null)
-            return false;
-
-        if (! (vdb instanceof VDBMetaData))
-            return false;
-
-        return ((VDBMetaData) vdb).isXmlDeployment();
-    }
-
     @Override
     public Collection<String> getVdbNames() throws KException {
         checkStarted();
@@ -356,9 +343,6 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
             List<TeiidVdb> teiidVdbs = new ArrayList<>();
             for (VDB vdb : vdbs) {
-                if (!isDynamic(vdb))
-                    continue;
-
                 teiidVdbs.add(new TeiidVdbImpl(vdb));
             }
 
@@ -374,9 +358,6 @@ public class DefaultMetadataInstance implements MetadataInstance {
         try {
             VDB vdb = getAdmin().getVDB(name, "1");
             if (vdb == null)
-                return null;
-
-            if (!isDynamic(vdb))
                 return null;
 
             return new TeiidVdbImpl(vdb);
@@ -454,26 +435,23 @@ public class DefaultMetadataInstance implements MetadataInstance {
     }
 
 	@Override
-	public DeployStatus deploy(UnitOfWork uow, Vdb vdb) {
-        ArgCheck.isNotNull( uow, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( uow.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-
+	public DeployStatus deploy(Vdb vdb) {
         DeployStatus status = new DeployStatus();
 
         try {
-            String vdbName = vdb.getName(uow);
+            String vdbName = vdb.getName();
             status.addProgressMessage("Starting deployment of vdb " + vdbName); //$NON-NLS-1$
 
             status.addProgressMessage("Attempting to deploy VDB " + vdbName + " to teiid"); //$NON-NLS-1$ //$NON-NLS-2$
 
             // Get VDB content
-            byte[] vdbXml = vdb.export(uow, null);
+            byte[] vdbXml = vdb.export(null);
             if (vdbXml == null || vdbXml.length == 0) {
                 status.addErrorMessage("VDB " + vdbName + " content is empty"); //$NON-NLS-1$ //$NON-NLS-2$
                 return status;
             }
 
-            String vdbToDeployName = vdb.getName(uow);
+            String vdbToDeployName = vdb.getName();
             String vdbDeploymentName = vdbToDeployName + VDB_DEPLOYMENT_SUFFIX;
             deployDynamicVdb(vdbName, vdbDeploymentName, new ByteArrayInputStream(vdbXml));
 

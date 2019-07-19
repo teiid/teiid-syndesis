@@ -27,7 +27,6 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.KomodoRestV1Application;
 import org.komodo.rest.RestLink.LinkType;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
 
 /**
@@ -216,11 +215,10 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
 
     /**
      * @param dataservice the dataservice
-     * @param uow the transaction
      * @return the uri of the parent of the given data service
      * @throws KException if problem occurs
      */
-    public URI dataserviceParentUri(Dataservice dataservice, UnitOfWork uow) throws KException {
+    public URI dataserviceParentUri(Dataservice dataservice) throws KException {
         return workspaceDataservicesUri();
     }
 
@@ -317,11 +315,10 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
 
     /**
      * @param vdb
-     * @param uow
      * @return the uri of the parent of the given vdb
      * @throws KException
      */
-    public URI vdbParentUri(Vdb vdb, UnitOfWork uow) throws KException {
+    public URI vdbParentUri(Vdb vdb) throws KException {
         return workspaceVdbsUri();
     }
 

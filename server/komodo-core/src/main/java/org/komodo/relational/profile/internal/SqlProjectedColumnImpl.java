@@ -22,7 +22,6 @@ import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.PropertyValueType;
-import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.internal.TypeResolver;
 import org.komodo.relational.profile.SqlProjectedColumn;
@@ -65,27 +64,25 @@ public class SqlProjectedColumnImpl  extends RelationalObjectImpl implements Sql
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.core.repository.KomodoObject)
+         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.core.repository.KomodoObject)
          */
         @Override
-        public boolean resolvable(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
-            return ObjectImpl.validateType(transaction, kobject, KomodoLexicon.SqlComposition.NODE_TYPE);
+        public boolean resolvable(final KomodoObject kobject) throws KException {
+            return ObjectImpl.validateType(kobject, KomodoLexicon.SqlComposition.NODE_TYPE);
         }
 
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.core.repository.KomodoObject)
+         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.core.repository.KomodoObject)
          */
         @Override
-        public SqlProjectedColumnImpl resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
+        public SqlProjectedColumnImpl resolve(final KomodoObject kobject) throws KException {
             if (kobject.getTypeId() == SqlProjectedColumn.TYPE_ID) {
                 return (SqlProjectedColumnImpl)kobject;
             }
 
-            return new SqlProjectedColumnImpl(transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath());
+            return new SqlProjectedColumnImpl(kobject.getTransaction(), kobject.getRepository(), kobject.getAbsolutePath());
         }
 
     };
@@ -110,22 +107,22 @@ public class SqlProjectedColumnImpl  extends RelationalObjectImpl implements Sql
 	}
 
     @Override
-    public KomodoType getTypeIdentifier(UnitOfWork uow) {
+    public KomodoType getTypeIdentifier() {
         return SqlProjectedColumn.IDENTIFIER;
     }
     
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.internal.RelationalObjectImpl#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.relational.internal.RelationalObjectImpl#getParent()
      */
     @Override
-    public ViewDefinitionImpl getParent(final UnitOfWork transaction) throws KException {
-        ArgCheck.isNotNull(transaction, "transaction"); //$NON-NLS-1$
-        ArgCheck.isTrue((transaction.getState() == State.NOT_STARTED), "transaction state must be NOT_STARTED"); //$NON-NLS-1$
+    public ViewDefinitionImpl getParent() throws KException {
+        ArgCheck.isNotNull(getTransaction(), "transaction"); //$NON-NLS-1$
+        ArgCheck.isTrue((getTransaction().getState() == State.NOT_STARTED), "transaction state must be NOT_STARTED"); //$NON-NLS-1$
 
-        final KomodoObject grouping = super.getParent(transaction);
-        final ViewDefinitionImpl result = ViewDefinitionImpl.RESOLVER.resolve(transaction, grouping.getParent(transaction));
+        final KomodoObject grouping = super.getParent();
+        final ViewDefinitionImpl result = ViewDefinitionImpl.RESOLVER.resolve(grouping.getParent());
         return result;
     }
 
@@ -150,42 +147,42 @@ public class SqlProjectedColumnImpl  extends RelationalObjectImpl implements Sql
     }
 
 	@Override
-	public void setName(UnitOfWork transaction, String name) throws KException {
-		setObjectProperty(transaction, "setName", KomodoLexicon.SqlProjectedColumn.NAME, name); //$NON-NLS-1$
+	public void setName(String name) throws KException {
+		setObjectProperty(getTransaction(), "setName", KomodoLexicon.SqlProjectedColumn.NAME, name); //$NON-NLS-1$
 	}
 
 	@Override
-	public String getName(UnitOfWork transaction) throws KException {
-        String value = getObjectProperty(transaction, PropertyValueType.STRING, 
+	public String getName() throws KException {
+        String value = getObjectProperty(getTransaction(), PropertyValueType.STRING, 
         		                                      "getName", //$NON-NLS-1$
                                                       KomodoLexicon.SqlProjectedColumn.NAME );
 		return value;
 	}
 
 	@Override
-	public void setType(UnitOfWork transaction, String type) throws KException {
-		setObjectProperty(transaction, "setType", KomodoLexicon.SqlProjectedColumn.TYPE, type); //$NON-NLS-1$
+	public void setType(String type) throws KException {
+		setObjectProperty(getTransaction(), "setType", KomodoLexicon.SqlProjectedColumn.TYPE, type); //$NON-NLS-1$
 	}
 
 	@Override
-	public String getType(UnitOfWork transaction) throws KException {
-        String value = getObjectProperty(transaction, PropertyValueType.STRING, 
+	public String getType() throws KException {
+        String value = getObjectProperty(getTransaction(), PropertyValueType.STRING, 
         		                                      "getType", //$NON-NLS-1$
                                                       KomodoLexicon.SqlProjectedColumn.TYPE );
 		return value;
 	}
 	
     @Override
-    public void setSelected(UnitOfWork transaction, boolean complete) throws KException {
-        setObjectProperty( transaction, "setComplete", KomodoLexicon.SqlProjectedColumn.IS_SELECTED, complete ); //$NON-NLS-1$
+    public void setSelected(boolean complete) throws KException {
+        setObjectProperty( getTransaction(), "setComplete", KomodoLexicon.SqlProjectedColumn.IS_SELECTED, complete ); //$NON-NLS-1$
     }
 
     @Override
-    public boolean isSelected(UnitOfWork transaction) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+    public boolean isSelected() throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         
-        final Boolean value = getObjectProperty(transaction, PropertyValueType.BOOLEAN, 
+        final Boolean value = getObjectProperty(getTransaction(), PropertyValueType.BOOLEAN, 
                                                              "isSelected", //$NON-NLS-1$
                                                              KomodoLexicon.SqlProjectedColumn.IS_SELECTED );
         return value;

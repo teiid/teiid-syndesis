@@ -20,12 +20,12 @@ package org.komodo.rest.relational.response.vieweditorstate;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.komodo.relational.profile.SqlComposition;
 import org.komodo.relational.profile.SqlProjectedColumn;
 import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.rest.RestBasicEntity;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * Rest ViewDefinition
@@ -97,39 +97,39 @@ public class RestViewDefinition extends RestBasicEntity {
      * @param baseUri
      * @throws KException
      */
-    public RestViewDefinition(URI baseUri, ViewDefinition viewDef, UnitOfWork transaction) throws KException {
+    public RestViewDefinition(URI baseUri, ViewDefinition viewDef) throws KException {
         super(baseUri);
         
         
-        String name = viewDef.getViewName(transaction);
+        String name = viewDef.getViewName();
         if( name != null ) {
         	tuples.put(RestViewEditorState.ID_VIEW_NAME, name);
         }
-        if( viewDef.getDescription(transaction) != null ) {
-        	tuples.put(RestViewEditorState.DESCRIPTION, viewDef.getDescription(transaction));
+        if( viewDef.getDescription() != null ) {
+        	tuples.put(RestViewEditorState.DESCRIPTION, viewDef.getDescription());
         }
-        if( viewDef.getDdl(transaction) != null ) {
-        	tuples.put(RestViewEditorState.DDL, viewDef.getDdl(transaction));
+        if( viewDef.getDdl() != null ) {
+        	tuples.put(RestViewEditorState.DDL, viewDef.getDdl());
         }
         
-        setComplete(viewDef.isComplete(transaction));
-        setUserDefined(viewDef.isUserDefined(transaction));
+        setComplete(viewDef.isComplete());
+        setUserDefined(viewDef.isUserDefined());
         
-        String[] paths = viewDef.getSourcePaths(transaction);
+        String[] paths = viewDef.getSourcePaths();
         if( paths != null && paths.length > 0 ) {
         	tuples.put(RestViewEditorState.SOURCE_PATHS, paths);
         }
 
         List<RestSqlComposition> compList = new ArrayList<>();
-        for (SqlComposition comp : viewDef.getSqlCompositions(transaction)) {
-        	RestSqlComposition restComp = new RestSqlComposition(baseUri, comp, transaction);
+        for (SqlComposition comp : viewDef.getSqlCompositions()) {
+        	RestSqlComposition restComp = new RestSqlComposition(baseUri, comp);
         	compList.add(restComp);
         }
         this.compositions = compList.toArray(new RestSqlComposition[0]);
         
         List<RestSqlProjectedColumn> columnList = new ArrayList<>();
-        for (SqlProjectedColumn col : viewDef.getProjectedColumns(transaction)) {
-            RestSqlProjectedColumn restCol = new RestSqlProjectedColumn(baseUri, col, transaction);
+        for (SqlProjectedColumn col : viewDef.getProjectedColumns()) {
+            RestSqlProjectedColumn restCol = new RestSqlProjectedColumn(baseUri, col);
             columnList.add(restCol);
         }
         this.projectedColumns = columnList.toArray(new RestSqlProjectedColumn[0]);

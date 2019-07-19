@@ -21,10 +21,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
+
 import org.junit.Test;
-import org.komodo.core.KomodoLexicon;
 import org.komodo.relational.profile.SqlComposition;
 import org.komodo.relational.profile.SqlProjectedColumn;
 import org.komodo.relational.profile.StateCommand;
@@ -225,76 +226,75 @@ public class ViewEditorStateSerializerTest extends AbstractSerializerTest {
         redoArgs.put(newNameKey, newName);
 
         StateCommand undoCommand = mock(StateCommand.class);
-        when(undoCommand.getId(transaction)).thenReturn(undoRedoId);
-        when(undoCommand.getArguments(transaction)).thenReturn(undoArgs);
+        when(undoCommand.getId()).thenReturn(undoRedoId);
+        when(undoCommand.getArguments()).thenReturn(undoArgs);
 
         StateCommand redoCommand = mock(StateCommand.class);
-        when(redoCommand.getId(transaction)).thenReturn(undoRedoId);
-        when(redoCommand.getArguments(transaction)).thenReturn(redoArgs);
+        when(redoCommand.getId()).thenReturn(undoRedoId);
+        when(redoCommand.getArguments()).thenReturn(redoArgs);
 
         StateCommandAggregate command = mock(StateCommandAggregate.class);
-        when(command.getName(transaction)).thenReturn(
-                                                      KomodoLexicon.StateCommandAggregate.NAME_PREFIX + 0);
-        when(command.getUndo(transaction)).thenReturn(undoCommand);
-        when(command.getRedo(transaction)).thenReturn(redoCommand);
+        when(command.getName()).thenReturn("INDEX_0");
+        when(command.getUndo()).thenReturn(undoCommand);
+        when(command.getRedo()).thenReturn(redoCommand);
 
         StateCommandAggregate[] commands = { command };
         ViewEditorState state = mock(ViewEditorState.class);
-        when(state.getName(transaction)).thenReturn(viewName);
-        when(state.getCommands(transaction)).thenReturn(commands);
+        when(state.getName()).thenReturn(viewName);
+        when(state.getCommands()).thenReturn(commands);
         
         // Add view definition
         
         String[] sourceTablePaths = { sourceTablePath1, sourceTablePath2, sourceTablePath3, sourceTablePath4 };
         ViewDefinition viewDef = mock(ViewDefinition.class);
-        when(viewDef.getName(transaction)).thenReturn(RestViewEditorState.VIEW_DEFINITION_LABEL);
-        when(viewDef.getViewName(transaction)).thenReturn(viewDefinitionName);
-        when(viewDef.getDescription(transaction)).thenReturn(description);
-        when(viewDef.isComplete(transaction)).thenReturn(isComplete);
-        when(viewDef.isUserDefined(transaction)).thenReturn(isUserDefined);
-        when(viewDef.getSourcePaths(transaction)).thenReturn(sourceTablePaths);
+        when(viewDef.getName()).thenReturn(RestViewEditorState.VIEW_DEFINITION_LABEL);
+        when(viewDef.getViewName()).thenReturn(viewDefinitionName);
+        when(viewDef.getDescription()).thenReturn(description);
+        when(viewDef.isComplete()).thenReturn(isComplete);
+        when(viewDef.isUserDefined()).thenReturn(isUserDefined);
+        when(viewDef.getSourcePaths()).thenReturn(sourceTablePaths);
         
         // Mocks for Compositions
         SqlComposition sqlComp1 = mock(SqlComposition.class);
-        when(sqlComp1.getName(transaction)).thenReturn(comp1Name);
-        when(sqlComp1.getDescription(transaction)).thenReturn(comp1Desc);
-        when(sqlComp1.getLeftSourcePath(transaction)).thenReturn(comp1LeftSource);
-        when(sqlComp1.getRightSourcePath(transaction)).thenReturn(comp1RightSource);
-        when(sqlComp1.getLeftCriteriaColumn(transaction)).thenReturn(comp1LeftColumn);
-        when(sqlComp1.getRightCriteriaColumn(transaction)).thenReturn(comp1RightColumn);
-        when(sqlComp1.getType(transaction)).thenReturn(comp1Type);
-        when(sqlComp1.getOperator(transaction)).thenReturn(comp1Operator);
+        when(sqlComp1.getName()).thenReturn(comp1Name);
+        when(sqlComp1.getDescription()).thenReturn(comp1Desc);
+        when(sqlComp1.getLeftSourcePath()).thenReturn(comp1LeftSource);
+        when(sqlComp1.getRightSourcePath()).thenReturn(comp1RightSource);
+        when(sqlComp1.getLeftCriteriaColumn()).thenReturn(comp1LeftColumn);
+        when(sqlComp1.getRightCriteriaColumn()).thenReturn(comp1RightColumn);
+        when(sqlComp1.getType()).thenReturn(comp1Type);
+        when(sqlComp1.getOperator()).thenReturn(comp1Operator);
         
         SqlComposition sqlComp2 = mock(SqlComposition.class);
-        when(sqlComp2.getName(transaction)).thenReturn(comp2Name);
-        when(sqlComp2.getDescription(transaction)).thenReturn(comp2Desc);
-        when(sqlComp2.getLeftSourcePath(transaction)).thenReturn(comp2LeftSource);
-        when(sqlComp2.getRightSourcePath(transaction)).thenReturn(comp2RightSource);
-        when(sqlComp2.getLeftCriteriaColumn(transaction)).thenReturn(comp2LeftColumn);
-        when(sqlComp2.getRightCriteriaColumn(transaction)).thenReturn(comp2RightColumn);
-        when(sqlComp2.getType(transaction)).thenReturn(comp2Type);
-        when(sqlComp2.getOperator(transaction)).thenReturn(comp2Operator);
+        when(sqlComp2.getName()).thenReturn(comp2Name);
+        when(sqlComp2.getDescription()).thenReturn(comp2Desc);
+        when(sqlComp2.getLeftSourcePath()).thenReturn(comp2LeftSource);
+        when(sqlComp2.getRightSourcePath()).thenReturn(comp2RightSource);
+        when(sqlComp2.getLeftCriteriaColumn()).thenReturn(comp2LeftColumn);
+        when(sqlComp2.getRightCriteriaColumn()).thenReturn(comp2RightColumn);
+        when(sqlComp2.getType()).thenReturn(comp2Type);
+        when(sqlComp2.getOperator()).thenReturn(comp2Operator);
         
         SqlComposition[] sqlComps = { sqlComp1, sqlComp2 };
-        when(viewDef.getSqlCompositions(transaction)).thenReturn(sqlComps);
+        when(viewDef.getSqlCompositions()).thenReturn(sqlComps);
 
         // Mocks for projected columns
         SqlProjectedColumn sqlCol1 = mock(SqlProjectedColumn.class);
-        when(sqlCol1.getName(transaction)).thenReturn(column1Name);
-        when(sqlCol1.getType(transaction)).thenReturn(column1Type);
-        when(sqlCol1.isSelected(transaction)).thenReturn(column1Selected);
+        when(sqlCol1.getName()).thenReturn(column1Name);
+        when(sqlCol1.getType()).thenReturn(column1Type);
+        when(sqlCol1.isSelected()).thenReturn(column1Selected);
 
         SqlProjectedColumn sqlCol2 = mock(SqlProjectedColumn.class);
-        when(sqlCol2.getName(transaction)).thenReturn(column2Name);
-        when(sqlCol2.getType(transaction)).thenReturn(column2Type);
-        when(sqlCol2.isSelected(transaction)).thenReturn(column2Selected);
+        when(sqlCol2.getName()).thenReturn(column2Name);
+        when(sqlCol2.getType()).thenReturn(column2Type);
+        when(sqlCol2.isSelected()).thenReturn(column2Selected);
         
         SqlProjectedColumn[] sqlCols = { sqlCol1, sqlCol2 };
-        when(viewDef.getProjectedColumns(transaction)).thenReturn(sqlCols);
+        when(viewDef.getProjectedColumns()).thenReturn(sqlCols);
 
-        when(state.getViewDefinition(transaction)).thenReturn(viewDef);
+        when(state.getViewDefinition()).thenReturn(viewDef);
 
-        RestViewEditorState restState = new RestViewEditorState(MY_BASE_URI, state, transaction);
+        RestViewEditorState restState = new RestViewEditorState(MY_BASE_URI, state);
 
         String expectedJson = createViewEditorState()
                                                     .replaceAll(NEW_LINE,  SPACE)

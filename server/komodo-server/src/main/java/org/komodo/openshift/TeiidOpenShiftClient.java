@@ -90,6 +90,7 @@ import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoConfigurationProperties;
+import org.komodo.spi.KEngine;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.ApplicationProperties;
@@ -427,6 +428,7 @@ public class TeiidOpenShiftClient implements StringConstants {
     private volatile ConcurrentLinkedQueue<BuildStatus> workQueue = new ConcurrentLinkedQueue<>();
 
     private MetadataInstance metadata;
+    private KEngine kengine;
     private HashMap<String, DataSourceDefinition> sources = new HashMap<>();
 
     /**
@@ -449,9 +451,10 @@ public class TeiidOpenShiftClient implements StringConstants {
     private EncryptionComponent encryptionComponent;
     private KomodoConfigurationProperties config;
 
-	public TeiidOpenShiftClient(MetadataInstance metadata, EncryptionComponent encryptor,
+	public TeiidOpenShiftClient(MetadataInstance metadata, KEngine kengine, EncryptionComponent encryptor,
 			KomodoConfigurationProperties config) {
         this.metadata = metadata;
+        this.kengine = kengine;
         this.encryptionComponent = encryptor;
         this.config = config;
 
@@ -1175,6 +1178,7 @@ public class TeiidOpenShiftClient implements StringConstants {
                 PublishConfiguration publishConfig = work.publishConfiguration();
                 Vdb vdb = publishConfig.getVDB();
                 UnitOfWork uow = publishConfig.getTransaction();
+                kengine.associateTransaction(uow);
                 OAuthCredentials oauthCreds = publishConfig.getOAuthCredentials();
 
                 String vdbName = work.vdbName();
@@ -1184,13 +1188,13 @@ public class TeiidOpenShiftClient implements StringConstants {
                     // create build contents as tar file
                     info(vdbName, "Publishing - Creating zip archive");
                     GenericArchive archive = ShrinkWrap.create(GenericArchive.class, "contents.tar");
-                    String pomFile = generatePomXml(oauthCreds, uow, vdb, publishConfig.isEnableOData());
+                    String pomFile = generatePomXml(oauthCreds, vdb, publishConfig.isEnableOData());
 
                     debug(vdbName, "Publishing - Generated pom file: " + NEW_LINE + pomFile);
                     archive.add(new StringAsset(pomFile), "pom.xml");
 
-                    byte[] vdbContents = vdb.export(uow, null);
-                    String modifiedVDB = normalizeDataSourceNames(vdb, new String(vdbContents), uow);
+                    byte[] vdbContents = vdb.export(null);
+                    String modifiedVDB = normalizeDataSourceNames(vdb, new String(vdbContents));
                     debug(vdbName, "Publishing - Exported vdb: " + NEW_LINE + new String(vdbContents));
                     archive.add(new StringAsset(modifiedVDB), "/src/main/resources/" + vdbName + "-vdb.xml");
 
@@ -1198,7 +1202,7 @@ public class TeiidOpenShiftClient implements StringConstants {
                     archive.add(new ByteArrayAsset(ObjectConverterUtil.convertToByteArray(configIs)),
                                 "/src/main/resources/application.properties");
 
-                    InputStream dsIs = buildDataSourceBuilders(vdb, uow);
+                    InputStream dsIs = buildDataSourceBuilders(vdb);
                     archive.add(new ByteArrayAsset(ObjectConverterUtil.convertToByteArray(dsIs)),
                             "/src/main/java/io/integration/DataSources.java");
 
@@ -1231,10 +1235,10 @@ public class TeiidOpenShiftClient implements StringConstants {
                     info(vdbName, "Publishing - Fetching environment variables for vdb data sources");
 
 					publishConfig.addEnvironmentVariables(
-							getEnvironmentVariablesForVDBDataSources(oauthCreds, uow, vdb, publishConfig));
+							getEnvironmentVariablesForVDBDataSources(oauthCreds, vdb, publishConfig));
 					
 					publishConfig.addSecretVariables(
-							getSecretVariablesForVDBDataSources(oauthCreds, uow, vdb, publishConfig));
+							getSecretVariablesForVDBDataSources(oauthCreds, vdb, publishConfig));
 					
                     work.setBuildName(buildName);
                     work.setStatusMessage("Build Running");
@@ -1261,13 +1265,13 @@ public class TeiidOpenShiftClient implements StringConstants {
         });
     }
 
-	private String normalizeDataSourceNames(Vdb vdb, String vdbContents, UnitOfWork uow) throws KException {
-		debug(vdb.getName(uow), vdbContents);
-        Model[] models = vdb.getModels(uow);
+	private String normalizeDataSourceNames(Vdb vdb, String vdbContents) throws KException {
+		debug(vdb.getName(), vdbContents);
+        Model[] models = vdb.getModels();
         for (Model model : models) {
-            ModelSource[] sources = model.getSources(uow);
+            ModelSource[] sources = model.getSources();
             for (ModelSource source : sources) {
-                String originalName = source.getName(uow);
+                String originalName = source.getName();
                 String name = originalName.toLowerCase();
                 name = name.replace("-", "");
                 if (!originalName.contentEquals(name)) {
@@ -1288,7 +1292,7 @@ public class TeiidOpenShiftClient implements StringConstants {
             "        return DataSourceBuilder.create().build();\n" +
             "    }";
 
-    protected InputStream buildDataSourceBuilders(Vdb vdb, UnitOfWork uow) throws KException {
+    protected InputStream buildDataSourceBuilders(Vdb vdb) throws KException {
         StringWriter sw = new StringWriter();
         sw.write("package io.integration;\n" +
                 "\n" +
@@ -1302,11 +1306,11 @@ public class TeiidOpenShiftClient implements StringConstants {
                 "@Configuration\n" +
                 "public class DataSources {\n");
 
-        Model[] models = vdb.getModels(uow);
+        Model[] models = vdb.getModels();
         for (Model model : models) {
-            ModelSource[] sources = model.getSources(uow);
+            ModelSource[] sources = model.getSources();
             for (ModelSource source : sources) {
-                String name = source.getName(uow);
+                String name = source.getName();
                 name = name.toLowerCase();
                 name = name.replace("-", "");
                 sw.write(DS_TEMPLATE.replace("{name}", name).replace("{method-name}", name));                
@@ -1328,10 +1332,7 @@ public class TeiidOpenShiftClient implements StringConstants {
      * @return the build status of the virtualization
      * @throws KException if error occurs
      */
-    public BuildStatus publishVirtualization(PublishConfiguration publishConfig) throws KException {
-        Vdb vdb = publishConfig.getVDB();
-        String vdbName = vdb.getVdbName(publishConfig.getTransaction());
-
+    public BuildStatus publishVirtualization(PublishConfiguration publishConfig, String vdbName) throws KException {
         removeLog(vdbName);
         info(vdbName, "Publishing - Start publishing of virtualization: " + vdbName);
 
@@ -1356,14 +1357,14 @@ public class TeiidOpenShiftClient implements StringConstants {
         }
     }
     
-    Map<String, String> getSecretVariablesForVDBDataSources(OAuthCredentials oauthCreds, UnitOfWork uow, Vdb vdb,
+    Map<String, String> getSecretVariablesForVDBDataSources(OAuthCredentials oauthCreds, Vdb vdb,
             PublishConfiguration publishConfig) throws KException {
         Map<String, String> properties = new HashMap<>();
-        Model[] models = vdb.getModels(uow);
+        Model[] models = vdb.getModels();
         for (Model model : models) {
-            ModelSource[] sources = model.getSources(uow);
+            ModelSource[] sources = model.getSources();
             for (ModelSource source : sources) {
-                String name = source.getName(uow);
+                String name = source.getName();
                 DefaultSyndesisDataSource ds = getSyndesisDataSource(oauthCreds, name);
                 if (ds == null) {
                     throw new KException("Datasource "+name+" not found in Syndesis");
@@ -1373,7 +1374,7 @@ public class TeiidOpenShiftClient implements StringConstants {
                 DataSourceDefinition def = ds.getDefinition();
                 if (def == null) {
                     throw new KException("Failed to determine the source type for "
-                            + name + " in VDB " + vdb.getName(uow));
+                            + name + " in VDB " + vdb.getName());
                 }
 
                 Properties config = def.getPublishedImageDataSourceProperties(ds);
@@ -1387,14 +1388,14 @@ public class TeiidOpenShiftClient implements StringConstants {
         return properties;
     }    
 
-    Collection<EnvVar> getEnvironmentVariablesForVDBDataSources(OAuthCredentials oauthCreds, UnitOfWork uow, Vdb vdb,
+    Collection<EnvVar> getEnvironmentVariablesForVDBDataSources(OAuthCredentials oauthCreds, Vdb vdb,
             PublishConfiguration publishConfig) throws KException {
         List<EnvVar> envs = new ArrayList<>();
-        Model[] models = vdb.getModels(uow);
+        Model[] models = vdb.getModels();
         for (Model model : models) {
-            ModelSource[] sources = model.getSources(uow);
+            ModelSource[] sources = model.getSources();
             for (ModelSource source : sources) {
-                String name = source.getName(uow);
+                String name = source.getName();
                 DefaultSyndesisDataSource ds = getSyndesisDataSource(oauthCreds, name);
                 if (ds == null) {
                     throw new KException("Datasource "+name+" not found in Syndesis");
@@ -1404,12 +1405,12 @@ public class TeiidOpenShiftClient implements StringConstants {
                 DataSourceDefinition def = ds.getDefinition();
                 if (def == null) {
                     throw new KException("Failed to determine the source type for "
-                            + name + " in VDB " + vdb.getName(uow));
+                            + name + " in VDB " + vdb.getName());
                 }
                 // data source properties as ENV variables
                 def.getPublishedImageDataSourceProperties(ds).forEach((K,V) -> {
                 	try {
-						envs.add(envFromSecret(secretName(vdb.getName(uow)), (String)K));
+						envs.add(envFromSecret(secretName(vdb.getName()), (String)K));
 					} catch (KException e) {
 						//ignore.
 					}
@@ -1420,7 +1421,7 @@ public class TeiidOpenShiftClient implements StringConstants {
         for (Map.Entry<String, String> entry : publishConfig.getUserEnvironmentVariables().entrySet()) {
             envs.add(env(entry.getKey(), entry.getValue()));
         }
-        envs.add(env("VDB_FILE", vdb.getName(uow)+"-vdb.xml"));
+        envs.add(env("VDB_FILE", vdb.getName()+"-vdb.xml"));
         envs.add(env("JAVA_OPTIONS", publishConfig.getUserJavaOptions()));
         return envs;
     }
@@ -1761,12 +1762,11 @@ public class TeiidOpenShiftClient implements StringConstants {
     /**
      * This method generates the pom.xml file, that needs to be saved in the root of the project.
      * @param authToken - token for Openshift authentication
-     * @param uow - Unit Of Work
      * @param vdb - VDB for which pom.xml is generated
      * @return pom.xml contents
      * @throws KException
      */
-    protected String generatePomXml(OAuthCredentials oauthCreds, UnitOfWork uow, Vdb vdb, boolean enableOdata) throws KException {
+    protected String generatePomXml(OAuthCredentials oauthCreds, Vdb vdb, boolean enableOdata) throws KException {
         try {
             StringBuilder builder = new StringBuilder();
             InputStream is = this.getClass().getClassLoader().getResourceAsStream("s2i/template-pom.xml");
@@ -1775,12 +1775,12 @@ public class TeiidOpenShiftClient implements StringConstants {
             StringBuilder vdbSourceNames = new StringBuilder();
             StringBuilder vdbDependencies = new StringBuilder();
 
-            String vdbName = vdb.getName(uow);
-            Model[] models = vdb.getModels(uow);
+            String vdbName = vdb.getName();
+            Model[] models = vdb.getModels();
             for (Model model : models) {
-                ModelSource[] sources = model.getSources(uow);
+                ModelSource[] sources = model.getSources();
                 for (ModelSource source : sources) {
-                    String name = source.getName(uow);
+                    String name = source.getName();
                     DefaultSyndesisDataSource ds = getSyndesisDataSource(oauthCreds, name);
                     if (ds == null) {
                         throw new KException("Datasource " + name + " not found");
@@ -1788,7 +1788,7 @@ public class TeiidOpenShiftClient implements StringConstants {
                     DataSourceDefinition def = ds.getDefinition();
                     if (def == null) {
                         throw new KException("Failed to determine the source type for "
-                                + name + " in VDB " + vdb.getName(uow));
+                                + name + " in VDB " + vdb.getName());
                     }
 
                     vdbSourceNames.append(name).append(StringConstants.SPACE); // this used as label

@@ -22,16 +22,18 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.komodo.core.KEvent;
 import org.komodo.core.internal.repository.JcrEngine;
 import org.komodo.core.internal.repository.KObjectFactory;
 import org.komodo.core.internal.repository.Repository;
+import org.komodo.core.internal.repository.UnitOfWorkDelegate;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.UnitOfWork;
-import org.komodo.spi.repository.UnitOfWorkDelegate;
-import org.komodo.spi.repository.UnitOfWorkListener;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
@@ -266,17 +268,18 @@ public class LocalRepository extends RepositoryImpl {
      * {@inheritDoc}
      *
      * @see org.komodo.core.internal.repository.Repository#createTransaction(java.lang.String, boolean,
-     *      org.komodo.spi.repository.Repository.UnitOfWorkListener)
+     *      org.komodo.core.repository.Repository.UnitOfWorkListener)
      */
     @Override
     public UnitOfWork createTransaction(final String userName, final String name,
                                          final boolean rollbackOnly,
-                                         final UnitOfWorkListener callback, String repoUser) throws KException {
+                                         final SynchronousCallback callback, String repoUser) throws KException {
         ArgCheck.isNotEmpty(name, "name"); //$NON-NLS-1$
         LOGGER.debug("creating transaction {0} with rollbackOnly = {1}", name, rollbackOnly); //$NON-NLS-1$
         final UnitOfWorkDelegate session = createSession();
         final UnitOfWork uow = new LocalRepositoryTransaction(userName, name, session, rollbackOnly, callback, repoUser);
         this.sessions.put(session, uow);
+        associateTransaction(uow);
         return uow;
     }
 
@@ -286,7 +289,7 @@ public class LocalRepository extends RepositoryImpl {
                                     final String uowName,
                                     final UnitOfWorkDelegate uowSession,
                                     final boolean uowRollbackOnly,
-                                    final UnitOfWorkListener listener,
+                                    final SynchronousCallback listener,
                                     final String repoUser) {
             super(userName, uowName, uowSession, uowRollbackOnly, listener, repoUser);
         }
@@ -297,12 +300,11 @@ public class LocalRepository extends RepositoryImpl {
          * @see org.komodo.core.repository.RepositoryImpl.UnitOfWorkImpl#commit()
          */
         @Override
-        public void commit() {
+        public Future<Void> commit() {
             if (this.state != State.NOT_STARTED) {
-                this.error = new KException( Messages.getString( Messages.Komodo.ERROR_TRANSACTION_FINISHED,
+                setError(new KException( Messages.getString( Messages.Komodo.ERROR_TRANSACTION_FINISHED,
                                                                  this.name,
-                                                                 this.state ) );
-                this.state = State.ERROR;
+                                                                 this.state ) ));
             } else {
                 if (isRollbackOnly()) {
                     rollback();
@@ -358,6 +360,44 @@ public class LocalRepository extends RepositoryImpl {
                     LocalRepository.this.engine.accept( request );
                 }
             }
+            
+            return new Future<Void>() {
+
+				@Override
+				public boolean cancel(boolean mayInterruptIfRunning) {
+					return false;
+				}
+
+				@Override
+				public Void get() throws InterruptedException, ExecutionException {
+					callback.getLatch().await();
+					if (callback.error() != null) {
+						throw new ExecutionException(callback.error());
+					}
+					return null;
+				}
+
+				@Override
+				public Void get(long timeout, TimeUnit unit)
+						throws InterruptedException, ExecutionException, TimeoutException {
+					callback.getLatch().await(timeout, unit);
+					if (callback.error() != null) {
+						throw new ExecutionException(callback.error());
+					}
+					return null;
+				}
+
+				@Override
+				public boolean isCancelled() {
+					return false;
+				}
+
+				@Override
+				public boolean isDone() {
+					return callback.getLatch().getCount() == 0;
+				}
+            	
+            };
         }
 
         /**
@@ -367,11 +407,13 @@ public class LocalRepository extends RepositoryImpl {
          */
         @Override
         public void rollback() {
+        	if (this.state == State.ROLLED_BACK){
+            	return;
+            }
             if (this.state != State.NOT_STARTED) {
-                this.error = new KException( Messages.getString( Messages.Komodo.ERROR_TRANSACTION_FINISHED,
+                setError(new KException( Messages.getString( Messages.Komodo.ERROR_TRANSACTION_FINISHED,
                                                                  this.name,
-                                                                 this.state ) );
-                this.state = State.ERROR;
+                                                                 this.state ) ));
             } else {
                 this.state = State.RUNNING;
             }
@@ -429,6 +471,7 @@ public class LocalRepository extends RepositoryImpl {
 
         protected void setError( final Throwable e ) {
             this.state = State.ERROR;
+            this.callback.errorOccurred(e);
 
             if (e instanceof KException) {
                 this.error = ( KException )e;

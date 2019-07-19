@@ -104,7 +104,7 @@ public class JcrNodeFactory extends AbstractJcrFactory implements KObjectFactory
 
         Node childNode = node(transaction, child);
         try {
-            return new ObjectImpl(repository, childNode.getParent().getPath(), 0);
+            return new ObjectImpl(transaction, repository, childNode.getParent().getPath(), 0);
         } catch (Exception ex) {
             throw handleError(ex);
         }
@@ -118,7 +118,7 @@ public class JcrNodeFactory extends AbstractJcrFactory implements KObjectFactory
         try {
             Node node = node(transaction, kObject);
             String type = node.getPrimaryNodeType().getName();
-            return new DescriptorImpl(repository, type);
+            return new DescriptorImpl(transaction, repository, type);
         } catch (Exception ex) {
             throw handleError(ex);
         }
@@ -161,7 +161,7 @@ public class JcrNodeFactory extends AbstractJcrFactory implements KObjectFactory
                 return null;
 
             Node node = node(transaction, absolutePath);
-            return new ObjectImpl(repository, node.getPath(), 0);
+            return new ObjectImpl(transaction, repository, node.getPath(), 0);
 
         } catch (Exception ex) {
             throw handleError(ex);
@@ -186,7 +186,7 @@ public class JcrNodeFactory extends AbstractJcrFactory implements KObjectFactory
     
             if (itr.getSize() == 1) {
                 Node node = itr.nextNode();
-                return new ObjectImpl(repository, node.getPath(), node.getIndex());
+                return new ObjectImpl(transaction, repository, node.getPath(), node.getIndex());
             }
     
             throw new KException(Messages.getString(Messages.Komodo.DUPLICATE_OBJECT_ERROR, id));
@@ -210,7 +210,7 @@ public class JcrNodeFactory extends AbstractJcrFactory implements KObjectFactory
             else
                 node = new JcrTools().findOrCreateNode(session, absolutePath, nodeType);
     
-            KomodoObject result = new ObjectImpl(repository, node.getPath(), node.getIndex());
+            KomodoObject result = new ObjectImpl(transaction, repository, node.getPath(), node.getIndex());
             return result;
         } catch (Exception ex) {
             throw handleError(ex);
@@ -240,7 +240,7 @@ public class JcrNodeFactory extends AbstractJcrFactory implements KObjectFactory
         Node parentNode = node(transaction, parent);
         try {
             Node childNode = parentNode.getNode(childName);
-            return new ObjectImpl(repository, childNode.getPath(), 0);
+            return new ObjectImpl(transaction, repository, childNode.getPath(), 0);
         } catch (Exception ex) {
             throw handleError(ex);
         }
@@ -278,7 +278,7 @@ public class JcrNodeFactory extends AbstractJcrFactory implements KObjectFactory
 
             while (childNodes.hasNext()) {
                 Node childNode = childNodes.nextNode();
-                children.add(new ObjectImpl(repository, childNode.getPath(), 0));
+                children.add(new ObjectImpl(transaction, repository, childNode.getPath(), 0));
             }
 
             return children;
@@ -296,7 +296,7 @@ public class JcrNodeFactory extends AbstractJcrFactory implements KObjectFactory
         try {
             Node parentNode = node(transaction, parent);
             Node childNode = parentNode.addNode(nodeName, type);
-            KomodoObject result = new ObjectImpl(repository, childNode.getPath(), 0);
+            KomodoObject result = new ObjectImpl(transaction, repository, childNode.getPath(), 0);
             return result;
         } catch (Exception ex) {
             throw handleError(ex);
@@ -349,11 +349,11 @@ public class JcrNodeFactory extends AbstractJcrFactory implements KObjectFactory
 
         try {
             Node node = node(transaction, kObject);
-            Property result = null;
+            PropertyImpl result = null;
 
             if (node.hasProperty(propertyName)) {
                 javax.jcr.Property jcrProperty = node.getProperty(propertyName);
-                result = new PropertyImpl(repository, jcrProperty.getPath());
+                result = new PropertyImpl(transaction, repository, jcrProperty.getPath());
             }
 
             return result;
@@ -380,7 +380,7 @@ public class JcrNodeFactory extends AbstractJcrFactory implements KObjectFactory
 
             for ( NodeType nodeType : nodeTypes ) {
                 if ( typeName.equals( nodeType.getName() ) ) {
-                    result = new DescriptorImpl(repository, nodeType.getName());
+                    result = new DescriptorImpl(transaction, repository, nodeType.getName());
                     break;
                 }
             }
@@ -406,7 +406,7 @@ public class JcrNodeFactory extends AbstractJcrFactory implements KObjectFactory
             List<Descriptor> result = new ArrayList<>(nodeTypes.length);
 
             for (NodeType nodeType : nodeTypes) {
-                result.add(new DescriptorImpl(repository, nodeType.getName()));
+                result.add(new DescriptorImpl(transaction, repository, nodeType.getName()));
             }
 
             return result;
@@ -465,7 +465,7 @@ public class JcrNodeFactory extends AbstractJcrFactory implements KObjectFactory
             NodeType[] superTypes = nodeType.getSupertypes();
             if (superTypes.length > 0) {
                 for (NodeType superType : superTypes) {
-                    descriptors.add(new DescriptorImpl(repository, superType.getName()));
+                    descriptors.add(new DescriptorImpl(transaction, repository, superType.getName()));
                 }
             }
 
@@ -475,17 +475,17 @@ public class JcrNodeFactory extends AbstractJcrFactory implements KObjectFactory
         }
     }
 
-    protected Collection<Descriptor> getAllDescriptors(Repository repository, Node node) throws Exception {
+    protected Collection<Descriptor> getAllDescriptors(UnitOfWork transaction, Repository repository, Node node) throws Exception {
         List<Descriptor> descriptors = new ArrayList<>();
     
         NodeType[] mixins = node.getMixinNodeTypes();
         if (mixins != null) {
             for (NodeType mixin : mixins) {
-                descriptors.add(new DescriptorImpl(repository, mixin.getName()));
+                descriptors.add(new DescriptorImpl(transaction, repository, mixin.getName()));
             }
         }
     
-        descriptors.add(new DescriptorImpl(repository, node.getPrimaryNodeType().getName()));
+        descriptors.add(new DescriptorImpl(transaction, repository, node.getPrimaryNodeType().getName()));
         return descriptors;
     }
 
@@ -496,8 +496,8 @@ public class JcrNodeFactory extends AbstractJcrFactory implements KObjectFactory
 
         try {
             Node node = node(transaction, kObject);
-            for (Descriptor typeDescriptor : getAllDescriptors(repository, node)) {
-                for (PropertyDescriptor propDescriptor : typeDescriptor.getPropertyDescriptors(transaction)) {
+            for (Descriptor typeDescriptor : getAllDescriptors(transaction, repository, node)) {
+                for (PropertyDescriptor propDescriptor : typeDescriptor.getPropertyDescriptors()) {
                     if ((propDescriptor != null) && propName.equals(propDescriptor.getName())) {
                         return propDescriptor;
                     }

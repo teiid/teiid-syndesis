@@ -60,8 +60,8 @@ public final class ProfileImplTest extends RelationalModelTest {
         String name = "myNewView";
         ViewEditorStateImpl viewEditorState = RelationalModelFactory.createViewEditorState(getTransaction(),
                                                                                                                                                _repo, profile, name);
-        assertTrue(profile.hasChild(getTransaction(), name));
-        assertEquals(name, viewEditorState.getName(getTransaction()));
+        assertTrue(profile.hasChild(name));
+        assertEquals(name, viewEditorState.getName());
 
         String undoId = "removeSourceCommand";
         String srcName = "myFabSource";
@@ -74,20 +74,20 @@ public final class ProfileImplTest extends RelationalModelTest {
         redoArgs.put("srcName", srcName);
         redoArgs.put("srcPath", srcPath);
 
-        StateCommandAggregateImpl stateCmdAgg = viewEditorState.addCommand(getTransaction());
-        StateCommand undoCommand = stateCmdAgg.setUndo(getTransaction(), undoId, undoArgs);
-        StateCommand redoCommand = stateCmdAgg.setRedo(getTransaction(), redoId, redoArgs);
+        StateCommandAggregateImpl stateCmdAgg = viewEditorState.addCommand();
+        StateCommand undoCommand = stateCmdAgg.setUndo(undoId, undoArgs);
+        StateCommand redoCommand = stateCmdAgg.setRedo(redoId, redoArgs);
 
-        StateCommandAggregate[] commands = viewEditorState.getCommands(getTransaction());
+        StateCommandAggregate[] commands = viewEditorState.getCommands();
         assertEquals(1, commands.length);
         assertEquals(stateCmdAgg, commands[0]);
         assertEquals(KomodoLexicon.StateCommandAggregate.NAME_PREFIX + 0,
-                                     stateCmdAgg.getName(getTransaction()));
+                                     stateCmdAgg.getName());
 
-        assertEquals(undoId, undoCommand.getId(getTransaction()));
-        assertEquals(undoArgs, undoCommand.getArguments(getTransaction()));
-        assertEquals(redoId, redoCommand.getId(getTransaction()));
-        assertEquals(redoArgs, redoCommand.getArguments(getTransaction()));
+        assertEquals(undoId, undoCommand.getId());
+        assertEquals(undoArgs, undoCommand.getArguments());
+        assertEquals(redoId, redoCommand.getId());
+        assertEquals(redoArgs, redoCommand.getArguments());
     }
 
     @Test
@@ -96,20 +96,20 @@ public final class ProfileImplTest extends RelationalModelTest {
 
         for ( int i = 0; i < numViews; ++i ) {
             String name = "myNewView" + i;
-            profile.addViewEditorState( getTransaction(), name);
+            profile.addViewEditorState( name);
         }
 
-        assertThat( this.profile.getViewEditorStates( getTransaction() ).length, is( numViews ) );
+        assertThat( this.profile.getViewEditorStates( ).length, is( numViews ) );
 
-        KomodoObject[] children = profile.getChildren(getTransaction());
+        KomodoObject[] children = profile.getChildren();
         assertEquals(numViews, children.length);
     }
 
     @Test
     public void shouldRemoveView() throws Exception {
         String name = "myNewView";
-        this.profile.addViewEditorState( getTransaction(), name);
-        this.profile.removeViewEditorState( getTransaction(), name );
-        assertThat( this.profile.getViewEditorStates( getTransaction() ).length, is( 0 ) );
+        this.profile.addViewEditorState( name);
+        this.profile.removeViewEditorState( name );
+        assertThat( this.profile.getViewEditorStates( ).length, is( 0 ) );
     }
 }

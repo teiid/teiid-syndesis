@@ -46,20 +46,20 @@ public final class PrimaryKeyImplTest extends RelationalModelTest {
     @Before
     public void init() throws Exception {
         this.table = createTable();
-        this.primaryKey = this.table.setPrimaryKey( getTransaction(), NAME );
+        this.primaryKey = this.table.setPrimaryKey( NAME );
         commit();
     }
 
     @Test
     public void shouldAddColumnReference() throws Exception {
-        final ColumnImpl column = this.table.addColumn( getTransaction(), "MyColumn" );
-        this.primaryKey.addColumn( getTransaction(), column );
+        final ColumnImpl column = this.table.addColumn( "MyColumn" );
+        this.primaryKey.addColumn( column );
         commit();
 
-        assertThat( this.primaryKey.getColumns( getTransaction() ).length, is( 1 ) );
-        assertThat( this.primaryKey.getColumns( getTransaction() )[0], is( column ) );
-        assertThat( this.primaryKey.getProperty( getTransaction(), Constraint.REFERENCES ).getValues( getTransaction() ).length, is( 1 ) );
-        assertThat( this.primaryKey.getProperty( getTransaction(), Constraint.REFERENCES ).getValues( getTransaction() )[0].toString(),
+        assertThat( this.primaryKey.getColumns( ).length, is( 1 ) );
+        assertThat( this.primaryKey.getColumns( )[0], is( column ) );
+        assertThat( this.primaryKey.getProperty( Constraint.REFERENCES ).getValues( getTransaction() ).length, is( 1 ) );
+        assertThat( this.primaryKey.getProperty( Constraint.REFERENCES ).getValues( getTransaction() )[0].toString(),
                     // TODO Is this worth creating a getId() API method??
                     is( ((ColumnImpl)column).getObjectFactory().getId(getTransaction(), (KomodoObject)column).getStringValue( getTransaction() ) ) );
     }
@@ -90,30 +90,30 @@ public final class PrimaryKeyImplTest extends RelationalModelTest {
 
     @Test
     public void shouldHaveCorrectDescriptor() throws Exception {
-        assertThat( this.primaryKey.hasDescriptor( getTransaction(), TeiidDdlLexicon.Constraint.TABLE_ELEMENT ), is( true ) );
+        assertThat( this.primaryKey.hasDescriptor( TeiidDdlLexicon.Constraint.TABLE_ELEMENT ), is( true ) );
     }
 
     @Test
     public void shouldHaveCorrectName() throws Exception {
-        assertThat( this.primaryKey.getName( getTransaction() ), is( NAME ) );
+        assertThat( this.primaryKey.getName( ), is( NAME ) );
     }
 
     @Test
     public void shouldHaveCorrectTypeIdentifier() throws Exception {
-        assertThat(this.primaryKey.getTypeIdentifier( getTransaction() ), is(KomodoType.PRIMARY_KEY));
+        assertThat(this.primaryKey.getTypeIdentifier( ), is(KomodoType.PRIMARY_KEY));
     }
 
     @Test
     public void shouldHaveMoreRawProperties() throws Exception {
-        final String[] filteredProps = this.primaryKey.getPropertyNames( getTransaction() );
+        final String[] filteredProps = this.primaryKey.getPropertyNames( );
         final String[] rawProps = this.primaryKey.getRawPropertyNames( getTransaction() );
         assertThat( ( rawProps.length > filteredProps.length ), is( true ) );
     }
 
     @Test
     public void shouldHaveParentTableAfterConstruction() throws Exception {
-        assertThat( this.primaryKey.getParent( getTransaction() ), is( instanceOf( Table.class ) ) );
-        assertThat( this.primaryKey.getTable( getTransaction() ), is( this.table ) );
+        assertThat( this.primaryKey.getParent( ), is( instanceOf( Table.class ) ) );
+        assertThat( this.primaryKey.getTable( ), is( this.table ) );
     }
 
     @Test( expected = UnsupportedOperationException.class )
@@ -123,7 +123,7 @@ public final class PrimaryKeyImplTest extends RelationalModelTest {
 
     @Test
     public void shouldNotContainFilteredProperties() throws Exception {
-        final String[] filteredProps = this.primaryKey.getPropertyNames( getTransaction() );
+        final String[] filteredProps = this.primaryKey.getPropertyNames( );
         final Filter[] filters = ((PrimaryKeyImpl)this.primaryKey).getFilters();
 
         for ( final String name : filteredProps ) {
@@ -137,7 +137,7 @@ public final class PrimaryKeyImplTest extends RelationalModelTest {
     public void shouldRename() throws Exception {
         final String newName = "blah";
         this.primaryKey.rename( getTransaction(), newName );
-        assertThat( this.primaryKey.getName( getTransaction() ), is( newName ) );
+        assertThat( this.primaryKey.getName( ), is( newName ) );
     }
 
 }

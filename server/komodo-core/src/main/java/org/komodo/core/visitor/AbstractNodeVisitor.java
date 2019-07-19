@@ -56,7 +56,7 @@ public abstract class AbstractNodeVisitor implements KomodoObjectVisitor {
     protected abstract String undefined();
 
     protected String findMixinTypeByNamespace(UnitOfWork transaction, KomodoObject kObject, String nspacePrefix) throws Exception {
-        Descriptor[] mixinTypes = kObject.getDescriptors(transaction);
+        Descriptor[] mixinTypes = kObject.getDescriptors();
         if (mixinTypes.length == 0)
             return null;
 
@@ -76,7 +76,7 @@ public abstract class AbstractNodeVisitor implements KomodoObjectVisitor {
     }
 
     protected String findMixinTypeById(UnitOfWork transaction, KomodoObject kObject, String mixinTypeId) throws Exception {
-        Descriptor[] mixins = kObject.getDescriptors(transaction);
+        Descriptor[] mixins = kObject.getDescriptors();
         if (mixins.length == 0)
             return null;
 
@@ -105,8 +105,8 @@ public abstract class AbstractNodeVisitor implements KomodoObjectVisitor {
 
     protected void visitChild(UnitOfWork transaction, KomodoObject kObject, String relKomodoObjectPath) throws Exception {
         
-        if (kObject.hasChild(transaction, relKomodoObjectPath)) {
-            KomodoObject child = kObject.getChild(transaction, relKomodoObjectPath);
+        if (kObject.hasChild(relKomodoObjectPath)) {
+            KomodoObject child = kObject.getChild(relKomodoObjectPath);
             child.accept(transaction, this);
         }
     }
@@ -115,19 +115,19 @@ public abstract class AbstractNodeVisitor implements KomodoObjectVisitor {
         if (kObject == null)
             return Collections.emptyList();
 
-       return Arrays.asList(kObject.getChildren(transaction));
+       return Arrays.asList(kObject.getChildren());
     }
 
     protected Collection<KomodoObject> getChildren(UnitOfWork transaction, KomodoObject kObject, String mixinTypeId) throws Exception {
         if (kObject == null)
             return Collections.emptyList();
         
-        KomodoObject[] childrenOfType = kObject.getChildrenOfType(transaction, mixinTypeId);
+        KomodoObject[] childrenOfType = kObject.getChildrenOfType(mixinTypeId);
         return Arrays.asList(childrenOfType);
     }
 
     protected void visitFilteredChildren(UnitOfWork transaction, KomodoObject kObject, String typeName) throws Exception, Exception {
-        KomodoObject[] childrenOfType = kObject.getChildrenOfType(transaction, typeName);
+        KomodoObject[] childrenOfType = kObject.getChildrenOfType(typeName);
         for (KomodoObject child : childrenOfType) {
             child.accept(transaction, this);
         }

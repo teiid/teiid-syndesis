@@ -25,7 +25,6 @@ import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.internal.ExcludeQNamesFilter;
 import org.komodo.relational.internal.RelationalChildRestrictedObject;
 import org.komodo.relational.model.Column;
-import org.komodo.relational.model.Table;
 import org.komodo.relational.model.TableConstraint;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.UnitOfWork;
@@ -64,27 +63,27 @@ abstract class TableConstraintImpl extends RelationalChildRestrictedObject imple
      *      org.komodo.relational.model.Column)
      */
     @Override
-    public void addColumn( final UnitOfWork transaction,
+    public void addColumn(
                            final Column columnToAdd ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotNull( columnToAdd, "columnToAdd" ); //$NON-NLS-1$
 
         String[] newRefs = null;
-        final Property property = getProperty( transaction, Constraint.REFERENCES );
-        final String columnId = getObjectFactory().getId(transaction, columnToAdd).getStringValue( transaction );
+        final Property property = getProperty( Constraint.REFERENCES );
+        final String columnId = getObjectFactory().getId(getTransaction(), columnToAdd).getStringValue( getTransaction() );
 
         if ( property == null ) {
             newRefs = new String[] { columnId };
         } else {
             // add to existing multi-valued property
-            final String[] columnRefs = property.getStringValues( transaction );
+            final String[] columnRefs = property.getStringValues( getTransaction() );
             newRefs = new String[ columnRefs.length + 1 ];
             System.arraycopy( columnRefs, 0, newRefs, 0, columnRefs.length );
             newRefs[columnRefs.length] = columnId;
         }
 
-        setProperty( transaction, Constraint.REFERENCES, ( Object[] )newRefs );
+        setProperty( Constraint.REFERENCES, ( Object[] )newRefs );
     }
 
     /**
@@ -93,29 +92,29 @@ abstract class TableConstraintImpl extends RelationalChildRestrictedObject imple
      * @see org.komodo.relational.model.TableConstraint#getColumns(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public Column[] getColumns( final UnitOfWork transaction ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+    public Column[] getColumns() throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         final Repository repository = getRepository();
         Column[] result = null;
-        final Property property = getProperty( transaction, Constraint.REFERENCES );
+        final Property property = getProperty( Constraint.REFERENCES );
 
         if ( property == null ) {
             result = new Column[ 0 ];
         } else {
-            final String[] columnRefs = property.getStringValues( transaction );
+            final String[] columnRefs = property.getStringValues( getTransaction() );
             result = new Column[ columnRefs.length ];
             int i = 0;
 
             for ( final String columnId : columnRefs ) {
-                final KomodoObject kobject = repository.getUsingId( transaction, columnId );
+                final KomodoObject kobject = repository.getUsingId( getTransaction(), columnId );
 
                 if ( kobject == null ) {
                     throw new KException( Messages.getString( Relational.REFERENCED_COLUMN_NOT_FOUND, columnId ) );
                 }
 
-                result[i] = new ColumnImpl( transaction, repository, kobject.getAbsolutePath() );
+                result[i] = new ColumnImpl( getTransaction(), repository, kobject.getAbsolutePath() );
                 ++i;
             }
         }
@@ -129,17 +128,17 @@ abstract class TableConstraintImpl extends RelationalChildRestrictedObject imple
      * @see org.komodo.relational.model.TableConstraint#getTable(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public TableImpl getTable( final UnitOfWork transaction ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+    public TableImpl getTable() throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         TableImpl result = null;
-        final KomodoObject parent = getParent( transaction );
+        final KomodoObject parent = getParent( );
 
-        if ( parent.hasDescriptor( transaction, CreateTable.TABLE_STATEMENT ) ) {
-            result = new TableImpl( transaction, getRepository(), parent.getAbsolutePath() );
-        } else if ( parent.hasDescriptor( transaction, CreateTable.VIEW_STATEMENT ) ) {
-            result = new ViewImpl( transaction, getRepository(), parent.getAbsolutePath() );
+        if ( parent.hasDescriptor( CreateTable.TABLE_STATEMENT ) ) {
+            result = new TableImpl( getTransaction(), getRepository(), parent.getAbsolutePath() );
+        } else if ( parent.hasDescriptor( CreateTable.VIEW_STATEMENT ) ) {
+            result = new ViewImpl( getTransaction(), getRepository(), parent.getAbsolutePath() );
         } else {
             throw new KException( Messages.getString( Relational.UNEXPECTED_TABLE_TYPE ) );
         }
@@ -154,14 +153,14 @@ abstract class TableConstraintImpl extends RelationalChildRestrictedObject imple
      *      org.komodo.relational.model.Column)
      */
     @Override
-    public void removeColumn( final UnitOfWork transaction,
+    public void removeColumn(
                               final Column columnToRemove ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotNull( columnToRemove, "columnToRemove" ); //$NON-NLS-1$
 
-        final String columnId = getObjectFactory().getId(transaction, columnToRemove).getStringValue( transaction );
-        final Column[] current = getColumns( transaction );
+        final String columnId = getObjectFactory().getId(getTransaction(), columnToRemove).getStringValue( getTransaction() );
+        final Column[] current = getColumns( );
 
         if ( current.length == 0 ) {
             throw new KException( Messages.getString( Relational.REFERENCED_COLUMN_NOT_FOUND, columnId ) );
@@ -175,13 +174,13 @@ abstract class TableConstraintImpl extends RelationalChildRestrictedObject imple
             if ( column.equals( columnToRemove ) ) {
                 found = true;
             } else {
-                updatedRefs[i] = getObjectFactory().getId(transaction, column).getStringValue( transaction );
+                updatedRefs[i] = getObjectFactory().getId(getTransaction(), column).getStringValue( getTransaction() );
                 ++i;
             }
         }
 
         if ( found ) {
-            setProperty( transaction, Constraint.REFERENCES, ( Object[] )updatedRefs );
+            setProperty( Constraint.REFERENCES, ( Object[] )updatedRefs );
         } else {
             throw new KException( Messages.getString( Relational.REFERENCED_COLUMN_NOT_FOUND, columnId ) );
         }
@@ -190,18 +189,17 @@ abstract class TableConstraintImpl extends RelationalChildRestrictedObject imple
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.core.repository.ObjectImpl#setProperty(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
-     *      java.lang.Object[])
+     * @see org.komodo.core.repository.ObjectImpl#setProperty(java.lang.String, java.lang.Object[])
      */
     @Override
-    public void setProperty( final UnitOfWork transaction,
+    public void setProperty(
                              final String propertyName,
                              final Object... values ) throws KException {
         if ( PROPS_FILTER.rejectProperty( propertyName ) ) {
             throw new UnsupportedOperationException( Messages.getString( Relational.PROPERTY_NOT_MODIFIABLE, propertyName ) );
         }
 
-        super.setProperty( transaction, propertyName, values );
+        super.setProperty( propertyName, values );
     }
 
 }

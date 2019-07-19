@@ -21,7 +21,6 @@ import org.komodo.core.repository.KomodoObject;
 import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * A class that determines if a {@link KomodoObject} can be converted into a strong typed relational object.
@@ -42,31 +41,25 @@ public interface TypeResolver< T extends RelationalObjectImpl > {
     Class< ? extends KomodoObject > owningClass();
 
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param kobject
      *        the {@link KomodoObject} being resolved (cannot be <code>null</code>)
      * @return <code>true</code> if object can be resolved to this resolver's type
      * @throws KException
      *         if an error occurs
      */
-    boolean resolvable( final UnitOfWork transaction,
-                        final KomodoObject kobject ) throws KException;
+    boolean resolvable( final KomodoObject kobject ) throws KException;
 
     /**
      * Converts the specified {@link KomodoObject} to this resolver's strong typed relational object. It is assumed that the
-     * object has been {@link #resolvable(UnitOfWork, KomodoObject) resolved}.
-     *
-     * @param transaction
-     *        the transaction (can be <code>null</code> if the operation should be automatically committed)
+     * object has been {@link #resolvable(KomodoObject) resolved}.
      * @param kobject
      *        the {@link KomodoObject} being resolved (cannot be <code>null</code>)
+     *
      * @return the strong typed {@link RelationalObject} (never <code>null</code>)
      * @throws KException
      *         if an error occurs
-     * @see #resolvable(UnitOfWork, KomodoObject)
+     * @see #resolvable(KomodoObject)
      */
-    T resolve( final UnitOfWork transaction,
-               final KomodoObject kobject ) throws KException;
+    T resolve( final KomodoObject kobject ) throws KException;
 
 }

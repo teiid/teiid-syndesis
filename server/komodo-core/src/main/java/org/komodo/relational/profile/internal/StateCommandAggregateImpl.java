@@ -23,7 +23,6 @@ import org.komodo.core.KomodoLexicon;
 import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.ObjectImpl;
-import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.internal.TypeResolver;
@@ -68,27 +67,25 @@ public class StateCommandAggregateImpl extends RelationalObjectImpl implements S
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.core.repository.KomodoObject)
+         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.core.repository.KomodoObject)
          */
         @Override
-        public boolean resolvable(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
-            return ObjectImpl.validateType(transaction, kobject, KomodoLexicon.StateCommandAggregate.NODE_TYPE);
+        public boolean resolvable(final KomodoObject kobject) throws KException {
+            return ObjectImpl.validateType(kobject, KomodoLexicon.StateCommandAggregate.NODE_TYPE);
         }
 
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.core.repository.KomodoObject)
+         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.core.repository.KomodoObject)
          */
         @Override
-        public StateCommandAggregateImpl resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
+        public StateCommandAggregateImpl resolve(final KomodoObject kobject) throws KException {
             if (kobject.getTypeId() == StateCommandAggregate.TYPE_ID) {
                 return (StateCommandAggregateImpl)kobject;
             }
 
-            return new StateCommandAggregateImpl(transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath());
+            return new StateCommandAggregateImpl(kobject.getTransaction(), kobject.getRepository(), kobject.getAbsolutePath());
         }
 
     };
@@ -108,7 +105,7 @@ public class StateCommandAggregateImpl extends RelationalObjectImpl implements S
     }
 
     @Override
-    public KomodoType getTypeIdentifier(UnitOfWork uow) {
+    public KomodoType getTypeIdentifier() {
         return StateCommandAggregate.IDENTIFIER;
     }
 
@@ -128,15 +125,14 @@ public class StateCommandAggregateImpl extends RelationalObjectImpl implements S
     
         KomodoObject stateCmdObject = null;
 
-        if (hasChild(transaction, stateCmdType)) {
-            stateCmdObject = getChild(transaction, stateCmdType,
-                                                    KomodoLexicon.StateCommand.NODE_TYPE);
+        if (hasChild(stateCmdType)) {
+            stateCmdObject = getChild(stateCmdType, KomodoLexicon.StateCommand.NODE_TYPE);
         }
     
         if (stateCmdObject == null)
             return null;
     
-        return StateCommandImpl.RESOLVER.resolve(transaction, stateCmdObject);
+        return StateCommandImpl.RESOLVER.resolve(stateCmdObject);
     }
 
     private StateCommand setStateCommand(UnitOfWork transaction, String stateCmdType,
@@ -146,24 +142,24 @@ public class StateCommandAggregateImpl extends RelationalObjectImpl implements S
     }
 
     @Override
-    public StateCommand getUndo(UnitOfWork transaction) throws KException {
-        return getStateCommand(transaction, KomodoLexicon.StateCommandAggregate.UNDO);
+    public StateCommand getUndo() throws KException {
+        return getStateCommand(getTransaction(), KomodoLexicon.StateCommandAggregate.UNDO);
     }
 
     @Override
-    public StateCommand setUndo(UnitOfWork transaction, String commandId, Map<String, String> arguments) throws Exception {
-        return setStateCommand(transaction, KomodoLexicon.StateCommandAggregate.UNDO,
+    public StateCommand setUndo(String commandId, Map<String, String> arguments) throws Exception {
+        return setStateCommand(getTransaction(), KomodoLexicon.StateCommandAggregate.UNDO,
                                                                commandId, arguments);
     }
 
     @Override
-    public StateCommand getRedo(UnitOfWork transaction) throws KException {
-        return getStateCommand(transaction, KomodoLexicon.StateCommandAggregate.REDO);
+    public StateCommand getRedo() throws KException {
+        return getStateCommand(getTransaction(), KomodoLexicon.StateCommandAggregate.REDO);
     }
 
     @Override
-    public StateCommand setRedo(UnitOfWork transaction, String commandId, Map<String, String> arguments) throws Exception {
-        return setStateCommand(transaction, KomodoLexicon.StateCommandAggregate.REDO,
+    public StateCommand setRedo(String commandId, Map<String, String> arguments) throws Exception {
+        return setStateCommand(getTransaction(), KomodoLexicon.StateCommandAggregate.REDO,
                                                                commandId, arguments);
     }
 }

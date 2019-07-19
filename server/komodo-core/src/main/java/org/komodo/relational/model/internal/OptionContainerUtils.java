@@ -29,7 +29,6 @@ import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.Property;
 import org.komodo.core.repository.PropertyDescriptor;
 import org.komodo.core.repository.PropertyValueType;
-import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.internal.OptionContainer;
@@ -164,7 +163,7 @@ public final class OptionContainerUtils {
         PrimaryTypeDescriptor( final UnitOfWork transaction,
                                final OptionContainer optionContainer,
                                final Descriptor descriptor ) throws KException {
-            super( RepositoryImpl.getRepository(transaction), optionContainer.getName( transaction ) );
+            super( transaction, optionContainer.getRepository(), optionContainer.getName( ) );
             ArgCheck.isNotNull( descriptor, "descriptor" ); //$NON-NLS-1$
 
             this.container = optionContainer;
@@ -174,11 +173,11 @@ public final class OptionContainerUtils {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.core.repository.DescriptorImpl#getPropertyDescriptors(org.komodo.spi.repository.Repository.UnitOfWork)
+         * @see org.komodo.core.repository.DescriptorImpl#getPropertyDescriptors()
          */
         @Override
-        public PropertyDescriptor[] getPropertyDescriptors( final UnitOfWork transaction ) throws KException {
-            final PropertyDescriptor[] propDescriptors = this.primaryType.getPropertyDescriptors( transaction );
+        public PropertyDescriptor[] getPropertyDescriptors( ) throws KException {
+            final PropertyDescriptor[] propDescriptors = this.primaryType.getPropertyDescriptors( );
             PropertyDescriptor[] standardDescriptors = PropertyDescriptor.NO_DESCRIPTORS;
             PropertyDescriptor[] customDescriptors = PropertyDescriptor.NO_DESCRIPTORS;
 
@@ -196,14 +195,14 @@ public final class OptionContainerUtils {
             }
 
             { // custom statement options
-                final StatementOption[] customOptions = this.container.getCustomOptions( transaction );
+                final StatementOption[] customOptions = this.container.getCustomOptions( );
 
                 if ( customOptions.length > 0 ) {
                     customDescriptors = new PropertyDescriptor[ customOptions.length ];
                     int i = 0;
 
                     for ( final StatementOption option : customOptions ) {
-                        customDescriptors[i++] = new OptionDescriptor( option.getName( transaction ), null );
+                        customDescriptors[i++] = new OptionDescriptor( option.getName( ), null );
                     }
                 }
             }
@@ -263,7 +262,7 @@ public final class OptionContainerUtils {
         final List< StatementOption > custom = new ArrayList<>( options.length );
 
         for ( final StatementOption option : options ) {
-            if ( !container.isStandardOption( option.getName( transaction ) ) ) {
+            if ( !container.isStandardOption( option.getName( ) ) ) {
                 custom.add( option );
             }
         }
@@ -291,7 +290,7 @@ public final class OptionContainerUtils {
             return null;
         }
 
-        return option.getOption( transaction );
+        return option.getOption( );
     }
 
     /**
@@ -324,7 +323,7 @@ public final class OptionContainerUtils {
 
             if ( customOptions.length > 0 ) {
                 for ( final StatementOption option : customOptions ) {
-                    if ( propName.equals( option.getName( transaction ) ) ) {
+                    if ( propName.equals( option.getName( ) ) ) {
                         result = option.getDescriptor( transaction );
                         break;
                     }
@@ -351,7 +350,7 @@ public final class OptionContainerUtils {
         int i = 0;
 
         for ( final StatementOption option : options ) {
-            names[i++] = option.getName( transaction );
+            names[i++] = option.getName( );
         }
 
         return names;
@@ -373,12 +372,12 @@ public final class OptionContainerUtils {
         ArgCheck.isNotNull( container, "container" ); //$NON-NLS-1$
 
         // must create a generic KomodoObject here so that we can get to the getChildrenOfType that does not filter result
-        final KomodoObject same = new ObjectImpl( RepositoryImpl.getRepository(transaction), container.getAbsolutePath(), container.getIndex() );
+        final KomodoObject same = new ObjectImpl( transaction, container.getRepository(), container.getAbsolutePath(), container.getIndex() );
         final List< StatementOption > result = new ArrayList< StatementOption >();
 
-        for ( final KomodoObject kobject : same.getChildrenOfType( transaction, StandardDdlLexicon.TYPE_STATEMENT_OPTION ) ) {
+        for ( final KomodoObject kobject : same.getChildrenOfType( StandardDdlLexicon.TYPE_STATEMENT_OPTION ) ) {
             final StatementOption option = new StatementOptionImpl( transaction,
-            		RepositoryImpl.getRepository(transaction),
+            		kobject.getRepository(),
                                                                     kobject.getAbsolutePath() );
             result.add( option );
         }
@@ -487,7 +486,7 @@ public final class OptionContainerUtils {
 
         if ( options.length != 0 ) {
             for ( final StatementOption option : options ) {
-                if ( name.equals( option.getName( transaction ) ) ) {
+                if ( name.equals( option.getName( ) ) ) {
                     result = option;
                     break;
                 }
@@ -614,7 +613,7 @@ public final class OptionContainerUtils {
 
         if ( options.length != 0 ) {
             for ( final StatementOptionImpl option : options ) {
-                if ( optionToRemove.equals( option.getName( transaction ) ) ) {
+                if ( optionToRemove.equals( option.getName( ) ) ) {
                     option.remove( transaction );
                     found = true;
                     break;
@@ -658,12 +657,12 @@ public final class OptionContainerUtils {
 
         if ( result == null ) {
             result = RelationalModelFactory.createStatementOption( transaction,
-            		RepositoryImpl.getRepository(transaction),
+            		container.getRepository(),
                                                                    container,
                                                                    optionName,
                                                                    optionValue );
         } else {
-            result.setOption( transaction, optionValue );
+            result.setOption( optionValue );
         }
 
         return result;

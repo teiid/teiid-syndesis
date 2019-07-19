@@ -29,15 +29,12 @@ import org.komodo.utils.ArgCheck;
 /**
  * The base class for a {@link Property Komodo object property}.
  */
-public class PropertyImpl implements Property {
+public class PropertyImpl extends AbstractKNode implements Property {
 
     /**
      * An empty array of values.
      */
     public static final Object[] NO_VALUES = new Object[0];
-
-    private final String path;
-    private final Repository repository;
 
     /**
      * @param propertyRepository
@@ -47,27 +44,10 @@ public class PropertyImpl implements Property {
      * @throws KException
      *         if there is an error constructing the property
      */
-    public PropertyImpl( final Repository propertyRepository,
+    public PropertyImpl( final UnitOfWork transaction,
+    					 final Repository propertyRepository,
                          final String propertyPath ) throws KException {
-        ArgCheck.isNotNull(propertyRepository, "propertyRepository"); //$NON-NLS-1$
-        ArgCheck.isNotEmpty(propertyPath, "propertyPath"); //$NON-NLS-1$
-
-        this.repository = propertyRepository;
-        this.path = propertyPath;
-    }
-
-    /**
-     * @param propertyRepository
-     *        the repository where this property is located (cannot be <code>null</code>)
-     * @param nodePath
-     *        the path to the parent node (cannot be empty)
-     * @param propertyName
-     *        the name of the property (cannot be empty)
-     * @throws KException
-     *         if there is an error constructing the property
-     */
-    public PropertyImpl(Repository propertyRepository, String nodePath, String propertyName) throws KException {
-        this(propertyRepository, nodePath + KPropertyFactory.DELIMITER + propertyName);
+    	super(propertyRepository, propertyPath);
     }
 
     public KPropertyFactory getPropertyFactory() {
@@ -323,15 +303,15 @@ public class PropertyImpl implements Property {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.core.repository.KNode#getName(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.KNode#getName()
      */
     @Override
-    public String getName( final UnitOfWork transaction ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+    public String getName( ) throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         try {
-            return getPropertyFactory().getName(transaction, this);
+            return getPropertyFactory().getName(getTransaction(), this);
         } catch (final Exception e) {
             if (e instanceof KException) {
                 throw (KException)e;
@@ -344,15 +324,15 @@ public class PropertyImpl implements Property {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.core.repository.KNode#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.KNode#getParent()
      */
     @Override
-    public KomodoObject getParent( final UnitOfWork transaction ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+    public KomodoObject getParent( ) throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         try {
-            return getPropertyFactory().getParent(transaction, this);
+            return getPropertyFactory().getParent(getTransaction(), this);
         } catch (final Exception e) {
             if (e instanceof KException) {
                 throw (KException)e;

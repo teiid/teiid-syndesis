@@ -151,64 +151,60 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
                                     final Repository repository,
                                     final String path,
                                     final int index ) throws KException {
-        super( repository, path, index );
+        super(transaction, repository, path, index );
 
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-        internalValidateInitialState( transaction, this );
+        internalValidateInitialState( this );
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.core.repository.ObjectImpl#getChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.core.repository.ObjectImpl#getChild(java.lang.String)
      */
     @Override
-    public KomodoObject getChild( final UnitOfWork transaction,
-                                  final String name ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+    public KomodoObject getChild( final String name ) throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
-        final KomodoObject kobject = super.getChild( transaction, name );
-        final KomodoObject result = resolveType( transaction, kobject );
+        final KomodoObject kobject = super.getChild( name );
+        final KomodoObject result = resolveType( kobject );
         return result;
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.core.repository.ObjectImpl#getChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
-     *      java.lang.String)
+     * @see org.komodo.core.repository.ObjectImpl#getChild(java.lang.String, java.lang.String)
      */
     @Override
-    public KomodoObject getChild( final UnitOfWork transaction,
-                                  final String name,
+    public KomodoObject getChild( final String name,
                                   final String typeName ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         if ( !StringUtils.isBlank( typeName ) && isDescriptorFiltered( typeName ) ) {
             throw new KException( Messages.getString( Messages.Komodo.CHILD_NOT_FOUND, name, getAbsolutePath() ) );
         }
 
-        final KomodoObject kobject = super.getChild( transaction, name, typeName );
-        final KomodoObject result = resolveType( transaction, kobject );
+        final KomodoObject kobject = super.getChild( name, typeName );
+        final KomodoObject result = resolveType( kobject );
         return result;
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.core.repository.ObjectImpl#getChildren(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
+     * @see org.komodo.core.repository.ObjectImpl#getChildren(java.lang.String[])
      */
     @Override
-    public KomodoObject[] getChildren( final UnitOfWork transaction,
-                                       final String... namePatterns ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+    public KomodoObject[] getChildren( final String... namePatterns ) throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         KomodoObject[] result = null;
-        final KomodoObject[] kids = super.getChildren( transaction, namePatterns );
+        final KomodoObject[] kids = super.getChildren( namePatterns );
 
         if ( kids.length == 0 ) {
             result = kids;
@@ -217,9 +213,9 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
 
             for ( final KomodoObject kobject : kids ) {
                 // ensure child has at least one non-filtered descriptor
-                for ( final Descriptor descriptor : getAllDescriptors( transaction, kobject ) ) {
+                for ( final Descriptor descriptor : getAllDescriptors( getTransaction(), kobject ) ) {
                     if ( !isDescriptorFiltered( descriptor.getName() ) ) {
-                        temp.add( resolveType( transaction, kobject ) );
+                        temp.add( resolveType( kobject ) );
                         break;
                     }
                 }
@@ -234,15 +230,13 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.core.repository.ObjectImpl#getChildrenOfType(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
-     *      java.lang.String[])
+     * @see org.komodo.core.repository.ObjectImpl#getChildrenOfType(java.lang.String, java.lang.String[])
      */
     @Override
-    public KomodoObject[] getChildrenOfType( final UnitOfWork transaction,
-                                             final String type,
+    public KomodoObject[] getChildrenOfType( final String type,
                                              final String... namePatterns ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( type, "type" ); //$NON-NLS-1$
 
         KomodoObject[] result = null;
@@ -250,7 +244,7 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
         if ( isDescriptorFiltered( type ) ) {
             result = KomodoObject.EMPTY_ARRAY;
         } else {
-            final KomodoObject[] kids = super.getChildrenOfType( transaction, type, namePatterns );
+            final KomodoObject[] kids = super.getChildrenOfType( type, namePatterns );
 
             if ( kids.length == 0 ) {
                 result = kids;
@@ -259,9 +253,9 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
 
                 for ( final KomodoObject kobject : kids ) {
                     // ensure child has at least one non-filtered descriptor
-                    for ( final Descriptor descriptor : getAllDescriptors( transaction, kobject ) ) {
+                    for ( final Descriptor descriptor : getAllDescriptors( getTransaction(), kobject ) ) {
                         if ( !isDescriptorFiltered( descriptor.getName() ) ) {
-                            temp.add( resolveType( transaction, kobject ) );
+                            temp.add( resolveType( kobject ) );
                             break;
                         }
                     }
@@ -277,18 +271,18 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.core.repository.ObjectImpl#getDescriptor(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.core.repository.ObjectImpl#getDescriptor(java.lang.String)
      */
     @Override
-    public Descriptor getDescriptor( final UnitOfWork transaction,
+    public Descriptor getDescriptor(
                                      final String typeName ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         Descriptor result = null;
 
         if ( !isDescriptorFiltered( typeName ) ) {
-            result = new FilteredDescriptor( super.getDescriptor( transaction, typeName ) );
+            result = new FilteredDescriptor( super.getDescriptor( typeName ) );
         }
 
         if ( result == null ) {
@@ -301,14 +295,14 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.core.repository.ObjectImpl#getDescriptors(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.ObjectImpl#getDescriptors()
      */
     @Override
-    public Descriptor[] getDescriptors( final UnitOfWork transaction ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+    public Descriptor[] getDescriptors( ) throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
-        final Descriptor[] temp = super.getDescriptors( transaction );
+        final Descriptor[] temp = super.getDescriptors( );
         final List< Descriptor > result = new ArrayList<>( temp.length );
 
         if ( ( temp.length != 0 ) && ( getFilters().length != 0 ) ) {
@@ -334,17 +328,17 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.core.repository.ObjectImpl#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.ObjectImpl#getParent()
      */
     @Override
-    public KomodoObject getParent( final UnitOfWork transaction ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+    public KomodoObject getParent( ) throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
-        KomodoObject result = super.getParent( transaction );
+        KomodoObject result = super.getParent( );
 
         if ( result != null ) {
-            return resolveType( transaction, result );
+            return resolveType( result );
         }
 
         return null;
@@ -353,18 +347,18 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.core.repository.ObjectImpl#getProperty(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.core.repository.ObjectImpl#getProperty(java.lang.String)
      */
     @Override
-    public Property getProperty( final UnitOfWork transaction,
+    public Property getProperty(
                                  final String name ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         Property result = null;
 
         if ( !isPropertyFiltered( name ) ) {
-            result = super.getProperty( transaction, name );
+            result = super.getProperty( name );
         }
 
         return result;
@@ -373,14 +367,14 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.core.repository.ObjectImpl#getPropertyDescriptors(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.ObjectImpl#getPropertyDescriptors()
      */
     @Override
-    public PropertyDescriptor[] getPropertyDescriptors( final UnitOfWork transaction ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+    public PropertyDescriptor[] getPropertyDescriptors( ) throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
-        final PropertyDescriptor[] descriptors = super.getPropertyDescriptors( transaction );
+        final PropertyDescriptor[] descriptors = super.getPropertyDescriptors( );
         final List< PropertyDescriptor > result = new ArrayList<>( descriptors.length );
 
         for ( final PropertyDescriptor descriptor : descriptors ) {
@@ -396,14 +390,14 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.core.repository.ObjectImpl#getPropertyNames(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.ObjectImpl#getPropertyNames()
      */
     @Override
-    public String[] getPropertyNames( final UnitOfWork transaction ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+    public String[] getPropertyNames( ) throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
-        final String[] props = super.getPropertyNames( transaction );
+        final String[] props = super.getPropertyNames( );
         final List< String > result = new ArrayList<>( props.length );
 
         for ( final String propName : props ) {
@@ -425,23 +419,22 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.core.repository.ObjectImpl#hasChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.core.repository.ObjectImpl#hasChild(java.lang.String)
      */
     @Override
-    public boolean hasChild( final UnitOfWork transaction,
-                             final String name ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+    public boolean hasChild( final String name ) throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( name, "name" ); //$NON-NLS-1$
 
-        boolean result = super.hasChild( transaction, name );
+        boolean result = super.hasChild( name );
 
         if ( result ) {
             result = false;
 
             // if one of the children with that name has a type that is not filtered return true
-            for ( final KomodoObject kobject : getChildren( transaction, name ) ) {
-                for ( final Descriptor descriptor : getAllDescriptors( transaction, kobject ) ) {
+            for ( final KomodoObject kobject : getChildren( name ) ) {
+                for ( final Descriptor descriptor : getAllDescriptors( getTransaction(), kobject ) ) {
                     if ( !isDescriptorFiltered( descriptor.getName() ) ) {
                         result = true;
                         break;
@@ -460,22 +453,20 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.core.repository.ObjectImpl#hasChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
-     *      java.lang.String)
+     * @see org.komodo.core.repository.ObjectImpl#hasChild(java.lang.String, java.lang.String)
      */
     @Override
-    public boolean hasChild( final UnitOfWork transaction,
-                             final String name,
+    public boolean hasChild( final String name,
                              final String typeName ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( name, "name" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( typeName, "typeName" ); //$NON-NLS-1$
 
         boolean result = false;
 
         if ( !isDescriptorFiltered( typeName ) ) {
-            result = super.hasChild( transaction, name, typeName );
+            result = super.hasChild( name, typeName );
         }
 
         return result;
@@ -484,15 +475,15 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.core.repository.ObjectImpl#hasChildren(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.ObjectImpl#hasChildren()
      */
     @Override
-    public boolean hasChildren( final UnitOfWork transaction ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+    public boolean hasChildren( ) throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
-        if ( super.hasChildren( transaction ) ) {
-            return ( getChildren( transaction ).length != 0 ); // filtered children > 0
+        if ( super.hasChildren( ) ) {
+            return ( getChildren( ).length != 0 ); // filtered children > 0
         }
 
         return false;
@@ -501,19 +492,19 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.core.repository.ObjectImpl#hasDescriptor(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.core.repository.ObjectImpl#hasDescriptor(java.lang.String)
      */
     @Override
-    public boolean hasDescriptor( final UnitOfWork transaction,
+    public boolean hasDescriptor(
                                   final String descriptorName ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( descriptorName );
 
         boolean result = false;
 
         if ( !isDescriptorFiltered( descriptorName ) ) {
-            result = super.hasDescriptor( transaction, descriptorName );
+            result = super.hasDescriptor( descriptorName );
         }
 
         return result;
@@ -522,30 +513,30 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.core.repository.ObjectImpl#hasProperty(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.core.repository.ObjectImpl#hasProperty(java.lang.String)
      */
     @Override
-    public boolean hasProperty( final UnitOfWork transaction,
+    public boolean hasProperty(
                                 final String name ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( name, "name" ); //$NON-NLS-1$
 
         boolean result = false;
 
         if ( !isPropertyFiltered( name ) ) {
-            result = super.hasProperty( transaction, name );
+            result = super.hasProperty( name );
         }
 
         return result;
     }
 
-    private final void internalValidateInitialState( final UnitOfWork transaction,
+    private final void internalValidateInitialState(
                                                      final KomodoObject kobject ) throws KException {
-        assert ( transaction != null );
+        assert ( getTransaction() != null );
 
         if ( VALIDATE_INITIAL_STATE ) {
-            validateInitialState( transaction, kobject );
+            validateInitialState( kobject );
         }
     }
 
@@ -587,18 +578,18 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
         return false;
     }
 
-    protected KomodoObject resolveType( final UnitOfWork transaction,
+    protected KomodoObject resolveType(
                                         final KomodoObject kobject ) throws KException {
-        TypeResolver< ? > resolver = getResolverRegistry().getResolver(kobject.getTypeIdentifier(transaction));
-        if (resolver != null && resolver.resolvable(transaction, kobject))
-            return resolver.resolve( transaction, kobject );
+        TypeResolver< ? > resolver = getResolverRegistry().getResolver(kobject.getTypeIdentifier());
+        if (resolver != null && resolver.resolvable(kobject))
+            return resolver.resolve( kobject );
 
         // Failed with the type identifier so try to be safe than sorry
         // and iterate through all resolvers to check this object is really
         // not resolvable.
         for ( final TypeResolver< ? > aResolver : getResolverRegistry().getResolvers() ) {
-            if ( aResolver.resolvable( transaction, kobject ) ) {
-                return aResolver.resolve( transaction, kobject );
+            if ( aResolver.resolvable( kobject ) ) {
+                return aResolver.resolve( kobject );
             }
         }
 
@@ -646,11 +637,11 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
      * @throws KException
      *         if an error occurs
      */
-    protected void validateInitialState( final UnitOfWork transaction,
+    protected void validateInitialState(
                                          final KomodoObject kobject ) throws KException {
         final TypeResolver< ? > resolver = getResolverRegistry().getResolver( kobject.getClass() );
 
-        if ( ( resolver != null ) && !resolver.resolvable( transaction, kobject ) ) {
+        if ( ( resolver != null ) && !resolver.resolvable( kobject ) ) {
             throw new KException( Messages.getString( Komodo.INCORRECT_TYPE,
                                                       kobject.getAbsolutePath(),
                                                       kobject.getClass().getSimpleName() ) );
@@ -678,11 +669,11 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.core.repository.Descriptor#getPropertyDescriptors(org.komodo.spi.repository.Repository.UnitOfWork)
+         * @see org.komodo.core.repository.Descriptor#getPropertyDescriptors()
          */
         @Override
-        public PropertyDescriptor[] getPropertyDescriptors( final UnitOfWork transaction ) throws KException {
-            final PropertyDescriptor[] descriptors = this.delegate.getPropertyDescriptors(transaction);
+        public PropertyDescriptor[] getPropertyDescriptors( ) throws KException {
+            final PropertyDescriptor[] descriptors = this.delegate.getPropertyDescriptors();
 
             if ( descriptors.length == 0 ) {
                 return descriptors;
@@ -702,22 +693,22 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
     }
     
     @Override
-    public String getPropertyValue(UnitOfWork transaction, String name) throws KException {
-    	Property p = getProperty(transaction, name);
+    public String getPropertyValue(String name) throws KException {
+    	Property p = getProperty(name);
     	if (p != null) {
-    		return p.getStringValue(transaction);
+    		return p.getStringValue(getTransaction());
     	}
     	return null;
     }
     
     @Override
-    public void setPropertyValue(UnitOfWork transaction, String name, String value) throws KException {
-    	this.setProperty(transaction, name, value);
+    public void setPropertyValue(String name, String value) throws KException {
+    	this.setProperty(name, value);
     }
     
     @Override
-    public RelationalObjectImpl getRelationalParent(UnitOfWork transaction) throws KException {
-    	return (RelationalObjectImpl)this.getParent(transaction);
+    public RelationalObjectImpl getRelationalParent() throws KException {
+    	return (RelationalObjectImpl)this.getParent();
     }
     
 }

@@ -23,31 +23,30 @@ import org.komodo.relational.model.Model;
 import org.komodo.relational.profile.Profile;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.UnitOfWork;
 
 public interface WorkspaceManager {
 
-	Vdb createVdb(UnitOfWork uow, String vdbName) throws KException;
+	Vdb createVdb(String vdbName) throws KException;
 
-	Vdb findVdb(UnitOfWork uow, String vdbName) throws KException;
+	Vdb findVdb(String vdbName) throws KException;
 
-	Vdb[] findVdbs(UnitOfWork uow, String searchPattern) throws KException;
+	Vdb[] findVdbs(String searchPattern) throws KException;
 
-	void deleteVdb(UnitOfWork transaction, Vdb vdb) throws KException;
+	void deleteVdb(Vdb vdb) throws KException;
 	
 
-	Dataservice createDataservice(UnitOfWork uow, String serviceName) throws KException;
+	Dataservice createDataservice(String serviceName) throws KException;
 
-	Dataservice findDataservice(UnitOfWork uow, String dataserviceName) throws KException;
+	Dataservice findDataservice(String dataserviceName) throws KException;
 
-	Dataservice[] findDataservices(UnitOfWork uow, String searchPattern) throws KException;
+	Dataservice[] findDataservices(String searchPattern) throws KException;
 
-	void deleteDataservice(UnitOfWork transaction, Dataservice dataservice) throws KException;
+	void deleteDataservice(Dataservice dataservice) throws KException;
 
 
-	Profile getUserProfile(UnitOfWork transaction) throws KException;
+	Profile getUserProfile() throws KException;
 
 		
-	boolean isSchemaActive(UnitOfWork uow, Model schemaModel) throws KException;
+	boolean isSchemaActive(Model schemaModel) throws KException;
 
 }

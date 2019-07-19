@@ -58,8 +58,8 @@ public class RepositoryTools implements StringConstants {
         // Look for the KomodoObject first ...
         if ( parent.hasRawChild( transaction, relPath, defaultType ) ) {
             for ( final KomodoObject kid : parent.getRawChildren( transaction, relPath ) ) {
-                if ( defaultType.equals( kid.getPrimaryType( transaction ).getName() )
-                     || kid.hasDescriptor( transaction, defaultType ) ) {
+                if ( defaultType.equals( kid.getPrimaryType( ).getName() )
+                     || kid.hasDescriptor( defaultType ) ) {
                     return kid;
                 }
             }
@@ -156,7 +156,7 @@ public class RepositoryTools implements StringConstants {
 
         StringBuilder sb = new StringBuilder();
         try {
-            sb.append(property.getName(transaction)).append('=');
+            sb.append(property.getName()).append('=');
             sb.append(getDisplayValue(transaction, property));
         } catch (Exception e) {
             sb.append(" on deleted node ").append(property.getAbsolutePath()); //$NON-NLS-1$
@@ -175,7 +175,7 @@ public class RepositoryTools implements StringConstants {
      * @throws Exception the exception
      */
     public static String getDisplayValue(UnitOfWork transaction,
-                                         Property property) throws Exception {
+    		Property property) throws Exception {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == org.komodo.spi.repository.UnitOfWork.State.NOT_STARTED ),
                          "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
@@ -192,7 +192,7 @@ public class RepositoryTools implements StringConstants {
     			Object value = values[i];
 
                 if ( propIsReference ) {
-                    final String path = findPathOfReference( transaction, RepositoryImpl.getRepository(transaction), value.toString() );
+                    final String path = findPathOfReference( transaction, property.getRepository(), value.toString() );
 
                     if (!StringUtils.isBlank( path )) {
                         value = path;
@@ -211,7 +211,7 @@ public class RepositoryTools implements StringConstants {
     		Object value = property.getValue(transaction);
 
             if ( propIsReference ) {
-                final String path = findPathOfReference( transaction, RepositoryImpl.getRepository(transaction), value.toString() );
+                final String path = findPathOfReference( transaction, property.getRepository(), value.toString() );
 
                 if (!StringUtils.isBlank( path )) {
                     value = path;
@@ -280,20 +280,20 @@ public class RepositoryTools implements StringConstants {
         public String visit(UnitOfWork transaction,
                             KomodoObject object) throws Exception {
             String indent = createIndent(object.getAbsolutePath());
-            buffer.append(indent + object.getName(transaction) + NEW_LINE);
+            buffer.append(indent + object.getName() + NEW_LINE);
 
             //
             // Avoid relational filters of object's children
             //
-            ObjectImpl bareObject = new ObjectImpl(RepositoryImpl.getRepository(transaction), object.getAbsolutePath(), object.getIndex());
-            String[] propertyNames = bareObject.getPropertyNames(transaction);
+            ObjectImpl bareObject = new ObjectImpl(transaction, object.getRepository(), object.getAbsolutePath(), object.getIndex());
+            String[] propertyNames = bareObject.getPropertyNames();
 
             for (String propertyName : propertyNames) {
-                Property property = bareObject.getProperty(transaction, propertyName);
+                Property property = bareObject.getProperty(propertyName);
                 buffer.append(indent + TAB + AT + getDisplayNameAndValue(transaction, property) + NEW_LINE);
             }
 
-            KomodoObject[] children = bareObject.getChildren(transaction);
+            KomodoObject[] children = bareObject.getChildren();
             for (int i = 0; i < children.length; ++i)
                 children[i].accept(transaction, this);
 

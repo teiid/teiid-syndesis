@@ -26,9 +26,6 @@ import org.junit.Test;
 import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl.Filter;
-import org.komodo.relational.model.Column;
-import org.komodo.relational.model.Table;
-import org.komodo.relational.model.TableConstraint;
 import org.komodo.spi.KException;
 import org.teiid.modeshape.sequencer.ddl.TeiidDdlLexicon;
 
@@ -43,21 +40,21 @@ public final class TableConstraintTest extends RelationalModelTest {
     @Before
     public void init() throws Exception {
         this.table = createTable();
-        this.constraint = this.table.addUniqueConstraint( getTransaction(), NAME );
+        this.constraint = this.table.addUniqueConstraint( NAME );
         commit();
     }
 
     @Test
     public void shouldAddColumn() throws Exception {
         final ColumnImpl column = RelationalModelFactory.createColumn( getTransaction(), _repo, mock( TableImpl.class ), "column" );
-        this.constraint.addColumn( getTransaction(), column );
+        this.constraint.addColumn( column );
 
-        assertThat( this.constraint.hasProperty( getTransaction(), TeiidDdlLexicon.Constraint.REFERENCES ), is( true ) );
-        assertThat( this.constraint.getProperty( getTransaction(), TeiidDdlLexicon.Constraint.REFERENCES ).getValues( getTransaction() ).length,
+        assertThat( this.constraint.hasProperty( TeiidDdlLexicon.Constraint.REFERENCES ), is( true ) );
+        assertThat( this.constraint.getProperty( TeiidDdlLexicon.Constraint.REFERENCES ).getValues( getTransaction() ).length,
                     is( 1 ) );
 
         commit(); // must commit so that query used in next method will work
-        assertThat( this.constraint.getColumns( getTransaction() ).length, is( 1 ) );
+        assertThat( this.constraint.getColumns( ).length, is( 1 ) );
     }
 
     @Test
@@ -68,19 +65,19 @@ public final class TableConstraintTest extends RelationalModelTest {
     @Test( expected = KException.class )
     public void shouldFailWhenRemovingColumnThatWasNeverAdded() throws Exception {
         final ColumnImpl column = RelationalModelFactory.createColumn( getTransaction(), _repo, mock( TableImpl.class ), "column" );
-        this.constraint.removeColumn( getTransaction(), column );
+        this.constraint.removeColumn( column );
     }
 
     @Test
     public void shouldHaveMoreRawProperties() throws Exception {
-        final String[] filteredProps = this.constraint.getPropertyNames( getTransaction() );
+        final String[] filteredProps = this.constraint.getPropertyNames( );
         final String[] rawProps = this.constraint.getRawPropertyNames( getTransaction() );
         assertThat( ( rawProps.length > filteredProps.length ), is( true ) );
     }
 
     @Test
     public void shouldHaveTableAfterConstruction() throws Exception {
-        assertThat( this.constraint.getTable( getTransaction() ), is( this.table ) );
+        assertThat( this.constraint.getTable( ), is( this.table ) );
     }
 
     @Test( expected = UnsupportedOperationException.class )
@@ -90,17 +87,17 @@ public final class TableConstraintTest extends RelationalModelTest {
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldNotBeAbleToAddNullColumn() throws Exception {
-        this.constraint.addColumn( getTransaction(), null );
+        this.constraint.addColumn( null );
     }
 
     @Test( expected = UnsupportedOperationException.class )
     public void shouldNotBeAbleToSetConstraintType() throws Exception {
-        this.constraint.setProperty( getTransaction(), TeiidDdlLexicon.Constraint.TYPE, "INDEX" );
+        this.constraint.setProperty( TeiidDdlLexicon.Constraint.TYPE, "INDEX" );
     }
 
     @Test
     public void shouldNotContainFilteredProperties() throws Exception {
-        final String[] filteredProps = this.constraint.getPropertyNames( getTransaction() );
+        final String[] filteredProps = this.constraint.getPropertyNames( );
         final Filter[] filters = ((TableConstraintImpl)this.constraint).getFilters();
 
         for ( final String name : filteredProps ) {
@@ -112,17 +109,17 @@ public final class TableConstraintTest extends RelationalModelTest {
 
     @Test
     public void shouldNotHaveColumnsAfterConstruction() throws Exception {
-        assertThat( this.constraint.getColumns( getTransaction() ).length, is( 0 ) );
+        assertThat( this.constraint.getColumns( ).length, is( 0 ) );
     }
 
     @Test
     public void shouldRemoveColumn() throws Exception {
         final ColumnImpl column = RelationalModelFactory.createColumn( getTransaction(), _repo, mock( TableImpl.class ), "column" );
-        this.constraint.addColumn( getTransaction(), column );
+        this.constraint.addColumn( column );
         commit(); // must commit so that query used in next method will work
 
-        this.constraint.removeColumn( getTransaction(), column );
-        assertThat( this.constraint.hasProperty( getTransaction(), TeiidDdlLexicon.Constraint.REFERENCES ), is( false ) );
+        this.constraint.removeColumn( column );
+        assertThat( this.constraint.hasProperty( TeiidDdlLexicon.Constraint.REFERENCES ), is( false ) );
     }
 
 }

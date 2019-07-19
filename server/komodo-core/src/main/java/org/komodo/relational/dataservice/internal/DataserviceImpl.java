@@ -22,9 +22,7 @@ import java.util.Calendar;
 import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.ObjectImpl;
-import org.komodo.core.repository.Property;
 import org.komodo.core.repository.PropertyValueType;
-import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.internal.TypeResolver;
@@ -72,30 +70,25 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.core.repository.KomodoObject)
+         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.core.repository.KomodoObject)
          */
         @Override
-        public boolean resolvable( final UnitOfWork transaction,
-                                   final KomodoObject kobject ) throws KException {
-            return ObjectImpl.validateType( transaction,
-                                            kobject,
+        public boolean resolvable(final KomodoObject kobject ) throws KException {
+            return ObjectImpl.validateType( kobject,
                                             DataVirtLexicon.DataService.NODE_TYPE );
         }
 
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.core.repository.KomodoObject)
+         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.core.repository.KomodoObject)
          */
         @Override
-        public DataserviceImpl resolve( final UnitOfWork transaction,
-                                    final KomodoObject kobject ) throws KException {
+        public DataserviceImpl resolve(final KomodoObject kobject ) throws KException {
             if ( kobject.getTypeId() == Dataservice.TYPE_ID ) {
                 return ( DataserviceImpl )kobject;
             }
-            return new DataserviceImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
+            return new DataserviceImpl( kobject.getTransaction(), kobject.getRepository(), kobject.getAbsolutePath() );
         }
 
     };
@@ -123,7 +116,7 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
     }
 
     @Override
-    public KomodoType getTypeIdentifier(UnitOfWork transaction) {
+    public KomodoType getTypeIdentifier() {
         return Dataservice.IDENTIFIER;
     }
 
@@ -140,11 +133,11 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.dataservice.Dataservice#getDescription(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.relational.dataservice.Dataservice#getDescription()
      */
     @Override
-    public String getDescription( final UnitOfWork transaction ) throws KException {
-        return getObjectProperty( transaction,
+    public String getDescription( ) throws KException {
+        return getObjectProperty( getTransaction(),
                                   PropertyValueType.STRING,
                                   "getDescription", //$NON-NLS-1$
                                   DataVirtLexicon.DataService.DESCRIPTION );
@@ -156,8 +149,8 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
      * @see org.komodo.relational.dataservice.Dataservice#getLastModified(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public Calendar getLastModified( final UnitOfWork transaction ) throws KException {
-        return getObjectProperty( transaction,
+    public Calendar getLastModified() throws KException {
+        return getObjectProperty( getTransaction(),
                                   PropertyValueType.DATE,
                                   "getLastModified", //$NON-NLS-1$
                                   DataVirtLexicon.DataService.LAST_MODIFIED );
@@ -169,8 +162,8 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
      * @see org.komodo.relational.dataservice.Dataservice#getModifiedBy(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public String getModifiedBy( final UnitOfWork transaction ) throws KException {
-        return getObjectProperty( transaction,
+    public String getModifiedBy() throws KException {
+        return getObjectProperty( getTransaction(),
                                   PropertyValueType.STRING,
                                   "getModifiedBy", //$NON-NLS-1$
                                   DataVirtLexicon.DataService.MODIFIED_BY );
@@ -179,13 +172,12 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.dataservice.Dataservice#setDescription(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String)
+     * @see org.komodo.relational.dataservice.Dataservice#setDescription(java.lang.String)
      */
     @Override
-    public void setDescription( final UnitOfWork transaction,
+    public void setDescription(
                                 final String newDescription ) throws KException {
-        setObjectProperty( transaction,
+        setObjectProperty( getTransaction(),
                            "setDescription", //$NON-NLS-1$
                            DataVirtLexicon.DataService.DESCRIPTION,
                            newDescription );
@@ -198,9 +190,9 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
      *      java.util.Calendar)
      */
     @Override
-    public void setLastModified( final UnitOfWork transaction,
+    public void setLastModified(
                                  final Calendar newLastModified ) throws KException {
-        setObjectProperty( transaction,
+        setObjectProperty( getTransaction(),
                            "setLastModified", //$NON-NLS-1$
                            DataVirtLexicon.DataService.LAST_MODIFIED,
                            newLastModified );
@@ -213,30 +205,12 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
      *      java.lang.String)
      */
     @Override
-    public void setModifiedBy( final UnitOfWork transaction,
+    public void setModifiedBy(
                                final String newModifiedBy ) throws KException {
-        setObjectProperty( transaction,
+        setObjectProperty( getTransaction(),
                            "setModifiedBy", //$NON-NLS-1$
                            DataVirtLexicon.DataService.MODIFIED_BY,
                            newModifiedBy );
     }
     
-    @Override
-    public String getServiceVdbName(UnitOfWork uow) throws KException {
-    	KomodoObject child = this.getChild(uow, "serviceVdb", DataVirtLexicon.VdbEntry.NODE_TYPE);
-    	if (child != null) {
-    		Property p = child.getProperty(uow, DataVirtLexicon.VdbEntry.VDB_NAME);
-    		if (p != null) {
-    			return p.getStringValue(uow);
-    		}
-    	}
-    	return null;
-    }
-    
-    @Override
-    public void setServiceVdbName(UnitOfWork uow, String name) throws KException {
-    	KomodoObject child = this.addChild(uow, "serviceVdb", DataVirtLexicon.VdbEntry.NODE_TYPE);
-    	child.setProperty(uow, DataVirtLexicon.VdbEntry.VDB_NAME, name);
-    }
-   
 }

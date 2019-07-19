@@ -20,12 +20,12 @@ package org.komodo.rest.relational.response.vieweditorstate;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import org.komodo.relational.profile.ViewEditorState;
+
 import org.komodo.relational.profile.StateCommandAggregate;
 import org.komodo.relational.profile.ViewDefinition;
+import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.rest.AbstractKEntity;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.UnitOfWork;
 
 public class RestViewEditorState extends AbstractKEntity {
 
@@ -129,22 +129,21 @@ public class RestViewEditorState extends AbstractKEntity {
      * Constructor for use when serializing.
      * @param baseUri the base uri
      * @param viewEditorState the view editor state
-     *
      * @throws KException if error occurs
      */
-    public RestViewEditorState(URI baseUri, ViewEditorState viewEditorState, UnitOfWork transaction) throws KException {
+    public RestViewEditorState(URI baseUri, ViewEditorState viewEditorState) throws KException {
         super(baseUri);
 
-        setId(viewEditorState.getName(transaction));
+        setId(viewEditorState.getName());
         
-        ViewDefinition viewDef = viewEditorState.getViewDefinition(transaction);
+        ViewDefinition viewDef = viewEditorState.getViewDefinition();
         if( viewDef != null ) {
-        	this.viewDefinition = new RestViewDefinition(baseUri, viewDef, transaction);
+        	this.viewDefinition = new RestViewDefinition(baseUri, viewDef);
         }
 
         List<RestStateCommandAggregate> cmdList = new ArrayList<>();
-        for (StateCommandAggregate cmd : viewEditorState.getCommands(transaction)) {
-            RestStateCommandAggregate restCmd = new RestStateCommandAggregate(baseUri, cmd, transaction);
+        for (StateCommandAggregate cmd : viewEditorState.getCommands()) {
+            RestStateCommandAggregate restCmd = new RestStateCommandAggregate(baseUri, cmd);
             cmdList.add(restCmd);
         }
 

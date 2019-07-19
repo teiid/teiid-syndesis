@@ -19,7 +19,6 @@ package org.komodo.relational.model;
 
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * Represents a relational model primary key.
@@ -47,6 +46,6 @@ public interface PrimaryKey extends TableConstraint {
      * @see org.komodo.core.repository.KNode#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    Table getRelationalParent( final UnitOfWork transaction ) throws KException;
+    Table getRelationalParent( ) throws KException;
 
 }

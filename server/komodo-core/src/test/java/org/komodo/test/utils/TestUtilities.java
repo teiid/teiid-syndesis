@@ -424,14 +424,14 @@ public class TestUtilities implements StringConstants {
                                                           ALL_ELEMENTS_EXAMPLE_NAME + ALL_ELEMENTS_EXAMPLE_SUFFIX,
                                                           VdbLexicon.Vdb.VIRTUAL_DATABASE);
         myVdbExample.addDescriptor(uow, "mode:derived", "mix:referenceable");
-        myVdbExample.setProperty(uow, VdbLexicon.Vdb.NAME, "myVDB");
-        myVdbExample.setProperty(uow, VdbLexicon.Vdb.DESCRIPTION, "vdb description");
-        myVdbExample.setProperty(uow, VdbLexicon.Vdb.CONNECTION_TYPE, "NONE");
-        myVdbExample.setProperty(uow, VdbLexicon.Vdb.ORIGINAL_FILE, "/vdbs/" + ALL_ELEMENTS_EXAMPLE_NAME + ALL_ELEMENTS_EXAMPLE_SUFFIX);
-        myVdbExample.setProperty(uow, VdbLexicon.Vdb.PREVIEW, false);
-        myVdbExample.setProperty(uow, VdbLexicon.Vdb.VERSION, 1);
-        myVdbExample.setProperty(uow, "vdb-property2", "vdb-value2");
-        myVdbExample.setProperty(uow, "vdb-property", "vdb-value");
+        myVdbExample.setProperty(VdbLexicon.Vdb.NAME, "myVDB");
+        myVdbExample.setProperty(VdbLexicon.Vdb.DESCRIPTION, "vdb description");
+        myVdbExample.setProperty(VdbLexicon.Vdb.CONNECTION_TYPE, "NONE");
+        myVdbExample.setProperty(VdbLexicon.Vdb.ORIGINAL_FILE, "/vdbs/" + ALL_ELEMENTS_EXAMPLE_NAME + ALL_ELEMENTS_EXAMPLE_SUFFIX);
+        myVdbExample.setProperty(VdbLexicon.Vdb.PREVIEW, false);
+        myVdbExample.setProperty(VdbLexicon.Vdb.VERSION, 1);
+        myVdbExample.setProperty("vdb-property2", "vdb-value2");
+        myVdbExample.setProperty("vdb-property", "vdb-value");
 
         /*
          *      vdb:importVdbs
@@ -446,8 +446,8 @@ public class TestUtilities implements StringConstants {
          *              @vdb:import-data-policies=false
          */
         KomodoObject importVdb = importVdbs.addChild(uow, "x", VdbLexicon.ImportVdb.IMPORT_VDB);
-        importVdb.setProperty(uow, VdbLexicon.ImportVdb.VERSION, 2);
-        importVdb.setProperty(uow, VdbLexicon.ImportVdb.IMPORT_DATA_POLICIES, false);
+        importVdb.setProperty(VdbLexicon.ImportVdb.VERSION, 2);
+        importVdb.setProperty(VdbLexicon.ImportVdb.IMPORT_DATA_POLICIES, false);
 
         /*
          *      model-one
@@ -459,10 +459,10 @@ public class TestUtilities implements StringConstants {
          *          @model-prop=model-value-override
          */
         KomodoObject modelOne = myVdbExample.addChild(uow, "model-one", VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        modelOne.setProperty(uow, CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
-        modelOne.setProperty(uow, VdbLexicon.Vdb.DESCRIPTION, "model description");
-        modelOne.setProperty(uow, VdbLexicon.Model.VISIBLE, false);
-        modelOne.setProperty(uow, "model-prop", "model-value-override");
+        modelOne.setProperty(CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
+        modelOne.setProperty(VdbLexicon.Vdb.DESCRIPTION, "model description");
+        modelOne.setProperty(VdbLexicon.Model.VISIBLE, false);
+        modelOne.setProperty("model-prop", "model-value-override");
 
         /*
          *          vdb:sources
@@ -477,8 +477,8 @@ public class TestUtilities implements StringConstants {
          *                  @vdb:sourceJndiName=java:mybinding
          */
         KomodoObject model1Src1 = model1Sources.addChild(uow, "s1", VdbLexicon.Source.SOURCE);
-        model1Src1.setProperty(uow, VdbLexicon.Source.TRANSLATOR, "translator");
-        model1Src1.setProperty(uow, VdbLexicon.Source.JNDI_NAME, "java:mybinding");
+        model1Src1.setProperty(VdbLexicon.Source.TRANSLATOR, "translator");
+        model1Src1.setProperty(VdbLexicon.Source.JNDI_NAME, "java:mybinding");
         setModelSourceOriginConnection(uow, model1Src1, S1Connection);
 
         /*
@@ -490,13 +490,13 @@ public class TestUtilities implements StringConstants {
          *          @model-prop=model-value
          */
         KomodoObject modelTwo = myVdbExample.addChild(uow, "model-two", VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        modelTwo.setProperty(uow, CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
-        modelTwo.setProperty(uow, VdbLexicon.Model.VISIBLE, true);
-        modelTwo.setProperty(uow, "model-prop", "model-value");
-        modelTwo.setProperty(uow, VdbLexicon.Model.METADATA_TYPE, "DDL");
+        modelTwo.setProperty(CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
+        modelTwo.setProperty(VdbLexicon.Model.VISIBLE, true);
+        modelTwo.setProperty("model-prop", "model-value");
+        modelTwo.setProperty(VdbLexicon.Model.METADATA_TYPE, "DDL");
 
         String modelDefinition = "CREATE VIEW Test AS select * FROM Test.getTest;";
-        modelTwo.setProperty(uow, VdbLexicon.Model.MODEL_DEFINITION, modelDefinition);
+        modelTwo.setProperty(VdbLexicon.Model.MODEL_DEFINITION, modelDefinition);
 
         /*
          *          vdb:sources
@@ -511,8 +511,8 @@ public class TestUtilities implements StringConstants {
          *                  @vdb:sourceJndiName=java:binding-one
          */
         KomodoObject model2Src1 = model2Sources.addChild(uow, "s1", VdbLexicon.Source.SOURCE);
-        model2Src1.setProperty(uow, VdbLexicon.Source.TRANSLATOR, "translator");
-        model2Src1.setProperty(uow, VdbLexicon.Source.JNDI_NAME, "java:binding-one");
+        model2Src1.setProperty(VdbLexicon.Source.TRANSLATOR, "translator");
+        model2Src1.setProperty(VdbLexicon.Source.JNDI_NAME, "java:binding-one");
         setModelSourceOriginConnection(uow, model2Src1, S1Connection);
 
         /*
@@ -522,8 +522,8 @@ public class TestUtilities implements StringConstants {
          *                  @vdb:sourceJndiName=java:binding-two
          */
         KomodoObject model2Src2 = model2Sources.addChild(uow, "s2", VdbLexicon.Source.SOURCE);
-        model2Src2.setProperty(uow, VdbLexicon.Source.TRANSLATOR, "translator");
-        model2Src2.setProperty(uow, VdbLexicon.Source.JNDI_NAME, "java:binding-two");
+        model2Src2.setProperty(VdbLexicon.Source.TRANSLATOR, "translator");
+        model2Src2.setProperty(VdbLexicon.Source.JNDI_NAME, "java:binding-two");
         setModelSourceOriginConnection(uow, model2Src2, S2Connection);
 
         /*
@@ -540,9 +540,9 @@ public class TestUtilities implements StringConstants {
          *              my-property=my-value
          */
         KomodoObject oraTranslator = translators.addChild(uow, "oracleOverride", VdbLexicon.Translator.TRANSLATOR);
-        oraTranslator.setProperty(uow, VdbLexicon.Translator.DESCRIPTION, "hello world");
-        oraTranslator.setProperty(uow, VdbLexicon.Translator.TYPE, "oracle");
-        oraTranslator.setProperty(uow, "my-property", "my-value");
+        oraTranslator.setProperty(VdbLexicon.Translator.DESCRIPTION, "hello world");
+        oraTranslator.setProperty(VdbLexicon.Translator.TYPE, "oracle");
+        oraTranslator.setProperty("my-property", "my-value");
 
         /*
          *      vdb:dataRoles
@@ -560,11 +560,11 @@ public class TestUtilities implements StringConstants {
          *              @vdb:mappedRoleNames=ROLE1, ROLE2
          */
         KomodoObject dataRole1 = dataRoles.addChild(uow, "roleOne", VdbLexicon.DataRole.DATA_ROLE);
-        dataRole1.setProperty(uow, VdbLexicon.Translator.DESCRIPTION, "roleOne described");
-        dataRole1.setProperty(uow, VdbLexicon.DataRole.ANY_AUTHENTICATED, false);
-        dataRole1.setProperty(uow, VdbLexicon.DataRole.GRANT_ALL, true);
-        dataRole1.setProperty(uow, VdbLexicon.DataRole.ALLOW_CREATE_TEMP_TABLES, true);
-        dataRole1.setProperty(uow, VdbLexicon.DataRole.MAPPED_ROLE_NAMES, "ROLE1", "ROLE2");
+        dataRole1.setProperty(VdbLexicon.Translator.DESCRIPTION, "roleOne described");
+        dataRole1.setProperty(VdbLexicon.DataRole.ANY_AUTHENTICATED, false);
+        dataRole1.setProperty(VdbLexicon.DataRole.GRANT_ALL, true);
+        dataRole1.setProperty(VdbLexicon.DataRole.ALLOW_CREATE_TEMP_TABLES, true);
+        dataRole1.setProperty(VdbLexicon.DataRole.MAPPED_ROLE_NAMES, "ROLE1", "ROLE2");
 
         /*
          *              vdb:permissions
@@ -578,7 +578,7 @@ public class TestUtilities implements StringConstants {
          *                      @allowRead=true
          */
         KomodoObject permission1 = permissions.addChild(uow, "myTable.T1", VdbLexicon.DataRole.Permission.PERMISSION);
-        permission1.setProperty(uow, VdbLexicon.DataRole.Permission.ALLOW_READ, true);
+        permission1.setProperty(VdbLexicon.DataRole.Permission.ALLOW_READ, true);
 
         /*
          *                  myTable.T2
@@ -591,12 +591,12 @@ public class TestUtilities implements StringConstants {
          *                      @allowAlter=true
          */
         KomodoObject permission2 = permissions.addChild(uow, "myTable.T2", VdbLexicon.DataRole.Permission.PERMISSION);
-        permission2.setProperty(uow, VdbLexicon.DataRole.Permission.ALLOW_CREATE, true);
-        permission2.setProperty(uow, VdbLexicon.DataRole.Permission.ALLOW_READ, false);
-        permission2.setProperty(uow, VdbLexicon.DataRole.Permission.ALLOW_UPDATE, true);
-        permission2.setProperty(uow, VdbLexicon.DataRole.Permission.ALLOW_DELETE, true);
-        permission2.setProperty(uow, VdbLexicon.DataRole.Permission.ALLOW_EXECUTE, true);
-        permission2.setProperty(uow, VdbLexicon.DataRole.Permission.ALLOW_ALTER, true);
+        permission2.setProperty(VdbLexicon.DataRole.Permission.ALLOW_CREATE, true);
+        permission2.setProperty(VdbLexicon.DataRole.Permission.ALLOW_READ, false);
+        permission2.setProperty(VdbLexicon.DataRole.Permission.ALLOW_UPDATE, true);
+        permission2.setProperty(VdbLexicon.DataRole.Permission.ALLOW_DELETE, true);
+        permission2.setProperty(VdbLexicon.DataRole.Permission.ALLOW_EXECUTE, true);
+        permission2.setProperty(VdbLexicon.DataRole.Permission.ALLOW_ALTER, true);
 
         /*
          *                      vdb:conditions
@@ -610,7 +610,7 @@ public class TestUtilities implements StringConstants {
          *                              @vdb:constraint=false
          */
         KomodoObject condition = conditions.addChild(uow, "col1 = user()", VdbLexicon.DataRole.Permission.Condition.CONDITION);
-        condition.setProperty(uow, VdbLexicon.DataRole.Permission.Condition.CONSTRAINT, false);
+        condition.setProperty(VdbLexicon.DataRole.Permission.Condition.CONSTRAINT, false);
 
         /*
          *                  myTable.T2.col1
@@ -630,7 +630,7 @@ public class TestUtilities implements StringConstants {
          *                              @vdb:order=1
          */
         KomodoObject mask = masks.addChild(uow, "col2", VdbLexicon.DataRole.Permission.Mask.MASK);
-        mask.setProperty(uow, VdbLexicon.DataRole.Permission.Mask.ORDER, 1);
+        mask.setProperty(VdbLexicon.DataRole.Permission.Mask.ORDER, 1);
 
         /*
          *                  javascript
@@ -638,7 +638,7 @@ public class TestUtilities implements StringConstants {
          *                      @allowLanguage=true
          */
         KomodoObject permission4 = permissions.addChild(uow, "javascript", VdbLexicon.DataRole.Permission.PERMISSION);
-        permission4.setProperty(uow, VdbLexicon.DataRole.Permission.ALLOW_LANGUAGE, true);
+        permission4.setProperty(VdbLexicon.DataRole.Permission.ALLOW_LANGUAGE, true);
 
         return myVdbExample;
     }
@@ -675,15 +675,15 @@ public class TestUtilities implements StringConstants {
                                                                     TWEET_EXAMPLE_NAME + TWEET_EXAMPLE_SUFFIX,
                                                                     VdbLexicon.Vdb.VIRTUAL_DATABASE);
         tweetExample.addDescriptor(uow, "mode:derived", "mix:referenceable");
-        tweetExample.setProperty(uow, VdbLexicon.Vdb.NAME, "twitter");
-        tweetExample.setProperty(uow, VdbLexicon.Vdb.DESCRIPTION, "Shows how to call Web Services");
+        tweetExample.setProperty(VdbLexicon.Vdb.NAME, "twitter");
+        tweetExample.setProperty(VdbLexicon.Vdb.DESCRIPTION, "Shows how to call Web Services");
     
         // Miscellaneous property
-        tweetExample.setProperty(uow, "UseConnectorMetadata", "cached");
+        tweetExample.setProperty("UseConnectorMetadata", "cached");
     
-        tweetExample.setProperty(uow, VdbLexicon.Vdb.ORIGINAL_FILE, "/vdbs/" + TWEET_EXAMPLE_NAME + TWEET_EXAMPLE_SUFFIX);
-        tweetExample.setProperty(uow, VdbLexicon.Vdb.PREVIEW, false);
-        tweetExample.setProperty(uow, VdbLexicon.Vdb.VERSION, 1);
+        tweetExample.setProperty(VdbLexicon.Vdb.ORIGINAL_FILE, "/vdbs/" + TWEET_EXAMPLE_NAME + TWEET_EXAMPLE_SUFFIX);
+        tweetExample.setProperty(VdbLexicon.Vdb.PREVIEW, false);
+        tweetExample.setProperty(VdbLexicon.Vdb.VERSION, 1);
     
         /*
          *      vdb:translators
@@ -700,9 +700,9 @@ public class TestUtilities implements StringConstants {
          *              @vdb:description=Rest Web Service translator
          */
         KomodoObject rest = translators.addChild(uow, REST_TRANSLATOR, VdbLexicon.Translator.TRANSLATOR);
-        rest.setProperty(uow, "DefaultServiceMode", "MESSAGE");
-        rest.setProperty(uow, "DefaultBinding", "HTTP");
-        rest.setProperty(uow, VdbLexicon.Translator.TYPE, "ws");
+        rest.setProperty("DefaultServiceMode", "MESSAGE");
+        rest.setProperty("DefaultBinding", "HTTP");
+        rest.setProperty(VdbLexicon.Translator.TYPE, "ws");
     
         /*
          *      twitter
@@ -716,9 +716,9 @@ public class TestUtilities implements StringConstants {
          *          @vdb:sourceJndiName=java:/twitterDS
          */
         KomodoObject twitter = tweetExample.addChild(uow, TWITTER_MODEL, VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        twitter.setProperty(uow, CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
-        twitter.setProperty(uow, VdbLexicon.Model.VISIBLE, true);
-        twitter.setProperty(uow, VdbLexicon.Model.METADATA_TYPE, "DDL");
+        twitter.setProperty(CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
+        twitter.setProperty(VdbLexicon.Model.VISIBLE, true);
+        twitter.setProperty(VdbLexicon.Model.METADATA_TYPE, "DDL");
     
         /*
          *          vdb:sources
@@ -733,8 +733,8 @@ public class TestUtilities implements StringConstants {
          *                  @vdb:sourceJndiName=java:/twitterDS
          */
         KomodoObject twitterSource = twitterSources.addChild(uow, TWITTER_MODEL, VdbLexicon.Source.SOURCE);
-        twitterSource.setProperty(uow, VdbLexicon.Source.TRANSLATOR, REST_TRANSLATOR);
-        twitterSource.setProperty(uow, VdbLexicon.Source.JNDI_NAME, "java:/twitterDS");
+        twitterSource.setProperty(VdbLexicon.Source.TRANSLATOR, REST_TRANSLATOR);
+        twitterSource.setProperty(VdbLexicon.Source.JNDI_NAME, "java:/twitterDS");
         setModelSourceOriginConnection(uow, twitterSource, twitterConnection);
     
         /*
@@ -747,10 +747,10 @@ public class TestUtilities implements StringConstants {
          *          @vdb:modelDefinition=CREATE VIRTUAL PROCEDURE getTweets(query varchar) RETURNS (created_on varchar(25), from_user varchar(25), to_user varchar(25), profile_image_url varchar(25), source varchar(25), text varchar(140)) AS select tweet.* from (call twitter.invokeHTTP(action => 'GET', endpoint =>querystring('',query as "q"))) w, XMLTABLE('results' passing JSONTOXML('myxml', w.result) columns created_on string PATH 'created_at', from_user string PATH 'from_user', to_user string PATH 'to_user', profile_image_url string PATH 'profile_image_url', source string PATH 'source', text string PATH 'text') tweet; CREATE VIEW Tweet AS select * FROM twitterview.getTweets;
          */
         KomodoObject twitterView = tweetExample.addChild(uow, TWITTER_VIEW_MODEL, VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        twitterView.setProperty(uow, CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
-        twitterView.setProperty(uow, VdbLexicon.Model.METADATA_TYPE, "DDL");
-        twitterView.setProperty(uow, VdbLexicon.Model.VISIBLE, true);
-        twitterView.setProperty(uow, VdbLexicon.Model.MODEL_DEFINITION, TWITTER_VIEW_MODEL_DDL);
+        twitterView.setProperty(CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
+        twitterView.setProperty(VdbLexicon.Model.METADATA_TYPE, "DDL");
+        twitterView.setProperty(VdbLexicon.Model.VISIBLE, true);
+        twitterView.setProperty(VdbLexicon.Model.MODEL_DEFINITION, TWITTER_VIEW_MODEL_DDL);
     
         return tweetExample;
     }
@@ -782,13 +782,13 @@ public class TestUtilities implements StringConstants {
                                                   PATIENTS_VDB_FILE,
                                                   VdbLexicon.Vdb.VIRTUAL_DATABASE);
         patientsVdb.addDescriptor(uow, "mode:derived", "mix:referenceable");
-        patientsVdb.setProperty(uow, VdbLexicon.Vdb.NAME, "patients");
-        patientsVdb.setProperty(uow, VdbLexicon.Vdb.DESCRIPTION, "Sample Dataservice for patient records");
-        patientsVdb.setProperty(uow, VdbLexicon.Vdb.CONNECTION_TYPE, "BY_VERSION");
+        patientsVdb.setProperty(VdbLexicon.Vdb.NAME, "patients");
+        patientsVdb.setProperty(VdbLexicon.Vdb.DESCRIPTION, "Sample Dataservice for patient records");
+        patientsVdb.setProperty(VdbLexicon.Vdb.CONNECTION_TYPE, "BY_VERSION");
 
-        patientsVdb.setProperty(uow, VdbLexicon.Vdb.ORIGINAL_FILE, "/vdbs/" + PATIENTS_VDB_FILE);
-        patientsVdb.setProperty(uow, VdbLexicon.Vdb.PREVIEW, false);
-        patientsVdb.setProperty(uow, VdbLexicon.Vdb.VERSION, 1);
+        patientsVdb.setProperty(VdbLexicon.Vdb.ORIGINAL_FILE, "/vdbs/" + PATIENTS_VDB_FILE);
+        patientsVdb.setProperty(VdbLexicon.Vdb.PREVIEW, false);
+        patientsVdb.setProperty(VdbLexicon.Vdb.VERSION, 1);
 
         /*
          *      Patients
@@ -802,10 +802,10 @@ public class TestUtilities implements StringConstants {
         KomodoObject patientsModel = patientsVdb.addChild(uow,
                                                                                     PATIENTS_MODEL,
                                                                                     VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        patientsModel.setProperty(uow, CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
-        patientsModel.setProperty(uow,  VdbLexicon.Model.DESCRIPTION, "Example Patient Service");
-        patientsModel.setProperty(uow, VdbLexicon.Model.VISIBLE, true);
-        patientsModel.setProperty(uow, VdbLexicon.Model.METADATA_TYPE, "DDL");
+        patientsModel.setProperty(CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
+        patientsModel.setProperty(VdbLexicon.Model.DESCRIPTION,  "Example Patient Service");
+        patientsModel.setProperty(VdbLexicon.Model.VISIBLE, true);
+        patientsModel.setProperty(VdbLexicon.Model.METADATA_TYPE, "DDL");
         StringBuffer patientsModelDefn = new StringBuffer();
         patientsModelDefn.append("CREATE VIEW TheServiceView (")
                             .append("id long, ")
@@ -819,7 +819,7 @@ public class TestUtilities implements StringConstants {
                             .append(") ")
                             .append("AS ")
                             .append("SELECT id, firstName, lastName, gender, age, currentSmoker, lastPrimaryCareVisit FROM vdbwebtest.PATIENT;");
-        patientsModel.setProperty(uow, VdbLexicon.Model.MODEL_DEFINITION, patientsModelDefn.toString());
+        patientsModel.setProperty(VdbLexicon.Model.MODEL_DEFINITION, patientsModelDefn.toString());
 
         /*
          * Create patients connection to base the model source on
@@ -842,9 +842,9 @@ public class TestUtilities implements StringConstants {
         KomodoObject patientSourceModel = patientsVdb.addChild(uow,
                                                                                     PATIENTS_SOURCE,
                                                                                     VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        patientSourceModel.setProperty(uow, CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
-        patientSourceModel.setProperty(uow, VdbLexicon.Model.VISIBLE, true);
-        patientSourceModel.setProperty(uow, VdbLexicon.Model.METADATA_TYPE, "DDL");
+        patientSourceModel.setProperty(CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
+        patientSourceModel.setProperty(VdbLexicon.Model.VISIBLE, true);
+        patientSourceModel.setProperty(VdbLexicon.Model.METADATA_TYPE, "DDL");
 
         /*
          *          vdb:sources
@@ -864,8 +864,8 @@ public class TestUtilities implements StringConstants {
         KomodoObject patientSource = patientSources.addChild(uow,
                                                                                                PATIENTS_SOURCE,
                                                                                                VdbLexicon.Source.SOURCE);
-        patientSource.setProperty(uow, VdbLexicon.Source.TRANSLATOR, "mysql5");
-        patientSource.setProperty(uow, VdbLexicon.Source.JNDI_NAME, "java:/MySqlPatients");
+        patientSource.setProperty(VdbLexicon.Source.TRANSLATOR, "mysql5");
+        patientSource.setProperty(VdbLexicon.Source.JNDI_NAME, "java:/MySqlPatients");
         setModelSourceOriginConnection(uow, patientSource, patientsConnection);
 
         return patientsVdb;
@@ -905,15 +905,15 @@ public class TestUtilities implements StringConstants {
                                                   TWEET_EXAMPLE_NAME + TWEET_EXAMPLE_SUFFIX,
                                                   VdbLexicon.Vdb.VIRTUAL_DATABASE);
         tweetExample.addDescriptor(uow, "mode:derived", "mix:referenceable");
-        tweetExample.setProperty(uow, VdbLexicon.Vdb.NAME, "twitter");
-        tweetExample.setProperty(uow, VdbLexicon.Vdb.DESCRIPTION, "Shows how to call Web Services");
+        tweetExample.setProperty(VdbLexicon.Vdb.NAME, "twitter");
+        tweetExample.setProperty(VdbLexicon.Vdb.DESCRIPTION, "Shows how to call Web Services");
     
         // Miscellaneous property
-        tweetExample.setProperty(uow, "UseConnectorMetadata", "cached");
+        tweetExample.setProperty("UseConnectorMetadata", "cached");
     
-        tweetExample.setProperty(uow, VdbLexicon.Vdb.ORIGINAL_FILE, "/vdbs/" + TWEET_EXAMPLE_NAME + TWEET_EXAMPLE_SUFFIX);
-        tweetExample.setProperty(uow, VdbLexicon.Vdb.PREVIEW, false);
-        tweetExample.setProperty(uow, VdbLexicon.Vdb.VERSION, 1);
+        tweetExample.setProperty(VdbLexicon.Vdb.ORIGINAL_FILE, "/vdbs/" + TWEET_EXAMPLE_NAME + TWEET_EXAMPLE_SUFFIX);
+        tweetExample.setProperty(VdbLexicon.Vdb.PREVIEW, false);
+        tweetExample.setProperty(VdbLexicon.Vdb.VERSION, 1);
     
         /*
          *      vdb:translators
@@ -934,10 +934,10 @@ public class TestUtilities implements StringConstants {
         KomodoObject rest = translators.addChild(uow,
                                                                           REST_TRANSLATOR,
                                                                           VdbLexicon.Translator.TRANSLATOR);
-        rest.setProperty(uow, VdbLexicon.Translator.DESCRIPTION, "Rest Web Service translator");
-        rest.setProperty(uow, "DefaultServiceMode", "MESSAGE");
-        rest.setProperty(uow, "DefaultBinding", "HTTP");
-        rest.setProperty(uow, VdbLexicon.Translator.TYPE, "ws");
+        rest.setProperty(VdbLexicon.Translator.DESCRIPTION, "Rest Web Service translator");
+        rest.setProperty("DefaultServiceMode", "MESSAGE");
+        rest.setProperty("DefaultBinding", "HTTP");
+        rest.setProperty(VdbLexicon.Translator.TYPE, "ws");
     
         /*
          *      twitter
@@ -953,9 +953,9 @@ public class TestUtilities implements StringConstants {
         KomodoObject twitter = tweetExample.addChild(uow,
                                                                                     TWITTER_MODEL,
                                                                                     VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        twitter.setProperty(uow, CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
-        twitter.setProperty(uow, VdbLexicon.Model.VISIBLE, true);
-        twitter.setProperty(uow, VdbLexicon.Model.METADATA_TYPE, "DDL");
+        twitter.setProperty(CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.PHYSICAL);
+        twitter.setProperty(VdbLexicon.Model.VISIBLE, true);
+        twitter.setProperty(VdbLexicon.Model.METADATA_TYPE, "DDL");
     
         /*
          *          vdb:sources
@@ -975,8 +975,8 @@ public class TestUtilities implements StringConstants {
         KomodoObject twitterSource = twitterSources.addChild(uow,
                                                                                                TWITTER_MODEL,
                                                                                                VdbLexicon.Source.SOURCE);
-        twitterSource.setProperty(uow, VdbLexicon.Source.TRANSLATOR, REST_TRANSLATOR);
-        twitterSource.setProperty(uow, VdbLexicon.Source.JNDI_NAME, "java:/twitterDS");
+        twitterSource.setProperty(VdbLexicon.Source.TRANSLATOR, REST_TRANSLATOR);
+        twitterSource.setProperty(VdbLexicon.Source.JNDI_NAME, "java:/twitterDS");
         setModelSourceOriginConnection(uow, twitterSource, twitterConnection);
 
         /*
@@ -991,9 +991,9 @@ public class TestUtilities implements StringConstants {
         KomodoObject twitterView = tweetExample.addChild(uow,
                                                                                            TWITTER_VIEW_MODEL,
                                                                                            VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        twitterView.setProperty(uow, CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
-        twitterView.setProperty(uow, VdbLexicon.Model.METADATA_TYPE, "DDL");
-        twitterView.setProperty(uow, VdbLexicon.Model.VISIBLE, true);
+        twitterView.setProperty(CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
+        twitterView.setProperty(VdbLexicon.Model.METADATA_TYPE, "DDL");
+        twitterView.setProperty(VdbLexicon.Model.VISIBLE, true);
     
         StringBuffer modelDefinition = new StringBuffer();
         modelDefinition.append("CREATE VIRTUAL PROCEDURE getTweets(IN query varchar) ")
@@ -1007,13 +1007,13 @@ public class TestUtilities implements StringConstants {
                                 .append("to_user string PATH 'to_user', profile_image_url string PATH 'profile_image_url', ")
                                 .append("source string PATH 'source', text string PATH 'text') AS tweet;; ")
                                 .append("CREATE VIEW Tweet AS select * FROM twitterview.getTweets;");
-        twitterView.setProperty(uow, VdbLexicon.Model.MODEL_DEFINITION, modelDefinition.toString());
+        twitterView.setProperty(VdbLexicon.Model.MODEL_DEFINITION, modelDefinition.toString());
     
         return tweetExample;
     }
 
     private static void setModelSourceOriginConnection(UnitOfWork uow, KomodoObject source, KomodoObject connection) throws KException {
-        source.setProperty(uow, VdbLexicon.Source.ORIGIN_CONNECTION, connection.getName(uow));
+        source.setProperty(VdbLexicon.Source.ORIGIN_CONNECTION, connection.getName());
     }
 
     /**
@@ -1628,18 +1628,6 @@ public class TestUtilities implements StringConstants {
         Checksum contentCRC = new CRC32();
         contentCRC.update(bytes, 0, bytes.length);
         return contentCRC.getValue();
-    }
-
-    /**
-     * @param num
-     * @return string of tabs
-     */
-    public static String tab(int num) {
-        StringBuffer buf = new StringBuffer();
-        for (int i = 0; i < num; ++i)
-            buf.append(TAB);
-
-        return buf.toString();
     }
 
     /**

@@ -22,7 +22,6 @@ import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.PropertyValueType;
-import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.internal.TypeResolver;
 import org.komodo.relational.profile.SqlComposition;
@@ -65,27 +64,25 @@ public class SqlCompositionImpl  extends RelationalObjectImpl implements SqlComp
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.core.repository.KomodoObject)
+         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.core.repository.KomodoObject)
          */
         @Override
-        public boolean resolvable(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
-            return ObjectImpl.validateType(transaction, kobject, KomodoLexicon.SqlComposition.NODE_TYPE);
+        public boolean resolvable(final KomodoObject kobject) throws KException {
+            return ObjectImpl.validateType(kobject, KomodoLexicon.SqlComposition.NODE_TYPE);
         }
 
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.core.repository.KomodoObject)
+         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.core.repository.KomodoObject)
          */
         @Override
-        public SqlCompositionImpl resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
+        public SqlCompositionImpl resolve(final KomodoObject kobject) throws KException {
             if (kobject.getTypeId() == SqlComposition.TYPE_ID) {
                 return (SqlCompositionImpl)kobject;
             }
 
-            return new SqlCompositionImpl(transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath());
+            return new SqlCompositionImpl(kobject.getTransaction(), kobject.getRepository(), kobject.getAbsolutePath());
         }
 
     };
@@ -110,22 +107,22 @@ public class SqlCompositionImpl  extends RelationalObjectImpl implements SqlComp
 	}
 
     @Override
-    public KomodoType getTypeIdentifier(UnitOfWork uow) {
+    public KomodoType getTypeIdentifier() {
         return SqlComposition.IDENTIFIER;
     }
     
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.internal.RelationalObjectImpl#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.relational.internal.RelationalObjectImpl#getParent()
      */
     @Override
-    public ViewDefinitionImpl getParent(final UnitOfWork transaction) throws KException {
-        ArgCheck.isNotNull(transaction, "transaction"); //$NON-NLS-1$
-        ArgCheck.isTrue((transaction.getState() == State.NOT_STARTED), "transaction state must be NOT_STARTED"); //$NON-NLS-1$
+    public ViewDefinitionImpl getParent() throws KException {
+        ArgCheck.isNotNull(getTransaction(), "transaction"); //$NON-NLS-1$
+        ArgCheck.isTrue((getTransaction().getState() == State.NOT_STARTED), "transaction state must be NOT_STARTED"); //$NON-NLS-1$
 
-        final KomodoObject grouping = super.getParent(transaction);
-        final ViewDefinitionImpl result = ViewDefinitionImpl.RESOLVER.resolve(transaction, grouping.getParent(transaction));
+        final KomodoObject grouping = super.getParent();
+        final ViewDefinitionImpl result = ViewDefinitionImpl.RESOLVER.resolve(grouping.getParent());
         return result;
     }
 
@@ -150,91 +147,91 @@ public class SqlCompositionImpl  extends RelationalObjectImpl implements SqlComp
     }
 
 	@Override
-	public void setDescription(UnitOfWork transaction, String description) throws KException {
-		setObjectProperty(transaction, "setDescription", KomodoLexicon.SqlComposition.DESCRIPTION, description); //$NON-NLS-1$
+	public void setDescription(String description) throws KException {
+		setObjectProperty(getTransaction(), "setDescription", KomodoLexicon.SqlComposition.DESCRIPTION, description); //$NON-NLS-1$
 	}
 
 	@Override
-	public String getDescription(UnitOfWork transaction) throws KException {
-        String value = getObjectProperty(transaction, PropertyValueType.STRING, 
+	public String getDescription() throws KException {
+        String value = getObjectProperty(getTransaction(), PropertyValueType.STRING, 
         		"getDescription", //$NON-NLS-1$
                 KomodoLexicon.SqlComposition.DESCRIPTION );
 		return value;
 	}
 
 	@Override
-	public void setLeftSourcePath(UnitOfWork transaction, String leftSourcePath) throws KException {
-		setObjectProperty(transaction, "setLeftSourcePath", KomodoLexicon.SqlComposition.LEFT_SOURCE_PATH, leftSourcePath); //$NON-NLS-1$
+	public void setLeftSourcePath(String leftSourcePath) throws KException {
+		setObjectProperty(getTransaction(), "setLeftSourcePath", KomodoLexicon.SqlComposition.LEFT_SOURCE_PATH, leftSourcePath); //$NON-NLS-1$
 	}
 
 	@Override
-	public String getLeftSourcePath(UnitOfWork transaction) throws KException {
-        String value = getObjectProperty(transaction, PropertyValueType.STRING, 
+	public String getLeftSourcePath() throws KException {
+        String value = getObjectProperty(getTransaction(), PropertyValueType.STRING, 
         		"getLeftSourcePath", //$NON-NLS-1$
                 KomodoLexicon.SqlComposition.LEFT_SOURCE_PATH );
 		return value;
 	}
 
 	@Override
-	public void setRightSourcePath(UnitOfWork transaction, String rightSourcePath) throws KException {
-		setObjectProperty(transaction, "setRightSourcePath", KomodoLexicon.SqlComposition.RIGHT_SOURCE_PATH, rightSourcePath); //$NON-NLS-1$
+	public void setRightSourcePath(String rightSourcePath) throws KException {
+		setObjectProperty(getTransaction(), "setRightSourcePath", KomodoLexicon.SqlComposition.RIGHT_SOURCE_PATH, rightSourcePath); //$NON-NLS-1$
 	}
 
 	@Override
-	public String getRightSourcePath(UnitOfWork transaction) throws KException {
-        String value = getObjectProperty(transaction, PropertyValueType.STRING, 
+	public String getRightSourcePath() throws KException {
+        String value = getObjectProperty(getTransaction(), PropertyValueType.STRING, 
         		"getRightSourcePath", //$NON-NLS-1$
                 KomodoLexicon.SqlComposition.RIGHT_SOURCE_PATH );
 		return value;
 	}
 
 	@Override
-	public void setType(UnitOfWork transaction, String type) throws KException {
-		setObjectProperty(transaction, "setType", KomodoLexicon.SqlComposition.TYPE, type); //$NON-NLS-1$
+	public void setType(String type) throws KException {
+		setObjectProperty(getTransaction(), "setType", KomodoLexicon.SqlComposition.TYPE, type); //$NON-NLS-1$
 	}
 
 	@Override
-	public String getType(UnitOfWork transaction) throws KException {
-        String value = getObjectProperty(transaction, PropertyValueType.STRING, 
+	public String getType() throws KException {
+        String value = getObjectProperty(getTransaction(), PropertyValueType.STRING, 
         		"getType", //$NON-NLS-1$
                 KomodoLexicon.SqlComposition.TYPE );
 		return value;
 	}
 
 	@Override
-	public void setOperator(UnitOfWork transaction, String operator) throws KException {
-		setObjectProperty(transaction, "setOperator", KomodoLexicon.SqlComposition.OPERATOR, operator); //$NON-NLS-1$
+	public void setOperator(String operator) throws KException {
+		setObjectProperty(getTransaction(), "setOperator", KomodoLexicon.SqlComposition.OPERATOR, operator); //$NON-NLS-1$
 	}
 
 	@Override
-	public String getOperator(UnitOfWork transaction) throws KException {
-        String value = getObjectProperty(transaction, PropertyValueType.STRING, 
+	public String getOperator() throws KException {
+        String value = getObjectProperty(getTransaction(), PropertyValueType.STRING, 
         		"getOperator", //$NON-NLS-1$
                 KomodoLexicon.SqlComposition.OPERATOR );
 		return value;
 	}
 
 	@Override
-	public void setLeftCriteriaColumn(UnitOfWork transaction, String leftCriteriaColumn) throws KException {
-		setObjectProperty(transaction, "setLeftCriteriaColumn", KomodoLexicon.SqlComposition.LEFT_CRITERIA_COLUMN, leftCriteriaColumn); //$NON-NLS-1$
+	public void setLeftCriteriaColumn(String leftCriteriaColumn) throws KException {
+		setObjectProperty(getTransaction(), "setLeftCriteriaColumn", KomodoLexicon.SqlComposition.LEFT_CRITERIA_COLUMN, leftCriteriaColumn); //$NON-NLS-1$
 	}
 
 	@Override
-	public String getLeftCriteriaColumn(UnitOfWork transaction) throws KException {
-        String value = getObjectProperty(transaction, PropertyValueType.STRING, 
+	public String getLeftCriteriaColumn() throws KException {
+        String value = getObjectProperty(getTransaction(), PropertyValueType.STRING, 
         		"getLeftCriteriaColumn", //$NON-NLS-1$
                 KomodoLexicon.SqlComposition.LEFT_CRITERIA_COLUMN );
 		return value;
 	}
 
 	@Override
-	public void setRightCriteriaColumn(UnitOfWork transaction, String rightCriteriaColumn) throws KException {
-		setObjectProperty(transaction, "setRightCriteriaColumn", KomodoLexicon.SqlComposition.RIGHT_CRITERIA_COLUMN, rightCriteriaColumn); //$NON-NLS-1$
+	public void setRightCriteriaColumn(String rightCriteriaColumn) throws KException {
+		setObjectProperty(getTransaction(), "setRightCriteriaColumn", KomodoLexicon.SqlComposition.RIGHT_CRITERIA_COLUMN, rightCriteriaColumn); //$NON-NLS-1$
 	}
 
 	@Override
-	public String getRightCriteriaColumn(UnitOfWork transaction) throws KException {
-        String value = getObjectProperty(transaction, PropertyValueType.STRING, 
+	public String getRightCriteriaColumn() throws KException {
+        String value = getObjectProperty(getTransaction(), PropertyValueType.STRING, 
         		"getRightCriteriaColumn", //$NON-NLS-1$
                 KomodoLexicon.SqlComposition.RIGHT_CRITERIA_COLUMN );
 		return value;

@@ -29,13 +29,11 @@ public interface Exportable {
 	String EXCLUDE_TABLE_CONSTRAINTS_KEY = "excludeTableConstraints";
 
 	/**
-     * @param transaction
-     *        the transaction (can be <code>null</code> if update should be automatically committed)
      * @return the name of this exportable
      * @throws KException
      *         if an error occurs
      */
-    String getName(UnitOfWork transaction) throws KException;
+    String getName() throws KException;
 
     /**
      * @param transaction
@@ -45,6 +43,6 @@ public interface Exportable {
      * @throws KException
      *         if an error occurs
      */
-    byte[] export( final UnitOfWork transaction, Properties properties ) throws KException;
+    byte[] export(  Properties properties ) throws KException;
 
 }

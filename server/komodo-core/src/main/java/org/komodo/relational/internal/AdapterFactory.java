@@ -67,20 +67,20 @@ public class AdapterFactory {
 
         try {
             KomodoObject kObject = (KomodoObject) object;
-            KomodoType type = kObject.getTypeIdentifier(transaction);
+            KomodoType type = kObject.getTypeIdentifier();
             TypeResolverRegistry registry = TypeResolverRegistry.getInstance();
             TypeResolver< ? > resolver = registry.getResolver(type);
 
-            if (resolver != null && resolver.resolvable(transaction, kObject))
-                result = resolver.resolve(transaction, kObject);
+            if (resolver != null && resolver.resolvable(kObject))
+                result = resolver.resolve(kObject);
 
             if (result == null) {
                 // Failed with the type identifier so try to be safe than sorry
                 // and iterate through all resolvers to check this object is really
                 // not resolvable.
                 for (final TypeResolver< ? > aResolver : registry.getResolvers()) {
-                    if (aResolver.resolvable(transaction, kObject)) {
-                        result = aResolver.resolve(transaction, kObject);
+                    if (aResolver.resolvable(kObject)) {
+                        result = aResolver.resolve(kObject);
                         break;
                     }
                 }

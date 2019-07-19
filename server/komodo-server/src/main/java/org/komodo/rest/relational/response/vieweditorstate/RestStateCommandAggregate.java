@@ -20,12 +20,13 @@ package org.komodo.rest.relational.response.vieweditorstate;
 import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
 import javax.ws.rs.core.MediaType;
+
 import org.komodo.relational.profile.StateCommand;
 import org.komodo.relational.profile.StateCommandAggregate;
 import org.komodo.rest.KRestEntity;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.UnitOfWork;
 
 public class RestStateCommandAggregate implements KRestEntity {
 
@@ -100,18 +101,17 @@ public class RestStateCommandAggregate implements KRestEntity {
      * Constructor for use when serializing.
      * @param baseUri the base uri
      * @param stateCmdAgg the view editor state command aggregate
-     *
      * @throws KException if error occurs
      */
-    public RestStateCommandAggregate(URI baseUri, StateCommandAggregate stateCmdAgg, UnitOfWork transaction) throws KException {
+    public RestStateCommandAggregate(URI baseUri, StateCommandAggregate stateCmdAgg) throws KException {
 
-        StateCommand undo = stateCmdAgg.getUndo(transaction);
-        StateCommand redo = stateCmdAgg.getRedo(transaction);
+        StateCommand undo = stateCmdAgg.getUndo();
+        StateCommand redo = stateCmdAgg.getRedo();
 
         if (undo != null) {
             RestStateCommand undoStateCmd = getOrCreateUndoStateCommand();
-            undoStateCmd.setId(undo.getId(transaction));
-            Map<String, String> undoArgs = undo.getArguments(transaction);
+            undoStateCmd.setId(undo.getId());
+            Map<String, String> undoArgs = undo.getArguments();
             for (Map.Entry<String, String> arg : undoArgs.entrySet()) {
                 undoStateCmd.addArgument(arg.getKey(), arg.getValue());
             }
@@ -119,8 +119,8 @@ public class RestStateCommandAggregate implements KRestEntity {
 
         if (redo != null) {
             RestStateCommand redoStateCmd = getOrCreateRedoStateCommand();
-            redoStateCmd.setId(redo.getId(transaction));
-            Map<String, String> redoArgs = redo.getArguments(transaction);
+            redoStateCmd.setId(redo.getId());
+            Map<String, String> redoArgs = redo.getArguments();
             for (Map.Entry<String, String> arg : redoArgs.entrySet()) {
                 redoStateCmd.addArgument(arg.getKey(), arg.getValue());
             }

@@ -26,7 +26,6 @@ import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.Property;
 import org.komodo.core.repository.PropertyValueType;
-import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.internal.RelationalModelFactory;
@@ -85,27 +84,25 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.core.repository.KomodoObject)
+         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.core.repository.KomodoObject)
          */
         @Override
-        public boolean resolvable(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
-            return ObjectImpl.validateType(transaction, kobject, KomodoLexicon.ViewDefinition.NODE_TYPE);
+        public boolean resolvable(final KomodoObject kobject) throws KException {
+            return ObjectImpl.validateType(kobject, KomodoLexicon.ViewDefinition.NODE_TYPE);
         }
 
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.core.repository.KomodoObject)
+         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.core.repository.KomodoObject)
          */
         @Override
-        public ViewDefinitionImpl resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
+        public ViewDefinitionImpl resolve(final KomodoObject kobject) throws KException {
             if (kobject.getTypeId() == ViewDefinition.TYPE_ID) {
                 return (ViewDefinitionImpl)kobject;
             }
 
-            return new ViewDefinitionImpl(transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath());
+            return new ViewDefinitionImpl(kobject.getTransaction(), kobject.getRepository(), kobject.getAbsolutePath());
         }
 
     };
@@ -130,22 +127,22 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
 	}
 
     @Override
-    public KomodoType getTypeIdentifier(UnitOfWork uow) {
+    public KomodoType getTypeIdentifier() {
         return ViewDefinition.IDENTIFIER;
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.internal.RelationalObjectImpl#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.relational.internal.RelationalObjectImpl#getParent()
      */
     @Override
-    public ViewEditorStateImpl getParent(final UnitOfWork transaction) throws KException {
-        ArgCheck.isNotNull(transaction, "transaction"); //$NON-NLS-1$
-        ArgCheck.isTrue((transaction.getState() == State.NOT_STARTED), "transaction state must be NOT_STARTED"); //$NON-NLS-1$
+    public ViewEditorStateImpl getParent() throws KException {
+        ArgCheck.isNotNull(getTransaction(), "transaction"); //$NON-NLS-1$
+        ArgCheck.isTrue((getTransaction().getState() == State.NOT_STARTED), "transaction state must be NOT_STARTED"); //$NON-NLS-1$
 
-        final KomodoObject grouping = super.getParent(transaction);
-        final ViewEditorStateImpl result = ViewEditorStateImpl.RESOLVER.resolve(transaction, grouping.getParent(transaction));
+        final KomodoObject grouping = super.getParent();
+        final ViewEditorStateImpl result = ViewEditorStateImpl.RESOLVER.resolve(grouping.getParent());
         return result;
     }
 
@@ -176,14 +173,13 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
      * @see org.komodo.relational.profile.ViewDefinition#addSqlComposition(UnitOfWork, String)
      */
     @Override
-    public SqlComposition addSqlComposition(UnitOfWork transaction, 
-                                            String compositionName) throws KException {
-        return RelationalModelFactory.createSqlComposition( transaction, getRepository(), this, compositionName);
+    public SqlComposition addSqlComposition(String compositionName) throws KException {
+        return RelationalModelFactory.createSqlComposition( getTransaction(), getRepository(), this, compositionName);
     }
 
-    private KomodoObject getSqlCompositionsGroupingNode( final UnitOfWork transaction ) {
+    private KomodoObject getSqlCompositionsGroupingNode() {
         try {
-            final KomodoObject[] groupings = getRawChildren( transaction, KomodoLexicon.ViewDefinition.SQL_COMPOSITIONS );
+            final KomodoObject[] groupings = getRawChildren( getTransaction(), KomodoLexicon.ViewDefinition.SQL_COMPOSITIONS );
 
             if ( groupings.length == 0 ) {
                 return null;
@@ -195,9 +191,9 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
         }
     }
 
-    private KomodoObject getSqlProjectedColumnsGroupingNode( final UnitOfWork transaction ) {
+    private KomodoObject getSqlProjectedColumnsGroupingNode() {
         try {
-            final KomodoObject[] groupings = getRawChildren( transaction, KomodoLexicon.ViewDefinition.SQL_PROJECTED_COLUMNS );
+            final KomodoObject[] groupings = getRawChildren( getTransaction(), KomodoLexicon.ViewDefinition.SQL_PROJECTED_COLUMNS );
 
             if ( groupings.length == 0 ) {
                 return null;
@@ -215,17 +211,17 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
      * @see org.komodo.relational.profile.ViewDefinition#getSqlCompositions(UnitOfWork, String...)
      */
     @Override
-    public SqlCompositionImpl[] getSqlCompositions(final UnitOfWork transaction, final String... namePatterns) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+    public SqlCompositionImpl[] getSqlCompositions(final String... namePatterns) throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
-        final KomodoObject grouping = getSqlCompositionsGroupingNode( transaction);
+        final KomodoObject grouping = getSqlCompositionsGroupingNode();
 
         if ( grouping != null ) {
             final List< SqlCompositionImpl > temp = new ArrayList<>();
 
-            for ( final KomodoObject kobject : grouping.getChildren( transaction, namePatterns ) ) {
-                final SqlCompositionImpl gitRepo = new SqlCompositionImpl( transaction, getRepository(), kobject.getAbsolutePath() );
+            for ( final KomodoObject kobject : grouping.getChildren( namePatterns ) ) {
+                final SqlCompositionImpl gitRepo = new SqlCompositionImpl( getTransaction(), getRepository(), kobject.getAbsolutePath() );
                 temp.add( gitRepo );
             }
 
@@ -241,48 +237,47 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
      * @see org.komodo.relational.profile.ViewDefinition#getSqlCompositions(UnitOfWork, String...)
      */
     @Override
-    public void removeSqlComposition(UnitOfWork transaction, String sqlCompositionToRemove) throws KException {
-        ArgCheck.isNotNull(transaction, "transaction"); //$NON-NLS-1$
-        ArgCheck.isTrue((transaction.getState() == State.NOT_STARTED), "transaction state is not NOT_STARTED"); //$NON-NLS-1$
+    public void removeSqlComposition(String sqlCompositionToRemove) throws KException {
+        ArgCheck.isNotNull(getTransaction(), "transaction"); //$NON-NLS-1$
+        ArgCheck.isTrue((getTransaction().getState() == State.NOT_STARTED), "transaction state is not NOT_STARTED"); //$NON-NLS-1$
         ArgCheck.isNotEmpty(sqlCompositionToRemove, "sqlCompositionToRemove"); //$NON-NLS-1$
 
-        final SqlCompositionImpl[] sqlCompositions = getSqlCompositions(transaction, sqlCompositionToRemove);
+        final SqlCompositionImpl[] sqlCompositions = getSqlCompositions(sqlCompositionToRemove);
 
         if (sqlCompositions.length == 0) {
             throw new KException(Messages.getString(Relational.SQL_COMPOSITION_NOT_FOUND_TO_REMOVE, sqlCompositionToRemove));
         }
 
         // remove first occurrence
-        sqlCompositions[0].remove(transaction);
+        sqlCompositions[0].remove(getTransaction());
     }
 
 	@Override
-	public String getDescription(UnitOfWork transaction) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+	public String getDescription() throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         
-        String desc = getObjectProperty(transaction, PropertyValueType.STRING, "getDescription", //$NON-NLS-1$
+        String desc = getObjectProperty(getTransaction(), PropertyValueType.STRING, "getDescription", //$NON-NLS-1$
                 KomodoLexicon.ViewDefinition.DESCRIPTION );
 		return desc;
 	}
 
 	@Override
-	public String getDdl(UnitOfWork transaction) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+	public String getDdl() throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         
-        String desc = getObjectProperty(transaction, PropertyValueType.STRING, "getDdl", //$NON-NLS-1$
+        String desc = getObjectProperty(getTransaction(), PropertyValueType.STRING, "getDdl", //$NON-NLS-1$
                 KomodoLexicon.ViewDefinition.DDL );
 		return desc;
 	}
 
 	@Override
-	public String[] getSourcePaths(UnitOfWork transaction,
-            final String... namePatterns ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+	public String[] getSourcePaths(final String... namePatterns ) throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
-        final Property property = getProperty( transaction, KomodoLexicon.ViewDefinition.SOURCE_PATHS );
+        final Property property = getProperty( KomodoLexicon.ViewDefinition.SOURCE_PATHS );
 
         if ( property == null ) {
             return StringConstants.EMPTY_ARRAY;
@@ -291,7 +286,7 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
         final boolean matchPattern = ( ( namePatterns != null ) && ( namePatterns.length != 0 ) );
         final List< String > paths = new ArrayList< >();
 
-        for ( final String value : property.getStringValues( transaction ) ) {
+        for ( final String value : property.getStringValues( getTransaction() ) ) {
             if ( matchPattern ) {
                 for ( final String pattern : namePatterns ) {
                     // convert pattern to a regex
@@ -310,37 +305,37 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
 	}
 
 	@Override
-	public String getViewName(UnitOfWork transaction) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+	public String getViewName() throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         
-        String name = getObjectProperty(transaction, PropertyValueType.STRING, "getViewName", //$NON-NLS-1$
+        String name = getObjectProperty(getTransaction(), PropertyValueType.STRING, "getViewName", //$NON-NLS-1$
                 KomodoLexicon.ViewDefinition.VIEW_NAME );
 		return name;
 	}
 	
 	@Override
-	public void setViewName(UnitOfWork transaction, String name) throws KException {
-		setObjectProperty( transaction, "setViewName", KomodoLexicon.ViewDefinition.VIEW_NAME, name ); //$NON-NLS-1$
+	public void setViewName(String name) throws KException {
+		setObjectProperty( getTransaction(), "setViewName", KomodoLexicon.ViewDefinition.VIEW_NAME, name ); //$NON-NLS-1$
 	}
 
 	@Override
-	public void setDescription(UnitOfWork transaction, String description) throws KException {
-		setObjectProperty( transaction, "setDescription", KomodoLexicon.ViewDefinition.DESCRIPTION, description ); //$NON-NLS-1$
+	public void setDescription(String description) throws KException {
+		setObjectProperty( getTransaction(), "setDescription", KomodoLexicon.ViewDefinition.DESCRIPTION, description ); //$NON-NLS-1$
 	}
 
 	@Override
-	public void setDdl(UnitOfWork transaction, String ddl) throws KException {
-		setObjectProperty( transaction, "setDdl", KomodoLexicon.ViewDefinition.DDL, ddl ); //$NON-NLS-1$
+	public void setDdl(String ddl) throws KException {
+		setObjectProperty( getTransaction(), "setDdl", KomodoLexicon.ViewDefinition.DDL, ddl ); //$NON-NLS-1$
 	}
 
 	@Override
-	public String[] removeSourcePath(UnitOfWork transaction, String sourcePathToRemove) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+	public String[] removeSourcePath(String sourcePathToRemove) throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( sourcePathToRemove, "roleNameToRemove" ); //$NON-NLS-1$
 
-        final String[] current = getSourcePaths( transaction );
+        final String[] current = getSourcePaths( );
 
         if ( current.length == 0 ) {
             throw new KException( Messages.getString( Relational.MAPPED_ROLE_NOT_FOUND_TO_REMOVE, sourcePathToRemove ) );
@@ -363,20 +358,20 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
         }
 
         final Object[] newValue = ( ( result.length == 0 ) ? null : result );
-        setProperty( transaction, KomodoLexicon.ViewDefinition.SOURCE_PATHS, newValue );
+        setProperty( KomodoLexicon.ViewDefinition.SOURCE_PATHS, newValue );
 
         return result;
 		
 	}
 
 	@Override
-	public String[] addSourcePath(UnitOfWork transaction, String sourcePathToAdd) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+	public String[] addSourcePath(String sourcePathToAdd) throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( sourcePathToAdd, "sourcePathToAdd" ); //$NON-NLS-1$
 
         String[] result = null;
-        final String[] current = getSourcePaths( transaction );
+        final String[] current = getSourcePaths( );
         int i = 0;
 
         if ( current.length == 0 ) {
@@ -396,37 +391,37 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
         }
 
         result[i] = sourcePathToAdd;
-        setProperty( transaction, KomodoLexicon.ViewDefinition.SOURCE_PATHS, ( Object[] )result );
+        setProperty( KomodoLexicon.ViewDefinition.SOURCE_PATHS, ( Object[] )result );
 
         return result;
 	}
 
 	@Override
-	public void setComplete(UnitOfWork transaction, boolean complete) throws KException {
-		setObjectProperty( transaction, "setComplete", KomodoLexicon.ViewDefinition.IS_COMPLETE, complete ); //$NON-NLS-1$
+	public void setComplete(boolean complete) throws KException {
+		setObjectProperty( getTransaction(), "setComplete", KomodoLexicon.ViewDefinition.IS_COMPLETE, complete ); //$NON-NLS-1$
 	}
 
 	@Override
-	public boolean isComplete(UnitOfWork transaction) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+	public boolean isComplete() throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         
-        final Boolean value = getObjectProperty(transaction, PropertyValueType.BOOLEAN, "isComplete", //$NON-NLS-1$
+        final Boolean value = getObjectProperty(getTransaction(), PropertyValueType.BOOLEAN, "isComplete", //$NON-NLS-1$
                                                              KomodoLexicon.ViewDefinition.IS_COMPLETE );
 		return value;
 	}
 
 	@Override
-	public void setUserDefined(UnitOfWork transaction, boolean userDefined) throws KException {
-		setObjectProperty( transaction, "setUserDefined", KomodoLexicon.ViewDefinition.IS_USER_DEFINED, userDefined ); //$NON-NLS-1$
+	public void setUserDefined(boolean userDefined) throws KException {
+		setObjectProperty( getTransaction(), "setUserDefined", KomodoLexicon.ViewDefinition.IS_USER_DEFINED, userDefined ); //$NON-NLS-1$
 	}
 
 	@Override
-	public boolean isUserDefined(UnitOfWork transaction) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+	public boolean isUserDefined() throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         
-        final Boolean value = getObjectProperty(transaction, PropertyValueType.BOOLEAN, "isUserDefined", //$NON-NLS-1$
+        final Boolean value = getObjectProperty(getTransaction(), PropertyValueType.BOOLEAN, "isUserDefined", //$NON-NLS-1$
                                                              KomodoLexicon.ViewDefinition.IS_USER_DEFINED );
 		return value;
 	}
@@ -437,9 +432,8 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
      * @see org.komodo.relational.profile.ViewDefinition#addSqlComposition(UnitOfWork, String)
      */
     @Override
-    public SqlProjectedColumn addProjectedColumn(UnitOfWork transaction, 
-                                                 String columnName) throws KException {
-        return RelationalModelFactory.createSqlProjectedColumn( transaction, getRepository(), this, columnName);
+    public SqlProjectedColumn addProjectedColumn(String columnName) throws KException {
+        return RelationalModelFactory.createSqlProjectedColumn( getTransaction(), getRepository(), this, columnName);
     }
     
     /**
@@ -448,37 +442,36 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
      * @see org.komodo.relational.profile.ViewDefinition#removeProjectedColumn(UnitOfWork, String...)
      */
     @Override
-    public void removeProjectedColumn(UnitOfWork transaction, String columnToRemove) throws KException {
-        ArgCheck.isNotNull(transaction, "transaction"); //$NON-NLS-1$
-        ArgCheck.isTrue((transaction.getState() == State.NOT_STARTED), "transaction state is not NOT_STARTED"); //$NON-NLS-1$
+    public void removeProjectedColumn(String columnToRemove) throws KException {
+        ArgCheck.isNotNull(getTransaction(), "transaction"); //$NON-NLS-1$
+        ArgCheck.isTrue((getTransaction().getState() == State.NOT_STARTED), "transaction state is not NOT_STARTED"); //$NON-NLS-1$
         ArgCheck.isNotEmpty(columnToRemove, "columnToRemove"); //$NON-NLS-1$
 
-        final SqlProjectedColumnImpl[] columns = getProjectedColumns(transaction, columnToRemove);
+        final SqlProjectedColumnImpl[] columns = getProjectedColumns(columnToRemove);
 
         if (columns.length == 0) {
             throw new KException(Messages.getString(Relational.PROJECTED_COLUMN_NOT_FOUND_TO_REMOVE, columnToRemove));
         }
 
         // remove first occurrence
-        columns[0].remove(transaction);
+        columns[0].remove(getTransaction());
     }
 
     /* (non-Javadoc)
      * @see org.komodo.relational.profile.ViewDefinition#getProjectedColumns(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
      */
     @Override
-    public SqlProjectedColumnImpl[] getProjectedColumns(UnitOfWork transaction,
-                                                    String... namePatterns) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+    public SqlProjectedColumnImpl[] getProjectedColumns(String... namePatterns) throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
-        final KomodoObject grouping = getSqlProjectedColumnsGroupingNode( transaction);
+        final KomodoObject grouping = getSqlProjectedColumnsGroupingNode( );
 
         if ( grouping != null ) {
             final List< SqlProjectedColumnImpl > temp = new ArrayList<>();
 
-            for ( final KomodoObject kobject : grouping.getChildren( transaction, namePatterns ) ) {
-                final SqlProjectedColumnImpl gitRepo = new SqlProjectedColumnImpl( transaction, getRepository(), kobject.getAbsolutePath() );
+            for ( final KomodoObject kobject : grouping.getChildren( namePatterns ) ) {
+                final SqlProjectedColumnImpl gitRepo = new SqlProjectedColumnImpl( getTransaction(), getRepository(), kobject.getAbsolutePath() );
                 temp.add( gitRepo );
             }
 

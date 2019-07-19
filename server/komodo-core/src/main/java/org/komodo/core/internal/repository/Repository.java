@@ -26,10 +26,10 @@ import org.komodo.core.repository.KPropertyFactory;
 import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.OperationType;
 import org.komodo.core.repository.RepositoryClientEvent;
+import org.komodo.core.repository.SynchronousCallback;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.UnitOfWork;
-import org.komodo.spi.repository.UnitOfWorkListener;
 
 /**
  * A repository is a data store containing artifacts generated while modeling VDBs
@@ -141,7 +141,7 @@ public interface Repository {
      */
     UnitOfWork createTransaction(final String userName, final String name,
                                   final boolean rollbackOnly,
-                                  final UnitOfWorkListener callback,
+                                  final SynchronousCallback callback,
                                   final String repoUser) throws KException;
 
     /**

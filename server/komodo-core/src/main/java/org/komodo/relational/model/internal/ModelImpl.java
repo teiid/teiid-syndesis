@@ -25,7 +25,6 @@ import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.PropertyValueType;
-import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.core.visitor.DdlNodeVisitor;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.relational.Messages;
@@ -96,29 +95,25 @@ public class ModelImpl extends RelationalObjectImpl implements Model {
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.core.repository.KomodoObject)
+         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.core.repository.KomodoObject)
          */
         @Override
-        public boolean resolvable( final UnitOfWork transaction,
-                                   final KomodoObject kobject ) throws KException {
-            return ObjectImpl.validateType( transaction, kobject, VdbLexicon.Vdb.DECLARATIVE_MODEL );
+        public boolean resolvable( final KomodoObject kobject ) throws KException {
+            return ObjectImpl.validateType( kobject, VdbLexicon.Vdb.DECLARATIVE_MODEL );
         }
 
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.core.repository.KomodoObject)
+         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.core.repository.KomodoObject)
          */
         @Override
-        public ModelImpl resolve( final UnitOfWork transaction,
-                              final KomodoObject kobject ) throws KException {
+        public ModelImpl resolve( final KomodoObject kobject ) throws KException {
             if ( kobject.getTypeId() == Model.TYPE_ID ) {
                 return ( ModelImpl )kobject;
             }
 
-            return new ModelImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
+            return new ModelImpl( kobject.getTransaction(), kobject.getRepository(), kobject.getAbsolutePath() );
         }
 
     };
@@ -148,7 +143,7 @@ public class ModelImpl extends RelationalObjectImpl implements Model {
     }
 
     @Override
-    public KomodoType getTypeIdentifier( UnitOfWork uow ) {
+    public KomodoType getTypeIdentifier( ) {
         return Model.IDENTIFIER;
     }
 
@@ -158,9 +153,9 @@ public class ModelImpl extends RelationalObjectImpl implements Model {
      * @see org.komodo.relational.model.Model#addSource(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
-    public ModelSourceImpl addSource( final UnitOfWork transaction,
+    public ModelSourceImpl addSource(
                                   final String sourceName ) throws KException {
-        return RelationalModelFactory.createModelSource( transaction, getRepository(), this, sourceName );
+        return RelationalModelFactory.createModelSource( getTransaction(), getRepository(), this, sourceName );
     }
 
     /**
@@ -169,9 +164,9 @@ public class ModelImpl extends RelationalObjectImpl implements Model {
      * @see org.komodo.relational.model.Model#addTable(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
-    public TableImpl addTable( final UnitOfWork transaction,
+    public TableImpl addTable(
                            final String tableName ) throws KException {
-        return RelationalModelFactory.createTable( transaction, getRepository(), this, tableName );
+        return RelationalModelFactory.createTable( getTransaction(), getRepository(), this, tableName );
     }
 
     /**
@@ -180,63 +175,61 @@ public class ModelImpl extends RelationalObjectImpl implements Model {
      * @see org.komodo.relational.model.Model#addView(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
-    public ViewImpl addView( final UnitOfWork transaction,
+    public ViewImpl addView(
                          final String viewName ) throws KException {
-        return RelationalModelFactory.createView( transaction, getRepository(), this, viewName );
+        return RelationalModelFactory.createView( getTransaction(), getRepository(), this, viewName );
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.internal.RelationalObjectImpl#getChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.relational.internal.RelationalObjectImpl#getChild(java.lang.String)
      */
     @Override
-    public KomodoObject getChild( UnitOfWork transaction,
-                                  String name ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
+    public KomodoObject getChild( String name ) throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( name, "name" ); //$NON-NLS-1$
 
         // check sources
-        final KomodoObject[] matches = getSources( transaction, name );
+        final KomodoObject[] matches = getSources( name );
 
         if ( matches.length != 0 ) {
             return matches[ 0 ];
         }
 
         // other child types do not have grouping nodes
-        return super.getChild( transaction, name );
+        return super.getChild( name );
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.internal.RelationalObjectImpl#getChild(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String, java.lang.String)
+     * @see org.komodo.relational.internal.RelationalObjectImpl#getChild(java.lang.String,
+     *      java.lang.String)
      */
     @Override
-    public RelationalObjectImpl getChild( final UnitOfWork transaction,
-                                  final String name,
+    public RelationalObjectImpl getChild( final String name,
                                   final String typeName ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( name, "name" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( typeName, "typeName" ); //$NON-NLS-1$
 
         if (VdbLexicon.Source.SOURCE.equals( typeName )) {
-            final ModelSourceImpl[] sources = getSources( transaction, name );
+            final ModelSourceImpl[] sources = getSources( name );
 
             if ( sources.length != 0 ) {
                 return sources[ 0 ];
             }
         } else if (CreateTable.TABLE_STATEMENT.equals( typeName )) {
-            final TableImpl[] tables = getTables( transaction, name );
+            final TableImpl[] tables = getTables( name );
 
             if ( tables.length != 0 ) {
                 return tables[ 0 ];
             }
         } else if (CreateTable.VIEW_STATEMENT.equals( typeName )) {
-            final ViewImpl[] views = getViews( transaction, name );
+            final ViewImpl[] views = getViews( name );
 
             if ( views.length != 0 ) {
                 return views[ 0 ];
@@ -252,18 +245,16 @@ public class ModelImpl extends RelationalObjectImpl implements Model {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.internal.RelationalObjectImpl#getChildren(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String[])
+     * @see org.komodo.relational.internal.RelationalObjectImpl#getChildren(java.lang.String[])
      */
     @Override
-    public KomodoObject[] getChildren( final UnitOfWork transaction,
-                                       final String... namePatterns ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+    public KomodoObject[] getChildren( final String... namePatterns ) throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
-        final KomodoObject[] sources = getSources( transaction, namePatterns );
-        final KomodoObject[] tables = getTables( transaction, namePatterns );
-        final KomodoObject[] views = getViews( transaction, namePatterns );
+        final KomodoObject[] sources = getSources( namePatterns );
+        final KomodoObject[] tables = getTables( namePatterns );
+        final KomodoObject[] views = getViews( namePatterns );
 
         final KomodoObject[] result = new KomodoObject[ sources.length
                                                         + tables.length
@@ -288,11 +279,11 @@ public class ModelImpl extends RelationalObjectImpl implements Model {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.model.Model#getDescription(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.relational.model.Model#getDescription()
      */
     @Override
-    public String getDescription( final UnitOfWork transaction ) throws KException {
-        return getObjectProperty( transaction, PropertyValueType.STRING, "getDescription", VdbLexicon.Vdb.DESCRIPTION ); //$NON-NLS-1$
+    public String getDescription() throws KException {
+        return getObjectProperty( getTransaction(), PropertyValueType.STRING, "getDescription", VdbLexicon.Vdb.DESCRIPTION ); //$NON-NLS-1$
     }
 
     /**
@@ -300,13 +291,12 @@ public class ModelImpl extends RelationalObjectImpl implements Model {
      *
      * @see org.komodo.relational.model.Model#getMetadataType(org.komodo.spi.repository.Repository.UnitOfWork)
      */
-    @Override
-    public String getMetadataType( final UnitOfWork transaction ) throws KException {
-        final String result = getObjectProperty( transaction, PropertyValueType.STRING, "getMetadataType", //$NON-NLS-1$
+    public String getMetadataType() throws KException {
+        final String result = getObjectProperty( getTransaction(), PropertyValueType.STRING, "getMetadataType", //$NON-NLS-1$
                                                  VdbLexicon.Model.METADATA_TYPE );
         // if no metadata type return default value if there is a model definition
         if ( StringUtils.isBlank( result ) ) {
-            return StringUtils.isBlank( getModelDefinition( transaction ) ) ? EMPTY_STRING : DEFAULT_METADATA_TYPE;
+            return StringUtils.isBlank( getModelDefinition( ) ) ? EMPTY_STRING : DEFAULT_METADATA_TYPE;
         }
 
         return result;
@@ -318,8 +308,8 @@ public class ModelImpl extends RelationalObjectImpl implements Model {
      * @see org.komodo.relational.model.Model#getModelDefinition(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public String getModelDefinition( final UnitOfWork uow ) throws KException {
-        final String modelDefn = getObjectProperty( uow, PropertyValueType.STRING, "getModelDefinition", //$NON-NLS-1$
+    public String getModelDefinition() throws KException {
+        final String modelDefn = getObjectProperty( getTransaction(), PropertyValueType.STRING, "getModelDefinition", //$NON-NLS-1$
                                                     VdbLexicon.Model.MODEL_DEFINITION );
         return modelDefn == null ? EMPTY_STRING : modelDefn;
     }
@@ -330,8 +320,8 @@ public class ModelImpl extends RelationalObjectImpl implements Model {
      * @see org.komodo.relational.model.Model#getModelType(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public Type getModelType( final UnitOfWork uow ) throws KException {
-        final String value = getObjectProperty( uow, PropertyValueType.STRING, "getModelType", //$NON-NLS-1$
+    public Type getModelType() throws KException {
+        final String value = getObjectProperty( getTransaction(), PropertyValueType.STRING, "getModelType", //$NON-NLS-1$
                                                 CoreLexicon.JcrId.MODEL_TYPE );
         final Type modelType = ( ( value == null ) ? null : Type.valueOf( value ) );
         return ( ( modelType == null ) ? Type.DEFAULT_VALUE : modelType );
@@ -343,18 +333,18 @@ public class ModelImpl extends RelationalObjectImpl implements Model {
      * @see org.komodo.relational.model.Model#getSources(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
      */
     @Override
-    public ModelSourceImpl[] getSources( final UnitOfWork transaction,
+    public ModelSourceImpl[] getSources(
                                      final String... namePatterns ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
-        final KomodoObject grouping = getSourcesGroupingNode( transaction );
+        final KomodoObject grouping = getSourcesGroupingNode( );
 
         if ( grouping != null ) {
             final List< ModelSourceImpl > temp = new ArrayList<>();
 
-            for ( final KomodoObject kobject : grouping.getChildren( transaction, namePatterns ) ) {
-                final ModelSourceImpl source = new ModelSourceImpl( transaction, getRepository(), kobject.getAbsolutePath() );
+            for ( final KomodoObject kobject : grouping.getChildren( namePatterns ) ) {
+                final ModelSourceImpl source = new ModelSourceImpl( getTransaction(), getRepository(), kobject.getAbsolutePath() );
                 temp.add( source );
             }
 
@@ -364,9 +354,9 @@ public class ModelImpl extends RelationalObjectImpl implements Model {
         return NO_SOURCES;
     }
 
-    private KomodoObject getSourcesGroupingNode( final UnitOfWork transaction ) {
+    private KomodoObject getSourcesGroupingNode() {
         try {
-            final KomodoObject[] groupings = getRawChildren( transaction, VdbLexicon.Vdb.SOURCES );
+            final KomodoObject[] groupings = getRawChildren( getTransaction(), VdbLexicon.Vdb.SOURCES );
 
             if ( groupings.length == 0 ) {
                 return null;
@@ -384,15 +374,15 @@ public class ModelImpl extends RelationalObjectImpl implements Model {
      * @see org.komodo.relational.model.Model#getTables(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
      */
     @Override
-    public TableImpl[] getTables( final UnitOfWork transaction,
+    public TableImpl[] getTables(
                               final String... namePatterns ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         final List< TableImpl > result = new ArrayList< TableImpl >();
 
-        for ( final KomodoObject kobject : super.getChildrenOfType( transaction, CreateTable.TABLE_STATEMENT, namePatterns ) ) {
-            final TableImpl table = new TableImpl( transaction, getRepository(), kobject.getAbsolutePath() );
+        for ( final KomodoObject kobject : super.getChildrenOfType( CreateTable.TABLE_STATEMENT, namePatterns ) ) {
+            final TableImpl table = new TableImpl( getTransaction(), getRepository(), kobject.getAbsolutePath() );
             result.add( table );
         }
 
@@ -419,15 +409,15 @@ public class ModelImpl extends RelationalObjectImpl implements Model {
      * @see org.komodo.relational.model.Model#getViews(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
      */
     @Override
-    public ViewImpl[] getViews( final UnitOfWork transaction,
+    public ViewImpl[] getViews(
                             final String... namePatterns ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         final List< ViewImpl > result = new ArrayList< ViewImpl >();
 
-        for ( final KomodoObject kobject : super.getChildrenOfType( transaction, CreateTable.VIEW_STATEMENT, namePatterns ) ) {
-            final ViewImpl view = new ViewImpl( transaction, getRepository(), kobject.getAbsolutePath() );
+        for ( final KomodoObject kobject : super.getChildrenOfType( CreateTable.VIEW_STATEMENT, namePatterns ) ) {
+            final ViewImpl view = new ViewImpl( getTransaction(), getRepository(), kobject.getAbsolutePath() );
             result.add( view );
         }
 
@@ -439,14 +429,13 @@ public class ModelImpl extends RelationalObjectImpl implements Model {
     }
     
     @Override
-    public ViewImpl getView( final UnitOfWork transaction,
-                            final String name ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+    public ViewImpl getView( final String name ) throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         
-        KomodoObject child = super.getChild( transaction, name, CreateTable.VIEW_STATEMENT);
-        if (child != null) {
-            return ViewImpl.RESOLVER.resolve( transaction, child );
+        if (super.hasChild( name, CreateTable.VIEW_STATEMENT)) {
+            KomodoObject child = super.getChild( name, CreateTable.VIEW_STATEMENT);
+            return ViewImpl.RESOLVER.resolve( child );
         }
         return null;
     }
@@ -454,59 +443,57 @@ public class ModelImpl extends RelationalObjectImpl implements Model {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.internal.RelationalObjectImpl#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.relational.internal.RelationalObjectImpl#getParent()
      */
     @Override
-    public VdbImpl getParent( final UnitOfWork transaction ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
+    public VdbImpl getParent() throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
 
-        final KomodoObject parent = super.getParent( transaction );
-        final VdbImpl result = VdbImpl.RESOLVER.resolve( transaction, parent );
+        final KomodoObject parent = super.getParent( );
+        final VdbImpl result = VdbImpl.RESOLVER.resolve( parent );
         return result;
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.internal.RelationalObjectImpl#hasChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.relational.internal.RelationalObjectImpl#hasChild(java.lang.String)
      */
     @Override
-    public boolean hasChild( final UnitOfWork transaction,
-                             final String name ) throws KException {
+    public boolean hasChild( final String name ) throws KException {
         if ( VdbLexicon.Vdb.SOURCES.equals( name ) ) {
             return false; // use hasRawChild
         }
 
-        return ( super.hasChild( transaction, name ) || ( getSources( transaction, name ).length != 0 ) );
+        return ( super.hasChild( name ) || ( getSources( name ).length != 0 ) );
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.internal.RelationalObjectImpl#hasChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String, java.lang.String)
+     * @see org.komodo.relational.internal.RelationalObjectImpl#hasChild(java.lang.String, java.lang.String)
      */
     @Override
-    public boolean hasChild( final UnitOfWork transaction,
-                             final String name,
+    public boolean hasChild( final String name,
                              final String typeName ) throws KException {
         if ( VdbLexicon.Source.SOURCE.equals( typeName ) ) {
-            return ( getSources( transaction, name ).length != 0 );
+            return ( getSources( name ).length != 0 );
         }
 
-        return super.hasChild( transaction, name, typeName );
+        return super.hasChild( name, typeName );
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.internal.RelationalObjectImpl#hasChildren(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.relational.internal.RelationalObjectImpl#hasChildren()
      */
     @Override
-    public boolean hasChildren( final UnitOfWork transaction ) throws KException {
+    public boolean hasChildren( ) throws KException {
         // short-circuit with call to super (will also return the sources grouping node)
         // call to getChildren does not return source grouping node
-        return ( super.hasChildren( transaction ) && ( getChildren( transaction ).length != 0 ) );
+        return ( super.hasChildren( ) && ( getChildren( ).length != 0 ) );
     }
 
     /**
@@ -515,8 +502,8 @@ public class ModelImpl extends RelationalObjectImpl implements Model {
      * @see org.komodo.relational.model.Model#isVisible(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public boolean isVisible( final UnitOfWork transaction ) throws KException {
-        final Boolean value = getObjectProperty( transaction, PropertyValueType.BOOLEAN, "isVisible", VdbLexicon.Model.VISIBLE ); //$NON-NLS-1$
+    public boolean isVisible() throws KException {
+        final Boolean value = getObjectProperty( getTransaction(), PropertyValueType.BOOLEAN, "isVisible", VdbLexicon.Model.VISIBLE ); //$NON-NLS-1$
 
         if ( value == null ) {
             return DEFAULT_VISIBLE;
@@ -531,20 +518,20 @@ public class ModelImpl extends RelationalObjectImpl implements Model {
      * @see org.komodo.relational.model.Model#removeSource(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
-    public void removeSource( final UnitOfWork transaction,
+    public void removeSource(
                               final String sourceToRemove ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( sourceToRemove, "sourceToRemove" ); //$NON-NLS-1$
 
-        final ModelSourceImpl[] sources = getSources( transaction, sourceToRemove );
+        final ModelSourceImpl[] sources = getSources( sourceToRemove );
 
         if ( sources.length == 0 ) {
             throw new KException( Messages.getString( Relational.MODEL_SOURCE_NOT_FOUND_TO_REMOVE, sourceToRemove ) );
         }
 
         // remove first occurrence
-        sources[ 0 ].remove( transaction );
+        sources[ 0 ].remove( getTransaction() );
     }
 
     /**
@@ -553,20 +540,20 @@ public class ModelImpl extends RelationalObjectImpl implements Model {
      * @see org.komodo.relational.model.Model#removeTable(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
-    public void removeTable( final UnitOfWork transaction,
+    public void removeTable(
                              final String tableName ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( tableName, "tableName" ); //$NON-NLS-1$
 
-        final TableImpl[] tables = getTables( transaction, tableName );
+        final TableImpl[] tables = getTables( tableName );
 
         if ( tables.length == 0 ) {
             throw new KException( Messages.getString( Relational.TABLE_NOT_FOUND_TO_REMOVE, tableName ) );
         }
 
         // remove first occurrence
-        tables[ 0 ].remove( transaction );
+        tables[ 0 ].remove( getTransaction() );
     }
 
     /**
@@ -575,31 +562,31 @@ public class ModelImpl extends RelationalObjectImpl implements Model {
      * @see org.komodo.relational.model.Model#removeView(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
-    public void removeView( final UnitOfWork transaction,
+    public void removeView(
                             final String viewName ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( viewName, "viewName" ); //$NON-NLS-1$
 
-        final ViewImpl[] views = getViews( transaction, viewName );
+        final ViewImpl[] views = getViews( viewName );
 
         if ( views.length == 0 ) {
             throw new KException( Messages.getString( Relational.VIEW_NOT_FOUND_TO_REMOVE, viewName ) );
         }
 
         // remove first occurrence
-        views[ 0 ].remove( transaction );
+        views[ 0 ].remove( getTransaction() );
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.model.Model#setDescription(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.relational.model.Model#setDescription(java.lang.String)
      */
     @Override
-    public void setDescription( final UnitOfWork transaction,
+    public void setDescription(
                                 final String newDescription ) throws KException {
-        setObjectProperty( transaction, "setDescription", VdbLexicon.Vdb.DESCRIPTION, newDescription ); //$NON-NLS-1$
+        setObjectProperty( getTransaction(), "setDescription", VdbLexicon.Vdb.DESCRIPTION, newDescription ); //$NON-NLS-1$
     }
 
     /**
@@ -607,16 +594,15 @@ public class ModelImpl extends RelationalObjectImpl implements Model {
      *
      * @see org.komodo.relational.model.Model#setMetadataType(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
-    @Override
-    public void setMetadataType( final UnitOfWork transaction,
+    public void setMetadataType(
                                  final String newMetadataType ) throws KException {
         String value = newMetadataType;
 
         if ( StringUtils.isBlank( newMetadataType ) ) {
-            value = ( StringUtils.isBlank( getModelDefinition( transaction ) ) ? value : DEFAULT_METADATA_TYPE );
+            value = ( StringUtils.isBlank( getModelDefinition( ) ) ? value : DEFAULT_METADATA_TYPE );
         }
 
-        setObjectProperty( transaction, "setMetadataType", VdbLexicon.Model.METADATA_TYPE, value ); //$NON-NLS-1$
+        setObjectProperty( getTransaction(), "setMetadataType", VdbLexicon.Model.METADATA_TYPE, value ); //$NON-NLS-1$
     }
 
     /**
@@ -626,19 +612,19 @@ public class ModelImpl extends RelationalObjectImpl implements Model {
      *      java.lang.String)
      */
     @Override
-    public void setModelDefinition( final UnitOfWork uow,
+    public void setModelDefinition(
                                     final String modelDefinition ) throws KException {
-        setObjectProperty( uow, "setModelDefinition", VdbLexicon.Model.MODEL_DEFINITION, modelDefinition ); //$NON-NLS-1$
+        setObjectProperty( getTransaction(), "setModelDefinition", VdbLexicon.Model.MODEL_DEFINITION, modelDefinition ); //$NON-NLS-1$
 
         if ( StringUtils.isBlank( modelDefinition ) ) {
             // if no model definition make sure there isn't a metadata type
-            if ( !StringUtils.isBlank( getMetadataType( uow ) ) ) {
-                setMetadataType( uow, EMPTY_STRING );
+            if ( !StringUtils.isBlank( getMetadataType( ) ) ) {
+                setMetadataType( EMPTY_STRING );
             }
         } else {
             // if there is a model definition make sure there is a metadata type
-            if ( StringUtils.isBlank( getMetadataType( uow ) ) ) {
-                setMetadataType( uow, DEFAULT_METADATA_TYPE );
+            if ( StringUtils.isBlank( getMetadataType( ) ) ) {
+                setMetadataType( DEFAULT_METADATA_TYPE );
             }
         }
     }
@@ -650,10 +636,10 @@ public class ModelImpl extends RelationalObjectImpl implements Model {
      *      org.komodo.relational.model.Model.Type)
      */
     @Override
-    public void setModelType( final UnitOfWork uow,
+    public void setModelType(
                               final Type newModelType ) throws KException {
         final Type modelType = ( ( newModelType == null ) ? Type.DEFAULT_VALUE : newModelType );
-        setObjectProperty( uow, "setModelType", CoreLexicon.JcrId.MODEL_TYPE, modelType.name() ); //$NON-NLS-1$
+        setObjectProperty( getTransaction(), "setModelType", CoreLexicon.JcrId.MODEL_TYPE, modelType.name() ); //$NON-NLS-1$
     }
 
     /**
@@ -662,9 +648,9 @@ public class ModelImpl extends RelationalObjectImpl implements Model {
      * @see org.komodo.relational.model.Model#setVisible(org.komodo.spi.repository.Repository.UnitOfWork, boolean)
      */
     @Override
-    public void setVisible( final UnitOfWork transaction,
+    public void setVisible(
                             final boolean newVisible ) throws KException {
-        setObjectProperty( transaction, "setVisible", VdbLexicon.Model.VISIBLE, newVisible ); //$NON-NLS-1$
+        setObjectProperty( getTransaction(), "setVisible", VdbLexicon.Model.VISIBLE, newVisible ); //$NON-NLS-1$
     }
 
     private String exportDdl(UnitOfWork transaction, Properties exportProperties) throws Exception {
@@ -682,19 +668,19 @@ public class ModelImpl extends RelationalObjectImpl implements Model {
      * @see org.komodo.spi.repository.Exportable#export(org.komodo.spi.repository.Repository.UnitOfWork, java.util.Properties)
      */
     @Override
-    public byte[] export( final UnitOfWork transaction , Properties exportProperties) throws KException {
-        ArgCheck.isNotNull(transaction);
+    public byte[] export(Properties exportProperties) throws KException {
+        ArgCheck.isNotNull(getTransaction());
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("modelimpl-export: transaction = {0}", transaction.getName()); //$NON-NLS-1$
+            LOGGER.debug("modelimpl-export: transaction = {0}", getTransaction().getName()); //$NON-NLS-1$
         }
 
         try {
-            String result = exportDdl(transaction, exportProperties);
+            String result = exportDdl(getTransaction(), exportProperties);
 
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("ModelImpl: transaction = {0}, xml = {1}", //$NON-NLS-1$
-                             transaction.getName(),
+                             getTransaction().getName(),
                              result);
             }
 
@@ -706,8 +692,8 @@ public class ModelImpl extends RelationalObjectImpl implements Model {
     }
     
     @Override
-    public VdbImpl getRelationalParent(UnitOfWork transaction) throws KException {
-    	return this.getParent(transaction);
+    public VdbImpl getRelationalParent() throws KException {
+    	return this.getParent();
     }
 
 }

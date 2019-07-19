@@ -23,7 +23,6 @@ import java.util.Map;
 import org.komodo.core.repository.KomodoObject;
 import org.komodo.relational.model.internal.StatementOption;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * Indicates the implementing class may have {@link StatementOption options}.
@@ -31,13 +30,11 @@ import org.komodo.spi.repository.UnitOfWork;
 public interface OptionContainer extends KomodoObject {
 
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @return the user-defined and any other non-standard statement options (never <code>null</code> but can be empty)
      * @throws KException
      *         if an error occurs
      */
-    StatementOption[] getCustomOptions( final UnitOfWork transaction ) throws KException;
+    StatementOption[] getCustomOptions( ) throws KException;
 
     /**
      * @return the names of the standard options and their default value (never <code>null</code> but can be empty)
@@ -49,22 +46,18 @@ public interface OptionContainer extends KomodoObject {
     /**
      * This result includes both the standard statement options and any custom options that have been set.
      *
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED}))
      * @return the statement option names for this object (never <code>null</code> but can be empty)
      * @throws KException
      *         if an error occurs
      */
-    String[] getStatementOptionNames( final UnitOfWork transaction ) throws KException;
+    String[] getStatementOptionNames( ) throws KException;
 
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @return the statement options that have been set (never <code>null</code> but can be empty)
      * @throws KException
      *         if an error occurs
      */
-    StatementOption[] getStatementOptions( final UnitOfWork transaction ) throws KException;
+    StatementOption[] getStatementOptions( ) throws KException;
 
     /**
      * @param transaction
@@ -75,7 +68,7 @@ public interface OptionContainer extends KomodoObject {
      * @throws KException
      *         if an error occurs
      */
-    boolean isCustomOption( final UnitOfWork transaction,
+    boolean isCustomOption(
                             final String name ) throws KException;
 
     /**
@@ -95,12 +88,10 @@ public interface OptionContainer extends KomodoObject {
      * @throws KException
      *         if an error occurs
      */
-    void removeStatementOption( final UnitOfWork transaction,
+    void removeStatementOption(
                                 final String optionToRemove ) throws KException;
 
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param optionName
      *        the name of the statement option being added (cannot be empty)
      * @param optionValue
@@ -109,8 +100,7 @@ public interface OptionContainer extends KomodoObject {
      * @throws KException
      *         if an error occurs
      */
-    StatementOption setStatementOption( final UnitOfWork transaction,
-                                        final String optionName,
+    StatementOption setStatementOption( final String optionName,
                                         final String optionValue ) throws KException;
 
 }

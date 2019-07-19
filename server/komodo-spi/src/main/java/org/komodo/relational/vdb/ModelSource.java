@@ -21,7 +21,6 @@ import org.komodo.relational.RelationalObject;
 import org.komodo.relational.model.Model;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * Represents a VDB model source.
@@ -38,13 +37,8 @@ public interface ModelSource extends RelationalObject {
      */
     KomodoType IDENTIFIER = KomodoType.VDB_MODEL_SOURCE;
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.core.repository.KNode#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
-     */
     @Override
-    Model getRelationalParent( final UnitOfWork transaction ) throws KException;
+    Model getRelationalParent( ) throws KException;
 
     /**
      * @param transaction
@@ -53,7 +47,7 @@ public interface ModelSource extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    String getJndiName( final UnitOfWork transaction ) throws KException;
+    String getJndiName( ) throws KException;
 
     /**
      * @param transaction
@@ -62,7 +56,7 @@ public interface ModelSource extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    String getTranslatorName( final UnitOfWork transaction ) throws KException;
+    String getTranslatorName( ) throws KException;
 
     /**
      * @param transaction
@@ -72,7 +66,7 @@ public interface ModelSource extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void setJndiName( final UnitOfWork transaction,
+    void setJndiName( 
                       final String newJndiName ) throws KException;
 
     /**
@@ -83,7 +77,7 @@ public interface ModelSource extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void setTranslatorName( final UnitOfWork transaction,
+    void setTranslatorName( 
                             final String newTranslatorName ) throws KException;
 
 }

@@ -30,8 +30,6 @@ import org.komodo.core.repository.KomodoObject;
 import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.internal.RelationalObjectImpl.Filter;
-import org.komodo.relational.vdb.Translator;
-import org.komodo.relational.vdb.Vdb;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.KomodoType;
@@ -45,7 +43,7 @@ public final class TranslatorImplTest extends RelationalModelTest {
     @Before
     public void init() throws Exception {
         final VdbImpl vdb = createVdb();
-        this.translator = vdb.addTranslator( getTransaction(), "translator", "type" );
+        this.translator = vdb.addTranslator( "translator", "type" );
         commit();
     }
 
@@ -58,7 +56,7 @@ public final class TranslatorImplTest extends RelationalModelTest {
     public void shouldFailConstructionIfNotTranslator() {
         if ( RelationalObjectImpl.VALIDATE_INITIAL_STATE ) {
             try {
-                new TranslatorImpl( getTransaction(), _repo, this.translator.getParent( getTransaction() ).getAbsolutePath() );
+                new TranslatorImpl( getTransaction(), _repo, this.translator.getParent( ).getAbsolutePath() );
                 fail();
             } catch ( final KException e ) {
                 // expected
@@ -68,30 +66,30 @@ public final class TranslatorImplTest extends RelationalModelTest {
 
     @Test
     public void shouldHaveCorrectPrimaryType() throws Exception {
-        assertThat( this.translator.getPrimaryType( getTransaction() ).getName(), is( VdbLexicon.Translator.TRANSLATOR ) );
+        assertThat( this.translator.getPrimaryType( ).getName(), is( VdbLexicon.Translator.TRANSLATOR ) );
     }
 
     @Test
     public void shouldHaveCorrectTypeIdentifier() throws Exception {
-        assertThat(this.translator.getTypeIdentifier( getTransaction() ), is(KomodoType.VDB_TRANSLATOR));
+        assertThat(this.translator.getTypeIdentifier( ), is(KomodoType.VDB_TRANSLATOR));
     }
 
     @Test
     public void shouldHaveMoreRawProperties() throws Exception {
-        final String[] filteredProps = this.translator.getPropertyNames( getTransaction() );
+        final String[] filteredProps = this.translator.getPropertyNames( );
         final String[] rawProps = this.translator.getRawPropertyNames( getTransaction() );
         assertThat( ( rawProps.length > filteredProps.length ), is( true ) );
     }
 
     @Test
     public void shouldHaveParentVdb() throws Exception {
-        KomodoObject parent = this.translator.getParent(getTransaction());
-        assertEquals(KomodoType.VDB, parent.getTypeIdentifier(getTransaction()));
+        KomodoObject parent = this.translator.getParent();
+        assertEquals(KomodoType.VDB, parent.getTypeIdentifier());
     }
 
     @Test
     public void shouldHaveTypeAfterConstruction() throws Exception {
-        assertThat( this.translator.getType( getTransaction() ), is( notNullValue() ) );
+        assertThat( this.translator.getType( ), is( notNullValue() ) );
     }
 
     @Test( expected = UnsupportedOperationException.class )
@@ -101,17 +99,17 @@ public final class TranslatorImplTest extends RelationalModelTest {
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldNotBeAbleToSetEmptyType() throws Exception {
-        this.translator.setType( getTransaction(), StringConstants.EMPTY_STRING );
+        this.translator.setType( StringConstants.EMPTY_STRING );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldNotBeAbleToSetNullType() throws Exception {
-        this.translator.setType( getTransaction(), null );
+        this.translator.setType( null );
     }
 
     @Test
     public void shouldNotContainFilteredProperties() throws Exception {
-        final String[] filteredProps = this.translator.getPropertyNames( getTransaction() );
+        final String[] filteredProps = this.translator.getPropertyNames( );
         final Filter[] filters = ((TranslatorImpl)this.translator).getFilters();
 
         for ( final String name : filteredProps ) {
@@ -123,38 +121,38 @@ public final class TranslatorImplTest extends RelationalModelTest {
 
     @Test
     public void shouldNotHaveDescriptionAfterConstruction() throws Exception {
-        assertThat( this.translator.getDescription( getTransaction() ), is( nullValue() ) );
+        assertThat( this.translator.getDescription( ), is( nullValue() ) );
     }
 
     @Test
     public void shouldRename() throws Exception {
         final String newName = "blah";
         this.translator.rename( getTransaction(), newName );
-        assertThat( this.translator.getName( getTransaction() ), is( newName ) );
+        assertThat( this.translator.getName( ), is( newName ) );
     }
 
     @Test
     public void shouldSetCustomProperty() throws Exception {
         final String propName = "custom";
         final String propValue = "value";
-        this.translator.setProperty( getTransaction(), propName, propValue );
+        this.translator.setProperty( propName, propValue );
 
-        assertThat( this.translator.getProperty( getTransaction(), propName ), is( notNullValue() ) );
-        assertThat( this.translator.getProperty( getTransaction(), propName ).getStringValue( getTransaction() ), is( propValue ) );
+        assertThat( this.translator.getProperty( propName ), is( notNullValue() ) );
+        assertThat( this.translator.getProperty( propName ).getStringValue( getTransaction() ), is( propValue ) );
     }
 
     @Test
     public void shouldSetDescription() throws Exception {
         final String newValue = "newDescription";
-        this.translator.setDescription( getTransaction(), newValue );
-        assertThat( this.translator.getDescription( getTransaction() ), is( newValue ) );
+        this.translator.setDescription( newValue );
+        assertThat( this.translator.getDescription( ), is( newValue ) );
     }
 
     @Test
     public void shouldSetType() throws Exception {
         final String newValue = "newType";
-        this.translator.setType( getTransaction(), newValue );
-        assertThat( this.translator.getType( getTransaction() ), is( newValue ) );
+        this.translator.setType( newValue );
+        assertThat( this.translator.getType( ), is( newValue ) );
     }
 
 }

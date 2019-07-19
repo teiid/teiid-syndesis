@@ -18,7 +18,6 @@
 package org.komodo.core.repository;
 
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * A {@link KomodoObject Komodo object} type definition.
@@ -31,12 +30,10 @@ public interface Descriptor {
     String getName();
 
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @return the {@link KomodoObject Komodo object's} {@link Property property} {@link PropertyDescriptor descriptors} (never
      *         <code>null</code> but can be empty)
      * @throws KException
      *         if an error occurs
      */
-    PropertyDescriptor[] getPropertyDescriptors( final UnitOfWork transaction ) throws KException;
+    PropertyDescriptor[] getPropertyDescriptors( ) throws KException;
 }

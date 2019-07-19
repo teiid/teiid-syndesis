@@ -22,7 +22,6 @@ import org.komodo.relational.RelationalConstants.Nullable;
 import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * Represents a relational model column.
@@ -126,12 +125,8 @@ public interface Column extends RelationalObject {
      */
     boolean DEFAULT_UPDATABLE = true;
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.core.repository.KNode#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
-     */
-    Table getRelationalParent( final UnitOfWork transaction ) throws KException;
+    @Override
+    Table getRelationalParent( ) throws KException;
 
     /**
      * @param transaction
@@ -140,7 +135,7 @@ public interface Column extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    long getCharOctetLength( final UnitOfWork transaction ) throws KException;
+    long getCharOctetLength( ) throws KException;
 
     /**
      * @param transaction
@@ -149,7 +144,7 @@ public interface Column extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    String getCollationName( final UnitOfWork transaction ) throws KException;
+    String getCollationName( ) throws KException;
 
     /**
      * @param transaction
@@ -159,7 +154,7 @@ public interface Column extends RelationalObject {
      *         if an error occurs
      * @see RelationalConstants#DEFAULT_DATATYPE_NAME
      */
-    String getDatatypeName( final UnitOfWork transaction ) throws KException;
+    String getDatatypeName( ) throws KException;
 
     /**
      * @param transaction
@@ -168,7 +163,7 @@ public interface Column extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    String getDefaultValue( final UnitOfWork transaction ) throws KException;
+    String getDefaultValue( ) throws KException;
 
     /**
      * @param transaction
@@ -177,7 +172,7 @@ public interface Column extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    String getDescription( final UnitOfWork transaction ) throws KException;
+    String getDescription( ) throws KException;
 
     /**
      * @param transaction
@@ -187,7 +182,7 @@ public interface Column extends RelationalObject {
      *         if an error occurs
      * @see #DEFAULT_DISTINCT_VALUES
      */
-    long getDistinctValues( final UnitOfWork transaction ) throws KException;
+    long getDistinctValues( ) throws KException;
 
     /**
      * @param transaction
@@ -197,7 +192,7 @@ public interface Column extends RelationalObject {
      *         if an error occurs
      * @see RelationalConstants#DEFAULT_LENGTH
      */
-    long getLength( final UnitOfWork transaction ) throws KException;
+    long getLength( ) throws KException;
 
     /**
      * @param transaction
@@ -206,7 +201,7 @@ public interface Column extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    String getMaxValue( final UnitOfWork transaction ) throws KException;
+    String getMaxValue( ) throws KException;
 
     /**
      * @param transaction
@@ -215,7 +210,7 @@ public interface Column extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    String getMinValue( final UnitOfWork transaction ) throws KException;
+    String getMinValue( ) throws KException;
 
     /**
      * @param transaction
@@ -224,7 +219,7 @@ public interface Column extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    String getNameInSource( final UnitOfWork transaction ) throws KException;
+    String getNameInSource( ) throws KException;
 
     /**
      * @param transaction
@@ -233,7 +228,7 @@ public interface Column extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    String getNativeType( final UnitOfWork transaction ) throws KException;
+    String getNativeType( ) throws KException;
 
     /**
      * @param transaction
@@ -243,7 +238,7 @@ public interface Column extends RelationalObject {
      *         if an error occurs
      * @see Nullable#DEFAULT_VALUE
      */
-    Nullable getNullable( final UnitOfWork transaction ) throws KException;
+    Nullable getNullable( ) throws KException;
 
     /**
      * @param transaction
@@ -252,7 +247,7 @@ public interface Column extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    long getNullValueCount( final UnitOfWork transaction ) throws KException;
+    long getNullValueCount( ) throws KException;
 
     /**
      * @param transaction
@@ -262,7 +257,7 @@ public interface Column extends RelationalObject {
      *         if an error occurs
      * @see RelationalConstants#DEFAULT_PRECISION
      */
-    long getPrecision( final UnitOfWork transaction ) throws KException;
+    long getPrecision( ) throws KException;
 
     /**
      * @param transaction
@@ -271,7 +266,7 @@ public interface Column extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    long getRadix( final UnitOfWork transaction ) throws KException;
+    long getRadix( ) throws KException;
 
     /**
      * @param transaction
@@ -281,7 +276,7 @@ public interface Column extends RelationalObject {
      *         if an error occurs
      * @see RelationalConstants#DEFAULT_SCALE
      */
-    long getScale( final UnitOfWork transaction ) throws KException;
+    long getScale( ) throws KException;
 
     /**
      * @param transaction
@@ -291,7 +286,7 @@ public interface Column extends RelationalObject {
      *         if an error occurs
      * @see Searchable#DEFAULT_VALUE
      */
-    Searchable getSearchable( final UnitOfWork transaction ) throws KException;
+    Searchable getSearchable( ) throws KException;
 
     /**
      * @param transaction
@@ -300,7 +295,7 @@ public interface Column extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    String getUuid( final UnitOfWork transaction ) throws KException;
+    String getUuid( ) throws KException;
 
     /**
      * @param transaction
@@ -310,7 +305,7 @@ public interface Column extends RelationalObject {
      *         if an error occurs
      * @see Column#DEFAULT_AUTO_INCREMENTED
      */
-    boolean isAutoIncremented( final UnitOfWork transaction ) throws KException;
+    boolean isAutoIncremented( ) throws KException;
 
     /**
      * @param transaction
@@ -320,7 +315,7 @@ public interface Column extends RelationalObject {
      *         if an error occurs
      * @see #DEFAULT_CASE_SENSITIVE
      */
-    boolean isCaseSensitive( final UnitOfWork transaction ) throws KException;
+    boolean isCaseSensitive( ) throws KException;
 
     /**
      * @param transaction
@@ -330,7 +325,7 @@ public interface Column extends RelationalObject {
      *         if an error occurs
      * @see #DEFAULT_CURRENCY
      */
-    boolean isCurrency( final UnitOfWork transaction ) throws KException;
+    boolean isCurrency( ) throws KException;
 
     /**
      * @param transaction
@@ -340,7 +335,7 @@ public interface Column extends RelationalObject {
      *         if an error occurs
      * @see #DEFAULT_FIXED_LENGTH
      */
-    boolean isFixedLength( final UnitOfWork transaction ) throws KException;
+    boolean isFixedLength( ) throws KException;
 
     /**
      * @param transaction
@@ -350,7 +345,7 @@ public interface Column extends RelationalObject {
      *         if an error occurs
      * @see #DEFAULT_SELECTABLE
      */
-    boolean isSelectable( final UnitOfWork transaction ) throws KException;
+    boolean isSelectable( ) throws KException;
 
     /**
      * @param transaction
@@ -360,7 +355,7 @@ public interface Column extends RelationalObject {
      *         if an error occurs
      * @see #DEFAULT_SIGNED
      */
-    boolean isSigned( final UnitOfWork transaction ) throws KException;
+    boolean isSigned( ) throws KException;
 
     /**
      * @param transaction
@@ -370,7 +365,7 @@ public interface Column extends RelationalObject {
      *         if an error occurs
      * @see #DEFAULT_UPDATABLE
      */
-    boolean isUpdatable( final UnitOfWork transaction ) throws KException;
+    boolean isUpdatable( ) throws KException;
 
     /**
      * @param transaction
@@ -381,7 +376,7 @@ public interface Column extends RelationalObject {
      *         if an error occurs
      * @see Column#DEFAULT_AUTO_INCREMENTED
      */
-    void setAutoIncremented( final UnitOfWork transaction,
+    void setAutoIncremented( 
                              final boolean newAutoIncremented ) throws KException;
 
     /**
@@ -393,7 +388,7 @@ public interface Column extends RelationalObject {
      *         if an error occurs
      * @see #DEFAULT_CASE_SENSITIVE
      */
-    void setCaseSensitive( final UnitOfWork transaction,
+    void setCaseSensitive( 
                            final boolean newCaseSensitive ) throws KException;
 
     /**
@@ -404,7 +399,7 @@ public interface Column extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void setCharOctetLength( final UnitOfWork transaction,
+    void setCharOctetLength( 
                              final long newCharOctetLength ) throws KException;
 
     /**
@@ -415,7 +410,7 @@ public interface Column extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void setCollationName( final UnitOfWork transaction,
+    void setCollationName( 
                            final String newCollationName ) throws KException;
 
     /**
@@ -427,7 +422,7 @@ public interface Column extends RelationalObject {
      *         if an error occurs
      * @see #DEFAULT_CURRENCY
      */
-    void setCurrency( final UnitOfWork transaction,
+    void setCurrency( 
                       final boolean newCurrency ) throws KException;
 
     /**
@@ -439,7 +434,7 @@ public interface Column extends RelationalObject {
      *         if an error occurs
      * @see RelationalConstants#DEFAULT_DATATYPE_NAME
      */
-    void setDatatypeName( final UnitOfWork transaction,
+    void setDatatypeName( 
                           final String newTypeName ) throws KException;
 
     /**
@@ -450,7 +445,7 @@ public interface Column extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void setDefaultValue( final UnitOfWork transaction,
+    void setDefaultValue( 
                           final String newDefaultValue ) throws KException;
 
     /**
@@ -461,7 +456,7 @@ public interface Column extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void setDescription( final UnitOfWork transaction,
+    void setDescription( 
                          final String newDescription ) throws KException;
 
     /**
@@ -473,7 +468,7 @@ public interface Column extends RelationalObject {
      *         if an error occurs
      * @see #DEFAULT_DISTINCT_VALUES
      */
-    void setDistinctValues( final UnitOfWork transaction,
+    void setDistinctValues( 
                             final long newDistinctValues ) throws KException;
 
     /**
@@ -485,7 +480,7 @@ public interface Column extends RelationalObject {
      *         if an error occurs
      * @see #DEFAULT_FIXED_LENGTH
      */
-    void setFixedLength( final UnitOfWork transaction,
+    void setFixedLength( 
                          final boolean newFixedLength ) throws KException;
 
     /**
@@ -497,7 +492,7 @@ public interface Column extends RelationalObject {
      *         if an error occurs
      * @see RelationalConstants#DEFAULT_LENGTH
      */
-    void setLength( final UnitOfWork transaction,
+    void setLength( 
                     final long newLength ) throws KException;
 
     /**
@@ -508,7 +503,7 @@ public interface Column extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void setMaxValue( final UnitOfWork transaction,
+    void setMaxValue( 
                       final String newMaxValue ) throws KException;
 
     /**
@@ -519,7 +514,7 @@ public interface Column extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void setMinValue( final UnitOfWork transaction,
+    void setMinValue( 
                       final String newMinValue ) throws KException;
 
     /**
@@ -530,7 +525,7 @@ public interface Column extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void setNameInSource( final UnitOfWork transaction,
+    void setNameInSource( 
                           final String newNameInSource ) throws KException;
 
     /**
@@ -541,7 +536,7 @@ public interface Column extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void setNativeType( final UnitOfWork transaction,
+    void setNativeType( 
                         final String newNativeType ) throws KException;
 
     /**
@@ -553,7 +548,7 @@ public interface Column extends RelationalObject {
      *         if an error occurs
      * @see Nullable#DEFAULT_VALUE
      */
-    void setNullable( final UnitOfWork transaction,
+    void setNullable( 
                       final Nullable newNullable ) throws KException;
 
     /**
@@ -564,7 +559,7 @@ public interface Column extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void setNullValueCount( final UnitOfWork transaction,
+    void setNullValueCount( 
                             final long newNullValueCount ) throws KException;
 
     /**
@@ -576,7 +571,7 @@ public interface Column extends RelationalObject {
      *         if an error occurs
      * @see RelationalConstants#DEFAULT_PRECISION
      */
-    void setPrecision( final UnitOfWork transaction,
+    void setPrecision( 
                        final long newPrecision ) throws KException;
 
     /**
@@ -587,7 +582,7 @@ public interface Column extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void setRadix( final UnitOfWork transaction,
+    void setRadix( 
                    final long newRadix ) throws KException;
 
     /**
@@ -599,7 +594,7 @@ public interface Column extends RelationalObject {
      *         if an error occurs
      * @see RelationalConstants#DEFAULT_SCALE
      */
-    void setScale( final UnitOfWork transaction,
+    void setScale( 
                    final long newScale ) throws KException;
 
     /**
@@ -611,7 +606,7 @@ public interface Column extends RelationalObject {
      *         if an error occurs
      * @see Searchable#DEFAULT_VALUE
      */
-    void setSearchable( final UnitOfWork transaction,
+    void setSearchable( 
                         final Searchable newSearchable ) throws KException;
 
     /**
@@ -623,7 +618,7 @@ public interface Column extends RelationalObject {
      *         if an error occurs
      * @see #DEFAULT_SELECTABLE
      */
-    void setSelectable( final UnitOfWork transaction,
+    void setSelectable( 
                         final boolean newSelectable ) throws KException;
 
     /**
@@ -635,7 +630,7 @@ public interface Column extends RelationalObject {
      *         if an error occurs
      * @see #DEFAULT_SIGNED
      */
-    void setSigned( final UnitOfWork transaction,
+    void setSigned( 
                     final boolean newSigned ) throws KException;
 
     /**
@@ -647,7 +642,7 @@ public interface Column extends RelationalObject {
      *         if an error occurs
      * @see #DEFAULT_UPDATABLE
      */
-    void setUpdatable( final UnitOfWork transaction,
+    void setUpdatable( 
                        final boolean newUpdatable ) throws KException;
 
     /**
@@ -658,15 +653,14 @@ public interface Column extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void setUuid( final UnitOfWork transaction,
+    void setUuid( 
                   final String newUuid ) throws KException;
 
     /**
      * Get the number or array dimensions or null if this is not an array type
-     * @param uow
      * @return
      * @throws KException
      */
-	Long getArrayDimensions(UnitOfWork uow) throws KException;
+	Long getArrayDimensions() throws KException;
 
 }

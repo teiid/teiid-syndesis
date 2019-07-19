@@ -41,7 +41,7 @@ public final class VdbImportImplTest extends RelationalModelTest {
     @Before
     public void init() throws Exception {
         final VdbImpl vdb = createVdb();
-        this.vdbImport = vdb.addImport( getTransaction(), "vdbToImport" );
+        this.vdbImport = vdb.addImport( "vdbToImport" );
         commit();
     }
 
@@ -54,7 +54,7 @@ public final class VdbImportImplTest extends RelationalModelTest {
     public void shouldFailConstructionIfNotVdbImport() {
         if ( RelationalObjectImpl.VALIDATE_INITIAL_STATE ) {
             try {
-                new VdbImportImpl( getTransaction(), _repo, this.vdbImport.getParent( getTransaction() ).getAbsolutePath() );
+                new VdbImportImpl( getTransaction(), _repo, this.vdbImport.getParent( ).getAbsolutePath() );
                 fail();
             } catch ( final KException e ) {
                 // expected
@@ -64,34 +64,34 @@ public final class VdbImportImplTest extends RelationalModelTest {
 
     @Test
     public void shouldHaveCorrectPrimaryType() throws Exception {
-        assertThat( this.vdbImport.getPrimaryType( getTransaction() ).getName(), is( VdbLexicon.ImportVdb.IMPORT_VDB ) );
+        assertThat( this.vdbImport.getPrimaryType( ).getName(), is( VdbLexicon.ImportVdb.IMPORT_VDB ) );
     }
 
     @Test
     public void shouldHaveCorrectTypeIdentifier() throws Exception {
-        assertThat(this.vdbImport.getTypeIdentifier( getTransaction() ), is(KomodoType.VDB_IMPORT));
+        assertThat(this.vdbImport.getTypeIdentifier( ), is(KomodoType.VDB_IMPORT));
     }
 
     @Test
     public void shouldHaveDefaultImportDataPoliciesAfterConstruction() throws Exception {
-        assertThat( this.vdbImport.isImportDataPolicies( getTransaction() ), is( VdbImport.DEFAULT_IMPORT_DATA_POLICIES ) );
+        assertThat( this.vdbImport.isImportDataPolicies( ), is( VdbImport.DEFAULT_IMPORT_DATA_POLICIES ) );
     }
 
     @Test
     public void shouldHaveDefaultImportDataPoliciesValueAfterConstruction() throws Exception {
-        assertThat( this.vdbImport.isImportDataPolicies( getTransaction() ), is( VdbImport.DEFAULT_IMPORT_DATA_POLICIES ) );
+        assertThat( this.vdbImport.isImportDataPolicies( ), is( VdbImport.DEFAULT_IMPORT_DATA_POLICIES ) );
     }
 
     @Test
     public void shouldHaveMoreRawProperties() throws Exception {
-        final String[] filteredProps = this.vdbImport.getPropertyNames( getTransaction() );
+        final String[] filteredProps = this.vdbImport.getPropertyNames( );
         final String[] rawProps = this.vdbImport.getRawPropertyNames( getTransaction() );
         assertThat( ( rawProps.length > filteredProps.length ), is( true ) );
     }
 
     @Test
     public void shouldHaveParentVdb() throws Exception {
-        assertThat( this.vdbImport.getParent( getTransaction() ), is( instanceOf( VdbImpl.class ) ) );
+        assertThat( this.vdbImport.getParent( ), is( instanceOf( VdbImpl.class ) ) );
     }
 
     @Test( expected = UnsupportedOperationException.class )
@@ -101,7 +101,7 @@ public final class VdbImportImplTest extends RelationalModelTest {
 
     @Test
     public void shouldNotContainFilteredProperties() throws Exception {
-        final String[] filteredProps = this.vdbImport.getPropertyNames( getTransaction() );
+        final String[] filteredProps = this.vdbImport.getPropertyNames( );
         final Filter[] filters = ((VdbImportImpl)this.vdbImport).getFilters();
 
         for ( final String name : filteredProps ) {
@@ -115,21 +115,21 @@ public final class VdbImportImplTest extends RelationalModelTest {
     public void shouldRename() throws Exception {
         final String newName = "blah";
         this.vdbImport.rename( getTransaction(), newName );
-        assertThat( this.vdbImport.getName( getTransaction() ), is( newName ) );
+        assertThat( this.vdbImport.getName( ), is( newName ) );
     }
 
     @Test
     public void shouldSetImportDataPoliciesValue() throws Exception {
         final boolean newValue = !VdbImport.DEFAULT_IMPORT_DATA_POLICIES;
-        this.vdbImport.setImportDataPolicies( getTransaction(), newValue );
-        assertThat( this.vdbImport.isImportDataPolicies( getTransaction() ), is( newValue ) );
+        this.vdbImport.setImportDataPolicies( newValue );
+        assertThat( this.vdbImport.isImportDataPolicies( ), is( newValue ) );
     }
 
     @Test
     public void shouldSetVersion() throws Exception {
         final int newValue = ( Vdb.DEFAULT_VERSION + 10 );
-        this.vdbImport.setVersion( getTransaction(), newValue );
-        assertThat( this.vdbImport.getVersion( getTransaction() ), is( newValue ) );
+        this.vdbImport.setVersion( newValue );
+        assertThat( this.vdbImport.getVersion( ), is( newValue ) );
     }
 
 }

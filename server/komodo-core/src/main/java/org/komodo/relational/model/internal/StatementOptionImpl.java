@@ -28,7 +28,6 @@ import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.PropertyDescriptor;
 import org.komodo.core.repository.PropertyValueType;
-import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.Messages;
 import org.komodo.relational.internal.RelationalChildRestrictedObject;
 import org.komodo.relational.internal.TypeResolver;
@@ -76,10 +75,8 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
          *      org.komodo.core.repository.KomodoObject)
          */
         @Override
-        public boolean resolvable( final UnitOfWork transaction,
-                                   final KomodoObject kobject ) throws KException {
-            return ObjectImpl.validateType( transaction,
-                                            kobject,
+        public boolean resolvable( final KomodoObject kobject ) throws KException {
+            return ObjectImpl.validateType( kobject,
                                             StandardDdlLexicon.TYPE_STATEMENT_OPTION );
         }
 
@@ -90,13 +87,12 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
          *      org.komodo.core.repository.KomodoObject)
          */
         @Override
-        public StatementOptionImpl resolve( final UnitOfWork transaction,
-                                        final KomodoObject kobject ) throws KException {
+        public StatementOptionImpl resolve( final KomodoObject kobject ) throws KException {
             if ( kobject.getTypeId() == StatementOption.TYPE_ID ) {
                 return ( StatementOptionImpl )kobject;
             }
 
-            return new StatementOptionImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
+            return new StatementOptionImpl( kobject.getTransaction(), kobject.getRepository(), kobject.getAbsolutePath() );
         }
 
     };
@@ -131,7 +127,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
      */
     @Override
     public Boolean getBooleanValue( final UnitOfWork transaction ) throws KException {
-        final String value = getOption( transaction );
+        final String value = getOption( );
         return Boolean.parseBoolean( value );
     }
 
@@ -154,7 +150,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
      */
     @Override
     public Calendar getDateValue( final UnitOfWork transaction ) throws KException {
-        final String value = getOption( transaction );
+        final String value = getOption( );
 
         try {
             final Date date = DateFormat.getInstance().parse( value );
@@ -187,10 +183,10 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
     public PropertyDescriptor getDescriptor( final UnitOfWork transaction ) throws KException {
         if ( this.descriptor == null ) {
             // find descriptor in the primary type
-            final Descriptor primaryType = getParent( transaction ).getPrimaryType( transaction );
-            final String name = getName( transaction );
+            final Descriptor primaryType = getParent( ).getPrimaryType( );
+            final String name = getName( );
 
-            for ( final PropertyDescriptor descriptor : primaryType.getPropertyDescriptors( transaction ) ) {
+            for ( final PropertyDescriptor descriptor : primaryType.getPropertyDescriptors( ) ) {
                 if ( name.equals( descriptor.getName() )) {
                     this.descriptor = descriptor;
                     break;
@@ -208,7 +204,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
      */
     @Override
     public Double getDoubleValue( final UnitOfWork transaction ) throws KException {
-        final String value = getOption( transaction );
+        final String value = getOption( );
         return Double.parseDouble( value );
     }
 
@@ -231,7 +227,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
      */
     @Override
     public Integer getIntegerValue( final UnitOfWork transaction ) throws KException {
-        final String value = getOption( transaction );
+        final String value = getOption( );
         return Integer.parseInt( value );
     }
 
@@ -254,7 +250,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
      */
     @Override
     public Long getLongValue( final UnitOfWork transaction ) throws KException {
-        final String value = getOption( transaction );
+        final String value = getOption( );
         return Long.parseLong( value );
     }
 
@@ -273,11 +269,11 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.model.internal.StatementOption#getOption(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.relational.model.internal.StatementOption#getOption()
      */
     @Override
-    public String getOption( final UnitOfWork uow ) throws KException {
-        return getObjectProperty( uow, PropertyValueType.STRING, "getOption", StandardDdlLexicon.VALUE ); //$NON-NLS-1$
+    public String getOption( ) throws KException {
+        return getObjectProperty( getTransaction(), PropertyValueType.STRING, "getOption", StandardDdlLexicon.VALUE ); //$NON-NLS-1$
     }
 
     /**
@@ -287,7 +283,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
      */
     @Override
     public String getStringValue( final UnitOfWork transaction ) throws KException {
-        return getOption( transaction );
+        return getOption( );
     }
 
     /**
@@ -308,7 +304,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
      * @see org.komodo.core.repository.ObjectImpl#getTypeIdentifier(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public KomodoType getTypeIdentifier( final UnitOfWork transaction ) {
+    public KomodoType getTypeIdentifier( ) {
         return StatementOption.IDENTIFIER;
     }
 
@@ -319,7 +315,7 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
      */
     @Override
     public String getValue( final UnitOfWork transaction ) throws KException {
-        return getOption( transaction );
+        return getOption( );
     }
 
     /**
@@ -367,9 +363,9 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
     public void set( final UnitOfWork transaction,
                      final Object... values ) throws KException {
         if ( ( values == null ) || ( values.length == 0 ) ) {
-            setOption( transaction, null );
+            setOption( null );
         } else if ( values.length == 1 ) {
-            setOption( transaction, values[0].toString() );
+            setOption( values[0].toString() );
         } else {
             throw new UnsupportedOperationException( Messages.getString( Messages.Relational.INVALID_STATEMENT_OPTION_VALUE ) );
         }
@@ -378,17 +374,15 @@ public final class StatementOptionImpl extends RelationalChildRestrictedObject i
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.model.internal.StatementOption#setOption(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String)
+     * @see org.komodo.relational.model.internal.StatementOption#setOption(java.lang.String)
      */
     @Override
-    public void setOption( final UnitOfWork transaction,
-                           final String newOption ) throws KException {
+    public void setOption( final String newOption ) throws KException {
         ArgCheck.isNotEmpty( newOption, "newOption" ); //$NON-NLS-1$
-        setObjectProperty( transaction, "setOption", StandardDdlLexicon.VALUE, newOption ); //$NON-NLS-1$
+        setObjectProperty( getTransaction(), "setOption", StandardDdlLexicon.VALUE, newOption ); //$NON-NLS-1$
 
         if ( StringUtils.isBlank( newOption ) ) {
-            remove( transaction );
+            remove( getTransaction() );
         }
     }
 

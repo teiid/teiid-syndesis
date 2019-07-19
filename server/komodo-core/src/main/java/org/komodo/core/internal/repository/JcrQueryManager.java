@@ -19,8 +19,10 @@ package org.komodo.core.internal.repository;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
+import javax.jcr.Session;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
@@ -31,7 +33,6 @@ import org.komodo.core.repository.ObjectImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;
-import javax.jcr.Session;
 
 public class JcrQueryManager implements KQueryManager {
 
@@ -56,7 +57,7 @@ public class JcrQueryManager implements KQueryManager {
             NodeIterator itr = result.getNodes();
             while (itr.hasNext()) {
                 Node node = itr.nextNode();
-                results.add(new ObjectImpl(repository, node.getPath(), node.getIndex()));
+                results.add(new ObjectImpl(transaction, repository, node.getPath(), node.getIndex()));
             }
 
             return results;

@@ -66,125 +66,125 @@ public final class TableImplTest extends RelationalModelTest {
     @Before
     public void init() throws Exception {
         this.model = createModel();
-        this.table = model.addTable( getTransaction(), NAME );
+        this.table = model.addTable( NAME );
         commit();
     }
 
     @Test
     public void shouldAddColumn() throws Exception {
         final String name = "column";
-        final ColumnImpl column = this.table.addColumn( getTransaction(), name );
+        final ColumnImpl column = this.table.addColumn( name );
         assertThat( column, is( notNullValue() ) );
-        assertThat( this.table.getColumns( getTransaction() ).length, is( 1 ) );
-        assertThat( column.getName( getTransaction() ), is( name ) );
-        assertThat( this.table.getChildren( getTransaction() ).length, is( 1 ) );
-        assertThat( this.table.getChildren( getTransaction() )[0], is( instanceOf( Column.class ) ) );
+        assertThat( this.table.getColumns( ).length, is( 1 ) );
+        assertThat( column.getName( ), is( name ) );
+        assertThat( this.table.getChildren( ).length, is( 1 ) );
+        assertThat( this.table.getChildren( )[0], is( instanceOf( Column.class ) ) );
     }
 
     @Test
     public void shouldAddForeignKey() throws Exception {
         final TableImpl refTable = RelationalModelFactory.createTable( getTransaction(), _repo, mock( ModelImpl.class ), "refTable" );
         final String name = "foreignKey";
-        final ForeignKeyImpl foreignKey = this.table.addForeignKey( getTransaction(), name, refTable );
+        final ForeignKeyImpl foreignKey = this.table.addForeignKey( name, refTable );
 
         assertThat( foreignKey, is( notNullValue() ) );
-        assertThat( foreignKey.getName( getTransaction() ), is( name ) );
-        assertThat( this.table.getChildren( getTransaction() ).length, is( 1 ) );
-        assertThat( this.table.getChildren( getTransaction() )[0], is( instanceOf( ForeignKey.class ) ) );
+        assertThat( foreignKey.getName( ), is( name ) );
+        assertThat( this.table.getChildren( ).length, is( 1 ) );
+        assertThat( this.table.getChildren( )[0], is( instanceOf( ForeignKey.class ) ) );
     }
 
     @Test
     public void shouldAddStatementOption() throws Exception {
         final String name = "statementoption";
         final String value = "statementvalue";
-        final StatementOption statementOption = this.table.setStatementOption( getTransaction(), name, value );
+        final StatementOption statementOption = this.table.setStatementOption( name, value );
         assertThat( statementOption, is( notNullValue() ) );
-        assertThat( statementOption.getName( getTransaction() ), is( name ) );
-        assertThat( statementOption.getOption( getTransaction() ), is( value ) );
+        assertThat( statementOption.getName( ), is( name ) );
+        assertThat( statementOption.getOption( ), is( value ) );
     }
 
     @Test
     public void shouldAddUniqueConstraint() throws Exception {
         final String name = "uniqueConstraint";
-        final UniqueConstraintImpl uniqueConstraint = this.table.addUniqueConstraint( getTransaction(), name );
+        final UniqueConstraintImpl uniqueConstraint = this.table.addUniqueConstraint( name );
 
         assertThat( uniqueConstraint, is( notNullValue() ) );
-        assertThat( uniqueConstraint.getName( getTransaction() ), is( name ) );
-        assertThat( this.table.getChildren( getTransaction() ).length, is( 1 ) );
-        assertThat( this.table.getChildren( getTransaction() )[0], is( instanceOf( UniqueConstraint.class ) ) );
+        assertThat( uniqueConstraint.getName( ), is( name ) );
+        assertThat( this.table.getChildren( ).length, is( 1 ) );
+        assertThat( this.table.getChildren( )[0], is( instanceOf( UniqueConstraint.class ) ) );
     }
 
     @Test
     public void shouldAllowEmptyQueryExpression() throws Exception {
-        this.table.setQueryExpression( getTransaction(), StringConstants.EMPTY_STRING );
+        this.table.setQueryExpression( StringConstants.EMPTY_STRING );
     }
 
     @Test
     public void shouldAllowNullOnCommitValue() throws Exception {
-        this.table.setOnCommitValue( getTransaction(), null );
+        this.table.setOnCommitValue( null );
     }
 
     @Test
     public void shouldAllowNullQueryExpression() throws Exception {
-        this.table.setQueryExpression( getTransaction(), null );
+        this.table.setQueryExpression( null );
     }
 
     @Test
     public void shouldAllowNullSchemaElementType() throws Exception {
-        this.table.setSchemaElementType( getTransaction(), null );
+        this.table.setSchemaElementType( null );
     }
 
     @Test
     public void shouldAllowNullTemporaryTypeValue() throws Exception {
-        this.table.setTemporaryTableType( getTransaction(), null );
+        this.table.setTemporaryTableType( null );
     }
 
     @Test
     public void shouldCountChildren() throws Exception {
-        this.table.addColumn( getTransaction(), "column" );
-        this.table.addUniqueConstraint( getTransaction(), "uniqueConstraint" );
-        this.table.setPrimaryKey( getTransaction(), "primaryKey" );
-        assertThat( this.table.getChildren( getTransaction() ).length, is( 3 ) );
+        this.table.addColumn( "column" );
+        this.table.addUniqueConstraint( "uniqueConstraint" );
+        this.table.setPrimaryKey( "primaryKey" );
+        assertThat( this.table.getChildren( ).length, is( 3 ) );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailAddingEmptyColumnName() throws Exception {
-        this.table.addColumn( getTransaction(), StringConstants.EMPTY_STRING );
+        this.table.addColumn( StringConstants.EMPTY_STRING );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailAddingEmptyForeignKeyName() throws Exception {
-        this.table.addForeignKey( getTransaction(), StringConstants.EMPTY_STRING, mock( Table.class ) );
+        this.table.addForeignKey( StringConstants.EMPTY_STRING, mock( Table.class ) );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailAddingEmptyStatementOptionName() throws Exception {
-        this.table.setStatementOption( getTransaction(), StringConstants.EMPTY_STRING, "blah" );
+        this.table.setStatementOption( StringConstants.EMPTY_STRING, "blah" );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailAddingEmptyUniqueConstraintName() throws Exception {
-        this.table.addUniqueConstraint( getTransaction(), StringConstants.EMPTY_STRING );
+        this.table.addUniqueConstraint( StringConstants.EMPTY_STRING );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailAddingNullColumnName() throws Exception {
-        this.table.addColumn( getTransaction(), null );
+        this.table.addColumn( null );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailAddingNullForeignKeyName() throws Exception {
-        this.table.addForeignKey( getTransaction(), null, mock( Table.class ) );
+        this.table.addForeignKey( null, mock( Table.class ) );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailAddingNullStatementOptionName() throws Exception {
-        this.table.setStatementOption( getTransaction(), null, "blah" );
+        this.table.setStatementOption( null, "blah" );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailAddingNullUniqueConstraintName() throws Exception {
-        this.table.addUniqueConstraint( getTransaction(), null );
+        this.table.addUniqueConstraint( null );
     }
 
     @Test
@@ -201,122 +201,122 @@ public final class TableImplTest extends RelationalModelTest {
 
     @Test( expected = KException.class )
     public void shouldFailRemovingMissingPrimaryKey() throws Exception {
-        this.table.removePrimaryKey( getTransaction() );
+        this.table.removePrimaryKey( );
     }
 
     @Test( expected = KException.class )
     public void shouldFailSettingEmptyDescriptionWhenNeverAdded() throws Exception {
-        this.table.setDescription( getTransaction(), StringConstants.EMPTY_STRING );
+        this.table.setDescription( StringConstants.EMPTY_STRING );
     }
 
     @Test( expected = KException.class )
     public void shouldFailSettingEmptyMaterializedTableWhenNeverAdded() throws Exception {
-        this.table.setMaterializedTable( getTransaction(), StringConstants.EMPTY_STRING );
+        this.table.setMaterializedTable( StringConstants.EMPTY_STRING );
     }
 
     @Test( expected = KException.class )
     public void shouldFailSettingEmptyNameInSourceWhenNeverAdded() throws Exception {
-        this.table.setNameInSource( getTransaction(), StringConstants.EMPTY_STRING );
+        this.table.setNameInSource( StringConstants.EMPTY_STRING );
     }
 
     @Test( expected = KException.class )
     public void shouldFailSettingEmptyStatementOptionValueWhenNeverAdded() throws Exception {
-        this.table.setStatementOption( getTransaction(), "blah", StringConstants.EMPTY_STRING );
+        this.table.setStatementOption( "blah", StringConstants.EMPTY_STRING );
     }
 
     @Test( expected = KException.class )
     public void shouldFailSettingEmptyUuidWhenNeverAdded() throws Exception {
-        this.table.setUuid( getTransaction(), StringConstants.EMPTY_STRING );
+        this.table.setUuid( StringConstants.EMPTY_STRING );
     }
 
     @Test( expected = KException.class )
     public void shouldFailSettingNullDescriptionWhenNeverAdded() throws Exception {
-        this.table.setDescription( getTransaction(), null );
+        this.table.setDescription( null );
     }
 
     @Test( expected = KException.class )
     public void shouldFailSettingNullMaterializedTableWhenNeverAdded() throws Exception {
-        this.table.setMaterializedTable( getTransaction(), null );
+        this.table.setMaterializedTable( null );
     }
 
     @Test( expected = KException.class )
     public void shouldFailSettingNullNameInSourceWhenNeverAdded() throws Exception {
-        this.table.setNameInSource( getTransaction(), null );
+        this.table.setNameInSource( null );
     }
 
     @Test( expected = KException.class )
     public void shouldFailSettingNullStatementOptionValueWhenNeverAdded() throws Exception {
-        this.table.setStatementOption( getTransaction(), "blah", null );
+        this.table.setStatementOption( "blah", null );
     }
 
     @Test( expected = KException.class )
     public void shouldFailSettingNullUuidWhenNeverAdded() throws Exception {
-        this.table.setUuid( getTransaction(), null );
+        this.table.setUuid( null );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailTryingToRemoveEmptyColumnName() throws Exception {
-        this.table.removeColumn( getTransaction(), StringConstants.EMPTY_STRING );
+        this.table.removeColumn( StringConstants.EMPTY_STRING );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailTryingToRemoveEmptyForeignKeyName() throws Exception {
-        this.table.removeForeignKey( getTransaction(), StringConstants.EMPTY_STRING );
+        this.table.removeForeignKey( StringConstants.EMPTY_STRING );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailTryingToRemoveEmptyStatementOptionName() throws Exception {
-        this.table.removeStatementOption( getTransaction(), StringConstants.EMPTY_STRING );
+        this.table.removeStatementOption( StringConstants.EMPTY_STRING );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailTryingToRemoveEmptyUniqueConstraintName() throws Exception {
-        this.table.removeUniqueConstraint( getTransaction(), StringConstants.EMPTY_STRING );
+        this.table.removeUniqueConstraint( StringConstants.EMPTY_STRING );
     }
 
     @Test( expected = KException.class )
     public void shouldFailTryingToRemoveMissingPrimaryKey() throws Exception {
-        this.table.removePrimaryKey( getTransaction() );
+        this.table.removePrimaryKey( );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailTryingToRemoveNullColumnName() throws Exception {
-        this.table.removeColumn( getTransaction(), null );
+        this.table.removeColumn( null );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailTryingToRemoveNullForeignKeyName() throws Exception {
-        this.table.removeForeignKey( getTransaction(), null );
+        this.table.removeForeignKey( null );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailTryingToRemoveNullStatementOptionName() throws Exception {
-        this.table.removeStatementOption( getTransaction(), null );
+        this.table.removeStatementOption( null );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailTryingToRemoveNullUniqueConstraintName() throws Exception {
-        this.table.removeUniqueConstraint( getTransaction(), null );
+        this.table.removeUniqueConstraint( null );
     }
 
     @Test( expected = KException.class )
     public void shouldFailTryingToRemoveUnknownColumn() throws Exception {
-        this.table.removeColumn( getTransaction(), "unknown" );
+        this.table.removeColumn( "unknown" );
     }
 
     @Test( expected = KException.class )
     public void shouldFailTryingToRemoveUnknownForeignKey() throws Exception {
-        this.table.removeForeignKey( getTransaction(), "unknown" );
+        this.table.removeForeignKey( "unknown" );
     }
 
     @Test( expected = KException.class )
     public void shouldFailTryingToRemoveUnknownStatementOption() throws Exception {
-        this.table.removeStatementOption( getTransaction(), "unknown" );
+        this.table.removeStatementOption( "unknown" );
     }
 
     @Test( expected = KException.class )
     public void shouldFailTryingToRemoveUnknownUniqueConstraint() throws Exception {
-        this.table.removeUniqueConstraint( getTransaction(), "unknown" );
+        this.table.removeUniqueConstraint( "unknown" );
     }
 
     @Test
@@ -324,10 +324,10 @@ public final class TableImplTest extends RelationalModelTest {
         final int numColumns = 5;
 
         for ( int i = 0; i < numColumns; ++i ) {
-            this.table.addColumn( getTransaction(), "column" + i );
+            this.table.addColumn( "column" + i );
         }
 
-        assertThat( this.table.getColumns( getTransaction() ).length, is( numColumns ) );
+        assertThat( this.table.getColumns( ).length, is( numColumns ) );
     }
 
     @Test
@@ -336,10 +336,10 @@ public final class TableImplTest extends RelationalModelTest {
         final int numForeignKeys = 5;
 
         for ( int i = 0; i < numForeignKeys; ++i ) {
-            this.table.addForeignKey( getTransaction(), "foreignKey" + i, refTable );
+            this.table.addForeignKey( "foreignKey" + i, refTable );
         }
 
-        assertThat( this.table.getForeignKeys( getTransaction() ).length, is( numForeignKeys ) );
+        assertThat( this.table.getForeignKeys( ).length, is( numForeignKeys ) );
     }
 
     @Test
@@ -347,10 +347,10 @@ public final class TableImplTest extends RelationalModelTest {
         final int numStatementOptions = 5;
 
         for ( int i = 0; i < numStatementOptions; ++i ) {
-            this.table.setStatementOption( getTransaction(), "statementoption" + i, "statementvalue" + i );
+            this.table.setStatementOption( "statementoption" + i, "statementvalue" + i );
         }
 
-        assertThat( this.table.getStatementOptions( getTransaction() ).length, is( numStatementOptions ) );
+        assertThat( this.table.getStatementOptions( ).length, is( numStatementOptions ) );
     }
 
     @Test
@@ -358,57 +358,57 @@ public final class TableImplTest extends RelationalModelTest {
         final int numUniqueConstraints = 5;
 
         for ( int i = 0; i < numUniqueConstraints; ++i ) {
-            this.table.addUniqueConstraint( getTransaction(), "foreignKey" + i );
+            this.table.addUniqueConstraint( "foreignKey" + i );
         }
 
-        assertThat( this.table.getUniqueConstraints( getTransaction() ).length, is( numUniqueConstraints ) );
+        assertThat( this.table.getUniqueConstraints( ).length, is( numUniqueConstraints ) );
     }
 
     @Test
     public void shouldHaveCorrectTypeIdentifier() throws Exception {
-        assertThat(this.table.getTypeIdentifier( getTransaction() ), is(KomodoType.TABLE));
+        assertThat(this.table.getTypeIdentifier( ), is(KomodoType.TABLE));
     }
 
     @Test
     public void shouldHaveDefaultCardinalityAfterConstruction() throws Exception {
-        assertThat( this.table.getCardinality( getTransaction() ), is( Table.DEFAULT_CARDINALITY ) );
+        assertThat( this.table.getCardinality( ), is( Table.DEFAULT_CARDINALITY ) );
     }
 
     @Test
     public void shouldHaveDefaultMaterializedAfterConstruction() throws Exception {
-        assertThat( this.table.isMaterialized( getTransaction() ), is( Table.DEFAULT_MATERIALIZED ) );
+        assertThat( this.table.isMaterialized( ), is( Table.DEFAULT_MATERIALIZED ) );
     }
 
     @Test
     public void shouldHaveDefaultUpdatableAfterConstruction() throws Exception {
-        assertThat( this.table.isUpdatable( getTransaction() ), is( Table.DEFAULT_UPDATABLE ) );
+        assertThat( this.table.isUpdatable( ), is( Table.DEFAULT_UPDATABLE ) );
     }
 
     @Test
     public void shouldHaveMoreRawProperties() throws Exception {
-        final String[] filteredProps = this.table.getPropertyNames( getTransaction() );
+        final String[] filteredProps = this.table.getPropertyNames( );
         final String[] rawProps = this.table.getRawPropertyNames( getTransaction() );
         assertThat( ( rawProps.length > filteredProps.length ), is( true ) );
     }
 
     @Test
     public void shouldHaveParentModel() throws Exception {
-        assertThat( this.table.getParent( getTransaction() ), is( instanceOf( ModelImpl.class ) ) );
-        assertThat( this.table.getParent( getTransaction() ), is( ( KomodoObject )this.model ) );
+        assertThat( this.table.getParent( ), is( instanceOf( ModelImpl.class ) ) );
+        assertThat( this.table.getParent( ), is( ( KomodoObject )this.model ) );
     }
 
     @Test
     public void shouldHaveSchemaElementTypePropertyDefaultValueAfterConstruction() throws Exception {
-        assertThat( this.table.getSchemaElementType( getTransaction() ), is( SchemaElementType.DEFAULT_VALUE ) );
-        assertThat( this.table.hasProperty( getTransaction(), StandardDdlLexicon.DEFAULT_VALUE ), is( false ) );
+        assertThat( this.table.getSchemaElementType( ), is( SchemaElementType.DEFAULT_VALUE ) );
+        assertThat( this.table.hasProperty( StandardDdlLexicon.DEFAULT_VALUE ), is( false ) );
     }
 
     @Test
     public void shouldIncludeCustomOptionsWithPropertyDescriptors() throws Exception {
         final String customName = "blah";
-        this.table.setStatementOption( getTransaction(), customName, "elvis" );
+        this.table.setStatementOption( customName, "elvis" );
 
-        final PropertyDescriptor[] propDescriptors = this.table.getPropertyDescriptors( getTransaction() );
+        final PropertyDescriptor[] propDescriptors = this.table.getPropertyDescriptors( );
         boolean found = false;
 
         for ( final PropertyDescriptor descriptor : propDescriptors ) {
@@ -426,14 +426,14 @@ public final class TableImplTest extends RelationalModelTest {
     @Test
     public void shouldIncludeOptionsWithPropertyNames() throws Exception {
         final String custom = "blah";
-        this.table.setStatementOption( getTransaction(), custom, "sledge" );
+        this.table.setStatementOption( custom, "sledge" );
         boolean customFound = false;
 
         final String standard = this.table.getStandardOptions().keySet().iterator().next();
-        this.table.setStatementOption( getTransaction(), standard, "hammer" );
+        this.table.setStatementOption( standard, "hammer" );
         boolean standardFound = false;
 
-        for ( final String prop : this.table.getPropertyNames( getTransaction() ) ) {
+        for ( final String prop : this.table.getPropertyNames( ) ) {
             if ( custom.equals( prop ) ) {
                 if ( customFound ) {
                     fail( "Custom option included multiple times in property names" );
@@ -465,7 +465,7 @@ public final class TableImplTest extends RelationalModelTest {
     @Test
     public void shouldIncludeStandardOptionDefaultValuesWithPropertyDescriptors() throws Exception {
         final Map< String, String > options = this.table.getStandardOptions();
-        final PropertyDescriptor[] propDescriptors = this.table.getPropertyDescriptors( getTransaction() );
+        final PropertyDescriptor[] propDescriptors = this.table.getPropertyDescriptors( );
 
         for ( final Entry< String, String > entry : options.entrySet() ) {
             for ( final PropertyDescriptor descriptor : propDescriptors ) {
@@ -487,7 +487,7 @@ public final class TableImplTest extends RelationalModelTest {
     @Test
     public void shouldIncludeStandardOptionsWithPrimaryTypePropertyDescriptors() throws Exception {
         final Set< String > optionNames = this.table.getStandardOptions().keySet();
-        final PropertyDescriptor[] propDescriptors = this.table.getPrimaryType( getTransaction() ).getPropertyDescriptors( getTransaction() );
+        final PropertyDescriptor[] propDescriptors = this.table.getPrimaryType( ).getPropertyDescriptors( );
 
         for ( final String optionName : optionNames ) {
             boolean found = false;
@@ -508,7 +508,7 @@ public final class TableImplTest extends RelationalModelTest {
     @Test
     public void shouldIncludeStandardOptionsWithPropertyDescriptors() throws Exception {
         final Set< String > optionNames = this.table.getStandardOptions().keySet();
-        final PropertyDescriptor[] propDescriptors = this.table.getPropertyDescriptors( getTransaction() );
+        final PropertyDescriptor[] propDescriptors = this.table.getPropertyDescriptors( );
 
         for ( final String optionName : optionNames ) {
             boolean found = false;
@@ -529,76 +529,76 @@ public final class TableImplTest extends RelationalModelTest {
     @Test
     public void shouldObtainCustomOptions() throws Exception {
         final String sledge = "sledge";
-        this.table.setStatementOption( getTransaction(), sledge, "hammer" );
+        this.table.setStatementOption( sledge, "hammer" );
 
         final String elvis = "elvis";
-        this.table.setStatementOption( getTransaction(), elvis, "presley" );
+        this.table.setStatementOption( elvis, "presley" );
 
-        assertThat( this.table.getCustomOptions( getTransaction() ).length, is( 2 ) );
-        assertThat( Arrays.asList( this.table.getStatementOptionNames( getTransaction() ) ), hasItems( sledge, elvis ) );
+        assertThat( this.table.getCustomOptions( ).length, is( 2 ) );
+        assertThat( Arrays.asList( this.table.getStatementOptionNames( ) ), hasItems( sledge, elvis ) );
     }
 
     @Test
     public void shouldObtainStatementOptionNames() throws Exception {
         final String custom = "blah";
-        this.table.setStatementOption( getTransaction(), custom, "sledge" );
+        this.table.setStatementOption( custom, "sledge" );
 
         final String standard = this.table.getStandardOptions().keySet().iterator().next();
-        this.table.setStatementOption( getTransaction(), standard, "hammer" );
+        this.table.setStatementOption( standard, "hammer" );
 
-        assertThat( this.table.getStatementOptionNames( getTransaction() ).length, is( 2 ) );
-        assertThat( Arrays.asList( this.table.getStatementOptionNames( getTransaction() ) ), hasItems( custom, standard ) );
+        assertThat( this.table.getStatementOptionNames( ).length, is( 2 ) );
+        assertThat( Arrays.asList( this.table.getStatementOptionNames( ) ), hasItems( custom, standard ) );
     }
 
     @Test
     public void shouldRemoveStandardOptionAsIfProperty() throws Exception {
         final String option = this.table.getStandardOptions().keySet().iterator().next();
         final String value = "newValue";
-        this.table.setProperty( getTransaction(), option, value ); // add
-        this.table.setProperty( getTransaction(), option, (Object)null ); // remove
-        assertThat( this.table.hasProperty( getTransaction(), option ), is( false ) );
-        assertThat( this.table.hasChild( getTransaction(), option ), is( false ) );
+        this.table.setProperty( option, value ); // add
+        this.table.setProperty( option, (Object)null ); // remove
+        assertThat( this.table.hasProperty( option ), is( false ) );
+        assertThat( this.table.hasChild( option ), is( false ) );
     }
 
     @Test
     public void shouldSetCustomOptionAsIfProperty() throws Exception {
         final String option = "blah";
-        this.table.setStatementOption( getTransaction(), option, "initialValue" );
+        this.table.setStatementOption( option, "initialValue" );
 
         final String value = "newValue";
-        this.table.setProperty( getTransaction(), option, value );
+        this.table.setProperty( option, value );
 
-        assertThat( this.table.hasProperty( getTransaction(), option ), is( true ) );
-        assertThat( this.table.getProperty( getTransaction(), option ), is( instanceOf( StatementOption.class ) ) );
-        assertThat( this.table.getStatementOptions( getTransaction() ).length, is( 1 ) );
-        assertThat( this.table.isCustomOption( getTransaction(), option ), is( true ) );
+        assertThat( this.table.hasProperty( option ), is( true ) );
+        assertThat( this.table.getProperty( option ), is( instanceOf( StatementOption.class ) ) );
+        assertThat( this.table.getStatementOptions( ).length, is( 1 ) );
+        assertThat( this.table.isCustomOption( option ), is( true ) );
 
-        final StatementOption statementOption = this.table.getStatementOptions( getTransaction() )[0];
-        assertThat( statementOption.getName( getTransaction() ), is( option ) );
+        final StatementOption statementOption = this.table.getStatementOptions( )[0];
+        assertThat( statementOption.getName( ), is( option ) );
         assertThat( statementOption.getValue( getTransaction() ), is( ( Object )value ) );
     }
 
     @Test
     public void shouldSetStandardOptionAsIfProperty() throws Exception {
         final String option = this.table.getStandardOptions().keySet().iterator().next();
-        this.table.setStatementOption( getTransaction(), option, "initialValue" );
+        this.table.setStatementOption( option, "initialValue" );
 
         final String value = "newValue";
-        this.table.setProperty( getTransaction(), option, value );
+        this.table.setProperty( option, value );
 
-        assertThat( this.table.hasProperty( getTransaction(), option ), is( true ) );
-        assertThat( this.table.getProperty( getTransaction(), option ), is( instanceOf( StatementOption.class ) ) );
-        assertThat( this.table.isCustomOption( getTransaction(), option ), is( false ) );
-        assertThat( this.table.getStatementOptions( getTransaction() ).length, is( 1 ) );
+        assertThat( this.table.hasProperty( option ), is( true ) );
+        assertThat( this.table.getProperty( option ), is( instanceOf( StatementOption.class ) ) );
+        assertThat( this.table.isCustomOption( option ), is( false ) );
+        assertThat( this.table.getStatementOptions( ).length, is( 1 ) );
 
-        final StatementOption statementOption = this.table.getStatementOptions( getTransaction() )[0];
-        assertThat( statementOption.getName( getTransaction() ), is( option ) );
+        final StatementOption statementOption = this.table.getStatementOptions( )[0];
+        assertThat( statementOption.getName( ), is( option ) );
         assertThat( statementOption.getValue( getTransaction() ), is( ( Object )value ) );
     }
 
     @Test
     public void shouldNotContainFilteredProperties() throws Exception {
-        final String[] filteredProps = this.table.getPropertyNames( getTransaction() );
+        final String[] filteredProps = this.table.getPropertyNames( );
         final Filter[] filters = ((TableImpl)this.table).getFilters();
 
         for ( final String name : filteredProps ) {
@@ -610,194 +610,194 @@ public final class TableImplTest extends RelationalModelTest {
 
     @Test
     public void shouldNotCountStatementOptionsAsChildren() throws Exception {
-        this.table.setCardinality( getTransaction(), 5 );
-        this.table.setStatementOption( getTransaction(), "sledge", "hammer" );
-        assertThat( this.table.getChildren( getTransaction() ).length, is( 0 ) );
+        this.table.setCardinality( 5 );
+        this.table.setStatementOption( "sledge", "hammer" );
+        assertThat( this.table.getChildren( ).length, is( 0 ) );
     }
 
     @Test
     public void shouldNotHaveOnCommitValueAfterConstruction() throws Exception {
-        assertThat( this.table.hasProperty( getTransaction(), StandardDdlLexicon.ON_COMMIT_VALUE ), is( false ) );
-        assertThat( this.table.getOnCommitValue( getTransaction() ), is( nullValue() ) );
+        assertThat( this.table.hasProperty( StandardDdlLexicon.ON_COMMIT_VALUE ), is( false ) );
+        assertThat( this.table.getOnCommitValue( ), is( nullValue() ) );
     }
 
     @Test
     public void shouldNotHavePrimaryKeyAfterConstruction() throws Exception {
-        assertThat( this.table.getPrimaryKey( getTransaction() ), is( nullValue() ) );
+        assertThat( this.table.getPrimaryKey( ), is( nullValue() ) );
     }
 
     @Test
     public void shouldNotHaveQueryExpressionAfterConstruction() throws Exception {
-        assertThat( this.table.getQueryExpression( getTransaction() ), is( nullValue() ) );
+        assertThat( this.table.getQueryExpression( ), is( nullValue() ) );
     }
 
     @Test
     public void shouldNotHaveTemporaryTypeValueAfterConstruction() throws Exception {
-        assertThat( this.table.hasProperty( getTransaction(), StandardDdlLexicon.TEMPORARY ), is( false ) );
-        assertThat( this.table.getTemporaryTableType( getTransaction() ), is( nullValue() ) );
+        assertThat( this.table.hasProperty( StandardDdlLexicon.TEMPORARY ), is( false ) );
+        assertThat( this.table.getTemporaryTableType( ), is( nullValue() ) );
     }
 
     @Test
     public void shouldRemoveColumn() throws Exception {
         final String name = "column";
-        this.table.addColumn( getTransaction(), name );
-        this.table.removeColumn( getTransaction(), name );
-        assertThat( this.table.getColumns( getTransaction() ).length, is( 0 ) );
+        this.table.addColumn( name );
+        this.table.removeColumn( name );
+        assertThat( this.table.getColumns( ).length, is( 0 ) );
     }
 
     @Test
     public void shouldRemoveForeignKey() throws Exception {
         final TableImpl refTable = RelationalModelFactory.createTable( getTransaction(), _repo, mock( ModelImpl.class ), "refTable" );
         final String name = "foreignKey";
-        this.table.addForeignKey( getTransaction(), name, refTable );
-        this.table.removeForeignKey( getTransaction(), name );
+        this.table.addForeignKey( name, refTable );
+        this.table.removeForeignKey( name );
 
-        assertThat( this.table.getForeignKeys( getTransaction() ).length, is( 0 ) );
+        assertThat( this.table.getForeignKeys( ).length, is( 0 ) );
     }
 
     @Test
     public void shouldRemovePrimaryKey() throws Exception {
-        this.table.setPrimaryKey( getTransaction(), "primaryKey" );
-        this.table.removePrimaryKey( getTransaction() );
-        assertThat( this.table.getPrimaryKey( getTransaction() ), is( nullValue() ) );
+        this.table.setPrimaryKey( "primaryKey" );
+        this.table.removePrimaryKey( );
+        assertThat( this.table.getPrimaryKey( ), is( nullValue() ) );
     }
 
     @Test
     public void shouldRemoveStatementOption() throws Exception {
         final String name = "statementoption";
-        this.table.setStatementOption( getTransaction(), name, "blah" );
-        this.table.removeStatementOption( getTransaction(), name );
-        assertThat( this.table.getStatementOptions( getTransaction() ).length, is( 0 ) );
+        this.table.setStatementOption( name, "blah" );
+        this.table.removeStatementOption( name );
+        assertThat( this.table.getStatementOptions( ).length, is( 0 ) );
     }
 
     @Test
     public void shouldRemoveUniqueConstraint() throws Exception {
         final String name = "uniqueConstraint";
-        this.table.addUniqueConstraint( getTransaction(), name );
-        this.table.removeUniqueConstraint( getTransaction(), name );
+        this.table.addUniqueConstraint( name );
+        this.table.removeUniqueConstraint( name );
 
-        assertThat( this.table.getUniqueConstraints( getTransaction() ).length, is( 0 ) );
+        assertThat( this.table.getUniqueConstraints( ).length, is( 0 ) );
     }
 
     @Test
     public void shouldRename() throws Exception {
         final String newName = "blah";
         this.table.rename( getTransaction(), newName );
-        assertThat( this.table.getName( getTransaction() ), is( newName ) );
+        assertThat( this.table.getName( ), is( newName ) );
     }
 
     @Test
     public void shouldSetCardinality() throws Exception {
         final long value = 10;
-        this.table.setCardinality( getTransaction(), value );
-        assertThat( this.table.getCardinality( getTransaction() ), is( value ) );
+        this.table.setCardinality( value );
+        assertThat( this.table.getCardinality( ), is( value ) );
     }
 
     @Test
     public void shouldSetDescription() throws Exception {
         final String value = "description";
-        this.table.setDescription( getTransaction(), value );
-        assertThat( this.table.getDescription( getTransaction() ), is( value ) );
+        this.table.setDescription( value );
+        assertThat( this.table.getDescription( ), is( value ) );
     }
 
     @Test
     public void shouldSetMaterialized() throws Exception {
         final boolean value = !Table.DEFAULT_MATERIALIZED;
-        this.table.setMaterialized( getTransaction(), value );
-        assertThat( this.table.isMaterialized( getTransaction() ), is( value ) );
+        this.table.setMaterialized( value );
+        assertThat( this.table.isMaterialized( ), is( value ) );
     }
 
     @Test
     public void shouldSetMaterializedTable() throws Exception {
         final String value = "materializedTable";
-        this.table.setMaterializedTable( getTransaction(), value );
-        assertThat( this.table.getMaterializedTable( getTransaction() ), is( value ) );
+        this.table.setMaterializedTable( value );
+        assertThat( this.table.getMaterializedTable( ), is( value ) );
     }
 
     @Test
     public void shouldSetNameInSource() throws Exception {
         final String value = "nameInSource";
-        this.table.setNameInSource( getTransaction(), value );
-        assertThat( this.table.getNameInSource( getTransaction() ), is( value ) );
+        this.table.setNameInSource( value );
+        assertThat( this.table.getNameInSource( ), is( value ) );
     }
 
     @Test
     public void shouldSetOnCommitProperty() throws Exception {
         final OnCommit value = OnCommit.DELETE_ROWS;
-        this.table.setOnCommitValue( getTransaction(), value );
-        assertThat( this.table.getOnCommitValue( getTransaction() ), is( value ) );
-        assertThat( this.table.getProperty( getTransaction(), StandardDdlLexicon.ON_COMMIT_VALUE ).getStringValue( getTransaction() ),
+        this.table.setOnCommitValue( value );
+        assertThat( this.table.getOnCommitValue( ), is( value ) );
+        assertThat( this.table.getProperty( StandardDdlLexicon.ON_COMMIT_VALUE ).getStringValue( getTransaction() ),
                     is( value.toValue() ) );
     }
 
     @Test
     public void shouldSetPrimaryKey() throws Exception {
         final String name = "primaryKey";
-        final PrimaryKeyImpl pk = this.table.setPrimaryKey( getTransaction(), name );
+        final PrimaryKeyImpl pk = this.table.setPrimaryKey( name );
         assertThat( pk, is( notNullValue() ) );
-        assertThat( pk.getName( getTransaction() ), is( name ) );
-        assertThat( this.table.hasChild( getTransaction(), name ), is( true ) );
+        assertThat( pk.getName( ), is( name ) );
+        assertThat( this.table.hasChild( name ), is( true ) );
     }
 
     @Test
     public void shouldSetQueryExpression() throws Exception {
         final String value = ( "select * from " + NAME );
-        this.table.setQueryExpression( getTransaction(), value );
-        assertThat( this.table.getQueryExpression( getTransaction() ), is( value ) );
+        this.table.setQueryExpression( value );
+        assertThat( this.table.getQueryExpression( ), is( value ) );
     }
 
     @Test
     public void shouldSetSchemaElementTypeProperty() throws Exception {
         final SchemaElementType value = SchemaElementType.VIRTUAL;
-        this.table.setSchemaElementType( getTransaction(), value );
-        assertThat( this.table.getSchemaElementType( getTransaction() ), is( value ) );
-        assertThat( this.table.getProperty( getTransaction(), TeiidDdlLexicon.SchemaElement.TYPE ).getStringValue( getTransaction() ),
+        this.table.setSchemaElementType( value );
+        assertThat( this.table.getSchemaElementType( ), is( value ) );
+        assertThat( this.table.getProperty( TeiidDdlLexicon.SchemaElement.TYPE ).getStringValue( getTransaction() ),
                     is( value.name() ) );
     }
 
     @Test
     public void shouldSetTemporaryTableTypeProperty() throws Exception {
         final TemporaryType value = TemporaryType.GLOBAL;
-        this.table.setTemporaryTableType( getTransaction(), value );
-        assertThat( this.table.getTemporaryTableType( getTransaction() ), is( value ) );
-        assertThat( this.table.getProperty( getTransaction(), StandardDdlLexicon.TEMPORARY ).getStringValue( getTransaction() ),
+        this.table.setTemporaryTableType( value );
+        assertThat( this.table.getTemporaryTableType( ), is( value ) );
+        assertThat( this.table.getProperty( StandardDdlLexicon.TEMPORARY ).getStringValue( getTransaction() ),
                     is( value.name() ) );
     }
 
     @Test
     public void shouldSetUpdatable() throws Exception {
         final boolean value = !Table.DEFAULT_UPDATABLE;
-        this.table.setUpdatable( getTransaction(), value );
-        assertThat( this.table.isUpdatable( getTransaction() ), is( value ) );
+        this.table.setUpdatable( value );
+        assertThat( this.table.isUpdatable( ), is( value ) );
     }
 
     @Test
     public void shouldSetUuid() throws Exception {
         final String value = "uuid";
-        this.table.setUuid( getTransaction(), value );
-        assertThat( this.table.getUuid( getTransaction() ), is( value ) );
+        this.table.setUuid( value );
+        assertThat( this.table.getUuid( ), is( value ) );
     }
     
     @Test
     public void shouldExportDdl() throws Exception {
         // Add columns
-        final ColumnImpl column1 = this.table.addColumn( getTransaction(), "column1" );
-        column1.setDescription( getTransaction(), "Col1 Description" );
-        column1.setDatatypeName( getTransaction(), "string" );
-        column1.setNameInSource( getTransaction(), "Col1_NIS" );
-        final ColumnImpl column2 = this.table.addColumn( getTransaction(), "column2" );
-        column2.setDescription( getTransaction(), "Col2 Description" );
-        column2.setDatatypeName( getTransaction(), "string" );
-        column2.setNameInSource( getTransaction(), "Col2_NIS" );
+        final ColumnImpl column1 = this.table.addColumn( "column1" );
+        column1.setDescription( "Col1 Description" );
+        column1.setDatatypeName( "string" );
+        column1.setNameInSource( "Col1_NIS" );
+        final ColumnImpl column2 = this.table.addColumn( "column2" );
+        column2.setDescription( "Col2 Description" );
+        column2.setDatatypeName( "string" );
+        column2.setNameInSource( "Col2_NIS" );
 
         // Add a FK
         final TableImpl refTable = RelationalModelFactory.createTable( getTransaction(), _repo, mock( ModelImpl.class ), "refTable" );
         final String name = "foreignKey";
-        this.table.addForeignKey( getTransaction(), name, refTable );
+        this.table.addForeignKey( name, refTable );
         commit();
 
         // Export the table
-        byte[] bytes = this.table.export(getTransaction(), new Properties());
+        byte[] bytes = this.table.export(new Properties());
         String exportedDdl = new String(bytes);
         
         // Check exported DDL
@@ -812,24 +812,24 @@ public final class TableImplTest extends RelationalModelTest {
     @Test
     public void shouldExportDdlExcludeConstraints() throws Exception {
         // Add columns
-        final ColumnImpl column1 = this.table.addColumn( getTransaction(), "column1" );
-        column1.setDescription( getTransaction(), "Col1 Description" );
-        column1.setDatatypeName( getTransaction(), "string" );
-        column1.setNameInSource( getTransaction(), "Col1_NIS" );
-        final ColumnImpl column2 = this.table.addColumn( getTransaction(), "column2" );
-        column2.setDescription( getTransaction(), "Col2 Description" );
-        column2.setDatatypeName( getTransaction(), "string" );
-        column2.setNameInSource( getTransaction(), "Col2_NIS" );
+        final ColumnImpl column1 = this.table.addColumn( "column1" );
+        column1.setDescription( "Col1 Description" );
+        column1.setDatatypeName( "string" );
+        column1.setNameInSource( "Col1_NIS" );
+        final ColumnImpl column2 = this.table.addColumn( "column2" );
+        column2.setDescription( "Col2 Description" );
+        column2.setDatatypeName( "string" );
+        column2.setNameInSource( "Col2_NIS" );
 
         // Add a FK
         final TableImpl refTable = RelationalModelFactory.createTable( getTransaction(), _repo, mock( ModelImpl.class ), "refTable" );
         final String name = "foreignKey";
-        this.table.addForeignKey( getTransaction(), name, refTable );
+        this.table.addForeignKey( name, refTable );
 
         // Export the table
         Properties exportProps = new Properties();
         exportProps.put( Exportable.EXCLUDE_TABLE_CONSTRAINTS_KEY, true );
-        byte[] bytes = this.table.export(getTransaction(), exportProps);
+        byte[] bytes = this.table.export(exportProps);
         String exportedDdl = new String(bytes);
         
         // Check exported DDL

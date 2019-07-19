@@ -33,6 +33,7 @@ public class DescriptorImpl implements Descriptor {
 
     final String name;
     final Repository repository;
+    final UnitOfWork transaction;
 
     /**
      * @param descriptorRepository
@@ -40,13 +41,15 @@ public class DescriptorImpl implements Descriptor {
      * @param descriptorName
      *        the descriptor name (cannot be empty)
      */
-    public DescriptorImpl( final Repository descriptorRepository,
+    public DescriptorImpl( final UnitOfWork transaction,
+    					   final Repository descriptorRepository,
                            final String descriptorName ) {
         ArgCheck.isNotNull( descriptorRepository, "descriptorRepository" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( descriptorName, "descriptorName" ); //$NON-NLS-1$
 
         this.repository = descriptorRepository;
         this.name = descriptorName;
+        this.transaction = transaction;
     }
 
     public KObjectFactory getNodeFactory() {
@@ -85,10 +88,10 @@ public class DescriptorImpl implements Descriptor {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.core.repository.Descriptor#getPropertyDescriptors(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.Descriptor#getPropertyDescriptors()
      */
     @Override
-    public PropertyDescriptor[] getPropertyDescriptors( final UnitOfWork transaction ) throws KException {
+    public PropertyDescriptor[] getPropertyDescriptors( ) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
