@@ -17,7 +17,6 @@
  */
 package org.komodo.metadata.internal;
 
-import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,8 +28,8 @@ import org.komodo.metadata.runtime.TeiidVdb;
 import org.teiid.adminapi.Model;
 import org.teiid.adminapi.VDB;
 import org.teiid.adminapi.VDB.Status;
+import org.teiid.adminapi.VDBImport;
 import org.teiid.adminapi.impl.VDBMetaData;
-import org.teiid.adminapi.impl.VDBMetadataParser;
 import org.teiid.core.util.ArgCheck;
 
 public class TeiidVdbImpl implements TeiidVdb, Comparable<TeiidVdbImpl> {
@@ -59,7 +58,7 @@ public class TeiidVdbImpl implements TeiidVdb, Comparable<TeiidVdbImpl> {
 
     private Properties properties = new Properties();
 
-    private String vdbExport;
+	private VDB vdb;
 
     public TeiidVdbImpl(VDB vdb) throws Exception {
         ArgCheck.isNotNull(vdb, "vdb"); //$NON-NLS-1$
@@ -96,10 +95,8 @@ public class TeiidVdbImpl implements TeiidVdb, Comparable<TeiidVdbImpl> {
         for (String name : vdb.getProperties().stringPropertyNames()) {
             properties.setProperty(name, vdb.getPropertyValue(name));
         }
-
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        VDBMetadataParser.marshell((VDBMetaData)vdb, out);
-        vdbExport = new String(out.toByteArray());
+        
+        this.vdb = vdb;
     }
 
     /* (non-Javadoc)
@@ -221,7 +218,7 @@ public class TeiidVdbImpl implements TeiidVdb, Comparable<TeiidVdbImpl> {
     }
 
     @Override
-    public String export() throws Exception {
-        return vdbExport;
+    public List<? extends VDBImport> getImports() {
+    	return this.vdb.getVDBImports();
     }
 }

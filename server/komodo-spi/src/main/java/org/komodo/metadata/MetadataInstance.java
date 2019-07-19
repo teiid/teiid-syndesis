@@ -17,7 +17,6 @@
  */
 package org.komodo.metadata;
 
-import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 
@@ -25,11 +24,11 @@ import org.komodo.metadata.query.QSResult;
 import org.komodo.metadata.runtime.TeiidDataSource;
 import org.komodo.metadata.runtime.TeiidVdb;
 import org.komodo.relational.DeployStatus;
-import org.komodo.relational.vdb.Vdb;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
 import org.teiid.adminapi.Admin;
 import org.teiid.adminapi.AdminException;
+import org.teiid.adminapi.impl.VDBMetaData;
 
 public interface MetadataInstance extends StringConstants {
 
@@ -234,15 +233,6 @@ public interface MetadataInstance extends StringConstants {
     String getSchema(String vdbName, String version, String modelName) throws KException;
 
     /**
-     * Deploy a dynamic vdb
-     *
-     * @param vdbDeploymentName
-     * @param stream
-     * @throws KException 
-     */
-    void deployDynamicVdb(String vdbName, String vdbDeploymentName, InputStream stream) throws KException;
-
-    /**
      * Undeploy the dynamic vdb with the given name
      * @param name
      * @throws KException 
@@ -283,5 +273,5 @@ public interface MetadataInstance extends StringConstants {
      * @param vdb
      * @return the deployment status of the vdb
      */
-	DeployStatus deploy(Vdb vdb);
+	DeployStatus deploy(VDBMetaData vdb) throws KException;
 }
