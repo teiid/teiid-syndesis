@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.spi.repository;
+package org.komodo.core.repository;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -42,11 +42,11 @@ import java.util.concurrent.TimeUnit;
  * This will hold the thread committing the transaction until it has completely
  * finished.
  */
-public class SynchronousCallback implements UnitOfWorkListener {
+public class SynchronousCallback {
 
     private final CountDownLatch latch = new CountDownLatch(1);
 
-    private Throwable error;
+    private volatile Throwable error;
 
     /**
      * Wait for the completion of the sequencers
@@ -61,12 +61,10 @@ public class SynchronousCallback implements UnitOfWorkListener {
         return latch.await(timeout, unit);
     }
 
-    @Override
     public void respond(Object results) {
         latch.countDown();
     }
 
-    @Override
     public void errorOccurred(Throwable error) {
         this.error = error;
         latch.countDown();
@@ -85,5 +83,9 @@ public class SynchronousCallback implements UnitOfWorkListener {
     public boolean hasError() {
         return this.error != null;
     }
+    
+    public CountDownLatch getLatch() {
+		return latch;
+	}
 
 }

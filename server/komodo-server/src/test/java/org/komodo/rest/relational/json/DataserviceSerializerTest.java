@@ -62,14 +62,14 @@ public final class DataserviceSerializerTest extends AbstractSerializerTest  {
     @Before
     public void init() throws Exception {
         Vdb serviceVdb = Mockito.mock(Vdb.class);
-        Mockito.when(serviceVdb.getName(transaction)).thenReturn("ServiceVdb");
-        Mockito.when(serviceVdb.getVersion(transaction)).thenReturn(1);
+        Mockito.when(serviceVdb.getName()).thenReturn("ServiceVdb");
+        Mockito.when(serviceVdb.getVersion()).thenReturn(1);
 
         Dataservice theService = Mockito.mock(Dataservice.class);
-        Mockito.when(theService.getName(transaction)).thenReturn(DATASERVICE_NAME);
-        Mockito.when(theService.getServiceVdbName(transaction)).thenReturn("ServiceVdb");
+        Mockito.when(theService.getName()).thenReturn(DATASERVICE_NAME);
+        Mockito.when(theService.getServiceVdbName()).thenReturn("ServiceVdb");
 
-        this.dataservice = new RestDataservice(MY_BASE_URI, theService, false, transaction, serviceVdb);
+        this.dataservice = new RestDataservice(MY_BASE_URI, theService, false, serviceVdb);
         this.dataservice.setDescription(DESCRIPTION);
     }
 

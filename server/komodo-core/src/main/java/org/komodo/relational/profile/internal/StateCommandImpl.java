@@ -25,7 +25,6 @@ import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.PropertyValueType;
-import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.internal.RelationalChildRestrictedObject;
 import org.komodo.relational.internal.TypeResolver;
 import org.komodo.relational.profile.StateCommand;
@@ -66,27 +65,25 @@ public class StateCommandImpl extends RelationalChildRestrictedObject implements
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.core.repository.KomodoObject)
+         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.core.repository.KomodoObject)
          */
         @Override
-        public boolean resolvable(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
-            return ObjectImpl.validateType(transaction, kobject, KomodoLexicon.StateCommand.NODE_TYPE);
+        public boolean resolvable(final KomodoObject kobject) throws KException {
+            return ObjectImpl.validateType(kobject, KomodoLexicon.StateCommand.NODE_TYPE);
         }
 
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.core.repository.KomodoObject)
+         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.core.repository.KomodoObject)
          */
         @Override
-        public StateCommandImpl resolve(final UnitOfWork transaction, final KomodoObject kobject) throws KException {
+        public StateCommandImpl resolve(final KomodoObject kobject) throws KException {
             if (kobject.getTypeId() == StateCommand.TYPE_ID) {
                 return (StateCommandImpl)kobject;
             }
 
-            return new StateCommandImpl(transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath());
+            return new StateCommandImpl(kobject.getTransaction(), kobject.getRepository(), kobject.getAbsolutePath());
         }
 
     };
@@ -106,7 +103,7 @@ public class StateCommandImpl extends RelationalChildRestrictedObject implements
     }
 
     @Override
-    public KomodoType getTypeIdentifier(UnitOfWork uow) {
+    public KomodoType getTypeIdentifier() {
         return StateCommand.IDENTIFIER;
     }
 
@@ -121,22 +118,22 @@ public class StateCommandImpl extends RelationalChildRestrictedObject implements
     }
 
     @Override
-    public String getId(UnitOfWork transaction) throws KException {
-        return getObjectProperty(transaction, PropertyValueType.STRING, "getId",
+    public String getId() throws KException {
+        return getObjectProperty(getTransaction(), PropertyValueType.STRING, "getId",
                                                                      KomodoLexicon.StateCommand.ID);
     }
 
     @Override
-    public void setId(UnitOfWork transaction, String id) throws Exception {
-        setObjectProperty(transaction, "setId",
+    public void setId(String id) throws Exception {
+        setObjectProperty(getTransaction(), "setId",
                                                                       KomodoLexicon.StateCommand.ID, id);
     }
 
     @Override
-    public Map<String, String> getArguments(UnitOfWork transaction) throws KException {
+    public Map<String, String> getArguments() throws KException {
         Map<String, String> args = new HashMap<>();
 
-        String[] propertyNames = getPropertyNames(transaction);
+        String[] propertyNames = getPropertyNames();
         if (propertyNames == null)
             return args;
 
@@ -144,7 +141,7 @@ public class StateCommandImpl extends RelationalChildRestrictedObject implements
             if (! propertyName.startsWith(KomodoLexicon.StateCommand.ARGS_PREFIX))
                 continue;
 
-            String value = getObjectProperty(transaction, PropertyValueType.STRING, "getArgument", propertyName);
+            String value = getObjectProperty(getTransaction(), PropertyValueType.STRING, "getArgument", propertyName);
             String name = propertyName.replace(
                                                                    KomodoLexicon.StateCommand.ARGS_PREFIX, EMPTY_STRING);
             args.put(name,  value);
@@ -154,14 +151,14 @@ public class StateCommandImpl extends RelationalChildRestrictedObject implements
     }
 
     @Override
-    public void setArguments(UnitOfWork transaction, Map<String, String> arguments) throws KException {
+    public void setArguments(Map<String, String> arguments) throws KException {
         if (arguments == null)
             arguments = new HashMap<>();
 
         for (Map.Entry<String, String> entry : arguments.entrySet()) {
             String name = KomodoLexicon.StateCommand.ARGS_PREFIX + entry.getKey();
             String value = entry.getValue();
-            setObjectProperty(transaction, "setArgument", name, value); //$NON-NLS-1$
+            setObjectProperty(getTransaction(), "setArgument", name, value); //$NON-NLS-1$
         }
     }
 }

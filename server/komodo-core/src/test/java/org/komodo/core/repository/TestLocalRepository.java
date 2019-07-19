@@ -21,13 +21,9 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -37,10 +33,8 @@ import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.internal.repository.Repository.Id;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
-import org.komodo.spi.repository.SynchronousCallback;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWork.State;
-import org.komodo.spi.repository.UnitOfWorkListener;
 import org.teiid.modeshape.sequencer.vdb.lexicon.VdbLexicon;
 
 @SuppressWarnings( {"javadoc", "nls"} )
@@ -52,129 +46,6 @@ public class TestLocalRepository extends AbstractLocalRepositoryTest {
         assertThat(_repo.getState(), is(Repository.State.REACHABLE));
     }
 
-    /**
-     * Tests to confirm that the transaction awaits the completion of the sequencers
-     * prior to calling the given callback when creating an unrelated object.
-     *
-     * Confirms that the sequencers are called and complete (with nothing to do)
-     *
-     * @throws Exception
-     */
-    @Test
-    public void shouldRespondWithCallback() throws Exception {
-        // Ensure the workspace is created first and in a different transaction
-        _repo.komodoWorkspace(getTransaction());
-        commit();
-
-        final Boolean[] callbackCalled = new Boolean[1];
-        callbackCalled[0] = false;
-
-        //
-        // Despite only creating a node the callback should be called
-        // and the value of callbackCalled changed to true
-        //
-        UnitOfWorkListener delegate = new UnitOfWorkListener() {
-
-            @Override
-            public void respond(Object results) {
-                callbackCalled[0] = true;
-            }
-
-            @Override
-            public void errorOccurred(Throwable error) {
-                // Nothing required since synchronous callback will log the error
-            }
-        };
-
-        SynchronousCallback callback = new SynchronousNestedCallback(delegate);
-        useCustomCallback( callback, false );
-
-        //
-        // Create a single test node with no relationship to the sequencers or
-        // with any relevant properties
-        //
-        _repo.add( getTransaction(), RepositoryImpl.komodoWorkspacePath(getTransaction()), "Test1", null );
-        commit();
-
-        //
-        // Stop the test from completing prior to the callback returning
-        //
-        assertTrue(callback.await(TIME_TO_WAIT, TimeUnit.MINUTES));
-        assertFalse(callback.hasError());
-
-        //
-        // The callback should have updated the value of callbackCalled to true
-        //
-        assertTrue(callbackCalled[0]);
-
-        // Create a single test node with no relationship to the sequencers or
-        // with any relevant properties
-        //
-        _repo.add(getTransaction(), RepositoryImpl.komodoWorkspacePath(getTransaction()), "Test1", null);
-        commit();
-    }
-
-    /**
-     * Tests to confirm that the transaction awaits the completion of the sequencers
-     * prior to calling the given callback when setting a property on an unrelated object
-     *
-     * Confirms that the sequencers are called and complete (with nothing to do)
-     *
-     * @throws Exception
-     */
-    @Test
-    public void shouldRespondWithCallback2() throws Exception {
-        // Ensure the workspace is created first and in a different transaction
-        _repo.komodoWorkspace(getTransaction());
-        commit();
-
-        // Create the test object to test the addition of a property
-        KomodoObject testObject = _repo.add(getTransaction(), RepositoryImpl.komodoWorkspacePath(getTransaction()), "Test1", null);
-        assertNotNull(testObject);
-        commit();
-
-        final Boolean[] callbackCalled = new Boolean[1];
-        callbackCalled[0] = false;
-
-        //
-        // Despite setting an unrelated (to the sequencers) property the callback
-        // should be called and the value of callbackCalled changed to true
-        //
-        UnitOfWorkListener delegate = new UnitOfWorkListener() {
-
-            @Override
-            public void respond(Object results) {
-                callbackCalled[0] = true;
-            }
-
-            @Override
-            public void errorOccurred(Throwable error) {
-                // Nothing required since synchronous callback will log the error
-            }
-        };
-
-        final SynchronousCallback callback = new SynchronousNestedCallback( delegate );
-        useCustomCallback( callback, false );
-
-        //
-        // Create a single test node with no relationship to the sequencers or
-        // with any relevant properties
-        //
-        testObject.setProperty(getTransaction(), "TestProperty1", "My property value");
-        commit();
-
-        //
-        // Stop the test from completing prior to the callback returning
-        //
-        assertTrue(callback.await(TIME_TO_WAIT, TimeUnit.MINUTES));
-        assertFalse(callback.hasError());
-
-        //
-        // The callback should have updated the value of callbackCalled to true
-        //
-        assertTrue(callbackCalled[0]);
-    }
-
     @Test
     public void shouldAddWorkspaceItemAtRoot() throws Exception {
         // setup
@@ -184,7 +55,7 @@ public class TestLocalRepository extends AbstractLocalRepositoryTest {
 
         // tests
         assertThat(rootNode, is(notNullValue()));
-        assertThat(rootNode.getName(getTransaction()), is(name));
+        assertThat(rootNode.getName(), is(name));
         assertThat(rootNode.getAbsolutePath(), is(RepositoryImpl.komodoWorkspacePath(getTransaction()) + FORWARD_SLASH + name));
     }
 
@@ -197,7 +68,6 @@ public class TestLocalRepository extends AbstractLocalRepositoryTest {
         // tests
         assertThat(transaction, is(notNullValue()));
         assertThat(transaction.getName(), is(name));
-        assertThat(transaction.getCallback(), is(nullValue()));
         assertThat(transaction.isRollbackOnly(), is(true));
 
         transaction.commit();
@@ -212,7 +82,6 @@ public class TestLocalRepository extends AbstractLocalRepositoryTest {
         // tests
         assertThat(transaction, is(notNullValue()));
         assertThat(transaction.getName(), is(name));
-        assertThat(transaction.getCallback(), is(nullValue()));
         assertThat(transaction.isRollbackOnly(), is(false));
 
         transaction.commit();
@@ -245,8 +114,8 @@ public class TestLocalRepository extends AbstractLocalRepositoryTest {
     public void shouldGetWorkspaceHomeofTestUser() throws Exception {
         final KomodoObject rootNode = _repo.getFromWorkspace(getTransaction(), null);
         assertThat(rootNode, is(notNullValue()));
-        assertThat(rootNode.getName(getTransaction()), is(TEST_USER));
-        assertThat(rootNode.getPrimaryType(getTransaction()).getName(), is(KomodoLexicon.Home.NODE_TYPE));
+        assertThat(rootNode.getName(), is(TEST_USER));
+        assertThat(rootNode.getPrimaryType().getName(), is(KomodoLexicon.Home.NODE_TYPE));
     }
 
     @Test
@@ -278,7 +147,7 @@ public class TestLocalRepository extends AbstractLocalRepositoryTest {
         //
         // _repo.checkSettings() dynamically creates user home
         //
-        KomodoObject wkspObject = new ObjectImpl(_repo, userWksp, 0);
+        KomodoObject wkspObject = new ObjectImpl(getTransaction(), _repo, userWksp, 0);
         KomodoObject vdb = wkspObject.addChild(tx, "testVdb", VdbLexicon.Vdb.VIRTUAL_DATABASE);
         assertNotNull(vdb);
         commit(tx, State.COMMITTED);
@@ -344,11 +213,11 @@ public class TestLocalRepository extends AbstractLocalRepositoryTest {
 
         assertEquals(komodoWkspPath, komodoWksp.getAbsolutePath());
 
-        KomodoObject komodoRoot = komodoWksp.getParent(sysTx);
+        KomodoObject komodoRoot = komodoWksp.getParent();
         assertNotNull(komodoRoot);
         assertEquals(komodoRootPath, komodoRoot.getAbsolutePath());
 
-        final KomodoObject nullParent = komodoRoot.getParent(sysTx);
+        final KomodoObject nullParent = komodoRoot.getParent();
         assertThat( nullParent, is( nullValue() ) );
     }
 

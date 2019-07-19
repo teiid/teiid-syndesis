@@ -45,7 +45,9 @@ import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.Property;
 import org.komodo.core.repository.RepositoryClientEvent;
 import org.komodo.core.repository.RepositoryImpl;
+import org.komodo.core.repository.RepositoryImpl.UnitOfWorkImpl;
 import org.komodo.core.repository.RepositoryTools;
+import org.komodo.core.repository.SynchronousCallback;
 import org.komodo.metadata.DataTypeService;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.relational.WorkspaceManager;
@@ -53,9 +55,7 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.relational.workspace.WorkspaceManagerImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.SystemConstants;
-import org.komodo.spi.repository.SynchronousCallback;
 import org.komodo.spi.repository.UnitOfWork;
-import org.komodo.spi.repository.UnitOfWorkListener;
 import org.komodo.utils.KLog;
 import org.komodo.utils.observer.KLatchRepositoryObserver;
 import org.mockito.Mockito;
@@ -110,7 +110,7 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
             try {
                 transaction = _repo.createTransaction(TEST_USER, "verifyInitialRepositoryContent", true, null, TEST_USER);
                 final KomodoObject workspace = _repo.komodoWorkspace(transaction);
-                workspace.getName( transaction );
+                workspace.getName( );
                 transaction.commit();
             } catch ( final Exception e ) {
                 throw new Exception( "Failed verifying initial workspace content: " + e.getLocalizedMessage(), e );
@@ -173,7 +173,7 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
                 switch ( this.uow.getState() ) {
                     case NOT_STARTED:
                     case RUNNING:
-                        rollback();
+                    	rollback(this.uow, this.callback);
                         break;
                     case COMMITTED:
                     case ERROR:
@@ -195,7 +195,7 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
             switch ( this.sysUow.getState() ) {
                 case NOT_STARTED:
                 case RUNNING:
-                    sysRollback();
+                	rollback(this.sysUow, this.sysCallback);
                     break;
                 case COMMITTED:
                 case ERROR:
@@ -231,7 +231,7 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
         }
     }
 
-    protected static void commit( UnitOfWork currTx,
+    private static void commit( UnitOfWork currTx,
                                                               SynchronousCallback currCallback,
                                                               UnitOfWork.State expectedState) throws Exception {
         currTx.commit();
@@ -241,7 +241,7 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
         if (expectedState == UnitOfWork.State.ERROR) {
             assertThat( currTx.getState(), is( expectedState ) );
         } else {
-            assertThat( currTx.getError(), is( nullValue() ) );
+            assertThat( ((UnitOfWorkImpl)currTx).getError(), is( nullValue() ) );
             assertThat( currTx.getState(), is( expectedState ) );
         }
 
@@ -258,8 +258,8 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
     }
 
     protected static void commit(UnitOfWork currTx, UnitOfWork.State expectedState) throws Exception {
-        assertTrue(currTx.getCallback() instanceof SynchronousCallback);
-        commit(currTx, (SynchronousCallback) currTx.getCallback(), expectedState);
+        assertTrue(((UnitOfWorkImpl)currTx).getCallback() instanceof SynchronousCallback);
+        commit(currTx, (SynchronousCallback) ((UnitOfWorkImpl)currTx).getCallback(), expectedState);
     }
 
     private void commit( final UnitOfWork.State expectedState, final SynchronousCallback nextCallback ) throws Exception {
@@ -269,45 +269,17 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
         this.uow = _repo.createTransaction(TEST_USER, this.name.getMethodName(), this.rollbackOnly, this.callback, TEST_USER);
     }
 
-    protected void commit( final UnitOfWork.State expectedState ) throws Exception {
-        final SynchronousCallback nextCallback = new TestTransactionListener();
-        commit( expectedState, nextCallback );
-    }
 
     protected void commit() throws Exception {
-        commit(UnitOfWork.State.COMMITTED);
+    	final SynchronousCallback nextCallback = new TestTransactionListener();
+        commit( UnitOfWork.State.COMMITTED, nextCallback );
     }
 
-    protected void sysCommit( final UnitOfWork.State expectedState, final SynchronousCallback nextCallback ) throws Exception {
-        commit(this.sysUow, this.sysCallback, expectedState);
-
-        this.sysCallback = nextCallback;
-        this.sysUow = createTransaction(SystemConstants.SYSTEM_USER, txId(SystemConstants.SYSTEM_USER, "sysTx"), false, sysCallback);
-    }
-
-    protected void sysCommit( final UnitOfWork.State expectedState ) throws Exception {
-        final SynchronousCallback nextCallback = new TestTransactionListener();
-        sysCommit( expectedState, nextCallback );
-    }
-
-    protected void sysCommit() throws Exception {
-        sysCommit(UnitOfWork.State.COMMITTED);
-    }
-
-    protected void useCustomCallback( final SynchronousCallback callback,
-                                      final boolean commitCurrentTransaction ) throws Exception {
-        if ( commitCurrentTransaction ) {
-            commit( UnitOfWork.State.COMMITTED, callback );
-        } else {
-            rollback( callback );
-        }
-    }
-
-    protected static UnitOfWork createTransaction( String user, String txName, boolean rollback, final UnitOfWorkListener callback ) throws Exception {
+    protected static UnitOfWork createTransaction( String user, String txName, boolean rollback, final SynchronousCallback callback ) throws Exception {
         return _repo.createTransaction(user, txName , rollback, callback, user);
     }
 
-    private UnitOfWork createTransaction( final UnitOfWorkListener callback ) throws Exception {
+    private UnitOfWork createTransaction( final SynchronousCallback callback ) throws Exception {
         return createTransaction(TEST_USER, (this.name.getMethodName() + '-' + this.txCount++), this.rollbackOnly, callback);
     }
 
@@ -328,6 +300,7 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
      * System Transaction can search from workspace root rather than just inside home directory
      */
     protected UnitOfWork sysTx() throws Exception {
+    	RepositoryImpl.associateTransaction(this.sysUow);
         return this.sysUow;
     }
 
@@ -337,6 +310,7 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
      * @return the current transaction (never <code>null</code>)
      */
     protected UnitOfWork getTransaction() {
+    	RepositoryImpl.associateTransaction(this.uow);
         return this.uow;
     }
 
@@ -344,37 +318,13 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
         currTx.rollback();
 
         assertThat( currCallback.await( TIME_TO_WAIT, TimeUnit.MINUTES ), is( true ) );
-        assertThat( currTx.getError(), is( nullValue() ) );
+        assertThat( ((UnitOfWorkImpl)currTx).getError(), is( nullValue() ) );
         assertThat( currTx.getState(), is( UnitOfWork.State.ROLLED_BACK ) );
 
         if ( currCallback instanceof TestTransactionListener ) {
             assertThat( ( ( TestTransactionListener )currCallback ).respondCallbackReceived(), is( true ) );
             assertThat( ( ( TestTransactionListener )currCallback ).errorCallbackReceived(), is( false ) );
         }
-    }
-
-    private void rollback( final SynchronousCallback nextCallback ) throws Exception {
-        rollback(this.uow, this.callback);
-
-        // create new transaction
-        this.callback = nextCallback;
-        this.uow = createTransaction( this.callback );
-    }
-
-    private void sysRollback( final SynchronousCallback nextCallback ) throws Exception {
-        rollback(this.sysUow, this.sysCallback);
-
-        // create new transaction
-        this.sysCallback = nextCallback;
-        this.sysUow = createTransaction( this.sysCallback );
-    }
-
-    protected void rollback() throws Exception {
-        rollback( new TestTransactionListener() );
-    }
-
-    protected void sysRollback() throws Exception {
-        sysRollback( new TestTransactionListener() );
     }
 
     protected void traverse(UnitOfWork uow, KomodoObject node, StringBuffer buffer) throws Exception {
@@ -389,7 +339,7 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
     }
 
     protected void traverse(UnitOfWork uow, String nodePath) throws Exception {
-        KomodoObject ko = new ObjectImpl(_repo, nodePath, 0);
+        KomodoObject ko = new ObjectImpl(getTransaction(), _repo, nodePath, 0);
         traverse(uow, ko);
     }
 
@@ -406,7 +356,7 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
     private String toString(Property property) throws Exception {
         StringBuilder sb = new StringBuilder();
         try {
-            sb.append(property.getName(this.uow)).append('=');
+            sb.append(property.getName()).append('=');
             if (property.isMultiple(this.uow)) {
                 sb.append('[');
                 Object[] values = property.getValues(this.uow);
@@ -445,31 +395,31 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
     }
 
     protected void verifyProperty( UnitOfWork uow, KomodoObject node, String propertyName, long expectedValue ) throws KException {
-        Property property = node.getProperty(uow, propertyName);
+        Property property = node.getProperty(propertyName);
         Long value = property.isMultiple(uow) ? property.getLongValues(uow)[0] : property.getLongValue(uow);
         assertEquals(expectedValue, value.longValue());
     }
 
     protected void verifyProperty( UnitOfWork uow, KomodoObject node, String propertyName, boolean expectedValue ) throws KException {
-        Property property = node.getProperty(uow, propertyName);
+        Property property = node.getProperty(propertyName);
         Boolean value = property.isMultiple(uow) ? property.getBooleanValues(uow)[0] : property.getBooleanValue(uow);
         assertEquals(expectedValue, value.booleanValue());
     }
 
     protected void verifyProperty( UnitOfWork uow, KomodoObject node, String propertyName, java.sql.Date expectedValue ) throws KException {
-        Property property = node.getProperty(uow, propertyName);
+        Property property = node.getProperty(propertyName);
         Object value = property.isMultiple(uow) ? property.getValues(uow)[0] : property.getValue(uow);
         assertEquals(expectedValue, java.sql.Date.valueOf(value.toString()));
     }
 
     protected void verifyProperty( UnitOfWork uow, KomodoObject node, String propertyName, java.sql.Time expectedValue ) throws KException {
-        Property property = node.getProperty(uow, propertyName);
+        Property property = node.getProperty(propertyName);
         Object value = property.isMultiple(uow) ? property.getValues(uow)[0] : property.getValue(uow);
         assertEquals(expectedValue, java.sql.Time.valueOf(value.toString()));
     }
 
     protected boolean verifyHasProperty( UnitOfWork uow, KomodoObject node, String propNameStr ) throws KException {
-        return node.hasProperty(uow, propNameStr);
+        return node.hasProperty(propNameStr);
     }
 
     protected void verifyPrimaryType( UnitOfWork uow, KomodoObject node, String expectedValue ) throws KException {
@@ -477,7 +427,7 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
     }
 
     protected void verifyMixinType( UnitOfWork uow, KomodoObject node, String expectedValue ) throws KException {
-        assertTrue(node.hasDescriptor(uow, expectedValue));
+        assertTrue(node.hasDescriptor(expectedValue));
     }
 
     protected void verifyMixinTypes( UnitOfWork uow, KomodoObject node, String... expectedValues ) throws KException {
@@ -502,7 +452,7 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
 
         KomodoObject childNode = null;
         if (parentNode.hasRawChild(uow, relativePath))
-            childNode = parentNode.getChild(uow, relativePath + indexExp);
+            childNode = parentNode.getChild(relativePath + indexExp);
 
 //        traverse(uow, parentNode);
         assertNotNull(childNode);
@@ -565,7 +515,7 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
     }
     
 	protected Vdb[] findVdbs() throws KException {
-		return workspaceManager().findVdbs(getTransaction(), null);
+		return workspaceManager().findVdbs(null);
 	}
 	
     protected WorkspaceManager workspaceManager() throws KException {

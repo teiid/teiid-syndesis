@@ -15,37 +15,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.spi.repository;
 
-public interface UnitOfWorkDelegate {
+package org.komodo.core.repository;
 
-    /**
-     * @return true if this session has pending changes
-     * @throws Exception 
-     */
-    boolean hasPendingChanges() throws Exception;
+import org.komodo.core.KEngineImpl;
+import org.komodo.core.internal.repository.Repository;
+import org.komodo.spi.repository.UnitOfWork;
 
-    /**
-     * @return true if this session is live, otherwise false
-     */
-    boolean isLive();
-
-    /**
-     * Save this session
-     */
-    void save() throws Exception;
-
-    /**
-     * Complete and end this session
-     */
-    void complete();
-
-    /**
-     * Refresh the session
-     *
-     * @param keepChanges
-     * @throws Exception 
-     */
-    void refresh(boolean keepChanges) throws Exception;
+public abstract class AbstractKNode implements KNode {
+	
+    protected String path;
+    final protected Repository repository;
+	
+	public AbstractKNode(final Repository komodoRepository, 
+			final String path) {
+		this.repository = komodoRepository;
+		this.path = path;
+	}
+	
+	public Repository getRepository() {
+		return repository;
+	}
+	
+	public UnitOfWork getTransaction() {
+		return KEngineImpl.getTransaction();
+	}
 
 }

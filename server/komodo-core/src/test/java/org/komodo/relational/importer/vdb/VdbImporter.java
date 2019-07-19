@@ -71,7 +71,7 @@ public class VdbImporter extends AbstractImporter {
 
         VdbImpl vdb = getWorkspaceManager(transaction).createVdb(transaction, parentObject, vdbName, vdbFilePath);
         KomodoObject fileNode = vdb.addChild(transaction, JcrConstants.JCR_CONTENT, null);
-        fileNode.setProperty(transaction, JcrConstants.JCR_DATA, content);
+        fileNode.setProperty(JcrConstants.JCR_DATA, content);
     }
 
     protected WorkspaceManagerImpl getWorkspaceManager(UnitOfWork transaction) throws KException {
@@ -88,7 +88,7 @@ public class VdbImporter extends AbstractImporter {
         String vdbName = importOptions.getOption(OptionKeys.NAME).toString();
 
         // No node with the requested name - ok to create
-        if (!parentObject.hasChild(transaction, vdbName))
+        if (!parentObject.hasChild(vdbName))
             return true;
 
         // Option specifying how to handle when node exists with requested name
@@ -107,7 +107,7 @@ public class VdbImporter extends AbstractImporter {
                 break;
             // OVERWRITE - Return 'true' - deletes the existing VDB so that new one can replace existing.
             case OVERWRITE:
-                KomodoObject oldNode = parentObject.getChild(transaction, vdbName);
+                KomodoObject oldNode = parentObject.getChild(vdbName);
                 oldNode.remove(transaction);
         }
 

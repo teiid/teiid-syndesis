@@ -21,7 +21,6 @@ import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * Interface for SqlProjectedColumn
@@ -39,60 +38,48 @@ public interface SqlProjectedColumn  extends RelationalObject, StringConstants {
     KomodoType IDENTIFIER = KomodoType.SQL_PROJECTED_COLUMN;
     
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param name
      *        the new value for the <code>name</code> property
      * @throws KException
      *         if an error occurs
      */
-    void setName(UnitOfWork transaction, String name) throws KException;
+    void setName(String name) throws KException;
     
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @return the value of the <code>name</code> property
      * @throws KException
      *         if an error occurs
      */
     @Override
-    String getName(UnitOfWork transaction) throws KException;
+    String getName() throws KException;
     
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param type
      *        the new value for the <code>type</code> property
      * @throws KException
      *         if an error occurs
      */
-    void setType(UnitOfWork transaction, String type) throws KException;
+    void setType(String type) throws KException;
     
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @return the value of the <code>type</code> property
      * @throws KException
      *         if an error occurs
      */
-    String getType(UnitOfWork transaction) throws KException;
+    String getType() throws KException;
     
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param selected value for selected
      * @throws KException
      *         if an error occurs         
      */
-    void setSelected(final UnitOfWork transaction, boolean selected) throws KException;
+    void setSelected( boolean selected) throws KException;
     
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @return boolean value of selected
      * @throws KException
      *         if an error occurs         
      */
-    boolean isSelected(final UnitOfWork transaction) throws KException;
+    boolean isSelected() throws KException;
     
 }

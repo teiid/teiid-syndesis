@@ -22,7 +22,6 @@ import java.net.URI;
 import org.komodo.relational.profile.SqlComposition;
 import org.komodo.rest.RestBasicEntity;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.UnitOfWork;
 
 public class RestSqlComposition extends RestBasicEntity {
 	
@@ -119,45 +118,45 @@ public class RestSqlComposition extends RestBasicEntity {
      * @param baseUri
      * @throws KException
      */
-    public RestSqlComposition(URI baseUri, SqlComposition sqlCompostion, UnitOfWork uow) throws KException {
+    public RestSqlComposition(URI baseUri, SqlComposition sqlCompostion) throws KException {
         super(baseUri);
         
-        String value = sqlCompostion.getName(uow);
+        String value = sqlCompostion.getName();
         if( value != null ) {
         	tuples.put(RestViewEditorState.ID_NAME, value);
         }
         
-        value = sqlCompostion.getDescription(uow);
+        value = sqlCompostion.getDescription();
         if( value != null ) {
         	tuples.put(RestViewEditorState.DESCRIPTION, value);
         }
         
-        value = sqlCompostion.getRightSourcePath(uow);
+        value = sqlCompostion.getRightSourcePath();
         if( value != null ) {
         	tuples.put(RestViewEditorState.RIGHT_SOURCE_PATH_LABEL, value);
         }
         
-        value = sqlCompostion.getLeftSourcePath(uow);
+        value = sqlCompostion.getLeftSourcePath();
         if( value != null ) {
         	tuples.put(RestViewEditorState.LEFT_SOURCE_PATH_LABEL, value);
         }
         
-        value = sqlCompostion.getRightCriteriaColumn(uow);
+        value = sqlCompostion.getRightCriteriaColumn();
         if( value != null ) {
         	tuples.put(RestViewEditorState.RIGHT_CRITERIA_COLUMN_LABEL, value);
         }
         
-        value = sqlCompostion.getLeftCriteriaColumn(uow);
+        value = sqlCompostion.getLeftCriteriaColumn();
         if( value != null ) {
         	tuples.put(RestViewEditorState.LEFT_CRITERIA_COLUMN_LABEL, value);
         }
         
-        value = sqlCompostion.getType(uow);
+        value = sqlCompostion.getType();
         if( value != null ) {
         	tuples.put(RestViewEditorState.TYPE_LABEL, value);
         }
         
-        value = sqlCompostion.getOperator(uow);
+        value = sqlCompostion.getOperator();
         if( value != null ) {
         	tuples.put(RestViewEditorState.OPERATOR_LABEL, value);
         }

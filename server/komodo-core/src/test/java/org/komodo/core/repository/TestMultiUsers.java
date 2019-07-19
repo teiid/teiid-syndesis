@@ -29,7 +29,6 @@ import org.junit.Test;
 import org.komodo.core.AbstractLocalRepositoryTest;
 import org.komodo.core.KomodoLexicon;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.SynchronousCallback;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWork.State;
 import org.modeshape.jcr.api.JcrConstants;
@@ -112,7 +111,7 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
     }
 
     private ObjectImpl convert(KomodoObject obj) throws Exception {
-        return new ObjectImpl(((ObjectImpl)obj).getRepository(), obj.getAbsolutePath(), obj.getIndex());
+        return new ObjectImpl(obj.getTransaction(), obj.getRepository(), obj.getAbsolutePath(), obj.getIndex());
     }
 
     @Test
@@ -249,7 +248,7 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
         // get a child
         //
         try {
-            bobVdb.getChild(aliceTx, bobModelName);
+            bobVdb.getChild(bobModelName);
             fail(failMsg);
         } catch (Exception ex) {
             assertEquals(
@@ -261,7 +260,7 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
         // get a child
         //
         try {
-            bobVdb.getChild(aliceTx, bobModelName, VdbLexicon.Vdb.DECLARATIVE_MODEL);
+            bobVdb.getChild(bobModelName, VdbLexicon.Vdb.DECLARATIVE_MODEL);
             fail(failMsg);
         } catch (Exception ex) {
             assertEquals(
@@ -273,7 +272,7 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
         // get children
         //
         try {
-            bobVdb.getChildren(aliceTx, bobModelName);
+            bobVdb.getChildren(bobModelName);
             fail(failMsg);
         } catch (Exception ex) {
             assertEquals(
@@ -285,7 +284,7 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
         // get children of type
         //
         try {
-            bobVdb.getChildrenOfType(aliceTx, VdbLexicon.Vdb.DECLARATIVE_MODEL);
+            bobVdb.getChildrenOfType(VdbLexicon.Vdb.DECLARATIVE_MODEL);
             fail(failMsg);
         } catch (Exception ex) {
             assertEquals(
@@ -297,7 +296,7 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
         // get descriptor
         //
         try {
-            bobVdb.getDescriptor(aliceTx, VdbLexicon.Vdb.DECLARATIVE_MODEL);
+            bobVdb.getDescriptor(VdbLexicon.Vdb.DECLARATIVE_MODEL);
             fail(failMsg);
         } catch (Exception ex) {
             assertEquals(
@@ -309,7 +308,7 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
         // get descriptors
         //
         try {
-            bobVdb.getDescriptors(aliceTx);
+            bobVdb.getDescriptors();
             fail(failMsg);
         } catch (Exception ex) {
             assertEquals(
@@ -321,7 +320,7 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
         // get name
         //
         try {
-            bobVdb.getName(aliceTx);
+            bobVdb.getName();
             fail(failMsg);
         } catch (Exception ex) {
             assertEquals(
@@ -333,7 +332,7 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
         // get parent
         //
         try {
-            bobVdb.getParent(aliceTx);
+            bobVdb.getParent();
             fail(failMsg);
         } catch (Exception ex) {
             assertEquals(
@@ -345,7 +344,7 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
         // get primary type
         //
         try {
-            bobVdb.getPrimaryType(aliceTx);
+            bobVdb.getPrimaryType();
             fail(failMsg);
         } catch (Exception ex) {
             assertEquals(
@@ -357,7 +356,7 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
         // get property
         //
         try {
-            bobVdb.getProperty(aliceTx, "aproperty");
+            bobVdb.getProperty("aproperty");
             fail(failMsg);
         } catch (Exception ex) {
             assertEquals(
@@ -369,7 +368,7 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
         // get property descriptors
         //
         try {
-            bobVdb.getPropertyDescriptors(aliceTx);
+            bobVdb.getPropertyDescriptors();
             fail(failMsg);
         } catch (Exception ex) {
             assertEquals(
@@ -381,7 +380,7 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
         // get property names
         //
         try {
-            bobVdb.getPropertyNames(aliceTx);
+            bobVdb.getPropertyNames();
             fail(failMsg);
         } catch (Exception ex) {
             assertEquals(
@@ -393,7 +392,7 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
         // get type identifier
         //
         try {
-            bobVdb.getTypeIdentifier(aliceTx);
+            bobVdb.getTypeIdentifier();
             fail(failMsg);
         } catch (Exception ex) {
             assertEquals(
@@ -405,7 +404,7 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
         // has child
         //
         try {
-            bobVdb.hasChild(aliceTx, "achild");
+            bobVdb.hasChild("achild");
             fail(failMsg);
         } catch (Exception ex) {
             assertEquals(
@@ -417,7 +416,7 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
         // has child
         //
         try {
-            bobVdb.hasChild(aliceTx, "achild", VdbLexicon.Vdb.DECLARATIVE_MODEL);
+            bobVdb.hasChild("achild", VdbLexicon.Vdb.DECLARATIVE_MODEL);
             fail(failMsg);
         } catch (Exception ex) {
             assertEquals(
@@ -429,7 +428,7 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
         // has children
         //
         try {
-            bobVdb.hasChildren(aliceTx);
+            bobVdb.hasChildren();
             fail(failMsg);
         } catch (Exception ex) {
             assertEquals(
@@ -441,7 +440,7 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
         // has descriptor
         //
         try {
-            bobVdb.hasDescriptor(aliceTx, "descriptorName");
+            bobVdb.hasDescriptor("descriptorName");
             fail(failMsg);
         } catch (Exception ex) {
             assertEquals(
@@ -453,7 +452,7 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
         // has properties
         //
         try {
-            bobVdb.hasProperties(aliceTx);
+            bobVdb.hasProperties();
             fail(failMsg);
         } catch (Exception ex) {
             assertEquals(
@@ -465,7 +464,7 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
         // has property
         //
         try {
-            bobVdb.hasProperty(aliceTx, "propertyName");
+            bobVdb.hasProperty("propertyName");
             fail(failMsg);
         } catch (Exception ex) {
             assertEquals(
@@ -501,7 +500,7 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
         // remove child
         //
         try {
-            bobVdb.removeChild(aliceTx, bobModelName);
+            bobVdb.removeChild(bobModelName);
             fail(failMsg);
         } catch (Exception ex) {
             assertEquals(
@@ -537,7 +536,7 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
         // set property
         //
         try {
-            bobVdb.setProperty(aliceTx, "property1", "value1");
+            bobVdb.setProperty("property1", "value1");
             fail(failMsg);
         } catch (Exception ex) {
             assertEquals(
@@ -600,121 +599,121 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
         // Adding a descriptor
         //
         bobVdb.addDescriptor(sysTx, nodeType);
-        assertNotNull(bobVdbObject.getDescriptor(sysTx, nodeType));
+        assertNotNull(bobVdbObject.getDescriptor(nodeType));
 
         //
         // get a child
         //
-        KomodoObject bobModelObject = bobVdb.getChild(sysTx, bobModelName);
+        KomodoObject bobModelObject = bobVdb.getChild(bobModelName);
         assertNotNull(bobModelObject);
 
         //
         // get a child
         //
-        bobModelObject = bobVdb.getChild(sysTx, bobModelName, VdbLexicon.Vdb.DECLARATIVE_MODEL);
+        bobModelObject = bobVdb.getChild(bobModelName, VdbLexicon.Vdb.DECLARATIVE_MODEL);
         assertNotNull(bobModelObject);
 
         //
         // get children
         //
-        KomodoObject[] bobModels = bobVdb.getChildren(sysTx, bobModelName);
+        KomodoObject[] bobModels = bobVdb.getChildren(bobModelName);
         assertNotNull(bobModels);
         assertEquals(1, bobModels.length);
 
         //
         // get children of type
         //
-        bobModels = bobVdb.getChildrenOfType(sysTx, VdbLexicon.Vdb.DECLARATIVE_MODEL);
+        bobModels = bobVdb.getChildrenOfType(VdbLexicon.Vdb.DECLARATIVE_MODEL);
         assertNotNull(bobModels);
         assertEquals(1, bobModels.length);
 
         //
         // get descriptor
         //
-        Descriptor descriptor = bobVdb.getDescriptor(sysTx, nodeType);
+        Descriptor descriptor = bobVdb.getDescriptor(nodeType);
         assertNotNull(descriptor);
 
         //
         // get descriptors
         //
-        Descriptor[] descriptors = bobVdb.getDescriptors(sysTx);
+        Descriptor[] descriptors = bobVdb.getDescriptors();
         assertNotNull(descriptors);
         assertTrue(descriptors.length > 0);
 
         //
         // get name
         //
-        String name = bobVdb.getName(sysTx);
+        String name = bobVdb.getName();
         assertEquals(bobVdbName, name);
 
         //
         // get parent
         //
-        KomodoObject parent = bobVdb.getParent(sysTx);
+        KomodoObject parent = bobVdb.getParent();
         assertNotNull(parent);
-        assertEquals(KomodoLexicon.Home.NODE_TYPE, parent.getPrimaryType(sysTx).getName());
+        assertEquals(KomodoLexicon.Home.NODE_TYPE, parent.getPrimaryType().getName());
 
         //
         // get primary type
         //
-        Descriptor primaryType = bobVdb.getPrimaryType(sysTx);
+        Descriptor primaryType = bobVdb.getPrimaryType();
         assertNotNull(primaryType);
         assertEquals(VdbLexicon.Vdb.VIRTUAL_DATABASE, primaryType.getName());
 
         //
         // get property names
         //
-        String[] propertyNames = bobVdb.getPropertyNames(sysTx);
+        String[] propertyNames = bobVdb.getPropertyNames();
         assertNotNull(propertyNames);
         assertTrue(propertyNames.length > 0);
 
         //
         // get property descriptors
         //
-        PropertyDescriptor[] propertyDescriptors = bobVdb.getPropertyDescriptors(sysTx);
+        PropertyDescriptor[] propertyDescriptors = bobVdb.getPropertyDescriptors();
         assertNotNull(propertyDescriptors);
         assertTrue(propertyDescriptors.length > 0);
 
         //
         // get property
         //
-        assertNotNull(bobVdb.getProperty(sysTx, property));
+        assertNotNull(bobVdb.getProperty(property));
 
         //
         // get type identifier
         //
-        KomodoType type = bobVdb.getTypeIdentifier(sysTx);
+        KomodoType type = bobVdb.getTypeIdentifier();
         assertEquals(KomodoType.VDB, type);
 
         //
         // has child
         //
-        assertTrue(bobVdb.hasChild(sysTx, bobModelName));
+        assertTrue(bobVdb.hasChild(bobModelName));
 
         //
         // has child
         //
-        assertTrue(bobVdb.hasChild(sysTx, bobModelName, VdbLexicon.Vdb.DECLARATIVE_MODEL));
+        assertTrue(bobVdb.hasChild(bobModelName, VdbLexicon.Vdb.DECLARATIVE_MODEL));
 
         //
         // has children
         //
-        assertTrue(bobVdb.hasChildren(sysTx));
+        assertTrue(bobVdb.hasChildren());
 
         //
         // has descriptor
         //
-        assertTrue(bobVdb.hasDescriptor(sysTx, nodeType));
+        assertTrue(bobVdb.hasDescriptor(nodeType));
 
         //
         // has properties
         //
-        assertTrue(bobVdb.hasProperties(sysTx));
+        assertTrue(bobVdb.hasProperties());
 
         //
         // has property
         //
-        assertTrue(bobVdb.hasProperty(sysTx, property));
+        assertTrue(bobVdb.hasProperty(property));
 
         //
         // print
@@ -729,7 +728,7 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
         //
         // set property
         //
-        bobVdb.setProperty(sysTx, "property1", "value1");
+        bobVdb.setProperty("property1", "value1");
 
         //
         // accept
@@ -755,20 +754,20 @@ public class TestMultiUsers extends AbstractLocalRepositoryTest {
         //
         // remove child
         //
-        bobVdb.removeChild(sysTx, bobModelName);
-        assertFalse(bobVdbObject.hasChild(sysTx, bobModelName));
+        bobVdb.removeChild(bobModelName);
+        assertFalse(bobVdbObject.hasChild(bobModelName));
 
         //
         // rename
         //
         String newNameExt = "1";
         bobVdb.rename(sysTx, bobVdbName + newNameExt);
-        assertTrue(bobWksp.hasChild(sysTx, bobVdbName + newNameExt));
+        assertTrue(bobWksp.hasChild(bobVdbName + newNameExt));
 
         //
         // remove
         //
         bobVdb.remove(sysTx);
-        assertFalse(bobWksp.hasChild(sysTx, bobVdbName + newNameExt));
+        assertFalse(bobWksp.hasChild(bobVdbName + newNameExt));
     }
 }

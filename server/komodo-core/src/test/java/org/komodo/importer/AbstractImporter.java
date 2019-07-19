@@ -161,7 +161,7 @@ public abstract class AbstractImporter implements StringConstants {
         KomodoObject workspace = getWorkspace(transaction);
         for (int i = 0; i < 1000; ++i) {
             String newName = nodeName + UNDERSCORE + i;
-            if (! workspace.hasChild(transaction, newName))
+            if (! workspace.hasChild(newName))
                 return newName;
         }
 

@@ -17,9 +17,6 @@
  */
 package org.komodo.core.repository;
 
-import org.komodo.spi.repository.SynchronousCallback;
-import org.komodo.spi.repository.UnitOfWorkListener;
-
 /**
  * Acts like a {@link SynchronousCallback} but will also call a delegate
  * callback added by its constructor. Thus, allowing for a callback to 'do'
@@ -27,12 +24,12 @@ import org.komodo.spi.repository.UnitOfWorkListener;
  */
 public class SynchronousNestedCallback extends SynchronousCallback {
 
-    private final UnitOfWorkListener delegate;
+    private final SynchronousCallback delegate;
 
     /**
      * @param delegate additional callback to be called synchronously
      */
-    public SynchronousNestedCallback(UnitOfWorkListener delegate) {
+    public SynchronousNestedCallback(SynchronousCallback delegate) {
         this.delegate = delegate;
     }
 

@@ -37,31 +37,31 @@ public final class ViewImplTest extends RelationalModelTest {
     @Before
     public void init() throws Exception {
         this.model = createModel();
-        this.view = this.model.addView( getTransaction(), "view" );
+        this.view = this.model.addView( "view" );
         commit();
     }
 
     @Test
     public void shouldHaveCorrectTypeIdentifier() throws Exception {
-        assertThat(this.view.getTypeIdentifier( getTransaction() ), is(KomodoType.VIEW));
+        assertThat(this.view.getTypeIdentifier( ), is(KomodoType.VIEW));
     }
 
     @Test
     public void shouldHaveMoreRawProperties() throws Exception {
-        final String[] filteredProps = this.view.getPropertyNames( getTransaction() );
+        final String[] filteredProps = this.view.getPropertyNames( );
         final String[] rawProps = this.view.getRawPropertyNames( getTransaction() );
         assertThat( ( rawProps.length > filteredProps.length ), is( true ) );
     }
 
     @Test
     public void shouldHaveParentModel() throws Exception {
-        assertThat( this.view.getParent( getTransaction() ), is( instanceOf( ModelImpl.class ) ) );
-        assertThat( this.view.getParent( getTransaction() ), is( ( KomodoObject )this.model ) );
+        assertThat( this.view.getParent( ), is( instanceOf( ModelImpl.class ) ) );
+        assertThat( this.view.getParent( ), is( ( KomodoObject )this.model ) );
     }
 
     @Test
     public void shouldNotContainFilteredProperties() throws Exception {
-        final String[] filteredProps = this.view.getPropertyNames( getTransaction() );
+        final String[] filteredProps = this.view.getPropertyNames( );
         final Filter[] filters = ((ViewImpl)this.view).getFilters();
 
         for ( final String name : filteredProps ) {
@@ -75,7 +75,7 @@ public final class ViewImplTest extends RelationalModelTest {
     public void shouldRename() throws Exception {
         final String newName = "blah";
         this.view.rename( getTransaction(), newName );
-        assertThat( this.view.getName( getTransaction() ), is( newName ) );
+        assertThat( this.view.getName( ), is( newName ) );
     }
 
 }

@@ -26,6 +26,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -50,7 +51,7 @@ public final class ObjectImplTest extends AbstractLocalRepositoryTest {
 
     @Test
     public void komodoRootShouldNotHaveAParent() throws Exception {
-        assertThat( _repo.komodoRoot( getTransaction() ).getParent( getTransaction() ), is( ( KomodoObject )null ) );
+        assertThat( _repo.komodoRoot( getTransaction() ).getParent( ), is( ( KomodoObject )null ) );
     }
 
     @Test
@@ -59,16 +60,16 @@ public final class ObjectImplTest extends AbstractLocalRepositoryTest {
         final String type = "nt:folder";
         final KomodoObject child = this.kobject.addChild( getTransaction(), name, type );
         assertThat( _repo.getFromWorkspace( getTransaction(), child.getAbsolutePath() ), is( notNullValue() ) );
-        assertThat( child.getPrimaryType( getTransaction() ).getName(), is( type ) );
+        assertThat( child.getPrimaryType( ).getName(), is( type ) );
     }
 
     @Test
     public void shouldAddDescriptor() throws Exception {
         final String descriptorName = "mix:referenceable";
         this.kobject.addDescriptor( getTransaction(), descriptorName );
-        assertThat( this.kobject.hasDescriptor( getTransaction(), descriptorName ), is( true ) );
-        assertThat( this.kobject.getDescriptors( getTransaction() ).length, is( 1 ) );
-        assertThat( this.kobject.getDescriptors( getTransaction() )[0].getName(), is( descriptorName ) );
+        assertThat( this.kobject.hasDescriptor( descriptorName ), is( true ) );
+        assertThat( this.kobject.getDescriptors( ).length, is( 1 ) );
+        assertThat( this.kobject.getDescriptors( )[0].getName(), is( descriptorName ) );
     }
 
     @Test
@@ -76,9 +77,9 @@ public final class ObjectImplTest extends AbstractLocalRepositoryTest {
         final String descriptor1 = "mix:referenceable";
         final String descriptor2 = "mix:lockable";
         this.kobject.addDescriptor( getTransaction(), descriptor1, descriptor2 );
-        assertThat( this.kobject.hasDescriptor( getTransaction(), descriptor1 ), is( true ) );
-        assertThat( this.kobject.hasDescriptor( getTransaction(), descriptor2 ), is( true ) );
-        assertThat( this.kobject.getDescriptors( getTransaction() ).length, is( 2 ) );
+        assertThat( this.kobject.hasDescriptor( descriptor1 ), is( true ) );
+        assertThat( this.kobject.hasDescriptor( descriptor2 ), is( true ) );
+        assertThat( this.kobject.getDescriptors( ).length, is( 2 ) );
     }
 
     @Test
@@ -103,7 +104,7 @@ public final class ObjectImplTest extends AbstractLocalRepositoryTest {
 
         for ( final String reservedPath : RepositoryImpl.getReservedPaths(getTransaction()) ) {
             try {
-                final KomodoObject kobject = new ObjectImpl( _repo, reservedPath, 0 );
+                final KomodoObject kobject = new ObjectImpl(getTransaction(), _repo, reservedPath, 0 );
                 kobject.addDescriptor( getTransaction(), descriptorName );
                 fail( "addDescriptor should not be successful for path " + reservedPath );
             } catch ( final KException e ) {
@@ -124,45 +125,45 @@ public final class ObjectImplTest extends AbstractLocalRepositoryTest {
 
     @Test( expected = KException.class )
     public void shouldFailToGetChildIfItDoesNotExist() throws Exception {
-        this.kobject.getChild( getTransaction(), "blah" );
+        this.kobject.getChild( "blah" );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGetChildWithEmptyName() throws Exception {
-        this.kobject.getChild( getTransaction(), EMPTY_STRING );
+        this.kobject.getChild( EMPTY_STRING );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGetChildWithNullName() throws Exception {
-        this.kobject.getChild( getTransaction(), null );
+        this.kobject.getChild( null );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGetChildWithEmptyType() throws Exception {
         final String name = "kid";
         this.kobject.addChild( getTransaction(), name, null );
-        this.kobject.getChild( getTransaction(), name, StringConstants.EMPTY_STRING );
+        this.kobject.getChild( name, StringConstants.EMPTY_STRING );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGetChildWithNullType() throws Exception {
         final String name = "kid";
         this.kobject.addChild( getTransaction(), name, null );
-        this.kobject.getChild( getTransaction(), name, null );
+        this.kobject.getChild( name, null );
     }
 
     @Test
     public void shouldGetChild() throws Exception {
         final String name = "kid";
         this.kobject.addChild( getTransaction(), name, null );
-        assertThat( this.kobject.getChild( getTransaction(), name ), is( notNullValue() ) );
+        assertThat( this.kobject.getChild( name ), is( notNullValue() ) );
     }
 
     @Test( expected = KException.class )
     public void shouldFailToGetChildIfIncorrectType() throws Exception {
         final String name = "kid";
         this.kobject.addChild( getTransaction(), name, null );
-        this.kobject.getChild( getTransaction(), name, JcrNtLexicon.FOLDER.getString() );
+        this.kobject.getChild( name, JcrNtLexicon.FOLDER.getString() );
     }
 
     @Test
@@ -170,7 +171,7 @@ public final class ObjectImplTest extends AbstractLocalRepositoryTest {
         final String name = "kid";
         KomodoObject expected = this.kobject.addChild( getTransaction(), name, null );
         this.kobject.addChild( getTransaction(), name, JcrNtLexicon.FOLDER.getString() );
-        assertThat( this.kobject.getChild( getTransaction(), name, JcrNtLexicon.UNSTRUCTURED.getString() ), is( expected ) );
+        assertThat( this.kobject.getChild( name, JcrNtLexicon.UNSTRUCTURED.getString() ), is( expected ) );
     }
 
     @Test
@@ -183,30 +184,30 @@ public final class ObjectImplTest extends AbstractLocalRepositoryTest {
         final String descriptorName = "mix:referenceable";
         this.kobject.addDescriptor( getTransaction(), descriptorName );
         this.kobject.addDescriptor( getTransaction(), "mix:lockable" );
-        assertThat( this.kobject.getDescriptors( getTransaction() ).length, is( 2 ) );
-        assertThat( this.kobject.getDescriptor( getTransaction(), descriptorName ).getName(), is( descriptorName ) );
+        assertThat( this.kobject.getDescriptors( ).length, is( 2 ) );
+        assertThat( this.kobject.getDescriptor( descriptorName ).getName(), is( descriptorName ) );
     }
 
     @Test
     public void shouldHaveSameNumberRawDescriptorsAsDescriptors() throws Exception {
-        assertThat( this.kobject.getDescriptors( getTransaction() ).length, is( this.kobject.getRawDescriptors( getTransaction() ).length ) );
+        assertThat( this.kobject.getDescriptors( ).length, is( this.kobject.getRawDescriptors( getTransaction() ).length ) );
     }
 
     @Test
     public void shouldHaveSameNumberRawPropertiesAsProperties() throws Exception {
-        assertThat( this.kobject.getPropertyNames( getTransaction() ).length, is( this.kobject.getRawPropertyNames( getTransaction() ).length ) );
+        assertThat( this.kobject.getPropertyNames( ).length, is( this.kobject.getRawPropertyNames( getTransaction() ).length ) );
     }
 
     @Test
     public void shouldHaveUnknownTypeIdentifier() throws Exception {
-        assertThat( this.kobject.getTypeIdentifier( getTransaction() ), is( KomodoType.UNKNOWN ) );
+        assertThat( this.kobject.getTypeIdentifier( ), is( KomodoType.UNKNOWN ) );
     }
 
     @Test
     public void shouldNotAllowRemovingObjectsWithReservedPaths() throws Exception {
         for ( final String reservedPath : RepositoryImpl.getReservedPaths(getTransaction()) ) {
             try {
-                final KomodoObject kobject = new ObjectImpl( _repo, reservedPath, 0 );
+                final KomodoObject kobject = new ObjectImpl(getTransaction(), _repo, reservedPath, 0 );
                 kobject.remove( getTransaction() );
                 fail( "Remove should not be successful for reserved path " + reservedPath );
             } catch ( final KException e ) {
@@ -220,21 +221,21 @@ public final class ObjectImplTest extends AbstractLocalRepositoryTest {
         final KomodoObject komodoRoot = _repo.komodoRoot( getTransaction() );
 
         try {
-            komodoRoot.removeChild( getTransaction(), _repo.komodoEnvironment( getTransaction() ).getName( getTransaction() ) );
+            komodoRoot.removeChild( _repo.komodoEnvironment( getTransaction() ).getName( ) );
             fail( "Root should not be able to remove the environment child object" );
         } catch ( final KException e ) {
             // expected
         }
 
         try {
-            komodoRoot.removeChild( getTransaction(), _repo.komodoLibrary( getTransaction() ).getName( getTransaction() ) );
+            komodoRoot.removeChild( _repo.komodoLibrary( getTransaction() ).getName( ) );
             fail( "Root should not be able to remove the library child object" );
         } catch ( final KException e ) {
             // expected
         }
 
         try {
-            komodoRoot.removeChild( getTransaction(), _repo.komodoWorkspace( getTransaction() ).getName( getTransaction() ) );
+            komodoRoot.removeChild( _repo.komodoWorkspace( getTransaction() ).getName( ) );
             fail( "Root should not be able to remove the workspace child object" );
         } catch ( final KException e ) {
             // expected
@@ -245,7 +246,7 @@ public final class ObjectImplTest extends AbstractLocalRepositoryTest {
     public void shouldNotAllowRenamingObjectWithReservedPath() throws Exception {
         for ( final String reservedPath : RepositoryImpl.getReservedPaths(getTransaction()) ) {
             try {
-                final KomodoObject kobject = new ObjectImpl( _repo, reservedPath, 0 );
+                final KomodoObject kobject = new ObjectImpl(getTransaction(), _repo, reservedPath, 0 );
                 kobject.rename( getTransaction(), "blah" );
                 fail( "Should not allow renaming the object at reserved path " + reservedPath );
             } catch ( final KException e ) {
@@ -258,7 +259,7 @@ public final class ObjectImplTest extends AbstractLocalRepositoryTest {
     public void shouldNotAllowSettingPrimaryTypeOfObjectsWithReservedPaths() throws Exception {
         for ( final String reservedPath : RepositoryImpl.getReservedPaths(getTransaction()) ) {
             try {
-                final KomodoObject kobject = new ObjectImpl( _repo, reservedPath, 0 );
+                final KomodoObject kobject = new ObjectImpl(getTransaction(), _repo, reservedPath, 0 );
                 kobject.setPrimaryType( getTransaction(), "nt:unstructured" );
                 fail( "Should not allow setting primary type of the object at reserved path " + reservedPath );
             } catch ( final KException e ) {
@@ -273,15 +274,15 @@ public final class ObjectImplTest extends AbstractLocalRepositoryTest {
 
         UnitOfWork sysTx = sysTx();
         for ( final String reservedPath : RepositoryImpl.getReservedPaths(sysTx) ) {
-            final KomodoObject kobject = new ObjectImpl( _repo, reservedPath, 0 );
+            final KomodoObject kobject = new ObjectImpl(getTransaction(), _repo, reservedPath, 0 );
 
-            final Property property = kobject.getProperty( sysTx, propertyName );
+            final Property property = kobject.getProperty( propertyName );
             assertThat( property, is( nullValue() ) );
 
             final Property rawProperty = kobject.getRawProperty( sysTx, propertyName );
             assertThat( rawProperty, is( nullValue() ) );
 
-            assertThat( kobject.hasProperty( sysTx, propertyName ), is( false ) );
+            assertThat( kobject.hasProperty( propertyName ), is( false ) );
             assertThat( kobject.hasRawProperty( sysTx, propertyName ), is( false ) );
         }
     }
@@ -290,8 +291,8 @@ public final class ObjectImplTest extends AbstractLocalRepositoryTest {
     public void shouldNotHavePropertyDescriptorsWhenReservedPath() throws Exception {
         UnitOfWork sysTx = sysTx();
         for ( final String reservedPath : RepositoryImpl.getReservedPaths(sysTx) ) {
-            final KomodoObject kobject = new ObjectImpl( _repo, reservedPath, 0 );
-            final PropertyDescriptor[] descriptors = kobject.getPropertyDescriptors( sysTx );
+            final KomodoObject kobject = new ObjectImpl(getTransaction(), _repo, reservedPath, 0 );
+            final PropertyDescriptor[] descriptors = kobject.getPropertyDescriptors( );
             assertThat( descriptors.length, is( 0 ) );
 
             final PropertyDescriptor[] rawDescriptors = kobject.getRawPropertyDescriptors( sysTx );
@@ -303,8 +304,8 @@ public final class ObjectImplTest extends AbstractLocalRepositoryTest {
     public void shouldNotHavePropertyNamesWhenReservedPath() throws Exception {
         UnitOfWork sysTx = sysTx();
         for ( final String reservedPath : RepositoryImpl.getReservedPaths(sysTx) ) {
-            final KomodoObject kobject = new ObjectImpl( _repo, reservedPath, 0 );
-            final String[] names = kobject.getPropertyNames( sysTx );
+            final KomodoObject kobject = new ObjectImpl(getTransaction(), _repo, reservedPath, 0 );
+            final String[] names = kobject.getPropertyNames( );
             assertThat( names.length, is( 0 ) );
 
             final String[] rawNames = kobject.getRawPropertyNames( sysTx );
@@ -317,7 +318,7 @@ public final class ObjectImplTest extends AbstractLocalRepositoryTest {
         final KomodoObject obj = _repo.getFromWorkspace( getTransaction(), NAME );
         obj.remove( getTransaction() );
         assertThat( _repo.getFromWorkspace( getTransaction(), NAME ), is( nullValue() ) );
-        assertThat( _repo.komodoWorkspace( getTransaction() ).getChildren( getTransaction() ).length, is( 0 ) );
+        assertThat( _repo.komodoWorkspace( getTransaction() ).getChildren( ).length, is( 0 ) );
     }
 
     @Test
@@ -340,7 +341,7 @@ public final class ObjectImplTest extends AbstractLocalRepositoryTest {
         assertNotNull(testNode);
 
         testNode.remove(transaction2);
-        assertFalse(wkspNode.hasChild(transaction2, name));
+        assertFalse(wkspNode.hasChild(name));
 
         testNode = _repo.getFromWorkspace(transaction2, testNodePath);
         assertNull(testNode);
@@ -384,7 +385,7 @@ public final class ObjectImplTest extends AbstractLocalRepositoryTest {
     public void shouldSetPrimaryType() throws Exception {
         final String newType = "nt:folder";
         this.kobject.setPrimaryType( getTransaction(), newType );
-        assertThat( this.kobject.getPrimaryType( getTransaction() ).getName(), is( newType ) );
+        assertThat( this.kobject.getPrimaryType( ).getName(), is( newType ) );
     }
 
 }

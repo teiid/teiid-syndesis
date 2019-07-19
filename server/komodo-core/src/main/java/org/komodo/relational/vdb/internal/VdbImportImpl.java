@@ -21,7 +21,6 @@ import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.PropertyValueType;
-import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.internal.RelationalChildRestrictedObject;
 import org.komodo.relational.internal.TypeResolver;
 import org.komodo.relational.vdb.VdbImport;
@@ -65,29 +64,25 @@ public class VdbImportImpl extends RelationalChildRestrictedObject implements Vd
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.core.repository.KomodoObject)
+         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.core.repository.KomodoObject)
          */
         @Override
-        public boolean resolvable( final UnitOfWork transaction,
-                                   final KomodoObject kobject ) throws KException {
-            return ObjectImpl.validateType( transaction, kobject, VdbLexicon.ImportVdb.IMPORT_VDB );
+        public boolean resolvable( final KomodoObject kobject ) throws KException {
+            return ObjectImpl.validateType( kobject, VdbLexicon.ImportVdb.IMPORT_VDB );
         }
 
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.core.repository.KomodoObject)
+         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.core.repository.KomodoObject)
          */
         @Override
-        public VdbImportImpl resolve( final UnitOfWork transaction,
-                                  final KomodoObject kobject ) throws KException {
+        public VdbImportImpl resolve( final KomodoObject kobject ) throws KException {
             if ( kobject.getTypeId() == VdbImport.TYPE_ID ) {
                 return ( VdbImportImpl )kobject;
             }
 
-            return new VdbImportImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
+            return new VdbImportImpl( kobject.getTransaction(), kobject.getRepository(), kobject.getAbsolutePath() );
         }
 
     };
@@ -109,22 +104,22 @@ public class VdbImportImpl extends RelationalChildRestrictedObject implements Vd
     }
 
     @Override
-    public KomodoType getTypeIdentifier(UnitOfWork uow) {
+    public KomodoType getTypeIdentifier() {
         return VdbImport.IDENTIFIER;
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.internal.RelationalObjectImpl#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.relational.internal.RelationalObjectImpl#getParent()
      */
     @Override
-    public VdbImpl getParent( final UnitOfWork transaction ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
+    public VdbImpl getParent() throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
 
-        final KomodoObject grouping = super.getParent( transaction );
-        final VdbImpl result = VdbImpl.RESOLVER.resolve( transaction, grouping.getParent( transaction ) );
+        final KomodoObject grouping = super.getParent( );
+        final VdbImpl result = VdbImpl.RESOLVER.resolve( grouping.getParent( ) );
         return result;
     }
 
@@ -144,8 +139,8 @@ public class VdbImportImpl extends RelationalChildRestrictedObject implements Vd
      * @see org.komodo.relational.vdb.VdbImport#getVersion(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public int getVersion( final UnitOfWork uow ) throws KException {
-        return getObjectProperty(uow, PropertyValueType.INTEGER, "getVersion", VdbLexicon.ImportVdb.VERSION); //$NON-NLS-1$
+    public int getVersion() throws KException {
+        return getObjectProperty(getTransaction(), PropertyValueType.INTEGER, "getVersion", VdbLexicon.ImportVdb.VERSION); //$NON-NLS-1$
     }
 
     /**
@@ -154,8 +149,8 @@ public class VdbImportImpl extends RelationalChildRestrictedObject implements Vd
      * @see org.komodo.relational.vdb.VdbImport#isImportDataPolicies(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public boolean isImportDataPolicies( final UnitOfWork uow ) throws KException {
-        return getObjectProperty(uow, PropertyValueType.BOOLEAN, "isImportDataPolicies", //$NON-NLS-1$
+    public boolean isImportDataPolicies() throws KException {
+        return getObjectProperty(getTransaction(), PropertyValueType.BOOLEAN, "isImportDataPolicies", //$NON-NLS-1$
                                  VdbLexicon.ImportVdb.IMPORT_DATA_POLICIES);
     }
 
@@ -165,9 +160,9 @@ public class VdbImportImpl extends RelationalChildRestrictedObject implements Vd
      * @see org.komodo.relational.vdb.VdbImport#setImportDataPolicies(org.komodo.spi.repository.Repository.UnitOfWork, boolean)
      */
     @Override
-    public void setImportDataPolicies( final UnitOfWork uow,
+    public void setImportDataPolicies(
                                        final boolean newImportDataPolicies ) throws KException {
-        setObjectProperty(uow, "setImportDataPolicies", VdbLexicon.ImportVdb.IMPORT_DATA_POLICIES, newImportDataPolicies); //$NON-NLS-1$
+        setObjectProperty(getTransaction(), "setImportDataPolicies", VdbLexicon.ImportVdb.IMPORT_DATA_POLICIES, newImportDataPolicies); //$NON-NLS-1$
     }
 
     /**
@@ -176,14 +171,14 @@ public class VdbImportImpl extends RelationalChildRestrictedObject implements Vd
      * @see org.komodo.relational.vdb.VdbImport#setVersion(org.komodo.spi.repository.Repository.UnitOfWork, int)
      */
     @Override
-    public void setVersion( final UnitOfWork uow,
+    public void setVersion(
                             final int newVersion ) throws KException {
-        setObjectProperty(uow, "setVersion", VdbLexicon.ImportVdb.VERSION, newVersion); //$NON-NLS-1$
+        setObjectProperty(getTransaction(), "setVersion", VdbLexicon.ImportVdb.VERSION, newVersion); //$NON-NLS-1$
     }
     
     @Override
-    public VdbImpl getRelationalParent(UnitOfWork transaction) throws KException {
-    	return this.getParent(transaction);
+    public VdbImpl getRelationalParent() throws KException {
+    	return this.getParent();
     }
 
 }

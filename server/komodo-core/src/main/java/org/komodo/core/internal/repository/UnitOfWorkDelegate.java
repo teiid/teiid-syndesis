@@ -17,13 +17,35 @@
  */
 package org.komodo.core.internal.repository;
 
-import javax.jcr.Session;
-
-public interface JcrUowDelegate extends UnitOfWorkDelegate {
+public interface UnitOfWorkDelegate {
 
     /**
-     * @return the implementation of this delegate for internal JCR use
+     * @return true if this session has pending changes
+     * @throws Exception 
      */
-    Session getImplementation();
+    boolean hasPendingChanges() throws Exception;
+
+    /**
+     * @return true if this session is live, otherwise false
+     */
+    boolean isLive();
+
+    /**
+     * Save this session
+     */
+    void save() throws Exception;
+
+    /**
+     * Complete and end this session
+     */
+    void complete();
+
+    /**
+     * Refresh the session
+     *
+     * @param keepChanges
+     * @throws Exception 
+     */
+    void refresh(boolean keepChanges) throws Exception;
 
 }

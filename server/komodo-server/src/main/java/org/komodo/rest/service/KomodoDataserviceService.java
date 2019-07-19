@@ -129,7 +129,7 @@ public final class KomodoDataserviceService extends KomodoService
 
             // find Data services
             uow = createTransaction(principal, "getDataservices", true); //$NON-NLS-1$
-            Dataservice[] dataServices = getWorkspaceManager(uow).findDataservices(uow, searchPattern);
+            Dataservice[] dataServices = getWorkspaceManager().findDataservices(searchPattern);
 
             int start = 0;
 
@@ -176,11 +176,11 @@ public final class KomodoDataserviceService extends KomodoService
             for (final Dataservice dataService : dataServices) {
                 if ((start == 0) || (i >= start)) {
                     if ((size == ALL_AVAILABLE) || (entities.size() < size)) {
-                        RestDataservice entity = createRestDataservice(uriInfo, uow, properties, dataService);
+                        RestDataservice entity = createRestDataservice(uriInfo, properties, dataService);
 
                         entities.add(entity);
                         LOGGER.debug("getDataservices:Dataservice '{0}' entity was constructed", //$NON-NLS-1$
-                                dataService.getName(uow));
+                                dataService.getName());
                     } else {
                         break;
                     }
@@ -205,14 +205,13 @@ public final class KomodoDataserviceService extends KomodoService
         }
     }
 
-	private RestDataservice createRestDataservice(final UriInfo uriInfo, UnitOfWork uow, KomodoProperties properties,
-			final Dataservice dataService) throws KException {
-		Vdb serviceVdb = findVdb(uow, dataService.getServiceVdbName(uow));
-		RestDataservice entity = new RestDataservice(uriInfo.getBaseUri(), dataService, false, uow, serviceVdb);
-		entity.setServiceViewModel(RestDataservice.getServiceViewModelName(uow, serviceVdb));
-        entity.setViewDefinitionNames(RestDataservice.getViewDefnNames(uow, getWorkspaceManager(uow), serviceVdb));
+	private RestDataservice createRestDataservice(final UriInfo uriInfo, KomodoProperties properties, final Dataservice dataService) throws KException {
+		Vdb serviceVdb = findVdb(dataService.getServiceVdbName());
+		RestDataservice entity = new RestDataservice(uriInfo.getBaseUri(), dataService, false, serviceVdb);
+		entity.setServiceViewModel(RestDataservice.getServiceViewModelName(serviceVdb));
+        entity.setViewDefinitionNames(RestDataservice.getViewDefnNames(getWorkspaceManager(), serviceVdb));
 		// Set published status of dataservice
-		BuildStatus status = this.openshiftClient.getVirtualizationStatus(dataService.getServiceVdbName(uow));
+		BuildStatus status = this.openshiftClient.getVirtualizationStatus(dataService.getServiceVdbName());
 		entity.setPublishedState(status.status().name());
 		entity.setPublishPodName(status.publishPodName());
 		entity.setPodNamespace(status.namespace());
@@ -253,15 +252,15 @@ public final class KomodoDataserviceService extends KomodoService
         try {
             uow = createTransaction(principal, "getDataservice", true); //$NON-NLS-1$
 
-            Dataservice dataservice = findDataservice(uow, dataserviceName);
+            Dataservice dataservice = findDataservice(dataserviceName);
             if (dataservice == null)
                 return commitNoDataserviceFound(uow, mediaTypes, dataserviceName);
 
             KomodoProperties properties = new KomodoProperties();
             
-            RestDataservice restDataservice = createRestDataservice(uriInfo, uow, properties, dataservice);
+            RestDataservice restDataservice = createRestDataservice(uriInfo, properties, dataservice);
 
-            LOGGER.debug("getDataservice:Dataservice '{0}' entity was constructed", dataservice.getName(uow)); //$NON-NLS-1$
+            LOGGER.debug("getDataservice:Dataservice '{0}' entity was constructed", dataservice.getName()); //$NON-NLS-1$
             return commit(uow, mediaTypes, restDataservice);
 
         } catch (final Exception e) {
@@ -345,15 +344,15 @@ public final class KomodoDataserviceService extends KomodoService
             uow = createTransaction(principal, "createDataservice", false); //$NON-NLS-1$
 
             // Error if the repo already contains a dataservice with the supplied name.
-            Dataservice existing = getWorkspaceManager(uow).findDataservice(uow, dataserviceName);
+            Dataservice existing = getWorkspaceManager().findDataservice(dataserviceName);
             if (existing != null) {
                 return createErrorResponseWithForbidden(mediaTypes,
                         RelationalMessages.Error.DATASERVICE_SERVICE_CREATE_ALREADY_EXISTS);
             }
 
             // create new Dataservice
-            return doAddDataservice(uow, uriInfo.getBaseUri(), mediaTypes, restDataservice);
-
+            KomodoStatusObject kso = doAddDataservice(uriInfo.getBaseUri(), mediaTypes, restDataservice);
+            return commit(uow, mediaTypes, kso);
         } catch (final Exception e) {
             if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
                 uow.rollback();
@@ -368,67 +367,51 @@ public final class KomodoDataserviceService extends KomodoService
         }
     }
 
-    private Response doAddDataservice(final UnitOfWork uow, final URI baseUri, final List<MediaType> mediaTypes,
-            final RestDataservice restDataservice) throws KomodoRestException {
-        assert (!uow.isRollbackOnly());
-        assert (uow.getState() == State.NOT_STARTED);
+    private KomodoStatusObject doAddDataservice(final URI baseUri, final List<MediaType> mediaTypes, final RestDataservice restDataservice) throws KException {
         assert (restDataservice != null);
 
         final String dataserviceName = restDataservice.getId();
-        try {
-            final Dataservice dataservice = getWorkspaceManager(uow).createDataservice(uow, dataserviceName);
+        final Dataservice dataservice = getWorkspaceManager().createDataservice(dataserviceName);
 
-            // Transfers the properties from the rest object to the created komodo service.
-            setProperties(uow, dataservice, restDataservice);
+        // Transfers the properties from the rest object to the created komodo service.
+        setProperties(dataservice, restDataservice);
 
-            String serviceVdbName = dataserviceName.toLowerCase() + SERVICE_VDB_SUFFIX;
-            WorkspaceManager wkspMgr = getWorkspaceManager(uow);
+        String serviceVdbName = dataserviceName.toLowerCase() + SERVICE_VDB_SUFFIX;
+        WorkspaceManager wkspMgr = getWorkspaceManager();
 
-            // Find the service VDB definition for this Dataservice. If one exists already,
-            // it is replaced.
-            Vdb svcVdbObj = wkspMgr.findVdb(uow, serviceVdbName);
-            if (svcVdbObj != null) {
-                wkspMgr.deleteVdb(uow, svcVdbObj);
-            }
-
-            Vdb serviceVdb = wkspMgr.createVdb(uow, serviceVdbName);
-
-            // Add to the ServiceVdb a virtual model for the View
-            Model viewModel = serviceVdb.addModel(uow, SERVICE_VDB_VIEW_MODEL);
-            viewModel.setModelType(uow, Type.VIRTUAL);
-
-            dataservice.setServiceVdbName(uow, serviceVdbName);
-
-            KomodoStatusObject kso = new KomodoStatusObject("Create Status"); //$NON-NLS-1$
-            kso.addAttribute(dataserviceName, "Successfully created"); //$NON-NLS-1$
-
-            return commit(uow, mediaTypes, kso);
-        } catch (final Exception e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
-                uow.rollback();
-            }
-
-            if (e instanceof KomodoRestException) {
-                throw (KomodoRestException) e;
-            }
-
-            throw new KomodoRestException(
-                    RelationalMessages.getString(DATASERVICE_SERVICE_CREATE_DATASERVICE_ERROR, dataserviceName), e);
+        // Find the service VDB definition for this Dataservice. If one exists already,
+        // it is replaced.
+        Vdb svcVdbObj = wkspMgr.findVdb(serviceVdbName);
+        if (svcVdbObj != null) {
+            wkspMgr.deleteVdb(svcVdbObj);
         }
+
+        Vdb serviceVdb = wkspMgr.createVdb(serviceVdbName);
+
+        // Add to the ServiceVdb a virtual model for the View
+        Model viewModel = serviceVdb.addModel(SERVICE_VDB_VIEW_MODEL);
+        viewModel.setModelType(Type.VIRTUAL);
+
+        dataservice.setServiceVdbName(serviceVdbName);
+
+        KomodoStatusObject kso = new KomodoStatusObject("Create Status"); //$NON-NLS-1$
+        kso.addAttribute(dataserviceName, "Successfully created"); //$NON-NLS-1$
+        
+        return kso;
     }
 
     // Sets Dataservice properties using the supplied RestDataservice object
-    private void setProperties(final UnitOfWork uow, Dataservice dataService, RestDataservice restDataService)
+    private void setProperties(Dataservice dataService, RestDataservice restDataService)
             throws KException {
         // 'New' = requested RestDataservice properties
         String newDescription = restDataService.getDescription();
 
         // 'Old' = current Dataservice properties
-        String oldDescription = dataService.getDescription(uow);
+        String oldDescription = dataService.getDescription();
 
         // Description
         if (!StringUtils.equals(newDescription, oldDescription)) {
-            dataService.setDescription(uow, newDescription);
+            dataService.setDescription(newDescription);
         }
     }
 
@@ -465,10 +448,10 @@ public final class KomodoDataserviceService extends KomodoService
         try {
             uow = createTransaction(principal, "removeDataserviceFromWorkspace", false); //$NON-NLS-1$
 
-            final WorkspaceManager wkspMgr = getWorkspaceManager(uow);
+            final WorkspaceManager wkspMgr = getWorkspaceManager();
             
 
-            final Dataservice dataservice = wkspMgr.findDataservice(uow, dataserviceName);
+            final Dataservice dataservice = wkspMgr.findDataservice(dataserviceName);
             
             // Error if the specified service does not exist
             if (dataservice == null) {
@@ -477,26 +460,26 @@ public final class KomodoDataserviceService extends KomodoService
             }
 
             // Delete the Dataservice serviceVDB if found
-            String vdbName = dataservice.getServiceVdbName(uow);
-            Vdb serviceVdb = findVdb(uow, vdbName);
+            String vdbName = dataservice.getServiceVdbName();
+            Vdb serviceVdb = findVdb(vdbName);
 
             if (serviceVdb != null) {
-                wkspMgr.deleteVdb(uow, serviceVdb);
+                wkspMgr.deleteVdb(serviceVdb);
             }
 
             // Delete the Dataservice
-            wkspMgr.deleteDataservice(uow, dataservice);
+            wkspMgr.deleteDataservice(dataservice);
 
             KomodoStatusObject kso = new KomodoStatusObject("Delete Status"); //$NON-NLS-1$
             kso.addAttribute(dataserviceName, "Successfully deleted"); //$NON-NLS-1$
 
             // delete any view editor states of that virtualization
             final String viewEditorIdPrefix = KomodoService.getViewEditorStateIdPrefix(vdbName) + "*"; //$NON-NLS-1$
-            final ViewEditorState[] editorStates = getViewEditorStates(uow, viewEditorIdPrefix);
+            final ViewEditorState[] editorStates = getViewEditorStates(viewEditorIdPrefix);
 
             if (editorStates.length != 0) {
                 for (final ViewEditorState editorState : editorStates) {
-                    removeEditorState(uow, editorState);
+                    removeEditorState(editorState);
                 }
 
                 kso.addAttribute(vdbName, "Successfully deleted " + editorStates.length + " saved editor states"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -560,7 +543,7 @@ public final class KomodoDataserviceService extends KomodoService
 
         try {
             uow = createTransaction(principal, "validateDataserviceName", true); //$NON-NLS-1$
-            final Dataservice service = findDataservice(uow, dataserviceName);
+            final Dataservice service = findDataservice(dataserviceName);
 
             if (service == null) {
             	return Response.ok().build();
@@ -625,19 +608,19 @@ public final class KomodoDataserviceService extends KomodoService
         try {
             uow = createTransaction(principal, "refreshDataserviceViews", false); //$NON-NLS-1$
 
-            Dataservice dataservice = findDataservice(uow, dataserviceName);
+            Dataservice dataservice = findDataservice(dataserviceName);
             if (dataservice == null)
                 return commitNoDataserviceFound(uow, mediaTypes, dataserviceName);
 
-            String vdbName = dataservice.getServiceVdbName(uow);
-            Vdb serviceVdb = findVdb(uow, vdbName);
+            String vdbName = dataservice.getServiceVdbName();
+            Vdb serviceVdb = findVdb(vdbName);
 
             // Get all of the editor states from the user profile
             // They are stored under ids of form "serviceVdbName.viewName"
             final String viewEditorIdPrefix = KomodoService.getViewEditorStateIdPrefix(vdbName) + "*"; //$NON-NLS-1$
-            final ViewEditorState[] editorStates = getViewEditorStates(uow, viewEditorIdPrefix);
+            final ViewEditorState[] editorStates = getViewEditorStates(viewEditorIdPrefix);
 
-            new ServiceVdbGenerator(getWorkspaceManager(uow)).refreshServiceVdb(uow, serviceVdb, editorStates);
+            new ServiceVdbGenerator(getWorkspaceManager()).refreshServiceVdb(serviceVdb, editorStates);
 
             KomodoStatusObject kso = new KomodoStatusObject("Refresh Status"); //$NON-NLS-1$
             kso.addAttribute(dataserviceName, "View Successfully refreshed"); //$NON-NLS-1$
@@ -741,12 +724,12 @@ public final class KomodoDataserviceService extends KomodoService
         try {
             uow = createTransaction(principal, "updateDataservice", false); //$NON-NLS-1$
 
-            Dataservice dataservice = findDataservice(uow, dataserviceName);
+            Dataservice dataservice = findDataservice(dataserviceName);
             if (dataservice == null)
                 return commitNoDataserviceFound(uow, mediaTypes, dataserviceName);
 
             // Note that intially only the description is available for updating. 
-            dataservice.setDescription(uow, restDataservice.getDescription());
+            dataservice.setDescription(restDataservice.getDescription());
 
             KomodoStatusObject kso = new KomodoStatusObject("Update Dataservice Status"); //$NON-NLS-1$
             kso.addAttribute(dataserviceName, "Dataservice successfully updated"); //$NON-NLS-1$

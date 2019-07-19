@@ -69,23 +69,20 @@ public abstract class RelationalChildRestrictedObject extends RelationalObjectIm
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.core.repository.ObjectImpl#getChildren(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
+     * @see org.komodo.core.repository.ObjectImpl#getChildren(java.lang.String[])
      */
     @Override
-    public final KomodoObject[] getChildren( final UnitOfWork uow,
-                                             final String... namePatterns ) {
+    public final KomodoObject[] getChildren( final String... namePatterns ) {
         return KomodoObject.EMPTY_ARRAY;
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.core.repository.ObjectImpl#getChildrenOfType(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
-     *      java.lang.String[])
+     * @see org.komodo.core.repository.ObjectImpl#getChildrenOfType(java.lang.String, java.lang.String[])
      */
     @Override
-    public final KomodoObject[] getChildrenOfType( final UnitOfWork uow,
-                                                   final String type,
+    public final KomodoObject[] getChildrenOfType( final String type,
                                                    final String... namePatterns ) {
         return KomodoObject.EMPTY_ARRAY;
     }
@@ -94,11 +91,10 @@ public abstract class RelationalChildRestrictedObject extends RelationalObjectIm
      * {@inheritDoc}
      *
      * @return <code>false</code>
-     * @see org.komodo.core.repository.ObjectImpl#hasChild(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.core.repository.ObjectImpl#hasChild(java.lang.String)
      */
     @Override
-    public final boolean hasChild( final UnitOfWork uow,
-                                   final String name ) {
+    public final boolean hasChild( final String name ) {
         return false;
     }
 
@@ -106,10 +102,10 @@ public abstract class RelationalChildRestrictedObject extends RelationalObjectIm
      * {@inheritDoc}
      *
      * @return <code>false</code>
-     * @see org.komodo.core.repository.ObjectImpl#hasChildren(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.ObjectImpl#hasChildren()
      */
     @Override
-    public final boolean hasChildren( final UnitOfWork uow ) {
+    public final boolean hasChildren( ) {
         return false;
     }
     /**

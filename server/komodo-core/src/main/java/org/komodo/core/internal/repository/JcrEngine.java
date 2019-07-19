@@ -39,7 +39,6 @@ import org.komodo.core.repository.Messages;
 import org.komodo.core.repository.RepoEngine;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.UnitOfWorkDelegate;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 import org.modeshape.common.collection.Problem;

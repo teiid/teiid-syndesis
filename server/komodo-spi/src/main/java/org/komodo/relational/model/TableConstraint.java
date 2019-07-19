@@ -19,7 +19,6 @@ package org.komodo.relational.model;
 
 import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * Represents a relational model table constraint.
@@ -60,7 +59,7 @@ public interface TableConstraint extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void addColumn( final UnitOfWork transaction,
+    void addColumn( 
                     final Column columnToAdd ) throws KException;
 
     /**
@@ -70,7 +69,7 @@ public interface TableConstraint extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    Column[] getColumns( final UnitOfWork transaction ) throws KException;
+    Column[] getColumns( ) throws KException;
 
     /**
      * @return the constraint type (never <code>null</code>)
@@ -84,7 +83,7 @@ public interface TableConstraint extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    Table getTable( final UnitOfWork transaction ) throws KException;
+    Table getTable( ) throws KException;
 
     /**
      * @param transaction
@@ -94,7 +93,7 @@ public interface TableConstraint extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void removeColumn( final UnitOfWork transaction,
+    void removeColumn( 
                        final Column columnToRemove ) throws KException;
 
 }

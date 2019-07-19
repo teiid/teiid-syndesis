@@ -21,7 +21,6 @@ import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * Interface for SqlComposition
@@ -39,71 +38,57 @@ public interface SqlComposition  extends RelationalObject, StringConstants {
     KomodoType IDENTIFIER = KomodoType.SQL_COMPOSITION;
     
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param branch
      *        the new value for the <code>description</code> property
      * @throws KException
      *         if an error occurs
      */
-    void setDescription(UnitOfWork transaction, String description) throws KException;
+    void setDescription(String description) throws KException;
     
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @return the value of the <code>description</code> property
      * @throws KException
      *         if an error occurs
      */
-    String getDescription(UnitOfWork transaction) throws KException;
+    String getDescription() throws KException;
     
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param branch
      *        the new value for the <code>leftSourcePath</code> property
      * @throws KException
      *         if an error occurs
      */
-    void setLeftSourcePath(UnitOfWork transaction, String leftSource) throws KException;
+    void setLeftSourcePath(String leftSource) throws KException;
     
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @return the value of the <code>leftSourcePath</code> property
      * @throws KException
      *         if an error occurs
      */
-    String getLeftSourcePath(UnitOfWork transaction) throws KException;
+    String getLeftSourcePath() throws KException;
     
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param branch
      *        the new value for the <code>rightSourcePath</code> property
      * @throws KException
      *         if an error occurs
      */
-    void setRightSourcePath(UnitOfWork transaction, String rightSource) throws KException;
+    void setRightSourcePath(String rightSource) throws KException;
     
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @return the value of the <code>rightSourcePath</code> property
      * @throws KException
      *         if an error occurs
      */
-    String getRightSourcePath(UnitOfWork transaction) throws KException;
+    String getRightSourcePath() throws KException;
     
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param branch
      *        the new value for the <code>leftCriteriaColumn</code> property
      * @throws KException
      *         if an error occurs
      */
-    void setLeftCriteriaColumn(UnitOfWork transaction, String leftCriteriaColumn) throws KException;
+    void setLeftCriteriaColumn(String leftCriteriaColumn) throws KException;
     
     /**
      * @param transaction
@@ -112,7 +97,7 @@ public interface SqlComposition  extends RelationalObject, StringConstants {
      * @throws KException
      *         if an error occurs
      */
-    String getLeftCriteriaColumn(UnitOfWork transaction) throws KException;
+    String getLeftCriteriaColumn() throws KException;
     
     /**
      * @param transaction
@@ -122,7 +107,7 @@ public interface SqlComposition  extends RelationalObject, StringConstants {
      * @throws KException
      *         if an error occurs
      */
-    void setRightCriteriaColumn(UnitOfWork transaction, String rightCriteriaColumn) throws KException;
+    void setRightCriteriaColumn(String rightCriteriaColumn) throws KException;
     
     /**
      * @param transaction
@@ -131,7 +116,7 @@ public interface SqlComposition  extends RelationalObject, StringConstants {
      * @throws KException
      *         if an error occurs
      */
-    String getRightCriteriaColumn(UnitOfWork transaction) throws KException;
+    String getRightCriteriaColumn() throws KException;
     
     /**
      * @param transaction
@@ -141,7 +126,7 @@ public interface SqlComposition  extends RelationalObject, StringConstants {
      * @throws KException
      *         if an error occurs
      */
-    void setType(UnitOfWork transaction, String type) throws KException;
+    void setType(String type) throws KException;
     
     /**
      * @param transaction
@@ -150,7 +135,7 @@ public interface SqlComposition  extends RelationalObject, StringConstants {
      * @throws KException
      *         if an error occurs
      */
-    String getType(UnitOfWork transaction) throws KException;
+    String getType() throws KException;
     
     /**
      * @param transaction
@@ -160,7 +145,7 @@ public interface SqlComposition  extends RelationalObject, StringConstants {
      * @throws KException
      *         if an error occurs
      */
-    void setOperator(UnitOfWork transaction, String operator) throws KException;
+    void setOperator(String operator) throws KException;
     
     /**
      * @param transaction
@@ -169,7 +154,7 @@ public interface SqlComposition  extends RelationalObject, StringConstants {
      * @throws KException
      *         if an error occurs
      */
-    String getOperator(UnitOfWork transaction) throws KException;
+    String getOperator() throws KException;
     
     
 }

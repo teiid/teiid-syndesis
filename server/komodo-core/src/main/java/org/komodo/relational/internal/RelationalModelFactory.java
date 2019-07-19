@@ -22,7 +22,6 @@ import java.util.Map;
 import org.komodo.core.KomodoLexicon;
 import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.KomodoObject;
-import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.core.repository.RepositoryTools;
 import org.komodo.relational.RelationalObject;
 import org.komodo.relational.dataservice.internal.DataserviceImpl;
@@ -182,10 +181,10 @@ public final class RelationalModelFactory {
 
         final KomodoObject kobject = repository.add( transaction, parentTable.getAbsolutePath(), foreignKeyName, null );
         kobject.addDescriptor( transaction, Constraint.FOREIGN_KEY_CONSTRAINT );
-        kobject.setProperty( transaction, Constraint.TYPE, ForeignKey.CONSTRAINT_TYPE.toValue() );
+        kobject.setProperty( Constraint.TYPE, ForeignKey.CONSTRAINT_TYPE.toValue() );
 
         final ForeignKeyImpl fk = new ForeignKeyImpl( transaction, repository, kobject.getAbsolutePath() );
-        fk.setReferencesTable( transaction, tableReference );
+        fk.setReferencesTable( tableReference );
         return fk;
     }
 
@@ -279,7 +278,7 @@ public final class RelationalModelFactory {
 
         final KomodoObject kobject = repository.add( transaction, parentTable.getAbsolutePath(), primaryKeyName, null );
         kobject.addDescriptor( transaction, Constraint.TABLE_ELEMENT );
-        kobject.setProperty( transaction, Constraint.TYPE, PrimaryKey.CONSTRAINT_TYPE.toValue() );
+        kobject.setProperty( Constraint.TYPE, PrimaryKey.CONSTRAINT_TYPE.toValue() );
 
         final PrimaryKeyImpl result = new PrimaryKeyImpl( transaction, repository, kobject.getAbsolutePath() );
         return result;
@@ -316,7 +315,7 @@ public final class RelationalModelFactory {
         kobject.addDescriptor( transaction, StandardDdlLexicon.TYPE_STATEMENT_OPTION );
 
         final StatementOptionImpl result = new StatementOptionImpl( transaction, repository, kobject.getAbsolutePath() );
-        result.setOption( transaction, optionValue );
+        result.setOption( optionValue );
         return result;
     }
 
@@ -384,8 +383,8 @@ public final class RelationalModelFactory {
                                                                              VdbLexicon.Vdb.TRANSLATORS,
                                                                              VdbLexicon.Vdb.TRANSLATORS );
             final KomodoObject kobject = grouping.addChild( transaction, translatorName, VdbLexicon.Translator.TRANSLATOR );
-            final TranslatorImpl result = new TranslatorImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
-            result.setType( transaction, translatorType );
+            final TranslatorImpl result = new TranslatorImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
+            result.setType( translatorType );
             return result;
         } catch ( final Exception e ) {
             throw handleError( e );
@@ -417,7 +416,7 @@ public final class RelationalModelFactory {
 
         final KomodoObject kobject = repository.add( transaction, parentTable.getAbsolutePath(), uniqueConstraintName, null );
         kobject.addDescriptor( transaction, Constraint.TABLE_ELEMENT );
-        kobject.setProperty( transaction, Constraint.TYPE, UniqueConstraint.CONSTRAINT_TYPE.toValue() );
+        kobject.setProperty( Constraint.TYPE, UniqueConstraint.CONSTRAINT_TYPE.toValue() );
 
         final UniqueConstraintImpl result = new UniqueConstraintImpl( transaction, repository, kobject.getAbsolutePath() );
         return result;
@@ -461,8 +460,8 @@ public final class RelationalModelFactory {
 
         final KomodoObject kobject = repository.add( transaction, parentPath, vdbName, VdbLexicon.Vdb.VIRTUAL_DATABASE );
         final VdbImpl result = new VdbImpl( transaction, repository, kobject.getAbsolutePath() );
-        result.setOriginalFilePath( transaction, externalFilePath );
-        result.setVdbName( transaction, vdbName );
+        result.setOriginalFilePath( externalFilePath );
+        result.setVdbName( vdbName );
         return result;
     }
 
@@ -496,7 +495,7 @@ public final class RelationalModelFactory {
                                                                              VdbLexicon.Vdb.IMPORT_VDBS );
             final KomodoObject kobject = grouping.addChild( transaction, vdbName, VdbLexicon.ImportVdb.IMPORT_VDB );
             final VdbImportImpl	 result = new VdbImportImpl( transaction, repository, kobject.getAbsolutePath() );
-            result.setVersion( transaction, Vdb.DEFAULT_VERSION );
+            result.setVersion( Vdb.DEFAULT_VERSION );
             return result;
         } catch ( final Exception e ) {
             throw handleError( e );
@@ -589,7 +588,7 @@ public final class RelationalModelFactory {
 
        try {
    		   // If a ViewDefinitionImpl already exists, remove it first
-           final ViewDefinitionImpl viewDefn = viewEditorState.getViewDefinition(transaction);
+           final ViewDefinitionImpl viewDefn = viewEditorState.getViewDefinition();
            if (viewDefn != null) {
            	viewDefn.remove(transaction);
            }
@@ -691,7 +690,7 @@ public final class RelationalModelFactory {
         ArgCheck.isNotNull( repository, "repository" ); //$NON-NLS-1$
 
         try {
-            int cmdSize = viewEditorState.getCommands(transaction).length;
+            int cmdSize = viewEditorState.getCommands().length;
             int index = cmdSize > 0 ? cmdSize - 1 : 0;
             String aggName = KomodoLexicon.StateCommandAggregate.NAME_PREFIX + index;
             final KomodoObject kobject = viewEditorState.addChild(transaction, aggName,
@@ -734,14 +733,14 @@ public final class RelationalModelFactory {
 
        
        try {
-           if (stateCommandAgg.hasChild(transaction, stateCommandType))
-               stateCommandAgg.removeChild(transaction, stateCommandType);
+           if (stateCommandAgg.hasChild(stateCommandType))
+               stateCommandAgg.removeChild(stateCommandType);
 
            KomodoObject stateCmdObject = stateCommandAgg.addChild(transaction, stateCommandType,
                                                                               KomodoLexicon.StateCommand.NODE_TYPE);
-           StateCommand stateCmd = StateCommandImpl.RESOLVER.resolve(transaction, stateCmdObject);
-           stateCmd.setId(transaction, commandId);
-           stateCmd.setArguments(transaction, arguments);
+           StateCommand stateCmd = StateCommandImpl.RESOLVER.resolve(stateCmdObject);
+           stateCmd.setId(commandId);
+           stateCmd.setArguments(arguments);
            return stateCmd;
        } catch ( final Exception e ) {
            throw handleError( e );
@@ -763,12 +762,12 @@ public final class RelationalModelFactory {
 
          */
 
-        kobject.setProperty( transaction, StandardDdlLexicon.DDL_EXPRESSION, "komodo created model" ); //$NON-NLS-1$
-        kobject.setProperty( transaction, StandardDdlLexicon.DDL_ORIGINAL_EXPRESSION, "komodo created model" ); //$NON-NLS-1$
-        kobject.setProperty( transaction, StandardDdlLexicon.DDL_START_LINE_NUMBER, 0L );
-        kobject.setProperty( transaction, StandardDdlLexicon.DDL_START_COLUMN_NUMBER, 0L );
-        kobject.setProperty( transaction, StandardDdlLexicon.DDL_START_CHAR_INDEX, 0L );
-        kobject.setProperty( transaction, StandardDdlLexicon.DDL_LENGTH, 0L );
+        kobject.setProperty( StandardDdlLexicon.DDL_EXPRESSION, "komodo created model" ); //$NON-NLS-1$
+        kobject.setProperty( StandardDdlLexicon.DDL_ORIGINAL_EXPRESSION, "komodo created model" ); //$NON-NLS-1$
+        kobject.setProperty( StandardDdlLexicon.DDL_START_LINE_NUMBER, 0L );
+        kobject.setProperty( StandardDdlLexicon.DDL_START_COLUMN_NUMBER, 0L );
+        kobject.setProperty( StandardDdlLexicon.DDL_START_CHAR_INDEX, 0L );
+        kobject.setProperty( StandardDdlLexicon.DDL_LENGTH, 0L );
     }
 
     private RelationalModelFactory() {

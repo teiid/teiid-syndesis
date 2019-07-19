@@ -19,7 +19,6 @@ package org.komodo.relational.model;
 
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * Represents a relational model foreign key.
@@ -41,13 +40,8 @@ public interface ForeignKey extends TableConstraint {
      */
     ConstraintType CONSTRAINT_TYPE = ConstraintType.FOREIGN_KEY;
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.core.repository.KNode#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
-     */
     @Override
-    Table getRelationalParent( final UnitOfWork transaction ) throws KException;
+    Table getRelationalParent( ) throws KException;
 
     /**
      * @param transaction
@@ -57,7 +51,7 @@ public interface ForeignKey extends TableConstraint {
      * @throws KException
      *         if an error occurs
      */
-    void addReferencesColumn( final UnitOfWork transaction,
+    void addReferencesColumn( 
                               final Column newReferencesColumn ) throws KException;
 
     /**
@@ -67,7 +61,7 @@ public interface ForeignKey extends TableConstraint {
      * @throws KException
      *         if an error occurs
      */
-    Column[] getReferencesColumns( final UnitOfWork transaction ) throws KException;
+    Column[] getReferencesColumns( ) throws KException;
 
     /**
      * @param transaction
@@ -76,7 +70,7 @@ public interface ForeignKey extends TableConstraint {
      * @throws KException
      *         if an error occurs
      */
-    Table getReferencesTable( final UnitOfWork transaction ) throws KException;
+    Table getReferencesTable( ) throws KException;
 
     /**
      * @param transaction
@@ -86,7 +80,7 @@ public interface ForeignKey extends TableConstraint {
      * @throws KException
      *         if an error occurs
      */
-    void removeReferencesColumn( final UnitOfWork transaction,
+    void removeReferencesColumn( 
                                  final Column referencesColumnToRemove ) throws KException;
 
     /**
@@ -97,7 +91,7 @@ public interface ForeignKey extends TableConstraint {
      * @throws KException
      *         if an error occurs
      */
-    void setReferencesTable( final UnitOfWork transaction,
+    void setReferencesTable( 
                              final Table newReferencesTable ) throws KException;
 
 }

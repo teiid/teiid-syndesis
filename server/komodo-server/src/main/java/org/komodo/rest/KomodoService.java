@@ -22,7 +22,9 @@ import static org.komodo.rest.Messages.Error.RESOURCE_NOT_FOUND;
 import static org.komodo.rest.Messages.General.GET_OPERATION_NAME;
 
 import java.util.List;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
@@ -47,9 +49,7 @@ import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.spi.KEngine;
 import org.komodo.spi.KException;
 import org.komodo.spi.SystemConstants;
-import org.komodo.spi.repository.SynchronousCallback;
 import org.komodo.spi.repository.UnitOfWork;
-import org.komodo.spi.repository.UnitOfWorkListener;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
@@ -215,26 +215,25 @@ public abstract class KomodoService implements V1Constants {
 		                             headers.getAcceptableMediaTypes(), RelationalMessages.Error.SECURITY_FAILURE_ERROR));
     }
 
-    protected WorkspaceManager getWorkspaceManager(UnitOfWork transaction) throws KException {
-    	return this.kengine.getWorkspaceManager(transaction);
+    protected WorkspaceManager getWorkspaceManager() throws KException {
+    	return this.kengine.getWorkspaceManager();
     }
 
-    protected Profile getUserProfile(UnitOfWork transaction) throws KException {
-        return getWorkspaceManager(transaction).getUserProfile(transaction);
+    protected Profile getUserProfile() throws KException {
+        return getWorkspaceManager().getUserProfile();
     }
 
     /**
-     * @param uow the transaction
      * @param viewEditorStateId the editor state identifier
      * @return <code>true</code> if editor state was deleted; <code>false</code> if not found
      * @throws Exception if an error occurs
      */
-    protected boolean removeEditorState(UnitOfWork uow, String viewEditorStateId) throws Exception {
-        Profile userProfile = getUserProfile(uow);
-        ViewEditorState[] states = userProfile.getViewEditorStates(uow,  viewEditorStateId);
+    protected boolean removeEditorState(String viewEditorStateId) throws Exception {
+        Profile userProfile = getUserProfile();
+        ViewEditorState state = userProfile.getViewEditorState(viewEditorStateId);
 
-        if (states.length != 0) {
-            userProfile.removeViewEditorState(uow, viewEditorStateId);
+        if (state != null) {
+            userProfile.removeViewEditorState(viewEditorStateId);
             return true;
         }
 
@@ -242,32 +241,28 @@ public abstract class KomodoService implements V1Constants {
     }
 
     /**
-     * @param uow the transaction to use
      * @param editorState the editor state being deleted
      * @return <code>true</code> if successfully deleted
      * @throws Exception if an error occurs
      */
-    protected boolean removeEditorState( final UnitOfWork uow,
-                                         final ViewEditorState editorState ) throws Exception {
-        return removeEditorState( uow, editorState.getName( uow ) );
+    protected boolean removeEditorState( final ViewEditorState editorState ) throws Exception {
+        return removeEditorState(editorState.getName( ) );
     }
 
      /**
      *
-     * @param uow the transaction to use
      * @param searchPattern the optional search pattern
      * @return the view editor states (never <code>null</code> but can be empty)
      * @throws Exception if an error occurs
      */
-    protected ViewEditorState[] getViewEditorStates( final UnitOfWork uow,
-                                                     final String searchPattern ) throws Exception {
-        final Profile profile = getUserProfile( uow );
+    protected ViewEditorState[] getViewEditorStates(final String searchPattern ) throws Exception {
+        final Profile profile = getUserProfile( );
         ViewEditorState[] viewEditorStates = null;
 
         if ( StringUtils.isBlank( searchPattern ) ) {
-            viewEditorStates = profile.getViewEditorStates( uow );
+            viewEditorStates = profile.getViewEditorStates( );
         } else {
-            viewEditorStates = profile.getViewEditorStates( uow, searchPattern );
+            viewEditorStates = profile.getViewEditorStates( searchPattern );
         }
 
         return viewEditorStates;
@@ -364,7 +359,7 @@ public abstract class KomodoService implements V1Constants {
         return false;
     }
 
-    protected Response commit(List<MediaType> acceptableMediaTypes, final KRestEntity entity) throws Exception {
+    private Response commit(List<MediaType> acceptableMediaTypes, final KRestEntity entity) throws Exception {
         ResponseBuilder builder = null;
 
         if ( entity == RestBasicEntity.NO_CONTENT ) {
@@ -394,50 +389,15 @@ public abstract class KomodoService implements V1Constants {
         return builder.build();
     }
 
-    protected Response commit( final UnitOfWork transaction, List<MediaType> acceptableMediaTypes,
-                               final KRestEntity entity ) throws Exception {
-        assert( transaction.getCallback() instanceof SynchronousCallback );
+    protected Response commit(UnitOfWork transaction, List<MediaType> acceptableMediaTypes, final KRestEntity entity) throws Exception {
         final int timeout = TIMEOUT;
         final TimeUnit unit = UNIT;
 
-        final SynchronousCallback callback = ( SynchronousCallback )transaction.getCallback();
-        transaction.commit();
+        Future<Void> callback = transaction.commit();
 
-        if ( !callback.await( timeout, unit ) ) {
-            // callback timeout occurred
-            String errorMessage = Messages.getString( COMMIT_TIMEOUT, transaction.getName(), timeout, unit );
-            Object responseEntity = createErrorResponseEntity(acceptableMediaTypes, errorMessage);
-            return Response.status( Status.INTERNAL_SERVER_ERROR )
-                           .entity(responseEntity)
-                           .build();
-        }
-
-        Throwable error = callback.error();
-
-        if ( error != null ) {
-            // callback was called because of an error condition
-            Object responseEntity = createErrorResponseEntity(acceptableMediaTypes, error.getLocalizedMessage());
-            return Response.status( Status.INTERNAL_SERVER_ERROR )
-                .entity(responseEntity)
-                .build();
-        }
-
-        LOGGER.debug( "commit: successfully committed '{0}', rollbackOnly = '{1}'", //$NON-NLS-1$
-                      transaction.getName(),
-                      transaction.isRollbackOnly() );
-
-        return commit(acceptableMediaTypes, entity);
-    }
-
-    protected Response commit(UnitOfWork transaction, List<MediaType> acceptableMediaTypes) throws Exception {
-        assert( transaction.getCallback() instanceof SynchronousCallback );
-        final int timeout = TIMEOUT;
-        final TimeUnit unit = UNIT;
-
-        final SynchronousCallback callback = ( SynchronousCallback )transaction.getCallback();
-        transaction.commit();
-
-        if ( ! callback.await( timeout, unit ) ) {
+        try {
+        	callback.get( timeout, unit );
+        } catch (TimeoutException e) {
             // callback timeout occurred
             String errorMessage = Messages.getString( COMMIT_TIMEOUT, transaction.getName(), timeout, unit );
             Object responseEntity = createErrorResponseEntity(acceptableMediaTypes, errorMessage);
@@ -445,24 +405,23 @@ public abstract class KomodoService implements V1Constants {
                            .type( MediaType.TEXT_PLAIN )
                            .entity(responseEntity)
                            .build();
-        }
-
-        Throwable error = transaction.getError();
-        if ( error != null ) {
+        } catch (Throwable e) {
+        	if (e.getCause() != null) {
+        		e = e.getCause();
+        	}
             // callback was called because of an error condition
-            Object responseEntity = createErrorResponseEntity(acceptableMediaTypes, error.getLocalizedMessage());
+            Object responseEntity = createErrorResponseEntity(acceptableMediaTypes, e.getLocalizedMessage());
             return Response.status( Status.INTERNAL_SERVER_ERROR )
                             .entity(responseEntity)
                             .build();
         }
 
-        error = callback.error();
-        if ( error != null ) {
-         // callback was called because of an error condition
-            Object responseEntity = createErrorResponseEntity(acceptableMediaTypes, error.getLocalizedMessage());
-            return Response.status( Status.INTERNAL_SERVER_ERROR )
-                           .entity(responseEntity)
-                           .build();
+        LOGGER.debug( "commit: successfully committed '{0}', rollbackOnly = '{1}'", //$NON-NLS-1$
+                transaction.getName(),
+                transaction.isRollbackOnly() );
+
+        if (entity != null) {
+        	return commit(acceptableMediaTypes, entity);
         }
 
         return Response.ok().build();
@@ -471,7 +430,7 @@ public abstract class KomodoService implements V1Constants {
     protected Response commit( final UnitOfWork transaction, List<MediaType> acceptableMediaTypes,
                                final List<? extends KRestEntity> entities ) throws Exception {
 
-        commit(transaction, acceptableMediaTypes);
+        commit(transaction, acceptableMediaTypes, (KRestEntity)null);
 
         LOGGER.debug( "commit: successfully committed '{0}', rollbackOnly = '{1}'", //$NON-NLS-1$
                       transaction.getName(),
@@ -512,42 +471,24 @@ public abstract class KomodoService implements V1Constants {
      *         if there is an error creating the transaction
      */
     protected UnitOfWork createTransaction(final SecurityPrincipal user, final String name,
-                                            final boolean rollbackOnly, final UnitOfWorkListener callback) throws KException {
+                                            final boolean rollbackOnly) throws KException {
     	final UnitOfWork result = this.kengine.createTransaction( user.getUserName(),
                                                                (getClass().getSimpleName() + COLON + name + COLON + System.currentTimeMillis()),
-                                                               rollbackOnly, callback, "anonymous");
+                                                               rollbackOnly, "anonymous");
         LOGGER.debug( "createTransaction:created '{0}', rollbackOnly = '{1}'", result.getName(), result.isRollbackOnly() ); //$NON-NLS-1$
         return result;
     }
 
-    /**
-     * @param user
-     *        the user initiating the transaction
-     * @param name
-     *        the name of the transaction (cannot be empty)
-     * @param rollbackOnly
-     *        <code>true</code> if transaction must be rolled back
-     * @return the new transaction (never <code>null</code>)
-     * @throws KException
-     *         if there is an error creating the transaction
-     */
-    protected UnitOfWork createTransaction(final SecurityPrincipal user, final String name,
-                                            final boolean rollbackOnly ) throws KException {
-    	final SynchronousCallback callback = new SynchronousCallback();
-    	return createTransaction(user, name, rollbackOnly, callback);
-    }
-
-    protected Vdb findVdb(UnitOfWork uow, String vdbName) throws KException {
-        return getWorkspaceManager(uow).findVdb(uow, vdbName);
+    protected Vdb findVdb(String vdbName) throws KException {
+        return getWorkspaceManager().findVdb(vdbName);
     }
 
     protected UnitOfWork systemTx(String description, boolean rollback) throws KException {
-        SynchronousCallback callback = new SynchronousCallback();
-        return createTransaction(SYSTEM_USER, description, rollback, callback); //$NON-NLS-1$
+        return createTransaction(SYSTEM_USER, description, rollback); //$NON-NLS-1$
     }
 
-    protected Dataservice findDataservice(UnitOfWork uow, String dataserviceName) throws KException {
-    	return getWorkspaceManager(uow).findDataservice(uow, dataserviceName);
+    protected Dataservice findDataservice(String dataserviceName) throws KException {
+    	return getWorkspaceManager().findDataservice(dataserviceName);
     }
 
     protected String uri(String... segments) {

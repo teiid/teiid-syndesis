@@ -286,10 +286,10 @@ public class TestVdbExport extends AbstractLocalRepositoryTest {
         KomodoObject furtherPatientsModel = patientsExample.addChild(getTransaction(),
                                                                                     furtherPatientsModelName,
                                                                                     VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        furtherPatientsModel.setProperty(getTransaction(), CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
-        furtherPatientsModel.setProperty(getTransaction(),  VdbLexicon.Model.DESCRIPTION, "Further Patients View");
-        furtherPatientsModel.setProperty(getTransaction(), VdbLexicon.Model.VISIBLE, true);
-        furtherPatientsModel.setProperty(getTransaction(), VdbLexicon.Model.METADATA_TYPE, "DDL");
+        furtherPatientsModel.setProperty(CoreLexicon.JcrId.MODEL_TYPE, CoreLexicon.ModelType.VIRTUAL);
+        furtherPatientsModel.setProperty(VdbLexicon.Model.DESCRIPTION,  "Further Patients View");
+        furtherPatientsModel.setProperty(VdbLexicon.Model.VISIBLE, true);
+        furtherPatientsModel.setProperty(VdbLexicon.Model.METADATA_TYPE, "DDL");
         StringBuffer patientsModelDefn = new StringBuffer();
         String createViewTxt = "CREATE VIEW FurtherView (";
         patientsModelDefn.append(createViewTxt)
@@ -301,7 +301,7 @@ public class TestVdbExport extends AbstractLocalRepositoryTest {
                             .append(") ")
                             .append("AS ")
                             .append("SELECT id, furtherDetail1, furtherDetail2, furtherDetail3 FROM vdbwebtest.FURTHER_PATIENT;");
-        furtherPatientsModel.setProperty(getTransaction(), VdbLexicon.Model.MODEL_DEFINITION, patientsModelDefn.toString());
+        furtherPatientsModel.setProperty(VdbLexicon.Model.MODEL_DEFINITION, patientsModelDefn.toString());
 
         commit();
 //        traverse(getTransaction(), patientsExample);
@@ -355,8 +355,8 @@ public class TestVdbExport extends AbstractLocalRepositoryTest {
 
         commit();
 
-        KomodoObject patientsModel = patientsExample.getChild(getTransaction(), TestUtilities.PATIENTS_MODEL);
-        Property modelDefnProperty = patientsModel.getProperty(getTransaction(), VdbLexicon.Model.MODEL_DEFINITION);
+        KomodoObject patientsModel = patientsExample.getChild(TestUtilities.PATIENTS_MODEL);
+        Property modelDefnProperty = patientsModel.getProperty(VdbLexicon.Model.MODEL_DEFINITION);
         String modelDefn = modelDefnProperty.getStringValue(getTransaction());
         assertNotNull(modelDefn);
 
@@ -365,7 +365,7 @@ public class TestVdbExport extends AbstractLocalRepositoryTest {
         "SELECT id, furtherDetail FROM vdbwebtest.MORE_PATIENT;";
 
         modelDefn = modelDefn + newViewContent;
-        patientsModel.setProperty(getTransaction(), VdbLexicon.Model.MODEL_DEFINITION, modelDefn);
+        patientsModel.setProperty(VdbLexicon.Model.MODEL_DEFINITION, modelDefn);
         commit();
 
         traverse(getTransaction(), patientsExample);

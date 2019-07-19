@@ -147,7 +147,7 @@ public final class KomodoUtilService extends KomodoService {
         try {
             // find VDBs
             uow = systemTx("getVdbs", true); //$NON-NLS-1$
-            Vdb[] vdbs = getWorkspaceManager(uow).findVdbs(uow, null);
+            Vdb[] vdbs = getWorkspaceManager().findVdbs(null);
             repoStatus.addAttribute(REPO_VDB_TOTAL, Integer.toString(vdbs.length));
 
         } catch (final Exception e) {
@@ -247,7 +247,7 @@ public final class KomodoUtilService extends KomodoService {
             final String txId = "getViewEditorStates"; //$NON-NLS-1$ //$NON-NLS-2$
             uow = createTransaction(principal, txId, true );
 
-            final ViewEditorState[] viewEditorStates = getViewEditorStates(uow, searchPattern);
+            final ViewEditorState[] viewEditorStates = getViewEditorStates(searchPattern);
             LOGGER.debug( "getViewEditorStates:found '{0}' ViewEditorStates", viewEditorStates.length ); //$NON-NLS-1$
 
             int start = 0;
@@ -292,8 +292,8 @@ public final class KomodoUtilService extends KomodoService {
                 if (size != ALL_AVAILABLE && restViewEditorStates.size() > size)
                     continue;
 
-                RestViewEditorState restviewEditorState = new RestViewEditorState(uriInfo.getBaseUri(), viewEditorState, uow);
-                LOGGER.debug("getViewEditorStates:ViewEditorState '{0}' entity was constructed", viewEditorState.getName(uow)); //$NON-NLS-1$
+                RestViewEditorState restviewEditorState = new RestViewEditorState(uriInfo.getBaseUri(), viewEditorState);
+                LOGGER.debug("getViewEditorStates:ViewEditorState '{0}' entity was constructed", viewEditorState.getName()); //$NON-NLS-1$
                 restViewEditorStates.add(restviewEditorState);
                 ++i;
             }
@@ -348,16 +348,16 @@ public final class KomodoUtilService extends KomodoService {
 
             final String txId = "getViewEditorStates"; //$NON-NLS-1$ //$NON-NLS-2$
             uow = createTransaction(principal, txId, true );
-            Profile profile = getUserProfile(uow);
-            ViewEditorState[] viewEditorStates = profile.getViewEditorStates(uow, viewEditorStateId);
+            Profile profile = getUserProfile();
+            ViewEditorState viewEditorState = profile.getViewEditorState(viewEditorStateId);
             LOGGER.debug( "getViewEditorState:found '{0}' ViewEditorStates",
-                              viewEditorStates == null ? 0 : viewEditorStates.length ); //$NON-NLS-1$
+                              viewEditorState == null ? 0 : 1 ); //$NON-NLS-1$
 
-            if (viewEditorStates == null || viewEditorStates.length == 0)
+            if (viewEditorState == null)
                 return Response.noContent().build();
 
-            RestViewEditorState restViewEditorState = new RestViewEditorState(uriInfo.getBaseUri(), viewEditorStates[0], uow);
-            LOGGER.debug("getViewEditorStates:ViewEditorState '{0}' entity was constructed", viewEditorStates[0].getName(uow)); //$NON-NLS-1$
+            RestViewEditorState restViewEditorState = new RestViewEditorState(uriInfo.getBaseUri(), viewEditorState);
+            LOGGER.debug("getViewEditorStates:ViewEditorState '{0}' entity was constructed", viewEditorState.getName()); //$NON-NLS-1$
             return commit( uow, mediaTypes, restViewEditorState );
 
         } catch ( final Exception e ) {
@@ -428,7 +428,7 @@ public final class KomodoUtilService extends KomodoService {
 
             // Create the ViewEditorState objects
             for (RestViewEditorState restViewEditorState : restViewEditorStates) {
-                createViewEditorState(restViewEditorState, uow);
+                createViewEditorState(restViewEditorState);
             }
 
             KomodoStatusObject kso = new KomodoStatusObject("Stash Status"); //$NON-NLS-1$
@@ -611,62 +611,61 @@ public final class KomodoUtilService extends KomodoService {
     /**
      * Creates the view editor state from the RestViewEditorState
      * @param editorState the state
-     * @param uow the transaction
      * @return the ViewEditorState repo object
      * @throws Exception exception if a problem is encountered
      */
-    private ViewEditorState createViewEditorState(final RestViewEditorState editorState, UnitOfWork uow) throws Exception {
+    private ViewEditorState createViewEditorState(final RestViewEditorState editorState) throws Exception {
         String stateId = editorState.getId();
         RestStateCommandAggregate[] commands = editorState.getCommands();
         RestViewDefinition restViewDefn = editorState.getViewDefinition();
 
         // Add a new ViewEditorState to the userProfile
-        Profile userProfile = getUserProfile(uow);
-        ViewEditorState viewEditorState = userProfile.addViewEditorState(uow, stateId);
+        Profile userProfile = getUserProfile();
+        ViewEditorState viewEditorState = userProfile.addViewEditorState(stateId);
 
         // Add commands to the ViewEditorState
         for (RestStateCommandAggregate restCmd : commands) {
             RestStateCommand restUndo = restCmd.getUndo();
             RestStateCommand restRedo = restCmd.getRedo();
 
-            StateCommandAggregate stateCmdAgg = viewEditorState.addCommand(uow);
-            stateCmdAgg.setUndo(uow, restUndo.getId(), restUndo.getArguments());
-            stateCmdAgg.setRedo(uow, restRedo.getId(), restRedo.getArguments());
+            StateCommandAggregate stateCmdAgg = viewEditorState.addCommand();
+            stateCmdAgg.setUndo(restUndo.getId(), restUndo.getArguments());
+            stateCmdAgg.setRedo(restRedo.getId(), restRedo.getArguments());
         }
 
         // Set ViewDefinition of the ViewEditorState
-        ViewDefinition viewDefn = viewEditorState.setViewDefinition(uow);
-        viewDefn.setViewName(uow, restViewDefn.getViewName());
-        viewDefn.setDdl(uow, restViewDefn.getDdl());
+        ViewDefinition viewDefn = viewEditorState.setViewDefinition();
+        viewDefn.setViewName(restViewDefn.getViewName());
+        viewDefn.setDdl(restViewDefn.getDdl());
         // If user-defined, user may have changed description.  Reset object description from DDL
         if(restViewDefn.isUserDefined()) {
           String ddlDescr = getDdlViewDescription(restViewDefn.getDdl());
-          viewDefn.setDescription(uow, ddlDescr);
+          viewDefn.setDescription(ddlDescr);
         } else {
-          viewDefn.setDescription(uow, restViewDefn.getDescription());
+          viewDefn.setDescription(restViewDefn.getDescription());
         }
         for (String restSourcePath: restViewDefn.getSourcePaths()) {
-            viewDefn.addSourcePath(uow, restSourcePath);
+            viewDefn.addSourcePath(restSourcePath);
         }
-        viewDefn.setComplete(uow, restViewDefn.isComplete());
-        viewDefn.setUserDefined(uow, restViewDefn.isUserDefined());
+        viewDefn.setComplete(restViewDefn.isComplete());
+        viewDefn.setUserDefined(restViewDefn.isUserDefined());
         // Compositions
         for (RestSqlComposition restComp: restViewDefn.getSqlCompositions()) {
-            SqlComposition sqlComp = viewDefn.addSqlComposition(uow, restComp.getId());
-            sqlComp.setDescription(uow, restComp.getDescription());
-            sqlComp.setLeftSourcePath(uow, restComp.getLeftSourcePath());
-            sqlComp.setRightSourcePath(uow, restComp.getRightSourcePath());
-            sqlComp.setLeftCriteriaColumn(uow, restComp.getLeftCriteriaColumn());
-            sqlComp.setRightCriteriaColumn(uow, restComp.getRightCriteriaColumn());
-            sqlComp.setType(uow, restComp.getType());
-            sqlComp.setOperator(uow, restComp.getOperator());
+            SqlComposition sqlComp = viewDefn.addSqlComposition(restComp.getId());
+            sqlComp.setDescription(restComp.getDescription());
+            sqlComp.setLeftSourcePath(restComp.getLeftSourcePath());
+            sqlComp.setRightSourcePath(restComp.getRightSourcePath());
+            sqlComp.setLeftCriteriaColumn(restComp.getLeftCriteriaColumn());
+            sqlComp.setRightCriteriaColumn(restComp.getRightCriteriaColumn());
+            sqlComp.setType(restComp.getType());
+            sqlComp.setOperator(restComp.getOperator());
         }
         // Projected Columns
         for (RestSqlProjectedColumn restCol: restViewDefn.getProjectedColumns()) {
-            SqlProjectedColumn sqlProjectedCol = viewDefn.addProjectedColumn(uow, restCol.getName());
-            sqlProjectedCol.setName(uow, restCol.getName());
-            sqlProjectedCol.setType(uow, restCol.getType());
-            sqlProjectedCol.setSelected(uow, restCol.isSelected());
+            SqlProjectedColumn sqlProjectedCol = viewDefn.addProjectedColumn(restCol.getName());
+            sqlProjectedCol.setName(restCol.getName());
+            sqlProjectedCol.setType(restCol.getType());
+            sqlProjectedCol.setSelected(restCol.isSelected());
         }
         return viewEditorState;
     }
@@ -759,7 +758,7 @@ public final class KomodoUtilService extends KomodoService {
         try {
             uow = createTransaction(principal, "removeUserProfileViewEditorState", false); //$NON-NLS-1$
 
-            if (!removeEditorState(uow, viewEditorStateId)) {
+            if (!removeEditorState(viewEditorStateId)) {
                 return Response.noContent().build();
             }
 

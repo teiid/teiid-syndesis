@@ -21,7 +21,6 @@ import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.PropertyValueType;
-import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.internal.RelationalChildRestrictedObject;
 import org.komodo.relational.internal.TypeResolver;
 import org.komodo.relational.model.internal.ModelImpl;
@@ -66,29 +65,25 @@ public final class ModelSourceImpl extends RelationalChildRestrictedObject imple
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.core.repository.KomodoObject)
+         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.core.repository.KomodoObject)
          */
         @Override
-        public boolean resolvable( final UnitOfWork transaction,
-                                   final KomodoObject kobject ) throws KException {
-            return ObjectImpl.validateType( transaction, kobject, VdbLexicon.Source.SOURCE );
+        public boolean resolvable( final KomodoObject kobject ) throws KException {
+            return ObjectImpl.validateType( kobject, VdbLexicon.Source.SOURCE );
         }
 
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.core.repository.KomodoObject)
+         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.core.repository.KomodoObject)
          */
         @Override
-        public ModelSourceImpl resolve( final UnitOfWork transaction,
-                                    final KomodoObject kobject ) throws KException {
+        public ModelSourceImpl resolve( final KomodoObject kobject ) throws KException {
             if ( kobject.getTypeId() == ModelSource.TYPE_ID ) {
                 return ( ModelSourceImpl )kobject;
             }
 
-            return new ModelSourceImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
+            return new ModelSourceImpl( kobject.getTransaction(), kobject.getRepository(), kobject.getAbsolutePath() );
         }
 
     };
@@ -110,7 +105,7 @@ public final class ModelSourceImpl extends RelationalChildRestrictedObject imple
     }
 
     @Override
-    public KomodoType getTypeIdentifier( UnitOfWork uow ) {
+    public KomodoType getTypeIdentifier( ) {
         return ModelSource.IDENTIFIER;
     }
 
@@ -120,22 +115,22 @@ public final class ModelSourceImpl extends RelationalChildRestrictedObject imple
      * @see org.komodo.relational.vdb.ModelSource#getJndiName(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public String getJndiName( final UnitOfWork uow ) throws KException {
-        return getObjectProperty( uow, PropertyValueType.STRING, "getJndiName", VdbLexicon.Source.JNDI_NAME ); //$NON-NLS-1$
+    public String getJndiName( ) throws KException {
+        return getObjectProperty( getTransaction(), PropertyValueType.STRING, "getJndiName", VdbLexicon.Source.JNDI_NAME ); //$NON-NLS-1$
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.internal.RelationalObjectImpl#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.relational.internal.RelationalObjectImpl#getParent()
      */
     @Override
-    public ModelImpl getParent( final UnitOfWork transaction ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
+    public ModelImpl getParent() throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
 
-        final KomodoObject grouping = super.getParent( transaction );
-        final ModelImpl result = ModelImpl.RESOLVER.resolve( transaction, grouping.getParent( transaction ) );
+        final KomodoObject grouping = super.getParent( );
+        final ModelImpl result = ModelImpl.RESOLVER.resolve( grouping.getParent( ) );
         return result;
     }
 
@@ -145,8 +140,8 @@ public final class ModelSourceImpl extends RelationalChildRestrictedObject imple
      * @see org.komodo.relational.vdb.ModelSource#getTranslatorName(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public String getTranslatorName( final UnitOfWork uow ) throws KException {
-        return getObjectProperty( uow, PropertyValueType.STRING, "getTranslatorName", VdbLexicon.Source.TRANSLATOR ); //$NON-NLS-1$
+    public String getTranslatorName( ) throws KException {
+        return getObjectProperty( getTransaction(), PropertyValueType.STRING, "getTranslatorName", VdbLexicon.Source.TRANSLATOR ); //$NON-NLS-1$
     }
 
     /**
@@ -165,9 +160,8 @@ public final class ModelSourceImpl extends RelationalChildRestrictedObject imple
      * @see org.komodo.relational.vdb.ModelSource#setJndiName(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
-    public void setJndiName( final UnitOfWork uow,
-                             final String newJndiName ) throws KException {
-        setObjectProperty( uow, "setJndiName", VdbLexicon.Source.JNDI_NAME, newJndiName ); //$NON-NLS-1$
+    public void setJndiName( final String newJndiName ) throws KException {
+        setObjectProperty( getTransaction(), "setJndiName", VdbLexicon.Source.JNDI_NAME, newJndiName ); //$NON-NLS-1$
     }
 
     /**
@@ -177,14 +171,13 @@ public final class ModelSourceImpl extends RelationalChildRestrictedObject imple
      *      java.lang.String)
      */
     @Override
-    public void setTranslatorName( final UnitOfWork uow,
-                                   final String newTranslatorName ) throws KException {
-        setObjectProperty( uow, "setTranslatorName", VdbLexicon.Source.TRANSLATOR, newTranslatorName ); //$NON-NLS-1$
+    public void setTranslatorName( final String newTranslatorName ) throws KException {
+        setObjectProperty( getTransaction(), "setTranslatorName", VdbLexicon.Source.TRANSLATOR, newTranslatorName ); //$NON-NLS-1$
     }
     
     @Override
-    public ModelImpl getRelationalParent(UnitOfWork transaction) throws KException {
-    	return this.getParent(transaction);
+    public ModelImpl getRelationalParent() throws KException {
+    	return this.getParent();
     }
 
 }

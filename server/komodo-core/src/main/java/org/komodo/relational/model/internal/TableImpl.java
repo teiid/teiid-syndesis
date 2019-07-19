@@ -30,7 +30,6 @@ import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.Property;
 import org.komodo.core.repository.PropertyValueType;
-import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.core.visitor.DdlNodeVisitor;
 import org.komodo.core.visitor.DdlNodeVisitor.VisitorExclusions;
 import org.komodo.metadata.MetadataInstance;
@@ -106,29 +105,25 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.core.repository.KomodoObject)
+         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.core.repository.KomodoObject)
          */
         @Override
-        public boolean resolvable( final UnitOfWork transaction,
-                                   final KomodoObject kobject ) throws KException {
-            return ObjectImpl.validateType( transaction, kobject, CreateTable.TABLE_STATEMENT );
+        public boolean resolvable( final KomodoObject kobject ) throws KException {
+            return ObjectImpl.validateType( kobject, CreateTable.TABLE_STATEMENT );
         }
 
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.core.repository.KomodoObject)
+         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.core.repository.KomodoObject)
          */
         @Override
-        public TableImpl resolve( final UnitOfWork transaction,
-                              final KomodoObject kobject ) throws KException {
+        public TableImpl resolve( final KomodoObject kobject ) throws KException {
             if ( kobject.getTypeId() == Table.TYPE_ID ) {
                 return ( TableImpl )kobject;
             }
 
-            return new TableImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
+            return new TableImpl( kobject.getTransaction(), kobject.getRepository(), kobject.getAbsolutePath() );
         }
 
     };
@@ -216,9 +211,9 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      * @see org.komodo.relational.model.Table#addColumn(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
-    public ColumnImpl addColumn( final UnitOfWork transaction,
+    public ColumnImpl addColumn(
                              final String columnName ) throws KException {
-        return RelationalModelFactory.createColumn( transaction, getRepository(), this, columnName );
+        return RelationalModelFactory.createColumn( getTransaction(), getRepository(), this, columnName );
     }
 
     /**
@@ -228,10 +223,10 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      *      org.komodo.relational.model.Table)
      */
     @Override
-    public ForeignKeyImpl addForeignKey( final UnitOfWork transaction,
+    public ForeignKeyImpl addForeignKey(
                                      final String foreignKeyName,
                                      final Table referencedTable ) throws KException {
-        return RelationalModelFactory.createForeignKey( transaction, getRepository(), this, foreignKeyName, referencedTable );
+        return RelationalModelFactory.createForeignKey( getTransaction(), getRepository(), this, foreignKeyName, referencedTable );
     }
 
     /**
@@ -241,9 +236,9 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      *      java.lang.String)
      */
     @Override
-    public UniqueConstraintImpl addUniqueConstraint( final UnitOfWork transaction,
+    public UniqueConstraintImpl addUniqueConstraint(
                                                  final String constraintName ) throws KException {
-        return RelationalModelFactory.createUniqueConstraint( transaction, getRepository(), this, constraintName );
+        return RelationalModelFactory.createUniqueConstraint( getTransaction(), getRepository(), this, constraintName );
     }
 
     /**
@@ -252,8 +247,8 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      * @see org.komodo.relational.model.Table#getCardinality(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public long getCardinality( final UnitOfWork transaction ) throws KException {
-        final String option = OptionContainerUtils.getOption( transaction, this, StandardOption.CARDINALITY.name() );
+    public long getCardinality() throws KException {
+        final String option = OptionContainerUtils.getOption( getTransaction(), this, StandardOption.CARDINALITY.name() );
 
         if ( option == null ) {
             return Table.DEFAULT_CARDINALITY;
@@ -265,19 +260,17 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.internal.RelationalObjectImpl#getChildren(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String[])
+     * @see org.komodo.relational.internal.RelationalObjectImpl#getChildren(java.lang.String[])
      */
     @Override
-    public KomodoObject[] getChildren( final UnitOfWork transaction,
-                                       final String... namePatterns ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+    public KomodoObject[] getChildren( final String... namePatterns ) throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         // constraints are access patterns, primary key, and unique constraints
-        final KomodoObject[] constraints = getChildrenOfType( transaction, Constraint.TABLE_ELEMENT, namePatterns );
-        final Column[] columns = getColumns( transaction, namePatterns );
-        final ForeignKey[] foreignKeys = getForeignKeys( transaction, namePatterns );
+        final KomodoObject[] constraints = getChildrenOfType( Constraint.TABLE_ELEMENT, namePatterns );
+        final Column[] columns = getColumns( namePatterns );
+        final ForeignKey[] foreignKeys = getForeignKeys( namePatterns );
 
         final int size = constraints.length + columns.length + foreignKeys.length;
         final KomodoObject[] result = new KomodoObject[ size ];
@@ -304,15 +297,15 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      * @see org.komodo.relational.model.Table#getColumns(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
      */
     @Override
-    public ColumnImpl[] getColumns( final UnitOfWork transaction,
+    public ColumnImpl[] getColumns(
                                 final String... namePatterns ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         final List< ColumnImpl > result = new ArrayList< ColumnImpl >();
 
-        for ( final KomodoObject kobject : getChildrenOfType( transaction, CreateTable.TABLE_ELEMENT, namePatterns ) ) {
-            final ColumnImpl column = new ColumnImpl( transaction, getRepository(), kobject.getAbsolutePath() );
+        for ( final KomodoObject kobject : getChildrenOfType( CreateTable.TABLE_ELEMENT, namePatterns ) ) {
+            final ColumnImpl column = new ColumnImpl( getTransaction(), getRepository(), kobject.getAbsolutePath() );
             result.add( column );
         }
 
@@ -326,21 +319,21 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.internal.OptionContainer#getCustomOptions(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.relational.internal.OptionContainer#getCustomOptions()
      */
     @Override
-    public StatementOption[] getCustomOptions( final UnitOfWork transaction ) throws KException {
-        return OptionContainerUtils.getCustomOptions( transaction, this );
+    public StatementOption[] getCustomOptions() throws KException {
+        return OptionContainerUtils.getCustomOptions( getTransaction(), this );
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.model.Table#getDescription(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.relational.model.Table#getDescription()
      */
     @Override
-    public String getDescription( final UnitOfWork transaction ) throws KException {
-        return OptionContainerUtils.getOption(transaction, this, StandardOption.ANNOTATION.name());
+    public String getDescription() throws KException {
+        return OptionContainerUtils.getOption(getTransaction(), this, StandardOption.ANNOTATION.name());
     }
 
     /**
@@ -349,15 +342,15 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      * @see org.komodo.relational.model.Table#getForeignKeys(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String[])
      */
     @Override
-    public ForeignKeyImpl[] getForeignKeys( final UnitOfWork transaction,
+    public ForeignKeyImpl[] getForeignKeys(
                                         final String... namePatterns ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         final List< ForeignKeyImpl > result = new ArrayList< ForeignKeyImpl >();
 
-        for ( final KomodoObject kobject : getChildrenOfType( transaction, Constraint.FOREIGN_KEY_CONSTRAINT, namePatterns ) ) {
-            final ForeignKeyImpl constraint = new ForeignKeyImpl( transaction, getRepository(), kobject.getAbsolutePath() );
+        for ( final KomodoObject kobject : getChildrenOfType( Constraint.FOREIGN_KEY_CONSTRAINT, namePatterns ) ) {
+            final ForeignKeyImpl constraint = new ForeignKeyImpl( getTransaction(), getRepository(), kobject.getAbsolutePath() );
             result.add( constraint );
         }
 
@@ -374,8 +367,8 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      * @see org.komodo.relational.model.Table#getMaterializedTable(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public String getMaterializedTable( final UnitOfWork transaction ) throws KException {
-        return OptionContainerUtils.getOption(transaction, this, StandardOption.MATERIALIZED_TABLE.name());
+    public String getMaterializedTable() throws KException {
+        return OptionContainerUtils.getOption(getTransaction(), this, StandardOption.MATERIALIZED_TABLE.name());
     }
 
     /**
@@ -384,8 +377,8 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      * @see org.komodo.relational.model.Table#getNameInSource(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public String getNameInSource( final UnitOfWork transaction ) throws KException {
-        return OptionContainerUtils.getOption(transaction, this, StandardOption.NAMEINSOURCE.name());
+    public String getNameInSource() throws KException {
+        return OptionContainerUtils.getOption(getTransaction(), this, StandardOption.NAMEINSOURCE.name());
     }
 
     /**
@@ -394,8 +387,8 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      * @see org.komodo.relational.model.Table#getOnCommitValue(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public OnCommit getOnCommitValue( final UnitOfWork uow ) throws KException {
-        final String value = getObjectProperty(uow, PropertyValueType.STRING, "getOnCommitValue", //$NON-NLS-1$
+    public OnCommit getOnCommitValue() throws KException {
+        final String value = getObjectProperty(getTransaction(), PropertyValueType.STRING, "getOnCommitValue", //$NON-NLS-1$
                                                StandardDdlLexicon.ON_COMMIT_VALUE);
 
         if (StringUtils.isBlank(value)) {
@@ -411,14 +404,14 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      * @see org.komodo.relational.model.Table#getPrimaryKey(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public PrimaryKeyImpl getPrimaryKey( final UnitOfWork transaction ) throws KException {
+    public PrimaryKeyImpl getPrimaryKey() throws KException {
     	PrimaryKeyImpl result = null;
 
-        for ( final KomodoObject kobject : getChildrenOfType( transaction, Constraint.TABLE_ELEMENT ) ) {
-            final Property prop = kobject.getRawProperty( transaction, Constraint.TYPE );
+        for ( final KomodoObject kobject : getChildrenOfType( Constraint.TABLE_ELEMENT ) ) {
+            final Property prop = kobject.getRawProperty( getTransaction(), Constraint.TYPE );
 
-            if ( PrimaryKey.CONSTRAINT_TYPE.toValue().equals( prop.getStringValue( transaction ) ) ) {
-                result = new PrimaryKeyImpl( transaction, getRepository(), kobject.getAbsolutePath() );
+            if ( PrimaryKey.CONSTRAINT_TYPE.toValue().equals( prop.getStringValue( getTransaction() ) ) ) {
+                result = new PrimaryKeyImpl( getTransaction(), getRepository(), kobject.getAbsolutePath() );
                 break;
             }
         }
@@ -429,33 +422,32 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.core.repository.ObjectImpl#getPrimaryType(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.ObjectImpl#getPrimaryType()
      */
     @Override
-    public Descriptor getPrimaryType( final UnitOfWork transaction ) throws KException {
-        return OptionContainerUtils.createPrimaryType(transaction, this, super.getPrimaryType( transaction ));
+    public Descriptor getPrimaryType( ) throws KException {
+        return OptionContainerUtils.createPrimaryType(getTransaction(), this, super.getPrimaryType( ));
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.internal.RelationalObjectImpl#getProperty(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String)
+     * @see org.komodo.relational.internal.RelationalObjectImpl#getProperty(java.lang.String)
      */
     @Override
-    public Property getProperty( final UnitOfWork transaction,
+    public Property getProperty(
                                  final String name ) throws KException {
-        return OptionContainerUtils.getProperty( transaction, this, name, super.getProperty( transaction, name ) );
+        return OptionContainerUtils.getProperty( getTransaction(), this, name, super.getProperty( name ) );
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.internal.RelationalObjectImpl#getPropertyNames(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.relational.internal.RelationalObjectImpl#getPropertyNames()
      */
     @Override
-    public String[] getPropertyNames( final UnitOfWork transaction ) throws KException {
-        return OptionContainerUtils.getPropertyNames( transaction, this, super.getPropertyNames( transaction ) );
+    public String[] getPropertyNames() throws KException {
+        return OptionContainerUtils.getPropertyNames( getTransaction(), this, super.getPropertyNames( ) );
     }
 
     /**
@@ -464,8 +456,8 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      * @see org.komodo.relational.model.Table#getQueryExpression(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public String getQueryExpression( final UnitOfWork uow ) throws KException {
-        return getObjectProperty(uow, PropertyValueType.STRING, "getQueryExpression", CreateTable.QUERY_EXPRESSION); //$NON-NLS-1$
+    public String getQueryExpression() throws KException {
+        return getObjectProperty(getTransaction(), PropertyValueType.STRING, "getQueryExpression", CreateTable.QUERY_EXPRESSION); //$NON-NLS-1$
     }
 
     /**
@@ -474,8 +466,8 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      * @see org.komodo.relational.model.SchemaElement#getSchemaElementType(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public SchemaElementType getSchemaElementType( final UnitOfWork uow ) throws KException {
-        final String value = getObjectProperty(uow, PropertyValueType.STRING, "getSchemaElementType", //$NON-NLS-1$
+    public SchemaElementType getSchemaElementType() throws KException {
+        final String value = getObjectProperty(getTransaction(), PropertyValueType.STRING, "getSchemaElementType", //$NON-NLS-1$
                                                SchemaElement.TYPE);
 
         if (StringUtils.isBlank(value)) {
@@ -498,21 +490,21 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.internal.OptionContainer#getStatementOptionNames(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.relational.internal.OptionContainer#getStatementOptionNames()
      */
     @Override
-    public String[] getStatementOptionNames( final UnitOfWork transaction ) throws KException {
-        return OptionContainerUtils.getOptionNames( transaction, this );
+    public String[] getStatementOptionNames() throws KException {
+        return OptionContainerUtils.getOptionNames( getTransaction(), this );
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.internal.OptionContainer#getStatementOptions(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.relational.internal.OptionContainer#getStatementOptions()
      */
     @Override
-    public StatementOption[] getStatementOptions( final UnitOfWork transaction ) throws KException {
-        return OptionContainerUtils.getOptions( transaction, this );
+    public StatementOption[] getStatementOptions() throws KException {
+        return OptionContainerUtils.getOptions( getTransaction(), this );
     }
 
     /**
@@ -521,8 +513,8 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      * @see org.komodo.relational.model.Table#getTemporaryTableType(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public TemporaryType getTemporaryTableType( final UnitOfWork uow ) throws KException {
-        final String value = getObjectProperty(uow, PropertyValueType.STRING, "getTemporaryTableType", //$NON-NLS-1$
+    public TemporaryType getTemporaryTableType() throws KException {
+        final String value = getObjectProperty(getTransaction(), PropertyValueType.STRING, "getTemporaryTableType", //$NON-NLS-1$
                                                StandardDdlLexicon.TEMPORARY);
 
         if (StringUtils.isBlank(value)) {
@@ -545,10 +537,10 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.core.repository.ObjectImpl#getTypeIdentifier(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.ObjectImpl#getTypeIdentifier()
      */
     @Override
-    public KomodoType getTypeIdentifier( final UnitOfWork uow ) {
+    public KomodoType getTypeIdentifier() {
         return Table.IDENTIFIER;
     }
 
@@ -559,18 +551,18 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      *      java.lang.String[])
      */
     @Override
-    public UniqueConstraintImpl[] getUniqueConstraints( final UnitOfWork transaction,
+    public UniqueConstraintImpl[] getUniqueConstraints(
                                                     final String... namePatterns ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         final List< UniqueConstraintImpl > result = new ArrayList< UniqueConstraintImpl >();
 
-        for ( final KomodoObject kobject : getChildrenOfType( transaction, Constraint.TABLE_ELEMENT, namePatterns ) ) {
-            final Property prop = kobject.getRawProperty( transaction, Constraint.TYPE );
+        for ( final KomodoObject kobject : getChildrenOfType( Constraint.TABLE_ELEMENT, namePatterns ) ) {
+            final Property prop = kobject.getRawProperty( getTransaction(), Constraint.TYPE );
 
-            if ( UniqueConstraint.CONSTRAINT_TYPE.toValue().equals( prop.getStringValue( transaction ) ) ) {
-                final UniqueConstraintImpl constraint = new UniqueConstraintImpl( transaction,
+            if ( UniqueConstraint.CONSTRAINT_TYPE.toValue().equals( prop.getStringValue( getTransaction() ) ) ) {
+                final UniqueConstraintImpl constraint = new UniqueConstraintImpl( getTransaction(),
                                                                               getRepository(),
                                                                               kobject.getAbsolutePath() );
                 result.add( constraint );
@@ -590,45 +582,44 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      * @see org.komodo.relational.model.Table#getUuid(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public String getUuid( final UnitOfWork transaction ) throws KException {
-        return OptionContainerUtils.getOption( transaction, this, StandardOption.UUID.name() );
+    public String getUuid() throws KException {
+        return OptionContainerUtils.getOption( getTransaction(), this, StandardOption.UUID.name() );
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.internal.RelationalObjectImpl#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.relational.internal.RelationalObjectImpl#getParent()
      */
     @Override
-    public ModelImpl getParent( final UnitOfWork transaction ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
+    public ModelImpl getParent() throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
 
-        final KomodoObject parent = super.getParent( transaction );
-        final ModelImpl result = ModelImpl.RESOLVER.resolve( transaction, parent );
+        final KomodoObject parent = super.getParent( );
+        final ModelImpl result = ModelImpl.RESOLVER.resolve( parent );
         return result;
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.core.repository.ObjectImpl#hasProperties(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.core.repository.ObjectImpl#hasProperties()
      */
     @Override
-    public boolean hasProperties( final UnitOfWork transaction ) throws KException {
-        return OptionContainerUtils.hasProperties( transaction, this, super.hasProperties( transaction ) );
+    public boolean hasProperties() throws KException {
+        return OptionContainerUtils.hasProperties( getTransaction(), this, super.hasProperties( ) );
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.internal.RelationalObjectImpl#hasProperty(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String)
+     * @see org.komodo.relational.internal.RelationalObjectImpl#hasProperty(java.lang.String)
      */
     @Override
-    public boolean hasProperty( final UnitOfWork transaction,
+    public boolean hasProperty(
                                 final String name ) throws KException {
-        return OptionContainerUtils.hasProperty( transaction, this, name, super.hasProperty( transaction, name ) );
+        return OptionContainerUtils.hasProperty( getTransaction(), this, name, super.hasProperty( name ) );
     }
 
     /**
@@ -638,9 +629,9 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      *      java.lang.String)
      */
     @Override
-    public boolean isCustomOption( final UnitOfWork transaction,
+    public boolean isCustomOption(
                                    final String name ) throws KException {
-        return OptionContainerUtils.hasCustomOption( transaction, this, name );
+        return OptionContainerUtils.hasCustomOption( getTransaction(), this, name );
     }
 
     /**
@@ -649,8 +640,8 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      * @see org.komodo.relational.model.Table#isMaterialized(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public boolean isMaterialized( final UnitOfWork transaction ) throws KException {
-        final String option = OptionContainerUtils.getOption( transaction, this, StandardOption.MATERIALIZED.name() );
+    public boolean isMaterialized() throws KException {
+        final String option = OptionContainerUtils.getOption( getTransaction(), this, StandardOption.MATERIALIZED.name() );
 
         if ( option == null ) {
             return Table.DEFAULT_MATERIALIZED;
@@ -675,8 +666,8 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      * @see org.komodo.relational.model.Table#isUpdatable(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public boolean isUpdatable( final UnitOfWork transaction ) throws KException {
-        final String option = OptionContainerUtils.getOption( transaction, this, StandardOption.UPDATABLE.name() );
+    public boolean isUpdatable() throws KException {
+        final String option = OptionContainerUtils.getOption( getTransaction(), this, StandardOption.UPDATABLE.name() );
 
         if ( option == null ) {
             return Table.DEFAULT_UPDATABLE;
@@ -691,20 +682,20 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      * @see org.komodo.relational.model.Table#removeColumn(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
-    public void removeColumn( final UnitOfWork transaction,
+    public void removeColumn(
                               final String columnToRemove ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( columnToRemove, "columnToRemove" ); //$NON-NLS-1$
 
-        final ColumnImpl[] columns = getColumns( transaction, columnToRemove );
+        final ColumnImpl[] columns = getColumns( columnToRemove );
 
         if ( columns.length == 0 ) {
             throw new KException( Messages.getString( Relational.COLUMN_NOT_FOUND_TO_REMOVE, columnToRemove ) );
         }
 
         // remove first occurrence
-        columns[ 0 ].remove( transaction );
+        columns[ 0 ].remove( getTransaction() );
     }
 
     /**
@@ -713,13 +704,13 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      * @see org.komodo.relational.model.Table#removeForeignKey(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
-    public void removeForeignKey( final UnitOfWork transaction,
+    public void removeForeignKey(
                                   final String foreignKeyToRemove ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( foreignKeyToRemove, "foreignKeyToRemove" ); //$NON-NLS-1$
 
-        final ForeignKeyImpl[] foreignKeys = getForeignKeys( transaction, foreignKeyToRemove );
+        final ForeignKeyImpl[] foreignKeys = getForeignKeys( foreignKeyToRemove );
 
         if ( foreignKeys.length == 0 ) {
             throw new KException( Messages.getString( Relational.CONSTRAINT_NOT_FOUND_TO_REMOVE,
@@ -728,7 +719,7 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
         }
 
         // remove first occurrence
-        foreignKeys[ 0 ].remove( transaction );
+        foreignKeys[ 0 ].remove( getTransaction() );
     }
 
     /**
@@ -737,11 +728,11 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      * @see org.komodo.relational.model.Table#removePrimaryKey(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public void removePrimaryKey( final UnitOfWork transaction ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+    public void removePrimaryKey() throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
-        final PrimaryKeyImpl primaryKey = getPrimaryKey( transaction );
+        final PrimaryKeyImpl primaryKey = getPrimaryKey( );
 
         if ( primaryKey == null ) {
             throw new KException( Messages.getString( Relational.CONSTRAINT_NOT_FOUND_TO_REMOVE,
@@ -749,7 +740,7 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
                                                       PrimaryKey.CONSTRAINT_TYPE.toString() ) );
         }
 
-        primaryKey.remove( transaction );
+        primaryKey.remove( getTransaction() );
     }
 
     /**
@@ -759,9 +750,9 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      *      java.lang.String)
      */
     @Override
-    public void removeStatementOption( final UnitOfWork transaction,
+    public void removeStatementOption(
                                        final String optionToRemove ) throws KException {
-        OptionContainerUtils.removeOption( transaction, this, optionToRemove );
+        OptionContainerUtils.removeOption( getTransaction(), this, optionToRemove );
     }
 
     /**
@@ -771,13 +762,13 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      *      java.lang.String)
      */
     @Override
-    public void removeUniqueConstraint( final UnitOfWork transaction,
+    public void removeUniqueConstraint(
                                         final String constraintToRemove ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotEmpty( constraintToRemove, "constraintToRemove" ); //$NON-NLS-1$
 
-        final UniqueConstraintImpl[] uniqueConstraints = getUniqueConstraints( transaction, constraintToRemove );
+        final UniqueConstraintImpl[] uniqueConstraints = getUniqueConstraints( constraintToRemove );
 
         if ( uniqueConstraints.length == 0 ) {
             throw new KException( Messages.getString( Relational.CONSTRAINT_NOT_FOUND_TO_REMOVE,
@@ -786,7 +777,7 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
         }
 
         // remove first occurrence
-        uniqueConstraints[ 0 ].remove( transaction );
+        uniqueConstraints[ 0 ].remove( getTransaction() );
     }
 
     /**
@@ -795,20 +786,20 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      * @see org.komodo.relational.model.Table#setCardinality(org.komodo.spi.repository.Repository.UnitOfWork, long)
      */
     @Override
-    public void setCardinality( final UnitOfWork transaction,
+    public void setCardinality(
                                 final long newCardinality ) throws KException {
-        setStatementOption(transaction, StandardOption.CARDINALITY.name(), Long.toString(newCardinality));
+        setStatementOption(StandardOption.CARDINALITY.name(), Long.toString(newCardinality));
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.model.Table#setDescription(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
+     * @see org.komodo.relational.model.Table#setDescription(java.lang.String)
      */
     @Override
-    public void setDescription( final UnitOfWork transaction,
+    public void setDescription(
                                 final String newDescription ) throws KException {
-        setStatementOption(transaction, StandardOption.ANNOTATION.name(), newDescription);
+        setStatementOption(StandardOption.ANNOTATION.name(), newDescription);
     }
 
     /**
@@ -817,9 +808,9 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      * @see org.komodo.relational.model.Table#setMaterialized(org.komodo.spi.repository.Repository.UnitOfWork, boolean)
      */
     @Override
-    public void setMaterialized( final UnitOfWork transaction,
+    public void setMaterialized(
                                  final boolean newMaterialized ) throws KException {
-        setStatementOption(transaction, StandardOption.MATERIALIZED.name(), Boolean.toString(newMaterialized));
+        setStatementOption(StandardOption.MATERIALIZED.name(), Boolean.toString(newMaterialized));
     }
 
     /**
@@ -829,9 +820,9 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      *      java.lang.String)
      */
     @Override
-    public void setMaterializedTable( final UnitOfWork transaction,
+    public void setMaterializedTable(
                                       final String newMaterializedTable ) throws KException {
-        setStatementOption(transaction, StandardOption.MATERIALIZED_TABLE.name(), newMaterializedTable);
+        setStatementOption(StandardOption.MATERIALIZED_TABLE.name(), newMaterializedTable);
     }
 
     /**
@@ -840,9 +831,9 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      * @see org.komodo.relational.model.Table#setNameInSource(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
-    public void setNameInSource( final UnitOfWork transaction,
+    public void setNameInSource(
                                  final String newNameInSource ) throws KException {
-        setStatementOption(transaction, StandardOption.NAMEINSOURCE.name(), newNameInSource);
+        setStatementOption(StandardOption.NAMEINSOURCE.name(), newNameInSource);
     }
 
     /**
@@ -852,10 +843,10 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      *      org.komodo.relational.model.Table.OnCommit)
      */
     @Override
-    public void setOnCommitValue( final UnitOfWork uow,
+    public void setOnCommitValue(
                                   final OnCommit newOnCommit ) throws KException {
         final String newValue = (newOnCommit == null) ? null : newOnCommit.toValue();
-        setObjectProperty(uow, "setOnCommitValue", StandardDdlLexicon.ON_COMMIT_VALUE, newValue); //$NON-NLS-1$
+        setObjectProperty(getTransaction(), "setOnCommitValue", StandardDdlLexicon.ON_COMMIT_VALUE, newValue); //$NON-NLS-1$
     }
 
     /**
@@ -864,32 +855,31 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      * @see org.komodo.relational.model.Table#setPrimaryKey(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
-    public PrimaryKeyImpl setPrimaryKey( final UnitOfWork transaction,
+    public PrimaryKeyImpl setPrimaryKey(
                                      final String newPrimaryKeyName ) throws KException {
         // delete existing primary key (don't call removePrimaryKey as it throws exception if one does not exist)
-        final PrimaryKeyImpl primaryKey = getPrimaryKey( transaction );
+        final PrimaryKeyImpl primaryKey = getPrimaryKey( );
 
         if ( primaryKey != null ) {
-            primaryKey.remove( transaction );
+            primaryKey.remove( getTransaction() );
         }
 
-        final PrimaryKeyImpl result = RelationalModelFactory.createPrimaryKey( transaction, getRepository(), this, newPrimaryKeyName );
+        final PrimaryKeyImpl result = RelationalModelFactory.createPrimaryKey( getTransaction(), getRepository(), this, newPrimaryKeyName );
         return result;
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.core.repository.ObjectImpl#setProperty(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String,
-     *      java.lang.Object[])
+     * @see org.komodo.core.repository.ObjectImpl#setProperty(java.lang.String, java.lang.Object[])
      */
     @Override
-    public void setProperty( final UnitOfWork transaction,
+    public void setProperty(
                              final String propertyName,
                              final Object... values ) throws KException {
         // if an option was not set then set a property
-        if ( !OptionContainerUtils.setProperty( transaction, this, propertyName, values ) ) {
-            super.setProperty( transaction, propertyName, values );
+        if ( !OptionContainerUtils.setProperty( getTransaction(), this, propertyName, values ) ) {
+            super.setProperty( propertyName, values );
         }
     }
 
@@ -900,9 +890,9 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      *      java.lang.String)
      */
     @Override
-    public void setQueryExpression( final UnitOfWork uow,
+    public void setQueryExpression(
                                     final String newQueryExpression ) throws KException {
-        setObjectProperty(uow, "setQueryExpression", CreateTable.QUERY_EXPRESSION, newQueryExpression); //$NON-NLS-1$
+        setObjectProperty(getTransaction(), "setQueryExpression", CreateTable.QUERY_EXPRESSION, newQueryExpression); //$NON-NLS-1$
     }
 
     /**
@@ -912,23 +902,23 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      *      org.komodo.relational.model.SchemaElement.SchemaElementType)
      */
     @Override
-    public void setSchemaElementType( final UnitOfWork uow,
+    public void setSchemaElementType(
                                       final SchemaElementType newSchemaElementType ) throws KException {
         final String newValue = ((newSchemaElementType == null) ? SchemaElementType.DEFAULT_VALUE.name() : newSchemaElementType.name());
-        setObjectProperty(uow, "setSchemaElementType", SchemaElement.TYPE, newValue); //$NON-NLS-1$
+        setObjectProperty(getTransaction(), "setSchemaElementType", SchemaElement.TYPE, newValue); //$NON-NLS-1$
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.internal.OptionContainer#setStatementOption(org.komodo.spi.repository.Repository.UnitOfWork,
-     *      java.lang.String, java.lang.String)
+     * @see org.komodo.relational.internal.OptionContainer#setStatementOption(java.lang.String,
+     *      java.lang.String)
      */
     @Override
-    public StatementOption setStatementOption( final UnitOfWork transaction,
+    public StatementOption setStatementOption(
                                                final String optionName,
                                                final String optionValue ) throws KException {
-        return OptionContainerUtils.setOption( transaction, this, optionName, optionValue );
+        return OptionContainerUtils.setOption( getTransaction(), this, optionName, optionValue );
     }
 
     /**
@@ -938,10 +928,10 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      *      org.komodo.relational.model.Table.TemporaryType)
      */
     @Override
-    public void setTemporaryTableType( final UnitOfWork uow,
+    public void setTemporaryTableType(
                                        final TemporaryType newTempType ) throws KException {
         final String newValue = ((newTempType == null) ? null : newTempType.name());
-        setObjectProperty(uow, "setTemporaryTableType", StandardDdlLexicon.TEMPORARY, newValue); //$NON-NLS-1$
+        setObjectProperty(getTransaction(), "setTemporaryTableType", StandardDdlLexicon.TEMPORARY, newValue); //$NON-NLS-1$
     }
 
     /**
@@ -950,9 +940,9 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      * @see org.komodo.relational.model.Table#setUpdatable(org.komodo.spi.repository.Repository.UnitOfWork, boolean)
      */
     @Override
-    public void setUpdatable( final UnitOfWork transaction,
+    public void setUpdatable(
                               final boolean newUpdatable ) throws KException {
-        setStatementOption(transaction, StandardOption.UPDATABLE.name(), Boolean.toString(newUpdatable));
+        setStatementOption(StandardOption.UPDATABLE.name(), Boolean.toString(newUpdatable));
     }
 
     /**
@@ -961,9 +951,9 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      * @see org.komodo.relational.model.Table#setUuid(org.komodo.spi.repository.Repository.UnitOfWork, java.lang.String)
      */
     @Override
-    public void setUuid( final UnitOfWork transaction,
+    public void setUuid(
                          final String newUuid ) throws KException {
-        setStatementOption( transaction, StandardOption.UUID.name(), newUuid );
+        setStatementOption( StandardOption.UUID.name(), newUuid );
     }
 
     private String exportDdl(UnitOfWork transaction, Properties exportProperties) throws Exception {
@@ -987,19 +977,19 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
      * @see org.komodo.spi.repository.Exportable#export(org.komodo.spi.repository.Repository.UnitOfWork, java.util.Properties)
      */
     @Override
-    public byte[] export( final UnitOfWork transaction , Properties exportProperties) throws KException {
-        ArgCheck.isNotNull(transaction);
+    public byte[] export(Properties exportProperties) throws KException {
+        ArgCheck.isNotNull(getTransaction());
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("tableimpl-export: transaction = {0}", transaction.getName()); //$NON-NLS-1$
+            LOGGER.debug("tableimpl-export: transaction = {0}", getTransaction().getName()); //$NON-NLS-1$
         }
 
         try {
-            String result = exportDdl(transaction, exportProperties);
+            String result = exportDdl(getTransaction(), exportProperties);
 
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("TableImpl: transaction = {0}, xml = {1}", //$NON-NLS-1$
-                             transaction.getName(),
+                             getTransaction().getName(),
                              result);
             }
 
@@ -1011,8 +1001,8 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
     }
     
     @Override
-    public ModelImpl getRelationalParent(UnitOfWork transaction) throws KException {
-    	return this.getParent(transaction);
+    public ModelImpl getRelationalParent() throws KException {
+    	return this.getParent();
     }
 
 }

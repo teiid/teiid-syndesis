@@ -28,7 +28,6 @@ import org.komodo.relational.DeployStatus;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
-import org.komodo.spi.repository.UnitOfWork;
 import org.teiid.adminapi.Admin;
 import org.teiid.adminapi.AdminException;
 
@@ -281,11 +280,8 @@ public interface MetadataInstance extends StringConstants {
 	Admin getAdmin() throws AdminException;
 
     /**
-     * @param uow
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @param vdb
      * @return the deployment status of the vdb
      */
-	DeployStatus deploy(UnitOfWork uow, Vdb vdb);
+	DeployStatus deploy(Vdb vdb);
 }

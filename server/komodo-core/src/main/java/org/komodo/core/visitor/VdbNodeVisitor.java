@@ -34,7 +34,6 @@ import org.komodo.core.repository.Descriptor;
 import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.OperationType;
 import org.komodo.core.repository.Property;
-import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.metadata.DataTypeService;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
@@ -255,7 +254,7 @@ public class VdbNodeVisitor extends AbstractNodeVisitor implements StringConstan
 
     private boolean isPrimaryNodeType(UnitOfWork transaction, KomodoObject kObject, NodeTypeName kObjectTypeName)
         throws Exception {
-        Descriptor kObjectType = kObject.getPrimaryType(transaction);
+        Descriptor kObjectType = kObject.getPrimaryType();
         return kObjectTypeName.getId().equals(kObjectType.getName());
     }
 
@@ -285,7 +284,7 @@ public class VdbNodeVisitor extends AbstractNodeVisitor implements StringConstan
         Property property = property(transaction, kObject, VdbLexicon.DataRole.Permission.Mask.ORDER);
         writeAttribute(VdbLexicon.ManifestIds.ORDER, toString(transaction, property));
 
-        writeCharacters(kObject.getName(transaction));
+        writeCharacters(kObject.getName());
         writeEndElement();
     }
 
@@ -300,7 +299,7 @@ public class VdbNodeVisitor extends AbstractNodeVisitor implements StringConstan
         Property property = property(transaction, kObject, VdbLexicon.DataRole.Permission.Condition.CONSTRAINT);
         writeAttribute(VdbLexicon.ManifestIds.CONSTRAINT, toString(transaction, property));
 
-        writeCharacters(kObject.getName(transaction));
+        writeCharacters(kObject.getName());
         writeEndElement();
     }
 
@@ -316,7 +315,7 @@ public class VdbNodeVisitor extends AbstractNodeVisitor implements StringConstan
         // Resource name element
         writeNewLine();
         writeTab(ElementTabValue.RESOURCE_NAME);
-        writeElementWithText(VdbLexicon.ManifestIds.RESOURCE_NAME, kObject.getName(transaction));
+        writeElementWithText(VdbLexicon.ManifestIds.RESOURCE_NAME, kObject.getName());
 
         String[][] permTags = {
             {VdbLexicon.DataRole.Permission.ALLOW_CREATE, VdbLexicon.ManifestIds.ALLOW_CREATE},
@@ -363,7 +362,7 @@ public class VdbNodeVisitor extends AbstractNodeVisitor implements StringConstan
         writeStartElement(NodeTypeName.DATA_ROLE.getTag());
 
         // Process data role attributes
-        String nameProp = kObject.getName(transaction);
+        String nameProp = kObject.getName();
         writeAttribute(VdbLexicon.ManifestIds.NAME, nameProp);
         Property authProp = property(transaction, kObject, VdbLexicon.DataRole.ANY_AUTHENTICATED);
         writeAttribute(VdbLexicon.ManifestIds.ANY_AUTHENTICATED, toString(transaction, authProp));
@@ -380,8 +379,8 @@ public class VdbNodeVisitor extends AbstractNodeVisitor implements StringConstan
         visitChild(transaction, kObject, NodeTypeName.PERMISSIONS.getId());
 
         // Mapped Role Names
-        if (kObject.hasProperty(transaction, VdbLexicon.DataRole.MAPPED_ROLE_NAMES)) {
-            Property property = kObject.getProperty(transaction, VdbLexicon.DataRole.MAPPED_ROLE_NAMES);
+        if (kObject.hasProperty(VdbLexicon.DataRole.MAPPED_ROLE_NAMES)) {
+            Property property = kObject.getProperty(VdbLexicon.DataRole.MAPPED_ROLE_NAMES);
             Object[] mappedRoleValues = property.getValues(transaction);
             for (Object value : mappedRoleValues) {
                 writeTab(ElementTabValue.MAPPED_ROLE_NAME);
@@ -402,7 +401,7 @@ public class VdbNodeVisitor extends AbstractNodeVisitor implements StringConstan
         writeStartElement(NodeTypeName.TRANSLATOR.getTag());
 
         // Process translator attributes
-        String nameProp = kObject.getName(transaction);
+        String nameProp = kObject.getName();
         writeAttribute(VdbLexicon.ManifestIds.NAME, nameProp);
         Property typeProp = property(transaction, kObject, VdbLexicon.Translator.TYPE);
         writeAttribute(VdbLexicon.ManifestIds.TYPE, toString(transaction, typeProp));
@@ -431,7 +430,7 @@ public class VdbNodeVisitor extends AbstractNodeVisitor implements StringConstan
         writeStartElement(NodeTypeName.SOURCE.getTag());
 
         // Process source attributes
-        String nameProp = kObject.getName(transaction);
+        String nameProp = kObject.getName();
         writeAttribute(VdbLexicon.ManifestIds.NAME, nameProp);
         Property translatorProp = property(transaction, kObject, VdbLexicon.Source.TRANSLATOR);
         writeAttribute(VdbLexicon.ManifestIds.TRANSLATOR_NAME, toString(transaction, translatorProp));
@@ -457,15 +456,15 @@ public class VdbNodeVisitor extends AbstractNodeVisitor implements StringConstan
     private Properties sourceConnections(UnitOfWork transaction, KomodoObject model) throws Exception {
         Properties props = new Properties();
     
-        if (! model.hasChild(transaction, NodeTypeName.SOURCES.getId()))
+        if (! model.hasChild(NodeTypeName.SOURCES.getId()))
             return props;
 
-        KomodoObject sources = model.getChild(transaction, NodeTypeName.SOURCES.getId());
-        for (KomodoObject source : sources.getChildrenOfType(transaction, NodeTypeName.SOURCE.getId())) {
-            if (! source.hasProperty(transaction, VdbLexicon.Source.ORIGIN_CONNECTION))
+        KomodoObject sources = model.getChild(NodeTypeName.SOURCES.getId());
+        for (KomodoObject source : sources.getChildrenOfType(NodeTypeName.SOURCE.getId())) {
+            if (! source.hasProperty(VdbLexicon.Source.ORIGIN_CONNECTION))
                 continue;
 
-            Property connProperty = source.getProperty(transaction, VdbLexicon.Source.ORIGIN_CONNECTION);
+            Property connProperty = source.getProperty(VdbLexicon.Source.ORIGIN_CONNECTION);
             String connName = connProperty.getStringValue(transaction);
             if (connName == null)
                 continue;
@@ -474,7 +473,7 @@ public class VdbNodeVisitor extends AbstractNodeVisitor implements StringConstan
              * Add a property to the model that specifies the association
              * between the named source and the named connection
              */
-            props.setProperty(VdbLexicon.ManifestIds.ORIGIN_SRC_CONNECTION + "-" + source.getName(transaction), connName);
+            props.setProperty(VdbLexicon.ManifestIds.ORIGIN_SRC_CONNECTION + "-" + source.getName(), connName);
         }
 
         return props;
@@ -487,7 +486,7 @@ public class VdbNodeVisitor extends AbstractNodeVisitor implements StringConstan
         writeTab(ElementTabValue.MODEL);
         writeStartElement(NodeTypeName.MODEL.getTag());
 
-        writeAttribute(VdbLexicon.ManifestIds.NAME, kObject.getName(transaction));
+        writeAttribute(VdbLexicon.ManifestIds.NAME, kObject.getName());
 
         Property typeProp = property(transaction, kObject, CoreLexicon.JcrId.MODEL_TYPE);
         writeAttribute(VdbLexicon.ManifestIds.TYPE, toString(transaction, typeProp));
@@ -552,7 +551,7 @@ public class VdbNodeVisitor extends AbstractNodeVisitor implements StringConstan
         writeStartElement(NodeTypeName.IMPORT_VDB.getTag());
 
         // Process import-vdb attributes
-        String nameProp = kObject.getName(transaction);
+        String nameProp = kObject.getName();
         writeAttribute(VdbLexicon.ManifestIds.NAME, nameProp);
         Property versionProp = property(transaction, kObject, VdbLexicon.ImportVdb.VERSION);
         writeAttribute(VdbLexicon.ManifestIds.VERSION, toString(transaction, versionProp));
@@ -590,7 +589,7 @@ public class VdbNodeVisitor extends AbstractNodeVisitor implements StringConstan
         }
 
         for (Property property : properties) {
-            String name = property.getName(transaction);
+            String name = property.getName();
             if (name == null)
                 continue;
 
@@ -629,7 +628,7 @@ public class VdbNodeVisitor extends AbstractNodeVisitor implements StringConstan
     }
 
     private String convertNamePrefixToUri(UnitOfWork transaction, Property property) throws Exception {
-        String name = property.getName(transaction);
+        String name = property.getName();
         int index = name.indexOf( COLON );
 
         // if JCR expanded name or just a local name just return the name
@@ -640,7 +639,7 @@ public class VdbNodeVisitor extends AbstractNodeVisitor implements StringConstan
         // convert JCR qualified name to expanded name
         String prefix = name.substring(0, index);
 
-        KObjectFactory objectFactory = RepositoryImpl.getRepository(transaction).getObjectFactory();
+        KObjectFactory objectFactory = property.getRepository().getObjectFactory();
         String uri = objectFactory.getNamespaceURI(transaction, prefix) ;
         QName expanded = new QName( uri, name.substring( index + 1 ) );
 
@@ -721,7 +720,7 @@ public class VdbNodeVisitor extends AbstractNodeVisitor implements StringConstan
         if (kObject == null)
             return null;
 
-        Descriptor primaryType = kObject.getPrimaryType(transaction);
+        Descriptor primaryType = kObject.getPrimaryType();
         String kObjectTypeName = primaryType.getName();
         NodeTypeName ntName = NodeTypeName.findName(kObjectTypeName);
         try {
@@ -781,7 +780,7 @@ public class VdbNodeVisitor extends AbstractNodeVisitor implements StringConstan
                 // write tab value based on kObject path/type
                 writeTab(getTabValue(relNodePath));
 
-                KomodoObject child = kObject.getChild(transaction, relNodePath);
+                KomodoObject child = kObject.getChild(relNodePath);
                 child.accept(transaction, this);
             }
         } catch (XMLStreamException ex) {

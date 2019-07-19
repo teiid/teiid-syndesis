@@ -44,6 +44,7 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.AuthHandlingFilter;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoConfigurationProperties;
+import org.komodo.spi.KEngine;
 import org.komodo.spi.KException;
 import org.mockito.Mockito;
 import org.teiid.core.util.ObjectConverterUtil;
@@ -66,11 +67,11 @@ public class TestVDBPublisher extends RelationalModelTest {
 		 */
 
         Vdb vdb = createVdb(name);
-        Model accounts = vdb.addModel(getTransaction(), "accounts");
-        accounts.setVisible(getTransaction(), true);
-        ModelSource source = accounts.addSource(getTransaction(), "accounts-xyz");
-        source.setTranslatorName(getTransaction(), "postgresql");
-        source.setJndiName(getTransaction(), "java:/accountsDS");
+        Model accounts = vdb.addModel("accounts");
+        accounts.setVisible(true);
+        ModelSource source = accounts.addSource("accounts-xyz");
+        source.setTranslatorName("postgresql");
+        source.setJndiName("java:/accountsDS");
 
         commit(); // commit the import
     }
@@ -83,7 +84,7 @@ public class TestVDBPublisher extends RelationalModelTest {
         sources.add(getMySQLDS());
         sources.add(getPostgreSQL());
 
-		TeiidOpenShiftClient client = new TeiidOpenShiftClient(metadata, new EncryptionComponent("blah"),
+		TeiidOpenShiftClient client = new TeiidOpenShiftClient(metadata, Mockito.mock(KEngine.class), new EncryptionComponent("blah"),
 				new KomodoConfigurationProperties()) {
             @Override
             public Set<DefaultSyndesisDataSource> getSyndesisSources(OAuthCredentials authToken) throws KException {
@@ -153,7 +154,7 @@ public class TestVDBPublisher extends RelationalModelTest {
         assertThat( vdbs.length, is(1));
 
         final OAuthCredentials authToken = AuthHandlingFilter.threadOAuthCredentials.get();
-        String pom = generator.generatePomXml(authToken, getTransaction(), vdbs[0], false);
+        String pom = generator.generatePomXml(authToken, vdbs[0], false);
         assertEquals(ObjectConverterUtil.convertFileToString(new File("src/test/resources/generated-pom.xml")), pom);
     }
     
@@ -164,7 +165,7 @@ public class TestVDBPublisher extends RelationalModelTest {
         final Vdb[] vdbs = findVdbs();
         assertThat( vdbs.length, is(1));
 
-        InputStream dsIs = generator.buildDataSourceBuilders(vdbs[0], getTransaction());
+        InputStream dsIs = generator.buildDataSourceBuilders(vdbs[0]);
         String ds = ObjectConverterUtil.convertToString(dsIs);
         assertEquals(ObjectConverterUtil.convertFileToString(new File("src/test/resources/generated-ds.txt")), ds);
     }    
@@ -179,7 +180,7 @@ public class TestVDBPublisher extends RelationalModelTest {
         final OAuthCredentials authToken = AuthHandlingFilter.threadOAuthCredentials.get();
         PublishConfiguration config = new PublishConfiguration();
         Collection<EnvVar> variables = generator
-                .getEnvironmentVariablesForVDBDataSources(authToken, getTransaction(), vdbs[0], config);
+                .getEnvironmentVariablesForVDBDataSources(authToken, vdbs[0], config);
         assertThat( variables.size(), is(9));
         
         String javaOptions= 

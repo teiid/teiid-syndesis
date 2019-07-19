@@ -22,7 +22,6 @@ import java.util.Calendar;
 import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * A model of a dataservice instance
@@ -40,87 +39,66 @@ public interface Dataservice extends RelationalObject {
     KomodoType IDENTIFIER = KomodoType.DATASERVICE;
 
     /**
-     * @param uow
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @param name
      * @return the service VDB name (may be <code>null</code> if not defined)
      * @throws KException
      *         if an error occurs
      */
-    void setServiceVdbName( final UnitOfWork uow, String name ) throws KException;
+    void setServiceVdbName( String name ) throws KException;
 
     /**
-     * @param uow
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @return the service VDB name (may be <code>null</code> if not defined)
      * @throws KException
      *         if an error occurs
      */
-    String getServiceVdbName( final UnitOfWork uow ) throws KException;
+    String getServiceVdbName( ) throws KException;
 
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @return the value of the <code>description</code> property (can be empty)
      * @throws KException
      *         if an error occurs
      */
-    String getDescription( final UnitOfWork transaction ) throws KException;
+    String getDescription( ) throws KException;
 
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @return the last time the manifest was modified (can be <code>null</code>)
      * @throws KException
      *         if an error occurs
      */
-    Calendar getLastModified( final UnitOfWork transaction ) throws KException;
+    Calendar getLastModified( ) throws KException;
 
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not
-     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
      * @return the name of the user who last modified the data service (can be <code>null</code> or empty)
      * @throws KException
      *         if an error occurs
      */
-    String getModifiedBy( final UnitOfWork transaction ) throws KException;
+    String getModifiedBy( ) throws KException;
 
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param newDescription
      *        the new value of the <code>description</code> property
      * @throws KException
      *         if an error occurs
      */
-    void setDescription( final UnitOfWork transaction,
+    void setDescription( 
                          final String newDescription ) throws KException;
 
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param newLastModified
      *        the new value of the <code>last modified date</code> property
      * @throws KException
      *         if an error occurs
      */
-    void setLastModified( final UnitOfWork transaction,
+    void setLastModified( 
                           final Calendar newLastModified ) throws KException;
 
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param newModifiedBy
      *        the new value of the <code>modified by</code> property
      * @throws KException
      *         if an error occurs
      */
-    void setModifiedBy( final UnitOfWork transaction,
+    void setModifiedBy( 
                         final String newModifiedBy ) throws KException;
     
 }

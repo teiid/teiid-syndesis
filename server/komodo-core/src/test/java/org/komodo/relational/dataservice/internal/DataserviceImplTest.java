@@ -44,19 +44,19 @@ public final class DataserviceImplTest extends RelationalModelTest {
 
     @Test
     public void shouldHaveName() throws Exception {
-        assertThat( this.dataservice.getName( getTransaction() ), is( SERVICE_NAME ) );
+        assertThat( this.dataservice.getName( ), is( SERVICE_NAME ) );
     }
 
     @Test
     public void shouldHaveMoreRawProperties() throws Exception {
-        final String[] filteredProps = this.dataservice.getPropertyNames( getTransaction() );
+        final String[] filteredProps = this.dataservice.getPropertyNames( );
         final String[] rawProps = this.dataservice.getRawPropertyNames( getTransaction() );
         assertThat( ( rawProps.length > filteredProps.length ), is( true ) );
     }
 
     @Test
     public void shouldNotContainFilteredProperties() throws Exception {
-        final String[] filteredProps = this.dataservice.getPropertyNames( getTransaction() );
+        final String[] filteredProps = this.dataservice.getPropertyNames( );
         final Filter[] filters = ((DataserviceImpl)this.dataservice).getFilters();
 
         for ( final String name : filteredProps ) {
@@ -68,43 +68,43 @@ public final class DataserviceImplTest extends RelationalModelTest {
 
     @Test
     public void shouldHaveCorrectPrimaryType() throws Exception {
-        assertThat( this.dataservice.getPrimaryType( getTransaction() ).getName(), is( DataVirtLexicon.DataService.NODE_TYPE ) );
+        assertThat( this.dataservice.getPrimaryType( ).getName(), is( DataVirtLexicon.DataService.NODE_TYPE ) );
     }
 
     @Test
     public void shouldHaveCorrectTypeIdentifier() throws Exception {
-        assertThat(this.dataservice.getTypeIdentifier( getTransaction() ), is(KomodoType.DATASERVICE));
+        assertThat(this.dataservice.getTypeIdentifier( ), is(KomodoType.DATASERVICE));
     }
 
     @Test
     public void shouldSetDescription() throws Exception {
         final String descr = "This is a description";
-        this.dataservice.setDescription(getTransaction(), descr);
+        this.dataservice.setDescription(descr);
 
-        assertThat( this.dataservice.getDescription( getTransaction() ), is( descr ) );
+        assertThat( this.dataservice.getDescription( ), is( descr ) );
     }
 
     @Test
     public void shouldSetModifiedBy() throws Exception {
         final String user = "elvis";
-        this.dataservice.setModifiedBy( getTransaction(), user );
-        assertThat( this.dataservice.getModifiedBy( getTransaction() ), is( user ) );
+        this.dataservice.setModifiedBy( user );
+        assertThat( this.dataservice.getModifiedBy( ), is( user ) );
     }
 
     @Test
     public void shouldSetLastModified() throws Exception {
         final Calendar date = Calendar.getInstance();
         date.set( 2016, 8, 23, 13, 48, 33 );
-        this.dataservice.setLastModified( getTransaction(), date );
-        assertThat( this.dataservice.getLastModified( getTransaction() ), is( date ) );
+        this.dataservice.setLastModified( date );
+        assertThat( this.dataservice.getLastModified( ), is( date ) );
     }
 
     @Test
     public void shouldSetServiceVdbName() throws Exception {
         final String vdbName = "MyServiceVdb";
 
-        this.dataservice.setServiceVdbName( getTransaction(), vdbName );
-        assertEquals(vdbName, this.dataservice.getServiceVdbName( getTransaction()));
+        this.dataservice.setServiceVdbName( vdbName );
+        assertEquals(vdbName, this.dataservice.getServiceVdbName());
     }
 
 }

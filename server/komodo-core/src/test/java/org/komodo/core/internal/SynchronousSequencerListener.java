@@ -21,9 +21,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import javax.jcr.Session;
 import org.komodo.core.internal.repository.JcrUowDelegate;
+import org.komodo.core.internal.repository.UnitOfWorkDelegate;
 import org.komodo.core.repository.KSequencerController;
 import org.komodo.core.repository.KSequencerListener;
-import org.komodo.spi.repository.UnitOfWorkDelegate;
 import org.komodo.utils.KLog;
 
 /**

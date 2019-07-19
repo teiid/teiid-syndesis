@@ -30,6 +30,7 @@ import org.komodo.core.KEvent.Type;
 import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.RepositoryClientEvent;
 import org.komodo.core.repository.RepositoryImpl;
+import org.komodo.core.repository.SynchronousCallback;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.relational.workspace.WorkspaceManagerImpl;
 import org.komodo.spi.KEngine;
@@ -37,7 +38,6 @@ import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
 import org.komodo.spi.SystemConstants;
 import org.komodo.spi.repository.UnitOfWork;
-import org.komodo.spi.repository.UnitOfWorkListener;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
@@ -467,14 +467,23 @@ public class KEngineImpl implements KEngine, KObserver, StringConstants {
     }
 
 	@Override
-	public WorkspaceManagerImpl getWorkspaceManager(UnitOfWork transaction) throws KException {
-		return WorkspaceManagerImpl.getInstance(getDefaultRepository(), transaction);
+	public WorkspaceManagerImpl getWorkspaceManager() throws KException {
+		return WorkspaceManagerImpl.getInstance(getDefaultRepository(), getTransaction());
 	}
 
 	@Override
-	public UnitOfWork createTransaction(String userName, String name, boolean rollbackOnly, UnitOfWorkListener callback,
+	public UnitOfWork createTransaction(String userName, String name, boolean rollbackOnly, 
 			String repoUser) throws KException {
-        return getDefaultRepository().createTransaction(userName, name, rollbackOnly, callback, repoUser);
+        return getDefaultRepository().createTransaction(userName, name, rollbackOnly, new SynchronousCallback(), repoUser);
+	}
+
+	@Override
+	public void associateTransaction(UnitOfWork uow) {
+		RepositoryImpl.associateTransaction(uow);
+	}
+	
+	public static UnitOfWork getTransaction() {
+		return RepositoryImpl.getTransaction();
 	}
 
 }

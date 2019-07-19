@@ -21,7 +21,6 @@ import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * Represents a relational model table.
@@ -134,13 +133,8 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      */
     boolean DEFAULT_UPDATABLE = true;
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.core.repository.KNode#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
-     */
     @Override
-    Model getRelationalParent( final UnitOfWork transaction ) throws KException;
+    Model getRelationalParent( ) throws KException;
 
     /**
      * @param transaction
@@ -151,7 +145,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      * @throws KException
      *         if an error occurs
      */
-    Column addColumn( final UnitOfWork transaction,
+    Column addColumn( 
                       final String columnName ) throws KException;
 
     /**
@@ -165,7 +159,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      * @throws KException
      *         if an error occurs
      */
-    ForeignKey addForeignKey( final UnitOfWork transaction,
+    ForeignKey addForeignKey( 
                               final String foreignKeyName,
                               final Table referencedTable ) throws KException;
 
@@ -178,7 +172,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      * @throws KException
      *         if an error occurs
      */
-    UniqueConstraint addUniqueConstraint( final UnitOfWork transaction,
+    UniqueConstraint addUniqueConstraint( 
                                           final String constraintName ) throws KException;
 
     /**
@@ -189,7 +183,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      *         if an error occurs
      * @see #DEFAULT_CARDINALITY
      */
-    long getCardinality( final UnitOfWork transaction ) throws KException;
+    long getCardinality( ) throws KException;
 
     /**
      * @param transaction
@@ -200,7 +194,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      * @throws KException
      *         if an error occurs
      */
-    Column[] getColumns( final UnitOfWork transaction,
+    Column[] getColumns( 
                          final String... namePatterns ) throws KException;
 
     /**
@@ -210,7 +204,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      * @throws KException
      *         if an error occurs
      */
-    String getDescription( final UnitOfWork transaction ) throws KException;
+    String getDescription( ) throws KException;
 
     /**
      * @param transaction
@@ -221,7 +215,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      * @throws KException
      *         if an error occurs
      */
-    ForeignKey[] getForeignKeys( final UnitOfWork transaction,
+    ForeignKey[] getForeignKeys( 
                                  final String... namePatterns ) throws KException;
 
     /**
@@ -231,7 +225,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      * @throws KException
      *         if an error occurs
      */
-    String getMaterializedTable( final UnitOfWork transaction ) throws KException;
+    String getMaterializedTable( ) throws KException;
 
     /**
      * @param transaction
@@ -240,7 +234,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      * @throws KException
      *         if an error occurs
      */
-    String getNameInSource( final UnitOfWork transaction ) throws KException;
+    String getNameInSource( ) throws KException;
 
     /**
      * @param transaction
@@ -249,7 +243,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      * @throws KException
      *         if an error occurs
      */
-    OnCommit getOnCommitValue( final UnitOfWork transaction ) throws KException;
+    OnCommit getOnCommitValue( ) throws KException;
 
     /**
      * @param transaction
@@ -258,7 +252,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      * @throws KException
      *         if an error occurs
      */
-    PrimaryKey getPrimaryKey( final UnitOfWork transaction ) throws KException;
+    PrimaryKey getPrimaryKey( ) throws KException;
 
     /**
      * @param transaction
@@ -267,7 +261,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      * @throws KException
      *         if an error occurs
      */
-    String getQueryExpression( final UnitOfWork transaction ) throws KException;
+    String getQueryExpression( ) throws KException;
 
     /**
      * @param transaction
@@ -276,7 +270,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      * @throws KException
      *         if an error occurs
      */
-    TemporaryType getTemporaryTableType( final UnitOfWork transaction ) throws KException;
+    TemporaryType getTemporaryTableType( ) throws KException;
 
     /**
      * @param transaction
@@ -287,7 +281,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      * @throws KException
      *         if an error occurs
      */
-    UniqueConstraint[] getUniqueConstraints( final UnitOfWork transaction,
+    UniqueConstraint[] getUniqueConstraints( 
                                              final String... namePatterns ) throws KException;
 
     /**
@@ -297,7 +291,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      * @throws KException
      *         if an error occurs
      */
-    String getUuid( final UnitOfWork transaction ) throws KException;
+    String getUuid( ) throws KException;
 
     /**
      * @param transaction
@@ -307,7 +301,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      *         if an error occurs
      * @see #DEFAULT_MATERIALIZED
      */
-    boolean isMaterialized( final UnitOfWork transaction ) throws KException;
+    boolean isMaterialized( ) throws KException;
 
     /**
      * @param transaction
@@ -317,7 +311,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      *         if an error occurs
      * @see #DEFAULT_UPDATABLE
      */
-    boolean isUpdatable( final UnitOfWork transaction ) throws KException;
+    boolean isUpdatable( ) throws KException;
 
     /**
      * @param transaction
@@ -327,7 +321,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      * @throws KException
      *         if an error occurs
      */
-    void removeColumn( final UnitOfWork transaction,
+    void removeColumn( 
                        final String columnToRemove ) throws KException;
 
     /**
@@ -338,7 +332,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      * @throws KException
      *         if an error occurs
      */
-    void removeForeignKey( final UnitOfWork transaction,
+    void removeForeignKey( 
                            final String foreignKeyToRemove ) throws KException;
 
     /**
@@ -347,7 +341,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      * @throws KException
      *         if an error occurs
      */
-    void removePrimaryKey( final UnitOfWork transaction ) throws KException;
+    void removePrimaryKey( ) throws KException;
 
     /**
      * @param transaction
@@ -357,7 +351,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      * @throws KException
      *         if an error occurs
      */
-    void removeUniqueConstraint( final UnitOfWork transaction,
+    void removeUniqueConstraint( 
                                  final String constraintToRemove ) throws KException;
 
     /**
@@ -369,7 +363,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      *         if an error occurs
      * @see #DEFAULT_CARDINALITY
      */
-    void setCardinality( final UnitOfWork transaction,
+    void setCardinality( 
                          long newCardinality ) throws KException;
 
     /**
@@ -380,7 +374,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      * @throws KException
      *         if an error occurs
      */
-    void setDescription( final UnitOfWork transaction,
+    void setDescription( 
                          final String newDescription ) throws KException;
 
     /**
@@ -392,7 +386,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      *         if an error occurs
      * @see #DEFAULT_MATERIALIZED
      */
-    void setMaterialized( final UnitOfWork transaction,
+    void setMaterialized( 
                           final boolean newMaterialized ) throws KException;
 
     /**
@@ -403,7 +397,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      * @throws KException
      *         if an error occurs
      */
-    void setMaterializedTable( final UnitOfWork transaction,
+    void setMaterializedTable( 
                                final String newMaterializedTable ) throws KException;
 
     /**
@@ -414,7 +408,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      * @throws KException
      *         if an error occurs
      */
-    void setNameInSource( final UnitOfWork transaction,
+    void setNameInSource( 
                           final String newNameInSource ) throws KException;
 
     /**
@@ -425,7 +419,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      * @throws KException
      *         if an error occurs
      */
-    void setOnCommitValue( final UnitOfWork transaction,
+    void setOnCommitValue( 
                            final OnCommit newOnCommit ) throws KException;
 
     /**
@@ -437,7 +431,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      * @throws KException
      *         if an error occurs
      */
-    PrimaryKey setPrimaryKey( final UnitOfWork transaction,
+    PrimaryKey setPrimaryKey( 
                               final String newPrimaryKeyName ) throws KException;
 
     /**
@@ -448,7 +442,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      * @throws KException
      *         if an error occurs
      */
-    void setQueryExpression( final UnitOfWork transaction,
+    void setQueryExpression( 
                              final String newQueryExpression ) throws KException;
 
     /**
@@ -459,7 +453,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      * @throws KException
      *         if an error occurs
      */
-    void setTemporaryTableType( final UnitOfWork transaction,
+    void setTemporaryTableType( 
                                 final TemporaryType newTempType ) throws KException;
 
     /**
@@ -471,7 +465,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      *         if an error occurs
      * @see #DEFAULT_UPDATABLE
      */
-    void setUpdatable( final UnitOfWork transaction,
+    void setUpdatable( 
                        final boolean newUpdatable ) throws KException;
 
     /**
@@ -482,7 +476,7 @@ public interface Table extends Exportable, RelationalObject, SchemaElement {
      * @throws KException
      *         if an error occurs
      */
-    void setUuid( final UnitOfWork transaction,
+    void setUuid( 
                   final String newUuid ) throws KException;
 
 }

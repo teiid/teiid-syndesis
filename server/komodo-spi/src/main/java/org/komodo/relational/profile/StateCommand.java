@@ -22,7 +22,6 @@ import java.util.Map;
 import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * Represents the configuration of a view editor state command
@@ -46,31 +45,25 @@ public interface StateCommand extends RelationalObject {
 
 
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @return the id of the command
      * @throws KException
      *          if an error occurs
      */
-    String getId(final UnitOfWork transaction) throws KException;
+    String getId() throws KException;
 
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param id the id of the command
      * @throws Exception
      *          if an error occurs
      */
-    void setId(final UnitOfWork transaction, String id) throws Exception;
+    void setId( String id) throws Exception;
 
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @return the arguments of the command
      * @throws KException
      *         if an error occurs
      */
-    Map<String, String> getArguments(final UnitOfWork transaction) throws KException;
+    Map<String, String> getArguments() throws KException;
 
     /**
      * @param transaction
@@ -80,5 +73,5 @@ public interface StateCommand extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void setArguments(final UnitOfWork transaction, final Map<String, String> arguments) throws KException;
+    void setArguments( final Map<String, String> arguments) throws KException;
 }

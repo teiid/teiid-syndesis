@@ -23,7 +23,6 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * Represents a relational model.
@@ -50,13 +49,8 @@ public interface Model extends Exportable, RelationalObject {
      */
     KomodoType IDENTIFIER = KomodoType.MODEL;
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.core.repository.KNode#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
-     */
     @Override
-    Vdb getRelationalParent( final UnitOfWork transaction ) throws KException;
+    Vdb getRelationalParent( ) throws KException;
 
     /**
      * The type of a model.
@@ -90,7 +84,7 @@ public interface Model extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    ModelSource addSource( final UnitOfWork transaction,
+    ModelSource addSource( 
                            final String sourceName ) throws KException;
 
     /**
@@ -102,7 +96,7 @@ public interface Model extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    Table addTable( final UnitOfWork transaction,
+    Table addTable( 
                     final String tableName ) throws KException;
 
     /**
@@ -114,7 +108,7 @@ public interface Model extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    View addView( final UnitOfWork transaction,
+    View addView( 
                   final String viewName ) throws KException;
 
     /**
@@ -124,17 +118,7 @@ public interface Model extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    String getDescription( final UnitOfWork transaction ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> and its state must be {@link State#NOT_STARTED})
-     * @return the metadata type (can be empty if there is no model definition)
-     * @throws KException
-     *         if error occurs
-     * @see #DEFAULT_METADATA_TYPE
-     */
-    String getMetadataType( final UnitOfWork transaction ) throws KException;
+    String getDescription( ) throws KException;
 
     /**
      * @param transaction
@@ -143,7 +127,7 @@ public interface Model extends Exportable, RelationalObject {
      * @throws KException
      *         if error occurs
      */
-    String getModelDefinition( final UnitOfWork transaction ) throws KException;
+    String getModelDefinition( ) throws KException;
 
     /**
      * @param transaction
@@ -153,7 +137,7 @@ public interface Model extends Exportable, RelationalObject {
      *         if error occurs
      * @see Type#DEFAULT_VALUE
      */
-    Type getModelType( final UnitOfWork transaction ) throws KException;
+    Type getModelType( ) throws KException;
 
     /**
      * @param transaction
@@ -164,7 +148,7 @@ public interface Model extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    ModelSource[] getSources( final UnitOfWork transaction,
+    ModelSource[] getSources( 
                               final String... namePatterns ) throws KException;
 
     /**
@@ -176,7 +160,7 @@ public interface Model extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    Table[] getTables( final UnitOfWork transaction,
+    Table[] getTables( 
                        final String... namePatterns ) throws KException;
 
     /**
@@ -188,7 +172,7 @@ public interface Model extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    View[] getViews( final UnitOfWork transaction,
+    View[] getViews( 
                      final String... namePatterns ) throws KException;
 
     /**
@@ -199,7 +183,7 @@ public interface Model extends Exportable, RelationalObject {
      *         if an error occurs
      * @see #DEFAULT_VISIBLE
      */
-    boolean isVisible( final UnitOfWork transaction ) throws KException;
+    boolean isVisible( ) throws KException;
 
     /**
      * @param transaction
@@ -209,7 +193,7 @@ public interface Model extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void removeSource( final UnitOfWork transaction,
+    void removeSource( 
                        final String sourceName ) throws KException;
 
     /**
@@ -220,7 +204,7 @@ public interface Model extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void removeTable( final UnitOfWork transaction,
+    void removeTable( 
                       final String tableName ) throws KException;
 
     /**
@@ -231,7 +215,7 @@ public interface Model extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void removeView( final UnitOfWork transaction,
+    void removeView( 
                      final String viewName ) throws KException;
 
     /**
@@ -242,19 +226,8 @@ public interface Model extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void setDescription( final UnitOfWork transaction,
+    void setDescription( 
                          final String newDescription ) throws KException;
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of {@link State#NOT_STARTED})
-     * @param newMetadataType
-     *        the new value of the <code>metadataType</code> property (can be empty)
-     * @throws KException
-     *         if error occurs
-     */
-    void setMetadataType( final UnitOfWork transaction,
-                          final String newMetadataType ) throws KException;
 
     /**
      * @param transaction
@@ -264,7 +237,7 @@ public interface Model extends Exportable, RelationalObject {
      * @throws KException
      *         if error occurs
      */
-    void setModelDefinition( final UnitOfWork transaction,
+    void setModelDefinition( 
                              final String modelDefinition ) throws KException;
 
     /**
@@ -276,7 +249,7 @@ public interface Model extends Exportable, RelationalObject {
      *         if error occurs
      * @see Type#DEFAULT_VALUE
      */
-    void setModelType( final UnitOfWork transaction,
+    void setModelType( 
                        final Type newModelType ) throws KException;
 
     /**
@@ -288,9 +261,15 @@ public interface Model extends Exportable, RelationalObject {
      *         if an error occurs
      * @see #DEFAULT_VISIBLE
      */
-    void setVisible( final UnitOfWork transaction,
+    void setVisible( 
                      final boolean newVisible ) throws KException;
 
-	View getView(UnitOfWork transaction, String name) throws KException;
+    /**
+     * @param name
+     * @return the view found in this model
+     * @throws KException
+     *         if an error occurs
+     */
+	View getView(String name) throws KException;
 
 }

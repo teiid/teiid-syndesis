@@ -32,7 +32,6 @@ import org.komodo.openshift.BuildStatus;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.relational.dataservice.RestDataservice;
-import org.komodo.spi.repository.UnitOfWork;
 import org.mockito.Mockito;
 
 @SuppressWarnings( {"javadoc", "nls"} )
@@ -71,17 +70,15 @@ public final class RestDataserviceTest {
 
     @Before
     public void init() throws Exception {
-        UnitOfWork transaction = Mockito.mock(UnitOfWork.class);
-
         Vdb serviceVdb = Mockito.mock(Vdb.class);
-        Mockito.when(serviceVdb.getName(transaction)).thenReturn("ServiceVdb");
-        Mockito.when(serviceVdb.getVersion(transaction)).thenReturn(1);
+        Mockito.when(serviceVdb.getName()).thenReturn("ServiceVdb");
+        Mockito.when(serviceVdb.getVersion()).thenReturn(1);
 
         Dataservice theDataservice = Mockito.mock(Dataservice.class);
-        Mockito.when(theDataservice.getName(transaction)).thenReturn(DATASERVICE_NAME);
-        Mockito.when(theDataservice.getServiceVdbName(transaction)).thenReturn("ServiceVdb");
+        Mockito.when(theDataservice.getName()).thenReturn(DATASERVICE_NAME);
+        Mockito.when(theDataservice.getServiceVdbName()).thenReturn("ServiceVdb");
 
-        this.dataservice = new RestDataservice(BASE_URI, theDataservice, false, transaction, serviceVdb);
+        this.dataservice = new RestDataservice(BASE_URI, theDataservice, false, serviceVdb);
         this.dataservice.setId(DATASERVICE_NAME);
         this.dataservice.setDescription(DESCRIPTION);
         this.dataservice.setServiceVdbName(SERVICE_VDB_NAME);

@@ -19,7 +19,6 @@ package org.komodo.relational.model;
 
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * Represents a relational model view.
@@ -42,6 +41,6 @@ public interface View extends Table {
      * @see org.komodo.core.repository.KNode#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    Model getRelationalParent( final UnitOfWork transaction ) throws KException;
+    Model getRelationalParent( ) throws KException;
 
 }

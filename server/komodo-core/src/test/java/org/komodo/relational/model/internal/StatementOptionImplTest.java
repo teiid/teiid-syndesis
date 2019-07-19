@@ -65,22 +65,22 @@ public final class StatementOptionImplTest extends RelationalModelTest {
 
     @Test
     public void shouldHaveCorrectDescriptor() throws Exception {
-        assertThat( this.option.hasDescriptor( getTransaction(), StandardDdlLexicon.TYPE_STATEMENT_OPTION ), is( true ) );
+        assertThat( this.option.hasDescriptor( StandardDdlLexicon.TYPE_STATEMENT_OPTION ), is( true ) );
     }
 
     @Test
     public void shouldHaveCorrectTypeIdentifier() throws Exception {
-        assertThat(this.option.getTypeIdentifier( getTransaction() ), is(KomodoType.STATEMENT_OPTION));
+        assertThat(this.option.getTypeIdentifier( ), is(KomodoType.STATEMENT_OPTION));
     }
 
     @Test
     public void shouldHaveCorrectName() throws Exception {
-        assertThat( this.option.getName( getTransaction() ), is( NAME ) );
+        assertThat( this.option.getName( ), is( NAME ) );
     }
 
     @Test
     public void shouldHaveMoreRawProperties() throws Exception {
-        final String[] filteredProps = this.option.getPropertyNames( getTransaction() );
+        final String[] filteredProps = this.option.getPropertyNames( );
         final String[] rawProps = this.option.getRawPropertyNames( getTransaction() );
         assertThat( ( rawProps.length > filteredProps.length ), is( true ) );
     }
@@ -92,17 +92,17 @@ public final class StatementOptionImplTest extends RelationalModelTest {
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldNotAllowEmptyOptionValueProperty() throws Exception {
-        this.option.setOption( getTransaction(), StringConstants.EMPTY_STRING );
+        this.option.setOption( StringConstants.EMPTY_STRING );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldNotAllowNullOptionValueProperty() throws Exception {
-        this.option.setOption( getTransaction(), null );
+        this.option.setOption( null );
     }
 
     @Test
     public void shouldNotContainFilteredProperties() throws Exception {
-        final String[] filteredProps = this.option.getPropertyNames( getTransaction() );
+        final String[] filteredProps = this.option.getPropertyNames( );
         final Filter[] filters = ((StatementOptionImpl)this.option).getFilters();
 
         for ( final String name : filteredProps ) {
@@ -116,15 +116,15 @@ public final class StatementOptionImplTest extends RelationalModelTest {
     public void shouldRename() throws Exception {
         final String newName = "blah";
         this.option.rename( getTransaction(), newName );
-        assertThat( this.option.getName( getTransaction() ), is( newName ) );
+        assertThat( this.option.getName( ), is( newName ) );
     }
 
     @Test
     public void shouldSetOptionValueProperty() throws Exception {
         final String value = "optionvalue";
-        this.option.setOption( getTransaction(), value );
-        assertThat( this.option.getOption( getTransaction() ), is( value ) );
-        assertThat( this.option.getProperty( getTransaction(), StandardDdlLexicon.VALUE ).getStringValue( getTransaction() ), is( value ) );
+        this.option.setOption( value );
+        assertThat( this.option.getOption( ), is( value ) );
+        assertThat( this.option.getProperty( StandardDdlLexicon.VALUE ).getStringValue( getTransaction() ), is( value ) );
     }
 
 }

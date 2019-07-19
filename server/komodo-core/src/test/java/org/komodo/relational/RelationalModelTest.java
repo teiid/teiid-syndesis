@@ -44,10 +44,10 @@ public class RelationalModelTest extends AbstractLocalRepositoryTest {
                                  final String modelName ) throws Exception {
         final WorkspaceManagerImpl mgr = WorkspaceManagerImpl.getInstance(_repo, getTransaction());
         final VdbImpl vdb = mgr.createVdb( getTransaction(), null, vdbName, vdbPath );
-        final ModelImpl model = vdb.addModel( getTransaction(), modelName );
+        final ModelImpl model = vdb.addModel( modelName );
 
-        assertThat( model.getPrimaryType( getTransaction() ).getName(), is( VdbLexicon.Vdb.DECLARATIVE_MODEL ) );
-        assertThat( model.getName( getTransaction() ), is( modelName ) );
+        assertThat( model.getPrimaryType( ).getName(), is( VdbLexicon.Vdb.DECLARATIVE_MODEL ) );
+        assertThat( model.getName( ), is( modelName ) );
         return model;
     }
 
@@ -61,8 +61,8 @@ public class RelationalModelTest extends AbstractLocalRepositoryTest {
                                  final String tableName ) throws Exception {
         final WorkspaceManagerImpl mgr = WorkspaceManagerImpl.getInstance(_repo, getTransaction());
         final VdbImpl vdb = mgr.createVdb( getTransaction(), null, vdbName, vdbPath );
-        final ModelImpl model = vdb.addModel( getTransaction(), modelName );
-        return model.addTable( getTransaction(), tableName );
+        final ModelImpl model = vdb.addModel( modelName );
+        return model.addTable( tableName );
     }
 
     protected VdbImpl createVdb() throws Exception {
@@ -84,9 +84,9 @@ public class RelationalModelTest extends AbstractLocalRepositoryTest {
         final WorkspaceManagerImpl mgr = WorkspaceManagerImpl.getInstance(_repo, getTransaction());
         final VdbImpl vdb = mgr.createVdb( getTransaction(), parent, vdbName, originalFilePath );
 
-        assertThat( vdb.getPrimaryType( getTransaction() ).getName(), is( VdbLexicon.Vdb.VIRTUAL_DATABASE ) );
-        assertThat( vdb.getName( getTransaction() ), is( vdbName ) );
-        assertThat( vdb.getOriginalFilePath( getTransaction() ), is( originalFilePath ) );
+        assertThat( vdb.getPrimaryType( ).getName(), is( VdbLexicon.Vdb.VIRTUAL_DATABASE ) );
+        assertThat( vdb.getName( ), is( vdbName ) );
+        assertThat( vdb.getOriginalFilePath( ), is( originalFilePath ) );
         return vdb;
     }
 
@@ -103,8 +103,8 @@ public class RelationalModelTest extends AbstractLocalRepositoryTest {
         final WorkspaceManagerImpl mgr = WorkspaceManagerImpl.getInstance(_repo, getTransaction());
         final DataserviceImpl ds = mgr.createDataservice( getTransaction(), parent, serviceName );
 
-        assertThat( ds.getPrimaryType( getTransaction() ).getName(), is( DataVirtLexicon.DataService.NODE_TYPE ) );
-        assertThat( ds.getName( getTransaction() ), is( serviceName ) );
+        assertThat( ds.getPrimaryType( ).getName(), is( DataVirtLexicon.DataService.NODE_TYPE ) );
+        assertThat( ds.getName( ), is( serviceName ) );
         return ds;
     }
 

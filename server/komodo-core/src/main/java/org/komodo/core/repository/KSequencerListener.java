@@ -18,7 +18,7 @@
 package org.komodo.core.repository;
 
 import org.komodo.core.internal.repository.KSequencers;
-import org.komodo.spi.repository.UnitOfWorkDelegate;
+import org.komodo.core.internal.repository.UnitOfWorkDelegate;
 
 
 /**

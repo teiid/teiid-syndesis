@@ -157,53 +157,53 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     @Before
     public void init() throws Exception {
     	Vdb dsVdb = createVdb(viewDefinitionName, "originalFilePath");
-    	Model viewModel = dsVdb.addModel(getTransaction(), TEST_VIEW_NAME);
-    	viewModel.setModelType(getTransaction(), Type.VIRTUAL);
+    	Model viewModel = dsVdb.addModel(TEST_VIEW_NAME);
+    	viewModel.setModelType(Type.VIRTUAL);
     	
 //        Connection connection = createConnection( DS_NAME );
-//        connection.setDescription(getTransaction(), description);
+//        connection.setDescription(description);
 //
 //        final String extLoc = "new-external-location";
-//        connection.setExternalLocation(getTransaction(), extLoc );
+//        connection.setExternalLocation(extLoc );
 //
-//        connection.setJdbc(getTransaction(), false);
-//        connection.setJndiName(getTransaction(), DS_JNDI_NAME);
-//        connection.setDriverName(getTransaction(), "dsDriver");
-//        connection.setClassName(getTransaction(), "dsClassname");
-//        connection.setProperty(getTransaction(), "prop1", "prop1Value");
-//        connection.setProperty(getTransaction(), "prop2", "prop2Value");
+//        connection.setJdbc(false);
+//        connection.setJndiName(DS_JNDI_NAME);
+//        connection.setDriverName("dsDriver");
+//        connection.setClassName("dsClassname");
+//        connection.setProperty("prop1", "prop1Value");
+//        connection.setProperty("prop2", "prop2Value");
 
         // Create a schema VDB for connection1
         Vdb sourceVdb = createVdb(VDB_NAME, "originalFilePath");
-        Model sourceModel = sourceVdb.addModel(getTransaction(), MODEL_NAME);
-        sourceModel.setModelDefinition(getTransaction(), pgconnection1schemamodelDDL);
-        ModelSource modelSource = sourceModel.addSource(getTransaction(), DS_NAME);
-        modelSource.setJndiName(getTransaction(), DS_JNDI_NAME);
-        modelSource.setTranslatorName(getTransaction(), TRANSLATOR_JDBC);
-        //modelSource.setAssociatedConnection(getTransaction(), connection);
+        Model sourceModel = sourceVdb.addModel(MODEL_NAME);
+        sourceModel.setModelDefinition(pgconnection1schemamodelDDL);
+        ModelSource modelSource = sourceModel.addSource(DS_NAME);
+        modelSource.setJndiName(DS_JNDI_NAME);
+        modelSource.setTranslatorName(TRANSLATOR_JDBC);
+        //modelSource.setAssociatedConnection(connection);
 
         commit();
         
 //        Connection connection2 = createConnection( DS_NAME_2 );
-//        connection2.setDescription(getTransaction(), description);
+//        connection2.setDescription(description);
 //        
-//        connection2.setExternalLocation(getTransaction(), extLoc );
+//        connection2.setExternalLocation(extLoc );
 //        
-//        connection2.setJdbc(getTransaction(), false);
-//        connection2.setJndiName(getTransaction(), "DS_JNDI_NAME2");
-//        connection2.setDriverName(getTransaction(), "dsDriver");
-//        connection2.setClassName(getTransaction(), "dsClassname2");
-//        connection2.setProperty(getTransaction(), "prop1", "prop1Value");
-//        connection2.setProperty(getTransaction(), "prop2", "prop2Value");
+//        connection2.setJdbc(false);
+//        connection2.setJndiName("DS_JNDI_NAME2");
+//        connection2.setDriverName("dsDriver");
+//        connection2.setClassName("dsClassname2");
+//        connection2.setProperty("prop1", "prop1Value");
+//        connection2.setProperty("prop2", "prop2Value");
 
         // Create a schema VDB for connection2
         sourceVdb = createVdb(VDB_NAME_2, "originalFilePath");
-        sourceModel = sourceVdb.addModel(getTransaction(), MODEL_NAME_2);
-        sourceModel.setModelDefinition(getTransaction(), pgconnection2schemamodelDDL);
-        ModelSource modelSource2 = sourceModel.addSource(getTransaction(), DS_NAME_2);
-        modelSource2.setJndiName(getTransaction(), DS_JNDI_NAME2);
-        modelSource2.setTranslatorName(getTransaction(), TRANSLATOR_JDBC);
-        //modelSource2.setAssociatedConnection(getTransaction(), connection2);
+        sourceModel = sourceVdb.addModel(MODEL_NAME_2);
+        sourceModel.setModelDefinition(pgconnection2schemamodelDDL);
+        ModelSource modelSource2 = sourceModel.addSource(DS_NAME_2);
+        modelSource2.setJndiName(DS_JNDI_NAME2);
+        modelSource2.setTranslatorName(TRANSLATOR_JDBC);
+        //modelSource2.setAssociatedConnection(connection2);
         
         commit();
     }
@@ -215,64 +215,64 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
         boolean twoTables = secondSourceTablePath != null && StringUtils.areDifferent(sourceTablePath1, secondSourceTablePath);
         
         ViewDefinitionImpl viewDef = mock(ViewDefinitionImpl.class);
-        when(viewDef.getName(getTransaction())).thenReturn("vdbDefinition");
-        when(viewDef.getViewName(getTransaction())).thenReturn(viewDefinitionName);
-        when(viewDef.getDescription(getTransaction())).thenReturn(description);
-        when(viewDef.isComplete(getTransaction())).thenReturn(isComplete);
-        when(viewDef.getSourcePaths(getTransaction())).thenReturn(sourceTablePaths);
+        when(viewDef.getName()).thenReturn("vdbDefinition");
+        when(viewDef.getViewName()).thenReturn(viewDefinitionName);
+        when(viewDef.getDescription()).thenReturn(description);
+        when(viewDef.isComplete()).thenReturn(isComplete);
+        when(viewDef.getSourcePaths()).thenReturn(sourceTablePaths);
         
         SqlCompositionImpl sqlComp1 = mock(SqlCompositionImpl.class);
-        when(sqlComp1.getName(getTransaction())).thenReturn(comp1Name);
-        when(sqlComp1.getDescription(getTransaction())).thenReturn(comp1Desc);
-        when(sqlComp1.getLeftSourcePath(getTransaction())).thenReturn(comp1LeftSource);
-        when(sqlComp1.getRightSourcePath(getTransaction())).thenReturn(comp1RightSource);
-        when(sqlComp1.getLeftCriteriaColumn(getTransaction())).thenReturn(comp1LeftColumn);
-        when(sqlComp1.getRightCriteriaColumn(getTransaction())).thenReturn(comp1RightColumn);
-        when(sqlComp1.getType(getTransaction())).thenReturn(joinType);
-        when(sqlComp1.getOperator(getTransaction())).thenReturn(comp1Operator);
+        when(sqlComp1.getName()).thenReturn(comp1Name);
+        when(sqlComp1.getDescription()).thenReturn(comp1Desc);
+        when(sqlComp1.getLeftSourcePath()).thenReturn(comp1LeftSource);
+        when(sqlComp1.getRightSourcePath()).thenReturn(comp1RightSource);
+        when(sqlComp1.getLeftCriteriaColumn()).thenReturn(comp1LeftColumn);
+        when(sqlComp1.getRightCriteriaColumn()).thenReturn(comp1RightColumn);
+        when(sqlComp1.getType()).thenReturn(joinType);
+        when(sqlComp1.getOperator()).thenReturn(comp1Operator);
         
         SqlCompositionImpl[] sqlComps = new SqlCompositionImpl[1];
         sqlComps[0] = sqlComp1;
-        when(viewDef.getSqlCompositions(getTransaction())).thenReturn(sqlComps);
+        when(viewDef.getSqlCompositions()).thenReturn(sqlComps);
         
         if( useAll ) {
         	SqlProjectedColumnImpl projCol = mock(SqlProjectedColumnImpl.class);
-	        when(projCol.getName(getTransaction())).thenReturn("ALL");
-	        when(projCol.getType(getTransaction())).thenReturn("ALL");
-	        when(projCol.isSelected(getTransaction())).thenReturn(true);
+	        when(projCol.getName()).thenReturn("ALL");
+	        when(projCol.getType()).thenReturn("ALL");
+	        when(projCol.isSelected()).thenReturn(true);
 	        
 	        SqlProjectedColumnImpl[] projCols = new SqlProjectedColumnImpl[1];
 	        projCols[0] = projCol;
-	        when(viewDef.getProjectedColumns(getTransaction())).thenReturn(projCols);
+	        when(viewDef.getProjectedColumns()).thenReturn(projCols);
         } else {
         	SqlProjectedColumnImpl[] projCols = new SqlProjectedColumnImpl[3];
         	
         	SqlProjectedColumnImpl projCol = mock(SqlProjectedColumnImpl.class);
-	        when(projCol.getName(getTransaction())).thenReturn(ID);
-	        when(projCol.getType(getTransaction())).thenReturn(IDType);
-	        when(projCol.isSelected(getTransaction())).thenReturn(true);
+	        when(projCol.getName()).thenReturn(ID);
+	        when(projCol.getType()).thenReturn(IDType);
+	        when(projCol.isSelected()).thenReturn(true);
 	        projCols[0] = projCol;
 	        
 	        projCol = mock(SqlProjectedColumnImpl.class);
-	        when(projCol.getName(getTransaction())).thenReturn(ORDER_DATE);
-	        when(projCol.getType(getTransaction())).thenReturn(TIMESTAMP);
-	        when(projCol.isSelected(getTransaction())).thenReturn(true);
+	        when(projCol.getName()).thenReturn(ORDER_DATE);
+	        when(projCol.getType()).thenReturn(TIMESTAMP);
+	        when(projCol.isSelected()).thenReturn(true);
 	        projCols[1] = projCol;
 	        
 	        projCol = mock(SqlProjectedColumnImpl.class);
 	        if( twoTables && !singleConnection ) {
-	        	when(projCol.getName(getTransaction())).thenReturn(CUSTOMER_NAME);
+	        	when(projCol.getName()).thenReturn(CUSTOMER_NAME);
 	        } else {
-	        	when(projCol.getName(getTransaction())).thenReturn(NAME);
+	        	when(projCol.getName()).thenReturn(NAME);
 	        }
-	        when(projCol.getType(getTransaction())).thenReturn(STRING);
-	        when(projCol.isSelected(getTransaction())).thenReturn(true);
+	        when(projCol.getType()).thenReturn(STRING);
+	        when(projCol.isSelected()).thenReturn(true);
 	        projCols[2] = projCol;
 	        
-	        when(viewDef.getProjectedColumns(getTransaction())).thenReturn(projCols);
+	        when(viewDef.getProjectedColumns()).thenReturn(projCols);
         }
 
-        return vdbGenerator.getODataViewDdl(getTransaction(), viewDef);
+        return vdbGenerator.getODataViewDdl(viewDef);
     }
     
     private ViewEditorStateImpl[] helpCreateViewEditorState(int numSources) throws KException {
@@ -280,11 +280,11 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
         ViewEditorStateImpl[] stateArray = new ViewEditorStateImpl[1];
 
         ViewEditorStateImpl state = mock(ViewEditorStateImpl.class);
-        when(state.getName(getTransaction())).thenReturn(viewDefinitionName);
+        when(state.getName()).thenReturn(viewDefinitionName);
         stateArray[0] = state;
         ViewDefinitionImpl viewDef = mock(ViewDefinitionImpl.class);
-        when(state.setViewDefinition(getTransaction())).thenReturn(viewDef);
-        when(state.getViewDefinition(getTransaction())).thenReturn(viewDef);
+        when(state.setViewDefinition()).thenReturn(viewDef);
+        when(state.getViewDefinition()).thenReturn(viewDef);
         if( numSources == 1 ) {
         	helpCreateViewDefinitionAll(viewDef, sourceTablePath2, false);
         } else {
@@ -299,61 +299,61 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
         String[] sourceTablePaths = { sourceTablePath1, secondSourceTablePath };
         boolean twoTables = secondSourceTablePath != null && StringUtils.areDifferent(sourceTablePath1, secondSourceTablePath);
         
-        when(viewDef.getName(getTransaction())).thenReturn("vdbDefinition");
-        when(viewDef.getViewName(getTransaction())).thenReturn(viewDefinitionName);
-        when(viewDef.getDescription(getTransaction())).thenReturn(description);
-        when(viewDef.isComplete(getTransaction())).thenReturn(isComplete);
-        when(viewDef.getSourcePaths(getTransaction())).thenReturn(sourceTablePaths);
+        when(viewDef.getName()).thenReturn("vdbDefinition");
+        when(viewDef.getViewName()).thenReturn(viewDefinitionName);
+        when(viewDef.getDescription()).thenReturn(description);
+        when(viewDef.isComplete()).thenReturn(isComplete);
+        when(viewDef.getSourcePaths()).thenReturn(sourceTablePaths);
         
         SqlCompositionImpl sqlComp1 = mock(SqlCompositionImpl.class);
-        when(sqlComp1.getName(getTransaction())).thenReturn(comp1Name);
-        when(sqlComp1.getDescription(getTransaction())).thenReturn(comp1Desc);
-        when(sqlComp1.getLeftSourcePath(getTransaction())).thenReturn(comp1LeftSource);
-        when(sqlComp1.getRightSourcePath(getTransaction())).thenReturn(comp1RightSource);
-        when(sqlComp1.getLeftCriteriaColumn(getTransaction())).thenReturn(comp1LeftColumn);
-        when(sqlComp1.getRightCriteriaColumn(getTransaction())).thenReturn(comp1RightColumn);
-        when(sqlComp1.getType(getTransaction())).thenReturn(ServiceVdbGenerator.JOIN_INNER);
-        when(sqlComp1.getOperator(getTransaction())).thenReturn(comp1Operator);
+        when(sqlComp1.getName()).thenReturn(comp1Name);
+        when(sqlComp1.getDescription()).thenReturn(comp1Desc);
+        when(sqlComp1.getLeftSourcePath()).thenReturn(comp1LeftSource);
+        when(sqlComp1.getRightSourcePath()).thenReturn(comp1RightSource);
+        when(sqlComp1.getLeftCriteriaColumn()).thenReturn(comp1LeftColumn);
+        when(sqlComp1.getRightCriteriaColumn()).thenReturn(comp1RightColumn);
+        when(sqlComp1.getType()).thenReturn(ServiceVdbGenerator.JOIN_INNER);
+        when(sqlComp1.getOperator()).thenReturn(comp1Operator);
         
         SqlCompositionImpl[] sqlComps = new SqlCompositionImpl[1];
         sqlComps[0] = sqlComp1;
-        when(viewDef.getSqlCompositions(getTransaction())).thenReturn(sqlComps);
+        when(viewDef.getSqlCompositions()).thenReturn(sqlComps);
         
         if( useAll ) {
         	SqlProjectedColumnImpl projCol = mock(SqlProjectedColumnImpl.class);
-	        when(projCol.getName(getTransaction())).thenReturn("ALL");
-	        when(projCol.getType(getTransaction())).thenReturn("ALL");
-	        when(projCol.isSelected(getTransaction())).thenReturn(true);
+	        when(projCol.getName()).thenReturn("ALL");
+	        when(projCol.getType()).thenReturn("ALL");
+	        when(projCol.isSelected()).thenReturn(true);
 	        
 	        SqlProjectedColumnImpl[] projCols = new SqlProjectedColumnImpl[1];
 	        projCols[0] = projCol;
-	        when(viewDef.getProjectedColumns(getTransaction())).thenReturn(projCols);
+	        when(viewDef.getProjectedColumns()).thenReturn(projCols);
         } else {
         	SqlProjectedColumnImpl[] projCols = new SqlProjectedColumnImpl[3];
         	
         	SqlProjectedColumnImpl projCol = mock(SqlProjectedColumnImpl.class);
-	        when(projCol.getName(getTransaction())).thenReturn(ID);
-	        when(projCol.getType(getTransaction())).thenReturn(IDType);
-	        when(projCol.isSelected(getTransaction())).thenReturn(true);
+	        when(projCol.getName()).thenReturn(ID);
+	        when(projCol.getType()).thenReturn(IDType);
+	        when(projCol.isSelected()).thenReturn(true);
 	        projCols[0] = projCol;
 	        
 	        projCol = mock(SqlProjectedColumnImpl.class);
-	        when(projCol.getName(getTransaction())).thenReturn(ORDER_DATE);
-	        when(projCol.getType(getTransaction())).thenReturn(TIMESTAMP);
-	        when(projCol.isSelected(getTransaction())).thenReturn(true);
+	        when(projCol.getName()).thenReturn(ORDER_DATE);
+	        when(projCol.getType()).thenReturn(TIMESTAMP);
+	        when(projCol.isSelected()).thenReturn(true);
 	        projCols[1] = projCol;
 	        
 	        projCol = mock(SqlProjectedColumnImpl.class);
 	        if( twoTables ) {
-	        	when(projCol.getName(getTransaction())).thenReturn(CUSTOMER_NAME);
+	        	when(projCol.getName()).thenReturn(CUSTOMER_NAME);
 	        } else {
-	        	when(projCol.getName(getTransaction())).thenReturn(NAME);
+	        	when(projCol.getName()).thenReturn(NAME);
 	        }
-	        when(projCol.getType(getTransaction())).thenReturn(STRING);
-	        when(projCol.isSelected(getTransaction())).thenReturn(true);
+	        when(projCol.getType()).thenReturn(STRING);
+	        when(projCol.isSelected()).thenReturn(true);
 	        projCols[2] = projCol;
 	        
-	        when(viewDef.getProjectedColumns(getTransaction())).thenReturn(projCols);
+	        when(viewDef.getProjectedColumns()).thenReturn(projCols);
         }
         
         return viewDef;
@@ -374,22 +374,22 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
 
         String[] sourceTablePaths = { sourceTablePath1 };
         ViewDefinitionImpl viewDef = mock(ViewDefinitionImpl.class);
-        when(viewDef.getName(getTransaction())).thenReturn("vdbDefinition");
-        when(viewDef.getViewName(getTransaction())).thenReturn(viewDefinitionName);
-        when(viewDef.getDescription(getTransaction())).thenReturn(description);
-        when(viewDef.isComplete(getTransaction())).thenReturn(isComplete);
-        when(viewDef.getSourcePaths(getTransaction())).thenReturn(sourceTablePaths);
+        when(viewDef.getName()).thenReturn("vdbDefinition");
+        when(viewDef.getViewName()).thenReturn(viewDefinitionName);
+        when(viewDef.getDescription()).thenReturn(description);
+        when(viewDef.isComplete()).thenReturn(isComplete);
+        when(viewDef.getSourcePaths()).thenReturn(sourceTablePaths);
         
         SqlProjectedColumnImpl projCol = mock(SqlProjectedColumnImpl.class);
-        when(projCol.getName(getTransaction())).thenReturn("ALL");
-        when(projCol.getType(getTransaction())).thenReturn("ALL");
-        when(projCol.isSelected(getTransaction())).thenReturn(true);
+        when(projCol.getName()).thenReturn("ALL");
+        when(projCol.getType()).thenReturn("ALL");
+        when(projCol.isSelected()).thenReturn(true);
         
         SqlProjectedColumnImpl[] projCols = new SqlProjectedColumnImpl[1];
         projCols[0] = projCol;
-        when(viewDef.getProjectedColumns(getTransaction())).thenReturn(projCols);
+        when(viewDef.getProjectedColumns()).thenReturn(projCols);
 
-        String viewDdl = vdbGenerator.getODataViewDdl(getTransaction(), viewDef);
+        String viewDdl = vdbGenerator.getODataViewDdl(viewDef);
         printResults(EXPECTED_DDL, viewDdl);
         assertThat(viewDdl, is(EXPECTED_DDL));
     }
@@ -402,22 +402,22 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
 
         String[] sourceTablePaths = { sourceTablePath1b };
         ViewDefinitionImpl viewDef = mock(ViewDefinitionImpl.class);
-        when(viewDef.getName(getTransaction())).thenReturn("vdbDefinition");
-        when(viewDef.getViewName(getTransaction())).thenReturn(viewDefinitionName);
-        when(viewDef.getDescription(getTransaction())).thenReturn(description);
-        when(viewDef.isComplete(getTransaction())).thenReturn(isComplete);
-        when(viewDef.getSourcePaths(getTransaction())).thenReturn(sourceTablePaths);
+        when(viewDef.getName()).thenReturn("vdbDefinition");
+        when(viewDef.getViewName()).thenReturn(viewDefinitionName);
+        when(viewDef.getDescription()).thenReturn(description);
+        when(viewDef.isComplete()).thenReturn(isComplete);
+        when(viewDef.getSourcePaths()).thenReturn(sourceTablePaths);
         
         SqlProjectedColumnImpl projCol = mock(SqlProjectedColumnImpl.class);
-        when(projCol.getName(getTransaction())).thenReturn("ALL");
-        when(projCol.getType(getTransaction())).thenReturn("ALL");
-        when(projCol.isSelected(getTransaction())).thenReturn(true);
+        when(projCol.getName()).thenReturn("ALL");
+        when(projCol.getType()).thenReturn("ALL");
+        when(projCol.isSelected()).thenReturn(true);
         
         SqlProjectedColumnImpl[] projCols = new SqlProjectedColumnImpl[1];
         projCols[0] = projCol;
-        when(viewDef.getProjectedColumns(getTransaction())).thenReturn(projCols);
+        when(viewDef.getProjectedColumns()).thenReturn(projCols);
 
-        String viewDdl = vdbGenerator.getODataViewDdl(getTransaction(), viewDef);
+        String viewDdl = vdbGenerator.getODataViewDdl(viewDef);
         printResults(EXPECTED_DDL, viewDdl);
         assertThat(viewDdl, is(EXPECTED_DDL));
     }
@@ -573,7 +573,7 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     	
     	Vdb serviceVdb = null;
     	for( Vdb vdb : vdbs ) {
-    		if( vdb.getName(getTransaction()).equals(viewDefinitionName)) {
+    		if( vdb.getName().equals(viewDefinitionName)) {
     			serviceVdb = vdb;
     			break;
     		}
@@ -581,26 +581,26 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     	
     	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(workspaceManager());
     	
-    	vdbGenerator.refreshServiceVdb(getTransaction(), serviceVdb, states);
+    	vdbGenerator.refreshServiceVdb(serviceVdb, states);
     	
     	commit();
     	
-    	Model[] models = serviceVdb.getModels(getTransaction());
+    	Model[] models = serviceVdb.getModels();
     	
         assertThat(models.length, is(2));
-        ModelImpl viewModel = (ModelImpl)ServiceVdbGenerator.getViewModel(getTransaction(), serviceVdb);
+        ModelImpl viewModel = (ModelImpl)ServiceVdbGenerator.getViewModel(serviceVdb);
         assertNotNull(viewModel);
-        assertThat(viewModel.getViews(getTransaction()).length, is(1));
-    	View view = viewModel.getViews(getTransaction())[0];
+        assertThat(viewModel.getViews().length, is(1));
+    	View view = viewModel.getViews()[0];
     	assertNotNull(view);
-    	assertThat(view.getColumns(getTransaction()).length, is(4));
+    	assertThat(view.getColumns().length, is(4));
     	
 //    	for( ModelImpl model : models ) {
-//    		if( model.getModelType(getTransaction()) == Type.PHYSICAL) {
-//    			ModelSource[] modelSources = model.getSources(getTransaction());
+//    		if( model.getModelType() == Type.PHYSICAL) {
+//    			ModelSource[] modelSources = model.getSources();
 //    			assertNotNull(modelSources);
 //    			for( ModelSourceImpl ms : modelSources ) {
-//    				assertNotNull(ms.getOriginConnection(getTransaction()));
+//    				assertNotNull(ms.getOriginConnection());
 //    			}
 //    		}
 //    	}
@@ -613,7 +613,7 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     	
     	Vdb serviceVdb = null;
     	for( Vdb vdb : vdbs ) {
-    		if( vdb.getName(getTransaction()).equals(viewDefinitionName)) {
+    		if( vdb.getName().equals(viewDefinitionName)) {
     			serviceVdb = vdb;
     			break;
     		}
@@ -621,27 +621,27 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     	
     	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(workspaceManager());
     	
-    	vdbGenerator.refreshServiceVdb(getTransaction(), serviceVdb, states);
+    	vdbGenerator.refreshServiceVdb(serviceVdb, states);
     	
     	commit();
     	
-    	Model[] models = serviceVdb.getModels(getTransaction());
+    	Model[] models = serviceVdb.getModels();
     	
         assertThat(models.length, is(3));
-        ModelImpl viewModel = (ModelImpl)ServiceVdbGenerator.getViewModel(getTransaction(), serviceVdb);
+        ModelImpl viewModel = (ModelImpl)ServiceVdbGenerator.getViewModel(serviceVdb);
         assertNotNull(viewModel);
-        assertThat(viewModel.getViews(getTransaction()).length, is(1));
-    	View view = viewModel.getViews(getTransaction())[0];
+        assertThat(viewModel.getViews().length, is(1));
+    	View view = viewModel.getViews()[0];
     	assertNotNull(view);
-    	assertThat(view.getColumns(getTransaction()).length, is(4));
+    	assertThat(view.getColumns().length, is(4));
     	
     	
 //    	for( ModelImpl model : models ) {
-//    		if( model.getModelType(getTransaction()) == Type.PHYSICAL) {
-//    			ModelSource[] modelSources = model.getSources(getTransaction());
+//    		if( model.getModelType() == Type.PHYSICAL) {
+//    			ModelSource[] modelSources = model.getSources();
 //    			assertNotNull(modelSources);
 //    			for( ModelSourceImpl ms : modelSources ) {
-//    				assertNotNull(ms.getOriginConnection(getTransaction()));
+//    				assertNotNull(ms.getOriginConnection());
 //    			}
 //    		}
 //    	}

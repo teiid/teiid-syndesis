@@ -119,7 +119,7 @@ public class TestDdlNodeVisitor extends AbstractLocalRepositoryTest {
     protected void helpTest(String ddl, String expected, String... pathsToBeSequenced) throws Exception {
         KomodoObject workspace = _repo.komodoWorkspace(getTransaction());
         KomodoObject ddlObject = workspace.addChild(getTransaction(), "ddl-sequencing" + System.nanoTime(), VdbLexicon.Vdb.DECLARATIVE_MODEL);
-        ddlObject.setProperty(getTransaction(), VdbLexicon.Model.MODEL_DEFINITION, ddl);
+        ddlObject.setProperty(VdbLexicon.Model.MODEL_DEFINITION, ddl);
 
 //        traverse(getTransaction(), ddlObject);
 

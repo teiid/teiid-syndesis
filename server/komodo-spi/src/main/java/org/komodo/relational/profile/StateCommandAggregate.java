@@ -22,7 +22,6 @@ import java.util.Map;
 import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.UnitOfWork;
 
 /**
  * Represents the configuration of a view editor state command
@@ -46,13 +45,11 @@ public interface StateCommandAggregate extends RelationalObject {
 
 
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @return the undo command
      * @throws KException
      *          if an error occurs
      */
-    StateCommand getUndo(final UnitOfWork transaction) throws KException;
+    StateCommand getUndo() throws KException;
 
     /**
      * @param transaction
@@ -63,26 +60,22 @@ public interface StateCommandAggregate extends RelationalObject {
      * @throws Exception
      *          if an error occurs
      */
-    StateCommand setUndo(final UnitOfWork transaction, String commandId, Map<String, String> arguments) throws Exception;
+    StateCommand setUndo( String commandId, Map<String, String> arguments) throws Exception;
 
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @return the redo command
      * @throws KException
      *          if an error occurs
      */
-    StateCommand getRedo(final UnitOfWork transaction) throws KException;
+    StateCommand getRedo() throws KException;
 
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @param commandId the id of the command
      * @param arguments the map of the arguments
      * @return the new redo command
      * @throws Exception
      *          if an error occurs
      */
-    StateCommand setRedo(final UnitOfWork transaction, String commandId, Map<String, String> arguments) throws Exception;
+    StateCommand setRedo( String commandId, Map<String, String> arguments) throws Exception;
 
 }

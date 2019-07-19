@@ -67,15 +67,15 @@ public final class KomodoVdbService extends KomodoService {
 
     private static final StringNameValidator VALIDATOR = new StringNameValidator();
 
-    private Model findModel(UnitOfWork uow, List<MediaType> mediaTypes,
-                                                String modelName, Vdb vdb) throws KException {
-        Model model = vdb.getModel(uow, modelName);
+    private Model findModel(List<MediaType> mediaTypes, String modelName,
+                                                Vdb vdb) throws KException {
+        Model model = vdb.getModel(modelName);
         LOGGER.debug( "Model '{0}' was found", modelName ); //$NON-NLS-1$
         return model;
     }
 
-    private View findView(UnitOfWork uow, List<MediaType> mediaTypes, String viewName, Model model) throws KException {
-    	View view = model.getView(uow, viewName);
+    private View findView(List<MediaType> mediaTypes, String viewName, Model model) throws KException {
+    	View view = model.getView(viewName);
     	if(view == null) {
     		return null;
     	}
@@ -128,13 +128,13 @@ public final class KomodoVdbService extends KomodoService {
         try {
             uow = createTransaction(principal, "removeVdbFromWorkspace", false); //$NON-NLS-1$
 
-            final WorkspaceManager mgr = getWorkspaceManager(uow);
-            Vdb vdb = mgr.findVdb(uow, vdbName);
+            final WorkspaceManager mgr = getWorkspaceManager();
+            Vdb vdb = mgr.findVdb(vdbName);
 
             if (vdb == null)
                 return Response.noContent().build();
 
-            mgr.deleteVdb(uow, vdb);
+            mgr.deleteVdb(vdb);
 
             KomodoStatusObject kso = new KomodoStatusObject("Delete Status"); //$NON-NLS-1$
             kso.addAttribute(vdbName, "Successfully deleted"); //$NON-NLS-1$
@@ -211,17 +211,17 @@ public final class KomodoVdbService extends KomodoService {
         try {
             uow = createTransaction( principal, "validateViewName", true ); //$NON-NLS-1$
 
-            Vdb vdb = findVdb(uow, vdbName);
+            Vdb vdb = findVdb(vdbName);
             if (vdb == null)
                 return commitNoVdbFound(uow, mediaTypes, vdbName);
 
-            Model model = findModel(uow, mediaTypes, modelName, vdb);
+            Model model = findModel(mediaTypes, modelName, vdb);
             if (model == null) {
                 return commitNoModelFound(uow, mediaTypes, modelName, vdbName);
             }
 
             // make sure an existing View does not have that name
-            final View view = findView( uow, mediaTypes, viewName, model );
+            final View view = findView( mediaTypes, viewName, model );
 
             if ( view == null ) {
             	// name is valid

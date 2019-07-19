@@ -42,36 +42,36 @@ public final class ModelSourceImplTest extends RelationalModelTest {
     @Before
     public void init() throws Exception {
         final ModelImpl model = createModel();
-        this.source = model.addSource( getTransaction(), "source" );
+        this.source = model.addSource( "source" );
         commit();
     }
 
     @Test
     public void shouldBeAbleToSetEmptyJndi() throws Exception {
-        this.source.setJndiName( getTransaction(), "blah" );
-        this.source.setJndiName( getTransaction(), StringConstants.EMPTY_STRING );
-        assertThat( this.source.getJndiName( getTransaction() ), is( nullValue() ) );
+        this.source.setJndiName( "blah" );
+        this.source.setJndiName( StringConstants.EMPTY_STRING );
+        assertThat( this.source.getJndiName( ), is( nullValue() ) );
     }
 
     @Test
     public void shouldBeAbleToSetEmptyTranslator() throws Exception {
-        this.source.setTranslatorName( getTransaction(), "blah" );
-        this.source.setTranslatorName( getTransaction(), StringConstants.EMPTY_STRING );
-        assertThat( this.source.getTranslatorName( getTransaction() ), is( nullValue() ) );
+        this.source.setTranslatorName( "blah" );
+        this.source.setTranslatorName( StringConstants.EMPTY_STRING );
+        assertThat( this.source.getTranslatorName( ), is( nullValue() ) );
     }
 
     @Test
     public void shouldBeAbleToSetNullJndi() throws Exception {
-        this.source.setJndiName( getTransaction(), "blah" );
-        this.source.setJndiName( getTransaction(), null );
-        assertThat( this.source.getJndiName( getTransaction() ), is( nullValue() ) );
+        this.source.setJndiName( "blah" );
+        this.source.setJndiName( null );
+        assertThat( this.source.getJndiName( ), is( nullValue() ) );
     }
 
     @Test
     public void shouldBeAbleToSetNullTranslator() throws Exception {
-        this.source.setTranslatorName( getTransaction(), "blah" );
-        this.source.setTranslatorName( getTransaction(), null );
-        assertThat( this.source.getTranslatorName( getTransaction() ), is( nullValue() ) );
+        this.source.setTranslatorName( "blah" );
+        this.source.setTranslatorName( null );
+        assertThat( this.source.getTranslatorName( ), is( nullValue() ) );
     }
 
     @Test
@@ -93,24 +93,24 @@ public final class ModelSourceImplTest extends RelationalModelTest {
 
     @Test
     public void shouldHaveCorrectPrimaryType() throws Exception {
-        assertThat( this.source.getPrimaryType( getTransaction() ).getName(), is( VdbLexicon.Source.SOURCE ) );
+        assertThat( this.source.getPrimaryType( ).getName(), is( VdbLexicon.Source.SOURCE ) );
     }
 
     @Test
     public void shouldHaveCorrectTypeIdentifier() throws Exception {
-        assertThat(this.source.getTypeIdentifier( getTransaction() ), is(KomodoType.VDB_MODEL_SOURCE));
+        assertThat(this.source.getTypeIdentifier( ), is(KomodoType.VDB_MODEL_SOURCE));
     }
 
     @Test
     public void shouldHaveMoreRawProperties() throws Exception {
-        final String[] filteredProps = this.source.getPropertyNames( getTransaction() );
+        final String[] filteredProps = this.source.getPropertyNames( );
         final String[] rawProps = this.source.getRawPropertyNames( getTransaction() );
         assertThat( ( rawProps.length > filteredProps.length ), is( true ) );
     }
 
     @Test
     public void shouldHaveParentModel() throws Exception {
-        assertThat( this.source.getParent( getTransaction() ), is( instanceOf( ModelImpl.class ) ) );
+        assertThat( this.source.getParent( ), is( instanceOf( ModelImpl.class ) ) );
     }
 
     @Test( expected = UnsupportedOperationException.class )
@@ -120,7 +120,7 @@ public final class ModelSourceImplTest extends RelationalModelTest {
 
     @Test
     public void shouldNotContainFilteredProperties() throws Exception {
-        final String[] filteredProps = this.source.getPropertyNames( getTransaction() );
+        final String[] filteredProps = this.source.getPropertyNames( );
         final Filter[] filters = ((ModelSourceImpl)this.source).getFilters();
 
         for ( final String name : filteredProps ) {
@@ -132,33 +132,33 @@ public final class ModelSourceImplTest extends RelationalModelTest {
 
     @Test
     public void shouldNotHaveJndiNameAfterConstruction() throws Exception {
-        assertThat( this.source.getJndiName( getTransaction() ), is( nullValue() ) );
+        assertThat( this.source.getJndiName( ), is( nullValue() ) );
     }
 
     @Test
     public void shouldNotHaveTranslatorNameAfterConstruction() throws Exception {
-        assertThat( this.source.getTranslatorName( getTransaction() ), is( nullValue() ) );
+        assertThat( this.source.getTranslatorName( ), is( nullValue() ) );
     }
 
     @Test
     public void shouldRename() throws Exception {
         final String newName = "blah";
         this.source.rename( getTransaction(), newName );
-        assertThat( this.source.getName( getTransaction() ), is( newName ) );
+        assertThat( this.source.getName( ), is( newName ) );
     }
 
     @Test
     public void shouldSetJndiName() throws Exception {
         final String name = "jndiName";
-        this.source.setJndiName( getTransaction(), name );
-        assertThat( this.source.getJndiName( getTransaction() ), is( name ) );
+        this.source.setJndiName( name );
+        assertThat( this.source.getJndiName( ), is( name ) );
     }
 
     @Test
     public void shouldSetTranslatorName() throws Exception {
         final String name = "translatorName";
-        this.source.setTranslatorName( getTransaction(), name );
-        assertThat( this.source.getTranslatorName( getTransaction() ), is( name ) );
+        this.source.setTranslatorName( name );
+        assertThat( this.source.getTranslatorName( ), is( name ) );
     }
 
 }

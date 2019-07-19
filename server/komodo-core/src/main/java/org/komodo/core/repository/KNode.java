@@ -17,6 +17,7 @@
  */
 package org.komodo.core.repository;
 
+import org.komodo.core.internal.repository.Repository;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.UnitOfWork;
 
@@ -31,24 +32,22 @@ public interface KNode {
     String getAbsolutePath();
 
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED}
      * @return the last segment of the absolute path (never empty)
      * @throws KException
      *         if an error occurs
      * @see #getAbsolutePath()
      */
-    String getName( final UnitOfWork transaction ) throws KException;
+    String getName( ) throws KException;
 
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED}
      * @return the parent {@link KomodoObject Komodo object} (can be <code>null</code> if at the Komodo root)
      * @throws KException
      *         if an error occurs
      */
-    KomodoObject getParent( final UnitOfWork transaction ) throws KException;
+    KomodoObject getParent( ) throws KException;
+    
+    Repository getRepository();
+    
+    UnitOfWork getTransaction();
 
 }

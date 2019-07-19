@@ -24,7 +24,6 @@ import org.komodo.relational.model.Model;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.Exportable;
 import org.komodo.spi.repository.KomodoType;
-import org.komodo.spi.repository.UnitOfWork;
 import org.w3c.dom.Document;
 
 /**
@@ -85,7 +84,7 @@ public interface Vdb extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    VdbImport addImport( final UnitOfWork transaction,
+    VdbImport addImport( 
                          final String vdbName ) throws KException;
 
     /**
@@ -97,7 +96,7 @@ public interface Vdb extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    Model addModel( final UnitOfWork transaction,
+    Model addModel( 
                     final String modelName ) throws KException;
 
     /**
@@ -111,7 +110,7 @@ public interface Vdb extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    Translator addTranslator( final UnitOfWork transaction,
+    Translator addTranslator( 
                               final String translatorName,
                               final String translatorType ) throws KException;
 
@@ -123,7 +122,7 @@ public interface Vdb extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    VdbManifest createManifest( final UnitOfWork transaction, Properties properties ) throws KException;
+    VdbManifest createManifest(  Properties properties ) throws KException;
 
     /**
      * @param transaction
@@ -132,7 +131,7 @@ public interface Vdb extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    String getAllowedLanguages( final UnitOfWork transaction ) throws KException;
+    String getAllowedLanguages( ) throws KException;
 
     /**
      * @param transaction
@@ -140,7 +139,7 @@ public interface Vdb extends Exportable, RelationalObject {
      * @return the authentication type (can be empty)
      * @throws KException
      */
-    String getAuthenticationType( final UnitOfWork transaction ) throws KException;
+    String getAuthenticationType( ) throws KException;
 
     /**
      * @param transaction
@@ -149,7 +148,7 @@ public interface Vdb extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    String getConnectionType( final UnitOfWork transaction ) throws KException;
+    String getConnectionType( ) throws KException;
 
     /**
      * @param transaction
@@ -158,7 +157,7 @@ public interface Vdb extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    String getDescription( final UnitOfWork transaction ) throws KException;
+    String getDescription( ) throws KException;
 
     /**
      * @param transaction
@@ -167,7 +166,7 @@ public interface Vdb extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    String getGssPattern( final UnitOfWork transaction ) throws KException;
+    String getGssPattern( ) throws KException;
     
     /**
      * @param transaction
@@ -177,7 +176,7 @@ public interface Vdb extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    Model getModel( final UnitOfWork transaction,
+    Model getModel( 
                        final String name ) throws KException;
 
     /**
@@ -189,7 +188,7 @@ public interface Vdb extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    Model[] getModels( final UnitOfWork transaction,
+    Model[] getModels( 
                        final String... namePatterns ) throws KException;
 
     /**
@@ -201,7 +200,7 @@ public interface Vdb extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    VdbImport[] getImports( final UnitOfWork transaction,
+    VdbImport[] getImports( 
                             final String... namePatterns ) throws KException;
 
     /**
@@ -211,7 +210,7 @@ public interface Vdb extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    String getOriginalFilePath( final UnitOfWork transaction ) throws KException;
+    String getOriginalFilePath( ) throws KException;
 
     /**
      * @param transaction
@@ -220,7 +219,7 @@ public interface Vdb extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    String getPasswordPattern( final UnitOfWork transaction ) throws KException;
+    String getPasswordPattern( ) throws KException;
 
     /**
      * @param transaction
@@ -229,7 +228,7 @@ public interface Vdb extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    int getQueryTimeout( final UnitOfWork transaction ) throws KException;
+    int getQueryTimeout( ) throws KException;
 
     /**
      * @param transaction
@@ -240,7 +239,7 @@ public interface Vdb extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    Translator[] getTranslators( final UnitOfWork transaction,
+    Translator[] getTranslators( 
                                  final String... namePatterns ) throws KException;
 
     /**
@@ -252,7 +251,7 @@ public interface Vdb extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    String getVdbName( final UnitOfWork transaction ) throws KException;
+    String getVdbName( ) throws KException;
 
     /**
      * @param transaction
@@ -262,7 +261,7 @@ public interface Vdb extends Exportable, RelationalObject {
      *         if an error occurs
      * @see #DEFAULT_VERSION
      */
-    int getVersion( final UnitOfWork transaction ) throws KException;
+    int getVersion( ) throws KException;
 
     /**
      * @param transaction
@@ -272,7 +271,7 @@ public interface Vdb extends Exportable, RelationalObject {
      *         if an error occurs
      * @see #DEFAULT_PREVIEW
      */
-    boolean isPreview( final UnitOfWork transaction ) throws KException;
+    boolean isPreview( ) throws KException;
 
     /**
      * @param transaction
@@ -282,7 +281,7 @@ public interface Vdb extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void removeImport( final UnitOfWork transaction,
+    void removeImport( 
                        final String importToRemove ) throws KException;
 
     /**
@@ -293,7 +292,7 @@ public interface Vdb extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void removeModel( final UnitOfWork transaction,
+    void removeModel( 
                       final String modelToRemove ) throws KException;
 
     /**
@@ -304,7 +303,7 @@ public interface Vdb extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void removeTranslator( final UnitOfWork transaction,
+    void removeTranslator( 
                            final String translatorToRemove ) throws KException;
 
     /**
@@ -315,7 +314,7 @@ public interface Vdb extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void setAllowedLanguages( final UnitOfWork transaction,
+    void setAllowedLanguages( 
                               final String newAllowedLanguages ) throws KException;
 
     /**
@@ -326,7 +325,7 @@ public interface Vdb extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void setAuthenticationType( final UnitOfWork transaction,
+    void setAuthenticationType( 
                                 final String newAuthenticationType ) throws KException;
 
     /**
@@ -337,7 +336,7 @@ public interface Vdb extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void setConnectionType( final UnitOfWork transaction,
+    void setConnectionType( 
                             final String newConnectionType ) throws KException;
 
     /**
@@ -348,7 +347,7 @@ public interface Vdb extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void setDescription( final UnitOfWork transaction,
+    void setDescription( 
                          final String newDescription ) throws KException;
 
     /**
@@ -359,7 +358,7 @@ public interface Vdb extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void setGssPattern( final UnitOfWork transaction,
+    void setGssPattern( 
                         final String newGssPattern ) throws KException;
 
     /**
@@ -370,7 +369,7 @@ public interface Vdb extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void setOriginalFilePath( final UnitOfWork transaction,
+    void setOriginalFilePath( 
                               final String newOriginalFilePath ) throws KException;
 
     /**
@@ -381,7 +380,7 @@ public interface Vdb extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void setPasswordPattern( final UnitOfWork transaction,
+    void setPasswordPattern( 
                              final String newPasswordPattern ) throws KException;
 
     /**
@@ -393,7 +392,7 @@ public interface Vdb extends Exportable, RelationalObject {
      *         if an error occurs
      * @see #DEFAULT_PREVIEW
      */
-    void setPreview( final UnitOfWork transaction,
+    void setPreview( 
                      final boolean newPreview ) throws KException;
 
     /**
@@ -404,7 +403,7 @@ public interface Vdb extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void setQueryTimeout( final UnitOfWork transaction,
+    void setQueryTimeout( 
                           final int newQueryTimeout ) throws KException;
 
     /**
@@ -417,7 +416,7 @@ public interface Vdb extends Exportable, RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void setVdbName( final UnitOfWork transaction,
+    void setVdbName( 
                      final String newVdbName ) throws KException;
 
     /**
@@ -429,7 +428,7 @@ public interface Vdb extends Exportable, RelationalObject {
      *         if an error occurs
      * @see #DEFAULT_VERSION
      */
-    void setVersion( final UnitOfWork transaction,
+    void setVersion( 
                      final int newVersion ) throws KException;
 
 }

@@ -44,8 +44,6 @@ import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.TeiidAdminImpl;
 import org.komodo.rest.TeiidServer;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.UnitOfWork;
-import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -454,26 +452,23 @@ public class DefaultMetadataInstance implements MetadataInstance {
     }
 
 	@Override
-	public DeployStatus deploy(UnitOfWork uow, Vdb vdb) {
-        ArgCheck.isNotNull( uow, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( uow.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
-
+	public DeployStatus deploy(Vdb vdb) {
         DeployStatus status = new DeployStatus();
 
         try {
-            String vdbName = vdb.getName(uow);
+            String vdbName = vdb.getName();
             status.addProgressMessage("Starting deployment of vdb " + vdbName); //$NON-NLS-1$
 
             status.addProgressMessage("Attempting to deploy VDB " + vdbName + " to teiid"); //$NON-NLS-1$ //$NON-NLS-2$
 
             // Get VDB content
-            byte[] vdbXml = vdb.export(uow, null);
+            byte[] vdbXml = vdb.export(null);
             if (vdbXml == null || vdbXml.length == 0) {
                 status.addErrorMessage("VDB " + vdbName + " content is empty"); //$NON-NLS-1$ //$NON-NLS-2$
                 return status;
             }
 
-            String vdbToDeployName = vdb.getName(uow);
+            String vdbToDeployName = vdb.getName();
             String vdbDeploymentName = vdbToDeployName + VDB_DEPLOYMENT_SUFFIX;
             deployDynamicVdb(vdbName, vdbDeploymentName, new ByteArrayInputStream(vdbXml));
 

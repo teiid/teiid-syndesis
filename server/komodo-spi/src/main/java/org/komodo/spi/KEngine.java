@@ -21,7 +21,6 @@ package org.komodo.spi;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.relational.WorkspaceManager;
 import org.komodo.spi.repository.UnitOfWork;
-import org.komodo.spi.repository.UnitOfWorkListener;
 
 public interface KEngine {
 	
@@ -41,13 +40,13 @@ public interface KEngine {
 
 	/**
 	 * Get the {@link WorkspaceManager} for manipulating the repository
-	 * @param transaction
 	 * @return
 	 * @throws KException
 	 */
-	WorkspaceManager getWorkspaceManager(UnitOfWork transaction) throws KException;
+	WorkspaceManager getWorkspaceManager() throws KException;
 
 	/**
+     * Creates and associates a transaction with the current thread.
      * @param userName
      *       the user name of the transaction initiator
      * @param name
@@ -61,7 +60,12 @@ public interface KEngine {
      * @throws KException
      *         if an error occurs
      */
-	UnitOfWork createTransaction(String userName, String name, boolean rollbackOnly, UnitOfWorkListener callback,
-			String repoUser) throws KException;
+	UnitOfWork createTransaction(String userName, String name, boolean rollbackOnly, String repoUser) throws KException;
+	
+	/**
+	 * Associates the given transaction with the current thread.
+	 * @param uow
+	 */
+	void associateTransaction(UnitOfWork uow);
 
 }

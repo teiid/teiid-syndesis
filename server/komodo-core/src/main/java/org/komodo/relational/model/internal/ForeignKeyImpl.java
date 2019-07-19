@@ -21,7 +21,6 @@ import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.Property;
-import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
 import org.komodo.relational.internal.TypeResolver;
@@ -68,15 +67,14 @@ public final class ForeignKeyImpl extends TableConstraintImpl implements Foreign
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.core.repository.KomodoObject)
+         * @see org.komodo.relational.internal.TypeResolver#resolvable(org.komodo.core.repository.KomodoObject)
          */
         @Override
-        public boolean resolvable( final UnitOfWork transaction,
-                                   final KomodoObject kobject ) throws KException {
-            return ObjectImpl.validateType( transaction, kobject, Constraint.FOREIGN_KEY_CONSTRAINT )
+        public boolean resolvable( final KomodoObject kobject ) throws KException {
+        	UnitOfWork transaction = kobject.getTransaction();
+            return ObjectImpl.validateType( kobject, Constraint.FOREIGN_KEY_CONSTRAINT )
                    && ObjectImpl.validatePropertyValue( transaction,
-                		   RepositoryImpl.getRepository(transaction),
+                		   kobject.getRepository(),
                                                         kobject,
                                                         Constraint.TYPE,
                                                         CONSTRAINT_TYPE.toValue() );
@@ -85,17 +83,15 @@ public final class ForeignKeyImpl extends TableConstraintImpl implements Foreign
         /**
          * {@inheritDoc}
          *
-         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.spi.repository.Repository.UnitOfWork,
-         *      org.komodo.core.repository.KomodoObject)
+         * @see org.komodo.relational.internal.TypeResolver#resolve(org.komodo.core.repository.KomodoObject)
          */
         @Override
-        public ForeignKeyImpl resolve( final UnitOfWork transaction,
-                                   final KomodoObject kobject ) throws KException {
+        public ForeignKeyImpl resolve( final KomodoObject kobject ) throws KException {
             if ( kobject.getTypeId() == ForeignKey.TYPE_ID ) {
                 return ( ForeignKeyImpl )kobject;
             }
-
-            return new ForeignKeyImpl( transaction, RepositoryImpl.getRepository(transaction), kobject.getAbsolutePath() );
+            UnitOfWork transaction = kobject.getTransaction();
+            return new ForeignKeyImpl( transaction, kobject.getRepository(), kobject.getAbsolutePath() );
         }
 
     };
@@ -117,7 +113,7 @@ public final class ForeignKeyImpl extends TableConstraintImpl implements Foreign
     }
 
     @Override
-    public KomodoType getTypeIdentifier(UnitOfWork uow) {
+    public KomodoType getTypeIdentifier() {
         return ForeignKey.IDENTIFIER;
     }
 
@@ -128,27 +124,27 @@ public final class ForeignKeyImpl extends TableConstraintImpl implements Foreign
      *      org.komodo.relational.model.Column)
      */
     @Override
-    public void addReferencesColumn( final UnitOfWork transaction,
+    public void addReferencesColumn(
                                      final Column newReferencesColumn ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotNull( newReferencesColumn, "newReferencesColumn" ); //$NON-NLS-1$
 
         String[] newValue = null;
-        final Property property = getProperty( transaction, Constraint.TABLE_REFERENCE_REFERENCES );
-        final String columnId = getObjectFactory().getId(transaction, newReferencesColumn).getStringValue( transaction );
+        final Property property = getProperty( Constraint.TABLE_REFERENCE_REFERENCES );
+        final String columnId = getObjectFactory().getId(getTransaction(), newReferencesColumn).getStringValue( getTransaction() );
 
         if ( property == null ) {
             newValue = new String[ 1 ];
             newValue[0] = columnId;
         } else {
-            final String[] columnRefs = property.getStringValues( transaction );
+            final String[] columnRefs = property.getStringValues( getTransaction() );
             newValue = new String[ columnRefs.length + 1 ];
             System.arraycopy( columnRefs, 0, newValue, 0, columnRefs.length );
             newValue[columnRefs.length] = columnId;
         }
 
-        setProperty( transaction, Constraint.TABLE_REFERENCE_REFERENCES, ( Object[] )newValue );
+        setProperty( Constraint.TABLE_REFERENCE_REFERENCES, ( Object[] )newValue );
     }
 
     /**
@@ -167,30 +163,30 @@ public final class ForeignKeyImpl extends TableConstraintImpl implements Foreign
      * @see org.komodo.relational.model.ForeignKey#getReferencesColumns(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public Column[] getReferencesColumns( final UnitOfWork transaction ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+    public Column[] getReferencesColumns() throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         final Repository repository = getRepository();
         Column[] result = null;
 
-        final Property property = getProperty( transaction, Constraint.TABLE_REFERENCE_REFERENCES );
+        final Property property = getProperty( Constraint.TABLE_REFERENCE_REFERENCES );
 
         if ( property == null ) {
             result = new Column[ 0 ];
         } else {
-            final String[] columnRefs = property.getStringValues( transaction );
+            final String[] columnRefs = property.getStringValues( getTransaction() );
             result = new Column[ columnRefs.length ];
             int i = 0;
 
             for ( final String columnId : columnRefs ) {
-                final KomodoObject kobject = repository.getUsingId( transaction, columnId );
+                final KomodoObject kobject = repository.getUsingId( getTransaction(), columnId );
 
                 if ( kobject == null ) {
                     throw new KException( Messages.getString( Relational.REFERENCED_COLUMN_NOT_FOUND, columnId ) );
                 }
 
-                result[i] = new ColumnImpl( transaction, repository, kobject.getAbsolutePath() );
+                result[i] = new ColumnImpl( getTransaction(), repository, kobject.getAbsolutePath() );
                 ++i;
             }
         }
@@ -204,22 +200,22 @@ public final class ForeignKeyImpl extends TableConstraintImpl implements Foreign
      * @see org.komodo.relational.model.ForeignKey#getReferencesTable(org.komodo.spi.repository.Repository.UnitOfWork)
      */
     @Override
-    public TableImpl getReferencesTable( final UnitOfWork transaction ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+    public TableImpl getReferencesTable() throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
 
         TableImpl result = null;
-        final Property property = getProperty( transaction, Constraint.TABLE_REFERENCE );
+        final Property property = getProperty( Constraint.TABLE_REFERENCE );
 
         if ( property != null ) {
-            final String tableId = property.getStringValue( transaction );
-            final KomodoObject kobject = getRepository().getUsingId( transaction, tableId );
+            final String tableId = property.getStringValue( getTransaction() );
+            final KomodoObject kobject = getRepository().getUsingId( getTransaction(), tableId );
 
             if ( kobject == null ) {
                 throw new KException( Messages.getString( Relational.REFERENCED_TABLE_NOT_FOUND, tableId ) );
             }
 
-            result = new TableImpl( transaction, getRepository(), kobject.getAbsolutePath() );
+            result = new TableImpl( getTransaction(), getRepository(), kobject.getAbsolutePath() );
         }
 
         return result;
@@ -238,15 +234,15 @@ public final class ForeignKeyImpl extends TableConstraintImpl implements Foreign
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.internal.RelationalObjectImpl#getParent(org.komodo.spi.repository.Repository.UnitOfWork)
+     * @see org.komodo.relational.internal.RelationalObjectImpl#getParent()
      */
     @Override
-    public TableImpl getParent( final UnitOfWork transaction ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
+    public TableImpl getParent() throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state must be NOT_STARTED" ); //$NON-NLS-1$
 
-        final KomodoObject parent = super.getParent( transaction );
-        final TableImpl result = TableImpl.RESOLVER.resolve( transaction, parent );
+        final KomodoObject parent = super.getParent( );
+        final TableImpl result = TableImpl.RESOLVER.resolve( parent );
         return result;
     }
 
@@ -257,20 +253,20 @@ public final class ForeignKeyImpl extends TableConstraintImpl implements Foreign
      *      org.komodo.relational.model.Column)
      */
     @Override
-    public void removeReferencesColumn( final UnitOfWork transaction,
+    public void removeReferencesColumn(
                                         final Column removeReferencesColumn ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotNull( removeReferencesColumn, "removeReferencesColumn" ); //$NON-NLS-1$
 
-        final String columnId = getObjectFactory().getId(transaction, removeReferencesColumn).getStringValue( transaction );
-        final Column[] current = getReferencesColumns( transaction );
+        final String columnId = getObjectFactory().getId(getTransaction(), removeReferencesColumn).getStringValue( getTransaction() );
+        final Column[] current = getReferencesColumns( );
 
         if ( current.length == 0 ) {
             throw new KException( Messages.getString( Relational.REFERENCED_COLUMN_NOT_FOUND, columnId ) );
         }
 
-        setProperty( transaction, Constraint.TABLE_REFERENCE_REFERENCES, ( Object[] )null );
+        setProperty( Constraint.TABLE_REFERENCE_REFERENCES, ( Object[] )null );
 
         boolean found = false;
 //        final Column[] updated = new Column[ current.length - 1 ];
@@ -280,7 +276,7 @@ public final class ForeignKeyImpl extends TableConstraintImpl implements Foreign
             if ( column.equals( removeReferencesColumn ) ) {
                 found = true;
             } else {
-                addReferencesColumn( transaction, column );
+                addReferencesColumn( column );
 //                updated[i] = column;
 //                ++i;
             }
@@ -300,29 +296,29 @@ public final class ForeignKeyImpl extends TableConstraintImpl implements Foreign
      *      org.komodo.relational.model.Table)
      */
     @Override
-    public void setReferencesTable( final UnitOfWork transaction,
+    public void setReferencesTable(
                                     final Table newReferencesTable ) throws KException {
-        ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
-        ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
         ArgCheck.isNotNull( newReferencesTable, "newReferencesTable" ); //$NON-NLS-1$
 
         // only set if different
-        final TableImpl current = getReferencesTable( transaction );
+        final TableImpl current = getReferencesTable( );
 
         if ( !newReferencesTable.equals( current ) ) {
-            final String tableId = getObjectFactory().getId(transaction, newReferencesTable).getStringValue( transaction );
-            setProperty( transaction, Constraint.TABLE_REFERENCE, tableId );
+            final String tableId = getObjectFactory().getId(getTransaction(), newReferencesTable).getStringValue( getTransaction() );
+            setProperty( Constraint.TABLE_REFERENCE, tableId );
 
-            if ( ( current != null ) && hasProperty( transaction, Constraint.TABLE_REFERENCE_REFERENCES ) ) {
+            if ( ( current != null ) && hasProperty( Constraint.TABLE_REFERENCE_REFERENCES ) ) {
                 // remove reference columns because they pertained to previous referenced table
-                setProperty( transaction, Constraint.TABLE_REFERENCE_REFERENCES, ( Object[] )null );
+                setProperty( Constraint.TABLE_REFERENCE_REFERENCES, ( Object[] )null );
             }
         }
     }
     
     @Override
-    public TableImpl getRelationalParent(UnitOfWork transaction) throws KException {
-    	return getParent(transaction);
+    public TableImpl getRelationalParent() throws KException {
+    	return getParent();
     }
 
 }
