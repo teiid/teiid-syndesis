@@ -18,6 +18,8 @@
 package org.komodo.metadata.internal;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -30,6 +32,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import javax.xml.stream.XMLStreamException;
+
 import org.komodo.metadata.DataTypeService;
 import org.komodo.metadata.DataTypeService.DataTypeName;
 import org.komodo.metadata.Messages;
@@ -40,7 +44,6 @@ import org.komodo.metadata.query.QSRow;
 import org.komodo.metadata.runtime.TeiidDataSource;
 import org.komodo.metadata.runtime.TeiidVdb;
 import org.komodo.relational.DeployStatus;
-import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.TeiidAdminImpl;
 import org.komodo.rest.TeiidServer;
 import org.komodo.spi.KException;
@@ -51,6 +54,8 @@ import org.springframework.stereotype.Component;
 import org.teiid.adminapi.Admin;
 import org.teiid.adminapi.AdminException;
 import org.teiid.adminapi.VDB;
+import org.teiid.adminapi.impl.VDBMetaData;
+import org.teiid.adminapi.impl.VDBMetadataParser;
 import org.teiid.query.parser.QueryParser;
 import org.teiid.query.sql.LanguageObject;
 
@@ -367,31 +372,61 @@ public class DefaultMetadataInstance implements MetadataInstance {
     }
 
     @Override
-    public void deployDynamicVdb(String vdbName, String deploymentName, InputStream inStream) throws KException {
-        checkStarted();
+    public DeployStatus deploy(VDBMetaData vdb) throws KException {
+    	DeployStatus status = new DeployStatus();
 
+    	String vdbName = vdb.getName();
+    	
         try {
-            ArgCheck.isNotNull(deploymentName, "deploymentName"); //$NONNLS1$
-            ArgCheck.isNotNull(inStream, "inStream"); //$NONNLS1$
+            status.addProgressMessage("Starting deployment of vdb " + vdbName); //$NON-NLS-1$
 
-            VDB vdb = getAdmin().getVDB(vdbName, "1.0");
-            if (vdb != null) {
-            	getAdmin().undeploy(deploymentName);
-            }
-            getAdmin().deploy(deploymentName, inStream);
-
-            // Give a 0.5 sec pause for the VDB to finish loading metadata.
+            status.addProgressMessage("Attempting to deploy VDB " + vdbName + " to teiid"); //$NON-NLS-1$ //$NON-NLS-2$
+            
+         // Deploy the VDB
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
             try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                // ignore
+    			VDBMetadataParser.marshell(vdb, baos);
+    		} catch (XMLStreamException | IOException e) {
+    			throw new KException(e);
+    		}
+            
+            byte[] bytes = baos.toByteArray();
+            
+            InputStream inStream = new ByteArrayInputStream(bytes);
+
+            checkStarted();
+            
+            String deploymentName = vdbName + VDB_DEPLOYMENT_SUFFIX;
+
+            try {
+                ArgCheck.isNotNull(deploymentName, "deploymentName"); //$NONNLS1$
+                ArgCheck.isNotNull(inStream, "inStream"); //$NONNLS1$
+
+                VDB existing = getAdmin().getVDB(vdbName, "1.0");
+                if (existing != null) {
+                	getAdmin().undeploy(deploymentName);
+                }
+                getAdmin().deploy(deploymentName, inStream);
+
+                // Give a 0.5 sec pause for the VDB to finish loading metadata.
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    // ignore
+                }
+
+            } catch (Exception ex) {
+                throw handleError(ex);
             }
 
+            status.addProgressMessage("VDB deployed " + vdbName + " to teiid"); //$NON-NLS-1$ //$NON-NLS-2$
         } catch (Exception ex) {
-            throw handleError(ex);
+            status.addErrorMessage(ex);
         }
+        
+        return status;
     }
-
+    
     @Override
     public void undeployDynamicVdb(String vdbName) throws KException {
         checkStarted();
@@ -434,32 +469,4 @@ public class DefaultMetadataInstance implements MetadataInstance {
         }
     }
 
-	@Override
-	public DeployStatus deploy(Vdb vdb) {
-        DeployStatus status = new DeployStatus();
-
-        try {
-            String vdbName = vdb.getName();
-            status.addProgressMessage("Starting deployment of vdb " + vdbName); //$NON-NLS-1$
-
-            status.addProgressMessage("Attempting to deploy VDB " + vdbName + " to teiid"); //$NON-NLS-1$ //$NON-NLS-2$
-
-            // Get VDB content
-            byte[] vdbXml = vdb.export(null);
-            if (vdbXml == null || vdbXml.length == 0) {
-                status.addErrorMessage("VDB " + vdbName + " content is empty"); //$NON-NLS-1$ //$NON-NLS-2$
-                return status;
-            }
-
-            String vdbToDeployName = vdb.getName();
-            String vdbDeploymentName = vdbToDeployName + VDB_DEPLOYMENT_SUFFIX;
-            deployDynamicVdb(vdbName, vdbDeploymentName, new ByteArrayInputStream(vdbXml));
-
-            status.addProgressMessage("VDB deployed " + vdbName + " to teiid"); //$NON-NLS-1$ //$NON-NLS-2$
-        } catch (Exception ex) {
-            status.addErrorMessage(ex);
-        }
-        
-        return status;
-	}
 }

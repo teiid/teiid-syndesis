@@ -20,11 +20,14 @@ package org.komodo.rest.service;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.ByteArrayOutputStream;
 import java.util.Properties;
 
 import org.junit.Test;
 import org.komodo.metadata.internal.TeiidDataSourceImpl;
 import org.komodo.metadata.runtime.TeiidDataSource;
+import org.teiid.adminapi.impl.VDBMetaData;
+import org.teiid.adminapi.impl.VDBMetadataParser;
 
 @SuppressWarnings({ "javadoc", "nls" })
 public class KomodoMetadataServiceTest {
@@ -35,9 +38,11 @@ public class KomodoMetadataServiceTest {
 		properties.setProperty(TeiidDataSource.DATASOURCE_JNDINAME, "something");
 		properties.setProperty(TeiidDataSource.DATASOURCE_DRIVERNAME, "type");
 		TeiidDataSourceImpl tds = new TeiidDataSourceImpl("source", properties);
-		byte[] bytes = KomodoMetadataService.generateSourceVdb(tds, "vdb");
+		VDBMetaData vdb = KomodoMetadataService.generateSourceVdb(tds, "vdb");
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		VDBMetadataParser.marshell(vdb, baos);
 		
-		String s = new String(bytes, "UTF-8");
+		String s = new String(baos.toByteArray(), "UTF-8");
 		assertEquals(
 				"<?xml version=\"1.0\" ?><vdb name=\"vdb\" version=\"1\"><description>Vdb for source Data Source:	source\n"
 						+ "Type: 		type</description><connection-type>BY_VERSION</connection-type>"

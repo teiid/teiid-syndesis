@@ -21,6 +21,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
+import org.teiid.adminapi.VDBImport;
+
 /**
  *
  */
@@ -108,11 +110,6 @@ public interface TeiidVdb {
      */
     Properties getProperties( );
     
-    /**
-     * 
-     * @return xml string of the vdb
-     * @throws Exception 
-     */
-    String export( ) throws Exception;
+	List<? extends VDBImport> getImports();
 
 }

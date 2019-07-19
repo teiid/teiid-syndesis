@@ -17,9 +17,6 @@
  */
 package org.komodo.rest.service;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -46,10 +43,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
-import javax.xml.stream.XMLStreamException;
 
 import org.komodo.datasources.DefaultSyndesisDataSource;
 import org.komodo.metadata.MetadataInstance;
+import org.komodo.metadata.internal.TeiidVdbImpl;
 import org.komodo.metadata.query.QSResult;
 import org.komodo.metadata.runtime.TeiidDataSource;
 import org.komodo.metadata.runtime.TeiidVdb;
@@ -63,7 +60,6 @@ import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
-import org.komodo.relational.vdb.VdbImport;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.CallbackTimeoutException;
 import org.komodo.rest.KomodoRestException;
@@ -86,9 +82,10 @@ import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.teiid.adminapi.Model.Type;
+import org.teiid.adminapi.VDBImport;
 import org.teiid.adminapi.impl.ModelMetaData;
+import org.teiid.adminapi.impl.VDBImportMetadata;
 import org.teiid.adminapi.impl.VDBMetaData;
-import org.teiid.adminapi.impl.VDBMetadataParser;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -117,7 +114,7 @@ public class KomodoMetadataService extends KomodoService {
 
     }
 
-    private static final String CONNECTION_VDB_PATTERN = "{0}btlconn"; //$NON-NLS-1$
+    private static final String CONNECTION_VDB_SUFFIX = "btlconn"; //$NON-NLS-1$
 
     private static final String SCHEMA_MODEL_NAME_PATTERN = "{0}schemamodel"; //$NON-NLS-1$
     private static final String SCHEMA_VDB_NAME_PATTERN = "{0}schemavdb"; //$NON-NLS-1$
@@ -417,19 +414,19 @@ public class KomodoMetadataService extends KomodoService {
         try {
             uow = createTransaction(principal, "refreshPreviewVdb", false ); //$NON-NLS-1$
 
-            WorkspaceManager wMgr = getWorkspaceManager();
-
-            Vdb previewVdb = wMgr.findVdb(vdbName);
+            TeiidVdb previewVdb = getMetadataInstance().getVdb(vdbName);
+            VDBMetaData workingCopy = new VDBMetaData();
+        	workingCopy.setName(vdbName);
             
             // if workspace does not have preview vdb, then create it.
             if (previewVdb == null ) {
-            	previewVdb = wMgr.createVdb( vdbName );
+            	previewVdb = new TeiidVdbImpl(workingCopy);
             }
 
             // Get the list of current preview VDB import names
             List<String> currentVdbImportNames = new ArrayList<String>();
-            VdbImport[] currentVdbImports = previewVdb.getImports();
-            for( VdbImport vdbImport: currentVdbImports ) {
+            List<? extends VDBImport> currentVdbImports = previewVdb.getImports();
+            for( VDBImport vdbImport: currentVdbImports ) {
             	currentVdbImportNames.add(vdbImport.getName());
             }
 
@@ -437,7 +434,7 @@ public class KomodoMetadataService extends KomodoService {
             List<String> connectionVdbNames = new ArrayList<String>();
             Collection<String> vdbNames = getMetadataInstance().getVdbNames();
             for( String name: vdbNames) {
-            	if (name.endsWith("btlconn")) {
+            	if (name.endsWith(CONNECTION_VDB_SUFFIX)) {
             		connectionVdbNames.add(name);
             	}
             }
@@ -446,7 +443,9 @@ public class KomodoMetadataService extends KomodoService {
             boolean importAdded = false;
             for(String connVdbName: connectionVdbNames) {
             	if(!currentVdbImportNames.contains(connVdbName)) {
-            		previewVdb.addImport(connVdbName);
+            		VDBImportMetadata vdbImport = new VDBImportMetadata();
+            		vdbImport.setName(connVdbName);
+            		workingCopy.getVDBImports().add(vdbImport);
             		importAdded = true;
             	}
             }
@@ -455,8 +454,8 @@ public class KomodoMetadataService extends KomodoService {
             boolean importRemoved = false;
             for(String currentVdbImportName: currentVdbImportNames) {
             	if(!connectionVdbNames.contains(currentVdbImportName)) {
-            		previewVdb.removeImport(currentVdbImportName);
             		importRemoved = true;
+            		break;
             	}
             }
 
@@ -468,7 +467,7 @@ public class KomodoMetadataService extends KomodoService {
                 //
                 // Deploy the VDB
                 //
-                DeployStatus deployStatus = getMetadataInstance().deploy(previewVdb);
+                DeployStatus deployStatus = getMetadataInstance().deploy(workingCopy);
 
                 // Await the deployment to end
                 Thread.sleep(DEPLOYMENT_WAIT_TIME);
@@ -1334,14 +1333,14 @@ public class KomodoMetadataService extends KomodoService {
        // Name of VDB to be created is based on the source name
         String vdbName = getWorkspaceSourceVdbName( teiidSource.getName() );
         
-        byte[] bytes = generateSourceVdb(teiidSource, vdbName);
-		getMetadataInstance().deployDynamicVdb(vdbName, vdbName+VDB_DEPLOYMENT_SUFFIX, new ByteArrayInputStream(bytes));
+        VDBMetaData vdb = generateSourceVdb(teiidSource, vdbName);
+		getMetadataInstance().deploy(vdb);
         
         // Wait for deployment to complete
         Thread.sleep(DEPLOYMENT_WAIT_TIME);
     }
 
-	static byte[] generateSourceVdb(TeiidDataSource teiidSource, String vdbName) throws KException {
+	static VDBMetaData generateSourceVdb(TeiidDataSource teiidSource, String vdbName) throws KException {
 		// Get necessary info from the source
         String sourceName = teiidSource.getName();
         String jndiName = teiidSource.getJndiName();
@@ -1368,16 +1367,7 @@ public class KomodoMetadataService extends KomodoService {
         // TODO: re-implement, needed for publishing
         // modelSource.setAssociatedConnection(uow, connection);
         
-        // Deploy the VDB
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
-			VDBMetadataParser.marshell(vdb, baos);
-		} catch (XMLStreamException | IOException e) {
-			throw new KException(e);
-		}
-        
-        byte[] bytes = baos.toByteArray();
-		return bytes;
+        return vdb;
 	}
     
     /**
@@ -1475,7 +1465,7 @@ public class KomodoMetadataService extends KomodoService {
      * @return the source vdb name
      */
     private String getWorkspaceSourceVdbName( final String sourceName ) {
-        return MessageFormat.format( CONNECTION_VDB_PATTERN, sourceName.toLowerCase() );
+        return sourceName.toLowerCase() + CONNECTION_VDB_SUFFIX;
     }
 
     /**
