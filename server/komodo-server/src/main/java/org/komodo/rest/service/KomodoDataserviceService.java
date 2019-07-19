@@ -392,8 +392,6 @@ public final class KomodoDataserviceService extends KomodoService
         Model viewModel = serviceVdb.addModel(SERVICE_VDB_VIEW_MODEL);
         viewModel.setModelType(Type.VIRTUAL);
 
-        dataservice.setServiceVdbName(serviceVdbName);
-
         KomodoStatusObject kso = new KomodoStatusObject("Create Status"); //$NON-NLS-1$
         kso.addAttribute(dataserviceName, "Successfully created"); //$NON-NLS-1$
         

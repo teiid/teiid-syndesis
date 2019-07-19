@@ -21,6 +21,7 @@ import java.util.Calendar;
 
 import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;
+import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.KomodoType;
 
 /**
@@ -39,19 +40,13 @@ public interface Dataservice extends RelationalObject {
     KomodoType IDENTIFIER = KomodoType.DATASERVICE;
 
     /**
-     * @param name
      * @return the service VDB name (may be <code>null</code> if not defined)
      * @throws KException
      *         if an error occurs
      */
-    void setServiceVdbName( String name ) throws KException;
-
-    /**
-     * @return the service VDB name (may be <code>null</code> if not defined)
-     * @throws KException
-     *         if an error occurs
-     */
-    String getServiceVdbName( ) throws KException;
+    default String getServiceVdbName( ) throws KException {
+    	return getName().toLowerCase() + StringConstants.SERVICE_VDB_SUFFIX;
+    }
 
     /**
      * @return the value of the <code>description</code> property (can be empty)

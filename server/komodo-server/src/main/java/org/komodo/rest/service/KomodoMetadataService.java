@@ -17,12 +17,18 @@
  */
 package org.komodo.rest.service;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -40,6 +46,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
+import javax.xml.stream.XMLStreamException;
 
 import org.komodo.datasources.DefaultSyndesisDataSource;
 import org.komodo.metadata.MetadataInstance;
@@ -78,6 +85,10 @@ import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.teiid.adminapi.Model.Type;
+import org.teiid.adminapi.impl.ModelMetaData;
+import org.teiid.adminapi.impl.VDBMetaData;
+import org.teiid.adminapi.impl.VDBMetadataParser;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -933,29 +944,30 @@ public class KomodoMetadataService extends KomodoService {
 
             // Get teiid datasources
             Collection<TeiidDataSource> allTeiidSources = getMetadataInstance().getDataSources();
+            
+            Map<String, TeiidDataSource> teiidSourceMap = allTeiidSources.stream().collect(Collectors.toMap(t -> t.getName(), Function.identity()));
 
             // Add status summary for each of the syndesis sources.  Determine if there is a matching teiid source
             for (DefaultSyndesisDataSource dataSource : dataSources) {
                 RestSyndesisSourceStatus status = new RestSyndesisSourceStatus(dataSource.getName());
-                for (TeiidDataSource teiidSource : allTeiidSources) {
-                    // Syndesis source has a corresponding VDB.  Use VDB for status
-                    if (teiidSource.getName().equals(dataSource.getName())) {
-                        status.setHasTeiidSource(true);
-                    }
+                TeiidDataSource teiidSource = teiidSourceMap.get(dataSource.getName());
+                if (teiidSource != null) {
+                	status.setHasTeiidSource(true);
                 }
                 statuses.add(status);
             }
             
             // For each syndesis source, determine if there is a matching teiid VDB for the source
             final Collection< TeiidVdb > vdbs = getMetadataInstance().getVdbs();
+
+            Map<String, TeiidVdb> vdbMap = vdbs.stream().collect(Collectors.toMap(v -> v.getName(), Function.identity()));
+            
             for( RestSyndesisSourceStatus status : statuses ) {
                 // Name of vdb based on source name
                 String vdbName = getWorkspaceSourceVdbName( status.getSourceName() );
-                for (TeiidVdb vdb: vdbs) {
-                    if ( vdb.getName().equals(vdbName) ) {
-                        status.setTeiidVdbDetails(vdb);
-                        break;
-                    }
+                TeiidVdb vdb = vdbMap.get(vdbName);
+                if ( vdb != null ) {
+                    status.setTeiidVdbDetails(vdb);
                 }
             }
 
@@ -1318,25 +1330,11 @@ public class KomodoMetadataService extends KomodoService {
      * @throws KException
      * @throws InterruptedException
      */
-    private DeployStatus doDeploySourceVdb( TeiidDataSource teiidSource ) throws KException, InterruptedException {
+    private void doDeploySourceVdb( TeiidDataSource teiidSource ) throws KException, InterruptedException {
         assert( teiidSource != null );
 
-        // Get necessary info from the source
-        String sourceName = teiidSource.getName();
-        String jndiName = teiidSource.getJndiName();
-        String driverName = teiidSource.getType();
-        
-        // Name of VDB to be created is based on the source name
-        String vdbName = getWorkspaceSourceVdbName( sourceName );
-        
         // VDB is created in the repository.  If it already exists, delete it
         final WorkspaceManager mgr = this.getWorkspaceManager();
-        
-        final Vdb existingVdb = findVdb(vdbName);
-
-        if ( existingVdb != null ) {
-            mgr.deleteVdb(existingVdb);
-        }
         
         // delete schema VDB if it exists
         final Vdb schemaVdb = findWorkspaceSchemaVdb(teiidSource );
@@ -1344,38 +1342,55 @@ public class KomodoMetadataService extends KomodoService {
         if ( schemaVdb != null ) {
             mgr.deleteVdb( schemaVdb );
         }
+        
+       // Name of VDB to be created is based on the source name
+        String vdbName = getWorkspaceSourceVdbName( teiidSource.getName() );
+        
+        byte[] bytes = generateSourceVdb(teiidSource, vdbName);
+		getMetadataInstance().deployDynamicVdb(vdbName, vdbName+VDB_DEPLOYMENT_SUFFIX, new ByteArrayInputStream(bytes));
+        
+        // Wait for deployment to complete
+        Thread.sleep(DEPLOYMENT_WAIT_TIME);
+    }
 
-        // Create new VDB
-        final Vdb vdb = mgr.createVdb( vdbName );
+	static byte[] generateSourceVdb(TeiidDataSource teiidSource, String vdbName) throws KException {
+		// Get necessary info from the source
+        String sourceName = teiidSource.getName();
+        String jndiName = teiidSource.getJndiName();
+        String driverName = teiidSource.getType();
+
+        VDBMetaData vdb = new VDBMetaData();
+        vdb.setName(vdbName);
         vdb.setDescription("Vdb for source "+teiidSource); //$NON-NLS-1$
-                    
-        // Add model to the VDB
-        Model model = vdb.addModel(getSchemaModelName(sourceName));
-        model.setModelType(Model.Type.PHYSICAL);
-        model.setPropertyValue("importer.TableTypes", "TABLE,VIEW"); //$NON-NLS-1$ //$NON-NLS-2$
-        model.setPropertyValue("importer.UseQualifiedName", "true");  //$NON-NLS-1$//$NON-NLS-2$
-        model.setPropertyValue("importer.UseCatalogName", "false");  //$NON-NLS-1$//$NON-NLS-2$
-        model.setPropertyValue("importer.UseFullSchemaName", "false");  //$NON-NLS-1$//$NON-NLS-2$
+        ModelMetaData mmd = new ModelMetaData();
+        mmd.setName(getSchemaModelName(sourceName));
+        vdb.addModel(mmd);
+        mmd.setModelType(Type.PHYSICAL);
+        mmd.addProperty("importer.TableTypes", "TABLE,VIEW"); //$NON-NLS-1$ //$NON-NLS-2$
+        mmd.addProperty("importer.UseQualifiedName", "true");  //$NON-NLS-1$//$NON-NLS-2$
+        mmd.addProperty("importer.UseCatalogName", "false");  //$NON-NLS-1$//$NON-NLS-2$
+        mmd.addProperty("importer.UseFullSchemaName", "false");  //$NON-NLS-1$//$NON-NLS-2$
         if (teiidSource.getPropertyValue("schema") != null) {
-        	model.setPropertyValue("importer.schemaPattern", teiidSource.getPropertyValue("schema"));  //$NON-NLS-1$//$NON-NLS-2$
+        	mmd.addProperty("importer.schemaName", teiidSource.getPropertyValue("schema"));  //$NON-NLS-1$//$NON-NLS-2$
         }
         
         // Add model source to the model
         final String modelSourceName = teiidSource.getName();
-        ModelSource modelSource = model.addSource(modelSourceName);
-        modelSource.setJndiName(jndiName);
-        modelSource.setTranslatorName(driverName);
+        mmd.addSourceMapping(modelSourceName, driverName, jndiName);
         // TODO: re-implement, needed for publishing
         // modelSource.setAssociatedConnection(uow, connection);
         
         // Deploy the VDB
-        DeployStatus deployStatus = getMetadataInstance().deploy(vdb);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+			VDBMetadataParser.marshell(vdb, baos);
+		} catch (XMLStreamException | IOException e) {
+			throw new KException(e);
+		}
         
-        // Wait for deployment to complete
-        Thread.sleep(DEPLOYMENT_WAIT_TIME);
-        
-        return deployStatus;
-    }
+        byte[] bytes = baos.toByteArray();
+		return bytes;
+	}
     
     /**
      * Add model to the schema vdb
@@ -1390,64 +1405,13 @@ public class KomodoMetadataService extends KomodoService {
         Model schemaModel = schemaVdb.addModel( schemaModelName );
         
         // Make a copy of the workspace syndesis source vdb model source under the syndesis source schema vdb model
-        final ModelSource workspaceVdbModelSource = findWorkspaceSyndesisSourceVdbModelSource(dataSource );
-        if( workspaceVdbModelSource != null ) {
-            ModelSource mdlSource = schemaModel.addSource(workspaceVdbModelSource.getName());
-            mdlSource.setJndiName(workspaceVdbModelSource.getJndiName());
-            mdlSource.setTranslatorName( workspaceVdbModelSource.getTranslatorName());
-            // TODO: re-implement, needed for publishing
-            // mdlSource.setAssociatedConnection(uow, workspaceVdbModelSource.getOriginConnection(uow));
-        }
+        ModelSource mdlSource = schemaModel.addSource(dataSource.getName());
+        mdlSource.setJndiName(dataSource.getJndiName());
+        mdlSource.setTranslatorName( dataSource.getType());
+        // TODO: re-implement, needed for publishing
+        // mdlSource.setAssociatedConnection(uow, workspaceVdbModelSource.getOriginConnection(uow));
         
         return schemaModel;
-    }
-
-    /**
-     * Find the VDB in the workspace for the specified teiid dataSource
-     * @param dataSource the teiid data source
-     * @return the workspace VDB
-     * @throws KException
-     */
-    private Vdb findWorkspaceSyndesisSourceVdb(final TeiidDataSource dataSource ) throws KException {
-        final String dataSourceName = dataSource.getName( );
-
-        final String wsSourceVdbName = this.getWorkspaceSourceVdbName(dataSourceName);
-
-        Vdb vdb = findVdb(wsSourceVdbName);
-        return vdb;
-    }
-    
-    /**
-     * Find the Vdb ModelSource for the workspace syndesis source VDB
-     * @param dataSource the teiid data source
-     * @return the workspace VDB
-     * @throws KException
-     */
-    private ModelSource findWorkspaceSyndesisSourceVdbModelSource(final TeiidDataSource dataSource ) throws KException {
-        ModelSource modelSource = null;
-        
-        final Vdb vdb = findWorkspaceSyndesisSourceVdb(dataSource );
-
-        if ( vdb != null ) {
-            final String dataSourceName = dataSource.getName( );
-            final String schemaModelName = getSchemaModelName( dataSourceName );
-            final Model[] models = vdb.getModels(schemaModelName);
-
-            Model model = null;
-            if ( models.length != 0 ) {
-                model = models[ 0 ];
-            }
-            
-            if( model != null ) {
-                final String schemaModelSourceName = dataSource.getName();
-                final ModelSource[] modelSources = model.getSources(schemaModelSourceName);
-                if ( modelSources.length != 0 ) {
-                    modelSource = modelSources[ 0 ];
-                }
-            }
-        }
-
-        return modelSource;
     }
 
     /**

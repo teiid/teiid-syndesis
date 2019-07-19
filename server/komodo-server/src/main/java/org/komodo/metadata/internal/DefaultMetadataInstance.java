@@ -51,7 +51,6 @@ import org.springframework.stereotype.Component;
 import org.teiid.adminapi.Admin;
 import org.teiid.adminapi.AdminException;
 import org.teiid.adminapi.VDB;
-import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.query.parser.QueryParser;
 import org.teiid.query.sql.LanguageObject;
 
@@ -264,16 +263,6 @@ public class DefaultMetadataInstance implements MetadataInstance {
         }
     }
 
-    private boolean isDynamic(VDB vdb) {
-        if (vdb == null)
-            return false;
-
-        if (! (vdb instanceof VDBMetaData))
-            return false;
-
-        return ((VDBMetaData) vdb).isXmlDeployment();
-    }
-
     @Override
     public Collection<String> getVdbNames() throws KException {
         checkStarted();
@@ -354,9 +343,6 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
             List<TeiidVdb> teiidVdbs = new ArrayList<>();
             for (VDB vdb : vdbs) {
-                if (!isDynamic(vdb))
-                    continue;
-
                 teiidVdbs.add(new TeiidVdbImpl(vdb));
             }
 
@@ -372,9 +358,6 @@ public class DefaultMetadataInstance implements MetadataInstance {
         try {
             VDB vdb = getAdmin().getVDB(name, "1");
             if (vdb == null)
-                return null;
-
-            if (!isDynamic(vdb))
                 return null;
 
             return new TeiidVdbImpl(vdb);

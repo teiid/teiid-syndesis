@@ -18,7 +18,6 @@
 package org.komodo.relational.dataservice.internal;
 
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import java.util.Calendar;
@@ -97,14 +96,6 @@ public final class DataserviceImplTest extends RelationalModelTest {
         date.set( 2016, 8, 23, 13, 48, 33 );
         this.dataservice.setLastModified( date );
         assertThat( this.dataservice.getLastModified( ), is( date ) );
-    }
-
-    @Test
-    public void shouldSetServiceVdbName() throws Exception {
-        final String vdbName = "MyServiceVdb";
-
-        this.dataservice.setServiceVdbName( vdbName );
-        assertEquals(vdbName, this.dataservice.getServiceVdbName());
     }
 
 }

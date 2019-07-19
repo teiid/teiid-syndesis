@@ -22,7 +22,6 @@ import java.util.Calendar;
 import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.ObjectImpl;
-import org.komodo.core.repository.Property;
 import org.komodo.core.repository.PropertyValueType;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.internal.RelationalObjectImpl;
@@ -214,22 +213,4 @@ public class DataserviceImpl extends RelationalObjectImpl implements Dataservice
                            newModifiedBy );
     }
     
-    @Override
-    public String getServiceVdbName() throws KException {
-    	KomodoObject child = this.getChild("serviceVdb", DataVirtLexicon.VdbEntry.NODE_TYPE);
-    	if (child != null) {
-    		Property p = child.getProperty(DataVirtLexicon.VdbEntry.VDB_NAME);
-    		if (p != null) {
-    			return p.getStringValue(getTransaction());
-    		}
-    	}
-    	return null;
-    }
-    
-    @Override
-    public void setServiceVdbName(String name) throws KException {
-    	KomodoObject child = this.addChild(getTransaction(), "serviceVdb", DataVirtLexicon.VdbEntry.NODE_TYPE);
-    	child.setProperty(DataVirtLexicon.VdbEntry.VDB_NAME, name);
-    }
-   
 }

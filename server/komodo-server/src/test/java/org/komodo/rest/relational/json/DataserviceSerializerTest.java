@@ -67,7 +67,6 @@ public final class DataserviceSerializerTest extends AbstractSerializerTest  {
 
         Dataservice theService = Mockito.mock(Dataservice.class);
         Mockito.when(theService.getName()).thenReturn(DATASERVICE_NAME);
-        Mockito.when(theService.getServiceVdbName()).thenReturn("ServiceVdb");
 
         this.dataservice = new RestDataservice(MY_BASE_URI, theService, false, serviceVdb);
         this.dataservice.setDescription(DESCRIPTION);
