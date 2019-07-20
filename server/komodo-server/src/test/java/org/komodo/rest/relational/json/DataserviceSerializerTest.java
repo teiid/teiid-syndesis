@@ -24,7 +24,6 @@ import java.net.URLDecoder;
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.relational.dataservice.RestDataservice;
 import org.mockito.Mockito;
 
@@ -38,7 +37,7 @@ public final class DataserviceSerializerTest extends AbstractSerializerTest  {
         "  \"keng__id\": \"" + DATASERVICE_NAME + "\"," + NEW_LINE +
         "  \"keng__kType\": \"Dataservice\"," + NEW_LINE +
         "  \"tko__description\": \"my description\"," + NEW_LINE +
-        "  \"serviceVdbVersion\": \"1\"," + NEW_LINE +
+        "  \"serviceVdbName\": \"ServiceVdb\"," + NEW_LINE +
         "  \"keng__hasChildren\": true," + NEW_LINE +
         "  \"publishedState\": \"NOTFOUND\"," + NEW_LINE +
         "  \"keng___links\": [" + NEW_LINE +
@@ -61,14 +60,10 @@ public final class DataserviceSerializerTest extends AbstractSerializerTest  {
 
     @Before
     public void init() throws Exception {
-        Vdb serviceVdb = Mockito.mock(Vdb.class);
-        Mockito.when(serviceVdb.getName()).thenReturn("ServiceVdb");
-        Mockito.when(serviceVdb.getVersion()).thenReturn(1);
-
         Dataservice theService = Mockito.mock(Dataservice.class);
         Mockito.when(theService.getName()).thenReturn(DATASERVICE_NAME);
 
-        this.dataservice = new RestDataservice(MY_BASE_URI, theService, false, serviceVdb);
+        this.dataservice = new RestDataservice(MY_BASE_URI, theService, false, "ServiceVdb");
         this.dataservice.setDescription(DESCRIPTION);
     }
 

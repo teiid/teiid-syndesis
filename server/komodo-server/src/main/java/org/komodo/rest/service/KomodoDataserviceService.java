@@ -206,10 +206,9 @@ public final class KomodoDataserviceService extends KomodoService
     }
 
 	private RestDataservice createRestDataservice(final UriInfo uriInfo, KomodoProperties properties, final Dataservice dataService) throws KException {
-		Vdb serviceVdb = findVdb(dataService.getServiceVdbName());
-		RestDataservice entity = new RestDataservice(uriInfo.getBaseUri(), dataService, false, serviceVdb);
-		entity.setServiceViewModel(RestDataservice.getServiceViewModelName(serviceVdb));
-        entity.setViewDefinitionNames(RestDataservice.getViewDefnNames(getWorkspaceManager(), serviceVdb));
+		RestDataservice entity = new RestDataservice(uriInfo.getBaseUri(), dataService, false, dataService.getServiceVdbName());
+		entity.setServiceViewModel(SERVICE_VDB_VIEW_MODEL);
+        entity.setViewDefinitionNames(RestDataservice.getViewDefnNames(getWorkspaceManager(), dataService.getServiceVdbName()));
 		// Set published status of dataservice
 		BuildStatus status = this.openshiftClient.getVirtualizationStatus(dataService.getServiceVdbName());
 		entity.setPublishedState(status.status().name());
@@ -376,7 +375,7 @@ public final class KomodoDataserviceService extends KomodoService
         // Transfers the properties from the rest object to the created komodo service.
         setProperties(dataservice, restDataservice);
 
-        String serviceVdbName = dataserviceName.toLowerCase() + SERVICE_VDB_SUFFIX;
+        String serviceVdbName = dataservice.getServiceVdbName();
         WorkspaceManager wkspMgr = getWorkspaceManager();
 
         // Find the service VDB definition for this Dataservice. If one exists already,
