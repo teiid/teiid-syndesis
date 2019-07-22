@@ -18,7 +18,6 @@
 package org.komodo.metadata.internal;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -44,18 +43,19 @@ import org.komodo.metadata.query.QSRow;
 import org.komodo.metadata.runtime.TeiidDataSource;
 import org.komodo.metadata.runtime.TeiidVdb;
 import org.komodo.relational.DeployStatus;
-import org.komodo.rest.TeiidAdminImpl;
 import org.komodo.rest.TeiidServer;
 import org.komodo.spi.KException;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.teiid.adminapi.Admin;
 import org.teiid.adminapi.AdminException;
 import org.teiid.adminapi.VDB;
+import org.teiid.adminapi.impl.ModelMetaData;
+import org.teiid.adminapi.impl.SourceMappingMetadata;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.adminapi.impl.VDBMetadataParser;
+import org.teiid.core.util.AccessibleByteArrayOutputStream;
 import org.teiid.query.parser.QueryParser;
 import org.teiid.query.sql.LanguageObject;
 
@@ -67,14 +67,14 @@ public class DefaultMetadataInstance implements MetadataInstance {
     @Autowired
     private TeiidServer server;
 
-    private Admin admin;
+    private TeiidAdminImpl admin;
 
     public DefaultMetadataInstance() {
         
     }
     
     @Override
-    public Admin getAdmin() throws AdminException {
+    public TeiidAdminImpl getAdmin() throws AdminException {
     	if (this.admin == null) {
 	        this.admin = new TeiidAdminImpl(server.getAdmin(), server);
 	    }
@@ -382,31 +382,36 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
             status.addProgressMessage("Attempting to deploy VDB " + vdbName + " to teiid"); //$NON-NLS-1$ //$NON-NLS-2$
             
-         // Deploy the VDB
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            try {
-    			VDBMetadataParser.marshell(vdb, baos);
-    		} catch (XMLStreamException | IOException e) {
-    			throw new KException(e);
-    		}
+            // Deploy the VDB
+            AccessibleByteArrayOutputStream baos = toBytes(vdb);
             
-            byte[] bytes = baos.toByteArray();
-            
-            InputStream inStream = new ByteArrayInputStream(bytes);
+            byte[] bytes = baos.getBuffer();
+            InputStream inStream = new ByteArrayInputStream(bytes, 0, baos.getCount());
 
             checkStarted();
             
             String deploymentName = vdbName + VDB_DEPLOYMENT_SUFFIX;
-
+            
+            TeiidAdminImpl admin = getAdmin();
+            
             try {
                 ArgCheck.isNotNull(deploymentName, "deploymentName"); //$NONNLS1$
                 ArgCheck.isNotNull(inStream, "inStream"); //$NONNLS1$
 
-                VDB existing = getAdmin().getVDB(vdbName, "1.0");
+                VDB existing = admin.getVDB(vdbName, "1.0");
                 if (existing != null) {
-                	getAdmin().undeploy(deploymentName);
+                	admin.undeploy(deploymentName);
                 }
-                getAdmin().deploy(deploymentName, inStream);
+                
+                for (ModelMetaData model : vdb.getModelMetaDatas().values()) {
+                    for (SourceMappingMetadata smm : model.getSourceMappings()) {
+                    	admin.addTranslator(smm.getTranslatorName());
+                        if (smm.getConnectionJndiName() != null && admin.getDatasources().get(smm.getConnectionJndiName()) != null) {
+                            server.addConnectionFactory(smm.getName(), admin.getDatasources().get(smm.getConnectionJndiName()));
+                        }
+                    }
+                }
+                admin.deploy(deploymentName, new ByteArrayInputStream(baos.toByteArray()));
 
                 // Give a 0.5 sec pause for the VDB to finish loading metadata.
                 try {
@@ -467,6 +472,17 @@ public class DefaultMetadataInstance implements MetadataInstance {
         } catch (Exception ex) {
             throw handleError(ex);
         }
+    }
+    
+    public static AccessibleByteArrayOutputStream toBytes(VDBMetaData vdb) throws KException {
+    	AccessibleByteArrayOutputStream baos = new AccessibleByteArrayOutputStream();
+        try {
+			VDBMetadataParser.marshell(vdb, baos);
+		} catch (XMLStreamException | IOException e) {
+			throw new KException(e);
+		}
+        
+        return baos;
     }
 
 }

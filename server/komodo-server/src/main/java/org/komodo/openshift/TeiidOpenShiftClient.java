@@ -83,21 +83,19 @@ import org.komodo.datasources.PostgreSQLDefinition;
 import org.komodo.datasources.SalesforceDefinition;
 import org.komodo.datasources.WebServiceDefinition;
 import org.komodo.metadata.MetadataInstance;
+import org.komodo.metadata.internal.DefaultMetadataInstance;
 import org.komodo.openshift.BuildStatus.RouteStatus;
 import org.komodo.openshift.BuildStatus.Status;
-import org.komodo.relational.model.Model;
-import org.komodo.relational.vdb.ModelSource;
-import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoConfigurationProperties;
-import org.komodo.spi.KEngine;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.ApplicationProperties;
-import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.utils.FileUtils;
 import org.komodo.utils.StringUtils;
 import org.teiid.adminapi.AdminException;
+import org.teiid.adminapi.Model;
+import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.core.util.ObjectConverterUtil;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -320,8 +318,6 @@ public class TeiidOpenShiftClient implements StringConstants {
                         } else {
                             // Close the log as no longer needed actively
                             closeLog(work.vdbName());
-                            // dispose of the publish config artifacts
-                            work.publishConfiguration().dispose();
                         }
                     }
                 }
@@ -428,7 +424,6 @@ public class TeiidOpenShiftClient implements StringConstants {
     private volatile ConcurrentLinkedQueue<BuildStatus> workQueue = new ConcurrentLinkedQueue<>();
 
     private MetadataInstance metadata;
-    private KEngine kengine;
     private HashMap<String, DataSourceDefinition> sources = new HashMap<>();
 
     /**
@@ -451,10 +446,8 @@ public class TeiidOpenShiftClient implements StringConstants {
     private EncryptionComponent encryptionComponent;
     private KomodoConfigurationProperties config;
 
-	public TeiidOpenShiftClient(MetadataInstance metadata, KEngine kengine, EncryptionComponent encryptor,
-			KomodoConfigurationProperties config) {
+	public TeiidOpenShiftClient(MetadataInstance metadata, EncryptionComponent encryptor, KomodoConfigurationProperties config) {
         this.metadata = metadata;
-        this.kengine = kengine;
         this.encryptionComponent = encryptor;
         this.config = config;
 
@@ -1176,9 +1169,7 @@ public class TeiidOpenShiftClient implements StringConstants {
                 final OpenShiftClient client = openshiftClient();
                 String namespace = work.namespace();
                 PublishConfiguration publishConfig = work.publishConfiguration();
-                Vdb vdb = publishConfig.getVDB();
-                UnitOfWork uow = publishConfig.getTransaction();
-                kengine.associateTransaction(uow);
+                VDBMetaData vdb = publishConfig.getVDB();
                 OAuthCredentials oauthCreds = publishConfig.getOAuthCredentials();
 
                 String vdbName = work.vdbName();
@@ -1193,9 +1184,9 @@ public class TeiidOpenShiftClient implements StringConstants {
                     debug(vdbName, "Publishing - Generated pom file: " + NEW_LINE + pomFile);
                     archive.add(new StringAsset(pomFile), "pom.xml");
 
-                    byte[] vdbContents = vdb.export(null);
-                    String modifiedVDB = normalizeDataSourceNames(vdb, new String(vdbContents));
-                    debug(vdbName, "Publishing - Exported vdb: " + NEW_LINE + new String(vdbContents));
+                    byte[] vdbContents = DefaultMetadataInstance.toBytes(vdb).toByteArray();
+                    String modifiedVDB = normalizeDataSourceNames(vdb, new String(vdbContents, "UTF-8"));
+                    debug(vdbName, "Publishing - Exported vdb: " + NEW_LINE + modifiedVDB);
                     archive.add(new StringAsset(modifiedVDB), "/src/main/resources/" + vdbName + "-vdb.xml");
 
                     InputStream configIs = this.getClass().getClassLoader().getResourceAsStream("s2i/application.properties");
@@ -1265,13 +1256,11 @@ public class TeiidOpenShiftClient implements StringConstants {
         });
     }
 
-	private String normalizeDataSourceNames(Vdb vdb, String vdbContents) throws KException {
+	private String normalizeDataSourceNames(VDBMetaData vdb, String vdbContents) throws KException {
 		debug(vdb.getName(), vdbContents);
-        Model[] models = vdb.getModels();
-        for (Model model : models) {
-            ModelSource[] sources = model.getSources();
-            for (ModelSource source : sources) {
-                String originalName = source.getName();
+        for (Model model : vdb.getModels()) {
+            for (String source : model.getSourceNames()) {
+                String originalName = source;
                 String name = originalName.toLowerCase();
                 name = name.replace("-", "");
                 if (!originalName.contentEquals(name)) {
@@ -1292,7 +1281,7 @@ public class TeiidOpenShiftClient implements StringConstants {
             "        return DataSourceBuilder.create().build();\n" +
             "    }";
 
-    protected InputStream buildDataSourceBuilders(Vdb vdb) throws KException {
+    protected InputStream buildDataSourceBuilders(VDBMetaData vdb) throws KException {
         StringWriter sw = new StringWriter();
         sw.write("package io.integration;\n" +
                 "\n" +
@@ -1306,11 +1295,8 @@ public class TeiidOpenShiftClient implements StringConstants {
                 "@Configuration\n" +
                 "public class DataSources {\n");
 
-        Model[] models = vdb.getModels();
-        for (Model model : models) {
-            ModelSource[] sources = model.getSources();
-            for (ModelSource source : sources) {
-                String name = source.getName();
+        for (Model model : vdb.getModels()) {
+            for (String name : model.getSourceNames()) {
                 name = name.toLowerCase();
                 name = name.replace("-", "");
                 sw.write(DS_TEMPLATE.replace("{name}", name).replace("{method-name}", name));                
@@ -1357,24 +1343,21 @@ public class TeiidOpenShiftClient implements StringConstants {
         }
     }
     
-    Map<String, String> getSecretVariablesForVDBDataSources(OAuthCredentials oauthCreds, Vdb vdb,
+    Map<String, String> getSecretVariablesForVDBDataSources(OAuthCredentials oauthCreds, VDBMetaData vdb,
             PublishConfiguration publishConfig) throws KException {
         Map<String, String> properties = new HashMap<>();
-        Model[] models = vdb.getModels();
-        for (Model model : models) {
-            ModelSource[] sources = model.getSources();
-            for (ModelSource source : sources) {
-                String name = source.getName();
-                DefaultSyndesisDataSource ds = getSyndesisDataSource(oauthCreds, name);
+        for (Model model : vdb.getModels()) {
+            for (String source : model.getSourceNames()) {
+                DefaultSyndesisDataSource ds = getSyndesisDataSource(oauthCreds, source);
                 if (ds == null) {
-                    throw new KException("Datasource "+name+" not found in Syndesis");
+                    throw new KException("Datasource "+source+" not found in Syndesis");
                 }
 
                 // if null this is either file, ws, kind of source where service catalog source does not exist
                 DataSourceDefinition def = ds.getDefinition();
                 if (def == null) {
                     throw new KException("Failed to determine the source type for "
-                            + name + " in VDB " + vdb.getName());
+                            + source + " in VDB " + vdb.getName());
                 }
 
                 Properties config = def.getPublishedImageDataSourceProperties(ds);
@@ -1388,32 +1371,25 @@ public class TeiidOpenShiftClient implements StringConstants {
         return properties;
     }    
 
-    Collection<EnvVar> getEnvironmentVariablesForVDBDataSources(OAuthCredentials oauthCreds, Vdb vdb,
+    Collection<EnvVar> getEnvironmentVariablesForVDBDataSources(OAuthCredentials oauthCreds, VDBMetaData vdb,
             PublishConfiguration publishConfig) throws KException {
         List<EnvVar> envs = new ArrayList<>();
-        Model[] models = vdb.getModels();
-        for (Model model : models) {
-            ModelSource[] sources = model.getSources();
-            for (ModelSource source : sources) {
-                String name = source.getName();
-                DefaultSyndesisDataSource ds = getSyndesisDataSource(oauthCreds, name);
+        for (Model model : vdb.getModels()) {
+            for (String source : model.getSourceNames()) {
+                DefaultSyndesisDataSource ds = getSyndesisDataSource(oauthCreds, source);
                 if (ds == null) {
-                    throw new KException("Datasource "+name+" not found in Syndesis");
+                    throw new KException("Datasource "+source+" not found in Syndesis");
                 }
 
                 // if null this is either file, ws, kind of source where service catalog source does not exist
                 DataSourceDefinition def = ds.getDefinition();
                 if (def == null) {
                     throw new KException("Failed to determine the source type for "
-                            + name + " in VDB " + vdb.getName());
+                            + source + " in VDB " + vdb.getName());
                 }
                 // data source properties as ENV variables
                 def.getPublishedImageDataSourceProperties(ds).forEach((K,V) -> {
-                	try {
-						envs.add(envFromSecret(secretName(vdb.getName()), (String)K));
-					} catch (KException e) {
-						//ignore.
-					}
+					envs.add(envFromSecret(secretName(vdb.getName()), (String)K));
                 });
             }
         }
@@ -1766,7 +1742,7 @@ public class TeiidOpenShiftClient implements StringConstants {
      * @return pom.xml contents
      * @throws KException
      */
-    protected String generatePomXml(OAuthCredentials oauthCreds, Vdb vdb, boolean enableOdata) throws KException {
+    protected String generatePomXml(OAuthCredentials oauthCreds, VDBMetaData vdb, boolean enableOdata) throws KException {
         try {
             StringBuilder builder = new StringBuilder();
             InputStream is = this.getClass().getClassLoader().getResourceAsStream("s2i/template-pom.xml");
@@ -1776,22 +1752,20 @@ public class TeiidOpenShiftClient implements StringConstants {
             StringBuilder vdbDependencies = new StringBuilder();
 
             String vdbName = vdb.getName();
-            Model[] models = vdb.getModels();
+            List<Model> models = vdb.getModels();
             for (Model model : models) {
-                ModelSource[] sources = model.getSources();
-                for (ModelSource source : sources) {
-                    String name = source.getName();
-                    DefaultSyndesisDataSource ds = getSyndesisDataSource(oauthCreds, name);
+                for (String source : model.getSourceNames()) {
+                    DefaultSyndesisDataSource ds = getSyndesisDataSource(oauthCreds, source);
                     if (ds == null) {
-                        throw new KException("Datasource " + name + " not found");
+                        throw new KException("Datasource " + source + " not found");
                     }
                     DataSourceDefinition def = ds.getDefinition();
                     if (def == null) {
                         throw new KException("Failed to determine the source type for "
-                                + name + " in VDB " + vdb.getName());
+                                + source + " in VDB " + vdb.getName());
                     }
 
-                    vdbSourceNames.append(name).append(StringConstants.SPACE); // this used as label
+                    vdbSourceNames.append(source).append(StringConstants.SPACE); // this used as label
                     vdbDependencies.append(def.getPomDendencies());
                     vdbDependencies.append(StringConstants.NEW_LINE);
                 }

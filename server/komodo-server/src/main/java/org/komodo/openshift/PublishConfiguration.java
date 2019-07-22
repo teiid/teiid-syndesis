@@ -24,18 +24,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.spi.StringConstants;
-import org.komodo.spi.repository.UnitOfWork;
+import org.teiid.adminapi.impl.VDBMetaData;
 
 import io.fabric8.kubernetes.api.model.EnvVar;
 
 public class PublishConfiguration implements StringConstants {
 
     private OAuthCredentials oauthCreds;
-    private UnitOfWork uow;
-    private Vdb vdb;
+    private VDBMetaData vdb;
     private boolean enableOdata;
     private String containerMemorySize;
     private String containerDiskSize;
@@ -55,11 +53,11 @@ public class PublishConfiguration implements StringConstants {
         return buildImageStream;
     }
 
-    public Vdb getVDB() {
+    public VDBMetaData getVDB() {
         return this.vdb;
     }
 
-    public void setVDB(Vdb vdb) {
+    public void setVDB(VDBMetaData vdb) {
         this.vdb = vdb;
     }
 
@@ -145,21 +143,6 @@ public class PublishConfiguration implements StringConstants {
 
     public void setOAuthCredentials(OAuthCredentials creds) {
         this.oauthCreds = creds;
-    }
-
-    public UnitOfWork getTransaction() {
-        return this.uow;
-    }
-
-    public void setTransaction(UnitOfWork uow) {
-        this.uow = uow;
-    }
-
-    public void dispose() {
-        if (this.uow == null)
-            return;
-
-        this.uow.rollback();
     }
 
     public HashMap<String, String> getBuildNodeSelector() {

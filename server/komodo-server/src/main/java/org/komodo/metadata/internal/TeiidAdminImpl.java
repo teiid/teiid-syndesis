@@ -15,11 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.rest;
+package org.komodo.metadata.internal;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,8 +31,9 @@ import java.util.Set;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import javax.sql.DataSource;
-import javax.xml.stream.XMLStreamException;
 
+import org.komodo.rest.ExternalSource;
+import org.komodo.rest.TeiidServer;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.teiid.adminapi.Admin;
 import org.teiid.adminapi.AdminException;
@@ -50,11 +48,7 @@ import org.teiid.adminapi.Translator;
 import org.teiid.adminapi.VDB;
 import org.teiid.adminapi.VDB.ConnectionType;
 import org.teiid.adminapi.WorkerPoolStatistics;
-import org.teiid.adminapi.impl.ModelMetaData;
 import org.teiid.adminapi.impl.PropertyDefinitionMetadata;
-import org.teiid.adminapi.impl.SourceMappingMetadata;
-import org.teiid.adminapi.impl.VDBMetaData;
-import org.teiid.adminapi.impl.VDBMetadataParser;
 import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository.ConnectorManagerException;
 import org.teiid.translator.TranslatorException;
 
@@ -159,25 +153,7 @@ public class TeiidAdminImpl implements Admin {
 
     @Override
     public void deploy(String deployName, InputStream arg1) throws AdminException {
-        if (!deployName.endsWith("-vdb.xml")) {
-        	deployName = deployName +"-vdb.xml";
-        }
-        try {
-            VDBMetaData vdb =  VDBMetadataParser.unmarshell(arg1);
-            for (ModelMetaData model : vdb.getModelMetaDatas().values()) {
-                for (SourceMappingMetadata smm : model.getSourceMappings()) {
-                    addTranslator(smm.getTranslatorName());
-                    if (smm.getConnectionJndiName() != null && this.datasources.get(smm.getConnectionJndiName()) != null) {
-                        server.addConnectionFactory(smm.getName(), this.datasources.get(smm.getConnectionJndiName()));
-                    }
-                }
-            }
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            VDBMetadataParser.marshell(vdb, baos);
-            delegate.deploy(deployName, new ByteArrayInputStream(baos.toByteArray()));
-        } catch (XMLStreamException | IOException e) {
-            throw new AdminProcessingException("Failed to load the VDB defined", e);
-        }
+        delegate.deploy(deployName, arg1);
     }
 
     void addTranslator(String translatorname) {
@@ -453,4 +429,8 @@ public class TeiidAdminImpl implements Admin {
     public void updateSource(String arg0, String arg1, String arg2, String arg3, String arg4) throws AdminException {
         delegate.updateSource(arg0, arg1, arg2, arg3, arg4);
     }
+    
+    public HashMap<String, Object> getDatasources() {
+		return datasources;
+	}
 }

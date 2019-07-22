@@ -18,18 +18,19 @@
 package org.komodo.rest.service;
 
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.relational.RelationalModelTest;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Model.Type;
-import org.komodo.relational.model.View;
-import org.komodo.relational.model.internal.ModelImpl;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.profile.internal.SqlCompositionImpl;
 import org.komodo.relational.profile.internal.SqlProjectedColumnImpl;
@@ -39,6 +40,8 @@ import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.spi.KException;
 import org.komodo.utils.StringUtils;
+import org.teiid.adminapi.impl.ModelMetaData;
+import org.teiid.adminapi.impl.VDBMetaData;
 
 @SuppressWarnings({ "javadoc", "nls" })
 public class ServiceVdbGeneratorTest extends RelationalModelTest {
@@ -569,31 +572,21 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     @Test
     public void shouldRefreshServiceVdb_SingleSource() throws Exception {
     	ViewEditorState[] states = helpCreateViewEditorState(1);
-    	Vdb[] vdbs = findVdbs();
-    	
-    	Vdb serviceVdb = null;
-    	for( Vdb vdb : vdbs ) {
-    		if( vdb.getName().equals(viewDefinitionName)) {
-    			serviceVdb = vdb;
-    			break;
-    		}
-    	}
     	
     	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(workspaceManager());
     	
-    	vdbGenerator.refreshServiceVdb(serviceVdb, states);
-    	
+    	VDBMetaData serviceVdb = vdbGenerator.refreshServiceVdb(viewDefinitionName, states);
+
     	commit();
     	
-    	Model[] models = serviceVdb.getModels();
+    	List<org.teiid.adminapi.Model> models = serviceVdb.getModels();
     	
-        assertThat(models.length, is(2));
-        ModelImpl viewModel = (ModelImpl)ServiceVdbGenerator.getViewModel(serviceVdb);
+    	assertThat(models.size(), is(2));
+        ModelMetaData viewModel = serviceVdb.getModel(SERVICE_VDB_VIEW_MODEL);
         assertNotNull(viewModel);
-        assertThat(viewModel.getViews().length, is(1));
-    	View view = viewModel.getViews()[0];
-    	assertNotNull(view);
-    	assertThat(view.getColumns().length, is(4));
+        assertEquals("CREATE VIEW orderInfoView (RowId long PRIMARY KEY, ID LONG, orderDate TIMESTAMP, customerName STRING) OPTIONS (ANNOTATION 'test view description text') AS \n" + 
+        		"SELECT ROW_NUMBER() OVER (ORDER BY ID), ID, orderDate\n" + 
+        		"FROM pgconnection1schemamodel.orders;\n", viewModel.getSourceMetadataText().get(0));
     	
 //    	for( ModelImpl model : models ) {
 //    		if( model.getModelType() == Type.PHYSICAL) {
@@ -609,31 +602,21 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     @Test
     public void shouldRefreshServiceVdb_TwoSources() throws Exception {
     	ViewEditorState[] states = helpCreateViewEditorState(2);
-    	Vdb[] vdbs = findVdbs();
-    	
-    	Vdb serviceVdb = null;
-    	for( Vdb vdb : vdbs ) {
-    		if( vdb.getName().equals(viewDefinitionName)) {
-    			serviceVdb = vdb;
-    			break;
-    		}
-    	}
     	
     	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(workspaceManager());
     	
-    	vdbGenerator.refreshServiceVdb(serviceVdb, states);
+    	VDBMetaData serviceVdb = vdbGenerator.refreshServiceVdb(viewDefinitionName, states);
     	
     	commit();
     	
-    	Model[] models = serviceVdb.getModels();
+    	List<org.teiid.adminapi.Model> models = serviceVdb.getModels();
     	
-        assertThat(models.length, is(3));
-        ModelImpl viewModel = (ModelImpl)ServiceVdbGenerator.getViewModel(serviceVdb);
+        assertThat(models.size(), is(3));
+        ModelMetaData viewModel = serviceVdb.getModel(SERVICE_VDB_VIEW_MODEL);
         assertNotNull(viewModel);
-        assertThat(viewModel.getViews().length, is(1));
-    	View view = viewModel.getViews()[0];
-    	assertNotNull(view);
-    	assertThat(view.getColumns().length, is(4));
+        assertEquals("CREATE VIEW orderInfoView (RowId long PRIMARY KEY, ID LONG, orderDate TIMESTAMP, customerName STRING) OPTIONS (ANNOTATION 'test view description text') AS \n" + 
+        		"SELECT ROW_NUMBER() OVER (ORDER BY ID), ID, orderDate\n" + 
+        		"FROM pgconnection1schemamodel.orders;\n", viewModel.getSourceMetadataText().get(0));
     	
     	
 //    	for( ModelImpl model : models ) {

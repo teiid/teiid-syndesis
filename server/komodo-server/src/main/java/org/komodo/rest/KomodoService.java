@@ -316,7 +316,11 @@ public abstract class KomodoService implements V1Constants {
 
     protected Response createErrorResponseWithForbidden(List<MediaType> mediaTypes, Throwable ex,
                                                         RelationalMessages.Error errorType, Object... errorMsgInputs) {
-        return createErrorResponse(Status.FORBIDDEN, mediaTypes, ex, errorType, errorMsgInputs);
+        if (ex != null) {
+        	LOGGER.error(errorType.toString(), ex);
+        }
+    	
+    	return createErrorResponse(Status.FORBIDDEN, mediaTypes, ex, errorType, errorMsgInputs);
     }
 
     protected Response createErrorResponseWithForbidden(List<MediaType> mediaTypes,

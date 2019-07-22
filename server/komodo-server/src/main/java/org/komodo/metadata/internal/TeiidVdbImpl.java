@@ -66,10 +66,6 @@ public class TeiidVdbImpl implements TeiidVdb, Comparable<TeiidVdbImpl> {
         if (! (vdb instanceof VDBMetaData))
             throw new Exception(Messages.getString(Messages.MetadataServer.onlySupportingDynamicVdbs));
 
-        VDBMetaData vdbMeta = (VDBMetaData)vdb;
-        if (! vdbMeta.isXmlDeployment())
-            throw new Exception(Messages.getString(Messages.MetadataServer.onlySupportingDynamicVdbs));
-
         name = vdb.getName();
 
         // Autoboxing first if version is an int as defined in teiid 8

@@ -58,6 +58,7 @@ import org.komodo.relational.WorkspaceManager;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.model.Model;
 import org.komodo.relational.model.Table;
+import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.vdb.ModelSource;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
@@ -1197,16 +1198,16 @@ public class KomodoMetadataService extends KomodoService {
     @POST
     @Path(V1Constants.PUBLISH)
     @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Publish Virtualization Service based on VDB or Dataservice",
+    @ApiOperation(value = "Publish Virtualization Service",
                                 response = KomodoStatusObject.class)
     @ApiResponses(value = {
-        @ApiResponse(code = 404, message = "No VDB or Dataservice could be found with name"),
+        @ApiResponse(code = 404, message = "No Dataservice could be found with name"),
         @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
     public Response publishVirtualization(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
             @ApiParam(value = "JSON properties:<br>" + OPEN_PRE_TAG + OPEN_BRACE + BR + NBSP
-                    + "\"name\":      \"Name of the VDB or Dataservice\"" + BR
+                    + "\"name\":      \"Name of the Dataservice\"" + BR
                     + "\"cpu-units\": \"(optional) Number of CPU units to allocate. 100 is 0.1 CPU (default 500)\"" + BR
                     + "\"memory\":    \"(optional) Amount memory to allocate in MB (default 1024)\"" + BR
                     + "\"disk-size\": \"(optional) Amount disk allocated in GB (default 20)\"" + BR
@@ -1233,9 +1234,9 @@ public class KomodoMetadataService extends KomodoService {
         UnitOfWork uow = null;
         try {
             uow = createTransaction(principal, "publish-init", true); //$NON-NLS-1$
-            Vdb vdb = findVdbByServiceOrName(payload, mediaTypes);
-
-            if (vdb == null) {
+            
+            Dataservice dataservice = findDataservice(payload.getName());
+		    if (dataservice == null) {
 		        return createErrorResponse(Status.NOT_FOUND, mediaTypes, RelationalMessages.Error.VDB_NOT_FOUND);
 		    }
             
@@ -1244,25 +1245,24 @@ public class KomodoMetadataService extends KomodoService {
 
             final OAuthCredentials creds = getAuthenticationToken();
 
-            UnitOfWork publishUow = createTransaction(principal, "publish", true); //$NON-NLS-1$
-            
-            //look the vdb backup with a new transaction
-            Vdb theVdb = findVdbByServiceOrName(payload, mediaTypes);
-            
-            if (theVdb == null) {
-		        return createErrorResponse(Status.NOT_FOUND, mediaTypes, RelationalMessages.Error.VDB_NOT_FOUND);
-		    }
+            // Get all of the editor states from the user profile
+            // They are stored under ids of form "serviceVdbName.viewName"
+			String serviceVdbName = dataservice.getServiceVdbName();
+			final String viewEditorIdPrefix =
+			KomodoService.getViewEditorStateIdPrefix(serviceVdbName) + "*"; //$NON-NLS-1$ final
+			ViewEditorState[] editorStates = getViewEditorStates(viewEditorIdPrefix);
+			 
+			VDBMetaData theVdb = new ServiceVdbGenerator(getWorkspaceManager()).refreshServiceVdb(serviceVdbName, editorStates);
             
             // the properties in this class can be exposed for user input
             PublishConfiguration config = new PublishConfiguration();
             config.setVDB(theVdb);
             config.setOAuthCredentials(creds);
-            config.setTransaction(publishUow);
             config.setEnableOData(payload.getEnableOdata());
             config.setContainerDiskSize(payload.getDiskSize());
             config.setContainerMemorySize(payload.getMemory());
             config.setCpuUnits(payload.getCpuUnits());
-            BuildStatus buildStatus = openshiftClient.publishVirtualization(config, theVdb.getName());
+            BuildStatus buildStatus = openshiftClient.publishVirtualization(config, serviceVdbName);
 
             //
             // If the thread concludes within the time of the parent thread sleeping
@@ -1275,7 +1275,6 @@ public class KomodoMetadataService extends KomodoService {
             //
             // Return the status from this request. Otherwise, monitor using #getVirtualizations()
             //
-            this.kengine.associateTransaction(uow);
             return commit(uow, mediaTypes, status);
         } catch (Throwable e) {
             if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
@@ -1287,28 +1286,6 @@ public class KomodoMetadataService extends KomodoService {
             return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.PUBLISH_ERROR, e.getMessage());
         }
     }
-
-	private Vdb findVdbByServiceOrName(final PublishRequestPayload payload, List<MediaType> mediaTypes)
-			throws KException {
-		Vdb vdb = findVdb(payload.getName());
-		if (vdb == null) {
-		    //
-		    // We don't have a vdb so maybe we have a dataservice instead
-		    // Find the dataservice's vdb to publish.
-		    //
-		    Dataservice dataservice = findDataservice(payload.getName());
-		    if (dataservice == null) {
-		    	return null;
-		    }
-
-		    String name = dataservice.getServiceVdbName();
-		    if (name != null) {
-		    	return findVdb(name);
-		    }
-		}
-		
-		return vdb;
-	}
 
     /**
      * Deploy / re-deploy a VDB to the metadata instance for the provided teiid data source.
