@@ -441,6 +441,11 @@
         <version>${version.teiid.modeshape}</version>
       </dependency>
       <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>teiid-spring-boot-starter-parent</artifactId>
+        <version>${version.springboot.teiid}</version>
+      </dependency>
+      <dependency>
         <groupId>xerces</groupId>
         <artifactId>xercesImpl</artifactId>
         <version>${version.xerces}</version>
