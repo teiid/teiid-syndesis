@@ -220,12 +220,11 @@ public interface MetadataInstance extends StringConstants {
 
     /**
      * @param vdbName
-     * @param version
      * @param modelName
      * @return the schema from the given model in the vdb with the given name
      * @throws KException 
      */
-    String getSchema(String vdbName, String version, String modelName) throws KException;
+    String getSchema(String vdbName, String modelName) throws KException;
 
     /**
      * Undeploy the dynamic vdb with the given name

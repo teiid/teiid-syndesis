@@ -60,7 +60,9 @@ import org.teiid.query.sql.LanguageObject;
 @Component
 public class DefaultMetadataInstance implements MetadataInstance {
 
-    @Autowired
+    public static final String DEFAULT_VDB_VERSION = "1";
+
+	@Autowired
     private TeiidServer server;
 
     private TeiidAdminImpl admin;
@@ -138,7 +140,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
         // Ensure any runtime exceptions are always caught and thrown as KExceptions
         //
         try {
-            connection = getConnection(vdb, "1");
+            connection = getConnection(vdb, DEFAULT_VDB_VERSION);
 
             if (connection == null)
                 throw new KException(Messages.getString(Messages.MetadataServer.vdbConnectionFailure, vdb));
@@ -355,7 +357,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
     public TeiidVdb getVdb(String name) throws KException {
         checkStarted();
         try {
-            VDB vdb = getAdmin().getVDB(name, "1");
+            VDB vdb = getAdmin().getVDB(name, DEFAULT_VDB_VERSION);
             if (vdb == null)
                 return null;
 
@@ -392,7 +394,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
                 ArgCheck.isNotNull(deploymentName, "deploymentName"); //$NONNLS1$
                 ArgCheck.isNotNull(inStream, "inStream"); //$NONNLS1$
 
-                VDB existing = admin.getVDB(vdbName, "1.0");
+                VDB existing = admin.getVDB(vdbName, DEFAULT_VDB_VERSION);
                 if (existing != null) {
                 	admin.undeploy(deploymentName);
                 }
@@ -441,10 +443,10 @@ public class DefaultMetadataInstance implements MetadataInstance {
     }
 
     @Override
-    public String getSchema(String vdbName, String vdbVersion, String modelName) throws KException {
+    public String getSchema(String vdbName, String modelName) throws KException {
         checkStarted();
         try {
-            return getAdmin().getSchema(vdbName, vdbVersion, modelName, null, null);
+            return getAdmin().getSchema(vdbName, DEFAULT_VDB_VERSION, modelName, null, null);
         } catch (Exception ex) {
             throw handleError(ex);
         }
