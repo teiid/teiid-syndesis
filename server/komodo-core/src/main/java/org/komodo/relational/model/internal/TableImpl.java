@@ -32,9 +32,9 @@ import org.komodo.core.repository.Property;
 import org.komodo.core.repository.PropertyValueType;
 import org.komodo.core.visitor.DdlNodeVisitor;
 import org.komodo.core.visitor.DdlNodeVisitor.VisitorExclusions;
-import org.komodo.metadata.MetadataInstance;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
+import org.komodo.relational.internal.DataTypeService;
 import org.komodo.relational.internal.OptionContainer;
 import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
@@ -963,8 +963,7 @@ public class TableImpl extends RelationalObjectImpl implements Table, OptionCont
                 exclusions.add(VisitorExclusions.EXCLUDE_TABLE_CONSTRAINTS);
             }
         }
-        MetadataInstance metadata = getRepository().getMetadataInstance();
-        DdlNodeVisitor visitor = new DdlNodeVisitor(metadata.getDataTypeService(), false, exclusions.toArray(new VisitorExclusions[0]));
+        DdlNodeVisitor visitor = new DdlNodeVisitor(new DataTypeService(), false, exclusions.toArray(new VisitorExclusions[0]));
         visitor.visit(transaction, this);
 
         String result = visitor.getDdl();

@@ -18,10 +18,9 @@
 package org.komodo.rest.relational.response.virtualization;
 
 import java.net.URI;
-import java.text.SimpleDateFormat;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import org.komodo.openshift.BuildStatus;
@@ -48,13 +47,11 @@ public class RestVirtualizationStatus extends AbstractKEntity {
 
     public static final String ROUTES_LABEL = "routes";
 
-    private static SimpleDateFormat sdf = new SimpleDateFormat("M-dd-yyyy hh:mm:ss");
-
     private List<RestRouteStatus> routes = new ArrayList<RestRouteStatus>();
 
     public RestVirtualizationStatus() {
     }
-
+    
     public RestVirtualizationStatus(URI baseUri, BuildStatus status) throws KException {
 
         ArgCheck.isNotNull(status, "status"); //$NON-NLS-1$
@@ -65,8 +62,10 @@ public class RestVirtualizationStatus extends AbstractKEntity {
         setStatus(status.status().name());
         setStatusMsg(status.statusMessage());
         setNamespace(status.namespace());
-        Date date = new Date(status.lastUpdated());
-        setLastUpdated(sdf.format(date));
+        Timestamp date = new Timestamp(status.lastUpdated());
+        String val = date.toString();
+        //only show whole seconds
+        setLastUpdated(val.substring(0, val.indexOf('.')));
 
         List<RouteStatus> routeStatuses = status.routes();
         if (routeStatuses != null && routeStatuses.size() > 0) {

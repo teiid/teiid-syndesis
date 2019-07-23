@@ -94,20 +94,20 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     private final static String pgconnection1schemamodelDDL = 
     		SET_NAMESPACE_STRING +
     		"CREATE FOREIGN TABLE orders ( "
-    		+ "ID long, orderDate timestamp) OPTIONS(\"" + TABLE_OPTION_FQN + "\" \"" + FQN_TABLE_1 + "\");\n" +
+    		+ "ID long primary key, orderDate timestamp) OPTIONS(\"" + TABLE_OPTION_FQN + "\" \"" + FQN_TABLE_1 + "\");\n" +
     		"CREATE FOREIGN TABLE orders2 ( "
-    		+ "ID long, year string, orderDate timestamp) OPTIONS(\"" + TABLE_OPTION_FQN + "\" \"" + FQN_TABLE_2 + "\");\n" +
+    		+ "ID long primary key, year string, orderDate timestamp) OPTIONS(\"" + TABLE_OPTION_FQN + "\" \"" + FQN_TABLE_2 + "\");\n" +
     		"CREATE FOREIGN TABLE customers ( "
-    		+ "ID long, name string) OPTIONS(\"" + TABLE_OPTION_FQN + "\" \"" + FQN_TABLE_3 + "\");";
+    		+ "ID long primary key, name string) OPTIONS(\"" + TABLE_OPTION_FQN + "\" \"" + FQN_TABLE_3 + "\");";
     
     private final static String pgconnection2schemamodelDDL = 
     		SET_NAMESPACE_STRING +
     		"CREATE FOREIGN TABLE orders ( "
-    		+ "ID long, orderDate timestamp) OPTIONS(\"" + TABLE_OPTION_FQN + "\" \"" + FQN_TABLE_1 + "\");\n" +
+    		+ "ID long primary key, orderDate timestamp) OPTIONS(\"" + TABLE_OPTION_FQN + "\" \"" + FQN_TABLE_1 + "\");\n" +
     		"CREATE FOREIGN TABLE orders2 ( "
-    		+ "ID long, year string, orderDate timestamp) OPTIONS(\"" + TABLE_OPTION_FQN + "\" \"" + FQN_TABLE_2 + "\");\n" +
+    		+ "ID long primary key, year string, orderDate timestamp) OPTIONS(\"" + TABLE_OPTION_FQN + "\" \"" + FQN_TABLE_2 + "\");\n" +
     		"CREATE FOREIGN TABLE customers ( "
-    		+ "ID long, customerName string) OPTIONS(\"" + TABLE_OPTION_FQN + "\" \"" + FQN_TABLE_3 + "\");";
+    		+ "ID long primary key, customerName string) OPTIONS(\"" + TABLE_OPTION_FQN + "\" \"" + FQN_TABLE_3 + "\");";
     
     private final static String EXPECTED_JOIN_SQL_TWO_SOURCES_START =
             "CREATE VIEW orderInfoView (RowId long PRIMARY KEY, ID LONG, orderDate TIMESTAMP, customerName STRING) OPTIONS (ANNOTATION 'test view description text') AS \n"
@@ -128,14 +128,14 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
           + "A.ID = B.ID;";
     
     private final static String EXPECTED_NO_JOIN_SQL_SINGE_SOURCE =
-            "CREATE VIEW orderInfoView (RowId long PRIMARY KEY, ID LONG, orderDate TIMESTAMP) OPTIONS (ANNOTATION 'test view description text') AS \n"
-          + "SELECT ROW_NUMBER() OVER (ORDER BY ID), ID, orderDate\n"
-          + "FROM pgconnection1schemamodel.orders;";
+            "CREATE VIEW orderInfoView (ID LONG, orderDate TIMESTAMP, PRIMARY KEY(ID)) OPTIONS (ANNOTATION 'test view description text') AS \n" + 
+            "SELECT ID, orderDate\n" + 
+            "FROM pgconnection1schemamodel.orders;";
 
     private final static String EXPECTED_NO_JOIN_SQL_SINGE_SOURCE_WITH_KEYWORD =
-            "CREATE VIEW orderInfoView (RowId long PRIMARY KEY, ID LONG, \"year\" STRING, orderDate TIMESTAMP) OPTIONS (ANNOTATION 'test view description text') AS \n"
-          + "SELECT ROW_NUMBER() OVER (ORDER BY ID), ID, \"year\", orderDate\n"
-          + "FROM pgconnection1schemamodel.orders2;";
+            "CREATE VIEW orderInfoView (ID LONG, \"year\" STRING, orderDate TIMESTAMP, PRIMARY KEY(ID)) OPTIONS (ANNOTATION 'test view description text') AS \n" + 
+            "SELECT ID, \"year\", orderDate\n" + 
+            "FROM pgconnection1schemamodel.orders2;";
     
     // ===========================
     // orders
@@ -394,7 +394,7 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
 
         String viewDdl = vdbGenerator.getODataViewDdl(viewDef);
         printResults(EXPECTED_DDL, viewDdl);
-        assertThat(viewDdl, is(EXPECTED_DDL));
+        assertEquals(EXPECTED_DDL, viewDdl);
     }
 
     @Test
@@ -422,7 +422,7 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
 
         String viewDdl = vdbGenerator.getODataViewDdl(viewDef);
         printResults(EXPECTED_DDL, viewDdl);
-        assertThat(viewDdl, is(EXPECTED_DDL));
+        assertEquals(EXPECTED_DDL, viewDdl);
     }
 
 	@Test
@@ -584,9 +584,9 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     	assertThat(models.size(), is(2));
         ModelMetaData viewModel = serviceVdb.getModel(SERVICE_VDB_VIEW_MODEL);
         assertNotNull(viewModel);
-        assertEquals("CREATE VIEW orderInfoView (RowId long PRIMARY KEY, ID LONG, orderDate TIMESTAMP, customerName STRING) OPTIONS (ANNOTATION 'test view description text') AS \n" + 
-        		"SELECT ROW_NUMBER() OVER (ORDER BY ID), ID, orderDate\n" + 
-        		"FROM pgconnection1schemamodel.orders;\n", viewModel.getSourceMetadataText().get(0));
+        assertEquals("CREATE VIEW orderInfoView (ID LONG, orderDate TIMESTAMP, customerName STRING) OPTIONS (ANNOTATION 'test view description text') AS \n" + 
+        		"SELECT A.ID, A.orderDate, \n" + 
+        		"FROM pgconnection1schemamodel.orders AS A;\n", viewModel.getSourceMetadataText().get(0));
     	
 //    	for( ModelImpl model : models ) {
 //    		if( model.getModelType() == Type.PHYSICAL) {
@@ -614,9 +614,9 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
         assertThat(models.size(), is(3));
         ModelMetaData viewModel = serviceVdb.getModel(SERVICE_VDB_VIEW_MODEL);
         assertNotNull(viewModel);
-        assertEquals("CREATE VIEW orderInfoView (RowId long PRIMARY KEY, ID LONG, orderDate TIMESTAMP, customerName STRING) OPTIONS (ANNOTATION 'test view description text') AS \n" + 
-        		"SELECT ROW_NUMBER() OVER (ORDER BY ID), ID, orderDate\n" + 
-        		"FROM pgconnection1schemamodel.orders;\n", viewModel.getSourceMetadataText().get(0));
+        assertEquals("CREATE VIEW orderInfoView (ID LONG, orderDate TIMESTAMP, customerName STRING) OPTIONS (ANNOTATION 'test view description text') AS \n" + 
+        		"SELECT A.ID, A.orderDate, B.customerName\n" + 
+        		"FROM pgconnection1schemamodel.orders AS A;\n", viewModel.getSourceMetadataText().get(0));
     	
     	
 //    	for( ModelImpl model : models ) {

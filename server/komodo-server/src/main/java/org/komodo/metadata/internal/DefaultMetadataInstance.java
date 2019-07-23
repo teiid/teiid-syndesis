@@ -33,8 +33,6 @@ import java.util.Properties;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.komodo.metadata.DataTypeService;
-import org.komodo.metadata.DataTypeService.DataTypeName;
 import org.komodo.metadata.Messages;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.metadata.query.QSColumn;
@@ -62,9 +60,9 @@ import org.teiid.query.sql.LanguageObject;
 @Component
 public class DefaultMetadataInstance implements MetadataInstance {
 
-    private static DataTypeService dataTypeService = new DataTypeService();
+    public static final String DEFAULT_VDB_VERSION = "1";
 
-    @Autowired
+	@Autowired
     private TeiidServer server;
 
     private TeiidAdminImpl admin;
@@ -76,7 +74,11 @@ public class DefaultMetadataInstance implements MetadataInstance {
     @Override
     public TeiidAdminImpl getAdmin() throws AdminException {
     	if (this.admin == null) {
-	        this.admin = new TeiidAdminImpl(server.getAdmin(), server);
+    		synchronized (this) {
+    			if (this.admin == null) {
+    				this.admin = new TeiidAdminImpl(server.getAdmin(), server);
+    			}
+    		}
 	    }
 		return this.admin;
     }
@@ -121,11 +123,6 @@ public class DefaultMetadataInstance implements MetadataInstance {
     }
 
     @Override
-    public DataTypeService getDataTypeService() {
-        return dataTypeService;
-    }
-
-    @Override
     public QSResult query(String vdb, String query, int offset, int limit) throws KException {
         checkStarted();
 
@@ -143,7 +140,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
         // Ensure any runtime exceptions are always caught and thrown as KExceptions
         //
         try {
-            connection = getConnection(vdb, "1");
+            connection = getConnection(vdb, DEFAULT_VDB_VERSION);
 
             if (connection == null)
                 throw new KException(Messages.getString(Messages.MetadataServer.vdbConnectionFailure, vdb));
@@ -166,8 +163,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
                 String columnName = rsmd.getColumnName(i);
                 String columnLabel = rsmd.getColumnLabel(i);
                 String colTypeName = rsmd.getColumnTypeName(i);
-                DataTypeName typeName = dataTypeService.getDataTypeName(colTypeName);
-                QSColumn column = new QSColumn(typeName, columnName, columnLabel);
+                QSColumn column = new QSColumn(colTypeName, columnName, columnLabel);
                 result.addColumn(column);
             }
 
@@ -361,7 +357,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
     public TeiidVdb getVdb(String name) throws KException {
         checkStarted();
         try {
-            VDB vdb = getAdmin().getVDB(name, "1");
+            VDB vdb = getAdmin().getVDB(name, DEFAULT_VDB_VERSION);
             if (vdb == null)
                 return null;
 
@@ -398,7 +394,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
                 ArgCheck.isNotNull(deploymentName, "deploymentName"); //$NONNLS1$
                 ArgCheck.isNotNull(inStream, "inStream"); //$NONNLS1$
 
-                VDB existing = admin.getVDB(vdbName, "1.0");
+                VDB existing = admin.getVDB(vdbName, DEFAULT_VDB_VERSION);
                 if (existing != null) {
                 	admin.undeploy(deploymentName);
                 }
@@ -447,10 +443,10 @@ public class DefaultMetadataInstance implements MetadataInstance {
     }
 
     @Override
-    public String getSchema(String vdbName, String vdbVersion, String modelName) throws KException {
+    public String getSchema(String vdbName, String modelName) throws KException {
         checkStarted();
         try {
-            return getAdmin().getSchema(vdbName, vdbVersion, modelName, null, null);
+            return getAdmin().getSchema(vdbName, DEFAULT_VDB_VERSION, modelName, null, null);
         } catch (Exception ex) {
             throw handleError(ex);
         }

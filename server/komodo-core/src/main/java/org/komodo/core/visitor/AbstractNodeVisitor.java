@@ -26,7 +26,7 @@ import org.komodo.core.repository.Descriptor;
 import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.KomodoObjectVisitor;
 import org.komodo.core.repository.Property;
-import org.komodo.metadata.DataTypeService;
+import org.komodo.relational.internal.DataTypeService;
 import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.utils.ArgCheck;

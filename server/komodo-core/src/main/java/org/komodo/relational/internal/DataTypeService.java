@@ -1,4 +1,4 @@
-package org.komodo.metadata;
+package org.komodo.relational.internal;
 
 import java.util.Set;
 

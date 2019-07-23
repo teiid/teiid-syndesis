@@ -46,6 +46,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.komodo.datasources.DefaultSyndesisDataSource;
 import org.komodo.metadata.MetadataInstance;
+import org.komodo.metadata.internal.DefaultMetadataInstance;
 import org.komodo.metadata.internal.TeiidVdbImpl;
 import org.komodo.metadata.query.QSResult;
 import org.komodo.metadata.runtime.TeiidDataSource;
@@ -445,6 +446,7 @@ public class KomodoMetadataService extends KomodoService {
             for(String connVdbName: connectionVdbNames) {
             	if(!currentVdbImportNames.contains(connVdbName)) {
             		VDBImportMetadata vdbImport = new VDBImportMetadata();
+            		vdbImport.setVersion(DefaultMetadataInstance.DEFAULT_VDB_VERSION);
             		vdbImport.setName(connVdbName);
             		workingCopy.getVDBImports().add(vdbImport);
             		importAdded = true;
@@ -721,7 +723,7 @@ public class KomodoMetadataService extends KomodoService {
                     }
                 }
 
-                final String modelDdl = getMetadataInstance().getSchema( deployedVdb.getName(), "1", schemaModelName ); //$NON-NLS-1$
+                final String modelDdl = getMetadataInstance().getSchema( deployedVdb.getName(), schemaModelName ); //$NON-NLS-1$
                 schemaModel.setModelDefinition(modelDdl );
                 kso.addAttribute(syndesisSourceName, "Generate schema"); //$NON-NLS-1$
                 // after transaction is committed this will trigger the DDL sequencer which will create
