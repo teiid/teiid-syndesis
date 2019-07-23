@@ -55,7 +55,7 @@ public class RestQueryColumn implements KRestEntity {
     public RestQueryColumn(QSColumn column) {
         this.name = column.getColumnName();
         this.label = column.getColumnLabel();
-        this.type = column.getDataType().getId();
+        this.type = column.getDataType();
     }
 
     @Override

@@ -24,8 +24,9 @@ import static org.junit.Assert.assertTrue;
 import java.util.Set;
 
 import org.junit.Test;
-import org.komodo.metadata.DataTypeService.DataSourceTypes;
-import org.komodo.metadata.DataTypeService.DataTypeName;
+import org.komodo.relational.internal.DataTypeService;
+import org.komodo.relational.internal.DataTypeService.DataSourceTypes;
+import org.komodo.relational.internal.DataTypeService.DataTypeName;
 
 /**
  *

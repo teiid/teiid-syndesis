@@ -26,9 +26,9 @@ import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.ObjectImpl;
 import org.komodo.core.repository.PropertyValueType;
 import org.komodo.core.visitor.DdlNodeVisitor;
-import org.komodo.metadata.MetadataInstance;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
+import org.komodo.relational.internal.DataTypeService;
 import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.internal.TypeResolver;
@@ -654,8 +654,7 @@ public class ModelImpl extends RelationalObjectImpl implements Model {
     }
 
     private String exportDdl(UnitOfWork transaction, Properties exportProperties) throws Exception {
-    	MetadataInstance metadata = getRepository().getMetadataInstance();
-        DdlNodeVisitor visitor = new DdlNodeVisitor(metadata.getDataTypeService(), false);
+        DdlNodeVisitor visitor = new DdlNodeVisitor(new DataTypeService(), false);
         visitor.visit(transaction, this);
 
         String result = visitor.getDdl();

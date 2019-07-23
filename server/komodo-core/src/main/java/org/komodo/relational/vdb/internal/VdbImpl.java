@@ -35,9 +35,9 @@ import org.komodo.core.repository.PropertyDescriptor;
 import org.komodo.core.repository.PropertyDescriptorImpl;
 import org.komodo.core.repository.PropertyValueType;
 import org.komodo.core.visitor.VdbNodeVisitor;
-import org.komodo.metadata.MetadataInstance;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
+import org.komodo.relational.internal.DataTypeService;
 import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.internal.TypeResolver;
@@ -220,8 +220,7 @@ public class VdbImpl extends RelationalObjectImpl implements Vdb {
             try {
                 final XMLOutputFactory xof = XMLOutputFactory.newInstance();
                 final XMLStreamWriter xsw = xof.createXMLStreamWriter(writer);
-                MetadataInstance metadata = getRepository().getMetadataInstance();
-                final VdbNodeVisitor visitor = new VdbNodeVisitor(metadata.getDataTypeService(), xsw);
+                final VdbNodeVisitor visitor = new VdbNodeVisitor(new DataTypeService(), xsw);
                 if( exportProperties != null && !exportProperties.isEmpty() ) {
                 	boolean useTabs = exportProperties.containsKey(Exportable.USE_TABS_PROP_KEY);
                 	visitor.setShowTabs(useTabs);

@@ -33,8 +33,6 @@ import java.util.Properties;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.komodo.metadata.DataTypeService;
-import org.komodo.metadata.DataTypeService.DataTypeName;
 import org.komodo.metadata.Messages;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.metadata.query.QSColumn;
@@ -61,8 +59,6 @@ import org.teiid.query.sql.LanguageObject;
 
 @Component
 public class DefaultMetadataInstance implements MetadataInstance {
-
-    private static DataTypeService dataTypeService = new DataTypeService();
 
     @Autowired
     private TeiidServer server;
@@ -125,11 +121,6 @@ public class DefaultMetadataInstance implements MetadataInstance {
     }
 
     @Override
-    public DataTypeService getDataTypeService() {
-        return dataTypeService;
-    }
-
-    @Override
     public QSResult query(String vdb, String query, int offset, int limit) throws KException {
         checkStarted();
 
@@ -170,8 +161,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
                 String columnName = rsmd.getColumnName(i);
                 String columnLabel = rsmd.getColumnLabel(i);
                 String colTypeName = rsmd.getColumnTypeName(i);
-                DataTypeName typeName = dataTypeService.getDataTypeName(colTypeName);
-                QSColumn column = new QSColumn(typeName, columnName, columnLabel);
+                QSColumn column = new QSColumn(colTypeName, columnName, columnLabel);
                 result.addColumn(column);
             }
 

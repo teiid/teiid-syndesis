@@ -48,7 +48,6 @@ import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.core.repository.RepositoryImpl.UnitOfWorkImpl;
 import org.komodo.core.repository.RepositoryTools;
 import org.komodo.core.repository.SynchronousCallback;
-import org.komodo.metadata.DataTypeService;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.relational.WorkspaceManager;
 import org.komodo.relational.vdb.Vdb;
@@ -98,7 +97,6 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
 
     	KEngineImpl engine = new KEngineImpl();
     	MetadataInstance metadata = Mockito.mock(MetadataInstance.class);
-    	Mockito.when(metadata.getDataTypeService()).thenReturn(new DataTypeService());
     	engine.setMetadataInstance(metadata);
         engine.setDefaultRepository(_repo);
 

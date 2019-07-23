@@ -21,7 +21,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
-import org.komodo.metadata.DataTypeService;
+import org.komodo.relational.internal.DataTypeService;
 
 @SuppressWarnings( {"javadoc", "nls"} )
 public class TestDdlNodeVisitorIdentifiers {

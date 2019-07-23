@@ -41,7 +41,6 @@ import org.komodo.relational.profile.SqlProjectedColumn;
 import org.komodo.relational.profile.StateCommandAggregate;
 import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.relational.profile.ViewEditorState;
-import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.KomodoRestException;
 import org.komodo.rest.KomodoRestV1Application;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
@@ -89,8 +88,6 @@ import io.swagger.annotations.ApiResponses;
 public final class KomodoUtilService extends KomodoService {
 
     private static final String PREVIEW_VDB = "PreviewVdb";
-
-	private static final String REPO_VDB_TOTAL = "Repository Vdb Total"; //$NON-NLS-1$
 
     public static final String APP_NAME = "App Name"; //$NON-NLS-1$
 
@@ -149,8 +146,6 @@ public final class KomodoUtilService extends KomodoService {
         try {
             // find VDBs
             uow = systemTx("getVdbs", true); //$NON-NLS-1$
-            Vdb[] vdbs = getWorkspaceManager().findVdbs(null);
-            repoStatus.addAttribute(REPO_VDB_TOTAL, Integer.toString(vdbs.length));
 
         } catch (final Exception e) {
             if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
@@ -163,7 +158,6 @@ public final class KomodoUtilService extends KomodoService {
 
             String errorMsg = e.getLocalizedMessage() != null ? e.getLocalizedMessage() : e.getClass().getSimpleName();
             errorMsg = RelationalMessages.getString(RelationalMessages.Error.ABOUT_SERVICE_ERROR, errorMsg);
-            repoStatus.addAttribute(REPO_VDB_TOTAL, errorMsg);
         }
 
         // create response

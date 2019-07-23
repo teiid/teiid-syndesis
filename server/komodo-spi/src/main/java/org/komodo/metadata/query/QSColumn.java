@@ -17,23 +17,21 @@
  */
 package org.komodo.metadata.query;
 
-import org.komodo.metadata.DataTypeService.DataTypeName;
-
 public class QSColumn {
 
-    private final DataTypeName dataType;
+    private final String dataType;
 
     private final String columnName;
 
     private final String columnLabel;
 
-    public QSColumn(DataTypeName dataType, String columnName, String columnLabel) {
+    public QSColumn(String dataType, String columnName, String columnLabel) {
         this.dataType = dataType;
         this.columnName = columnName;
         this.columnLabel = columnLabel;
     }
 
-    public DataTypeName getDataType() {
+    public String getDataType() {
         return dataType;
     }
 

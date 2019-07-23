@@ -141,11 +141,6 @@ public interface MetadataInstance extends StringConstants {
     Condition getCondition();
 
     /**
-     * @return the data type service
-     */
-    DataTypeService getDataTypeService();
-
-    /**
      * Query the vdb with given name
      *
      * @param vdbName the name of the vdb to query
