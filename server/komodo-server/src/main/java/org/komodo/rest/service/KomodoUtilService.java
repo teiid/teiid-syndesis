@@ -88,7 +88,9 @@ import io.swagger.annotations.ApiResponses;
 @Api( tags = {V1Constants.SERVICE_SEGMENT} )
 public final class KomodoUtilService extends KomodoService {
 
-    private static final String REPO_VDB_TOTAL = "Repository Vdb Total"; //$NON-NLS-1$
+    private static final String PREVIEW_VDB = "PreviewVdb";
+
+	private static final String REPO_VDB_TOTAL = "Repository Vdb Total"; //$NON-NLS-1$
 
     public static final String APP_NAME = "App Name"; //$NON-NLS-1$
 
@@ -518,11 +520,11 @@ public final class KomodoUtilService extends KomodoService {
 	            ModelMetaData m = new ModelMetaData();
 	            m.setName("m"); //$NON-NLS-1$
 	        	
-				MetadataFactory mf = new MetadataFactory("PreviewVdb", 1,SystemMetadata.getInstance().getRuntimeTypeMap(),m);
+				MetadataFactory mf = new MetadataFactory(PREVIEW_VDB, 1,SystemMetadata.getInstance().getRuntimeTypeMap(),m);
 	        	parser.parseDDL(mf, restViewDefinition.getDdl());
 	        	
 				VDBMetaData vdb = (VDBMetaData) this.kengine.getMetadataInstance().getAdmin()
-						.getVDB("PreviewVdb", "1");
+						.getVDB(PREVIEW_VDB, "1");
 				TransformationMetadata qmi = vdb.getAttachment(TransformationMetadata.class);
 	        	
 				CompositeMetadataStore store = qmi.getMetadataStore();

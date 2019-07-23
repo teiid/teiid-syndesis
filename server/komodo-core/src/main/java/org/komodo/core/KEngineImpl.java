@@ -477,7 +477,6 @@ public class KEngineImpl implements KEngine, KObserver, StringConstants {
         return getDefaultRepository().createTransaction(userName, name, rollbackOnly, new SynchronousCallback(), repoUser);
 	}
 
-	@Override
 	public void associateTransaction(UnitOfWork uow) {
 		RepositoryImpl.associateTransaction(uow);
 	}

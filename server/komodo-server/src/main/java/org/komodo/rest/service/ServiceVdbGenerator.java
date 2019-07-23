@@ -26,7 +26,6 @@ import java.util.Properties;
 import org.komodo.relational.WorkspaceManager;
 import org.komodo.relational.model.Column;
 import org.komodo.relational.model.Model;
-import org.komodo.relational.model.Model.Type;
 import org.komodo.relational.model.Table;
 import org.komodo.relational.profile.SqlComposition;
 import org.komodo.relational.profile.SqlProjectedColumn;
@@ -39,6 +38,8 @@ import org.komodo.spi.StringConstants;
 import org.komodo.spi.TeiidSqlConstants;
 import org.komodo.utils.PathUtils;
 import org.komodo.utils.StringUtils;
+import org.teiid.adminapi.impl.ModelMetaData;
+import org.teiid.adminapi.impl.VDBMetaData;
 
 /**
  * This class provides methods to generate data service vdbs containing a view model
@@ -102,6 +103,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
      * 
      * All views will end up in a new view model added to the vdb
      * 1 or more source models will be generated and added to the vdb
+     * @param vdbName 
      * 
      * @param uow
      * 		the transaction
@@ -111,9 +113,16 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
      * @throws KException
      * 		if problem occurs
      */
-    public void refreshServiceVdb(Vdb serviceVdb, ViewEditorState[] editorStates) throws KException {
-        // Reset the viewModel using the valid ViewDefinition
-        Model viewModel = getViewModel(serviceVdb);
+    public VDBMetaData refreshServiceVdb(String vdbName, ViewEditorState[] editorStates) throws KException {
+        VDBMetaData vdb = new VDBMetaData();
+        vdb.setName(vdbName);
+        
+    	// Reset the viewModel using the valid ViewDefinition
+        ModelMetaData model = new ModelMetaData();
+        model.setName(SERVICE_VDB_VIEW_MODEL);
+        model.setModelType(org.teiid.adminapi.Model.Type.VIRTUAL);
+    	vdb.addModel(model); 
+         
         // Keep track of unique list of sources needed
     	List<Table> allSourceTables = new ArrayList<Table>();
     	
@@ -148,13 +157,8 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
             	}
         	}
             // Set the generated DDL on the service VDB view model
-            viewModel.setModelDefinition(allViewDdl.toString());
-        } else { 
-        	viewModel.setModelDefinition(""); //$NON-NLS-1$
+            model.addSourceMetadata("DDL", allViewDdl.toString());
         }
-
-        // remove all source models from current service VDB
-        clearSourceModels(serviceVdb);
 
         // Build a Mapping of the unique schemaModel to it's tables
         Map< Model, List<Table> > schemaTableMap = new HashMap<Model, List<Table>>();
@@ -185,20 +189,21 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
         	}
         	
         	// Create a source model and set the DDL string via setModelDeinition(DDL)
-            Model srcModel = serviceVdb.addModel(currentSchemaModel.getName());
-            srcModel.setModelType(Type.PHYSICAL);
-            srcModel.setModelDefinition(sb.toString());
+        	ModelMetaData srcModel = new ModelMetaData();
+        	srcModel.setName(currentSchemaModel.getName());
+        	vdb.addModel(srcModel);
+            srcModel.setModelType(org.teiid.adminapi.Model.Type.PHYSICAL);
+            srcModel.addSourceMetadata("DDL", sb.toString());
         	
             // Add ModelSource based on currentSchemaModel ModelSource info
             ModelSource[] schemaModelSources = currentSchemaModel.getSources();
             for( ModelSource srcModelSource : schemaModelSources) {
-            	// create the ModelSource
-	            ModelSource tgtModelSource = srcModel.addSource(srcModelSource.getName());
-	            // set the jndi name and translator name
-	            tgtModelSource.setJndiName(srcModelSource.getJndiName());
-	            tgtModelSource.setTranslatorName(srcModelSource.getTranslatorName());
+            	// add the source mapping
+	            srcModel.addSourceMapping(srcModelSource.getName(), srcModelSource.getTranslatorName(), srcModelSource.getJndiName());
             }
         }
+        
+        return vdb;
     }
     
     /*
@@ -409,26 +414,6 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
     	return "";
     }
     
-    /**
-     * Method returns the view model for a service VDB
-     * 
-     * @param uow
-     * 		the transaction
-     * @param serviceVdb
-     *		the service VDB
-     * @return the view model
-     * @throws KException
-     *  	if problem occurs
-     */
-    public static Model getViewModel(final Vdb serviceVdb) throws KException {
-    	for( Model model : serviceVdb.getModels() ) {
-    		if( model.getModelType() == Type.VIRTUAL ) {
-    			return model;
-    		}
-    	}
-    	return null;
-    }
-
     /*
      * Find and resolve source {@link TableInfo}s for a {@link ViewDefinition} object
      * @param uow
@@ -476,18 +461,6 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
 		return sourceTableInfos.toArray(new TableInfo[0]);
 	}
 	
-    
-	/*
-	 * Simple method that removes all source models from a VDB
-	 */
-    private void clearSourceModels(final Vdb serviceVdb) throws KException {
-    	for( Model model : serviceVdb.getModels() ) {
-    		if( model.getModelType() == Type.PHYSICAL ) {
-    			serviceVdb.removeModel(model.getName());
-    		}
-    	}
-    }
-
     /*
      * constructs a simple column string for a view definition
      * 

@@ -34,15 +34,13 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.komodo.relational.WorkspaceManager;
-import org.komodo.relational.model.Model;
-import org.komodo.relational.model.View;
 import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.KomodoRestException;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
 import org.komodo.rest.relational.RelationalMessages;
+import org.komodo.rest.relational.dataservice.RestDataservice;
 import org.komodo.rest.relational.response.KomodoStatusObject;
-import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWork.State;
@@ -66,22 +64,6 @@ import io.swagger.annotations.ApiResponses;
 public final class KomodoVdbService extends KomodoService {
 
     private static final StringNameValidator VALIDATOR = new StringNameValidator();
-
-    private Model findModel(List<MediaType> mediaTypes, String modelName,
-                                                Vdb vdb) throws KException {
-        Model model = vdb.getModel(modelName);
-        LOGGER.debug( "Model '{0}' was found", modelName ); //$NON-NLS-1$
-        return model;
-    }
-
-    private View findView(List<MediaType> mediaTypes, String viewName, Model model) throws KException {
-    	View view = model.getView(viewName);
-    	if(view == null) {
-    		return null;
-    	}
-    	LOGGER.debug( "View '{0}' was found", viewName ); //$NON-NLS-1$
-    	return view;
-    }
 
     /**
      * Delete the specified Vdb from the komodo repository
@@ -205,33 +187,24 @@ public final class KomodoVdbService extends KomodoService {
             return Response.ok().entity( errorMsg ).build();
         }
 
-        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
         UnitOfWork uow = null;
 
         try {
             uow = createTransaction( principal, "validateViewName", true ); //$NON-NLS-1$
 
-            Vdb vdb = findVdb(vdbName);
-            if (vdb == null)
-                return commitNoVdbFound(uow, mediaTypes, vdbName);
-
-            Model model = findModel(mediaTypes, modelName, vdb);
-            if (model == null) {
-                return commitNoModelFound(uow, mediaTypes, modelName, vdbName);
+            String[] names = RestDataservice.getViewDefnNames(getWorkspaceManager(), vdbName);
+            
+            for (String name : names) {
+            	if (viewName.equals(name)) {
+                    // name is the same as an existing View
+            		return Response.ok()
+                            .entity( RelationalMessages.getString( VIEW_NAME_EXISTS ) )
+                            .build();
+            	}
             }
-
-            // make sure an existing View does not have that name
-            final View view = findView( mediaTypes, viewName, model );
-
-            if ( view == null ) {
-            	// name is valid
-            	return Response.ok().build();
-            }
-
-            // name is the same as an existing View
-            return Response.ok()
-                           .entity( RelationalMessages.getString( VIEW_NAME_EXISTS ) )
-                           .build();
+            
+        	// name is valid
+        	return Response.ok().build();
         } catch ( final Exception e ) {
             if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
                 uow.rollback();

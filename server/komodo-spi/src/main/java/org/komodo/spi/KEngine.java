@@ -62,10 +62,4 @@ public interface KEngine {
      */
 	UnitOfWork createTransaction(String userName, String name, boolean rollbackOnly, String repoUser) throws KException;
 	
-	/**
-	 * Associates the given transaction with the current thread.
-	 * @param uow
-	 */
-	void associateTransaction(UnitOfWork uow);
-
 }

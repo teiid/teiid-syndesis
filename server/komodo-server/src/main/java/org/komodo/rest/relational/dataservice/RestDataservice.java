@@ -25,12 +25,9 @@ import java.util.Properties;
 import org.komodo.openshift.BuildStatus;
 import org.komodo.relational.WorkspaceManager;
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.model.Model;
-import org.komodo.relational.model.Model.Type;
 import org.komodo.relational.profile.Profile;
 import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.relational.profile.ViewEditorState;
-import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.RestBasicEntity;
 import org.komodo.rest.RestLink;
 import org.komodo.rest.RestLink.LinkType;
@@ -108,7 +105,7 @@ public final class RestDataservice extends RestBasicEntity {
      * @param exportXml whether xml should be exported
      * @throws KException if error occurs
      */
-    public RestDataservice(URI baseUri, Dataservice dataService, boolean exportXml, Vdb serviceVdb) throws KException {
+    public RestDataservice(URI baseUri, Dataservice dataService, boolean exportXml, String vdbName) throws KException {
         super(baseUri);
         
         setId(dataService.getName());
@@ -120,13 +117,8 @@ public final class RestDataservice extends RestBasicEntity {
         URI parentUri = getUriBuilder().dataserviceParentUri(dataService);
         getUriBuilder().addSetting(settings, SettingNames.DATA_SERVICE_PARENT_PATH, parentUri);
 
-        if (serviceVdb != null) {
-            setServiceVdbName(serviceVdb.getVdbName( ));
-            setServiceVdbVersion(Integer.toString(serviceVdb.getVersion( )));
-            setHasChildren(true);
-        } else {
-        	setHasChildren(false);
-        }
+        setServiceVdbName(vdbName);
+        setHasChildren(true);
 
         // Initialize the published state to NOTFOUND
         setPublishedState(BuildStatus.Status.NOTFOUND.name());
@@ -271,36 +263,13 @@ public final class RestDataservice extends RestBasicEntity {
     }
     
     /**
-     * Get the service view name
-     * @param serviceVdb
-     * @return
-     * @throws KException
-     */
-    public static String getServiceViewModelName(Vdb serviceVdb) throws KException {
-        String viewModelName = null;
-        // Only ONE virtual model should exist in the dataservice vdb.
-        // The returned view model is the first virtual model found - or null if none found.
-        if( serviceVdb != null ) {
-            Model[] models = serviceVdb.getModels();
-            for(Model model : models) {
-                Model.Type modelType = model.getModelType();
-                if(modelType == Type.VIRTUAL) {
-                    viewModelName = model.getName();
-                    break;
-                }
-            }
-        }
-        return viewModelName;
-    }
-    
-    /**
      *  get the ViewDefinitionImpl names for the dataservice
      */
-    public static String[] getViewDefnNames(WorkspaceManager workspaceManager, Vdb serviceVdb) throws KException {
+    public static String[] getViewDefnNames(WorkspaceManager workspaceManager, String vdbName) throws KException {
         Profile userProfile = workspaceManager.getUserProfile();
         ViewEditorState[] editorStates = null;
         if (userProfile != null) {
-        	String svcVdbName = serviceVdb.getName().toLowerCase();
+        	String svcVdbName = vdbName.toLowerCase();
         	String pattern = svcVdbName + "*";
             editorStates = userProfile.getViewEditorStates(pattern);
         }

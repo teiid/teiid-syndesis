@@ -48,10 +48,7 @@ import org.komodo.openshift.ProtocolType;
 import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.relational.WorkspaceManager;
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.model.Model;
-import org.komodo.relational.model.Model.Type;
 import org.komodo.relational.profile.ViewEditorState;
-import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.KomodoRestException;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
@@ -206,10 +203,9 @@ public final class KomodoDataserviceService extends KomodoService
     }
 
 	private RestDataservice createRestDataservice(final UriInfo uriInfo, KomodoProperties properties, final Dataservice dataService) throws KException {
-		Vdb serviceVdb = findVdb(dataService.getServiceVdbName());
-		RestDataservice entity = new RestDataservice(uriInfo.getBaseUri(), dataService, false, serviceVdb);
-		entity.setServiceViewModel(RestDataservice.getServiceViewModelName(serviceVdb));
-        entity.setViewDefinitionNames(RestDataservice.getViewDefnNames(getWorkspaceManager(), serviceVdb));
+		RestDataservice entity = new RestDataservice(uriInfo.getBaseUri(), dataService, false, dataService.getServiceVdbName());
+		entity.setServiceViewModel(SERVICE_VDB_VIEW_MODEL);
+        entity.setViewDefinitionNames(RestDataservice.getViewDefnNames(getWorkspaceManager(), dataService.getServiceVdbName()));
 		// Set published status of dataservice
 		BuildStatus status = this.openshiftClient.getVirtualizationStatus(dataService.getServiceVdbName());
 		entity.setPublishedState(status.status().name());
@@ -376,22 +372,6 @@ public final class KomodoDataserviceService extends KomodoService
         // Transfers the properties from the rest object to the created komodo service.
         setProperties(dataservice, restDataservice);
 
-        String serviceVdbName = dataserviceName.toLowerCase() + SERVICE_VDB_SUFFIX;
-        WorkspaceManager wkspMgr = getWorkspaceManager();
-
-        // Find the service VDB definition for this Dataservice. If one exists already,
-        // it is replaced.
-        Vdb svcVdbObj = wkspMgr.findVdb(serviceVdbName);
-        if (svcVdbObj != null) {
-            wkspMgr.deleteVdb(svcVdbObj);
-        }
-
-        Vdb serviceVdb = wkspMgr.createVdb(serviceVdbName);
-
-        // Add to the ServiceVdb a virtual model for the View
-        Model viewModel = serviceVdb.addModel(SERVICE_VDB_VIEW_MODEL);
-        viewModel.setModelType(Type.VIRTUAL);
-
         KomodoStatusObject kso = new KomodoStatusObject("Create Status"); //$NON-NLS-1$
         kso.addAttribute(dataserviceName, "Successfully created"); //$NON-NLS-1$
         
@@ -457,13 +437,7 @@ public final class KomodoDataserviceService extends KomodoService
                         RelationalMessages.Error.DATASERVICE_SERVICE_SERVICE_DNE);
             }
 
-            // Delete the Dataservice serviceVDB if found
             String vdbName = dataservice.getServiceVdbName();
-            Vdb serviceVdb = findVdb(vdbName);
-
-            if (serviceVdb != null) {
-                wkspMgr.deleteVdb(serviceVdb);
-            }
 
             // Delete the Dataservice
             wkspMgr.deleteDataservice(dataservice);
@@ -610,15 +584,18 @@ public final class KomodoDataserviceService extends KomodoService
             if (dataservice == null)
                 return commitNoDataserviceFound(uow, mediaTypes, dataserviceName);
 
-            String vdbName = dataservice.getServiceVdbName();
-            Vdb serviceVdb = findVdb(vdbName);
+            //String vdbName = dataservice.getServiceVdbName();
 
             // Get all of the editor states from the user profile
             // They are stored under ids of form "serviceVdbName.viewName"
-            final String viewEditorIdPrefix = KomodoService.getViewEditorStateIdPrefix(vdbName) + "*"; //$NON-NLS-1$
+            /*final String viewEditorIdPrefix = KomodoService.getViewEditorStateIdPrefix(vdbName) + "*"; //$NON-NLS-1$
             final ViewEditorState[] editorStates = getViewEditorStates(viewEditorIdPrefix);
 
-            new ServiceVdbGenerator(getWorkspaceManager()).refreshServiceVdb(serviceVdb, editorStates);
+            VDBMetaData vdb = new ServiceVdbGenerator(getWorkspaceManager()).refreshServiceVdb(serviceVdb, editorStates);
+            
+            TODO: should we generate and deploy a virtualization specific preview vdb?
+            
+            */
 
             KomodoStatusObject kso = new KomodoStatusObject("Refresh Status"); //$NON-NLS-1$
             kso.addAttribute(dataserviceName, "View Successfully refreshed"); //$NON-NLS-1$
