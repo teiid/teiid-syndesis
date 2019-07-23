@@ -23,11 +23,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import javax.sql.DataSource;
@@ -58,8 +59,8 @@ import com.zaxxer.hikari.HikariDataSource;
 public class TeiidAdminImpl implements Admin {
     private Admin delegate;
     private TeiidServer server;
-    private HashMap<String, Object> datasources = new HashMap<>();
-    private HashMap<String, Properties> dsProperties = new HashMap<>();
+    private Map<String, Object> datasources = new ConcurrentHashMap<>();
+    private Map<String, Properties> dsProperties = new ConcurrentHashMap<>();
     private ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1); 
 
     public TeiidAdminImpl(Admin delegate, TeiidServer server) {
@@ -102,7 +103,7 @@ public class TeiidAdminImpl implements Admin {
     }
 
     @Override
-    public void createDataSource(String deploymentName, String templateName, Properties properties) throws AdminException {
+    public synchronized void createDataSource(String deploymentName, String templateName, Properties properties) throws AdminException {
         switch(templateName) {
         case "postgresql":
         case "mysql":
@@ -133,7 +134,7 @@ public class TeiidAdminImpl implements Admin {
     }
 
     @Override
-    public void deleteDataSource(String dsName) throws AdminException {
+    public synchronized void deleteDataSource(String dsName) throws AdminException {
         Object ds = this.datasources.get(dsName);
         if (ds != null) {
             this.server.removeConnectionFactoryProvider(dsName);
@@ -430,7 +431,7 @@ public class TeiidAdminImpl implements Admin {
         delegate.updateSource(arg0, arg1, arg2, arg3, arg4);
     }
     
-    public HashMap<String, Object> getDatasources() {
+    Map<String, Object> getDatasources() {
 		return datasources;
 	}
 }

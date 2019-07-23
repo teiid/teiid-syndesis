@@ -76,7 +76,11 @@ public class DefaultMetadataInstance implements MetadataInstance {
     @Override
     public TeiidAdminImpl getAdmin() throws AdminException {
     	if (this.admin == null) {
-	        this.admin = new TeiidAdminImpl(server.getAdmin(), server);
+    		synchronized (this) {
+    			if (this.admin == null) {
+    				this.admin = new TeiidAdminImpl(server.getAdmin(), server);
+    			}
+    		}
 	    }
 		return this.admin;
     }

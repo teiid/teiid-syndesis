@@ -100,16 +100,16 @@ public class BuildStatus {
         }
     }
 
-    private Status status = Status.NOTFOUND;
-    private PublishConfiguration publishConfiguration;
+    private volatile Status status = Status.NOTFOUND;
+    private volatile PublishConfiguration publishConfiguration;
 
-    private String buildName;
-    private String deploymentName;
+    private volatile String buildName;
+    private volatile String deploymentName;
     private final String vdbName;
-    private String namespace;
+    private volatile String namespace;
     private String publishPodName;
-    private long lastUpdated = 0L;
-    private String statusMessage;
+    private volatile long lastUpdated = 0L;
+    private volatile String statusMessage;
 
 	private List<RouteStatus> routes = null;
 
@@ -121,7 +121,7 @@ public class BuildStatus {
         return publishConfiguration;
     }
 
-    public synchronized void setPublishConfiguration(PublishConfiguration publishConfiguration) {
+    public void setPublishConfiguration(PublishConfiguration publishConfiguration) {
         this.publishConfiguration = publishConfiguration;
     }
 
@@ -129,7 +129,7 @@ public class BuildStatus {
         return buildName;
     }
 
-    public synchronized void setBuildName(String buildName) {
+    public void setBuildName(String buildName) {
         this.buildName = buildName;
     }
 
@@ -137,7 +137,7 @@ public class BuildStatus {
         return deploymentName;
     }
 
-    public synchronized void setDeploymentName(String deploymentName) {
+    public void setDeploymentName(String deploymentName) {
         this.deploymentName = deploymentName;
     }
 
@@ -149,7 +149,7 @@ public class BuildStatus {
         return namespace;
     }
 
-    public synchronized void setNamespace(String namespace) {
+    public void setNamespace(String namespace) {
         this.namespace = namespace;
     }
 
@@ -157,7 +157,7 @@ public class BuildStatus {
         return statusMessage;
     }
 
-    public synchronized void setStatusMessage(String statusMessage) {
+    public void setStatusMessage(String statusMessage) {
         this.statusMessage = statusMessage;
     }
 
@@ -165,7 +165,7 @@ public class BuildStatus {
         return lastUpdated;
     }
 
-    public synchronized void setLastUpdated() {
+    public void setLastUpdated() {
         this.lastUpdated = System.currentTimeMillis();
     }
     
@@ -181,7 +181,7 @@ public class BuildStatus {
         return status;
     }
 
-    public synchronized void setStatus(Status status) {
+    public void setStatus(Status status) {
         this.status = status;
     }
 
