@@ -32,44 +32,7 @@
         <enabled>true</enabled>
       </snapshots>
     </repository>
-    <repository>
-      <id>rh-earlyaccess</id>
-      <name>Red Hat Early Access</name>
-      <url>https://maven.repository.redhat.com/earlyaccess/all/</url>
-      <releases>
-        <enabled>true</enabled>
-        <updatePolicy>never</updatePolicy>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>rh-techpreview</id>
-      <name>Red Hat Tech Preview</name>
-      <url>https://maven.repository.redhat.com/techpreview/all/</url>
-      <layout>default</layout>
-      <releases>
-        <enabled>true</enabled>
-        <updatePolicy>never</updatePolicy>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>rh-ga</id>
-      <name>Red Hat GA Release</name>
-      <url>https://maven.repository.redhat.com/ga/</url>
-      <layout>default</layout>
-      <releases>
-        <enabled>true</enabled>
-        <updatePolicy>never</updatePolicy>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
+    <!--internal-repos-->
   </repositories>
 
   <build>

@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -79,8 +80,10 @@ public class TestVDBPublisher extends AbstractLocalRepositoryTest {
         sources.add(getMySQLDS());
         sources.add(getPostgreSQL());
 
+        Map<String, String> repos = new HashMap<String, String>();
+        repos.put("rh-ga", "https://maven.repository.redhat.com/ga/");
 		TeiidOpenShiftClient client = new TeiidOpenShiftClient(metadata, new EncryptionComponent("blah"),
-				new KomodoConfigurationProperties()) {
+				new KomodoConfigurationProperties(), repos) {
             @Override
             public Set<DefaultSyndesisDataSource> getSyndesisSources(OAuthCredentials authToken) throws KException {
                 return sources;

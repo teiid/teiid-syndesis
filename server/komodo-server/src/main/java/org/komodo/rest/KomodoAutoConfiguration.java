@@ -53,7 +53,7 @@ import org.springframework.security.crypto.encrypt.TextEncryptor;
 import org.teiid.runtime.EmbeddedConfiguration;
 
 @Configuration
-@EnableConfigurationProperties(KomodoConfigurationProperties.class)
+@EnableConfigurationProperties({KomodoConfigurationProperties.class, SpringMavenProperties.class})
 public class KomodoAutoConfiguration {
 	
     @Value("${encrypt.key}")
@@ -64,6 +64,9 @@ public class KomodoAutoConfiguration {
     
     @Autowired
     private KomodoConfigurationProperties config;
+    
+    @Autowired
+    private SpringMavenProperties maven;
 
     @Bean
     public TextEncryptor getTextEncryptor() {
@@ -119,7 +122,8 @@ public class KomodoAutoConfiguration {
 	        	// monitor to track connections from the syndesis
 				TeiidOpenShiftClient TOSClient = new TeiidOpenShiftClient(
 						(TeiidMetadataInstance) kengine.getMetadataInstance(),
-						new EncryptionComponent(getTextEncryptor()), this.config);
+						new EncryptionComponent(getTextEncryptor()), this.config,
+						this.maven == null ? null : this.maven.getRepositories());
 	        	SyndesisConnectionSynchronizer sync = new SyndesisConnectionSynchronizer(TOSClient);
 	        	SyndesisConnectionMonitor scm = new SyndesisConnectionMonitor(sync);
 	        	ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
@@ -154,8 +158,9 @@ public class KomodoAutoConfiguration {
     @ConditionalOnMissingBean
     public TeiidOpenShiftClient openShiftClient(@Autowired KEngine kengine, @Autowired TextEncryptor enc) {
         try {
-            return new TeiidOpenShiftClient((TeiidMetadataInstance) kengine.getMetadataInstance(),
-                    new EncryptionComponent(enc), this.config);
+			return new TeiidOpenShiftClient((TeiidMetadataInstance) kengine.getMetadataInstance(),
+					new EncryptionComponent(enc), this.config,
+					this.maven == null ? null : this.maven.getRepositories());
         } catch (KException e) {
             throw new RuntimeException(e);
         }
