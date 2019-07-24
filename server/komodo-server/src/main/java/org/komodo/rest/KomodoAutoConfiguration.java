@@ -104,7 +104,7 @@ public class KomodoAutoConfiguration implements ApplicationListener<ContextRefre
 				TeiidOpenShiftClient TOSClient = new TeiidOpenShiftClient(
 						kengine.getMetadataInstance(), new EncryptionComponent(getTextEncryptor()),
 						this.config);
-	        	SyndesisConnectionSynchronizer sync = new SyndesisConnectionSynchronizer(TOSClient);
+	        	SyndesisConnectionSynchronizer sync = new SyndesisConnectionSynchronizer(TOSClient, kengine);
 	        	SyndesisConnectionMonitor scm = new SyndesisConnectionMonitor(sync);
 	        	ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
 	        	executor.schedule(scm, 15, TimeUnit.SECONDS);

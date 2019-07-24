@@ -19,20 +19,16 @@
 package org.komodo.relational;
 
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.model.Model;
 import org.komodo.relational.profile.Profile;
-import org.komodo.relational.vdb.Vdb;
 import org.komodo.spi.KException;
 
 public interface WorkspaceManager {
-
-	Vdb createVdb(String vdbName) throws KException;
-
-	Vdb findVdb(String vdbName) throws KException;
-
-	Vdb[] findVdbs(String searchPattern) throws KException;
-
-	void deleteVdb(Vdb vdb) throws KException;
+	
+	String findSchema(String name) throws KException;
+	
+	boolean deleteSchema(String name) throws KException;
+	
+	void saveSchema(String name, String contents) throws KException;
 	
 
 	Dataservice createDataservice(String serviceName) throws KException;
@@ -45,8 +41,5 @@ public interface WorkspaceManager {
 
 
 	Profile getUserProfile() throws KException;
-
-		
-	boolean isSchemaActive(Model schemaModel) throws KException;
 
 }

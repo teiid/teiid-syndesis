@@ -44,8 +44,6 @@ import org.komodo.utils.StringUtils;
 import org.komodo.utils.observer.KLatchObserver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.teiid.query.parser.QueryParser;
-import org.teiid.query.sql.LanguageObject;
 
 /**
  * The Komodo engine. It is responsible for persisting and retriever user session data and Teiid artifacts.
@@ -453,17 +451,6 @@ public class KEngineImpl implements KEngine, KObserver, StringConstants {
         for (final KObserver observer : copy) {
             observer.errorOccurred(e);
         }
-    }
-
-    /**
-     * Not included on {@link MetadataInstance} interface due to dependency on {@link LanguageObject}
-     *
-     * @param sql
-     * @return a language object tree representing the given sql string
-     * @throws Exception
-     */
-    public LanguageObject parse(String sql) throws Exception {
-        return QueryParser.getQueryParser().parseDesignerCommand(sql);
     }
 
 	@Override

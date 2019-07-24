@@ -24,24 +24,30 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.komodo.metadata.internal.TeiidDataSourceImpl;
+import org.komodo.metadata.runtime.TeiidDataSource;
 import org.komodo.relational.RelationalModelTest;
-import org.komodo.relational.model.Model;
-import org.komodo.relational.model.Model.Type;
 import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.relational.profile.internal.SqlCompositionImpl;
 import org.komodo.relational.profile.internal.SqlProjectedColumnImpl;
 import org.komodo.relational.profile.internal.ViewDefinitionImpl;
 import org.komodo.relational.profile.internal.ViewEditorStateImpl;
-import org.komodo.relational.vdb.ModelSource;
-import org.komodo.relational.vdb.Vdb;
+import org.komodo.rest.service.ServiceVdbGenerator.SchemaFinder;
 import org.komodo.spi.KException;
 import org.komodo.utils.StringUtils;
 import org.teiid.adminapi.impl.ModelMetaData;
 import org.teiid.adminapi.impl.VDBMetaData;
+import org.teiid.metadata.MetadataFactory;
+import org.teiid.metadata.Schema;
+import org.teiid.query.metadata.SystemMetadata;
+import org.teiid.query.parser.QueryParser;
 
 @SuppressWarnings({ "javadoc", "nls" })
 public class ServiceVdbGeneratorTest extends RelationalModelTest {
@@ -73,14 +79,11 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     private static String FQN_TABLE_2 = "schema=public/table=orders2";
     private static String FQN_TABLE_3 = "schema=public/table=customers";
     
-    private static final String TEST_VIEW_NAME = "test_view_name";
     private static final String DS_NAME = "pgconnection1";
     private static final String DS_JNDI_NAME = "java:/jndiName1";
-    private static final String VDB_NAME = "pgconnection1schemavdb";
     private static final String MODEL_NAME = "pgconnection1schemamodel";
     private static final String DS_NAME_2 = "pgconnection2";
     private static final String DS_JNDI_NAME2 = "java:/jndiName2";
-    private static final String VDB_NAME_2 = "pgconnection2schemavdb";
     private static final String MODEL_NAME_2 = "pgconnection2schemamodel";
     private static final String TRANSLATOR_JDBC = "jdbc";
     
@@ -94,20 +97,20 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     private final static String pgconnection1schemamodelDDL = 
     		SET_NAMESPACE_STRING +
     		"CREATE FOREIGN TABLE orders ( "
-    		+ "ID long primary key, orderDate timestamp) OPTIONS(\"" + TABLE_OPTION_FQN + "\" \"" + FQN_TABLE_1 + "\");\n" +
+    		+ "ID long primary key, orderDate timestamp) OPTIONS(\"" + TABLE_OPTION_FQN + "\" '" + FQN_TABLE_1 + "');\n" +
     		"CREATE FOREIGN TABLE orders2 ( "
-    		+ "ID long primary key, year string, orderDate timestamp) OPTIONS(\"" + TABLE_OPTION_FQN + "\" \"" + FQN_TABLE_2 + "\");\n" +
+    		+ "ID long primary key, \"year\" string, orderDate timestamp) OPTIONS(\"" + TABLE_OPTION_FQN + "\" '" + FQN_TABLE_2 + "');\n" +
     		"CREATE FOREIGN TABLE customers ( "
-    		+ "ID long primary key, name string) OPTIONS(\"" + TABLE_OPTION_FQN + "\" \"" + FQN_TABLE_3 + "\");";
+    		+ "ID long primary key, name string) OPTIONS(\"" + TABLE_OPTION_FQN + "\" '" + FQN_TABLE_3 + "');";
     
     private final static String pgconnection2schemamodelDDL = 
     		SET_NAMESPACE_STRING +
     		"CREATE FOREIGN TABLE orders ( "
-    		+ "ID long primary key, orderDate timestamp) OPTIONS(\"" + TABLE_OPTION_FQN + "\" \"" + FQN_TABLE_1 + "\");\n" +
+    		+ "ID long primary key, orderDate timestamp) OPTIONS(\"" + TABLE_OPTION_FQN + "\" '" + FQN_TABLE_1 + "');\n" +
     		"CREATE FOREIGN TABLE orders2 ( "
-    		+ "ID long primary key, year string, orderDate timestamp) OPTIONS(\"" + TABLE_OPTION_FQN + "\" \"" + FQN_TABLE_2 + "\");\n" +
+    		+ "ID long primary key, \"year\" string, orderDate timestamp) OPTIONS(\"" + TABLE_OPTION_FQN + "\" '" + FQN_TABLE_2 + "');\n" +
     		"CREATE FOREIGN TABLE customers ( "
-    		+ "ID long primary key, customerName string) OPTIONS(\"" + TABLE_OPTION_FQN + "\" \"" + FQN_TABLE_3 + "\");";
+    		+ "ID long primary key, customerName string) OPTIONS(\"" + TABLE_OPTION_FQN + "\" '" + FQN_TABLE_3 + "');";
     
     private final static String EXPECTED_JOIN_SQL_TWO_SOURCES_START =
             "CREATE VIEW orderInfoView (RowId long PRIMARY KEY, ID LONG, orderDate TIMESTAMP, customerName STRING) OPTIONS (ANNOTATION 'test view description text') AS \n"
@@ -128,12 +131,12 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
           + "A.ID = B.ID;";
     
     private final static String EXPECTED_NO_JOIN_SQL_SINGE_SOURCE =
-            "CREATE VIEW orderInfoView (ID LONG, orderDate TIMESTAMP, PRIMARY KEY(ID)) OPTIONS (ANNOTATION 'test view description text') AS \n" + 
+            "CREATE VIEW orderInfoView (ID, orderDate, PRIMARY KEY(ID)) OPTIONS (ANNOTATION 'test view description text') AS \n" + 
             "SELECT ID, orderDate\n" + 
             "FROM pgconnection1schemamodel.orders;";
 
     private final static String EXPECTED_NO_JOIN_SQL_SINGE_SOURCE_WITH_KEYWORD =
-            "CREATE VIEW orderInfoView (ID LONG, \"year\" STRING, orderDate TIMESTAMP, PRIMARY KEY(ID)) OPTIONS (ANNOTATION 'test view description text') AS \n" + 
+            "CREATE VIEW orderInfoView (ID, \"year\", orderDate, PRIMARY KEY(ID)) OPTIONS (ANNOTATION 'test view description text') AS \n" + 
             "SELECT ID, \"year\", orderDate\n" + 
             "FROM pgconnection1schemamodel.orders2;";
     
@@ -156,63 +159,31 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     private final static String LEFT_OUTER_JOIN_STR = "LEFT OUTER JOIN \n";
     private final static String RIGHT_OUTER_JOIN_STR = "RIGHT OUTER JOIN \n";
     private final static String FULL_OUTER_JOIN_STR = "FULL OUTER JOIN \n";
+    
+    private Map<String, TeiidDataSource> dataSources = new HashMap<>();
+    private Map<String, Schema> schemas = new HashMap<>();
 
     @Before
     public void init() throws Exception {
-    	Vdb dsVdb = createVdb(viewDefinitionName, "originalFilePath");
-    	Model viewModel = dsVdb.addModel(TEST_VIEW_NAME);
-    	viewModel.setModelType(Type.VIRTUAL);
-    	
-//        Connection connection = createConnection( DS_NAME );
-//        connection.setDescription(description);
-//
-//        final String extLoc = "new-external-location";
-//        connection.setExternalLocation(extLoc );
-//
-//        connection.setJdbc(false);
-//        connection.setJndiName(DS_JNDI_NAME);
-//        connection.setDriverName("dsDriver");
-//        connection.setClassName("dsClassname");
-//        connection.setProperty("prop1", "prop1Value");
-//        connection.setProperty("prop2", "prop2Value");
-
-        // Create a schema VDB for connection1
-        Vdb sourceVdb = createVdb(VDB_NAME, "originalFilePath");
-        Model sourceModel = sourceVdb.addModel(MODEL_NAME);
-        sourceModel.setModelDefinition(pgconnection1schemamodelDDL);
-        ModelSource modelSource = sourceModel.addSource(DS_NAME);
-        modelSource.setJndiName(DS_JNDI_NAME);
-        modelSource.setTranslatorName(TRANSLATOR_JDBC);
-        //modelSource.setAssociatedConnection(connection);
-
-        commit();
-        
-//        Connection connection2 = createConnection( DS_NAME_2 );
-//        connection2.setDescription(description);
-//        
-//        connection2.setExternalLocation(extLoc );
-//        
-//        connection2.setJdbc(false);
-//        connection2.setJndiName("DS_JNDI_NAME2");
-//        connection2.setDriverName("dsDriver");
-//        connection2.setClassName("dsClassname2");
-//        connection2.setProperty("prop1", "prop1Value");
-//        connection2.setProperty("prop2", "prop2Value");
-
-        // Create a schema VDB for connection2
-        sourceVdb = createVdb(VDB_NAME_2, "originalFilePath");
-        sourceModel = sourceVdb.addModel(MODEL_NAME_2);
-        sourceModel.setModelDefinition(pgconnection2schemamodelDDL);
-        ModelSource modelSource2 = sourceModel.addSource(DS_NAME_2);
-        modelSource2.setJndiName(DS_JNDI_NAME2);
-        modelSource2.setTranslatorName(TRANSLATOR_JDBC);
-        //modelSource2.setAssociatedConnection(connection2);
-        
+    	addSourceInfo(DS_NAME, DS_JNDI_NAME, pgconnection1schemamodelDDL, MODEL_NAME);
+    	addSourceInfo(DS_NAME_2, DS_JNDI_NAME2, pgconnection2schemamodelDDL, MODEL_NAME_2);
+		
         commit();
     }
+
+	private void addSourceInfo(String connectionName, String jndiName, String ddl, String modelName) {
+		Properties properties = new Properties();
+		properties.setProperty(TeiidDataSource.DATASOURCE_DRIVERNAME, TRANSLATOR_JDBC);
+		properties.setProperty(TeiidDataSource.DATASOURCE_JNDINAME, jndiName);
+		dataSources.put(connectionName, new TeiidDataSourceImpl(connectionName, properties));
+    	
+		MetadataFactory mf = new MetadataFactory("x", 1, modelName, SystemMetadata.getInstance().getRuntimeTypeMap(), new Properties(), null);
+        QueryParser.getQueryParser().parseDDL(mf, ddl);
+        schemas.put(connectionName, mf.getSchema());
+	}
     
 	private String helpGenerateDdlForWithJoinType(String secondSourceTablePath, String joinType, boolean singleConnection, boolean useAll) throws KException {
-        ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(workspaceManager());
+        ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(schemaFinder());
 
         String[] sourceTablePaths = { sourceTablePath1, secondSourceTablePath };
         boolean twoTables = secondSourceTablePath != null && StringUtils.areDifferent(sourceTablePath1, secondSourceTablePath);
@@ -373,7 +344,7 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     public void shouldGenerateOdataViewDDL_WithSingleSourceViewDefinition_NoJoinOneTable() throws Exception {
     	String EXPECTED_DDL = EXPECTED_NO_JOIN_SQL_SINGE_SOURCE;
     	
-    	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(workspaceManager());
+    	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(schemaFinder());
 
         String[] sourceTablePaths = { sourceTablePath1 };
         ViewDefinitionImpl viewDef = mock(ViewDefinitionImpl.class);
@@ -401,7 +372,7 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     public void shouldGenerateOdataViewDDL_WithSingleSourceViewDefinition_NoJoinOneTable_withKeywordCol() throws Exception {
     	String EXPECTED_DDL = EXPECTED_NO_JOIN_SQL_SINGE_SOURCE_WITH_KEYWORD;
     	
-    	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(workspaceManager());
+    	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(schemaFinder());
 
         String[] sourceTablePaths = { sourceTablePath1b };
         ViewDefinitionImpl viewDef = mock(ViewDefinitionImpl.class);
@@ -573,7 +544,7 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     public void shouldRefreshServiceVdb_SingleSource() throws Exception {
     	ViewEditorState[] states = helpCreateViewEditorState(1);
     	
-    	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(workspaceManager());
+    	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(schemaFinder());
     	
     	VDBMetaData serviceVdb = vdbGenerator.refreshServiceVdb(viewDefinitionName, states);
 
@@ -603,7 +574,7 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     public void shouldRefreshServiceVdb_TwoSources() throws Exception {
     	ViewEditorState[] states = helpCreateViewEditorState(2);
     	
-    	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(workspaceManager());
+    	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(schemaFinder());
     	
     	VDBMetaData serviceVdb = vdbGenerator.refreshServiceVdb(viewDefinitionName, states);
     	
@@ -629,5 +600,20 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
 //    		}
 //    	}
     }
+    
+    protected ServiceVdbGenerator.SchemaFinder schemaFinder() throws KException {
+		return new SchemaFinder() {
+			
+			@Override
+			public TeiidDataSource findTeiidDatasource(String connectionName) throws KException {
+				return dataSources.get(connectionName);
+			}
+			
+			@Override
+			public Schema findSchema(String connectionName) throws KException {
+				return schemas.get(connectionName);
+			}
+		};
+	}
     
 }

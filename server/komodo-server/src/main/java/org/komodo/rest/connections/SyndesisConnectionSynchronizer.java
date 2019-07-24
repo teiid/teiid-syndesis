@@ -28,10 +28,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.komodo.datasources.DefaultSyndesisDataSource;
 import org.komodo.openshift.TeiidOpenShiftClient;
+import org.komodo.relational.WorkspaceManager;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
+import org.komodo.rest.KomodoService;
 import org.komodo.rest.connections.SyndesisConnectionMonitor.EventMsg;
 import org.komodo.rest.relational.response.metadata.RestSyndesisSourceStatus;
+import org.komodo.spi.KEngine;
 import org.komodo.spi.KException;
+import org.komodo.spi.SystemConstants;
+import org.komodo.spi.repository.UnitOfWork;
 import org.teiid.adminapi.AdminException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -54,10 +59,12 @@ public class SyndesisConnectionSynchronizer {
 	private OkHttpClient client;
 
 	OAuthCredentials bogusCredentials = new OAuthCredentials("supersecret", "developer");
+	private KEngine kengine;
 
-	public SyndesisConnectionSynchronizer(TeiidOpenShiftClient toc) {
+	public SyndesisConnectionSynchronizer(TeiidOpenShiftClient toc, KEngine kengine) {
 		this.openshiftClient = toc;
 		this.client = buildHttpClient();
+		this.kengine = kengine;
 	}
 
 	/*
@@ -251,8 +258,8 @@ public class SyndesisConnectionSynchronizer {
 	private boolean deleteConnection(String dsName) throws KException {
 		try {
 			RestSyndesisSourceStatus status = checkMetadataStatus(dsName);
-			if (status != null && status.getSchemaVdbName() != null) {
-				deleteSchemaVDB(status);
+			if (status != null && status.getSchemaModelName() != null) {
+				deleteSchemaModel(status);
 			}
 	
 			if (status != null && status.getVdbName() != null) {
@@ -267,18 +274,26 @@ public class SyndesisConnectionSynchronizer {
 		}
 	}
 
-	private void deleteSchemaVDB(RestSyndesisSourceStatus status) throws KException {
-		Request request = SyndesisConnectionMonitor.buildRequest()
-				.url(LOCAL_REST + "/workspace/vdbs/" + status.getSchemaVdbName()).delete().build();
-		try (Response response = this.client.newCall(request).execute()) {
-			if (response.isSuccessful()) {
-				LOGGER.info("Workspace VDB " + status.getSchemaVdbName() + " deleted.");
-			} else {
-				LOGGER.info("Failed to delete Workspace VDB " + status.getSchemaVdbName());
-			}
-		} catch (IOException e) {
-			throw handleError(e);
-		}
+	private void deleteSchemaModel(RestSyndesisSourceStatus status) throws KException {
+        UnitOfWork uow = null;
+        try {
+            uow = kengine.createTransaction(SystemConstants.SYSTEM_USER, "delete schema", false, KomodoService.REPO_USER); //$NON-NLS-1$
+
+            final WorkspaceManager mgr = kengine.getWorkspaceManager();
+            
+            boolean result = mgr.deleteSchema(status.getSchemaModelName());
+            if (result) {
+    			LOGGER.info("Workspace schema " + status.getSchemaModelName() + " deleted.");
+    		} else {
+    			LOGGER.info("Failed to delete schema " + status.getSchemaModelName());
+    		}
+            
+            uow.commit();
+        } catch (final Exception e) {
+            if (uow != null) {
+                uow.rollback();
+            }
+        }
 	}
 
 	private void deleteSourceVDB(RestSyndesisSourceStatus status) throws KException {

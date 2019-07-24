@@ -2,12 +2,15 @@ package org.komodo.rest.relational.json;
 
 import static org.komodo.rest.Messages.Error.INCOMPLETE_JSON;
 import static org.komodo.rest.relational.json.KomodoJsonMarshaller.BUILDER;
+
 import java.io.IOException;
 import java.util.Arrays;
+
 import org.komodo.rest.Messages;
 import org.komodo.rest.relational.response.metadata.RestSyndesisSourceStatus;
 import org.komodo.rest.relational.response.metadata.RestSyndesisSourceStatus.EntityState;
 import org.komodo.utils.StringUtils;
+
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
@@ -53,8 +56,6 @@ public final class SyndesisSourceStatusSerializer extends TypeAdapter< RestSynde
                 status.setSchemaModelName( in.nextString() );
             } else if ( RestSyndesisSourceStatus.SCHEMA_STATE.equals( name ) ) {
                 status.setSchemaState( EntityState.fromString( in.nextString() ) );
-            } else if ( RestSyndesisSourceStatus.SCHEMA_VDB_NAME.equals( name ) ) {
-                status.setSchemaVdbName( in.nextString() );
             } else if ( RestSyndesisSourceStatus.SERVER_VDB_NAME.equals( name ) ) {
                 status.setVdbName( in.nextString() );
             } else if ( RestSyndesisSourceStatus.SERVER_VDB_STATE.equals( name ) ) {
@@ -113,12 +114,6 @@ public final class SyndesisSourceStatusSerializer extends TypeAdapter< RestSynde
         if ( !StringUtils.isBlank( status.getSchemaModelName() ) ) {
             out.name( RestSyndesisSourceStatus.SCHEMA_MODEL_NAME );
             out.value( status.getSchemaModelName() );
-        }
-
-        // schema VDB name
-        if ( !StringUtils.isBlank( status.getSchemaVdbName() ) ) {
-            out.name( RestSyndesisSourceStatus.SCHEMA_VDB_NAME );
-            out.value( status.getSchemaVdbName() );
         }
 
         // server VDB name

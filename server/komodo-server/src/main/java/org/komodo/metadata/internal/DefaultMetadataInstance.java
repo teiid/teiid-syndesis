@@ -409,13 +409,6 @@ public class DefaultMetadataInstance implements MetadataInstance {
                 }
                 admin.deploy(deploymentName, new ByteArrayInputStream(baos.toByteArray()));
 
-                // Give a 0.5 sec pause for the VDB to finish loading metadata.
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    // ignore
-                }
-
             } catch (Exception ex) {
                 throw handleError(ex);
             }

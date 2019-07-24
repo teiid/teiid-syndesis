@@ -37,7 +37,7 @@ public class KomodoMetadataServiceTest {
 		properties.setProperty(TeiidDataSource.DATASOURCE_JNDINAME, "something");
 		properties.setProperty(TeiidDataSource.DATASOURCE_DRIVERNAME, "type");
 		TeiidDataSourceImpl tds = new TeiidDataSourceImpl("source", properties);
-		VDBMetaData vdb = KomodoMetadataService.generateSourceVdb(tds, "vdb");
+		VDBMetaData vdb = KomodoMetadataService.generateSourceVdb(tds, "vdb", null);
 		
 		
 		String s = new String(DefaultMetadataInstance.toBytes(vdb).toByteArray(), "UTF-8");
@@ -51,5 +51,22 @@ public class KomodoMetadataServiceTest {
 						+ "<property name=\"importer.UseFullSchemaName\" value=\"false\"></property>"
 						+ "<source name=\"source\" translator-name=\"type\" connection-jndi-name=\"something\"></source></model></vdb>",
 				s);
+		
+		//with ddl passed in
+		vdb = KomodoMetadataService.generateSourceVdb(tds, "vdb", "create something...");
+		
+		s = new String(DefaultMetadataInstance.toBytes(vdb).toByteArray(), "UTF-8");
+		assertEquals(
+				"<?xml version=\"1.0\" ?><vdb name=\"vdb\" version=\"1\"><description>Vdb for source Data Source:	source\n"
+						+ "Type: 		type</description><connection-type>BY_VERSION</connection-type>"
+						+ "<model name=\"sourceschemamodel\" type=\"PHYSICAL\" visible=\"true\">"
+						+ "<property name=\"importer.TableTypes\" value=\"TABLE,VIEW\"></property>"
+						+ "<property name=\"importer.UseQualifiedName\" value=\"true\"></property>"
+						+ "<property name=\"importer.UseCatalogName\" value=\"false\"></property>"
+						+ "<property name=\"importer.UseFullSchemaName\" value=\"false\"></property>"
+						+ "<source name=\"source\" translator-name=\"type\" connection-jndi-name=\"something\"></source>"
+						+ "<metadata type=\"DDL\"><![CDATA[create something...]]></metadata></model></vdb>",
+				s);
+		
 	}
 }

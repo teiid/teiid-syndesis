@@ -23,7 +23,6 @@ import java.util.Properties;
 import javax.ws.rs.core.UriBuilder;
 
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.KomodoRestV1Application;
 import org.komodo.rest.RestLink.LinkType;
 import org.komodo.spi.KException;
@@ -311,15 +310,6 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
         return UriBuilder.fromUri(vdbUri(parentUri, vdbName))
                                    .path(target.uriName())
                                    .build();
-    }
-
-    /**
-     * @param vdb
-     * @return the uri of the parent of the given vdb
-     * @throws KException
-     */
-    public URI vdbParentUri(Vdb vdb) throws KException {
-        return workspaceVdbsUri();
     }
 
     /**

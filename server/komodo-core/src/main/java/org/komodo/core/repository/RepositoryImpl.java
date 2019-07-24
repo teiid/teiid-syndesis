@@ -32,7 +32,6 @@ import org.komodo.core.KomodoLexicon.Komodo;
 import org.komodo.core.internal.repository.KObjectFactory;
 import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.internal.repository.UnitOfWorkDelegate;
-import org.komodo.metadata.MetadataInstance;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
 import org.komodo.spi.SystemConstants;
@@ -339,14 +338,6 @@ public abstract class RepositoryImpl implements Repository, StringConstants {
     public KEngineImpl getKEngine() {
     	return this.kEngine;
     }    
-    
-    @Override
-    public MetadataInstance getMetadataInstance() throws KException {
-    	if (this.kEngine != null) {
-    		return this.kEngine.getMetadataInstance();
-    	}
-    	return null;
-    }
     
     /**
      * Called prior to each external API method. Prepares the object at the given nodePath
