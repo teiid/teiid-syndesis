@@ -1221,12 +1221,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
             // Get all of the editor states from the user profile
             // They are stored under ids of form "serviceVdbName.viewName"
-			String serviceVdbName = dataservice.getServiceVdbName();
-			final String viewEditorIdPrefix =
-			KomodoService.getViewEditorStateIdPrefix(serviceVdbName) + "*"; //$NON-NLS-1$ final
-			ViewEditorState[] editorStates = getViewEditorStates(viewEditorIdPrefix);
-			 
-			VDBMetaData theVdb = new ServiceVdbGenerator(this).refreshServiceVdb(serviceVdbName, editorStates);
+			VDBMetaData theVdb = generateServiceVDB(dataservice);
             
             // the properties in this class can be exposed for user input
             PublishConfiguration config = new PublishConfiguration();
@@ -1236,7 +1231,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             config.setContainerDiskSize(payload.getDiskSize());
             config.setContainerMemorySize(payload.getMemory());
             config.setCpuUnits(payload.getCpuUnits());
-            BuildStatus buildStatus = openshiftClient.publishVirtualization(config, serviceVdbName);
+            BuildStatus buildStatus = openshiftClient.publishVirtualization(config, theVdb.getName());
 
             //
             // If the thread concludes within the time of the parent thread sleeping
@@ -1260,6 +1255,16 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.PUBLISH_ERROR, e.getMessage());
         }
     }
+
+	VDBMetaData generateServiceVDB(Dataservice dataservice) throws KException, Exception {
+		String serviceVdbName = dataservice.getServiceVdbName();
+		final String viewEditorIdPrefix =
+		KomodoService.getViewEditorStateIdPrefix(serviceVdbName) + "*"; //$NON-NLS-1$ final
+		ViewEditorState[] editorStates = getViewEditorStates(viewEditorIdPrefix);
+		 
+		VDBMetaData theVdb = new ServiceVdbGenerator(this).refreshServiceVdb(serviceVdbName, editorStates);
+		return theVdb;
+	}
 
     /**
      * Deploy / re-deploy a VDB to the metadata instance for the provided teiid data source.
