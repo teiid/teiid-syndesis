@@ -24,19 +24,7 @@ import java.util.Map;
 
 import org.komodo.core.repository.KomodoObject;
 import org.komodo.relational.dataservice.internal.DataserviceImpl;
-import org.komodo.relational.model.internal.ColumnImpl;
-import org.komodo.relational.model.internal.ForeignKeyImpl;
-import org.komodo.relational.model.internal.ModelImpl;
-import org.komodo.relational.model.internal.PrimaryKeyImpl;
-import org.komodo.relational.model.internal.StatementOptionImpl;
-import org.komodo.relational.model.internal.TableImpl;
-import org.komodo.relational.model.internal.UniqueConstraintImpl;
-import org.komodo.relational.model.internal.ViewImpl;
 import org.komodo.relational.profile.internal.ProfileImpl;
-import org.komodo.relational.vdb.internal.ModelSourceImpl;
-import org.komodo.relational.vdb.internal.TranslatorImpl;
-import org.komodo.relational.vdb.internal.VdbImpl;
-import org.komodo.relational.vdb.internal.VdbImportImpl;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.utils.KeyInValueMap;
 import org.komodo.utils.KeyInValueMap.KeyFromValueAdapter;
@@ -74,33 +62,12 @@ public class TypeResolverRegistry {
 
     private TypeResolverRegistry() {
 
-        index(KomodoType.COLUMN, ColumnImpl.RESOLVER);
 
         index(KomodoType.DATASERVICE, DataserviceImpl.RESOLVER);
 
-        index(KomodoType.FOREIGN_KEY, ForeignKeyImpl.RESOLVER);
-
-        index(KomodoType.MODEL, ModelImpl.RESOLVER);
-
-        index(KomodoType.PRIMARY_KEY, PrimaryKeyImpl.RESOLVER);
 
         index(KomodoType.PROFILE, ProfileImpl.RESOLVER);
 
-        index(KomodoType.STATEMENT_OPTION, StatementOptionImpl.RESOLVER);
-
-        index(KomodoType.TABLE, TableImpl.RESOLVER);
-
-        index(KomodoType.UNIQUE_CONSTRAINT, UniqueConstraintImpl.RESOLVER);
-
-        index(KomodoType.VDB, VdbImpl.RESOLVER);
-
-        index(KomodoType.VDB_IMPORT, VdbImportImpl.RESOLVER);
-
-        index(KomodoType.VDB_MODEL_SOURCE, ModelSourceImpl.RESOLVER);
-
-        index(KomodoType.VDB_TRANSLATOR, TranslatorImpl.RESOLVER);
-
-        index(KomodoType.VIEW, ViewImpl.RESOLVER);
     }
 
     @SuppressWarnings( "unchecked" )

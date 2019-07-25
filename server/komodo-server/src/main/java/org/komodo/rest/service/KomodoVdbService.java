@@ -20,9 +20,6 @@ package org.komodo.rest.service;
 import static org.komodo.rest.relational.RelationalMessages.Error.VIEW_NAME_EXISTS;
 import static org.komodo.rest.relational.RelationalMessages.Error.VIEW_NAME_VALIDATION_ERROR;
 
-import java.util.List;
-
-import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -33,19 +30,15 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import org.komodo.relational.WorkspaceManager;
-import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.KomodoRestException;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
 import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.dataservice.RestDataservice;
-import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.StringNameValidator;
-import org.komodo.utils.StringUtils;
 import org.springframework.stereotype.Component;
 
 import io.swagger.annotations.Api;
@@ -64,76 +57,6 @@ import io.swagger.annotations.ApiResponses;
 public final class KomodoVdbService extends KomodoService {
 
     private static final StringNameValidator VALIDATOR = new StringNameValidator();
-
-    /**
-     * Delete the specified Vdb from the komodo repository
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
-     * @param vdbName
-     *        the name of the Vdb to be removed (cannot be <code>null</code>)
-     * @return a JSON document representing the results of the removal
-     * @throws KomodoRestException
-     *         if there is a problem performing the delete
-     */
-    @DELETE
-    @Path("{vdbName}")
-    @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Delete a vdb from the workspace")
-    @ApiResponses(value = {
-        @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-    public Response deleteVdb( final @Context HttpHeaders headers,
-                               final @Context UriInfo uriInfo,
-                               @ApiParam(
-                                         value = "Name of the Vdb to be removed",
-                                         required = true
-                               )
-                               final @PathParam( "vdbName" ) String vdbName) throws KomodoRestException {
-
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
-
-        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
-            return notAcceptableMediaTypesBuilder().build();
-
-        // Error if the vdb name is missing
-        if (StringUtils.isBlank( vdbName )) {
-            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VDB_SERVICE_DELETE_MISSING_VDB_NAME);
-        }
-
-        UnitOfWork uow = null;
-        try {
-            uow = createTransaction(principal, "removeVdbFromWorkspace", false); //$NON-NLS-1$
-
-            final WorkspaceManager mgr = getWorkspaceManager();
-            Vdb vdb = mgr.findVdb(vdbName);
-
-            if (vdb == null)
-                return Response.noContent().build();
-
-            mgr.deleteVdb(vdb);
-
-            KomodoStatusObject kso = new KomodoStatusObject("Delete Status"); //$NON-NLS-1$
-            kso.addAttribute(vdbName, "Successfully deleted"); //$NON-NLS-1$
-
-            return commit(uow, mediaTypes, kso);
-        } catch (final Exception e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
-                uow.rollback();
-            }
-
-            if (e instanceof KomodoRestException) {
-                throw (KomodoRestException)e;
-            }
-
-            return createErrorResponseWithForbidden(mediaTypes, e, RelationalMessages.Error.VDB_SERVICE_DELETE_VDB_ERROR);
-        }
-    }
 
     /**
      * @param headers

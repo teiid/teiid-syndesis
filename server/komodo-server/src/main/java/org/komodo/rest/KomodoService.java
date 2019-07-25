@@ -40,7 +40,6 @@ import org.komodo.relational.WorkspaceManager;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.profile.Profile;
 import org.komodo.relational.profile.ViewEditorState;
-import org.komodo.relational.vdb.Vdb;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.RestBasicEntity.ResourceNotFound;
@@ -62,7 +61,9 @@ import com.google.gson.Gson;
  */
 public abstract class KomodoService implements V1Constants {
 
-    public static final String ENCRYPTED_PREFIX = "ENCRYPTED-";
+    public static final String REPO_USER = "anonymous";
+
+	public static final String ENCRYPTED_PREFIX = "ENCRYPTED-";
 
     protected static final KLog LOGGER = KLog.getLogger();
 
@@ -478,13 +479,9 @@ public abstract class KomodoService implements V1Constants {
                                             final boolean rollbackOnly) throws KException {
     	final UnitOfWork result = this.kengine.createTransaction( user.getUserName(),
                                                                (getClass().getSimpleName() + COLON + name + COLON + System.currentTimeMillis()),
-                                                               rollbackOnly, "anonymous");
+                                                               rollbackOnly, REPO_USER);
         LOGGER.debug( "createTransaction:created '{0}', rollbackOnly = '{1}'", result.getName(), result.isRollbackOnly() ); //$NON-NLS-1$
         return result;
-    }
-
-    protected Vdb findVdb(String vdbName) throws KException {
-        return getWorkspaceManager().findVdb(vdbName);
     }
 
     protected UnitOfWork systemTx(String description, boolean rollback) throws KException {

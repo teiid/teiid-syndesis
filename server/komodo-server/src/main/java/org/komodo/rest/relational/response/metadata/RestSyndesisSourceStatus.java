@@ -126,7 +126,6 @@ public final class RestSyndesisSourceStatus implements KRestEntity {
     private List< String > errors;
     private EntityState schemaState = EntityState.MISSING;
     private String schemaModelName;
-    private String schemaVdbName;
     private String vdbName;
     private EntityState vdbState = EntityState.MISSING;
 
@@ -163,7 +162,6 @@ public final class RestSyndesisSourceStatus implements KRestEntity {
                && Objects.equals( this.errors, that.errors )
                && Objects.equals( this.schemaModelName, that.schemaModelName )
                && Objects.equals(  this.schemaState, that.schemaState )
-               && Objects.equals(  this.schemaVdbName, that.schemaVdbName )
                && Objects.equals( this.vdbName, that.vdbName )
                && Objects.equals( this.vdbState, that.vdbState );
     }
@@ -204,13 +202,6 @@ public final class RestSyndesisSourceStatus implements KRestEntity {
     }
 
     /**
-     * @return the schema VDB name (can be empty)
-     */
-    public String getSchemaVdbName() {
-        return this.schemaVdbName;
-    }
-
-    /**
      * @return the server VDB name (can be empty)
      */
     public String getVdbName() {
@@ -247,7 +238,6 @@ public final class RestSyndesisSourceStatus implements KRestEntity {
                              this.errors,
                              this.schemaModelName,
                              this.schemaState,
-                             this.schemaVdbName,
                              this.vdbName,
                              this.vdbState );
     }
@@ -306,13 +296,6 @@ public final class RestSyndesisSourceStatus implements KRestEntity {
      */
     public void setSchemaModelName( final String schemaModelName ) {
         this.schemaModelName = schemaModelName;
-    }
-
-    /**
-     * @param schemaVdbName the workspace schema VDB name (can be empty)
-     */
-    public void setSchemaVdbName( final String schemaVdbName ) {
-        this.schemaVdbName = schemaVdbName;
     }
 
     /**

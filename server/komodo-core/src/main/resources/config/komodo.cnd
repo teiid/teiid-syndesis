@@ -54,6 +54,7 @@
  * data sources, dataservices, folders and other resources created and being worked by users.
  */
 [tko:workspace] > nt:unstructured
+ + * (tko:schema) copy 
 
 /*
  * Home directories distinguish the assets of individual users.

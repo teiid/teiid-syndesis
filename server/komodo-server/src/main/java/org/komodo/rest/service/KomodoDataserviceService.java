@@ -90,6 +90,9 @@ public final class KomodoDataserviceService extends KomodoService
 
     @Autowired
     private TeiidOpenShiftClient openshiftClient;
+    
+    @Autowired
+    private KomodoMetadataService metadataService;
 
     /**
      * Get the Dataservices from the komodo repository
@@ -584,18 +587,10 @@ public final class KomodoDataserviceService extends KomodoService
             if (dataservice == null)
                 return commitNoDataserviceFound(uow, mediaTypes, dataserviceName);
 
-            //String vdbName = dataservice.getServiceVdbName();
-
-            // Get all of the editor states from the user profile
-            // They are stored under ids of form "serviceVdbName.viewName"
-            /*final String viewEditorIdPrefix = KomodoService.getViewEditorStateIdPrefix(vdbName) + "*"; //$NON-NLS-1$
-            final ViewEditorState[] editorStates = getViewEditorStates(viewEditorIdPrefix);
-
-            VDBMetaData vdb = new ServiceVdbGenerator(getWorkspaceManager()).refreshServiceVdb(serviceVdb, editorStates);
+            //generate has the side effect of setting ddl
+            this.metadataService.generateServiceVDB(dataservice);
             
-            TODO: should we generate and deploy a virtualization specific preview vdb?
-            
-            */
+            //TODO: should we generate and deploy a virtualization specific preview vdb
 
             KomodoStatusObject kso = new KomodoStatusObject("Refresh Status"); //$NON-NLS-1$
             kso.addAttribute(dataserviceName, "View Successfully refreshed"); //$NON-NLS-1$
