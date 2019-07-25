@@ -28,12 +28,12 @@ import org.komodo.core.repository.Property;
 import org.komodo.core.repository.PropertyValueType;
 import org.komodo.relational.Messages;
 import org.komodo.relational.Messages.Relational;
+import org.komodo.relational.dataservice.SqlComposition;
+import org.komodo.relational.dataservice.SqlProjectedColumn;
+import org.komodo.relational.dataservice.ViewDefinition;
 import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.internal.TypeResolver;
-import org.komodo.relational.profile.SqlComposition;
-import org.komodo.relational.profile.SqlProjectedColumn;
-import org.komodo.relational.profile.ViewDefinition;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.KomodoType;
@@ -170,7 +170,7 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.profile.ViewDefinition#addSqlComposition(UnitOfWork, String)
+     * @see org.komodo.relational.dataservice.ViewDefinition#addSqlComposition(UnitOfWork, String)
      */
     @Override
     public SqlComposition addSqlComposition(String compositionName) throws KException {
@@ -208,7 +208,7 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.profile.ViewDefinition#getSqlCompositions(UnitOfWork, String...)
+     * @see org.komodo.relational.dataservice.ViewDefinition#getSqlCompositions(UnitOfWork, String...)
      */
     @Override
     public SqlCompositionImpl[] getSqlCompositions(final String... namePatterns) throws KException {
@@ -234,7 +234,7 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.profile.ViewDefinition#getSqlCompositions(UnitOfWork, String...)
+     * @see org.komodo.relational.dataservice.ViewDefinition#getSqlCompositions(UnitOfWork, String...)
      */
     @Override
     public void removeSqlComposition(String sqlCompositionToRemove) throws KException {
@@ -429,7 +429,7 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.profile.ViewDefinition#addSqlComposition(UnitOfWork, String)
+     * @see org.komodo.relational.dataservice.ViewDefinition#addSqlComposition(UnitOfWork, String)
      */
     @Override
     public SqlProjectedColumn addProjectedColumn(String columnName) throws KException {
@@ -439,7 +439,7 @@ public class ViewDefinitionImpl extends RelationalObjectImpl implements ViewDefi
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.relational.profile.ViewDefinition#removeProjectedColumn(UnitOfWork, String...)
+     * @see org.komodo.relational.dataservice.ViewDefinition#removeProjectedColumn(UnitOfWork, String...)
      */
     @Override
     public void removeProjectedColumn(String columnToRemove) throws KException {

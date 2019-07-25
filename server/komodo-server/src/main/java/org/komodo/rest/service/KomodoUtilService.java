@@ -35,12 +35,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import org.komodo.relational.profile.Profile;
-import org.komodo.relational.profile.SqlComposition;
-import org.komodo.relational.profile.SqlProjectedColumn;
-import org.komodo.relational.profile.StateCommandAggregate;
-import org.komodo.relational.profile.ViewDefinition;
-import org.komodo.relational.profile.ViewEditorState;
+import org.komodo.metadata.MetadataInstance;
+import org.komodo.relational.dataservice.SqlComposition;
+import org.komodo.relational.dataservice.SqlProjectedColumn;
+import org.komodo.relational.dataservice.StateCommandAggregate;
+import org.komodo.relational.dataservice.ViewDefinition;
+import org.komodo.relational.dataservice.ViewEditorState;
 import org.komodo.rest.KomodoRestException;
 import org.komodo.rest.KomodoRestV1Application;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
@@ -59,6 +59,7 @@ import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.teiid.adminapi.impl.ModelMetaData;
 import org.teiid.adminapi.impl.VDBMetaData;
@@ -110,7 +111,9 @@ public final class KomodoUtilService extends KomodoService {
         "teiid-vdb-all-elements.xml", "tweet-example-vdb.xml",
         "northwind.xml", "financials.xml"
     };
-
+    
+    @Autowired
+    private MetadataInstance metadataInstance;
 
     /**
      * @param headers
@@ -344,8 +347,7 @@ public final class KomodoUtilService extends KomodoService {
 
             final String txId = "getViewEditorStates"; //$NON-NLS-1$ //$NON-NLS-2$
             uow = createTransaction(principal, txId, true );
-            Profile profile = getUserProfile();
-            ViewEditorState viewEditorState = profile.getViewEditorState(viewEditorStateId);
+            ViewEditorState viewEditorState = getWorkspaceManager().getViewEditorState(viewEditorStateId);
             LOGGER.debug( "getViewEditorState:found '{0}' ViewEditorStates",
                               viewEditorState == null ? 0 : 1 ); //$NON-NLS-1$
 
@@ -517,7 +519,7 @@ public final class KomodoUtilService extends KomodoService {
 				MetadataFactory mf = new MetadataFactory(PREVIEW_VDB, 1,SystemMetadata.getInstance().getRuntimeTypeMap(),m);
 	        	parser.parseDDL(mf, restViewDefinition.getDdl());
 	        	
-				VDBMetaData vdb = this.kengine.getMetadataInstance().getVdb(PREVIEW_VDB).getVDBMetaData();
+				VDBMetaData vdb = metadataInstance.getVdb(PREVIEW_VDB).getVDBMetaData();
 				TransformationMetadata qmi = vdb.getAttachment(TransformationMetadata.class);
 	        	
 				CompositeMetadataStore store = qmi.getMetadataStore();
@@ -615,8 +617,7 @@ public final class KomodoUtilService extends KomodoService {
         RestViewDefinition restViewDefn = editorState.getViewDefinition();
 
         // Add a new ViewEditorState to the userProfile
-        Profile userProfile = getUserProfile();
-        ViewEditorState viewEditorState = userProfile.addViewEditorState(stateId);
+        ViewEditorState viewEditorState = getWorkspaceManager().addViewEditorState(stateId);
 
         // Add commands to the ViewEditorState
         for (RestStateCommandAggregate restCmd : commands) {

@@ -25,9 +25,8 @@ import java.util.Properties;
 import org.komodo.openshift.BuildStatus;
 import org.komodo.relational.WorkspaceManager;
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.profile.Profile;
-import org.komodo.relational.profile.ViewDefinition;
-import org.komodo.relational.profile.ViewEditorState;
+import org.komodo.relational.dataservice.ViewDefinition;
+import org.komodo.relational.dataservice.ViewEditorState;
 import org.komodo.rest.RestBasicEntity;
 import org.komodo.rest.RestLink;
 import org.komodo.rest.RestLink.LinkType;
@@ -266,13 +265,10 @@ public final class RestDataservice extends RestBasicEntity {
      *  get the ViewDefinitionImpl names for the dataservice
      */
     public static String[] getViewDefnNames(WorkspaceManager workspaceManager, String vdbName) throws KException {
-        Profile userProfile = workspaceManager.getUserProfile();
         ViewEditorState[] editorStates = null;
-        if (userProfile != null) {
-        	String svcVdbName = vdbName.toLowerCase();
-        	String pattern = svcVdbName + "*";
-            editorStates = userProfile.getViewEditorStates(pattern);
-        }
+    	String svcVdbName = vdbName.toLowerCase();
+    	String pattern = svcVdbName + "*";
+        editorStates = workspaceManager.getViewEditorStates(pattern);
 
         List<String> viewNames = new ArrayList<String>();
         for (ViewEditorState editorState: editorStates) {

@@ -21,39 +21,6 @@ import org.komodo.spi.KException;
 
 public interface RelationalObject {
 	
-	/**
-     * @return the parent RelationalObject (can be <code>null</code> if at the Komodo root)
-     * @throws KException
-     *         if an error occurs
-     */
-	RelationalObject getRelationalParent( ) throws KException;
-	
-    /**
-     * @return the last segment of the absolute path (never empty)
-     * @throws KException
-     *         if an error occurs
-     * @see #getAbsolutePath()
-     */
 	String getName() throws KException;
-	
-	/**
-     * @param name
-     *        the name of property being requested (cannot be empty)
-	 * @return the property string or <code>null</code> if the property doesn't exist
-     * @throws KException
-     *         if an error occurs
-     */
-    String getPropertyValue( final String name ) throws KException;
-    
-    /**
-     * @param name
-     *        the name of property being set (cannot be empty)
-     * @param value
-     *        the property string or <code>null</code> if the property doesn't exist
-     * @throws KException
-     *         if an error occurs
-     */
-    void setPropertyValue( final String name,
-            String value ) throws KException;
 	
 }

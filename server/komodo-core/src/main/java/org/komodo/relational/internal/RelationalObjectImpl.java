@@ -692,23 +692,4 @@ public abstract class RelationalObjectImpl extends ObjectImpl implements Relatio
 
     }
     
-    @Override
-    public String getPropertyValue(String name) throws KException {
-    	Property p = getProperty(name);
-    	if (p != null) {
-    		return p.getStringValue(getTransaction());
-    	}
-    	return null;
-    }
-    
-    @Override
-    public void setPropertyValue(String name, String value) throws KException {
-    	this.setProperty(name, value);
-    }
-    
-    @Override
-    public RelationalObjectImpl getRelationalParent() throws KException {
-    	return (RelationalObjectImpl)this.getParent();
-    }
-    
 }

@@ -19,7 +19,7 @@
 package org.komodo.relational;
 
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.profile.Profile;
+import org.komodo.relational.dataservice.ViewEditorState;
 import org.komodo.spi.KException;
 
 public interface WorkspaceManager {
@@ -40,6 +40,35 @@ public interface WorkspaceManager {
 	void deleteDataservice(Dataservice dataservice) throws KException;
 
 
-	Profile getUserProfile() throws KException;
+    /**
+    *
+    * @param stateId the id of the view editor state
+    * @return the new view editor state (never <code>null</code>)
+    * @throws KException
+    *          if an error occurs
+    */
+   ViewEditorState addViewEditorState(  String stateId) throws KException;
+
+   /**
+    * @param namePatterns
+    *        optional name patterns (can be <code>null</code> or empty but cannot have <code>null</code> or empty elements)
+    *
+    * @return the view editor states (never <code>null</code> but can be empty)
+    * @throws KException
+    *         if an error occurs
+    */
+   ViewEditorState[] getViewEditorStates(  final String... namePatterns ) throws KException;
+
+   /**
+    * @param viewEditorStateId
+    *        the id of the viewEditorState being removed (cannot be empty)
+    * @return true if removed
+    * @throws KException
+    *         if an error occurs
+    */
+   boolean removeViewEditorState( 
+                        final String viewEditorStateId ) throws KException;
+
+   ViewEditorState getViewEditorState(String name) throws KException;
 
 }

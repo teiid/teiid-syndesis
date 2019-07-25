@@ -26,12 +26,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.junit.Test;
-import org.komodo.relational.profile.SqlComposition;
-import org.komodo.relational.profile.SqlProjectedColumn;
-import org.komodo.relational.profile.StateCommand;
-import org.komodo.relational.profile.StateCommandAggregate;
-import org.komodo.relational.profile.ViewDefinition;
-import org.komodo.relational.profile.ViewEditorState;
+import org.komodo.relational.dataservice.SqlComposition;
+import org.komodo.relational.dataservice.SqlProjectedColumn;
+import org.komodo.relational.dataservice.StateCommand;
+import org.komodo.relational.dataservice.StateCommandAggregate;
+import org.komodo.relational.dataservice.ViewDefinition;
+import org.komodo.relational.dataservice.ViewEditorState;
 import org.komodo.rest.relational.response.vieweditorstate.RestSqlComposition;
 import org.komodo.rest.relational.response.vieweditorstate.RestSqlProjectedColumn;
 import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate;

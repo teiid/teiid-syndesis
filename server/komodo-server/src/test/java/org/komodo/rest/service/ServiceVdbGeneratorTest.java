@@ -34,7 +34,7 @@ import org.junit.Test;
 import org.komodo.metadata.internal.TeiidDataSourceImpl;
 import org.komodo.metadata.runtime.TeiidDataSource;
 import org.komodo.relational.RelationalModelTest;
-import org.komodo.relational.profile.ViewEditorState;
+import org.komodo.relational.dataservice.ViewEditorState;
 import org.komodo.relational.profile.internal.SqlCompositionImpl;
 import org.komodo.relational.profile.internal.SqlProjectedColumnImpl;
 import org.komodo.relational.profile.internal.ViewDefinitionImpl;

@@ -30,12 +30,12 @@ import javax.transaction.TransactionManager;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
+import org.komodo.metadata.MetadataInstance;
 import org.komodo.openshift.EncryptionComponent;
 import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.rest.connections.SyndesisConnectionMonitor;
 import org.komodo.rest.connections.SyndesisConnectionSynchronizer;
 import org.komodo.spi.KEngine;
-import org.komodo.spi.KException;
 import org.komodo.spi.SystemConstants;
 import org.komodo.spi.repository.ApplicationProperties;
 import org.komodo.spi.repository.PersistenceType;
@@ -72,6 +72,9 @@ public class KomodoAutoConfiguration implements ApplicationListener<ContextRefre
     @Autowired
     private KEngine kengine;
     
+    @Autowired
+    private MetadataInstance metadataInstance;
+    
     @Bean
     public TextEncryptor getTextEncryptor() {
         return Encryptors.text(encryptKey, "deadbeef");
@@ -99,18 +102,14 @@ public class KomodoAutoConfiguration implements ApplicationListener<ContextRefre
         if ( !started ) {
             throw new RuntimeException(Messages.getString( KOMODO_ENGINE_STARTUP_TIMEOUT, 1, TimeUnit.MINUTES));
         } else {
-            try {
-	        	// monitor to track connections from the syndesis
-				TeiidOpenShiftClient TOSClient = new TeiidOpenShiftClient(
-						kengine.getMetadataInstance(), new EncryptionComponent(getTextEncryptor()),
-						this.config);
-	        	SyndesisConnectionSynchronizer sync = new SyndesisConnectionSynchronizer(TOSClient, kengine);
-	        	SyndesisConnectionMonitor scm = new SyndesisConnectionMonitor(sync);
-	        	ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
-	        	executor.schedule(scm, 15, TimeUnit.SECONDS);
-            } catch (KException e) {
-                throw new WebApplicationException( e, Status.INTERNAL_SERVER_ERROR );
-            }
+        	// monitor to track connections from the syndesis
+			TeiidOpenShiftClient TOSClient = new TeiidOpenShiftClient(
+					metadataInstance, new EncryptionComponent(getTextEncryptor()),
+					this.config);
+        	SyndesisConnectionSynchronizer sync = new SyndesisConnectionSynchronizer(TOSClient, kengine);
+        	SyndesisConnectionMonitor scm = new SyndesisConnectionMonitor(sync);
+        	ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
+        	executor.schedule(scm, 15, TimeUnit.SECONDS);
         }
     }
 
@@ -136,12 +135,8 @@ public class KomodoAutoConfiguration implements ApplicationListener<ContextRefre
     @Bean
     @ConditionalOnMissingBean
     public TeiidOpenShiftClient openShiftClient(@Autowired KEngine kengine, @Autowired TextEncryptor enc) {
-        try {
-            return new TeiidOpenShiftClient(kengine.getMetadataInstance(), new EncryptionComponent(enc),
-                    this.config);
-        } catch (KException e) {
-            throw new RuntimeException(e);
-        }
+        return new TeiidOpenShiftClient(metadataInstance, new EncryptionComponent(enc),
+                this.config);
     }
 
     private void initPersistenceEnvironment() {

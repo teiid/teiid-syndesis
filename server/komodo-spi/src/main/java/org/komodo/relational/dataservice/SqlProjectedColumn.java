@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.relational.profile;
+package org.komodo.relational.dataservice;
 
 import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;

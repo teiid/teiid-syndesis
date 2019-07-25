@@ -33,6 +33,7 @@ import java.util.Properties;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.komodo.metadata.DeployStatus;
 import org.komodo.metadata.Messages;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.metadata.query.QSColumn;
@@ -40,7 +41,6 @@ import org.komodo.metadata.query.QSResult;
 import org.komodo.metadata.query.QSRow;
 import org.komodo.metadata.runtime.TeiidDataSource;
 import org.komodo.metadata.runtime.TeiidVdb;
-import org.komodo.relational.DeployStatus;
 import org.komodo.rest.TeiidServer;
 import org.komodo.spi.KException;
 import org.komodo.utils.ArgCheck;

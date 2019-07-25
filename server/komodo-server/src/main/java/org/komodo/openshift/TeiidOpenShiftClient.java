@@ -972,7 +972,7 @@ public class TeiidOpenShiftClient implements StringConstants {
         		labels.put("discovery.3scale.net", "true");
         		annotations.put("discovery.3scale.net/scheme", "http");
         		annotations.put("discovery.3scale.net/port", Integer.toString(port));
-        		annotations.put("discovery.3scale.net/description-path", "/swagger.json");        		
+        		annotations.put("discovery.3scale.net/description-path", "/openapi.json");        		
         	}
         	
             client.services().inNamespace(namespace).createNew()

@@ -38,8 +38,7 @@ import javax.ws.rs.core.Variant.VariantListBuilder;
 
 import org.komodo.relational.WorkspaceManager;
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.profile.Profile;
-import org.komodo.relational.profile.ViewEditorState;
+import org.komodo.relational.dataservice.ViewEditorState;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.RestBasicEntity.ResourceNotFound;
@@ -220,25 +219,13 @@ public abstract class KomodoService implements V1Constants {
     	return this.kengine.getWorkspaceManager();
     }
 
-    protected Profile getUserProfile() throws KException {
-        return getWorkspaceManager().getUserProfile();
-    }
-
     /**
      * @param viewEditorStateId the editor state identifier
      * @return <code>true</code> if editor state was deleted; <code>false</code> if not found
      * @throws Exception if an error occurs
      */
     protected boolean removeEditorState(String viewEditorStateId) throws Exception {
-        Profile userProfile = getUserProfile();
-        ViewEditorState state = userProfile.getViewEditorState(viewEditorStateId);
-
-        if (state != null) {
-            userProfile.removeViewEditorState(viewEditorStateId);
-            return true;
-        }
-
-        return false;
+        return getWorkspaceManager().removeViewEditorState(viewEditorStateId);
     }
 
     /**
@@ -257,16 +244,7 @@ public abstract class KomodoService implements V1Constants {
      * @throws Exception if an error occurs
      */
     protected ViewEditorState[] getViewEditorStates(final String searchPattern ) throws Exception {
-        final Profile profile = getUserProfile( );
-        ViewEditorState[] viewEditorStates = null;
-
-        if ( StringUtils.isBlank( searchPattern ) ) {
-            viewEditorStates = profile.getViewEditorStates( );
-        } else {
-            viewEditorStates = profile.getViewEditorStates( searchPattern );
-        }
-
-        return viewEditorStates;
+    	return getWorkspaceManager().getViewEditorStates( searchPattern );
     }
 
     protected Object createErrorResponseEntity(List<MediaType> acceptableMediaTypes, String errorMessage) {

@@ -15,53 +15,63 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.relational.profile;
+package org.komodo.relational.dataservice;
+
+import java.util.Map;
 
 import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;
-import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.KomodoType;
 
 /**
- * Represents the configuration of a view editor state
+ * Represents the configuration of a view editor state command
  */
-public interface ViewEditorState extends RelationalObject, StringConstants {
+public interface StateCommand extends RelationalObject {
 
     /**
      * The type identifier.
      */
-    int TYPE_ID = ViewEditorState.class.hashCode();
+    int TYPE_ID = StateCommand.class.hashCode();
 
     /**
      * Identifier of this object
      */
-    KomodoType IDENTIFIER = KomodoType.VIEW_EDITOR_STATE;
+    KomodoType IDENTIFIER = KomodoType.STATE_COMMAND;
 
     /**
-     * @return the new command
-     * @throws KException
-     *         if an error occurs
+     * An empty array of view editor state commands.
      */
-    StateCommandAggregate addCommand() throws KException;
+    StateCommand[] NO_STATE_COMMANDS = new StateCommand[0];
+
 
     /**
-     * @return the state commands
+     * @return the id of the command
      * @throws KException
-     *         if an error occurs
+     *          if an error occurs
      */
-    StateCommandAggregate[] getCommands() throws KException;
-    
+    String getId() throws KException;
+
     /**
-     * @return the view definition
-     * @throws KException
-     *         if an error occurs
+     * @param id the id of the command
+     * @throws Exception
+     *          if an error occurs
      */
-    ViewDefinition setViewDefinition() throws KException;
-    
+    void setId( String id) throws Exception;
+
     /**
-     * @return the view definition
+     * @return the arguments of the command
      * @throws KException
      *         if an error occurs
      */
-    ViewDefinition getViewDefinition() throws KException;
+    Map<String, String> getArguments() throws KException;
+
+    /**
+     * @param transaction
+     *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
+     * @param arguments
+     *        the new map of arguments
+     * @throws KException
+     *         if an error occurs
+     */
+    void setArguments( final Map<String, String> arguments) throws KException;
 }

@@ -21,9 +21,9 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.komodo.relational.profile.StateCommandAggregate;
-import org.komodo.relational.profile.ViewDefinition;
-import org.komodo.relational.profile.ViewEditorState;
+import org.komodo.relational.dataservice.StateCommandAggregate;
+import org.komodo.relational.dataservice.ViewDefinition;
+import org.komodo.relational.dataservice.ViewEditorState;
 import org.komodo.rest.AbstractKEntity;
 import org.komodo.spi.KException;
 
