@@ -11,33 +11,33 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @DataJpaTest
-public class ViewEditorStateTest {
+public class ViewDefinitionTest {
 	
 	@Autowired
     private TestEntityManager entityManager;
  
     @Autowired
-    private ViewEditorStateRepository viewEditorStateRepository;
+    private ViewDefinitionRepository viewEditorStateRepository;
     
     @Test
     public void testFindDeleteByName() {
-        ViewEditorState v = new ViewEditorState("x");
+        ViewDefinition v = new ViewDefinition("x");
         v.setDdl("create ...");
         entityManager.persist(v);
         entityManager.flush();
      
-        ViewEditorState found = viewEditorStateRepository.findByName(v.getName());
+        ViewDefinition found = viewEditorStateRepository.findByName(v.getName());
      
         assertEquals(v.getDdl(), found.getDdl());
         
         WorkspaceManagerImpl workspaceManagerImpl = new WorkspaceManagerImpl();
         workspaceManagerImpl.setViewEditorStateRepository(viewEditorStateRepository);
         
-        workspaceManagerImpl.addViewEditorState("y");
-        workspaceManagerImpl.addViewEditorState("x1");
+        workspaceManagerImpl.addViewDefiniton("y");
+        workspaceManagerImpl.addViewDefiniton("x1");
         entityManager.flush();
 
-        assertEquals(2, workspaceManagerImpl.getViewEditorStates("x").length);
+        assertEquals(2, workspaceManagerImpl.getViewDefinitions("x").length);
     }
 
 }

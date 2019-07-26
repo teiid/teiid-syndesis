@@ -15,17 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.komodo.relational;
 
-package org.komodo.core.datavirtualization;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
-@Repository
-public interface ViewEditorStateRepository extends JpaRepository<ViewEditorState, String> {
-
-	public ViewEditorState findByName(String name);
-
-	public long deleteByName(String name);
+public interface Named {
+	
+	String getName();
 	
 }

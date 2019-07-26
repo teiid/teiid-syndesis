@@ -15,31 +15,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.relational.dataservice;
 
-import java.util.List;
+package org.komodo.core.datavirtualization;
 
-import org.komodo.relational.RelationalObject;
-import org.komodo.spi.KException;
-import org.komodo.spi.StringConstants;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-/**
- * Represents the configuration of a view editor state
- */
-public interface ViewEditorState extends RelationalObject, StringConstants {
+@Repository
+public interface ViewDefinitionRepository extends JpaRepository<ViewDefinition, String> {
+
+	public ViewDefinition findByName(String name);
+
+	public long deleteByName(String name);
 	
-    /**
-     * @return the new command
-     */
-    StateCommandAggregate addCommand();
-
-    /**
-     * @return the state commands
-     */
-    List<StateCommandAggregate> getCommands();
-        
-    /**
-     * @return the view definition
-     */
-    ViewDefinition getViewDefinition() throws KException;
 }

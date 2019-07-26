@@ -21,7 +21,7 @@ package org.komodo.core.datavirtualization;
 import org.komodo.relational.WorkspaceManager;
 import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.relational.dataservice.SourceSchema;
-import org.komodo.relational.dataservice.ViewEditorState;
+import org.komodo.relational.dataservice.ViewDefinition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -36,7 +36,7 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
 	@Autowired
 	private SourceSchemaRepository schemaRepository;
 	@Autowired
-	private ViewEditorStateRepository viewEditorStateRepository;
+	private ViewDefinitionRepository viewDefinitionRepository;
 
 	@Override
 	public String findSchema(String name) {
@@ -80,32 +80,32 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
 	}
 	
 	@Override
-	public ViewEditorState addViewEditorState(String name) {
-		org.komodo.core.datavirtualization.ViewEditorState viewEditorState = new org.komodo.core.datavirtualization.ViewEditorState(name);
-		return this.viewEditorStateRepository.save(viewEditorState);
+	public ViewDefinition addViewDefiniton(String viewName) {
+		org.komodo.core.datavirtualization.ViewDefinition viewEditorState = new org.komodo.core.datavirtualization.ViewDefinition(viewName);
+		return this.viewDefinitionRepository.save(viewEditorState);
 	}
 	
 	@Override
-	public ViewEditorState getViewEditorState(String name) {
-		return this.viewEditorStateRepository.findByName(name);
+	public ViewDefinition getViewDefinition(String name) {
+		return this.viewDefinitionRepository.findByName(name);
 	}
 	
 	@Override
-	public ViewEditorState[] getViewEditorStates(String namePrefix) {
+	public ViewDefinition[] getViewDefinitions(String viewDefinitionNamePrefix) {
 		ExampleMatcher exampleMatcher = ExampleMatcher.matching().withStringMatcher(StringMatcher.STARTING);
-		return this.viewEditorStateRepository
+		return this.viewDefinitionRepository
 				.findAll(
-						Example.of(new org.komodo.core.datavirtualization.ViewEditorState(namePrefix), exampleMatcher))
-				.toArray(new ViewEditorState[0]);
+						Example.of(new org.komodo.core.datavirtualization.ViewDefinition(viewDefinitionNamePrefix), exampleMatcher))
+				.toArray(new ViewDefinition[0]);
 	}
 	
 	@Override
-	public boolean removeViewEditorState(String viewEditorStateId) {
-		return this.viewEditorStateRepository.deleteByName(viewEditorStateId) > 1;
+	public boolean removeViewDefinition(String viewDefinitionName) {
+		return this.viewDefinitionRepository.deleteByName(viewDefinitionName) > 1;
 	}
 	
-	void setViewEditorStateRepository(ViewEditorStateRepository viewEditorStateRepository) {
-		this.viewEditorStateRepository = viewEditorStateRepository;
+	void setViewEditorStateRepository(ViewDefinitionRepository viewEditorStateRepository) {
+		this.viewDefinitionRepository = viewEditorStateRepository;
 	}
 
 }

@@ -22,9 +22,7 @@ import static org.komodo.rest.Messages.Error.RESOURCE_NOT_FOUND;
 import static org.komodo.rest.Messages.General.GET_OPERATION_NAME;
 
 import java.util.List;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
@@ -38,7 +36,7 @@ import javax.ws.rs.core.Variant.VariantListBuilder;
 
 import org.komodo.relational.WorkspaceManager;
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.dataservice.ViewEditorState;
+import org.komodo.relational.dataservice.ViewDefinition;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.RestBasicEntity.ResourceNotFound;
@@ -48,6 +46,7 @@ import org.komodo.spi.KEngine;
 import org.komodo.spi.KException;
 import org.komodo.spi.SystemConstants;
 import org.komodo.spi.repository.UnitOfWork;
+import org.komodo.spi.repository.UnitOfWork.TimeoutException;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
@@ -132,21 +131,7 @@ public abstract class KomodoService implements V1Constants {
             return errorResponse;
         }
     }
-
-    /**
-     * <strong>*** The result ID needs to match the format that Beetle Studio uses. ***</strong>
-     *
-     * @param vdbName the VDB the view is contained in (cannot be empty)
-     * @param viewName the view name (cannot be empty)
-     * @return the ID of the editor state of the specified view (never empty)
-     */
-    public static String getViewEditorStateId( final String vdbName,
-                                               final String viewName ) {
-        assert( !StringUtils.isBlank( vdbName ) );
-        assert( !StringUtils.isBlank( viewName ) );
-        return KomodoService.getViewEditorStateIdPrefix( vdbName ) + viewName;
-    }
-
+    
     /**
      * <strong>*** The prefix needs to match the format that Beetle Studio uses. ***</strong>
      *
@@ -216,32 +201,16 @@ public abstract class KomodoService implements V1Constants {
     	return this.kengine.getWorkspaceManager();
     }
 
-    /**
-     * @param viewEditorStateId the editor state identifier
-     * @return <code>true</code> if editor state was deleted; <code>false</code> if not found
-     * @throws Exception if an error occurs
-     */
-    protected boolean removeEditorState(String viewEditorStateId) throws Exception {
-        return getWorkspaceManager().removeViewEditorState(viewEditorStateId);
+    protected boolean removeViewDefinition(String viewDefinitionName) throws Exception {
+        return getWorkspaceManager().removeViewDefinition(viewDefinitionName);
     }
 
-    /**
-     * @param editorState the editor state being deleted
-     * @return <code>true</code> if successfully deleted
-     * @throws Exception if an error occurs
-     */
-    protected boolean removeEditorState( final ViewEditorState editorState ) throws Exception {
-        return removeEditorState(editorState.getName( ) );
+    protected boolean removeViewDefinition( final ViewDefinition viewDefinition ) throws Exception {
+        return removeViewDefinition(viewDefinition.getName( ) );
     }
 
-     /**
-     *
-     * @param namePrefix
-     * @return the view editor states (never <code>null</code> but can be empty)
-     * @throws Exception if an error occurs
-     */
-    protected ViewEditorState[] getViewEditorStates(final String namePrefix ) throws Exception {
-    	return getWorkspaceManager().getViewEditorStates( namePrefix );
+    protected ViewDefinition[] getViewDefinitions(final String namePrefix ) throws Exception {
+    	return getWorkspaceManager().getViewDefinitions( namePrefix );
     }
 
     protected Object createErrorResponseEntity(List<MediaType> acceptableMediaTypes, String errorMessage) {
@@ -373,10 +342,10 @@ public abstract class KomodoService implements V1Constants {
         final int timeout = TIMEOUT;
         final TimeUnit unit = UNIT;
 
-        Future<Void> callback = transaction.commit();
+        
 
         try {
-        	callback.get( timeout, unit );
+        	transaction.commit();
         } catch (TimeoutException e) {
             // callback timeout occurred
             String errorMessage = Messages.getString( COMMIT_TIMEOUT, transaction.getName(), timeout, unit );

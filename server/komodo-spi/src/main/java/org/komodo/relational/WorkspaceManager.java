@@ -19,7 +19,7 @@
 package org.komodo.relational;
 
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.dataservice.ViewEditorState;
+import org.komodo.relational.dataservice.ViewDefinition;
 
 public interface WorkspaceManager {
 	
@@ -39,23 +39,12 @@ public interface WorkspaceManager {
 	boolean deleteDataservice(String serviceName);
 	
 	
-   ViewEditorState addViewEditorState(  String stateName);
+	ViewDefinition addViewDefiniton(  String viewDefinitionName);
 
-   /**
-    * @param namePrefix
-    *
-    * @return the view editor states (never <code>null</code> but can be empty)
-    */
-   ViewEditorState[] getViewEditorStates(String namePrefix);
+    ViewDefinition[] getViewDefinitions(String viewDefinitionNamePrefix);
+    
+	boolean removeViewDefinition(final String viewDefinitionName);
 
-   /**
-    * @param viewEditorStateId
-    *        the id of the viewEditorState being removed (cannot be empty)
-    * @return true if removed
-    */
-   boolean removeViewEditorState( 
-                        final String stateName );
-
-   ViewEditorState getViewEditorState(String stateName);
+	ViewDefinition getViewDefinition(String viewDefinitionName);
 
 }

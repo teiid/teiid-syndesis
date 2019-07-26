@@ -17,19 +17,14 @@
  */
 package org.komodo.relational.dataservice;
 
+import org.komodo.relational.Named;
 import org.komodo.spi.StringConstants;
 
 /**
  * Interface for SqlProjectedColumn
  */
-public interface SqlProjectedColumn  extends StringConstants {
+public interface SqlProjectedColumn  extends Named, StringConstants {
 
-    /**
-     * @param name
-     *        the new value for the <code>name</code> property
-     */
-    void setName(String name);
-    
     /**
      * @return the value of the <code>name</code> property
      */

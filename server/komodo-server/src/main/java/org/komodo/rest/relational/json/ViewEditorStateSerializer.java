@@ -21,7 +21,6 @@ import static org.komodo.rest.relational.json.KomodoJsonMarshaller.BUILDER;
 
 import java.io.IOException;
 
-import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewDefinition;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
 
@@ -46,10 +45,6 @@ public class ViewEditorStateSerializer extends AbstractEntitySerializer<RestView
     		RestViewDefinition viewDef = BUILDER.fromJson(in, RestViewDefinition.class);
             state.setViewDefinition(viewDef);
     		return name;
-    	} else if (RestViewEditorState.CONTENT_LABEL.equals(name)) {
-            RestStateCommandAggregate[] commands = BUILDER.fromJson(in, RestStateCommandAggregate[].class);
-            state.setCommands(commands);
-            return Integer.toString(commands.length);
         }
 
         return null; // not processed
@@ -64,17 +59,5 @@ public class ViewEditorStateSerializer extends AbstractEntitySerializer<RestView
     		BUILDER.getAdapter( RestViewDefinition.class ).write( out, state.getViewDefinition());
         }
     	
-    	RestStateCommandAggregate[] commands = state.getCommands();
-
-        if (commands.length != 0) {
-            out.name(RestViewEditorState.CONTENT_LABEL);
-            out.beginArray();
-            
-            for (RestStateCommandAggregate command : commands) {
-                BUILDER.getAdapter(RestStateCommandAggregate.class).write(out, command);
-            }
-            
-            out.endArray();
-        }
     }
 }

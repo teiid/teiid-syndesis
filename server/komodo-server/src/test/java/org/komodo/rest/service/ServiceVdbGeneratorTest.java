@@ -37,7 +37,6 @@ import org.komodo.metadata.runtime.TeiidDataSource;
 import org.komodo.relational.dataservice.SqlComposition;
 import org.komodo.relational.dataservice.SqlProjectedColumn;
 import org.komodo.relational.dataservice.ViewDefinition;
-import org.komodo.relational.dataservice.ViewEditorState;
 import org.komodo.rest.service.ServiceVdbGenerator.SchemaFinder;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
@@ -246,15 +245,13 @@ public class ServiceVdbGeneratorTest {
         return vdbGenerator.getODataViewDdl(viewDef);
     }
     
-    private ViewEditorState[] helpCreateViewEditorState(int numSources) throws KException {
+    private ViewDefinition[] helpCreateViewEditorState(int numSources) throws KException {
 
-        ViewEditorState[] stateArray = new ViewEditorState[1];
+    	ViewDefinition[] stateArray = new ViewDefinition[1];
 
-        ViewEditorState state = mock(ViewEditorState.class);
-        when(state.getName()).thenReturn(viewDefinitionName);
-        stateArray[0] = state;
         ViewDefinition viewDef = mock(ViewDefinition.class);
-        when(state.getViewDefinition()).thenReturn(viewDef);
+        when(viewDef.getName()).thenReturn(viewDefinitionName);
+        stateArray[0] = viewDef;
         if( numSources == 1 ) {
         	helpCreateViewDefinitionAll(viewDef, sourceTablePath2, false);
         } else {
@@ -535,7 +532,7 @@ public class ServiceVdbGeneratorTest {
     
     @Test
     public void shouldRefreshServiceVdb_SingleSource() throws Exception {
-    	ViewEditorState[] states = helpCreateViewEditorState(1);
+    	ViewDefinition[] states = helpCreateViewEditorState(1);
     	
     	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(schemaFinder());
     	
@@ -563,7 +560,7 @@ public class ServiceVdbGeneratorTest {
     
     @Test
     public void shouldRefreshServiceVdb_TwoSources() throws Exception {
-    	ViewEditorState[] states = helpCreateViewEditorState(2);
+    	ViewDefinition[] states = helpCreateViewEditorState(2);
     	
     	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(schemaFinder());
     	

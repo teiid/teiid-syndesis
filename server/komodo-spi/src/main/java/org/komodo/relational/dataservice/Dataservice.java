@@ -17,14 +17,18 @@
  */
 package org.komodo.relational.dataservice;
 
-import org.komodo.relational.RelationalObject;
+import org.komodo.relational.Named;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
 
 /**
  * A model of a dataservice instance
  */
-public interface Dataservice extends RelationalObject {
+public interface Dataservice extends Named {
+	
+	static String getServiceVdbName(String name) {
+		return name.toLowerCase() + StringConstants.SERVICE_VDB_SUFFIX;
+	}
 
     /**
      * @return the service VDB name (may be <code>null</code> if not defined)
@@ -32,7 +36,7 @@ public interface Dataservice extends RelationalObject {
      *         if an error occurs
      */
     default String getServiceVdbName( ) throws KException {
-    	return getName().toLowerCase() + StringConstants.SERVICE_VDB_SUFFIX;
+    	return getServiceVdbName(getName());
     }
 
     /**

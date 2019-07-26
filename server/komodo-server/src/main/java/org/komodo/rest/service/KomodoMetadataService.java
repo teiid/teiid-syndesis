@@ -57,7 +57,7 @@ import org.komodo.openshift.PublishConfiguration;
 import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.relational.WorkspaceManager;
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.dataservice.ViewEditorState;
+import org.komodo.relational.dataservice.ViewDefinition;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoRestException;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
@@ -74,7 +74,6 @@ import org.komodo.rest.relational.response.virtualization.RestVirtualizationStat
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
 import org.komodo.spi.repository.UnitOfWork;
-import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -195,7 +194,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
            return commit(uow, mediaTypes, status);
 
         } catch (final Exception e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+            if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();
             }
 
@@ -343,7 +342,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 //           return commit(uow, mediaTypes, status);
 //
 //        } catch (final Exception e) {
-//            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+//            if ((uow != null) && !uow.isCompleted()) {
 //                uow.rollback();
 //            }
 //
@@ -488,7 +487,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             	return commit(uow, mediaTypes, kso);
             }
         } catch (final Exception e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+            if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();
             }
 
@@ -590,7 +589,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
            return commit(uow, mediaTypes, restResult);
 
         } catch (final Exception e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+            if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();
             }
 
@@ -693,7 +692,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
             return commit(uow, mediaTypes, kso);
         } catch (final Exception e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+            if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();
             }
 
@@ -771,7 +770,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
             return commit( uow, mediaTypes, schemaNodes ); 
         } catch ( final Exception e ) {
-            if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
+            if ( ( uow != null ) && !uow.isCompleted()) {
                 uow.rollback();
             }
 
@@ -850,7 +849,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
             return commit( uow, mediaTypes, rootNodes ); 
         } catch ( final Exception e ) {
-            if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
+            if ( ( uow != null ) && !uow.isCompleted()) {
                 uow.rollback();
             }
 
@@ -937,7 +936,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
             return commit( uow, mediaTypes, statuses );
         } catch ( final Exception e ) {
-            if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
+            if ( ( uow != null ) && !uow.isCompleted()) {
                 uow.rollback();
             }
 
@@ -987,7 +986,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             setSchemaStatus(status);
             return commit( uow, mediaTypes, status );
         } catch ( final Exception e ) {
-            if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
+            if ( ( uow != null ) && !uow.isCompleted()) {
                 uow.rollback();
             }
             if ( e instanceof KomodoRestException ) {
@@ -1027,7 +1026,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             }
             return commit(uow, mediaTypes, entityList);
         } catch (Throwable e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+            if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();
             }
             if (e instanceof KomodoRestException) {
@@ -1063,7 +1062,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
             return commit(uow, mediaTypes, createBuildStatus(status, uriInfo.getBaseUri()));
         } catch (Throwable e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+            if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();
             }
             if (e instanceof KomodoRestException) {
@@ -1101,7 +1100,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
             return commit(uow, mediaTypes, status);
         } catch (Throwable e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+            if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();
             }
             if (e instanceof KomodoRestException) {
@@ -1146,7 +1145,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             BuildStatus status = this.openshiftClient.deleteVirtualization(vdbName);
             return commit(uow, mediaTypes, createBuildStatus(status, uriInfo.getBaseUri()));
         } catch (Throwable e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+            if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();
             }
             if (e instanceof KomodoRestException) {
@@ -1233,7 +1232,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             //
             return commit(uow, mediaTypes, status);
         } catch (Throwable e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+            if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();
             }
             if (e instanceof KomodoRestException) {
@@ -1245,9 +1244,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
 	VDBMetaData generateServiceVDB(Dataservice dataservice) throws KException, Exception {
 		String serviceVdbName = dataservice.getServiceVdbName();
-		final String viewEditorIdPrefix =
-		KomodoService.getViewEditorStateIdPrefix(serviceVdbName); //$NON-NLS-1$ final
-		ViewEditorState[] editorStates = getViewEditorStates(viewEditorIdPrefix);
+		ViewDefinition[] editorStates = getViewDefinitions(serviceVdbName);
 		 
 		VDBMetaData theVdb = new ServiceVdbGenerator(this).refreshServiceVdb(serviceVdbName, editorStates);
 		return theVdb;

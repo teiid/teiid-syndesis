@@ -18,9 +18,9 @@
 
 package org.komodo.relational.dataservice;
 
-import org.komodo.relational.RelationalObject;
+import org.komodo.relational.Named;
 
-public interface SourceSchema extends RelationalObject {
+public interface SourceSchema extends Named {
 
 	String getDdl();
 

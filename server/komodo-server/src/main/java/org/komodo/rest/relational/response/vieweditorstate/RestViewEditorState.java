@@ -18,12 +18,8 @@
 package org.komodo.rest.relational.response.vieweditorstate;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.komodo.relational.dataservice.StateCommandAggregate;
 import org.komodo.relational.dataservice.ViewDefinition;
-import org.komodo.relational.dataservice.ViewEditorState;
 import org.komodo.rest.AbstractKEntity;
 import org.komodo.spi.KException;
 
@@ -103,21 +99,11 @@ public class RestViewEditorState extends AbstractKEntity {
      */
     public static final String PROJECTED_COLUMNS_LABEL = "projectedColumns";
 
-    /**
-     * Label used for view editor start content
-     */
-    public static final String CONTENT_LABEL = "undoables";
-
     /*
      * the view definition
      */
     private RestViewDefinition viewDefinition;
     
-    /*
-     * The contents of the view editor state
-     */
-    private RestStateCommandAggregate[] commands = new RestStateCommandAggregate[0];
-
     /**
      * Constructor for use when deserializing
      */
@@ -131,23 +117,12 @@ public class RestViewEditorState extends AbstractKEntity {
      * @param viewEditorState the view editor state
      * @throws KException if error occurs
      */
-    public RestViewEditorState(URI baseUri, ViewEditorState viewEditorState) throws KException {
+    public RestViewEditorState(URI baseUri, ViewDefinition viewEditorState) throws KException {
         super(baseUri);
 
         setId(viewEditorState.getName());
         
-        ViewDefinition viewDef = viewEditorState.getViewDefinition();
-        if( viewDef != null ) {
-        	this.viewDefinition = new RestViewDefinition(baseUri, viewDef);
-        }
-
-        List<RestStateCommandAggregate> cmdList = new ArrayList<>();
-        for (StateCommandAggregate cmd : viewEditorState.getCommands()) {
-            RestStateCommandAggregate restCmd = new RestStateCommandAggregate(baseUri, cmd);
-            cmdList.add(restCmd);
-        }
-
-        this.commands = cmdList.toArray(new RestStateCommandAggregate[0]);
+        this.viewDefinition = new RestViewDefinition(baseUri, viewEditorState);
     }
 
     /**
@@ -173,14 +148,4 @@ public class RestViewEditorState extends AbstractKEntity {
         this.viewDefinition = viewDefinition;
     }
 
-    /**
-     * @return the content
-     */
-    public RestStateCommandAggregate[] getCommands() {
-        return commands;
-    }
-
-    public void setCommands(RestStateCommandAggregate[] commands) {
-        this.commands = commands;
-    }
 }

@@ -21,14 +21,8 @@ import java.net.URI;
 
 import javax.ws.rs.core.UriBuilder;
 
-import org.junit.Before;
 import org.komodo.rest.json.JsonConstants;
-import org.komodo.spi.KException;
-import org.komodo.spi.repository.UnitOfWork;
-import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.StringUtils;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 
 /**
  *
@@ -47,9 +41,6 @@ public abstract class AbstractSerializerTest implements JsonConstants {
     protected static final String DATASERVICE_DATA_PATH = "/workspace/dataservices/dataservice1";
     protected static final String SEARCH = "/workspace/search?";
 
-    @Mock
-    protected UnitOfWork transaction;
-
     protected static String q(Object value) {
         return SPEECH_MARK + value + SPEECH_MARK;
     }
@@ -64,19 +55,6 @@ public abstract class AbstractSerializerTest implements JsonConstants {
 
     protected String pnl(Object value) {
         return value + NEW_LINE;
-    }
-
-    public AbstractSerializerTest() {
-        super();
-    }
-
-    @Before
-    public void basicInit() throws KException {
-        transaction = Mockito.mock(UnitOfWork.class);
-        Mockito.when(transaction.getState()).thenReturn(State.NOT_STARTED);
-
-        UnitOfWork uow = Mockito.mock(UnitOfWork.class);
-        Mockito.when(uow.getState()).thenReturn(State.NOT_STARTED);
     }
 
 }

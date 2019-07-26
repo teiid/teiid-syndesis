@@ -28,28 +28,19 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 import org.komodo.relational.dataservice.SqlComposition;
-import org.komodo.relational.dataservice.SqlProjectedColumn;
-import org.komodo.relational.dataservice.StateCommandAggregate;
-import org.komodo.relational.dataservice.ViewDefinition;;
+import org.komodo.relational.dataservice.SqlProjectedColumn;;
 
 /**
  * Represents the configuration of a view editor state
  */
 @Entity
-public class ViewEditorState implements org.komodo.relational.dataservice.ViewEditorState, ViewDefinition {
+public class ViewDefinition implements org.komodo.relational.dataservice.ViewDefinition {
 	
 	public static class State {
-		private List<StateCommandAggregate> commands = new ArrayList<>(1);
 		private List<SqlComposition> sqlCompositions = new ArrayList<>(1);
 		private List<SqlProjectedColumn> projectedColumns = new ArrayList<>(1);
 		private List<String> sourcePaths = new ArrayList<>(1);
 		
-		public List<StateCommandAggregate> getCommands() {
-			return commands;
-		}
-		public void setCommands(List<StateCommandAggregate> commands) {
-			this.commands = commands;
-		}
 		public List<SqlComposition> getSqlCompositions() {
 			return sqlCompositions;
 		}
@@ -85,7 +76,7 @@ public class ViewEditorState implements org.komodo.relational.dataservice.ViewEd
 	@Convert(converter = JpaConverterJson.class)
 	private State state = new State();
 	
-	public ViewEditorState(String name) {
+	public ViewDefinition(String name) {
 		this.name = name;
 	}
 
@@ -98,22 +89,6 @@ public class ViewEditorState implements org.komodo.relational.dataservice.ViewEd
 		return name;
 	}
 	
-	@Override
-	public StateCommandAggregate addCommand() {
-		org.komodo.core.datavirtualization.StateCommandAggregate stateCommandAggregate = new org.komodo.core.datavirtualization.StateCommandAggregate();
-		state.commands.add(stateCommandAggregate);
-		return stateCommandAggregate;
-	}
-	@Override
-	public List<StateCommandAggregate> getCommands() {
-		return state.commands;
-	}
-	
-	@Override
-	public ViewDefinition getViewDefinition() {
-		return this;
-	}
-
 	@Override
 	public SqlComposition addSqlComposition(String compositionName) {
 		org.komodo.core.datavirtualization.SqlComposition sqlComposition = new org.komodo.core.datavirtualization.SqlComposition(compositionName);
@@ -196,10 +171,6 @@ public class ViewEditorState implements org.komodo.relational.dataservice.ViewEd
 	@Override
 	public List<SqlProjectedColumn> getProjectedColumns() {
 		return state.projectedColumns;
-	}
-	
-	public void setCommands(List<StateCommandAggregate> commands) {
-		state.commands = commands;
 	}
 	
 	public void setSqlCompositions(List<SqlComposition> sqlCompositions) {

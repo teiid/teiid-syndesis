@@ -19,12 +19,13 @@ package org.komodo.relational.dataservice;
 
 import java.util.List;
 
+import org.komodo.relational.Named;
 import org.komodo.spi.StringConstants;
 
 /**
  * Represents the configuration of a view definition
  */
-public interface ViewDefinition  extends StringConstants {
+public interface ViewDefinition  extends Named, StringConstants {
 
     /**
      * @param compositionName

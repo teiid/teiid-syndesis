@@ -49,7 +49,7 @@ import org.komodo.openshift.ProtocolType;
 import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.relational.WorkspaceManager;
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.dataservice.ViewEditorState;
+import org.komodo.relational.dataservice.ViewDefinition;
 import org.komodo.rest.KomodoRestException;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
@@ -62,7 +62,6 @@ import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
 import org.komodo.spi.TeiidSqlConstants;
 import org.komodo.spi.repository.UnitOfWork;
-import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -198,7 +197,7 @@ public final class KomodoDataserviceService extends KomodoService
             return commit(uow, mediaTypes, entities);
 
         } catch (final Exception e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+            if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();
             }
 
@@ -268,7 +267,7 @@ public final class KomodoDataserviceService extends KomodoService
             return commit(uow, mediaTypes, restDataservice);
 
         } catch (final Exception e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+            if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();
             }
 
@@ -358,7 +357,7 @@ public final class KomodoDataserviceService extends KomodoService
             KomodoStatusObject kso = doAddDataservice(uriInfo.getBaseUri(), mediaTypes, restDataservice);
             return commit(uow, mediaTypes, kso);
         } catch (final Exception e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+            if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();
             }
 
@@ -455,11 +454,11 @@ public final class KomodoDataserviceService extends KomodoService
 
             // delete any view editor states of that virtualization
             final String viewEditorIdPrefix = KomodoService.getViewEditorStateIdPrefix(vdbName); //$NON-NLS-1$
-            final ViewEditorState[] editorStates = getViewEditorStates(viewEditorIdPrefix);
+            final ViewDefinition[] editorStates = getViewDefinitions(viewEditorIdPrefix);
 
             if (editorStates.length != 0) {
-                for (final ViewEditorState editorState : editorStates) {
-                    removeEditorState(editorState);
+                for (final ViewDefinition editorState : editorStates) {
+                    removeViewDefinition(editorState);
                 }
 
                 kso.addAttribute(vdbName, "Successfully deleted " + editorStates.length + " saved editor states"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -467,7 +466,7 @@ public final class KomodoDataserviceService extends KomodoService
 
             return commit(uow, mediaTypes, kso);
         } catch (final Exception e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+            if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();
             }
 
@@ -532,7 +531,7 @@ public final class KomodoDataserviceService extends KomodoService
             // name is a duplicate
             return Response.ok().entity(RelationalMessages.getString(DATASERVICE_SERVICE_NAME_EXISTS)).build();
         } catch (final Exception e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+            if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();
             }
 
@@ -602,7 +601,7 @@ public final class KomodoDataserviceService extends KomodoService
 
             return commit(uow, mediaTypes, kso);
         } catch (final Exception e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+            if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();
             }
 
@@ -711,7 +710,7 @@ public final class KomodoDataserviceService extends KomodoService
 
             return commit(uow, mediaTypes, kso);
         } catch (final Exception e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+            if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();
             }
 

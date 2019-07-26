@@ -34,7 +34,6 @@ import org.komodo.metadata.runtime.TeiidDataSource;
 import org.komodo.relational.dataservice.SqlComposition;
 import org.komodo.relational.dataservice.SqlProjectedColumn;
 import org.komodo.relational.dataservice.ViewDefinition;
-import org.komodo.relational.dataservice.ViewEditorState;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
 import org.komodo.spi.TeiidSqlConstants;
@@ -121,7 +120,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
      * @throws KException
      * 		if problem occurs
      */
-    public VDBMetaData refreshServiceVdb(String vdbName, ViewEditorState[] editorStates) throws KException {
+    public VDBMetaData refreshServiceVdb(String vdbName, ViewDefinition[] editorStates) throws KException {
         VDBMetaData vdb = new VDBMetaData();
         vdb.setName(vdbName);
         
@@ -138,9 +137,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
         	// Generate new model DDL by appending all view DDLs
         	StringBuilder allViewDdl = new StringBuilder();
 
-            for ( final ViewEditorState editorState : editorStates ) {
-            	ViewDefinition viewDef = editorState.getViewDefinition();
-            	
+            for ( final ViewDefinition viewDef : editorStates ) {
             	// If the ViewDefinition is complete, generate view DDL from it and append
             	if( viewDef.isComplete() ) {
             		TableInfo[] tableInfos = getSourceTableInfos(viewDef);

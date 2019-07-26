@@ -17,14 +17,14 @@
  */
 package org.komodo.relational.dataservice;
 
-import org.komodo.relational.RelationalObject;
+import org.komodo.relational.Named;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
 
 /**
  * Interface for SqlComposition
  */
-public interface SqlComposition  extends RelationalObject, StringConstants {
+public interface SqlComposition  extends Named, StringConstants {
 
     /**
      * @param branch
