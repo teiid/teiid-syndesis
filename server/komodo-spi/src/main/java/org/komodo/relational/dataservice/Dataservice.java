@@ -17,27 +17,14 @@
  */
 package org.komodo.relational.dataservice;
 
-import java.util.Calendar;
-
 import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
-import org.komodo.spi.repository.KomodoType;
 
 /**
  * A model of a dataservice instance
  */
 public interface Dataservice extends RelationalObject {
-
-    /**
-     * The type identifier.
-     */
-    int TYPE_ID = Dataservice.class.hashCode();
-
-    /**
-     * Identifier of this object
-     */
-    KomodoType IDENTIFIER = KomodoType.DATASERVICE;
 
     /**
      * @return the service VDB name (may be <code>null</code> if not defined)
@@ -53,21 +40,7 @@ public interface Dataservice extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    String getDescription( ) throws KException;
-
-    /**
-     * @return the last time the manifest was modified (can be <code>null</code>)
-     * @throws KException
-     *         if an error occurs
-     */
-    Calendar getLastModified( ) throws KException;
-
-    /**
-     * @return the name of the user who last modified the data service (can be <code>null</code> or empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    String getModifiedBy( ) throws KException;
+    String getDescription( );
 
     /**
      * @param newDescription
@@ -76,24 +49,6 @@ public interface Dataservice extends RelationalObject {
      *         if an error occurs
      */
     void setDescription( 
-                         final String newDescription ) throws KException;
-
-    /**
-     * @param newLastModified
-     *        the new value of the <code>last modified date</code> property
-     * @throws KException
-     *         if an error occurs
-     */
-    void setLastModified( 
-                          final Calendar newLastModified ) throws KException;
-
-    /**
-     * @param newModifiedBy
-     *        the new value of the <code>modified by</code> property
-     * @throws KException
-     *         if an error occurs
-     */
-    void setModifiedBy( 
-                        final String newModifiedBy ) throws KException;
+                         final String newDescription );
     
 }

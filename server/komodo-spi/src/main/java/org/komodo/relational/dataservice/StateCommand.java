@@ -19,37 +19,19 @@ package org.komodo.relational.dataservice;
 
 import java.util.Map;
 
-import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KomodoType;
 
 /**
  * Represents the configuration of a view editor state command
  */
-public interface StateCommand extends RelationalObject {
-
-    /**
-     * The type identifier.
-     */
-    int TYPE_ID = StateCommand.class.hashCode();
-
-    /**
-     * Identifier of this object
-     */
-    KomodoType IDENTIFIER = KomodoType.STATE_COMMAND;
-
-    /**
-     * An empty array of view editor state commands.
-     */
-    StateCommand[] NO_STATE_COMMANDS = new StateCommand[0];
-
+public interface StateCommand {
 
     /**
      * @return the id of the command
      * @throws KException
      *          if an error occurs
      */
-    String getId() throws KException;
+    String getId();
 
     /**
      * @param id the id of the command
@@ -63,7 +45,7 @@ public interface StateCommand extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    Map<String, String> getArguments() throws KException;
+    Map<String, String> getArguments();
 
     /**
      * @param transaction
@@ -73,5 +55,5 @@ public interface StateCommand extends RelationalObject {
      * @throws KException
      *         if an error occurs
      */
-    void setArguments( final Map<String, String> arguments) throws KException;
+    void setArguments( final Map<String, String> arguments);
 }

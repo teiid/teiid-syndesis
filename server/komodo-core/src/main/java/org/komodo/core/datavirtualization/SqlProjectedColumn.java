@@ -15,24 +15,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.utils;
+package org.komodo.core.datavirtualization;
 
-import java.io.File;
-import java.io.InputStream;
-
-import org.junit.Test;
-
-public final class FileUtilsTest {
-
-    @Test
-    public void shouldNotFailWhenDestinationDirectoryNameIsLess3Chars() throws Exception {
-        final File parent = new File( System.getProperty( "java.io.tmpdir" ) );
-        final File destination = new File( parent, "a" );
-        destination.mkdir();
-        destination.deleteOnExit();
-
-        final InputStream zipStream = FileUtilsTest.class.getResourceAsStream("/JoinServiceSameTableNames.zip");
-        FileUtils.zipExtract( zipStream, destination );
-    }
+public class SqlProjectedColumn implements org.komodo.relational.dataservice.SqlProjectedColumn {
+	
+	private String name;
+	private String type;
+	private boolean selected;
+	
+	public SqlProjectedColumn(String name) {
+		this.name = name;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getType() {
+		return type;
+	}
+	public void setType(String type) {
+		this.type = type;
+	}
+	public boolean isSelected() {
+		return selected;
+	}
+	public void setSelected(boolean selected) {
+		this.selected = selected;
+	}
 
 }

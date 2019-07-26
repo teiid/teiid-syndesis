@@ -17,181 +17,101 @@
  */
 package org.komodo.relational.dataservice;
 
-import org.komodo.relational.RelationalObject;
-import org.komodo.spi.KException;
+import java.util.List;
+
 import org.komodo.spi.StringConstants;
-import org.komodo.spi.repository.KomodoType;
 
 /**
  * Represents the configuration of a view definition
  */
-public interface ViewDefinition  extends RelationalObject, StringConstants {
+public interface ViewDefinition  extends StringConstants {
 
-    /**
-     * The type identifier.
-     */
-    int TYPE_ID = ViewDefinition.class.hashCode();
-
-    /**
-     * Identifier of this object
-     */
-    KomodoType IDENTIFIER = KomodoType.VIEW_DEFINITION;
-
-
-    
     /**
      * @param compositionName
      *        the name of the sql composition being added (cannot be empty)
      * @return the new sql composition (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
      */
-    SqlComposition addSqlComposition(  String compositionName ) throws KException;
+    SqlComposition addSqlComposition(  String compositionName );
     
     /**
-     * @param namePatterns
-     *        optional name patterns (can be <code>null</code> or empty but cannot have <code>null</code> or empty elements)
      * @return the sql compositions (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
      */
-    SqlComposition[] getSqlCompositions(  final String... namePatterns ) throws KException;
+    List<SqlComposition> getSqlCompositions( );
 
     /**
-     * @param sqlCompositionToRemove
-     *        the name of the sql composition being removed (cannot be empty)       
-     * @throws KException
-     *         if an error occurs
-     */
-    void removeSqlComposition( 
-                         final String sqlCompositionToRemove ) throws KException;
-    
-    
-    /**
      * @return the view name
-     * @throws KException
-     *         if an error occurs   
      */
-    String getViewName() throws KException;
+    String getViewName();
     
     /**
      * @param name the view name
-     * @throws KException
-     *         if an error occurs
      */
-    void setViewName(String name) throws KException;
+    void setViewName(String name);
     
     /**
      * @return the description
-     * @throws KException
-     *         if an error occurs
      */
-    String getDescription() throws KException;
+    String getDescription();
     
     /**
      * @param description value of description
-     * @throws KException
-     *         if an error occurs         
      */
-    void setDescription( String description) throws KException;
+    void setDescription( String description);
     
     /**
      * @return the view DDL
-     * @throws KException
-     *         if an error occurs
      */
-    String getDdl() throws KException;
+    String getDdl();
     
     /**
      * @param ddl value of view ddl
-     * @throws KException
-     *         if an error occurs         
      */
-    void setDdl( String ddl) throws KException;
+    void setDdl( String ddl);
 
     /**
      * @param complete value for isComplete
-     * @throws KException
-     *         if an error occurs         
      */
-    void setComplete( boolean complete) throws KException;
+    void setComplete( boolean complete);
     
     /**
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not {@link State#NOT_STARTED})
      * @return boolean value of isComplete
-     * @throws KException
-     *         if an error occurs         
      */
-    boolean isComplete() throws KException;
+    boolean isComplete();
 
     /**
      * @param userDefined value for isUserDefined
-     * @throws KException
-     *         if an error occurs         
      */
-    void setUserDefined( boolean userDefined) throws KException;
+    void setUserDefined( boolean userDefined);
     
     /**
      * @return boolean value of isUserDefined
-     * @throws KException
-     *         if an error occurs         
      */
-    boolean isUserDefined() throws KException;
+    boolean isUserDefined();
     
     /**
-     * @param namePatterns
-     *        optional name patterns (can be <code>null</code> or empty but cannot have <code>null</code> or empty elements)
      * @return the string array of source paths
-     * @throws KException
-     *         if an error occurs     
      */
-    String[] getSourcePaths(  final String... namePatterns ) throws KException;
-    
-    /**
-     * @param sourcePathToRemove
-     *        the source path being removed (cannot be empty)       
-     * @return the source paths
-     * @throws KException
-     *         if an error occurs
-     */
-    String[] removeSourcePath( 
-                                final String sourcePathToRemove ) throws KException;
+    List<String> getSourcePaths( );
     
     /**
      * @param sourcePath 
      *        the name of the source path (cannot be empty)
      * @return the source paths
-     * @throws KException
-     *         if an error occurs
      */
-    String[] addSourcePath(  String sourcePath ) throws KException;
+    void addSourcePath(  String sourcePath );
 
     /**
      * @param columnName
      *        the name of the projected column being added (cannot be empty)
      * @return the new projected column (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
      */
-    SqlProjectedColumn addProjectedColumn(  String columnName ) throws KException;
+    SqlProjectedColumn addProjectedColumn(  String columnName );
     
     /**
-     * @param projectedColumnToRemove
-     *        the name of the projected column being removed (cannot be empty)       
-     * @throws KException
-     *         if an error occurs
-     */
-    void removeProjectedColumn( 
-                                final String projectedColumnToRemove ) throws KException;
-
-    /**
-     * @param namePatterns
-     *        optional name patterns (can be <code>null</code> or empty but cannot have <code>null</code> or empty elements)
      * @return the sql projected columns (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
      */
-    SqlProjectedColumn[] getProjectedColumns(  final String... namePatterns ) throws KException;
+    List<SqlProjectedColumn> getProjectedColumns( );
 
 }

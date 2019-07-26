@@ -17,69 +17,43 @@
  */
 package org.komodo.relational.dataservice;
 
-import org.komodo.relational.RelationalObject;
-import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
-import org.komodo.spi.repository.KomodoType;
 
 /**
  * Interface for SqlProjectedColumn
  */
-public interface SqlProjectedColumn  extends RelationalObject, StringConstants {
+public interface SqlProjectedColumn  extends StringConstants {
 
-    /**
-     * The type identifier.
-     */
-    int TYPE_ID = SqlProjectedColumn.class.hashCode();
-
-    /**
-     * Identifier of this object
-     */
-    KomodoType IDENTIFIER = KomodoType.SQL_PROJECTED_COLUMN;
-    
     /**
      * @param name
      *        the new value for the <code>name</code> property
-     * @throws KException
-     *         if an error occurs
      */
-    void setName(String name) throws KException;
+    void setName(String name);
     
     /**
      * @return the value of the <code>name</code> property
-     * @throws KException
-     *         if an error occurs
      */
-    @Override
-    String getName() throws KException;
+    String getName();
     
     /**
      * @param type
      *        the new value for the <code>type</code> property
-     * @throws KException
-     *         if an error occurs
      */
-    void setType(String type) throws KException;
+    void setType(String type);
     
     /**
      * @return the value of the <code>type</code> property
-     * @throws KException
-     *         if an error occurs
      */
-    String getType() throws KException;
+    String getType();
     
     /**
      * @param selected value for selected
-     * @throws KException
-     *         if an error occurs         
      */
-    void setSelected( boolean selected) throws KException;
+    void setSelected( boolean selected);
     
     /**
      * @return boolean value of selected
-     * @throws KException
-     *         if an error occurs         
      */
-    boolean isSelected() throws KException;
+    boolean isSelected();
     
 }

@@ -108,7 +108,7 @@ public final class RestDataservice extends RestBasicEntity {
         super(baseUri);
         
         setId(dataService.getName());
-        setkType(Dataservice.IDENTIFIER);
+        setkType(KomodoType.DATASERVICE);
 
         setDescription(dataService.getDescription());
 
@@ -267,8 +267,7 @@ public final class RestDataservice extends RestBasicEntity {
     public static String[] getViewDefnNames(WorkspaceManager workspaceManager, String vdbName) throws KException {
         ViewEditorState[] editorStates = null;
     	String svcVdbName = vdbName.toLowerCase();
-    	String pattern = svcVdbName + "*";
-        editorStates = workspaceManager.getViewEditorStates(pattern);
+        editorStates = workspaceManager.getViewEditorStates(svcVdbName);
 
         List<String> viewNames = new ArrayList<String>();
         for (ViewEditorState editorState: editorStates) {

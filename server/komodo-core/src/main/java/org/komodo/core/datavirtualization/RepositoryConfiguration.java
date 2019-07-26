@@ -15,24 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.utils;
 
-import java.io.File;
-import java.io.InputStream;
+package org.komodo.core.datavirtualization;
 
-import org.junit.Test;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-public final class FileUtilsTest {
-
-    @Test
-    public void shouldNotFailWhenDestinationDirectoryNameIsLess3Chars() throws Exception {
-        final File parent = new File( System.getProperty( "java.io.tmpdir" ) );
-        final File destination = new File( parent, "a" );
-        destination.mkdir();
-        destination.deleteOnExit();
-
-        final InputStream zipStream = FileUtilsTest.class.getResourceAsStream("/JoinServiceSameTableNames.zip");
-        FileUtils.zipExtract( zipStream, destination );
-    }
+@SpringBootApplication
+public class RepositoryConfiguration { 
 
 }

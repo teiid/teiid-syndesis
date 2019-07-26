@@ -33,6 +33,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.komodo.metadata.MetadataInstance;
@@ -212,6 +213,12 @@ public final class KomodoUtilService extends KomodoService {
                 dataType = "string",
                 paramType = "query"),
         @ApiImplicitParam(
+                name = QueryParamKeys.VIRTUALIZATION,
+                value = "The name of the virtualization",
+                required = true,
+                dataType = "string",
+                paramType = "query"),
+        @ApiImplicitParam(
                 name = QueryParamKeys.SIZE,
                 value = "The number of objects to return. If not present, all objects are returned",
                 required = false,
@@ -241,12 +248,17 @@ public final class KomodoUtilService extends KomodoService {
         try {
 
             final String searchPattern = uriInfo.getQueryParameters().getFirst( QueryParamKeys.PATTERN );
-
+            if (!StringUtils.isBlank(searchPattern)) {
+            	return createErrorResponse(Status.NOT_IMPLEMENTED, mediaTypes, "pattern is not implemented, use ");
+            }
+            
+            final String virtualization = uriInfo.getQueryParameters().getFirst( QueryParamKeys.VIRTUALIZATION );
+            
             // find view editor states
             final String txId = "getViewEditorStates"; //$NON-NLS-1$ //$NON-NLS-2$
             uow = createTransaction(principal, txId, true );
 
-            final ViewEditorState[] viewEditorStates = getViewEditorStates(searchPattern);
+            final ViewEditorState[] viewEditorStates = getViewEditorStates(virtualization);
             LOGGER.debug( "getViewEditorStates:found '{0}' ViewEditorStates", viewEditorStates.length ); //$NON-NLS-1$
 
             int start = 0;
@@ -630,7 +642,7 @@ public final class KomodoUtilService extends KomodoService {
         }
 
         // Set ViewDefinition of the ViewEditorState
-        ViewDefinition viewDefn = viewEditorState.setViewDefinition();
+        ViewDefinition viewDefn = viewEditorState.getViewDefinition();
         viewDefn.setViewName(restViewDefn.getViewName());
         viewDefn.setDdl(restViewDefn.getDdl());
         // If user-defined, user may have changed description.  Reset object description from DDL

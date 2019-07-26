@@ -15,24 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.utils;
 
-import java.io.File;
-import java.io.InputStream;
+package org.komodo.relational.dataservice;
 
-import org.junit.Test;
+import org.komodo.relational.RelationalObject;
 
-public final class FileUtilsTest {
+public interface SourceSchema extends RelationalObject {
 
-    @Test
-    public void shouldNotFailWhenDestinationDirectoryNameIsLess3Chars() throws Exception {
-        final File parent = new File( System.getProperty( "java.io.tmpdir" ) );
-        final File destination = new File( parent, "a" );
-        destination.mkdir();
-        destination.deleteOnExit();
+	String getDdl();
 
-        final InputStream zipStream = FileUtilsTest.class.getResourceAsStream("/JoinServiceSameTableNames.zip");
-        FileUtils.zipExtract( zipStream, destination );
-    }
+	void setDdl(String ddl);
+
+	String getId();
+
+	void setId(String id);
 
 }

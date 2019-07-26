@@ -20,7 +20,6 @@ package org.komodo.relational.dataservice;
 import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
-import org.komodo.spi.repository.KomodoType;
 
 /**
  * Interface for SqlComposition
@@ -28,29 +27,19 @@ import org.komodo.spi.repository.KomodoType;
 public interface SqlComposition  extends RelationalObject, StringConstants {
 
     /**
-     * The type identifier.
-     */
-    int TYPE_ID = SqlComposition.class.hashCode();
-
-    /**
-     * Identifier of this object
-     */
-    KomodoType IDENTIFIER = KomodoType.SQL_COMPOSITION;
-    
-    /**
      * @param branch
      *        the new value for the <code>description</code> property
      * @throws KException
      *         if an error occurs
      */
-    void setDescription(String description) throws KException;
+    void setDescription(String description);
     
     /**
      * @return the value of the <code>description</code> property
      * @throws KException
      *         if an error occurs
      */
-    String getDescription() throws KException;
+    String getDescription();
     
     /**
      * @param branch
@@ -58,14 +47,14 @@ public interface SqlComposition  extends RelationalObject, StringConstants {
      * @throws KException
      *         if an error occurs
      */
-    void setLeftSourcePath(String leftSource) throws KException;
+    void setLeftSourcePath(String leftSource);
     
     /**
      * @return the value of the <code>leftSourcePath</code> property
      * @throws KException
      *         if an error occurs
      */
-    String getLeftSourcePath() throws KException;
+    String getLeftSourcePath();
     
     /**
      * @param branch
@@ -73,14 +62,14 @@ public interface SqlComposition  extends RelationalObject, StringConstants {
      * @throws KException
      *         if an error occurs
      */
-    void setRightSourcePath(String rightSource) throws KException;
+    void setRightSourcePath(String rightSource);
     
     /**
      * @return the value of the <code>rightSourcePath</code> property
      * @throws KException
      *         if an error occurs
      */
-    String getRightSourcePath() throws KException;
+    String getRightSourcePath();
     
     /**
      * @param branch
@@ -88,7 +77,7 @@ public interface SqlComposition  extends RelationalObject, StringConstants {
      * @throws KException
      *         if an error occurs
      */
-    void setLeftCriteriaColumn(String leftCriteriaColumn) throws KException;
+    void setLeftCriteriaColumn(String leftCriteriaColumn);
     
     /**
      * @param transaction
@@ -97,7 +86,7 @@ public interface SqlComposition  extends RelationalObject, StringConstants {
      * @throws KException
      *         if an error occurs
      */
-    String getLeftCriteriaColumn() throws KException;
+    String getLeftCriteriaColumn();
     
     /**
      * @param transaction
@@ -107,7 +96,7 @@ public interface SqlComposition  extends RelationalObject, StringConstants {
      * @throws KException
      *         if an error occurs
      */
-    void setRightCriteriaColumn(String rightCriteriaColumn) throws KException;
+    void setRightCriteriaColumn(String rightCriteriaColumn);
     
     /**
      * @param transaction
@@ -116,7 +105,7 @@ public interface SqlComposition  extends RelationalObject, StringConstants {
      * @throws KException
      *         if an error occurs
      */
-    String getRightCriteriaColumn() throws KException;
+    String getRightCriteriaColumn();
     
     /**
      * @param transaction
@@ -126,7 +115,7 @@ public interface SqlComposition  extends RelationalObject, StringConstants {
      * @throws KException
      *         if an error occurs
      */
-    void setType(String type) throws KException;
+    void setType(String type);
     
     /**
      * @param transaction
@@ -135,7 +124,7 @@ public interface SqlComposition  extends RelationalObject, StringConstants {
      * @throws KException
      *         if an error occurs
      */
-    String getType() throws KException;
+    String getType();
     
     /**
      * @param transaction
@@ -145,7 +134,7 @@ public interface SqlComposition  extends RelationalObject, StringConstants {
      * @throws KException
      *         if an error occurs
      */
-    void setOperator(String operator) throws KException;
+    void setOperator(String operator);
     
     /**
      * @param transaction
@@ -154,7 +143,7 @@ public interface SqlComposition  extends RelationalObject, StringConstants {
      * @throws KException
      *         if an error occurs
      */
-    String getOperator() throws KException;
+    String getOperator();
     
     
 }

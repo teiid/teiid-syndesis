@@ -58,29 +58,11 @@ public enum PersistenceType {
         return connUrl;
     }
 
-    /**
-     * @return the connection url with any know system properties replaced with their values
-     */
-    public String getEvaluatedConnUrl() {
-        String url = ApplicationProperties.substitute(connUrl, SystemConstants.ENGINE_DATA_DIR);
-        url = ApplicationProperties.substitute(connUrl, SystemConstants.REPOSITORY_PERSISTENCE_HOST);
-        return url;
-    }
-
     public String getBinaryStoreUrl() {
     	if (binaryUrl == null) {
     		return getConnUrl();
     	}
         return binaryUrl;
-    }
-
-    /**
-     * @return the binary store url with any know system properties replaced with their values
-     */
-    public String getEvaluatedBinaryStoreUrl() {
-        String url = ApplicationProperties.substitute(binaryUrl, SystemConstants.ENGINE_DATA_DIR);
-        url = ApplicationProperties.substitute(binaryUrl, SystemConstants.REPOSITORY_PERSISTENCE_HOST);
-        return url;
     }
 
     public String getDriver() {

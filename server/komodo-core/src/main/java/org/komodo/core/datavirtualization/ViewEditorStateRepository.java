@@ -15,24 +15,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.utils;
 
-import java.io.File;
-import java.io.InputStream;
+package org.komodo.core.datavirtualization;
 
-import org.junit.Test;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public final class FileUtilsTest {
+@Repository
+public interface ViewEditorStateRepository extends JpaRepository<ViewEditorState, String> {
 
-    @Test
-    public void shouldNotFailWhenDestinationDirectoryNameIsLess3Chars() throws Exception {
-        final File parent = new File( System.getProperty( "java.io.tmpdir" ) );
-        final File destination = new File( parent, "a" );
-        destination.mkdir();
-        destination.deleteOnExit();
+	public ViewEditorState findByName(String name);
 
-        final InputStream zipStream = FileUtilsTest.class.getResourceAsStream("/JoinServiceSameTableNames.zip");
-        FileUtils.zipExtract( zipStream, destination );
-    }
-
+	public long deleteByName(String name);
+	
 }

@@ -17,10 +17,8 @@
  */
 package org.komodo.relational;
 
-import org.komodo.spi.KException;
-
 public interface RelationalObject {
 	
-	String getName() throws KException;
+	String getName();
 	
 }

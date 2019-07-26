@@ -15,24 +15,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.utils;
+package org.komodo.core.datavirtualization;
 
-import java.io.File;
-import java.io.InputStream;
+import java.util.Map;
 
-import org.junit.Test;
+public class StateCommand implements org.komodo.relational.dataservice.StateCommand {
 
-public final class FileUtilsTest {
-
-    @Test
-    public void shouldNotFailWhenDestinationDirectoryNameIsLess3Chars() throws Exception {
-        final File parent = new File( System.getProperty( "java.io.tmpdir" ) );
-        final File destination = new File( parent, "a" );
-        destination.mkdir();
-        destination.deleteOnExit();
-
-        final InputStream zipStream = FileUtilsTest.class.getResourceAsStream("/JoinServiceSameTableNames.zip");
-        FileUtils.zipExtract( zipStream, destination );
-    }
+	private String id;
+	private Map<String, String> arguments;
+	
+	public StateCommand() {
+	}
+	
+	public StateCommand(String id, Map<String, String> arguments) {
+		this.id = id;
+		this.arguments = arguments;
+	}
+	
+	public String getId() {
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
+	}
+	public Map<String, String> getArguments() {
+		return arguments;
+	}
+	public void setArguments(Map<String, String> arguments) {
+		this.arguments = arguments;
+	}
 
 }

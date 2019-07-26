@@ -1246,7 +1246,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 	VDBMetaData generateServiceVDB(Dataservice dataservice) throws KException, Exception {
 		String serviceVdbName = dataservice.getServiceVdbName();
 		final String viewEditorIdPrefix =
-		KomodoService.getViewEditorStateIdPrefix(serviceVdbName) + "*"; //$NON-NLS-1$ final
+		KomodoService.getViewEditorStateIdPrefix(serviceVdbName); //$NON-NLS-1$ final
 		ViewEditorState[] editorStates = getViewEditorStates(viewEditorIdPrefix);
 		 
 		VDBMetaData theVdb = new ServiceVdbGenerator(this).refreshServiceVdb(serviceVdbName, editorStates);

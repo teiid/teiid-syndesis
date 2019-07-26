@@ -40,6 +40,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.komodo.openshift.BuildStatus;
@@ -127,9 +128,13 @@ public final class KomodoDataserviceService extends KomodoService
         try {
             final String searchPattern = uriInfo.getQueryParameters().getFirst(QueryParamKeys.PATTERN);
 
+            if (!StringUtils.isBlank(searchPattern)) {
+            	return createErrorResponse(Status.NOT_IMPLEMENTED, mediaTypes, "pattern is not implemented");
+            }
+            
             // find Data services
             uow = createTransaction(principal, "getDataservices", true); //$NON-NLS-1$
-            Dataservice[] dataServices = getWorkspaceManager().findDataservices(searchPattern);
+            Iterable<? extends Dataservice> dataServices = getWorkspaceManager().findDataservices();
 
             int start = 0;
 
@@ -443,13 +448,13 @@ public final class KomodoDataserviceService extends KomodoService
             String vdbName = dataservice.getServiceVdbName();
 
             // Delete the Dataservice
-            wkspMgr.deleteDataservice(dataservice);
+            wkspMgr.deleteDataservice(dataserviceName);
 
             KomodoStatusObject kso = new KomodoStatusObject("Delete Status"); //$NON-NLS-1$
             kso.addAttribute(dataserviceName, "Successfully deleted"); //$NON-NLS-1$
 
             // delete any view editor states of that virtualization
-            final String viewEditorIdPrefix = KomodoService.getViewEditorStateIdPrefix(vdbName) + "*"; //$NON-NLS-1$
+            final String viewEditorIdPrefix = KomodoService.getViewEditorStateIdPrefix(vdbName); //$NON-NLS-1$
             final ViewEditorState[] editorStates = getViewEditorStates(viewEditorIdPrefix);
 
             if (editorStates.length != 0) {

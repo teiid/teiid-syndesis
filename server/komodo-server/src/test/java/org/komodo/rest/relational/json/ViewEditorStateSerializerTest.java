@@ -22,6 +22,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -234,25 +235,22 @@ public class ViewEditorStateSerializerTest extends AbstractSerializerTest {
         when(redoCommand.getArguments()).thenReturn(redoArgs);
 
         StateCommandAggregate command = mock(StateCommandAggregate.class);
-        when(command.getName()).thenReturn("INDEX_0");
         when(command.getUndo()).thenReturn(undoCommand);
         when(command.getRedo()).thenReturn(redoCommand);
 
-        StateCommandAggregate[] commands = { command };
         ViewEditorState state = mock(ViewEditorState.class);
         when(state.getName()).thenReturn(viewName);
-        when(state.getCommands()).thenReturn(commands);
+        when(state.getCommands()).thenReturn(Arrays.asList(command));
         
         // Add view definition
         
         String[] sourceTablePaths = { sourceTablePath1, sourceTablePath2, sourceTablePath3, sourceTablePath4 };
         ViewDefinition viewDef = mock(ViewDefinition.class);
-        when(viewDef.getName()).thenReturn(RestViewEditorState.VIEW_DEFINITION_LABEL);
         when(viewDef.getViewName()).thenReturn(viewDefinitionName);
         when(viewDef.getDescription()).thenReturn(description);
         when(viewDef.isComplete()).thenReturn(isComplete);
         when(viewDef.isUserDefined()).thenReturn(isUserDefined);
-        when(viewDef.getSourcePaths()).thenReturn(sourceTablePaths);
+        when(viewDef.getSourcePaths()).thenReturn(Arrays.asList(sourceTablePaths));
         
         // Mocks for Compositions
         SqlComposition sqlComp1 = mock(SqlComposition.class);
@@ -276,7 +274,7 @@ public class ViewEditorStateSerializerTest extends AbstractSerializerTest {
         when(sqlComp2.getOperator()).thenReturn(comp2Operator);
         
         SqlComposition[] sqlComps = { sqlComp1, sqlComp2 };
-        when(viewDef.getSqlCompositions()).thenReturn(sqlComps);
+        when(viewDef.getSqlCompositions()).thenReturn(Arrays.asList(sqlComps));
 
         // Mocks for projected columns
         SqlProjectedColumn sqlCol1 = mock(SqlProjectedColumn.class);
@@ -290,7 +288,7 @@ public class ViewEditorStateSerializerTest extends AbstractSerializerTest {
         when(sqlCol2.isSelected()).thenReturn(column2Selected);
         
         SqlProjectedColumn[] sqlCols = { sqlCol1, sqlCol2 };
-        when(viewDef.getProjectedColumns()).thenReturn(sqlCols);
+        when(viewDef.getProjectedColumns()).thenReturn(Arrays.asList(sqlCols));
 
         when(state.getViewDefinition()).thenReturn(viewDef);
 

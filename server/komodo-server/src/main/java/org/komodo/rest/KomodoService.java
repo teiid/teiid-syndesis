@@ -93,10 +93,7 @@ public abstract class KomodoService implements V1Constants {
          */
         String START = "start"; //$NON-NLS-1$
 
-        /**
-         * The Komodo Type required.
-         */
-        String KTYPE = "ktype"; //$NON-NLS-1$
+		String VIRTUALIZATION = "virtualization";
     }
 
     private class ErrorResponse {
@@ -239,12 +236,12 @@ public abstract class KomodoService implements V1Constants {
 
      /**
      *
-     * @param searchPattern the optional search pattern
+     * @param namePrefix
      * @return the view editor states (never <code>null</code> but can be empty)
      * @throws Exception if an error occurs
      */
-    protected ViewEditorState[] getViewEditorStates(final String searchPattern ) throws Exception {
-    	return getWorkspaceManager().getViewEditorStates( searchPattern );
+    protected ViewEditorState[] getViewEditorStates(final String namePrefix ) throws Exception {
+    	return getWorkspaceManager().getViewEditorStates( namePrefix );
     }
 
     protected Object createErrorResponseEntity(List<MediaType> acceptableMediaTypes, String errorMessage) {

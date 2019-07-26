@@ -19,37 +19,19 @@ package org.komodo.relational.dataservice;
 
 import java.util.Map;
 
-import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;
-import org.komodo.spi.repository.KomodoType;
 
 /**
  * Represents the configuration of a view editor state command
  */
-public interface StateCommandAggregate extends RelationalObject {
-
-    /**
-     * The type identifier.
-     */
-    int TYPE_ID = StateCommandAggregate.class.hashCode();
-
-    /**
-     * Identifier of this object
-     */
-    KomodoType IDENTIFIER = KomodoType.STATE_COMMAND_AGGREGATE;
-
-    /**
-     * An empty array of view editor state commands.
-     */
-    StateCommandAggregate[] NO_STATE_COMMAND_AGGREGATES = new StateCommandAggregate[0];
-
+public interface StateCommandAggregate {
 
     /**
      * @return the undo command
      * @throws KException
      *          if an error occurs
      */
-    StateCommand getUndo() throws KException;
+    StateCommand getUndo();
 
     /**
      * @param transaction
@@ -67,7 +49,7 @@ public interface StateCommandAggregate extends RelationalObject {
      * @throws KException
      *          if an error occurs
      */
-    StateCommand getRedo() throws KException;
+    StateCommand getRedo();
 
     /**
      * @param commandId the id of the command

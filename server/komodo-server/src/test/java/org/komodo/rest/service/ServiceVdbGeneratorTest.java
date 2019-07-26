@@ -24,6 +24,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,14 +34,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.komodo.metadata.internal.TeiidDataSourceImpl;
 import org.komodo.metadata.runtime.TeiidDataSource;
-import org.komodo.relational.RelationalModelTest;
+import org.komodo.relational.dataservice.SqlComposition;
+import org.komodo.relational.dataservice.SqlProjectedColumn;
+import org.komodo.relational.dataservice.ViewDefinition;
 import org.komodo.relational.dataservice.ViewEditorState;
-import org.komodo.relational.profile.internal.SqlCompositionImpl;
-import org.komodo.relational.profile.internal.SqlProjectedColumnImpl;
-import org.komodo.relational.profile.internal.ViewDefinitionImpl;
-import org.komodo.relational.profile.internal.ViewEditorStateImpl;
 import org.komodo.rest.service.ServiceVdbGenerator.SchemaFinder;
 import org.komodo.spi.KException;
+import org.komodo.spi.StringConstants;
 import org.komodo.utils.StringUtils;
 import org.teiid.adminapi.impl.ModelMetaData;
 import org.teiid.adminapi.impl.VDBMetaData;
@@ -50,7 +50,7 @@ import org.teiid.query.metadata.SystemMetadata;
 import org.teiid.query.parser.QueryParser;
 
 @SuppressWarnings({ "javadoc", "nls" })
-public class ServiceVdbGeneratorTest extends RelationalModelTest {
+public class ServiceVdbGeneratorTest {
 	
     private static String viewDefinitionName = "orderInfoView";
     private static String description = "test view description text";
@@ -167,8 +167,6 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     public void init() throws Exception {
     	addSourceInfo(DS_NAME, DS_JNDI_NAME, pgconnection1schemamodelDDL, MODEL_NAME);
     	addSourceInfo(DS_NAME_2, DS_JNDI_NAME2, pgconnection2schemamodelDDL, MODEL_NAME_2);
-		
-        commit();
     }
 
 	private void addSourceInfo(String connectionName, String jndiName, String ddl, String modelName) {
@@ -188,14 +186,13 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
         String[] sourceTablePaths = { sourceTablePath1, secondSourceTablePath };
         boolean twoTables = secondSourceTablePath != null && StringUtils.areDifferent(sourceTablePath1, secondSourceTablePath);
         
-        ViewDefinitionImpl viewDef = mock(ViewDefinitionImpl.class);
-        when(viewDef.getName()).thenReturn("vdbDefinition");
+        ViewDefinition viewDef = mock(ViewDefinition.class);
         when(viewDef.getViewName()).thenReturn(viewDefinitionName);
         when(viewDef.getDescription()).thenReturn(description);
         when(viewDef.isComplete()).thenReturn(isComplete);
-        when(viewDef.getSourcePaths()).thenReturn(sourceTablePaths);
+        when(viewDef.getSourcePaths()).thenReturn(Arrays.asList(sourceTablePaths));
         
-        SqlCompositionImpl sqlComp1 = mock(SqlCompositionImpl.class);
+        SqlComposition sqlComp1 = mock(SqlComposition.class);
         when(sqlComp1.getName()).thenReturn(comp1Name);
         when(sqlComp1.getDescription()).thenReturn(comp1Desc);
         when(sqlComp1.getLeftSourcePath()).thenReturn(comp1LeftSource);
@@ -205,35 +202,35 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
         when(sqlComp1.getType()).thenReturn(joinType);
         when(sqlComp1.getOperator()).thenReturn(comp1Operator);
         
-        SqlCompositionImpl[] sqlComps = new SqlCompositionImpl[1];
+        SqlComposition[] sqlComps = new SqlComposition[1];
         sqlComps[0] = sqlComp1;
-        when(viewDef.getSqlCompositions()).thenReturn(sqlComps);
+        when(viewDef.getSqlCompositions()).thenReturn(Arrays.asList(sqlComps));
         
         if( useAll ) {
-        	SqlProjectedColumnImpl projCol = mock(SqlProjectedColumnImpl.class);
+        	SqlProjectedColumn projCol = mock(SqlProjectedColumn.class);
 	        when(projCol.getName()).thenReturn("ALL");
 	        when(projCol.getType()).thenReturn("ALL");
 	        when(projCol.isSelected()).thenReturn(true);
 	        
-	        SqlProjectedColumnImpl[] projCols = new SqlProjectedColumnImpl[1];
+	        SqlProjectedColumn[] projCols = new SqlProjectedColumn[1];
 	        projCols[0] = projCol;
-	        when(viewDef.getProjectedColumns()).thenReturn(projCols);
+	        when(viewDef.getProjectedColumns()).thenReturn(Arrays.asList(projCols));
         } else {
-        	SqlProjectedColumnImpl[] projCols = new SqlProjectedColumnImpl[3];
+        	SqlProjectedColumn[] projCols = new SqlProjectedColumn[3];
         	
-        	SqlProjectedColumnImpl projCol = mock(SqlProjectedColumnImpl.class);
+        	SqlProjectedColumn projCol = mock(SqlProjectedColumn.class);
 	        when(projCol.getName()).thenReturn(ID);
 	        when(projCol.getType()).thenReturn(IDType);
 	        when(projCol.isSelected()).thenReturn(true);
 	        projCols[0] = projCol;
 	        
-	        projCol = mock(SqlProjectedColumnImpl.class);
+	        projCol = mock(SqlProjectedColumn.class);
 	        when(projCol.getName()).thenReturn(ORDER_DATE);
 	        when(projCol.getType()).thenReturn(TIMESTAMP);
 	        when(projCol.isSelected()).thenReturn(true);
 	        projCols[1] = projCol;
 	        
-	        projCol = mock(SqlProjectedColumnImpl.class);
+	        projCol = mock(SqlProjectedColumn.class);
 	        if( twoTables && !singleConnection ) {
 	        	when(projCol.getName()).thenReturn(CUSTOMER_NAME);
 	        } else {
@@ -243,21 +240,20 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
 	        when(projCol.isSelected()).thenReturn(true);
 	        projCols[2] = projCol;
 	        
-	        when(viewDef.getProjectedColumns()).thenReturn(projCols);
+	        when(viewDef.getProjectedColumns()).thenReturn(Arrays.asList(projCols));
         }
 
         return vdbGenerator.getODataViewDdl(viewDef);
     }
     
-    private ViewEditorStateImpl[] helpCreateViewEditorState(int numSources) throws KException {
+    private ViewEditorState[] helpCreateViewEditorState(int numSources) throws KException {
 
-        ViewEditorStateImpl[] stateArray = new ViewEditorStateImpl[1];
+        ViewEditorState[] stateArray = new ViewEditorState[1];
 
-        ViewEditorStateImpl state = mock(ViewEditorStateImpl.class);
+        ViewEditorState state = mock(ViewEditorState.class);
         when(state.getName()).thenReturn(viewDefinitionName);
         stateArray[0] = state;
-        ViewDefinitionImpl viewDef = mock(ViewDefinitionImpl.class);
-        when(state.setViewDefinition()).thenReturn(viewDef);
+        ViewDefinition viewDef = mock(ViewDefinition.class);
         when(state.getViewDefinition()).thenReturn(viewDef);
         if( numSources == 1 ) {
         	helpCreateViewDefinitionAll(viewDef, sourceTablePath2, false);
@@ -268,18 +264,17 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
         return stateArray;
     }
     
-    private ViewDefinitionImpl helpCreateViewDefinitionAll(ViewDefinitionImpl viewDef, String secondSourceTablePath, boolean useAll) throws KException {
+    private ViewDefinition helpCreateViewDefinitionAll(ViewDefinition viewDef, String secondSourceTablePath, boolean useAll) throws KException {
 
         String[] sourceTablePaths = { sourceTablePath1, secondSourceTablePath };
         boolean twoTables = secondSourceTablePath != null && StringUtils.areDifferent(sourceTablePath1, secondSourceTablePath);
         
-        when(viewDef.getName()).thenReturn("vdbDefinition");
         when(viewDef.getViewName()).thenReturn(viewDefinitionName);
         when(viewDef.getDescription()).thenReturn(description);
         when(viewDef.isComplete()).thenReturn(isComplete);
-        when(viewDef.getSourcePaths()).thenReturn(sourceTablePaths);
+        when(viewDef.getSourcePaths()).thenReturn(Arrays.asList(sourceTablePaths));
         
-        SqlCompositionImpl sqlComp1 = mock(SqlCompositionImpl.class);
+        SqlComposition sqlComp1 = mock(SqlComposition.class);
         when(sqlComp1.getName()).thenReturn(comp1Name);
         when(sqlComp1.getDescription()).thenReturn(comp1Desc);
         when(sqlComp1.getLeftSourcePath()).thenReturn(comp1LeftSource);
@@ -289,35 +284,35 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
         when(sqlComp1.getType()).thenReturn(ServiceVdbGenerator.JOIN_INNER);
         when(sqlComp1.getOperator()).thenReturn(comp1Operator);
         
-        SqlCompositionImpl[] sqlComps = new SqlCompositionImpl[1];
+        SqlComposition[] sqlComps = new SqlComposition[1];
         sqlComps[0] = sqlComp1;
-        when(viewDef.getSqlCompositions()).thenReturn(sqlComps);
+        when(viewDef.getSqlCompositions()).thenReturn(Arrays.asList(sqlComps));
         
         if( useAll ) {
-        	SqlProjectedColumnImpl projCol = mock(SqlProjectedColumnImpl.class);
+        	SqlProjectedColumn projCol = mock(SqlProjectedColumn.class);
 	        when(projCol.getName()).thenReturn("ALL");
 	        when(projCol.getType()).thenReturn("ALL");
 	        when(projCol.isSelected()).thenReturn(true);
 	        
-	        SqlProjectedColumnImpl[] projCols = new SqlProjectedColumnImpl[1];
+	        SqlProjectedColumn[] projCols = new SqlProjectedColumn[1];
 	        projCols[0] = projCol;
-	        when(viewDef.getProjectedColumns()).thenReturn(projCols);
+	        when(viewDef.getProjectedColumns()).thenReturn(Arrays.asList(projCols));
         } else {
-        	SqlProjectedColumnImpl[] projCols = new SqlProjectedColumnImpl[3];
+        	SqlProjectedColumn[] projCols = new SqlProjectedColumn[3];
         	
-        	SqlProjectedColumnImpl projCol = mock(SqlProjectedColumnImpl.class);
+        	SqlProjectedColumn projCol = mock(SqlProjectedColumn.class);
 	        when(projCol.getName()).thenReturn(ID);
 	        when(projCol.getType()).thenReturn(IDType);
 	        when(projCol.isSelected()).thenReturn(true);
 	        projCols[0] = projCol;
 	        
-	        projCol = mock(SqlProjectedColumnImpl.class);
+	        projCol = mock(SqlProjectedColumn.class);
 	        when(projCol.getName()).thenReturn(ORDER_DATE);
 	        when(projCol.getType()).thenReturn(TIMESTAMP);
 	        when(projCol.isSelected()).thenReturn(true);
 	        projCols[1] = projCol;
 	        
-	        projCol = mock(SqlProjectedColumnImpl.class);
+	        projCol = mock(SqlProjectedColumn.class);
 	        if( twoTables ) {
 	        	when(projCol.getName()).thenReturn(CUSTOMER_NAME);
 	        } else {
@@ -327,7 +322,7 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
 	        when(projCol.isSelected()).thenReturn(true);
 	        projCols[2] = projCol;
 	        
-	        when(viewDef.getProjectedColumns()).thenReturn(projCols);
+	        when(viewDef.getProjectedColumns()).thenReturn(Arrays.asList(projCols));
         }
         
         return viewDef;
@@ -347,21 +342,20 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(schemaFinder());
 
         String[] sourceTablePaths = { sourceTablePath1 };
-        ViewDefinitionImpl viewDef = mock(ViewDefinitionImpl.class);
-        when(viewDef.getName()).thenReturn("vdbDefinition");
+        ViewDefinition viewDef = mock(ViewDefinition.class);
         when(viewDef.getViewName()).thenReturn(viewDefinitionName);
         when(viewDef.getDescription()).thenReturn(description);
         when(viewDef.isComplete()).thenReturn(isComplete);
-        when(viewDef.getSourcePaths()).thenReturn(sourceTablePaths);
+        when(viewDef.getSourcePaths()).thenReturn(Arrays.asList(sourceTablePaths));
         
-        SqlProjectedColumnImpl projCol = mock(SqlProjectedColumnImpl.class);
+        SqlProjectedColumn projCol = mock(SqlProjectedColumn.class);
         when(projCol.getName()).thenReturn("ALL");
         when(projCol.getType()).thenReturn("ALL");
         when(projCol.isSelected()).thenReturn(true);
         
-        SqlProjectedColumnImpl[] projCols = new SqlProjectedColumnImpl[1];
+        SqlProjectedColumn[] projCols = new SqlProjectedColumn[1];
         projCols[0] = projCol;
-        when(viewDef.getProjectedColumns()).thenReturn(projCols);
+        when(viewDef.getProjectedColumns()).thenReturn(Arrays.asList(projCols));
 
         String viewDdl = vdbGenerator.getODataViewDdl(viewDef);
         printResults(EXPECTED_DDL, viewDdl);
@@ -375,21 +369,20 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(schemaFinder());
 
         String[] sourceTablePaths = { sourceTablePath1b };
-        ViewDefinitionImpl viewDef = mock(ViewDefinitionImpl.class);
-        when(viewDef.getName()).thenReturn("vdbDefinition");
+        ViewDefinition viewDef = mock(ViewDefinition.class);
         when(viewDef.getViewName()).thenReturn(viewDefinitionName);
         when(viewDef.getDescription()).thenReturn(description);
         when(viewDef.isComplete()).thenReturn(isComplete);
-        when(viewDef.getSourcePaths()).thenReturn(sourceTablePaths);
+        when(viewDef.getSourcePaths()).thenReturn(Arrays.asList(sourceTablePaths));
         
-        SqlProjectedColumnImpl projCol = mock(SqlProjectedColumnImpl.class);
+        SqlProjectedColumn projCol = mock(SqlProjectedColumn.class);
         when(projCol.getName()).thenReturn("ALL");
         when(projCol.getType()).thenReturn("ALL");
         when(projCol.isSelected()).thenReturn(true);
         
-        SqlProjectedColumnImpl[] projCols = new SqlProjectedColumnImpl[1];
+        SqlProjectedColumn[] projCols = new SqlProjectedColumn[1];
         projCols[0] = projCol;
-        when(viewDef.getProjectedColumns()).thenReturn(projCols);
+        when(viewDef.getProjectedColumns()).thenReturn(Arrays.asList(projCols));
 
         String viewDdl = vdbGenerator.getODataViewDdl(viewDef);
         printResults(EXPECTED_DDL, viewDdl);
@@ -548,22 +541,20 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     	
     	VDBMetaData serviceVdb = vdbGenerator.refreshServiceVdb(viewDefinitionName, states);
 
-    	commit();
-    	
     	List<org.teiid.adminapi.Model> models = serviceVdb.getModels();
     	
     	assertThat(models.size(), is(2));
-        ModelMetaData viewModel = serviceVdb.getModel(SERVICE_VDB_VIEW_MODEL);
+        ModelMetaData viewModel = serviceVdb.getModel(StringConstants.SERVICE_VDB_VIEW_MODEL);
         assertNotNull(viewModel);
         assertEquals("CREATE VIEW orderInfoView (ID LONG, orderDate TIMESTAMP, customerName STRING) OPTIONS (ANNOTATION 'test view description text') AS \n" + 
         		"SELECT A.ID, A.orderDate, \n" + 
         		"FROM pgconnection1schemamodel.orders AS A;\n", viewModel.getSourceMetadataText().get(0));
     	
-//    	for( ModelImpl model : models ) {
+//    	for( Model model : models ) {
 //    		if( model.getModelType() == Type.PHYSICAL) {
 //    			ModelSource[] modelSources = model.getSources();
 //    			assertNotNull(modelSources);
-//    			for( ModelSourceImpl ms : modelSources ) {
+//    			for( ModelSource ms : modelSources ) {
 //    				assertNotNull(ms.getOriginConnection());
 //    			}
 //    		}
@@ -578,23 +569,21 @@ public class ServiceVdbGeneratorTest extends RelationalModelTest {
     	
     	VDBMetaData serviceVdb = vdbGenerator.refreshServiceVdb(viewDefinitionName, states);
     	
-    	commit();
-    	
     	List<org.teiid.adminapi.Model> models = serviceVdb.getModels();
     	
         assertThat(models.size(), is(3));
-        ModelMetaData viewModel = serviceVdb.getModel(SERVICE_VDB_VIEW_MODEL);
+        ModelMetaData viewModel = serviceVdb.getModel(StringConstants.SERVICE_VDB_VIEW_MODEL);
         assertNotNull(viewModel);
         assertEquals("CREATE VIEW orderInfoView (ID LONG, orderDate TIMESTAMP, customerName STRING) OPTIONS (ANNOTATION 'test view description text') AS \n" + 
         		"SELECT A.ID, A.orderDate, B.customerName\n" + 
         		"FROM pgconnection1schemamodel.orders AS A;\n", viewModel.getSourceMetadataText().get(0));
     	
     	
-//    	for( ModelImpl model : models ) {
+//    	for( Model model : models ) {
 //    		if( model.getModelType() == Type.PHYSICAL) {
 //    			ModelSource[] modelSources = model.getSources();
 //    			assertNotNull(modelSources);
-//    			for( ModelSourceImpl ms : modelSources ) {
+//    			for( ModelSource ms : modelSources ) {
 //    				assertNotNull(ms.getOriginConnection());
 //    			}
 //    		}

@@ -40,7 +40,7 @@ public interface SystemConstants extends StringConstants {
     String VDB_BUILDER_DATA_DIR = "vdbbuilder.dataDir"; //$NON-NLS-1$
 
     /**
-     * The environment variable that defines the type of the persistence to be used for modeshape.
+     * The environment variable that defines the type of the persistence to be used.
      * Values are either PGSQL or H2.
      */
     String REPOSITORY_PERSISTENCE_TYPE = "komodo.repositoryPersistenceType";

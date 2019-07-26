@@ -152,7 +152,6 @@
     <version.org.jboss.spec.jboss-javaee-7.0>1.0.4.Final</version.org.jboss.spec.jboss-javaee-7.0>
     <version.org.jboss.xnio>3.5.4.Final</version.org.jboss.xnio>
 
-    <version.teiid.modeshape>1.0.2-SNAPSHOT</version.teiid.modeshape>
     <version.postgresql>42.1.4</version.postgresql>
     <version.xerces>2.11.0</version.xerces>
     
@@ -380,34 +379,9 @@
         <scope>test</scope>
       </dependency>
       <dependency>
-        <groupId>org.teiid.modeshape</groupId>
-        <artifactId>modeshape-jcr-api</artifactId>
-        <version>${version.teiid.modeshape}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.teiid.modeshape</groupId>
-        <artifactId>modeshape-jcr</artifactId>
-        <version>${version.teiid.modeshape}</version>
-      </dependency>
-      <dependency>
         <groupId>org.postgresql</groupId>
         <artifactId>postgresql</artifactId>
         <version>${version.postgresql}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.teiid.modeshape</groupId>
-        <artifactId>teiid-modeshape-sequencer-vdb</artifactId>
-        <version>${version.teiid.modeshape}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.teiid.modeshape</groupId>
-        <artifactId>teiid-modeshape-sequencer-ddl</artifactId>
-        <version>${version.teiid.modeshape}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.teiid.modeshape</groupId>
-        <artifactId>teiid-modeshape-sequencer-dataservice</artifactId>
-        <version>${version.teiid.modeshape}</version>
       </dependency>
       <dependency>
         <groupId>xerces</groupId>

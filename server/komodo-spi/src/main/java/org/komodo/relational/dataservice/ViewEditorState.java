@@ -17,51 +17,29 @@
  */
 package org.komodo.relational.dataservice;
 
+import java.util.List;
+
 import org.komodo.relational.RelationalObject;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
-import org.komodo.spi.repository.KomodoType;
 
 /**
  * Represents the configuration of a view editor state
  */
 public interface ViewEditorState extends RelationalObject, StringConstants {
-
-    /**
-     * The type identifier.
-     */
-    int TYPE_ID = ViewEditorState.class.hashCode();
-
-    /**
-     * Identifier of this object
-     */
-    KomodoType IDENTIFIER = KomodoType.VIEW_EDITOR_STATE;
-
+	
     /**
      * @return the new command
-     * @throws KException
-     *         if an error occurs
      */
-    StateCommandAggregate addCommand() throws KException;
+    StateCommandAggregate addCommand();
 
     /**
      * @return the state commands
-     * @throws KException
-     *         if an error occurs
      */
-    StateCommandAggregate[] getCommands() throws KException;
-    
+    List<StateCommandAggregate> getCommands();
+        
     /**
      * @return the view definition
-     * @throws KException
-     *         if an error occurs
-     */
-    ViewDefinition setViewDefinition() throws KException;
-    
-    /**
-     * @return the view definition
-     * @throws KException
-     *         if an error occurs
      */
     ViewDefinition getViewDefinition() throws KException;
 }

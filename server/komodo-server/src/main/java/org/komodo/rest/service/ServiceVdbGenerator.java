@@ -56,9 +56,7 @@ import org.teiid.query.sql.visitor.SQLStringVisitor;
  * This class provides methods to generate data service vdbs containing a view model
  * and one or more source models
  * 
- * Each model is created via generating DDL and calling setModelDefinition() method that 
- * relies on komodo/modeshape framework to parse the DDL and construct the corresponding 
- * PHYSICAL and VIRTUAL relational models
+ * Each model is created via generating DDL and calling setModelDefinition() method
  *
  */
 public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
@@ -270,11 +268,11 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
         // ---------------------------------------------
         // Generate the View projected columns
         // ---------------------------------------------
-        SqlProjectedColumn[] projectedColumns = viewDef.getProjectedColumns();
+        List<SqlProjectedColumn> projectedColumns = viewDef.getProjectedColumns();
         Set<String> selectedProjColumnNames = new LinkedHashSet<String>();
         
         // If "SELECT ALL" then include all of the source table columns
-        if( projectedColumns.length == 1 && projectedColumns[0].getName().equalsIgnoreCase("ALL")  ) { //$NON-NLS-1$
+        if( projectedColumns.size() == 1 && projectedColumns.get(0).getName().equalsIgnoreCase("ALL")  ) { //$NON-NLS-1$
         	for (Iterator<ColumnInfo> iter = columns.values().iterator(); iter.hasNext();) {
         		ColumnInfo info = iter.next();
                 // keep track of projected column names
@@ -441,8 +439,8 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
 		if ( !viewDefinition.isComplete() ) {
 			return new TableInfo[0];
 		}
-		String[] sourceTablePaths = viewDefinition.getSourcePaths();
-		ArrayList<TableInfo> sourceTableInfos = new ArrayList<TableInfo>(sourceTablePaths.length);
+		List<String> sourceTablePaths = viewDefinition.getSourcePaths();
+		ArrayList<TableInfo> sourceTableInfos = new ArrayList<TableInfo>(sourceTablePaths.size());
 
 		// Find and create TableInfo for each source Path
 		int iTable = 0;
@@ -465,7 +463,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
 			            if( option.equals(tableOption) ) {
 			                String alias = (iTable == 0) ? "A" : "B"; //$NON-NLS-1$ //$NON-NLS-2$
 			                // create a new TableInfo object
-			                sourceTableInfos.add(new TableInfo(path, table, sourceTablePaths.length>1?alias:null));
+			                sourceTableInfos.add(new TableInfo(path, table, sourceTablePaths.size()>1?alias:null));
 			                iTable++;
 			                break;
 			            }
