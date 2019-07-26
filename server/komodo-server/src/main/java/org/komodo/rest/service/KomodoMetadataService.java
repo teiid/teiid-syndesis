@@ -45,6 +45,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.komodo.datasources.DefaultSyndesisDataSource;
+import org.komodo.metadata.DeployStatus;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
 import org.komodo.metadata.internal.TeiidVdbImpl;
@@ -54,12 +55,10 @@ import org.komodo.metadata.runtime.TeiidVdb;
 import org.komodo.openshift.BuildStatus;
 import org.komodo.openshift.PublishConfiguration;
 import org.komodo.openshift.TeiidOpenShiftClient;
-import org.komodo.relational.DeployStatus;
 import org.komodo.relational.WorkspaceManager;
 import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.profile.ViewEditorState;
+import org.komodo.relational.dataservice.ViewEditorState;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
-import org.komodo.rest.CallbackTimeoutException;
 import org.komodo.rest.KomodoRestException;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
@@ -126,6 +125,9 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
     @Autowired
     private TeiidOpenShiftClient openshiftClient;
+    
+    @Autowired
+    private MetadataInstance metadataInstance;
 
     /**
      * @param engine
@@ -137,15 +139,8 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
     public KomodoMetadataService() throws WebApplicationException {
     }
 
-    private synchronized MetadataInstance getMetadataInstance() throws KException {
-        return this.kengine.getMetadataInstance();
-    }
-
-    private Response createTimeoutResponse(List<MediaType> mediaTypes) {
-        Object responseEntity = createErrorResponseEntity(mediaTypes,
-                                                                  RelationalMessages.getString(
-                                                                                               RelationalMessages.Error.VDB_SAMPLE_IMPORT_TIMEOUT));
-        return Response.status(Status.FORBIDDEN).entity(responseEntity).build();
+    private MetadataInstance getMetadataInstance() throws KException {
+        return metadataInstance;
     }
 
     /**
@@ -1031,8 +1026,6 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
                 entityList.add(createBuildStatus(status, uriInfo.getBaseUri()));
             }
             return commit(uow, mediaTypes, entityList);
-        } catch (CallbackTimeoutException ex) {
-            return createTimeoutResponse(mediaTypes);
         } catch (Throwable e) {
             if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
                 uow.rollback();
@@ -1069,8 +1062,6 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             BuildStatus status = this.openshiftClient.getVirtualizationStatus(vdbName);
 
             return commit(uow, mediaTypes, createBuildStatus(status, uriInfo.getBaseUri()));
-        } catch (CallbackTimeoutException ex) {
-            return createTimeoutResponse(mediaTypes);
         } catch (Throwable e) {
             if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
                 uow.rollback();
@@ -1109,8 +1100,6 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             status.addAttribute("log", log); //$NON-NLS-1$
 
             return commit(uow, mediaTypes, status);
-        } catch (CallbackTimeoutException ex) {
-            return createTimeoutResponse(mediaTypes);
         } catch (Throwable e) {
             if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
                 uow.rollback();
@@ -1156,8 +1145,6 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             uow = createTransaction(principal, "publish", true); //$NON-NLS-1$
             BuildStatus status = this.openshiftClient.deleteVirtualization(vdbName);
             return commit(uow, mediaTypes, createBuildStatus(status, uriInfo.getBaseUri()));
-        } catch (CallbackTimeoutException ex) {
-            return createTimeoutResponse(mediaTypes);
         } catch (Throwable e) {
             if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
                 uow.rollback();

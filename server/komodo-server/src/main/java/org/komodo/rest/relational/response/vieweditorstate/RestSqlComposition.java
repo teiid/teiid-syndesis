@@ -19,7 +19,7 @@ package org.komodo.rest.relational.response.vieweditorstate;
 
 import java.net.URI;
 
-import org.komodo.relational.profile.SqlComposition;
+import org.komodo.relational.dataservice.SqlComposition;
 import org.komodo.rest.RestBasicEntity;
 import org.komodo.spi.KException;
 

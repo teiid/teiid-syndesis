@@ -21,9 +21,9 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.komodo.relational.profile.SqlComposition;
-import org.komodo.relational.profile.SqlProjectedColumn;
-import org.komodo.relational.profile.ViewDefinition;
+import org.komodo.relational.dataservice.SqlComposition;
+import org.komodo.relational.dataservice.SqlProjectedColumn;
+import org.komodo.relational.dataservice.ViewDefinition;
 import org.komodo.rest.RestBasicEntity;
 import org.komodo.spi.KException;
 

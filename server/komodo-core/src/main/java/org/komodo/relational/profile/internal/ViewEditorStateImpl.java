@@ -24,16 +24,15 @@ import org.komodo.core.KomodoLexicon;
 import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.ObjectImpl;
+import org.komodo.relational.dataservice.StateCommandAggregate;
+import org.komodo.relational.dataservice.ViewEditorState;
 import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
 import org.komodo.relational.internal.TypeResolver;
-import org.komodo.relational.profile.StateCommandAggregate;
-import org.komodo.relational.profile.ViewEditorState;
 import org.komodo.spi.KException;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.spi.repository.UnitOfWork.State;
-import org.komodo.utils.ArgCheck;
 
 /**
  * An implementation of a view editor state object.
@@ -114,21 +113,6 @@ public class ViewEditorStateImpl extends RelationalObjectImpl implements ViewEdi
     @Override
     public KomodoType getTypeIdentifier() {
         return ViewEditorState.IDENTIFIER;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.relational.internal.RelationalObjectImpl#getParent()
-     */
-    @Override
-    public ProfileImpl getParent() throws KException {
-        ArgCheck.isNotNull(getTransaction(), "transaction"); //$NON-NLS-1$
-        ArgCheck.isTrue((getTransaction().getState() == State.NOT_STARTED), "transaction state must be NOT_STARTED"); //$NON-NLS-1$
-
-        final KomodoObject grouping = super.getParent();
-        final ProfileImpl result = ProfileImpl.RESOLVER.resolve(grouping.getParent());
-        return result;
     }
 
     /**

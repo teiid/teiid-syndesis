@@ -24,7 +24,6 @@ import java.util.Map;
 
 import org.komodo.core.repository.KomodoObject;
 import org.komodo.relational.dataservice.internal.DataserviceImpl;
-import org.komodo.relational.profile.internal.ProfileImpl;
 import org.komodo.spi.repository.KomodoType;
 import org.komodo.utils.KeyInValueMap;
 import org.komodo.utils.KeyInValueMap.KeyFromValueAdapter;
@@ -64,9 +63,6 @@ public class TypeResolverRegistry {
 
 
         index(KomodoType.DATASERVICE, DataserviceImpl.RESOLVER);
-
-
-        index(KomodoType.PROFILE, ProfileImpl.RESOLVER);
 
     }
 

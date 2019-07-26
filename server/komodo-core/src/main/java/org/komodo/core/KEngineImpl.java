@@ -20,10 +20,6 @@ package org.komodo.core;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.komodo.core.KEvent.Type;
@@ -31,7 +27,6 @@ import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.RepositoryClientEvent;
 import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.core.repository.SynchronousCallback;
-import org.komodo.metadata.MetadataInstance;
 import org.komodo.relational.workspace.WorkspaceManagerImpl;
 import org.komodo.spi.KEngine;
 import org.komodo.spi.KException;
@@ -125,10 +120,7 @@ public class KEngineImpl implements KEngine, KObserver, StringConstants {
 
     private KomodoErrorHandler errorHandler = new KomodoErrorHandler();
 
-    private MetadataInstance metadataInstance;
-
     private final Set<KObserver> observers = new HashSet<>();
-    
     
     public KEngineImpl() {
         checkDataDirProperty();
@@ -158,16 +150,6 @@ public class KEngineImpl implements KEngine, KObserver, StringConstants {
     public void setDefaultRepository(RepositoryImpl repository) throws Exception {
     	ArgCheck.isTrue(State.SHUTDOWN.equals(getState()), "Engine should be shutdown before calling setDefaultRepository"); //$NON-NLS-1$
     	this.defaultRepository = repository;
-    }
-
-    @Override
-    public MetadataInstance getMetadataInstance() throws KException {
-        return this.metadataInstance;
-    }
-    
-    @Autowired
-    public void setMetadataInstance(MetadataInstance instance) {
-    	this.metadataInstance = instance;
     }
 
     /**
@@ -255,65 +237,6 @@ public class KEngineImpl implements KEngine, KObserver, StringConstants {
     }
 
     /**
-     * Shutdown the engine and wait for it and all repositories to
-     * be disconnected, including the local repository which should
-     * be shutdown as well.
-     *
-     * @throws Exception if shutdown fails
-     */
-    public void shutdownAndWait() throws Exception {
-        Callable<Boolean> shutdownTask = new Callable<Boolean>() {
-
-            @Override
-            public Boolean call() throws Exception {
-                shutdown();
-
-                boolean shutdown = false;
-                while(!shutdown) {
-                    if (! KEngineImpl.State.SHUTDOWN.equals(KEngineImpl.this.getState())) {
-                        Thread.sleep(5);
-                        continue;
-                    }
-
-                    if (MetadataInstance.Condition.REACHABLE.equals(KEngineImpl.this.getMetadataInstance().getCondition())) {
-                        Thread.sleep(5);
-                        continue;
-                    }
-
-                    int reposShutdown = 0;
-                    for (Repository repository : getRepositories()) {
-                        if (Repository.State.REACHABLE.equals(repository.getState()))
-                            break;
-
-                        reposShutdown++;
-                    }
-
-                    if (reposShutdown == getRepositories().size())
-                        shutdown = true;
-                    else
-                        Thread.sleep(5);
-                }
-
-                return shutdown;
-            }
-        };
-
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        Future<Boolean> future = executor.submit(shutdownTask);
-
-        KLog.getLogger().info("Starting shutdown procedure ..."); //$NON-NLS-1$
-
-        //
-        // Hold the thread until shutdown is complete
-        //
-        future.get(5, TimeUnit.MINUTES);
-
-        KLog.getLogger().info("Shutdown completed."); //$NON-NLS-1$
-
-        executor.shutdownNow();
-    }
-
-    /**
      * @throws KException if there is an error starting the engine
      */
     public void start() throws KException {
@@ -323,11 +246,6 @@ public class KEngineImpl implements KEngine, KObserver, StringConstants {
                 throw new KException(Messages.getString(Messages.KEngine.No_Repository));
             }
 
-            // Initialise the metadata instance
-            if (this.metadataInstance == null) {
-            	throw new KException(Messages.getString(Messages.KEngine.No_Metadata_Instance));
-            }
-            
             add(defaultRepository);
             defaultRepository.registerKEngine(this);
         	

@@ -18,19 +18,11 @@
 
 package org.komodo.spi;
 
-import org.komodo.metadata.MetadataInstance;
 import org.komodo.relational.WorkspaceManager;
 import org.komodo.spi.repository.UnitOfWork;
 
 public interface KEngine {
 	
-	/**
-	 * Get the {@link MetadataInstance}
-	 * @return
-	 * @throws KException
-	 */
-	MetadataInstance getMetadataInstance() throws KException;
-
 	/**
 	 * Start and wait for the engine to be ready
 	 * @return true if start was successful

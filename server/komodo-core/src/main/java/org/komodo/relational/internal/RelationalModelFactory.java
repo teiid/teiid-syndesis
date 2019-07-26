@@ -24,11 +24,10 @@ import org.komodo.core.internal.repository.Repository;
 import org.komodo.core.repository.KomodoObject;
 import org.komodo.core.repository.RepositoryTools;
 import org.komodo.relational.RelationalObject;
+import org.komodo.relational.dataservice.SqlComposition;
+import org.komodo.relational.dataservice.SqlProjectedColumn;
+import org.komodo.relational.dataservice.StateCommand;
 import org.komodo.relational.dataservice.internal.DataserviceImpl;
-import org.komodo.relational.profile.SqlComposition;
-import org.komodo.relational.profile.SqlProjectedColumn;
-import org.komodo.relational.profile.StateCommand;
-import org.komodo.relational.profile.internal.ProfileImpl;
 import org.komodo.relational.profile.internal.SqlCompositionImpl;
 import org.komodo.relational.profile.internal.SqlProjectedColumnImpl;
 import org.komodo.relational.profile.internal.StateCommandAggregateImpl;
@@ -115,7 +114,7 @@ public final class RelationalModelFactory {
      * @throws KException
      *        if an error occurs
      */
-    public static ViewEditorStateImpl createViewEditorState(UnitOfWork transaction, Repository repository, ProfileImpl profile,
+    public static ViewEditorStateImpl createViewEditorState(UnitOfWork transaction, Repository repository, KomodoObject parent,
                                                                                                    String stateId) throws KException {
         ArgCheck.isNotNull( transaction, "transaction" ); //$NON-NLS-1$
         ArgCheck.isTrue( ( transaction.getState() == State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
@@ -124,7 +123,7 @@ public final class RelationalModelFactory {
 
         try {
             final KomodoObject grouping = RepositoryTools.findOrCreateChild( transaction,
-                                                                             profile,
+                                                                             parent,
                                                                              KomodoLexicon.Profile.VIEW_EDITOR_STATES,
                                                                              KomodoLexicon.Profile.VIEW_EDITOR_STATES );
             final KomodoObject kobject = grouping.addChild( transaction, stateId, KomodoLexicon.ViewEditorState.NODE_TYPE );

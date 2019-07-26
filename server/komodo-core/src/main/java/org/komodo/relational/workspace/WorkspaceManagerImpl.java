@@ -36,7 +36,7 @@ import org.komodo.relational.dataservice.internal.DataserviceImpl;
 import org.komodo.relational.internal.AdapterFactory;
 import org.komodo.relational.internal.RelationalModelFactory;
 import org.komodo.relational.internal.RelationalObjectImpl;
-import org.komodo.relational.profile.internal.ProfileImpl;
+import org.komodo.relational.profile.internal.ViewEditorStateImpl;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
 import org.komodo.spi.SystemConstants;
@@ -58,6 +58,11 @@ public class WorkspaceManagerImpl extends RelationalObjectImpl implements Relati
      * An empty array of Dataservices.
      */
     final static DataserviceImpl[] NO_DATASERVICES = new DataserviceImpl[ 0 ];
+    
+	/**
+     * An empty array of view editor states.
+     */
+    final static ViewEditorStateImpl[] NO_VIEW_EDITOR_STATES = new ViewEditorStateImpl[0];
 	
 	static final Filter[] NO_FILTERS = new Filter[0];
 	
@@ -380,39 +385,6 @@ public class WorkspaceManagerImpl extends RelationalObjectImpl implements Relati
     }
 
     /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
-     * @param type
-     *        the lexicon node type name of objects being found
-     * @return the paths of all the objects in the workspace with the specified type (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    public String[] findByType( final UnitOfWork transaction,
-                                final String type) throws KException {
-        return findByType( transaction, type, RepositoryImpl.komodoWorkspacePath(transaction), null, false );
-    }
-
-    /**
-     * @param transaction
-     *        the transaction (cannot be <code>null</code> and must have a state of
-     *        {@link org.komodo.spi.repository.UnitOfWork.State#NOT_STARTED})
-     * @param type
-     *        the lexicon node type name of objects being found
-     * @param includeSubTypes
-     *        determines whether sub types are included in the return
-     * @return the paths of all the objects in the workspace with the specified type (never <code>null</code> but can be empty)
-     * @throws KException
-     *         if an error occurs
-     */
-    public String[] findByType( final UnitOfWork transaction,
-                                final String type,
-                                boolean includeSubTypes) throws KException {
-        return findByType( transaction, type, RepositoryImpl.komodoWorkspacePath(transaction), null, includeSubTypes );
-    }
-
-    /**
      * @param searchPattern pattern to match.  If blank, will match all. 
      * @param transaction
      *        the transaction (cannot be <code>null</code> or have a state that is not
@@ -539,19 +511,6 @@ public class WorkspaceManagerImpl extends RelationalObjectImpl implements Relati
     }
     
 	@Override
-	public ProfileImpl getUserProfile() throws KException {
-        Repository repo = getRepository();
-        KomodoObject userProfileObj = repo.komodoProfile(getTransaction());
-        ProfileImpl userProfile = resolve(getTransaction(), userProfileObj, ProfileImpl.class);
-        if (userProfile == null) {
-            String msg = Messages.getString(Messages.Relational.NO_USER_PROFILE, getTransaction().getUserName());
-            throw new KException(msg);
-        }
-
-        return userProfile;
-    }
-
-	@Override
 	public String findSchema(String name) throws KException {
 		if (hasChild(name, KomodoLexicon.Schema.NODE_TYPE)) {
 			KomodoObject object = getChild(name, KomodoLexicon.Schema.NODE_TYPE);
@@ -575,5 +534,84 @@ public class WorkspaceManagerImpl extends RelationalObjectImpl implements Relati
 		KomodoObject object = this.addChild(getTransaction(), name, KomodoLexicon.Schema.NODE_TYPE);
 		object.setProperty(KomodoLexicon.Schema.RENDITION, contents);
 	}
+	
+    @Override
+    public ViewEditorStateImpl addViewEditorState(String stateId) throws KException {
+        // first delete if already exists
+        if ( getViewEditorState( stateId ) != null ) {
+            removeViewEditorState( stateId );
+        }
+
+        return RelationalModelFactory.createViewEditorState( getTransaction(), getRepository(), getRepository().komodoProfile(getTransaction()), stateId );
+    }
+
+    private KomodoObject getViewEditorStatesGroupingNode() {
+        try {
+        	KomodoObject userProfileObj = getRepository().komodoProfile(getTransaction());
+        	
+            final KomodoObject[] groupings = userProfileObj.getRawChildren( getTransaction(), KomodoLexicon.Profile.VIEW_EDITOR_STATES );
+
+            if ( groupings.length == 0 ) {
+                return null;
+            }
+
+            return groupings[ 0 ];
+        } catch ( final KException e ) {
+            return null;
+        }
+    }
+
+    @Override
+    public ViewEditorStateImpl[] getViewEditorStates(String... namePatterns) throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == org.komodo.spi.repository.UnitOfWork.State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+
+        final KomodoObject grouping = getViewEditorStatesGroupingNode( );
+
+        if ( grouping != null ) {
+            final List< ViewEditorStateImpl > temp = new ArrayList<>();
+
+            for ( final KomodoObject kobject : grouping.getChildren( namePatterns ) ) {
+                final ViewEditorStateImpl gitRepo = new ViewEditorStateImpl( getTransaction(), getRepository(), kobject.getAbsolutePath() );
+                temp.add( gitRepo );
+            }
+
+            return temp.toArray( new ViewEditorStateImpl[ temp.size() ] );
+        }
+
+        return NO_VIEW_EDITOR_STATES;
+    }
+    
+    @Override
+    public ViewEditorStateImpl getViewEditorState(String name) throws KException {
+        ArgCheck.isNotNull( getTransaction(), "transaction" ); //$NON-NLS-1$
+        ArgCheck.isTrue( ( getTransaction().getState() == org.komodo.spi.repository.UnitOfWork.State.NOT_STARTED ), "transaction state is not NOT_STARTED" ); //$NON-NLS-1$
+
+        final KomodoObject grouping = getViewEditorStatesGroupingNode();
+
+        if ( grouping != null && grouping.hasChild( name ) ) {
+        	KomodoObject kobject = grouping.getChild( name );
+            return new ViewEditorStateImpl( getTransaction(), getRepository(), kobject.getAbsolutePath() );
+        }
+
+        return null;
+    }
+
+    @Override
+    public boolean removeViewEditorState(String viewEditorStateId) throws KException {
+        ArgCheck.isNotNull(getTransaction(), "transaction"); //$NON-NLS-1$
+        ArgCheck.isTrue((getTransaction().getState() == org.komodo.spi.repository.UnitOfWork.State.NOT_STARTED), "transaction state is not NOT_STARTED"); //$NON-NLS-1$
+        ArgCheck.isNotEmpty(viewEditorStateId, "viewEditorStateId"); //$NON-NLS-1$
+
+        ViewEditorStateImpl state = getViewEditorState(viewEditorStateId);
+
+        if (state == null) {
+            return false;
+        }
+
+        // remove first occurrence
+        state.remove(getTransaction());
+        return true;
+    }
 
 }

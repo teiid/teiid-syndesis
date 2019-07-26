@@ -48,7 +48,6 @@ import org.komodo.core.repository.RepositoryImpl;
 import org.komodo.core.repository.RepositoryImpl.UnitOfWorkImpl;
 import org.komodo.core.repository.RepositoryTools;
 import org.komodo.core.repository.SynchronousCallback;
-import org.komodo.metadata.MetadataInstance;
 import org.komodo.relational.WorkspaceManager;
 import org.komodo.relational.workspace.WorkspaceManagerImpl;
 import org.komodo.spi.KException;
@@ -56,7 +55,6 @@ import org.komodo.spi.SystemConstants;
 import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.utils.KLog;
 import org.komodo.utils.observer.KLatchRepositoryObserver;
-import org.mockito.Mockito;
 import org.modeshape.jcr.api.JcrConstants;
 
 /**
@@ -95,8 +93,6 @@ public abstract class AbstractLocalRepositoryTest extends AbstractLoggingTest {
         assertThat(_repo.ping(), is(false));
 
     	KEngineImpl engine = new KEngineImpl();
-    	MetadataInstance metadata = Mockito.mock(MetadataInstance.class);
-    	engine.setMetadataInstance(metadata);
         engine.setDefaultRepository(_repo);
 
         assertTrue(engine.startAndWait());

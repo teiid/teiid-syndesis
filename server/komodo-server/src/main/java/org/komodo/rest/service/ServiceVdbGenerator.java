@@ -31,10 +31,10 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.komodo.metadata.runtime.TeiidDataSource;
-import org.komodo.relational.profile.SqlComposition;
-import org.komodo.relational.profile.SqlProjectedColumn;
-import org.komodo.relational.profile.ViewDefinition;
-import org.komodo.relational.profile.ViewEditorState;
+import org.komodo.relational.dataservice.SqlComposition;
+import org.komodo.relational.dataservice.SqlProjectedColumn;
+import org.komodo.relational.dataservice.ViewDefinition;
+import org.komodo.relational.dataservice.ViewEditorState;
 import org.komodo.spi.KException;
 import org.komodo.spi.StringConstants;
 import org.komodo.spi.TeiidSqlConstants;

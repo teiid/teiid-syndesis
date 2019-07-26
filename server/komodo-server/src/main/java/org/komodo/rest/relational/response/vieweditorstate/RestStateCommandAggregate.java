@@ -23,8 +23,8 @@ import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 
-import org.komodo.relational.profile.StateCommand;
-import org.komodo.relational.profile.StateCommandAggregate;
+import org.komodo.relational.dataservice.StateCommand;
+import org.komodo.relational.dataservice.StateCommandAggregate;
 import org.komodo.rest.KRestEntity;
 import org.komodo.spi.KException;
 
