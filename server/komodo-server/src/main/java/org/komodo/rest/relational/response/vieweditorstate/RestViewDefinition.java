@@ -21,11 +21,11 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.komodo.relational.dataservice.SqlComposition;
-import org.komodo.relational.dataservice.SqlProjectedColumn;
-import org.komodo.relational.dataservice.ViewDefinition;
+import org.komodo.KException;
+import org.komodo.datavirtualization.SqlComposition;
+import org.komodo.datavirtualization.SqlProjectedColumn;
+import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.rest.RestBasicEntity;
-import org.komodo.spi.KException;
 
 /**
  * Rest ViewDefinition

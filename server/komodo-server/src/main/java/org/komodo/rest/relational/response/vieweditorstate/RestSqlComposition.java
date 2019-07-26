@@ -19,9 +19,9 @@ package org.komodo.rest.relational.response.vieweditorstate;
 
 import java.net.URI;
 
-import org.komodo.relational.dataservice.SqlComposition;
+import org.komodo.KException;
+import org.komodo.datavirtualization.SqlComposition;
 import org.komodo.rest.RestBasicEntity;
-import org.komodo.spi.KException;
 
 public class RestSqlComposition extends RestBasicEntity {
 	

@@ -19,9 +19,9 @@ package org.komodo.rest.relational.response.vieweditorstate;
 
 import java.net.URI;
 
-import org.komodo.relational.dataservice.SqlProjectedColumn;
+import org.komodo.KException;
+import org.komodo.datavirtualization.SqlProjectedColumn;
 import org.komodo.rest.RestBasicEntity;
-import org.komodo.spi.KException;
 
 /**
  * Rest object for a projected column

@@ -36,11 +36,13 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
+import org.komodo.StringConstants;
+import org.komodo.UnitOfWork;
+import org.komodo.datavirtualization.DataVirtualization;
+import org.komodo.datavirtualization.SqlComposition;
+import org.komodo.datavirtualization.SqlProjectedColumn;
+import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.metadata.MetadataInstance;
-import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.dataservice.SqlComposition;
-import org.komodo.relational.dataservice.SqlProjectedColumn;
-import org.komodo.relational.dataservice.ViewDefinition;
 import org.komodo.rest.KomodoRestException;
 import org.komodo.rest.KomodoRestV1Application;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
@@ -53,8 +55,6 @@ import org.komodo.rest.relational.response.vieweditorstate.RestSqlProjectedColum
 import org.komodo.rest.relational.response.vieweditorstate.RestViewDefinition;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewDefinitionStatus;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
-import org.komodo.spi.StringConstants;
-import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -254,7 +254,7 @@ public final class KomodoUtilService extends KomodoService {
             final String txId = "getViewEditorStates"; //$NON-NLS-1$ //$NON-NLS-2$
             uow = createTransaction(principal, txId, true );
 
-            String vdbName = Dataservice.getServiceVdbName(virtualization);
+            String vdbName = DataVirtualization.getServiceVdbName(virtualization);
             String prefix = KomodoService.getViewEditorStateIdPrefix(vdbName);
             
             final ViewDefinition[] viewEditorStates = getViewDefinitions(prefix);

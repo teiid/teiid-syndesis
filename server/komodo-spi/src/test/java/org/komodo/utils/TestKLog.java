@@ -32,7 +32,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.komodo.spi.SystemConstants;
 
 @SuppressWarnings( {"javadoc", "nls"} )
 public class TestKLog {
@@ -49,13 +48,11 @@ public class TestKLog {
     	} else {
     		Files.createDirectory(_dataDirectory, new FileAttribute[0]);
     	}
-        System.setProperty(SystemConstants.ENGINE_DATA_DIR,  _dataDirectory.toAbsolutePath().toString());
     }
 
 	public static Path createEngineDirectory() throws IOException {
 		Path engineDir = Paths.get("target/KomodoEngineDataDir"+ThreadLocalRandom.current().nextInt());
 		Files.createDirectory(engineDir, new FileAttribute[0]);
-        System.setProperty(SystemConstants.ENGINE_DATA_DIR,  engineDir.toAbsolutePath().toString());
         return engineDir;
 	}
 

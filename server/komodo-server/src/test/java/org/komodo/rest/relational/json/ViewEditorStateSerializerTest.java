@@ -27,14 +27,14 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.junit.Test;
-import org.komodo.relational.dataservice.SqlComposition;
-import org.komodo.relational.dataservice.SqlProjectedColumn;
-import org.komodo.relational.dataservice.ViewDefinition;
+import org.komodo.KException;
+import org.komodo.datavirtualization.SqlComposition;
+import org.komodo.datavirtualization.SqlProjectedColumn;
+import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.rest.relational.response.vieweditorstate.RestSqlComposition;
 import org.komodo.rest.relational.response.vieweditorstate.RestSqlProjectedColumn;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewDefinition;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
-import org.komodo.spi.KException;
 
 public class ViewEditorStateSerializerTest extends AbstractSerializerTest {
 

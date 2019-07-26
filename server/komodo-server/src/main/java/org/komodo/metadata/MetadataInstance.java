@@ -20,11 +20,11 @@ package org.komodo.metadata;
 import java.util.Collection;
 import java.util.List;
 
+import org.komodo.KException;
+import org.komodo.StringConstants;
 import org.komodo.metadata.query.QSResult;
 import org.komodo.metadata.runtime.TeiidDataSource;
 import org.komodo.metadata.runtime.TeiidVdb;
-import org.komodo.spi.KException;
-import org.komodo.spi.StringConstants;
 import org.teiid.adminapi.Admin;
 import org.teiid.adminapi.AdminException;
 import org.teiid.adminapi.impl.VDBMetaData;

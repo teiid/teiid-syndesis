@@ -43,13 +43,17 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
+import org.komodo.KException;
+import org.komodo.StringConstants;
+import org.komodo.TeiidSqlConstants;
+import org.komodo.UnitOfWork;
+import org.komodo.WorkspaceManager;
+import org.komodo.datavirtualization.DataVirtualization;
+import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.openshift.BuildStatus;
 import org.komodo.openshift.BuildStatus.RouteStatus;
 import org.komodo.openshift.ProtocolType;
 import org.komodo.openshift.TeiidOpenShiftClient;
-import org.komodo.relational.WorkspaceManager;
-import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.dataservice.ViewDefinition;
 import org.komodo.rest.KomodoRestException;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
@@ -58,10 +62,6 @@ import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.dataservice.RestDataservice;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.response.KomodoStatusObject;
-import org.komodo.spi.KException;
-import org.komodo.spi.StringConstants;
-import org.komodo.spi.TeiidSqlConstants;
-import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -133,7 +133,7 @@ public final class KomodoDataserviceService extends KomodoService
             
             // find Data services
             uow = createTransaction(principal, "getDataservices", true); //$NON-NLS-1$
-            Iterable<? extends Dataservice> dataServices = getWorkspaceManager().findDataservices();
+            Iterable<? extends DataVirtualization> dataServices = getWorkspaceManager().findDataservices();
 
             int start = 0;
 
@@ -177,7 +177,7 @@ public final class KomodoDataserviceService extends KomodoService
             int i = 0;
 
             KomodoProperties properties = new KomodoProperties();
-            for (final Dataservice dataService : dataServices) {
+            for (final DataVirtualization dataService : dataServices) {
                 if ((start == 0) || (i >= start)) {
                     if ((size == ALL_AVAILABLE) || (entities.size() < size)) {
                         RestDataservice entity = createRestDataservice(uriInfo, properties, dataService);
@@ -209,7 +209,7 @@ public final class KomodoDataserviceService extends KomodoService
         }
     }
 
-	private RestDataservice createRestDataservice(final UriInfo uriInfo, KomodoProperties properties, final Dataservice dataService) throws KException {
+	private RestDataservice createRestDataservice(final UriInfo uriInfo, KomodoProperties properties, final DataVirtualization dataService) throws KException {
 		RestDataservice entity = new RestDataservice(uriInfo.getBaseUri(), dataService, false, dataService.getServiceVdbName());
 		entity.setServiceViewModel(SERVICE_VDB_VIEW_MODEL);
         entity.setViewDefinitionNames(RestDataservice.getViewDefnNames(getWorkspaceManager(), dataService.getServiceVdbName()));
@@ -255,7 +255,7 @@ public final class KomodoDataserviceService extends KomodoService
         try {
             uow = createTransaction(principal, "getDataservice", true); //$NON-NLS-1$
 
-            Dataservice dataservice = findDataservice(dataserviceName);
+            DataVirtualization dataservice = findDataservice(dataserviceName);
             if (dataservice == null)
                 return commitNoDataserviceFound(uow, mediaTypes, dataserviceName);
 
@@ -347,7 +347,7 @@ public final class KomodoDataserviceService extends KomodoService
             uow = createTransaction(principal, "createDataservice", false); //$NON-NLS-1$
 
             // Error if the repo already contains a dataservice with the supplied name.
-            Dataservice existing = getWorkspaceManager().findDataservice(dataserviceName);
+            DataVirtualization existing = getWorkspaceManager().findDataservice(dataserviceName);
             if (existing != null) {
                 return createErrorResponseWithForbidden(mediaTypes,
                         RelationalMessages.Error.DATASERVICE_SERVICE_CREATE_ALREADY_EXISTS);
@@ -374,7 +374,7 @@ public final class KomodoDataserviceService extends KomodoService
         assert (restDataservice != null);
 
         final String dataserviceName = restDataservice.getId();
-        final Dataservice dataservice = getWorkspaceManager().createDataservice(dataserviceName);
+        final DataVirtualization dataservice = getWorkspaceManager().createDataservice(dataserviceName);
 
         // Transfers the properties from the rest object to the created komodo service.
         setProperties(dataservice, restDataservice);
@@ -386,7 +386,7 @@ public final class KomodoDataserviceService extends KomodoService
     }
 
     // Sets Dataservice properties using the supplied RestDataservice object
-    private void setProperties(Dataservice dataService, RestDataservice restDataService)
+    private void setProperties(DataVirtualization dataService, RestDataservice restDataService)
             throws KException {
         // 'New' = requested RestDataservice properties
         String newDescription = restDataService.getDescription();
@@ -436,7 +436,7 @@ public final class KomodoDataserviceService extends KomodoService
             final WorkspaceManager wkspMgr = getWorkspaceManager();
             
 
-            final Dataservice dataservice = wkspMgr.findDataservice(dataserviceName);
+            final DataVirtualization dataservice = wkspMgr.findDataservice(dataserviceName);
             
             // Error if the specified service does not exist
             if (dataservice == null) {
@@ -522,7 +522,7 @@ public final class KomodoDataserviceService extends KomodoService
 
         try {
             uow = createTransaction(principal, "validateDataserviceName", true); //$NON-NLS-1$
-            final Dataservice service = findDataservice(dataserviceName);
+            final DataVirtualization service = findDataservice(dataserviceName);
 
             if (service == null) {
             	return Response.ok().build();
@@ -587,7 +587,7 @@ public final class KomodoDataserviceService extends KomodoService
         try {
             uow = createTransaction(principal, "refreshDataserviceViews", false); //$NON-NLS-1$
 
-            Dataservice dataservice = findDataservice(dataserviceName);
+            DataVirtualization dataservice = findDataservice(dataserviceName);
             if (dataservice == null)
                 return commitNoDataserviceFound(uow, mediaTypes, dataserviceName);
 
@@ -698,7 +698,7 @@ public final class KomodoDataserviceService extends KomodoService
         try {
             uow = createTransaction(principal, "updateDataservice", false); //$NON-NLS-1$
 
-            Dataservice dataservice = findDataservice(dataserviceName);
+            DataVirtualization dataservice = findDataservice(dataserviceName);
             if (dataservice == null)
                 return commitNoDataserviceFound(uow, mediaTypes, dataserviceName);
 

@@ -20,7 +20,8 @@ package org.komodo.rest;
 import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
-import org.komodo.spi.repository.KomodoType;
+
+import org.komodo.openshift.KomodoType;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
 import io.swagger.annotations.ApiModelProperty;

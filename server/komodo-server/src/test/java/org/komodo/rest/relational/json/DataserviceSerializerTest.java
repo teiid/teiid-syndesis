@@ -23,7 +23,7 @@ import java.net.URLDecoder;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.komodo.relational.dataservice.Dataservice;
+import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.rest.relational.dataservice.RestDataservice;
 import org.mockito.Mockito;
 
@@ -60,7 +60,7 @@ public final class DataserviceSerializerTest extends AbstractSerializerTest  {
 
     @Before
     public void init() throws Exception {
-        Dataservice theService = Mockito.mock(Dataservice.class);
+        DataVirtualization theService = Mockito.mock(DataVirtualization.class);
         Mockito.when(theService.getName()).thenReturn(DATASERVICE_NAME);
 
         this.dataservice = new RestDataservice(MY_BASE_URI, theService, false, "ServiceVdb");

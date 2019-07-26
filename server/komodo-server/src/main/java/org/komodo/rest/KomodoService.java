@@ -34,19 +34,18 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.Variant;
 import javax.ws.rs.core.Variant.VariantListBuilder;
 
-import org.komodo.relational.WorkspaceManager;
-import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.dataservice.ViewDefinition;
+import org.komodo.KEngine;
+import org.komodo.KException;
+import org.komodo.UnitOfWork;
+import org.komodo.UnitOfWork.TimeoutException;
+import org.komodo.WorkspaceManager;
+import org.komodo.datavirtualization.DataVirtualization;
+import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.RestBasicEntity.ResourceNotFound;
 import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
-import org.komodo.spi.KEngine;
-import org.komodo.spi.KException;
-import org.komodo.spi.SystemConstants;
-import org.komodo.spi.repository.UnitOfWork;
-import org.komodo.spi.repository.UnitOfWork.TimeoutException;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
@@ -58,6 +57,11 @@ import com.google.gson.Gson;
  * A Komodo service implementation.
  */
 public abstract class KomodoService implements V1Constants {
+	
+    /**
+	 * System user for transactions to be executed internally
+	 */
+	public static final String SYSTEM_USER_NAME = "SYSTEM";
 
     public static final String REPO_USER = "anonymous";
 
@@ -143,7 +147,7 @@ public abstract class KomodoService implements V1Constants {
         return vdbName + '.';
     }
 
-    protected final static SecurityPrincipal SYSTEM_USER = new SecurityPrincipal(SystemConstants.SYSTEM_USER, null);
+    protected final static SecurityPrincipal SYSTEM_USER = new SecurityPrincipal(SYSTEM_USER_NAME, null);
 
     @Autowired
     protected KEngine kengine;
@@ -192,7 +196,7 @@ public abstract class KomodoService implements V1Constants {
         }
 
 		return new SecurityPrincipal(
-		                             SystemConstants.REPOSITORY_PERSISTENCE_CONNECTION_USERNAME_DEFAULT,
+		                             "komodo",
 		                             createErrorResponse(Status.UNAUTHORIZED,
 		                             headers.getAcceptableMediaTypes(), RelationalMessages.Error.SECURITY_FAILURE_ERROR));
     }
@@ -432,7 +436,7 @@ public abstract class KomodoService implements V1Constants {
         return createTransaction(SYSTEM_USER, description, rollback); //$NON-NLS-1$
     }
 
-    protected Dataservice findDataservice(String dataserviceName) throws KException {
+    protected DataVirtualization findDataservice(String dataserviceName) throws KException {
     	return getWorkspaceManager().findDataservice(dataserviceName);
     }
 

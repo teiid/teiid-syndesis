@@ -30,13 +30,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import org.komodo.StringConstants;
+import org.komodo.UnitOfWork;
 import org.komodo.rest.KomodoRestException;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
 import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.dataservice.RestDataservice;
-import org.komodo.spi.StringConstants;
-import org.komodo.spi.repository.UnitOfWork;
 import org.komodo.utils.StringNameValidator;
 import org.springframework.stereotype.Component;
 

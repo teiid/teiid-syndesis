@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.komodo.StringConstants;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
-import org.komodo.spi.StringConstants;
 import org.teiid.adminapi.impl.VDBMetaData;
 
 import io.fabric8.kubernetes.api.model.EnvVar;

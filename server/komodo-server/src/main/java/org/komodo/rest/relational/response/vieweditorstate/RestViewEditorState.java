@@ -19,9 +19,9 @@ package org.komodo.rest.relational.response.vieweditorstate;
 
 import java.net.URI;
 
-import org.komodo.relational.dataservice.ViewDefinition;
+import org.komodo.KException;
+import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.rest.AbstractKEntity;
-import org.komodo.spi.KException;
 
 public class RestViewEditorState extends AbstractKEntity {
 

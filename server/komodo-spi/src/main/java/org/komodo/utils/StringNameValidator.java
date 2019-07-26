@@ -20,7 +20,7 @@ package org.komodo.utils;
 import java.util.Arrays;
 import java.util.TreeMap;
 
-import org.komodo.spi.StringConstants;
+import org.komodo.StringConstants;
 
 
 /**
