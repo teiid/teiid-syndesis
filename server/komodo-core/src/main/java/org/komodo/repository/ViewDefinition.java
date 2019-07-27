@@ -19,13 +19,13 @@ package org.komodo.repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.PrePersist;
 
 import org.komodo.datavirtualization.SqlComposition;
 import org.komodo.datavirtualization.SqlProjectedColumn;;
@@ -62,7 +62,6 @@ public class ViewDefinition implements org.komodo.datavirtualization.ViewDefinit
 	}
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
 	private String id;
 	@Column(unique=true)
 	private String name;
@@ -81,6 +80,13 @@ public class ViewDefinition implements org.komodo.datavirtualization.ViewDefinit
 	
 	public ViewDefinition(String name) {
 		this.name = name;
+	}
+	
+	@PrePersist
+	protected void prePersist() {
+		if (id == null) {
+			id = UUID.randomUUID().toString();
+		}
 	}
 
 	public String getId() {

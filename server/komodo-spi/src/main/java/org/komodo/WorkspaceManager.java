@@ -27,7 +27,7 @@ public interface WorkspaceManager {
 	
 	boolean deleteSchema(String name);
 	
-	void saveSchema(String name, String contents);
+	void saveOrUpdateSchema(String name, String contents);
 	
 
 	DataVirtualization createDataservice(String serviceName);

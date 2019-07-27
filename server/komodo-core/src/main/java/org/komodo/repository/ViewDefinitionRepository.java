@@ -18,6 +18,8 @@
 
 package org.komodo.repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -27,5 +29,7 @@ public interface ViewDefinitionRepository extends JpaRepository<ViewDefinition, 
 	public ViewDefinition findByName(String name);
 
 	public long deleteByName(String name);
+
+	public List<ViewDefinition> findAllByNameStartsWith(String viewDefinitionNamePrefix);
 	
 }

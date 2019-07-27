@@ -7,12 +7,10 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @DataJpaTest
-@ComponentScan
 public class ViewDefinitionTest {
 	
 	@Autowired
@@ -36,7 +34,7 @@ public class ViewDefinitionTest {
         assertEquals(v.getDdl(), found.getDdl());
         
         workspaceManagerImpl.addViewDefiniton("y");
-        workspaceManagerImpl.addViewDefiniton("x1");
+        workspaceManagerImpl.addViewDefiniton("x1").setComplete(true);
         entityManager.flush();
 
         assertEquals(2, workspaceManagerImpl.getViewDefinitions("x").length);

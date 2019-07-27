@@ -18,17 +18,17 @@
 
 package org.komodo.repository;
 
+import java.util.UUID;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.PrePersist;
 
 @Entity
 public class SourceSchema implements org.komodo.datavirtualization.SourceSchema {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
 	private String id;
 	@Column(unique=true)
 	private String name;
@@ -39,6 +39,13 @@ public class SourceSchema implements org.komodo.datavirtualization.SourceSchema 
 	
 	public SourceSchema(String name) {
 		this.name = name;
+	}
+	
+	@PrePersist
+	protected void prePersist() {
+		if (id == null) {
+			id = UUID.randomUUID().toString();
+		}
 	}
 	
 	@Override

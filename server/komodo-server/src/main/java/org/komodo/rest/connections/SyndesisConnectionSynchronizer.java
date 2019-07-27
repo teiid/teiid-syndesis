@@ -111,7 +111,7 @@ public class SyndesisConnectionSynchronizer {
 					synchronzePreviewVDB();
 					return true;
 				} catch (Exception e) {
-					LOGGER.error(e);
+					LOGGER.error("Error syncronizing", e);
 				}
 				return false;
 			}

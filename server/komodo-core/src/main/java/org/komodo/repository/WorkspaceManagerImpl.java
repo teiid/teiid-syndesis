@@ -22,9 +22,6 @@ import org.komodo.WorkspaceManager;
 import org.komodo.datavirtualization.SourceSchema;
 import org.komodo.datavirtualization.ViewDefinition;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
-import org.springframework.data.domain.ExampleMatcher.StringMatcher;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -52,9 +49,16 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
 	}
 
 	@Override
-	public void saveSchema(String name, String contents) {
-		org.komodo.repository.SourceSchema schema = new org.komodo.repository.SourceSchema(name);
-		this.schemaRepository.save(schema);
+	public void saveOrUpdateSchema(String name, String contents) {
+		org.komodo.repository.SourceSchema schema = this.schemaRepository.findByName(name);
+		if (schema != null) {
+			if (!contents.equals(schema.getDdl())) {
+				schema.setDdl(contents);
+			}
+		} else {
+			schema = new org.komodo.repository.SourceSchema(name);
+			this.schemaRepository.save(schema);
+		}
 	}
 
 	@Override
@@ -91,11 +95,8 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
 	
 	@Override
 	public ViewDefinition[] getViewDefinitions(String viewDefinitionNamePrefix) {
-		ExampleMatcher exampleMatcher = ExampleMatcher.matching().withStringMatcher(StringMatcher.STARTING);
 		return this.viewDefinitionRepository
-				.findAll(
-						Example.of(new org.komodo.repository.ViewDefinition(viewDefinitionNamePrefix), exampleMatcher))
-				.toArray(new ViewDefinition[0]);
+				.findAllByNameStartsWith(viewDefinitionNamePrefix).toArray(new ViewDefinition[0]);
 	}
 	
 	@Override

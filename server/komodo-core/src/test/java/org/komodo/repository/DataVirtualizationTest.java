@@ -1,11 +1,10 @@
 package org.komodo.repository;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.komodo.repository.DataVirtualization;
-import org.komodo.repository.DataVirtualizationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
@@ -28,6 +27,8 @@ public class DataVirtualizationTest {
         entityManager.flush();
      
         DataVirtualization found = dataVirtualizationRepository.findByName(dv.getName());
+        
+        assertNotNull(found.getId());
      
         assertEquals(dv.getName(), found.getName());
         

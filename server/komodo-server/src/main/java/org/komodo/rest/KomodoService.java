@@ -346,10 +346,14 @@ public abstract class KomodoService implements V1Constants {
         final int timeout = TIMEOUT;
         final TimeUnit unit = UNIT;
 
-        
-
+        boolean rollbackOnly = false;
         try {
-        	transaction.commit();
+        	if (transaction.isRollbackOnly()) {
+        		rollbackOnly = true;
+        		transaction.rollback();
+        	} else {
+        		transaction.commit();
+        	}
         } catch (TimeoutException e) {
             // callback timeout occurred
             String errorMessage = Messages.getString( COMMIT_TIMEOUT, transaction.getName(), timeout, unit );
@@ -371,7 +375,7 @@ public abstract class KomodoService implements V1Constants {
 
         LOGGER.debug( "commit: successfully committed '{0}', rollbackOnly = '{1}'", //$NON-NLS-1$
                 transaction.getName(),
-                transaction.isRollbackOnly() );
+                rollbackOnly);
 
         if (entity != null) {
         	return commit(acceptableMediaTypes, entity);
@@ -385,9 +389,6 @@ public abstract class KomodoService implements V1Constants {
 
         commit(transaction, acceptableMediaTypes, (KRestEntity)null);
 
-        LOGGER.debug( "commit: successfully committed '{0}', rollbackOnly = '{1}'", //$NON-NLS-1$
-                      transaction.getName(),
-                      transaction.isRollbackOnly() );
         ResponseBuilder builder = null;
 
         KRestEntity entity;

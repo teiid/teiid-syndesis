@@ -174,7 +174,6 @@
     <version.org.yaml>1.17</version.org.yaml>
     <version.io.fabric8.openshift-client>3.0.3</version.io.fabric8.openshift-client>
     <version.io.fabric8.kubernetes-api>3.0.8</version.io.fabric8.kubernetes-api>
-    <version.javax.jcr>2.0</version.javax.jcr>
     <version.org.jboss.spec.javax.transaction>1.0.1.Final</version.org.jboss.spec.javax.transaction>
     <version.xml-apis>1.4.01</version.xml-apis>
     <version.javax.xml.bind>2.1</version.javax.xml.bind>
@@ -209,11 +208,6 @@
         <artifactId>hamcrest-core</artifactId>
         <scope>test</scope>
         <version>${version.org.hamcrest}</version>
-      </dependency>
-      <dependency>
-        <groupId>javax.jcr</groupId>
-        <artifactId>jcr</artifactId>
-        <version>${version.javax.jcr}</version>
       </dependency>
       <dependency>
         <groupId>org.jboss.spec.javax.transaction</groupId>

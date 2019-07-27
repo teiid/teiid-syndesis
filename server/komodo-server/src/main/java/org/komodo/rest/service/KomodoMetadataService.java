@@ -712,7 +712,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 		final String modelDdl = getMetadataInstance().getSchema( sourceVdbName, schemaModelName ); //$NON-NLS-1$
 		
 		if (modelDdl != null) {
-			getWorkspaceManager().saveSchema(schemaModelName, modelDdl);
+			getWorkspaceManager().saveOrUpdateSchema(schemaModelName, modelDdl);
 		}
 	}
 
