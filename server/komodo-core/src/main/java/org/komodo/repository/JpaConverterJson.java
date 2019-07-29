@@ -47,10 +47,14 @@ public class JpaConverterJson implements AttributeConverter<Object, String> {
 	@Override
 	public Object convertToEntityAttribute(String dbData) {
 		try {
-			return objectMapper.readValue(dbData, Object.class);
+			return objectMapper.readValue(dbData, targetClass());
 		} catch (IOException ex) {
 			throw new RuntimeException(ex);
 		}
+	}
+	
+	protected Class<?> targetClass() {
+		return Object.class;
 	}
 
 }

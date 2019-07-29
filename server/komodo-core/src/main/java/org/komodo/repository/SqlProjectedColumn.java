@@ -23,6 +23,10 @@ public class SqlProjectedColumn implements org.komodo.datavirtualization.SqlProj
 	private String type;
 	private boolean selected;
 	
+	protected SqlProjectedColumn() {
+		
+	}
+	
 	public SqlProjectedColumn(String name) {
 		this.name = name;
 	}
