@@ -84,7 +84,6 @@ import org.teiid.adminapi.impl.VDBImportMetadata;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.metadata.AbstractMetadataRecord;
 import org.teiid.metadata.Schema;
-import org.teiid.query.metadata.TransformationMetadata;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -100,11 +99,6 @@ import io.swagger.annotations.ApiResponses;
 public class KomodoMetadataService extends KomodoService implements ServiceVdbGenerator.SchemaFinder {
 
     private interface OptionalParam {
-
-        /**
-         * Indicates if connection schema should be generated if it doesn't exist. Defaults to <code>true</code>.
-         */
-        String GENERATE_SCHEMA = "generate-schema"; //$NON-NLS-1$
 
         /**
          * Indicates if the connection server VDB should be redeployed if it already exists. Defaults to <code>false</code>.
@@ -634,12 +628,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
                                               required = false )
                                    @DefaultValue( "false" )
                                    @QueryParam( OptionalParam.REDEPLOY_CONNECTION )
-                                   final boolean redeployServerVdb,
-                                   @ApiParam( value = "Indicates the workspace schema model should be generated if it doesn't exist",
-                                              required = false )
-                                   @DefaultValue( "true" )
-                                   @QueryParam( OptionalParam.GENERATE_SCHEMA )
-                                   final boolean generateSchema ) throws KomodoRestException {
+                                   final boolean redeployServerVdb ) throws KomodoRestException {
         SecurityPrincipal principal = checkSecurityContext(headers);
         if (principal.hasErrorResponse())
             return principal.getErrorResponse();
@@ -656,7 +645,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         UnitOfWork uow = null;
 
         try {
-            final String txId = "refreshSchema?redeploy=" + redeployServerVdb + "&generate-schema=" + generateSchema;   //$NON-NLS-1$//$NON-NLS-2$
+            final String txId = "refreshSchema?redeploy=" + redeployServerVdb;   //$NON-NLS-1$
             uow = createTransaction(principal, txId, false );
 
             // Find the bound teiid source corresponding to the syndesis source
@@ -679,13 +668,8 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             // Initiate the VDB deployment
             if ( doDeploy ) {
                 doDeploySourceVdb(teiidSource); // this will delete workspace VDB first
-                kso.addAttribute(syndesisSourceName, "Delete workspace VDB, recreate, and redeploy"); //$NON-NLS-1$
-            } else if ( generateSchema ) {
+                kso.addAttribute(syndesisSourceName, "Delete workspace VDB, recreate, redeploy, and generated schema"); //$NON-NLS-1$
                 saveSchema(syndesisSourceName);
-                
-                kso.addAttribute(syndesisSourceName, "Generate schema"); //$NON-NLS-1$
-                // after transaction is committed this will trigger the DDL sequencer which will create
-                // the model objects.
             } else {
                 kso.addAttribute( syndesisSourceName, "Neither redeploy or generate schema requested" ); //$NON-NLS-1$
             }
@@ -1334,12 +1318,10 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 		if (vdb == null) {
 			return null;
 		}
-        
-		TransformationMetadata qmi = vdb.getVDBMetaData().getAttachment(TransformationMetadata.class);
 		
 		String name = getSchemaModelName(dataSourceName);
-		
-		return qmi.getMetadataStore().getSchema(name);
+        
+		return vdb.getSchema(name);
 	}
 
     /**
@@ -1552,10 +1534,6 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         
         if ( schema != null ) {
             status.setSchemaModelName(schemaModelName);
-        	status.setSchemaState( RestSyndesisSourceStatus.EntityState.ACTIVE );
-        } else {
-        	//TODO: check against the deployed vdb
-        	status.setSchemaState( RestSyndesisSourceStatus.EntityState.MISSING );
         }
     }
     

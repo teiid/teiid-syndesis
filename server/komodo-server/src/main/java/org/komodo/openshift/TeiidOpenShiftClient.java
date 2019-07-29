@@ -86,6 +86,7 @@ import org.komodo.datasources.SalesforceDefinition;
 import org.komodo.datasources.WebServiceDefinition;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
+import org.komodo.metadata.runtime.TeiidDataSource;
 import org.komodo.openshift.BuildStatus.RouteStatus;
 import org.komodo.openshift.BuildStatus.Status;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
@@ -604,7 +605,7 @@ public class TeiidOpenShiftClient implements StringConstants {
     public Set<DefaultSyndesisDataSource> getSyndesisSources(OAuthCredentials oauthCreds) throws KException {
         Set<DefaultSyndesisDataSource> sources = new HashSet<>();
         try {
-            Collection<String> dsNames = this.metadata.getAdmin().getDataSourceNames();
+            Collection<String> dsNames = this.metadata.getDataSourceNames();
             String url = SYNDESISURL+"/connections";
             InputStream response = executeGET(url, oauthCreds);
             ObjectMapper mapper = new ObjectMapper();
@@ -630,7 +631,7 @@ public class TeiidOpenShiftClient implements StringConstants {
     public DefaultSyndesisDataSource getSyndesisDataSourceById(OAuthCredentials oauthCreds, String dsId)
             throws KException {
         try {
-            Collection<String> dsNames = this.metadata.getAdmin().getDataSourceNames();
+            Collection<String> dsNames = this.metadata.getDataSourceNames();
             String url = SYNDESISURL+"/connections/"+dsId;
             InputStream response = executeGET(url, oauthCreds);
             ObjectMapper mapper = new ObjectMapper();
@@ -653,7 +654,7 @@ public class TeiidOpenShiftClient implements StringConstants {
             if (scd == null) {
                 throw new KException("failed to find the syndesis datasource by name " + dsName);
             }
-            Collection<String> dsNames = this.metadata.getAdmin().getDataSourceNames();
+            Collection<String> dsNames = this.metadata.getDataSourceNames();
             if (!dsNames.contains(dsName)) {
                 createDataSource(dsName, scd);
             }
@@ -668,7 +669,7 @@ public class TeiidOpenShiftClient implements StringConstants {
         }
         info(scd.getName(), "Bind source with name to Service: " + scd.getName());
         try {
-            Collection<String> dsNames = this.metadata.getAdmin().getDataSourceNames();
+            Collection<String> dsNames = this.metadata.getDataSourceNames();
             if (!dsNames.contains(scd.getName())) {
                 createDataSource(scd.getName(), scd);
             }
@@ -741,7 +742,7 @@ public class TeiidOpenShiftClient implements StringConstants {
         debug(name, "Creating the Datasource of Type " + scd.getType());
 
         String driverName = null;
-        Set<String> templateNames = this.metadata.getAdmin().getDataSourceTemplateNames();
+        Set<String> templateNames = this.metadata.getDataSourceTemplateNames();
         debug(name, "template names: " + templateNames);
         String dsType = scd.getDefinition().getType();
         for (String template : templateNames) {
@@ -759,23 +760,23 @@ public class TeiidOpenShiftClient implements StringConstants {
         Properties properties = scd.convertToDataSourceProperties();
         properties.setProperty(ID, scd.getId());
 
-        this.metadata.getAdmin().createDataSource(name, driverName, encryptionComponent.decrypt(properties));
+        this.metadata.createDataSource(name, driverName, encryptionComponent.decrypt(properties));
     }
     
     public void deleteDataSource(String dsName) throws AdminException, KException {
 
-    	for( String nextName : this.metadata.getAdmin().getDataSourceNames() ) {
+    	for( String nextName : this.metadata.getDataSourceNames() ) {
     		if( nextName != null && !StringUtils.isBlank(nextName) && nextName.equals(dsName)) {
-    			this.metadata.getAdmin().deleteDataSource(dsName);
+    			this.metadata.deleteDataSource(dsName);
     			return;
     		}
     	}
     }
     
     public String findDataSourceNameByEventId(String eventId) throws AdminException, KException  {
-    	for( String dsName : this.metadata.getAdmin().getDataSourceNames() ) {
-    		Properties props = this.metadata.getAdmin().getDataSource(dsName);
-    		String id = props.getProperty(ID);
+    	for( String dsName : this.metadata.getDataSourceNames() ) {
+    		TeiidDataSource props = this.metadata.getDataSource(dsName);
+    		String id = props.getPropertyValue(ID);
     		if( id != null && !StringUtils.isBlank(id) && id.equals(eventId)) {
     			return dsName;
     		}
@@ -784,7 +785,7 @@ public class TeiidOpenShiftClient implements StringConstants {
     }
     
     public Collection<String> getTeiidDataSourcesNames() throws AdminException {
-			return this.metadata.getAdmin().getDataSourceNames();
+			return this.metadata.getDataSourceNames();
     }
 
     private ImageStream createImageStream(OpenShiftClient client, String namespace, String vdbName) {

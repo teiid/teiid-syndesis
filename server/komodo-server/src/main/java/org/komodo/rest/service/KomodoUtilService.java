@@ -58,15 +58,6 @@ import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.teiid.adminapi.impl.ModelMetaData;
-import org.teiid.adminapi.impl.VDBMetaData;
-import org.teiid.metadata.AbstractMetadataRecord;
-import org.teiid.metadata.MetadataFactory;
-import org.teiid.query.metadata.CompositeMetadataStore;
-import org.teiid.query.metadata.MetadataValidator;
-import org.teiid.query.metadata.SystemMetadata;
-import org.teiid.query.metadata.TransformationMetadata;
-import org.teiid.query.parser.QueryParser;
 import org.teiid.query.validator.ValidatorReport;
 
 import io.swagger.annotations.Api;
@@ -521,27 +512,7 @@ public final class KomodoUtilService extends KomodoService {
         // Name is ok, do full parse if ddl is defined
         if( namesMatch && !StringUtils.isBlank(defnDdl)) {
 	        try {
-	        	QueryParser parser = QueryParser.getQueryParser();
-	        	
-	            ModelMetaData m = new ModelMetaData();
-	            m.setName("m"); //$NON-NLS-1$
-	        	
-				MetadataFactory mf = new MetadataFactory(PREVIEW_VDB, 1,SystemMetadata.getInstance().getRuntimeTypeMap(),m);
-	        	parser.parseDDL(mf, restViewDefinition.getDdl());
-	        	
-				VDBMetaData vdb = metadataInstance.getVdb(PREVIEW_VDB).getVDBMetaData();
-				TransformationMetadata qmi = vdb.getAttachment(TransformationMetadata.class);
-	        	
-				CompositeMetadataStore store = qmi.getMetadataStore();
-				mf.mergeInto(store);
-				
-				ValidatorReport report = new ValidatorReport();
-	        	MetadataValidator validator = new MetadataValidator();
-	        	for (AbstractMetadataRecord record : mf.getSchema().getResolvingOrder()) {
-	        		validator.validate(vdb, m, record, report, qmi, mf, parser);
-	        	}
-	        	
-	        	store.removeSchema("m");
+	        	ValidatorReport report = metadataInstance.validate(PREVIEW_VDB, restViewDefinition.getDdl());
 	        	
 	        	String error = report.getFailureMessage();
 	        	if (report.hasItems() && !error.isEmpty()) {

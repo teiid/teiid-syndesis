@@ -22,7 +22,6 @@ public final class SyndesisSourceStatusSerializer extends TypeAdapter< RestSynde
 
     private void checkComplete( final RestSyndesisSourceStatus status ) throws IOException {
         // per documentation
-        assert( status.getSchemaState() != null );
         assert( status.getVdbState() != null );
         assert( status.getErrors() != null );
 
@@ -54,8 +53,6 @@ public final class SyndesisSourceStatusSerializer extends TypeAdapter< RestSynde
                 status.setErrors( Arrays.asList( errors ) );
             } else if ( RestSyndesisSourceStatus.SCHEMA_MODEL_NAME.equals( name ) ) {
                 status.setSchemaModelName( in.nextString() );
-            } else if ( RestSyndesisSourceStatus.SCHEMA_STATE.equals( name ) ) {
-                status.setSchemaState( EntityState.fromString( in.nextString() ) );
             } else if ( RestSyndesisSourceStatus.SERVER_VDB_NAME.equals( name ) ) {
                 status.setVdbName( in.nextString() );
             } else if ( RestSyndesisSourceStatus.SERVER_VDB_STATE.equals( name ) ) {
@@ -93,10 +90,6 @@ public final class SyndesisSourceStatusSerializer extends TypeAdapter< RestSynde
         // server VDB state
         out.name( RestSyndesisSourceStatus.SERVER_VDB_STATE );
         out.value( status.getVdbState().toString() );
-
-        // workspace schema state
-        out.name( RestSyndesisSourceStatus.SCHEMA_STATE );
-        out.value( status.getSchemaState().toString() );
 
         // errors
         out.name( RestSyndesisSourceStatus.ERRORS );

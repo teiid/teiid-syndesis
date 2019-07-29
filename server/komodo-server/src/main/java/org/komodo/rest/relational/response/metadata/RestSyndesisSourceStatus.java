@@ -124,7 +124,6 @@ public final class RestSyndesisSourceStatus implements KRestEntity {
     private String sourceName;
     private boolean hasTeiidSource = false;
     private List< String > errors;
-    private EntityState schemaState = EntityState.MISSING;
     private String schemaModelName;
     private String vdbName;
     private EntityState vdbState = EntityState.MISSING;
@@ -161,7 +160,6 @@ public final class RestSyndesisSourceStatus implements KRestEntity {
                && Objects.equals( this.hasTeiidSource, that.hasTeiidSource )
                && Objects.equals( this.errors, that.errors )
                && Objects.equals( this.schemaModelName, that.schemaModelName )
-               && Objects.equals(  this.schemaState, that.schemaState )
                && Objects.equals( this.vdbName, that.vdbName )
                && Objects.equals( this.vdbState, that.vdbState );
     }
@@ -185,13 +183,6 @@ public final class RestSyndesisSourceStatus implements KRestEntity {
      */
     public List<String> getErrors() {
         return this.errors == null ? Arrays.asList( EMPTY_ARRAY ) : this.errors;
-    }
-
-    /**
-     * @return the schema state or {@link EntityState#MISSING} if not set
-     */
-    public EntityState getSchemaState() {
-        return this.schemaState == null ? EntityState.MISSING : this.schemaState;
     }
 
     /**
@@ -237,7 +228,6 @@ public final class RestSyndesisSourceStatus implements KRestEntity {
                              this.hasTeiidSource,
                              this.errors,
                              this.schemaModelName,
-                             this.schemaState,
                              this.vdbName,
                              this.vdbState );
     }
@@ -280,17 +270,6 @@ public final class RestSyndesisSourceStatus implements KRestEntity {
         this.errors = errors;
     }
 
-    /**
-     * @param schemaState the schema state (can be <code>null</code>)
-     */
-    public void setSchemaState( final EntityState schemaState ) {
-        this.schemaState = schemaState == null ? EntityState.MISSING : schemaState;
-    }
-
-    public void setSchemaState( final String state) {
-        this.schemaState = schemaState == null ? EntityState.MISSING : EntityState.valueOf(state);
-    }
-    
     /**
      * @param schemaModelName the workspace schema model name (can be empty)
      */
