@@ -19,7 +19,7 @@ package org.komodo.metadata;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 import java.util.Set;
 
 import org.komodo.KException;
@@ -266,7 +266,7 @@ public interface MetadataInstance extends StringConstants {
 
 	Collection<String> getDataSourceNames() throws AdminException;
 
-	void createDataSource(String deploymentName, String templateName, Properties properties) throws AdminException;
+	void createDataSource(String deploymentName, String templateName, Map<String, String> properties) throws AdminException;
 
 	ValidatorReport validate(String vdbName, String ddl) throws KException;
 }

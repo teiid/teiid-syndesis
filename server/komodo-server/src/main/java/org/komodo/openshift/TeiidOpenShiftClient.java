@@ -39,7 +39,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
@@ -757,8 +756,8 @@ public class TeiidOpenShiftClient implements StringConstants {
             throw new KException("No driver or resource adapter found for source type " + dsType);
         }
 
-        Properties properties = scd.convertToDataSourceProperties();
-        properties.setProperty(ID, scd.getId());
+        Map<String, String> properties = scd.convertToDataSourceProperties();
+        properties.put(ID, scd.getId());
 
         this.metadata.createDataSource(name, driverName, encryptionComponent.decrypt(properties));
     }
@@ -1360,11 +1359,11 @@ public class TeiidOpenShiftClient implements StringConstants {
                             + source + " in VDB " + vdb.getName());
                 }
 
-                Properties config = def.getPublishedImageDataSourceProperties(ds);
+                Map<String, String> config = def.getPublishedImageDataSourceProperties(ds);
                 if (config != null) {
-                	for (Map.Entry<Object, Object> entry : config.entrySet())
-						properties.put((String) entry.getKey(), Base64.getEncoder()
-								.encodeToString(encryptionComponent.decrypt((String) entry.getValue()).getBytes()));
+                	for (Map.Entry<String, String> entry : config.entrySet())
+						properties.put(entry.getKey(), Base64.getEncoder()
+								.encodeToString(encryptionComponent.decrypt(entry.getValue()).getBytes()));
                 }
             }
         }

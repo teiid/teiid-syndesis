@@ -17,8 +17,8 @@
  */
 package org.komodo.datasources;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 public class TeiidDefinition extends DataSourceDefinition {
 
@@ -47,23 +47,23 @@ public class TeiidDefinition extends DataSourceDefinition {
     }
 
     @Override
-    public Properties getInternalTeiidDataSourceProperties(DefaultSyndesisDataSource source) {
-        Properties props = new Properties();
+    public Map<String, String> getInternalTeiidDataSourceProperties(DefaultSyndesisDataSource source) {
+        Map<String, String> props = new HashMap<>();
         
-        props.setProperty("jndi-name", source.getName());
-        props.setProperty("driver-name", getType()); // used as translator name
-        props.setProperty("display-name", source.getName());
+        props.put("jndi-name", source.getName());
+        props.put("driver-name", getType()); // used as translator name
+        props.put("display-name", source.getName());
         
-        props.setProperty("url", source.getProperty("url"));
-        props.setProperty("user", source.getProperty("user"));
-        props.setProperty("password", source.getProperty("password"));
-        props.setProperty("schema", source.getProperty("schema"));
+        props.put("url", source.getProperty("url"));
+        props.put("user", source.getProperty("user"));
+        props.put("password", source.getProperty("password"));
+        props.put("schema", source.getProperty("schema"));
         return props;
     }
 
     @Override
-    public Properties getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd) {
-        Properties props = new Properties();
+    public Map<String, String> getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd) {
+    	Map<String, String> props = new HashMap<>();
         ds(props, scd, "jdbc-url", scd.getProperty("url"));
         ds(props, scd, "user", scd.getProperty("user"));
         ds(props, scd, "password", scd.getProperty("password"));

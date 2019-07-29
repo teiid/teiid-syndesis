@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -496,34 +495,30 @@ public class DefaultMetadataInstance implements MetadataInstance {
     }
     
     @Override
-    public synchronized void createDataSource(String deploymentName, String templateName, Properties properties) throws AdminException {
+    public void createDataSource(String deploymentName, String templateName, Map<String, String> properties)
+    		throws AdminException {
         switch(templateName) {
         case "postgresql":
         case "mysql":
         case "h2":
         case "teiid":
         	if (datasources.get(deploymentName) == null) {
-				DataSource ds = DataSourceBuilder.create().url(properties.getProperty("url"))
-						.username(properties.getProperty("username") != null ? properties.getProperty("username")
-								: properties.getProperty("user"))
-						.password(properties.getProperty("password")).build();
+				DataSource ds = DataSourceBuilder.create().url(properties.get("url"))
+						.username(properties.get("username") != null ? properties.get("username")
+								: properties.get("user"))
+						.password(properties.get("password")).build();
 				
 				if (ds instanceof HikariDataSource) {
-					((HikariDataSource)ds).setMaximumPoolSize(1);
+					((HikariDataSource)ds).setMaximumPoolSize(10);
 					((HikariDataSource)ds).setMinimumIdle(0);
 					((HikariDataSource)ds).setIdleTimeout(60000);
 					((HikariDataSource)ds).setScheduledExecutorService(executor);
 				}
 				
 	            this.datasources.put(deploymentName, ds);
-	            properties.setProperty("type", templateName);
+	            properties.put("type", templateName);
 	            
-	            Map<String, String> props = new LinkedHashMap<>();
-	            for (String name : properties.stringPropertyNames()) {
-	            	props.put(name, properties.getProperty(name));
-	            }
-	            
-	            this.dsProperties.put(deploymentName, props);
+	            this.dsProperties.put(deploymentName, properties);
         	}
             break;
             default:
