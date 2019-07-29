@@ -43,8 +43,9 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import org.komodo.spi.KException;
-import org.komodo.spi.StringConstants;
+
+import org.komodo.KException;
+import org.komodo.StringConstants;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 

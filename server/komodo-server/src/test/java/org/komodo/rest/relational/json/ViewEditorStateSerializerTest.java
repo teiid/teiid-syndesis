@@ -22,28 +22,23 @@ import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.junit.Test;
-import org.komodo.relational.dataservice.SqlComposition;
-import org.komodo.relational.dataservice.SqlProjectedColumn;
-import org.komodo.relational.dataservice.StateCommand;
-import org.komodo.relational.dataservice.StateCommandAggregate;
-import org.komodo.relational.dataservice.ViewDefinition;
-import org.komodo.relational.dataservice.ViewEditorState;
+import org.komodo.KException;
+import org.komodo.datavirtualization.SqlComposition;
+import org.komodo.datavirtualization.SqlProjectedColumn;
+import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.rest.relational.response.vieweditorstate.RestSqlComposition;
 import org.komodo.rest.relational.response.vieweditorstate.RestSqlProjectedColumn;
-import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate;
-import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate.RestStateCommand;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewDefinition;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
-import org.komodo.spi.KException;
 
 public class ViewEditorStateSerializerTest extends AbstractSerializerTest {
 
     private String viewName = "myNewView";
-    private String undoRedoId = "UpdateViewNameCommand";
     private String untitledName = "untitled";
     private String oldNameKey = "oldName";
     private String newNameKey = "newName";
@@ -134,33 +129,7 @@ public class ViewEditorStateSerializerTest extends AbstractSerializerTest {
                                 tab(4) + q(RestSqlProjectedColumn.SELECTED_LABEL) + colon() + column2Selected + NEW_LINE +
                             tab(3) + CLOSE_BRACE + NEW_LINE +
                         tab(2) + pnl(CLOSE_SQUARE_BRACKET) +   
-            	TAB + CLOSE_BRACE + pnl(COMMA) +
-            	
-                // undoables child
-                TAB + q(RestViewEditorState.CONTENT_LABEL) + colon() + pnl(OPEN_SQUARE_BRACKET) +
-                
-                tab(2) + pnl(OPEN_BRACE) +
-                    tab(3) + q(RestStateCommandAggregate.UNDO_LABEL) + colon() + pnl(OPEN_BRACE ) +
-                        tab(4) + q(RestStateCommand.ID_LABEL) +
-                                              colon() + q(undoRedoId) + pnl(COMMA) +
-                        tab(4) + q(RestStateCommand.ARGS_LABEL) + colon() + pnl(OPEN_BRACE) +
-                            tab(5) + q(oldNameKey) + colon() + q(viewName) + pnl(COMMA) +
-                            tab(5) + q(newNameKey) + colon() + pnl(q(untitledName)) +
-                        tab(4) + pnl(CLOSE_BRACE) +
-                    tab(3) + CLOSE_BRACE + pnl(COMMA) +
-
-                    tab(3) + q(RestStateCommandAggregate.REDO_LABEL) + colon() + pnl(OPEN_BRACE) +
-                        tab(4) + q(RestStateCommand.ID_LABEL) +
-                                              colon() + q(undoRedoId) + pnl(COMMA) +
-                        tab(4) + q(RestStateCommand.ARGS_LABEL) + colon() + pnl(OPEN_BRACE) +
-                            tab(5) + q(oldNameKey) + colon() + q(untitledName) + pnl(COMMA) +
-                            tab(5) + q(newNameKey) + colon() + pnl(q(viewName)) +
-                        tab(4) + pnl(CLOSE_BRACE) +
-                    tab(3) + pnl(CLOSE_BRACE) +
-
-                tab(2) + pnl(CLOSE_BRACE) +
-
-                TAB + pnl(CLOSE_SQUARE_BRACKET) +    
+            	TAB + CLOSE_BRACE +
             CLOSE_BRACE;
 
         return state;
@@ -184,33 +153,6 @@ public class ViewEditorStateSerializerTest extends AbstractSerializerTest {
         RestSqlComposition[] comps = viewDef.getSqlCompositions(); 
         assertNotNull(comps);
         assertEquals(2, comps.length);
-
-        RestStateCommandAggregate[] content = viewEditorState.getCommands();
-        assertNotNull(content);
-        assertEquals(1, content.length);
-
-        RestStateCommandAggregate cmdAgg = content[0];
-        RestStateCommand undo = cmdAgg.getUndo();
-        assertNotNull(undo);
-
-        String undoId = "UpdateViewNameCommand";
-        assertEquals(undoId, undo.getId());
-        Map<String, String> undoArgs = undo.getArguments();
-        assertNotNull(undoArgs);
-        assertEquals(2, undoArgs.size());
-        assertEquals(untitledName, undoArgs.get(newNameKey));
-        assertEquals(viewName, undoArgs.get(oldNameKey));
-
-        RestStateCommand redo = cmdAgg.getRedo();
-        assertNotNull(redo);
-
-        String redoId = undoId;
-        assertEquals(redoId, redo.getId());
-        Map<String, String> redoArgs = redo.getArguments();
-        assertNotNull(redoArgs);
-        assertEquals(2, redoArgs.size());
-        assertEquals(untitledName, redoArgs.get(oldNameKey));
-        assertEquals(viewName, redoArgs.get(newNameKey));
     }
 
     @Test
@@ -225,34 +167,14 @@ public class ViewEditorStateSerializerTest extends AbstractSerializerTest {
         redoArgs.put(oldNameKey, untitledName);
         redoArgs.put(newNameKey, newName);
 
-        StateCommand undoCommand = mock(StateCommand.class);
-        when(undoCommand.getId()).thenReturn(undoRedoId);
-        when(undoCommand.getArguments()).thenReturn(undoArgs);
-
-        StateCommand redoCommand = mock(StateCommand.class);
-        when(redoCommand.getId()).thenReturn(undoRedoId);
-        when(redoCommand.getArguments()).thenReturn(redoArgs);
-
-        StateCommandAggregate command = mock(StateCommandAggregate.class);
-        when(command.getName()).thenReturn("INDEX_0");
-        when(command.getUndo()).thenReturn(undoCommand);
-        when(command.getRedo()).thenReturn(redoCommand);
-
-        StateCommandAggregate[] commands = { command };
-        ViewEditorState state = mock(ViewEditorState.class);
-        when(state.getName()).thenReturn(viewName);
-        when(state.getCommands()).thenReturn(commands);
-        
-        // Add view definition
-        
         String[] sourceTablePaths = { sourceTablePath1, sourceTablePath2, sourceTablePath3, sourceTablePath4 };
         ViewDefinition viewDef = mock(ViewDefinition.class);
-        when(viewDef.getName()).thenReturn(RestViewEditorState.VIEW_DEFINITION_LABEL);
+        when(viewDef.getName()).thenReturn(viewName);
         when(viewDef.getViewName()).thenReturn(viewDefinitionName);
         when(viewDef.getDescription()).thenReturn(description);
         when(viewDef.isComplete()).thenReturn(isComplete);
         when(viewDef.isUserDefined()).thenReturn(isUserDefined);
-        when(viewDef.getSourcePaths()).thenReturn(sourceTablePaths);
+        when(viewDef.getSourcePaths()).thenReturn(Arrays.asList(sourceTablePaths));
         
         // Mocks for Compositions
         SqlComposition sqlComp1 = mock(SqlComposition.class);
@@ -276,7 +198,7 @@ public class ViewEditorStateSerializerTest extends AbstractSerializerTest {
         when(sqlComp2.getOperator()).thenReturn(comp2Operator);
         
         SqlComposition[] sqlComps = { sqlComp1, sqlComp2 };
-        when(viewDef.getSqlCompositions()).thenReturn(sqlComps);
+        when(viewDef.getSqlCompositions()).thenReturn(Arrays.asList(sqlComps));
 
         // Mocks for projected columns
         SqlProjectedColumn sqlCol1 = mock(SqlProjectedColumn.class);
@@ -290,11 +212,9 @@ public class ViewEditorStateSerializerTest extends AbstractSerializerTest {
         when(sqlCol2.isSelected()).thenReturn(column2Selected);
         
         SqlProjectedColumn[] sqlCols = { sqlCol1, sqlCol2 };
-        when(viewDef.getProjectedColumns()).thenReturn(sqlCols);
+        when(viewDef.getProjectedColumns()).thenReturn(Arrays.asList(sqlCols));
 
-        when(state.getViewDefinition()).thenReturn(viewDef);
-
-        RestViewEditorState restState = new RestViewEditorState(MY_BASE_URI, state);
+        RestViewEditorState restState = new RestViewEditorState(MY_BASE_URI, viewDef);
 
         String expectedJson = createViewEditorState()
                                                     .replaceAll(NEW_LINE,  SPACE)

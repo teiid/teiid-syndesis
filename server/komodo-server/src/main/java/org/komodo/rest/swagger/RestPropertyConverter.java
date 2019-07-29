@@ -19,8 +19,10 @@ package org.komodo.rest.swagger;
 
 import java.lang.reflect.Type;
 import java.util.Iterator;
+
+import org.komodo.openshift.KomodoType;
 import org.komodo.rest.RestProperty;
-import org.komodo.spi.repository.KomodoType;
+
 import io.swagger.converter.ModelConverter;
 import io.swagger.converter.ModelConverterContext;
 import io.swagger.models.Model;

@@ -28,8 +28,8 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.openshift.BuildStatus;
-import org.komodo.relational.dataservice.Dataservice;
 import org.komodo.rest.relational.dataservice.RestDataservice;
 import org.mockito.Mockito;
 
@@ -69,7 +69,7 @@ public final class RestDataserviceTest {
 
     @Before
     public void init() throws Exception {
-        Dataservice theDataservice = Mockito.mock(Dataservice.class);
+        DataVirtualization theDataservice = Mockito.mock(DataVirtualization.class);
         Mockito.when(theDataservice.getName()).thenReturn(DATASERVICE_NAME);
         Mockito.when(theDataservice.getServiceVdbName()).thenReturn("ServiceVdb");
 

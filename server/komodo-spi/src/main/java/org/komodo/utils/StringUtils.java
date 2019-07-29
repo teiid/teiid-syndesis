@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.komodo.spi.StringConstants;
+import org.komodo.StringConstants;
 
 /**
  * This is a common place to put String utility methods.

@@ -22,10 +22,10 @@ import java.util.Properties;
 
 import javax.ws.rs.core.UriBuilder;
 
-import org.komodo.relational.dataservice.Dataservice;
+import org.komodo.KException;
+import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.rest.KomodoRestV1Application;
 import org.komodo.rest.RestLink.LinkType;
-import org.komodo.spi.KException;
 import org.komodo.utils.ArgCheck;
 
 /**
@@ -217,7 +217,7 @@ public final class KomodoRestUriBuilder implements KomodoRestV1Application.V1Con
      * @return the uri of the parent of the given data service
      * @throws KException if problem occurs
      */
-    public URI dataserviceParentUri(Dataservice dataservice) throws KException {
+    public URI dataserviceParentUri(DataVirtualization dataservice) throws KException {
         return workspaceDataservicesUri();
     }
 

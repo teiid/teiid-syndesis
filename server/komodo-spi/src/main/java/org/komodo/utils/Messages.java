@@ -21,7 +21,7 @@ import java.text.MessageFormat;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
-import org.komodo.spi.StringConstants;
+import org.komodo.StringConstants;
 
 /**
  *

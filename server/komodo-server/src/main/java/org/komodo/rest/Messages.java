@@ -17,9 +17,9 @@
  */
 package org.komodo.rest;
 
-import static org.komodo.spi.StringConstants.CLOSE_ANGLE_BRACKET;
-import static org.komodo.spi.StringConstants.DOT;
-import static org.komodo.spi.StringConstants.OPEN_ANGLE_BRACKET;
+import static org.komodo.StringConstants.CLOSE_ANGLE_BRACKET;
+import static org.komodo.StringConstants.DOT;
+import static org.komodo.StringConstants.OPEN_ANGLE_BRACKET;
 
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;

@@ -24,7 +24,6 @@ import org.komodo.rest.RestProperty;
 import org.komodo.rest.json.LinkSerializer;
 import org.komodo.rest.json.RestPropertySerializer;
 import org.komodo.rest.relational.dataservice.RestDataservice;
-import org.komodo.rest.relational.json.ViewEditorStateCommandSerializer.ViewEditorStateCmdUnitSerializer;
 import org.komodo.rest.relational.request.KomodoConnectionAttributes;
 import org.komodo.rest.relational.request.KomodoQueryAttribute;
 import org.komodo.rest.relational.response.KomodoStatusObject;
@@ -34,8 +33,6 @@ import org.komodo.rest.relational.response.RestQueryRow;
 import org.komodo.rest.relational.response.metadata.RestSyndesisSourceStatus;
 import org.komodo.rest.relational.response.vieweditorstate.RestSqlComposition;
 import org.komodo.rest.relational.response.vieweditorstate.RestSqlProjectedColumn;
-import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate;
-import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate.RestStateCommand;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewDefinition;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
 import org.komodo.rest.relational.response.virtualization.RestRouteStatus;
@@ -76,8 +73,6 @@ public final class KomodoJsonMarshaller {
                                                   .registerTypeAdapter(RestViewDefinition.class, new ViewDefinitionSerializer())
                                                   .registerTypeAdapter(RestSqlComposition.class, new SqlCompositionSerializer())
                                                   .registerTypeAdapter(RestSqlProjectedColumn.class, new SqlProjectedColumnSerializer())
-                                                  .registerTypeAdapter(RestStateCommandAggregate.class, new ViewEditorStateCommandSerializer())
-                                                  .registerTypeAdapter(RestStateCommand.class, new ViewEditorStateCmdUnitSerializer())
                                                   .registerTypeAdapter(RestVirtualizationStatus.class, new VirtualizationStatusSerializer())
                                                   .registerTypeAdapter(RestRouteStatus.class, new RouteStatusSerializer());
 

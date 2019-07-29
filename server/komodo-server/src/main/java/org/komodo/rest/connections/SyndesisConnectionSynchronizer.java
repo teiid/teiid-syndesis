@@ -26,17 +26,16 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.komodo.KEngine;
+import org.komodo.KException;
+import org.komodo.UnitOfWork;
+import org.komodo.WorkspaceManager;
 import org.komodo.datasources.DefaultSyndesisDataSource;
 import org.komodo.openshift.TeiidOpenShiftClient;
-import org.komodo.relational.WorkspaceManager;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoService;
 import org.komodo.rest.connections.SyndesisConnectionMonitor.EventMsg;
 import org.komodo.rest.relational.response.metadata.RestSyndesisSourceStatus;
-import org.komodo.spi.KEngine;
-import org.komodo.spi.KException;
-import org.komodo.spi.SystemConstants;
-import org.komodo.spi.repository.UnitOfWork;
 import org.teiid.adminapi.AdminException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -112,7 +111,7 @@ public class SyndesisConnectionSynchronizer {
 					synchronzePreviewVDB();
 					return true;
 				} catch (Exception e) {
-					LOGGER.error(e);
+					LOGGER.error("Error syncronizing", e);
 				}
 				return false;
 			}
@@ -277,7 +276,7 @@ public class SyndesisConnectionSynchronizer {
 	private void deleteSchemaModel(RestSyndesisSourceStatus status) throws KException {
         UnitOfWork uow = null;
         try {
-            uow = kengine.createTransaction(SystemConstants.SYSTEM_USER, "delete schema", false, KomodoService.REPO_USER); //$NON-NLS-1$
+            uow = kengine.createTransaction(KomodoService.SYSTEM_USER_NAME, "delete schema", false, KomodoService.REPO_USER); //$NON-NLS-1$
 
             final WorkspaceManager mgr = kengine.getWorkspaceManager();
             

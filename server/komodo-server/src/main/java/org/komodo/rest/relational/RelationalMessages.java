@@ -17,15 +17,16 @@
  */
 package org.komodo.rest.relational;
 
-import static org.komodo.spi.StringConstants.CLOSE_ANGLE_BRACKET;
-import static org.komodo.spi.StringConstants.DOT;
-import static org.komodo.spi.StringConstants.OPEN_ANGLE_BRACKET;
+import static org.komodo.StringConstants.CLOSE_ANGLE_BRACKET;
+import static org.komodo.StringConstants.DOT;
+import static org.komodo.StringConstants.OPEN_ANGLE_BRACKET;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-import org.komodo.spi.repository.KomodoType;
+
+import org.komodo.openshift.KomodoType;
 
 /**
  * Localized messages for the {@code server rest} project.

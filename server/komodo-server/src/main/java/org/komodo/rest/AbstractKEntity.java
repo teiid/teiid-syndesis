@@ -26,9 +26,10 @@ import java.util.List;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
+
+import org.komodo.KException;
 import org.komodo.rest.RestLink.LinkType;
 import org.komodo.rest.relational.KomodoRestUriBuilder;
-import org.komodo.spi.KException;
 import org.komodo.utils.ArgCheck;
 
 public abstract class AbstractKEntity implements KRestEntity {

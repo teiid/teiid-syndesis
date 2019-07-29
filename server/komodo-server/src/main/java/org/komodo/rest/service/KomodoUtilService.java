@@ -33,14 +33,16 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
+import org.komodo.StringConstants;
+import org.komodo.UnitOfWork;
+import org.komodo.datavirtualization.DataVirtualization;
+import org.komodo.datavirtualization.SqlComposition;
+import org.komodo.datavirtualization.SqlProjectedColumn;
+import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.metadata.MetadataInstance;
-import org.komodo.relational.dataservice.SqlComposition;
-import org.komodo.relational.dataservice.SqlProjectedColumn;
-import org.komodo.relational.dataservice.StateCommandAggregate;
-import org.komodo.relational.dataservice.ViewDefinition;
-import org.komodo.relational.dataservice.ViewEditorState;
 import org.komodo.rest.KomodoRestException;
 import org.komodo.rest.KomodoRestV1Application;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
@@ -50,14 +52,9 @@ import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.vieweditorstate.RestSqlComposition;
 import org.komodo.rest.relational.response.vieweditorstate.RestSqlProjectedColumn;
-import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate;
-import org.komodo.rest.relational.response.vieweditorstate.RestStateCommandAggregate.RestStateCommand;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewDefinition;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewDefinitionStatus;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
-import org.komodo.spi.StringConstants;
-import org.komodo.spi.repository.UnitOfWork;
-import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -151,7 +148,7 @@ public final class KomodoUtilService extends KomodoService {
             uow = systemTx("getVdbs", true); //$NON-NLS-1$
 
         } catch (final Exception e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+            if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();
             }
 
@@ -212,6 +209,12 @@ public final class KomodoUtilService extends KomodoService {
                 dataType = "string",
                 paramType = "query"),
         @ApiImplicitParam(
+                name = QueryParamKeys.VIRTUALIZATION,
+                value = "The name of the virtualization",
+                required = true,
+                dataType = "string",
+                paramType = "query"),
+        @ApiImplicitParam(
                 name = QueryParamKeys.SIZE,
                 value = "The number of objects to return. If not present, all objects are returned",
                 required = false,
@@ -241,12 +244,20 @@ public final class KomodoUtilService extends KomodoService {
         try {
 
             final String searchPattern = uriInfo.getQueryParameters().getFirst( QueryParamKeys.PATTERN );
-
+            if (!StringUtils.isBlank(searchPattern)) {
+            	return createErrorResponse(Status.NOT_IMPLEMENTED, mediaTypes, "pattern is not implemented, use ");
+            }
+            
+            final String virtualization = uriInfo.getQueryParameters().getFirst( QueryParamKeys.VIRTUALIZATION );
+            
             // find view editor states
             final String txId = "getViewEditorStates"; //$NON-NLS-1$ //$NON-NLS-2$
             uow = createTransaction(principal, txId, true );
 
-            final ViewEditorState[] viewEditorStates = getViewEditorStates(searchPattern);
+            String vdbName = DataVirtualization.getServiceVdbName(virtualization);
+            String prefix = KomodoService.getViewEditorStateIdPrefix(vdbName);
+            
+            final ViewDefinition[] viewEditorStates = getViewDefinitions(prefix);
             LOGGER.debug( "getViewEditorStates:found '{0}' ViewEditorStates", viewEditorStates.length ); //$NON-NLS-1$
 
             int start = 0;
@@ -284,7 +295,7 @@ public final class KomodoUtilService extends KomodoService {
             }
 
             int i = 0;
-            for ( final ViewEditorState viewEditorState : viewEditorStates ) {
+            for ( final ViewDefinition viewEditorState : viewEditorStates ) {
                 if (i < start)
                     continue;
 
@@ -299,7 +310,7 @@ public final class KomodoUtilService extends KomodoService {
 
             return commit( uow, mediaTypes, restViewEditorStates );
         } catch ( final Exception e ) {
-            if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
+            if ( ( uow != null ) && !uow.isCompleted()) {
                 uow.rollback();
             }
 
@@ -347,7 +358,7 @@ public final class KomodoUtilService extends KomodoService {
 
             final String txId = "getViewEditorStates"; //$NON-NLS-1$ //$NON-NLS-2$
             uow = createTransaction(principal, txId, true );
-            ViewEditorState viewEditorState = getWorkspaceManager().getViewEditorState(viewEditorStateId);
+            ViewDefinition viewEditorState = getWorkspaceManager().getViewDefinition(viewEditorStateId);
             LOGGER.debug( "getViewEditorState:found '{0}' ViewEditorStates",
                               viewEditorState == null ? 0 : 1 ); //$NON-NLS-1$
 
@@ -359,7 +370,7 @@ public final class KomodoUtilService extends KomodoService {
             return commit( uow, mediaTypes, restViewEditorState );
 
         } catch ( final Exception e ) {
-            if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
+            if ( ( uow != null ) && !uow.isCompleted()) {
                 uow.rollback();
             }
 
@@ -382,7 +393,7 @@ public final class KomodoUtilService extends KomodoService {
      */
     @PUT
     @Path(V1Constants.USER_PROFILE + FORWARD_SLASH + V1Constants.VIEW_EDITOR_STATES)
-    @ApiOperation( value = "Store multiple view editor states in the user's profile", response = ViewEditorState.class )
+    @ApiOperation( value = "Store multiple view editor states in the user's profile" )
     @ApiResponses(value = {
         @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
         @ApiResponse(code = 403, message = "An error has occurred.")
@@ -395,7 +406,6 @@ public final class KomodoUtilService extends KomodoService {
                                                                  OPEN_PRE_TAG + OPEN_BRACKET + BR +
                                                                  OPEN_BRACE + BR +
                                                                  NBSP + RestViewEditorState.ID_LABEL + ": \"Unqiue name or identifier of the view editor state\"" + BR +
-                                                                 NBSP + RestViewEditorState.CONTENT_LABEL + ": { ... \"The content of the state\" ... }" + BR +
                                                                  NBSP + RestViewEditorState.VIEW_DEFINITION_LABEL + ": { ... \"The view definition content\" ... }" + BR +
                                                                  CLOSE_BRACE + BR +
                                                                  CLOSE_BRACE +
@@ -435,7 +445,7 @@ public final class KomodoUtilService extends KomodoService {
             return commit(uow, mediaTypes, kso);
 
         } catch (final Exception e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+            if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();
             }
 
@@ -568,15 +578,10 @@ public final class KomodoUtilService extends KomodoService {
      */
     private Response checkRestEditorState(final List<MediaType> mediaTypes, final RestViewEditorState restEditorState) {
         String stateId = restEditorState.getId();
-        RestStateCommandAggregate[] commands = restEditorState.getCommands();
         RestViewDefinition restViewDefn = restEditorState.getViewDefinition();
 
         if (StringUtils.isBlank(stateId)) {
             return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_ID);
-        }
-
-        if (commands == null) {
-            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_COMMANDS);
         }
 
         if (restViewDefn == null) {
@@ -611,26 +616,14 @@ public final class KomodoUtilService extends KomodoService {
      * @return the ViewEditorState repo object
      * @throws Exception exception if a problem is encountered
      */
-    private ViewEditorState createViewEditorState(final RestViewEditorState editorState) throws Exception {
+    private ViewDefinition createViewEditorState(final RestViewEditorState editorState) throws Exception {
         String stateId = editorState.getId();
-        RestStateCommandAggregate[] commands = editorState.getCommands();
         RestViewDefinition restViewDefn = editorState.getViewDefinition();
 
         // Add a new ViewEditorState to the userProfile
-        ViewEditorState viewEditorState = getWorkspaceManager().addViewEditorState(stateId);
-
-        // Add commands to the ViewEditorState
-        for (RestStateCommandAggregate restCmd : commands) {
-            RestStateCommand restUndo = restCmd.getUndo();
-            RestStateCommand restRedo = restCmd.getRedo();
-
-            StateCommandAggregate stateCmdAgg = viewEditorState.addCommand();
-            stateCmdAgg.setUndo(restUndo.getId(), restUndo.getArguments());
-            stateCmdAgg.setRedo(restRedo.getId(), restRedo.getArguments());
-        }
+        ViewDefinition viewDefn = getWorkspaceManager().addViewDefiniton(stateId);
 
         // Set ViewDefinition of the ViewEditorState
-        ViewDefinition viewDefn = viewEditorState.setViewDefinition();
         viewDefn.setViewName(restViewDefn.getViewName());
         viewDefn.setDdl(restViewDefn.getDdl());
         // If user-defined, user may have changed description.  Reset object description from DDL
@@ -659,11 +652,10 @@ public final class KomodoUtilService extends KomodoService {
         // Projected Columns
         for (RestSqlProjectedColumn restCol: restViewDefn.getProjectedColumns()) {
             SqlProjectedColumn sqlProjectedCol = viewDefn.addProjectedColumn(restCol.getName());
-            sqlProjectedCol.setName(restCol.getName());
             sqlProjectedCol.setType(restCol.getType());
             sqlProjectedCol.setSelected(restCol.isSelected());
         }
-        return viewEditorState;
+        return viewDefn;
     }
 
     /**
@@ -754,7 +746,7 @@ public final class KomodoUtilService extends KomodoService {
         try {
             uow = createTransaction(principal, "removeUserProfileViewEditorState", false); //$NON-NLS-1$
 
-            if (!removeEditorState(viewEditorStateId)) {
+            if (!removeViewDefinition(viewEditorStateId)) {
                 return Response.noContent().build();
             }
 
@@ -764,7 +756,7 @@ public final class KomodoUtilService extends KomodoService {
             return commit(uow, mediaTypes, kso);
 
         } catch (final Exception e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+            if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();
             }
 
