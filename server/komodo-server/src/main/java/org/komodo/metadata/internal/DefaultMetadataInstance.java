@@ -28,9 +28,15 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
+import javax.sql.DataSource;
 import javax.xml.stream.XMLStreamException;
 
 import org.komodo.KException;
@@ -42,20 +48,38 @@ import org.komodo.metadata.query.QSResult;
 import org.komodo.metadata.query.QSRow;
 import org.komodo.metadata.runtime.TeiidDataSource;
 import org.komodo.metadata.runtime.TeiidVdb;
+import org.komodo.rest.ExternalSource;
 import org.komodo.rest.TeiidServer;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.stereotype.Component;
+import org.teiid.adminapi.Admin;
 import org.teiid.adminapi.AdminException;
+import org.teiid.adminapi.AdminProcessingException;
 import org.teiid.adminapi.VDB;
 import org.teiid.adminapi.impl.ModelMetaData;
 import org.teiid.adminapi.impl.SourceMappingMetadata;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.adminapi.impl.VDBMetadataParser;
+import org.teiid.api.exception.query.QueryMetadataException;
+import org.teiid.core.TeiidComponentException;
 import org.teiid.core.util.AccessibleByteArrayOutputStream;
+import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository.ConnectorManagerException;
+import org.teiid.metadata.AbstractMetadataRecord;
+import org.teiid.metadata.MetadataFactory;
+import org.teiid.query.metadata.BasicQueryMetadataWrapper;
+import org.teiid.query.metadata.CompositeMetadataStore;
+import org.teiid.query.metadata.MetadataValidator;
+import org.teiid.query.metadata.SystemMetadata;
+import org.teiid.query.metadata.TransformationMetadata;
 import org.teiid.query.parser.QueryParser;
 import org.teiid.query.sql.LanguageObject;
+import org.teiid.query.validator.ValidatorReport;
+import org.teiid.translator.TranslatorException;
+
+import com.zaxxer.hikari.HikariDataSource;
 
 @Component
 public class DefaultMetadataInstance implements MetadataInstance {
@@ -65,22 +89,21 @@ public class DefaultMetadataInstance implements MetadataInstance {
 	@Autowired
     private TeiidServer server;
 
-    private TeiidAdminImpl admin;
+    private Admin admin;
+    private Map<String, Object> datasources = new ConcurrentHashMap<>();
+    private Map<String, Map<String, String>> dsProperties = new ConcurrentHashMap<>();
+    private ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1); 
 
-    public DefaultMetadataInstance() {
-        
+    public DefaultMetadataInstance(TeiidServer server) {
+        this.server = server;
     }
     
-    @Override
-    public TeiidAdminImpl getAdmin() throws AdminException {
-    	if (this.admin == null) {
-    		synchronized (this) {
-    			if (this.admin == null) {
-    				this.admin = new TeiidAdminImpl(server.getAdmin(), server);
-    			}
-    		}
-	    }
-		return this.admin;
+    public Admin getAdmin() throws AdminException {
+    	//no need to synchronize, as delegate holds no state
+    	if (admin == null) {
+    		admin = server.getAdmin(); 
+    	}
+    	return admin;
     }
     
 	public Connection getConnection(String vdb, String version) throws SQLException {
@@ -210,21 +233,11 @@ public class DefaultMetadataInstance implements MetadataInstance {
     }
 
     @Override
-    public boolean dataSourceExists(String name) throws KException {
-        checkStarted();
-        try {
-            return getAdmin().getDataSourceNames().contains(name);
-        } catch (Exception ex) {
-            throw handleError(ex);
-        }
-    }
-
-    @Override
     public TeiidDataSource getDataSource(String name) throws KException {
         checkStarted();
-        Properties dataSource;
+        Map<String, String> dataSource;
         try {
-            dataSource = getAdmin().getDataSource(name);
+            dataSource = this.dsProperties.get(name);
             if (dataSource == null)
                 return null;
 
@@ -235,10 +248,19 @@ public class DefaultMetadataInstance implements MetadataInstance {
     }
 
     @Override
-    public void deleteDataSource(String dsName) throws KException {
+    public synchronized void deleteDataSource(String dsName) throws KException {
         checkStarted();
         try {
-            getAdmin().deleteDataSource(dsName);
+        	Object ds = this.datasources.get(dsName);
+            if (ds != null) {
+                this.server.removeConnectionFactoryProvider(dsName);
+                this.datasources.remove(dsName);
+            }
+            
+            // close the underlying datasource and any connections
+            if (ds instanceof HikariDataSource) {
+            	((HikariDataSource)ds).close();
+            }
         } catch (Exception ex) {
             throw handleError(ex);
         }
@@ -354,7 +376,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
     }
 
     @Override
-    public TeiidVdb getVdb(String name) throws KException {
+    public TeiidVdbImpl getVdb(String name) throws KException {
         checkStarted();
         try {
             VDB vdb = getAdmin().getVDB(name, DEFAULT_VDB_VERSION);
@@ -388,7 +410,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
             
             String deploymentName = vdbName + VDB_DEPLOYMENT_SUFFIX;
             
-            TeiidAdminImpl admin = getAdmin();
+            Admin admin = getAdmin();
             
             try {
                 ArgCheck.isNotNull(deploymentName, "deploymentName"); //$NONNLS1$
@@ -401,9 +423,9 @@ public class DefaultMetadataInstance implements MetadataInstance {
                 
                 for (ModelMetaData model : vdb.getModelMetaDatas().values()) {
                     for (SourceMappingMetadata smm : model.getSourceMappings()) {
-                    	admin.addTranslator(smm.getTranslatorName());
-                        if (smm.getConnectionJndiName() != null && admin.getDatasources().get(smm.getConnectionJndiName()) != null) {
-                            server.addConnectionFactory(smm.getName(), admin.getDatasources().get(smm.getConnectionJndiName()));
+                    	addTranslator(smm.getTranslatorName());
+                        if (smm.getConnectionJndiName() != null && datasources.get(smm.getConnectionJndiName()) != null) {
+                            server.addConnectionFactory(smm.getName(), datasources.get(smm.getConnectionJndiName()));
                         }
                     }
                 }
@@ -423,7 +445,6 @@ public class DefaultMetadataInstance implements MetadataInstance {
     
     @Override
     public void undeployDynamicVdb(String vdbName) throws KException {
-        checkStarted();
         try {
             TeiidVdb vdb = getVdb(vdbName);
             if (vdb != null) {
@@ -437,7 +458,6 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
     @Override
     public String getSchema(String vdbName, String modelName) throws KException {
-        checkStarted();
         try {
             return getAdmin().getSchema(vdbName, DEFAULT_VDB_VERSION, modelName, null, null);
         } catch (Exception ex) {
@@ -472,6 +492,105 @@ public class DefaultMetadataInstance implements MetadataInstance {
 		}
         
         return baos;
+    }
+    
+    @Override
+    public void createDataSource(String deploymentName, String templateName, Map<String, String> properties)
+    		throws AdminException {
+        switch(templateName) {
+        case "postgresql":
+        case "mysql":
+        case "h2":
+        case "teiid":
+        	if (datasources.get(deploymentName) == null) {
+				DataSource ds = DataSourceBuilder.create().url(properties.get("url"))
+						.username(properties.get("username") != null ? properties.get("username")
+								: properties.get("user"))
+						.password(properties.get("password")).build();
+				
+				if (ds instanceof HikariDataSource) {
+					((HikariDataSource)ds).setMaximumPoolSize(10);
+					((HikariDataSource)ds).setMinimumIdle(0);
+					((HikariDataSource)ds).setIdleTimeout(60000);
+					((HikariDataSource)ds).setScheduledExecutorService(executor);
+				}
+				
+	            this.datasources.put(deploymentName, ds);
+	            properties.put("type", templateName);
+	            
+	            this.dsProperties.put(deploymentName, properties);
+        	}
+            break;
+            default:
+            throw new AdminProcessingException(
+                    "Unsupported data type " + templateName + " Failed to create data source " + deploymentName);
+        }
+    }
+
+    @Override
+    public Set<String> getDataSourceTemplateNames() throws AdminException {
+        HashSet<String> templates = new HashSet<>();
+        templates.add("postgresql");
+        templates.add("mysql");
+        templates.add("h2");
+        templates.add("teiid");
+        return templates;
+    }
+    
+    @Override
+    public Collection<String> getDataSourceNames() throws AdminException {
+        return datasources.keySet();
+    }
+    
+    void addTranslator(String translatorname) {
+        try {
+            if (server.getExecutionFactory(translatorname) == null) {
+                server.addTranslator(ExternalSource.translatorClass(translatorname, "org.komodo.rest"));
+            }
+        } catch (ConnectorManagerException | TranslatorException e) {
+            throw new IllegalStateException("Failed to load translator " + translatorname, e);
+        }
+    }
+    
+    @Override
+    public ValidatorReport validate(String vdbName, String ddl) throws KException {
+		QueryParser parser = QueryParser.getQueryParser();
+		
+		ModelMetaData m = new ModelMetaData();
+		m.setName(SERVICE_VDB_VIEW_MODEL); //$NON-NLS-1$
+		
+		MetadataFactory mf = new MetadataFactory(vdbName, DEFAULT_VDB_VERSION, SystemMetadata.getInstance().getRuntimeTypeMap(),m);
+		parser.parseDDL(mf, ddl);
+		
+		TeiidVdbImpl preview = getVdb(vdbName);
+		if (preview == null || !preview.isActive()) {
+			throw new KException("Preview VDB is not yet available");
+		}
+		
+		
+		VDBMetaData vdb = preview.getVDBMetaData();
+		TransformationMetadata qmi = vdb.getAttachment(TransformationMetadata.class);
+		
+		//create an metadata facade so we can find stuff that was parsed
+		CompositeMetadataStore compositeMetadataStore = new CompositeMetadataStore(mf.asMetadataStore());
+		BasicQueryMetadataWrapper wrapper = new BasicQueryMetadataWrapper(qmi) {
+			@Override
+			public Object getGroupID(String groupName) throws TeiidComponentException, QueryMetadataException {
+				try {
+					return super.getGroupID(groupName);
+				} catch (QueryMetadataException e) {
+					return compositeMetadataStore.findGroup(groupName);
+				}
+			}
+		};
+		
+		ValidatorReport report = new ValidatorReport();
+		MetadataValidator validator = new MetadataValidator();
+		for (AbstractMetadataRecord record : mf.getSchema().getResolvingOrder()) {
+			validator.validate(vdb, m, record, report, wrapper, mf, parser);
+		}
+		
+		return report;
     }
 
 }

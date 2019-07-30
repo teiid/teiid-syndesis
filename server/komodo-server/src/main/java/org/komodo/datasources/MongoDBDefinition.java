@@ -18,7 +18,6 @@
 package org.komodo.datasources;
 
 import java.util.Map;
-import java.util.Properties;
 
 public class MongoDBDefinition extends DataSourceDefinition {
 
@@ -46,7 +45,7 @@ public class MongoDBDefinition extends DataSourceDefinition {
     }
 
     @Override
-    public Properties getInternalTeiidDataSourceProperties(DefaultSyndesisDataSource source) {
+    public Map<String, String> getInternalTeiidDataSourceProperties(DefaultSyndesisDataSource source) {
         /*
         {
               "DATABASE_SERVICE_NAME":"mongodb",
@@ -65,30 +64,12 @@ public class MongoDBDefinition extends DataSourceDefinition {
               username
         }
         */
-        Properties props = new Properties();
-        props.setProperty("remoteServerList", source.getProperty("DATABASE_SERVICE_NAME")+":27017");
-        props.setProperty("username", source.getProperty("username"));
-        props.setProperty("password", source.getProperty("password"));
-        props.setProperty("database", source.getProperty("database_name"));
-        props.setProperty("class-name", "org.teiid.resource.adapter.mongodb.MongoDBManagedConnectionFactory");
-        props.setProperty("securityType", "SCRAM_SHA_1");
-        props.setProperty("authDatabase", source.getProperty("database_name"));
-        props.setProperty("ssl", "false");
-        return props;
+    	throw new UnsupportedOperationException();
     }
 
     @Override
-    public Properties getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd) {
-        Properties props = setupResourceAdapter(scd.getName(), "org.jboss.teiid.resource-adapter.mongodb",
-                "org.teiid.resource.adapter.mongodb.MongoDBManagedConnectionFactory", scd.getName());
-        ds(props, scd, "SecurityType", "SCRAM_SHA_1");
-        ds(props, scd, "Ssl", "false");
-        ds(props, scd, "AuthDatabase", scd.getProperty("database_name"));
-        ds(props, scd, "RemoteServerList", scd.getProperty("DATABASE_SERVICE_NAME")+":27017");
-        ds(props, scd, "Database", scd.getProperty("database_name"));
-        ds(props, scd, "Username", scd.getProperty("username"));
-        ds(props, scd, "Password", scd.getProperty("password"));
-        return props;
+    public Map<String, String> getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd) {
+    	throw new UnsupportedOperationException();
     }
     
 

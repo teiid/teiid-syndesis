@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -169,9 +170,9 @@ public class ServiceVdbGeneratorTest {
     }
 
 	private void addSourceInfo(String connectionName, String jndiName, String ddl, String modelName) {
-		Properties properties = new Properties();
-		properties.setProperty(TeiidDataSource.DATASOURCE_DRIVERNAME, TRANSLATOR_JDBC);
-		properties.setProperty(TeiidDataSource.DATASOURCE_JNDINAME, jndiName);
+		Map<String, String> properties = new LinkedHashMap<String, String>();
+		properties.put(TeiidDataSource.DATASOURCE_DRIVERNAME, TRANSLATOR_JDBC);
+		properties.put(TeiidDataSource.DATASOURCE_JNDINAME, jndiName);
 		dataSources.put(connectionName, new TeiidDataSourceImpl(connectionName, properties));
     	
 		MetadataFactory mf = new MetadataFactory("x", 1, modelName, SystemMetadata.getInstance().getRuntimeTypeMap(), new Properties(), null);

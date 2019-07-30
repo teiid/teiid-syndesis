@@ -27,9 +27,6 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.PrePersist;
 
-import org.komodo.datavirtualization.SqlComposition;
-import org.komodo.datavirtualization.SqlProjectedColumn;;
-
 /**
  * Represents the configuration of a view editor state
  */
@@ -61,6 +58,13 @@ public class ViewDefinition implements org.komodo.datavirtualization.ViewDefinit
 		}
 	}
 	
+	public static class ViewDefinitionStateConvertor extends JpaConverterJson {
+		@Override
+		protected Class<?> targetClass() {
+			return State.class;
+		}
+	}
+
 	@Id
 	private String id;
 	@Column(unique=true)
@@ -72,7 +76,7 @@ public class ViewDefinition implements org.komodo.datavirtualization.ViewDefinit
 	private boolean complete;
 	private boolean userDefined;
 	
-	@Convert(converter = JpaConverterJson.class)
+	@Convert(converter = ViewDefinitionStateConvertor.class)
 	private State state = new State();
 	
 	protected ViewDefinition() {
@@ -106,8 +110,8 @@ public class ViewDefinition implements org.komodo.datavirtualization.ViewDefinit
 	}
 
 	@Override
-	public List<SqlComposition> getSqlCompositions() {
-		return state.sqlCompositions;
+	public List<org.komodo.datavirtualization.SqlComposition> getSqlCompositions() {
+		return new ArrayList<>(state.sqlCompositions);
 	}
 
 	@Override
@@ -173,13 +177,13 @@ public class ViewDefinition implements org.komodo.datavirtualization.ViewDefinit
 	@Override
 	public SqlProjectedColumn addProjectedColumn(String columnName) {
 		org.komodo.repository.SqlProjectedColumn sqlProjectedColumn = new org.komodo.repository.SqlProjectedColumn(columnName);
-		this.getProjectedColumns().add(sqlProjectedColumn);
+		this.state.projectedColumns.add(sqlProjectedColumn);
 		return sqlProjectedColumn;
 	}
 
 	@Override
-	public List<SqlProjectedColumn> getProjectedColumns() {
-		return state.projectedColumns;
+	public List<org.komodo.datavirtualization.SqlProjectedColumn> getProjectedColumns() {
+		return new ArrayList<>(state.projectedColumns);
 	}
 	
 	public void setSqlCompositions(List<SqlComposition> sqlCompositions) {

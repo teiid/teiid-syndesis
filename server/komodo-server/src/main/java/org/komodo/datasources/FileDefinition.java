@@ -18,7 +18,6 @@
 package org.komodo.datasources;
 
 import java.util.Map;
-import java.util.Properties;
 
 public class FileDefinition extends DataSourceDefinition {
 
@@ -46,18 +45,12 @@ public class FileDefinition extends DataSourceDefinition {
     }
     
     @Override
-    public Properties getInternalTeiidDataSourceProperties(DefaultSyndesisDataSource source) {
-        Properties props = new Properties();
-        props.setProperty("class-name", "org.teiid.resource.adapter.file.FileManagedConnectionFactory");
-        props.setProperty("ParentDirectory", source.getProperty("directory"));
-        return props;
+    public Map<String, String> getInternalTeiidDataSourceProperties(DefaultSyndesisDataSource source) {
+    	throw new UnsupportedOperationException();
     } 
     
     @Override
-    public Properties getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd) {
-        Properties props = setupResourceAdapter(scd.getName(), "org.jboss.teiid.resource-adapter.file",
-                "org.teiid.resource.adapter.file.FileManagedConnectionFactory", scd.getName());
-        ds(props, scd, "ParentDirectory", scd.getProperty("directory"));
-        return props;
+    public Map<String, String> getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd) {
+    	throw new UnsupportedOperationException();
     }     
 }

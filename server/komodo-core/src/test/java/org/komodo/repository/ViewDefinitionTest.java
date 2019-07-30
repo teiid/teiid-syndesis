@@ -1,6 +1,9 @@
 package org.komodo.repository;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Arrays;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,6 +41,23 @@ public class ViewDefinitionTest {
         entityManager.flush();
 
         assertEquals(2, workspaceManagerImpl.getViewDefinitions("x").length);
+        
+        assertTrue(workspaceManagerImpl.removeViewDefinition(v.getName()));
+    }
+    
+    @Test
+    public void testState() {
+    	ViewDefinition v = new ViewDefinition("exising");
+        v.setDdl("create ...");
+        v.addSourcePath("x");
+        v.addSqlComposition("comp");
+        v = viewEditorStateRepository.save(v);
+        entityManager.flush();
+        entityManager.detach(v);
+    	
+        ViewDefinition found = viewEditorStateRepository.findByName("exising");
+        assertEquals(1, found.getSqlCompositions().size());
+        assertEquals(Arrays.asList("x"), found.getSourcePaths());
     }
 
 }

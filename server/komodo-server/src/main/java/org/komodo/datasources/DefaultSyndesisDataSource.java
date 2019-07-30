@@ -18,7 +18,6 @@
 package org.komodo.datasources;
 
 import java.util.Map;
-import java.util.Properties;
 
 public class DefaultSyndesisDataSource {
 	private String id;
@@ -84,7 +83,7 @@ public class DefaultSyndesisDataSource {
         return this.properties.get(key);
     }
 
-    public Properties convertToDataSourceProperties() {
+    public Map<String, String> convertToDataSourceProperties() {
         return this.definition.getInternalTeiidDataSourceProperties(this);
     }
 }

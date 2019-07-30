@@ -165,38 +165,27 @@ public class SyndesisConnectionSynchronizer {
 
 		// check if the metadata is already available, then skip it.
 		RestSyndesisSourceStatus status = checkMetadataStatus(sds.getName());
-		if (status != null && status.getSchemaState() == RestSyndesisSourceStatus.EntityState.ACTIVE
+		if (status != null
 				&& status.getVdbState() == RestSyndesisSourceStatus.EntityState.ACTIVE) {
 			LOGGER.info("Schema already in repo for source " + sds.getName() +" skipping refresh");
 			return;
 		}
 
 		// check for 5 mins
-		boolean schemaRequestSubmitted = false;
 		boolean vdbRequestSubmitted = false;
 		long start = System.currentTimeMillis();
 		while (System.currentTimeMillis() - start < (5 * 60 * 1000)) {
 			status = checkMetadataStatus(sds.getName());
-			if (status.getSchemaState() == RestSyndesisSourceStatus.EntityState.ACTIVE
-					&& status.getVdbState() == RestSyndesisSourceStatus.EntityState.ACTIVE) {
+			if (status.getVdbState() == RestSyndesisSourceStatus.EntityState.ACTIVE) {
 				// we are done.
 				LOGGER.info("Schema Generation Success for source " + sds.getName());
-				break;
-			} else if (status.getSchemaState() == RestSyndesisSourceStatus.EntityState.FAILED) {
-				LOGGER.warn("Schema Generation Failed for fetching metadata for source " + sds.getName());
 				break;
 			} else if (status.getVdbState() == RestSyndesisSourceStatus.EntityState.FAILED) {
 				LOGGER.warn("VDB deployment Failed for fetching metadata for source " + sds.getName());
 				break;
 			} else if (status.getVdbState() == RestSyndesisSourceStatus.EntityState.MISSING && !vdbRequestSubmitted) {
-				requestMetadataForDataSource(sds, false);
+				requestMetadataForDataSource(sds);
 				vdbRequestSubmitted = true;
-			} else if (status.getVdbState() == RestSyndesisSourceStatus.EntityState.ACTIVE
-					&& status.getSchemaState() == RestSyndesisSourceStatus.EntityState.MISSING
-					&& !schemaRequestSubmitted) {
-				// request to read metadata and add to komodo repo
-				requestMetadataForDataSource(sds, true);
-				schemaRequestSubmitted = true;
 			}
 			
 			// sleep for 5 seconds
@@ -228,18 +217,14 @@ public class SyndesisConnectionSynchronizer {
 		return null;
 	}
 
-	private void requestMetadataForDataSource(DefaultSyndesisDataSource sds, boolean generateSchema) {
-		String query = "?redeploy=true&generate-schema=false";
-		if (generateSchema) {
-			query = "?redeploy=false&generate-schema=true";
-		}
+	private void requestMetadataForDataSource(DefaultSyndesisDataSource sds) {
+		String query = "?redeploy=true";
 		Request request = SyndesisConnectionMonitor.buildRequest()
 				.url(LOCAL_REST + "/metadata/refresh-schema/" + sds.getName() + query)
 				.post(RequestBody.create(null, "")).build();
 		try (Response response = this.client.newCall(request).execute()) {
 			if (response.isSuccessful()) {
-				LOGGER.info("submitted request to fetch metadata of connection " + sds.getName()
-						+ " with schema-generation " + generateSchema);
+				LOGGER.info("submitted request to fetch metadata of connection " + sds.getName());
 			} else {
 				LOGGER.warn("Failed to submitted request to fetch metadata for connection " + sds.getName());
 			}

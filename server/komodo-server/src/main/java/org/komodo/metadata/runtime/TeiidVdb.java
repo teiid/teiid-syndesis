@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.teiid.adminapi.VDBImport;
-import org.teiid.adminapi.impl.VDBMetaData;
+import org.teiid.metadata.Schema;
 
 /**
  *
@@ -113,6 +113,12 @@ public interface TeiidVdb {
     
 	List<? extends VDBImport> getImports();
 	
-	VDBMetaData getVDBMetaData();
+	/**
+	 * Return the live metadata {@link Schema} instance
+	 * WARNING: do not modify
+	 * @param name
+	 * @return
+	 */
+	Schema getSchema(String name);
 
 }

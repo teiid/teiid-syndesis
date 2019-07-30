@@ -15,7 +15,7 @@
  */
 package org.komodo.metadata.runtime;
 
-import java.util.Properties;
+import java.util.Map;
 
 /**
  *
@@ -81,7 +81,7 @@ public interface TeiidDataSource {
     /**
      * @return properties of data source
      */
-    Properties getProperties();
+    Map<String, String> getProperties();
 
     /**
      * @param name

@@ -101,7 +101,7 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
 	
 	@Override
 	public boolean removeViewDefinition(String viewDefinitionName) {
-		return this.viewDefinitionRepository.deleteByName(viewDefinitionName) > 1;
+		return this.viewDefinitionRepository.deleteByName(viewDefinitionName) > 0;
 	}
 	
 }

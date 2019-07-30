@@ -28,6 +28,10 @@ public class SqlComposition implements org.komodo.datavirtualization.SqlComposit
 	private String operator;
 	private String type;
 	
+	protected SqlComposition() {
+		
+	}
+	
 	public SqlComposition(String name) {
 		this.name = name;
 	}

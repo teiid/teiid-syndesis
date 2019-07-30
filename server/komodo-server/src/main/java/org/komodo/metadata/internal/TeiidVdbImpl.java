@@ -31,6 +31,8 @@ import org.teiid.adminapi.VDB.Status;
 import org.teiid.adminapi.VDBImport;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.core.util.ArgCheck;
+import org.teiid.metadata.Schema;
+import org.teiid.query.metadata.TransformationMetadata;
 
 public class TeiidVdbImpl implements TeiidVdb, Comparable<TeiidVdbImpl> {
 
@@ -95,18 +97,12 @@ public class TeiidVdbImpl implements TeiidVdb, Comparable<TeiidVdbImpl> {
         this.vdb = (VDBMetaData)vdb;
     }
 
-    /* (non-Javadoc)
-     * @see org.teiid.designer.runtime.impl.ITeiidVdb#compareTo(org.teiid.designer.runtime.impl.TeiidVdb)
-     */
     @Override
     public int compareTo(TeiidVdbImpl vdb) {
         ArgCheck.isNotNull(vdb, "vdb"); //$NON-NLS-1$
         return getName().compareTo(vdb.getName());
     }
 
-    /* (non-Javadoc)
-     * @see org.teiid.designer.runtime.impl.ITeiidVdb#equals(java.lang.Object)
-     */
     @Override
     public boolean equals(Object obj) {
         if (obj == null)
@@ -122,9 +118,6 @@ public class TeiidVdbImpl implements TeiidVdb, Comparable<TeiidVdbImpl> {
         return false;
     }
 
-    /* (non-Javadoc)
-     * @see org.teiid.designer.runtime.impl.ITeiidVdb#hashCode()
-     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -133,9 +126,6 @@ public class TeiidVdbImpl implements TeiidVdb, Comparable<TeiidVdbImpl> {
         return result;
     }
 
-    /* (non-Javadoc)
-     * @see org.teiid.designer.runtime.impl.ITeiidVdb#getName()
-     */
     @Override
     public String getName() {
         return name;
@@ -146,17 +136,11 @@ public class TeiidVdbImpl implements TeiidVdb, Comparable<TeiidVdbImpl> {
         return deploymentName;
     }
 
-    /* (non-Javadoc)
-     * @see org.teiid.designer.runtime.impl.ITeiidVdb#getVersion()
-     */
     @Override
     public String getVersion() {
         return version;
     }
 
-    /* (non-Javadoc)
-     * @see org.teiid.designer.runtime.impl.ITeiidVdb#isPreviewVdb()
-     */
     @Override
     public boolean isPreviewVdb() {
         return isPreview;
@@ -218,8 +202,14 @@ public class TeiidVdbImpl implements TeiidVdb, Comparable<TeiidVdbImpl> {
     	return this.vdb.getVDBImports();
     }
     
-    @Override
     public VDBMetaData getVDBMetaData() {
     	return this.vdb;
     }
+    
+    @Override
+    public Schema getSchema(String name) {
+    	TransformationMetadata qmi = vdb.getAttachment(TransformationMetadata.class);
+    	return qmi.getMetadataStore().getSchema(name);
+    }
+    
 }

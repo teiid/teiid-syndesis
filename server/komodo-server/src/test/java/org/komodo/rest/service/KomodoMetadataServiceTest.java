@@ -20,7 +20,8 @@ package org.komodo.rest.service;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.Properties;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.junit.Test;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
@@ -33,9 +34,9 @@ public class KomodoMetadataServiceTest {
 	
 	@Test
 	public void testSourceVdbGeneration() throws Exception {
-		Properties properties = new Properties();
-		properties.setProperty(TeiidDataSource.DATASOURCE_JNDINAME, "something");
-		properties.setProperty(TeiidDataSource.DATASOURCE_DRIVERNAME, "type");
+		Map<String, String> properties = new LinkedHashMap<String, String>();
+		properties.put(TeiidDataSource.DATASOURCE_JNDINAME, "something");
+		properties.put(TeiidDataSource.DATASOURCE_DRIVERNAME, "type");
 		TeiidDataSourceImpl tds = new TeiidDataSourceImpl("source", properties);
 		VDBMetaData vdb = KomodoMetadataService.generateSourceVdb(tds, "vdb", null);
 		
