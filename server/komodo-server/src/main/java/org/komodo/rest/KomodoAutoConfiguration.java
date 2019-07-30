@@ -86,10 +86,8 @@ public class KomodoAutoConfiguration implements ApplicationListener<ContextRefre
             throw new RuntimeException(Messages.getString( KOMODO_ENGINE_STARTUP_TIMEOUT, 1, TimeUnit.MINUTES));
         } else {
         	// monitor to track connections from the syndesis
-			TeiidOpenShiftClient TOSClient = new TeiidOpenShiftClient(
-					metadataInstance, new EncryptionComponent(getTextEncryptor()),
-					this.config);
-			SyndesisConnectionSynchronizer sync = new SyndesisConnectionSynchronizer(TOSClient, event.getApplicationContext().getBean(KomodoMetadataService.class));
+			SyndesisConnectionSynchronizer sync = new SyndesisConnectionSynchronizer(openShiftClient(
+					kengine, getTextEncryptor()), event.getApplicationContext().getBean(KomodoMetadataService.class));
         	SyndesisConnectionMonitor scm = new SyndesisConnectionMonitor(sync, executor);
     		this.executor.scheduleAtFixedRate(()->scm.connect(), 5, 15, TimeUnit.SECONDS);
         }
