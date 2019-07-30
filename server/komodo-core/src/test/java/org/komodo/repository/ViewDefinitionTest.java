@@ -36,13 +36,17 @@ public class ViewDefinitionTest {
      
         assertEquals(v.getDdl(), found.getDdl());
         
-        workspaceManagerImpl.addViewDefiniton("y");
-        workspaceManagerImpl.addViewDefiniton("x1").setComplete(true);
+        workspaceManagerImpl.createViewDefiniton("y");
+        workspaceManagerImpl.createViewDefiniton("x1").setComplete(true);
         entityManager.flush();
 
         assertEquals(2, workspaceManagerImpl.getViewDefinitions("x").length);
         
-        assertTrue(workspaceManagerImpl.removeViewDefinition(v.getName()));
+        assertTrue(workspaceManagerImpl.deleteViewDefinition(v.getName()));
+        
+        workspaceManagerImpl.createViewDefiniton(v.getName());
+        
+        entityManager.flush();
     }
     
     @Test

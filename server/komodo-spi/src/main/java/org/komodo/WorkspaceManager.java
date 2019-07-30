@@ -27,23 +27,23 @@ public interface WorkspaceManager {
 	
 	boolean deleteSchema(String name);
 	
-	void saveOrUpdateSchema(String name, String contents);
+	void createOrUpdateSchema(String name, String contents);
 	
 
-	DataVirtualization createDataservice(String serviceName);
+	DataVirtualization createDataVirtualization(String virtualizationName);
 
-	DataVirtualization findDataservice(String dataserviceName);
+	DataVirtualization findDataVirtualization(String virtualizationName);
 
-	public Iterable<? extends DataVirtualization> findDataservices();
+	public Iterable<? extends DataVirtualization> findDataVirtualizations();
 
-	boolean deleteDataservice(String serviceName);
+	boolean deleteDataVirtualization(String virtualizationName);
 	
 	
-	ViewDefinition addViewDefiniton(  String viewDefinitionName);
+	ViewDefinition createViewDefiniton(String viewDefinitionName);
 
     ViewDefinition[] getViewDefinitions(String viewDefinitionNamePrefix);
     
-	boolean removeViewDefinition(final String viewDefinitionName);
+	boolean deleteViewDefinition(final String viewDefinitionName);
 
 	ViewDefinition getViewDefinition(String viewDefinitionName);
 

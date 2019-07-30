@@ -105,7 +105,7 @@ public class KEngineImpl implements KEngine {
 
 	@Override
 	public boolean startAndWait() throws Exception {
-		this.workspaceManagerImpl.findDataservice("x");
+		this.workspaceManagerImpl.findDataVirtualization("x");
 		return true;
 	}
 

@@ -591,8 +591,10 @@ public final class KomodoUtilService extends KomodoService {
         String stateId = editorState.getId();
         RestViewDefinition restViewDefn = editorState.getViewDefinition();
 
+        // We completely replace each time, so remove if it exists
+        getWorkspaceManager().deleteViewDefinition(stateId);
         // Add a new ViewEditorState to the userProfile
-        ViewDefinition viewDefn = getWorkspaceManager().addViewDefiniton(stateId);
+        ViewDefinition viewDefn = getWorkspaceManager().createViewDefiniton(stateId);
 
         // Set ViewDefinition of the ViewEditorState
         viewDefn.setViewName(restViewDefn.getViewName());

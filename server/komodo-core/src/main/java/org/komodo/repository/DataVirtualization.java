@@ -18,30 +18,25 @@
 
 package org.komodo.repository;
 
-import java.util.UUID;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.PrePersist;
+
+import org.hibernate.annotations.GenericGenerator;
 
 @Entity
 public class DataVirtualization implements org.komodo.datavirtualization.DataVirtualization {
 	
 	@Id
+	@GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
 	private String id;
 	@Column(unique=true)
 	private String name;
 	private String description;
 	
 	protected DataVirtualization() {
-	}
-	
-	@PrePersist
-	protected void prePersist() {
-		if (id == null) {
-			id = UUID.randomUUID().toString();
-		}
 	}
 	
 	public DataVirtualization(String name) {

@@ -695,7 +695,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 		final String modelDdl = getMetadataInstance().getSchema( sourceVdbName, schemaModelName ); //$NON-NLS-1$
 		
 		if (modelDdl != null) {
-			getWorkspaceManager().saveOrUpdateSchema(schemaModelName, modelDdl);
+			getWorkspaceManager().createOrUpdateSchema(schemaModelName, modelDdl);
 		}
 	}
 
@@ -805,27 +805,28 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
             // Get teiid datasources
             Collection<TeiidDataSource> allTeiidSources = getMetadataInstance().getDataSources();
+            
+            Map<String, TeiidDataSource> teiidSourceMap = allTeiidSources.stream().collect(Collectors.toMap(t -> t.getName(), Function.identity()));
 
             // Add status summary for each of the syndesis sources.  Determine if there is a matching teiid source
             for (DefaultSyndesisDataSource dataSource : dataSources) {
-                for (TeiidDataSource teiidSource : allTeiidSources) {
-                    // Syndesis source has a corresponding VDB.  Use VDB for status
-                    if (teiidSource.getName().equals(dataSource.getName())) {
-                        final Schema schemaModel = findSchemaModel( teiidSource );
+            	TeiidDataSource teiidSource = teiidSourceMap.get(dataSource.getName());
+            	if (teiidSource == null) {
+            		continue;
+            	}
+                final Schema schemaModel = findSchemaModel( teiidSource );
 
-                        List<RestSchemaNode> schemaNodes = null;
-                        if ( schemaModel != null ) {
-                            schemaNodes = this.generateSourceSchema(dataSource.getName(), schemaModel.getTables().values());
-                            if(schemaNodes != null && !schemaNodes.isEmpty()) {
-                            	RestSchemaNode rootNode = new RestSchemaNode();
-                            	rootNode.setName(dataSource.getName());
-                            	rootNode.setType("root");
-                            	for(RestSchemaNode sNode: schemaNodes) {
-                            		rootNode.addChild(sNode);
-                            	}
-                            	rootNodes.add(rootNode);
-                            }
-                        }
+                List<RestSchemaNode> schemaNodes = null;
+                if ( schemaModel != null ) {
+                    schemaNodes = this.generateSourceSchema(dataSource.getName(), schemaModel.getTables().values());
+                    if(schemaNodes != null && !schemaNodes.isEmpty()) {
+                    	RestSchemaNode rootNode = new RestSchemaNode();
+                    	rootNode.setName(dataSource.getName());
+                    	rootNode.setType("root");
+                    	for(RestSchemaNode sNode: schemaNodes) {
+                    		rootNode.addChild(sNode);
+                    	}
+                    	rootNodes.add(rootNode);
                     }
                 }
             }

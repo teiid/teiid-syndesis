@@ -2,6 +2,7 @@ package org.komodo.repository;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,6 +21,9 @@ public class DataVirtualizationTest {
     @Autowired
     private DataVirtualizationRepository dataVirtualizationRepository;
     
+    @Autowired
+    private WorkspaceManagerImpl workspaceManagerImpl;
+    
     @Test
     public void testFindDeleteByName() {
         DataVirtualization dv = new DataVirtualization("foo");
@@ -32,7 +36,9 @@ public class DataVirtualizationTest {
      
         assertEquals(dv.getName(), found.getName());
         
-        assertEquals(1, dataVirtualizationRepository.deleteByName(dv.getName()));
+        assertTrue(workspaceManagerImpl.deleteDataVirtualization(dv.getName()));
+        
+        entityManager.flush();
     }
 
 

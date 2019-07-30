@@ -26,6 +26,4 @@ public interface DataVirtualizationRepository extends JpaRepository<DataVirtuali
 		
 	 public DataVirtualization findByName(String name);
 	 
-	 public long deleteByName(String name);
-	 
 }

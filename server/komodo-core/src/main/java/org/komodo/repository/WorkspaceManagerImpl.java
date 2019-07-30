@@ -45,11 +45,17 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
 
 	@Override
 	public boolean deleteSchema(String name) {
-		return this.schemaRepository.deleteByName(name) > 0;
+		org.komodo.repository.SourceSchema ss = this.schemaRepository.findByName(name);
+		if (ss == null) {
+			return false;
+		}
+		this.schemaRepository.delete(ss);
+		this.schemaRepository.flush();
+		return true;
 	}
 
 	@Override
-	public void saveOrUpdateSchema(String name, String contents) {
+	public void createOrUpdateSchema(String name, String contents) {
 		org.komodo.repository.SourceSchema schema = this.schemaRepository.findByName(name);
 		if (schema != null) {
 			if (!contents.equals(schema.getDdl())) {
@@ -62,28 +68,34 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
 	}
 
 	@Override
-	public DataVirtualization createDataservice(String serviceName) {
+	public DataVirtualization createDataVirtualization(String serviceName) {
 		DataVirtualization dataservice = new DataVirtualization(serviceName);
 		return this.dataVirtualizationRepository.save(dataservice);
 	}
 
 	@Override
-	public DataVirtualization findDataservice(String dataserviceName) {
+	public DataVirtualization findDataVirtualization(String dataserviceName) {
 		return this.dataVirtualizationRepository.findByName(dataserviceName);
 	}
 
 	@Override
-	public Iterable<? extends DataVirtualization> findDataservices() {
+	public Iterable<? extends DataVirtualization> findDataVirtualizations() {
 		return this.dataVirtualizationRepository.findAll();
 	}
 	
 	@Override
-	public boolean deleteDataservice(String serviceName) {
-		return this.dataVirtualizationRepository.deleteByName(serviceName) > 0;
+	public boolean deleteDataVirtualization(String serviceName) {
+		org.komodo.repository.DataVirtualization dv = this.dataVirtualizationRepository.findByName(serviceName);
+		if (dv == null) {
+			return false;
+		}
+		this.dataVirtualizationRepository.delete(dv);
+		this.dataVirtualizationRepository.flush();
+		return true;
 	}
 	
 	@Override
-	public ViewDefinition addViewDefiniton(String viewName) {
+	public ViewDefinition createViewDefiniton(String viewName) {
 		org.komodo.repository.ViewDefinition viewEditorState = new org.komodo.repository.ViewDefinition(viewName);
 		return this.viewDefinitionRepository.save(viewEditorState);
 	}
@@ -100,8 +112,14 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
 	}
 	
 	@Override
-	public boolean removeViewDefinition(String viewDefinitionName) {
-		return this.viewDefinitionRepository.deleteByName(viewDefinitionName) > 0;
+	public boolean deleteViewDefinition(String viewDefinitionName) {
+		org.komodo.repository.ViewDefinition vd = this.viewDefinitionRepository.findByName(viewDefinitionName);
+		if (vd == null) {
+			return false;
+		}
+		this.viewDefinitionRepository.delete(vd);
+		this.viewDefinitionRepository.flush();
+		return true;
 	}
 	
 }

@@ -94,6 +94,10 @@ public class DefaultMetadataInstance implements MetadataInstance {
     private Map<String, Map<String, String>> dsProperties = new ConcurrentHashMap<>();
     private ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1); 
 
+    public DefaultMetadataInstance() {
+    	
+    }
+    
     public DefaultMetadataInstance(TeiidServer server) {
         this.server = server;
     }
@@ -270,7 +274,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
     public Collection<TeiidDataSource> getDataSources() throws KException {
         checkStarted();
         try {
-            Collection<String> dsNames = getAdmin().getDataSourceNames();
+            Collection<String> dsNames = getDataSourceNames();
             if (dsNames.isEmpty())
                 return Collections.emptyList();
 

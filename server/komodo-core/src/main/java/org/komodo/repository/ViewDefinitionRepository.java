@@ -28,8 +28,6 @@ public interface ViewDefinitionRepository extends JpaRepository<ViewDefinition, 
 
 	public ViewDefinition findByName(String name);
 
-	public long deleteByName(String name);
-
 	public List<ViewDefinition> findAllByNameStartsWith(String viewDefinitionNamePrefix);
 	
 }
