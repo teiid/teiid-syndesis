@@ -25,8 +25,6 @@ import java.util.Set;
 import org.komodo.KException;
 import org.komodo.StringConstants;
 import org.komodo.metadata.query.QSResult;
-import org.komodo.metadata.runtime.TeiidDataSource;
-import org.komodo.metadata.runtime.TeiidVdb;
 import org.teiid.adminapi.AdminException;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.query.validator.ValidatorReport;

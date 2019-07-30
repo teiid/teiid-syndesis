@@ -20,7 +20,7 @@ package org.komodo.metadata.internal;
 import java.util.Collections;
 import java.util.Map;
 
-import org.komodo.metadata.runtime.TeiidDataSource;
+import org.komodo.metadata.TeiidDataSource;
 import org.teiid.core.util.ArgCheck;
 
 public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, TeiidDataSource {

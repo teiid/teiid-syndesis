@@ -36,7 +36,7 @@ import org.komodo.TeiidSqlConstants;
 import org.komodo.datavirtualization.SqlComposition;
 import org.komodo.datavirtualization.SqlProjectedColumn;
 import org.komodo.datavirtualization.ViewDefinition;
-import org.komodo.metadata.runtime.TeiidDataSource;
+import org.komodo.metadata.TeiidDataSource;
 import org.komodo.utils.PathUtils;
 import org.teiid.adminapi.Admin.SchemaObjectType;
 import org.teiid.adminapi.impl.ModelMetaData;

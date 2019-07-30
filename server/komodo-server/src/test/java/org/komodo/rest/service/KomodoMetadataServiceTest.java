@@ -24,9 +24,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.junit.Test;
+import org.komodo.metadata.TeiidDataSource;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
 import org.komodo.metadata.internal.TeiidDataSourceImpl;
-import org.komodo.metadata.runtime.TeiidDataSource;
 import org.teiid.adminapi.impl.VDBMetaData;
 
 @SuppressWarnings({ "javadoc", "nls" })
