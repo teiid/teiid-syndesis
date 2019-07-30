@@ -1,11 +1,10 @@
 package org.komodo.repository;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.komodo.repository.SourceSchema;
-import org.komodo.repository.SourceSchemaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
@@ -21,6 +20,9 @@ public class SourceSchemaTest {
     @Autowired
     private SourceSchemaRepository sourceSchemaRepository;
     
+    @Autowired
+    private WorkspaceManagerImpl workspaceManagerImpl;
+    
     @Test
     public void testFindDeleteByName() {
         SourceSchema s = new SourceSchema("foo");
@@ -32,7 +34,9 @@ public class SourceSchemaTest {
      
         assertEquals(s.getDdl(), found.getDdl());
         
-        assertEquals(1, sourceSchemaRepository.deleteByName(s.getName()));
+        assertTrue(workspaceManagerImpl.deleteSchema(s.getName()));
+        
+        entityManager.flush();
     }
 
 

@@ -133,7 +133,7 @@ public final class KomodoDataserviceService extends KomodoService
             
             // find Data services
             uow = createTransaction(principal, "getDataservices", true); //$NON-NLS-1$
-            Iterable<? extends DataVirtualization> dataServices = getWorkspaceManager().findDataservices();
+            Iterable<? extends DataVirtualization> dataServices = getWorkspaceManager().findDataVirtualizations();
 
             int start = 0;
 
@@ -347,7 +347,7 @@ public final class KomodoDataserviceService extends KomodoService
             uow = createTransaction(principal, "createDataservice", false); //$NON-NLS-1$
 
             // Error if the repo already contains a dataservice with the supplied name.
-            DataVirtualization existing = getWorkspaceManager().findDataservice(dataserviceName);
+            DataVirtualization existing = getWorkspaceManager().findDataVirtualization(dataserviceName);
             if (existing != null) {
                 return createErrorResponseWithForbidden(mediaTypes,
                         RelationalMessages.Error.DATASERVICE_SERVICE_CREATE_ALREADY_EXISTS);
@@ -374,7 +374,7 @@ public final class KomodoDataserviceService extends KomodoService
         assert (restDataservice != null);
 
         final String dataserviceName = restDataservice.getId();
-        final DataVirtualization dataservice = getWorkspaceManager().createDataservice(dataserviceName);
+        final DataVirtualization dataservice = getWorkspaceManager().createDataVirtualization(dataserviceName);
 
         // Transfers the properties from the rest object to the created komodo service.
         setProperties(dataservice, restDataservice);
@@ -436,7 +436,7 @@ public final class KomodoDataserviceService extends KomodoService
             final WorkspaceManager wkspMgr = getWorkspaceManager();
             
 
-            final DataVirtualization dataservice = wkspMgr.findDataservice(dataserviceName);
+            final DataVirtualization dataservice = wkspMgr.findDataVirtualization(dataserviceName);
             
             // Error if the specified service does not exist
             if (dataservice == null) {
@@ -447,7 +447,7 @@ public final class KomodoDataserviceService extends KomodoService
             String vdbName = dataservice.getServiceVdbName();
 
             // Delete the Dataservice
-            wkspMgr.deleteDataservice(dataserviceName);
+            wkspMgr.deleteDataVirtualization(dataserviceName);
 
             KomodoStatusObject kso = new KomodoStatusObject("Delete Status"); //$NON-NLS-1$
             kso.addAttribute(dataserviceName, "Successfully deleted"); //$NON-NLS-1$

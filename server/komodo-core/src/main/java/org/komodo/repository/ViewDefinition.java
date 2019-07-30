@@ -19,13 +19,14 @@ package org.komodo.repository;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.PrePersist;
+
+import org.hibernate.annotations.GenericGenerator;
 
 /**
  * Represents the configuration of a view editor state
@@ -66,6 +67,8 @@ public class ViewDefinition implements org.komodo.datavirtualization.ViewDefinit
 	}
 
 	@Id
+	@GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
 	private String id;
 	@Column(unique=true)
 	private String name;
@@ -86,13 +89,6 @@ public class ViewDefinition implements org.komodo.datavirtualization.ViewDefinit
 		this.name = name;
 	}
 	
-	@PrePersist
-	protected void prePersist() {
-		if (id == null) {
-			id = UUID.randomUUID().toString();
-		}
-	}
-
 	public String getId() {
 		return id;
 	}

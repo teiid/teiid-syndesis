@@ -18,14 +18,12 @@
 
 package org.komodo.repository;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface SourceSchemaRepository extends CrudRepository<SourceSchema, String> {
+public interface SourceSchemaRepository extends JpaRepository<SourceSchema, String> {
 
 	public SourceSchema findByName(String name);
-
-	public long deleteByName(String name);
 
 }

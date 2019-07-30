@@ -206,7 +206,7 @@ public abstract class KomodoService implements V1Constants {
     }
 
     protected boolean removeViewDefinition(String viewDefinitionName) throws Exception {
-        return getWorkspaceManager().removeViewDefinition(viewDefinitionName);
+        return getWorkspaceManager().deleteViewDefinition(viewDefinitionName);
     }
 
     protected boolean removeViewDefinition( final ViewDefinition viewDefinition ) throws Exception {
@@ -438,7 +438,7 @@ public abstract class KomodoService implements V1Constants {
     }
 
     protected DataVirtualization findDataservice(String dataserviceName) throws KException {
-    	return getWorkspaceManager().findDataservice(dataserviceName);
+    	return getWorkspaceManager().findDataVirtualization(dataserviceName);
     }
 
     protected String uri(String... segments) {
