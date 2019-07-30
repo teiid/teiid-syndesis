@@ -27,11 +27,12 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Properties;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.komodo.KException;
 import org.komodo.datasources.DefaultSyndesisDataSource;
 import org.komodo.datasources.MySQLDefinition;
 import org.komodo.datasources.PostgreSQLDefinition;
@@ -39,7 +40,6 @@ import org.komodo.metadata.MetadataInstance;
 import org.komodo.rest.AuthHandlingFilter;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoConfigurationProperties;
-import org.komodo.spi.KException;
 import org.mockito.Mockito;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.adminapi.impl.VDBMetadataParser;
@@ -117,13 +117,13 @@ public class TestVDBPublisher {
     @Test
     public void testDecryption() throws Exception {
         EncryptionComponent ec = new EncryptionComponent("GpADvcFIBgqMUwSfvljdQ1N5qeQFNXaAToht2O4kgBW2bIalkcPWphs54C4e7mjq");
-        Properties credentialData = new Properties();
+        Map<String, String> credentialData = new HashMap<>();
         credentialData.put("password", "»ENC:7965a258e2f0029b0e5e797b81917366ed11608f195755fc4fcfebecfca4781917de289fb8579d306741b5ec5680a686");
         credentialData.put("schema", "sampledb");
         credentialData.put("url", "jdbc:mysql://localhost:1521/sampledb");
         credentialData.put("user", "johnny");
-        Properties decrypted = ec.decrypt(credentialData);
-        assertThat(credentialData.getProperty("password").equals(decrypted.getProperty("password")), is(false));
+        Map<String, String> decrypted = ec.decrypt(credentialData);
+        assertThat(credentialData.get("password").equals(decrypted.get("password")), is(false));
     }
 
     @Test

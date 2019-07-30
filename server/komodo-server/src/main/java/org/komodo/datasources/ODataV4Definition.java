@@ -18,7 +18,6 @@
 package org.komodo.datasources;
 
 import java.util.Map;
-import java.util.Properties;
 
 public class ODataV4Definition extends DataSourceDefinition {
 
@@ -46,22 +45,12 @@ public class ODataV4Definition extends DataSourceDefinition {
     }
     
     @Override
-    public Properties getInternalTeiidDataSourceProperties(DefaultSyndesisDataSource source) {
-        Properties props = new Properties();
-        props.setProperty("class-name", "org.teiid.resource.adapter.ws.WSManagedConnectionFactory");
-        props.setProperty("EndPoint", source.getProperty("url"));
-        props.setProperty("AuthUserName", source.getProperty("username"));
-        props.setProperty("AuthPassword", source.getProperty("password"));
-        return props;
+    public Map<String, String> getInternalTeiidDataSourceProperties(DefaultSyndesisDataSource source) {
+    	throw new UnsupportedOperationException();
     }    
     
     @Override
-    public Properties getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd) {
-        Properties props = setupResourceAdapter(scd.getName(), "org.jboss.teiid.resource-adapter.webservice",
-                "org.teiid.resource.adapter.ws.WSManagedConnectionFactory", scd.getName());
-        ds(props, scd, "EndPoint", scd.getProperty("url"));
-        ds(props, scd, "AuthUserName", scd.getProperty("username"));
-        ds(props, scd, "AuthPassword", scd.getProperty("password"));
-        return props;
+    public Map<String, String> getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd) {
+    	throw new UnsupportedOperationException();
     }
 }

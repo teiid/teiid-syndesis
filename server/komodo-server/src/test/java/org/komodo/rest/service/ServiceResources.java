@@ -23,8 +23,6 @@ import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.rules.ExternalResource;
-import org.komodo.spi.repository.ApplicationProperties;
-import org.komodo.spi.repository.PersistenceType;
 import org.komodo.utils.FileUtils;
 import org.komodo.utils.TestKLog;
 
@@ -73,10 +71,6 @@ public class ServiceResources extends ExternalResource {
 
     private void initResources() throws IOException {
         _kengineDataDir = TestKLog.createEngineDirectory();     
-        //
-        // Sets the persistence type to H2 for test purposes
-        //
-        ApplicationProperties.setRepositoryPersistenceType(PersistenceType.H2.name());
     }
 
     private void destroyResources() {

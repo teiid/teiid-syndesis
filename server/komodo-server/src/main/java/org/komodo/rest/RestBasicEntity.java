@@ -19,8 +19,8 @@ package org.komodo.rest;
 
 import java.net.URI;
 
-import org.komodo.spi.KException;
-import org.komodo.spi.repository.KomodoType;
+import org.komodo.KException;
+import org.komodo.openshift.KomodoType;
 import org.komodo.utils.ArgCheck;
 
 /**

@@ -19,11 +19,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.komodo.spi.KException;
+import org.komodo.KException;
 import org.springframework.security.crypto.encrypt.Encryptors;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
 
@@ -97,17 +96,6 @@ public class EncryptionComponent {
         HashMap<String, String> result = new HashMap<>();
         for (Map.Entry<String, String> entry : props.entrySet()) {
             result.put(entry.getKey(), decrypt(entry.getValue()));
-        }
-        return result;
-    }
-
-    public Properties decrypt(Properties props) throws KException {
-        if( props == null ) {
-            return null;
-        }
-        Properties result = new Properties();
-        for (String key : props.stringPropertyNames()) {
-            result.put(key, decrypt(props.getProperty(key)));
         }
         return result;
     }

@@ -46,53 +46,22 @@
       <artifactId>komodo-spi</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.teiid.modeshape</groupId>
-      <artifactId>modeshape-jcr-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.teiid.modeshape</groupId>
-      <artifactId>modeshape-jcr</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.teiid.modeshape</groupId>
-      <artifactId>teiid-modeshape-sequencer-vdb</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.teiid.modeshape</groupId>
-      <artifactId>teiid-modeshape-sequencer-ddl</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.teiid.modeshape</groupId>
-      <artifactId>teiid-modeshape-sequencer-dataservice</artifactId>
-    </dependency>
-    <dependency>
-        <groupId>javax.jcr</groupId>
-        <artifactId>jcr</artifactId>          
-    </dependency>
-    <dependency>
-        <groupId>xml-apis</groupId>
-        <artifactId>xml-apis</artifactId>
-    </dependency>
-    <dependency>
         <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter</artifactId>
+        <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+    <dependency>
+    	<groupId>com.fasterxml.jackson.core</groupId>
+    	<artifactId>jackson-databind</artifactId>
     </dependency>      
-    <!-- Needed to get at modeshape's underlying logging system - see JcrLogConfigurator for details -->
-    <dependency>
-      <groupId>org.teiid</groupId>
-      <artifactId>komodo-spi</artifactId>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-        <groupId>org.hamcrest</groupId>
-        <artifactId>hamcrest-core</artifactId>        
-        <scope>test</scope>
-    </dependency>
-    <dependency>
-		<groupId>commons-io</groupId>
-		<artifactId>commons-io</artifactId>
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-test</artifactId>
 		<scope>test</scope>
+	</dependency>
+	<dependency>
+	    <groupId>com.h2database</groupId>
+	    <artifactId>h2</artifactId>
+	    <scope>test</scope>
 	</dependency>    
   </dependencies>
   

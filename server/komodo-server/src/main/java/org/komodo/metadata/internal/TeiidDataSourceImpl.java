@@ -17,24 +17,23 @@
  */
 package org.komodo.metadata.internal;
 
-import java.util.Properties;
+import java.util.Collections;
+import java.util.Map;
 
-import org.komodo.metadata.runtime.TeiidDataSource;
+import org.komodo.metadata.TeiidDataSource;
 import org.teiid.core.util.ArgCheck;
 
 public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, TeiidDataSource {
 
     private final String name;
-    private final Properties properties = new Properties();
+    private final Map<String, String> properties;
 
-    public TeiidDataSourceImpl(String name, Properties properties) {
+    public TeiidDataSourceImpl(String name, Map<String, String> properties) {
         ArgCheck.isNotEmpty(name, "name"); //$NON-NLS-1$
         ArgCheck.isNotEmpty(properties, "properties"); //$NON-NLS-1$
 
         this.name = name;
-        for (String propName : properties.stringPropertyNames()) {
-            this.properties.setProperty(propName, properties.getProperty(propName));
-        }
+        this.properties = Collections.unmodifiableMap(properties);
     }
 
     /**
@@ -78,13 +77,13 @@ public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, Tei
     }
 
     @Override
-    public Properties getProperties() {
+    public Map<String, String> getProperties() {
         return this.properties;
     }
 
     @Override
     public String getPropertyValue(String name) {
-        return this.properties.getProperty(name);
+        return this.properties.get(name);
     }
 
     /**

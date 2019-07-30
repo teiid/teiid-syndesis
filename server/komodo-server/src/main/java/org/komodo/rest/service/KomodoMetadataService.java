@@ -44,20 +44,23 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
+import org.komodo.KException;
+import org.komodo.StringConstants;
+import org.komodo.UnitOfWork;
+import org.komodo.WorkspaceManager;
 import org.komodo.datasources.DefaultSyndesisDataSource;
+import org.komodo.datavirtualization.DataVirtualization;
+import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.metadata.DeployStatus;
 import org.komodo.metadata.MetadataInstance;
+import org.komodo.metadata.TeiidDataSource;
+import org.komodo.metadata.TeiidVdb;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
 import org.komodo.metadata.internal.TeiidVdbImpl;
 import org.komodo.metadata.query.QSResult;
-import org.komodo.metadata.runtime.TeiidDataSource;
-import org.komodo.metadata.runtime.TeiidVdb;
 import org.komodo.openshift.BuildStatus;
 import org.komodo.openshift.PublishConfiguration;
 import org.komodo.openshift.TeiidOpenShiftClient;
-import org.komodo.relational.WorkspaceManager;
-import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.dataservice.ViewEditorState;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoRestException;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
@@ -71,10 +74,6 @@ import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.RestQueryResult;
 import org.komodo.rest.relational.response.metadata.RestSyndesisSourceStatus;
 import org.komodo.rest.relational.response.virtualization.RestVirtualizationStatus;
-import org.komodo.spi.KException;
-import org.komodo.spi.StringConstants;
-import org.komodo.spi.repository.UnitOfWork;
-import org.komodo.spi.repository.UnitOfWork.State;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -85,7 +84,6 @@ import org.teiid.adminapi.impl.VDBImportMetadata;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.metadata.AbstractMetadataRecord;
 import org.teiid.metadata.Schema;
-import org.teiid.query.metadata.TransformationMetadata;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -101,11 +99,6 @@ import io.swagger.annotations.ApiResponses;
 public class KomodoMetadataService extends KomodoService implements ServiceVdbGenerator.SchemaFinder {
 
     private interface OptionalParam {
-
-        /**
-         * Indicates if connection schema should be generated if it doesn't exist. Defaults to <code>true</code>.
-         */
-        String GENERATE_SCHEMA = "generate-schema"; //$NON-NLS-1$
 
         /**
          * Indicates if the connection server VDB should be redeployed if it already exists. Defaults to <code>false</code>.
@@ -195,7 +188,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
            return commit(uow, mediaTypes, status);
 
         } catch (final Exception e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+            if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();
             }
 
@@ -343,7 +336,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 //           return commit(uow, mediaTypes, status);
 //
 //        } catch (final Exception e) {
-//            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+//            if ((uow != null) && !uow.isCompleted()) {
 //                uow.rollback();
 //            }
 //
@@ -488,7 +481,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             	return commit(uow, mediaTypes, kso);
             }
         } catch (final Exception e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+            if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();
             }
 
@@ -590,7 +583,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
            return commit(uow, mediaTypes, restResult);
 
         } catch (final Exception e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+            if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();
             }
 
@@ -604,10 +597,9 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
     /**
      * Initiate schema refresh for a syndesis source.  This will either deploy a vdb for the source, or refresh an existing source vdb schema
-     * - no params supplied : (redeploy=false, generate-schema=true) - If source vdb not found, it is deployed. If source vdb found, regen schema.
-     * - params supplied (redeploy=true, generate-schema=any) - The source vdb is redeployed
-     * - params supplied (redeploy=false, generate-schema=false) - If source vdb not found, it is deployed.  If source vdb found, no op
-     * - params supplied (redeploy=false, generate-schema=true) - If source vdb not found, it is deployed.  If source vdb found, regen schema
+     * - no params supplied : (redeploy=false) - If source vdb not found, it is deployed. If source vdb found, regen schema.
+     * - params supplied (redeploy=true) - The source vdb is redeployed
+     * - params supplied (redeploy=false) - If source vdb not found, it is deployed.  If source vdb found, no op
      * @param headers
      *        the request headers (never <code>null</code>)
      * @param uriInfo
@@ -635,12 +627,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
                                               required = false )
                                    @DefaultValue( "false" )
                                    @QueryParam( OptionalParam.REDEPLOY_CONNECTION )
-                                   final boolean redeployServerVdb,
-                                   @ApiParam( value = "Indicates the workspace schema model should be generated if it doesn't exist",
-                                              required = false )
-                                   @DefaultValue( "true" )
-                                   @QueryParam( OptionalParam.GENERATE_SCHEMA )
-                                   final boolean generateSchema ) throws KomodoRestException {
+                                   final boolean redeployServerVdb ) throws KomodoRestException {
         SecurityPrincipal principal = checkSecurityContext(headers);
         if (principal.hasErrorResponse())
             return principal.getErrorResponse();
@@ -657,7 +644,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         UnitOfWork uow = null;
 
         try {
-            final String txId = "refreshSchema?redeploy=" + redeployServerVdb + "&generate-schema=" + generateSchema;   //$NON-NLS-1$//$NON-NLS-2$
+            final String txId = "refreshSchema?redeploy=" + redeployServerVdb;   //$NON-NLS-1$
             uow = createTransaction(principal, txId, false );
 
             // Find the bound teiid source corresponding to the syndesis source
@@ -680,20 +667,15 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             // Initiate the VDB deployment
             if ( doDeploy ) {
                 doDeploySourceVdb(teiidSource); // this will delete workspace VDB first
-                kso.addAttribute(syndesisSourceName, "Delete workspace VDB, recreate, and redeploy"); //$NON-NLS-1$
-            } else if ( generateSchema ) {
+                kso.addAttribute(syndesisSourceName, "Delete workspace VDB, recreate, redeploy, and generated schema"); //$NON-NLS-1$
                 saveSchema(syndesisSourceName);
-                
-                kso.addAttribute(syndesisSourceName, "Generate schema"); //$NON-NLS-1$
-                // after transaction is committed this will trigger the DDL sequencer which will create
-                // the model objects.
             } else {
                 kso.addAttribute( syndesisSourceName, "Neither redeploy or generate schema requested" ); //$NON-NLS-1$
             }
 
             return commit(uow, mediaTypes, kso);
         } catch (final Exception e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+            if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();
             }
 
@@ -713,7 +695,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 		final String modelDdl = getMetadataInstance().getSchema( sourceVdbName, schemaModelName ); //$NON-NLS-1$
 		
 		if (modelDdl != null) {
-			getWorkspaceManager().saveSchema(schemaModelName, modelDdl);
+			getWorkspaceManager().createOrUpdateSchema(schemaModelName, modelDdl);
 		}
 	}
 
@@ -771,7 +753,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
             return commit( uow, mediaTypes, schemaNodes ); 
         } catch ( final Exception e ) {
-            if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
+            if ( ( uow != null ) && !uow.isCompleted()) {
                 uow.rollback();
             }
 
@@ -823,34 +805,35 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
             // Get teiid datasources
             Collection<TeiidDataSource> allTeiidSources = getMetadataInstance().getDataSources();
+            
+            Map<String, TeiidDataSource> teiidSourceMap = allTeiidSources.stream().collect(Collectors.toMap(t -> t.getName(), Function.identity()));
 
             // Add status summary for each of the syndesis sources.  Determine if there is a matching teiid source
             for (DefaultSyndesisDataSource dataSource : dataSources) {
-                for (TeiidDataSource teiidSource : allTeiidSources) {
-                    // Syndesis source has a corresponding VDB.  Use VDB for status
-                    if (teiidSource.getName().equals(dataSource.getName())) {
-                        final Schema schemaModel = findSchemaModel( teiidSource );
+            	TeiidDataSource teiidSource = teiidSourceMap.get(dataSource.getName());
+            	if (teiidSource == null) {
+            		continue;
+            	}
+                final Schema schemaModel = findSchemaModel( teiidSource );
 
-                        List<RestSchemaNode> schemaNodes = null;
-                        if ( schemaModel != null ) {
-                            schemaNodes = this.generateSourceSchema(dataSource.getName(), schemaModel.getTables().values());
-                            if(schemaNodes != null && !schemaNodes.isEmpty()) {
-                            	RestSchemaNode rootNode = new RestSchemaNode();
-                            	rootNode.setName(dataSource.getName());
-                            	rootNode.setType("root");
-                            	for(RestSchemaNode sNode: schemaNodes) {
-                            		rootNode.addChild(sNode);
-                            	}
-                            	rootNodes.add(rootNode);
-                            }
-                        }
+                List<RestSchemaNode> schemaNodes = null;
+                if ( schemaModel != null ) {
+                    schemaNodes = this.generateSourceSchema(dataSource.getName(), schemaModel.getTables().values());
+                    if(schemaNodes != null && !schemaNodes.isEmpty()) {
+                    	RestSchemaNode rootNode = new RestSchemaNode();
+                    	rootNode.setName(dataSource.getName());
+                    	rootNode.setType("root");
+                    	for(RestSchemaNode sNode: schemaNodes) {
+                    		rootNode.addChild(sNode);
+                    	}
+                    	rootNodes.add(rootNode);
                     }
                 }
             }
 
             return commit( uow, mediaTypes, rootNodes ); 
         } catch ( final Exception e ) {
-            if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
+            if ( ( uow != null ) && !uow.isCompleted()) {
                 uow.rollback();
             }
 
@@ -937,7 +920,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
             return commit( uow, mediaTypes, statuses );
         } catch ( final Exception e ) {
-            if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
+            if ( ( uow != null ) && !uow.isCompleted()) {
                 uow.rollback();
             }
 
@@ -987,7 +970,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             setSchemaStatus(status);
             return commit( uow, mediaTypes, status );
         } catch ( final Exception e ) {
-            if ( ( uow != null ) && ( uow.getState() != State.ROLLED_BACK ) ) {
+            if ( ( uow != null ) && !uow.isCompleted()) {
                 uow.rollback();
             }
             if ( e instanceof KomodoRestException ) {
@@ -1027,7 +1010,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             }
             return commit(uow, mediaTypes, entityList);
         } catch (Throwable e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+            if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();
             }
             if (e instanceof KomodoRestException) {
@@ -1063,7 +1046,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
             return commit(uow, mediaTypes, createBuildStatus(status, uriInfo.getBaseUri()));
         } catch (Throwable e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+            if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();
             }
             if (e instanceof KomodoRestException) {
@@ -1101,7 +1084,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
             return commit(uow, mediaTypes, status);
         } catch (Throwable e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+            if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();
             }
             if (e instanceof KomodoRestException) {
@@ -1146,7 +1129,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             BuildStatus status = this.openshiftClient.deleteVirtualization(vdbName);
             return commit(uow, mediaTypes, createBuildStatus(status, uriInfo.getBaseUri()));
         } catch (Throwable e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+            if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();
             }
             if (e instanceof KomodoRestException) {
@@ -1196,7 +1179,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         try {
             uow = createTransaction(principal, "publish-init", true); //$NON-NLS-1$
             
-            Dataservice dataservice = findDataservice(payload.getName());
+            DataVirtualization dataservice = findDataservice(payload.getName());
 		    if (dataservice == null) {
 		        return createErrorResponse(Status.NOT_FOUND, mediaTypes, RelationalMessages.Error.VDB_NOT_FOUND);
 		    }
@@ -1233,7 +1216,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             //
             return commit(uow, mediaTypes, status);
         } catch (Throwable e) {
-            if ((uow != null) && (uow.getState() != State.ROLLED_BACK)) {
+            if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();
             }
             if (e instanceof KomodoRestException) {
@@ -1243,11 +1226,9 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         }
     }
 
-	VDBMetaData generateServiceVDB(Dataservice dataservice) throws KException, Exception {
+	VDBMetaData generateServiceVDB(DataVirtualization dataservice) throws KException, Exception {
 		String serviceVdbName = dataservice.getServiceVdbName();
-		final String viewEditorIdPrefix =
-		KomodoService.getViewEditorStateIdPrefix(serviceVdbName) + "*"; //$NON-NLS-1$ final
-		ViewEditorState[] editorStates = getViewEditorStates(viewEditorIdPrefix);
+		ViewDefinition[] editorStates = getViewDefinitions(serviceVdbName);
 		 
 		VDBMetaData theVdb = new ServiceVdbGenerator(this).refreshServiceVdb(serviceVdbName, editorStates);
 		return theVdb;
@@ -1337,12 +1318,10 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 		if (vdb == null) {
 			return null;
 		}
-        
-		TransformationMetadata qmi = vdb.getVDBMetaData().getAttachment(TransformationMetadata.class);
 		
 		String name = getSchemaModelName(dataSourceName);
-		
-		return qmi.getMetadataStore().getSchema(name);
+        
+		return vdb.getSchema(name);
 	}
 
     /**

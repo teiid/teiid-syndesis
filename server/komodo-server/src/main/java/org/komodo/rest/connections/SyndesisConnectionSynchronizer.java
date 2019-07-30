@@ -26,17 +26,16 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.komodo.KEngine;
+import org.komodo.KException;
+import org.komodo.UnitOfWork;
+import org.komodo.WorkspaceManager;
 import org.komodo.datasources.DefaultSyndesisDataSource;
 import org.komodo.openshift.TeiidOpenShiftClient;
-import org.komodo.relational.WorkspaceManager;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoService;
 import org.komodo.rest.connections.SyndesisConnectionMonitor.EventMsg;
 import org.komodo.rest.relational.response.metadata.RestSyndesisSourceStatus;
-import org.komodo.spi.KEngine;
-import org.komodo.spi.KException;
-import org.komodo.spi.SystemConstants;
-import org.komodo.spi.repository.UnitOfWork;
 import org.teiid.adminapi.AdminException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -112,7 +111,7 @@ public class SyndesisConnectionSynchronizer {
 					synchronzePreviewVDB();
 					return true;
 				} catch (Exception e) {
-					LOGGER.error(e);
+					LOGGER.error("Error syncronizing", e);
 				}
 				return false;
 			}
@@ -166,38 +165,27 @@ public class SyndesisConnectionSynchronizer {
 
 		// check if the metadata is already available, then skip it.
 		RestSyndesisSourceStatus status = checkMetadataStatus(sds.getName());
-		if (status != null && status.getSchemaState() == RestSyndesisSourceStatus.EntityState.ACTIVE
+		if (status != null
 				&& status.getVdbState() == RestSyndesisSourceStatus.EntityState.ACTIVE) {
 			LOGGER.info("Schema already in repo for source " + sds.getName() +" skipping refresh");
 			return;
 		}
 
 		// check for 5 mins
-		boolean schemaRequestSubmitted = false;
 		boolean vdbRequestSubmitted = false;
 		long start = System.currentTimeMillis();
 		while (System.currentTimeMillis() - start < (5 * 60 * 1000)) {
 			status = checkMetadataStatus(sds.getName());
-			if (status.getSchemaState() == RestSyndesisSourceStatus.EntityState.ACTIVE
-					&& status.getVdbState() == RestSyndesisSourceStatus.EntityState.ACTIVE) {
+			if (status.getVdbState() == RestSyndesisSourceStatus.EntityState.ACTIVE) {
 				// we are done.
 				LOGGER.info("Schema Generation Success for source " + sds.getName());
-				break;
-			} else if (status.getSchemaState() == RestSyndesisSourceStatus.EntityState.FAILED) {
-				LOGGER.warn("Schema Generation Failed for fetching metadata for source " + sds.getName());
 				break;
 			} else if (status.getVdbState() == RestSyndesisSourceStatus.EntityState.FAILED) {
 				LOGGER.warn("VDB deployment Failed for fetching metadata for source " + sds.getName());
 				break;
 			} else if (status.getVdbState() == RestSyndesisSourceStatus.EntityState.MISSING && !vdbRequestSubmitted) {
-				requestMetadataForDataSource(sds, false);
+				requestMetadataForDataSource(sds);
 				vdbRequestSubmitted = true;
-			} else if (status.getVdbState() == RestSyndesisSourceStatus.EntityState.ACTIVE
-					&& status.getSchemaState() == RestSyndesisSourceStatus.EntityState.MISSING
-					&& !schemaRequestSubmitted) {
-				// request to read metadata and add to komodo repo
-				requestMetadataForDataSource(sds, true);
-				schemaRequestSubmitted = true;
 			}
 			
 			// sleep for 5 seconds
@@ -229,18 +217,14 @@ public class SyndesisConnectionSynchronizer {
 		return null;
 	}
 
-	private void requestMetadataForDataSource(DefaultSyndesisDataSource sds, boolean generateSchema) {
-		String query = "?redeploy=true&generate-schema=false";
-		if (generateSchema) {
-			query = "?redeploy=false&generate-schema=true";
-		}
+	private void requestMetadataForDataSource(DefaultSyndesisDataSource sds) {
+		String query = "?redeploy=true";
 		Request request = SyndesisConnectionMonitor.buildRequest()
 				.url(LOCAL_REST + "/metadata/refresh-schema/" + sds.getName() + query)
 				.post(RequestBody.create(null, "")).build();
 		try (Response response = this.client.newCall(request).execute()) {
 			if (response.isSuccessful()) {
-				LOGGER.info("submitted request to fetch metadata of connection " + sds.getName()
-						+ " with schema-generation " + generateSchema);
+				LOGGER.info("submitted request to fetch metadata of connection " + sds.getName());
 			} else {
 				LOGGER.warn("Failed to submitted request to fetch metadata for connection " + sds.getName());
 			}
@@ -277,7 +261,7 @@ public class SyndesisConnectionSynchronizer {
 	private void deleteSchemaModel(RestSyndesisSourceStatus status) throws KException {
         UnitOfWork uow = null;
         try {
-            uow = kengine.createTransaction(SystemConstants.SYSTEM_USER, "delete schema", false, KomodoService.REPO_USER); //$NON-NLS-1$
+            uow = kengine.createTransaction(KomodoService.SYSTEM_USER_NAME, "delete schema", false, KomodoService.REPO_USER); //$NON-NLS-1$
 
             final WorkspaceManager mgr = kengine.getWorkspaceManager();
             

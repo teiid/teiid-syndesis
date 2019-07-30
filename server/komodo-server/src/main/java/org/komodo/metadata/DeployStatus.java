@@ -20,7 +20,7 @@ package org.komodo.metadata;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.komodo.spi.StringConstants;
+import org.komodo.StringConstants;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.StringUtils;
 

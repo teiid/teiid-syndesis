@@ -22,17 +22,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.komodo.KException;
+import org.komodo.WorkspaceManager;
+import org.komodo.datavirtualization.DataVirtualization;
+import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.openshift.BuildStatus;
-import org.komodo.relational.WorkspaceManager;
-import org.komodo.relational.dataservice.Dataservice;
-import org.komodo.relational.dataservice.ViewDefinition;
-import org.komodo.relational.dataservice.ViewEditorState;
+import org.komodo.openshift.KomodoType;
 import org.komodo.rest.RestBasicEntity;
 import org.komodo.rest.RestLink;
 import org.komodo.rest.RestLink.LinkType;
 import org.komodo.rest.relational.KomodoRestUriBuilder.SettingNames;
-import org.komodo.spi.KException;
-import org.komodo.spi.repository.KomodoType;
 
 /**
  * A Dataservice that can be used by GSON to build a JSON document representation.
@@ -104,11 +103,11 @@ public final class RestDataservice extends RestBasicEntity {
      * @param exportXml whether xml should be exported
      * @throws KException if error occurs
      */
-    public RestDataservice(URI baseUri, Dataservice dataService, boolean exportXml, String vdbName) throws KException {
+    public RestDataservice(URI baseUri, DataVirtualization dataService, boolean exportXml, String vdbName) throws KException {
         super(baseUri);
         
         setId(dataService.getName());
-        setkType(Dataservice.IDENTIFIER);
+        setkType(KomodoType.DATASERVICE);
 
         setDescription(dataService.getDescription());
 
@@ -265,15 +264,13 @@ public final class RestDataservice extends RestBasicEntity {
      *  get the ViewDefinitionImpl names for the dataservice
      */
     public static String[] getViewDefnNames(WorkspaceManager workspaceManager, String vdbName) throws KException {
-        ViewEditorState[] editorStates = null;
+        ViewDefinition[] editorStates = null;
     	String svcVdbName = vdbName.toLowerCase();
-    	String pattern = svcVdbName + "*";
-        editorStates = workspaceManager.getViewEditorStates(pattern);
+        editorStates = workspaceManager.getViewDefinitions(svcVdbName);
 
         List<String> viewNames = new ArrayList<String>();
-        for (ViewEditorState editorState: editorStates) {
-        	ViewDefinition viewDefn = editorState.getViewDefinition();
-        	viewNames.add(viewDefn.getViewName());
+        for (ViewDefinition editorState: editorStates) {
+        	viewNames.add(editorState.getViewName());
         }
         
         return viewNames.toArray(new String[0]);

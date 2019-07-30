@@ -17,9 +17,10 @@
  */
 package org.komodo.rest.swagger;
 
+import org.komodo.openshift.KomodoType;
 import org.komodo.rest.RestProperty;
 import org.komodo.rest.relational.dataservice.RestDataservice;
-import org.komodo.spi.repository.KomodoType;
+
 import io.swagger.converter.ModelConverterContext;
 import io.swagger.models.ModelImpl;
 

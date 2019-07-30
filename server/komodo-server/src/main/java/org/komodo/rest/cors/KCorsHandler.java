@@ -19,7 +19,7 @@ package org.komodo.rest.cors;
 
 import java.util.Set;
 
-import org.komodo.spi.StringConstants;
+import org.komodo.StringConstants;
 
 /**
  * Handler which intercepts / filters to resolve CORS-related issues

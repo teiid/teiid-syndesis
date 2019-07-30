@@ -56,7 +56,7 @@ public abstract class DataSourceDefinition {
      * @param properties
      * @return return the modified property set to make the connection in the given environment
      */
-    public abstract Properties getInternalTeiidDataSourceProperties(DefaultSyndesisDataSource source);
+    public abstract Map<String, String> getInternalTeiidDataSourceProperties(DefaultSyndesisDataSource source);
 
     /**
      * Given the connection properties from the Syndesis secrets generate Spring Boot
@@ -64,26 +64,15 @@ public abstract class DataSourceDefinition {
      * @param datasource data source details
      * @return properties properties required to create a connection in target environment
      */
-    public abstract Properties getPublishedImageDataSourceProperties(DefaultSyndesisDataSource datasource);
+    public abstract Map<String, String> getPublishedImageDataSourceProperties(DefaultSyndesisDataSource datasource);
 
-    protected void ds(Properties props, DefaultSyndesisDataSource scd, String key, String value) {
-        props.setProperty(
+    protected void ds(Map<String, String> props, DefaultSyndesisDataSource scd, String key, String value) {
+        props.put(
                 "spring.datasource." + scd.getName() + "." + key,
                 value);
     }
 
     protected Properties setupResourceAdapter(String dsName, String moduleName, String className, String jndiName) {
-        Properties props = new Properties();
-        // consult Teiid documents for all the properties; Then map to properties from
-        // OpenShift Service
-        String raPrefix = "swarm.resource-adapters.resource-adapters." + dsName + ".";
-        String cdPrefix = raPrefix + "connection-definitions." + dsName + ".";
-        props.setProperty(raPrefix + "module", moduleName);
-        props.setProperty(raPrefix + "transaction-support", "NoTransaction");
-        props.setProperty(cdPrefix + "class-name", className);
-        props.setProperty(cdPrefix + "jndi-name", jndiName);
-        props.setProperty(cdPrefix + "enabled", "true");
-        props.setProperty(cdPrefix + "use-java-context", "true");
-        return props;
+    	throw new UnsupportedOperationException();
     }
 }

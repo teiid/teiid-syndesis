@@ -22,16 +22,15 @@ import java.util.Properties;
 
 import javax.ws.rs.core.Application;
 
+import org.komodo.KEngine;
+import org.komodo.KException;
 import org.komodo.rest.json.JsonConstants;
-import org.komodo.spi.KEngine;
-import org.komodo.spi.KException;
-import org.komodo.spi.SystemConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * The JAX-RS {@link Application} that provides the Komodo REST API.
  */
-public class KomodoRestV1Application implements SystemConstants {
+public class KomodoRestV1Application {
 
     @Autowired
     KEngine kengine;
