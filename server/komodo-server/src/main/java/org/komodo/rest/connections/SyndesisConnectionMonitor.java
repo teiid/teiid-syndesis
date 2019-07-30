@@ -18,10 +18,7 @@
 package org.komodo.rest.connections;
 
 import java.io.IOException;
-import java.util.Map.Entry;
-import java.util.TreeMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,13 +33,13 @@ import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 import okio.ByteString;
 
-public class SyndesisConnectionMonitor extends Thread {
+public class SyndesisConnectionMonitor {
 	private static final Log LOGGER = LogFactory.getLog(SyndesisConnectionMonitor.class);
 	private WebSocket webSocket;
-	private boolean connected;
+	private volatile boolean connected;
 	private ObjectMapper mapper = new ObjectMapper();
 	private SyndesisConnectionSynchronizer connectionSynchronizer;
-	private TreeMap<EventMsg, Future<Boolean>> pendingWork = new TreeMap<>();
+	private ScheduledThreadPoolExecutor executor;
 	
 	static class Message {
 		private String event;
@@ -72,7 +69,6 @@ public class SyndesisConnectionMonitor extends Thread {
 		private Type action;
 		private String kind;
 		private String id;
-		private int retries = 0;
 		
 		public Type getAction() {
 			return action;
@@ -92,56 +88,15 @@ public class SyndesisConnectionMonitor extends Thread {
 		public void setId(String id) {
 			this.id = id;
 		}
-		public int getRetries() {
-			return retries;
-		}
-		public void setRetries(int retries) {
-			this.retries = retries;
-		}
 		@Override
 		public int compareTo(EventMsg o) {
 			return id.compareTo(o.id);
 		}
 	}
 	
-	public SyndesisConnectionMonitor(SyndesisConnectionSynchronizer scs) {
-		super("SyndesisConnectionSynchronizer");
-		setDaemon(true);
+	public SyndesisConnectionMonitor(SyndesisConnectionSynchronizer scs, ScheduledThreadPoolExecutor executor) {
 		this.connectionSynchronizer = scs;
-	}
-	
-	public void run() {
-		connect();
-		while (true) {
-			try {
-				sleep((int) (30 * 1000));
-				if (!this.pendingWork.isEmpty()) {
-					Entry<EventMsg, Future<Boolean>> entry = this.pendingWork.firstEntry();
-					this.pendingWork.remove(entry.getKey());
-					
-					if (entry.getValue().isDone()) {
-						try {
-							entry.getValue().get();
-						} catch (ExecutionException e) {
-							LOGGER.error("Error = " + e.getCause().getMessage(), e.getCause());
-							int retries = entry.getKey().getRetries();
-							if (retries < 3) {
-								LOGGER.info("Retrying the event again..");
-								entry.getKey().setRetries(retries+1);
-								// to make this work, the tasks need to be idempotent by the time they end
-								Future<Boolean> task = connectionSynchronizer.handleConnectionEvent(entry.getKey());
-								this.pendingWork.put(entry.getKey(), task);
-							}
-						}
-					}
-				}
-			} catch (InterruptedException e) {
-				break;
-			}			
-			if (!isConnected()) {
-				connect();
-			}
-		}
+		this.executor = executor;
 	}
 	
 	static Request.Builder buildRequest() {
@@ -154,7 +109,10 @@ public class SyndesisConnectionMonitor extends Thread {
 		return builder;
 	}
 	
-	private void connect() {
+	public void connect() {
+		if (isConnected()) {
+			return;
+		}
 		String RESERVATIONS_PATH = "http://syndesis-server/api/v1/event/reservations";
 		String WS_PATH = "ws://syndesis-server/api/v1/event/streams.ws/";
 
@@ -220,23 +178,24 @@ public class SyndesisConnectionMonitor extends Thread {
 	}
 	
 	private void handleMessage(String text) {
-		try {
-			Message msg = mapper.readValue(text.getBytes(), Message.class);
-			if (msg.getEvent().contentEquals("message") && msg.getData().contentEquals("connected")) {
-				connected = true;
-				connectionSynchronizer.synchronizeConnections();
-			} else if (msg.getEvent().contentEquals("change-event")) {
-				EventMsg event = mapper.readValue(msg.getData().getBytes(), EventMsg.class);
-				if (event.getKind().contentEquals("connection")) {
-					Future<Boolean> task = connectionSynchronizer.handleConnectionEvent(event);
-					this.pendingWork.put(event, task);
-				} else {
-					LOGGER.debug("Message discarded " + text);
+		executor.execute(() -> {
+			try {
+				Message msg = mapper.readValue(text.getBytes(), Message.class);
+				if (msg.getEvent().contentEquals("message") && msg.getData().contentEquals("connected")) {
+					connected = true;
+					connectionSynchronizer.synchronizeConnections();
+				} else if (msg.getEvent().contentEquals("change-event")) {
+					EventMsg event = mapper.readValue(msg.getData().getBytes(), EventMsg.class);
+					if (event.getKind().contentEquals("connection")) {
+						connectionSynchronizer.handleConnectionEvent(event);
+					} else {
+						LOGGER.debug("Message discarded " + text);
+					}
 				}
+			} catch (Exception e) {
+				LOGGER.error("handleMessage: Failed to read the response", e);
 			}
-		} catch (IOException e) {
-			LOGGER.error("handleMessage: Failed to read the response", e);
-		}
+		});
 	}
 	
 	public boolean isConnected() {

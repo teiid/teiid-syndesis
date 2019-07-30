@@ -22,6 +22,7 @@ import static org.komodo.rest.Messages.Error.RESOURCE_NOT_FOUND;
 import static org.komodo.rest.Messages.General.GET_OPERATION_NAME;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.core.Context;
@@ -147,7 +148,7 @@ public abstract class KomodoService implements V1Constants {
         return vdbName + '.';
     }
 
-    protected final static SecurityPrincipal SYSTEM_USER = new SecurityPrincipal(SYSTEM_USER_NAME, null);
+    public final static SecurityPrincipal SYSTEM_USER = new SecurityPrincipal(SYSTEM_USER_NAME, null);
 
     @Autowired
     protected KEngine kengine;
@@ -262,6 +263,15 @@ public abstract class KomodoService implements V1Constants {
 
         return createErrorResponse(returnCode, mediaTypes, resultMsg);
     }
+    
+    protected Response createErrorResponse(List<MediaType> mediaTypes, Throwable ex,
+            RelationalMessages.Error errorType, Object... errorMsgInputs) {
+		if (ex != null) {
+			LOGGER.error(errorType.toString(), ex);
+		}
+		
+		return createErrorResponse(Status.INTERNAL_SERVER_ERROR, mediaTypes, ex, errorType, errorMsgInputs);
+	}
 
     protected Response createErrorResponseWithForbidden(List<MediaType> mediaTypes, Throwable ex,
                                                         RelationalMessages.Error errorType, Object... errorMsgInputs) {
@@ -312,7 +322,11 @@ public abstract class KomodoService implements V1Constants {
         return false;
     }
 
-    private Response commit(List<MediaType> acceptableMediaTypes, final KRestEntity entity) throws Exception {
+    protected Response toResponse(List<MediaType> acceptableMediaTypes, final KRestEntity entity) throws Exception {
+    	if (entity == null) {
+            return Response.ok().build();
+        }
+    	
         ResponseBuilder builder = null;
 
         if ( entity == RestBasicEntity.NO_CONTENT ) {
@@ -341,19 +355,47 @@ public abstract class KomodoService implements V1Constants {
 
         return builder.build();
     }
+    
+    protected <T> T runInTransaction(SecurityPrincipal principal, String txnName, boolean rollbackOnly, Callable<T> callable) throws Exception {
+		UnitOfWork uow = null;
+
+        try {
+            uow = createTransaction(principal, txnName, rollbackOnly ); //$NON-NLS-1$
+            T result = callable.call();
+            commit(uow);
+            return result;
+        } catch ( final Exception e ) {
+            if ( ( uow != null ) && !uow.isCompleted()) {
+                uow.rollback();
+            }
+            if ( e instanceof KomodoRestException ) {
+                throw ( KomodoRestException )e;
+            }
+            throw e;
+        }
+	}    
+
+    
+    protected void commit(UnitOfWork transaction) throws Exception {
+        boolean rollbackOnly = false;
+    	if (transaction.isRollbackOnly()) {
+    		rollbackOnly = true;
+    		transaction.rollback();
+    	} else {
+    		transaction.commit();
+    	}
+
+        LOGGER.debug( "commit: successfully committed '{0}', rollbackOnly = '{1}'", //$NON-NLS-1$
+                transaction.getName(),
+                rollbackOnly);
+    }
 
     protected Response commit(UnitOfWork transaction, List<MediaType> acceptableMediaTypes, final KRestEntity entity) throws Exception {
         final int timeout = TIMEOUT;
         final TimeUnit unit = UNIT;
 
-        boolean rollbackOnly = false;
         try {
-        	if (transaction.isRollbackOnly()) {
-        		rollbackOnly = true;
-        		transaction.rollback();
-        	} else {
-        		transaction.commit();
-        	}
+        	commit(transaction);
         } catch (TimeoutException e) {
             // callback timeout occurred
             String errorMessage = Messages.getString( COMMIT_TIMEOUT, transaction.getName(), timeout, unit );
@@ -363,9 +405,6 @@ public abstract class KomodoService implements V1Constants {
                            .entity(responseEntity)
                            .build();
         } catch (Throwable e) {
-        	if (e.getCause() != null) {
-        		e = e.getCause();
-        	}
             // callback was called because of an error condition
             Object responseEntity = createErrorResponseEntity(acceptableMediaTypes, e.getLocalizedMessage());
             return Response.status( Status.INTERNAL_SERVER_ERROR )
@@ -373,12 +412,8 @@ public abstract class KomodoService implements V1Constants {
                             .build();
         }
 
-        LOGGER.debug( "commit: successfully committed '{0}', rollbackOnly = '{1}'", //$NON-NLS-1$
-                transaction.getName(),
-                rollbackOnly);
-
         if (entity != null) {
-        	return commit(acceptableMediaTypes, entity);
+        	return toResponse(acceptableMediaTypes, entity);
         }
 
         return Response.ok().build();
@@ -441,22 +476,6 @@ public abstract class KomodoService implements V1Constants {
     	return getWorkspaceManager().findDataVirtualization(dataserviceName);
     }
 
-    protected String uri(String... segments) {
-        StringBuffer buffer = new StringBuffer();
-        for (int i = 0; i < segments.length; ++i) {
-            buffer.append(segments[i]);
-            if (i < (segments.length - 1))
-                buffer.append(FORWARD_SLASH);
-        }
-
-        return buffer.toString();
-    }
-
-    protected Response commitNoVdbFound(UnitOfWork uow, List<MediaType> mediaTypes, String vdbName) throws Exception {
-        LOGGER.debug( "VDB '{0}' was not found", vdbName ); //$NON-NLS-1$
-        return commit( uow, mediaTypes, new ResourceNotFound( vdbName, Messages.getString( GET_OPERATION_NAME ) ) );
-    }
-
     protected Response commitNoDataserviceFound(UnitOfWork uow, List<MediaType> mediaTypes, String dataserviceName) throws Exception {
         LOGGER.debug( "Dataservice '{0}' was not found", dataserviceName ); //$NON-NLS-1$
         return commit( uow, mediaTypes, new ResourceNotFound( dataserviceName, Messages.getString( GET_OPERATION_NAME ) ) );
@@ -465,12 +484,6 @@ public abstract class KomodoService implements V1Constants {
     protected Response commitNoConnectionFound(UnitOfWork uow, List<MediaType> mediaTypes, String connectionName) throws Exception {
         LOGGER.debug( "Connection '{0}' was not found", connectionName ); //$NON-NLS-1$
         return commit( uow, mediaTypes, new ResourceNotFound( connectionName, Messages.getString( GET_OPERATION_NAME ) ) );
-    }
-
-    protected Response commitNoModelFound(UnitOfWork uow, List<MediaType> mediaTypes, String modelName, String vdbName) throws Exception {
-        return commit(uow, mediaTypes,
-                      new ResourceNotFound(uri(vdbName, MODELS_SEGMENT, modelName),
-                                           Messages.getString( GET_OPERATION_NAME)));
     }
 
 }

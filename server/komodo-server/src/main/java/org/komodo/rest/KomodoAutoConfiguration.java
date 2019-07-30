@@ -32,6 +32,7 @@ import org.komodo.openshift.EncryptionComponent;
 import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.rest.connections.SyndesisConnectionMonitor;
 import org.komodo.rest.connections.SyndesisConnectionSynchronizer;
+import org.komodo.rest.service.KomodoMetadataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -65,6 +66,8 @@ public class KomodoAutoConfiguration implements ApplicationListener<ContextRefre
     @Autowired
     private MetadataInstance metadataInstance;
     
+    private ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
+    
     @Bean
     public TextEncryptor getTextEncryptor() {
         return Encryptors.text(encryptKey, "deadbeef");
@@ -86,10 +89,9 @@ public class KomodoAutoConfiguration implements ApplicationListener<ContextRefre
 			TeiidOpenShiftClient TOSClient = new TeiidOpenShiftClient(
 					metadataInstance, new EncryptionComponent(getTextEncryptor()),
 					this.config);
-        	SyndesisConnectionSynchronizer sync = new SyndesisConnectionSynchronizer(TOSClient, kengine);
-        	SyndesisConnectionMonitor scm = new SyndesisConnectionMonitor(sync);
-        	ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
-        	executor.schedule(scm, 15, TimeUnit.SECONDS);
+			SyndesisConnectionSynchronizer sync = new SyndesisConnectionSynchronizer(TOSClient, event.getApplicationContext().getBean(KomodoMetadataService.class));
+        	SyndesisConnectionMonitor scm = new SyndesisConnectionMonitor(sync, executor);
+    		this.executor.scheduleAtFixedRate(()->scm.connect(), 5, 15, TimeUnit.SECONDS);
         }
     }
 

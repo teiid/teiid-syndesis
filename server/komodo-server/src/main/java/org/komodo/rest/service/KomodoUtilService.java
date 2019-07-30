@@ -76,7 +76,7 @@ import io.swagger.annotations.ApiResponses;
 @Api( tags = {V1Constants.SERVICE_SEGMENT} )
 public final class KomodoUtilService extends KomodoService {
 
-    private static final String PREVIEW_VDB = "PreviewVdb";
+    public static final String PREVIEW_VDB = "PreviewVdb";
 
     public static final String APP_NAME = "App Name"; //$NON-NLS-1$
 
