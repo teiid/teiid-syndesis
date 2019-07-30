@@ -597,10 +597,9 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
     /**
      * Initiate schema refresh for a syndesis source.  This will either deploy a vdb for the source, or refresh an existing source vdb schema
-     * - no params supplied : (redeploy=false, generate-schema=true) - If source vdb not found, it is deployed. If source vdb found, regen schema.
-     * - params supplied (redeploy=true, generate-schema=any) - The source vdb is redeployed
-     * - params supplied (redeploy=false, generate-schema=false) - If source vdb not found, it is deployed.  If source vdb found, no op
-     * - params supplied (redeploy=false, generate-schema=true) - If source vdb not found, it is deployed.  If source vdb found, regen schema
+     * - no params supplied : (redeploy=false) - If source vdb not found, it is deployed. If source vdb found, regen schema.
+     * - params supplied (redeploy=true) - The source vdb is redeployed
+     * - params supplied (redeploy=false) - If source vdb not found, it is deployed.  If source vdb found, no op
      * @param headers
      *        the request headers (never <code>null</code>)
      * @param uriInfo
@@ -1534,6 +1533,10 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         
         if ( schema != null ) {
             status.setSchemaModelName(schemaModelName);
+        	status.setSchemaState( RestSyndesisSourceStatus.EntityState.ACTIVE );
+        } else {
+        	//TODO: check against the deployed vdb
+        	status.setSchemaState( RestSyndesisSourceStatus.EntityState.MISSING );
         }
     }
     

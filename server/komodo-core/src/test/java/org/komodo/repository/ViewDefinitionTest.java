@@ -1,6 +1,7 @@
 package org.komodo.repository;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 
@@ -40,6 +41,8 @@ public class ViewDefinitionTest {
         entityManager.flush();
 
         assertEquals(2, workspaceManagerImpl.getViewDefinitions("x").length);
+        
+        assertTrue(workspaceManagerImpl.removeViewDefinition(v.getName()));
     }
     
     @Test
