@@ -6,7 +6,7 @@ import java.util.Objects;
 
 import javax.ws.rs.core.MediaType;
 
-import org.komodo.metadata.runtime.TeiidVdb;
+import org.komodo.metadata.TeiidVdb;
 import org.komodo.rest.KRestEntity;
 import org.komodo.utils.StringUtils;
 
