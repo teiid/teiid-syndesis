@@ -24,6 +24,4 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface SourceSchemaRepository extends JpaRepository<SourceSchema, String> {
 
-	public SourceSchema findByName(String name);
-
 }

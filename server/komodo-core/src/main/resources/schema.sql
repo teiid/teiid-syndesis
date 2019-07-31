@@ -14,7 +14,6 @@ CREATE TABLE IF NOT EXISTS source_schema
   ( 
      id   VARCHAR(255) NOT NULL, 
      ddl  VARCHAR(1000000), 
-     NAME VARCHAR(1024) UNIQUE, 
      PRIMARY KEY (id) 
   ); 
 

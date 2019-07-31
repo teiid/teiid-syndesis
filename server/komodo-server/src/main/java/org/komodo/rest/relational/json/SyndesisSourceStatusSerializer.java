@@ -53,7 +53,7 @@ public final class SyndesisSourceStatusSerializer extends TypeAdapter< RestSynde
                 final String[] errors = BUILDER.fromJson( in, String[].class );
                 status.setErrors( Arrays.asList( errors ) );
             } else if ( RestSyndesisSourceStatus.SCHEMA_MODEL_NAME.equals( name ) ) {
-                status.setSchemaModelName( in.nextString() );
+                status.setSchemaModelId( in.nextString() );
             } else if ( RestSyndesisSourceStatus.SCHEMA_STATE.equals( name ) ) {
                 status.setSchemaState( EntityState.fromString( in.nextString() ) );
             } else if ( RestSyndesisSourceStatus.SERVER_VDB_NAME.equals( name ) ) {
@@ -111,9 +111,9 @@ public final class SyndesisSourceStatusSerializer extends TypeAdapter< RestSynde
         out.endArray();
 
         // schema model name
-        if ( !StringUtils.isBlank( status.getSchemaModelName() ) ) {
+        if ( !StringUtils.isBlank( status.getSchemaModelId() ) ) {
             out.name( RestSyndesisSourceStatus.SCHEMA_MODEL_NAME );
-            out.value( status.getSchemaModelName() );
+            out.value( status.getSchemaModelId() );
         }
 
         // server VDB name

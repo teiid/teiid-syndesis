@@ -18,38 +18,21 @@
 
 package org.komodo.repository;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-
-import org.hibernate.annotations.GenericGenerator;
 
 @Entity
 public class SourceSchema implements org.komodo.datavirtualization.SourceSchema {
 
 	@Id
-	@GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
 	private String id;
-	@Column(unique=true)
-	private String name;
 	private String ddl;
 	
 	protected SourceSchema() {
 	}
 	
-	public SourceSchema(String name) {
-		this.name = name;
-	}
-	
-	@Override
-	public String getName() {
-		return name;
-	}
-	
-	public void setName(String name) {
-		this.name = name;
+	public SourceSchema(String id) {
+		this.id = id;
 	}
 	
 	@Override

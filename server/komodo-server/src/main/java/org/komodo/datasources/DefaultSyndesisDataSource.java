@@ -21,8 +21,8 @@ import java.util.Map;
 
 public class DefaultSyndesisDataSource {
 	private String id;
-    private String name;
-    private boolean bound;
+    private String syndesisName;
+    private volatile String komodoName;
     private String translator;
     private Map<String, String> properties;
     private DataSourceDefinition definition;
@@ -31,29 +31,21 @@ public class DefaultSyndesisDataSource {
         return id;
     }
     
-    public String getName() {
-        return name;
+    public String getSyndesisName() {
+        return syndesisName;
     }
 
     public String getType() {
         return definition.getType();
     }
 
-    public boolean isBound() {
-        return bound;
-    }
-
     public void setId(String id) {
         this.id = id;
     }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setBound(boolean bound) {
-        this.bound = bound;
-    }
+    
+    public void setSyndesisName(String syndesisName) {
+		this.syndesisName = syndesisName;
+	}
 
     public String getTranslatorName() {
         return translator;
@@ -86,4 +78,17 @@ public class DefaultSyndesisDataSource {
     public Map<String, String> convertToDataSourceProperties() {
         return this.definition.getInternalTeiidDataSourceProperties(this);
     }
+    
+    /**
+     * If bound returns the unique Komodo datasource name, which is also a valid
+     * schema name.  It will already be cleansed of problematic characters.
+     * @return
+     */
+    public String getKomodoName() {
+		return komodoName;
+	}
+    
+    public void setKomodoName(String komodoName) {
+		this.komodoName = komodoName;
+	}
 }

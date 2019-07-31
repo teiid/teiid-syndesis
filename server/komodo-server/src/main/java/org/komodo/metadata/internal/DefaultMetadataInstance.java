@@ -409,7 +409,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
             
             byte[] bytes = baos.getBuffer();
             InputStream inStream = new ByteArrayInputStream(bytes, 0, baos.getCount());
-
+            
             checkStarted();
             
             String deploymentName = vdbName + VDB_DEPLOYMENT_SUFFIX;

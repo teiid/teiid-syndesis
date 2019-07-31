@@ -98,11 +98,11 @@ public class SyndesisConnectionSynchronizer {
 	}
 
 	private void handleAddConnection(EventMsg event) throws KException {
-		DefaultSyndesisDataSource sds = this.openshiftClient.getSyndesisDataSourceByEventId(bogusCredentials,
+		DefaultSyndesisDataSource sds = this.openshiftClient.getSyndesisDataSourceById(bogusCredentials,
 				event.getId());
 		if (sds != null) {
 			addConnection(sds);
-			LOGGER.info("Add connection completed for " + sds.getName());
+			LOGGER.info("Add connection completed for " + sds.getSyndesisName());
 		} else {
 			LOGGER.info("failed find data source with id " + event.getId());
 		}
@@ -113,40 +113,40 @@ public class SyndesisConnectionSynchronizer {
 	 * associated objects and then re-adding the same connection.
 	 */
 	private void handleUpdateConnection(EventMsg event) throws KException{
-		DefaultSyndesisDataSource sds = this.openshiftClient.getSyndesisDataSourceByEventId(bogusCredentials,
+		DefaultSyndesisDataSource sds = this.openshiftClient.getSyndesisDataSourceById(bogusCredentials,
 				event.getId());
 		if (sds != null) {
-			deleteConnection(sds.getName());
+			deleteConnection(sds);
 			handleAddConnection(event);
 		}
-		LOGGER.info("UPDATE connection completed for " + sds.getName());
+		LOGGER.info("UPDATE connection completed for " + sds.getSyndesisName());
 	}
 	
 	private boolean handleDeleteConnection(EventMsg event) throws KException {
 		try {
 			// note here that the datasource is already deleted from the syndesis
 			// so we would need to search by local cached event id
-			String dsName = this.openshiftClient.findDataSourceNameByEventId(event.getId());
-			if (dsName == null) {
-				return true;
+			DefaultSyndesisDataSource sds = this.openshiftClient.getSyndesisDataSourceById(bogusCredentials,
+					event.getId());
+			if (sds != null) {
+				return deleteConnection(sds);
 			}
 			
-			return deleteConnection(dsName);
+			return false;
 		} catch (Exception e) {
 			throw handleError(e);
 		}
 	}	
 	
 	private void addConnection(DefaultSyndesisDataSource sds) throws KException {
-		if (!sds.isBound()) {
+		if (sds.getKomodoName() == null) {
 			this.openshiftClient.bindToSyndesisSource(bogusCredentials, sds);
 		}
 
 		// check if the metadata is already available, then skip it.
-		RestSyndesisSourceStatus status = checkMetadataStatus(sds.getName());
-		if (status != null
-				&& status.getVdbState() == RestSyndesisSourceStatus.EntityState.ACTIVE) {
-			LOGGER.info("Schema already in repo for source " + sds.getName() +" skipping refresh");
+		RestSyndesisSourceStatus status = checkMetadataStatus(sds);
+		if (status.getVdbState() == RestSyndesisSourceStatus.EntityState.ACTIVE) {
+			LOGGER.info("Schema already in repo for source " + sds.getSyndesisName() +" skipping refresh");
 			return;
 		}
 
@@ -154,50 +154,51 @@ public class SyndesisConnectionSynchronizer {
 		boolean vdbRequestSubmitted = false;
 		long start = System.currentTimeMillis();
 		while (System.currentTimeMillis() - start < (5 * 60 * 1000)) {
-			status = checkMetadataStatus(sds.getName());
+			status = checkMetadataStatus(sds);
 			if (status.getVdbState() == RestSyndesisSourceStatus.EntityState.ACTIVE) {
 				// we are done.
-				LOGGER.info("Schema Generation Success for source " + sds.getName());
+				LOGGER.info("Schema Generation Success for source " + sds.getSyndesisName());
 				break;
 			} else if (status.getVdbState() == RestSyndesisSourceStatus.EntityState.FAILED) {
-				LOGGER.warn("VDB deployment Failed for fetching metadata for source " + sds.getName());
+				LOGGER.warn("VDB deployment Failed for fetching metadata for source " + sds.getSyndesisName());
 				break;
 			} else if (status.getVdbState() == RestSyndesisSourceStatus.EntityState.MISSING && !vdbRequestSubmitted) {
 				requestMetadataForDataSource(sds);
 				vdbRequestSubmitted = true;
 			}
 			
-			// sleep for 5 seconds
+			// sleep for 3 seconds
 			try {
 				Thread.sleep(3000);
 			} catch (InterruptedException e) {
+				Thread.interrupted();
 				break;
 			}			
 		}
 	}
 
-	private RestSyndesisSourceStatus checkMetadataStatus(String dsName) throws KException {
+	private RestSyndesisSourceStatus checkMetadataStatus(DefaultSyndesisDataSource dsd) throws KException {
 		try {
-			return metadataService.getSyndesisSourceStatusByName(dsName, KomodoService.SYSTEM_USER);
+			return metadataService.getSyndesisSourceStatus(dsd, KomodoService.SYSTEM_USER);
 		} catch (Exception e) {
-			LOGGER.warn("Failed to get metadata status " + dsName, e);
+			LOGGER.warn("Failed to get metadata status " + dsd.getSyndesisName(), e);
 			return null;
 		}
 	}
 
 	private void requestMetadataForDataSource(DefaultSyndesisDataSource sds) throws KException {
 		try {
-			this.metadataService.refreshSchema(sds.getName(), true, KomodoService.SYSTEM_USER);
-			LOGGER.info("submitted request to fetch metadata of connection " + sds.getName());
+			this.metadataService.refreshSchema(sds.getKomodoName(), true, KomodoService.SYSTEM_USER);
+			LOGGER.info("submitted request to fetch metadata of connection " + sds.getSyndesisName());
 		} catch (Exception e) {
-			LOGGER.warn("Failed to fetch metadata for connection " + sds.getName(), e);
+			LOGGER.warn("Failed to fetch metadata for connection " + sds.getSyndesisName(), e);
 		}
 	}
 
-	private boolean deleteConnection(String dsName) throws KException {
+	private boolean deleteConnection(DefaultSyndesisDataSource dsd) throws KException {
 		try {
-			RestSyndesisSourceStatus status = checkMetadataStatus(dsName);
-			if (status != null && status.getSchemaModelName() != null) {
+			RestSyndesisSourceStatus status = checkMetadataStatus(dsd);
+			if (status != null && status.getSchemaModelId() != null) {
 				deleteSchemaModel(status);
 			}
 	
@@ -205,8 +206,11 @@ public class SyndesisConnectionSynchronizer {
 				deleteSourceVDB(status);
 			}
 	
-			this.openshiftClient.deleteDataSource(dsName);
-			LOGGER.info("Connection deleted " + dsName);
+			String komodoName = dsd.getKomodoName();
+			if (komodoName != null) {
+				this.openshiftClient.deleteDataSource(komodoName);
+			}
+			LOGGER.info("Connection deleted " + dsd.getSyndesisName());
 			return true;
 		} catch(AdminException e) {
 			throw handleError(e);
@@ -215,10 +219,10 @@ public class SyndesisConnectionSynchronizer {
 
 	private void deleteSchemaModel(RestSyndesisSourceStatus status) throws KException {
 		try {
-			this.metadataService.deleteSchema(status.getSchemaModelName(), KomodoService.SYSTEM_USER);
-			LOGGER.info("Workspace schema " + status.getSchemaModelName() + " deleted.");
+			this.metadataService.deleteSchema(status.getSchemaModelId(), KomodoService.SYSTEM_USER);
+			LOGGER.info("Workspace schema " + status.getSchemaModelId() + " deleted.");
 		} catch (Exception e) {
-			LOGGER.info("Failed to delete schema " + status.getSchemaModelName(), e);
+			LOGGER.info("Failed to delete schema " + status.getSchemaModelId(), e);
 		}
 	}
 

@@ -35,8 +35,8 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
 	private ViewDefinitionRepository viewDefinitionRepository;
 
 	@Override
-	public String findSchema(String name) {
-		SourceSchema schema = this.schemaRepository.findByName(name);
+	public String findSchema(String id) {
+		SourceSchema schema = this.schemaRepository.findOne(id);
 		if (schema != null) {
 			return schema.getDdl();
 		}
@@ -44,25 +44,19 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
 	}
 
 	@Override
-	public boolean deleteSchema(String name) {
-		org.komodo.repository.SourceSchema ss = this.schemaRepository.findByName(name);
-		if (ss == null) {
-			return false;
-		}
-		this.schemaRepository.delete(ss);
-		this.schemaRepository.flush();
-		return true;
+	public void deleteSchema(String id) {
+		this.schemaRepository.delete(id);
 	}
 
 	@Override
-	public void createOrUpdateSchema(String name, String contents) {
-		org.komodo.repository.SourceSchema schema = this.schemaRepository.findByName(name);
+	public void createOrUpdateSchema(String id, String contents) {
+		org.komodo.repository.SourceSchema schema = this.schemaRepository.findOne(id);
 		if (schema != null) {
 			if (!contents.equals(schema.getDdl())) {
 				schema.setDdl(contents);
 			}
 		} else {
-			schema = new org.komodo.repository.SourceSchema(name);
+			schema = new org.komodo.repository.SourceSchema(id);
 			this.schemaRepository.save(schema);
 		}
 	}

@@ -84,8 +84,8 @@ public class TestVDBPublisher {
 
     private DefaultSyndesisDataSource getMySQLDS() {
         DefaultSyndesisDataSource ds1 = new DefaultSyndesisDataSource();
-        ds1.setName("inventory-abc");
-        ds1.setBound(true);
+        ds1.setSyndesisName("inventory-abc");
+        ds1.setKomodoName("inventory-abc");
         ds1.setTranslatorName("mysql5");
         ds1.setDefinition(new MySQLDefinition());
 
@@ -100,8 +100,8 @@ public class TestVDBPublisher {
 
     private DefaultSyndesisDataSource getPostgreSQL() {
         DefaultSyndesisDataSource ds2 = new DefaultSyndesisDataSource();
-        ds2.setName("accounts-xyz");
-        ds2.setBound(true);
+        ds2.setSyndesisName("accounts-xyz");
+        ds2.setKomodoName("accounts-xyz");
         ds2.setTranslatorName("postgresql");
         ds2.setDefinition(new PostgreSQLDefinition());
 

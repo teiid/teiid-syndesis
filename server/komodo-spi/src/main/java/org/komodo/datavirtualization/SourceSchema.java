@@ -18,7 +18,7 @@
 
 package org.komodo.datavirtualization;
 
-public interface SourceSchema extends Named {
+public interface SourceSchema {
 
 	String getDdl();
 
