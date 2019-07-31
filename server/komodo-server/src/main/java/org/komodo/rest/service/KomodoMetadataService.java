@@ -18,7 +18,6 @@
 package org.komodo.rest.service;
 
 import java.net.URI;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -108,8 +107,6 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
     }
 
     private static final String CONNECTION_VDB_SUFFIX = "btlconn"; //$NON-NLS-1$
-
-    private static final String SCHEMA_MODEL_NAME_PATTERN = "{0}schemamodel"; //$NON-NLS-1$
 
     /**
      * fqn table option key
@@ -523,7 +520,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
                                    final @Context UriInfo uriInfo,
                                    @ApiParam( value = "Name of the syndesis source",
                                               required = true )
-                                   final @PathParam( "syndesisSourceName" ) String syndesisSourceName,
+                                   final @PathParam( "komodoSourceName" ) String komodoSourceName,
                                    @ApiParam( value = "Indicates the source VDB should be redeployed if it already exists",
                                               required = false )
                                    @DefaultValue( "false" )
@@ -538,12 +535,12 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             return notAcceptableMediaTypesBuilder().build();
 
         // Error if the syndesisSource is missing
-        if (StringUtils.isBlank( syndesisSourceName )) {
+        if (StringUtils.isBlank( komodoSourceName )) {
             return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.CONNECTION_SERVICE_MISSING_CONNECTION_NAME);
         }
 
         try {
-            final KomodoStatusObject kso = refreshSchema(syndesisSourceName, redeployServerVdb, principal);
+            final KomodoStatusObject kso = refreshSchema(komodoSourceName, redeployServerVdb, principal);
 
             return toResponse(mediaTypes, kso);
         } catch (final Exception e) {
@@ -555,15 +552,15 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         }
     }
 
-	public KomodoStatusObject refreshSchema(final String syndesisSourceName, final boolean redeployServerVdb, SecurityPrincipal principal) throws KException, Exception {
+	public KomodoStatusObject refreshSchema(final String komodoName, final boolean redeployServerVdb, SecurityPrincipal principal) throws KException, Exception {
 		return runInTransaction(principal, "refreshSchema?redeploy=" + redeployServerVdb, false, () -> {// Find the bound teiid source corresponding to the syndesis source
-			TeiidDataSource teiidSource = this.findTeiidSource(syndesisSourceName);
+			TeiidDataSource teiidSource = this.findTeiidSource(komodoName);
 
 			if (teiidSource == null)
 			    return null;
 
 			final KomodoStatusObject kso = new KomodoStatusObject( "Refresh schema" ); //$NON-NLS-1$
-			final TeiidVdb deployedVdb = findDeployedVdb( syndesisSourceName );
+			final TeiidVdb deployedVdb = findDeployedVdb( komodoName );
 			boolean doDeploy = false;
 
 			// If no deployed VDB is found for the source, it is deployed regardless of other settings
@@ -576,32 +573,33 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 			// Initiate the VDB deployment
 			if ( doDeploy ) {
 			    doDeploySourceVdb(teiidSource); // this will delete workspace VDB first
-			    kso.addAttribute(syndesisSourceName, "Delete workspace VDB, recreate, redeploy, and generated schema"); //$NON-NLS-1$
-			    saveSchema(syndesisSourceName);
+			    kso.addAttribute(komodoName, "Delete workspace VDB, recreate, redeploy, and generated schema"); //$NON-NLS-1$
+			    saveSchema(teiidSource.getId(), komodoName);
 			} else {
-			    kso.addAttribute( syndesisSourceName, "Neither redeploy or generate schema requested" ); //$NON-NLS-1$
+			    kso.addAttribute( komodoName, "Neither redeploy or generate schema requested" ); //$NON-NLS-1$
 			}
 			return kso;
 		});
 	}
 	
-	public boolean deleteSchema(String schemaName, SecurityPrincipal principal) throws Exception {
-		return runInTransaction(principal, "deleteSchema", false, () -> {
+	public void deleteSchema(String schemaId, SecurityPrincipal principal) throws Exception {
+		runInTransaction(principal, "deleteSchema", false, () -> {
 			final WorkspaceManager mgr = kengine.getWorkspaceManager();
             
-            return mgr.deleteSchema(schemaName);
+            mgr.deleteSchema(schemaId);
+            return null;
 		});
 	}
 
-	private void saveSchema(final String syndesisSourceName) throws KException {
-		final String schemaModelName = getSchemaModelName( syndesisSourceName );
+	private void saveSchema(final String schemaId, final String komodoName) throws KException {
+		final String schemaModelName = getSchemaModelName( komodoName );
 
-		final String sourceVdbName = getWorkspaceSourceVdbName( syndesisSourceName );
+		final String sourceVdbName = getWorkspaceSourceVdbName( komodoName );
 		
 		final String modelDdl = getMetadataInstance().getSchema( sourceVdbName, schemaModelName ); //$NON-NLS-1$
 		
 		if (modelDdl != null) {
-			getWorkspaceManager().createOrUpdateSchema(schemaModelName, modelDdl);
+			getWorkspaceManager().createOrUpdateSchema(schemaId, modelDdl);
 		}
 	}
 
@@ -716,7 +714,8 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
             // Add status summary for each of the syndesis sources.  Determine if there is a matching teiid source
             for (DefaultSyndesisDataSource dataSource : dataSources) {
-            	TeiidDataSource teiidSource = teiidSourceMap.get(dataSource.getName());
+            	String komodoName = dataSource.getKomodoName();
+            	TeiidDataSource teiidSource = teiidSourceMap.get(komodoName);
             	if (teiidSource == null) {
             		continue;
             	}
@@ -724,10 +723,10 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
                 List<RestSchemaNode> schemaNodes = null;
                 if ( schemaModel != null ) {
-                    schemaNodes = this.generateSourceSchema(dataSource.getName(), schemaModel.getTables().values());
+                    schemaNodes = this.generateSourceSchema(komodoName, schemaModel.getTables().values());
                     if(schemaNodes != null && !schemaNodes.isEmpty()) {
                     	RestSchemaNode rootNode = new RestSchemaNode();
-                    	rootNode.setName(dataSource.getName());
+                    	rootNode.setName(komodoName);
                     	rootNode.setType("root");
                     	for(RestSchemaNode sNode: schemaNodes) {
                     		rootNode.addChild(sNode);
@@ -788,40 +787,15 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             // Get syndesis sources
             Collection<DefaultSyndesisDataSource> dataSources = this.openshiftClient.getSyndesisSources(getAuthenticationToken());
 
-            // Get teiid datasources
-            Collection<TeiidDataSource> allTeiidSources = getMetadataInstance().getDataSources();
-            
-            Map<String, TeiidDataSource> teiidSourceMap = allTeiidSources.stream().collect(Collectors.toMap(t -> t.getName(), Function.identity()));
-
             // Add status summary for each of the syndesis sources.  Determine if there is a matching teiid source
             for (DefaultSyndesisDataSource dataSource : dataSources) {
-                RestSyndesisSourceStatus status = new RestSyndesisSourceStatus(dataSource.getName());
-                TeiidDataSource teiidSource = teiidSourceMap.get(dataSource.getName());
-                if (teiidSource != null) {
-                	status.setHasTeiidSource(true);
-                }
-                statuses.add(status);
+            	String komodoName = dataSource.getKomodoName();
+            	if (komodoName == null) {
+            		continue;
+            	}
+                statuses.add(createSourceStatus(dataSource));
             }
             
-            // For each syndesis source, determine if there is a matching teiid VDB for the source
-            final Collection< TeiidVdb > vdbs = getMetadataInstance().getVdbs();
-
-            Map<String, TeiidVdb> vdbMap = vdbs.stream().collect(Collectors.toMap(v -> v.getName(), Function.identity()));
-            
-            for( RestSyndesisSourceStatus status : statuses ) {
-                // Name of vdb based on source name
-                String vdbName = getWorkspaceSourceVdbName( status.getSourceName() );
-                TeiidVdb vdb = vdbMap.get(vdbName);
-                if ( vdb != null ) {
-                    status.setTeiidVdbDetails(vdb);
-                }
-            }
-
-            // For each syndesis source, set the schema availability status
-            for( RestSyndesisSourceStatus status : statuses ) {
-                this.setSchemaStatus(status);
-            }
-
             LOGGER.debug( "getSyndesisSourceStatuses '{0}' statuses", statuses.size() ); //$NON-NLS-1$
 
             return commit( uow, mediaTypes, statuses );
@@ -838,53 +812,34 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         }
     }
     
-    @GET
-    @Path(V1Constants.SYNDESIS_SOURCE_STATUSES+"/{syndesisSourceName}")
-    @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Return the syndesis source statuses by name",
-                  response = RestSyndesisSourceStatus.class)
-    @ApiResponses(value = {
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-	public Response getSyndesisSourceStatusesByName(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
-			@PathParam("syndesisSourceName") final String syndesisSourceName) throws KomodoRestException {
-
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
-
-        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        try {
-			RestSyndesisSourceStatus status = getSyndesisSourceStatusByName(syndesisSourceName, principal);
-			return toResponse(mediaTypes, status);
-        } catch ( final Exception e ) {
-            if ( e instanceof KomodoRestException ) {
-                throw ( KomodoRestException )e;
-            }
-			return createErrorResponse(mediaTypes, e,
-					RelationalMessages.Error.CONNECTION_SERVICE_GET_CONNECTIONS_ERROR);
-		}
-    }
-
-	public RestSyndesisSourceStatus getSyndesisSourceStatusByName(final String syndesisSourceName, SecurityPrincipal principal) throws Exception {
+	public RestSyndesisSourceStatus getSyndesisSourceStatus(final DefaultSyndesisDataSource sds, SecurityPrincipal principal) throws Exception {
 		return runInTransaction(principal, "getSyndesisSourceStatusByName", true, () -> {
-            TeiidDataSource teiidSource = getMetadataInstance().getDataSource(syndesisSourceName);
-            RestSyndesisSourceStatus status = new RestSyndesisSourceStatus(syndesisSourceName);
-            if (teiidSource != null) {
-            	status.setHasTeiidSource(true);
-            }
-
-            // Name of vdb based on source name
-            String vdbName = getWorkspaceSourceVdbName(syndesisSourceName);
-            TeiidVdb teiidVdb = getMetadataInstance().getVdb(vdbName);
-            if (teiidVdb != null) {
-            	status.setTeiidVdbDetails(teiidVdb);
-            }
-
-            // For each syndesis source, set the schema availability status
-            setSchemaStatus(status);
-            return status;
+            return createSourceStatus(sds);
 		});
+	}
+
+	private RestSyndesisSourceStatus createSourceStatus(final DefaultSyndesisDataSource sds)
+			throws KException, Exception {
+		String komodoName = sds.getKomodoName();
+		if (komodoName == null) {
+			return null;
+		}
+		TeiidDataSource teiidSource = getMetadataInstance().getDataSource(komodoName);
+		RestSyndesisSourceStatus status = new RestSyndesisSourceStatus(komodoName);
+		if (teiidSource != null) {
+			status.setHasTeiidSource(true);
+		}
+
+		// Name of vdb based on source name
+		String vdbName = getWorkspaceSourceVdbName(komodoName);
+		TeiidVdb teiidVdb = getMetadataInstance().getVdb(vdbName);
+		if (teiidVdb != null) {
+			status.setTeiidVdbDetails(teiidVdb);
+		}
+
+		// For each syndesis source, set the schema availability status
+		setSchemaStatus(teiidSource.getId(), status);
+		return status;
 	}    
 
     @GET
@@ -1153,10 +1108,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         // VDB is created in the repository.  If it already exists, delete it
         final WorkspaceManager mgr = this.getWorkspaceManager();
         
-        final String dataSourceName = teiidSource.getName( );
-        final String schemaName = getSchemaModelName(dataSourceName);
-        
-        String schema = mgr.findSchema(schemaName);
+        String schema = mgr.findSchema(teiidSource.getId());
         
         // Name of VDB to be created is based on the source name
         String vdbName = getWorkspaceSourceVdbName( teiidSource.getName() );
@@ -1165,7 +1117,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 		getMetadataInstance().deploy(vdb);
 		
 		if (schema == null) {
-			saveSchema(teiidSource.getName());
+			saveSchema(teiidSource.getId(), teiidSource.getName());
 		}
     }
 
@@ -1174,7 +1126,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         String sourceName = teiidSource.getName();
         String jndiName = teiidSource.getJndiName();
         String driverName = teiidSource.getType();
-
+        
         VDBMetaData vdb = new VDBMetaData();
         vdb.setName(vdbName);
         vdb.setDescription("Vdb for source "+teiidSource); //$NON-NLS-1$
@@ -1186,8 +1138,8 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         mmd.addProperty("importer.UseQualifiedName", "true");  //$NON-NLS-1$//$NON-NLS-2$
         mmd.addProperty("importer.UseCatalogName", "false");  //$NON-NLS-1$//$NON-NLS-2$
         mmd.addProperty("importer.UseFullSchemaName", "false");  //$NON-NLS-1$//$NON-NLS-2$
-        if (teiidSource.getPropertyValue("schema") != null) {
-        	mmd.addProperty("importer.schemaName", teiidSource.getPropertyValue("schema"));  //$NON-NLS-1$//$NON-NLS-2$
+        if (teiidSource.getSchema() != null) {
+        	mmd.addProperty("importer.schemaName", teiidSource.getSchema());  //$NON-NLS-1$//$NON-NLS-2$
         }
         
         if (schema != null) {
@@ -1262,12 +1214,10 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
     }
 
     /**
-     * Generate schema VDB model name, given the name of the source
-     * @param sourceName the source name
-     * @return the schema VDB model name
+     * Just a no-op
      */
     static String getSchemaModelName( final String sourceName ) {
-        return MessageFormat.format( SCHEMA_MODEL_NAME_PATTERN, sourceName.toLowerCase() );
+        return sourceName;
     }
     
     /**
@@ -1429,17 +1379,12 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
      * @param status the RestSyndesisSourceStatus
      * @throws Exception if error occurs
      */
-    private void setSchemaStatus(final RestSyndesisSourceStatus status ) throws Exception {
-        // Name of schema vdb based on source name
-        final String srcName = status.getSourceName();
-
-        final String schemaModelName = getSchemaModelName( srcName );
-        
+    private void setSchemaStatus(String schemaId, final RestSyndesisSourceStatus status ) throws Exception {
         // Get the workspace schema VDB
-        String schema = getWorkspaceManager().findSchema(schemaModelName);
+        String schema = getWorkspaceManager().findSchema(schemaId);
         
         if ( schema != null ) {
-            status.setSchemaModelName(schemaModelName);
+            status.setSchemaModelId(schemaId);
         	status.setSchemaState( RestSyndesisSourceStatus.EntityState.ACTIVE );
         } else {
         	//TODO: check against the deployed vdb

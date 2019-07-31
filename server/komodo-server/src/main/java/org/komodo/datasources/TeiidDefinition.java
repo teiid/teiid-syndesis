@@ -17,7 +17,6 @@
  */
 package org.komodo.datasources;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class TeiidDefinition extends DataSourceDefinition {
@@ -46,36 +45,4 @@ public class TeiidDefinition extends DataSourceDefinition {
         return false;
     }
 
-    @Override
-    public Map<String, String> getInternalTeiidDataSourceProperties(DefaultSyndesisDataSource source) {
-        Map<String, String> props = new HashMap<>();
-        
-        props.put("jndi-name", source.getName());
-        props.put("driver-name", getType()); // used as translator name
-        props.put("display-name", source.getName());
-        
-        props.put("url", source.getProperty("url"));
-        props.put("user", source.getProperty("user"));
-        props.put("password", source.getProperty("password"));
-        props.put("schema", source.getProperty("schema"));
-        return props;
-    }
-
-    @Override
-    public Map<String, String> getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd) {
-    	Map<String, String> props = new HashMap<>();
-        ds(props, scd, "jdbc-url", scd.getProperty("url"));
-        ds(props, scd, "user", scd.getProperty("user"));
-        ds(props, scd, "password", scd.getProperty("password"));
-        
-        if (scd.getProperty("schema") != null) {
-        	ds(props, scd, "importer.schemaName", scd.getProperty("schema"));
-        }
-
-        // pool properties
-        ds(props, scd, "maximumPoolSize", "5");
-        ds(props, scd, "minimumIdle", "0");
-        
-        return props;
-    }
 }

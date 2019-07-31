@@ -1,7 +1,7 @@
 package org.komodo.repository;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,13 +30,15 @@ public class SourceSchemaTest {
         entityManager.persist(s);
         entityManager.flush();
      
-        org.komodo.datavirtualization.SourceSchema found = sourceSchemaRepository.findByName(s.getName());
+        org.komodo.datavirtualization.SourceSchema found = sourceSchemaRepository.findOne(s.getId());
      
         assertEquals(s.getDdl(), found.getDdl());
         
-        assertTrue(workspaceManagerImpl.deleteSchema(s.getName()));
+        workspaceManagerImpl.deleteSchema(s.getId());
         
         entityManager.flush();
+        
+        assertNull(sourceSchemaRepository.findOne(s.getId()));
     }
 
 
