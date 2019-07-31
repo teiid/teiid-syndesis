@@ -91,7 +91,10 @@ import org.komodo.utils.FileUtils;
 import org.komodo.utils.StringUtils;
 import org.teiid.adminapi.AdminException;
 import org.teiid.adminapi.Model;
+import org.teiid.adminapi.impl.ModelMetaData;
+import org.teiid.adminapi.impl.SourceMappingMetadata;
 import org.teiid.adminapi.impl.VDBMetaData;
+import org.teiid.core.util.AccessibleByteArrayOutputStream;
 import org.teiid.core.util.ObjectConverterUtil;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -525,22 +528,6 @@ public class TeiidOpenShiftClient implements StringConstants {
         }
     }    
 
-    public void bindToSyndesisSource(OAuthCredentials oauthCreds, String dsName) throws KException {
-        info(dsName, "Bind source with name to Service: " + dsName);
-        try {
-            DefaultSyndesisDataSource scd = getSyndesisDataSource(oauthCreds, dsName);
-            if (scd == null) {
-                throw new KException("failed to find the syndesis datasource by name " + dsName);
-            }
-            Collection<String> dsNames = this.metadata.getDataSourceNames();
-            if (!dsNames.contains(dsName)) {
-                createDataSource(dsName, scd);
-            }
-        } catch (Exception e) {
-            throw handleError(e);
-        }
-    }
-    
     public void bindToSyndesisSource(OAuthCredentials oauthCreds, DefaultSyndesisDataSource scd) throws KException {
         if (scd == null) {
             throw new KException("failed to find the syndesis datasource");
@@ -1023,11 +1010,11 @@ public class TeiidOpenShiftClient implements StringConstants {
 
                     debug(vdbName, "Publishing - Generated pom file: " + NEW_LINE + pomFile);
                     archive.add(new StringAsset(pomFile), "pom.xml");
+                    
+                    normalizeDataSourceNames(vdb);
 
-                    byte[] vdbContents = DefaultMetadataInstance.toBytes(vdb).toByteArray();
-                    String modifiedVDB = normalizeDataSourceNames(vdb, new String(vdbContents, "UTF-8"));
-                    debug(vdbName, "Publishing - Exported vdb: " + NEW_LINE + modifiedVDB);
-                    archive.add(new StringAsset(modifiedVDB), "/src/main/resources/" + vdbName + "-vdb.xml");
+                    AccessibleByteArrayOutputStream vdbContents = DefaultMetadataInstance.toBytes(vdb);
+                    archive.add(new ByteArrayAsset(new ByteArrayInputStream(vdbContents.getBuffer(), 0, vdbContents.getCount())), "/src/main/resources/" + vdbName + "-vdb.xml");
 
                     InputStream configIs = this.getClass().getClassLoader().getResourceAsStream("s2i/application.properties");
                     archive.add(new ByteArrayAsset(ObjectConverterUtil.convertToByteArray(configIs)),
@@ -1096,22 +1083,14 @@ public class TeiidOpenShiftClient implements StringConstants {
         });
     }
 
-	private String normalizeDataSourceNames(VDBMetaData vdb, String vdbContents) throws KException {
-		debug(vdb.getName(), vdbContents);
-        for (Model model : vdb.getModels()) {
-            for (String source : model.getSourceNames()) {
-                String originalName = source;
-                String name = originalName.toLowerCase();
-                name = name.replace("-", "");
-                if (!originalName.contentEquals(name)) {
-                	// <source name="sample-db" translator-name="postgresql" connection-jndi-name="sample-db"></source>
-					vdbContents = vdbContents.replace("name=\"" + originalName + "\"", "name=\"" + name + "\"");
-					vdbContents = vdbContents.replace("connection-jndi-name=\"" + originalName + "\"",
-							"connection-jndi-name=\"" + name + "\"");
-                }
+	protected void normalizeDataSourceNames(VDBMetaData vdb) throws KException {
+        for (ModelMetaData model : vdb.getModelMetaDatas().values()) {
+        	for (SourceMappingMetadata source : model.getSources().values()) {
+        		String name = source.getName().toLowerCase();
+                name = name.replaceAll("[-\\.\\s]", "");
+                source.setConnectionJndiName(name);
             }
         }
-		return vdbContents;
 	}
 	
     private static final String DS_TEMPLATE =
@@ -1137,9 +1116,8 @@ public class TeiidOpenShiftClient implements StringConstants {
 
         for (Model model : vdb.getModels()) {
             for (String name : model.getSourceNames()) {
-                name = name.toLowerCase();
-                name = name.replace("-", "");
-                sw.write(DS_TEMPLATE.replace("{name}", name).replace("{method-name}", name));                
+            	String replacement = model.getSourceConnectionJndiName(name);
+                sw.write(DS_TEMPLATE.replace("{name}", replacement).replace("{method-name}", replacement));                
                 sw.write("\n");
             }
         }

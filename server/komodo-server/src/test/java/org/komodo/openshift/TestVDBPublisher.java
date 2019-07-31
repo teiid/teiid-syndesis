@@ -139,6 +139,8 @@ public class TestVDBPublisher {
     public void testGenerateDataSource() throws Exception {
         TeiidOpenShiftClient generator = testDataSetup();
 
+        generator.normalizeDataSourceNames(vdb);
+        
         InputStream dsIs = generator.buildDataSourceBuilders(vdb);
         String ds = ObjectConverterUtil.convertToString(dsIs);
         assertEquals(ObjectConverterUtil.convertFileToString(new File("src/test/resources/generated-ds.txt")), ds);

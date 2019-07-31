@@ -838,34 +838,6 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         }
     }
     
-    @GET
-    @Path(V1Constants.SYNDESIS_SOURCE_STATUSES+"/{syndesisSourceName}")
-    @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Return the syndesis source statuses by name",
-                  response = RestSyndesisSourceStatus.class)
-    @ApiResponses(value = {
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-	public Response getSyndesisSourceStatusesByName(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
-			@PathParam("syndesisSourceName") final String syndesisSourceName) throws KomodoRestException {
-
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
-
-        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        try {
-			RestSyndesisSourceStatus status = getSyndesisSourceStatusByName(syndesisSourceName, principal);
-			return toResponse(mediaTypes, status);
-        } catch ( final Exception e ) {
-            if ( e instanceof KomodoRestException ) {
-                throw ( KomodoRestException )e;
-            }
-			return createErrorResponse(mediaTypes, e,
-					RelationalMessages.Error.CONNECTION_SERVICE_GET_CONNECTIONS_ERROR);
-		}
-    }
-
 	public RestSyndesisSourceStatus getSyndesisSourceStatusByName(final String syndesisSourceName, SecurityPrincipal principal) throws Exception {
 		return runInTransaction(principal, "getSyndesisSourceStatusByName", true, () -> {
             TeiidDataSource teiidSource = getMetadataInstance().getDataSource(syndesisSourceName);
