@@ -19,9 +19,7 @@ package org.komodo.rest.relational.json;
 
 import org.komodo.rest.KRestEntity;
 import org.komodo.rest.RestBasicEntity;
-import org.komodo.rest.RestLink;
 import org.komodo.rest.RestProperty;
-import org.komodo.rest.json.LinkSerializer;
 import org.komodo.rest.json.RestPropertySerializer;
 import org.komodo.rest.relational.dataservice.RestDataservice;
 import org.komodo.rest.relational.request.KomodoConnectionAttributes;
@@ -58,8 +56,7 @@ public final class KomodoJsonMarshaller {
     public static final Gson PRETTY_BUILDER;
 
     static {
-        final GsonBuilder temp = new GsonBuilder().registerTypeAdapter( RestLink.class, new LinkSerializer())
-                                                  .registerTypeAdapter(KomodoStatusObject.class, new StatusObjectSerializer())
+        final GsonBuilder temp = new GsonBuilder().registerTypeAdapter(KomodoStatusObject.class, new StatusObjectSerializer())
                                                   .registerTypeAdapter(RestProperty.class, new RestPropertySerializer())
                                                   .registerTypeAdapter(RestDataservice.class, new DataserviceSerializer())
                                                   .registerTypeAdapter(RestSyndesisSourceStatus.class, new SyndesisSourceStatusSerializer())

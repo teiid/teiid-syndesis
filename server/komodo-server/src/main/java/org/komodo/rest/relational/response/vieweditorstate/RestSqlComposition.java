@@ -17,8 +17,6 @@
  */
 package org.komodo.rest.relational.response.vieweditorstate;
 
-import java.net.URI;
-
 import org.komodo.KException;
 import org.komodo.datavirtualization.SqlComposition;
 import org.komodo.rest.RestBasicEntity;
@@ -115,12 +113,9 @@ public class RestSqlComposition extends RestBasicEntity {
      * Constructor for those connections needing more control over what basic properties
      * should be set
      *
-     * @param baseUri
      * @throws KException
      */
-    public RestSqlComposition(URI baseUri, SqlComposition sqlCompostion) throws KException {
-        super(baseUri);
-        
+    public RestSqlComposition(SqlComposition sqlCompostion) throws KException {
         String value = sqlCompostion.getName();
         if( value != null ) {
         	tuples.put(RestViewEditorState.ID_NAME, value);

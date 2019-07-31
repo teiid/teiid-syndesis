@@ -22,10 +22,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 
-import java.net.URI;
-
-import javax.ws.rs.core.UriBuilder;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.datavirtualization.DataVirtualization;
@@ -36,7 +32,6 @@ import org.mockito.Mockito;
 @SuppressWarnings( {"javadoc", "nls"} )
 public final class RestDataserviceTest {
 
-    private static final URI BASE_URI = UriBuilder.fromUri("http://localhost:8081/v1/").build();
     private static final String DATASERVICE_NAME = "MyDataservice";
     private static final String DESCRIPTION = "my description";
     private static final String SERVICE_VDB_NAME = "serviceVdbName";
@@ -51,12 +46,10 @@ public final class RestDataserviceTest {
     private RestDataservice copy() {
         final RestDataservice copy = new RestDataservice();
 
-        copy.setBaseUri(dataservice.getBaseUri());
         copy.setId(dataservice.getId());
         copy.setDescription(dataservice.getDescription());
         copy.setkType(dataservice.getkType());
         copy.setHasChildren(dataservice.hasChildren());
-        copy.setLinks(this.dataservice.getLinks());
         copy.setProperties(this.dataservice.getProperties());
         copy.setServiceVdbName(this.dataservice.getServiceVdbName());
         copy.setServiceVdbVersion(this.dataservice.getServiceVdbVersion());
@@ -73,7 +66,7 @@ public final class RestDataserviceTest {
         Mockito.when(theDataservice.getName()).thenReturn(DATASERVICE_NAME);
         Mockito.when(theDataservice.getServiceVdbName()).thenReturn("ServiceVdb");
 
-        this.dataservice = new RestDataservice(BASE_URI, theDataservice, false, "ServiceVdb");
+        this.dataservice = new RestDataservice(theDataservice, false, "ServiceVdb");
         this.dataservice.setId(DATASERVICE_NAME);
         this.dataservice.setDescription(DESCRIPTION);
         this.dataservice.setServiceVdbName(SERVICE_VDB_NAME);
@@ -84,11 +77,6 @@ public final class RestDataserviceTest {
         viewNames[0] = SERVICE_VIEW1;
         viewNames[1] = SERVICE_VIEW2;
         this.dataservice.setViewDefinitionNames(viewNames);
-    }
-
-    @Test
-    public void shouldHaveBaseUri() {
-        assertEquals(BASE_URI, this.dataservice.getBaseUri());
     }
 
     @Test
@@ -107,11 +95,9 @@ public final class RestDataserviceTest {
     @Test
     public void shouldConstructEmptyDataservice() {
         final RestDataservice empty = new RestDataservice();
-        assertNull(empty.getBaseUri());
         assertNull(empty.getId());
         assertNull(empty.getDescription());
         assertEquals(empty.getProperties().isEmpty(), true);
-        assertEquals(empty.getLinks().size(), 0);
     }
 
     @Test
