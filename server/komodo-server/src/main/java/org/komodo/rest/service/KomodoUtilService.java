@@ -123,27 +123,10 @@ public final class KomodoUtilService extends KomodoService {
         repoStatus.addAttribute(APP_VERSION, KomodoRestV1Application.V1Constants.App.version());
 
         List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        UnitOfWork uow = null;
-        try {
-            // find VDBs
-            uow = systemTx("getVdbs", true); //$NON-NLS-1$
-
-        } catch (final Exception e) {
-            if ((uow != null) && !uow.isCompleted()) {
-                uow.rollback();
-            }
-
-            if (e instanceof KomodoRestException) {
-                throw (KomodoRestException)e;
-            }
-
-            String errorMsg = e.getLocalizedMessage() != null ? e.getLocalizedMessage() : e.getClass().getSimpleName();
-            errorMsg = RelationalMessages.getString(RelationalMessages.Error.ABOUT_SERVICE_ERROR, errorMsg);
-        }
 
         // create response
         try {
-            return commit(uow, mediaTypes, repoStatus);
+            return toResponse(mediaTypes, repoStatus);
         } catch (Exception ex) {
             return createErrorResponseWithForbidden(mediaTypes, ex, RelationalMessages.Error.ABOUT_SERVICE_ERROR);
         }

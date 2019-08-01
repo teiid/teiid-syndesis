@@ -30,6 +30,8 @@ public interface WorkspaceManager {
 	void createOrUpdateSchema(String id, String contents);
 	
 
+	DataVirtualization findDataVirtualizationByNameIgnoreCase(String virtualizationName);
+
 	DataVirtualization createDataVirtualization(String virtualizationName);
 
 	DataVirtualization findDataVirtualization(String virtualizationName);

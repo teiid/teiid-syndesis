@@ -19,7 +19,6 @@ package org.komodo.rest;
 
 import static org.komodo.rest.Messages.Error.COMMIT_TIMEOUT;
 import static org.komodo.rest.Messages.Error.RESOURCE_NOT_FOUND;
-import static org.komodo.rest.Messages.General.GET_OPERATION_NAME;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -322,6 +321,24 @@ public abstract class KomodoService implements V1Constants {
         return false;
     }
 
+    protected Response toResponse(List<MediaType> acceptableMediaTypes, final List<? extends KRestEntity> entities) throws Exception {
+    	ResponseBuilder builder = null;
+
+        KRestEntity entity;
+        if ( entities.size() == 1 && (entity = entities.iterator().next()) instanceof ResourceNotFound ) {
+        	return toResponse(acceptableMediaTypes, entity);
+        } else {
+
+            if (isAcceptable(acceptableMediaTypes, MediaType.APPLICATION_JSON_TYPE))
+                builder = Response.ok( KomodoJsonMarshaller.marshallArray(entities.toArray(new KRestEntity[0]), true), MediaType.APPLICATION_JSON );
+            else {
+                builder = notAcceptableMediaTypesBuilder();
+            }
+        }
+
+        return builder.build();
+    }
+    
     protected Response toResponse(List<MediaType> acceptableMediaTypes, final KRestEntity entity) throws Exception {
     	if (entity == null) {
             return Response.ok().build();
@@ -335,8 +352,7 @@ public abstract class KomodoService implements V1Constants {
             final ResourceNotFound resourceNotFound = ( ResourceNotFound )entity;
 
             String notFoundMsg = Messages.getString( RESOURCE_NOT_FOUND,
-                                                     resourceNotFound.getResourceName(),
-                                                     resourceNotFound.getOperationName() );
+                                                     resourceNotFound.getResourceName());
             Object responseEntity = createErrorResponseEntity(acceptableMediaTypes, notFoundMsg);
             builder = Response.status( Status.NOT_FOUND ).entity(responseEntity);
         } else {
@@ -375,7 +391,6 @@ public abstract class KomodoService implements V1Constants {
         }
 	}    
 
-    
     protected void commit(UnitOfWork transaction) throws Exception {
         boolean rollbackOnly = false;
     	if (transaction.isRollbackOnly()) {
@@ -397,6 +412,8 @@ public abstract class KomodoService implements V1Constants {
         try {
         	commit(transaction);
         } catch (TimeoutException e) {
+        	//TODO: the time here is arbitrary - we are not yet configuring an explicit timeout
+        	
             // callback timeout occurred
             String errorMessage = Messages.getString( COMMIT_TIMEOUT, transaction.getName(), timeout, unit );
             Object responseEntity = createErrorResponseEntity(acceptableMediaTypes, errorMessage);
@@ -423,28 +440,8 @@ public abstract class KomodoService implements V1Constants {
                                final List<? extends KRestEntity> entities ) throws Exception {
 
         commit(transaction, acceptableMediaTypes, (KRestEntity)null);
-
-        ResponseBuilder builder = null;
-
-        KRestEntity entity;
-        if ( entities.size() == 1 && (entity = entities.iterator().next()) instanceof ResourceNotFound ) {
-            final ResourceNotFound resourceNotFound = ( ResourceNotFound )entity;
-
-            String notFoundMessage = Messages.getString( RESOURCE_NOT_FOUND,
-                                                         resourceNotFound.getResourceName(),
-                                                         resourceNotFound.getOperationName() );
-            Object responseEntity = createErrorResponseEntity(acceptableMediaTypes, notFoundMessage);
-            builder = Response.status( Status.NOT_FOUND ).entity(responseEntity);
-        } else {
-
-            if (isAcceptable(acceptableMediaTypes, MediaType.APPLICATION_JSON_TYPE))
-                builder = Response.ok( KomodoJsonMarshaller.marshallArray(entities.toArray(new KRestEntity[0]), true), MediaType.APPLICATION_JSON );
-            else {
-                builder = notAcceptableMediaTypesBuilder();
-            }
-        }
-
-        return builder.build();
+        
+        return toResponse(acceptableMediaTypes, entities);
     }
 
     /**
@@ -468,22 +465,13 @@ public abstract class KomodoService implements V1Constants {
         return result;
     }
 
-    protected UnitOfWork systemTx(String description, boolean rollback) throws KException {
-        return createTransaction(SYSTEM_USER, description, rollback); //$NON-NLS-1$
-    }
-
     protected DataVirtualization findDataservice(String dataserviceName) throws KException {
     	return getWorkspaceManager().findDataVirtualization(dataserviceName);
     }
 
-    protected Response commitNoDataserviceFound(UnitOfWork uow, List<MediaType> mediaTypes, String dataserviceName) throws Exception {
-        LOGGER.debug( "Dataservice '{0}' was not found", dataserviceName ); //$NON-NLS-1$
-        return commit( uow, mediaTypes, new ResourceNotFound( dataserviceName, Messages.getString( GET_OPERATION_NAME ) ) );
-    }
-
     protected Response commitNoConnectionFound(UnitOfWork uow, List<MediaType> mediaTypes, String connectionName) throws Exception {
         LOGGER.debug( "Connection '{0}' was not found", connectionName ); //$NON-NLS-1$
-        return commit( uow, mediaTypes, new ResourceNotFound( connectionName, Messages.getString( GET_OPERATION_NAME ) ) );
+        return commit( uow, mediaTypes, new ResourceNotFound( connectionName ) );
     }
 
 }

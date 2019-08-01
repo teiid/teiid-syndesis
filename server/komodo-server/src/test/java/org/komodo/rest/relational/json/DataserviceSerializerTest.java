@@ -48,7 +48,7 @@ public final class DataserviceSerializerTest extends AbstractSerializerTest  {
         DataVirtualization theService = Mockito.mock(DataVirtualization.class);
         Mockito.when(theService.getName()).thenReturn(DATASERVICE_NAME);
 
-        this.dataservice = new RestDataservice(theService, false, "ServiceVdb");
+        this.dataservice = new RestDataservice(theService, "ServiceVdb");
         this.dataservice.setDescription(DESCRIPTION);
     }
 

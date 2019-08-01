@@ -89,6 +89,7 @@ import org.komodo.openshift.BuildStatus.Status;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoConfigurationProperties;
 import org.komodo.utils.FileUtils;
+import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
 import org.teiid.adminapi.AdminException;
 import org.teiid.adminapi.Model;
@@ -630,11 +631,12 @@ public class TeiidOpenShiftClient implements StringConstants {
      */
 	protected void setUniqueKomodoName(DefaultSyndesisDataSource scd, String syndesisName) throws AdminException {
 		String name = syndesisName;
+		int maxLength = StringNameValidator.DEFAULT_MAXIMUM_LENGTH;
 		//remove any problematic characters
 		name = name.replaceAll("[\\.\\?\\_\\s]", "");
 		//slim it down
-		if (name.length() > 1024) {
-			name = name.substring(0, 1024);
+		if (name.length() > maxLength) {
+			name = name.substring(0, maxLength);
 		}
 		
 		TreeSet<String> taken = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
@@ -651,6 +653,9 @@ public class TeiidOpenShiftClient implements StringConstants {
 		int i = 1;
 		String toUse = name;
 		while (taken.contains(toUse)) {
+			if (name.length() + (i/10 + 1) > maxLength) {
+				name = name.substring(0, maxLength - (i/10 + 1));
+			}
 			toUse = name + i;
 			i++;
 		}
