@@ -30,29 +30,17 @@ public class RestBasicEntity extends AbstractKEntity {
      */
     public static class ResourceNotFound extends RestBasicEntity {
 
-        private final String operationName;
         private final String resourceName;
 
         /**
          * @param resourceName
          *        the name of the resource that was not found (cannot be empty)
-         * @param operationName
-         *        the operation that was executed (cannot be empty)
          */
-        public ResourceNotFound(final String resourceName, final String operationName) {
+        public ResourceNotFound(final String resourceName) {
             super();
             ArgCheck.isNotEmpty(resourceName, "resourceName"); //$NON-NLS-1$
-            ArgCheck.isNotEmpty(operationName, "operationName"); //$NON-NLS-1$
 
             this.resourceName = resourceName;
-            this.operationName = operationName;
-        }
-
-        /**
-         * @return the operation name (never empty)
-         */
-        public String getOperationName() {
-            return this.operationName;
         }
 
         /**
@@ -126,6 +114,6 @@ public class RestBasicEntity extends AbstractKEntity {
     @SuppressWarnings( "nls" )
     @Override
     public String toString() {
-        return "RestBasicEntity [tuples=" + this.tuples + ", properties=" + this.properties + "]";
+        return "RestBasicEntity [tuples=" + this.tuples + "]";
     }
 }

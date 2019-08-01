@@ -60,16 +60,21 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
 			this.schemaRepository.save(schema);
 		}
 	}
+	
+	@Override
+	public DataVirtualization findDataVirtualizationByNameIgnoreCase(String virtualizationName) {
+		return this.dataVirtualizationRepository.findByNameIgnoreCase(virtualizationName);
+	}
 
 	@Override
-	public DataVirtualization createDataVirtualization(String serviceName) {
-		DataVirtualization dataservice = new DataVirtualization(serviceName);
+	public DataVirtualization createDataVirtualization(String virtualizationName) {
+		DataVirtualization dataservice = new DataVirtualization(virtualizationName);
 		return this.dataVirtualizationRepository.save(dataservice);
 	}
 
 	@Override
-	public DataVirtualization findDataVirtualization(String dataserviceName) {
-		return this.dataVirtualizationRepository.findByName(dataserviceName);
+	public DataVirtualization findDataVirtualization(String virtualizationName) {
+		return this.dataVirtualizationRepository.findByName(virtualizationName);
 	}
 
 	@Override

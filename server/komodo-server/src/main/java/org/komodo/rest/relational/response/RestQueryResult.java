@@ -21,14 +21,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import javax.ws.rs.core.MediaType;
 
 import org.komodo.metadata.query.QSColumn;
 import org.komodo.metadata.query.QSResult;
 import org.komodo.metadata.query.QSRow;
-import org.komodo.rest.KRestEntity;
 
-public class RestQueryResult implements KRestEntity {
+public class RestQueryResult {
 
     /**
      * Label for columns
@@ -59,16 +57,6 @@ public class RestQueryResult implements KRestEntity {
         for (QSRow row : result.getRows()) {
             rows.add(new RestQueryRow(row));
         }
-    }
-
-    @Override
-    public Object getXml() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean supports(MediaType mediaType) {
-        return MediaType.APPLICATION_JSON_TYPE.equals(mediaType);
     }
 
     public RestQueryRow[] getRows() {

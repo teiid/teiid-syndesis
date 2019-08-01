@@ -46,11 +46,11 @@ public final class RestDataserviceTest {
     private RestDataservice copy() {
         final RestDataservice copy = new RestDataservice();
 
-        copy.setId(dataservice.getId());
+        copy.setName(dataservice.getName());
+        copy.setGeneratedId(dataservice.getGeneratedId());
         copy.setDescription(dataservice.getDescription());
         copy.setkType(dataservice.getkType());
         copy.setHasChildren(dataservice.hasChildren());
-        copy.setProperties(this.dataservice.getProperties());
         copy.setServiceVdbName(this.dataservice.getServiceVdbName());
         copy.setServiceVdbVersion(this.dataservice.getServiceVdbVersion());
         copy.setServiceViewModel(this.dataservice.getServiceViewModel());
@@ -66,7 +66,7 @@ public final class RestDataserviceTest {
         Mockito.when(theDataservice.getName()).thenReturn(DATASERVICE_NAME);
         Mockito.when(theDataservice.getServiceVdbName()).thenReturn("ServiceVdb");
 
-        this.dataservice = new RestDataservice(theDataservice, false, "ServiceVdb");
+        this.dataservice = new RestDataservice(theDataservice, "ServiceVdb");
         this.dataservice.setId(DATASERVICE_NAME);
         this.dataservice.setDescription(DESCRIPTION);
         this.dataservice.setServiceVdbName(SERVICE_VDB_NAME);
@@ -97,7 +97,6 @@ public final class RestDataserviceTest {
         final RestDataservice empty = new RestDataservice();
         assertNull(empty.getId());
         assertNull(empty.getDescription());
-        assertEquals(empty.getProperties().isEmpty(), true);
     }
 
     @Test

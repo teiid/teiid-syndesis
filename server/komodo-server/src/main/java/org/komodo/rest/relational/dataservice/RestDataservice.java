@@ -82,6 +82,8 @@ public final class RestDataservice extends RestBasicEntity {
      * Label used to describe dataservice odata host name
      */
     public static final String DATASERVICE_ODATA_HOST_NAME = "odataHostName"; //$NON-NLS-1$
+    
+    public static final String DATASERVICE_ID_LABEL = "id"; //$NON-NLS-1$
 
     /**
      * Constructor for use when deserializing
@@ -94,12 +96,13 @@ public final class RestDataservice extends RestBasicEntity {
     /**
      * Constructor for use when serializing.
      * @param dataService the dataService
-     * @param exportXml whether xml should be exported
      * @throws KException if error occurs
      */
-    public RestDataservice(DataVirtualization dataService, boolean exportXml, String vdbName) throws KException {
-        setId(dataService.getName());
+    public RestDataservice(DataVirtualization dataService, String vdbName) throws KException {
+        setName(dataService.getName());
         setkType(KomodoType.DATASERVICE);
+        
+        setGeneratedId(dataService.getId());
 
         setDescription(dataService.getDescription());
 
@@ -258,6 +261,23 @@ public final class RestDataservice extends RestBasicEntity {
         }
         
         return viewNames.toArray(new String[0]);
+    }
+    
+    public String getName() {
+    	return this.getId();
+    }
+    
+    public void setName(String name) {
+    	this.setId(name);
+    }
+    
+    public String getGeneratedId() {
+    	Object value = tuples.get(DATASERVICE_ID_LABEL);
+    	return value == null ? null : value.toString();
+    }
+    
+    public void setGeneratedId(String id) {
+    	this.tuples.put(DATASERVICE_ID_LABEL, id);
     }
     
 }

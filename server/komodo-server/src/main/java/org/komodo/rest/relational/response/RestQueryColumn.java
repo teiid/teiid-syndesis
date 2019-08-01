@@ -17,12 +17,9 @@
  */
 package org.komodo.rest.relational.response;
 
-import javax.ws.rs.core.MediaType;
-
 import org.komodo.metadata.query.QSColumn;
-import org.komodo.rest.KRestEntity;
 
-public class RestQueryColumn implements KRestEntity {
+public class RestQueryColumn {
 
     /**
      * Label for name
@@ -56,16 +53,6 @@ public class RestQueryColumn implements KRestEntity {
         this.name = column.getColumnName();
         this.label = column.getColumnLabel();
         this.type = column.getDataType();
-    }
-
-    @Override
-    public Object getXml() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean supports(MediaType mediaType) {
-        return MediaType.APPLICATION_JSON_TYPE.equals(mediaType);
     }
 
     public String getName() {

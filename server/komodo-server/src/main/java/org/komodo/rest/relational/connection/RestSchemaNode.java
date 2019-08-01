@@ -21,44 +21,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.ws.rs.core.MediaType;
-
-import org.komodo.rest.KRestEntity;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
  * Used to build a JSON representation for a schema node
  */
-public class RestSchemaNode implements KRestEntity {
-
-    /**
-     * Label for connection name
-     */
-    public static final String CONNECTION_NAME_LABEL = "connectionName"; //$NON-NLS-1$
-
-    /**
-     * Label for name
-     */
-    public static final String NAME_LABEL = "name"; //$NON-NLS-1$
-
-    /**
-     * Label for type
-     */
-    public static final String TYPE_LABEL = "type"; //$NON-NLS-1$
-
-    /**
-     * Label for type
-     */
-    public static final String PATH_LABEL = "path"; //$NON-NLS-1$
-
-    /**
-     * Label for queryable
-     */
-    public static final String QUERYABLE_LABEL = "queryable"; //$NON-NLS-1$
-
-    /**
-     * Label for parent
-     */
-    public static final String CHILDREN_LABEL = "children"; //$NON-NLS-1$
+@JsonSerialize
+@JsonInclude(Include.NON_NULL)
+public class RestSchemaNode {
 
     private List<RestSchemaNode> children = new ArrayList<RestSchemaNode>();
     
@@ -89,16 +61,6 @@ public class RestSchemaNode implements KRestEntity {
         this.connectionName = connName;
         this.name = name;
         this.type = type;
-    }
-
-    @Override
-    public Object getXml() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean supports(MediaType mediaType) {
-        return MediaType.APPLICATION_JSON_TYPE.equals(mediaType);
     }
 
     /**

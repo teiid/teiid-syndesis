@@ -21,7 +21,7 @@ import org.komodo.KException;
 import org.komodo.StringConstants;
 
 /**
- * A model of a dataservice instance
+ * A model of a datavirtualization instance
  */
 public interface DataVirtualization extends Named {
 	
@@ -31,8 +31,6 @@ public interface DataVirtualization extends Named {
 
     /**
      * @return the service VDB name (may be <code>null</code> if not defined)
-     * @throws KException
-     *         if an error occurs
      */
     default String getServiceVdbName( ) throws KException {
     	return getServiceVdbName(getName());
@@ -40,18 +38,21 @@ public interface DataVirtualization extends Named {
 
     /**
      * @return the value of the <code>description</code> property (can be empty)
-     * @throws KException
-     *         if an error occurs
      */
     String getDescription( );
 
     /**
      * @param newDescription
      *        the new value of the <code>description</code> property
-     * @throws KException
-     *         if an error occurs
      */
     void setDescription( 
                          final String newDescription );
+    
+    /**
+     * Get the id of the virtualization
+     */
+    String getId();
+
+	void setName(String name);
     
 }
