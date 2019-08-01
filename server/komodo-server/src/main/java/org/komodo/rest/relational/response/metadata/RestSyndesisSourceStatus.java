@@ -125,7 +125,7 @@ public final class RestSyndesisSourceStatus implements KRestEntity {
     private boolean hasTeiidSource = false;
     private List< String > errors;
     private EntityState schemaState = EntityState.MISSING;
-    private String schemaModelName;
+    private String schemaModelId;
     private String vdbName;
     private EntityState vdbState = EntityState.MISSING;
 
@@ -160,7 +160,7 @@ public final class RestSyndesisSourceStatus implements KRestEntity {
         return Objects.equals( this.sourceName, that.sourceName )
                && Objects.equals( this.hasTeiidSource, that.hasTeiidSource )
                && Objects.equals( this.errors, that.errors )
-               && Objects.equals( this.schemaModelName, that.schemaModelName )
+               && Objects.equals( this.schemaModelId, that.schemaModelId )
                && Objects.equals(  this.schemaState, that.schemaState )
                && Objects.equals( this.vdbName, that.vdbName )
                && Objects.equals( this.vdbState, that.vdbState );
@@ -197,8 +197,8 @@ public final class RestSyndesisSourceStatus implements KRestEntity {
     /**
      * @return the schema model name (can be empty)
      */
-    public String getSchemaModelName() {
-        return this.schemaModelName;
+    public String getSchemaModelId() {
+        return this.schemaModelId;
     }
 
     /**
@@ -236,7 +236,7 @@ public final class RestSyndesisSourceStatus implements KRestEntity {
         return Objects.hash( this.sourceName,
                              this.hasTeiidSource,
                              this.errors,
-                             this.schemaModelName,
+                             this.schemaModelId,
                              this.schemaState,
                              this.vdbName,
                              this.vdbState );
@@ -291,11 +291,8 @@ public final class RestSyndesisSourceStatus implements KRestEntity {
         this.schemaState = schemaState == null ? EntityState.MISSING : EntityState.valueOf(state);
     }
     
-    /**
-     * @param schemaModelName the workspace schema model name (can be empty)
-     */
-    public void setSchemaModelName( final String schemaModelName ) {
-        this.schemaModelName = schemaModelName;
+    public void setSchemaModelId( final String schemaModelid ) {
+        this.schemaModelId = schemaModelid;
     }
 
     /**

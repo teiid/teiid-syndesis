@@ -19,12 +19,15 @@ package org.komodo.rest.relational.json;
 
 import static org.komodo.rest.Messages.Error.UNEXPECTED_JSON_TOKEN;
 import static org.komodo.rest.relational.json.KomodoJsonMarshaller.BUILDER;
+
 import java.io.IOException;
+
 import org.komodo.rest.Messages;
 import org.komodo.rest.relational.response.vieweditorstate.RestSqlComposition;
 import org.komodo.rest.relational.response.vieweditorstate.RestSqlProjectedColumn;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewDefinition;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
+
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
@@ -36,11 +39,6 @@ public class ViewDefinitionSerializer extends TypeAdapter<RestViewDefinition> {
 	@Override
 	public void write(JsonWriter out, RestViewDefinition restViewDef) throws IOException {
 		out.beginObject();
-		
-		if( restViewDef.getBaseUri() != null) {
-			out.name(RestViewEditorState.BASE_URI);
-			out.value(restViewDef.getBaseUri().toString());
-		}
 		
 		out.name(RestViewEditorState.ID_VIEW_NAME);
 		out.value(restViewDef.getViewName());
@@ -128,10 +126,6 @@ public class ViewDefinitionSerializer extends TypeAdapter<RestViewDefinition> {
                 case RestViewEditorState.PROJECTED_COLUMNS_LABEL:
                     RestSqlProjectedColumn[] cols = BUILDER.fromJson(in, RestSqlProjectedColumn[].class);
                     viewDef.setProjectedColumns(cols);
-                    break;
-                case RestViewEditorState.BASE_URI:
-                	in.nextString();
-                    //viewDef.getTuples().put(RestViewEditorState.BASE_URI, in.nextString());
                     break;
                 default: {
                     throw new IOException( Messages.getString( UNEXPECTED_JSON_TOKEN, name ));

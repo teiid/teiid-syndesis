@@ -54,8 +54,6 @@ public class RestViewDefinition extends RestBasicEntity {
      * @throws KException the exception
      */
     public RestViewDefinition(final RestViewDefinition viewDef) throws KException {
-    	super(viewDef.getBaseUri());
-    	
     	String name = viewDef.getViewName();
         if( name != null ) {
         	tuples.put(RestViewEditorState.ID_VIEW_NAME, name);
@@ -98,9 +96,6 @@ public class RestViewDefinition extends RestBasicEntity {
      * @throws KException
      */
     public RestViewDefinition(URI baseUri, ViewDefinition viewDef) throws KException {
-        super(baseUri);
-        
-        
         String name = viewDef.getViewName();
         if( name != null ) {
         	tuples.put(RestViewEditorState.ID_VIEW_NAME, name);
@@ -122,14 +117,14 @@ public class RestViewDefinition extends RestBasicEntity {
 
         List<RestSqlComposition> compList = new ArrayList<>();
         for (SqlComposition comp : viewDef.getSqlCompositions()) {
-        	RestSqlComposition restComp = new RestSqlComposition(baseUri, comp);
+        	RestSqlComposition restComp = new RestSqlComposition(comp);
         	compList.add(restComp);
         }
         this.compositions = compList.toArray(new RestSqlComposition[0]);
         
         List<RestSqlProjectedColumn> columnList = new ArrayList<>();
         for (SqlProjectedColumn col : viewDef.getProjectedColumns()) {
-            RestSqlProjectedColumn restCol = new RestSqlProjectedColumn(baseUri, col);
+            RestSqlProjectedColumn restCol = new RestSqlProjectedColumn(col);
             columnList.add(restCol);
         }
         this.projectedColumns = columnList.toArray(new RestSqlProjectedColumn[0]);

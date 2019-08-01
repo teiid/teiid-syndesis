@@ -288,11 +288,6 @@ public class KomodoRestV1Application {
         String SYNDESIS_SOURCE_STATUSES = "syndesisSourceStatuses"; //$NON-NLS-1$
         
         /**
-         * Bind to available source in OpenShift Service catalog
-         */
-        String BIND_TO_SERVICE_CATALOG_SOURCE = "bindToServiceCatalogSource"; //$NON-NLS-1$
-
-        /**
          * User profile resource method constant
          */
         String USER_PROFILE = "userProfile"; //$NON-NLS-1$

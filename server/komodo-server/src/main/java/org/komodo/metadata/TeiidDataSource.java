@@ -46,6 +46,8 @@ public interface TeiidDataSource {
      * The display name property.
      */
     String DATASOURCE_DISPLAYNAME = "display-name"; //$NON-NLS-1$
+    
+    String DATASOURCE_SCHEMA = "schema"; //$NON-NLS-1$
 
     /**
      * @return display name of data source
@@ -89,5 +91,9 @@ public interface TeiidDataSource {
      * @return value of named property
      */
     String getPropertyValue(String name);
+
+	String getId();
+	
+	String getSchema();
 
 }

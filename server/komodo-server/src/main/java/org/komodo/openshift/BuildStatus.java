@@ -107,7 +107,7 @@ public class BuildStatus {
     private volatile String deploymentName;
     private final String vdbName;
     private volatile String namespace;
-    private String publishPodName;
+    private volatile String publishPodName;
     private volatile long lastUpdated = 0L;
     private volatile String statusMessage;
 

@@ -36,20 +36,18 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
@@ -94,7 +92,11 @@ import org.komodo.utils.FileUtils;
 import org.komodo.utils.StringUtils;
 import org.teiid.adminapi.AdminException;
 import org.teiid.adminapi.Model;
+import org.teiid.adminapi.impl.ModelMetaData;
+import org.teiid.adminapi.impl.SourceMappingMetadata;
 import org.teiid.adminapi.impl.VDBMetaData;
+import org.teiid.core.CoreConstants;
+import org.teiid.core.util.AccessibleByteArrayOutputStream;
 import org.teiid.core.util.ObjectConverterUtil;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -135,276 +137,171 @@ import io.fabric8.openshift.client.OpenShiftConfig;
 import io.fabric8.openshift.client.OpenShiftConfigBuilder;
 
 public class TeiidOpenShiftClient implements StringConstants {
-    private static final String ID = "id";
+    public static final String ID = "id";
 	private static final String SERVICE_CA_CERT_FILE = "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt";
     private String openShiftHost = "https://openshift.default.svc";
     private long buildTimeoutInSeconds = 2 * 60 * 1000L;
     private final OpenShiftConfig openShiftClientConfig = new OpenShiftConfigBuilder().withMasterUrl(openShiftHost)
             .withCaCertFile(SERVICE_CA_CERT_FILE).withBuildTimeout(buildTimeoutInSeconds).build();
 
-    private enum MonitorState {
-        STOPPED,
-        INITIATED,
-        RUNNING
-    }
-
     private NamespacedOpenShiftClient openshiftClient() {
         return new DefaultOpenShiftClient(openShiftClientConfig);
     }
 
     /**
-     * Thread for monitoring the work queue and openshift builds.
      * Responsible for sending SUBMITTED work to be configured
      * and for sending completed builds to be deployed.
-     *
-     * If the workQueue is empty then this thread will simply
-     * finish and be cleaned up by its parent monitorService.
      */
-    private class MonitorThread extends Thread {
-
-        public MonitorThread() {
-            this.setName("TeiidOpenShiftClient.MonitorThread");
-        }
+    private class BuildStatusRunner implements Runnable {
+    	
+    	private BuildStatus work;
+    	
+    	public BuildStatusRunner(BuildStatus buildStatus) {
+    		this.work = buildStatus;
+		}
 
         @Override
         public void run() {
-            final OpenShiftClient client = openshiftClient();
             try {
-                setMonitorState(MonitorState.RUNNING);
+                // introduce some delay..
+                long elapsed = System.currentTimeMillis() - work.lastUpdated();
+				if (elapsed < 3000) {
+                    try {
+                        Thread.sleep(3000 - elapsed);
+                    } catch (InterruptedException e) {
+                    	Thread.interrupted();
+                    	return;
+                    }
+                }
 
-                while (!workQueue.isEmpty()) {
-                    BuildStatus work = workQueue.peek();
-                    if (work == null) {
-                        error(null, "Publishing - No build in the build queue");
-                        continue;
-                    }
+                if (BuildStatus.Status.DELETE_SUBMITTED.equals(work.status())) {
+                    work.setLastUpdated();
+                    workExecutor.submit(this); // add at end                        
+                    return;
+                }
+                
+                if (BuildStatus.Status.DELETE_REQUEUE.equals(work.status())) {
+                	// requeue will change state to submitted and 
+                    work.setLastUpdated();
+                    deleteVirtualization(work.vdbName());
+                    workExecutor.submit(this); // add at end
+                    return;
+                }
+                
+                if (BuildStatus.Status.DELETE_DONE.equals(work.status())) {
+                	return;
+                }
+                
+                if (BuildStatus.Status.FAILED.equals(work.status()) || BuildStatus.Status.CANCELLED.equals(work.status())) {
+                    work.setLastUpdated();
+                    return;
+                }                    
 
-                    // introduce some delay..
-                    if ((System.currentTimeMillis() - work.lastUpdated()) < 3000) {
-                        try {
-                            Thread.sleep(3000);
-                        } catch (InterruptedException e) {
-                            break;
-                        }
-                    }
-
-                    if (BuildStatus.Status.DELETE_SUBMITTED.equals(work.status())) {
-                        work.setLastUpdated();
-                        workQueue.poll(); // remove
-                        workQueue.offer(work); // add at end                        
-                        continue;
-                    }
-                    
-                    if (BuildStatus.Status.DELETE_REQUEUE.equals(work.status())) {
-                    	// requeue will change state to submitted and 
-                        work.setLastUpdated();
-                        workQueue.poll(); // remove
-                        deleteVirtualization(work.vdbName());
-                        workQueue.offer(work); // add at end
-                        continue;
-                    }
-                    
-                    if (BuildStatus.Status.DELETE_DONE.equals(work.status())) {
-                    	workQueue.poll(); //remove
-                    	continue;
-                    }
-                    
-                    if (BuildStatus.Status.FAILED.equals(work.status()) || BuildStatus.Status.CANCELLED.equals(work.status())) {
-                        work.setLastUpdated();
-                        workQueue.poll();
-                    	continue;
-                    }                    
-
-                    if (BuildStatus.Status.SUBMITTED.equals(work.status())) {
-                        //
-                        // build submitted for configuration. This is done on another
-                        // thread to avoid clogging up the monitor thread.
-                        //
-                        info(work.vdbName(), "Publishing - Submitted build to be configured");
-                        
-                        workQueue.poll(); // remove
-                        
-                        configureBuild(work);
-                        
-                        work.setLastUpdated();
-                        workQueue.offer(work); // add at end
-                        
-                        continue;
-                    }
-
+                if (BuildStatus.Status.SUBMITTED.equals(work.status())) {
                     //
-                    // build is being configured which is done on another thread
-                    // so ignore this build for the moment
+                    // build submitted for configuration. This is done on another
+                    // thread to avoid clogging up the monitor thread.
                     //
-                    if (Status.CONFIGURING.equals(work.status())) {
-                        work.setLastUpdated();
-                        workQueue.poll(); // remove
-                        workQueue.offer(work); // add at end
+                    info(work.vdbName(), "Publishing - Submitted build to be configured");
+                    
+                    configureBuild(work);
+                    
+                    work.setLastUpdated();
+                    workExecutor.submit(this); // add at end
+                    
+                    return;
+                }
 
-                        debug(work.vdbName(), "Publishing - Continuing monitoring as configuring");
-                        continue;
-                    }
+                //
+                // build is being configured which is done on another thread
+                // so ignore this build for the moment
+                //
+                if (Status.CONFIGURING.equals(work.status())) {
+                    work.setLastUpdated();
+                    workExecutor.submit(this); // add at end
 
-                    Build build = client.builds().inNamespace(work.namespace()).withName(work.buildName()).get();
-                    if (build == null) {
-                        // build got deleted some how ignore, remove from monitoring..
-                        error(work.vdbName(), "Publishing - No build available for building");
-                        workQueue.poll();
-                        continue;
-                    }
+                    debug(work.vdbName(), "Publishing - Continuing monitoring as configuring");
+                    return;
+                }
+                
+                boolean shouldReQueue = true;
+            	try (final OpenShiftClient client = openshiftClient()) {
+	                Build build = client.builds().inNamespace(work.namespace()).withName(work.buildName()).get();
+	                if (build == null) {
+	                    // build got deleted some how ignore, remove from monitoring..
+	                    error(work.vdbName(), "Publishing - No build available for building");
+	                    return;
+	                }
+	
+	                String lastStatus = build.getStatus().getPhase();
+	                if (Builds.isCompleted(lastStatus)) {
+	                    if (! Status.DEPLOYING.equals(work.status())) {
+	                        info(work.vdbName(), "Publishing - Build completed. Preparing to deploy");
+	                        work.setStatusMessage("build completed, deployment started");
+	                        createSecret(client, work.namespace(), work.vdbName(), work);
+	                        DeploymentConfig dc = createDeploymentConfig(client, work);
+	                        work.setDeploymentName(dc.getMetadata().getName());
+	                        work.setStatus(Status.DEPLOYING);
+	                        client.deploymentConfigs().inNamespace(work.namespace())
+	                                .withName(dc.getMetadata().getName()).deployLatest();
+	                    } else {
+	                        DeploymentConfig dc = client.deploymentConfigs().inNamespace(work.namespace())
+	                                .withName(work.deploymentName()).get();
+	                        if (isDeploymentInReadyState(dc)) {
+	                            // it done now..
+	                            info(work.vdbName(), "Publishing - Deployment completed");
+	                            createServices(client, work.namespace(), work.vdbName());
+	                            work.setStatus(Status.RUNNING);
+	                            shouldReQueue = false;
+	                        } else {
+	                        	if (!isDeploymentProgressing(dc)) {
+	                        		work.setStatus(Status.FAILED);
+	                        		info(work.vdbName(), "Publishing - Deployment seems to be failed, this could be "
+	                        				+ "due to vdb failure, rediness check failed. Wait threshold is 2 minutes.");
+	                        		shouldReQueue = false;
+	                        	}
+	                            debug(work.vdbName(), "Publishing - Deployment not ready");
+	                            DeploymentCondition cond = getDeploymentConfigStatus(dc);
+	                            if (cond != null) {
+	                                debug(work.vdbName(), "Publishing - Deployment condition: " + cond.getMessage());
+	                                work.setStatusMessage(cond.getMessage());
+	                            } else {
+	                                work.setStatusMessage("Available condition not found in the Deployment Config");
+	                            }
+	                        }
+	                    }
+	                } else if (Builds.isCancelled(lastStatus)) {
+	                    info(work.vdbName(), "Publishing - Build cancelled");
+	                    // once failed do not queue the work again.
+	                    shouldReQueue = false;
+	                    work.setStatus(Status.CANCELLED);
+	                    work.setStatusMessage(build.getStatus().getMessage());
+	                    debug(work.vdbName(), "Build cancelled: " + work.buildName() + ". Reason "
+	                            + build.getStatus().getLogSnippet());
+	                } else if (Builds.isFailed(lastStatus)) {
+	                    error(work.vdbName(), "Publishing - Build failed");
+	                    // once failed do not queue the work again.
+	                    shouldReQueue = false;
+	                    work.setStatus(Status.FAILED);
+	                    work.setStatusMessage(build.getStatus().getMessage());
+	                    error(work.vdbName(),
+	                            "Build failed :" + work.buildName() + ". Reason " + build.getStatus().getLogSnippet());
+	                }
+            	}
 
-                    boolean shouldReQueue = true;
-                    String lastStatus = build.getStatus().getPhase();
-                    if (Builds.isCompleted(lastStatus)) {
-                        if (! Status.DEPLOYING.equals(work.status())) {
-                            info(work.vdbName(), "Publishing - Build completed. Preparing to deploy");
-                            work.setStatusMessage("build completed, deployment started");
-                            createSecret(client, work.namespace(), work.vdbName(), work);
-                            DeploymentConfig dc = createDeploymentConfig(client, work);
-                            work.setDeploymentName(dc.getMetadata().getName());
-                            work.setStatus(Status.DEPLOYING);
-                            client.deploymentConfigs().inNamespace(work.namespace())
-                                    .withName(dc.getMetadata().getName()).deployLatest();
-                        } else {
-                            DeploymentConfig dc = client.deploymentConfigs().inNamespace(work.namespace())
-                                    .withName(work.deploymentName()).get();
-                            if (isDeploymentInReadyState(dc)) {
-                                // it done now..
-                                info(work.vdbName(), "Publishing - Deployment completed");
-                                createServices(client, work.namespace(), work.vdbName());
-                                work.setStatus(Status.RUNNING);
-                                shouldReQueue = false;
-                            } else {
-                            	if (!isDeploymentProgressing(dc)) {
-                            		work.setStatus(Status.FAILED);
-                            		info(work.vdbName(), "Publishing - Deployment seems to be failed, this could be "
-                            				+ "due to vdb failure, rediness check failed. Wait threshold is 2 minutes.");
-                            		shouldReQueue = false;
-                            	}
-                                debug(work.vdbName(), "Publishing - Deployment not ready");
-                                DeploymentCondition cond = getDeploymentConfigStatus(dc);
-                                if (cond != null) {
-                                    debug(work.vdbName(), "Publishing - Deployment condition: " + cond.getMessage());
-                                    work.setStatusMessage(cond.getMessage());
-                                } else {
-                                    work.setStatusMessage("Available condition not found in the Deployment Config");
-                                }
-                            }
-                        }
-                    } else if (Builds.isCancelled(lastStatus)) {
-                        info(work.vdbName(), "Publishing - Build cancelled");
-                        // once failed do not queue the work again.
-                        shouldReQueue = false;
-                        work.setStatus(Status.CANCELLED);
-                        work.setStatusMessage(build.getStatus().getMessage());
-                        debug(work.vdbName(), "Build cancelled: " + work.buildName() + ". Reason "
-                                + build.getStatus().getLogSnippet());
-                    } else if (Builds.isFailed(lastStatus)) {
-                        error(work.vdbName(), "Publishing - Build failed");
-                        // once failed do not queue the work again.
-                        shouldReQueue = false;
-                        work.setStatus(Status.FAILED);
-                        work.setStatusMessage(build.getStatus().getMessage());
-                        error(work.vdbName(),
-                                "Build failed :" + work.buildName() + ". Reason " + build.getStatus().getLogSnippet());
-                    }
-
-                    synchronized (work) {
-                        work.setLastUpdated();
-                        workQueue.poll(); // remove
-                        if (shouldReQueue) {
-                            workQueue.offer(work); // add at end
-                        } else {
-                            // Close the log as no longer needed actively
-                            closeLog(work.vdbName());
-                        }
-                    }
+                work.setLastUpdated();
+                if (shouldReQueue) {
+                	workExecutor.submit(this); // add at end
+                } else {
+                    // Close the log as no longer needed actively
+                    closeLog(work.vdbName());
                 }
             } catch (Throwable ex) {
                 //
-                // This should catch all possible exceptions in the thread
-                // and ensure it never throws up to the monitor service causing
-                // the latter to suppress future attempts at running this thread.
-                //
                 // Does not specify an id so will only be logged in the KLog.
                 //
-                error(null, "Monitor thread exception", ex);
-            } finally {
-                client.close();
+                error(null, "Monitor exception", ex);
             }
-        }
-    }
-
-    /**
-     * Extends the {@link ScheduledThreadPoolExecutor} class to overcome a flaw in that
-     * if the MonitorThread runnable throws an exception subsequent runs are suppressed
-     * and the {@link ExecutorService} does not restart the task but just dies.
-     *
-     * This at least logs the exception then attempts to restart the service.
-     *
-     * @see {@link ScheduledExecutorService#scheduleAtFixedRate(Runnable, long, long, TimeUnit)}
-     *
-     */
-    private class MonitorThreadPoolExecutor extends ScheduledThreadPoolExecutor {
-
-        public MonitorThreadPoolExecutor(int corePoolSize) {
-            super(corePoolSize);
-        }
-
-        private void restartMonitorService(Throwable error) {
-            error(null, "Monitor thread failure", error);
-            setMonitorState(MonitorState.STOPPED);
-            monitorWork();
-        }
-
-        /**
-         * Overcomes deficiency in {@link ScheduledThreadPoolExecutor}
-         * where if an exception occurs subsequent attempts to run the task
-         * are suppressed. This will at least log the exception and stop the
-         * monitor service ready for it to be completely reinitialised.
-         *
-         * Note:
-         * The task is not the original runnable but a {@link ScheduledFuture}
-         * that wraps it. Any exception thrown by our MonitorThread is
-         * only available via {@link ScheduledFuture#get()}.
-         *
-         * The {@link Throwable} is if the wrapping task threw an exception
-         * not if our MonitorThread did.
-         */
-        @Override
-        protected void afterExecute(Runnable task, Throwable error) {
-            if (error != null) {
-                //
-                // monitor service task threw an exception so stop and restart
-                //
-                restartMonitorService(error);
-                return;
-            }
-
-            ScheduledFuture<?> future = (ScheduledFuture<?>) task;
-            if (future.isDone()) {
-                try {
-                    //
-                    // future will only be done if complete (get will return the result - do nothing)
-                    // or an exception is thrown. Either way future.get() will not block due to its 'doneness'
-                    //
-                    future.get();
-                } catch (ExecutionException ex) {
-                    //
-                    // If an exception was thrown by our MonitorThread then
-                    // this is wrapped in an ExecutionException and this is the
-                    // exception that is thrown.
-                    //
-                    restartMonitorService(ex);
-                } catch (InterruptedException e) {
-                    //
-                    // Thread was interrupted. Unlikely but possible so handle
-                    //
-                    restartMonitorService(e);
-                }
-            }
-
-            super.afterExecute(task, error);
         }
     }
 
@@ -417,33 +314,20 @@ public class TeiidOpenShiftClient implements StringConstants {
     private static final String SYSDESIS = "syndesis";
     private static final String MANAGED_BY = "managed-by";
     private static final String SYNDESISURL = "http://syndesis-server/api/v1";
-    private static final long MONITOR_SERVICE_INITIAL_DELAY = 3;
-    private static final long MONITOR_SERVICE_POLLING_DELAY = 5;
-
-    private volatile ConcurrentLinkedQueue<BuildStatus> workQueue = new ConcurrentLinkedQueue<>();
 
     private MetadataInstance metadata;
-    private HashMap<String, DataSourceDefinition> sources = new HashMap<>();
-
-    /**
-     * Dedicated to monitoring the work queue
-     */
-    private ScheduledExecutorService monitorService;
-
-    /**
-     * The state of the monitorService. Once started, it will keep going until
-     * {@link #setMonitorState(MonitorState.STOPPED)} is called.
-     */
-    private MonitorState monitorState = MonitorState.STOPPED;
+    private Map<String, DataSourceDefinition> sources = new ConcurrentHashMap<>();
 
     /**
      * Fixed pool of up to 3 threads for configuring images ready to be deployed
      */
     private ExecutorService configureService = Executors.newFixedThreadPool(3);
 
-    private Map<String, PrintWriter> logBuffers = new HashMap<>();
+    private Map<String, PrintWriter> logBuffers = new ConcurrentHashMap<>();
     private EncryptionComponent encryptionComponent;
     private KomodoConfigurationProperties config;
+    
+    private ThreadPoolExecutor workExecutor = new ThreadPoolExecutor(1, 1, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
 
 	public TeiidOpenShiftClient(MetadataInstance metadata, EncryptionComponent encryptor, KomodoConfigurationProperties config) {
         this.metadata = metadata;
@@ -604,7 +488,6 @@ public class TeiidOpenShiftClient implements StringConstants {
     public Set<DefaultSyndesisDataSource> getSyndesisSources(OAuthCredentials oauthCreds) throws KException {
         Set<DefaultSyndesisDataSource> sources = new HashSet<>();
         try {
-            Collection<String> dsNames = this.metadata.getDataSourceNames();
             String url = SYNDESISURL+"/connections";
             InputStream response = executeGET(url, oauthCreds);
             ObjectMapper mapper = new ObjectMapper();
@@ -616,7 +499,7 @@ public class TeiidOpenShiftClient implements StringConstants {
                 }
                 String name = item.get("name").asText();
                 try {
-                	sources.add(buildSyndesisDataSource(name, dsNames, item));
+                	sources.add(buildSyndesisDataSource(name, item));
                 } catch (KException e) {
                 	error(name, e.getMessage(), e);
                 }
@@ -630,7 +513,6 @@ public class TeiidOpenShiftClient implements StringConstants {
     public DefaultSyndesisDataSource getSyndesisDataSourceById(OAuthCredentials oauthCreds, String dsId)
             throws KException {
         try {
-            Collection<String> dsNames = this.metadata.getDataSourceNames();
             String url = SYNDESISURL+"/connections/"+dsId;
             InputStream response = executeGET(url, oauthCreds);
             ObjectMapper mapper = new ObjectMapper();
@@ -640,38 +522,22 @@ public class TeiidOpenShiftClient implements StringConstants {
                 throw new KException("Not SQL Connection, not supported yet.");
             }
             String name = root.get("name").asText();
-            return buildSyndesisDataSource(name, dsNames, root);
+            return buildSyndesisDataSource(name, root);
         } catch (Exception e) {
             throw handleError(e);
         }
     }    
 
-    public void bindToSyndesisSource(OAuthCredentials oauthCreds, String dsName) throws KException {
-        info(dsName, "Bind source with name to Service: " + dsName);
-        try {
-            DefaultSyndesisDataSource scd = getSyndesisDataSource(oauthCreds, dsName);
-            if (scd == null) {
-                throw new KException("failed to find the syndesis datasource by name " + dsName);
-            }
-            Collection<String> dsNames = this.metadata.getDataSourceNames();
-            if (!dsNames.contains(dsName)) {
-                createDataSource(dsName, scd);
-            }
-        } catch (Exception e) {
-            throw handleError(e);
-        }
-    }
-    
     public void bindToSyndesisSource(OAuthCredentials oauthCreds, DefaultSyndesisDataSource scd) throws KException {
-        if (scd == null) {
-            throw new KException("failed to find the syndesis datasource");
-        }
-        info(scd.getName(), "Bind source with name to Service: " + scd.getName());
+        info(scd.getSyndesisName(), "Bind source with name to Service: " + scd.getSyndesisName());
         try {
-            Collection<String> dsNames = this.metadata.getDataSourceNames();
-            if (!dsNames.contains(scd.getName())) {
-                createDataSource(scd.getName(), scd);
-            }
+        	String dsName = findDataSourceNameByEventId(scd.getId());
+        	if (dsName != null) {
+        		scd.setKomodoName(dsName);
+        	} else {
+                createDataSource(scd);
+        	}
+        	
         } catch (Exception e) {
             throw handleError(e);
         }
@@ -682,7 +548,7 @@ public class TeiidOpenShiftClient implements StringConstants {
         try {
             Set<DefaultSyndesisDataSource> sources = getSyndesisSources(oauthCreds);
             for (DefaultSyndesisDataSource source:sources) {
-                if (source.getName().equals(dsName)) {
+                if (dsName.equals(source.getKomodoName())) {
                     return (DefaultSyndesisDataSource)source;
                 }
             }
@@ -692,22 +558,7 @@ public class TeiidOpenShiftClient implements StringConstants {
         }
     }
     
-    public DefaultSyndesisDataSource getSyndesisDataSourceByEventId(OAuthCredentials oauthCreds, String eventId)
-            throws KException {
-        try {
-            Set<DefaultSyndesisDataSource> sources = getSyndesisSources(oauthCreds);
-            for (DefaultSyndesisDataSource source:sources) {
-                if (source.getId().equals(eventId)) {
-                    return (DefaultSyndesisDataSource)source;
-                }
-            }
-            return null;
-        } catch (Exception e) {
-            throw handleError(e);
-        }
-    }    
-    
-    private DefaultSyndesisDataSource buildSyndesisDataSource(String dsName, Collection<String> dsNames, JsonNode item)
+    private DefaultSyndesisDataSource buildSyndesisDataSource(String syndesisName, JsonNode item)
             throws KException {
         Map<String, String> p = new HashMap<>();
         JsonNode configuredProperties = item.get("configuredProperties");
@@ -720,11 +571,10 @@ public class TeiidOpenShiftClient implements StringConstants {
         	if( connectorIDNode != null ) {
 	            DefaultSyndesisDataSource dsd = new DefaultSyndesisDataSource();
 	            dsd.setId(connectorIDNode.asText());
-	            dsd.setName(dsName);
+	            dsd.setSyndesisName(syndesisName);
+	            String dsName = findDataSourceNameByEventId(connectorIDNode.asText());
+	            dsd.setKomodoName(dsName);
 	            dsd.setTranslatorName(def.getTranslatorName());
-	            if (dsNames.contains(dsName)) {
-	                dsd.setBound(true);
-	            }
 	            dsd.setProperties(p);
 	            dsd.setDefinition(def);
 	            return dsd;
@@ -735,14 +585,15 @@ public class TeiidOpenShiftClient implements StringConstants {
             throw new KException("Could not find datasource that matches to the configuration."+ p.get("url"));
         }
     }
-
-    private void createDataSource(String name, DefaultSyndesisDataSource scd)
+    
+    private void createDataSource(DefaultSyndesisDataSource scd)
             throws AdminException, KException {
-        debug(name, "Creating the Datasource of Type " + scd.getType());
+        String syndesisName = scd.getSyndesisName();
+		debug(syndesisName, "Creating the Datasource of Type " + scd.getType());
 
         String driverName = null;
         Set<String> templateNames = this.metadata.getDataSourceTemplateNames();
-        debug(name, "template names: " + templateNames);
+        debug(syndesisName, "template names: " + templateNames);
         String dsType = scd.getDefinition().getType();
         for (String template : templateNames) {
             // TODO: there is null entering from above call from getDataSourceTemplateNames need to investigate why
@@ -756,30 +607,73 @@ public class TeiidOpenShiftClient implements StringConstants {
             throw new KException("No driver or resource adapter found for source type " + dsType);
         }
 
-        Map<String, String> properties = scd.convertToDataSourceProperties();
-        properties.put(ID, scd.getId());
-
-        this.metadata.createDataSource(name, driverName, encryptionComponent.decrypt(properties));
+        //we'll create serially to ensure a unique generated name
+        synchronized (this) {
+        	setUniqueKomodoName(scd, syndesisName);
+        	String toUse = scd.getKomodoName();
+        	
+        	//now that the komodoname is set, we can create the properties
+        	Map<String, String> properties = scd.convertToDataSourceProperties();
+            properties.put(ID, scd.getId());
+        	
+            this.metadata.createDataSource(toUse, driverName, encryptionComponent.decrypt(properties));
+		}
     }
+
+    /**
+     * Create a unique and valid name the syndesis connection.  The name will be suitable
+     * as a schema name as well.
+     * @param scd
+     * @param syndesisName
+     * @return
+     * @throws AdminException
+     */
+	protected void setUniqueKomodoName(DefaultSyndesisDataSource scd, String syndesisName) throws AdminException {
+		String name = syndesisName;
+		//remove any problematic characters
+		name = name.replaceAll("[\\.\\?\\_\\s]", "");
+		//slim it down
+		if (name.length() > 1024) {
+			name = name.substring(0, 1024);
+		}
+		
+		TreeSet<String> taken = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+		taken.addAll(this.metadata.getDataSourceNames());
+		
+		//TODO: drive this via an api method
+		taken.add(CoreConstants.INFORMATION_SCHEMA);
+		taken.add(CoreConstants.ODBC_MODEL);
+		taken.add(CoreConstants.SYSTEM_ADMIN_MODEL);
+		taken.add(CoreConstants.SYSTEM_MODEL);
+		
+		taken.add(SERVICE_VDB_VIEW_MODEL);
+		
+		int i = 1;
+		String toUse = name;
+		while (taken.contains(toUse)) {
+			toUse = name + i;
+			i++;
+		}
+		
+		scd.setKomodoName(toUse);
+	}
     
     public void deleteDataSource(String dsName) throws AdminException, KException {
-
-    	for( String nextName : this.metadata.getDataSourceNames() ) {
-    		if( nextName != null && !StringUtils.isBlank(nextName) && nextName.equals(dsName)) {
-    			this.metadata.deleteDataSource(dsName);
-    			return;
-    		}
-    	}
+		this.metadata.deleteDataSource(dsName);
     }
     
-    public String findDataSourceNameByEventId(String eventId) throws AdminException, KException  {
-    	for( String dsName : this.metadata.getDataSourceNames() ) {
-    		TeiidDataSource props = this.metadata.getDataSource(dsName);
-    		String id = props.getPropertyValue(ID);
-    		if( id != null && !StringUtils.isBlank(id) && id.equals(eventId)) {
-    			return dsName;
-    		}
-    	}
+    public String findDataSourceNameByEventId(String eventId) throws KException  {
+    	try {
+			for( String dsName : this.metadata.getDataSourceNames() ) {
+				TeiidDataSource props = this.metadata.getDataSource(dsName);
+				String id = props.getId();
+				if( id != null && !StringUtils.isBlank(id) && id.equals(eventId)) {
+					return dsName;
+				}
+			}
+		} catch (AdminException e) {
+			throw handleError(e);
+		}
     	return null;
     }
     
@@ -1116,46 +1010,8 @@ public class TeiidOpenShiftClient implements StringConstants {
         work.setLastUpdated();
         work.setPublishConfiguration(publishConfig);
 
-        this.workQueue.add(work);
+        this.workExecutor.submit(new BuildStatusRunner(work));
         return work;
-    }
-
-    private void setMonitorState(MonitorState state) {
-        synchronized(monitorState) {
-            monitorState = state;
-
-            switch (monitorState) {
-                case STOPPED:
-                    monitorService.shutdownNow();
-                    monitorService = null;
-                    break;
-                case INITIATED:
-                    if (monitorService == null || monitorService.isShutdown()) {
-                        monitorService = new MonitorThreadPoolExecutor(1);
-                    }
-
-                    monitorService.scheduleAtFixedRate(new MonitorThread(), MONITOR_SERVICE_INITIAL_DELAY, MONITOR_SERVICE_POLLING_DELAY, TimeUnit.SECONDS);
-                    break;
-                case RUNNING:
-                    //
-                    // thread now fully running
-                    //
-                    break;
-            }
-        }
-    }
-
-    /**
-     * Once started for the first time monitor thread should execute for all
-     * work in the work queue. Once the queue is empty, it will die and a new
-     * monitor thread will be scheduled every {@link #MONITOR_SERVICE_POLLING_DELAY}
-     * seconds to check if there is more work to monitor.
-     */
-    private void monitorWork() {
-        if (monitorState != MonitorState.STOPPED)
-            return;
-
-        setMonitorState(MonitorState.INITIATED);
     }
 
     protected void configureBuild(BuildStatus work) {
@@ -1182,11 +1038,11 @@ public class TeiidOpenShiftClient implements StringConstants {
 
                     debug(vdbName, "Publishing - Generated pom file: " + NEW_LINE + pomFile);
                     archive.add(new StringAsset(pomFile), "pom.xml");
+                    
+                    normalizeDataSourceNames(vdb);
 
-                    byte[] vdbContents = DefaultMetadataInstance.toBytes(vdb).toByteArray();
-                    String modifiedVDB = normalizeDataSourceNames(vdb, new String(vdbContents, "UTF-8"));
-                    debug(vdbName, "Publishing - Exported vdb: " + NEW_LINE + modifiedVDB);
-                    archive.add(new StringAsset(modifiedVDB), "/src/main/resources/" + vdbName + "-vdb.xml");
+                    AccessibleByteArrayOutputStream vdbContents = DefaultMetadataInstance.toBytes(vdb);
+                    archive.add(new ByteArrayAsset(new ByteArrayInputStream(vdbContents.getBuffer(), 0, vdbContents.getCount())), "/src/main/resources/" + vdbName + "-vdb.xml");
 
                     InputStream configIs = this.getClass().getClassLoader().getResourceAsStream("s2i/application.properties");
                     archive.add(new ByteArrayAsset(ObjectConverterUtil.convertToByteArray(configIs)),
@@ -1255,22 +1111,14 @@ public class TeiidOpenShiftClient implements StringConstants {
         });
     }
 
-	private String normalizeDataSourceNames(VDBMetaData vdb, String vdbContents) throws KException {
-		debug(vdb.getName(), vdbContents);
-        for (Model model : vdb.getModels()) {
-            for (String source : model.getSourceNames()) {
-                String originalName = source;
-                String name = originalName.toLowerCase();
+	protected void normalizeDataSourceNames(VDBMetaData vdb) throws KException {
+        for (ModelMetaData model : vdb.getModelMetaDatas().values()) {
+        	for (SourceMappingMetadata source : model.getSources().values()) {
+        		String name = source.getName().toLowerCase();
                 name = name.replace("-", "");
-                if (!originalName.contentEquals(name)) {
-                	// <source name="sample-db" translator-name="postgresql" connection-jndi-name="sample-db"></source>
-					vdbContents = vdbContents.replace("name=\"" + originalName + "\"", "name=\"" + name + "\"");
-					vdbContents = vdbContents.replace("connection-jndi-name=\"" + originalName + "\"",
-							"connection-jndi-name=\"" + name + "\"");
-                }
+                source.setConnectionJndiName(name);
             }
         }
-		return vdbContents;
 	}
 	
     private static final String DS_TEMPLATE =
@@ -1296,9 +1144,8 @@ public class TeiidOpenShiftClient implements StringConstants {
 
         for (Model model : vdb.getModels()) {
             for (String name : model.getSourceNames()) {
-                name = name.toLowerCase();
-                name = name.replace("-", "");
-                sw.write(DS_TEMPLATE.replace("{name}", name).replace("{method-name}", name));                
+            	String replacement = model.getSourceConnectionJndiName(name);
+                sw.write(DS_TEMPLATE.replace("{name}", replacement).replace("{method-name}", replacement));                
                 sw.write("\n");
             }
         }
@@ -1333,9 +1180,6 @@ public class TeiidOpenShiftClient implements StringConstants {
             status = addToQueue(vdbName, publishConfig);
 
             debug(vdbName, "Publishing - Initiating work monitor if not already running");
-            synchronized (monitorState) {
-               monitorWork();
-            }
 
             info(vdbName, "Publishing - Status of build + " + status.status());
             return status;
@@ -1416,19 +1260,14 @@ public class TeiidOpenShiftClient implements StringConstants {
 				.withValueFrom(new EnvVarSourceBuilder().withNewSecretKeyRef(key, secret, false).build()).build();
     }
 
-    private BuildStatus getVirtualizationStatus(OpenShiftClient client, String vdbName) {
-        for (BuildStatus status: workQueue) {
-            if (status.vdbName().equals(vdbName)) {
-                return status;
-            }
-        }
-        return getVDBService(vdbName, ApplicationProperties.getNamespace(), client);
-    }
-
     public BuildStatus getVirtualizationStatus(String vdbName) {
+    	BuildStatus status = getVirtualizationStatusFromQueue(vdbName);
+    	if (status != null) {
+    		return status;
+    	}
         OpenShiftClient client = openshiftClient();
         try {
-            return getVirtualizationStatus(client, vdbName);
+    		return getVDBService(vdbName, ApplicationProperties.getNamespace(), client);
         } finally {
             client.close();
         }
@@ -1536,10 +1375,11 @@ public class TeiidOpenShiftClient implements StringConstants {
         }
 
         if (includeInQueue) {
-            Iterator<BuildStatus> iterator = workQueue.iterator();
-            while(iterator.hasNext()) {
-                BuildStatus status = iterator.next();
-                services.put(status.vdbName(), status);
+            for(Runnable r : workExecutor.getQueue()) {
+                if (r instanceof BuildStatusRunner) {
+                	BuildStatusRunner runner = (BuildStatusRunner)r;
+                    services.put(runner.work.vdbName(), runner.work);
+                }
             }
         }
 
@@ -1552,12 +1392,7 @@ public class TeiidOpenShiftClient implements StringConstants {
     }
 
     public BuildStatus deleteVirtualization(String vdbName) {
-        BuildStatus runningBuild = null;
-        for (BuildStatus status: workQueue) {
-            if (status.vdbName().equals(vdbName)) {
-                runningBuild = status;
-            }
-        }
+        BuildStatus runningBuild = getVirtualizationStatusFromQueue(vdbName);
 
         boolean queue = false;
         if (runningBuild == null) {
@@ -1584,15 +1419,23 @@ public class TeiidOpenShiftClient implements StringConstants {
         runningBuild.setStatusMessage("delete submitted");
         // since delete is async process too, monitor it in the monitor thread.
         if (queue) {
-        	workQueue.offer(runningBuild);
+        	workExecutor.submit(new BuildStatusRunner(runningBuild));
         }
         
-        // start the monitor thread is not active already
-        synchronized (monitorState) {
-            monitorWork();
-        }        
         return runningBuild;
     }
+
+	private BuildStatus getVirtualizationStatusFromQueue(String vdbName) {
+        for(Runnable r : workExecutor.getQueue()) {
+            if (r instanceof BuildStatusRunner) {
+            	BuildStatusRunner status = (BuildStatusRunner)r;
+            	if (status.work.vdbName().equals(vdbName)) {
+            		return status.work;
+            	}
+            }
+        }
+		return null;
+	}
 
     private void deleteVDBServiceResources(String vdbName, String inProgressBuildName, BuildStatus status) {
         final OpenShiftClient client = openshiftClient();

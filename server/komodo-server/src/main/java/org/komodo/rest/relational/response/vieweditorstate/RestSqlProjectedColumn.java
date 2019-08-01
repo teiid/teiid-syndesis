@@ -17,8 +17,6 @@
  */
 package org.komodo.rest.relational.response.vieweditorstate;
 
-import java.net.URI;
-
 import org.komodo.KException;
 import org.komodo.datavirtualization.SqlProjectedColumn;
 import org.komodo.rest.RestBasicEntity;
@@ -62,13 +60,10 @@ public class RestSqlProjectedColumn extends RestBasicEntity {
     
     /**
      * Constructor
-     * @param baseUri base uri
      * @param sqlProjectedColumn the projected column
      * @throws KException if error
      */
-    public RestSqlProjectedColumn(URI baseUri, SqlProjectedColumn sqlProjectedColumn) throws KException {
-        super(baseUri);
-        
+    public RestSqlProjectedColumn(SqlProjectedColumn sqlProjectedColumn) throws KException {
         String value = sqlProjectedColumn.getName();
         this.setName(value);
         

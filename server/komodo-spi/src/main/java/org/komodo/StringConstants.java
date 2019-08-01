@@ -430,8 +430,4 @@ public interface StringConstants {
      */
     String SERVICE_VDB_VIEW_MODEL = "views"; //$NON-NLS-1$
 
-    /**
-     * Service vdb view suffix
-     */
-    String SERVICE_VDB_VIEW_SUFFIX = "View"; //$NON-NLS-1$
 }

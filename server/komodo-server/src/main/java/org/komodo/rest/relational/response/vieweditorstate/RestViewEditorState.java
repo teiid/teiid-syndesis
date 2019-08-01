@@ -118,8 +118,6 @@ public class RestViewEditorState extends AbstractKEntity {
      * @throws KException if error occurs
      */
     public RestViewEditorState(URI baseUri, ViewDefinition viewEditorState) throws KException {
-        super(baseUri);
-
         setId(viewEditorState.getName());
         
         this.viewDefinition = new RestViewDefinition(baseUri, viewEditorState);

@@ -21,10 +21,10 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.komodo.metadata.TeiidDataSource;
+import org.komodo.openshift.TeiidOpenShiftClient;
 import org.teiid.core.util.ArgCheck;
 
 public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, TeiidDataSource {
-
     private final String name;
     private final Map<String, String> properties;
 
@@ -142,5 +142,15 @@ public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, Tei
         }
 
         return sb.toString();
+    }
+    
+    @Override
+    public String getId() {
+    	return getPropertyValue(TeiidOpenShiftClient.ID);
+    }
+    
+    @Override
+    public String getSchema() {
+    	return getPropertyValue(TeiidDataSource.DATASOURCE_SCHEMA);
     }
 }

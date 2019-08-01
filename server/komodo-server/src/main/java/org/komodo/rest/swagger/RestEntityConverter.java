@@ -22,9 +22,9 @@ import java.lang.reflect.Type;
 import java.util.Iterator;
 
 import org.komodo.openshift.KomodoType;
-import org.komodo.rest.RestLink;
 import org.komodo.rest.json.JsonConstants;
 import org.komodo.utils.KLog;
+
 import io.swagger.converter.ModelConverter;
 import io.swagger.converter.ModelConverterContext;
 import io.swagger.models.Model;
@@ -98,8 +98,6 @@ public abstract class RestEntityConverter<T> implements ModelConverter, JsonCons
         model.property(KTYPE, kTypeProperty);
 
         model.property(HAS_CHILDREN, requiredProperty(Boolean.class));
-
-        model.property(LINKS, context.resolveProperty(RestLink.class, null));
 
         context.defineModel(model.getName(), model);
 

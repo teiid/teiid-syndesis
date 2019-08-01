@@ -76,7 +76,7 @@ import io.swagger.annotations.ApiResponses;
 @Api( tags = {V1Constants.SERVICE_SEGMENT} )
 public final class KomodoUtilService extends KomodoService {
 
-    private static final String PREVIEW_VDB = "PreviewVdb";
+    public static final String PREVIEW_VDB = "PreviewVdb";
 
     public static final String APP_NAME = "App Name"; //$NON-NLS-1$
 
@@ -90,16 +90,6 @@ public final class KomodoUtilService extends KomodoService {
 
     public static final String WORKSPACE = "Workspace"; //$NON-NLS-1$
 
-    /**
-     * The sample vdbs provided by this service
-     */
-    @SuppressWarnings( "nls" )
-    public static final String[] SAMPLES = {
-        "parts_dynamic-vdb.xml", "portfolio-vdb.xml",
-        "teiid-vdb-all-elements.xml", "tweet-example-vdb.xml",
-        "northwind.xml", "financials.xml"
-    };
-    
     @Autowired
     private MetadataInstance metadataInstance;
 

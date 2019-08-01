@@ -17,8 +17,11 @@
  */
 package org.komodo.datasources;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
+
+import org.komodo.metadata.TeiidDataSource;
+import org.komodo.utils.ArgCheck;
 
 /**
  * Service catalog based Data Services that are available
@@ -56,7 +59,20 @@ public abstract class DataSourceDefinition {
      * @param properties
      * @return return the modified property set to make the connection in the given environment
      */
-    public abstract Map<String, String> getInternalTeiidDataSourceProperties(DefaultSyndesisDataSource source);
+    public Map<String, String> getInternalTeiidDataSourceProperties(DefaultSyndesisDataSource source) {
+    	Map<String, String> props = new HashMap<>();
+    	String komodoName = source.getKomodoName();
+    	ArgCheck.isNotNull(komodoName);
+		props.put(TeiidDataSource.DATASOURCE_JNDINAME, komodoName);
+        props.put(TeiidDataSource.DATASOURCE_DRIVERNAME, getType()); // used as translator name
+        props.put(TeiidDataSource.DATASOURCE_DISPLAYNAME, komodoName);
+        
+        props.put(TeiidDataSource.DATASOURCE_CONNECTION_URL, source.getProperty("url"));
+        props.put("username", source.getProperty("user"));
+        props.put("password", source.getProperty("password"));
+        props.put("schema", source.getProperty("schema"));
+        return props;
+    }
 
     /**
      * Given the connection properties from the Syndesis secrets generate Spring Boot
@@ -64,15 +80,27 @@ public abstract class DataSourceDefinition {
      * @param datasource data source details
      * @return properties properties required to create a connection in target environment
      */
-    public abstract Map<String, String> getPublishedImageDataSourceProperties(DefaultSyndesisDataSource datasource);
+    public Map<String, String> getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd) {
+    	Map<String, String> props = new HashMap<>();
+        ds(props, scd, "jdbc-url", scd.getProperty("url"));
+        ds(props, scd, "username", scd.getProperty("user"));
+        ds(props, scd, "password", scd.getProperty("password"));
+        
+        if (scd.getProperty("schema") != null) {
+        	ds(props, scd, "importer.schemaName", scd.getProperty("schema"));
+        }
+
+        // pool properties
+        ds(props, scd, "maximumPoolSize", "5");
+        ds(props, scd, "minimumIdle", "0");
+        
+        return props;
+    }
 
     protected void ds(Map<String, String> props, DefaultSyndesisDataSource scd, String key, String value) {
         props.put(
-                "spring.datasource." + scd.getName() + "." + key,
+                "spring.datasource." + scd.getKomodoName() + "." + key,
                 value);
     }
 
-    protected Properties setupResourceAdapter(String dsName, String moduleName, String className, String jndiName) {
-    	throw new UnsupportedOperationException();
-    }
 }

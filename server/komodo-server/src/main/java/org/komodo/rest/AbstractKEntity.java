@@ -17,19 +17,14 @@
  */
 package org.komodo.rest;
 
-import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriBuilder;
 
-import org.komodo.KException;
-import org.komodo.rest.RestLink.LinkType;
-import org.komodo.rest.relational.KomodoRestUriBuilder;
+import javax.ws.rs.core.MediaType;
+
 import org.komodo.utils.ArgCheck;
 
 public abstract class AbstractKEntity implements KRestEntity {
@@ -73,13 +68,9 @@ public abstract class AbstractKEntity implements KRestEntity {
 
     }
 
-    private transient KomodoRestUriBuilder uriBuilder;
-
     protected Map<String, Object> tuples = new LinkedHashMap<>();
 
     protected List<RestProperty> properties = new ArrayList<>();
-
-    protected Map<LinkType, RestLink> links = RestLink.NO_LINKS;
 
     // Transient to ensure its never serialized by Gson
     private transient String xml;
@@ -88,21 +79,11 @@ public abstract class AbstractKEntity implements KRestEntity {
      * Used for NO_CONTENT and ResourceNotFound
      */
     public AbstractKEntity() {
-        uriBuilder = null;
     }
 
     @Override
     public boolean supports(MediaType mediaType) {
         return MediaType.APPLICATION_JSON_TYPE.equals(mediaType);
-    }
-
-    /**
-     * @param baseUri the base uri of the REST request
-     * @throws KException if error occurs
-     */
-    public AbstractKEntity(URI baseUri) throws KException {
-        ArgCheck.isNotNull(baseUri, "baseUri"); //$NON-NLS-1$
-        setBaseUri(baseUri);
     }
 
     /**
@@ -120,29 +101,6 @@ public abstract class AbstractKEntity implements KRestEntity {
         tuples.put(key, value);
     }
 
-    /**
-     * @return the base Uri of this entity
-     */
-    public URI getBaseUri() {
-        Object uri = tuples.get(BASE_URI);
-        return uri != null ? UriBuilder.fromUri(uri.toString()).build() : null;
-    }
-
-    /**
-     * @param baseUri the base uri
-     */
-    public void setBaseUri(URI baseUri) {
-        tuples.put(BASE_URI, baseUri);
-        this.uriBuilder = new KomodoRestUriBuilder(baseUri);
-    }
-
-    /**
-     * @return the uriBuilder
-     */
-    public KomodoRestUriBuilder getUriBuilder() {
-        return this.uriBuilder;
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (this == obj)
@@ -152,11 +110,6 @@ public abstract class AbstractKEntity implements KRestEntity {
         if (getClass() != obj.getClass())
             return false;
         AbstractKEntity other = (AbstractKEntity)obj;
-        if (this.links == null) {
-            if (other.links != null)
-                return false;
-        } else if (!this.links.equals(other.links))
-            return false;
         if (this.properties == null) {
             if (other.properties != null)
                 return false;
@@ -171,13 +124,6 @@ public abstract class AbstractKEntity implements KRestEntity {
     }
 
     /**
-     * @return the links (never <code>null</code> but can be empty)
-     */
-    public final Collection<RestLink> getLinks() {
-        return this.links.values();
-    }
-
-    /**
      * @return the properties (never <code>null</code> but can be empty)
      */
     public final List<RestProperty> getProperties() {
@@ -188,46 +134,9 @@ public abstract class AbstractKEntity implements KRestEntity {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((this.links == null) ? 0 : this.links.hashCode());
         result = prime * result + ((this.properties == null) ? 0 : this.properties.hashCode());
         result = prime * result + ((this.tuples == null) ? 0 : this.tuples.hashCode());
         return result;
-    }
-
-    /**
-     * Adds a new link
-     * @param newLink the new link
-     */
-    public final void addLink(RestLink newLink) {
-        if (this.links == null || this.links == RestLink.NO_LINKS)
-            this.links = new LinkedHashMap<>();
-
-        this.links.put(newLink.getRel(), newLink);
-    }
-
-    /**
-     * Removes the link of given type
-     * @param type of link to remove
-     */
-    public final void removeLink(LinkType type) {
-        if (this.links == null || this.links == RestLink.NO_LINKS)
-            return;
-
-        this.links.remove(type);
-    }
-
-    /**
-     * @param newLinks
-     *        the new links (can be <code>null</code>)
-     */
-    public final void setLinks(final Collection<RestLink> newLinks) {
-        if (newLinks == null) {
-            this.links = RestLink.NO_LINKS;
-        } else {
-            for (RestLink link : newLinks) {
-                addLink(link);
-            }
-        }
     }
 
     /**
@@ -276,14 +185,12 @@ public abstract class AbstractKEntity implements KRestEntity {
     public void clone(AbstractKEntity instance) {
         instance.tuples = this.tuples;
         instance.properties = this.properties;
-        instance.links = this.links;
-        instance.uriBuilder = this.uriBuilder;
         instance.xml = this.xml;
     }
 
     @SuppressWarnings( "nls" )
     @Override
     public String toString() {
-        return "AbstractKEntity [tuples=" + this.tuples + ", properties=" + this.properties + ", links=" + this.links + "]";
+        return "AbstractKEntity [tuples=" + this.tuples + ", properties=" + this.properties + "]";
     }
 }

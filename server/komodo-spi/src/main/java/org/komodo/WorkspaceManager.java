@@ -23,11 +23,11 @@ import org.komodo.datavirtualization.ViewDefinition;
 
 public interface WorkspaceManager {
 	
-	String findSchema(String name);
+	String findSchema(String id);
 	
-	boolean deleteSchema(String name);
+	void deleteSchema(String id);
 	
-	void createOrUpdateSchema(String name, String contents);
+	void createOrUpdateSchema(String id, String contents);
 	
 
 	DataVirtualization createDataVirtualization(String virtualizationName);

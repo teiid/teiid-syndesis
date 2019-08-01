@@ -33,27 +33,12 @@ public final class DataserviceSerializerTest extends AbstractSerializerTest  {
     private static final String DESCRIPTION = "my description";
 
     private static final String JSON = OPEN_BRACE + NEW_LINE +
-        "  \"" + BASE_URI + "\": \"" + MY_BASE_URI + "\"," + NEW_LINE +
         "  \"keng__id\": \"" + DATASERVICE_NAME + "\"," + NEW_LINE +
         "  \"keng__kType\": \"Dataservice\"," + NEW_LINE +
         "  \"tko__description\": \"my description\"," + NEW_LINE +
         "  \"serviceVdbName\": \"ServiceVdb\"," + NEW_LINE +
         "  \"keng__hasChildren\": true," + NEW_LINE +
-        "  \"publishedState\": \"NOTFOUND\"," + NEW_LINE +
-        "  \"keng___links\": [" + NEW_LINE +
-        "    " + OPEN_BRACE + NEW_LINE +
-        "      \"rel\": \"self\"," + NEW_LINE +
-        "      \"href\": \"" + BASE_URI_PREFIX + DATASERVICE_DATA_PATH + "\"" + NEW_LINE +
-        "    " + CLOSE_BRACE + COMMA + NEW_LINE +
-        "    " + OPEN_BRACE + NEW_LINE +
-        "      \"rel\": \"parent\"," + NEW_LINE +
-        "      \"href\": \"" + BASE_URI_PREFIX + "/workspace/dataservices\"" + NEW_LINE +
-        "    " + CLOSE_BRACE + COMMA + NEW_LINE +
-        "    " + OPEN_BRACE + NEW_LINE +
-        "      \"rel\": \"vdbs\"," + NEW_LINE +
-        "      \"href\": \"" + BASE_URI_PREFIX + DATASERVICE_DATA_PATH + "/Vdbs\"" + NEW_LINE +
-        "    " + CLOSE_BRACE + NEW_LINE +
-        "  " + CLOSE_SQUARE_BRACKET + NEW_LINE +
+        "  \"publishedState\": \"NOTFOUND\"" + NEW_LINE +
         CLOSE_BRACE;
 
     private RestDataservice dataservice;
@@ -63,7 +48,7 @@ public final class DataserviceSerializerTest extends AbstractSerializerTest  {
         DataVirtualization theService = Mockito.mock(DataVirtualization.class);
         Mockito.when(theService.getName()).thenReturn(DATASERVICE_NAME);
 
-        this.dataservice = new RestDataservice(MY_BASE_URI, theService, false, "ServiceVdb");
+        this.dataservice = new RestDataservice(theService, false, "ServiceVdb");
         this.dataservice.setDescription(DESCRIPTION);
     }
 
@@ -79,7 +64,6 @@ public final class DataserviceSerializerTest extends AbstractSerializerTest  {
         final RestDataservice descriptor = KomodoJsonMarshaller.unmarshall( JSON, RestDataservice.class );
         assertEquals(DATASERVICE_NAME, descriptor.getId());
         assertEquals(DESCRIPTION, descriptor.getDescription());
-        assertEquals(3, descriptor.getLinks().size());
         assertEquals(true, descriptor.getProperties().isEmpty());
     }
 
