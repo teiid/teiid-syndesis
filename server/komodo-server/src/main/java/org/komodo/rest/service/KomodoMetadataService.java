@@ -17,7 +17,6 @@
  */
 package org.komodo.rest.service;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -66,13 +65,11 @@ import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
 import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.connection.RestSchemaNode;
-import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.request.KomodoQueryAttribute;
 import org.komodo.rest.relational.request.PublishRequestPayload;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.RestQueryResult;
 import org.komodo.rest.relational.response.metadata.RestSyndesisSourceStatus;
-import org.komodo.rest.relational.response.virtualization.RestVirtualizationStatus;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -431,7 +428,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
                                                      CLOSE_PRE_TAG,
                                              required = true
                                    )
-                                   final String queryAttribute)
+                                   final KomodoQueryAttribute kqa)
                                    throws KomodoRestException {
 
         SecurityPrincipal principal = checkSecurityContext(headers);
@@ -445,9 +442,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         //
         // Error if there is no query attribute defined
         //
-        KomodoQueryAttribute kqa;
         try {
-            kqa = KomodoJsonMarshaller.unmarshall(queryAttribute, KomodoQueryAttribute.class);
             if (kqa.getQuery() == null) {
                 return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.METADATA_SERVICE_QUERY_MISSING_QUERY);
             }
@@ -845,7 +840,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
     @GET
     @Path(V1Constants.PUBLISH)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Gets the published virtualization services", response = RestVirtualizationStatus[].class)
+    @ApiOperation(value = "Gets the published virtualization services", response = BuildStatus[].class)
     @ApiResponses(value = { @ApiResponse(code = 403, message = "An error has occurred.") })
     public Response getVirtualizations(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
             @ApiParam(value = "true to include in progress services", required = true, defaultValue="true")
@@ -864,12 +859,8 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         UnitOfWork uow = null;
         try {
             uow = createTransaction(principal, "publish", true); //$NON-NLS-1$
-            final List<RestVirtualizationStatus> entityList = new ArrayList<>();
             Collection<BuildStatus> statuses = this.openshiftClient.getVirtualizations(includeInProgressServices);
-            for (BuildStatus status : statuses) {
-                entityList.add(createBuildStatus(status, uriInfo.getBaseUri()));
-            }
-            return commit(uow, mediaTypes, entityList);
+            return commit(uow, mediaTypes, statuses);
         } catch (Throwable e) {
             if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();
@@ -885,7 +876,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
     @GET
     @Path(V1Constants.PUBLISH + StringConstants.FORWARD_SLASH + V1Constants.VDB_PLACEHOLDER)
     @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Find Build Status of Virtualization by VDB name", response = RestVirtualizationStatus.class)
+    @ApiOperation(value = "Find Build Status of Virtualization by VDB name", response = BuildStatus.class)
     @ApiResponses(value = {
         @ApiResponse(code = 404, message = "No VDB could be found with name"),
         @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
@@ -905,7 +896,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             uow = createTransaction(principal, "publish", true); //$NON-NLS-1$
             BuildStatus status = this.openshiftClient.getVirtualizationStatus(vdbName);
 
-            return commit(uow, mediaTypes, createBuildStatus(status, uriInfo.getBaseUri()));
+            return commit(uow, mediaTypes, status);
         } catch (Throwable e) {
             if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();
@@ -955,21 +946,10 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         }
     }
     
-    /**
-     * Create RestVirtualizationStatus
-     * @param status the build status
-     * @param baseUri the base uri
-     * @return RestVirtualizationStatus
-     * @throws Exception if error occurs
-     */
-    public RestVirtualizationStatus createBuildStatus(BuildStatus status, URI baseUri) throws Exception {
-        return new RestVirtualizationStatus(baseUri, status);
-    }
-
     @DELETE
     @Path(V1Constants.PUBLISH + StringConstants.FORWARD_SLASH + V1Constants.VDB_PLACEHOLDER)
     @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Delete Virtualization Service by VDB name",response = RestVirtualizationStatus.class)
+    @ApiOperation(value = "Delete Virtualization Service by VDB name",response = BuildStatus.class)
     @ApiResponses(value = {
         @ApiResponse(code = 404, message = "No VDB could be found with name"),
         @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
@@ -988,7 +968,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         try {
             uow = createTransaction(principal, "publish", true); //$NON-NLS-1$
             BuildStatus status = this.openshiftClient.deleteVirtualization(vdbName);
-            return commit(uow, mediaTypes, createBuildStatus(status, uriInfo.getBaseUri()));
+            return commit(uow, mediaTypes, status);
         } catch (Throwable e) {
             if ((uow != null) && !uow.isCompleted()) {
                 uow.rollback();

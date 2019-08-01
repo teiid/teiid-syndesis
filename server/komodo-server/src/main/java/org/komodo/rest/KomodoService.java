@@ -321,16 +321,16 @@ public abstract class KomodoService implements V1Constants {
         return false;
     }
 
-    protected Response toResponse(List<MediaType> acceptableMediaTypes, final List<? extends KRestEntity> entities) throws Exception {
+    protected Response toResponse(List<MediaType> acceptableMediaTypes, final List<?> entities) throws Exception {
     	ResponseBuilder builder = null;
 
-        KRestEntity entity;
+        Object entity;
         if ( entities.size() == 1 && (entity = entities.iterator().next()) instanceof ResourceNotFound ) {
         	return toResponse(acceptableMediaTypes, entity);
         } else {
 
             if (isAcceptable(acceptableMediaTypes, MediaType.APPLICATION_JSON_TYPE))
-                builder = Response.ok( KomodoJsonMarshaller.marshallArray(entities.toArray(new KRestEntity[0]), true), MediaType.APPLICATION_JSON );
+                builder = Response.ok( KomodoJsonMarshaller.marshallArray(entities.toArray(new Object[0]), true), MediaType.APPLICATION_JSON );
             else {
                 builder = notAcceptableMediaTypesBuilder();
             }
@@ -339,7 +339,7 @@ public abstract class KomodoService implements V1Constants {
         return builder.build();
     }
     
-    protected Response toResponse(List<MediaType> acceptableMediaTypes, final KRestEntity entity) throws Exception {
+    protected Response toResponse(List<MediaType> acceptableMediaTypes, final Object entity) throws Exception {
     	if (entity == null) {
             return Response.ok().build();
         }
@@ -362,8 +362,6 @@ public abstract class KomodoService implements V1Constants {
             //
             if (isAcceptable(acceptableMediaTypes, MediaType.APPLICATION_JSON_TYPE))
                 builder = Response.ok( KomodoJsonMarshaller.marshall( entity ), MediaType.APPLICATION_JSON );
-            else if (isAcceptable(acceptableMediaTypes, MediaType.APPLICATION_XML_TYPE) && entity.supports(MediaType.APPLICATION_XML_TYPE))
-                builder = Response.ok( entity.getXml(), MediaType.APPLICATION_XML );
             else {
                 builder = notAcceptableMediaTypesBuilder();
             }
@@ -405,7 +403,7 @@ public abstract class KomodoService implements V1Constants {
                 rollbackOnly);
     }
 
-    protected Response commit(UnitOfWork transaction, List<MediaType> acceptableMediaTypes, final KRestEntity entity) throws Exception {
+    protected Response commit(UnitOfWork transaction, List<MediaType> acceptableMediaTypes, final Object entity) throws Exception {
         final int timeout = TIMEOUT;
         final TimeUnit unit = UNIT;
 
@@ -437,9 +435,9 @@ public abstract class KomodoService implements V1Constants {
     }
 
     protected Response commit( final UnitOfWork transaction, List<MediaType> acceptableMediaTypes,
-                               final List<? extends KRestEntity> entities ) throws Exception {
+                               final List<?> entities ) throws Exception {
 
-        commit(transaction, acceptableMediaTypes, (KRestEntity)null);
+        commit(transaction, acceptableMediaTypes, (Object)null);
         
         return toResponse(acceptableMediaTypes, entities);
     }

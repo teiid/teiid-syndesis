@@ -808,7 +808,7 @@ public class TeiidOpenShiftClient implements StringConstants {
 
     private List<ContainerPort> getDeploymentPorts(PublishConfiguration config){
         List<ContainerPort> ports = new ArrayList<>();
-        ports.add(createPort(ProtocolType.PROMENTHEUS.id(), 9779, "TCP"));
+        ports.add(createPort(ProtocolType.PROMETHEUS.id(), 9779, "TCP"));
         ports.add(createPort(ProtocolType.JOLOKIA.id(), 8778, "TCP"));
         ports.add(createPort(ProtocolType.JDBC.id(), 31000, "TCP"));
         ports.add(createPort(ProtocolType.PG.id(), 35432, "TCP"));

@@ -51,7 +51,6 @@ public final class RestDataserviceTest {
         copy.setDescription(dataservice.getDescription());
         copy.setkType(dataservice.getkType());
         copy.setHasChildren(dataservice.hasChildren());
-        copy.setProperties(this.dataservice.getProperties());
         copy.setServiceVdbName(this.dataservice.getServiceVdbName());
         copy.setServiceVdbVersion(this.dataservice.getServiceVdbVersion());
         copy.setServiceViewModel(this.dataservice.getServiceViewModel());
@@ -98,7 +97,6 @@ public final class RestDataserviceTest {
         final RestDataservice empty = new RestDataservice();
         assertNull(empty.getId());
         assertNull(empty.getDescription());
-        assertEquals(empty.getProperties().isEmpty(), true);
     }
 
     @Test

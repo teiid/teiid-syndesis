@@ -24,13 +24,11 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Map;
 
 import org.komodo.rest.AbstractKEntity;
 import org.komodo.rest.Messages;
 import org.komodo.rest.RestBasicEntity;
-import org.komodo.rest.RestProperty;
 import org.komodo.rest.json.JsonConstants;
 
 import com.google.gson.TypeAdapter;
@@ -101,9 +99,6 @@ public abstract class AbstractEntitySerializer< T extends AbstractKEntity > exte
             if (readExtension(name, entity, in) != null)
                 continue;
 
-            if (PROPERTIES.equals(name))
-                readProperties(in, entity);
-            else {
                 JsonToken token = in.peek();
                 switch (token) {
                     case BOOLEAN:
@@ -156,7 +151,6 @@ public abstract class AbstractEntitySerializer< T extends AbstractKEntity > exte
                     default:
                         throw new IOException(Messages.getString(Messages.Error.UNEXPECTED_JSON_TOKEN, name));
                 }
-            }
         }
 
         if ( !isComplete( entity ) ) {
@@ -165,14 +159,6 @@ public abstract class AbstractEntitySerializer< T extends AbstractKEntity > exte
 
         endRead(in);
         return entity;
-    }
-
-    protected void readProperties( final JsonReader in, final T value ) {
-        final RestProperty[] props = BUILDER.fromJson( in, RestProperty[].class );
-        if (props == null)
-            value.setProperties(null);
-        else
-            value.setProperties( Arrays.asList(props) );
     }
 
     /**
@@ -201,17 +187,7 @@ public abstract class AbstractEntitySerializer< T extends AbstractKEntity > exte
 
         writeExtensions(out, entity);
 
-        writeProperties(out, entity);
-
         endWrite(out);
-    }
-
-    protected void writeProperties( final JsonWriter out, final T value ) throws IOException {
-        if (value.getProperties().isEmpty())
-            return;
-
-        out.name( JsonConstants.PROPERTIES );
-        BUILDER.toJson( value.getProperties().toArray(new RestProperty[0]), RestProperty[].class, out );
     }
 
     protected void writeValue(final JsonWriter out, Object value) throws IOException {

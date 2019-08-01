@@ -114,6 +114,6 @@ public class RestBasicEntity extends AbstractKEntity {
     @SuppressWarnings( "nls" )
     @Override
     public String toString() {
-        return "RestBasicEntity [tuples=" + this.tuples + ", properties=" + this.properties + "]";
+        return "RestBasicEntity [tuples=" + this.tuples + "]";
     }
 }

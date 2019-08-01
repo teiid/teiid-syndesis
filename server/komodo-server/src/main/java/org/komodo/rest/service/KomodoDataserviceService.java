@@ -571,7 +571,7 @@ public final class KomodoDataserviceService extends KomodoService
             if(!routeStatuses.isEmpty()) {
             	// Find Odata route if it exists
             	for(RouteStatus routeStatus: routeStatuses) {
-            		if(routeStatus.getKind() == ProtocolType.ODATA) {
+            		if(routeStatus.getProtocol() == ProtocolType.ODATA) {
             			odataHost = routeStatus.getHost();
             			break;
             		}

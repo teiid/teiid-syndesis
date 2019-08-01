@@ -4,10 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import javax.ws.rs.core.MediaType;
-
 import org.komodo.metadata.TeiidVdb;
-import org.komodo.rest.KRestEntity;
+import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.utils.StringUtils;
 
 /**
@@ -16,7 +14,7 @@ import org.komodo.utils.StringUtils;
  * - the corresponding teiid source vdb state, and details
  * - the corresponding schema vdb state, and details
  */
-public final class RestSyndesisSourceStatus implements KRestEntity {
+public final class RestSyndesisSourceStatus implements V1Constants {
 
     /*
 
@@ -218,17 +216,6 @@ public final class RestSyndesisSourceStatus implements KRestEntity {
     /**
      * {@inheritDoc}
      *
-     * @see org.komodo.rest.KRestEntity#getXml()
-     * @throws UnsupportedOperationException if called
-     */
-    @Override
-    public Object getXml() {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * {@inheritDoc}
-     *
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -313,14 +300,4 @@ public final class RestSyndesisSourceStatus implements KRestEntity {
         this.vdbState = vdbState == null ? EntityState.MISSING : EntityState.valueOf(state);
     }
     
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.komodo.rest.KRestEntity#supports(javax.ws.rs.core.MediaType)
-     */
-    @Override
-    public boolean supports( final MediaType mediaType ) {
-        return MediaType.APPLICATION_JSON_TYPE.equals( mediaType );
-    }
-
 }

@@ -17,17 +17,14 @@
  */
 package org.komodo.rest;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.core.MediaType;
-
+import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.utils.ArgCheck;
 
-public abstract class AbstractKEntity implements KRestEntity {
+public abstract class AbstractKEntity implements V1Constants {
 
     /**
      * A {@link RestBasicEntity} that indicates the resource was not found.
@@ -70,20 +67,10 @@ public abstract class AbstractKEntity implements KRestEntity {
 
     protected Map<String, Object> tuples = new LinkedHashMap<>();
 
-    protected List<RestProperty> properties = new ArrayList<>();
-
-    // Transient to ensure its never serialized by Gson
-    private transient String xml;
-
     /**
      * Used for NO_CONTENT and ResourceNotFound
      */
     public AbstractKEntity() {
-    }
-
-    @Override
-    public boolean supports(MediaType mediaType) {
-        return MediaType.APPLICATION_JSON_TYPE.equals(mediaType);
     }
 
     /**
@@ -110,11 +97,6 @@ public abstract class AbstractKEntity implements KRestEntity {
         if (getClass() != obj.getClass())
             return false;
         AbstractKEntity other = (AbstractKEntity)obj;
-        if (this.properties == null) {
-            if (other.properties != null)
-                return false;
-        } else if (!this.properties.equals(other.properties))
-            return false;
         if (this.tuples == null) {
             if (other.tuples != null)
                 return false;
@@ -123,60 +105,12 @@ public abstract class AbstractKEntity implements KRestEntity {
         return true;
     }
 
-    /**
-     * @return the properties (never <code>null</code> but can be empty)
-     */
-    public final List<RestProperty> getProperties() {
-        return this.properties;
-    }
-
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((this.properties == null) ? 0 : this.properties.hashCode());
         result = prime * result + ((this.tuples == null) ? 0 : this.tuples.hashCode());
         return result;
-    }
-
-    /**
-     * Add a property
-     *
-     * @param name the property name
-     * @param value the property value
-     */
-    public final void addProperty(String name, Object value) {
-        this.properties.add(new RestProperty(name, value));
-    }
-
-    /**
-     * @param newProperties
-     *        the new properties (can be <code>null</code>)
-     */
-    public final void setProperties(final List<RestProperty> newProperties) {
-        this.properties.clear();
-
-        if ((newProperties != null) && !newProperties.isEmpty()) {
-            for (RestProperty property : newProperties) {
-                ArgCheck.isNotNull(property);
-                this.properties.add(property);
-            }
-        }
-    }
-
-    /**
-     * @return the xml
-     */
-    @Override
-    public String getXml() {
-        return this.xml;
-    }
-
-    /**
-     * @param xml the xml manifestation of this vdb
-     */
-    public void setXml(String xml) {
-        this.xml = xml;
     }
 
     /**
@@ -184,13 +118,11 @@ public abstract class AbstractKEntity implements KRestEntity {
      */
     public void clone(AbstractKEntity instance) {
         instance.tuples = this.tuples;
-        instance.properties = this.properties;
-        instance.xml = this.xml;
     }
 
     @SuppressWarnings( "nls" )
     @Override
     public String toString() {
-        return "AbstractKEntity [tuples=" + this.tuples + ", properties=" + this.properties + "]";
+        return "AbstractKEntity [tuples=" + this.tuples + "]";
     }
 }

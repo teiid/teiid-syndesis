@@ -17,14 +17,10 @@
  */
 package org.komodo.rest.relational.json;
 
-import org.komodo.rest.KRestEntity;
+import java.io.IOException;
+
 import org.komodo.rest.RestBasicEntity;
-import org.komodo.rest.RestProperty;
-import org.komodo.rest.json.RestPropertySerializer;
 import org.komodo.rest.relational.dataservice.RestDataservice;
-import org.komodo.rest.relational.request.KomodoConnectionAttributes;
-import org.komodo.rest.relational.request.KomodoQueryAttribute;
-import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.RestQueryColumn;
 import org.komodo.rest.relational.response.RestQueryResult;
 import org.komodo.rest.relational.response.RestQueryRow;
@@ -33,11 +29,12 @@ import org.komodo.rest.relational.response.vieweditorstate.RestSqlComposition;
 import org.komodo.rest.relational.response.vieweditorstate.RestSqlProjectedColumn;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewDefinition;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
-import org.komodo.rest.relational.response.virtualization.RestRouteStatus;
-import org.komodo.rest.relational.response.virtualization.RestVirtualizationStatus;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -45,6 +42,8 @@ import com.google.gson.GsonBuilder;
  * A JSON serializer and deserializer for {@link RestBasicEntity Komodo REST objects}.
  */
 public final class KomodoJsonMarshaller {
+	
+	private final static ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private static final KLog LOGGER = KLog.getLogger();
 
@@ -56,35 +55,29 @@ public final class KomodoJsonMarshaller {
     public static final Gson PRETTY_BUILDER;
 
     static {
-        final GsonBuilder temp = new GsonBuilder().registerTypeAdapter(KomodoStatusObject.class, new StatusObjectSerializer())
-                                                  .registerTypeAdapter(RestProperty.class, new RestPropertySerializer())
-                                                  .registerTypeAdapter(RestDataservice.class, new DataserviceSerializer())
+        final GsonBuilder temp = new GsonBuilder().registerTypeAdapter(RestDataservice.class, new DataserviceSerializer())
                                                   .registerTypeAdapter(RestSyndesisSourceStatus.class, new SyndesisSourceStatusSerializer())
                                                   .registerTypeAdapter(RestBasicEntity.class, new BasicEntitySerializer<RestBasicEntity>())
-                                                  .registerTypeAdapter(KomodoQueryAttribute.class, new QueryAttributeSerializer())
                                                   .registerTypeAdapter(RestQueryResult.class, new QueryResultSerializer())
                                                   .registerTypeAdapter(RestQueryColumn.class, new QueryColumnSerializer())
                                                   .registerTypeAdapter(RestQueryRow.class, new QueryRowSerializer())
-                                                  .registerTypeAdapter(KomodoConnectionAttributes.class, new ConnectionAttributesSerializer())
                                                   .registerTypeAdapter(RestViewEditorState.class, new ViewEditorStateSerializer())
                                                   .registerTypeAdapter(RestViewDefinition.class, new ViewDefinitionSerializer())
                                                   .registerTypeAdapter(RestSqlComposition.class, new SqlCompositionSerializer())
-                                                  .registerTypeAdapter(RestSqlProjectedColumn.class, new SqlProjectedColumnSerializer())
-                                                  .registerTypeAdapter(RestVirtualizationStatus.class, new VirtualizationStatusSerializer())
-                                                  .registerTypeAdapter(RestRouteStatus.class, new RouteStatusSerializer());
+                                                  .registerTypeAdapter(RestSqlProjectedColumn.class, new SqlProjectedColumnSerializer());
 
         BUILDER = temp.create();
         PRETTY_BUILDER = temp.setPrettyPrinting().create();
     }
 
     /**
-     * Outputs a non-pretty printed JSON representation.
+     * Outputs a pretty printed JSON representation.
      *
      * @param entity
      *        the entity whose JSON representation is being requested (cannot be <code>null</code>)
      * @return the JSON representation (never empty)
      */
-    public static String marshall( final KRestEntity entity ) {
+    public static String marshall( final Object entity ) {
         return marshall( entity, true );
     }
 
@@ -95,11 +88,22 @@ public final class KomodoJsonMarshaller {
      *        <code>true</code> if JSON output should be pretty printed
      * @return the JSON representation (never empty)
      */
-    public static String marshall( final KRestEntity entity,
+    public static String marshall( final Object entity,
                                    final boolean prettyPrint ) {
         ArgCheck.isNotNull( entity, "entity" ); //$NON-NLS-1$
 
         String json = null;
+        
+        if (useJackson(entity.getClass())) {
+        	try {
+        		if (prettyPrint) {
+    				return OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(entity);
+        		}
+        		return OBJECT_MAPPER.writeValueAsString(entity);
+			} catch (JsonProcessingException e) {
+				throw new RuntimeException(e);
+			}
+        }
 
         if ( prettyPrint ) {
             json = PRETTY_BUILDER.toJson( entity );
@@ -109,6 +113,18 @@ public final class KomodoJsonMarshaller {
         return json;
     }
 
+	private static boolean useJackson(final Class<?> entityClass) {
+		if (entityClass.getAnnotation(JsonSerialize.class) != null) {
+			return true;
+		}
+		boolean result = !BUILDER.getAdapter(entityClass).getClass().getName().contains("komodo");
+		//if there's no registered serializer, use jackson as well
+		if (result) {
+			LOGGER.info("should mark {0} with JsonSerialize", entityClass);
+		}
+		return result;
+	}
+
     /**
      * @param entities
      *        the entities whose JSON representation is being requested (cannot be <code>null</code>)
@@ -116,11 +132,19 @@ public final class KomodoJsonMarshaller {
      *        <code>true</code> if JSON output should be pretty printed
      * @return the JSON representation (never empty)
      */
-    public static String marshallArray( final KRestEntity[] entities,
+    public static String marshallArray( final Object[] entities,
                                    final boolean prettyPrint ) {
         ArgCheck.isNotNull( entities, "entities" ); //$NON-NLS-1$
 
         String json = null;
+        
+        if (entities.length > 0 && useJackson(entities[0].getClass())) {
+        	try {
+				return OBJECT_MAPPER.writeValueAsString(entities);
+			} catch (JsonProcessingException e) {
+				throw new RuntimeException(e);
+			}
+        }
 
         if ( prettyPrint ) {
             json = PRETTY_BUILDER.toJson( entities );
@@ -141,8 +165,17 @@ public final class KomodoJsonMarshaller {
      *        the type of {@link RestBasicEntity} the JSON will be converted to (cannot be <code>null</code>)
      * @return the {@link RestBasicEntity} (never <code>null</code>)
      */
-    public static < T extends KRestEntity > T unmarshall( final String json,
+    public static < T extends Object > T unmarshall( final String json,
                                                                final Class< T > entityClass ) {
+    	
+    	if (useJackson(entityClass)) {
+        	try {
+				return OBJECT_MAPPER.readValue(json, entityClass);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+        }
+    	
         final T entity = BUILDER.fromJson( json, entityClass );
         return entity;
     }
@@ -156,9 +189,17 @@ public final class KomodoJsonMarshaller {
      *        the type of {@link RestBasicEntity} the JSON will be converted to (cannot be <code>null</code>)
      * @return the {@link RestBasicEntity} (never <code>null</code>)
      */
-    public static < T extends KRestEntity > T[] unmarshallArray( final String json,
+    public static < T extends Object > T[] unmarshallArray( final String json,
                                                                final Class< T[] > entityClass ) {
-        final T[] entity = BUILDER.fromJson( json, entityClass );
+    	if (useJackson(entityClass.getComponentType())) {
+        	try {
+				return OBJECT_MAPPER.readValue(json, entityClass);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+        }
+    	
+    	final T[] entity = BUILDER.fromJson( json, entityClass );
         return entity;
     }
 

@@ -17,11 +17,6 @@
  */
 package org.komodo.rest.relational.request;
 
-import javax.ws.rs.core.MediaType;
-
-import org.komodo.rest.KRestEntity;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,7 +28,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  */
 @JsonSerialize
 @JsonInclude(value=Include.NON_NULL)
-public class KomodoQueryAttribute implements KRestEntity {
+public class KomodoQueryAttribute {
 
     /**
      * Label for the query
@@ -72,18 +67,6 @@ public class KomodoQueryAttribute implements KRestEntity {
      */
     public KomodoQueryAttribute() {
         // do nothing
-    }
-
-    @Override
-    @JsonIgnore
-    public Object getXml() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    @JsonIgnore
-    public boolean supports(MediaType mediaType) {
-        return MediaType.APPLICATION_JSON_TYPE.equals(mediaType);
     }
 
     /**
