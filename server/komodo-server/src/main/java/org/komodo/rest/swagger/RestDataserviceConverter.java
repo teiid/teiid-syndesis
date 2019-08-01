@@ -18,7 +18,6 @@
 package org.komodo.rest.swagger;
 
 import org.komodo.openshift.KomodoType;
-import org.komodo.rest.RestProperty;
 import org.komodo.rest.relational.dataservice.RestDataservice;
 
 import io.swagger.converter.ModelConverterContext;
@@ -42,7 +41,5 @@ public class RestDataserviceConverter extends RestEntityConverter<RestDataservic
     @Override
     protected void addProperties(ModelImpl model, ModelConverterContext context) throws Exception {
         model.property(RestDataservice.DESCRIPTION_LABEL, property(String.class));
-
-        model.property(PROPERTIES, context.resolveProperty(RestProperty.class, null));
     }
 }

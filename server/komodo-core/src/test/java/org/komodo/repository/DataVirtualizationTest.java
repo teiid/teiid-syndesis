@@ -32,6 +32,8 @@ public class DataVirtualizationTest {
      
         DataVirtualization found = dataVirtualizationRepository.findByName(dv.getName());
         
+        assertNotNull(dataVirtualizationRepository.findByNameIgnoreCase(dv.getName().toUpperCase()));
+        
         assertNotNull(found.getId());
      
         assertEquals(dv.getName(), found.getName());

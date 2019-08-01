@@ -21,7 +21,31 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+@JsonSerialize
+@JsonInclude(Include.NON_NULL)
 public class BuildStatus {
+	
+    public static final String VDB_NAME_LABEL = "vdb_name";
+
+    public static final String BUILD_NAME_LABEL = "build_name";
+
+    public static final String DEPLOYMENT_NAME_LABEL = "deployment_name";
+
+    public static final String NAMESPACE_LABEL = "namespace";
+
+    public static final String STATUS_LABEL = "build_status";
+
+    public static final String STATUS_MSG_LABEL = "build_status_message";
+
+    public static final String LAST_UPDATED_LABEL = "last_updated";
+
+    public static final String ROUTES_LABEL = "routes";
 
     public enum Status {
         NOTFOUND,
@@ -37,9 +61,11 @@ public class BuildStatus {
         DELETE_DONE
     }
 
+    @JsonSerialize
+    @JsonInclude(Include.NON_NULL)
     public static class RouteStatus {
         private final String name;
-        private final ProtocolType kind;
+        private final ProtocolType protocol;
         private String host;
         private String path;
         private String target;
@@ -48,15 +74,15 @@ public class BuildStatus {
 
         public RouteStatus(String name, ProtocolType kind) {
             this.name = name;
-            this.kind = kind;
+            this.protocol = kind;
         }
 
         public String getName() {
             return name;
         }
 
-        public ProtocolType getKind() {
-            return kind;
+        public ProtocolType getProtocol() {
+            return protocol;
         }
 
         public String getHost() {
@@ -100,17 +126,25 @@ public class BuildStatus {
         }
     }
 
+    @JsonProperty(STATUS_LABEL)
     private volatile Status status = Status.NOTFOUND;
+    @JsonIgnore
     private volatile PublishConfiguration publishConfiguration;
-
+    @JsonProperty(BUILD_NAME_LABEL)
     private volatile String buildName;
+    @JsonProperty(DEPLOYMENT_NAME_LABEL)
     private volatile String deploymentName;
+    @JsonProperty(VDB_NAME_LABEL)
     private final String vdbName;
+    @JsonProperty(NAMESPACE_LABEL)
     private volatile String namespace;
+    @JsonIgnore
     private volatile String publishPodName;
+    @JsonProperty(LAST_UPDATED_LABEL)
     private volatile long lastUpdated = 0L;
+    @JsonProperty(STATUS_MSG_LABEL)
     private volatile String statusMessage;
-
+    @JsonProperty(ROUTES_LABEL)
 	private List<RouteStatus> routes = null;
 
     public BuildStatus(String vdbName) {

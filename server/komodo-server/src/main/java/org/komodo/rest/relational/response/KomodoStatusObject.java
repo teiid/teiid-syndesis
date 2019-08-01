@@ -19,15 +19,18 @@ package org.komodo.rest.relational.response;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import javax.ws.rs.core.MediaType;
-import org.komodo.rest.KRestEntity;
+
 import org.komodo.utils.ArgCheck;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 
 /**
  * Object to be serialised by GSON that provides key/message pairs
  */
-public class KomodoStatusObject implements KRestEntity {
+@JsonSerialize
+public class KomodoStatusObject {
 
     /**
      * Label for the title
@@ -39,8 +42,10 @@ public class KomodoStatusObject implements KRestEntity {
      */
     public static final String INFO_LABEL = "Information"; //$NON-NLS-1$
 
+    @JsonProperty(TITLE_LABEL)
     private String title;
 
+    @JsonProperty(INFO_LABEL)
     private Map<String, String> attributes = new LinkedHashMap<>();
 
     /**
@@ -57,16 +62,6 @@ public class KomodoStatusObject implements KRestEntity {
     public KomodoStatusObject(String title) {
         ArgCheck.isNotNull(title);
         this.title = title;
-    }
-
-    @Override
-    public boolean supports(MediaType mediaType) {
-        return MediaType.APPLICATION_JSON_TYPE.equals(mediaType);
-    }
-
-    @Override
-    public Object getXml() {
-        throw new UnsupportedOperationException();
     }
 
     /**

@@ -17,16 +17,13 @@
  */
 package org.komodo.rest.relational.response.vieweditorstate;
 
-import javax.ws.rs.core.MediaType;
-
-import org.komodo.rest.KRestEntity;
 import org.komodo.utils.ArgCheck;
 
 
 /**
  * Object to be serialised by GSON that provides view definition status
  */
-public class RestViewDefinitionStatus implements KRestEntity {
+public class RestViewDefinitionStatus {
 
     /**
      * Label for the title
@@ -56,16 +53,6 @@ public class RestViewDefinitionStatus implements KRestEntity {
     public RestViewDefinitionStatus(String status) {
         ArgCheck.isNotNull(status);
         this.status = status;
-    }
-
-    @Override
-    public boolean supports(MediaType mediaType) {
-        return MediaType.APPLICATION_JSON_TYPE.equals(mediaType);
-    }
-
-    @Override
-    public Object getXml() {
-        throw new UnsupportedOperationException();
     }
 
     /**

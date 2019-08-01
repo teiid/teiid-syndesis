@@ -47,7 +47,6 @@ import org.apache.http.util.EntityUtils;
 import org.junit.ClassRule;
 import org.junit.rules.ExternalResource;
 import org.komodo.StringConstants;
-import org.komodo.rest.KRestEntity;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 
@@ -117,13 +116,13 @@ public class AbstractServiceTest implements StringConstants, V1Constants {
         request.setEntity(requestEntity);
     }
 
-    protected void addBody(HttpEntityEnclosingRequestBase request, KRestEntity bodyObject) throws UnsupportedEncodingException {
+    protected void addBody(HttpEntityEnclosingRequestBase request, Object bodyObject) throws UnsupportedEncodingException {
         String body = KomodoJsonMarshaller.marshall(bodyObject);
         HttpEntity requestEntity = new StringEntity(body, ContentType.APPLICATION_JSON);
         request.setEntity(requestEntity);
     }
 
-    protected void addBody(HttpEntityEnclosingRequestBase request, KRestEntity[] bodyObject) throws UnsupportedEncodingException {
+    protected void addBody(HttpEntityEnclosingRequestBase request, Object[] bodyObject) throws UnsupportedEncodingException {
         String body = KomodoJsonMarshaller.marshallArray(bodyObject, false);
         HttpEntity requestEntity = new StringEntity(body, ContentType.APPLICATION_JSON);
         request.setEntity(requestEntity);

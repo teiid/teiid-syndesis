@@ -17,11 +17,6 @@
  */
 package org.komodo.rest.relational.request;
 
-import javax.ws.rs.core.MediaType;
-
-import org.komodo.rest.KRestEntity;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -30,7 +25,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 @JsonSerialize
 @JsonInclude(value=Include.NON_NULL)
-public class PublishRequestPayload implements KRestEntity {
+public class PublishRequestPayload {
 
     @JsonProperty
     private String name;
@@ -46,18 +41,6 @@ public class PublishRequestPayload implements KRestEntity {
 
     @JsonProperty("enable-odata")
     private Boolean enableOdata = true;
-
-    @Override
-    @JsonIgnore
-    public boolean supports(MediaType mediaType) {
-        return MediaType.APPLICATION_JSON_TYPE.equals(mediaType);
-    }
-
-    @Override
-    @JsonIgnore
-    public Object getXml() {
-        throw new UnsupportedOperationException();
-    }
 
     public String getName() {
         return name;

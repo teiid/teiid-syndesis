@@ -17,13 +17,15 @@
  */
 package org.komodo.openshift;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public enum ProtocolType {
-    ODATA,
-    SODATA,
-    JDBC,
-    PG,
-    JOLOKIA,
-    PROMENTHEUS;
+    @JsonProperty("odata") ODATA,
+    @JsonProperty("sodata") SODATA,
+    @JsonProperty("jdbc") JDBC,
+    @JsonProperty("pg") PG,
+    @JsonProperty("jolokia") JOLOKIA,
+    @JsonProperty("prometheus") PROMETHEUS;
 
     public String id() {
         return this.name().toLowerCase();

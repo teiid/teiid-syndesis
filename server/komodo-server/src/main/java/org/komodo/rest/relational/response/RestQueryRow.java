@@ -22,12 +22,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.ws.rs.core.MediaType;
 
 import org.komodo.metadata.query.QSRow;
-import org.komodo.rest.KRestEntity;
+import org.komodo.rest.KomodoRestV1Application.V1Constants;
 
-public class RestQueryRow implements KRestEntity {
+public class RestQueryRow implements V1Constants {
 
     /**
      * Label for row
@@ -72,16 +71,6 @@ public class RestQueryRow implements KRestEntity {
                 this.values.add(valueStr);
             }
         }
-    }
-
-    @Override
-    public Object getXml() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean supports(MediaType mediaType) {
-        return MediaType.APPLICATION_JSON_TYPE.equals(mediaType);
     }
 
     public String[] getValues() {
