@@ -76,11 +76,9 @@ public class ViewEditorStateSerializerTest extends AbstractSerializerTest {
     private String createViewEditorState() {
         String state = EMPTY_STRING +
             OPEN_BRACE + NEW_LINE +
-                TAB + q(RestViewEditorState.BASE_URI) + colon() + q(MY_BASE_URI) + pnl(COMMA) +
                 TAB + q(RestViewEditorState.ID_LABEL) + colon() + q(viewName) + pnl(COMMA) +
                 // viewDefinition child 
                 TAB + q(RestViewEditorState.VIEW_DEFINITION_LABEL) + colon() + pnl(OPEN_BRACE ) + 
-                	tab(2) + q(RestViewEditorState.BASE_URI) + colon() + q(MY_BASE_URI) + pnl(COMMA) +
                 	tab(2) + q(RestViewEditorState.ID_VIEW_NAME) + colon() + q(viewDefinitionName) + pnl(COMMA) +
                 	tab(2) + q(RestViewEditorState.DESCRIPTION) + colon() + q(description) + pnl(COMMA) +
                 	tab(2) + q(RestViewEditorState.IS_COMPLETE) + colon() + isComplete + pnl(COMMA) +

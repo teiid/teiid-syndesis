@@ -45,11 +45,6 @@ public interface JsonConstants extends StringConstants {
     String ID = KENGINE_PREFIX + "id"; //$NON-NLS-1$
 
     /**
-     * id property
-     */
-    String BASE_URI = KENGINE_PREFIX + "baseUri"; //$NON-NLS-1$
-
-    /**
      * type property
      */
     String TYPE = KENGINE_PREFIX + "type"; //$NON-NLS-1$
@@ -63,11 +58,6 @@ public interface JsonConstants extends StringConstants {
      * has-children property
      */
     String HAS_CHILDREN = KENGINE_PREFIX + "hasChildren"; //$NON-NLS-1$
-
-    /**
-     * links property
-     */
-    String LINKS = KENGINE_PREFIX + "_links"; //$NON-NLS-1$
 
     /**
      * default property

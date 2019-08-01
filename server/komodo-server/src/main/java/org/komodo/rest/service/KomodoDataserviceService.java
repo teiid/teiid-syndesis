@@ -210,7 +210,7 @@ public final class KomodoDataserviceService extends KomodoService
     }
 
 	private RestDataservice createRestDataservice(final UriInfo uriInfo, KomodoProperties properties, final DataVirtualization dataService) throws KException {
-		RestDataservice entity = new RestDataservice(uriInfo.getBaseUri(), dataService, false, dataService.getServiceVdbName());
+		RestDataservice entity = new RestDataservice(dataService, false, dataService.getServiceVdbName());
 		entity.setServiceViewModel(SERVICE_VDB_VIEW_MODEL);
         entity.setViewDefinitionNames(RestDataservice.getViewDefnNames(getWorkspaceManager(), dataService.getServiceVdbName()));
 		// Set published status of dataservice

@@ -19,18 +19,20 @@ package org.komodo.rest.relational.json;
 
 import static org.komodo.rest.Messages.Error.INCOMPLETE_JSON;
 import static org.komodo.rest.relational.json.KomodoJsonMarshaller.BUILDER;
+
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Map;
+
 import org.komodo.rest.AbstractKEntity;
 import org.komodo.rest.Messages;
 import org.komodo.rest.RestBasicEntity;
-import org.komodo.rest.RestLink;
 import org.komodo.rest.RestProperty;
 import org.komodo.rest.json.JsonConstants;
+
 import com.google.gson.TypeAdapter;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
@@ -101,8 +103,6 @@ public abstract class AbstractEntitySerializer< T extends AbstractKEntity > exte
 
             if (PROPERTIES.equals(name))
                 readProperties(in, entity);
-            else if (LINKS.equals(name))
-                readLinks(in, entity);
             else {
                 JsonToken token = in.peek();
                 switch (token) {
@@ -175,14 +175,6 @@ public abstract class AbstractEntitySerializer< T extends AbstractKEntity > exte
             value.setProperties( Arrays.asList(props) );
     }
 
-    protected void readLinks( final JsonReader in,
-                              final T value ) {
-
-        final RestLink[] links = BUILDER.fromJson( in, RestLink[].class );
-        value.setLinks( Arrays.asList(links) );
-    }
-
-
     /**
      * Sub-classes should implement this to write further data to the json
      *
@@ -211,8 +203,6 @@ public abstract class AbstractEntitySerializer< T extends AbstractKEntity > exte
 
         writeProperties(out, entity);
 
-        writeLinks(out, entity);
-
         endWrite(out);
     }
 
@@ -222,14 +212,6 @@ public abstract class AbstractEntitySerializer< T extends AbstractKEntity > exte
 
         out.name( JsonConstants.PROPERTIES );
         BUILDER.toJson( value.getProperties().toArray(new RestProperty[0]), RestProperty[].class, out );
-    }
-
-    protected void writeLinks( final JsonWriter out,
-                               final T value ) throws IOException {
-        if ( value.getLinks().size() != 0 ) {
-            out.name( JsonConstants.LINKS );
-            BUILDER.toJson( value.getLinks().toArray(new RestLink[0]), RestLink[].class, out );
-        }
     }
 
     protected void writeValue(final JsonWriter out, Object value) throws IOException {

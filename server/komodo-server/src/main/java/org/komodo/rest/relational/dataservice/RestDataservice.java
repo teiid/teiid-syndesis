@@ -17,10 +17,8 @@
  */
 package org.komodo.rest.relational.dataservice;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import org.komodo.KException;
 import org.komodo.WorkspaceManager;
@@ -29,9 +27,6 @@ import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.openshift.BuildStatus;
 import org.komodo.openshift.KomodoType;
 import org.komodo.rest.RestBasicEntity;
-import org.komodo.rest.RestLink;
-import org.komodo.rest.RestLink.LinkType;
-import org.komodo.rest.relational.KomodoRestUriBuilder.SettingNames;
 
 /**
  * A Dataservice that can be used by GSON to build a JSON document representation.
@@ -98,32 +93,21 @@ public final class RestDataservice extends RestBasicEntity {
 
     /**
      * Constructor for use when serializing.
-     * @param baseUri the base uri of the vdb
      * @param dataService the dataService
      * @param exportXml whether xml should be exported
      * @throws KException if error occurs
      */
-    public RestDataservice(URI baseUri, DataVirtualization dataService, boolean exportXml, String vdbName) throws KException {
-        super(baseUri);
-        
+    public RestDataservice(DataVirtualization dataService, boolean exportXml, String vdbName) throws KException {
         setId(dataService.getName());
         setkType(KomodoType.DATASERVICE);
 
         setDescription(dataService.getDescription());
-
-        Properties settings = getUriBuilder().createSettings(SettingNames.DATA_SERVICE_NAME, getId());
-        URI parentUri = getUriBuilder().dataserviceParentUri(dataService);
-        getUriBuilder().addSetting(settings, SettingNames.DATA_SERVICE_PARENT_PATH, parentUri);
 
         setServiceVdbName(vdbName);
         setHasChildren(true);
 
         // Initialize the published state to NOTFOUND
         setPublishedState(BuildStatus.Status.NOTFOUND.name());
-
-        addLink(new RestLink(LinkType.SELF, getUriBuilder().dataserviceUri(LinkType.SELF, settings)));
-        addLink(new RestLink(LinkType.PARENT, getUriBuilder().dataserviceUri(LinkType.PARENT, settings)));
-        addLink(new RestLink(LinkType.VDBS, getUriBuilder().dataserviceUri(LinkType.VDBS, settings)));
     }
 
     /**

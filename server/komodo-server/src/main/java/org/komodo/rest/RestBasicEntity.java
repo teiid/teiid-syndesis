@@ -17,9 +17,6 @@
  */
 package org.komodo.rest;
 
-import java.net.URI;
-
-import org.komodo.KException;
 import org.komodo.openshift.KomodoType;
 import org.komodo.utils.ArgCheck;
 
@@ -82,14 +79,6 @@ public class RestBasicEntity extends AbstractKEntity {
     }
 
     /**
-     * @param baseUri the base uri of the REST request
-     * @throws KException if error occurs
-     */
-    public RestBasicEntity(URI baseUri) throws KException {
-        super(baseUri);
-    }
-
-    /**
      * @return the id
      */
     public String getId() {
@@ -137,6 +126,6 @@ public class RestBasicEntity extends AbstractKEntity {
     @SuppressWarnings( "nls" )
     @Override
     public String toString() {
-        return "RestBasicEntity [tuples=" + this.tuples + ", properties=" + this.properties + ", links=" + this.links + "]";
+        return "RestBasicEntity [tuples=" + this.tuples + ", properties=" + this.properties + "]";
     }
 }
