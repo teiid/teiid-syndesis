@@ -32,14 +32,13 @@ public final class DataserviceSerializerTest extends AbstractSerializerTest  {
 
     private static final String DESCRIPTION = "my description";
 
-    private static final String JSON = OPEN_BRACE + NEW_LINE +
-        "  \"keng__id\": \"" + DATASERVICE_NAME + "\"," + NEW_LINE +
-        "  \"keng__kType\": \"Dataservice\"," + NEW_LINE +
-        "  \"tko__description\": \"my description\"," + NEW_LINE +
-        "  \"serviceVdbName\": \"ServiceVdb\"," + NEW_LINE +
-        "  \"keng__hasChildren\": true," + NEW_LINE +
-        "  \"publishedState\": \"NOTFOUND\"" + NEW_LINE +
-        CLOSE_BRACE;
+    private static final String JSON = "{\n" + 
+    		"  \"serviceVdbName\" : \"ServiceVdb\",\n" + 
+    		"  \"publishedState\" : \"NOTFOUND\",\n" + 
+    		"  \"keng__id\" : \"dataservice1\",\n" + 
+    		"  \"tko__description\" : \"my description\",\n" + 
+    		"  \"serviceViewDefinitions\" : [ \"x\" ]\n" + 
+    		"}";
 
     private RestDataservice dataservice;
 
@@ -50,6 +49,7 @@ public final class DataserviceSerializerTest extends AbstractSerializerTest  {
 
         this.dataservice = new RestDataservice(theService, "ServiceVdb");
         this.dataservice.setDescription(DESCRIPTION);
+        this.dataservice.setViewDefinitionNames(new String[] {"x"});
     }
 
     @Test
@@ -62,14 +62,8 @@ public final class DataserviceSerializerTest extends AbstractSerializerTest  {
     @Test
     public void shouldImportJson() {
         final RestDataservice descriptor = KomodoJsonMarshaller.unmarshall( JSON, RestDataservice.class );
-        assertEquals(DATASERVICE_NAME, descriptor.getId());
+        assertEquals(DATASERVICE_NAME, descriptor.getName());
         assertEquals(DESCRIPTION, descriptor.getDescription());
-    }
-
-    @Test( expected = Exception.class )
-    public void shouldNotExportJsonWhenNameIsMissing() {
-        final RestDataservice descriptor = new RestDataservice();
-        KomodoJsonMarshaller.marshall( descriptor );
     }
 
     @Test( expected = Exception.class )

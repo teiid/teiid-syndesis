@@ -20,7 +20,6 @@ package org.komodo.rest.relational;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +34,6 @@ public final class RestDataserviceTest {
     private static final String DATASERVICE_NAME = "MyDataservice";
     private static final String DESCRIPTION = "my description";
     private static final String SERVICE_VDB_NAME = "serviceVdbName";
-    private static final String SERVICE_VDB_VERSION = "1";
     private static final String SERVICE_VIEW_MODEL = "serviceViewModel";
     private static final String SERVICE_VIEW1 = "serviceView1";
     private static final String SERVICE_VIEW2 = "serviceView2";
@@ -47,12 +45,9 @@ public final class RestDataserviceTest {
         final RestDataservice copy = new RestDataservice();
 
         copy.setName(dataservice.getName());
-        copy.setGeneratedId(dataservice.getGeneratedId());
+        copy.setId(dataservice.getId());
         copy.setDescription(dataservice.getDescription());
-        copy.setkType(dataservice.getkType());
-        copy.setHasChildren(dataservice.hasChildren());
         copy.setServiceVdbName(this.dataservice.getServiceVdbName());
-        copy.setServiceVdbVersion(this.dataservice.getServiceVdbVersion());
         copy.setServiceViewModel(this.dataservice.getServiceViewModel());
         copy.setViewDefinitionNames(this.dataservice.getViewDefinitionNames());
         copy.setPublishedState(this.dataservice.getPublishedState());
@@ -67,10 +62,9 @@ public final class RestDataserviceTest {
         Mockito.when(theDataservice.getServiceVdbName()).thenReturn("ServiceVdb");
 
         this.dataservice = new RestDataservice(theDataservice, "ServiceVdb");
-        this.dataservice.setId(DATASERVICE_NAME);
+        this.dataservice.setName(DATASERVICE_NAME);
         this.dataservice.setDescription(DESCRIPTION);
         this.dataservice.setServiceVdbName(SERVICE_VDB_NAME);
-        this.dataservice.setServiceVdbVersion(SERVICE_VDB_VERSION);
         this.dataservice.setServiceViewModel(SERVICE_VIEW_MODEL);
         this.dataservice.setPublishedState(DATASERVICE_PUBLISHED_STATE);
         String[] viewNames = new String[2];
@@ -93,13 +87,6 @@ public final class RestDataserviceTest {
     }
 
     @Test
-    public void shouldConstructEmptyDataservice() {
-        final RestDataservice empty = new RestDataservice();
-        assertNull(empty.getId());
-        assertNull(empty.getDescription());
-    }
-
-    @Test
     public void shouldHaveSameHashCode() {
         final RestDataservice thatDataservice = copy();
         assertEquals(this.dataservice.hashCode(), thatDataservice.hashCode());
@@ -108,43 +95,8 @@ public final class RestDataserviceTest {
     @Test
     public void shouldNotBeEqualWhenNameIsDifferent() {
         final RestDataservice thatDataservice = copy();
-        thatDataservice.setId(this.dataservice.getId() + "blah");
+        thatDataservice.setName(this.dataservice.getName() + "blah");
         assertNotEquals(this.dataservice, thatDataservice);
-    }
-
-    @Test
-    public void shouldSetName() {
-        final String newName = "blah";
-        this.dataservice.setId(newName);
-        assertEquals(this.dataservice.getId(), newName);
-    }
-
-    @Test
-    public void shouldSetDescription() {
-        final String newDescription = "blah";
-        this.dataservice.setDescription(newDescription);
-        assertEquals(this.dataservice.getDescription(), newDescription);
-    }
-
-    @Test
-    public void shouldSetServiceVdbName() {
-        final String newServiceVdb = "blah";
-        this.dataservice.setServiceVdbName(newServiceVdb);
-        assertEquals(this.dataservice.getServiceVdbName(), newServiceVdb);
-    }
-
-    @Test
-    public void shouldSetServiceVdbVersion() {
-        final String newServiceVdbVersion = "2";
-        this.dataservice.setServiceVdbVersion(newServiceVdbVersion);
-        assertEquals(this.dataservice.getServiceVdbVersion(), newServiceVdbVersion);
-    }
-
-    @Test
-    public void shouldSetServiceViewModel() {
-        final String newServiceViewModel = "blah";
-        this.dataservice.setServiceViewModel(newServiceViewModel);
-        assertEquals(this.dataservice.getServiceViewModel(), newServiceViewModel);
     }
 
     @Test

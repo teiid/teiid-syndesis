@@ -19,21 +19,10 @@ package org.komodo.rest.relational.response.vieweditorstate;
 
 import org.komodo.utils.ArgCheck;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-/**
- * Object to be serialised by GSON that provides view definition status
- */
+@JsonSerialize
 public class RestViewDefinitionStatus {
-
-    /**
-     * Label for the title
-     */
-    public static final String STATUS_LABEL = "status"; //$NON-NLS-1$
-
-    /**
-     * Label for the message
-     */
-    public static final String MESSAGE_LABEL = "message"; //$NON-NLS-1$
 
     private String status;
 

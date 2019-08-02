@@ -18,6 +18,7 @@
 package org.komodo.rest.relational.dataservice;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.komodo.KException;
@@ -25,72 +26,52 @@ import org.komodo.WorkspaceManager;
 import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.openshift.BuildStatus;
-import org.komodo.openshift.KomodoType;
-import org.komodo.rest.RestBasicEntity;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
  * A Dataservice that can be used by GSON to build a JSON document representation.
  */
-public final class RestDataservice extends RestBasicEntity {
+@JsonSerialize
+@JsonInclude(Include.NON_NULL)
+public final class RestDataservice {
 
     /**
      * Label used to describe description
      */
     public static final String DESCRIPTION_LABEL = "tko__description";
-
-    /**
-     * Label used to describe dataservice view modelName
-     */
-    public static final String DATASERVICE_VIEW_MODEL_LABEL = "serviceViewModel"; //$NON-NLS-1$
-
+    
     /**
      * Label used to describe dataservice viewNames
      */
     public static final String DATASERVICE_VIEW_DEFINITIONS_LABEL = "serviceViewDefinitions"; //$NON-NLS-1$
-
-    /**
-     * Label used to describe dataservice vdbName
-     */
-    public static final String DATASERVICE_VDB_NAME_LABEL = "serviceVdbName"; //$NON-NLS-1$
-
-    /**
-     * Label used to describe dataservice vdbVersion
-     */
-    public static final String DATASERVICE_VDB_VERSION_LABEL = "serviceVdbVersion"; //$NON-NLS-1$
-
-    /**
-     * Label used to describe dataservice connection total
-     */
-    public static final String DATASERVICE_CONNECTION_TOTAL_LABEL = "connections"; //$NON-NLS-1$
-
-    /**
-     * Label used to describe dataservice published state
-     */
-    public static final String DATASERVICE_PUBLISHED_STATE_LABEL = "publishedState"; //$NON-NLS-1$
-    
-    /**
-     * Label used to describe dataservice pod namespace
-     */
-    public static final String DATASERVICE_POD_NAMESPACE = "podNamespace"; //$NON-NLS-1$
-
-    /**
-     * Label used to describe dataservice publish pod name
-     */
-    public static final String DATASERVICE_PUBLISH_POD_NAME = "publishPodName"; //$NON-NLS-1$
-
-    /**
-     * Label used to describe dataservice odata host name
-     */
-    public static final String DATASERVICE_ODATA_HOST_NAME = "odataHostName"; //$NON-NLS-1$
     
     public static final String DATASERVICE_ID_LABEL = "id"; //$NON-NLS-1$
+    
+    public static final String DATASERVICE_NAME_LABEL = "keng__id"; //$NON-NLS-1$
 
+    private String id;
+    @JsonProperty(DATASERVICE_NAME_LABEL)
+    private String name;
+    @JsonProperty(DESCRIPTION_LABEL)
+    private String description;
+    private String serviceViewModel;
+    @JsonProperty(DATASERVICE_VIEW_DEFINITIONS_LABEL)
+    private String[] viewDefinitionNames;
+    private String serviceVdbName;
+    private String publishedState;
+    private String podNamespace;
+    private String publishPodName;
+    private String odataHostName;
+    
     /**
      * Constructor for use when deserializing
      */
     public RestDataservice() {
         super();
-        setkType(KomodoType.DATASERVICE);
     }
 
     /**
@@ -100,14 +81,12 @@ public final class RestDataservice extends RestBasicEntity {
      */
     public RestDataservice(DataVirtualization dataService, String vdbName) throws KException {
         setName(dataService.getName());
-        setkType(KomodoType.DATASERVICE);
         
-        setGeneratedId(dataService.getId());
+        setId(dataService.getId());
 
         setDescription(dataService.getDescription());
 
         setServiceVdbName(vdbName);
-        setHasChildren(true);
 
         // Initialize the published state to NOTFOUND
         setPublishedState(BuildStatus.Status.NOTFOUND.name());
@@ -117,134 +96,112 @@ public final class RestDataservice extends RestBasicEntity {
      * @return the VDB description (can be empty)
      */
     public String getDescription() {
-        Object description = tuples.get(DESCRIPTION_LABEL);
-        return description != null ? description.toString() : null;
+    	return description;
     }
 
     /**
      * @param description the description to set
      */
     public void setDescription(String description) {
-        tuples.put(DESCRIPTION_LABEL, description);
+    	this.description = description;
     }
 
     /**
      * @return the service view model name (can be empty)
      */
     public String getServiceViewModel() {
-        Object modelName = tuples.get(DATASERVICE_VIEW_MODEL_LABEL);
-        return modelName != null ? modelName.toString() : null;
+    	return this.serviceViewModel;
     }
 
     /**
      * @param modelName the view model name to set
      */
     public void setServiceViewModel(String modelName) {
-        tuples.put(DATASERVICE_VIEW_MODEL_LABEL, modelName);
+    	this.serviceViewModel = modelName;
     }
 
     /**
      * @return the service ViewDefinition names (can be empty)
      */
     public String[] getViewDefinitionNames() {
-        return (String[])tuples.get(DATASERVICE_VIEW_DEFINITIONS_LABEL);
+        return this.viewDefinitionNames;
     }
 
     /**
      * @param viewDefinitionNames the service view names to set
      */
     public void setViewDefinitionNames(final String[] viewDefinitionNames) {
-        tuples.put(DATASERVICE_VIEW_DEFINITIONS_LABEL, viewDefinitionNames);
+        this.viewDefinitionNames = viewDefinitionNames;
     }
 
     /**
      * @return the service vdb name (can be empty)
      */
     public String getServiceVdbName() {
-        Object serviceVdbName = tuples.get(DATASERVICE_VDB_NAME_LABEL);
-        return serviceVdbName != null ? serviceVdbName.toString() : null;
+    	return this.serviceVdbName;
     }
 
     /**
      * @param serviceVdbName the service vdb name to set
      */
     public void setServiceVdbName(String serviceVdbName) {
-        tuples.put(DATASERVICE_VDB_NAME_LABEL, serviceVdbName);
-    }
-
-    /**
-     * @return the service vdb version (can be empty)
-     */
-    public String getServiceVdbVersion() {
-        Object version = tuples.get(DATASERVICE_VDB_VERSION_LABEL);
-        return version != null ? version.toString() : "1"; //$NON-NLS-1$
-    }
-
-    /**
-     * @param version the version to set
-     */
-    public void setServiceVdbVersion( final String version) {
-        tuples.put(DATASERVICE_VDB_VERSION_LABEL, version);
+        this.serviceVdbName = serviceVdbName;
     }
 
     /**
      * @return the service published state (never empty)
      */
     public String getPublishedState() {
-        Object publishedState = tuples.get(DATASERVICE_PUBLISHED_STATE_LABEL);
-        return publishedState != null ? publishedState.toString() : null;
+    	return this.publishedState;
     }
     
     /**
      * @param publishedState the published state
      */
     public void setPublishedState(String publishedState) {
-        tuples.put(DATASERVICE_PUBLISHED_STATE_LABEL, publishedState);
+    	this.publishedState = publishedState;
     }
 
     /**
      * @return the pod namespace (can be empty)
      */
     public String getPodNamespace() {
-        Object podNamespace = tuples.get(DATASERVICE_POD_NAMESPACE);
-        return podNamespace != null ? podNamespace.toString() : null;
+    	return this.podNamespace;
     }
 
     /**
      * @param podNamesapce the service pod namespace to set
      */
     public void setPodNamespace(String podNamespace) {
-        tuples.put(DATASERVICE_POD_NAMESPACE, podNamespace);
+    	this.podNamespace = podNamespace;
     }
 
     /**
      * @return the service pod name (can be empty)
      */
     public String getPublishPodName() {
-        Object publishPodName = tuples.get(DATASERVICE_PUBLISH_POD_NAME);
-        return publishPodName != null ? publishPodName.toString() : null;
+    	return this.publishPodName;
     }
 
     /**
      * @param publishPodName the service pod name to set
      */
     public void setPublishPodName(String publishPodName) {
-        tuples.put(DATASERVICE_PUBLISH_POD_NAME, publishPodName);
+        this.publishPodName = publishPodName;
     }
     
     /**
      * @return the service pod name (can be empty)
      */
     public String getOdataHostName() {
-        Object odataHostName = tuples.get(DATASERVICE_ODATA_HOST_NAME);
-        return odataHostName != null ? odataHostName.toString() : null;
+    	return this.odataHostName;
     }
 
     /**
      * @param publishPodName the service pod name to set
      */
     public void setOdataHostName(String odataHostName) {
-        tuples.put(DATASERVICE_ODATA_HOST_NAME, odataHostName);
+    	this.odataHostName = odataHostName;
     }
     
     /**
@@ -264,20 +221,95 @@ public final class RestDataservice extends RestBasicEntity {
     }
     
     public String getName() {
-    	return this.getId();
+    	return this.name;
     }
     
     public void setName(String name) {
-    	this.setId(name);
+    	this.name = name;
     }
     
-    public String getGeneratedId() {
-    	Object value = tuples.get(DATASERVICE_ID_LABEL);
-    	return value == null ? null : value.toString();
+    public String getId() {
+    	return this.id;
     }
     
-    public void setGeneratedId(String id) {
-    	this.tuples.put(DATASERVICE_ID_LABEL, id);
+    public void setId(String id) {
+    	this.id = id;
     }
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((description == null) ? 0 : description.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((odataHostName == null) ? 0 : odataHostName.hashCode());
+		result = prime * result + ((podNamespace == null) ? 0 : podNamespace.hashCode());
+		result = prime * result + ((publishPodName == null) ? 0 : publishPodName.hashCode());
+		result = prime * result + ((publishedState == null) ? 0 : publishedState.hashCode());
+		result = prime * result + ((serviceVdbName == null) ? 0 : serviceVdbName.hashCode());
+		result = prime * result + ((serviceViewModel == null) ? 0 : serviceViewModel.hashCode());
+		result = prime * result + Arrays.hashCode(viewDefinitionNames);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		RestDataservice other = (RestDataservice) obj;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (odataHostName == null) {
+			if (other.odataHostName != null)
+				return false;
+		} else if (!odataHostName.equals(other.odataHostName))
+			return false;
+		if (podNamespace == null) {
+			if (other.podNamespace != null)
+				return false;
+		} else if (!podNamespace.equals(other.podNamespace))
+			return false;
+		if (publishPodName == null) {
+			if (other.publishPodName != null)
+				return false;
+		} else if (!publishPodName.equals(other.publishPodName))
+			return false;
+		if (publishedState == null) {
+			if (other.publishedState != null)
+				return false;
+		} else if (!publishedState.equals(other.publishedState))
+			return false;
+		if (serviceVdbName == null) {
+			if (other.serviceVdbName != null)
+				return false;
+		} else if (!serviceVdbName.equals(other.serviceVdbName))
+			return false;
+		if (serviceViewModel == null) {
+			if (other.serviceViewModel != null)
+				return false;
+		} else if (!serviceViewModel.equals(other.serviceViewModel))
+			return false;
+		if (!Arrays.equals(viewDefinitionNames, other.viewDefinitionNames))
+			return false;
+		return true;
+	}
     
 }

@@ -167,12 +167,6 @@ public final class KomodoUtilService extends KomodoService {
                   response = RestViewEditorState[].class)
     @ApiImplicitParams({
         @ApiImplicitParam(
-                name = QueryParamKeys.PATTERN,
-                value = "A regex expression used when searching. If not present, all objects are returned.",
-                required = false,
-                dataType = "string",
-                paramType = "query"),
-        @ApiImplicitParam(
                 name = QueryParamKeys.VIRTUALIZATION,
                 value = "The name of the virtualization",
                 required = true,
@@ -207,12 +201,11 @@ public final class KomodoUtilService extends KomodoService {
 
         try {
 
-            final String searchPattern = uriInfo.getQueryParameters().getFirst( QueryParamKeys.PATTERN );
-            if (!StringUtils.isBlank(searchPattern)) {
-            	return createErrorResponse(Status.NOT_IMPLEMENTED, mediaTypes, "pattern is not implemented, use ");
-            }
-            
             final String virtualization = uriInfo.getQueryParameters().getFirst( QueryParamKeys.VIRTUALIZATION );
+            
+            if (StringUtils.isBlank(virtualization)) {
+            	return createErrorResponse(Status.FORBIDDEN, mediaTypes, "VIRTUALIZATION name is required");
+            }
             
             // find view editor states
             final String txId = "getViewEditorStates"; //$NON-NLS-1$ //$NON-NLS-2$

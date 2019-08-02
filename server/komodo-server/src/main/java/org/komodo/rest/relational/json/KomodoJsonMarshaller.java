@@ -20,7 +20,6 @@ package org.komodo.rest.relational.json;
 import java.io.IOException;
 
 import org.komodo.rest.RestBasicEntity;
-import org.komodo.rest.relational.dataservice.RestDataservice;
 import org.komodo.rest.relational.response.RestQueryColumn;
 import org.komodo.rest.relational.response.RestQueryResult;
 import org.komodo.rest.relational.response.RestQueryRow;
@@ -55,8 +54,7 @@ public final class KomodoJsonMarshaller {
     public static final Gson PRETTY_BUILDER;
 
     static {
-        final GsonBuilder temp = new GsonBuilder().registerTypeAdapter(RestDataservice.class, new DataserviceSerializer())
-                                                  .registerTypeAdapter(RestSyndesisSourceStatus.class, new SyndesisSourceStatusSerializer())
+        final GsonBuilder temp = new GsonBuilder().registerTypeAdapter(RestSyndesisSourceStatus.class, new SyndesisSourceStatusSerializer())
                                                   .registerTypeAdapter(RestBasicEntity.class, new BasicEntitySerializer<RestBasicEntity>())
                                                   .registerTypeAdapter(RestQueryResult.class, new QueryResultSerializer())
                                                   .registerTypeAdapter(RestQueryColumn.class, new QueryColumnSerializer())

@@ -9,11 +9,9 @@ import org.komodo.rest.service.KomodoDataserviceService;
 import org.komodo.rest.service.KomodoMetadataService;
 import org.komodo.rest.service.KomodoUtilService;
 import org.komodo.rest.service.KomodoVdbService;
-import org.komodo.rest.swagger.RestDataserviceConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import io.swagger.converter.ModelConverters;
 import io.swagger.jaxrs.config.BeanConfig;
 import io.swagger.jaxrs.listing.ApiListingResource;
 import io.swagger.jaxrs.listing.SwaggerSerializers;
@@ -61,11 +59,5 @@ public class JerseyConfig extends ResourceConfig {
         config.setResourcePackage("org.komodo.rest.service");
         config.setPrettyPrint(true);
         config.setScan(true);
-
-        //
-        // Add converters for display of definitions
-        //
-        ModelConverters converters = ModelConverters.getInstance();
-        converters.addConverter(new RestDataserviceConverter());
     }
 }

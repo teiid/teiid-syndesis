@@ -17,7 +17,6 @@
  */
 package org.komodo.rest;
 
-import org.komodo.openshift.KomodoType;
 import org.komodo.utils.ArgCheck;
 
 /**
@@ -79,36 +78,6 @@ public class RestBasicEntity extends AbstractKEntity {
      */
     public void setId(String id) {
         tuples.put(ID, id);
-    }
-
-    /**
-     * @return the kType
-     */
-    public KomodoType getkType() {
-        Object ktype = tuples.get(KTYPE);
-        return ktype != null ? KomodoType.getKomodoType(ktype.toString()) : null;
-    }
-
-    /**
-     * @param kType the kType to set
-     */
-    public void setkType(KomodoType kType) {
-        tuples.put(KTYPE, kType);
-    }
-
-    /**
-     * @return the hasChildren
-     */
-    public boolean hasChildren() {
-        Object value = tuples.get(HAS_CHILDREN);
-        return value != null ? Boolean.parseBoolean(value.toString()) : false;
-    }
-
-    /**
-     * @param hasChildren the hasChildren to set
-     */
-    public void setHasChildren(boolean hasChildren) {
-        tuples.put(HAS_CHILDREN, hasChildren);
     }
 
     @SuppressWarnings( "nls" )
