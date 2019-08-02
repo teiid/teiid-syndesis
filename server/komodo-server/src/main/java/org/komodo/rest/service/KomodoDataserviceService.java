@@ -58,7 +58,6 @@ import org.komodo.rest.KomodoService;
 import org.komodo.rest.RestBasicEntity.ResourceNotFound;
 import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.dataservice.RestDataservice;
-import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
@@ -279,12 +278,7 @@ public final class KomodoDataserviceService extends KomodoService
             @ApiResponse(code = 403, message = "An error has occurred.") })
     public Response createDataservice(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
             @ApiParam(value = "Name of the data service", required = true) final @PathParam("dataserviceName") String dataserviceName,
-            @ApiParam(value = "" + "JSON of the properties of the new data service:<br>" + OPEN_PRE_TAG + OPEN_BRACE
-                    + BR + NBSP + "keng\\_\\_id: \"id of the data service\"" + COMMA + BR + NBSP + OPEN_PRE_CMT
-                    + "(identical to dataserviceName parameter)" + CLOSE_PRE_CMT + BR + BR + NBSP
-                    + "keng\\_\\_dataPath: \"path of dataservice\"" + COMMA + BR + NBSP
-                    + "tko__description: \"the description\"" + BR + CLOSE_BRACE
-                    + CLOSE_PRE_TAG, required = true) final String dataserviceJson)
+            @ApiParam(required = true) final RestDataservice restDataservice)
             throws KomodoRestException {
 
         SecurityPrincipal principal = checkSecurityContext(headers);
@@ -301,7 +295,6 @@ public final class KomodoDataserviceService extends KomodoService
                     RelationalMessages.Error.DATASERVICE_SERVICE_CREATE_MISSING_NAME);
         }
 
-        final RestDataservice restDataservice = KomodoJsonMarshaller.unmarshall(dataserviceJson, RestDataservice.class);
         final String jsonDataserviceName = restDataservice.getName();
         // Error if the name is missing from the supplied json body
         if (StringUtils.isBlank(jsonDataserviceName)) {
@@ -597,12 +590,7 @@ public final class KomodoDataserviceService extends KomodoService
             @ApiResponse(code = 403, message = "An error has occurred.") })
     public Response updateDataservice(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
             @ApiParam(value = "Name of the data service", required = true) final @PathParam("dataserviceName") String dataserviceName,
-            @ApiParam(value = "" + "JSON of the properties of the new data service:<br>" + OPEN_PRE_TAG + OPEN_BRACE
-                    + BR + NBSP + "keng\\_\\_id: \"id of the data service\"" + COMMA + BR + NBSP + OPEN_PRE_CMT
-                    + "(identical to dataserviceName parameter)" + CLOSE_PRE_CMT + BR + BR + NBSP
-                    + "keng\\_\\_dataPath: \"path of dataservice\"" + COMMA + BR + NBSP
-                    + "tko__description: \"the description\"" + BR + CLOSE_BRACE
-                    + CLOSE_PRE_TAG, required = true) final String dataserviceJson)
+            @ApiParam(required = true) final RestDataservice restDataservice)
             throws KomodoRestException {
 
         SecurityPrincipal principal = checkSecurityContext(headers);
@@ -619,7 +607,6 @@ public final class KomodoDataserviceService extends KomodoService
                     RelationalMessages.Error.DATASERVICE_SERVICE_UPDATE_MISSING_NAME);
         }
 
-        final RestDataservice restDataservice = KomodoJsonMarshaller.unmarshall(dataserviceJson, RestDataservice.class);
         final String jsonDataserviceName = restDataservice.getName();
         // Error if the name is missing from the supplied json body
         if (StringUtils.isBlank(jsonDataserviceName)) {
