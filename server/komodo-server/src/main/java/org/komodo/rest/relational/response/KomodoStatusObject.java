@@ -29,7 +29,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 /**
  * Object to be serialised by GSON that provides key/message pairs
  */
-@JsonSerialize
+@JsonSerialize(as = KomodoStatusObject.class)
 public class KomodoStatusObject {
 
     /**

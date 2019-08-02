@@ -21,7 +21,7 @@ import org.komodo.utils.ArgCheck;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-@JsonSerialize
+@JsonSerialize(as = RestViewDefinitionStatus.class)
 public class RestViewDefinitionStatus {
 
     private String status;

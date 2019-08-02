@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 /**
  * Used to build a JSON representation for a schema node
  */
-@JsonSerialize
+@JsonSerialize(as = RestSchemaNode.class)
 @JsonInclude(Include.NON_NULL)
 public class RestSchemaNode {
 

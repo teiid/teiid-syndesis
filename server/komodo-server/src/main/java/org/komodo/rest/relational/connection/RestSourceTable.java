@@ -30,7 +30,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 /**
  * Represents the configuration for a source table 
  */
-@JsonSerialize
+@JsonSerialize(as = RestSourceTable.class)
 @JsonInclude(Include.NON_NULL)
 public class RestSourceTable {
 

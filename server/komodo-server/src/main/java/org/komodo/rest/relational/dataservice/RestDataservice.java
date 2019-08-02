@@ -35,7 +35,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 /**
  * A Dataservice that can be used by GSON to build a JSON document representation.
  */
-@JsonSerialize
+@JsonSerialize(as = RestDataservice.class)
 @JsonInclude(Include.NON_NULL)
 public final class RestDataservice {
 

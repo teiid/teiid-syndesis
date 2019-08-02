@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 /**
  * Represents the configuration for the schema table's column info 
  */
-@JsonSerialize
+@JsonSerialize(as = RestSourceColumn.class)
 @JsonInclude(Include.NON_NULL)
 public class RestSourceColumn {
 	

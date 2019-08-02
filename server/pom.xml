@@ -122,7 +122,7 @@
     <version.apache.commons.compress>1.12</version.apache.commons.compress>
     <version.h2>1.4.196</version.h2>
     <version.org.apache.commons>3.8.1</version.org.apache.commons>
-    <version.io.swagger>1.5.8</version.io.swagger>
+    <version.io.swagger>1.5.22</version.io.swagger>
 	<version.io.opentracing.contrib>1.0.1</version.io.opentracing.contrib>
 	
     <version.commons.io>2.5</version.commons.io>
@@ -161,15 +161,14 @@
     <version.gson>2.2.4</version.gson>
     <version.apache.commons.codec>1.10</version.apache.commons.codec>
     <version.guava>20.0</version.guava>
-    <version.swagger>1.5.16</version.swagger>
     <version.jaxrs>2.13</version.jaxrs>
     <version.xsom>20130531</version.xsom>
     <version.relaxngDatatype>20020414</version.relaxngDatatype>
     <version.resteasy>3.0.19.Final</version.resteasy>
     <version.jboss.logging>3.3.0.Final</version.jboss.logging>
     <version.org.mockito>2.21.0</version.org.mockito>
-    <version.com.fasterxml.jackson>2.8.9</version.com.fasterxml.jackson>
-    <version.com.fasterxml.jackson.databind>2.8.11.3</version.com.fasterxml.jackson.databind>
+    <version.com.fasterxml.jackson>2.9.8</version.com.fasterxml.jackson>
+    <version.com.fasterxml.jackson.databind>2.9.8</version.com.fasterxml.jackson.databind>
     <org.apache.httpcomponents.version>4.5.3</org.apache.httpcomponents.version>
     <version.org.yaml>1.17</version.org.yaml>
     <version.io.fabric8.openshift-client>3.0.3</version.io.fabric8.openshift-client>
@@ -418,22 +417,22 @@
       <dependency>
         <groupId>io.swagger</groupId>
         <artifactId>swagger-annotations</artifactId>
-        <version>${version.swagger}</version>
+        <version>${version.io.swagger}</version>
       </dependency>
       <dependency>
         <groupId>io.swagger</groupId>
         <artifactId>swagger-core</artifactId>
-        <version>${version.swagger}</version>
+        <version>${version.io.swagger}</version>
       </dependency>
       <dependency>
         <groupId>io.swagger</groupId>
         <artifactId>swagger-models</artifactId>
-        <version>${version.swagger}</version>
+        <version>${version.io.swagger}</version>
       </dependency>
       <dependency>
         <groupId>io.swagger</groupId>
         <artifactId>swagger-jaxrs</artifactId>
-        <version>${version.swagger}</version>
+        <version>${version.io.swagger}</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jgit</groupId>
