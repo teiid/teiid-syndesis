@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
-import org.komodo.openshift.KomodoType;
-
 /**
  * Localized messages for the {@code server rest} project.
  */

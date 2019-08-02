@@ -167,12 +167,6 @@ public final class KomodoUtilService extends KomodoService {
                   response = RestViewEditorState[].class)
     @ApiImplicitParams({
         @ApiImplicitParam(
-                name = QueryParamKeys.PATTERN,
-                value = "A regex expression used when searching. If not present, all objects are returned.",
-                required = false,
-                dataType = "string",
-                paramType = "query"),
-        @ApiImplicitParam(
                 name = QueryParamKeys.VIRTUALIZATION,
                 value = "The name of the virtualization",
                 required = true,
@@ -207,12 +201,11 @@ public final class KomodoUtilService extends KomodoService {
 
         try {
 
-            final String searchPattern = uriInfo.getQueryParameters().getFirst( QueryParamKeys.PATTERN );
-            if (!StringUtils.isBlank(searchPattern)) {
-            	return createErrorResponse(Status.NOT_IMPLEMENTED, mediaTypes, "pattern is not implemented, use ");
-            }
-            
             final String virtualization = uriInfo.getQueryParameters().getFirst( QueryParamKeys.VIRTUALIZATION );
+            
+            if (StringUtils.isBlank(virtualization)) {
+            	return createErrorResponse(Status.FORBIDDEN, mediaTypes, "VIRTUALIZATION name is required");
+            }
             
             // find view editor states
             final String txId = "getViewEditorStates"; //$NON-NLS-1$ //$NON-NLS-2$
@@ -439,17 +432,8 @@ public final class KomodoUtilService extends KomodoService {
     })
     public Response validateViewDefinition(final @Context HttpHeaders headers,
                                                final @Context UriInfo uriInfo,
-                                               @ApiParam(
-                                                         value = "" +
-                                                                 "JSON of the view definition:<br>" +
-                                                                 OPEN_PRE_TAG + OPEN_BRACE + BR +
-                                                                 NBSP + RestViewEditorState.ID_VIEW_NAME + ": \"Name of the view definition\"" + BR +
-                                                                 NBSP + RestViewEditorState.DDL + ": { ... \"View definition DDL\" ... }" + BR +
-                                                                 CLOSE_BRACE +
-                                                                 CLOSE_PRE_TAG,
-                                                         required = true
-                                               )
-                                               final String viewDefinitionConfig) throws KomodoRestException {
+                                               @ApiParam(required = true)
+                                               final RestViewDefinition restViewDefinition) throws KomodoRestException {
         SecurityPrincipal principal = checkSecurityContext(headers);
         if (principal.hasErrorResponse())
             return principal.getErrorResponse();
@@ -458,7 +442,6 @@ public final class KomodoUtilService extends KomodoService {
         if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
             return notAcceptableMediaTypesBuilder().build();
 
-        RestViewDefinition restViewDefinition = KomodoJsonMarshaller.unmarshall(viewDefinitionConfig, RestViewDefinition.class);
         
     	LOGGER.info("Validating view : " + restViewDefinition.getViewName());
     	

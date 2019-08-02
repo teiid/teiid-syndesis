@@ -50,16 +50,6 @@ public interface JsonConstants extends StringConstants {
     String TYPE = KENGINE_PREFIX + "type"; //$NON-NLS-1$
 
     /**
-     * kengine type property
-     */
-    String KTYPE = KENGINE_PREFIX + "kType"; //$NON-NLS-1$
-
-    /**
-     * has-children property
-     */
-    String HAS_CHILDREN = KENGINE_PREFIX + "hasChildren"; //$NON-NLS-1$
-
-    /**
      * default property
      */
     String DEFAULT_VALUE = KENGINE_PREFIX + "defaultValue"; //$NON-NLS-1$

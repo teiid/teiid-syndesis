@@ -18,8 +18,10 @@
 package org.komodo.rest.relational.json;
 
 import java.io.IOException;
+
 import org.komodo.rest.RestBasicEntity;
 import org.komodo.utils.StringUtils;
+
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
@@ -47,7 +49,6 @@ public class BasicEntitySerializer<T extends RestBasicEntity> extends AbstractEn
 
     @Override
     protected boolean isComplete(T entity) {
-        return ! StringUtils.isBlank(entity.getId()) && 
-                       entity.getkType() != null;
+        return ! StringUtils.isBlank(entity.getId());
     }
 }

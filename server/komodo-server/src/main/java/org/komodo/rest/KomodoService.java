@@ -82,11 +82,6 @@ public abstract class KomodoService implements V1Constants {
     public interface QueryParamKeys {
 
         /**
-         * A regex expression used when searching. If not present, all objects are returned.
-         */
-        String PATTERN = "pattern"; //$NON-NLS-1$
-
-        /**
          * The number of objects to return. If not present, all objects are returned.
          */
         String SIZE = "size"; //$NON-NLS-1$
@@ -356,10 +351,6 @@ public abstract class KomodoService implements V1Constants {
             Object responseEntity = createErrorResponseEntity(acceptableMediaTypes, notFoundMsg);
             builder = Response.status( Status.NOT_FOUND ).entity(responseEntity);
         } else {
-
-            //
-            // Json will always be preferred over XML if both or the wildcard are present in the header
-            //
             if (isAcceptable(acceptableMediaTypes, MediaType.APPLICATION_JSON_TYPE))
                 builder = Response.ok( KomodoJsonMarshaller.marshall( entity ), MediaType.APPLICATION_JSON );
             else {
