@@ -1558,6 +1558,11 @@ public final class RelationalMessages {
         VALIDATE_VIEW_DEFINITION_NAME_MATCH_ERROR,
         
         /**
+         * An error indicating a problem with getting view source table info
+         */
+        GET_VIEW_SOURCE_TABLE_INFO_ERROR,
+        
+        /**
          * VDB Not found
          */
         VDB_NOT_FOUND,
