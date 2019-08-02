@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -65,11 +66,13 @@ import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
 import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.connection.RestSchemaNode;
+import org.komodo.rest.relational.connection.RestSourceSchema;
 import org.komodo.rest.relational.request.KomodoQueryAttribute;
 import org.komodo.rest.relational.request.PublishRequestPayload;
 import org.komodo.rest.relational.response.KomodoStatusObject;
 import org.komodo.rest.relational.response.RestQueryResult;
 import org.komodo.rest.relational.response.metadata.RestSyndesisSourceStatus;
+import org.komodo.rest.relational.response.vieweditorstate.RestViewSourceInfo;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -837,6 +840,82 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 		return status;
 	}    
 
+	/**
+	 * Find and return table column info for input source paths from view definition
+	 * 
+	 * @param headers
+	 *            the request headers (never <code>null</code>)
+	 * @param uriInfo
+	 *            the request URI information (never <code>null</code>)
+	 * @return source schema object array
+	 * @throws KomodoRestException
+	 *             if error occurs
+	 */
+	@POST
+	@Path(V1Constants.VIEW_SOURCE_INFO + FORWARD_SLASH + V1Constants.VIEW_EDITOR_STATE_PLACEHOLDER)
+	@ApiOperation(value = "Get Source Schema for View Definition", response = RestViewSourceInfo.class)
+	@ApiResponses(value = { @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
+			@ApiResponse(code = 403, message = "An error has occurred.") })
+	public Response viewSourceInfo(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
+			@ApiParam(value = "Name of the view editor state", required = true) final @PathParam("viewEditorStateId") String viewEditorStateId)
+			throws KomodoRestException {
+		SecurityPrincipal principal = checkSecurityContext(headers);
+		if (principal.hasErrorResponse())
+			return principal.getErrorResponse();
+
+		List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+		if (!isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
+			return notAcceptableMediaTypesBuilder().build();
+
+		LOGGER.info("getViewSourceSchemas()   viewEditorStateId : " + viewEditorStateId);
+
+		if (StringUtils.isBlank(viewEditorStateId)) {
+			return createErrorResponseWithForbidden(mediaTypes,
+					RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_ID);
+		}
+
+		RestViewSourceInfo response = null;
+
+		try {
+			ViewDefinition viewDefinition = this.getWorkspaceManager().getViewDefinition(viewEditorStateId);
+
+			List<String> sourcePaths = viewDefinition.getSourcePaths();
+
+			List<RestSourceSchema> srcSchemas = new ArrayList<RestSourceSchema>();
+
+			for (int i = 0; i < sourcePaths.size(); i++) {
+				String nextPath = sourcePaths.get(i);
+				// Example sourcePath >>>> sourcePaths[0] =
+				// "connection=conn1/schema=public/table=customer";
+				StringTokenizer tkzr = new StringTokenizer(nextPath, "/");
+				String connectionName = getPathValue(tkzr.nextToken());
+
+				Schema schema = findSchema(connectionName);
+				
+				if (schema != null) {
+					srcSchemas.add(new RestSourceSchema(nextPath, schema));
+				}
+			}
+
+			response = new RestViewSourceInfo(viewDefinition.getViewName(), srcSchemas.toArray(new RestSourceSchema[0]));
+
+		} catch (final Exception e) {
+			if (e instanceof KomodoRestException) {
+				throw (KomodoRestException) e;
+			}
+		}
+
+		UnitOfWork uow = null;
+
+		try {
+			uow = createTransaction(principal, "Get View Source Info", true); //$NON-NLS-1$
+			return commit(uow, mediaTypes, response);
+		} catch (Exception ex) {
+			return createErrorResponseWithForbidden(mediaTypes, ex,
+					RelationalMessages.Error.GET_VIEW_SOURCE_TABLE_INFO_ERROR);
+		}
+	}
+
     @GET
     @Path(V1Constants.PUBLISH)
     @Produces(MediaType.APPLICATION_JSON)
@@ -1384,6 +1463,15 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
     @Override
     public TeiidDataSource findTeiidDatasource(String connectionName) throws KException {
     	return getMetadataInstance().getDataSource(connectionName);
+    }
+    
+    private String getPathValue(String pathSegment) {
+		// Example sourcePath >>>> sourcePaths[0] =
+		// "connection=conn1/schema=public/table=customer";
+		LOGGER.info("      >>> path segment = " + pathSegment);
+		StringTokenizer tkzr = new StringTokenizer(pathSegment, "=");
+		tkzr.nextToken();
+		return tkzr.nextToken();
     }
     
 }

@@ -336,6 +336,11 @@ public class KomodoRestV1Application {
          * Validate a ViewDefintion
          */
         String VALIDATE_VIEW_DEFINITION = "validateViewDefinition";
+        
+        /**
+         * Get source schema, table, column information for view definition
+         */
+        String VIEW_SOURCE_INFO = "viewSourceInfo";
     }
 
 
