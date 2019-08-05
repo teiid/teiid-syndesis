@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 
-@JsonSerialize
+@JsonSerialize(as = PublishRequestPayload.class)
 @JsonInclude(value=Include.NON_NULL)
 public class PublishRequestPayload {
 

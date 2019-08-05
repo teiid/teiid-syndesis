@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-@JsonSerialize
+@JsonSerialize(as = BuildStatus.class)
 @JsonInclude(Include.NON_NULL)
 public class BuildStatus {
 	
@@ -61,7 +61,7 @@ public class BuildStatus {
         DELETE_DONE
     }
 
-    @JsonSerialize
+    @JsonSerialize(as = RouteStatus.class)
     @JsonInclude(Include.NON_NULL)
     public static class RouteStatus {
         private final String name;

@@ -30,7 +30,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 /**
  * Represents the configuration for a source schema
  */
-@JsonSerialize
+@JsonSerialize(as = RestSourceSchema.class)
 @JsonInclude(Include.NON_NULL)
 public class RestSourceSchema {
 	
