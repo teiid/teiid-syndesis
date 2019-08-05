@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 /**
  * Represents the configuration for the view's source info 
  */
-@JsonSerialize
+@JsonSerialize(as = RestViewSourceInfo.class)
 @JsonInclude(Include.NON_NULL)
 public class RestViewSourceInfo {
     

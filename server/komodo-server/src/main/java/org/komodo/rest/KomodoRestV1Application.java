@@ -308,11 +308,6 @@ public class KomodoRestV1Application {
         String VIEW_EDITOR_STATE = "viewEditorState"; //$NON-NLS-1$
 
         /**
-         * The view editor state of the user profile
-         */
-        String VIEW_EDITOR_STATES = "viewEditorStates"; //$NON-NLS-1$
-
-        /**
          * View editor state placeholder
          */
         String VIEW_EDITOR_STATE_PLACEHOLDER = "{viewEditorStateId}"; //$NON-NLS-1$

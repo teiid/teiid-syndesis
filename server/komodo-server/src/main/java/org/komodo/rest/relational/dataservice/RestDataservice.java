@@ -17,14 +17,10 @@
  */
 package org.komodo.rest.relational.dataservice;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import org.komodo.KException;
-import org.komodo.WorkspaceManager;
 import org.komodo.datavirtualization.DataVirtualization;
-import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.openshift.BuildStatus;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -48,8 +44,6 @@ public final class RestDataservice {
      * Label used to describe dataservice viewNames
      */
     public static final String DATASERVICE_VIEW_DEFINITIONS_LABEL = "serviceViewDefinitions"; //$NON-NLS-1$
-    
-    public static final String DATASERVICE_ID_LABEL = "id"; //$NON-NLS-1$
     
     public static final String DATASERVICE_NAME_LABEL = "keng__id"; //$NON-NLS-1$
 
@@ -202,22 +196,6 @@ public final class RestDataservice {
      */
     public void setOdataHostName(String odataHostName) {
     	this.odataHostName = odataHostName;
-    }
-    
-    /**
-     *  get the ViewDefinitionImpl names for the dataservice
-     */
-    public static String[] getViewDefnNames(WorkspaceManager workspaceManager, String vdbName) throws KException {
-        ViewDefinition[] editorStates = null;
-    	String svcVdbName = vdbName.toLowerCase();
-        editorStates = workspaceManager.getViewDefinitions(svcVdbName);
-
-        List<String> viewNames = new ArrayList<String>();
-        for (ViewDefinition editorState: editorStates) {
-        	viewNames.add(editorState.getViewName());
-        }
-        
-        return viewNames.toArray(new String[0]);
     }
     
     public String getName() {

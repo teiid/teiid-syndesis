@@ -429,5 +429,9 @@ public interface StringConstants {
      * Service vdb view model
      */
     String SERVICE_VDB_VIEW_MODEL = "views"; //$NON-NLS-1$
+    
+    String ID_LABEL = "id"; //$NON-NLS-1$
+    
+    String DESCRIPTION_FIELD_NAME = "keng__description"; //$NON-NLS-1$
 
 }

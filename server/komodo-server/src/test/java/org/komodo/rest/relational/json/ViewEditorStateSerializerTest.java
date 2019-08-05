@@ -19,29 +19,18 @@ package org.komodo.rest.relational.json;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.List;
 
 import org.junit.Test;
 import org.komodo.KException;
 import org.komodo.datavirtualization.SqlComposition;
-import org.komodo.datavirtualization.SqlProjectedColumn;
 import org.komodo.datavirtualization.ViewDefinition;
-import org.komodo.rest.relational.response.vieweditorstate.RestSqlComposition;
-import org.komodo.rest.relational.response.vieweditorstate.RestSqlProjectedColumn;
-import org.komodo.rest.relational.response.vieweditorstate.RestViewDefinition;
-import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
 
 public class ViewEditorStateSerializerTest extends AbstractSerializerTest {
-
+	
     private String viewName = "myNewView";
-    private String untitledName = "untitled";
-    private String oldNameKey = "oldName";
-    private String newNameKey = "newName";
     private String viewDefinitionName = "testView";
     private String description = "test view description text";
     private boolean isComplete = true;
@@ -74,155 +63,110 @@ public class ViewEditorStateSerializerTest extends AbstractSerializerTest {
     private boolean column2Selected = true;
  
     private String createViewEditorState() {
-        String state = EMPTY_STRING +
-            OPEN_BRACE + NEW_LINE +
-                TAB + q(RestViewEditorState.ID_LABEL) + colon() + q(viewName) + pnl(COMMA) +
-                // viewDefinition child 
-                TAB + q(RestViewEditorState.VIEW_DEFINITION_LABEL) + colon() + pnl(OPEN_BRACE ) + 
-                	tab(2) + q(RestViewEditorState.ID_VIEW_NAME) + colon() + q(viewDefinitionName) + pnl(COMMA) +
-                	tab(2) + q(RestViewEditorState.DESCRIPTION) + colon() + q(description) + pnl(COMMA) +
-                	tab(2) + q(RestViewEditorState.IS_COMPLETE) + colon() + isComplete + pnl(COMMA) +
-                	tab(2) + q(RestViewEditorState.IS_USER_DEFINED) + colon() + isUserDefined + pnl(COMMA) +
-                	tab(2) + q(RestViewEditorState.SOURCE_PATHS) + colon() + pnl(OPEN_SQUARE_BRACKET) +
-                		tab(3) + q(sourceTablePath1) + pnl(COMMA) +
-                		tab(3) + q(sourceTablePath2) + pnl(COMMA) +
-                		tab(3) + q(sourceTablePath3) + pnl(COMMA) +
-                		tab(3) + q(sourceTablePath4) + NEW_LINE +
-                		tab(2) + pnl(CLOSE_SQUARE_BRACKET + COMMA) +
-                
-                        // compositions array
-                        tab(2) + q(RestViewEditorState.COMPOSITIONS_LABEL) + colon() + pnl(OPEN_SQUARE_BRACKET) + 
-                            tab(3) + OPEN_BRACE + NEW_LINE +
-                                tab(4) + q(RestViewEditorState.ID_NAME) + colon() + q(comp1Name) + pnl(COMMA) +
-                                tab(4) + q(RestViewEditorState.ID_DESCRIPTION) + colon() + q(comp1Desc) + pnl(COMMA) +
-                                tab(4) + q(RestViewEditorState.LEFT_SOURCE_PATH_LABEL) + colon() + q(comp1LeftSource) + pnl(COMMA) +
-                                tab(4) + q(RestViewEditorState.RIGHT_SOURCE_PATH_LABEL) + colon() + q(comp1RightSource) + pnl(COMMA) +
-                                tab(4) + q(RestViewEditorState.LEFT_CRITERIA_COLUMN_LABEL) + colon() + q(comp1LeftColumn) + pnl(COMMA) +
-                                tab(4) + q(RestViewEditorState.RIGHT_CRITERIA_COLUMN_LABEL) + colon() + q(comp1RightColumn) + pnl(COMMA) +
-                                tab(4) + q(RestViewEditorState.TYPE_LABEL) + colon() + q(comp1Type) + pnl(COMMA) +
-                                tab(4) + q(RestViewEditorState.OPERATOR_LABEL) + colon() + q(comp1Operator) +
-                            tab(3) + CLOSE_BRACE + pnl(COMMA) +
-                            tab(3) + OPEN_BRACE + NEW_LINE +
-                                tab(4) + q(RestViewEditorState.ID_NAME) + colon() + q(comp2Name) + pnl(COMMA) +
-                                tab(4) + q(RestViewEditorState.ID_DESCRIPTION) + colon() + q(comp2Desc) + pnl(COMMA) +
-                                tab(4) + q(RestViewEditorState.LEFT_SOURCE_PATH_LABEL) + colon() + q(comp2LeftSource) + pnl(COMMA) +
-                                tab(4) + q(RestViewEditorState.RIGHT_SOURCE_PATH_LABEL) + colon() + q(comp2RightSource) + pnl(COMMA) +
-                                tab(4) + q(RestViewEditorState.LEFT_CRITERIA_COLUMN_LABEL) + colon() + q(comp2LeftColumn) + pnl(COMMA) +
-                                tab(4) + q(RestViewEditorState.RIGHT_CRITERIA_COLUMN_LABEL) + colon() + q(comp2RightColumn) + pnl(COMMA) +
-                                tab(4) + q(RestViewEditorState.TYPE_LABEL) + colon() + q(comp2Type) + pnl(COMMA) +
-                                tab(4) + q(RestViewEditorState.OPERATOR_LABEL) + colon() + q(comp2Operator) + NEW_LINE +
-                            tab(3) + CLOSE_BRACE + NEW_LINE +
-                        tab(2) + pnl(CLOSE_SQUARE_BRACKET + COMMA) +   
-
-                        // projected columns array
-                        tab(2) + q(RestViewEditorState.PROJECTED_COLUMNS_LABEL) + colon() + pnl(OPEN_SQUARE_BRACKET) + 
-                            tab(3) + OPEN_BRACE + NEW_LINE +
-                                tab(4) + q(RestSqlProjectedColumn.NAME_LABEL) + colon() + q(column1Name) + pnl(COMMA) +
-                                tab(4) + q(RestSqlProjectedColumn.TYPE_LABEL) + colon() + q(column1Type) + pnl(COMMA) +
-                                tab(4) + q(RestSqlProjectedColumn.SELECTED_LABEL) + colon() + column1Selected +
-                            tab(3) + CLOSE_BRACE + pnl(COMMA) +
-                            tab(3) + OPEN_BRACE + NEW_LINE +
-                                tab(4) + q(RestSqlProjectedColumn.NAME_LABEL) + colon() + q(column2Name) + pnl(COMMA) +
-                                tab(4) + q(RestSqlProjectedColumn.TYPE_LABEL) + colon() + q(column2Type) + pnl(COMMA) +
-                                tab(4) + q(RestSqlProjectedColumn.SELECTED_LABEL) + colon() + column2Selected + NEW_LINE +
-                            tab(3) + CLOSE_BRACE + NEW_LINE +
-                        tab(2) + pnl(CLOSE_SQUARE_BRACKET) +   
-            	TAB + CLOSE_BRACE +
-            CLOSE_BRACE;
-
-        return state;
+        return "{\n" + 
+        		"  \"id\" : \"myNewView\",\n" + 
+        		"  \"dataVirtualizationName\" : \"dvName\",\n" + 
+        		"  \"sourcePaths\" : [ \"path/to/source1\", \"path/to/source2\", \"path/to/source3\", \"path/to/source4\" ],\n" + 
+        		"  \"compositions\" : [ {\n" + 
+        		"    \"name\" : \"comp1\",\n" + 
+        		"    \"description\" : \"description for comp1\",\n" + 
+        		"    \"leftSourcePath\" : \"path/to/source1\",\n" + 
+        		"    \"leftCriteriaColumn\" : \"column1\",\n" + 
+        		"    \"rightSourcePath\" : \"path/to/source2\",\n" + 
+        		"    \"rightCriteriaColumn\" : \"column2\",\n" + 
+        		"    \"operator\" : \"EQ\",\n" + 
+        		"    \"type\" : \"INNER_JOIN\"\n" + 
+        		"  }, {\n" + 
+        		"    \"name\" : \"comp2\",\n" + 
+        		"    \"description\" : \"description for comp2\",\n" + 
+        		"    \"leftSourcePath\" : \"path/to/source3\",\n" + 
+        		"    \"leftCriteriaColumn\" : \"column3\",\n" + 
+        		"    \"rightSourcePath\" : \"path/to/source4\",\n" + 
+        		"    \"rightCriteriaColumn\" : \"column4\",\n" + 
+        		"    \"operator\" : \"EQ\",\n" + 
+        		"    \"type\" : \"LEFT_OUTER_JOIN\"\n" + 
+        		"  } ],\n" + 
+        		"  \"projectedColumns\" : [ {\n" + 
+        		"    \"name\" : \"col1\",\n" + 
+        		"    \"type\" : \"string\",\n" + 
+        		"    \"selected\" : false\n" + 
+        		"  }, {\n" + 
+        		"    \"name\" : \"col2\",\n" + 
+        		"    \"type\" : \"integer\",\n" + 
+        		"    \"selected\" : true\n" + 
+        		"  } ],\n" + 
+        		"  \"viewName\" : \"testView\",\n" + 
+        		"  \"keng__description\" : \"test view description text\",\n" + 
+        		"  \"isComplete\" : true,\n" + 
+        		"  \"isUserDefined\" : false\n" + 
+        		"}";
     }
 
     @Test
     public void shouldImportJson() {
         String state = createViewEditorState();
 
-        RestViewEditorState viewEditorState = KomodoJsonMarshaller.unmarshall(state, RestViewEditorState.class);
+        ViewDefinition viewEditorState = KomodoJsonMarshaller.unmarshall(state, org.komodo.repository.ViewDefinition.class);
         assertEquals(viewName, viewEditorState.getId());
         
-        RestViewDefinition viewDef = viewEditorState.getViewDefinition();
-        assertNotNull(viewDef);
-        assertEquals(viewDefinitionName, viewDef.getViewName());
+        assertNotNull(viewEditorState);
+        assertEquals(viewDefinitionName, viewEditorState.getName());
         
-        String[] paths = viewDef.getSourcePaths();
+        List<String> paths = viewEditorState.getSourcePaths();
         assertNotNull(paths);
-        assertEquals(4, paths.length);
+        assertEquals(4, paths.size());
         
-        RestSqlComposition[] comps = viewDef.getSqlCompositions(); 
+        List<SqlComposition> comps = viewEditorState.getCompositions(); 
         assertNotNull(comps);
-        assertEquals(2, comps.length);
+        assertEquals(2, comps.size());
     }
 
     @Test
     public void shouldExportJson() throws KException {
-        String newName = viewName;
-
-        Map<String, String> undoArgs = new LinkedHashMap<>();
-        undoArgs.put(oldNameKey, newName);
-        undoArgs.put(newNameKey, untitledName);
-
-        Map<String, String> redoArgs = new LinkedHashMap<>();
-        redoArgs.put(oldNameKey, untitledName);
-        redoArgs.put(newNameKey, newName);
-
         String[] sourceTablePaths = { sourceTablePath1, sourceTablePath2, sourceTablePath3, sourceTablePath4 };
-        ViewDefinition viewDef = mock(ViewDefinition.class);
-        when(viewDef.getName()).thenReturn(viewName);
-        when(viewDef.getViewName()).thenReturn(viewDefinitionName);
-        when(viewDef.getDescription()).thenReturn(description);
-        when(viewDef.isComplete()).thenReturn(isComplete);
-        when(viewDef.isUserDefined()).thenReturn(isUserDefined);
-        when(viewDef.getSourcePaths()).thenReturn(Arrays.asList(sourceTablePaths));
+        org.komodo.repository.ViewDefinition viewDef = new org.komodo.repository.ViewDefinition("dvName", viewDefinitionName);
+        viewDef.setId(viewName);
+        viewDef.setDescription(description);
+        viewDef.setComplete(isComplete);
+        viewDef.setUserDefined(isUserDefined);
+        viewDef.setSourcePaths(Arrays.asList(sourceTablePaths));
         
-        // Mocks for Compositions
-        SqlComposition sqlComp1 = mock(SqlComposition.class);
-        when(sqlComp1.getName()).thenReturn(comp1Name);
-        when(sqlComp1.getDescription()).thenReturn(comp1Desc);
-        when(sqlComp1.getLeftSourcePath()).thenReturn(comp1LeftSource);
-        when(sqlComp1.getRightSourcePath()).thenReturn(comp1RightSource);
-        when(sqlComp1.getLeftCriteriaColumn()).thenReturn(comp1LeftColumn);
-        when(sqlComp1.getRightCriteriaColumn()).thenReturn(comp1RightColumn);
-        when(sqlComp1.getType()).thenReturn(comp1Type);
-        when(sqlComp1.getOperator()).thenReturn(comp1Operator);
+        org.komodo.repository.SqlComposition sqlComp1 = new org.komodo.repository.SqlComposition(comp1Name);
+        sqlComp1.setDescription(comp1Desc);
+        sqlComp1.setLeftSourcePath(comp1LeftSource);
+        sqlComp1.setRightSourcePath(comp1RightSource);
+        sqlComp1.setLeftCriteriaColumn(comp1LeftColumn);
+        sqlComp1.setRightCriteriaColumn(comp1RightColumn);
+        sqlComp1.setType(comp1Type);
+        sqlComp1.setOperator(comp1Operator);
         
-        SqlComposition sqlComp2 = mock(SqlComposition.class);
-        when(sqlComp2.getName()).thenReturn(comp2Name);
-        when(sqlComp2.getDescription()).thenReturn(comp2Desc);
-        when(sqlComp2.getLeftSourcePath()).thenReturn(comp2LeftSource);
-        when(sqlComp2.getRightSourcePath()).thenReturn(comp2RightSource);
-        when(sqlComp2.getLeftCriteriaColumn()).thenReturn(comp2LeftColumn);
-        when(sqlComp2.getRightCriteriaColumn()).thenReturn(comp2RightColumn);
-        when(sqlComp2.getType()).thenReturn(comp2Type);
-        when(sqlComp2.getOperator()).thenReturn(comp2Operator);
-        
-        SqlComposition[] sqlComps = { sqlComp1, sqlComp2 };
-        when(viewDef.getSqlCompositions()).thenReturn(Arrays.asList(sqlComps));
+        org.komodo.repository.SqlComposition sqlComp2 = new org.komodo.repository.SqlComposition(comp2Name);
+        sqlComp2.setDescription(comp2Desc);
+        sqlComp2.setLeftSourcePath(comp2LeftSource);
+        sqlComp2.setRightSourcePath(comp2RightSource);
+        sqlComp2.setLeftCriteriaColumn(comp2LeftColumn);
+        sqlComp2.setRightCriteriaColumn(comp2RightColumn);
+        sqlComp2.setType(comp2Type);
+        sqlComp2.setOperator(comp2Operator);
 
-        // Mocks for projected columns
-        SqlProjectedColumn sqlCol1 = mock(SqlProjectedColumn.class);
-        when(sqlCol1.getName()).thenReturn(column1Name);
-        when(sqlCol1.getType()).thenReturn(column1Type);
-        when(sqlCol1.isSelected()).thenReturn(column1Selected);
+        viewDef.setCompositions(Arrays.asList(sqlComp1, sqlComp2));
 
-        SqlProjectedColumn sqlCol2 = mock(SqlProjectedColumn.class);
-        when(sqlCol2.getName()).thenReturn(column2Name);
-        when(sqlCol2.getType()).thenReturn(column2Type);
-        when(sqlCol2.isSelected()).thenReturn(column2Selected);
+        org.komodo.repository.SqlProjectedColumn sqlCol1 = new org.komodo.repository.SqlProjectedColumn(column1Name);
+        sqlCol1.setName(column1Name);
+        sqlCol1.setType(column1Type);
+        sqlCol1.setSelected(column1Selected);
+
+        org.komodo.repository.SqlProjectedColumn sqlCol2 = new org.komodo.repository.SqlProjectedColumn(column2Name);
+        sqlCol2.setName(column2Name);
+        sqlCol2.setType(column2Type);
+        sqlCol2.setSelected(column2Selected);
+
+        viewDef.setProjectedColumns(Arrays.asList(sqlCol1, sqlCol2));
+
+        String expectedJson = createViewEditorState();
         
-        SqlProjectedColumn[] sqlCols = { sqlCol1, sqlCol2 };
-        when(viewDef.getProjectedColumns()).thenReturn(Arrays.asList(sqlCols));
-
-        RestViewEditorState restState = new RestViewEditorState(MY_BASE_URI, viewDef);
-
-        String expectedJson = createViewEditorState()
-                                                    .replaceAll(NEW_LINE,  SPACE)
-                                                    .replaceAll(TAB, SPACE)
-                                                    .replaceAll(SPACE, EMPTY_STRING);
+        String resultJson = KomodoJsonMarshaller.marshall(viewDef);
         
-        String resultJson = KomodoJsonMarshaller.marshall(restState)
-                                                    .replaceAll(NEW_LINE,  SPACE)
-                                                    .replaceAll(TAB, SPACE)
-                                                    .replaceAll(SPACE, EMPTY_STRING);
         assertEquals(expectedJson, resultJson);
     }  
 }

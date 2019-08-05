@@ -31,23 +31,13 @@ public interface ViewDefinition  extends Named, StringConstants {
      *        the name of the sql composition being added (cannot be empty)
      * @return the new sql composition (never <code>null</code>)
      */
-    SqlComposition addSqlComposition(  String compositionName );
+    SqlComposition addComposition(  String compositionName );
     
     /**
      * @return the sql compositions (never <code>null</code> but can be empty)
      */
-    List<SqlComposition> getSqlCompositions( );
+    List<SqlComposition> getCompositions( );
 
-    /**
-     * @return the view name
-     */
-    String getViewName();
-    
-    /**
-     * @param name the view name
-     */
-    void setViewName(String name);
-    
     /**
      * @return the description
      */
@@ -113,5 +103,11 @@ public interface ViewDefinition  extends Named, StringConstants {
      * @return the sql projected columns (never <code>null</code> but can be empty)
      */
     List<SqlProjectedColumn> getProjectedColumns( );
+
+	String getDataVirtualizationName();
+	
+	String getId();
+	
+	void clearState();
 
 }

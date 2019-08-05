@@ -120,7 +120,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
      * @throws KException
      * 		if problem occurs
      */
-    public VDBMetaData refreshServiceVdb(String vdbName, ViewDefinition[] editorStates) throws KException {
+    public VDBMetaData refreshServiceVdb(String vdbName, List<? extends ViewDefinition> editorStates) throws KException {
         VDBMetaData vdb = new VDBMetaData();
         vdb.setName(vdbName);
         
@@ -133,7 +133,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
         // Keep track of unique list of sources needed
     	Map< Schema, LinkedHashSet<TableInfo> > schemaTableMap = new HashMap<Schema, LinkedHashSet<TableInfo>>();
         
-        if ( editorStates.length > 0 ) {
+        if ( !editorStates.isEmpty() ) {
         	// Generate new model DDL by appending all view DDLs
         	StringBuilder allViewDdl = new StringBuilder();
 
@@ -215,7 +215,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
     	//   * 1 or 2 source tables
     	//   * Join criteria in the form of left and right critieria column names
         
-    	String viewName = viewDef.getViewName();
+    	String viewName = viewDef.getName();
     	
     	if (sourceTableInfos.length < 1) throw new KException("Error getting the ViewDefinition sources"); //$NON-NLS-1$
     	

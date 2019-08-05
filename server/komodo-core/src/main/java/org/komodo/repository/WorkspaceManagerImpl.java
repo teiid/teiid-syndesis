@@ -18,10 +18,12 @@
 
 package org.komodo.repository;
 
+import java.util.List;
+
 import org.komodo.WorkspaceManager;
-import org.komodo.datavirtualization.SourceSchema;
 import org.komodo.datavirtualization.ViewDefinition;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -35,30 +37,41 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
 	private ViewDefinitionRepository viewDefinitionRepository;
 
 	@Override
-	public String findSchema(String id) {
-		SourceSchema schema = this.schemaRepository.findOne(id);
-		if (schema != null) {
-			return schema.getDdl();
+	public org.komodo.repository.SourceSchema findSchema(String id) {
+		return this.schemaRepository.findOne(id);
+	}
+
+	@Override
+	public boolean deleteSchema(String id) {
+		try {
+			this.schemaRepository.delete(id);
+			this.schemaRepository.flush();
+			return true;
+		} catch (EmptyResultDataAccessException e) {
+			return false;
 		}
-		return null;
 	}
-
+	
 	@Override
-	public void deleteSchema(String id) {
-		this.schemaRepository.delete(id);
-	}
-
-	@Override
-	public void createOrUpdateSchema(String id, String contents) {
+	public void createOrUpdateSchema(String id, String name, String contents) {
 		org.komodo.repository.SourceSchema schema = this.schemaRepository.findOne(id);
 		if (schema != null) {
+			if (!name.equals(schema.getName())) {
+				throw new IllegalArgumentException("Cannot change the name of an existing schema");
+			}
 			if (!contents.equals(schema.getDdl())) {
 				schema.setDdl(contents);
 			}
 		} else {
 			schema = new org.komodo.repository.SourceSchema(id);
+			schema.setName(name);
 			this.schemaRepository.save(schema);
 		}
+	}
+	
+	@Override
+	public List<String> findAllSchemaNames() {
+		return schemaRepository.findAllNames();
 	}
 	
 	@Override
@@ -94,31 +107,40 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
 	}
 	
 	@Override
-	public ViewDefinition createViewDefiniton(String viewName) {
-		org.komodo.repository.ViewDefinition viewEditorState = new org.komodo.repository.ViewDefinition(viewName);
+	public org.komodo.repository.ViewDefinition createViewDefiniton(String dvName, String viewName) {
+		org.komodo.repository.ViewDefinition viewEditorState = new org.komodo.repository.ViewDefinition(dvName, viewName);
 		return this.viewDefinitionRepository.save(viewEditorState);
 	}
 	
 	@Override
-	public ViewDefinition getViewDefinition(String name) {
-		return this.viewDefinitionRepository.findByName(name);
+	public List<String> getViewDefinitionsNames(String dvName) {
+		return this.viewDefinitionRepository.findAllNamesByDataVirtualizationName(dvName);
 	}
 	
 	@Override
-	public ViewDefinition[] getViewDefinitions(String viewDefinitionNamePrefix) {
-		return this.viewDefinitionRepository
-				.findAllByNameStartsWith(viewDefinitionNamePrefix).toArray(new ViewDefinition[0]);
+	public List<org.komodo.repository.ViewDefinition> getViewDefinitions(String dvName) {
+		return this.viewDefinitionRepository.findAllByDataVirtualizationName(dvName);
 	}
 	
 	@Override
-	public boolean deleteViewDefinition(String viewDefinitionName) {
-		org.komodo.repository.ViewDefinition vd = this.viewDefinitionRepository.findByName(viewDefinitionName);
-		if (vd == null) {
+	public boolean deleteViewDefinition(String id) {
+		try {
+			this.viewDefinitionRepository.delete(id);
+			this.viewDefinitionRepository.flush();
+			return true;
+		} catch (EmptyResultDataAccessException e) {
 			return false;
 		}
-		this.viewDefinitionRepository.delete(vd);
-		this.viewDefinitionRepository.flush();
-		return true;
+	}
+	
+	@Override
+	public org.komodo.repository.ViewDefinition findViewDefinition(String id) {
+		return this.viewDefinitionRepository.findOne(id);
+	}
+	
+	@Override
+	public ViewDefinition findViewDefinitionByNameIgnoreCase(String dvName, String viewDefinitionName) {
+		return this.viewDefinitionRepository.findByNameIgnoreCase(dvName, viewDefinitionName);
 	}
 	
 }

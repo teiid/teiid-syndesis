@@ -219,8 +219,9 @@ public class SyndesisConnectionSynchronizer {
 
 	private void deleteSchemaModel(RestSyndesisSourceStatus status) throws KException {
 		try {
-			this.metadataService.deleteSchema(status.getSchemaModelId(), KomodoService.SYSTEM_USER);
-			LOGGER.info("Workspace schema " + status.getSchemaModelId() + " deleted.");
+			if (this.metadataService.deleteSchema(status.getSchemaModelId(), KomodoService.SYSTEM_USER)) {
+				LOGGER.info("Workspace schema " + status.getSchemaModelId() + " deleted.");
+			} // else already deleted
 		} catch (Exception e) {
 			LOGGER.info("Failed to delete schema " + status.getSchemaModelId(), e);
 		}

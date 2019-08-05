@@ -27,23 +27,32 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.komodo.StringConstants;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
  * Represents the configuration of a view editor state
  */
 @Entity
+@JsonSerialize(as = ViewDefinition.class)
+@JsonInclude(Include.NON_NULL)
 public class ViewDefinition implements org.komodo.datavirtualization.ViewDefinition {
 	
 	public static class State {
-		private List<SqlComposition> sqlCompositions = new ArrayList<>(1);
+		private List<SqlComposition> compositions = new ArrayList<>(1);
 		private List<SqlProjectedColumn> projectedColumns = new ArrayList<>(1);
 		private List<String> sourcePaths = new ArrayList<>(1);
 		
 		public List<SqlComposition> getSqlCompositions() {
-			return sqlCompositions;
+			return compositions;
 		}
 		public void setSqlCompositions(List<SqlComposition> sqlCompositions) {
-			this.sqlCompositions = sqlCompositions;
+			this.compositions = sqlCompositions;
 		}
 		public List<SqlProjectedColumn> getProjectedColumns() {
 			return projectedColumns;
@@ -70,23 +79,29 @@ public class ViewDefinition implements org.komodo.datavirtualization.ViewDefinit
 	@GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
 	private String id;
+	@JsonProperty(value = "viewName")
 	@Column(unique=true)
 	private String name;
 	private String ddl;
-	
-	private String viewName;
+	@Column(name = "dv_name")
+	private String dataVirtualizationName;
+	@JsonProperty(value = StringConstants.DESCRIPTION_FIELD_NAME)
 	private String description;
+	@JsonProperty(value = "isComplete")
 	private boolean complete;
+	@JsonProperty(value = "isUserDefined")
 	private boolean userDefined;
 	
+	@JsonIgnore //for non-Entity serialization, the getters/setters will be used
 	@Convert(converter = ViewDefinitionStateConvertor.class)
 	private State state = new State();
 	
 	protected ViewDefinition() {
 	}
 	
-	public ViewDefinition(String name) {
+	public ViewDefinition(String dataVirtualizationName, String name) {
 		this.name = name;
+		this.dataVirtualizationName = dataVirtualizationName;
 	}
 	
 	public String getId() {
@@ -99,27 +114,17 @@ public class ViewDefinition implements org.komodo.datavirtualization.ViewDefinit
 	}
 	
 	@Override
-	public SqlComposition addSqlComposition(String compositionName) {
+	public SqlComposition addComposition(String compositionName) {
 		org.komodo.repository.SqlComposition sqlComposition = new org.komodo.repository.SqlComposition(compositionName);
-		state.sqlCompositions.add(sqlComposition);
+		state.compositions.add(sqlComposition);
 		return sqlComposition;
 	}
 
 	@Override
-	public List<org.komodo.datavirtualization.SqlComposition> getSqlCompositions() {
-		return new ArrayList<>(state.sqlCompositions);
+	public List<org.komodo.datavirtualization.SqlComposition> getCompositions() {
+		return new ArrayList<>(state.compositions);
 	}
-
-	@Override
-	public String getViewName() {
-		return this.viewName;
-	}
-
-	@Override
-	public void setViewName(String name) {
-		this.viewName = name;
-	}
-
+	
 	@Override
 	public String getDescription() {
 		return this.description;
@@ -182,12 +187,41 @@ public class ViewDefinition implements org.komodo.datavirtualization.ViewDefinit
 		return new ArrayList<>(state.projectedColumns);
 	}
 	
-	public void setSqlCompositions(List<SqlComposition> sqlCompositions) {
-		state.sqlCompositions = sqlCompositions;
+	public void setCompositions(List<SqlComposition> sqlCompositions) {
+		state.compositions = sqlCompositions;
 	}
 	
 	public void setSourcePaths(List<String> sourcePaths) {
 		state.sourcePaths = sourcePaths;
+	}
+	
+	public String getDataVirtualizationName() {
+		return dataVirtualizationName;
+	}
+	
+	public void setDataVirtualizationName(String dataVirtualizationName) {
+		this.dataVirtualizationName = dataVirtualizationName;
+	}
+	
+	public State getState() {
+		return state;
+	}
+	
+	public void setState(State state) {
+		this.state = state;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+	
+	public void setProjectedColumns(List<SqlProjectedColumn> projectedColumns) {
+		this.state.projectedColumns = projectedColumns;
+	}
+	
+	@Override
+	public void clearState() {
+		this.state = new State();
 	}
 
 }

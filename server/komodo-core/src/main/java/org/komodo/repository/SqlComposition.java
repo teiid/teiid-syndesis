@@ -17,6 +17,12 @@
  */
 package org.komodo.repository;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+@JsonSerialize(as = SqlComposition.class)
+@JsonInclude(Include.NON_NULL)
 public class SqlComposition implements org.komodo.datavirtualization.SqlComposition {
 	
 	private String name;

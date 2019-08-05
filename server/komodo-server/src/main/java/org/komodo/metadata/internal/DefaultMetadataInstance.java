@@ -557,7 +557,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
     }
     
     @Override
-    public ValidatorReport validate(String vdbName, String ddl) throws KException {
+    public ValidationResult validate(String vdbName, String ddl) throws KException {
 		QueryParser parser = QueryParser.getQueryParser();
 		
 		ModelMetaData m = new ModelMetaData();
@@ -594,7 +594,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
 			validator.validate(vdb, m, record, report, wrapper, mf, parser);
 		}
 		
-		return report;
+		return new ValidationResult(report, mf.getSchema());
     }
 
 }

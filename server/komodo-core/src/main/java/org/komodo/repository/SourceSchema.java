@@ -27,6 +27,7 @@ public class SourceSchema implements org.komodo.datavirtualization.SourceSchema 
 	@Id
 	private String id;
 	private String ddl;
+	private String name;
 	
 	protected SourceSchema() {
 	}
@@ -40,7 +41,6 @@ public class SourceSchema implements org.komodo.datavirtualization.SourceSchema 
 		return ddl;
 	}
 
-	@Override
 	public void setDdl(String ddl) {
 		this.ddl = ddl;
 	}
@@ -50,9 +50,16 @@ public class SourceSchema implements org.komodo.datavirtualization.SourceSchema 
 		return id;
 	}
 	
-	@Override
 	public void setId(String id) {
 		this.id = id;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
 	}
 
 }

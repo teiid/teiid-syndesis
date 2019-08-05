@@ -18,17 +18,31 @@
 
 package org.komodo;
 
+import java.util.List;
+
 import org.komodo.datavirtualization.DataVirtualization;
+import org.komodo.datavirtualization.SourceSchema;
 import org.komodo.datavirtualization.ViewDefinition;
 
 public interface WorkspaceManager {
 	
-	String findSchema(String id);
+	public static class EntityNotFoundException extends Exception {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -3995911719208421687L;
+		
+	}
 	
-	void deleteSchema(String id);
+	SourceSchema findSchema(String id);
 	
-	void createOrUpdateSchema(String id, String contents);
+	boolean deleteSchema(String id);
 	
+	void createOrUpdateSchema(String id, String name, String contents);
+	
+	List<String> findAllSchemaNames();
+
 
 	DataVirtualization findDataVirtualizationByNameIgnoreCase(String virtualizationName);
 
@@ -41,12 +55,16 @@ public interface WorkspaceManager {
 	boolean deleteDataVirtualization(String virtualizationName);
 	
 	
-	ViewDefinition createViewDefiniton(String viewDefinitionName);
-
-    ViewDefinition[] getViewDefinitions(String viewDefinitionNamePrefix);
+	ViewDefinition findViewDefinitionByNameIgnoreCase(String dvName, String viewName);
+	
+	ViewDefinition findViewDefinition(String id);
+	
+	boolean deleteViewDefinition(String id);
+	
+	ViewDefinition createViewDefiniton(String dvName, String viewName);
+	
+	List<String> getViewDefinitionsNames(String dvName);
+	
+	List<? extends ViewDefinition> getViewDefinitions(String dvName);
     
-	boolean deleteViewDefinition(final String viewDefinitionName);
-
-	ViewDefinition getViewDefinition(String viewDefinitionName);
-
 }

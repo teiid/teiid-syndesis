@@ -17,6 +17,12 @@
  */
 package org.komodo.repository;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+@JsonSerialize(as = SqlProjectedColumn.class)
+@JsonInclude(Include.NON_NULL)
 public class SqlProjectedColumn implements org.komodo.datavirtualization.SqlProjectedColumn {
 	
 	private String name;

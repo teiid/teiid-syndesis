@@ -24,10 +24,6 @@ import org.komodo.rest.relational.response.RestQueryColumn;
 import org.komodo.rest.relational.response.RestQueryResult;
 import org.komodo.rest.relational.response.RestQueryRow;
 import org.komodo.rest.relational.response.metadata.RestSyndesisSourceStatus;
-import org.komodo.rest.relational.response.vieweditorstate.RestSqlComposition;
-import org.komodo.rest.relational.response.vieweditorstate.RestSqlProjectedColumn;
-import org.komodo.rest.relational.response.vieweditorstate.RestViewDefinition;
-import org.komodo.rest.relational.response.vieweditorstate.RestViewEditorState;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 
@@ -58,11 +54,7 @@ public final class KomodoJsonMarshaller {
                                                   .registerTypeAdapter(RestBasicEntity.class, new BasicEntitySerializer<RestBasicEntity>())
                                                   .registerTypeAdapter(RestQueryResult.class, new QueryResultSerializer())
                                                   .registerTypeAdapter(RestQueryColumn.class, new QueryColumnSerializer())
-                                                  .registerTypeAdapter(RestQueryRow.class, new QueryRowSerializer())
-                                                  .registerTypeAdapter(RestViewEditorState.class, new ViewEditorStateSerializer())
-                                                  .registerTypeAdapter(RestViewDefinition.class, new ViewDefinitionSerializer())
-                                                  .registerTypeAdapter(RestSqlComposition.class, new SqlCompositionSerializer())
-                                                  .registerTypeAdapter(RestSqlProjectedColumn.class, new SqlProjectedColumnSerializer());
+                                                  .registerTypeAdapter(RestQueryRow.class, new QueryRowSerializer());
 
         BUILDER = temp.create();
         PRETTY_BUILDER = temp.setPrettyPrinting().create();

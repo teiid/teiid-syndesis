@@ -116,7 +116,7 @@ public class KomodoAutoConfiguration implements ApplicationListener<ContextRefre
     @ConditionalOnMissingBean
     public TeiidOpenShiftClient openShiftClient(@Autowired KEngine kengine, @Autowired TextEncryptor enc) {
         return new TeiidOpenShiftClient(metadataInstance, new EncryptionComponent(enc),
-                this.config);
+                this.config, kengine);
     }
 
 }

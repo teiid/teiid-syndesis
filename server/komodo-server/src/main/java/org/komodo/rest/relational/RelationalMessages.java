@@ -129,11 +129,6 @@ public final class RelationalMessages {
         DRIVER_SUCCESSFULLY_UNDEPLOYED,
         
         /**
-         * An import export service import success message
-         */
-        IMPORT_EXPORT_SERVICE_IMPORT_SUCCESS_MESSAGE,
-        
-        /**
          * VDB undeployment request sent but not yet undeployed
          */
         VDB_UNDEPLOYMENT_REQUEST_SENT,
@@ -1356,66 +1351,6 @@ public final class RelationalMessages {
         METADATA_SERVICE_GET_TEMPLATE_ENTRIES_ERROR,
 
         /**
-         * The importexport service lacks at least one storage attribute
-         */
-        IMPORT_EXPORT_SERVICE_NO_PARAMETERS_ERROR,
-
-        /**
-         * the importexport service encountered an unsupported storage type
-         */
-        IMPORT_EXPORT_SERVICE_UNSUPPORTED_TYPE_ERROR,
-
-        /**
-         * The import export service cannot parse the request body
-         */
-        IMPORT_EXPORT_SERVICE_REQUEST_PARSING_ERROR,
-
-        /**
-         * The import export service cannot find the artifact to be exported
-         */
-        IMPORT_EXPORT_SERVICE_NO_ARTIFACT_ERROR,
-
-        /**
-         * The import export service is trying to export an artifact that is not exportable
-         */
-        IMPORT_EXPORT_SERVICE_ARTIFACT_NOT_EXPORTABLE_ERROR,
-
-        /**
-         * The import export service has not found a relative file path to import from
-         */
-        IMPORT_EXPORT_SERVICE_NO_FILE_PATH_ERROR,
-
-        /**
-         * An import export service export error
-         */
-        IMPORT_EXPORT_SERVICE_EXPORT_ERROR,
-
-        /**
-         * An import export service import error
-         */
-        IMPORT_EXPORT_SERVICE_IMPORT_ERROR,
-
-        /**
-         * An import export service import artifact error
-         */
-        IMPORT_EXPORT_SERVICE_IMPORT_ARTIFACT_ERROR,
-        
-        /**
-         * An import export service storage types retrieval error
-         */
-        IMPORT_EXPORT_SERVICE_STORAGE_TYPES_ERROR,
-
-        /**
-         * An import export service storage types missing parameter error
-         */
-        IMPORT_EXPORT_SERVICE_MISSING_PARAMETER_ERROR,
-
-        /**
-         * An import export service no git repository in profile error
-         */
-        IMPORT_EXPORT_SERVICE_NO_NAMED_GIT_REPO_ERROR,
-
-        /**
          * An error indicating the failed status of to get syndesis sources
          */
         METADATA_GET_SYNDESIS_SOURCES_ERROR,
@@ -1488,7 +1423,7 @@ public final class RelationalMessages {
         /**
          * An error indicating a profile view editor state is missing its id
          */
-        PROFILE_EDITOR_STATE_MISSING_ID,
+        PROFILE_EDITOR_STATE_MISSING_NAME,
 
         /**
          * An error indicating a profile view editor state is missing commands
@@ -1544,6 +1479,8 @@ public final class RelationalMessages {
          * An error indicating a view definition is missing the DDL
          */
         VIEW_DEFINITION_MISSING_DDL,
+        
+        VIEW_DEFINITION_MISSING_DATAVIRTUALIZATIONNAME,
 
         /**
          * An error indicating a problem with validating the viewDefinition DDL
