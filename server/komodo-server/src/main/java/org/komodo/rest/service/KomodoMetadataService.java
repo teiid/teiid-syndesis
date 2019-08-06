@@ -70,7 +70,6 @@ import org.komodo.rest.relational.connection.RestSourceSchema;
 import org.komodo.rest.relational.request.KomodoQueryAttribute;
 import org.komodo.rest.relational.request.PublishRequestPayload;
 import org.komodo.rest.relational.response.KomodoStatusObject;
-import org.komodo.rest.relational.response.RestQueryResult;
 import org.komodo.rest.relational.response.metadata.RestSyndesisSourceStatus;
 import org.komodo.rest.relational.response.vieweditorstate.RestViewSourceInfo;
 import org.komodo.utils.StringUtils;
@@ -454,9 +453,8 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
             LOGGER.debug("Establishing query service for query {0} on vdb {1}", query, vdbName);
             QSResult result = getMetadataInstance().query(vdbName, query, kqa.getOffset(), kqa.getLimit());
-            RestQueryResult restResult = new RestQueryResult(result);
 
-           return commit(uow, mediaTypes, restResult);
+           return commit(uow, mediaTypes, result);
 
         } catch (final Exception e) {
             if ((uow != null) && !uow.isCompleted()) {
@@ -1323,10 +1321,10 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
     private void setSchemaStatus(String schemaId, final RestSyndesisSourceStatus status ) throws Exception {
         // Get the workspace schema VDB
         SourceSchema schema = getWorkspaceManager().findSchema(schemaId);
+        status.setId(schemaId);
         
         if ( schema != null && schema.getDdl() != null) {
-            status.setSchemaModelId(schemaId);
-        	status.setSchemaState( RestSyndesisSourceStatus.EntityState.ACTIVE );
+            status.setSchemaState( RestSyndesisSourceStatus.EntityState.ACTIVE );
         } else {
         	//TODO: check against the deployed vdb
         	status.setSchemaState( RestSyndesisSourceStatus.EntityState.MISSING );

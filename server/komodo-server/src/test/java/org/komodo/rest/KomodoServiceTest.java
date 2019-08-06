@@ -15,33 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.metadata.query;
 
-import java.util.ArrayList;
-import java.util.List;
+package org.komodo.rest;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import static org.junit.Assert.assertEquals;
 
-@JsonSerialize(as = QSRow.class)
-@JsonInclude(Include.NON_NULL)
-public class QSRow {
+import javax.ws.rs.core.Response.Status;
 
-    private final List<Object> row = new ArrayList<Object>();
+import org.junit.Test;
+import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 
-    /**
-     * @param value
-     */
-    public void add(Object value) {
-        row.add(value);
-    }
+public class KomodoServiceTest {
 
-    /**
-     * @return the values for this row
-     */
-    public List<Object> getRow() {
-        return row;
-    }
-    
+	@Test public void testErrorResponseSerialization() {
+		String json = KomodoJsonMarshaller.marshall(new KomodoService.ErrorResponse("yikes", Status.EXPECTATION_FAILED));
+		assertEquals("{\n" + 
+				"  \"error\" : \"yikes\"\n" + 
+				"}", json);
+	}
+	
 }

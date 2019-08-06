@@ -22,14 +22,17 @@ import java.util.Map;
 
 import org.komodo.utils.ArgCheck;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 
 /**
- * Object to be serialised by GSON that provides key/message pairs
+ * Object that provides key/message pairs
  */
 @JsonSerialize(as = KomodoStatusObject.class)
+@JsonInclude(Include.NON_NULL)
 public class KomodoStatusObject {
 
     /**

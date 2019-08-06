@@ -1,6 +1,7 @@
 --drop table if exists source_schema;
---drop table if exists data_virtualization;
+--drop index if exists view_definition_dv_name;
 --drop table if exists view_definition;
+--drop table if exists data_virtualization;
 
 CREATE TABLE IF NOT EXISTS data_virtualization 
   ( 

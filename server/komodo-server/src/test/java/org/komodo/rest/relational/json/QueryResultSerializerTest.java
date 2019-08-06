@@ -18,14 +18,13 @@
 package org.komodo.rest.relational.json;
 
 import static org.junit.Assert.assertEquals;
-import java.util.ArrayList;
-import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.StringConstants;
-import org.komodo.rest.relational.response.RestQueryColumn;
-import org.komodo.rest.relational.response.RestQueryResult;
-import org.komodo.rest.relational.response.RestQueryRow;
+import org.komodo.metadata.query.QSColumn;
+import org.komodo.metadata.query.QSResult;
+import org.komodo.metadata.query.QSRow;
 
 public class QueryResultSerializerTest implements StringConstants {
 
@@ -49,125 +48,59 @@ public class QueryResultSerializerTest implements StringConstants {
 
     private static int COLUMN_TYPE = 2;
 
-    private RestQueryResult queryResult;
+    private QSResult queryResult;
 
     private String JSON;
 
-    private String tab(String text, int num) {
-        StringBuffer buf = new StringBuffer();
-        for (int i = 0; i < num; ++i)
-            buf.append(SPACE).append(SPACE);
-
-        buf.append(text);
-        return buf.toString();
-    }
-
-    private String tab(String text) {
-        return tab(text, 1);
-    }
-
     @Before
     public void init() throws Exception {
-        StringBuffer jsonBuf = new StringBuffer(OPEN_BRACE).append(NEW_LINE);
-        jsonBuf.append(tab("\"columns\"")).append(COLON)
-                        .append(SPACE).append(OPEN_SQUARE_BRACKET).append(NEW_LINE);
-
-        List<RestQueryColumn> columns = new ArrayList<RestQueryColumn>();
-
+        queryResult = new QSResult();
+    	
         for (int i = 0; i < columnsData.length; ++i) {
             String[] columnData = columnsData[i];
 
-            jsonBuf.append(tab(OPEN_BRACE, 2)).append(NEW_LINE)
-                                .append(tab("\"name\"", 3))
-                                    .append(COLON)
-                                    .append(SPACE)
-                                    .append(SPEECH_MARK)
-                                    .append(columnsData[i][COLUMN_NAME])
-                                    .append(SPEECH_MARK)
-                                    .append(COMMA)
-                                    .append(NEW_LINE)
-                                .append(tab("\"label\"", 3))
-                                    .append(COLON)
-                                    .append(SPACE)
-                                    .append(SPEECH_MARK)
-                                    .append(columnsData[i][COLUMN_LABEL])
-                                    .append(SPEECH_MARK)
-                                    .append(COMMA)
-                                    .append(NEW_LINE)
-                                .append(tab("\"type\"", 3))
-                                    .append(COLON)
-                                    .append(SPACE)
-                                    .append(SPEECH_MARK)
-                                    .append(columnsData[i][COLUMN_TYPE])
-                                    .append(SPEECH_MARK)
-                                    .append(NEW_LINE)
-                            .append(tab(CLOSE_BRACE, 2));
+            QSColumn column = new QSColumn(columnData[COLUMN_TYPE], columnData[COLUMN_NAME], columnData[COLUMN_LABEL]);
 
-            if ((i + 1) < columnData.length)
-                jsonBuf.append(COMMA);
-
-            jsonBuf.append(NEW_LINE);
-
-            RestQueryColumn column = new RestQueryColumn();
-            column.setName(columnData[COLUMN_NAME]);
-            column.setLabel(columnData[COLUMN_LABEL]);
-            column.setType(columnData[COLUMN_TYPE]);
-
-            columns.add(column);
+            queryResult.addColumn(column);
         }
 
-        jsonBuf.append(tab(CLOSE_SQUARE_BRACKET)).append(COMMA).append(NEW_LINE);
-
-        jsonBuf.append(tab("\"rows\""))
-                        .append(COLON)
-                        .append(SPACE)
-                        .append(OPEN_SQUARE_BRACKET)
-                        .append(NEW_LINE);
-
-        List<RestQueryRow> rows = new ArrayList<RestQueryRow>();
         for (int i = 0; i < rowsData.length; ++i) {
             Object[] rowData = rowsData[i];
 
-            jsonBuf
-                        .append(tab(OPEN_BRACE, 2))
-                        .append(NEW_LINE)
-                            .append(tab("\"row\"", 3))
-                            .append(COLON)
-                            .append(SPACE)
-                            .append(OPEN_SQUARE_BRACKET)
-                            .append(NEW_LINE)
-                            .append(tab(SPEECH_MARK, 4)).append(rowData[COLUMN_NAME]).append(SPEECH_MARK)
-                            .append(COMMA)
-                            .append(NEW_LINE)
-                            .append(tab(SPEECH_MARK, 4)).append(rowData[COLUMN_LABEL]).append(SPEECH_MARK)
-                            .append(COMMA)
-                            .append(NEW_LINE)
-                            .append(tab(SPEECH_MARK, 4)).append(rowData[COLUMN_TYPE]).append(SPEECH_MARK)
-                            .append(NEW_LINE)
-                        .append(tab(CLOSE_SQUARE_BRACKET, 3))
-                        .append(NEW_LINE)
-                    .append(tab(CLOSE_BRACE, 2));
-                    
-            if ((i + 1) < rowsData.length)
-                jsonBuf.append(COMMA);
+            QSRow row = new QSRow();
+            for (Object o : rowData) {
+            	row.add(o);
+            }
 
-            jsonBuf.append(NEW_LINE);
-
-            RestQueryRow row = new RestQueryRow();
-            row.setValues(rowData);
-
-            rows.add(row);
+            queryResult.addRow(row);
         }
 
-        jsonBuf.append(tab(CLOSE_SQUARE_BRACKET))
-                        .append(NEW_LINE)
-                        .append(CLOSE_BRACE);
-
-        JSON = jsonBuf.toString();
-
-        queryResult = new RestQueryResult();
-        queryResult.setColumns(columns.toArray(new RestQueryColumn[0]));
-        queryResult.setRows(rows.toArray(new RestQueryRow[0]));
+        JSON = "{\n" + 
+        		"  \"columns\" : [ {\n" + 
+        		"    \"type\" : \"long\",\n" + 
+        		"    \"name\" : \"Id\",\n" + 
+        		"    \"label\" : \"ID\"\n" + 
+        		"  }, {\n" + 
+        		"    \"type\" : \"varchar\",\n" + 
+        		"    \"name\" : \"Name\",\n" + 
+        		"    \"label\" : \"Name\"\n" + 
+        		"  }, {\n" + 
+        		"    \"type\" : \"varchar\",\n" + 
+        		"    \"name\" : \"Code\",\n" + 
+        		"    \"label\" : \"Code\"\n" + 
+        		"  } ],\n" + 
+        		"  \"rows\" : [ {\n" + 
+        		"    \"row\" : [ 1, \"Florida\", \"FL\" ]\n" + 
+        		"  }, {\n" + 
+        		"    \"row\" : [ 2, \"Washington\", \"WA\" ]\n" + 
+        		"  }, {\n" + 
+        		"    \"row\" : [ 3, \"Missouri\", \"MI\" ]\n" + 
+        		"  }, {\n" + 
+        		"    \"row\" : [ 4, \"District of Columbia\", \"DC\" ]\n" + 
+        		"  }, {\n" + 
+        		"    \"row\" : [ 5, \"Montana\", \"MO\" ]\n" + 
+        		"  } ]\n" + 
+        		"}";
     }
 
     @Test
@@ -176,10 +109,12 @@ public class QueryResultSerializerTest implements StringConstants {
         assertEquals(JSON, json);
     }
 
-    @Test
+    /**
+     * Import is not used, and the import will fail as some state is final with no setters
+     * @throws Exception
+     */
+    @Test(expected = RuntimeException.class)
     public void shouldImportResult() throws Exception {
-        RestQueryResult queryResult = KomodoJsonMarshaller.unmarshall( JSON, RestQueryResult.class );
-        assertEquals(columnsData.length, queryResult.getColumns().length);
-        assertEquals(rowsData.length, queryResult.getRows().length);
+    	KomodoJsonMarshaller.unmarshall( JSON, QSResult.class );
     }
 }

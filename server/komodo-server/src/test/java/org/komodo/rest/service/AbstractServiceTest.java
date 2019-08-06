@@ -123,7 +123,7 @@ public class AbstractServiceTest implements StringConstants, V1Constants {
     }
 
     protected void addBody(HttpEntityEnclosingRequestBase request, Object[] bodyObject) throws UnsupportedEncodingException {
-        String body = KomodoJsonMarshaller.marshallArray(bodyObject, false);
+        String body = KomodoJsonMarshaller.marshall(bodyObject, false);
         HttpEntity requestEntity = new StringEntity(body, ContentType.APPLICATION_JSON);
         request.setEntity(requestEntity);
     }

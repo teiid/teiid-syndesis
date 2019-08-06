@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 
 /**
- * Object to be serialised by GSON that encapsulates an artifact path object
+ * Object that encapsulates an artifact path object
  */
 @JsonSerialize(as = KomodoQueryAttribute.class)
 @JsonInclude(value=Include.NON_NULL)

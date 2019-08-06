@@ -19,9 +19,12 @@ package org.komodo.rest.relational.response.vieweditorstate;
 
 import org.komodo.utils.ArgCheck;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 @JsonSerialize(as = RestViewDefinitionStatus.class)
+@JsonInclude(Include.NON_NULL)
 public class RestViewDefinitionStatus {
 
     private String status;

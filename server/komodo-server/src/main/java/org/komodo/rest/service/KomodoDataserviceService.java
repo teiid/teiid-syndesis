@@ -53,7 +53,7 @@ import org.komodo.openshift.ProtocolType;
 import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
-import org.komodo.rest.RestBasicEntity.ResourceNotFound;
+import org.komodo.rest.ResourceNotFound;
 import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.dataservice.RestDataservice;
 import org.komodo.rest.relational.response.KomodoStatusObject;

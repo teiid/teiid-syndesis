@@ -41,7 +41,6 @@ import org.komodo.UnitOfWork.TimeoutException;
 import org.komodo.WorkspaceManager;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
-import org.komodo.rest.RestBasicEntity.ResourceNotFound;
 import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.utils.KLog;
@@ -49,7 +48,8 @@ import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
  * A Komodo service implementation.
@@ -90,11 +90,15 @@ public abstract class KomodoService extends AbstractTransactionService implement
 		String VIRTUALIZATION = "virtualization";
     }
 
-    private class ErrorResponse {
+    @JsonSerialize(as = ErrorResponse.class)
+    static class ErrorResponse {
         private final String error;
+        @JsonIgnore
+        private Status status;
 
-        public ErrorResponse(String error) {
+        public ErrorResponse(String error, Status status) {
             this.error = error;
+            this.status = status;
         }
 
         @SuppressWarnings( "unused" )
@@ -135,30 +139,6 @@ public abstract class KomodoService extends AbstractTransactionService implement
     @Context
     protected SecurityContext securityContext;
 
-    /**
-     * @param value the value
-     * @return the value encoded for json
-     */
-    public static String protectPrefix(String value) {
-        if (value == null)
-            return null;
-
-        value = value.replaceAll(COLON, PREFIX_SEPARATOR);
-        return value;
-    }
-
-    /**
-     * @param value the value
-     * @return the value decoded from json transit
-     */
-    public static String unprotectPrefix(String value) {
-        if (value == null)
-            return null;
-
-        value = value.replaceAll(PREFIX_SEPARATOR, COLON);
-        return value;
-    }
-
     protected OAuthCredentials getAuthenticationToken() {
         return AuthHandlingFilter.threadOAuthCredentials.get();
     }
@@ -183,20 +163,6 @@ public abstract class KomodoService extends AbstractTransactionService implement
 
     protected WorkspaceManager getWorkspaceManager() throws KException {
     	return this.kengine.getWorkspaceManager();
-    }
-
-    protected Object createErrorResponseEntity(List<MediaType> acceptableMediaTypes, String errorMessage) {
-        Object responseEntity = null;
-
-        if (acceptableMediaTypes.contains(MediaType.APPLICATION_JSON_TYPE)) {
-            Gson gson = new Gson();
-            responseEntity = gson.toJson(new ErrorResponse(errorMessage));
-        } else if (acceptableMediaTypes.contains(MediaType.APPLICATION_XML_TYPE)) {
-        	return "<error>"+errorMessage+"</error>";
-        } else
-            responseEntity = errorMessage;
-
-        return responseEntity;
     }
 
     protected Response createErrorResponse(Status returnCode, List<MediaType> mediaTypes,
@@ -241,20 +207,19 @@ public abstract class KomodoService extends AbstractTransactionService implement
     }
 
     protected Response createErrorResponse(Status returnCode, List<MediaType> mediaTypes, String resultMsg) {
-        Object responseEntity = createErrorResponseEntity(mediaTypes, resultMsg);
-
         //
         // Log the error in the komodo log for future reference
         //
         KLog.getLogger().error(Messages.getString(Messages.Error.RESPONSE_ERROR, returnCode, resultMsg));
 
-        return Response.status(returnCode).entity(responseEntity).build();
+    	ErrorResponse error = new ErrorResponse(resultMsg, returnCode);
+
+        return toResponse(mediaTypes, error);
     }
 
     protected ResponseBuilder notAcceptableMediaTypesBuilder() {
         List<Variant> variants = VariantListBuilder.newInstance()
-                                                                   .mediaTypes(MediaType.APPLICATION_XML_TYPE,
-                                                                                       MediaType.APPLICATION_JSON_TYPE)
+                                                                   .mediaTypes(MediaType.APPLICATION_JSON_TYPE)
                                                                    .build();
 
         return Response.notAcceptable(variants);
@@ -275,46 +240,32 @@ public abstract class KomodoService extends AbstractTransactionService implement
         return false;
     }
 
-    protected Response toResponse(List<MediaType> acceptableMediaTypes, final List<?> entities) throws Exception {
-    	ResponseBuilder builder = null;
-
-        Object entity;
-        if ( entities.size() == 1 && (entity = entities.iterator().next()) instanceof ResourceNotFound ) {
-        	return toResponse(acceptableMediaTypes, entity);
-        } else {
-
-            if (isAcceptable(acceptableMediaTypes, MediaType.APPLICATION_JSON_TYPE))
-                builder = Response.ok( KomodoJsonMarshaller.marshallArray(entities.toArray(new Object[0]), true), MediaType.APPLICATION_JSON );
-            else {
-                builder = notAcceptableMediaTypesBuilder();
-            }
-        }
-
-        return builder.build();
-    }
-    
-    protected Response toResponse(List<MediaType> acceptableMediaTypes, final Object entity) {
-    	if (entity == null) {
-            return Response.ok().build();
+    protected Response toResponse(List<MediaType> acceptableMediaTypes, Object entity) {
+        Status status = Status.OK;
+        
+        if (entity == null) {
+            return Response.noContent().build();
         }
     	
         ResponseBuilder builder = null;
+        
+        if ( entity instanceof ErrorResponse ) {
+        	status = ((ErrorResponse)entity).status;
+        }
 
-        if ( entity == RestBasicEntity.NO_CONTENT ) {
-            builder = Response.noContent();
-        } else if ( entity instanceof ResourceNotFound ) {
+        if ( entity instanceof ResourceNotFound ) {
             final ResourceNotFound resourceNotFound = ( ResourceNotFound )entity;
 
             String notFoundMsg = Messages.getString( RESOURCE_NOT_FOUND,
                                                      resourceNotFound.getResourceName());
-            Object responseEntity = createErrorResponseEntity(acceptableMediaTypes, notFoundMsg);
-            builder = Response.status( Status.NOT_FOUND ).entity(responseEntity);
-        } else {
-            if (isAcceptable(acceptableMediaTypes, MediaType.APPLICATION_JSON_TYPE))
-                builder = Response.ok( KomodoJsonMarshaller.marshall( entity ), MediaType.APPLICATION_JSON );
-            else {
-                builder = notAcceptableMediaTypesBuilder();
-            }
+            entity = new ErrorResponse(notFoundMsg, Status.NOT_FOUND);
+            status = Status.NOT_FOUND;
+        }
+        
+        if (isAcceptable(acceptableMediaTypes, MediaType.APPLICATION_JSON_TYPE))
+            builder = Response.status(status).entity(KomodoJsonMarshaller.marshall( entity )).type(MediaType.APPLICATION_JSON );
+        else {
+            builder = notAcceptableMediaTypesBuilder();
         }
 
         return builder.build();
@@ -329,26 +280,14 @@ public abstract class KomodoService extends AbstractTransactionService implement
         } catch (TimeoutException e) {
         	//TODO: the time here is arbitrary - we are not yet configuring an explicit timeout
         	
-            // callback timeout occurred
+            // timeout occurred
             String errorMessage = Messages.getString( COMMIT_TIMEOUT, transaction.getName(), timeout, unit );
-            Object responseEntity = createErrorResponseEntity(acceptableMediaTypes, errorMessage);
-            return Response.status( Status.INTERNAL_SERVER_ERROR )
-                           .type( MediaType.TEXT_PLAIN )
-                           .entity(responseEntity)
-                           .build();
+            return createErrorResponse(Status.INTERNAL_SERVER_ERROR, acceptableMediaTypes, errorMessage);
         } catch (Throwable e) {
-            // callback was called because of an error condition
-            Object responseEntity = createErrorResponseEntity(acceptableMediaTypes, e.getLocalizedMessage());
-            return Response.status( Status.INTERNAL_SERVER_ERROR )
-                            .entity(responseEntity)
-                            .build();
+        	return createErrorResponse(Status.INTERNAL_SERVER_ERROR, acceptableMediaTypes, e.getLocalizedMessage());
         }
 
-        if (entity != null) {
-        	return toResponse(acceptableMediaTypes, entity);
-        }
-
-        return Response.ok().build();
+    	return toResponse(acceptableMediaTypes, entity);
     }
 
     protected Response commit( final UnitOfWork transaction, List<MediaType> acceptableMediaTypes,

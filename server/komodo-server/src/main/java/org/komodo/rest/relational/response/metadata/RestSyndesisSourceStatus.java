@@ -8,12 +8,18 @@ import org.komodo.metadata.TeiidVdb;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.utils.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 /**
  * The Syndesis source status.  Determine the following for syndesis source
  * - does it have corresponding teiid source
  * - the corresponding teiid source vdb state, and details
  * - the corresponding schema vdb state, and details
  */
+@JsonSerialize(as = RestSyndesisSourceStatus.class)
+@JsonInclude(Include.NON_NULL)
 public final class RestSyndesisSourceStatus implements V1Constants {
 
     /*
@@ -25,7 +31,7 @@ public final class RestSyndesisSourceStatus implements V1Constants {
       "vdbName": "myConnectionBtlConn",
       "schemaState": "MISSING" | "LOADING" | "ACTIVE" | "FAILED",
       "schemaVdbName": "syndesissrcnamebtlconnschemavdb",
-      "schemaModelName": "syndesisSrcNameBtlConnSchemaModel",
+      "id": "syndesis source / source schema id",
       "errors": []
     }
 
@@ -79,51 +85,11 @@ public final class RestSyndesisSourceStatus implements V1Constants {
  
     }
 
-    /**
-     * The property key for the syndesis source name.
-     */
-    public static final String SOURCE_NAME = "sourceName"; //$NON-NLS-1$
-
-    /**
-     * The property key for has teiid source
-     */
-    public static final String HAS_TEIID_SOURCE = "hasTeiidSource"; //$NON-NLS-1$
-
-    /**
-     * The property key for a list of validity errors.
-     */
-    public static final String ERRORS = "errors"; //$NON-NLS-1$
-
-    /**
-     * The property key for the connection's workspace schema model name.
-     */
-    public static final String SCHEMA_MODEL_NAME = "schemaModelName"; //$NON-NLS-1$
-
-    /**
-     * The property key for the connection's workspace schema (i.e., tables, procedures, etc. are available) state.
-     */
-    public static final String SCHEMA_STATE = "schemaState"; //$NON-NLS-1$
-
-    /**
-     * The property key for the connection's workspace schema VDB name.
-     */
-    public static final String SCHEMA_VDB_NAME = "schemaVdbName"; //$NON-NLS-1$
-
-    /**
-     * The property key for the connection's server VDB name.
-     */
-    public static final String SERVER_VDB_NAME = "vdbName"; //$NON-NLS-1$
-
-    /**
-     * The property key for the connection's server VDB state.
-     */
-    public static final String SERVER_VDB_STATE = "vdbState"; //$NON-NLS-1$
-
     private String sourceName;
     private boolean hasTeiidSource = false;
     private List< String > errors;
     private EntityState schemaState = EntityState.MISSING;
-    private String schemaModelId;
+    private String id;
     private String vdbName;
     private EntityState vdbState = EntityState.MISSING;
 
@@ -158,7 +124,7 @@ public final class RestSyndesisSourceStatus implements V1Constants {
         return Objects.equals( this.sourceName, that.sourceName )
                && Objects.equals( this.hasTeiidSource, that.hasTeiidSource )
                && Objects.equals( this.errors, that.errors )
-               && Objects.equals( this.schemaModelId, that.schemaModelId )
+               && Objects.equals( this.id, that.id )
                && Objects.equals(  this.schemaState, that.schemaState )
                && Objects.equals( this.vdbName, that.vdbName )
                && Objects.equals( this.vdbState, that.vdbState );
@@ -174,7 +140,7 @@ public final class RestSyndesisSourceStatus implements V1Constants {
     /**
      * @return 'true' if has corresponding teiid source
      */
-    public boolean hasTeiidSource() {
+    public boolean getHasTeiidSource() {
         return this.hasTeiidSource;
     }
 
@@ -195,8 +161,8 @@ public final class RestSyndesisSourceStatus implements V1Constants {
     /**
      * @return the schema model name (can be empty)
      */
-    public String getSchemaModelId() {
-        return this.schemaModelId;
+    public String getId() {
+        return this.id;
     }
 
     /**
@@ -223,7 +189,7 @@ public final class RestSyndesisSourceStatus implements V1Constants {
         return Objects.hash( this.sourceName,
                              this.hasTeiidSource,
                              this.errors,
-                             this.schemaModelId,
+                             this.id,
                              this.schemaState,
                              this.vdbName,
                              this.vdbState );
@@ -278,8 +244,8 @@ public final class RestSyndesisSourceStatus implements V1Constants {
         this.schemaState = schemaState == null ? EntityState.MISSING : EntityState.valueOf(state);
     }
     
-    public void setSchemaModelId( final String schemaModelid ) {
-        this.schemaModelId = schemaModelid;
+    public void setId(String id) {
+		this.id = id;
     }
 
     /**

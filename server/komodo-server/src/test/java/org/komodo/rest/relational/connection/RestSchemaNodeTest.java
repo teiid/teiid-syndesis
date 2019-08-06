@@ -49,7 +49,7 @@ public class RestSchemaNodeTest {
 		
 		assertEquals(expected, KomodoJsonMarshaller.marshall(other));
 		
-		value = KomodoJsonMarshaller.marshallArray(new Object[] {new RestSchemaNode(), new RestSchemaNode()}, true);
+		value = KomodoJsonMarshaller.marshall(new Object[] {new RestSchemaNode(), new RestSchemaNode()}, true);
 		
 		assertEquals("[{\"children\":[],\"queryable\":false},{\"children\":[],\"queryable\":false}]", value);
 	}

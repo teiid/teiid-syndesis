@@ -15,37 +15,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.metadata.query;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+package org.komodo.rest;
 
-@JsonSerialize(as = QSColumn.class)
-@JsonInclude(Include.NON_NULL)
-public class QSColumn {
+import org.komodo.utils.ArgCheck;
 
-    private final String type;
+/**
+ * indicates the resource was not found.
+ */
+public class ResourceNotFound {
 
-    private final String name;
+    private final String resourceName;
 
-    private final String label;
+    /**
+     * @param resourceName
+     *        the name of the resource that was not found (cannot be empty)
+     */
+    public ResourceNotFound(final String resourceName) {
+        super();
+        ArgCheck.isNotEmpty(resourceName, "resourceName"); //$NON-NLS-1$
 
-    public QSColumn(String dataType, String columnName, String columnLabel) {
-        this.type = dataType;
-        this.name = columnName;
-        this.label = columnLabel;
+        this.resourceName = resourceName;
     }
 
-    public String getType() {
-        return type;
+    /**
+     * @return the resource name (never empty)
+     */
+    public String getResourceName() {
+        return this.resourceName;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public String getLabel() {
-        return label;
-    }
 }
