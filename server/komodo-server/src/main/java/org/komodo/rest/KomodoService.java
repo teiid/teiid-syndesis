@@ -42,7 +42,6 @@ import org.komodo.WorkspaceManager;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.relational.RelationalMessages;
-import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;

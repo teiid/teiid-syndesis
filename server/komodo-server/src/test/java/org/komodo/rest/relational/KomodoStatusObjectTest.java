@@ -16,12 +16,13 @@
  * limitations under the License.
  */
 
-package org.komodo.rest.relational.response;
+package org.komodo.rest.relational;
 
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-import org.komodo.rest.relational.json.KomodoJsonMarshaller;
+import org.komodo.rest.KomodoJsonMarshaller;
+import org.komodo.rest.relational.KomodoStatusObject;
 
 public class KomodoStatusObjectTest {
 	

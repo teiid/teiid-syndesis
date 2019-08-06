@@ -40,6 +40,7 @@ import javax.sql.DataSource;
 import javax.xml.stream.XMLStreamException;
 
 import org.komodo.KException;
+import org.komodo.datasources.ExternalSource;
 import org.komodo.metadata.DeployStatus;
 import org.komodo.metadata.Messages;
 import org.komodo.metadata.MetadataInstance;
@@ -48,8 +49,6 @@ import org.komodo.metadata.TeiidVdb;
 import org.komodo.metadata.query.QSColumn;
 import org.komodo.metadata.query.QSResult;
 import org.komodo.metadata.query.QSRow;
-import org.komodo.rest.ExternalSource;
-import org.komodo.rest.TeiidServer;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 import org.springframework.beans.factory.annotation.Autowired;

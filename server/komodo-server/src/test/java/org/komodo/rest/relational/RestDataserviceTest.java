@@ -25,7 +25,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.openshift.BuildStatus;
-import org.komodo.rest.relational.dataservice.RestDataservice;
 import org.mockito.Mockito;
 
 @SuppressWarnings( {"javadoc", "nls"} )

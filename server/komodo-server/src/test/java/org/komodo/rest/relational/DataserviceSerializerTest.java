@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.rest.relational.json;
+package org.komodo.rest.relational;
 
 import static org.junit.Assert.assertEquals;
 
@@ -24,11 +24,14 @@ import java.net.URLDecoder;
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.datavirtualization.DataVirtualization;
-import org.komodo.rest.relational.dataservice.RestDataservice;
+import org.komodo.rest.KomodoJsonMarshaller;
+import org.komodo.rest.relational.RestDataservice;
 import org.mockito.Mockito;
 
 @SuppressWarnings( { "javadoc", "nls" } )
-public final class DataserviceSerializerTest extends AbstractSerializerTest  {
+public final class DataserviceSerializerTest {
+	
+    protected static final String DATASERVICE_NAME = "dataservice1";
 
     private static final String DESCRIPTION = "my description";
 

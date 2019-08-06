@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.rest.relational.json;
+package org.komodo.rest.relational;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -27,8 +27,9 @@ import org.junit.Test;
 import org.komodo.KException;
 import org.komodo.datavirtualization.SqlComposition;
 import org.komodo.datavirtualization.ViewDefinition;
+import org.komodo.rest.KomodoJsonMarshaller;
 
-public class ViewEditorStateSerializerTest extends AbstractSerializerTest {
+public class ViewEditorStateSerializerTest {
 	
     private String viewName = "myNewView";
     private String viewDefinitionName = "testView";

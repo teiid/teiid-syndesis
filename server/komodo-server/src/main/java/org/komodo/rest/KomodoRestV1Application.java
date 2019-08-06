@@ -24,7 +24,7 @@ import javax.ws.rs.core.Application;
 
 import org.komodo.KEngine;
 import org.komodo.KException;
-import org.komodo.rest.json.JsonConstants;
+import org.komodo.StringConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -38,7 +38,7 @@ public class KomodoRestV1Application {
     /**
      * Constants associated with version 1 of the Komodo REST application.
      */
-    public static interface V1Constants extends JsonConstants {
+    public static interface V1Constants extends StringConstants {
 
         class App {
 

@@ -16,16 +16,16 @@
  * limitations under the License.
  */
 
-package org.komodo.rest.relational.response;
+package org.komodo.rest.relational;
 
 import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
 
 import org.junit.Test;
-import org.komodo.rest.relational.json.KomodoJsonMarshaller;
-import org.komodo.rest.relational.response.metadata.RestSyndesisSourceStatus;
-import org.komodo.rest.relational.response.metadata.RestSyndesisSourceStatus.EntityState;
+import org.komodo.rest.KomodoJsonMarshaller;
+import org.komodo.rest.relational.RestSyndesisSourceStatus;
+import org.komodo.rest.relational.RestSyndesisSourceStatus.EntityState;
 
 public class RestSyndesisSourceStatusTest {
 	

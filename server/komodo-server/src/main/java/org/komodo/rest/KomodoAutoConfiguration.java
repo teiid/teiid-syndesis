@@ -28,6 +28,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.komodo.KEngine;
 import org.komodo.metadata.MetadataInstance;
+import org.komodo.metadata.internal.TeiidServer;
 import org.komodo.openshift.EncryptionComponent;
 import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.rest.connections.SyndesisConnectionMonitor;

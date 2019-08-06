@@ -29,7 +29,6 @@ import org.junit.Test;
 import org.komodo.KException;
 import org.komodo.metadata.DeployStatus;
 import org.komodo.metadata.MetadataInstance.ValidationResult;
-import org.komodo.rest.TeiidServer;
 import org.teiid.adminapi.impl.VDBMetadataParser;
 import org.teiid.runtime.EmbeddedConfiguration;
 

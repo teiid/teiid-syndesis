@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.rest;
+package org.komodo.datasources;
 
 import java.util.Set;
 

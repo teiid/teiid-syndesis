@@ -23,7 +23,6 @@ import static org.junit.Assert.assertEquals;
 import javax.ws.rs.core.Response.Status;
 
 import org.junit.Test;
-import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 
 public class KomodoServiceTest {
 

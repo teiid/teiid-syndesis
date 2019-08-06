@@ -47,8 +47,8 @@ import org.apache.http.util.EntityUtils;
 import org.junit.ClassRule;
 import org.junit.rules.ExternalResource;
 import org.komodo.StringConstants;
+import org.komodo.rest.KomodoJsonMarshaller;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
-import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 
 public class AbstractServiceTest implements StringConstants, V1Constants {
 

@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.rest.relational.json;
+package org.komodo.rest.relational;
 
 import static org.junit.Assert.assertEquals;
 
@@ -25,6 +25,7 @@ import org.komodo.StringConstants;
 import org.komodo.metadata.query.QSColumn;
 import org.komodo.metadata.query.QSResult;
 import org.komodo.metadata.query.QSRow;
+import org.komodo.rest.KomodoJsonMarshaller;
 
 public class QueryResultSerializerTest implements StringConstants {
 

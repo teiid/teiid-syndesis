@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.rest.relational.json;
+package org.komodo.rest;
 
 import java.io.IOException;
 
@@ -25,7 +25,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * A JSON serializer and deserializer for {@link RestBasicEntity Komodo REST objects}.
+ * A JSON serializer and deserializer.
  */
 public final class KomodoJsonMarshaller {
 	
