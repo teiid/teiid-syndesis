@@ -20,28 +20,21 @@ package org.komodo.metadata.query;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-@JsonSerialize(as = QSRow.class)
-@JsonInclude(Include.NON_NULL)
 public class QSRow {
 
-    private final List<Object> row = new ArrayList<Object>();
+    private final List<Object> values = new ArrayList<Object>();
 
     /**
      * @param value
      */
     public void add(Object value) {
-        row.add(value);
+        values.add(value);
     }
 
     /**
      * @return the values for this row
      */
-    public List<Object> getRow() {
-        return row;
+    public List<Object> getValues() {
+        return values;
     }
-    
 }

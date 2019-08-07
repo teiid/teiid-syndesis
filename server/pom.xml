@@ -158,6 +158,7 @@
     <!-- this is simply a version no dependencies involved right now -->
     <version.springboot.teiid>1.1.0</version.springboot.teiid>
     
+    <version.gson>2.2.4</version.gson>
     <version.apache.commons.codec>1.10</version.apache.commons.codec>
     <version.guava>20.0</version.guava>
     <version.jaxrs>2.13</version.jaxrs>
@@ -186,6 +187,7 @@
 
 
   <modules>
+    <module>komodo-spi</module>
     <module>komodo-core</module>
     <module>komodo-server</module>
   </modules>
@@ -250,6 +252,11 @@
       <!-- Komodo subprojects -->
       <dependency>
         <groupId>org.teiid</groupId>
+        <artifactId>komodo-spi</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
         <artifactId>komodo-metadata</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -262,6 +269,13 @@
         <groupId>org.teiid</groupId>
         <artifactId>komodo-server</artifactId>
         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>komodo-spi</artifactId>
+        <version>${project.version}</version>
+        <type>test-jar</type>
+        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
@@ -389,6 +403,11 @@
         <groupId>relaxngDatatype</groupId>
         <artifactId>relaxngDatatype</artifactId>
         <version>${version.relaxngDatatype}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.code.gson</groupId>
+        <artifactId>gson</artifactId>
+        <version>${version.gson}</version>
       </dependency>
       <dependency>
         <groupId>com.google.guava</groupId>

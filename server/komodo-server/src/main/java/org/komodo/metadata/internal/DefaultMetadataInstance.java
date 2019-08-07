@@ -40,7 +40,6 @@ import javax.sql.DataSource;
 import javax.xml.stream.XMLStreamException;
 
 import org.komodo.KException;
-import org.komodo.datasources.ExternalSource;
 import org.komodo.metadata.DeployStatus;
 import org.komodo.metadata.Messages;
 import org.komodo.metadata.MetadataInstance;
@@ -49,6 +48,8 @@ import org.komodo.metadata.TeiidVdb;
 import org.komodo.metadata.query.QSColumn;
 import org.komodo.metadata.query.QSResult;
 import org.komodo.metadata.query.QSRow;
+import org.komodo.rest.ExternalSource;
+import org.komodo.rest.TeiidServer;
 import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -556,7 +557,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
     }
     
     @Override
-    public ValidationResult validate(String vdbName, String ddl) throws KException {
+    public ValidatorReport validate(String vdbName, String ddl) throws KException {
 		QueryParser parser = QueryParser.getQueryParser();
 		
 		ModelMetaData m = new ModelMetaData();
@@ -593,7 +594,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
 			validator.validate(vdb, m, record, report, wrapper, mf, parser);
 		}
 		
-		return new ValidationResult(report, mf.getSchema());
+		return report;
     }
 
 }

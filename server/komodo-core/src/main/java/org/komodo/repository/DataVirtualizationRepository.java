@@ -18,7 +18,6 @@
 
 package org.komodo.repository;
 
-import org.komodo.datavirtualization.DataVirtualization;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

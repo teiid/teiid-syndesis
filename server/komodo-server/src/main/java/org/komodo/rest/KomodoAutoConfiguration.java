@@ -28,7 +28,6 @@ import javax.ws.rs.core.Response.Status;
 
 import org.komodo.KEngine;
 import org.komodo.metadata.MetadataInstance;
-import org.komodo.metadata.internal.TeiidServer;
 import org.komodo.openshift.EncryptionComponent;
 import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.rest.connections.SyndesisConnectionMonitor;
@@ -117,7 +116,7 @@ public class KomodoAutoConfiguration implements ApplicationListener<ContextRefre
     @ConditionalOnMissingBean
     public TeiidOpenShiftClient openShiftClient(@Autowired KEngine kengine, @Autowired TextEncryptor enc) {
         return new TeiidOpenShiftClient(metadataInstance, new EncryptionComponent(enc),
-                this.config, kengine);
+                this.config);
     }
 
 }
