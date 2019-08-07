@@ -442,7 +442,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
 		// Find and create TableInfo for each source Path
 		int iTable = 0;
 		for(String path : sourceTablePaths) {
-			String connectionName = PathUtils.getOption(path, "connection"); //$NON-NLS-1$
+			String connectionName = PathUtils.getOption(path, CONNECTION_KEY); //$NON-NLS-1$
 
 			// Find schema model based on the connection name (i.e. connection=pgConn)
 			final Schema schemaModel = findSchemaModel( connectionName );
@@ -542,7 +542,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
     	}
     	
     	public String getConnectionName() {
-			return PathUtils.getOption(this.path, "connection"); //$NON-NLS-1$
+			return PathUtils.getOption(this.path, CONNECTION_KEY); //$NON-NLS-1$
 		}
 
     	public String getSourceTablePath() {

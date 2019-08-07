@@ -47,6 +47,7 @@ import org.komodo.StringConstants;
 import org.komodo.TeiidSqlConstants;
 import org.komodo.WorkspaceManager;
 import org.komodo.datavirtualization.DataVirtualization;
+import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.openshift.BuildStatus;
 import org.komodo.openshift.BuildStatus.RouteStatus;
 import org.komodo.openshift.ProtocolType;
@@ -54,6 +55,7 @@ import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
 import org.komodo.rest.ResourceNotFound;
+import org.komodo.rest.relational.ImportPayload;
 import org.komodo.rest.relational.KomodoStatusObject;
 import org.komodo.rest.relational.RelationalMessages;
 import org.komodo.rest.relational.RestDataservice;
@@ -61,6 +63,9 @@ import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.teiid.metadata.Schema;
+import org.teiid.metadata.Table;
+import org.teiid.util.FullyQualifiedName;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -273,14 +278,14 @@ public final class KomodoDataserviceService extends KomodoService
         // Error if the dataservice name is missing
         if (StringUtils.isBlank(dataserviceName)) {
             return createErrorResponseWithForbidden(mediaTypes,
-                    RelationalMessages.Error.DATASERVICE_SERVICE_CREATE_MISSING_NAME);
+                    RelationalMessages.Error.DATASERVICE_SERVICE_MISSING_NAME);
         }
 
         final String jsonDataserviceName = restDataservice.getName();
         // Error if the name is missing from the supplied json body
         if (StringUtils.isBlank(jsonDataserviceName)) {
             return createErrorResponseWithForbidden(mediaTypes,
-                    RelationalMessages.Error.DATASERVICE_SERVICE_JSON_MISSING_NAME);
+                    RelationalMessages.Error.DATASERVICE_SERVICE_MISSING_NAME);
         }
 
         // Error if the name parameter is different than JSON name
@@ -333,7 +338,7 @@ public final class KomodoDataserviceService extends KomodoService
      * @return a JSON document representing the results of the removal
      */
     @DELETE
-    @Path("{dataserviceName}")
+    @Path(V1Constants.DATA_SERVICE_PLACEHOLDER)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Delete a dataservice from the workspace")
     @ApiResponses(value = { @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
@@ -462,7 +467,7 @@ public final class KomodoDataserviceService extends KomodoService
         // Error if the dataservice name is missing
         if (StringUtils.isBlank(dataserviceName)) {
             return createErrorResponseWithForbidden(mediaTypes,
-                    RelationalMessages.Error.DATASERVICE_SERVICE_REFRESH_VIEWS_MISSING_NAME);
+                    RelationalMessages.Error.DATASERVICE_SERVICE_MISSING_NAME);
         }
 
         try {
@@ -482,6 +487,101 @@ public final class KomodoDataserviceService extends KomodoService
                 KomodoStatusObject kso = new KomodoStatusObject("Refresh Status"); //$NON-NLS-1$
                 kso.addAttribute(dataserviceName, "View Successfully refreshed"); //$NON-NLS-1$
 
+                return toResponse(mediaTypes, kso);
+        	});
+        } catch (final Exception e) {
+            return createErrorResponse(mediaTypes, e,
+                    RelationalMessages.Error.DATASERVICE_SERVICE_REFRESH_VIEWS_ERROR, dataserviceName);
+        }
+    }
+    
+    @PUT
+    @Path(StringConstants.FORWARD_SLASH + V1Constants.DATA_SERVICE_PLACEHOLDER 
+    		+ V1Constants.IMPORT + StringConstants.FORWARD_SLASH
+    		+ V1Constants.KOMODO_SOURCE_PLACEHOLDER)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Import views from a given source", response = KomodoStatusObject.class)
+    @ApiResponses(value = { @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
+            @ApiResponse(code = 403, message = "An error has occurred.") })
+    public Response importViews(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
+            @ApiParam(value = "Name of the dataservice", required = true) 
+    		final @PathParam("dataserviceName") 
+    		String dataserviceName,
+            
+            @ApiParam( value = "Name of the komodo source", required = true ) 
+    		final @PathParam( "komodoSourceName" ) 
+    		String komodoSourceName,
+    		
+    		@ApiParam(value = "Import Payload", required = true) 
+    		final ImportPayload importPayload) {
+
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        if (!isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
+            return notAcceptableMediaTypesBuilder().build();
+
+        // Error if the dataservice name is missing
+        if (StringUtils.isBlank(dataserviceName)) {
+            return createErrorResponseWithForbidden(mediaTypes,
+                    RelationalMessages.Error.DATASERVICE_SERVICE_MISSING_NAME);
+        }
+        
+        if (StringUtils.isBlank(komodoSourceName)) {
+        	return createErrorResponseWithForbidden(mediaTypes, 
+        			RelationalMessages.Error.CONNECTION_SERVICE_MISSING_CONNECTION_NAME);
+        }
+
+        try {
+        	return runInTransaction(principal, "import", false, () -> {
+        		DataVirtualization dataservice = getWorkspaceManager().findDataVirtualization(dataserviceName);
+                if (dataservice == null) {
+                	return toResponse(mediaTypes, new ResourceNotFound( dataserviceName ));
+                }
+                
+                Schema s = metadataService.findSchema(komodoSourceName);
+                
+            	if (s == null) {
+                	return toResponse(mediaTypes, new ResourceNotFound( komodoSourceName ));
+                }
+            	
+                KomodoStatusObject kso = new KomodoStatusObject("Import Status"); //$NON-NLS-1$
+            	
+                for (String name : importPayload.getTables()) {
+                	Table t = s.getTable(name);
+                	if (t == null) {
+                		//could be an error/warning
+                		continue;
+                	}
+                	
+                	ViewDefinition viewDefn = getWorkspaceManager().findViewDefinitionByNameIgnoreCase(dataserviceName, name);
+                	if (name.equals(viewDefn.getName())) {
+                		//sanity check
+                		if (!name.equalsIgnoreCase(viewDefn.getName())) {
+                			throw new AssertionError("imported view name conflicts with an existing view name");
+                		}
+                		
+                		//reuse the same id
+                		viewDefn.clearState();
+                		viewDefn.setUserDefined(false);
+                		viewDefn.setDdl(null);
+                		viewDefn.setDescription(null);
+                	} else {
+                		viewDefn = getWorkspaceManager().createViewDefiniton(dataserviceName, name);
+                	}
+                	viewDefn.addProjectedColumn("ALL"); //TODO: fix this convention
+                	FullyQualifiedName fqn = new FullyQualifiedName(CONNECTION_KEY, komodoSourceName);
+                	String sourcePath = fqn.toString() + "/" + t.getProperty(KomodoMetadataService.TABLE_OPTION_FQN, false);
+                	viewDefn.addSourcePath(sourcePath); //TODO: fix this convention
+                	
+                	kso.addAttribute(viewDefn.getName(), viewDefn.getId());
+                }
+
+                //TODO: should this "refresh" the views as we go 
+                //this.metadataService.generateServiceVDB(dataservice);
+                
                 return toResponse(mediaTypes, kso);
         	});
         } catch (final Exception e) {
@@ -544,14 +644,14 @@ public final class KomodoDataserviceService extends KomodoService
         // Error if the dataservice name is missing
         if (StringUtils.isBlank(dataserviceName)) {
             return createErrorResponseWithForbidden(mediaTypes,
-                    RelationalMessages.Error.DATASERVICE_SERVICE_UPDATE_MISSING_NAME);
+                    RelationalMessages.Error.DATASERVICE_SERVICE_MISSING_NAME);
         }
 
         final String jsonDataserviceName = restDataservice.getName();
         // Error if the name is missing from the supplied json body
         if (StringUtils.isBlank(jsonDataserviceName)) {
             return createErrorResponseWithForbidden(mediaTypes,
-                    RelationalMessages.Error.DATASERVICE_SERVICE_JSON_MISSING_NAME);
+                    RelationalMessages.Error.DATASERVICE_SERVICE_MISSING_NAME);
         }
 
         // Error if the name parameter is different than JSON name

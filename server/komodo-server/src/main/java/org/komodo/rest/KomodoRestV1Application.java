@@ -163,9 +163,9 @@ public class KomodoRestV1Application {
         String CONNECTION_PLACEHOLDER = "{connectionName}"; //$NON-NLS-1$
 
         /**
-         * Placeholder added to an URI to allow a specific syndesis source name
+         * Placeholder added to an URI to allow a specific komodo source name
          */
-        String SYNDESIS_SOURCE_PLACEHOLDER = "{syndesisSourceName}"; //$NON-NLS-1$
+        String KOMODO_SOURCE_PLACEHOLDER = "{komodoSourceName}"; //$NON-NLS-1$
 
         /**
          * The name of the URI path segment for schema refresh
@@ -326,6 +326,8 @@ public class KomodoRestV1Application {
          * Refresh views referenced in a view editor state object
          */
         String REFRESH_DATASERVICE_VIEWS = "refreshViews";
+        
+        String IMPORT = "import";
         
         /**
          * Validate a ViewDefintion

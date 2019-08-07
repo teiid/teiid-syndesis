@@ -80,7 +80,6 @@
 	<dependency>
         <groupId>org.teiid</groupId>
         <artifactId>komodo-core</artifactId>
-        <scope>runtime</scope>
     </dependency>      
     <dependency>
         <groupId>org.teiid</groupId>

@@ -475,7 +475,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
      * @return a JSON representation of the refresh status (never <code>null</code>)
      */
     @POST
-    @Path( StringConstants.FORWARD_SLASH + V1Constants.REFRESH_SCHEMA_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.SYNDESIS_SOURCE_PLACEHOLDER )
+    @Path( StringConstants.FORWARD_SLASH + V1Constants.REFRESH_SCHEMA_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.KOMODO_SOURCE_PLACEHOLDER )
     @Produces( MediaType.APPLICATION_JSON )
     @ApiOperation(value = "Initiate schema refresh for a syndesis source")
     @ApiResponses(value = {

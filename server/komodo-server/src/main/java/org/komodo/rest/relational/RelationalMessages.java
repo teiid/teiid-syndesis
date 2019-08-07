@@ -295,21 +295,6 @@ public final class RelationalMessages {
         DATASERVICE_SERVICE_REFRESH_VIEWS_ERROR,
 
         /**
-         * An error indicating create attempt was missing a name
-         */
-        DATASERVICE_SERVICE_CREATE_MISSING_NAME,
- 
-        /**
-         * An error indicating clone attempt was missing a name
-         */
-        DATASERVICE_SERVICE_CLONE_MISSING_NAME,
- 
-        /**
-         * An error indicating refresh views attempt was missing a name
-         */
-        DATASERVICE_SERVICE_REFRESH_VIEWS_MISSING_NAME,
- 
-        /**
          * An error indicating clone attempt was missing a new service name
          */
         DATASERVICE_SERVICE_CLONE_MISSING_NEW_NAME,
@@ -330,25 +315,10 @@ public final class RelationalMessages {
         DATASERVICE_SERVICE_FIND_SOURCE_VDB_ERROR,
 
         /**
-         * The Dataservice service cannot parse the request body
-         */
-        DATASERVICE_SERVICE_REQUEST_PARSING_ERROR,
-
-        /**
          * An error indicating update attempt was missing a name
          */
-        DATASERVICE_SERVICE_UPDATE_MISSING_NAME,
+        DATASERVICE_SERVICE_MISSING_NAME,
         
-        /**
-         * An error indicating update attempt was missing json arg
-         */
-        DATASERVICE_SERVICE_UPDATE_MISSING_JSON,
- 
-        /**
-         * An error indicating the Dataservice name is missing from the input JSON document.
-         */
-        DATASERVICE_SERVICE_JSON_MISSING_NAME,
-
         /**
          * An error indicating that the service does not exist
          */
