@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.repository;
+package org.komodo.datavirtualization;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 @JsonSerialize(as = SqlComposition.class)
 @JsonInclude(Include.NON_NULL)
-public class SqlComposition implements org.komodo.datavirtualization.SqlComposition {
+public class SqlComposition implements Named {
 	
 	private String name;
 	private String description;

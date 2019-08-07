@@ -317,7 +317,7 @@ public final class KomodoUtilService extends KomodoService {
     public Response stashViewEditorState(final @Context HttpHeaders headers,
                                                final @Context UriInfo uriInfo,
                                                @ApiParam(required = true)
-                                               final org.komodo.repository.ViewDefinition restViewEditorState) {
+                                               final org.komodo.datavirtualization.ViewDefinition restViewEditorState) {
 
         SecurityPrincipal principal = checkSecurityContext(headers);
         if (principal.hasErrorResponse())

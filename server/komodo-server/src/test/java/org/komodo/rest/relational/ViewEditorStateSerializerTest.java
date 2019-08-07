@@ -107,7 +107,7 @@ public class ViewEditorStateSerializerTest {
     public void shouldImportJson() {
         String state = createViewEditorState();
 
-        ViewDefinition viewEditorState = KomodoJsonMarshaller.unmarshall(state, org.komodo.repository.ViewDefinition.class);
+        ViewDefinition viewEditorState = KomodoJsonMarshaller.unmarshall(state, org.komodo.datavirtualization.ViewDefinition.class);
         assertEquals(viewName, viewEditorState.getId());
         
         assertNotNull(viewEditorState);
@@ -125,14 +125,14 @@ public class ViewEditorStateSerializerTest {
     @Test
     public void shouldExportJson() throws KException {
         String[] sourceTablePaths = { sourceTablePath1, sourceTablePath2, sourceTablePath3, sourceTablePath4 };
-        org.komodo.repository.ViewDefinition viewDef = new org.komodo.repository.ViewDefinition("dvName", viewDefinitionName);
+        org.komodo.datavirtualization.ViewDefinition viewDef = new org.komodo.datavirtualization.ViewDefinition("dvName", viewDefinitionName);
         viewDef.setId(viewName);
         viewDef.setDescription(description);
         viewDef.setComplete(isComplete);
         viewDef.setUserDefined(isUserDefined);
         viewDef.setSourcePaths(Arrays.asList(sourceTablePaths));
         
-        org.komodo.repository.SqlComposition sqlComp1 = new org.komodo.repository.SqlComposition(comp1Name);
+        org.komodo.datavirtualization.SqlComposition sqlComp1 = new org.komodo.datavirtualization.SqlComposition(comp1Name);
         sqlComp1.setDescription(comp1Desc);
         sqlComp1.setLeftSourcePath(comp1LeftSource);
         sqlComp1.setRightSourcePath(comp1RightSource);
@@ -141,7 +141,7 @@ public class ViewEditorStateSerializerTest {
         sqlComp1.setType(comp1Type);
         sqlComp1.setOperator(comp1Operator);
         
-        org.komodo.repository.SqlComposition sqlComp2 = new org.komodo.repository.SqlComposition(comp2Name);
+        org.komodo.datavirtualization.SqlComposition sqlComp2 = new org.komodo.datavirtualization.SqlComposition(comp2Name);
         sqlComp2.setDescription(comp2Desc);
         sqlComp2.setLeftSourcePath(comp2LeftSource);
         sqlComp2.setRightSourcePath(comp2RightSource);
@@ -152,12 +152,12 @@ public class ViewEditorStateSerializerTest {
 
         viewDef.setCompositions(Arrays.asList(sqlComp1, sqlComp2));
 
-        org.komodo.repository.SqlProjectedColumn sqlCol1 = new org.komodo.repository.SqlProjectedColumn(column1Name);
+        org.komodo.datavirtualization.SqlProjectedColumn sqlCol1 = new org.komodo.datavirtualization.SqlProjectedColumn(column1Name);
         sqlCol1.setName(column1Name);
         sqlCol1.setType(column1Type);
         sqlCol1.setSelected(column1Selected);
 
-        org.komodo.repository.SqlProjectedColumn sqlCol2 = new org.komodo.repository.SqlProjectedColumn(column2Name);
+        org.komodo.datavirtualization.SqlProjectedColumn sqlCol2 = new org.komodo.datavirtualization.SqlProjectedColumn(column2Name);
         sqlCol2.setName(column2Name);
         sqlCol2.setType(column2Type);
         sqlCol2.setSelected(column2Selected);

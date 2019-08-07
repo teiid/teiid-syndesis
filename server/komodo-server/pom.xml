@@ -82,10 +82,6 @@
         <artifactId>komodo-core</artifactId>
     </dependency>      
     <dependency>
-        <groupId>org.teiid</groupId>
-        <artifactId>komodo-spi</artifactId>
-    </dependency>
-    <dependency>
       <groupId>com.sun.xsom</groupId>
       <artifactId>xsom</artifactId>
     </dependency>
@@ -147,12 +143,6 @@
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
       <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.teiid</groupId>
-      <artifactId>komodo-spi</artifactId>
-      <type>test-jar</type>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.teiid</groupId>

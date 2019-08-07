@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.repository;
+package org.komodo.datavirtualization;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +28,7 @@ import javax.persistence.Id;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.komodo.StringConstants;
+import org.komodo.repository.JpaConverterJson;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -41,7 +42,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @Entity
 @JsonSerialize(as = ViewDefinition.class)
 @JsonInclude(Include.NON_NULL)
-public class ViewDefinition implements org.komodo.datavirtualization.ViewDefinition {
+public class ViewDefinition implements Named {
 	
 	public static class State {
 		private List<SqlComposition> compositions = new ArrayList<>(1);
@@ -113,76 +114,62 @@ public class ViewDefinition implements org.komodo.datavirtualization.ViewDefinit
 		return name;
 	}
 	
-	@Override
 	public SqlComposition addComposition(String compositionName) {
-		org.komodo.repository.SqlComposition sqlComposition = new org.komodo.repository.SqlComposition(compositionName);
+		org.komodo.datavirtualization.SqlComposition sqlComposition = new org.komodo.datavirtualization.SqlComposition(compositionName);
 		state.compositions.add(sqlComposition);
 		return sqlComposition;
 	}
 
-	@Override
 	public List<org.komodo.datavirtualization.SqlComposition> getCompositions() {
 		return new ArrayList<>(state.compositions);
 	}
 	
-	@Override
 	public String getDescription() {
 		return this.description;
 	}
 
-	@Override
 	public void setDescription(String description) {
 		this.description = description;
 	}
 
-	@Override
 	public String getDdl() {
 		return this.ddl;
 	}
 
-	@Override
 	public void setDdl(String ddl) {
 		this.ddl = ddl;
 	}
 
-	@Override
 	public void setComplete(boolean complete) {
 		this.complete = complete;
 	}
 
-	@Override
 	public boolean isComplete() {
 		return this.complete;
 	}
 
-	@Override
 	public void setUserDefined(boolean userDefined) {
 		this.userDefined = userDefined;
 	}
 
-	@Override
 	public boolean isUserDefined() {
 		return this.userDefined;
 	}
 
-	@Override
 	public List<String> getSourcePaths() {
 		return state.sourcePaths;
 	}
 
-	@Override
 	public void addSourcePath(String sourcePath) {
 		this.getSourcePaths().add(sourcePath);
 	}
 
-	@Override
 	public SqlProjectedColumn addProjectedColumn(String columnName) {
-		org.komodo.repository.SqlProjectedColumn sqlProjectedColumn = new org.komodo.repository.SqlProjectedColumn(columnName);
+		org.komodo.datavirtualization.SqlProjectedColumn sqlProjectedColumn = new org.komodo.datavirtualization.SqlProjectedColumn(columnName);
 		this.state.projectedColumns.add(sqlProjectedColumn);
 		return sqlProjectedColumn;
 	}
 
-	@Override
 	public List<org.komodo.datavirtualization.SqlProjectedColumn> getProjectedColumns() {
 		return new ArrayList<>(state.projectedColumns);
 	}
@@ -219,7 +206,6 @@ public class ViewDefinition implements org.komodo.datavirtualization.ViewDefinit
 		this.state.projectedColumns = projectedColumns;
 	}
 	
-	@Override
 	public void clearState() {
 		this.state = new State();
 	}

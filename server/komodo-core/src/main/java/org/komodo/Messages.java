@@ -35,21 +35,7 @@ public class Messages implements StringConstants {
     @SuppressWarnings( "javadoc" )
     public enum SPI {
         valueCannotBeEmpty,
-    	valueCannotBeNull,
-        invalidTargetTypeForGetTeiidMethod,
-        invalidTargetTypeForGetDataSourceMethod,
-        invalidTargetTypeForGetTranslatorMethod,
-        invalidTargetTypeForGetUpdatedTeiidMethod;
-
-        @Override
-        public String toString() {
-            return getEnumName(this) + DOT + name();
-        }
-    }
-
-    @SuppressWarnings( "javadoc" )
-    public enum OutcomeFactory {
-        OK;
+    	valueCannotBeNull;
 
         @Override
         public String toString() {

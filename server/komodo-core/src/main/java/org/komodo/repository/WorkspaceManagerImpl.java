@@ -21,6 +21,7 @@ package org.komodo.repository;
 import java.util.List;
 
 import org.komodo.WorkspaceManager;
+import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.datavirtualization.ViewDefinition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -37,7 +38,7 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
 	private ViewDefinitionRepository viewDefinitionRepository;
 
 	@Override
-	public org.komodo.repository.SourceSchema findSchema(String id) {
+	public org.komodo.datavirtualization.SourceSchema findSchema(String id) {
 		return this.schemaRepository.findOne(id);
 	}
 
@@ -54,7 +55,7 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
 	
 	@Override
 	public void createOrUpdateSchema(String id, String name, String contents) {
-		org.komodo.repository.SourceSchema schema = this.schemaRepository.findOne(id);
+		org.komodo.datavirtualization.SourceSchema schema = this.schemaRepository.findOne(id);
 		if (schema != null) {
 			if (!name.equals(schema.getName())) {
 				throw new IllegalArgumentException("Cannot change the name of an existing schema");
@@ -63,7 +64,7 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
 				schema.setDdl(contents);
 			}
 		} else {
-			schema = new org.komodo.repository.SourceSchema(id);
+			schema = new org.komodo.datavirtualization.SourceSchema(id);
 			schema.setName(name);
 			this.schemaRepository.save(schema);
 		}
@@ -97,7 +98,7 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
 	
 	@Override
 	public boolean deleteDataVirtualization(String serviceName) {
-		org.komodo.repository.DataVirtualization dv = this.dataVirtualizationRepository.findByName(serviceName);
+		org.komodo.datavirtualization.DataVirtualization dv = this.dataVirtualizationRepository.findByName(serviceName);
 		if (dv == null) {
 			return false;
 		}
@@ -107,8 +108,8 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
 	}
 	
 	@Override
-	public org.komodo.repository.ViewDefinition createViewDefiniton(String dvName, String viewName) {
-		org.komodo.repository.ViewDefinition viewEditorState = new org.komodo.repository.ViewDefinition(dvName, viewName);
+	public org.komodo.datavirtualization.ViewDefinition createViewDefiniton(String dvName, String viewName) {
+		org.komodo.datavirtualization.ViewDefinition viewEditorState = new org.komodo.datavirtualization.ViewDefinition(dvName, viewName);
 		return this.viewDefinitionRepository.save(viewEditorState);
 	}
 	
@@ -118,7 +119,7 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
 	}
 	
 	@Override
-	public List<org.komodo.repository.ViewDefinition> getViewDefinitions(String dvName) {
+	public List<org.komodo.datavirtualization.ViewDefinition> getViewDefinitions(String dvName) {
 		return this.viewDefinitionRepository.findAllByDataVirtualizationName(dvName);
 	}
 	
@@ -134,7 +135,7 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
 	}
 	
 	@Override
-	public org.komodo.repository.ViewDefinition findViewDefinition(String id) {
+	public org.komodo.datavirtualization.ViewDefinition findViewDefinition(String id) {
 		return this.viewDefinitionRepository.findOne(id);
 	}
 	
