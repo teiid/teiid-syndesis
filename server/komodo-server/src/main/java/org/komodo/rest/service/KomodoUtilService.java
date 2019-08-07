@@ -327,11 +327,14 @@ public final class KomodoUtilService extends KomodoService {
         if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
             return notAcceptableMediaTypesBuilder().build();
         
-        RestViewDefinitionStatus status = validateViewDefinition(restViewEditorState);
-        if (!SUCCESS.equals(status.getStatus())) {
-        	return toResponse(mediaTypes, status);
+        if (StringUtils.isBlank(restViewEditorState.getName())) {
+        	return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VIEW_DEFINITION_MISSING_NAME);
         }
-
+        
+        if (StringUtils.isBlank(restViewEditorState.getDataVirtualizationName())) {
+        	return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VIEW_DEFINITION_MISSING_DATAVIRTUALIZATIONNAME);
+        }
+        
         try {
             // Create the ViewEditorState
             ViewDefinition vd = createViewEditorState(restViewEditorState);
@@ -391,12 +394,6 @@ public final class KomodoUtilService extends KomodoService {
         	viewDefnStatus.setMessage(RelationalMessages.getString(RelationalMessages.Error.VIEW_DEFINITION_MISSING_NAME));
             return viewDefnStatus;
         }
-
-        if (StringUtils.isBlank(viewDdl)) {
-        	viewDefnStatus.setStatus(ERROR);
-        	viewDefnStatus.setMessage(RelationalMessages.getString(RelationalMessages.Error.VIEW_DEFINITION_MISSING_DDL));
-            return viewDefnStatus;
-        }
         
         if (StringUtils.isBlank(restViewDefinition.getDataVirtualizationName())) {
         	viewDefnStatus.setStatus(ERROR);
@@ -404,6 +401,12 @@ public final class KomodoUtilService extends KomodoService {
             return viewDefnStatus;
         }
 
+        if (StringUtils.isBlank(viewDdl)) {
+        	viewDefnStatus.setStatus(ERROR);
+        	viewDefnStatus.setMessage(RelationalMessages.getString(RelationalMessages.Error.VIEW_DEFINITION_MISSING_DDL));
+            return viewDefnStatus;
+        }
+        
         try {
         	ValidationResult result = metadataInstance.validate(PREVIEW_VDB, restViewDefinition.getDdl());
         	ValidatorReport report = result.getReport();

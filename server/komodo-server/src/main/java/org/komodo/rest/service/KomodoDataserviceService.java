@@ -496,8 +496,8 @@ public final class KomodoDataserviceService extends KomodoService
     }
     
     @PUT
-    @Path(StringConstants.FORWARD_SLASH + V1Constants.DATA_SERVICE_PLACEHOLDER 
-    		+ V1Constants.IMPORT + StringConstants.FORWARD_SLASH
+    @Path(StringConstants.FORWARD_SLASH + V1Constants.DATA_SERVICE_PLACEHOLDER + 
+    		StringConstants.FORWARD_SLASH + V1Constants.IMPORT + StringConstants.FORWARD_SLASH
     		+ V1Constants.KOMODO_SOURCE_PLACEHOLDER)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Import views from a given source", response = KomodoStatusObject.class)
@@ -557,7 +557,7 @@ public final class KomodoDataserviceService extends KomodoService
                 	}
                 	
                 	ViewDefinition viewDefn = getWorkspaceManager().findViewDefinitionByNameIgnoreCase(dataserviceName, name);
-                	if (name.equals(viewDefn.getName())) {
+                	if (viewDefn != null) {
                 		//sanity check
                 		if (!name.equalsIgnoreCase(viewDefn.getName())) {
                 			throw new AssertionError("imported view name conflicts with an existing view name");

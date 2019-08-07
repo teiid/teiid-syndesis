@@ -80,7 +80,6 @@ public class ViewDefinition implements Named {
 	@GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
 	private String id;
-	@JsonProperty(value = "viewName")
 	@Column(unique=true)
 	private String name;
 	private String ddl;

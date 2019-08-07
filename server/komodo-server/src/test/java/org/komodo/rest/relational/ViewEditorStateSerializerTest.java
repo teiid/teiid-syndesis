@@ -65,7 +65,8 @@ public class ViewEditorStateSerializerTest {
  
     private String createViewEditorState() {
         return "{\n" + 
-        		"  \"id\" : \"myNewView\",\n" + 
+        		"  \"id\" : \"myNewView\",\n" +
+        		"  \"name\" : \"testView\",\n" + 
         		"  \"dataVirtualizationName\" : \"dvName\",\n" + 
         		"  \"sourcePaths\" : [ \"path/to/source1\", \"path/to/source2\", \"path/to/source3\", \"path/to/source4\" ],\n" + 
         		"  \"compositions\" : [ {\n" + 
@@ -96,7 +97,6 @@ public class ViewEditorStateSerializerTest {
         		"    \"type\" : \"integer\",\n" + 
         		"    \"selected\" : true\n" + 
         		"  } ],\n" + 
-        		"  \"viewName\" : \"testView\",\n" + 
         		"  \"keng__description\" : \"test view description text\",\n" + 
         		"  \"isComplete\" : true,\n" + 
         		"  \"isUserDefined\" : false\n" + 
