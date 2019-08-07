@@ -23,7 +23,7 @@ import static org.junit.Assert.assertFalse;
 import java.util.Map;
 
 import org.junit.Test;
-import org.komodo.rest.relational.RestDataservice;
+import org.komodo.rest.relational.dataservice.RestDataservice;
 
 import com.fasterxml.jackson.databind.type.SimpleType;
 

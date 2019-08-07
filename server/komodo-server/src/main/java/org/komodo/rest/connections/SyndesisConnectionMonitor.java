@@ -35,7 +35,7 @@ import okio.ByteString;
 
 public class SyndesisConnectionMonitor {
 	private static final Log LOGGER = LogFactory.getLog(SyndesisConnectionMonitor.class);
-	private volatile WebSocket webSocket;
+	private WebSocket webSocket;
 	private volatile boolean connected;
 	private ObjectMapper mapper = new ObjectMapper();
 	private SyndesisConnectionSynchronizer connectionSynchronizer;

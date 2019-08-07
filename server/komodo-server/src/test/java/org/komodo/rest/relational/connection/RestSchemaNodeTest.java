@@ -21,7 +21,7 @@ package org.komodo.rest.relational.connection;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-import org.komodo.rest.KomodoJsonMarshaller;
+import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 
 public class RestSchemaNodeTest {
 	
@@ -49,15 +49,9 @@ public class RestSchemaNodeTest {
 		
 		assertEquals(expected, KomodoJsonMarshaller.marshall(other));
 		
-		value = KomodoJsonMarshaller.marshall(new Object[] {new RestSchemaNode(), new RestSchemaNode()}, true);
+		value = KomodoJsonMarshaller.marshallArray(new Object[] {new RestSchemaNode(), new RestSchemaNode()}, true);
 		
-		assertEquals("[ {\n" + 
-				"  \"children\" : [ ],\n" + 
-				"  \"queryable\" : false\n" + 
-				"}, {\n" + 
-				"  \"children\" : [ ],\n" + 
-				"  \"queryable\" : false\n" + 
-				"} ]", value);
+		assertEquals("[{\"children\":[],\"queryable\":false},{\"children\":[],\"queryable\":false}]", value);
 	}
 
 }

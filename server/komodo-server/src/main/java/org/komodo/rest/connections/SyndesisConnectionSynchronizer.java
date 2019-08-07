@@ -27,7 +27,7 @@ import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoService;
 import org.komodo.rest.connections.SyndesisConnectionMonitor.EventMsg;
-import org.komodo.rest.relational.RestSyndesisSourceStatus;
+import org.komodo.rest.relational.response.metadata.RestSyndesisSourceStatus;
 import org.komodo.rest.service.KomodoMetadataService;
 import org.komodo.rest.service.KomodoUtilService;
 import org.teiid.adminapi.AdminException;
@@ -198,7 +198,7 @@ public class SyndesisConnectionSynchronizer {
 	private boolean deleteConnection(DefaultSyndesisDataSource dsd) throws KException {
 		try {
 			RestSyndesisSourceStatus status = checkMetadataStatus(dsd);
-			if (status != null && status.getId() != null) {
+			if (status != null && status.getSchemaModelId() != null) {
 				deleteSchemaModel(status);
 			}
 	
@@ -219,11 +219,10 @@ public class SyndesisConnectionSynchronizer {
 
 	private void deleteSchemaModel(RestSyndesisSourceStatus status) throws KException {
 		try {
-			if (this.metadataService.deleteSchema(status.getId(), KomodoService.SYSTEM_USER)) {
-				LOGGER.info("Workspace schema " + status.getSourceName() + " deleted.");
-			} // else already deleted
+			this.metadataService.deleteSchema(status.getSchemaModelId(), KomodoService.SYSTEM_USER);
+			LOGGER.info("Workspace schema " + status.getSchemaModelId() + " deleted.");
 		} catch (Exception e) {
-			LOGGER.info("Failed to delete schema " + status.getSourceName(), e);
+			LOGGER.info("Failed to delete schema " + status.getSchemaModelId(), e);
 		}
 	}
 

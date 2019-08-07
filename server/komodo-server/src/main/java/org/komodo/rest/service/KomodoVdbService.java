@@ -32,10 +32,11 @@ import javax.ws.rs.core.UriInfo;
 
 import org.komodo.StringConstants;
 import org.komodo.UnitOfWork;
-import org.komodo.datavirtualization.ViewDefinition;
+import org.komodo.rest.KomodoRestException;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
 import org.komodo.rest.relational.RelationalMessages;
+import org.komodo.rest.relational.dataservice.RestDataservice;
 import org.komodo.utils.StringNameValidator;
 import org.springframework.stereotype.Component;
 
@@ -70,6 +71,9 @@ public final class KomodoVdbService extends KomodoService {
 	 * @return the response (never <code>null</code>) with an entity that is
 	 *         either an empty string, when the name is valid, or an error
 	 *         message
+	 * @throws KomodoRestException
+	 *         if there is a problem validating the View name or constructing
+	 *         the response
      */
     @GET
     @Path( V1Constants.VDB_PLACEHOLDER + StringConstants.FORWARD_SLASH +
@@ -88,9 +92,11 @@ public final class KomodoVdbService extends KomodoService {
     public Response validateViewName( final @Context HttpHeaders headers,
                                       final @Context UriInfo uriInfo,
                                       @ApiParam(value = "Name of the Vdb", required = true)
-                                      final @PathParam( "virtualization" ) String virtualization,
+                                      final @PathParam( "vdbName" ) String vdbName,
                                       @ApiParam(value = "Name of the Model to get its tables", required = true)
-                                      final @PathParam( "viewName" ) String viewName ) {
+                                      final @PathParam( "modelName" ) String modelName,
+                                      @ApiParam( value = "The View name being checked", required = true )
+                                      final @PathParam( "viewName" ) String viewName ) throws KomodoRestException {
 
         SecurityPrincipal principal = checkSecurityContext(headers);
         if (principal.hasErrorResponse())
@@ -108,14 +114,16 @@ public final class KomodoVdbService extends KomodoService {
         try {
             uow = createTransaction( principal, "validateViewName", true ); //$NON-NLS-1$
 
-            ViewDefinition vd = getWorkspaceManager().findViewDefinitionByNameIgnoreCase(virtualization, viewName);
+            String[] names = RestDataservice.getViewDefnNames(getWorkspaceManager(), vdbName);
             
-        	if (vd != null) {
-                // name is the same as an existing View
-        		return Response.ok()
-                        .entity( RelationalMessages.getString( VIEW_NAME_EXISTS ) )
-                        .build();
-        	}
+            for (String name : names) {
+            	if (viewName.equals(name)) {
+                    // name is the same as an existing View
+            		return Response.ok()
+                            .entity( RelationalMessages.getString( VIEW_NAME_EXISTS ) )
+                            .build();
+            	}
+            }
             
         	// name is valid
         	return Response.ok().build();
@@ -124,7 +132,11 @@ public final class KomodoVdbService extends KomodoService {
                 uow.rollback();
             }
 
-            return createErrorResponse( headers.getAcceptableMediaTypes(),
+            if ( e instanceof KomodoRestException ) {
+                throw ( KomodoRestException )e;
+            }
+
+            return createErrorResponseWithForbidden( headers.getAcceptableMediaTypes(),
                                                      e,
                                                      VIEW_NAME_VALIDATION_ERROR );
         }

@@ -27,29 +27,9 @@ import org.komodo.StringConstants;
 import org.komodo.metadata.query.QSResult;
 import org.teiid.adminapi.AdminException;
 import org.teiid.adminapi.impl.VDBMetaData;
-import org.teiid.metadata.Schema;
 import org.teiid.query.validator.ValidatorReport;
 
 public interface MetadataInstance extends StringConstants {
-	
-	public static class ValidationResult {
-		private ValidatorReport report;
-		private Schema schema;
-		
-		public ValidationResult(ValidatorReport report, Schema schema) {
-			this.report = report;
-			this.schema = schema;
-		}
-		
-		public ValidatorReport getReport() {
-			return report;
-		}
-		
-		public Schema getSchema() {
-			return schema;
-		}
-		
-	}
 
 	/**
 	 * The host of the metadata instance
@@ -286,5 +266,5 @@ public interface MetadataInstance extends StringConstants {
 
 	void createDataSource(String deploymentName, String templateName, Map<String, String> properties) throws AdminException;
 
-	ValidationResult validate(String vdbName, String ddl) throws KException;
+	ValidatorReport validate(String vdbName, String ddl) throws KException;
 }

@@ -28,8 +28,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.komodo.KException;
 import org.komodo.metadata.DeployStatus;
-import org.komodo.metadata.MetadataInstance.ValidationResult;
+import org.komodo.rest.TeiidServer;
 import org.teiid.adminapi.impl.VDBMetadataParser;
+import org.teiid.query.validator.ValidatorReport;
 import org.teiid.runtime.EmbeddedConfiguration;
 
 public class DefaultMetadataInstanceTest {
@@ -68,11 +69,11 @@ public class DefaultMetadataInstanceTest {
 		
 		assertTrue(status.ok());
 
-		ValidationResult report = metadataInstance.validate("myservice", "create view v as select * from tbl");
-		assertFalse(report.getReport().toString(), report.getReport().hasItems());
+		ValidatorReport report = metadataInstance.validate("myservice", "create view v as select * from tbl");
+		assertFalse(report.toString(), report.hasItems());
 		
 		report = metadataInstance.validate("myservice", "create view v as select * from tbl1");
-		assertTrue(report.toString(), report.getReport().hasItems());
+		assertTrue(report.toString(), report.hasItems());
 	}
 
 }

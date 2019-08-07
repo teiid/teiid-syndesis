@@ -1,20 +1,18 @@
 --drop table if exists source_schema;
---drop index if exists view_definition_dv_name;
---drop table if exists view_definition;
 --drop table if exists data_virtualization;
+--drop table if exists view_definition;
 
 CREATE TABLE IF NOT EXISTS data_virtualization 
   ( 
      id          VARCHAR(64) NOT NULL, 
      description VARCHAR(4096), 
-     name        VARCHAR(255) UNIQUE, 
+     NAME        VARCHAR(255) UNIQUE, 
      PRIMARY KEY (id) 
   ); 
 
 CREATE TABLE IF NOT EXISTS source_schema 
   ( 
-     id   VARCHAR(64) NOT NULL,
-     name VARCHAR(255) UNIQUE, 
+     id   VARCHAR(64) NOT NULL, 
      ddl  VARCHAR(1000000), 
      PRIMARY KEY (id) 
   ); 
@@ -25,13 +23,9 @@ CREATE TABLE IF NOT EXISTS view_definition
      complete     BOOLEAN NOT NULL, 
      ddl          VARCHAR(100000), 
      description  VARCHAR(4096), 
-     name         VARCHAR(255), 
+     NAME         VARCHAR(255) UNIQUE, 
      state        VARCHAR(100000), 
      user_defined BOOLEAN NOT NULL, 
-     dv_name      VARCHAR(255) NOT NULL, 
-     PRIMARY KEY (id),
-     UNIQUE (name, dv_name),
-     FOREIGN KEY (dv_name) REFERENCES data_virtualization(name) ON DELETE CASCADE
+     view_name    VARCHAR(255), 
+     PRIMARY KEY (id) 
   ); 
-
-CREATE INDEX IF NOT EXISTS view_definition_dv_name ON view_definition(dv_name);

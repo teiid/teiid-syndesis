@@ -24,7 +24,7 @@ import org.junit.Test;
 import org.komodo.KException;
 import org.komodo.openshift.BuildStatus.RouteStatus;
 import org.komodo.openshift.BuildStatus.Status;
-import org.komodo.rest.KomodoJsonMarshaller;
+import org.komodo.rest.relational.json.KomodoJsonMarshaller;
 
 public class StatusTest {
 	

@@ -120,7 +120,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
      * @throws KException
      * 		if problem occurs
      */
-    public VDBMetaData refreshServiceVdb(String vdbName, List<? extends ViewDefinition> editorStates) throws KException {
+    public VDBMetaData refreshServiceVdb(String vdbName, ViewDefinition[] editorStates) throws KException {
         VDBMetaData vdb = new VDBMetaData();
         vdb.setName(vdbName);
         
@@ -133,7 +133,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
         // Keep track of unique list of sources needed
     	Map< Schema, LinkedHashSet<TableInfo> > schemaTableMap = new HashMap<Schema, LinkedHashSet<TableInfo>>();
         
-        if ( !editorStates.isEmpty() ) {
+        if ( editorStates.length > 0 ) {
         	// Generate new model DDL by appending all view DDLs
         	StringBuilder allViewDdl = new StringBuilder();
 
@@ -215,7 +215,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
     	//   * 1 or 2 source tables
     	//   * Join criteria in the form of left and right critieria column names
         
-    	String viewName = viewDef.getName();
+    	String viewName = viewDef.getViewName();
     	
     	if (sourceTableInfos.length < 1) throw new KException("Error getting the ViewDefinition sources"); //$NON-NLS-1$
     	
@@ -442,7 +442,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
 		// Find and create TableInfo for each source Path
 		int iTable = 0;
 		for(String path : sourceTablePaths) {
-			String connectionName = PathUtils.getOption(path, CONNECTION_KEY); //$NON-NLS-1$
+			String connectionName = PathUtils.getOption(path, "connection"); //$NON-NLS-1$
 
 			// Find schema model based on the connection name (i.e. connection=pgConn)
 			final Schema schemaModel = findSchemaModel( connectionName );
@@ -542,7 +542,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
     	}
     	
     	public String getConnectionName() {
-			return PathUtils.getOption(this.path, CONNECTION_KEY); //$NON-NLS-1$
+			return PathUtils.getOption(this.path, "connection"); //$NON-NLS-1$
 		}
 
     	public String getSourceTablePath() {

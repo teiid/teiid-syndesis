@@ -1,13 +1,10 @@
 package org.komodo.repository;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.komodo.datavirtualization.SourceSchema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
@@ -29,7 +26,6 @@ public class SourceSchemaTest {
     @Test
     public void testFindDeleteByName() {
         SourceSchema s = new SourceSchema("foo");
-        s.setName("bar");
         s.setDdl("create ...");
         entityManager.persist(s);
         entityManager.flush();
@@ -38,21 +34,12 @@ public class SourceSchemaTest {
      
         assertEquals(s.getDdl(), found.getDdl());
         
-        try {
-        	workspaceManagerImpl.createOrUpdateSchema(s.getId(), "foo", "create something...");
-        } catch (IllegalArgumentException e) {
-        	//don't allow the schema name to change
-        }
-        
-        workspaceManagerImpl.createOrUpdateSchema(s.getId(), "bar", "create something...");
-        
-        assertTrue(workspaceManagerImpl.deleteSchema(s.getId()));
-        
-        assertNull(sourceSchemaRepository.findOne(s.getId()));
-        
-        assertFalse(workspaceManagerImpl.deleteSchema(s.getId()));
+        workspaceManagerImpl.deleteSchema(s.getId());
         
         entityManager.flush();
+        
+        assertNull(sourceSchemaRepository.findOne(s.getId()));
     }
+
 
 }

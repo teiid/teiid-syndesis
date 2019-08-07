@@ -20,12 +20,6 @@ package org.komodo.metadata.query;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-@JsonSerialize(as = QSResult.class)
-@JsonInclude(Include.NON_NULL)
 public class QSResult {
 
     private final List<QSColumn> columns = new ArrayList<QSColumn>();
