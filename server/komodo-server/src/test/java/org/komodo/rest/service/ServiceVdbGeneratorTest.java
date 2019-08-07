@@ -187,7 +187,7 @@ public class ServiceVdbGeneratorTest {
         boolean twoTables = secondSourceTablePath != null && StringUtils.areDifferent(sourceTablePath1, secondSourceTablePath);
         
         ViewDefinition viewDef = mock(ViewDefinition.class);
-        when(viewDef.getViewName()).thenReturn(viewDefinitionName);
+        when(viewDef.getName()).thenReturn(viewDefinitionName);
         when(viewDef.getDescription()).thenReturn(description);
         when(viewDef.isComplete()).thenReturn(isComplete);
         when(viewDef.getSourcePaths()).thenReturn(Arrays.asList(sourceTablePaths));
@@ -204,7 +204,7 @@ public class ServiceVdbGeneratorTest {
         
         SqlComposition[] sqlComps = new SqlComposition[1];
         sqlComps[0] = sqlComp1;
-        when(viewDef.getSqlCompositions()).thenReturn(Arrays.asList(sqlComps));
+        when(viewDef.getCompositions()).thenReturn(Arrays.asList(sqlComps));
         
         if( useAll ) {
         	SqlProjectedColumn projCol = mock(SqlProjectedColumn.class);
@@ -267,7 +267,7 @@ public class ServiceVdbGeneratorTest {
         String[] sourceTablePaths = { sourceTablePath1, secondSourceTablePath };
         boolean twoTables = secondSourceTablePath != null && StringUtils.areDifferent(sourceTablePath1, secondSourceTablePath);
         
-        when(viewDef.getViewName()).thenReturn(viewDefinitionName);
+        when(viewDef.getName()).thenReturn(viewDefinitionName);
         when(viewDef.getDescription()).thenReturn(description);
         when(viewDef.isComplete()).thenReturn(isComplete);
         when(viewDef.getSourcePaths()).thenReturn(Arrays.asList(sourceTablePaths));
@@ -284,7 +284,7 @@ public class ServiceVdbGeneratorTest {
         
         SqlComposition[] sqlComps = new SqlComposition[1];
         sqlComps[0] = sqlComp1;
-        when(viewDef.getSqlCompositions()).thenReturn(Arrays.asList(sqlComps));
+        when(viewDef.getCompositions()).thenReturn(Arrays.asList(sqlComps));
         
         if( useAll ) {
         	SqlProjectedColumn projCol = mock(SqlProjectedColumn.class);
@@ -341,7 +341,7 @@ public class ServiceVdbGeneratorTest {
 
         String[] sourceTablePaths = { sourceTablePath1 };
         ViewDefinition viewDef = mock(ViewDefinition.class);
-        when(viewDef.getViewName()).thenReturn(viewDefinitionName);
+        when(viewDef.getName()).thenReturn(viewDefinitionName);
         when(viewDef.getDescription()).thenReturn(description);
         when(viewDef.isComplete()).thenReturn(isComplete);
         when(viewDef.getSourcePaths()).thenReturn(Arrays.asList(sourceTablePaths));
@@ -368,7 +368,7 @@ public class ServiceVdbGeneratorTest {
 
         String[] sourceTablePaths = { sourceTablePath1b };
         ViewDefinition viewDef = mock(ViewDefinition.class);
-        when(viewDef.getViewName()).thenReturn(viewDefinitionName);
+        when(viewDef.getName()).thenReturn(viewDefinitionName);
         when(viewDef.getDescription()).thenReturn(description);
         when(viewDef.isComplete()).thenReturn(isComplete);
         when(viewDef.getSourcePaths()).thenReturn(Arrays.asList(sourceTablePaths));
@@ -537,7 +537,7 @@ public class ServiceVdbGeneratorTest {
     	
     	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(schemaFinder());
     	
-    	VDBMetaData serviceVdb = vdbGenerator.refreshServiceVdb(viewDefinitionName, states);
+    	VDBMetaData serviceVdb = vdbGenerator.refreshServiceVdb(viewDefinitionName, Arrays.asList(states));
 
     	List<org.teiid.adminapi.Model> models = serviceVdb.getModels();
     	
@@ -565,7 +565,7 @@ public class ServiceVdbGeneratorTest {
     	
     	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(schemaFinder());
     	
-    	VDBMetaData serviceVdb = vdbGenerator.refreshServiceVdb(viewDefinitionName, states);
+    	VDBMetaData serviceVdb = vdbGenerator.refreshServiceVdb(viewDefinitionName, Arrays.asList(states));
     	
     	List<org.teiid.adminapi.Model> models = serviceVdb.getModels();
     	

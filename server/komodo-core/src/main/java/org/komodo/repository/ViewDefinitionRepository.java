@@ -20,14 +20,21 @@ package org.komodo.repository;
 
 import java.util.List;
 
+import org.komodo.datavirtualization.ViewDefinition;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ViewDefinitionRepository extends JpaRepository<ViewDefinition, String> {
 
-	public ViewDefinition findByName(String name);
+	@Query("from ViewDefinition vd where vd.dataVirtualizationName = :dvName and UPPER(vd.name) = UPPER(:viewDefinitionName)")
+	public ViewDefinition findByNameIgnoreCase(@Param("dvName") String dvName, @Param("viewDefinitionName") String viewDefinitionName);
 
-	public List<ViewDefinition> findAllByNameStartsWith(String viewDefinitionNamePrefix);
+	public List<ViewDefinition> findAllByDataVirtualizationName(String dvName);
+	
+	@Query(value = "SELECT name FROM view_definition WHERE dv_name = ?1", nativeQuery = true)
+	public List<String> findAllNamesByDataVirtualizationName(String dvName);
 	
 }

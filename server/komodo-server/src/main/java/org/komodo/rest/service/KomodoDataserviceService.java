@@ -52,17 +52,20 @@ import org.komodo.openshift.BuildStatus;
 import org.komodo.openshift.BuildStatus.RouteStatus;
 import org.komodo.openshift.ProtocolType;
 import org.komodo.openshift.TeiidOpenShiftClient;
-import org.komodo.rest.KomodoRestException;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
-import org.komodo.rest.RestBasicEntity.ResourceNotFound;
+import org.komodo.rest.ResourceNotFound;
+import org.komodo.rest.relational.ImportPayload;
+import org.komodo.rest.relational.KomodoStatusObject;
 import org.komodo.rest.relational.RelationalMessages;
-import org.komodo.rest.relational.dataservice.RestDataservice;
-import org.komodo.rest.relational.response.KomodoStatusObject;
+import org.komodo.rest.relational.RestDataservice;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.teiid.metadata.Schema;
+import org.teiid.metadata.Table;
+import org.teiid.util.FullyQualifiedName;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -100,8 +103,6 @@ public final class KomodoDataserviceService extends KomodoService
      *            the request URI information (never <code>null</code>)
      * @return a JSON document representing all the Dataservices in the Komodo
      *         workspace (never <code>null</code>)
-     * @throws KomodoRestException
-     *             if there is a problem constructing the Dataservices JSON document
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -110,8 +111,7 @@ public final class KomodoDataserviceService extends KomodoService
             @ApiImplicitParam(name = QueryParamKeys.SIZE, value = "The number of objects to return. If not present, all objects are returned", required = false, dataType = "integer", paramType = "query"),
             @ApiImplicitParam(name = QueryParamKeys.START, value = "Index of the first dataservice to return", required = false, dataType = "integer", paramType = "query") })
     @ApiResponses(value = { @ApiResponse(code = 403, message = "An error has occurred.") })
-    public Response getDataservices(final @Context HttpHeaders headers, final @Context UriInfo uriInfo)
-            throws KomodoRestException {
+    public Response getDataservices(final @Context HttpHeaders headers, final @Context UriInfo uriInfo) {
 
         SecurityPrincipal principal = checkSecurityContext(headers);
         if (principal.hasErrorResponse())
@@ -167,7 +167,7 @@ public final class KomodoDataserviceService extends KomodoService
 	            for (final DataVirtualization dataService : dataServices) {
 	                if ((start == 0) || (i >= start)) {
 	                    if ((size == ALL_AVAILABLE) || (entities.size() < size)) {
-	                        RestDataservice entity = createRestDataservice(uriInfo, dataService);
+	                        RestDataservice entity = createRestDataservice(dataService);
 	
 	                        entities.add(entity);
 	                        LOGGER.debug("getDataservices:Dataservice '{0}' entity was constructed", //$NON-NLS-1$
@@ -184,18 +184,15 @@ public final class KomodoDataserviceService extends KomodoService
 	            return toResponse(mediaTypes, entities);
         	});
         } catch (final Exception e) {
-            if (e instanceof KomodoRestException) {
-                throw (KomodoRestException) e;
-            }
-
             return createErrorResponse(mediaTypes, e, DATASERVICE_SERVICE_GET_DATASERVICES_ERROR);
         }
     }
 
-	private RestDataservice createRestDataservice(final UriInfo uriInfo, final DataVirtualization dataService) throws KException {
+	private RestDataservice createRestDataservice(final DataVirtualization dataService) throws KException {
 		RestDataservice entity = new RestDataservice(dataService, dataService.getServiceVdbName());
 		entity.setServiceViewModel(SERVICE_VDB_VIEW_MODEL);
-        entity.setViewDefinitionNames(RestDataservice.getViewDefnNames(getWorkspaceManager(), dataService.getServiceVdbName()));
+		List<String> names = getWorkspaceManager().getViewDefinitionsNames(dataService.getName());
+        entity.setViewDefinitionNames(names.toArray(new String[names.size()]));
 		// Set published status of dataservice
 		BuildStatus status = this.openshiftClient.getVirtualizationStatus(dataService.getServiceVdbName());
 		entity.setPublishedState(status.status().name());
@@ -213,9 +210,6 @@ public final class KomodoDataserviceService extends KomodoService
      * @param dataserviceName
      *            the id of the Dataservice being retrieved (cannot be empty)
      * @return the JSON representation of the Dataservice (never <code>null</code>)
-     * @throws KomodoRestException
-     *             if there is a problem finding the specified workspace Dataservice
-     *             or constructing the JSON representation
      */
     @GET
     @Path(V1Constants.DATA_SERVICE_PLACEHOLDER)
@@ -225,8 +219,7 @@ public final class KomodoDataserviceService extends KomodoService
             @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
             @ApiResponse(code = 403, message = "An error has occurred.") })
     public Response getDataservice(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
-            @ApiParam(value = "Id of the dataservice to be fetched, ie. the value of the 'keng__id' property", required = true) final @PathParam("dataserviceName") String dataserviceName)
-            throws KomodoRestException {
+            @ApiParam(value = "Id of the dataservice to be fetched, ie. the value of the 'keng__id' property", required = true) final @PathParam("dataserviceName") String dataserviceName) {
 
         SecurityPrincipal principal = checkSecurityContext(headers);
         if (principal.hasErrorResponse())
@@ -235,8 +228,8 @@ public final class KomodoDataserviceService extends KomodoService
         List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
         try {
             RestDataservice dataservice = runInTransaction(principal, "getDataVirtualization", true, () -> {
-            	DataVirtualization dv = findDataservice(dataserviceName);
-                return createRestDataservice(uriInfo, dv);
+            	DataVirtualization dv = getWorkspaceManager().findDataVirtualization(dataserviceName);
+                return createRestDataservice(dv);
             });
             if (dataservice == null) {
             	return toResponse(mediaTypes, new ResourceNotFound( dataserviceName ));
@@ -245,10 +238,6 @@ public final class KomodoDataserviceService extends KomodoService
             LOGGER.debug("getDataservice:Dataservice '{0}' entity was constructed", dataservice.getName()); //$NON-NLS-1$
             return toResponse(mediaTypes, dataservice);
         } catch (final Exception e) {
-            if (e instanceof KomodoRestException) {
-                throw (KomodoRestException) e;
-            }
-
             return createErrorResponse(mediaTypes, e, DATASERVICE_SERVICE_GET_DATASERVICE_ERROR,
                     dataserviceName);
         }
@@ -267,8 +256,6 @@ public final class KomodoDataserviceService extends KomodoService
      *            the dataservice JSON representation (cannot be <code>null</code>)
      * @return a JSON representation of the new dataservice (never
      *         <code>null</code>)
-     * @throws KomodoRestException
-     *             if there is an error creating the DataService
      */
     @POST
     @Path(FORWARD_SLASH + V1Constants.DATA_SERVICE_PLACEHOLDER)
@@ -278,8 +265,7 @@ public final class KomodoDataserviceService extends KomodoService
             @ApiResponse(code = 403, message = "An error has occurred.") })
     public Response createDataservice(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
             @ApiParam(value = "Name of the data service", required = true) final @PathParam("dataserviceName") String dataserviceName,
-            @ApiParam(required = true) final RestDataservice restDataservice)
-            throws KomodoRestException {
+            @ApiParam(required = true) final RestDataservice restDataservice) {
 
         SecurityPrincipal principal = checkSecurityContext(headers);
         if (principal.hasErrorResponse())
@@ -292,14 +278,14 @@ public final class KomodoDataserviceService extends KomodoService
         // Error if the dataservice name is missing
         if (StringUtils.isBlank(dataserviceName)) {
             return createErrorResponseWithForbidden(mediaTypes,
-                    RelationalMessages.Error.DATASERVICE_SERVICE_CREATE_MISSING_NAME);
+                    RelationalMessages.Error.DATASERVICE_SERVICE_MISSING_NAME);
         }
 
         final String jsonDataserviceName = restDataservice.getName();
         // Error if the name is missing from the supplied json body
         if (StringUtils.isBlank(jsonDataserviceName)) {
             return createErrorResponseWithForbidden(mediaTypes,
-                    RelationalMessages.Error.DATASERVICE_SERVICE_JSON_MISSING_NAME);
+                    RelationalMessages.Error.DATASERVICE_SERVICE_MISSING_NAME);
         }
 
         // Error if the name parameter is different than JSON name
@@ -330,14 +316,10 @@ public final class KomodoDataserviceService extends KomodoService
                 dataservice.setDescription(restDataservice.getDescription());
                 KomodoStatusObject kso = new KomodoStatusObject("Create Status"); //$NON-NLS-1$
                 kso.addAttribute(dataserviceName, "Successfully created"); //$NON-NLS-1$
-                kso.addAttribute(RestDataservice.DATASERVICE_ID_LABEL, dataservice.getId());
+                kso.addAttribute(StringConstants.ID_LABEL, dataservice.getId());
                 return toResponse(mediaTypes, kso);
             });
         } catch (final Exception e) {
-            if (e instanceof KomodoRestException) {
-                throw (KomodoRestException) e;
-            }
-
             return createErrorResponse(mediaTypes, e, DATASERVICE_SERVICE_CREATE_DATASERVICE_ERROR,
                     dataserviceName);
         }
@@ -354,18 +336,15 @@ public final class KomodoDataserviceService extends KomodoService
      *            the name of the data service to remove (cannot be
      *            <code>null</code>)
      * @return a JSON document representing the results of the removal
-     * @throws KomodoRestException
-     *             if there is a problem performing the delete
      */
     @DELETE
-    @Path("{dataserviceName}")
+    @Path(V1Constants.DATA_SERVICE_PLACEHOLDER)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Delete a dataservice from the workspace")
     @ApiResponses(value = { @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
             @ApiResponse(code = 403, message = "An error has occurred.") })
     public Response deleteDataservice(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
-            @ApiParam(value = "Name of the data service to be deleted", required = true) final @PathParam("dataserviceName") String dataserviceName)
-            throws KomodoRestException {
+            @ApiParam(value = "Name of the data service to be deleted", required = true) final @PathParam("dataserviceName") String dataserviceName) {
         SecurityPrincipal principal = checkSecurityContext(headers);
         if (principal.hasErrorResponse())
             return principal.getErrorResponse();
@@ -383,25 +362,12 @@ public final class KomodoDataserviceService extends KomodoService
                     return null;
                 }
 
-                String vdbName = dataservice.getServiceVdbName();
-
-                // Delete the Dataservice
+                // Delete the Dataservice. The view definitions will cascade
                 wkspMgr.deleteDataVirtualization(dataserviceName);
 
                 KomodoStatusObject status = new KomodoStatusObject("Delete Status"); //$NON-NLS-1$
                 status.addAttribute(dataserviceName, "Successfully deleted"); //$NON-NLS-1$
 
-                // delete any view editor states of that virtualization
-                final String viewEditorIdPrefix = KomodoService.getViewEditorStateIdPrefix(vdbName); //$NON-NLS-1$
-                final ViewDefinition[] editorStates = getViewDefinitions(viewEditorIdPrefix);
-
-                if (editorStates.length != 0) {
-                    for (final ViewDefinition editorState : editorStates) {
-                        removeViewDefinition(editorState);
-                    }
-
-                    status.addAttribute(vdbName, "Successfully deleted " + editorStates.length + " saved editor states"); //$NON-NLS-1$ //$NON-NLS-2$
-                }
         		return status;
         	});
         	
@@ -412,10 +378,6 @@ public final class KomodoDataserviceService extends KomodoService
 
             return toResponse(mediaTypes, kso);
         } catch (final Exception e) {
-            if (e instanceof KomodoRestException) {
-                throw (KomodoRestException) e;
-            }
-
             return createErrorResponse(mediaTypes, e, DATASERVICE_SERVICE_DELETE_DATASERVICE_ERROR);
         }
     }
@@ -429,9 +391,6 @@ public final class KomodoDataserviceService extends KomodoService
      *            the data service name being validated (cannot be empty)
      * @return the response (never <code>null</code>) with an entity that is either
      *         an empty string, when the name is valid, or an error message
-     * @throws KomodoRestException
-     *             if there is a problem validating the data service name or
-     *             constructing the response
      */
     @GET
     @Path(V1Constants.NAME_VALIDATION_SEGMENT + FORWARD_SLASH + V1Constants.DATA_SERVICE_PLACEHOLDER)
@@ -442,8 +401,7 @@ public final class KomodoDataserviceService extends KomodoService
             @ApiResponse(code = 403, message = "An unexpected error has occurred."),
             @ApiResponse(code = 500, message = "The dataservice name cannot be empty.") })
     public Response validateDataserviceName(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
-            @ApiParam(value = "The dataservice name being checked", required = true) final @PathParam("dataserviceName") String dataserviceName)
-            throws KomodoRestException {
+            @ApiParam(value = "The dataservice name being checked", required = true) final @PathParam("dataserviceName") String dataserviceName) {
 
         final SecurityPrincipal principal = checkSecurityContext(headers);
 
@@ -472,10 +430,6 @@ public final class KomodoDataserviceService extends KomodoService
             // name is a duplicate
             return Response.ok().entity(RelationalMessages.getString(DATASERVICE_SERVICE_NAME_EXISTS)).build();
         } catch (final Exception e) {
-            if (e instanceof KomodoRestException) {
-                throw (KomodoRestException) e;
-            }
-
             return createErrorResponse(headers.getAcceptableMediaTypes(), e,
                     DATASERVICE_SERVICE_NAME_VALIDATION_ERROR);
         }
@@ -491,8 +445,6 @@ public final class KomodoDataserviceService extends KomodoService
      * @param dataserviceName
      *            the dataservice name (cannot be empty)
      * @return a JSON representation of the new connection (never <code>null</code>)
-     * @throws KomodoRestException
-     *             if there is an error creating the Connection
      */
     @POST
     @Path(StringConstants.FORWARD_SLASH + V1Constants.REFRESH_DATASERVICE_VIEWS + StringConstants.FORWARD_SLASH
@@ -502,8 +454,7 @@ public final class KomodoDataserviceService extends KomodoService
     @ApiResponses(value = { @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
             @ApiResponse(code = 403, message = "An error has occurred.") })
     public Response refreshViews(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
-            @ApiParam(value = "Name of the dataservice", required = true) final @PathParam("dataserviceName") String dataserviceName)
-            throws KomodoRestException {
+            @ApiParam(value = "Name of the dataservice", required = true) final @PathParam("dataserviceName") String dataserviceName) {
 
         SecurityPrincipal principal = checkSecurityContext(headers);
         if (principal.hasErrorResponse())
@@ -516,12 +467,12 @@ public final class KomodoDataserviceService extends KomodoService
         // Error if the dataservice name is missing
         if (StringUtils.isBlank(dataserviceName)) {
             return createErrorResponseWithForbidden(mediaTypes,
-                    RelationalMessages.Error.DATASERVICE_SERVICE_REFRESH_VIEWS_MISSING_NAME);
+                    RelationalMessages.Error.DATASERVICE_SERVICE_MISSING_NAME);
         }
 
         try {
         	return runInTransaction(principal, "refreshDataVirtualizationViews", false, () -> {
-        		DataVirtualization dataservice = findDataservice(dataserviceName);
+        		DataVirtualization dataservice = getWorkspaceManager().findDataVirtualization(dataserviceName);
                 if (dataservice == null) {
                 	return toResponse(mediaTypes, new ResourceNotFound( dataserviceName ));
                 }
@@ -539,10 +490,101 @@ public final class KomodoDataserviceService extends KomodoService
                 return toResponse(mediaTypes, kso);
         	});
         } catch (final Exception e) {
-            if (e instanceof KomodoRestException) {
-                throw (KomodoRestException) e;
-            }
+            return createErrorResponse(mediaTypes, e,
+                    RelationalMessages.Error.DATASERVICE_SERVICE_REFRESH_VIEWS_ERROR, dataserviceName);
+        }
+    }
+    
+    @PUT
+    @Path(StringConstants.FORWARD_SLASH + V1Constants.DATA_SERVICE_PLACEHOLDER 
+    		+ V1Constants.IMPORT + StringConstants.FORWARD_SLASH
+    		+ V1Constants.KOMODO_SOURCE_PLACEHOLDER)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Import views from a given source", response = KomodoStatusObject.class)
+    @ApiResponses(value = { @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
+            @ApiResponse(code = 403, message = "An error has occurred.") })
+    public Response importViews(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
+            @ApiParam(value = "Name of the dataservice", required = true) 
+    		final @PathParam("dataserviceName") 
+    		String dataserviceName,
+            
+            @ApiParam( value = "Name of the komodo source", required = true ) 
+    		final @PathParam( "komodoSourceName" ) 
+    		String komodoSourceName,
+    		
+    		@ApiParam(value = "Import Payload", required = true) 
+    		final ImportPayload importPayload) {
 
+        SecurityPrincipal principal = checkSecurityContext(headers);
+        if (principal.hasErrorResponse())
+            return principal.getErrorResponse();
+
+        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
+        if (!isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
+            return notAcceptableMediaTypesBuilder().build();
+
+        // Error if the dataservice name is missing
+        if (StringUtils.isBlank(dataserviceName)) {
+            return createErrorResponseWithForbidden(mediaTypes,
+                    RelationalMessages.Error.DATASERVICE_SERVICE_MISSING_NAME);
+        }
+        
+        if (StringUtils.isBlank(komodoSourceName)) {
+        	return createErrorResponseWithForbidden(mediaTypes, 
+        			RelationalMessages.Error.CONNECTION_SERVICE_MISSING_CONNECTION_NAME);
+        }
+
+        try {
+        	return runInTransaction(principal, "import", false, () -> {
+        		DataVirtualization dataservice = getWorkspaceManager().findDataVirtualization(dataserviceName);
+                if (dataservice == null) {
+                	return toResponse(mediaTypes, new ResourceNotFound( dataserviceName ));
+                }
+                
+                Schema s = metadataService.findSchema(komodoSourceName);
+                
+            	if (s == null) {
+                	return toResponse(mediaTypes, new ResourceNotFound( komodoSourceName ));
+                }
+            	
+                KomodoStatusObject kso = new KomodoStatusObject("Import Status"); //$NON-NLS-1$
+            	
+                for (String name : importPayload.getTables()) {
+                	Table t = s.getTable(name);
+                	if (t == null) {
+                		//could be an error/warning
+                		continue;
+                	}
+                	
+                	ViewDefinition viewDefn = getWorkspaceManager().findViewDefinitionByNameIgnoreCase(dataserviceName, name);
+                	if (name.equals(viewDefn.getName())) {
+                		//sanity check
+                		if (!name.equalsIgnoreCase(viewDefn.getName())) {
+                			throw new AssertionError("imported view name conflicts with an existing view name");
+                		}
+                		
+                		//reuse the same id
+                		viewDefn.clearState();
+                		viewDefn.setUserDefined(false);
+                		viewDefn.setDdl(null);
+                		viewDefn.setDescription(null);
+                	} else {
+                		viewDefn = getWorkspaceManager().createViewDefiniton(dataserviceName, name);
+                	}
+                	viewDefn.addProjectedColumn("ALL"); //TODO: fix this convention
+                	FullyQualifiedName fqn = new FullyQualifiedName(CONNECTION_KEY, komodoSourceName);
+                	String sourcePath = fqn.toString() + "/" + t.getProperty(KomodoMetadataService.TABLE_OPTION_FQN, false);
+                	viewDefn.addSourcePath(sourcePath); //TODO: fix this convention
+                	
+                	kso.addAttribute(viewDefn.getName(), viewDefn.getId());
+                }
+
+                //TODO: should this "refresh" the views as we go 
+                //this.metadataService.generateServiceVDB(dataservice);
+                
+                return toResponse(mediaTypes, kso);
+        	});
+        } catch (final Exception e) {
             return createErrorResponse(mediaTypes, e,
                     RelationalMessages.Error.DATASERVICE_SERVICE_REFRESH_VIEWS_ERROR, dataserviceName);
         }
@@ -580,7 +622,6 @@ public final class KomodoDataserviceService extends KomodoService
      * @param dataserviceJson the dataservice JSON representation (cannot be
      *                        <code>null</code>)
      * @return a JSON representation of the new connection (never <code>null</code>)
-     * @throws KomodoRestException if there is an error creating the Connection
      */
     @PUT
     @Path(FORWARD_SLASH + V1Constants.DATA_SERVICE_PLACEHOLDER)
@@ -590,8 +631,7 @@ public final class KomodoDataserviceService extends KomodoService
             @ApiResponse(code = 403, message = "An error has occurred.") })
     public Response updateDataservice(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
             @ApiParam(value = "Name of the data service", required = true) final @PathParam("dataserviceName") String dataserviceName,
-            @ApiParam(required = true) final RestDataservice restDataservice)
-            throws KomodoRestException {
+            @ApiParam(required = true) final RestDataservice restDataservice) {
 
         SecurityPrincipal principal = checkSecurityContext(headers);
         if (principal.hasErrorResponse())
@@ -604,14 +644,14 @@ public final class KomodoDataserviceService extends KomodoService
         // Error if the dataservice name is missing
         if (StringUtils.isBlank(dataserviceName)) {
             return createErrorResponseWithForbidden(mediaTypes,
-                    RelationalMessages.Error.DATASERVICE_SERVICE_UPDATE_MISSING_NAME);
+                    RelationalMessages.Error.DATASERVICE_SERVICE_MISSING_NAME);
         }
 
         final String jsonDataserviceName = restDataservice.getName();
         // Error if the name is missing from the supplied json body
         if (StringUtils.isBlank(jsonDataserviceName)) {
             return createErrorResponseWithForbidden(mediaTypes,
-                    RelationalMessages.Error.DATASERVICE_SERVICE_JSON_MISSING_NAME);
+                    RelationalMessages.Error.DATASERVICE_SERVICE_MISSING_NAME);
         }
 
         // Error if the name parameter is different than JSON name
@@ -636,10 +676,6 @@ public final class KomodoDataserviceService extends KomodoService
                 return toResponse(mediaTypes, kso);
             });
         } catch (final Exception e) {
-            if (e instanceof KomodoRestException) {
-                throw (KomodoRestException) e;
-            }
-
             return createErrorResponse(mediaTypes, e,
                     RelationalMessages.Error.DATASERVICE_SERVICE_UPDATE_ERROR, dataserviceName);
         }
