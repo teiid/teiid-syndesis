@@ -29,8 +29,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Base transactional functionality 
- * - TODO: could be built into KEngine instead, just needs a diffenent naming convention
+ * - TODO: could be built into KEngine instead, just needs a different naming convention
  * other than class name.
+ * 
+ * In many of the rollback/read only scenarios, a transaction is not necessary
+ * 
+ * Eventually we'll probably replace with the Transactional annotation
  */
 public abstract class AbstractTransactionService implements V1Constants {
 	

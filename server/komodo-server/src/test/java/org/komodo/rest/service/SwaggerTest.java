@@ -23,7 +23,7 @@ import static org.junit.Assert.assertFalse;
 import java.util.Map;
 
 import org.junit.Test;
-import org.komodo.rest.relational.RestDataservice;
+import org.komodo.rest.datavirtualization.RestDataVirtualization;
 
 import com.fasterxml.jackson.databind.type.SimpleType;
 
@@ -37,7 +37,7 @@ public class SwaggerTest {
 		
 		//if we use the JsonSerialize annotation, we're required to have the as set
 		//otherwise the introspection won't find any properties
-		Map<String, Model> models = ModelConverters.getInstance().read(SimpleType.constructUnsafe(RestDataservice.class));
+		Map<String, Model> models = ModelConverters.getInstance().read(SimpleType.constructUnsafe(RestDataVirtualization.class));
 		assertFalse(models.isEmpty());
 		assertFalse(models.values().iterator().next().getProperties().isEmpty());
 	}

@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 import org.komodo.rest.KomodoJsonMarshaller;
+import org.komodo.rest.datavirtualization.connection.RestSchemaNode;
 
 public class RestSchemaNodeTest {
 	

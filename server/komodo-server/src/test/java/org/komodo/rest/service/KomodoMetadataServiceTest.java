@@ -20,17 +20,43 @@ package org.komodo.rest.service;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.komodo.metadata.TeiidDataSource;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
 import org.komodo.metadata.internal.TeiidDataSourceImpl;
+import org.komodo.openshift.TeiidOpenShiftClient;
+import org.komodo.repository.KomodoRepositoryConfiguration;
+import org.komodo.repository.WorkspaceManagerImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.teiid.adminapi.impl.VDBMetaData;
 
 @SuppressWarnings({ "javadoc", "nls" })
+@RunWith(SpringRunner.class)
+@DataJpaTest
+@ContextConfiguration(classes = {KomodoRepositoryConfiguration.class, ServiceTestConfiguration.class})
 public class KomodoMetadataServiceTest {
+	
+	@Autowired
+	private WorkspaceManagerImpl workspaceManagerImpl;
+	
+	@Autowired
+	private KomodoMetadataService komodoMetadataService;
+	
+	@Autowired
+	private DefaultMetadataInstance metadataInstance;
 	
 	@Test
 	public void testSourceVdbGeneration() throws Exception {
@@ -69,5 +95,32 @@ public class KomodoMetadataServiceTest {
 						+ "<metadata type=\"DDL\"><![CDATA[create something...]]></metadata></model></vdb>",
 				s);
 		
+	}
+	
+	@Test
+	public void testGetSchema() throws Exception {
+		Response r = komodoMetadataService.getSchema("source", Arrays.asList(MediaType.APPLICATION_JSON_TYPE));
+		//no source yet
+		assertEquals(Status.NOT_FOUND.getStatusCode(), r.getStatus());
+		
+		//add the data source, and schema
+		Map<String, String> props = new HashMap<>();
+		props.put(TeiidOpenShiftClient.ID, "someid");
+		props.put(TeiidDataSource.DATASOURCE_DRIVERNAME, "h2");
+		
+		metadataInstance.createDataSource("source", "h2", props);
+		workspaceManagerImpl.createOrUpdateSchema("someid", "source", 
+				"create foreign table tbl (col string) options (\"teiid_rel:fqn\" 'foo=bar');");
+		
+		r = komodoMetadataService.getSchema("source", Arrays.asList(MediaType.APPLICATION_JSON_TYPE));
+		assertEquals(Status.OK.getStatusCode(), r.getStatus());
+		assertEquals("[ {\n" + 
+				"  \"children\" : [ ],\n" + 
+				"  \"name\" : \"bar\",\n" + 
+				"  \"connectionName\" : \"source\",\n" + 
+				"  \"type\" : \"foo\",\n" + 
+				"  \"path\" : \"foo=bar\",\n" + 
+				"  \"queryable\" : true\n" + 
+				"} ]", r.getEntity());
 	}
 }

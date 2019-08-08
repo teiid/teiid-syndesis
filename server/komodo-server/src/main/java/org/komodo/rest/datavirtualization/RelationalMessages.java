@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.rest.relational;
+package org.komodo.rest.datavirtualization;
 
 import static org.komodo.StringConstants.CLOSE_ANGLE_BRACKET;
 import static org.komodo.StringConstants.DOT;

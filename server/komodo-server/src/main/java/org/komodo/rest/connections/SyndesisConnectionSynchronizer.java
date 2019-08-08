@@ -27,7 +27,7 @@ import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoService;
 import org.komodo.rest.connections.SyndesisConnectionMonitor.EventMsg;
-import org.komodo.rest.relational.RestSyndesisSourceStatus;
+import org.komodo.rest.datavirtualization.RestSyndesisSourceStatus;
 import org.komodo.rest.service.KomodoMetadataService;
 import org.komodo.rest.service.KomodoUtilService;
 import org.teiid.adminapi.AdminException;

@@ -35,7 +35,6 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.komodo.StringConstants;
-import org.komodo.UnitOfWork;
 import org.komodo.datavirtualization.SqlComposition;
 import org.komodo.datavirtualization.SqlProjectedColumn;
 import org.komodo.datavirtualization.ViewDefinition;
@@ -44,9 +43,10 @@ import org.komodo.metadata.MetadataInstance.ValidationResult;
 import org.komodo.rest.KomodoRestV1Application;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
-import org.komodo.rest.relational.KomodoStatusObject;
-import org.komodo.rest.relational.RelationalMessages;
-import org.komodo.rest.relational.RestViewDefinitionStatus;
+import org.komodo.rest.datavirtualization.KomodoStatusObject;
+import org.komodo.rest.datavirtualization.RelationalMessages;
+import org.komodo.rest.datavirtualization.RestViewDefinitionStatus;
+import org.komodo.rest.datavirtualization.ViewListing;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -137,10 +137,10 @@ public final class KomodoUtilService extends KomodoService {
      * @return a JSON document representing the view editor states in the user profile (never <code>null</code>)
      */
     @GET
-    @Path(V1Constants.USER_PROFILE + FORWARD_SLASH + V1Constants.VIEW_EDITOR_STATE)
+    @Path(V1Constants.USER_PROFILE + FORWARD_SLASH + V1Constants.VIEW_LISTINGS)
     @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Return the collection of view definitions",
-                  response = ViewDefinition.class)
+    @ApiOperation(value = "Return the collection of view listings",
+                  response = ViewListing[].class)
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = QueryParamKeys.VIRTUALIZATION,
@@ -164,7 +164,7 @@ public final class KomodoUtilService extends KomodoService {
     @ApiResponses(value = {
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
-    public Response getViewEditorStates( final @Context HttpHeaders headers,
+    public Response getViewList( final @Context HttpHeaders headers,
                                     final @Context UriInfo uriInfo ) {
 
         SecurityPrincipal principal = checkSecurityContext(headers);
@@ -172,11 +172,9 @@ public final class KomodoUtilService extends KomodoService {
             return principal.getErrorResponse();
 
         List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        UnitOfWork uow = null;
-        final List< ViewDefinition > viewDefinitions = new ArrayList<>();
+        final List< ViewListing > viewDefinitions = new ArrayList<>();
 
         try {
-
             final String virtualization = uriInfo.getQueryParameters().getFirst( QueryParamKeys.VIRTUALIZATION );
             
             if (StringUtils.isBlank(virtualization)) {
@@ -184,65 +182,68 @@ public final class KomodoUtilService extends KomodoService {
             }
             
             // find view editor states
-            final String txId = "getViewEditorStates"; //$NON-NLS-1$ //$NON-NLS-2$
-            uow = createTransaction(principal, txId, true );
-
-            final List<? extends ViewDefinition> viewEditorStates = getWorkspaceManager().getViewDefinitions( virtualization );
-            LOGGER.debug( "getViewEditorStates:found '{0}' ViewEditorStates", viewEditorStates.size() ); //$NON-NLS-1$
-
-            int start = 0;
-
-            { // start query parameter
-                final String qparam = uriInfo.getQueryParameters().getFirst( QueryParamKeys.START );
-                if ( qparam != null ) {
-                    try {
-                        start = Integer.parseInt( qparam );
-                        if ( start < 0 ) {
-                            start = 0;
-                        }
-                    } catch ( final Exception e ) {
-                        start = 0;
-                    }
-                }
-            }
-
-            int size = ALL_AVAILABLE;
-
-            { // size query parameter
-                final String qparam = uriInfo.getQueryParameters().getFirst( QueryParamKeys.SIZE );
-
-                if ( qparam != null ) {
-                    try {
-                        size = Integer.parseInt( qparam );
-
-                        if ( size <= 0 ) {
-                            size = ALL_AVAILABLE;
-                        }
-                    } catch ( final Exception e ) {
-                        size = ALL_AVAILABLE;
-                    }
-                }
-            }
-
-            int i = 0;
-            for ( final ViewDefinition viewEditorState : viewEditorStates ) {
-                if (i < start)
-                    continue;
-
-                if (size != ALL_AVAILABLE && viewDefinitions.size() > size)
-                    continue;
-
-                LOGGER.debug("getViewEditorStates:ViewEditorState '{0}' entity was constructed", viewEditorState.getName()); //$NON-NLS-1$
-                viewDefinitions.add(viewEditorState);
-                ++i;
-            }
-
-            return commit( uow, mediaTypes, viewDefinitions );
+            return runInTransaction(principal, "getViewEditorStates", true, ()->{
+            
+	            final List<? extends ViewDefinition> viewEditorStates = getWorkspaceManager().getViewDefinitions( virtualization );
+	            LOGGER.debug( "getViewEditorStates:found '{0}' ViewEditorStates", viewEditorStates.size() ); //$NON-NLS-1$
+	
+	            //TODO: paging / sorting can be pushed into the repository
+	            //also there's no sort here, perhaps this should be sorted on name
+	            
+	            int start = 0;
+	
+	            { // start query parameter
+	                final String qparam = uriInfo.getQueryParameters().getFirst( QueryParamKeys.START );
+	                if ( qparam != null ) {
+	                    try {
+	                        start = Integer.parseInt( qparam );
+	                        if ( start < 0 ) {
+	                            start = 0;
+	                        }
+	                    } catch ( final Exception e ) {
+	                        start = 0;
+	                    }
+	                }
+	            }
+	
+	            int size = ALL_AVAILABLE;
+	
+	            { // size query parameter
+	                final String qparam = uriInfo.getQueryParameters().getFirst( QueryParamKeys.SIZE );
+	
+	                if ( qparam != null ) {
+	                    try {
+	                        size = Integer.parseInt( qparam );
+	
+	                        if ( size <= 0 ) {
+	                            size = ALL_AVAILABLE;
+	                        }
+	                    } catch ( final Exception e ) {
+	                        size = ALL_AVAILABLE;
+	                    }
+	                }
+	            }
+	
+	            int i = 0;
+	            for ( final ViewDefinition viewEditorState : viewEditorStates ) {
+	                if (i < start)
+	                    continue;
+	
+	                if (size != ALL_AVAILABLE && viewDefinitions.size() > size)
+	                    continue;
+	
+	                LOGGER.debug("getViewEditorStates:ViewEditorState '{0}' entity was constructed", viewEditorState.getName()); //$NON-NLS-1$
+	                ViewListing listing = new ViewListing();
+	                listing.setId(viewEditorState.getId());
+	                listing.setName(viewEditorState.getName());
+	                listing.setDescription(viewEditorState.getDescription());
+	                viewDefinitions.add(listing);
+	                ++i;
+	            }
+	
+	            return toResponse(mediaTypes, viewDefinitions );
+            });
         } catch ( final Exception e ) {
-            if ( ( uow != null ) && !uow.isCompleted()) {
-                uow.rollback();
-            }
-
             return createErrorResponse(mediaTypes, e, RelationalMessages.Error.PROFILE_EDITOR_STATES_GET_ERROR);
         }
     }
@@ -275,26 +276,19 @@ public final class KomodoUtilService extends KomodoService {
             return principal.getErrorResponse();
 
         List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        UnitOfWork uow = null;
-
         try {
+        	return runInTransaction(principal, "getViewEditorStates", true, ()->{
+                ViewDefinition viewEditorState = getWorkspaceManager().findViewDefinition(viewEditorStateId);
+                LOGGER.debug( "getViewEditorState:found '{0}' ViewEditorStates",
+                                  viewEditorState == null ? 0 : 1 ); //$NON-NLS-1$
 
-            final String txId = "getViewEditorStates"; //$NON-NLS-1$ //$NON-NLS-2$
-            uow = createTransaction(principal, txId, true );
-            ViewDefinition viewEditorState = getWorkspaceManager().findViewDefinition(viewEditorStateId);
-            LOGGER.debug( "getViewEditorState:found '{0}' ViewEditorStates",
-                              viewEditorState == null ? 0 : 1 ); //$NON-NLS-1$
+                if (viewEditorState == null)
+                    return Response.noContent().build();
 
-            if (viewEditorState == null)
-                return Response.noContent().build();
-
-            LOGGER.debug("getViewEditorStates:ViewEditorState '{0}' entity was constructed", viewEditorState.getName()); //$NON-NLS-1$
-            return commit( uow, mediaTypes, viewEditorState );
-
+                LOGGER.debug("getViewEditorStates:ViewEditorState '{0}' entity was constructed", viewEditorState.getName()); //$NON-NLS-1$
+                return toResponse(mediaTypes, viewEditorState );
+        	});
         } catch ( final Exception e ) {
-            if ( ( uow != null ) && !uow.isCompleted()) {
-                uow.rollback();
-            }
             return createErrorResponse(mediaTypes, e, RelationalMessages.Error.PROFILE_EDITOR_STATES_GET_ERROR);
         }
     }
@@ -336,8 +330,9 @@ public final class KomodoUtilService extends KomodoService {
         }
         
         try {
-            // Create the ViewEditorState
-            ViewDefinition vd = createViewEditorState(restViewEditorState);
+        	ViewDefinition vd = runInTransaction(principal, "createViewDefinition", false, ()->{
+        		return createViewEditorState(restViewEditorState);
+        	});
 
             KomodoStatusObject kso = new KomodoStatusObject("Stash Status"); //$NON-NLS-1$
             kso.addAttribute("Stash Status", "Successfully stashed"); //$NON-NLS-1$
@@ -467,7 +462,7 @@ public final class KomodoUtilService extends KomodoService {
     	
         // Add a new ViewDefinition
     	if (viewDefn == null) {
-    		viewDefn = getWorkspaceManager().createViewDefiniton(restViewDefn.getDataVirtualizationName(), restViewDefn.getDataVirtualizationName());
+    		viewDefn = getWorkspaceManager().createViewDefiniton(restViewDefn.getDataVirtualizationName(), restViewDefn.getName());
     	} else {
     		if (restViewDefn.getId() != null && viewDefn.getId() != null && !restViewDefn.getId().endsWith(viewDefn.getDdl())) {
     			throw new IllegalArgumentException("view id does not match the persistent state");
@@ -544,23 +539,18 @@ public final class KomodoUtilService extends KomodoService {
             return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_NAME);
         }
 
-        UnitOfWork uow = null;
         try {
-            uow = createTransaction(principal, "removeUserProfileViewEditorState", false); //$NON-NLS-1$
+            return runInTransaction(principal, "removeUserProfileViewEditorState", false, ()-> {
+                if (!getWorkspaceManager().deleteViewDefinition(viewEditorStateId)) {
+                    return Response.noContent().build();
+                }
 
-            if (!getWorkspaceManager().deleteViewDefinition(viewEditorStateId)) {
-                return Response.noContent().build();
-            }
+                KomodoStatusObject kso = new KomodoStatusObject("Delete Status"); //$NON-NLS-1$
+                kso.addAttribute(viewEditorStateId, "Successfully deleted"); //$NON-NLS-1$
 
-            KomodoStatusObject kso = new KomodoStatusObject("Delete Status"); //$NON-NLS-1$
-            kso.addAttribute(viewEditorStateId, "Successfully deleted"); //$NON-NLS-1$
-
-            return commit(uow, mediaTypes, kso);
+                return toResponse(mediaTypes, kso);
+            }); //$NON-NLS-1$
         } catch (final Exception e) {
-            if ((uow != null) && !uow.isCompleted()) {
-                uow.rollback();
-            }
-
             return createErrorResponse(mediaTypes, e, RelationalMessages.Error.PROFILE_EDITOR_STATE_REMOVE_ERROR);
         }
     }

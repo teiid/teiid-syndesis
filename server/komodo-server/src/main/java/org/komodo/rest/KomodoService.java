@@ -17,12 +17,10 @@
  */
 package org.komodo.rest;
 
-import static org.komodo.rest.Messages.Error.COMMIT_TIMEOUT;
 import static org.komodo.rest.Messages.Error.RESOURCE_NOT_FOUND;
 
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
@@ -36,12 +34,10 @@ import javax.ws.rs.core.Variant.VariantListBuilder;
 
 import org.komodo.KEngine;
 import org.komodo.KException;
-import org.komodo.UnitOfWork;
-import org.komodo.UnitOfWork.TimeoutException;
 import org.komodo.WorkspaceManager;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
-import org.komodo.rest.relational.RelationalMessages;
+import org.komodo.rest.datavirtualization.RelationalMessages;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
@@ -67,9 +63,6 @@ public abstract class KomodoService extends AbstractTransactionService implement
     protected static final StringNameValidator VALIDATOR = new StringNameValidator();
 
     protected static final int ALL_AVAILABLE = -1;
-
-    private static final int TIMEOUT = 30;
-    private static final TimeUnit UNIT = TimeUnit.SECONDS;
 
     /**
      * Query parameter keys used by the service methods.
@@ -270,45 +263,8 @@ public abstract class KomodoService extends AbstractTransactionService implement
         return builder.build();
     }
     
-    protected Response commit(UnitOfWork transaction, List<MediaType> acceptableMediaTypes, final Object entity) throws Exception {
-        final int timeout = TIMEOUT;
-        final TimeUnit unit = UNIT;
-
-        try {
-        	commit(transaction);
-        } catch (TimeoutException e) {
-        	//TODO: the time here is arbitrary - we are not yet configuring an explicit timeout
-        	
-            // timeout occurred
-            String errorMessage = Messages.getString( COMMIT_TIMEOUT, transaction.getName(), timeout, unit );
-            return createErrorResponse(Status.INTERNAL_SERVER_ERROR, acceptableMediaTypes, errorMessage);
-        } catch (Throwable e) {
-        	return createErrorResponse(Status.INTERNAL_SERVER_ERROR, acceptableMediaTypes, e.getLocalizedMessage());
-        }
-
-    	return toResponse(acceptableMediaTypes, entity);
-    }
-
-    protected Response commit( final UnitOfWork transaction, List<MediaType> acceptableMediaTypes,
-                               final List<?> entities ) throws Exception {
-
-        commit(transaction, acceptableMediaTypes, (Object)null);
-        
-        return toResponse(acceptableMediaTypes, entities);
-    }
-
-    protected Response commitNoConnectionFound(UnitOfWork uow, List<MediaType> mediaTypes, String connectionName) throws Exception {
-        LOGGER.debug( "Connection '{0}' was not found", connectionName ); //$NON-NLS-1$
-        return commit( uow, mediaTypes, new ResourceNotFound( connectionName ) );
-    }
-    
     protected <T> T runInTransaction(SecurityPrincipal user, String txnName, boolean rollbackOnly, Callable<T> callable) throws Exception {
     	return runInTransaction(user.getUserName(), txnName, rollbackOnly, callable);
     }
     
-    protected UnitOfWork createTransaction(final SecurityPrincipal user, final String name,
-            final boolean rollbackOnly) throws KException {
-    	return createTransaction(user.getUserName(), name, rollbackOnly);
-    }
-
 }

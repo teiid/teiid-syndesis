@@ -15,45 +15,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.rest.relational.connection;
+package org.komodo.rest.datavirtualization;
 
-import org.teiid.metadata.Column;
+import org.komodo.rest.datavirtualization.connection.RestSourceSchema;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
- * Represents the configuration for the schema table's column info 
+ * Represents the configuration for the view's source info 
  */
-@JsonSerialize(as = RestSourceColumn.class)
+@JsonSerialize(as = RestViewSourceInfo.class)
 @JsonInclude(Include.NON_NULL)
-public class RestSourceColumn {
-	
-	/*
-	 * The column name
-	 */
-	private String columnName;
-	
-	/*
-	 * The column datatype
-	 */
-	private String datatype;
-
-    /**
-     * Constructor for use when deserializing
-     */
-    public RestSourceColumn(Column column) {
-        super();
-        this.columnName = column.getName();
-        this.datatype = column.getRuntimeType();
-    }
-
-    public String getColumName() {
-    	return this.columnName;
-    }
+public class RestViewSourceInfo {
     
-    public String getDatatype() {
-    	return this.datatype;
+    /*
+     * The view name
+     */
+    private String viewName;
+	
+    /*
+     * The array of source schemas
+     */
+    private RestSourceSchema[] schemas = new RestSourceSchema[0];
+    
+    /**
+     * Constructor for use <strong>only</strong> when deserializing.
+     */
+    public RestViewSourceInfo(String viewId, RestSourceSchema[] sourceSchemas) {
+    	this.viewName = viewId;
+    	this.schemas = sourceSchemas;
+    }
+	
+	public String getViewName() {
+		return this.viewName;
+	}
+	
+    /**
+     * @return the projected columns
+     */
+    public RestSourceSchema[] getSchemas() {
+        return schemas;
     }
 }

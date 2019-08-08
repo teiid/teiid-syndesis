@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.komodo.rest.relational;
+package org.komodo.rest.datavirtualization;
 
 import java.util.ArrayList;
 import java.util.List;

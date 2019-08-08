@@ -48,10 +48,6 @@ public class TeiidVdbImpl implements TeiidVdb, Comparable<TeiidVdbImpl> {
 
     private final String deploymentName;
 
-    private boolean isActive = false;
-    private boolean isLoading = false;
-    private boolean hasFailed = false;
-    private boolean wasRemoved = false;
     private boolean hasModels = false;
 
     private List<String> errors;
@@ -77,11 +73,6 @@ public class TeiidVdbImpl implements TeiidVdb, Comparable<TeiidVdbImpl> {
         isPreview = Boolean.parseBoolean(vdb.getProperties().getProperty(PREVIEW));
         deploymentName = vdb.getProperties().getProperty(DEPLOYMENT_NAME);
 
-        Status status = vdb.getStatus();
-        isActive = Status.ACTIVE.equals(status);
-        isLoading = Status.LOADING.equals(status);
-        hasFailed = Status.FAILED.equals(status);
-        wasRemoved = Status.REMOVED.equals(status);
         hasModels = !vdb.getModels().isEmpty();
 
         errors = vdb.getValidityErrors();
@@ -148,22 +139,22 @@ public class TeiidVdbImpl implements TeiidVdb, Comparable<TeiidVdbImpl> {
 
     @Override
     public boolean isActive() {
-        return isActive;
+        return Status.ACTIVE.equals(vdb.getStatus());
     }
 
     @Override
     public boolean isLoading() {
-        return isLoading;
+        return Status.LOADING.equals(vdb.getStatus());
     }
 
     @Override
     public boolean hasFailed() {
-        return hasFailed;
+        return Status.FAILED.equals(vdb.getStatus());
     }
 
     @Override
     public boolean wasRemoved() {
-        return wasRemoved;
+        return Status.REMOVED.equals(vdb.getStatus());
     }
 
     @Override
@@ -208,6 +199,9 @@ public class TeiidVdbImpl implements TeiidVdb, Comparable<TeiidVdbImpl> {
     
     @Override
     public Schema getSchema(String name) {
+    	if (!isActive()) {
+    		return null;
+    	}
     	TransformationMetadata qmi = vdb.getAttachment(TransformationMetadata.class);
     	return qmi.getMetadataStore().getSchema(name);
     }

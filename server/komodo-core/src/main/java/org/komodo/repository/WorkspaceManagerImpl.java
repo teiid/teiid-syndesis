@@ -66,6 +66,7 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
 		} else {
 			schema = new org.komodo.datavirtualization.SourceSchema(id);
 			schema.setName(name);
+			schema.setDdl(contents);
 			this.schemaRepository.save(schema);
 		}
 	}

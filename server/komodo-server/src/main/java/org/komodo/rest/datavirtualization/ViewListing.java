@@ -15,31 +15,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.utils;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+package org.komodo.rest.datavirtualization;
 
-import org.junit.Before;
-import org.junit.Test;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-@SuppressWarnings( {"javadoc", "nls"} )
-public class TestKLog {
+/**
+ * Metadata, no state, related to a view.
+ * 
+ * TODO: Eventually the list could include a type (table, view, procedure, etc.)
+ */
+@JsonSerialize(as = ViewListing.class)
+public class ViewListing {
 
-    private KLog logger;
+	private String id;
+	private String name;
+	private String description;
+	
+	public String getId() {
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getDescription() {
+		return description;
+	}
+	public void setDescription(String description) {
+		this.description = description;
+	}
 
-    @Before
-    public void setup() {
-        logger = KLog.getLogger();
-    }
-
-    @Test
-    public void testLogInit() {
-        try {
-            logger = KLog.getLogger();
-            assertNotNull(logger);
-        } catch (Throwable throwable) {
-            fail("Should not throw an exception " + throwable.getLocalizedMessage());
-        }
-    }
 }

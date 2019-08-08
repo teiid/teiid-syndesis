@@ -248,24 +248,9 @@ public class KomodoRestV1Application {
         String METADATA__CREDENTIALS = "credentials"; //$NON-NLS-1$
 
         /**
-         * The driver property for adding a driver to the teiid server
-         */
-        String METADATA_DRIVER = "driver"; //$NON-NLS-1$
-
-        /**
-         * Placeholder added to an URI to allow a specific teiid driver id
-         */
-        String METADATA_DRIVER_PLACEHOLDER = "{driverName}"; //$NON-NLS-1$
-
-        /**
          * The teiid segment for running a query against the teiid server
          */
         String QUERY_SEGMENT = "query"; //$NON-NLS-1$
-
-        /**
-         * The teiid segment for running a ping against the teiid server
-         */
-        String PING_SEGMENT = "ping"; //$NON-NLS-1$
 
         /**
          * The name of the URI ping type parameter
@@ -293,19 +278,14 @@ public class KomodoRestV1Application {
         String USER_PROFILE = "userProfile"; //$NON-NLS-1$
 
         /**
-         * The git repository configuration to the user profile
-         */
-        String GIT_REPOSITORY = "gitRepository"; //$NON-NLS-1$
-
-        /**
-         * Git repository configuration placeholder
-         */
-        String GIT_REPO_PLACEHOLDER = "{gitRepositoryName}"; //$NON-NLS-1$
-
-        /**
          * The view editor state of the user profile
          */
         String VIEW_EDITOR_STATE = "viewEditorState"; //$NON-NLS-1$
+        
+        /**
+         * The view editor state of the user profile
+         */
+        String VIEW_LISTINGS = "viewListings"; //$NON-NLS-1$
 
         /**
          * View editor state placeholder

@@ -24,8 +24,8 @@ import java.util.Arrays;
 
 import org.junit.Test;
 import org.komodo.rest.KomodoJsonMarshaller;
-import org.komodo.rest.relational.RestSyndesisSourceStatus;
-import org.komodo.rest.relational.RestSyndesisSourceStatus.EntityState;
+import org.komodo.rest.datavirtualization.RestSyndesisSourceStatus;
+import org.komodo.rest.datavirtualization.RestSyndesisSourceStatus.EntityState;
 
 public class RestSyndesisSourceStatusTest {
 	

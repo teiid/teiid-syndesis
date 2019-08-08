@@ -22,7 +22,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 import org.komodo.rest.KomodoJsonMarshaller;
-import org.komodo.rest.relational.KomodoStatusObject;
+import org.komodo.rest.datavirtualization.KomodoStatusObject;
 
 public class KomodoStatusObjectTest {
 	

@@ -15,9 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.rest.relational;
-
-import java.util.Arrays;
+package org.komodo.rest.datavirtualization;
 
 import org.komodo.KException;
 import org.komodo.datavirtualization.DataVirtualization;
@@ -31,9 +29,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 /**
  * A Dataservice.
  */
-@JsonSerialize(as = RestDataservice.class)
+@JsonSerialize(as = RestDataVirtualization.class)
 @JsonInclude(Include.NON_NULL)
-public final class RestDataservice {
+public final class RestDataVirtualization {
 
     /**
      * Label used to describe description
@@ -53,18 +51,17 @@ public final class RestDataservice {
     @JsonProperty(DESCRIPTION_LABEL)
     private String description;
     private String serviceViewModel;
-    @JsonProperty(DATASERVICE_VIEW_DEFINITIONS_LABEL)
-    private String[] viewDefinitionNames;
     private String serviceVdbName;
     private String publishedState;
     private String podNamespace;
     private String publishPodName;
     private String odataHostName;
+    private boolean empty = true;
     
     /**
      * Constructor for use when deserializing
      */
-    public RestDataservice() {
+    public RestDataVirtualization() {
         super();
     }
 
@@ -73,7 +70,7 @@ public final class RestDataservice {
      * @param dataService the dataService
      * @throws KException if error occurs
      */
-    public RestDataservice(DataVirtualization dataService, String vdbName) throws KException {
+    public RestDataVirtualization(DataVirtualization dataService, String vdbName) throws KException {
         setName(dataService.getName());
         
         setId(dataService.getId());
@@ -112,20 +109,6 @@ public final class RestDataservice {
      */
     public void setServiceViewModel(String modelName) {
     	this.serviceViewModel = modelName;
-    }
-
-    /**
-     * @return the service ViewDefinition names (can be empty)
-     */
-    public String[] getViewDefinitionNames() {
-        return this.viewDefinitionNames;
-    }
-
-    /**
-     * @param viewDefinitionNames the service view names to set
-     */
-    public void setViewDefinitionNames(final String[] viewDefinitionNames) {
-        this.viewDefinitionNames = viewDefinitionNames;
     }
 
     /**
@@ -227,7 +210,6 @@ public final class RestDataservice {
 		result = prime * result + ((publishedState == null) ? 0 : publishedState.hashCode());
 		result = prime * result + ((serviceVdbName == null) ? 0 : serviceVdbName.hashCode());
 		result = prime * result + ((serviceViewModel == null) ? 0 : serviceViewModel.hashCode());
-		result = prime * result + Arrays.hashCode(viewDefinitionNames);
 		return result;
 	}
 
@@ -239,7 +221,7 @@ public final class RestDataservice {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		RestDataservice other = (RestDataservice) obj;
+		RestDataVirtualization other = (RestDataVirtualization) obj;
 		if (description == null) {
 			if (other.description != null)
 				return false;
@@ -285,9 +267,19 @@ public final class RestDataservice {
 				return false;
 		} else if (!serviceViewModel.equals(other.serviceViewModel))
 			return false;
-		if (!Arrays.equals(viewDefinitionNames, other.viewDefinitionNames))
-			return false;
 		return true;
+	}
+
+	public void setEmpty(boolean empty) {
+		this.empty = empty;
+	}
+	
+	/**
+	 * If there is nothing defined in this data virtualization
+	 * @return
+	 */
+	public boolean isEmpty() {
+		return empty;
 	}
     
 }

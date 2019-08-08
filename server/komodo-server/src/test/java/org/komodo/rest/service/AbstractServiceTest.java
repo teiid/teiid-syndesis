@@ -44,8 +44,6 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.junit.ClassRule;
-import org.junit.rules.ExternalResource;
 import org.komodo.StringConstants;
 import org.komodo.rest.KomodoJsonMarshaller;
 import org.komodo.rest.KomodoRestV1Application.V1Constants;
@@ -64,13 +62,6 @@ public class AbstractServiceTest implements StringConstants, V1Constants {
     public static final String USER_NAME = "komodo";
 
     public static final String PASSWORD = "user";
-
-    //
-    // With this rule placed here and in the suites ensures that ServiceResources
-    // will be correctly instantiated whether running in a suite or as a single test class
-    //
-    @ClassRule
-    public static ExternalResource serviceResources = ServiceResources.getInstance();
 
     public AbstractServiceTest() {
         super();

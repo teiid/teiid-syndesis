@@ -1,4 +1,4 @@
-package org.komodo.rest.relational;
+package org.komodo.rest.datavirtualization;
 
 import java.util.Arrays;
 import java.util.List;

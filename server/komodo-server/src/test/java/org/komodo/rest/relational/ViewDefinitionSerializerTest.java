@@ -29,7 +29,7 @@ import org.komodo.datavirtualization.SqlComposition;
 import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.rest.KomodoJsonMarshaller;
 
-public class ViewEditorStateSerializerTest {
+public class ViewDefinitionSerializerTest {
 	
     private String viewName = "myNewView";
     private String viewDefinitionName = "testView";
@@ -65,10 +65,6 @@ public class ViewEditorStateSerializerTest {
  
     private String createViewEditorState() {
         return "{\n" + 
-        		"  \"id\" : \"myNewView\",\n" +
-        		"  \"name\" : \"testView\",\n" + 
-        		"  \"dataVirtualizationName\" : \"dvName\",\n" + 
-        		"  \"sourcePaths\" : [ \"path/to/source1\", \"path/to/source2\", \"path/to/source3\", \"path/to/source4\" ],\n" + 
         		"  \"compositions\" : [ {\n" + 
         		"    \"name\" : \"comp1\",\n" + 
         		"    \"description\" : \"description for comp1\",\n" + 
@@ -88,6 +84,12 @@ public class ViewEditorStateSerializerTest {
         		"    \"operator\" : \"EQ\",\n" + 
         		"    \"type\" : \"LEFT_OUTER_JOIN\"\n" + 
         		"  } ],\n" + 
+        		"  \"dataVirtualizationName\" : \"dvName\",\n" + 
+        		"  \"id\" : \"myNewView\",\n" + 
+        		"  \"isComplete\" : true,\n" + 
+        		"  \"isUserDefined\" : false,\n" + 
+        		"  \"keng__description\" : \"test view description text\",\n" + 
+        		"  \"name\" : \"testView\",\n" + 
         		"  \"projectedColumns\" : [ {\n" + 
         		"    \"name\" : \"col1\",\n" + 
         		"    \"type\" : \"string\",\n" + 
@@ -97,9 +99,7 @@ public class ViewEditorStateSerializerTest {
         		"    \"type\" : \"integer\",\n" + 
         		"    \"selected\" : true\n" + 
         		"  } ],\n" + 
-        		"  \"keng__description\" : \"test view description text\",\n" + 
-        		"  \"isComplete\" : true,\n" + 
-        		"  \"isUserDefined\" : false\n" + 
+        		"  \"sourcePaths\" : [ \"path/to/source1\", \"path/to/source2\", \"path/to/source3\", \"path/to/source4\" ]\n" + 
         		"}";
     }
 

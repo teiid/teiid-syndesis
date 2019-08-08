@@ -25,7 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.rest.KomodoJsonMarshaller;
-import org.komodo.rest.relational.RestDataservice;
+import org.komodo.rest.datavirtualization.RestDataVirtualization;
 import org.mockito.Mockito;
 
 @SuppressWarnings( { "javadoc", "nls" } )
@@ -37,22 +37,21 @@ public final class DataserviceSerializerTest {
 
     private static final String JSON = "{\n" + 
     		"  \"serviceVdbName\" : \"ServiceVdb\",\n" + 
-    		"  \"publishedState\" : \"NOTFOUND\",\n" + 
+    		"  \"publishedState\" : \"NOTFOUND\",\n" +
+    		"  \"empty\" : true,\n" +
     		"  \"keng__id\" : \"dataservice1\",\n" + 
-    		"  \"tko__description\" : \"my description\",\n" + 
-    		"  \"serviceViewDefinitions\" : [ \"x\" ]\n" + 
+    		"  \"tko__description\" : \"my description\"\n" + 
     		"}";
 
-    private RestDataservice dataservice;
+    private RestDataVirtualization dataservice;
 
     @Before
     public void init() throws Exception {
         DataVirtualization theService = Mockito.mock(DataVirtualization.class);
         Mockito.when(theService.getName()).thenReturn(DATASERVICE_NAME);
 
-        this.dataservice = new RestDataservice(theService, "ServiceVdb");
+        this.dataservice = new RestDataVirtualization(theService, "ServiceVdb");
         this.dataservice.setDescription(DESCRIPTION);
-        this.dataservice.setViewDefinitionNames(new String[] {"x"});
     }
 
     @Test
@@ -64,7 +63,7 @@ public final class DataserviceSerializerTest {
 
     @Test
     public void shouldImportJson() {
-        final RestDataservice descriptor = KomodoJsonMarshaller.unmarshall( JSON, RestDataservice.class );
+        final RestDataVirtualization descriptor = KomodoJsonMarshaller.unmarshall( JSON, RestDataVirtualization.class );
         assertEquals(DATASERVICE_NAME, descriptor.getName());
         assertEquals(DESCRIPTION, descriptor.getDescription());
     }
@@ -72,7 +71,7 @@ public final class DataserviceSerializerTest {
     @Test( expected = Exception.class )
     public void shouldNotImportJsonWhenIdIsMissing() {
         final String malformed = "{\"description\":\"my description\",\"links\":[{\"rel\":\"self\",\"href\":\"http://localhost:8080/v1/workspace/vdbs/MyVdb\",\"method\":\"GET\"},{\"rel\":\"parent\",\"href\":\"http://localhost:8080/v1/workspace/vdbs\",\"method\":\"GET\"},{\"rel\":\"manifest\",\"href\":\"http://localhost:8080/v1/workspace/vdbs/MyVdb/manifest\",\"method\":\"GET\"}]}";
-        KomodoJsonMarshaller.unmarshall( malformed, RestDataservice.class );
+        KomodoJsonMarshaller.unmarshall( malformed, RestDataVirtualization.class );
     }
 
 }
