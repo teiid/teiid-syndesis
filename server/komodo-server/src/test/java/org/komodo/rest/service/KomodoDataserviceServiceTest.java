@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.junit.Test;
@@ -63,13 +62,13 @@ public class KomodoDataserviceServiceTest {
 		ImportPayload payload = new ImportPayload();
 		payload.setTables(Arrays.asList("tbl"));
 		
-		Response r = komodoDataserviceService.importViews("dv", "source", payload, Arrays.asList(MediaType.APPLICATION_JSON_TYPE));
+		Response r = komodoDataserviceService.importViews("dv", "source", payload);
 		//dv not found
 		assertEquals(404, r.getStatus());
 		
 		workspaceManagerImpl.createDataVirtualization("dv");
 		
-		r = komodoDataserviceService.importViews("dv", "source", payload, Arrays.asList(MediaType.APPLICATION_JSON_TYPE));
+		r = komodoDataserviceService.importViews("dv", "source", payload);
 		//source not found
 		assertEquals(404, r.getStatus());
 		
@@ -79,7 +78,7 @@ public class KomodoDataserviceServiceTest {
 		
 		metadataInstance.createDataSource("source", "h2", props);
 		
-		r = komodoDataserviceService.importViews("dv", "source", payload, Arrays.asList(MediaType.APPLICATION_JSON_TYPE));
+		r = komodoDataserviceService.importViews("dv", "source", payload);
 		//source not found - as the properties are not valid
 		assertEquals(404, r.getStatus());
 		
@@ -88,7 +87,7 @@ public class KomodoDataserviceServiceTest {
 				"create foreign table tbl (col string) options (\"teiid_rel:fqn\" 'fqn');");
 		metadataInstance.undeployDynamicVdb(KomodoMetadataService.getWorkspaceSourceVdbName("source"));
 		
-		r = komodoDataserviceService.importViews("dv", "source", payload, Arrays.asList(MediaType.APPLICATION_JSON_TYPE));
+		r = komodoDataserviceService.importViews("dv", "source", payload);
 		KomodoStatusObject kso = KomodoJsonMarshaller.unmarshall(r.getEntity().toString(), KomodoStatusObject.class);
 		assertEquals(1, kso.getAttributes().size());
 		

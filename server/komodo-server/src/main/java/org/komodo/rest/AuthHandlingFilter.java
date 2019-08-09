@@ -27,10 +27,12 @@ import javax.ws.rs.ext.Provider;
 //import org.apache.commons.logging.Log;
 //import org.apache.commons.logging.LogFactory;
 import org.komodo.utils.KLog;
+import org.springframework.stereotype.Component;
 
 @Provider
 @PreMatching
-public class AuthHandlingFilter implements ContainerRequestFilter {
+@Component
+public class AuthHandlingFilter implements ContainerRequestFilter, CredentialsProvider {
 
 //    private static final Log LOGGER = LogFactory.getLog(AuthHandlingFilter.class);
 
@@ -80,6 +82,11 @@ public class AuthHandlingFilter implements ContainerRequestFilter {
 		OAuthCredentials creds = new OAuthCredentials(accessToken, user);
 		threadOAuthCredentials.set(creds);		
 //		LOGGER.info("  *** AuthHandlingFilter.filter() OAuth user = " + creds.user + "  Token = " + creds.getToken().toString());
+	}
+
+	@Override
+	public OAuthCredentials getCredentials() {
+		return threadOAuthCredentials.get();
 	}
 
 }

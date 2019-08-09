@@ -118,14 +118,8 @@ public final class KomodoUtilService extends KomodoService {
         repoStatus.addAttribute(APP_DESCRIPTION, KomodoRestV1Application.V1Constants.App.description());
         repoStatus.addAttribute(APP_VERSION, KomodoRestV1Application.V1Constants.App.version());
 
-        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-
         // create response
-        try {
-            return toResponse(mediaTypes, repoStatus);
-        } catch (Exception ex) {
-            return createErrorResponse(mediaTypes, ex, RelationalMessages.Error.ABOUT_SERVICE_ERROR);
-        }
+        return toResponse(repoStatus);
     }
 
     /**
@@ -135,6 +129,7 @@ public final class KomodoUtilService extends KomodoService {
      * @param uriInfo
      *        the request URI information (never <code>null</code>)
      * @return a JSON document representing the view editor states in the user profile (never <code>null</code>)
+     * @throws Exception 
      */
     @GET
     @Path(V1Constants.USER_PROFILE + FORWARD_SLASH + V1Constants.VIEW_LISTINGS)
@@ -165,87 +160,82 @@ public final class KomodoUtilService extends KomodoService {
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
     public Response getViewList( final @Context HttpHeaders headers,
-                                    final @Context UriInfo uriInfo ) {
+                                    final @Context UriInfo uriInfo ) throws Exception {
 
         SecurityPrincipal principal = checkSecurityContext(headers);
         if (principal.hasErrorResponse())
             return principal.getErrorResponse();
 
-        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
         final List< ViewListing > viewDefinitions = new ArrayList<>();
 
-        try {
-            final String virtualization = uriInfo.getQueryParameters().getFirst( QueryParamKeys.VIRTUALIZATION );
-            
-            if (StringUtils.isBlank(virtualization)) {
-            	return createErrorResponse(Status.FORBIDDEN, mediaTypes, "VIRTUALIZATION name is required");
-            }
-            
-            // find view editor states
-            return runInTransaction(principal, "getViewEditorStates", true, ()->{
-            
-	            final List<? extends ViewDefinition> viewEditorStates = getWorkspaceManager().getViewDefinitions( virtualization );
-	            LOGGER.debug( "getViewEditorStates:found '{0}' ViewEditorStates", viewEditorStates.size() ); //$NON-NLS-1$
-	
-	            //TODO: paging / sorting can be pushed into the repository
-	            //also there's no sort here, perhaps this should be sorted on name
-	            
-	            int start = 0;
-	
-	            { // start query parameter
-	                final String qparam = uriInfo.getQueryParameters().getFirst( QueryParamKeys.START );
-	                if ( qparam != null ) {
-	                    try {
-	                        start = Integer.parseInt( qparam );
-	                        if ( start < 0 ) {
-	                            start = 0;
-	                        }
-	                    } catch ( final Exception e ) {
-	                        start = 0;
-	                    }
-	                }
-	            }
-	
-	            int size = ALL_AVAILABLE;
-	
-	            { // size query parameter
-	                final String qparam = uriInfo.getQueryParameters().getFirst( QueryParamKeys.SIZE );
-	
-	                if ( qparam != null ) {
-	                    try {
-	                        size = Integer.parseInt( qparam );
-	
-	                        if ( size <= 0 ) {
-	                            size = ALL_AVAILABLE;
-	                        }
-	                    } catch ( final Exception e ) {
-	                        size = ALL_AVAILABLE;
-	                    }
-	                }
-	            }
-	
-	            int i = 0;
-	            for ( final ViewDefinition viewEditorState : viewEditorStates ) {
-	                if (i < start)
-	                    continue;
-	
-	                if (size != ALL_AVAILABLE && viewDefinitions.size() > size)
-	                    continue;
-	
-	                LOGGER.debug("getViewEditorStates:ViewEditorState '{0}' entity was constructed", viewEditorState.getName()); //$NON-NLS-1$
-	                ViewListing listing = new ViewListing();
-	                listing.setId(viewEditorState.getId());
-	                listing.setName(viewEditorState.getName());
-	                listing.setDescription(viewEditorState.getDescription());
-	                viewDefinitions.add(listing);
-	                ++i;
-	            }
-	
-	            return toResponse(mediaTypes, viewDefinitions );
-            });
-        } catch ( final Exception e ) {
-            return createErrorResponse(mediaTypes, e, RelationalMessages.Error.PROFILE_EDITOR_STATES_GET_ERROR);
+        final String virtualization = uriInfo.getQueryParameters().getFirst( QueryParamKeys.VIRTUALIZATION );
+        
+        if (StringUtils.isBlank(virtualization)) {
+        	return createErrorResponse(Status.FORBIDDEN, "VIRTUALIZATION name is required");
         }
+        
+        // find view editor states
+        return runInTransaction(principal, "getViewEditorStates", true, ()->{
+        
+            final List<? extends ViewDefinition> viewEditorStates = getWorkspaceManager().getViewDefinitions( virtualization );
+            LOGGER.debug( "getViewEditorStates:found '{0}' ViewEditorStates", viewEditorStates.size() ); //$NON-NLS-1$
+
+            //TODO: paging / sorting can be pushed into the repository
+            //also there's no sort here, perhaps this should be sorted on name
+            
+            int start = 0;
+
+            { // start query parameter
+                final String qparam = uriInfo.getQueryParameters().getFirst( QueryParamKeys.START );
+                if ( qparam != null ) {
+                    try {
+                        start = Integer.parseInt( qparam );
+                        if ( start < 0 ) {
+                            start = 0;
+                        }
+                    } catch ( final Exception e ) {
+                        start = 0;
+                    }
+                }
+            }
+
+            int size = ALL_AVAILABLE;
+
+            { // size query parameter
+                final String qparam = uriInfo.getQueryParameters().getFirst( QueryParamKeys.SIZE );
+
+                if ( qparam != null ) {
+                    try {
+                        size = Integer.parseInt( qparam );
+
+                        if ( size <= 0 ) {
+                            size = ALL_AVAILABLE;
+                        }
+                    } catch ( final Exception e ) {
+                        size = ALL_AVAILABLE;
+                    }
+                }
+            }
+
+            int i = 0;
+            for ( final ViewDefinition viewEditorState : viewEditorStates ) {
+                if (i < start)
+                    continue;
+
+                if (size != ALL_AVAILABLE && viewDefinitions.size() > size)
+                    continue;
+
+                LOGGER.debug("getViewEditorStates:ViewEditorState '{0}' entity was constructed", viewEditorState.getName()); //$NON-NLS-1$
+                ViewListing listing = new ViewListing();
+                listing.setId(viewEditorState.getId());
+                listing.setName(viewEditorState.getName());
+                listing.setDescription(viewEditorState.getDescription());
+                viewDefinitions.add(listing);
+                ++i;
+            }
+
+            return toResponse(viewDefinitions );
+        });
     }
 
     /**
@@ -255,6 +245,7 @@ public final class KomodoUtilService extends KomodoService {
      * @param uriInfo
      *        the request URI information (never <code>null</code>)
      * @return a JSON document representing the view editor state in the user profile (never <code>null</code>)
+     * @throws Exception 
      */
     @GET
     @Path(V1Constants.USER_PROFILE + FORWARD_SLASH +
@@ -269,28 +260,23 @@ public final class KomodoUtilService extends KomodoService {
     public Response getViewEditorState( final @Context HttpHeaders headers,
                                     final @Context UriInfo uriInfo,
                                     @ApiParam(value = "Name of the view editor state to fetch", required = true)
-                                    final @PathParam( "viewEditorStateId" ) String viewEditorStateId) {
+                                    final @PathParam( "viewEditorStateId" ) String viewEditorStateId) throws Exception {
 
         SecurityPrincipal principal = checkSecurityContext(headers);
         if (principal.hasErrorResponse())
             return principal.getErrorResponse();
 
-        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        try {
-        	return runInTransaction(principal, "getViewEditorStates", true, ()->{
-                ViewDefinition viewEditorState = getWorkspaceManager().findViewDefinition(viewEditorStateId);
-                LOGGER.debug( "getViewEditorState:found '{0}' ViewEditorStates",
-                                  viewEditorState == null ? 0 : 1 ); //$NON-NLS-1$
+    	return runInTransaction(principal, "getViewEditorStates", true, ()->{
+            ViewDefinition viewEditorState = getWorkspaceManager().findViewDefinition(viewEditorStateId);
+            LOGGER.debug( "getViewEditorState:found '{0}' ViewEditorStates",
+                              viewEditorState == null ? 0 : 1 ); //$NON-NLS-1$
 
-                if (viewEditorState == null)
-                    return Response.noContent().build();
+            if (viewEditorState == null)
+                return Response.noContent().build();
 
-                LOGGER.debug("getViewEditorStates:ViewEditorState '{0}' entity was constructed", viewEditorState.getName()); //$NON-NLS-1$
-                return toResponse(mediaTypes, viewEditorState );
-        	});
-        } catch ( final Exception e ) {
-            return createErrorResponse(mediaTypes, e, RelationalMessages.Error.PROFILE_EDITOR_STATES_GET_ERROR);
-        }
+            LOGGER.debug("getViewEditorStates:ViewEditorState '{0}' entity was constructed", viewEditorState.getName()); //$NON-NLS-1$
+            return toResponse(viewEditorState );
+    	});
     }
 
     /**
@@ -300,8 +286,10 @@ public final class KomodoUtilService extends KomodoService {
      * @param uriInfo
      *        the request URI information (never <code>null</code>)
      * @return stashed view editor state
+     * @throws Exception 
      */
     @PUT
+    @Produces( MediaType.APPLICATION_JSON )
     @Path(V1Constants.USER_PROFILE + FORWARD_SLASH + V1Constants.VIEW_EDITOR_STATE)
     @ApiOperation( value = "Store view editor state" )
     @ApiResponses(value = {
@@ -311,36 +299,28 @@ public final class KomodoUtilService extends KomodoService {
     public Response stashViewEditorState(final @Context HttpHeaders headers,
                                                final @Context UriInfo uriInfo,
                                                @ApiParam(required = true)
-                                               final org.komodo.datavirtualization.ViewDefinition restViewEditorState) {
+                                               final org.komodo.datavirtualization.ViewDefinition restViewEditorState) throws Exception {
 
         SecurityPrincipal principal = checkSecurityContext(headers);
         if (principal.hasErrorResponse())
             return principal.getErrorResponse();
 
-        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
-            return notAcceptableMediaTypesBuilder().build();
-        
         if (StringUtils.isBlank(restViewEditorState.getName())) {
-        	return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VIEW_DEFINITION_MISSING_NAME);
+        	return createErrorResponseWithForbidden(RelationalMessages.Error.VIEW_DEFINITION_MISSING_NAME);
         }
         
         if (StringUtils.isBlank(restViewEditorState.getDataVirtualizationName())) {
-        	return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.VIEW_DEFINITION_MISSING_DATAVIRTUALIZATIONNAME);
+        	return createErrorResponseWithForbidden(RelationalMessages.Error.VIEW_DEFINITION_MISSING_DATAVIRTUALIZATIONNAME);
         }
         
-        try {
-        	ViewDefinition vd = runInTransaction(principal, "createViewDefinition", false, ()->{
-        		return createViewEditorState(restViewEditorState);
-        	});
+    	ViewDefinition vd = runInTransaction(principal, "createViewDefinition", false, ()->{
+    		return createViewEditorState(restViewEditorState);
+    	});
 
-            KomodoStatusObject kso = new KomodoStatusObject("Stash Status"); //$NON-NLS-1$
-            kso.addAttribute("Stash Status", "Successfully stashed"); //$NON-NLS-1$
-            kso.addAttribute(StringConstants.ID_LABEL, vd.getId());
-            return toResponse(mediaTypes, kso);
-        } catch (final Exception e) {
-            return createErrorResponse(mediaTypes, e, RelationalMessages.Error.PROFILE_EDITOR_STATE_CREATE_ERROR);
-        }
+        KomodoStatusObject kso = new KomodoStatusObject("Stash Status"); //$NON-NLS-1$
+        kso.addAttribute("Stash Status", "Successfully stashed"); //$NON-NLS-1$
+        kso.addAttribute(StringConstants.ID_LABEL, vd.getId());
+        return toResponse(kso);
     }
     
     /**
@@ -352,6 +332,7 @@ public final class KomodoUtilService extends KomodoService {
      * @return validation status of the supplied ViewDefinition
      */
     @POST
+    @Produces( MediaType.APPLICATION_JSON )
     @Path(V1Constants.USER_PROFILE + FORWARD_SLASH + V1Constants.VALIDATE_VIEW_DEFINITION)
     @ApiOperation( value = "Validate a ViewDefinition", response = RestViewDefinitionStatus.class )
     @ApiResponses(value = {
@@ -366,16 +347,11 @@ public final class KomodoUtilService extends KomodoService {
         if (principal.hasErrorResponse())
             return principal.getErrorResponse();
 
-        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
-            return notAcceptableMediaTypesBuilder().build();
-
-        
     	LOGGER.info("Validating view : " + restViewDefinition.getName());
     	
         RestViewDefinitionStatus viewDefnStatus = validateViewDefinition(restViewDefinition);
 
-        return toResponse(mediaTypes, viewDefnStatus);
+        return toResponse(viewDefnStatus);
     }
 
 	private RestViewDefinitionStatus validateViewDefinition(final ViewDefinition restViewDefinition) {
@@ -509,8 +485,10 @@ public final class KomodoUtilService extends KomodoService {
      * @param uriInfo
      *        the request URI information (never <code>null</code>)
      * @return a JSON document representing the results of the removal
+     * @throws Exception 
      */
     @DELETE
+    @Produces( MediaType.APPLICATION_JSON )
     @Path(V1Constants.USER_PROFILE + FORWARD_SLASH +
                   V1Constants.VIEW_EDITOR_STATE + FORWARD_SLASH +
                   V1Constants.VIEW_EDITOR_STATE_PLACEHOLDER)
@@ -525,33 +503,25 @@ public final class KomodoUtilService extends KomodoService {
                                                          value = "Id of the view editor state to remove",
                                                          required = true
                                                )
-                                               final @PathParam("viewEditorStateId") String viewEditorStateId) {
+                                               final @PathParam("viewEditorStateId") String viewEditorStateId) throws Exception {
 
         SecurityPrincipal principal = checkSecurityContext(headers);
         if (principal.hasErrorResponse())
             return principal.getErrorResponse();
 
-        List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
-        if (! isAcceptable(mediaTypes, MediaType.APPLICATION_JSON_TYPE))
-            return notAcceptableMediaTypesBuilder().build();
-
         if (StringUtils.isBlank(viewEditorStateId)) {
-            return createErrorResponseWithForbidden(mediaTypes, RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_NAME);
+            return createErrorResponseWithForbidden(RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_NAME);
         }
 
-        try {
-            return runInTransaction(principal, "removeUserProfileViewEditorState", false, ()-> {
-                if (!getWorkspaceManager().deleteViewDefinition(viewEditorStateId)) {
-                    return Response.noContent().build();
-                }
+        return runInTransaction(principal, "removeUserProfileViewEditorState", false, ()-> {
+            if (!getWorkspaceManager().deleteViewDefinition(viewEditorStateId)) {
+                return Response.noContent().build();
+            }
 
-                KomodoStatusObject kso = new KomodoStatusObject("Delete Status"); //$NON-NLS-1$
-                kso.addAttribute(viewEditorStateId, "Successfully deleted"); //$NON-NLS-1$
+            KomodoStatusObject kso = new KomodoStatusObject("Delete Status"); //$NON-NLS-1$
+            kso.addAttribute(viewEditorStateId, "Successfully deleted"); //$NON-NLS-1$
 
-                return toResponse(mediaTypes, kso);
-            }); //$NON-NLS-1$
-        } catch (final Exception e) {
-            return createErrorResponse(mediaTypes, e, RelationalMessages.Error.PROFILE_EDITOR_STATE_REMOVE_ERROR);
-        }
+            return toResponse(kso);
+        }); //$NON-NLS-1$
     }
 }

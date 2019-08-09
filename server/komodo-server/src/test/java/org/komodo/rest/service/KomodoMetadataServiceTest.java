@@ -20,12 +20,10 @@ package org.komodo.rest.service;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -99,7 +97,7 @@ public class KomodoMetadataServiceTest {
 	
 	@Test
 	public void testGetSchema() throws Exception {
-		Response r = komodoMetadataService.getSchema("source", Arrays.asList(MediaType.APPLICATION_JSON_TYPE));
+		Response r = komodoMetadataService.getSchema("source");
 		//no source yet
 		assertEquals(Status.NOT_FOUND.getStatusCode(), r.getStatus());
 		
@@ -112,7 +110,7 @@ public class KomodoMetadataServiceTest {
 		workspaceManagerImpl.createOrUpdateSchema("someid", "source", 
 				"create foreign table tbl (col string) options (\"teiid_rel:fqn\" 'foo=bar');");
 		
-		r = komodoMetadataService.getSchema("source", Arrays.asList(MediaType.APPLICATION_JSON_TYPE));
+		r = komodoMetadataService.getSchema("source");
 		assertEquals(Status.OK.getStatusCode(), r.getStatus());
 		assertEquals("[ {\n" + 
 				"  \"children\" : [ ],\n" + 

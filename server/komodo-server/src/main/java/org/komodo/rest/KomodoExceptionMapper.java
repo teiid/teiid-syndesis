@@ -17,12 +17,12 @@
  */
 package org.komodo.rest;
 
-import javax.ws.rs.core.MediaType;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
+import org.komodo.rest.datavirtualization.RelationalMessages;
 import org.springframework.stereotype.Component;
 
 /**
@@ -39,10 +39,10 @@ public class KomodoExceptionMapper implements ExceptionMapper< Throwable > {
      */
     @Override
     public Response toResponse( final Throwable t ) {
-        return Response.status( Status.INTERNAL_SERVER_ERROR )
-                       .entity( t.getLocalizedMessage() )
-                       .type( MediaType.TEXT_PLAIN )
-                       .build();
+    	if (t instanceof WebApplicationException) {
+    		return ((WebApplicationException)t).getResponse();
+    	}
+        return KomodoService.createErrorResponse(t, RelationalMessages.Error.INTERNAL_ERROR);
     }
 
 }

@@ -19,18 +19,14 @@ package org.komodo.rest;
 
 import static org.komodo.rest.Messages.Error.RESOURCE_NOT_FOUND;
 
-import java.util.List;
 import java.util.concurrent.Callable;
 
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.Variant;
-import javax.ws.rs.core.Variant.VariantListBuilder;
 
 import org.komodo.KEngine;
 import org.komodo.KException;
@@ -127,16 +123,19 @@ public abstract class KomodoService extends AbstractTransactionService implement
 
     @Autowired
     protected KEngine kengine;
+    
+    @Autowired
+    protected CredentialsProvider credentialsProvider;
 
     @Context
     protected SecurityContext securityContext;
 
     protected OAuthCredentials getAuthenticationToken() {
-        return AuthHandlingFilter.threadOAuthCredentials.get();
+        return credentialsProvider.getCredentials();
     }
 
     protected SecurityPrincipal checkSecurityContext(HttpHeaders headers) {
-        OAuthCredentials oAuthCredentials = AuthHandlingFilter.threadOAuthCredentials.get();
+        OAuthCredentials oAuthCredentials = getAuthenticationToken();
 
         //
         // Without oauth proxy running oAuthCredentials is not null but its user is.
@@ -150,26 +149,26 @@ public abstract class KomodoService extends AbstractTransactionService implement
 		return new SecurityPrincipal(
 		                             "komodo",
 		                             createErrorResponse(Status.UNAUTHORIZED,
-		                             headers.getAcceptableMediaTypes(), RelationalMessages.Error.SECURITY_FAILURE_ERROR));
+		                             RelationalMessages.Error.SECURITY_FAILURE_ERROR));
     }
 
     protected WorkspaceManager getWorkspaceManager() throws KException {
     	return this.kengine.getWorkspaceManager();
     }
 
-    protected Response createErrorResponse(Status returnCode, List<MediaType> mediaTypes,
-                                           RelationalMessages.Error errorType, Object... errorMsgInputs) {
+    public static Response createErrorResponse(Status returnCode, RelationalMessages.Error errorType,
+                                           Object... errorMsgInputs) {
         String resultMsg = null;
         if (errorMsgInputs == null || errorMsgInputs.length == 0)
             resultMsg = RelationalMessages.getString(errorType);
         else
             resultMsg = RelationalMessages.getString(errorType, errorMsgInputs);
 
-        return createErrorResponse(returnCode, mediaTypes, resultMsg);
+        return createErrorResponse(returnCode, resultMsg);
     }
     
-    protected Response createErrorResponse(List<MediaType> mediaTypes, Throwable ex,
-            RelationalMessages.Error errorType, Object... errorMsgInputs) {
+    public static Response createErrorResponse(Throwable ex, RelationalMessages.Error errorType,
+            Object... errorMsgInputs) {
 		if (ex != null) {
 			LOGGER.error(errorType.toString(), ex);
 		}
@@ -190,15 +189,15 @@ public abstract class KomodoService extends AbstractTransactionService implement
         else
             resultMsg = RelationalMessages.getString(errorType, errorMsgInputs, buf.toString());
 
-        return createErrorResponse(Status.INTERNAL_SERVER_ERROR, mediaTypes, resultMsg);
+        return createErrorResponse(Status.INTERNAL_SERVER_ERROR, resultMsg);
 	}
 
-    protected Response createErrorResponseWithForbidden(List<MediaType> mediaTypes,
-                                                        RelationalMessages.Error errorType, Object... errorMsgInputs) {
-        return createErrorResponse(Status.FORBIDDEN, mediaTypes, errorType, errorMsgInputs);
+    public static Response createErrorResponseWithForbidden(RelationalMessages.Error errorType,
+                                                        Object... errorMsgInputs) {
+        return createErrorResponse(Status.FORBIDDEN, errorType, errorMsgInputs);
     }
 
-    protected Response createErrorResponse(Status returnCode, List<MediaType> mediaTypes, String resultMsg) {
+    public static Response createErrorResponse(Status returnCode, String resultMsg) {
         //
         // Log the error in the komodo log for future reference
         //
@@ -206,41 +205,16 @@ public abstract class KomodoService extends AbstractTransactionService implement
 
     	ErrorResponse error = new ErrorResponse(resultMsg, returnCode);
 
-        return toResponse(mediaTypes, error);
+        return toResponse(error);
     }
 
-    protected ResponseBuilder notAcceptableMediaTypesBuilder() {
-        List<Variant> variants = VariantListBuilder.newInstance()
-                                                                   .mediaTypes(MediaType.APPLICATION_JSON_TYPE)
-                                                                   .build();
-
-        return Response.notAcceptable(variants);
-    }
-
-    protected boolean isAcceptable(List<MediaType> acceptableTypes, MediaType candidate) {
-        if (acceptableTypes == null || acceptableTypes.isEmpty())
-            return false;
-
-        if (candidate == null)
-            return false;
-
-        for (MediaType acceptableType : acceptableTypes) {
-            if (candidate.isCompatible(acceptableType))
-                return true;
-        }
-
-        return false;
-    }
-
-    protected Response toResponse(List<MediaType> acceptableMediaTypes, Object entity) {
+    public static Response toResponse(Object entity) {
         Status status = Status.OK;
         
         if (entity == null) {
             return Response.noContent().build();
         }
     	
-        ResponseBuilder builder = null;
-        
         if ( entity instanceof ErrorResponse ) {
         	status = ((ErrorResponse)entity).status;
         }
@@ -254,13 +228,10 @@ public abstract class KomodoService extends AbstractTransactionService implement
             status = Status.NOT_FOUND;
         }
         
-        if (isAcceptable(acceptableMediaTypes, MediaType.APPLICATION_JSON_TYPE))
-            builder = Response.status(status).entity(KomodoJsonMarshaller.marshall( entity )).type(MediaType.APPLICATION_JSON );
-        else {
-            builder = notAcceptableMediaTypesBuilder();
-        }
-
-        return builder.build();
+		return Response.status(status)
+				.entity(KomodoJsonMarshaller.marshall(entity))
+				.type(MediaType.APPLICATION_JSON)
+				.build();
     }
     
     protected <T> T runInTransaction(SecurityPrincipal user, String txnName, boolean rollbackOnly, Callable<T> callable) throws Exception {

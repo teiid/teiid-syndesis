@@ -18,7 +18,6 @@
 package org.komodo.rest.service;
 
 import static org.komodo.rest.datavirtualization.RelationalMessages.Error.VIEW_NAME_EXISTS;
-import static org.komodo.rest.datavirtualization.RelationalMessages.Error.VIEW_NAME_VALIDATION_ERROR;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -69,6 +68,7 @@ public final class KomodoVdbService extends KomodoService {
 	 * @return the response (never <code>null</code>) with an entity that is
 	 *         either an empty string, when the name is valid, or an error
 	 *         message
+     * @throws Exception 
      */
     @GET
     @Path( V1Constants.VDB_PLACEHOLDER + StringConstants.FORWARD_SLASH +
@@ -89,7 +89,7 @@ public final class KomodoVdbService extends KomodoService {
                                       @ApiParam(value = "Name of the Vdb", required = true)
                                       final @PathParam( "virtualization" ) String virtualization,
                                       @ApiParam(value = "Name of the Model to get its tables", required = true)
-                                      final @PathParam( "viewName" ) String viewName ) {
+                                      final @PathParam( "viewName" ) String viewName ) throws Exception {
 
         SecurityPrincipal principal = checkSecurityContext(headers);
         if (principal.hasErrorResponse())
@@ -102,25 +102,19 @@ public final class KomodoVdbService extends KomodoService {
             return Response.ok().entity( errorMsg ).build();
         }
 
-        try {
-            return runInTransaction(principal, "validateViewName", true, ()-> {
-                ViewDefinition vd = getWorkspaceManager().findViewDefinitionByNameIgnoreCase(virtualization, viewName);
-                
-            	if (vd != null) {
-                    // name is the same as an existing View
-            		return Response.ok()
-                            .entity( RelationalMessages.getString( VIEW_NAME_EXISTS ) )
-                            .build();
-            	}
-                
-            	// name is valid
-            	return Response.ok().build();
-            }) ; //$NON-NLS-1$
-        } catch ( final Exception e ) {
-            return createErrorResponse( headers.getAcceptableMediaTypes(),
-                                                     e,
-                                                     VIEW_NAME_VALIDATION_ERROR );
-        }
+        return runInTransaction(principal, "validateViewName", true, ()-> {
+            ViewDefinition vd = getWorkspaceManager().findViewDefinitionByNameIgnoreCase(virtualization, viewName);
+            
+        	if (vd != null) {
+                // name is the same as an existing View
+        		return Response.ok()
+                        .entity( RelationalMessages.getString( VIEW_NAME_EXISTS ) )
+                        .build();
+        	}
+            
+        	// name is valid
+        	return Response.ok().build();
+        }) ; //$NON-NLS-1$
     }
 
 }
