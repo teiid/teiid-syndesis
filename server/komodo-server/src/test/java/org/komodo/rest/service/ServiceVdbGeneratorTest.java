@@ -208,8 +208,6 @@ public class ServiceVdbGeneratorTest {
         
         if( useAll ) {
         	SqlProjectedColumn projCol = mock(SqlProjectedColumn.class);
-	        when(projCol.getName()).thenReturn("ALL");
-	        when(projCol.getType()).thenReturn("ALL");
 	        when(projCol.isSelected()).thenReturn(true);
 	        
 	        SqlProjectedColumn[] projCols = new SqlProjectedColumn[1];
@@ -288,8 +286,6 @@ public class ServiceVdbGeneratorTest {
         
         if( useAll ) {
         	SqlProjectedColumn projCol = mock(SqlProjectedColumn.class);
-	        when(projCol.getName()).thenReturn("ALL");
-	        when(projCol.getType()).thenReturn("ALL");
 	        when(projCol.isSelected()).thenReturn(true);
 	        
 	        SqlProjectedColumn[] projCols = new SqlProjectedColumn[1];
@@ -344,11 +340,10 @@ public class ServiceVdbGeneratorTest {
         when(viewDef.getName()).thenReturn(viewDefinitionName);
         when(viewDef.getDescription()).thenReturn(description);
         when(viewDef.isComplete()).thenReturn(isComplete);
+        when(viewDef.isAdvanced()).thenReturn(true);
         when(viewDef.getSourcePaths()).thenReturn(Arrays.asList(sourceTablePaths));
         
         SqlProjectedColumn projCol = mock(SqlProjectedColumn.class);
-        when(projCol.getName()).thenReturn("ALL");
-        when(projCol.getType()).thenReturn("ALL");
         when(projCol.isSelected()).thenReturn(true);
         
         SqlProjectedColumn[] projCols = new SqlProjectedColumn[1];
@@ -371,11 +366,10 @@ public class ServiceVdbGeneratorTest {
         when(viewDef.getName()).thenReturn(viewDefinitionName);
         when(viewDef.getDescription()).thenReturn(description);
         when(viewDef.isComplete()).thenReturn(isComplete);
+        when(viewDef.isAdvanced()).thenReturn(true);
         when(viewDef.getSourcePaths()).thenReturn(Arrays.asList(sourceTablePaths));
         
         SqlProjectedColumn projCol = mock(SqlProjectedColumn.class);
-        when(projCol.getName()).thenReturn("ALL");
-        when(projCol.getType()).thenReturn("ALL");
         when(projCol.isSelected()).thenReturn(true);
         
         SqlProjectedColumn[] projCols = new SqlProjectedColumn[1];

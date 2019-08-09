@@ -112,7 +112,6 @@ public final class KomodoDataserviceService extends KomodoService
             @ApiImplicitParam(name = QueryParamKeys.START, value = "Index of the first dataservice to return", required = false, dataType = "integer", paramType = "query") })
     @ApiResponses(value = { @ApiResponse(code = 403, message = "An error has occurred.") })
     public Response getDataservices(final @Context HttpHeaders headers, final @Context UriInfo uriInfo) {
-
         SecurityPrincipal principal = checkSecurityContext(headers);
         if (principal.hasErrorResponse())
             return principal.getErrorResponse();
@@ -580,7 +579,6 @@ public final class KomodoDataserviceService extends KomodoService
 			} else {
 				viewDefn = getWorkspaceManager().createViewDefiniton(dataserviceName, name);
 			}
-			viewDefn.addProjectedColumn("ALL"); //TODO: fix this convention
 			FullyQualifiedName fqn = new FullyQualifiedName(CONNECTION_KEY, komodoSourceName);
 			String sourcePath = fqn.toString() + "/" + t.getProperty(KomodoMetadataService.TABLE_OPTION_FQN, false);
 			viewDefn.addSourcePath(sourcePath); //TODO: fix this convention

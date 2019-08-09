@@ -269,7 +269,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
         Set<String> selectedProjColumnNames = new LinkedHashSet<String>();
         
         // If "SELECT ALL" then include all of the source table columns
-        if( projectedColumns.size() == 1 && projectedColumns.get(0).getName().equalsIgnoreCase("ALL")  ) { //$NON-NLS-1$
+        if( viewDef.isAdvanced()  ) { //$NON-NLS-1$
         	for (Iterator<ColumnInfo> iter = columns.values().iterator(); iter.hasNext();) {
         		ColumnInfo info = iter.next();
                 // keep track of projected column names

@@ -40,12 +40,14 @@ import org.komodo.rest.datavirtualization.ImportPayload;
 import org.komodo.rest.datavirtualization.KomodoStatusObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @DataJpaTest
 @ContextConfiguration(classes = {KomodoRepositoryConfiguration.class, ServiceTestConfiguration.class})
+@DirtiesContext
 public class KomodoDataserviceServiceTest {
 	
 	@Autowired
@@ -95,16 +97,14 @@ public class KomodoDataserviceServiceTest {
 		ViewDefinition vd = workspaceManagerImpl.findViewDefinition(id);
 		vd.setId("consistent");
 		assertEquals("{\n" + 
+				"  \"advanced\" : true,\n" + 
 				"  \"compositions\" : [ ],\n" + 
 				"  \"dataVirtualizationName\" : \"dv\",\n" + 
 				"  \"id\" : \"consistent\",\n" + 
 				"  \"isComplete\" : false,\n" + 
-				"  \"isUserDefined\" : false,\n" + 
+				"  \"isUserDefined\" : false,\n" +
 				"  \"name\" : \"tbl\",\n" + 
-				"  \"projectedColumns\" : [ {\n" + 
-				"    \"name\" : \"ALL\",\n" + 
-				"    \"selected\" : false\n" + 
-				"  } ],\n" + 
+				"  \"projectedColumns\" : [ ],\n" +
 				"  \"sourcePaths\" : [ \"connection=source/fqn\" ]\n" + 
 				"}", KomodoJsonMarshaller.marshall(vd));
 	}

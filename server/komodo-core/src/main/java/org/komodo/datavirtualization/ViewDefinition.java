@@ -93,6 +93,7 @@ public class ViewDefinition implements Named {
 	private boolean complete;
 	@JsonProperty(value = "isUserDefined")
 	private boolean userDefined;
+	private boolean advanced = true;
 	
 	@JsonIgnore //for non-Entity serialization, the getters/setters will be used
 	@Convert(converter = ViewDefinitionStateConvertor.class)
@@ -209,6 +210,14 @@ public class ViewDefinition implements Named {
 	
 	public void clearState() {
 		this.state = new State();
+	}
+	
+	public boolean isAdvanced() {
+		return advanced;
+	}
+	
+	public void setAdvanced(boolean advanced) {
+		this.advanced = advanced;
 	}
 
 }

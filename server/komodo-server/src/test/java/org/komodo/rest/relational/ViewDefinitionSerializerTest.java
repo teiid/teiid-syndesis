@@ -65,6 +65,7 @@ public class ViewDefinitionSerializerTest {
  
     private String createViewEditorState() {
         return "{\n" + 
+        		"  \"advanced\" : true,\n" +
         		"  \"compositions\" : [ {\n" + 
         		"    \"name\" : \"comp1\",\n" + 
         		"    \"description\" : \"description for comp1\",\n" + 
