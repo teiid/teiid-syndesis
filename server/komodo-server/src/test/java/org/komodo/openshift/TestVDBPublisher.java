@@ -65,7 +65,7 @@ public class TestVDBPublisher {
         sources.add(getMySQLDS());
         sources.add(getPostgreSQL());
 
-		TeiidOpenShiftClient client = new TeiidOpenShiftClient(metadata, new EncryptionComponent("blah"), new KomodoConfigurationProperties()) {
+		TeiidOpenShiftClient client = new TeiidOpenShiftClient(metadata, new EncryptionComponent("blah"), new KomodoConfigurationProperties(), null) {
             @Override
             public Set<DefaultSyndesisDataSource> getSyndesisSources(OAuthCredentials authToken) throws KException {
                 return sources;

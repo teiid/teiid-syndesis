@@ -17,29 +17,35 @@
  */
 package org.komodo.metadata.query;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+@JsonSerialize(as = QSColumn.class)
+@JsonInclude(Include.NON_NULL)
 public class QSColumn {
 
-    private final String dataType;
+    private final String type;
 
-    private final String columnName;
+    private final String name;
 
-    private final String columnLabel;
+    private final String label;
 
     public QSColumn(String dataType, String columnName, String columnLabel) {
-        this.dataType = dataType;
-        this.columnName = columnName;
-        this.columnLabel = columnLabel;
+        this.type = dataType;
+        this.name = columnName;
+        this.label = columnLabel;
     }
 
-    public String getDataType() {
-        return dataType;
+    public String getType() {
+        return type;
     }
 
-    public String getColumnName() {
-        return columnName;
+    public String getName() {
+        return name;
     }
 
-    public String getColumnLabel() {
-        return columnLabel;
+    public String getLabel() {
+        return label;
     }
 }

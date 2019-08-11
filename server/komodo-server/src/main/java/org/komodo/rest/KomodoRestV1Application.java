@@ -24,7 +24,7 @@ import javax.ws.rs.core.Application;
 
 import org.komodo.KEngine;
 import org.komodo.KException;
-import org.komodo.rest.json.JsonConstants;
+import org.komodo.StringConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -38,7 +38,7 @@ public class KomodoRestV1Application {
     /**
      * Constants associated with version 1 of the Komodo REST application.
      */
-    public static interface V1Constants extends JsonConstants {
+    public static interface V1Constants extends StringConstants {
 
         class App {
 
@@ -163,9 +163,9 @@ public class KomodoRestV1Application {
         String CONNECTION_PLACEHOLDER = "{connectionName}"; //$NON-NLS-1$
 
         /**
-         * Placeholder added to an URI to allow a specific syndesis source name
+         * Placeholder added to an URI to allow a specific komodo source name
          */
-        String SYNDESIS_SOURCE_PLACEHOLDER = "{syndesisSourceName}"; //$NON-NLS-1$
+        String KOMODO_SOURCE_PLACEHOLDER = "{komodoSourceName}"; //$NON-NLS-1$
 
         /**
          * The name of the URI path segment for schema refresh
@@ -248,24 +248,9 @@ public class KomodoRestV1Application {
         String METADATA__CREDENTIALS = "credentials"; //$NON-NLS-1$
 
         /**
-         * The driver property for adding a driver to the teiid server
-         */
-        String METADATA_DRIVER = "driver"; //$NON-NLS-1$
-
-        /**
-         * Placeholder added to an URI to allow a specific teiid driver id
-         */
-        String METADATA_DRIVER_PLACEHOLDER = "{driverName}"; //$NON-NLS-1$
-
-        /**
          * The teiid segment for running a query against the teiid server
          */
         String QUERY_SEGMENT = "query"; //$NON-NLS-1$
-
-        /**
-         * The teiid segment for running a ping against the teiid server
-         */
-        String PING_SEGMENT = "ping"; //$NON-NLS-1$
 
         /**
          * The name of the URI ping type parameter
@@ -293,24 +278,14 @@ public class KomodoRestV1Application {
         String USER_PROFILE = "userProfile"; //$NON-NLS-1$
 
         /**
-         * The git repository configuration to the user profile
-         */
-        String GIT_REPOSITORY = "gitRepository"; //$NON-NLS-1$
-
-        /**
-         * Git repository configuration placeholder
-         */
-        String GIT_REPO_PLACEHOLDER = "{gitRepositoryName}"; //$NON-NLS-1$
-
-        /**
          * The view editor state of the user profile
          */
         String VIEW_EDITOR_STATE = "viewEditorState"; //$NON-NLS-1$
-
+        
         /**
          * The view editor state of the user profile
          */
-        String VIEW_EDITOR_STATES = "viewEditorStates"; //$NON-NLS-1$
+        String VIEW_LISTINGS = "viewListings"; //$NON-NLS-1$
 
         /**
          * View editor state placeholder
@@ -331,6 +306,8 @@ public class KomodoRestV1Application {
          * Refresh views referenced in a view editor state object
          */
         String REFRESH_DATASERVICE_VIEWS = "refreshViews";
+        
+        String IMPORT = "import";
         
         /**
          * Validate a ViewDefintion

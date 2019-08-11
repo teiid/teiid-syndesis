@@ -68,6 +68,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.TarExporter;
+import org.komodo.KEngine;
 import org.komodo.KException;
 import org.komodo.StringConstants;
 import org.komodo.datasources.AmazonS3Definition;
@@ -81,13 +82,16 @@ import org.komodo.datasources.ODataV4Definition;
 import org.komodo.datasources.PostgreSQLDefinition;
 import org.komodo.datasources.SalesforceDefinition;
 import org.komodo.datasources.WebServiceDefinition;
+import org.komodo.datavirtualization.SourceSchema;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.metadata.TeiidDataSource;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
 import org.komodo.openshift.BuildStatus.RouteStatus;
 import org.komodo.openshift.BuildStatus.Status;
+import org.komodo.rest.AbstractTransactionService;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoConfigurationProperties;
+import org.komodo.rest.KomodoService;
 import org.komodo.utils.FileUtils;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
@@ -137,7 +141,7 @@ import io.fabric8.openshift.client.OpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftConfig;
 import io.fabric8.openshift.client.OpenShiftConfigBuilder;
 
-public class TeiidOpenShiftClient implements StringConstants {
+public class TeiidOpenShiftClient extends AbstractTransactionService implements StringConstants {
     public static final String ID = "id";
 	private static final String SERVICE_CA_CERT_FILE = "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt";
     private String openShiftHost = "https://openshift.default.svc";
@@ -330,10 +334,11 @@ public class TeiidOpenShiftClient implements StringConstants {
     
     private ThreadPoolExecutor workExecutor = new ThreadPoolExecutor(1, 1, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
 
-	public TeiidOpenShiftClient(MetadataInstance metadata, EncryptionComponent encryptor, KomodoConfigurationProperties config) {
+	public TeiidOpenShiftClient(MetadataInstance metadata, EncryptionComponent encryptor, KomodoConfigurationProperties config, KEngine kengine) {
         this.metadata = metadata;
         this.encryptionComponent = encryptor;
         this.config = config;
+        this.kengine = kengine;
 
         // data source definitions
         add(new PostgreSQLDefinition());
@@ -346,7 +351,7 @@ public class TeiidOpenShiftClient implements StringConstants {
         add(new WebServiceDefinition());
         add(new AmazonS3Definition());
     }
-
+	
     private String getLogPath(String id) {
         String parentDir;
         try {
@@ -588,7 +593,7 @@ public class TeiidOpenShiftClient implements StringConstants {
     }
     
     private void createDataSource(DefaultSyndesisDataSource scd)
-            throws AdminException, KException {
+            throws Exception {
         String syndesisName = scd.getSyndesisName();
 		debug(syndesisName, "Creating the Datasource of Type " + scd.getType());
 
@@ -609,60 +614,70 @@ public class TeiidOpenShiftClient implements StringConstants {
         }
 
         //we'll create serially to ensure a unique generated name
-        synchronized (this) {
-        	setUniqueKomodoName(scd, syndesisName);
-        	String toUse = scd.getKomodoName();
-        	
-        	//now that the komodoname is set, we can create the properties
-        	Map<String, String> properties = scd.convertToDataSourceProperties();
-            properties.put(ID, scd.getId());
-        	
-            this.metadata.createDataSource(toUse, driverName, encryptionComponent.decrypt(properties));
-		}
+        setUniqueKomodoName(scd, syndesisName, KomodoService.SYSTEM_USER_NAME);
+    	String toUse = scd.getKomodoName();
+    	
+    	//now that the komodoname is set, we can create the properties
+    	Map<String, String> properties = scd.convertToDataSourceProperties();
+        properties.put(ID, scd.getId());
+    	
+        this.metadata.createDataSource(toUse, driverName, encryptionComponent.decrypt(properties));
     }
-
+    
     /**
      * Create a unique and valid name the syndesis connection.  The name will be suitable
      * as a schema name as well.
      * @param scd
      * @param syndesisName
      * @return
-     * @throws AdminException
+     * @throws Exception 
      */
-	protected void setUniqueKomodoName(DefaultSyndesisDataSource scd, String syndesisName) throws AdminException {
-		String name = syndesisName;
-		int maxLength = StringNameValidator.DEFAULT_MAXIMUM_LENGTH;
-		//remove any problematic characters
-		name = name.replaceAll("[\\.\\?\\_\\s]", "");
-		//slim it down
-		if (name.length() > maxLength) {
-			name = name.substring(0, maxLength);
-		}
-		
-		TreeSet<String> taken = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-		taken.addAll(this.metadata.getDataSourceNames());
-		
-		//TODO: drive this via an api method
-		taken.add(CoreConstants.INFORMATION_SCHEMA);
-		taken.add(CoreConstants.ODBC_MODEL);
-		taken.add(CoreConstants.SYSTEM_ADMIN_MODEL);
-		taken.add(CoreConstants.SYSTEM_MODEL);
-		
-		taken.add(SERVICE_VDB_VIEW_MODEL);
-		
-		int i = 1;
-		String toUse = name;
-		while (taken.contains(toUse)) {
-			if (name.length() + (i/10 + 1) > maxLength) {
-				name = name.substring(0, maxLength - (i/10 + 1));
+	public void setUniqueKomodoName(DefaultSyndesisDataSource scd, String syndesisName, String user) throws Exception {
+		runInTransaction(user, "setUniqueKomodoName", false, () -> {
+			SourceSchema ss = kengine.getWorkspaceManager().findSchema(scd.getId());
+			if (ss != null) {
+				//just reassociate
+				scd.setKomodoName(ss.getName());
+				return null;
 			}
-			toUse = name + i;
-			i++;
-		}
-		
-		scd.setKomodoName(toUse);
+			
+			String name = syndesisName;
+			int maxLength = StringNameValidator.DEFAULT_MAXIMUM_LENGTH;
+			//remove any problematic characters
+			name = name.replaceAll("[\\.\\?\\_\\s]", "");
+			//slim it down
+			if (name.length() > maxLength) {
+				name = name.substring(0, maxLength);
+			}
+			
+			TreeSet<String> taken = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+			taken.addAll(kengine.getWorkspaceManager().findAllSchemaNames());
+			
+			//TODO: drive this via an api method
+			taken.add(CoreConstants.INFORMATION_SCHEMA);
+			taken.add(CoreConstants.ODBC_MODEL);
+			taken.add(CoreConstants.SYSTEM_ADMIN_MODEL);
+			taken.add(CoreConstants.SYSTEM_MODEL);
+			
+			taken.add(SERVICE_VDB_VIEW_MODEL);
+			
+			int i = 1;
+			String toUse = name;
+			while (taken.contains(toUse)) {
+				if (name.length() + (i/10 + 1) > maxLength) {
+					name = name.substring(0, maxLength - (i/10 + 1));
+				}
+				toUse = name + i;
+				i++;
+			}
+			
+			scd.setKomodoName(toUse);
+			//update the db with the name we'll use
+			kengine.getWorkspaceManager().createOrUpdateSchema(scd.getId(), toUse, null);
+			return null;
+		});
 	}
-    
+
     public void deleteDataSource(String dsName) throws AdminException, KException {
 		this.metadata.deleteDataSource(dsName);
     }

@@ -21,30 +21,36 @@ package org.komodo.openshift;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
+import org.komodo.KEngine;
+import org.komodo.UnitOfWork;
+import org.komodo.WorkspaceManager;
 import org.komodo.datasources.DefaultSyndesisDataSource;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.rest.KomodoConfigurationProperties;
 import org.mockito.Mockito;
-import org.teiid.adminapi.AdminException;
 
 public class TeiidOpenShiftClientTest {
 
-	@Test public void testSetKomodoName() throws AdminException {
+	@Test public void testSetKomodoName() throws Exception {
         MetadataInstance metadata = Mockito.mock(MetadataInstance.class);
-
-		TeiidOpenShiftClient client = new TeiidOpenShiftClient(metadata, new EncryptionComponent("blah"), new KomodoConfigurationProperties());
+        KEngine kengine = Mockito.mock(KEngine.class);
+		Mockito.when(kengine.createTransaction(Mockito.anyString(), Mockito.anyString(), Mockito.anyBoolean(),
+				Mockito.anyString())).thenReturn(Mockito.mock(UnitOfWork.class));
+		Mockito.when(kengine.getWorkspaceManager()).thenReturn(Mockito.mock(WorkspaceManager.class));
+        
+		TeiidOpenShiftClient client = new TeiidOpenShiftClient(metadata, new EncryptionComponent("blah"), new KomodoConfigurationProperties(), kengine);
 		
 		DefaultSyndesisDataSource dsd = new DefaultSyndesisDataSource();
 		
-		client.setUniqueKomodoName(dsd, "views");
+		client.setUniqueKomodoName(dsd, "views", "x");
 		
 		assertEquals("views1", dsd.getKomodoName());
 		
-		client.setUniqueKomodoName(dsd, "View");
+		client.setUniqueKomodoName(dsd, "View", "x");
 		
 		assertEquals("View", dsd.getKomodoName());
 
-		client.setUniqueKomodoName(dsd, "?syS.");
+		client.setUniqueKomodoName(dsd, "?syS.", "x");
 		
 		assertEquals("syS1", dsd.getKomodoName());
 	}
