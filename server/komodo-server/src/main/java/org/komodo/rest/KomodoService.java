@@ -19,8 +19,9 @@ package org.komodo.rest;
 
 import static org.komodo.rest.Messages.Error.RESOURCE_NOT_FOUND;
 
-import java.util.concurrent.Callable;
-
+import javax.ws.rs.ClientErrorException;
+import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -32,11 +33,9 @@ import org.komodo.KEngine;
 import org.komodo.KException;
 import org.komodo.WorkspaceManager;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
-import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.datavirtualization.RelationalMessages;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringNameValidator;
-import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -79,7 +78,7 @@ public abstract class KomodoService extends AbstractTransactionService implement
     }
 
     @JsonSerialize(as = ErrorResponse.class)
-    static class ErrorResponse {
+    public static class ErrorResponse {
         private final String error;
         @JsonIgnore
         private Status status;
@@ -95,32 +94,6 @@ public abstract class KomodoService extends AbstractTransactionService implement
         }
     }
 
-    protected static class SecurityPrincipal {
-
-        private final String userName;
-
-        private final Response errorResponse;
-
-        public SecurityPrincipal(String userName, Response errorResponse) {
-            this.userName = userName;
-            this.errorResponse = errorResponse;
-        }
-
-        public String getUserName() {
-            return userName;
-        }
-
-        public boolean hasErrorResponse() {
-            return errorResponse != null;
-        }
-
-        public Response getErrorResponse() {
-            return errorResponse;
-        }
-    }
-    
-    public final static SecurityPrincipal SYSTEM_USER = new SecurityPrincipal(SYSTEM_USER_NAME, null);
-
     @Autowired
     protected KEngine kengine;
     
@@ -134,7 +107,7 @@ public abstract class KomodoService extends AbstractTransactionService implement
         return credentialsProvider.getCredentials();
     }
 
-    protected SecurityPrincipal checkSecurityContext(HttpHeaders headers) {
+    protected String checkSecurityContext(HttpHeaders headers) {
         OAuthCredentials oAuthCredentials = getAuthenticationToken();
 
         //
@@ -142,67 +115,41 @@ public abstract class KomodoService extends AbstractTransactionService implement
         // This will allow the default to the 'komodo' user but the catalog-service resource methods
         // will not be available.
         //
-        if (oAuthCredentials != null && oAuthCredentials.getUser() != null) {
-            return new SecurityPrincipal(oAuthCredentials.getUser(), null);
+        if (oAuthCredentials == null || oAuthCredentials.getUser() == null) {
+            error(Status.UNAUTHORIZED,
+                    RelationalMessages.Error.SECURITY_FAILURE_ERROR);
         }
-
-		return new SecurityPrincipal(
-		                             "komodo",
-		                             createErrorResponse(Status.UNAUTHORIZED,
-		                             RelationalMessages.Error.SECURITY_FAILURE_ERROR));
+        
+        return oAuthCredentials.getUser();
     }
 
     protected WorkspaceManager getWorkspaceManager() throws KException {
     	return this.kengine.getWorkspaceManager();
     }
 
-    public static Response createErrorResponse(Status returnCode, RelationalMessages.Error errorType,
-                                           Object... errorMsgInputs) {
-        String resultMsg = null;
-        if (errorMsgInputs == null || errorMsgInputs.length == 0)
-            resultMsg = RelationalMessages.getString(errorType);
-        else
-            resultMsg = RelationalMessages.getString(errorType, errorMsgInputs);
-
-        return createErrorResponse(returnCode, resultMsg);
-    }
-    
-    public static Response createErrorResponse(Throwable ex, RelationalMessages.Error errorType,
-            Object... errorMsgInputs) {
-		if (ex != null) {
-			LOGGER.error(errorType.toString(), ex);
-		}
-		
-		String errorMsg = ex.getLocalizedMessage() != null ? ex.getLocalizedMessage() : ex.getClass().getSimpleName();
-
-        //
-        // Allow for splitting the message into actual message & stack trace by
-        // dividing them with -----
-        //
-        StringBuffer buf = new StringBuffer(errorMsg).append(NEW_LINE).append("-----").append(NEW_LINE);
-        String stackTrace = StringUtils.exceptionToString(ex);
-        buf.append(stackTrace).append(NEW_LINE);
-
-        String resultMsg = null;
-        if (errorMsgInputs == null || errorMsgInputs.length == 0)
-            resultMsg = RelationalMessages.getString(errorType, buf.toString());
-        else
-            resultMsg = RelationalMessages.getString(errorType, errorMsgInputs, buf.toString());
-
-        return createErrorResponse(Status.INTERNAL_SERVER_ERROR, resultMsg);
+    public static void notFound(String resourceName) {
+		String message = Messages.getString( RESOURCE_NOT_FOUND,
+        		resourceName);
+		throw new NotFoundException(message, toResponse(new ErrorResponse(message, Status.NOT_FOUND)));
 	}
 
-    public static Response createErrorResponseWithForbidden(RelationalMessages.Error errorType,
+	public static void error(Status returnCode, RelationalMessages.Error errorType,
+                                           Object... errorMsgInputs) {
+        String resultMsg = RelationalMessages.getString(errorType, errorMsgInputs);
+        
+        throw new ClientErrorException(resultMsg, createErrorResponse(returnCode, resultMsg));
+    }
+    
+    public static void forbidden(RelationalMessages.Error errorType,
                                                         Object... errorMsgInputs) {
-        return createErrorResponse(Status.FORBIDDEN, errorType, errorMsgInputs);
+    	String resultMsg = RelationalMessages.getString(errorType, errorMsgInputs);
+    	
+        throw new ForbiddenException(resultMsg, createErrorResponse(Status.FORBIDDEN, resultMsg));
     }
 
     public static Response createErrorResponse(Status returnCode, String resultMsg) {
-        //
-        // Log the error in the komodo log for future reference
-        //
-        KLog.getLogger().error(Messages.getString(Messages.Error.RESPONSE_ERROR, returnCode, resultMsg));
-
+    	LOGGER.debug(Messages.getString(Messages.Error.RESPONSE_ERROR, returnCode, resultMsg));
+    	
     	ErrorResponse error = new ErrorResponse(resultMsg, returnCode);
 
         return toResponse(error);
@@ -219,23 +166,10 @@ public abstract class KomodoService extends AbstractTransactionService implement
         	status = ((ErrorResponse)entity).status;
         }
 
-        if ( entity instanceof ResourceNotFound ) {
-            final ResourceNotFound resourceNotFound = ( ResourceNotFound )entity;
-
-            String notFoundMsg = Messages.getString( RESOURCE_NOT_FOUND,
-                                                     resourceNotFound.getResourceName());
-            entity = new ErrorResponse(notFoundMsg, Status.NOT_FOUND);
-            status = Status.NOT_FOUND;
-        }
-        
 		return Response.status(status)
 				.entity(KomodoJsonMarshaller.marshall(entity))
 				.type(MediaType.APPLICATION_JSON)
 				.build();
-    }
-    
-    protected <T> T runInTransaction(SecurityPrincipal user, String txnName, boolean rollbackOnly, Callable<T> callable) throws Exception {
-    	return runInTransaction(user.getUserName(), txnName, rollbackOnly, callable);
     }
     
 }

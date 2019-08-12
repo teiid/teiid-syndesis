@@ -17,12 +17,14 @@
  */
 package org.komodo.rest.service;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -39,7 +41,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.komodo.KException;
@@ -60,9 +61,8 @@ import org.komodo.openshift.BuildStatus;
 import org.komodo.openshift.PublishConfiguration;
 import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
-import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
-import org.komodo.rest.ResourceNotFound;
+import org.komodo.rest.V1Constants;
 import org.komodo.rest.datavirtualization.KomodoQueryAttribute;
 import org.komodo.rest.datavirtualization.KomodoStatusObject;
 import org.komodo.rest.datavirtualization.PublishRequestPayload;
@@ -71,6 +71,7 @@ import org.komodo.rest.datavirtualization.RestSyndesisSourceStatus;
 import org.komodo.rest.datavirtualization.RestViewSourceInfo;
 import org.komodo.rest.datavirtualization.connection.RestSchemaNode;
 import org.komodo.rest.datavirtualization.connection.RestSourceSchema;
+import org.komodo.utils.PathUtils;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -130,7 +131,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 		return status;
 	}
 
-	public KomodoStatusObject refreshPreviewVdb(final String vdbName, SecurityPrincipal principal)
+	public KomodoStatusObject refreshPreviewVdb(final String vdbName, String principal)
 			throws KException, Exception {
 		return runInTransaction(principal, "refreshPreviewVdb", false, () -> {
 			TeiidVdb previewVdb = getMetadataInstance().getVdb(vdbName);
@@ -263,19 +264,17 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
                                    )
                                    final KomodoQueryAttribute kqa) throws KException {
 
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
+        checkSecurityContext(headers);
 
         //
         // Error if there is no query attribute defined
         //
         if (kqa.getQuery() == null) {
-            return createErrorResponseWithForbidden(RelationalMessages.Error.METADATA_SERVICE_QUERY_MISSING_QUERY);
+            forbidden(RelationalMessages.Error.METADATA_SERVICE_QUERY_MISSING_QUERY);
         }
 
         if (kqa.getTarget() == null) {
-            return createErrorResponseWithForbidden(RelationalMessages.Error.METADATA_SERVICE_QUERY_MISSING_TARGET);
+            forbidden(RelationalMessages.Error.METADATA_SERVICE_QUERY_MISSING_TARGET);
         }
 
         String target = kqa.getTarget();
@@ -285,7 +284,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
         TeiidVdb vdb = getMetadataInstance().getVdb(vdbName);
         if (vdb == null) {
-			return createErrorResponse(Status.BAD_REQUEST, RelationalMessages.Error.METADATA_SERVICE_QUERY_TARGET_NOT_DEPLOYED);
+			notFound(vdbName);
         }
 
         LOGGER.debug("Establishing query service for query {0} on vdb {1}", query, vdbName);
@@ -324,13 +323,11 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
                                    @DefaultValue( "true" )
                                    @QueryParam( "deployOnly" )
                                    final boolean redeployServerVdb ) throws Exception {
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
+        String principal = checkSecurityContext(headers);
 
         // Error if the syndesisSource is missing
         if (StringUtils.isBlank( komodoSourceName )) {
-            return createErrorResponseWithForbidden(RelationalMessages.Error.CONNECTION_SERVICE_MISSING_CONNECTION_NAME);
+            forbidden(RelationalMessages.Error.CONNECTION_SERVICE_MISSING_CONNECTION_NAME);
         }
 
         final KomodoStatusObject kso = refreshSchema(komodoSourceName, redeployServerVdb, principal);
@@ -338,7 +335,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         return toResponse(kso);
     }
 
-	public KomodoStatusObject refreshSchema(final String komodoName, final boolean deployOnly, SecurityPrincipal principal) throws KException, Exception {
+	public KomodoStatusObject refreshSchema(final String komodoName, final boolean deployOnly, String principal) throws KException, Exception {
 		return runInTransaction(principal, "refreshSchema?deployOnly=" + deployOnly, false, () -> {// Find the bound teiid source corresponding to the syndesis source
 			TeiidDataSource teiidSource = getMetadataInstance().getDataSource(komodoName);
 
@@ -361,7 +358,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 		});
 	}
 	
-	public boolean deleteSchema(String schemaId, SecurityPrincipal principal) throws Exception {
+	public boolean deleteSchema(String schemaId, String principal) throws Exception {
 		return runInTransaction(principal, "deleteSchema", false, () -> {
 			final WorkspaceManager mgr = kengine.getWorkspaceManager();
             
@@ -370,7 +367,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 	}
 
 	private void saveSchema(final String schemaId, final String komodoName) throws KException {
-		final String schemaModelName = getSchemaModelName( komodoName );
+		final String schemaModelName = komodoName;
 
 		final String sourceVdbName = getWorkspaceSourceVdbName( komodoName );
 		
@@ -407,24 +404,21 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
                                           required = true )
                                @PathParam( "komodoSourceName" )
                                final String komodoSourceName ) throws Exception {
-        final SecurityPrincipal principal = checkSecurityContext( headers );
+        final String principal = checkSecurityContext( headers );
 
-        if ( principal.hasErrorResponse() ) {
-            return principal.getErrorResponse();
-        }
-
-    	return runInTransaction(principal, "getSchema?komodoSourceName=" + komodoSourceName, true, ()->{
+        List<RestSchemaNode> result = runInTransaction(principal, "getSchema?komodoSourceName=" + komodoSourceName, true, ()->{
             return getSchema(komodoSourceName); 
     	}); 
+        return toResponse(result);
     }
 
-	Response getSchema(final String komodoSourceName) throws KException {
+    List<RestSchemaNode> getSchema(final String komodoSourceName) throws KException {
 		// Find the bound teiid source corresponding to the syndesis source
 		TeiidDataSource teiidSource = getMetadataInstance().getDataSource(komodoSourceName);
 
 		if (teiidSource == null) {
 			LOGGER.debug( "Connection '{0}' was not found", komodoSourceName ); //$NON-NLS-1$
-		    return toResponse(new ResourceNotFound( komodoSourceName ) );
+			notFound( komodoSourceName );
 		}
 		
 		Schema schemaModel = findSchemaModel( teiidSource );
@@ -434,7 +428,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 		    schemaNodes = this.generateSourceSchema(komodoSourceName, schemaModel.getTables().values());
 		}
 
-		return toResponse(schemaNodes);
+		return schemaNodes;
 	}
 
     /**
@@ -457,11 +451,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
     } )
     public Response getAllConnectionSchema( @Context final HttpHeaders headers,
                                             final @Context UriInfo uriInfo ) throws Exception {
-        final SecurityPrincipal principal = checkSecurityContext( headers );
-
-        if ( principal.hasErrorResponse() ) {
-            return principal.getErrorResponse();
-        }
+        final String principal = checkSecurityContext( headers );
 
         return runInTransaction(principal, "getAllConnectionSchema", true, ()->{
             List<RestSchemaNode> rootNodes = new ArrayList<RestSchemaNode>();
@@ -522,9 +512,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
     public Response getSyndesisSourceStatuses( final @Context HttpHeaders headers,
                                                final @Context UriInfo uriInfo ) throws Exception {
 
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
+        String principal = checkSecurityContext(headers);
 
         final List< RestSyndesisSourceStatus > statuses = new ArrayList<>();
 
@@ -546,7 +534,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
     	});
     }
     
-	public RestSyndesisSourceStatus getSyndesisSourceStatus(final DefaultSyndesisDataSource sds, SecurityPrincipal principal) throws Exception {
+	public RestSyndesisSourceStatus getSyndesisSourceStatus(final DefaultSyndesisDataSource sds, String principal) throws Exception {
 		return runInTransaction(principal, "getSyndesisSourceStatusByName", true, () -> {
             return createSourceStatus(sds);
 		});
@@ -594,14 +582,12 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 			@ApiResponse(code = 403, message = "An error has occurred.") })
 	public Response viewSourceInfo(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
 			@ApiParam(value = "Name of the view editor state", required = true) final @PathParam("viewEditorStateId") String viewEditorStateId) throws Exception {
-		SecurityPrincipal principal = checkSecurityContext(headers);
-		if (principal.hasErrorResponse())
-			return principal.getErrorResponse();
+		String principal = checkSecurityContext(headers);
 
 		LOGGER.info("getViewSourceSchemas()   viewEditorStateId : " + viewEditorStateId);
 
 		if (StringUtils.isBlank(viewEditorStateId)) {
-			return createErrorResponseWithForbidden(RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_NAME);
+			forbidden(RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_NAME);
 		}
 
 		return runInTransaction(principal, "getViewSourceSchemas", true, ()->{
@@ -609,23 +595,26 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
 			List<String> sourcePaths = viewDefinition.getSourcePaths();
 
-			List<RestSourceSchema> srcSchemas = new ArrayList<RestSourceSchema>();
+			LinkedHashMap<String, RestSourceSchema> srcSchemas = new LinkedHashMap<>();
 
 			for (int i = 0; i < sourcePaths.size(); i++) {
 				String nextPath = sourcePaths.get(i);
 				// Example sourcePath >>>> sourcePaths[0] =
 				// "connection=conn1/schema=public/table=customer";
-				StringTokenizer tkzr = new StringTokenizer(nextPath, "/");
-				String connectionName = getPathValue(tkzr.nextToken());
+				String connectionName = PathUtils.getOptions(nextPath).get(0).getSecond();
+				
+				if (srcSchemas.containsKey(connectionName)) {
+					continue;
+				}
 
 				Schema schema = findSchema(connectionName);
 				
 				if (schema != null) {
-					srcSchemas.add(new RestSourceSchema(nextPath, schema));
+					srcSchemas.put(connectionName, new RestSourceSchema(nextPath, schema));
 				}
 			}
 
-			RestViewSourceInfo response = new RestViewSourceInfo(viewDefinition.getName(), srcSchemas.toArray(new RestSourceSchema[0]));
+			RestViewSourceInfo response = new RestViewSourceInfo(viewDefinition.getName(), srcSchemas.values().toArray(new RestSourceSchema[0]));
 			return toResponse(response);
 		});
 	}
@@ -638,9 +627,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
     public Response getVirtualizations(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
             @ApiParam(value = "true to include in progress services", required = true, defaultValue="true")
             @QueryParam("includeInProgress") boolean includeInProgressServices) {
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
+        checkSecurityContext(headers);
 
         //
         // Ensure include in-progress services is included by default
@@ -664,9 +651,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
     public Response getVirtualizationStatus(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
             @ApiParam(value = "Name of the VDB", required = true) final @PathParam("vdbName") String vdbName) {
 
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
+        checkSecurityContext(headers);
 
         BuildStatus status = this.openshiftClient.getVirtualizationStatus(vdbName);
 
@@ -685,9 +670,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
     public Response getVirtualizationLogs(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
             @ApiParam(value = "Name of the VDB", required = true) final @PathParam("vdbName") String vdbName) {
 
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
+        checkSecurityContext(headers);
 
         KomodoStatusObject status = new KomodoStatusObject("Logs for " + vdbName); //$NON-NLS-1$
 
@@ -708,9 +691,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
     public Response deleteVirtualization(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
             @ApiParam(value = "Name of the VDB", required = true) final @PathParam("vdbName") String vdbName) {
 
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
+        checkSecurityContext(headers);
 
         BuildStatus status = this.openshiftClient.deleteVirtualization(vdbName);
         return toResponse(status);
@@ -736,22 +717,19 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
                     + CLOSE_BRACE
                     + CLOSE_PRE_TAG, required = true) final PublishRequestPayload payload) throws Exception {
 
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse()) {
-            return principal.getErrorResponse();
-        }
+        String principal = checkSecurityContext(headers);
 
         //
         // Error if there is no name attribute defined
         //
         if (payload.getName() == null) {
-            return createErrorResponseWithForbidden(RelationalMessages.Error.VDB_NAME_NOT_PROVIDED);
+            forbidden(RelationalMessages.Error.VDB_NAME_NOT_PROVIDED);
         }
 
         return runInTransaction(principal, "publish-init", true, ()-> {
             DataVirtualization dataservice = getWorkspaceManager().findDataVirtualization(payload.getName());
 		    if (dataservice == null) {
-		        return createErrorResponse(Status.NOT_FOUND, RelationalMessages.Error.VDB_NOT_FOUND);
+		        notFound(payload.getName());
 		    }
             
             KomodoStatusObject status = new KomodoStatusObject();
@@ -832,7 +810,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         vdb.setName(vdbName);
         vdb.setDescription("Vdb for source "+teiidSource); //$NON-NLS-1$
         ModelMetaData mmd = new ModelMetaData();
-        mmd.setName(getSchemaModelName(sourceName));
+        mmd.setName(sourceName);
         vdb.addModel(mmd);
         mmd.setModelType(Type.PHYSICAL);
         mmd.addProperty("importer.TableTypes", "TABLE,VIEW"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -875,9 +853,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 			return null;
 		}
 		
-		String name = getSchemaModelName(dataSourceName);
-        
-		return vdb.getSchema(name);
+		return vdb.getSchema(dataSourceName);
 	}
 
     /**
@@ -889,13 +865,6 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         return sourceName.toLowerCase() + CONNECTION_VDB_SUFFIX;
     }
 
-    /**
-     * Just a no-op
-     */
-    static String getSchemaModelName( final String sourceName ) {
-        return sourceName;
-    }
-    
     /**
      * Generate the syndesis source schema structure using the supplied table fqn information.
      * @param sourceName the name of the source
@@ -953,7 +922,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             String name = getSegmentName(segments[i]);
             // Root Level - look for matching root node in the list 
             if( i == 0 ) {
-                RestSchemaNode matchNode = getMatchingNode(sourceName, name, type, currentNodes.toArray( new RestSchemaNode[ currentNodes.size() ] ));
+                RestSchemaNode matchNode = getMatchingNode(sourceName, name, type, currentNodes);
                 // No match - create a new node
                 if(matchNode == null) {
                     matchNode = new RestSchemaNode(sourceName, name, type);
@@ -1019,9 +988,9 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
      * @param nodeList the list of nodes to search
      * @return the matching node, if found
      */
-    private RestSchemaNode getMatchingNode(String sourceName, String name, String type, RestSchemaNode[] nodeArray) {
+    private RestSchemaNode getMatchingNode(String sourceName, String name, String type, Collection<RestSchemaNode> nodes) {
         RestSchemaNode matchedNode = null;
-        for(RestSchemaNode node : nodeArray) {
+        for(RestSchemaNode node : nodes) {
             if( node.getConnectionName().equals(sourceName) && node.getName().equals(name) && node.getType().equals(type) ) {
                 matchedNode = node;
                 break;
@@ -1037,7 +1006,11 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
      */
     private String getSegmentName(String segment) {
         String[] parts = segment.split(EQUALS);
-        return parts[1].trim();
+        try {
+			return URLDecoder.decode(parts[1].trim(), "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
     }
     
     /**
@@ -1047,7 +1020,11 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
      */
     private String getSegmentType(String segment) {
         String[] parts = segment.split(EQUALS);
-        return parts[0].trim();
+        try {
+			return URLDecoder.decode(parts[0].trim(), "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
     }
     
     /**
@@ -1079,15 +1056,6 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
     @Override
     public TeiidDataSource findTeiidDatasource(String connectionName) throws KException {
     	return getMetadataInstance().getDataSource(connectionName);
-    }
-    
-    private String getPathValue(String pathSegment) {
-		// Example sourcePath >>>> sourcePaths[0] =
-		// "connection=conn1/schema=public/table=customer";
-		LOGGER.info("      >>> path segment = " + pathSegment);
-		StringTokenizer tkzr = new StringTokenizer(pathSegment, "=");
-		tkzr.nextToken();
-		return tkzr.nextToken();
     }
     
 }

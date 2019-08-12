@@ -19,13 +19,14 @@
 package org.komodo.rest.service;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.NotFoundException;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,6 +36,8 @@ import org.komodo.metadata.internal.TeiidDataSourceImpl;
 import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.repository.KomodoRepositoryConfiguration;
 import org.komodo.repository.WorkspaceManagerImpl;
+import org.komodo.rest.KomodoJsonMarshaller;
+import org.komodo.rest.datavirtualization.connection.RestSchemaNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ContextConfiguration;
@@ -97,9 +100,13 @@ public class KomodoMetadataServiceTest {
 	
 	@Test
 	public void testGetSchema() throws Exception {
-		Response r = komodoMetadataService.getSchema("source");
-		//no source yet
-		assertEquals(Status.NOT_FOUND.getStatusCode(), r.getStatus());
+		List<RestSchemaNode> nodes = null;
+		try {
+			nodes = komodoMetadataService.getSchema("source");
+			fail();
+		} catch (NotFoundException e) {
+			//no source yet
+		}
 		
 		//add the data source, and schema
 		Map<String, String> props = new HashMap<>();
@@ -108,17 +115,23 @@ public class KomodoMetadataServiceTest {
 		
 		metadataInstance.createDataSource("source", "h2", props);
 		workspaceManagerImpl.createOrUpdateSchema("someid", "source", 
-				"create foreign table tbl (col string) options (\"teiid_rel:fqn\" 'foo=bar');");
+				"create foreign table tbl (col string) options (\"teiid_rel:fqn\" 'schema=s%20x/t%20bl=bar');");
 		
-		r = komodoMetadataService.getSchema("source");
-		assertEquals(Status.OK.getStatusCode(), r.getStatus());
+		nodes = komodoMetadataService.getSchema("source");
 		assertEquals("[ {\n" + 
-				"  \"children\" : [ ],\n" + 
-				"  \"name\" : \"bar\",\n" + 
+				"  \"children\" : [ {\n" + 
+				"    \"children\" : [ ],\n" + 
+				"    \"name\" : \"bar\",\n" + 
+				"    \"connectionName\" : \"source\",\n" + 
+				"    \"type\" : \"t bl\",\n" + 
+				"    \"path\" : \"schema=s%20x/t%20bl=bar\",\n" + 
+				"    \"queryable\" : true\n" + 
+				"  } ],\n" + 
+				"  \"name\" : \"s x\",\n" + 
 				"  \"connectionName\" : \"source\",\n" + 
-				"  \"type\" : \"foo\",\n" + 
-				"  \"path\" : \"foo=bar\",\n" + 
-				"  \"queryable\" : true\n" + 
-				"} ]", r.getEntity());
+				"  \"type\" : \"schema\",\n" + 
+				"  \"path\" : \"schema=s%20x\",\n" + 
+				"  \"queryable\" : false\n" + 
+				"} ]", KomodoJsonMarshaller.marshall(nodes));
 	}
 }

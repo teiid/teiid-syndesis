@@ -25,7 +25,7 @@ import org.junit.runner.RunWith;
 import org.komodo.rest.Application;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.CredentialsProvider;
-import org.komodo.rest.KomodoRestV1Application;
+import org.komodo.rest.V1Constants;
 import org.komodo.rest.datavirtualization.KomodoStatusObject;
 import org.komodo.rest.service.IntegrationTest.IntegrationTestConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,7 +68,7 @@ public class IntegrationTest {
 	
 	@Test public void testAbout() {
 		ResponseEntity<KomodoStatusObject> response = restTemplate.getForEntity("/v1/service/about", KomodoStatusObject.class);
-		assertEquals(KomodoRestV1Application.V1Constants.App.name(), response.getBody().getAttributes().get(KomodoUtilService.APP_NAME));
+		assertEquals(V1Constants.App.name(), response.getBody().getAttributes().get(KomodoUtilService.APP_NAME));
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 	}
 	

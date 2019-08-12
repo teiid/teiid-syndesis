@@ -174,11 +174,10 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
         // Iterate each schemaModel, generating a source for it.
         for ( Entry<Schema, LinkedHashSet<TableInfo>> entry: schemaTableMap.entrySet() ) {
         	// Iterate tables for this schema, generating DDL
-        	String connectionName = null;
+        	String connectionName = entry.getKey().getName();
 
         	StringBuilder regex = new StringBuilder();
         	for ( TableInfo table: entry.getValue() ) {
-    			connectionName = table.getConnectionName();
     			if (regex.length() > 0) {
     				regex.append("|");
     			}
@@ -441,8 +440,11 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
 
 		// Find and create TableInfo for each source Path
 		int iTable = 0;
+		
+		
+		
 		for(String path : sourceTablePaths) {
-			String connectionName = PathUtils.getOption(path, CONNECTION_KEY); //$NON-NLS-1$
+			String connectionName = PathUtils.getOptions(path).get(0).getSecond();
 
 			// Find schema model based on the connection name (i.e. connection=pgConn)
 			final Schema schemaModel = findSchemaModel( connectionName );
@@ -450,7 +452,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
 			// Get the tables from the schema and match them with the table name
 			if ( schemaModel != null ) {
 			    final Collection<Table> tables = schemaModel.getTables().values();
-			    String tableOption = PathUtils.getTableOption(path);
+			    String tableOption = path.split("/", 2)[1];
 
 			    // Look thru schema tables for table with matching option.
 			    for (Table table: tables) {
@@ -541,10 +543,6 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
     		}
     	}
     	
-    	public String getConnectionName() {
-			return PathUtils.getOption(this.path, CONNECTION_KEY); //$NON-NLS-1$
-		}
-
     	public String getSourceTablePath() {
 			return this.path;
 		}

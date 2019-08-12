@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.komodo.metadata.TeiidVdb;
-import org.komodo.rest.KomodoRestV1Application.V1Constants;
+import org.komodo.rest.V1Constants;
 import org.komodo.utils.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude;

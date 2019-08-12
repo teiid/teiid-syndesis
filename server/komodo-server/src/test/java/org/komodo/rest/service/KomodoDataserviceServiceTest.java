@@ -19,12 +19,13 @@
 package org.komodo.rest.service;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.ws.rs.core.Response;
+import javax.ws.rs.NotFoundException;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -62,15 +63,22 @@ public class KomodoDataserviceServiceTest {
 		ImportPayload payload = new ImportPayload();
 		payload.setTables(Arrays.asList("tbl"));
 		
-		Response r = komodoDataserviceService.importViews("dv", "source", payload);
-		//dv not found
-		assertEquals(404, r.getStatus());
+		KomodoStatusObject kso = null;
+		try {
+			kso = komodoDataserviceService.importViews("dv", "source", payload);
+			fail();
+		} catch (NotFoundException e) {
+			//dv not found
+		}
 		
 		workspaceManagerImpl.createDataVirtualization("dv");
 		
-		r = komodoDataserviceService.importViews("dv", "source", payload);
-		//source not found
-		assertEquals(404, r.getStatus());
+		try {
+			kso = komodoDataserviceService.importViews("dv", "source", payload);
+			fail();
+		} catch (NotFoundException e) {
+			//source not found
+		}
 		
 		Map<String, String> props = new HashMap<>();
 		props.put(TeiidOpenShiftClient.ID, "someid");
@@ -78,17 +86,19 @@ public class KomodoDataserviceServiceTest {
 		
 		metadataInstance.createDataSource("source", "h2", props);
 		
-		r = komodoDataserviceService.importViews("dv", "source", payload);
-		//source not found - as the properties are not valid
-		assertEquals(404, r.getStatus());
+		try {
+			kso = komodoDataserviceService.importViews("dv", "source", payload);
+			fail();
+		} catch (NotFoundException e) {
+			//source not found - as the properties are not valid
+		}
 		
 		//add the schema definition - so that we don't really need the datasource, and redeploy
 		workspaceManagerImpl.createOrUpdateSchema("someid", "source", 
 				"create foreign table tbl (col string) options (\"teiid_rel:fqn\" 'fqn');");
 		metadataInstance.undeployDynamicVdb(KomodoMetadataService.getWorkspaceSourceVdbName("source"));
 		
-		r = komodoDataserviceService.importViews("dv", "source", payload);
-		KomodoStatusObject kso = KomodoJsonMarshaller.unmarshall(r.getEntity().toString(), KomodoStatusObject.class);
+		kso = komodoDataserviceService.importViews("dv", "source", payload);
 		assertEquals(1, kso.getAttributes().size());
 		
 		String id = kso.getAttributes().values().iterator().next();

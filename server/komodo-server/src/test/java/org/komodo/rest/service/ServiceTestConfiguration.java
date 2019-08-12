@@ -27,8 +27,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.teiid.runtime.EmbeddedConfiguration;
 
-@ComponentScan(basePackageClasses = KomodoDataserviceService.class)
-@ComponentScan(basePackageClasses = DefaultMetadataInstance.class)
+@ComponentScan(basePackageClasses = {KomodoDataserviceService.class, DefaultMetadataInstance.class})
 @TestConfiguration 
 public class ServiceTestConfiguration {
 

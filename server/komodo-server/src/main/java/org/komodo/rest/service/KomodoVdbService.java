@@ -31,8 +31,8 @@ import javax.ws.rs.core.UriInfo;
 
 import org.komodo.StringConstants;
 import org.komodo.datavirtualization.ViewDefinition;
-import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
+import org.komodo.rest.V1Constants;
 import org.komodo.rest.datavirtualization.RelationalMessages;
 import org.komodo.utils.StringNameValidator;
 import org.springframework.stereotype.Component;
@@ -91,9 +91,7 @@ public final class KomodoVdbService extends KomodoService {
                                       @ApiParam(value = "Name of the Model to get its tables", required = true)
                                       final @PathParam( "viewName" ) String viewName ) throws Exception {
 
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
+        String principal = checkSecurityContext(headers);
 
         final String errorMsg = VALIDATOR.checkValidName( viewName );
 

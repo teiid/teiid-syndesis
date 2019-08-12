@@ -40,9 +40,8 @@ import org.komodo.datavirtualization.SqlProjectedColumn;
 import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.metadata.MetadataInstance.ValidationResult;
-import org.komodo.rest.KomodoRestV1Application;
-import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.rest.KomodoService;
+import org.komodo.rest.V1Constants;
 import org.komodo.rest.datavirtualization.KomodoStatusObject;
 import org.komodo.rest.datavirtualization.RelationalMessages;
 import org.komodo.rest.datavirtualization.RestViewDefinitionStatus;
@@ -107,16 +106,14 @@ public final class KomodoUtilService extends KomodoService {
     public Response about(final @Context HttpHeaders headers,
                                                final @Context UriInfo uriInfo) {
 
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
+        checkSecurityContext(headers);
 
         KomodoStatusObject repoStatus = new KomodoStatusObject();
 
-        repoStatus.addAttribute(APP_NAME, KomodoRestV1Application.V1Constants.App.name());
-        repoStatus.addAttribute(APP_TITLE, KomodoRestV1Application.V1Constants.App.title());
-        repoStatus.addAttribute(APP_DESCRIPTION, KomodoRestV1Application.V1Constants.App.description());
-        repoStatus.addAttribute(APP_VERSION, KomodoRestV1Application.V1Constants.App.version());
+        repoStatus.addAttribute(APP_NAME, V1Constants.App.name());
+        repoStatus.addAttribute(APP_TITLE, V1Constants.App.title());
+        repoStatus.addAttribute(APP_DESCRIPTION, V1Constants.App.description());
+        repoStatus.addAttribute(APP_VERSION, V1Constants.App.version());
 
         // create response
         return toResponse(repoStatus);
@@ -162,9 +159,7 @@ public final class KomodoUtilService extends KomodoService {
     public Response getViewList( final @Context HttpHeaders headers,
                                     final @Context UriInfo uriInfo ) throws Exception {
 
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
+        String principal = checkSecurityContext(headers);
 
         final List< ViewListing > viewDefinitions = new ArrayList<>();
 
@@ -262,9 +257,7 @@ public final class KomodoUtilService extends KomodoService {
                                     @ApiParam(value = "Name of the view editor state to fetch", required = true)
                                     final @PathParam( "viewEditorStateId" ) String viewEditorStateId) throws Exception {
 
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
+        String principal = checkSecurityContext(headers);
 
     	return runInTransaction(principal, "getViewEditorStates", true, ()->{
             ViewDefinition viewEditorState = getWorkspaceManager().findViewDefinition(viewEditorStateId);
@@ -301,16 +294,14 @@ public final class KomodoUtilService extends KomodoService {
                                                @ApiParam(required = true)
                                                final org.komodo.datavirtualization.ViewDefinition restViewEditorState) throws Exception {
 
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
+        String principal = checkSecurityContext(headers);
 
         if (StringUtils.isBlank(restViewEditorState.getName())) {
-        	return createErrorResponseWithForbidden(RelationalMessages.Error.VIEW_DEFINITION_MISSING_NAME);
+        	forbidden(RelationalMessages.Error.VIEW_DEFINITION_MISSING_NAME);
         }
         
         if (StringUtils.isBlank(restViewEditorState.getDataVirtualizationName())) {
-        	return createErrorResponseWithForbidden(RelationalMessages.Error.VIEW_DEFINITION_MISSING_DATAVIRTUALIZATIONNAME);
+        	forbidden(RelationalMessages.Error.VIEW_DEFINITION_MISSING_DATAVIRTUALIZATIONNAME);
         }
         
     	ViewDefinition vd = runInTransaction(principal, "createViewDefinition", false, ()->{
@@ -343,9 +334,7 @@ public final class KomodoUtilService extends KomodoService {
                                                final @Context UriInfo uriInfo,
                                                @ApiParam(required = true)
                                                final ViewDefinition restViewDefinition) {
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
+        checkSecurityContext(headers);
 
     	LOGGER.info("Validating view : " + restViewDefinition.getName());
     	
@@ -505,12 +494,10 @@ public final class KomodoUtilService extends KomodoService {
                                                )
                                                final @PathParam("viewEditorStateId") String viewEditorStateId) throws Exception {
 
-        SecurityPrincipal principal = checkSecurityContext(headers);
-        if (principal.hasErrorResponse())
-            return principal.getErrorResponse();
+        String principal = checkSecurityContext(headers);
 
         if (StringUtils.isBlank(viewEditorStateId)) {
-            return createErrorResponseWithForbidden(RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_NAME);
+            forbidden(RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_NAME);
         }
 
         return runInTransaction(principal, "removeUserProfileViewEditorState", false, ()-> {

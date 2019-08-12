@@ -23,7 +23,6 @@ import java.util.concurrent.Callable;
 import org.komodo.KEngine;
 import org.komodo.KException;
 import org.komodo.UnitOfWork;
-import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.utils.KLog;
 import org.springframework.beans.factory.annotation.Autowired;
 

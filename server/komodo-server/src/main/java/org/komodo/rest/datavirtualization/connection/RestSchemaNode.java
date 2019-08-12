@@ -17,9 +17,8 @@
  */
 package org.komodo.rest.datavirtualization.connection;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -32,9 +31,11 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonInclude(Include.NON_NULL)
 public class RestSchemaNode {
 
-    private List<RestSchemaNode> children = new ArrayList<RestSchemaNode>();
+    private LinkedHashSet<RestSchemaNode> children = new LinkedHashSet<RestSchemaNode>();
     
     private String name;
+    
+    private String komodoName;
 
     private String connectionName;
 
@@ -147,22 +148,8 @@ public class RestSchemaNode {
      * Get node children
      * @return the node children
      */
-    public RestSchemaNode[] getChildren() {
-        return children.toArray(new RestSchemaNode[0]);
-    }
-
-    /**
-     * Set node children
-     * @param children the node children
-     */
-    public void setChildren(RestSchemaNode[] children) {
-        if (children == null || children.length == 0)
-            this.children = Collections.emptyList();
-
-        this.children = new ArrayList<>();
-        for (RestSchemaNode child : children) {
-            this.children.add(child);
-        }
+    public Set<RestSchemaNode> getChildren() {
+        return children;
     }
 
     /**
@@ -170,20 +157,52 @@ public class RestSchemaNode {
      * @param child the child node
      */
     public void addChild(RestSchemaNode child) {
-        if ( !hasChild(child) ) {
-        	this.children.add(child);
-        }
+    	this.children.add(child);
     }
+    
+    public String getKomodoName() {
+		return komodoName;
+	}
+    
+    public void setKomodoName(String komodoName) {
+		this.komodoName = komodoName;
+	}
 
-    private boolean hasChild(RestSchemaNode child) {
-    	boolean hasChild = false;
-    	for( RestSchemaNode node : this.children ) {
-    		if( node.getName().equals(child.getName()) &&
-    			node.getType().equals(child.getType()) ) {
-    			hasChild = true;
-    			break;
-    		}
-    	}
-    	return hasChild;
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((connectionName == null) ? 0 : connectionName.hashCode());
+		result = prime * result + ((komodoName == null) ? 0 : komodoName.hashCode());
+		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		RestSchemaNode other = (RestSchemaNode) obj;
+		if (connectionName == null) {
+			if (other.connectionName != null)
+				return false;
+		} else if (!connectionName.equals(other.connectionName))
+			return false;
+		if (komodoName == null) {
+			if (other.komodoName != null)
+				return false;
+		} else if (!komodoName.equals(other.komodoName))
+			return false;
+		if (type == null) {
+			if (other.type != null)
+				return false;
+		} else if (!type.equals(other.type))
+			return false;
+		return true;
+	}
+    
 }
