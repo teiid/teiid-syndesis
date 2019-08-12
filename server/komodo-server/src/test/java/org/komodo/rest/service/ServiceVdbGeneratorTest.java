@@ -244,20 +244,16 @@ public class ServiceVdbGeneratorTest {
         return vdbGenerator.getODataViewDdl(viewDef);
     }
     
-    private ViewDefinition[] helpCreateViewEditorState(int numSources) throws KException {
+    private ViewDefinition helpCreateViewEditorState(int numSources) throws KException {
 
-    	ViewDefinition[] stateArray = new ViewDefinition[1];
-
-        ViewDefinition viewDef = mock(ViewDefinition.class);
-        when(viewDef.getName()).thenReturn(viewDefinitionName);
-        stateArray[0] = viewDef;
+        ViewDefinition viewDef = new ViewDefinition("dvName", viewDefinitionName);
         if( numSources == 1 ) {
         	helpCreateViewDefinitionAll(viewDef, sourceTablePath2, false);
         } else {
         	helpCreateViewDefinitionAll(viewDef, sourceTablePath3, false);
         }
         
-        return stateArray;
+        return viewDef;
     }
     
     private ViewDefinition helpCreateViewDefinitionAll(ViewDefinition viewDef, String secondSourceTablePath, boolean useAll) throws KException {
@@ -265,10 +261,9 @@ public class ServiceVdbGeneratorTest {
         String[] sourceTablePaths = { sourceTablePath1, secondSourceTablePath };
         boolean twoTables = secondSourceTablePath != null && StringUtils.areDifferent(sourceTablePath1, secondSourceTablePath);
         
-        when(viewDef.getName()).thenReturn(viewDefinitionName);
-        when(viewDef.getDescription()).thenReturn(description);
-        when(viewDef.isComplete()).thenReturn(isComplete);
-        when(viewDef.getSourcePaths()).thenReturn(Arrays.asList(sourceTablePaths));
+        viewDef.setDescription(description);
+        viewDef.setComplete(isComplete);
+        viewDef.setSourcePaths(Arrays.asList(sourceTablePaths));
         
         SqlComposition sqlComp1 = mock(SqlComposition.class);
         when(sqlComp1.getName()).thenReturn(comp1Name);
@@ -282,7 +277,7 @@ public class ServiceVdbGeneratorTest {
         
         SqlComposition[] sqlComps = new SqlComposition[1];
         sqlComps[0] = sqlComp1;
-        when(viewDef.getCompositions()).thenReturn(Arrays.asList(sqlComps));
+        viewDef.setCompositions(Arrays.asList(sqlComps));
         
         if( useAll ) {
         	SqlProjectedColumn projCol = mock(SqlProjectedColumn.class);
@@ -290,7 +285,7 @@ public class ServiceVdbGeneratorTest {
 	        
 	        SqlProjectedColumn[] projCols = new SqlProjectedColumn[1];
 	        projCols[0] = projCol;
-	        when(viewDef.getProjectedColumns()).thenReturn(Arrays.asList(projCols));
+	        viewDef.setProjectedColumns(Arrays.asList(projCols));
         } else {
         	SqlProjectedColumn[] projCols = new SqlProjectedColumn[3];
         	
@@ -316,7 +311,7 @@ public class ServiceVdbGeneratorTest {
 	        when(projCol.isSelected()).thenReturn(true);
 	        projCols[2] = projCol;
 	        
-	        when(viewDef.getProjectedColumns()).thenReturn(Arrays.asList(projCols));
+	        viewDef.setProjectedColumns(Arrays.asList(projCols));
         }
         
         return viewDef;
@@ -527,19 +522,21 @@ public class ServiceVdbGeneratorTest {
     
     @Test
     public void shouldRefreshServiceVdb_SingleSource() throws Exception {
-    	ViewDefinition[] states = helpCreateViewEditorState(1);
+    	ViewDefinition state = helpCreateViewEditorState(1);
     	
     	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(schemaFinder());
     	
-    	VDBMetaData serviceVdb = vdbGenerator.refreshServiceVdb(viewDefinitionName, Arrays.asList(states));
+    	state.setDdl(vdbGenerator.getODataViewDdl(state));
+    	
+    	VDBMetaData serviceVdb = vdbGenerator.createServiceVdb(viewDefinitionName, Arrays.asList(state));
 
     	List<org.teiid.adminapi.Model> models = serviceVdb.getModels();
     	
     	assertThat(models.size(), is(2));
         ModelMetaData viewModel = serviceVdb.getModel(StringConstants.SERVICE_VDB_VIEW_MODEL);
         assertNotNull(viewModel);
-        assertEquals("CREATE VIEW orderInfoView (ID LONG, orderDate TIMESTAMP, customerName STRING) OPTIONS (ANNOTATION 'test view description text') AS \n" + 
-        		"SELECT A.ID, A.orderDate, \n" + 
+        assertEquals("CREATE VIEW orderInfoView (ID, orderDate, name) OPTIONS (ANNOTATION 'test view description text') AS \n" + 
+        		"SELECT A.ID, A.orderDate, B.name\n" + 
         		"FROM pgconnection1schemamodel.orders AS A;\n", viewModel.getSourceMetadataText().get(0));
     	
 //    	for( Model model : models ) {
@@ -555,18 +552,20 @@ public class ServiceVdbGeneratorTest {
     
     @Test
     public void shouldRefreshServiceVdb_TwoSources() throws Exception {
-    	ViewDefinition[] states = helpCreateViewEditorState(2);
+    	ViewDefinition state = helpCreateViewEditorState(2);
     	
     	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(schemaFinder());
     	
-    	VDBMetaData serviceVdb = vdbGenerator.refreshServiceVdb(viewDefinitionName, Arrays.asList(states));
+    	state.setDdl(vdbGenerator.getODataViewDdl(state));
+    	
+    	VDBMetaData serviceVdb = vdbGenerator.createServiceVdb(viewDefinitionName, Arrays.asList(state));
     	
     	List<org.teiid.adminapi.Model> models = serviceVdb.getModels();
     	
         assertThat(models.size(), is(3));
         ModelMetaData viewModel = serviceVdb.getModel(StringConstants.SERVICE_VDB_VIEW_MODEL);
         assertNotNull(viewModel);
-        assertEquals("CREATE VIEW orderInfoView (ID LONG, orderDate TIMESTAMP, customerName STRING) OPTIONS (ANNOTATION 'test view description text') AS \n" + 
+        assertEquals("CREATE VIEW orderInfoView (ID, orderDate, customerName) OPTIONS (ANNOTATION 'test view description text') AS \n" + 
         		"SELECT A.ID, A.orderDate, B.customerName\n" + 
         		"FROM pgconnection1schemamodel.orders AS A;\n", viewModel.getSourceMetadataText().get(0));
     	

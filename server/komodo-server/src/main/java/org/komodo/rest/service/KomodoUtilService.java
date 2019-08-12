@@ -88,6 +88,9 @@ public final class KomodoUtilService extends KomodoService {
 
     @Autowired
     private MetadataInstance metadataInstance;
+    
+    @Autowired
+    private KomodoMetadataService metadataService;
 
     /**
      * @param headers
@@ -304,8 +307,8 @@ public final class KomodoUtilService extends KomodoService {
         	forbidden(RelationalMessages.Error.VIEW_DEFINITION_MISSING_DATAVIRTUALIZATIONNAME);
         }
         
-    	ViewDefinition vd = runInTransaction(principal, "createViewDefinition", false, ()->{
-    		return createViewEditorState(restViewEditorState);
+    	ViewDefinition vd = runInTransaction(principal, "upsertViewDefinition", false, ()->{
+    		return upsertViewEditorState(restViewEditorState);
     	});
 
         KomodoStatusObject kso = new KomodoStatusObject("Stash Status"); //$NON-NLS-1$
@@ -413,8 +416,10 @@ public final class KomodoUtilService extends KomodoService {
      * @param editorState the state
      * @return the ViewEditorState repo object
      * @throws Exception exception if a problem is encountered
+     * 
+     * TODO: could refactor to directly save / merge, rather than copy
      */
-    private ViewDefinition createViewEditorState(final ViewDefinition restViewDefn) throws Exception {
+    ViewDefinition upsertViewEditorState(final ViewDefinition restViewDefn) throws Exception {
     	
     	ViewDefinition viewDefn = null;
     	
@@ -429,7 +434,7 @@ public final class KomodoUtilService extends KomodoService {
     	if (viewDefn == null) {
     		viewDefn = getWorkspaceManager().createViewDefiniton(restViewDefn.getDataVirtualizationName(), restViewDefn.getName());
     	} else {
-    		if (restViewDefn.getId() != null && viewDefn.getId() != null && !restViewDefn.getId().endsWith(viewDefn.getDdl())) {
+    		if (restViewDefn.getId() != null && viewDefn.getId() != null && !restViewDefn.getId().equals(viewDefn.getId())) {
     			throw new IllegalArgumentException("view id does not match the persistent state");
     		}
         	if (!restViewDefn.getName().equals(viewDefn.getName()) || !restViewDefn.getDataVirtualizationName().equals(viewDefn.getDataVirtualizationName())) {
@@ -465,6 +470,12 @@ public final class KomodoUtilService extends KomodoService {
             sqlProjectedCol.setType(restCol.getType());
             sqlProjectedCol.setSelected(restCol.isSelected());
         }
+        
+        if (viewDefn.isComplete() && !viewDefn.isUserDefined()) {
+        	String ddl = new ServiceVdbGenerator(metadataService).getODataViewDdl(viewDefn);
+			viewDefn.setDdl(ddl);
+        }
+        
         return viewDefn;
     }
 

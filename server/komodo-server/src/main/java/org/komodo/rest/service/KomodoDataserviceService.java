@@ -53,6 +53,7 @@ import org.komodo.rest.datavirtualization.ImportPayload;
 import org.komodo.rest.datavirtualization.KomodoStatusObject;
 import org.komodo.rest.datavirtualization.RelationalMessages;
 import org.komodo.rest.datavirtualization.RestDataVirtualization;
+import org.komodo.utils.KLog;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -401,33 +402,13 @@ public final class KomodoDataserviceService extends KomodoService
             @ApiResponse(code = 403, message = "An error has occurred.") })
     public Response refreshViews(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
             @ApiParam(value = "Name of the dataservice", required = true) final @PathParam("dataserviceName") String dataserviceName) throws Exception {
-
-        String principal = checkSecurityContext(headers);
-
-        // Error if the dataservice name is missing
-        if (StringUtils.isBlank(dataserviceName)) {
-            forbidden(RelationalMessages.Error.DATASERVICE_SERVICE_MISSING_NAME);
-        }
-
-    	KomodoStatusObject result = runInTransaction(principal, "refreshDataVirtualizationViews", false, () -> {
-    		DataVirtualization dataservice = getWorkspaceManager().findDataVirtualization(dataserviceName);
-            if (dataservice == null) {
-            	notFound( dataserviceName );
-            }
-
-            //generate has the side effect of setting ddl
-            this.metadataService.generateServiceVDB(dataservice);
-            
-            /*TODO: should we generate and deploy a virtualization specific preview vdb
-              that should be done outside of the txn
-            */
-
-            KomodoStatusObject kso = new KomodoStatusObject("Refresh Status"); //$NON-NLS-1$
-            kso.addAttribute(dataserviceName, "View Successfully refreshed"); //$NON-NLS-1$
-
-            return kso;
-    	});
-    	return toResponse(result);
+    	//TODO: remove this once the ui is updated
+    	
+    	KLog.getLogger().info("Refresh is no longer needed");
+    	
+        KomodoStatusObject kso = new KomodoStatusObject("Refresh Status"); //$NON-NLS-1$
+        kso.addAttribute(dataserviceName, "View Successfully refreshed"); //$NON-NLS-1$
+        return toResponse(kso);
     }
     
     @PUT
@@ -481,6 +462,8 @@ public final class KomodoDataserviceService extends KomodoService
 			notFound( komodoSourceName );
 		}
 		
+		ServiceVdbGenerator serviceVdbGenerator = new ServiceVdbGenerator(metadataService);
+		
 		KomodoStatusObject kso = new KomodoStatusObject("Import Status"); //$NON-NLS-1$
 		
 		for (String name : importPayload.getTables()) {
@@ -505,9 +488,13 @@ public final class KomodoDataserviceService extends KomodoService
 			} else {
 				viewDefn = getWorkspaceManager().createViewDefiniton(dataserviceName, name);
 			}
+			viewDefn.setComplete(true);
 			FullyQualifiedName fqn = new FullyQualifiedName(CONNECTION_KEY, komodoSourceName);
 			String sourcePath = fqn.toString() + "/" + t.getProperty(KomodoMetadataService.TABLE_OPTION_FQN, false);
 			viewDefn.addSourcePath(sourcePath); //TODO: fix this convention
+			
+			String ddl = serviceVdbGenerator.getODataViewDdl(viewDefn);
+			viewDefn.setDdl(ddl);
 			
 			kso.addAttribute(viewDefn.getName(), viewDefn.getId());
 		}

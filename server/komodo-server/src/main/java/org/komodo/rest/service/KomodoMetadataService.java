@@ -739,7 +739,10 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
             // Get all of the editor states from the user profile
             // They are stored under ids of form "serviceVdbName.viewName"
-			VDBMetaData theVdb = generateServiceVDB(dataservice);
+            String serviceVdbName = dataservice.getServiceVdbName();
+    		List<? extends ViewDefinition> editorStates = getWorkspaceManager().getViewDefinitions(dataservice.getName());
+    		 
+    		VDBMetaData theVdb = new ServiceVdbGenerator(this).createServiceVdb(serviceVdbName, editorStates);
             
             // the properties in this class can be exposed for user input
             PublishConfiguration config = new PublishConfiguration();
@@ -765,14 +768,6 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             return toResponse(status);
         }); 
     }
-
-	VDBMetaData generateServiceVDB(DataVirtualization dataservice) throws KException, Exception {
-		String serviceVdbName = dataservice.getServiceVdbName();
-		List<? extends ViewDefinition> editorStates = getWorkspaceManager().getViewDefinitions(dataservice.getName());
-		 
-		VDBMetaData theVdb = new ServiceVdbGenerator(this).refreshServiceVdb(serviceVdbName, editorStates);
-		return theVdb;
-	}
 
     /**
      * Deploy / re-deploy a VDB to the metadata instance for the provided teiid data source.

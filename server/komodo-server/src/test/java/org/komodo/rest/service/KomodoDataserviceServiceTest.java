@@ -95,7 +95,7 @@ public class KomodoDataserviceServiceTest {
 		
 		//add the schema definition - so that we don't really need the datasource, and redeploy
 		workspaceManagerImpl.createOrUpdateSchema("someid", "source", 
-				"create foreign table tbl (col string) options (\"teiid_rel:fqn\" 'fqn');");
+				"create foreign table tbl (col string) options (\"teiid_rel:fqn\" 'schema=s/table=tbl');");
 		metadataInstance.undeployDynamicVdb(KomodoMetadataService.getWorkspaceSourceVdbName("source"));
 		
 		kso = komodoDataserviceService.importViews("dv", "source", payload);
@@ -109,12 +109,13 @@ public class KomodoDataserviceServiceTest {
 				"  \"advanced\" : true,\n" + 
 				"  \"compositions\" : [ ],\n" + 
 				"  \"dataVirtualizationName\" : \"dv\",\n" + 
+				"  \"ddl\" : \"CREATE VIEW tbl (col) AS \\nSELECT col\\nFROM source.tbl;\",\n" + 
 				"  \"id\" : \"consistent\",\n" + 
-				"  \"isComplete\" : false,\n" + 
-				"  \"isUserDefined\" : false,\n" +
+				"  \"isComplete\" : true,\n" + 
+				"  \"isUserDefined\" : false,\n" + 
 				"  \"name\" : \"tbl\",\n" + 
-				"  \"projectedColumns\" : [ ],\n" +
-				"  \"sourcePaths\" : [ \"connection=source/fqn\" ]\n" + 
+				"  \"projectedColumns\" : [ ],\n" + 
+				"  \"sourcePaths\" : [ \"connection=source/schema=s/table=tbl\" ]\n" + 
 				"}", KomodoJsonMarshaller.marshall(vd));
 	}
 	

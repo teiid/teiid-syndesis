@@ -120,7 +120,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
      * @throws KException
      * 		if problem occurs
      */
-    public VDBMetaData refreshServiceVdb(String vdbName, List<? extends ViewDefinition> editorStates) throws KException {
+    public VDBMetaData createServiceVdb(String vdbName, List<? extends ViewDefinition> editorStates) throws KException {
         VDBMetaData vdb = new VDBMetaData();
         vdb.setName(vdbName);
         
@@ -143,13 +143,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
             		TableInfo[] tableInfos = getSourceTableInfos(viewDef);
 
             		// If the ViewDefinition is not user defined, regen the DDL
-            		String viewDdl = null;
-            		if(!viewDef.isUserDefined()) {
-                		viewDdl = getODataViewDdl(viewDef, tableInfos);
-                		viewDef.setDdl(viewDdl);
-            		} else {
-            			viewDdl = viewDef.getDdl();
-            		}
+            		String viewDdl = viewDef.getDdl();
             		allViewDdl.append(viewDdl).append(NEW_LINE);
    
             		// Add sources to list if not already present
@@ -447,7 +441,7 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
 			String connectionName = PathUtils.getOptions(path).get(0).getSecond();
 
 			// Find schema model based on the connection name (i.e. connection=pgConn)
-			final Schema schemaModel = findSchemaModel( connectionName );
+			final Schema schemaModel = finder.findSchema(connectionName);
 
 			// Get the tables from the schema and match them with the table name
 			if ( schemaModel != null ) {
@@ -495,13 +489,6 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
         
         return null;
     }
-    
-    /*
-     * Finds a schema model for a given connectionName from the workspace manager
-     */
-    private Schema findSchemaModel(final String connectionName) throws KException {
-		return finder.findSchema(connectionName);
-	}
     
     /*
      * Inner class to hold state for source table information and simplifies the DDL generating process
