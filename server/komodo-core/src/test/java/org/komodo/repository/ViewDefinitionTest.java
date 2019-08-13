@@ -67,14 +67,12 @@ public class ViewDefinitionTest {
     	
         v.setDdl("create ...");
         v.addSourcePath("x");
-        v.addComposition("comp");
         
         entityManager.flush();
         entityManager.detach(v);
     	
         ViewDefinition found = workspaceManagerImpl.findViewDefinition(v.getId());
         assertEquals("create ...", found.getDdl());
-        assertEquals(1, found.getCompositions().size());
         assertEquals(Arrays.asList("x"), found.getSourcePaths());
     }
 

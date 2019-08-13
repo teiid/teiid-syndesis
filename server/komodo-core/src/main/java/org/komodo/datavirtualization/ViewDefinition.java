@@ -47,22 +47,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 public class ViewDefinition implements Named {
 	
 	public static class State {
-		private List<SqlComposition> compositions = new ArrayList<>(1);
-		private List<SqlProjectedColumn> projectedColumns = new ArrayList<>(1);
 		private List<String> sourcePaths = new ArrayList<>(1);
 		
-		public List<SqlComposition> getSqlCompositions() {
-			return compositions;
-		}
-		public void setSqlCompositions(List<SqlComposition> sqlCompositions) {
-			this.compositions = sqlCompositions;
-		}
-		public List<SqlProjectedColumn> getProjectedColumns() {
-			return projectedColumns;
-		}
-		public void setProjectedColumns(List<SqlProjectedColumn> projectedColumns) {
-			this.projectedColumns = projectedColumns;
-		}
 		public List<String> getSourcePaths() {
 			return sourcePaths;
 		}
@@ -93,7 +79,6 @@ public class ViewDefinition implements Named {
 	private boolean complete;
 	@JsonProperty(value = "isUserDefined")
 	private boolean userDefined;
-	private boolean advanced = true;
 	
 	@JsonIgnore //for non-Entity serialization, the getters/setters will be used
 	@Convert(converter = ViewDefinitionStateConvertor.class)
@@ -114,16 +99,6 @@ public class ViewDefinition implements Named {
 	@Override
 	public String getName() {
 		return name;
-	}
-	
-	public SqlComposition addComposition(String compositionName) {
-		org.komodo.datavirtualization.SqlComposition sqlComposition = new org.komodo.datavirtualization.SqlComposition(compositionName);
-		state.compositions.add(sqlComposition);
-		return sqlComposition;
-	}
-
-	public List<org.komodo.datavirtualization.SqlComposition> getCompositions() {
-		return new ArrayList<>(state.compositions);
 	}
 	
 	public String getDescription() {
@@ -166,20 +141,6 @@ public class ViewDefinition implements Named {
 		this.getSourcePaths().add(sourcePath);
 	}
 
-	public SqlProjectedColumn addProjectedColumn(String columnName) {
-		org.komodo.datavirtualization.SqlProjectedColumn sqlProjectedColumn = new org.komodo.datavirtualization.SqlProjectedColumn(columnName);
-		this.state.projectedColumns.add(sqlProjectedColumn);
-		return sqlProjectedColumn;
-	}
-
-	public List<org.komodo.datavirtualization.SqlProjectedColumn> getProjectedColumns() {
-		return new ArrayList<>(state.projectedColumns);
-	}
-	
-	public void setCompositions(List<SqlComposition> sqlCompositions) {
-		state.compositions = sqlCompositions;
-	}
-	
 	public void setSourcePaths(List<String> sourcePaths) {
 		state.sourcePaths = sourcePaths;
 	}
@@ -204,20 +165,8 @@ public class ViewDefinition implements Named {
 		this.id = id;
 	}
 	
-	public void setProjectedColumns(List<SqlProjectedColumn> projectedColumns) {
-		this.state.projectedColumns = projectedColumns;
-	}
-	
 	public void clearState() {
 		this.state = new State();
 	}
 	
-	public boolean isAdvanced() {
-		return advanced;
-	}
-	
-	public void setAdvanced(boolean advanced) {
-		this.advanced = advanced;
-	}
-
 }

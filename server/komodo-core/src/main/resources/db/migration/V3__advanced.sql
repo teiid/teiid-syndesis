@@ -1,1 +1,0 @@
-alter table view_definition add column advanced BOOLEAN NOT NULL DEFAULT true;

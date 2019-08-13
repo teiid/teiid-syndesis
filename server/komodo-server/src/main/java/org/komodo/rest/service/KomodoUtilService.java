@@ -35,8 +35,6 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.komodo.StringConstants;
-import org.komodo.datavirtualization.SqlComposition;
-import org.komodo.datavirtualization.SqlProjectedColumn;
 import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.metadata.MetadataInstance.ValidationResult;
@@ -429,7 +427,8 @@ public final class KomodoUtilService extends KomodoService {
     	if (viewDefn == null) {
         	viewDefn = getWorkspaceManager().findViewDefinitionByNameIgnoreCase(restViewDefn.getDataVirtualizationName(), restViewDefn.getName());
     	}
-    	
+
+    	boolean pathsSame = false;
         // Add a new ViewDefinition
     	if (viewDefn == null) {
     		viewDefn = getWorkspaceManager().createViewDefiniton(restViewDefn.getDataVirtualizationName(), restViewDefn.getName());
@@ -440,6 +439,7 @@ public final class KomodoUtilService extends KomodoService {
         	if (!restViewDefn.getName().equals(viewDefn.getName()) || !restViewDefn.getDataVirtualizationName().equals(viewDefn.getDataVirtualizationName())) {
         		throw new IllegalArgumentException("view name / dv name does not match the persistent state");
         	}
+        	pathsSame = restViewDefn.getSourcePaths().equals(viewDefn.getSourcePaths());
     		viewDefn.clearState();
     	}
 
@@ -453,25 +453,9 @@ public final class KomodoUtilService extends KomodoService {
         }
         viewDefn.setComplete(restViewDefn.isComplete());
         viewDefn.setUserDefined(restViewDefn.isUserDefined());
-        // Compositions
-        for (SqlComposition restComp: restViewDefn.getCompositions()) {
-            SqlComposition sqlComp = viewDefn.addComposition(restComp.getName());
-            sqlComp.setDescription(restComp.getDescription());
-            sqlComp.setLeftSourcePath(restComp.getLeftSourcePath());
-            sqlComp.setRightSourcePath(restComp.getRightSourcePath());
-            sqlComp.setLeftCriteriaColumn(restComp.getLeftCriteriaColumn());
-            sqlComp.setRightCriteriaColumn(restComp.getRightCriteriaColumn());
-            sqlComp.setType(restComp.getType());
-            sqlComp.setOperator(restComp.getOperator());
-        }
-        // Projected Columns
-        for (SqlProjectedColumn restCol: restViewDefn.getProjectedColumns()) {
-            SqlProjectedColumn sqlProjectedCol = viewDefn.addProjectedColumn(restCol.getName());
-            sqlProjectedCol.setType(restCol.getType());
-            sqlProjectedCol.setSelected(restCol.isSelected());
-        }
         
-        if (viewDefn.isComplete() && !viewDefn.isUserDefined()) {
+        if (viewDefn.isComplete() && !viewDefn.isUserDefined() 
+        		&& (viewDefn.getDdl() == null || !pathsSame)) {
         	String ddl = new ServiceVdbGenerator(metadataService).getODataViewDdl(viewDefn);
 			viewDefn.setDdl(ddl);
         }

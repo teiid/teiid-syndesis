@@ -33,8 +33,6 @@ import java.util.regex.Pattern;
 import org.komodo.KException;
 import org.komodo.StringConstants;
 import org.komodo.TeiidSqlConstants;
-import org.komodo.datavirtualization.SqlComposition;
-import org.komodo.datavirtualization.SqlProjectedColumn;
 import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.metadata.TeiidDataSource;
 import org.komodo.utils.PathUtils;
@@ -70,13 +68,6 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
     private static final String OPEN_SQUARE_BRACKET = "["; //$NON-NLS-1$
     private static final String CLOSE_SQUARE_BRACKET = "]"; //$NON-NLS-1$
     
-    private static final String EQ_STR = "EQ"; //$NON-NLS-1$
-    private static final String NE_STR = "NE"; //$NON-NLS-1$
-    private static final String LT_STR = "LT"; //$NON-NLS-1$
-    private static final String GT_STR = "GT"; //$NON-NLS-1$
-    private static final String LE_STR = "LE"; //$NON-NLS-1$
-    private static final String GE_STR = "GE"; //$NON-NLS-1$
-
     /**
      * Inner Join Type
      */
@@ -258,41 +249,18 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
         // ---------------------------------------------
         // Generate the View projected columns
         // ---------------------------------------------
-        List<SqlProjectedColumn> projectedColumns = viewDef.getProjectedColumns();
         Set<String> selectedProjColumnNames = new LinkedHashSet<String>();
         
         // If "SELECT ALL" then include all of the source table columns
-        if( viewDef.isAdvanced()  ) { //$NON-NLS-1$
-        	for (Iterator<ColumnInfo> iter = columns.values().iterator(); iter.hasNext();) {
-        		ColumnInfo info = iter.next();
-                // keep track of projected column names
-                String colName = info.getName();
-                selectedProjColumnNames.add(colName);
-                // append name and type
-                sb.append(info.getName());
-                if (iter.hasNext()) {
-                    sb.append(StringConstants.COMMA).append(StringConstants.SPACE);
-                }
-            }
-            
-        // Not "SELECT ALL" - utilize the selected projected columns    
-        } else {
-            // Make list of only the selected columns
-            List<SqlProjectedColumn> selectedProjColumns = new ArrayList<SqlProjectedColumn>();
-            for (SqlProjectedColumn projCol: projectedColumns) {
-                String colName = projCol.getName();
-                if(projCol.isSelected() && !selectedProjColumnNames.contains(colName)) {
-                    selectedProjColumns.add(projCol);
-                    // keep track of projected column names
-                    selectedProjColumnNames.add(colName);
-                }
-            }
-            // generate selected column projection
-            for (int i = 0; i < selectedProjColumns.size(); i++) {
-                sb.append(selectedProjColumns.get(i).getName()).append(StringConstants.SPACE).append(selectedProjColumns.get(i).getType());
-                if (i < selectedProjColumns.size()-1) {
-                    sb.append(StringConstants.COMMA).append(StringConstants.SPACE);
-                }
+    	for (Iterator<ColumnInfo> iter = columns.values().iterator(); iter.hasNext();) {
+    		ColumnInfo info = iter.next();
+            // keep track of projected column names
+            String colName = info.getName();
+            selectedProjColumnNames.add(colName);
+            // append name and type
+            sb.append(info.getName());
+            if (iter.hasNext()) {
+                sb.append(StringConstants.COMMA).append(StringConstants.SPACE);
             }
         }
         
@@ -468,28 +436,6 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
 		return sourceTableInfos.toArray(new TableInfo[0]);
 	}
 	
-    /*
-     * returns the string value for the operator key from a SqlComposition object
-     */
-    private String getOperator(SqlComposition sqlComposition) throws KException {
-    	String type = sqlComposition.getOperator();
-        if( EQ_STR.equals(type)) {
-            return EQ;
-        } else if( LT_STR.equals(type)) {
-            return LT;
-        } else if( GT_STR.equals(type)) {
-        	return GT;
-        } else if( NE_STR.equals(type)) {
-        	return NE;
-        } else if( LE_STR.equals(type)) {
-        	return LE;
-        } else if( GE_STR.equals(type)) {
-        	return GE;
-        }
-        
-        return null;
-    }
-    
     /*
      * Inner class to hold state for source table information and simplifies the DDL generating process
      */

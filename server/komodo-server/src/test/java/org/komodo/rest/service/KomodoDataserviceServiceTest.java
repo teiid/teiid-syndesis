@@ -106,15 +106,12 @@ public class KomodoDataserviceServiceTest {
 		ViewDefinition vd = workspaceManagerImpl.findViewDefinition(id);
 		vd.setId("consistent");
 		assertEquals("{\n" + 
-				"  \"advanced\" : true,\n" + 
-				"  \"compositions\" : [ ],\n" + 
 				"  \"dataVirtualizationName\" : \"dv\",\n" + 
 				"  \"ddl\" : \"CREATE VIEW tbl (col) AS \\nSELECT col\\nFROM source.tbl;\",\n" + 
 				"  \"id\" : \"consistent\",\n" + 
 				"  \"isComplete\" : true,\n" + 
 				"  \"isUserDefined\" : false,\n" + 
 				"  \"name\" : \"tbl\",\n" + 
-				"  \"projectedColumns\" : [ ],\n" + 
 				"  \"sourcePaths\" : [ \"connection=source/schema=s/table=tbl\" ]\n" + 
 				"}", KomodoJsonMarshaller.marshall(vd));
 	}
