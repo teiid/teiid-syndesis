@@ -20,6 +20,9 @@ package org.komodo.rest.datavirtualization.connection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.teiid.core.util.EquivalenceUtil;
+import org.teiid.core.util.HashCodeUtil;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -170,12 +173,7 @@ public class RestSchemaNode {
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((connectionName == null) ? 0 : connectionName.hashCode());
-		result = prime * result + ((komodoName == null) ? 0 : komodoName.hashCode());
-		result = prime * result + ((type == null) ? 0 : type.hashCode());
-		return result;
+		return HashCodeUtil.hashCode(name.hashCode(), connectionName, type);
 	}
 
 	@Override
@@ -187,22 +185,9 @@ public class RestSchemaNode {
 		if (getClass() != obj.getClass())
 			return false;
 		RestSchemaNode other = (RestSchemaNode) obj;
-		if (connectionName == null) {
-			if (other.connectionName != null)
-				return false;
-		} else if (!connectionName.equals(other.connectionName))
-			return false;
-		if (komodoName == null) {
-			if (other.komodoName != null)
-				return false;
-		} else if (!komodoName.equals(other.komodoName))
-			return false;
-		if (type == null) {
-			if (other.type != null)
-				return false;
-		} else if (!type.equals(other.type))
-			return false;
-		return true;
+		return EquivalenceUtil.areEqual(connectionName, other.connectionName)
+				&& EquivalenceUtil.areEqual(name, other.name)
+				&& EquivalenceUtil.areEqual(type, other.type);
 	}
     
 }

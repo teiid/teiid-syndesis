@@ -115,7 +115,8 @@ public class KomodoMetadataServiceTest {
 		
 		metadataInstance.createDataSource("source", "h2", props);
 		workspaceManagerImpl.createOrUpdateSchema("someid", "source", 
-				"create foreign table tbl (col string) options (\"teiid_rel:fqn\" 'schema=s%20x/t%20bl=bar');");
+				"create foreign table tbl (col string) options (\"teiid_rel:fqn\" 'schema=s%20x/t%20bl=bar');"
+				+ "create foreign table tbl1 (col string) options (\"teiid_rel:fqn\" 'schema=s%20x/t%20bl=bar1');");
 		
 		nodes = komodoMetadataService.getSchema("source");
 		assertEquals("[ {\n" + 
@@ -125,6 +126,13 @@ public class KomodoMetadataServiceTest {
 				"    \"connectionName\" : \"source\",\n" + 
 				"    \"type\" : \"t bl\",\n" + 
 				"    \"path\" : \"schema=s%20x/t%20bl=bar\",\n" + 
+				"    \"queryable\" : true\n" + 
+				"  }, {\n" + 
+				"    \"children\" : [ ],\n" + 
+				"    \"name\" : \"bar1\",\n" + 
+				"    \"connectionName\" : \"source\",\n" + 
+				"    \"type\" : \"t bl\",\n" + 
+				"    \"path\" : \"schema=s%20x/t%20bl=bar1\",\n" + 
 				"    \"queryable\" : true\n" + 
 				"  } ],\n" + 
 				"  \"name\" : \"s x\",\n" + 
