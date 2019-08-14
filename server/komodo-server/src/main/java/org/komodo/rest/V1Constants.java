@@ -221,39 +221,9 @@ public interface V1Constants extends StringConstants {
     String VDB_NAME_PARAMETER = "name"; //$NON-NLS-1$
 
     /**
-     * The vdb export xml property
-     */
-    String VDB_EXPORT_XML_PROPERTY = "vdb-export-xml"; //$NON-NLS-1$
-
-    /**
-     * The name of the URI path segment for creating a workspace vdb model using teiid ddl
-     */
-    String MODEL_FROM_TEIID_DDL = "ModelFromTeiidDdl"; //$NON-NLS-1$
-
-    /**
-     * The teiid credentials property for modifying the usernames and passwords
-     */
-    String METADATA__CREDENTIALS = "credentials"; //$NON-NLS-1$
-
-    /**
      * The teiid segment for running a query against the teiid server
      */
     String QUERY_SEGMENT = "query"; //$NON-NLS-1$
-
-    /**
-     * The name of the URI ping type parameter
-     */
-    String PING_TYPE_PARAMETER = "pingType"; //$NON-NLS-1$
-
-    /**
-     * syndesis source segment
-     */
-    String SYNDESIS_SOURCE = "syndesisSource"; //$NON-NLS-1$
-
-    /**
-     * syndesis sources segment
-     */
-    String SYNDESIS_SOURCES = "syndesisSources"; //$NON-NLS-1$
 
     /**
      * syndesis source summaries segment
@@ -305,5 +275,5 @@ public interface V1Constants extends StringConstants {
     /**
      * Get source schema, table, column information for view definition
      */
-    String VIEW_SOURCE_INFO = "viewSourceInfo";
+    String RUNTIME_METADATA = "runtimeMetadata";
 }

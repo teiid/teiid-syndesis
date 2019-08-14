@@ -552,7 +552,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 	}    
 
 	/**
-	 * Find and return table column info
+	 * Find and return all runtime metadata
 	 * 
 	 * @param headers
 	 *            the request headers (never <code>null</code>)
@@ -563,14 +563,16 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 	 */
 	@GET
 	@Produces( MediaType.APPLICATION_JSON )
-	@Path(V1Constants.VIEW_SOURCE_INFO)
-	@ApiOperation(value = "Get Source Schema for View Definition", response = RestViewSourceInfo.class)
+	@Path(V1Constants.RUNTIME_METADATA + StringConstants.FORWARD_SLASH + V1Constants.DATA_SERVICE_PLACEHOLDER)
+	@ApiOperation(value = "Get Source Schema for a Virtualization", response = RestViewSourceInfo.class)
 	@ApiResponses(value = { @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
 			@ApiResponse(code = 403, message = "An error has occurred.") })
 	public Response viewSourceInfo(final @Context HttpHeaders headers, final @Context UriInfo uriInfo) throws Exception {
 		String principal = checkSecurityContext(headers);
 
 		LOGGER.debug("getViewSourceSchemas()");
+		
+		//TODO: view level metadata from the virtualization
 
 		return runInTransaction(principal, "getViewSourceSchemas", true, ()->{
 			List<RestSourceSchema> srcSchemas = new ArrayList<>();

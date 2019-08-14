@@ -214,7 +214,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
                 result.addRow(row);
             }
 
-            KLog.getLogger().debug("Query executed and returning {0} results", result.getRows().size());
+            KLog.getLogger().debug("Query executed and returning %d results", result.getRows().size());
 
             return result;
         } catch (Throwable t) {
