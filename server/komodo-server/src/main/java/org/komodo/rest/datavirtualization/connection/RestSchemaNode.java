@@ -38,13 +38,11 @@ public class RestSchemaNode {
     
     private String name;
     
-    private String komodoName;
+    private String teiidName;
 
     private String connectionName;
 
     private String type;
-    
-    private String path;
     
     private boolean queryable = false;
 
@@ -116,22 +114,6 @@ public class RestSchemaNode {
     }
 
     /**
-     * Get node path
-     * @return the node path
-     */
-    public String getPath() {
-        return path;
-    }
-
-    /**
-     * Set node path
-     * @param path the node path
-     */
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-    /**
      * Get isQueryable state
      * @return 'true' if is queryable
      */
@@ -163,12 +145,12 @@ public class RestSchemaNode {
     	this.children.add(child);
     }
     
-    public String getKomodoName() {
-		return komodoName;
+    public String getTeiidName() {
+		return teiidName;
 	}
     
-    public void setKomodoName(String komodoName) {
-		this.komodoName = komodoName;
+    public void setTeiidName(String teiidName) {
+		this.teiidName = teiidName;
 	}
 
 	@Override

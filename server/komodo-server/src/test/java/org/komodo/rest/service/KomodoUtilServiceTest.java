@@ -22,9 +22,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import java.util.Arrays;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.komodo.datavirtualization.ViewDefinition;
+import org.komodo.metadata.internal.DefaultMetadataInstance;
 import org.komodo.repository.KomodoRepositoryConfiguration;
 import org.komodo.repository.WorkspaceManagerImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,11 +35,17 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.teiid.adminapi.Model.Type;
+import org.teiid.adminapi.impl.ModelMetaData;
+import org.teiid.adminapi.impl.VDBMetaData;
 
 @RunWith(SpringRunner.class)
 @DataJpaTest
 @ContextConfiguration(classes = {KomodoRepositoryConfiguration.class, ServiceTestConfiguration.class})
 public class KomodoUtilServiceTest {
+	
+	@Autowired
+	private DefaultMetadataInstance metadataInstance;
 	
 	@Autowired
 	private KomodoUtilService komodoUtilService;
@@ -69,8 +78,21 @@ public class KomodoUtilServiceTest {
 			//trying to change the id
 		}
 		
+		//add a dummy preview vdb
+		VDBMetaData vdb = new VDBMetaData();
+		vdb.setName(KomodoUtilService.PREVIEW_VDB);
+		ModelMetaData m = new ModelMetaData();
+		m.setName("x");
+		vdb.addModel(m);
+		m.setModelType(Type.VIRTUAL);
+		m.addSourceMetadata("DDL", "create view v as select 1");
+		metadataInstance.deploy(vdb);
+		
+		//update with invalid ddl
 		vd.setId(null);
 		vd.setDdl("create something");
+		vd.setUserDefined(true);
+		vd.setComplete(true);
 		
 		saved = komodoUtilService.upsertViewEditorState(vd);
 		
@@ -78,6 +100,14 @@ public class KomodoUtilServiceTest {
 		
 		ViewDefinition found = workspaceManagerImpl.findViewDefinition(saved.getId());
 		assertEquals("create something", found.getDdl());
+		
+		//saving with valid ddl
+		vd.setDdl("create view y as select * from v");
+		
+		saved = komodoUtilService.upsertViewEditorState(vd);
+		
+		//the save should determine what is used in the view
+		assertEquals(Arrays.asList("schema=x/table=v"), saved.getSourcePaths());
 	}
 
 }

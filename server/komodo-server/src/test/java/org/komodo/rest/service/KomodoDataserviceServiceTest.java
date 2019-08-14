@@ -112,7 +112,7 @@ public class KomodoDataserviceServiceTest {
 				"  \"isComplete\" : true,\n" + 
 				"  \"isUserDefined\" : false,\n" + 
 				"  \"name\" : \"tbl\",\n" + 
-				"  \"sourcePaths\" : [ \"connection=source/schema=s/table=tbl\" ]\n" + 
+				"  \"sourcePaths\" : [ \"schema=source/table=tbl\" ]\n" + 
 				"}", KomodoJsonMarshaller.marshall(vd));
 	}
 	

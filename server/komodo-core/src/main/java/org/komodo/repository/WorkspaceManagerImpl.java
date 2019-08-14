@@ -26,6 +26,7 @@ import org.komodo.datavirtualization.ViewDefinition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
+import org.teiid.core.util.EquivalenceUtil;
 
 @Component
 public class WorkspaceManagerImpl implements WorkspaceManager {
@@ -60,7 +61,7 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
 			if (!name.equals(schema.getName())) {
 				throw new IllegalArgumentException("Cannot change the name of an existing schema");
 			}
-			if (!contents.equals(schema.getDdl())) {
+			if (!EquivalenceUtil.areEqual(contents, schema.getDdl())) {
 				schema.setDdl(contents);
 			}
 		} else {
@@ -115,12 +116,12 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
 	}
 	
 	@Override
-	public List<String> getViewDefinitionsNames(String dvName) {
+	public List<String> findViewDefinitionsNames(String dvName) {
 		return this.viewDefinitionRepository.findAllNamesByDataVirtualizationName(dvName);
 	}
 	
 	@Override
-	public List<org.komodo.datavirtualization.ViewDefinition> getViewDefinitions(String dvName) {
+	public List<org.komodo.datavirtualization.ViewDefinition> findViewDefinitions(String dvName) {
 		return this.viewDefinitionRepository.findAllByDataVirtualizationName(dvName);
 	}
 	

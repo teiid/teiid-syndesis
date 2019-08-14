@@ -40,25 +40,16 @@ public class RestSourceSchema {
     private String schemaName;
     
     /*
-     * The source path to the tables in this schema
-     */
-    private String sourcePath;
-
-    /*
      * The source table objects for this schema
      */
     private RestSourceTable[] sourceTables;
 
-    /**
-     * Constructor for use when deserializing
-     */
-    public RestSourceSchema(String sourcePath, Schema schema) {
+    public RestSourceSchema(Schema schema) {
         super();
-        this.sourcePath = sourcePath;
     	List<RestSourceTable> tables = new ArrayList<RestSourceTable>();
     	for( String key : schema.getTables().keySet()) {
     		Table nextTable = schema.getTables().get(key);
-    		tables.add(new RestSourceTable(this.sourcePath, nextTable));
+    		tables.add(new RestSourceTable(nextTable));
     	}
     	this.sourceTables = tables.toArray(new RestSourceTable[0]);
     }

@@ -39,7 +39,6 @@ import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.metadata.TeiidDataSource;
 import org.komodo.metadata.internal.TeiidDataSourceImpl;
 import org.komodo.rest.service.ServiceVdbGenerator.SchemaFinder;
-import org.komodo.utils.StringUtils;
 import org.teiid.adminapi.impl.ModelMetaData;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.metadata.MetadataFactory;
@@ -53,10 +52,10 @@ public class ServiceVdbGeneratorTest {
     private static String viewDefinitionName = "orderInfoView";
     private static String description = "test view description text";
     private boolean isComplete = true;
-    private static String sourceTablePath1 = "connection=pgconnection1/schema=public/table=orders";
-    private static String sourceTablePath1b = "connection=pgconnection1/schema=public/table=orders2";
-    private static String sourceTablePath2 = "connection=pgconnection1/schema=public/table=customers";
-    private static String sourceTablePath3 = "connection=pgconnection2/schema=public/table=customers";
+    private static String sourceTablePath1 = "connection=pgconnection1/table=orders";
+    private static String sourceTablePath1b = "connection=pgconnection1/table=orders2";
+    private static String sourceTablePath2 = "connection=pgconnection1/table=customers";
+    private static String sourceTablePath3 = "connection=pgconnection2/table=customers";
     
     private static String FQN_TABLE_1 = "schema=public/table=orders";
     private static String FQN_TABLE_2 = "schema=public/table=orders2";
@@ -167,7 +166,6 @@ public class ServiceVdbGeneratorTest {
         ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(schemaFinder());
 
         String[] sourceTablePaths = { sourceTablePath1, secondSourceTablePath };
-        boolean twoTables = secondSourceTablePath != null && StringUtils.areDifferent(sourceTablePath1, secondSourceTablePath);
         
         ViewDefinition viewDef = mock(ViewDefinition.class);
         when(viewDef.getName()).thenReturn(viewDefinitionName);
@@ -193,7 +191,6 @@ public class ServiceVdbGeneratorTest {
     private ViewDefinition helpCreateViewDefinitionAll(ViewDefinition viewDef, String secondSourceTablePath, boolean useAll) throws KException {
 
         String[] sourceTablePaths = { sourceTablePath1, secondSourceTablePath };
-        boolean twoTables = secondSourceTablePath != null && StringUtils.areDifferent(sourceTablePath1, secondSourceTablePath);
         
         viewDef.setDescription(description);
         viewDef.setComplete(isComplete);

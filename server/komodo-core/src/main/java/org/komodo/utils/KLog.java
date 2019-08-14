@@ -20,6 +20,18 @@ package org.komodo.utils;
 import org.apache.commons.logging.LogFactory;
 
 public class KLog {
+	
+    private final static String BLANK = "";
+
+    private static String format(String message, Object... arguments ) {
+    	if (message == null) {
+    		message = BLANK;
+    	}
+    	if (arguments == null || arguments.length == 0) {
+    		return message;
+    	}
+        return String.format(message, arguments);
+    }
 
     private static KLog instance;
 
@@ -35,75 +47,72 @@ public class KLog {
 
     private final org.apache.commons.logging.Log kLogger = LogFactory.getLog(KLog.class);
 
-    private TextI18n getI18n(String message) {
-        TextI18n ti18n = new TextI18n(message);
-        return ti18n;
+    public void info(String message, Object... args) {
+        kLogger.info(format(message, args));
     }
 
-    public synchronized void info(String message, Object... args) {
-        TextI18n ti18n = getI18n(message);
-        kLogger.info(ti18n.text(args));
-    }
-
-    public synchronized void info(String message, Throwable throwable, Object... args) {
-        TextI18n ti18n = getI18n(message);
-        kLogger.info(ti18n.text(args), throwable);
+    public void info(String message, Throwable throwable, Object... args) {
+        kLogger.info(format(message, args), throwable);
     }
 
     public boolean isInfoEnabled() {
         return this.kLogger.isInfoEnabled();
     }
 
-    public synchronized void warn(String message, Object... args) {
-        TextI18n ti18n = getI18n(message);
-        kLogger.warn(ti18n.text(args));
+    public void warn(String message, Object... args) {
+        kLogger.warn(format(message, args));
     }
 
-    public synchronized void warn(String message, Throwable throwable, Object... args) {
-        TextI18n ti18n = getI18n(message);
-        kLogger.warn(ti18n.text(args), throwable);
+    public void warn(String message, Throwable throwable, Object... args) {
+        kLogger.warn(format(message, args), throwable);
     }
 
     public boolean isWarnEnabled() {
         return this.kLogger.isWarnEnabled();
     }
 
-    public synchronized void error(String message, Object... args) {
-        TextI18n ti18n = getI18n(message);
-        kLogger.error(ti18n.text(args));
+    public void error(String message, Object... args) {
+        kLogger.error(format(message, args));
     }
 
-    public synchronized void error(String message, Throwable throwable, Object... args) {
-        TextI18n ti18n = getI18n(message);
-        kLogger.error(ti18n.text(args), throwable);
+    public void error(String message, Throwable throwable, Object... args) {
+        kLogger.error(format(message, args), throwable);
     }
 
     public boolean isErrorEnabled() {
         return this.kLogger.isErrorEnabled();
     }
 
-    public synchronized void debug(String message, Object... args) {
-        TextI18n ti18n = getI18n(message);
-        kLogger.debug(ti18n.text(args));
+    public void debug(String message, Object... args) {
+    	if (!isDebugEnabled()) {
+    		return;
+    	}
+        kLogger.debug(format(message, args));
     }
 
-    public synchronized void debug(String message, Throwable throwable, Object... args) {
-        TextI18n ti18n = getI18n(message);
-        kLogger.debug(ti18n.text(args), throwable);
+    public void debug(String message, Throwable throwable, Object... args) {
+    	if (!isDebugEnabled()) {
+    		return;
+    	}
+        kLogger.debug(format(message, args), throwable);
     }
 
     public boolean isDebugEnabled() {
         return this.kLogger.isDebugEnabled();
     }
 
-    public synchronized void trace(String message, Object... args) {
-        TextI18n ti18n = getI18n(message);
-        kLogger.trace(ti18n.text(args));
+    public void trace(String message, Object... args) {
+    	if (!isTraceEnabled()) {
+    		return;
+    	}
+        kLogger.trace(format(message, args));
     }
 
-    public synchronized void trace(String message, Throwable throwable, Object... args) {
-        TextI18n ti18n = getI18n(message);
-        kLogger.trace(ti18n.text(args), throwable);
+    public void trace(String message, Throwable throwable, Object... args) {
+    	if (!isTraceEnabled()) {
+    		return;
+    	}
+        kLogger.trace(format(message, args), throwable);
     }
 
     public boolean isTraceEnabled() {

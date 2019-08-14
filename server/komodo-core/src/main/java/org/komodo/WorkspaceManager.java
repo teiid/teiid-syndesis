@@ -63,8 +63,8 @@ public interface WorkspaceManager {
 	
 	ViewDefinition createViewDefiniton(String dvName, String viewName);
 	
-	List<String> getViewDefinitionsNames(String dvName);
+	List<String> findViewDefinitionsNames(String dvName);
 	
-	List<? extends ViewDefinition> getViewDefinitions(String dvName);
+	List<? extends ViewDefinition> findViewDefinitions(String dvName);
     
 }

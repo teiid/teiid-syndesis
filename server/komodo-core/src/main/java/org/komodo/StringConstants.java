@@ -17,11 +17,6 @@
  */
 package org.komodo;
 
-/**
- *
- *
- *
- */
 public interface StringConstants {
 
     /**
@@ -434,6 +429,8 @@ public interface StringConstants {
     
     String DESCRIPTION_FIELD_NAME = "keng__description"; //$NON-NLS-1$
     
-    String CONNECTION_KEY = "connection";
+    String SCHEMA_KEY = "schema";
+    
+    String TABLE_KEY = "table";
 
 }

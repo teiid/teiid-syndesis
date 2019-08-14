@@ -18,7 +18,6 @@
 package org.komodo.rest.service;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -32,10 +31,10 @@ import java.util.regex.Pattern;
 
 import org.komodo.KException;
 import org.komodo.StringConstants;
-import org.komodo.TeiidSqlConstants;
 import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.metadata.TeiidDataSource;
 import org.komodo.utils.PathUtils;
+import org.springframework.data.util.Pair;
 import org.teiid.adminapi.Admin.SchemaObjectType;
 import org.teiid.adminapi.impl.ModelMetaData;
 import org.teiid.adminapi.impl.VDBMetaData;
@@ -56,7 +55,7 @@ import org.teiid.query.sql.visitor.SQLStringVisitor;
  * Each model is created via generating DDL and calling setModelDefinition() method
  *
  */
-public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
+public final class ServiceVdbGenerator implements StringConstants {
 	
 	public interface SchemaFinder {
 		Schema findSchema(String connectionName) throws KException;
@@ -406,29 +405,27 @@ public final class ServiceVdbGenerator implements TeiidSqlConstants.Tokens {
 		
 		
 		for(String path : sourceTablePaths) {
-			String connectionName = PathUtils.getOptions(path).get(0).getSecond();
+			List<Pair<String, String>> options = PathUtils.getOptions(path);
+			
+			//format is connection=x/table=y
+			//NOTE: will eventually need to accomodate other object types, like
+			//procedures
+			
+			String connectionName = options.get(0).getSecond();
 
 			// Find schema model based on the connection name (i.e. connection=pgConn)
 			final Schema schemaModel = finder.findSchema(connectionName);
 
 			// Get the tables from the schema and match them with the table name
 			if ( schemaModel != null ) {
-			    final Collection<Table> tables = schemaModel.getTables().values();
-			    String tableOption = path.split("/", 2)[1];
+			    String tableName = options.get(1).getSecond();
 
-			    // Look thru schema tables for table with matching option.
-			    for (Table table: tables) {
-			        final String option = table.getProperty( KomodoMetadataService.TABLE_OPTION_FQN, false );
-			        if( option != null ) {
-			            // If table found, create the TableInfo and break
-			            if( option.equals(tableOption) ) {
-			                String alias = (iTable == 0) ? "A" : "B"; //$NON-NLS-1$ //$NON-NLS-2$
-			                // create a new TableInfo object
-			                sourceTableInfos.add(new TableInfo(path, table, sourceTablePaths.size()>1?alias:null));
-			                iTable++;
-			                break;
-			            }
-			        }
+			    Table table = schemaModel.getTable(tableName);
+			    if (table != null) {
+	                String alias = (iTable == 0) ? "A" : "B"; //$NON-NLS-1$ //$NON-NLS-2$
+	                // create a new TableInfo object
+	                sourceTableInfos.add(new TableInfo(path, table, sourceTablePaths.size()>1?alias:null));
+	                iTable++;
 			    }
 			}
 		}
