@@ -245,9 +245,9 @@ public final class RelationalMessages {
         SECURITY_FAILURE_ERROR,
 
         /**
-         * An error indicating a JSON document representing the Dataservices in the workspace could not be retrieved.
+         * A general error
          */
-        DATASERVICE_SERVICE_GET_DATASERVICES_ERROR,
+        INTERNAL_ERROR,
 
         /**
          * An error indicating an error occurred trying to obtain the specified Dataservice.

@@ -19,13 +19,13 @@
 package org.komodo.rest.service;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.NotFoundException;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,12 +40,14 @@ import org.komodo.rest.datavirtualization.ImportPayload;
 import org.komodo.rest.datavirtualization.KomodoStatusObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @DataJpaTest
 @ContextConfiguration(classes = {KomodoRepositoryConfiguration.class, ServiceTestConfiguration.class})
+@DirtiesContext
 public class KomodoDataserviceServiceTest {
 	
 	@Autowired
@@ -61,15 +63,22 @@ public class KomodoDataserviceServiceTest {
 		ImportPayload payload = new ImportPayload();
 		payload.setTables(Arrays.asList("tbl"));
 		
-		Response r = komodoDataserviceService.importViews("dv", "source", payload, Arrays.asList(MediaType.APPLICATION_JSON_TYPE));
-		//dv not found
-		assertEquals(404, r.getStatus());
+		KomodoStatusObject kso = null;
+		try {
+			kso = komodoDataserviceService.importViews("dv", "source", payload);
+			fail();
+		} catch (NotFoundException e) {
+			//dv not found
+		}
 		
 		workspaceManagerImpl.createDataVirtualization("dv");
 		
-		r = komodoDataserviceService.importViews("dv", "source", payload, Arrays.asList(MediaType.APPLICATION_JSON_TYPE));
-		//source not found
-		assertEquals(404, r.getStatus());
+		try {
+			kso = komodoDataserviceService.importViews("dv", "source", payload);
+			fail();
+		} catch (NotFoundException e) {
+			//source not found
+		}
 		
 		Map<String, String> props = new HashMap<>();
 		props.put(TeiidOpenShiftClient.ID, "someid");
@@ -77,17 +86,19 @@ public class KomodoDataserviceServiceTest {
 		
 		metadataInstance.createDataSource("source", "h2", props);
 		
-		r = komodoDataserviceService.importViews("dv", "source", payload, Arrays.asList(MediaType.APPLICATION_JSON_TYPE));
-		//source not found - as the properties are not valid
-		assertEquals(404, r.getStatus());
+		try {
+			kso = komodoDataserviceService.importViews("dv", "source", payload);
+			fail();
+		} catch (NotFoundException e) {
+			//source not found - as the properties are not valid
+		}
 		
 		//add the schema definition - so that we don't really need the datasource, and redeploy
 		workspaceManagerImpl.createOrUpdateSchema("someid", "source", 
-				"create foreign table tbl (col string) options (\"teiid_rel:fqn\" 'fqn');");
+				"create foreign table tbl (col string) options (\"teiid_rel:fqn\" 'schema=s/table=tbl');");
 		metadataInstance.undeployDynamicVdb(KomodoMetadataService.getWorkspaceSourceVdbName("source"));
 		
-		r = komodoDataserviceService.importViews("dv", "source", payload, Arrays.asList(MediaType.APPLICATION_JSON_TYPE));
-		KomodoStatusObject kso = KomodoJsonMarshaller.unmarshall(r.getEntity().toString(), KomodoStatusObject.class);
+		kso = komodoDataserviceService.importViews("dv", "source", payload);
 		assertEquals(1, kso.getAttributes().size());
 		
 		String id = kso.getAttributes().values().iterator().next();
@@ -95,17 +106,13 @@ public class KomodoDataserviceServiceTest {
 		ViewDefinition vd = workspaceManagerImpl.findViewDefinition(id);
 		vd.setId("consistent");
 		assertEquals("{\n" + 
-				"  \"compositions\" : [ ],\n" + 
 				"  \"dataVirtualizationName\" : \"dv\",\n" + 
+				"  \"ddl\" : \"CREATE VIEW tbl (col) AS \\nSELECT col\\nFROM source.tbl;\",\n" + 
 				"  \"id\" : \"consistent\",\n" + 
-				"  \"isComplete\" : false,\n" + 
+				"  \"isComplete\" : true,\n" + 
 				"  \"isUserDefined\" : false,\n" + 
 				"  \"name\" : \"tbl\",\n" + 
-				"  \"projectedColumns\" : [ {\n" + 
-				"    \"name\" : \"ALL\",\n" + 
-				"    \"selected\" : false\n" + 
-				"  } ],\n" + 
-				"  \"sourcePaths\" : [ \"connection=source/fqn\" ]\n" + 
+				"  \"sourcePaths\" : [ \"connection=source/schema=s/table=tbl\" ]\n" + 
 				"}", KomodoJsonMarshaller.marshall(vd));
 	}
 	

@@ -17,12 +17,18 @@
  */
 package org.komodo.rest;
 
-import javax.ws.rs.core.MediaType;
+import static org.komodo.StringConstants.NEW_LINE;
+
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
+import org.komodo.rest.KomodoService.ErrorResponse;
+import org.komodo.rest.datavirtualization.RelationalMessages;
+import org.komodo.utils.KLog;
+import org.komodo.utils.StringUtils;
 import org.springframework.stereotype.Component;
 
 /**
@@ -39,10 +45,27 @@ public class KomodoExceptionMapper implements ExceptionMapper< Throwable > {
      */
     @Override
     public Response toResponse( final Throwable t ) {
-        return Response.status( Status.INTERNAL_SERVER_ERROR )
-                       .entity( t.getLocalizedMessage() )
-                       .type( MediaType.TEXT_PLAIN )
-                       .build();
+    	if (t instanceof WebApplicationException) {
+    		return ((WebApplicationException)t).getResponse();
+    	}
+    	
+    	String errorMsg = t.getLocalizedMessage() != null ? t.getLocalizedMessage() : t.getClass().getSimpleName();
+
+        //
+        // Allow for splitting the message into actual message & stack trace by
+        // dividing them with -----
+        //
+        StringBuffer buf = new StringBuffer(errorMsg).append(NEW_LINE).append("-----").append(NEW_LINE);
+        String stackTrace = StringUtils.exceptionToString(t);
+        buf.append(stackTrace).append(NEW_LINE);
+
+        String resultMsg = RelationalMessages.getString(RelationalMessages.Error.INTERNAL_ERROR, buf.toString());
+        
+        KLog.getLogger().error(errorMsg, t);
+
+        ErrorResponse error = new ErrorResponse(resultMsg, Status.INTERNAL_SERVER_ERROR);
+
+        return KomodoService.toResponse(error);
     }
 
 }

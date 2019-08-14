@@ -597,21 +597,9 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
         String syndesisName = scd.getSyndesisName();
 		debug(syndesisName, "Creating the Datasource of Type " + scd.getType());
 
-        String driverName = null;
         Set<String> templateNames = this.metadata.getDataSourceTemplateNames();
         debug(syndesisName, "template names: " + templateNames);
-        String dsType = scd.getDefinition().getType();
-        for (String template : templateNames) {
-            // TODO: there is null entering from above call from getDataSourceTemplateNames need to investigate why
-            if ((template != null) && template.contains(dsType)) {
-                driverName = template;
-                break;
-            }
-        }
-
-        if (driverName == null) {
-            throw new KException("No driver or resource adapter found for source type " + dsType);
-        }
+        String dsType = scd.getType();
 
         //we'll create serially to ensure a unique generated name
         setUniqueKomodoName(scd, syndesisName, KomodoService.SYSTEM_USER_NAME);
@@ -621,7 +609,7 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
     	Map<String, String> properties = scd.convertToDataSourceProperties();
         properties.put(ID, scd.getId());
     	
-        this.metadata.createDataSource(toUse, driverName, encryptionComponent.decrypt(properties));
+        this.metadata.createDataSource(toUse, dsType, encryptionComponent.decrypt(properties));
     }
     
     /**

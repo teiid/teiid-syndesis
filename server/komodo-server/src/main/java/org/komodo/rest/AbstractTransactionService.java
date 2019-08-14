@@ -23,7 +23,6 @@ import java.util.concurrent.Callable;
 import org.komodo.KEngine;
 import org.komodo.KException;
 import org.komodo.UnitOfWork;
-import org.komodo.rest.KomodoRestV1Application.V1Constants;
 import org.komodo.utils.KLog;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -57,7 +56,7 @@ public abstract class AbstractTransactionService implements V1Constants {
      * @throws KException
      *         if there is an error creating the transaction
      */
-    protected UnitOfWork createTransaction(final String user, final String name,
+    private UnitOfWork createTransaction(final String user, final String name,
                                             final boolean rollbackOnly) throws KException {
     	final UnitOfWork result = this.kengine.createTransaction( user,
                                                                (getClass().getSimpleName() + COLON + name + COLON + System.currentTimeMillis()),
@@ -82,7 +81,7 @@ public abstract class AbstractTransactionService implements V1Constants {
         }
 	}
     
-    protected void commit(UnitOfWork transaction) throws Exception {
+    private void commit(UnitOfWork transaction) throws Exception {
         boolean rollbackOnly = false;
     	if (transaction.isRollbackOnly()) {
     		rollbackOnly = true;

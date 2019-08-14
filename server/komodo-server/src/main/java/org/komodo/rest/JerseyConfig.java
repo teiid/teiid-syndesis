@@ -18,7 +18,7 @@ import io.swagger.jaxrs.listing.SwaggerSerializers;
 
 @Component
 public class JerseyConfig extends ResourceConfig {
-
+	
     @Value("${spring.jersey.application-path:/}")
     private String apiPath;
 

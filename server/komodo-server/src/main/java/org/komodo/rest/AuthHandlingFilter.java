@@ -27,10 +27,12 @@ import javax.ws.rs.ext.Provider;
 //import org.apache.commons.logging.Log;
 //import org.apache.commons.logging.LogFactory;
 import org.komodo.utils.KLog;
+import org.springframework.stereotype.Component;
 
 @Provider
 @PreMatching
-public class AuthHandlingFilter implements ContainerRequestFilter {
+@Component
+public class AuthHandlingFilter implements ContainerRequestFilter, CredentialsProvider {
 
 //    private static final Log LOGGER = LogFactory.getLog(AuthHandlingFilter.class);
 
@@ -74,12 +76,19 @@ public class AuthHandlingFilter implements ContainerRequestFilter {
 	public void filter(ContainerRequestContext requestContext) throws IOException {
 		String accessToken = requestContext.getHeaderString("X-Forwarded-Access-Token");
 		String user = requestContext.getHeaderString("X-Forwarded-User");
-		KLog.getLogger().trace("URL =" + requestContext.getUriInfo());
-		KLog.getLogger().trace("X-Forwarded-Access-Token = " + accessToken);
-		KLog.getLogger().trace("X-Forwarded-User = " + user);
+		if (KLog.getLogger().isTraceEnabled()) {
+			KLog.getLogger().trace("URL =" + requestContext.getUriInfo());
+			KLog.getLogger().trace("X-Forwarded-Access-Token = " + accessToken);
+			KLog.getLogger().trace("X-Forwarded-User = " + user);
+		}
 		OAuthCredentials creds = new OAuthCredentials(accessToken, user);
 		threadOAuthCredentials.set(creds);		
 //		LOGGER.info("  *** AuthHandlingFilter.filter() OAuth user = " + creds.user + "  Token = " + creds.getToken().toString());
+	}
+
+	@Override
+	public OAuthCredentials getCredentials() {
+		return threadOAuthCredentials.get();
 	}
 
 }

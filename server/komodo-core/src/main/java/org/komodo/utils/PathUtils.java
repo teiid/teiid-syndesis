@@ -17,8 +17,14 @@
  */
 package org.komodo.utils;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
+
+import org.springframework.data.util.Pair;
 
 /**
  * This is a common place to put Path utility methods
@@ -41,10 +47,10 @@ public class PathUtils {
 	 * @param path
 	 * @return properties object
 	 */
-	public static Properties getOptions(String path) {
+	public static List<Pair<String, String>> getOptions(String path) {
 		StringTokenizer tokenizer = new StringTokenizer(path, OPTION_SEPARATOR);
 		
-		Properties props = new Properties();
+		List<Pair<String, String>> props = new ArrayList<>();
 		
         while (tokenizer.hasMoreTokens()) {
             String token = tokenizer.nextToken();
@@ -53,51 +59,15 @@ public class PathUtils {
             StringTokenizer strTkzr = new StringTokenizer(token, VALUE_SEPARATOR);
             String key = strTkzr.nextToken();
             String value = strTkzr.nextToken();
-            props.setProperty(key , value);
+            try {
+				props.add(Pair.of(URLDecoder.decode(key, "UTF-8") , URLDecoder.decode(value, "UTF-8")));
+			} catch (UnsupportedEncodingException e) {
+				throw new RuntimeException(e);
+			}
         }
         
         return props;
 
 	}
 	
-	/**
-	 * Simple method returns 
-	 * @param path
-	 * @param key
-	 * @return String property value - may be null
-	 */
-	public static String getOption(String path, String key) {
-		Properties props = getOptions(path);
-		
-		return props.getProperty(key);
-	}
-	
-	/**
-	 * Simple method returns the Table Option segments of the full path
-	 *  EXAMPLE:  PATH = >>   connection=pgconnection1/schema=public/table=orders
-	 *    TABLE OPTION = >>>  schema=public/table=orders 
-	 * @param path
-	 * @return String property value - may be null
-	 */
-	public static String getTableOption(String path) {
-		StringTokenizer tokenizer = new StringTokenizer(path, OPTION_SEPARATOR);
-		
-		StringBuilder sb = new StringBuilder();
-		int i=0;
-        while (tokenizer.hasMoreTokens()) {
-        	if( i > 1 ) sb.append(OPTION_SEPARATOR);
-        	
-            String token = tokenizer.nextToken();
-            if( i > 0 ) {
-	            // Now we split this token via the "="
-	            StringTokenizer strTkzr = new StringTokenizer(token, VALUE_SEPARATOR);
-	            String key = strTkzr.nextToken();
-	            String value = strTkzr.nextToken();
-	            sb.append((String)key).append('=').append(value);
-            }
-            i++;
-        }
-
-		return sb.toString();
-	}
 }

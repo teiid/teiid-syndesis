@@ -18,31 +18,13 @@
 
 package org.komodo.rest;
 
-import org.komodo.utils.ArgCheck;
+import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 
 /**
- * indicates the resource was not found.
+ * Interface to allow for the wiring of where to obtain credentials
  */
-public class ResourceNotFound {
-
-    private final String resourceName;
-
-    /**
-     * @param resourceName
-     *        the name of the resource that was not found (cannot be empty)
-     */
-    public ResourceNotFound(final String resourceName) {
-        super();
-        ArgCheck.isNotEmpty(resourceName, "resourceName"); //$NON-NLS-1$
-
-        this.resourceName = resourceName;
-    }
-
-    /**
-     * @return the resource name (never empty)
-     */
-    public String getResourceName() {
-        return this.resourceName;
-    }
+public interface CredentialsProvider {
+	
+	OAuthCredentials getCredentials();
 
 }

@@ -179,7 +179,7 @@ public class SyndesisConnectionSynchronizer {
 
 	private RestSyndesisSourceStatus checkMetadataStatus(DefaultSyndesisDataSource dsd) throws KException {
 		try {
-			return metadataService.getSyndesisSourceStatus(dsd, KomodoService.SYSTEM_USER);
+			return metadataService.getSyndesisSourceStatus(dsd, KomodoService.SYSTEM_USER_NAME);
 		} catch (Exception e) {
 			LOGGER.warn("Failed to get metadata status " + dsd.getSyndesisName(), e);
 			return null;
@@ -188,7 +188,7 @@ public class SyndesisConnectionSynchronizer {
 
 	private void requestMetadataForDataSource(DefaultSyndesisDataSource sds) throws KException {
 		try {
-			this.metadataService.refreshSchema(sds.getKomodoName(), true, KomodoService.SYSTEM_USER);
+			this.metadataService.refreshSchema(sds.getKomodoName(), true, KomodoService.SYSTEM_USER_NAME);
 			LOGGER.info("submitted request to fetch metadata of connection " + sds.getSyndesisName());
 		} catch (Exception e) {
 			LOGGER.warn("Failed to fetch metadata for connection " + sds.getSyndesisName(), e);
@@ -219,7 +219,7 @@ public class SyndesisConnectionSynchronizer {
 
 	private void deleteSchemaModel(RestSyndesisSourceStatus status) throws KException {
 		try {
-			if (this.metadataService.deleteSchema(status.getId(), KomodoService.SYSTEM_USER)) {
+			if (this.metadataService.deleteSchema(status.getId(), KomodoService.SYSTEM_USER_NAME)) {
 				LOGGER.info("Workspace schema " + status.getSourceName() + " deleted.");
 			} // else already deleted
 		} catch (Exception e) {
@@ -247,7 +247,7 @@ public class SyndesisConnectionSynchronizer {
 	private boolean synchronzePreviewVDB() {
 		LOGGER.info("Preview VDB update Request being submitted.");
 		try {
-			this.metadataService.refreshPreviewVdb(KomodoUtilService.PREVIEW_VDB, KomodoService.SYSTEM_USER);
+			this.metadataService.refreshPreviewVdb(KomodoUtilService.PREVIEW_VDB, KomodoService.SYSTEM_USER_NAME);
 			LOGGER.info("Preview VDB Updated");
 			return true;
 		} catch (Exception e) {
