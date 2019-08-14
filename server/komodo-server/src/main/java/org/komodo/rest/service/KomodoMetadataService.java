@@ -567,7 +567,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 	@ApiOperation(value = "Get Source Schema for a Virtualization", response = RestViewSourceInfo.class)
 	@ApiResponses(value = { @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
 			@ApiResponse(code = 403, message = "An error has occurred.") })
-	public Response viewSourceInfo(final @Context HttpHeaders headers, final @Context UriInfo uriInfo) throws Exception {
+	public Response getRuntimeMetadata(final @Context HttpHeaders headers, final @Context UriInfo uriInfo) throws Exception {
 		String principal = checkSecurityContext(headers);
 
 		LOGGER.debug("getViewSourceSchemas()");
