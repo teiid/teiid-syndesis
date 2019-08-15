@@ -220,7 +220,7 @@
         </property>
       </activation>
       <properties>
-        <fabric8.generator.name>teiid/komodo-server:%l</fabric8.generator.name>
+        <fabric8.generator.name>teiid/syndesis-dv:%l</fabric8.generator.name>
       </properties>
       <build>
         <plugins>
