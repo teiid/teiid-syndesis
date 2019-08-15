@@ -109,6 +109,9 @@ public class PublishConfiguration implements StringConstants {
         sb.append(" -XX:ConcGCThreads="+cpuLimit());
         sb.append(" -Djava.util.concurrent.ForkJoinPool.common.parallelism="+cpuLimit());
         sb.append(" -Dio.netty.eventLoopThreads="+(2*cpuLimit()));
+        
+        sb.append(" -Dorg.teiid.hiddenMetadataResolvable=false");
+        sb.append(" -Dorg.teiid.allowAlter=false");
         return sb.toString();
     }
 

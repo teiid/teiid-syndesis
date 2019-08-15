@@ -101,7 +101,7 @@ public class KomodoAutoConfiguration implements ApplicationListener<ContextRefre
         // turning off PostgreSQL support
         System.setProperty("org.teiid.addPGMetadata", "false");
         System.setProperty("org.teiid.hiddenMetadataResolvable", "false");
-        System.setProperty("org.teiid.allowAlter", "true");
+        System.setProperty("org.teiid.allowAlter", "false");
 
         final TeiidServer server = new TeiidServer();
 

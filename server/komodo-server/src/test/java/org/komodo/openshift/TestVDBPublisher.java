@@ -161,7 +161,9 @@ public class TestVDBPublisher {
                 + " -Djava.net.preferIPv4Addresses=true -Djava.net.preferIPv4Stack=true"
                 + " -XX:ParallelGCThreads=1 -XX:ConcGCThreads=1"
                 + " -Djava.util.concurrent.ForkJoinPool.common.parallelism=1"
-                + " -Dio.netty.eventLoopThreads=2";
+                + " -Dio.netty.eventLoopThreads=2"
+                + " -Dorg.teiid.hiddenMetadataResolvable=false"
+        		+ " -Dorg.teiid.allowAlter=false";
         
         assertThat(variables, hasItem(generator.envFromSecret("myservice-secret", "spring.datasource.accounts-xyz.username")));
         assertThat(variables, hasItem(generator.envFromSecret("myservice-secret", "spring.datasource.accounts-xyz.jdbc-url")));
