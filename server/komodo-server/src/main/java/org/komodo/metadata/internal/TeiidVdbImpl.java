@@ -44,10 +44,6 @@ public class TeiidVdbImpl implements TeiidVdb, Comparable<TeiidVdbImpl> {
 
     private String version;
 
-    private final boolean isPreview;
-
-    private final String deploymentName;
-
     private boolean hasModels = false;
 
     private List<String> errors;
@@ -69,9 +65,6 @@ public class TeiidVdbImpl implements TeiidVdb, Comparable<TeiidVdbImpl> {
         // Autoboxing first if version is an int as defined in teiid 8
         Object o = vdb.getVersion();
         version = o.toString();
-
-        isPreview = Boolean.parseBoolean(vdb.getProperties().getProperty(PREVIEW));
-        deploymentName = vdb.getProperties().getProperty(DEPLOYMENT_NAME);
 
         hasModels = !vdb.getModels().isEmpty();
 
@@ -123,18 +116,8 @@ public class TeiidVdbImpl implements TeiidVdb, Comparable<TeiidVdbImpl> {
     }
 
     @Override
-    public String getDeployedName() {
-        return deploymentName;
-    }
-
-    @Override
     public String getVersion() {
         return version;
-    }
-
-    @Override
-    public boolean isPreviewVdb() {
-        return isPreview;
     }
 
     @Override

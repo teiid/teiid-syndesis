@@ -44,7 +44,6 @@ import org.komodo.datasources.DefaultSyndesisDataSource;
 import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.datavirtualization.SourceSchema;
 import org.komodo.datavirtualization.ViewDefinition;
-import org.komodo.metadata.DeployStatus;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.metadata.TeiidDataSource;
 import org.komodo.metadata.TeiidVdb;
@@ -126,9 +125,9 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 		return status;
 	}
 
-	public KomodoStatusObject refreshPreviewVdb(final String vdbName, String principal)
+	public void refreshPreviewVdb(final String vdbName, String principal)
 			throws KException, Exception {
-		return runInTransaction(principal, "refreshPreviewVdb", false, () -> {
+		runInTransaction(principal, "refreshPreviewVdb", false, () -> {
 			TeiidVdb previewVdb = getMetadataInstance().getVdb(vdbName);
 			VDBMetaData workingCopy = new VDBMetaData();
 			workingCopy.setName(vdbName);
@@ -183,38 +182,17 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 			    //
 			    // Deploy the VDB
 			    //
-			    DeployStatus deployStatus = getMetadataInstance().deploy(workingCopy);
-	
-			    String title = RelationalMessages.getString(RelationalMessages.Info.VDB_DEPLOYMENT_STATUS_TITLE);
-			    KomodoStatusObject status = new KomodoStatusObject(title);
-	
-			    List<String> progressMessages = deployStatus.getProgressMessages();
-			    for (int i = 0; i < progressMessages.size(); ++i) {
-			        status.addAttribute("ProgressMessage" + (i + 1), progressMessages.get(i)); //$NON-NLS-1$
-			    }
-	
-			    if (deployStatus.ok()) {
-			        status.addAttribute("deploymentSuccess", Boolean.TRUE.toString()); //$NON-NLS-1$
-			        status.addAttribute(previewVdb.getName(),
-			                            RelationalMessages.getString(RelationalMessages.Info.VDB_SUCCESSFULLY_DEPLOYED));
-			    } else {
-			        status.addAttribute("deploymentSuccess", Boolean.FALSE.toString()); //$NON-NLS-1$
-			        List<String> errorMessages = deployStatus.getErrorMessages();
-			        for (int i = 0; i < errorMessages.size(); ++i) {
-			            status.addAttribute("ErrorMessage" + (i + 1), errorMessages.get(i)); //$NON-NLS-1$
-			        }
-	
-			        status.addAttribute(previewVdb.getName(),
-			                            RelationalMessages.getString(RelationalMessages.Info.VDB_DEPLOYED_WITH_ERRORS));
-			    }
-	
-			    return status;
+				try {
+					getMetadataInstance().deploy(workingCopy);
+				    LOGGER.debug("preview vdb updated");
+				} catch (KException e) {
+					LOGGER.error("could not update the preview vdb", e);
+				}
 			} else {
-				KomodoStatusObject kso = new KomodoStatusObject("Preview VDB Status"); //$NON-NLS-1$
-				kso.addAttribute(vdbName, "No refresh required"); //$NON-NLS-1$
-	
-				return kso;
+				LOGGER.debug("no preview update necessary");
 			}
+			
+			return null;
 		});
 	}
 
@@ -227,7 +205,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
      * @param queryAttribute
      *        the query attribute (never <code>null</code>)
      * @return a JSON representation of the Query results (never <code>null</code>)
-     * @throws KException 
+     * @throws Exception 
      */
     @SuppressWarnings( "nls" )
     @POST
@@ -247,7 +225,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
                                                      OPEN_PRE_TAG +
                                                      OPEN_BRACE + BR +
                                                      NBSP + "query: \"SQL formatted query to interrogate the target\"" + COMMA + BR +
-                                                     NBSP + "target: \"The name of the target to be queried\"" + BR +
+                                                     NBSP + "target: \"The name of the target data virtualization to be queried\"" + BR +
                                                      NBSP + OPEN_PRE_CMT + "(The target can be a vdb or data service. If the latter " +
                                                      NBSP + "then the name of the service vdb is extracted and " +
                                                      NBSP + "replaces the data service)" + CLOSE_PRE_CMT + COMMA + BR +
@@ -257,9 +235,9 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
                                                      CLOSE_PRE_TAG,
                                              required = true
                                    )
-                                   final KomodoQueryAttribute kqa) throws KException {
+                                   final KomodoQueryAttribute kqa) throws Exception {
 
-        checkSecurityContext(headers);
+        String principal = checkSecurityContext(headers);
 
         //
         // Error if there is no query attribute defined
@@ -274,19 +252,36 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
         String target = kqa.getTarget();
         String query = kqa.getQuery();
+        
+        TeiidVdb vdb = runInTransaction(principal, "query", false, ()->{
+        	return updatePreviewVdb(target);
+        });
 
-        String vdbName = target;
-
-        TeiidVdb vdb = getMetadataInstance().getVdb(vdbName);
-        if (vdb == null) {
-			notFound(vdbName);
-        }
-
-        LOGGER.debug("Establishing query service for query %s on vdb %s", query, vdbName);
-        QSResult result = getMetadataInstance().query(vdbName, query, kqa.getOffset(), kqa.getLimit());
-
+        LOGGER.debug("Establishing query service for query %s on vdb %s", query, target);
+        QSResult result = getMetadataInstance().query(vdb.getName(), query, kqa.getOffset(), kqa.getLimit());
         return toResponse(result);
     }
+
+	protected TeiidVdb updatePreviewVdb(String dvName) throws KException {
+		DataVirtualization dv = getWorkspaceManager().findDataVirtualization(dvName);
+		if (dv == null) {
+			notFound(dvName);
+		}
+		
+		String serviceVdbName = dv.getServiceVdbName();
+		TeiidVdb vdb = getMetadataInstance().getVdb(serviceVdbName);
+        
+        if (vdb == null || dv.isDirty()) {
+    		dv.setDirty(false);
+    		VDBMetaData theVdb = new ServiceVdbGenerator(this)
+    				.createServiceVdb(serviceVdbName, getWorkspaceManager().findViewDefinitions(dvName), true);
+        	
+    		metadataInstance.deploy(theVdb);
+    		vdb = metadataInstance.getVdb(serviceVdbName);
+        }
+        
+		return vdb;
+	}
 
     /**
      * Initiate schema refresh for a syndesis source.
@@ -567,15 +562,21 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 	@ApiOperation(value = "Get Source Schema for a Virtualization", response = RestViewSourceInfo.class)
 	@ApiResponses(value = { @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
 			@ApiResponse(code = 403, message = "An error has occurred.") })
-	public Response getRuntimeMetadata(final @Context HttpHeaders headers, final @Context UriInfo uriInfo) throws Exception {
+	public Response getRuntimeMetadata(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
+			@ApiParam(value = "Name of the data virtualization", required = true) final @PathParam("virtualization") String virtualization) throws Exception {
 		String principal = checkSecurityContext(headers);
 
-		LOGGER.debug("getViewSourceSchemas()");
+		LOGGER.debug("getRuntimeMetadata()");
 		
-		//TODO: view level metadata from the virtualization
-
-		return runInTransaction(principal, "getViewSourceSchemas", true, ()->{
+		if (virtualization == null) {
+			forbidden(RelationalMessages.Error.DATASERVICE_SERVICE_MISSING_NAME);
+		}
+		
+		return runInTransaction(principal, "getRuntimeMetadata", false, ()->{
 			List<RestSourceSchema> srcSchemas = new ArrayList<>();
+			
+			//once we support view layering, we need to use the dv specific one
+			//updatePreviewVdb(virtualization);
 			
 			for (TeiidDataSource dataSource : getMetadataInstance().getDataSources()) {
 				Schema s = findSchemaModel(dataSource);
@@ -712,7 +713,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             String serviceVdbName = dataservice.getServiceVdbName();
     		List<? extends ViewDefinition> editorStates = getWorkspaceManager().findViewDefinitions(dataservice.getName());
     		 
-    		VDBMetaData theVdb = new ServiceVdbGenerator(this).createServiceVdb(serviceVdbName, editorStates);
+    		VDBMetaData theVdb = new ServiceVdbGenerator(this).createServiceVdb(serviceVdbName, editorStates, false);
             
             // the properties in this class can be exposed for user input
             PublishConfiguration config = new PublishConfiguration();
@@ -758,7 +759,11 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         String vdbName = getWorkspaceSourceVdbName( teiidSource.getName() );
         
         VDBMetaData vdb = generateSourceVdb(teiidSource, vdbName, schema == null ? null : schema.getDdl());
-		getMetadataInstance().deploy(vdb);
+        try {
+        	getMetadataInstance().deploy(vdb);
+        } catch (KException e) {
+        	LOGGER.error("could not deploy source vdb", e);
+        }
 		
 		if (schema != null && schema.getDdl() == null) {
 			saveSchema(teiidSource.getId(), teiidSource.getName());

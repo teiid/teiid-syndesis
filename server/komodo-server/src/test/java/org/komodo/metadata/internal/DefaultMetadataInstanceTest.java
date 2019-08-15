@@ -27,7 +27,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.KException;
-import org.komodo.metadata.DeployStatus;
 import org.komodo.metadata.MetadataInstance.ValidationResult;
 import org.teiid.adminapi.impl.VDBMetadataParser;
 import org.teiid.runtime.EmbeddedConfiguration;
@@ -64,10 +63,8 @@ public class DefaultMetadataInstanceTest {
 				"    </model>    \n" + 
 				"</vdb>";
 		
-		DeployStatus status = metadataInstance.deploy(VDBMetadataParser.unmarshell(new ByteArrayInputStream(vdb.getBytes("UTF-8"))));
+		metadataInstance.deploy(VDBMetadataParser.unmarshell(new ByteArrayInputStream(vdb.getBytes("UTF-8"))));
 		
-		assertTrue(status.ok());
-
 		ValidationResult report = metadataInstance.validate("myservice", "create view v as select * from tbl");
 		assertFalse(report.getReport().toString(), report.getReport().hasItems());
 		

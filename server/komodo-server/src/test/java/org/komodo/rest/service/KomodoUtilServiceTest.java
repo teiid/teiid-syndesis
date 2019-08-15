@@ -79,13 +79,7 @@ public class KomodoUtilServiceTest {
 		}
 		
 		//add a dummy preview vdb
-		VDBMetaData vdb = new VDBMetaData();
-		vdb.setName(KomodoUtilService.PREVIEW_VDB);
-		ModelMetaData m = new ModelMetaData();
-		m.setName("x");
-		vdb.addModel(m);
-		m.setModelType(Type.VIRTUAL);
-		m.addSourceMetadata("DDL", "create view v as select 1");
+		VDBMetaData vdb = dummyPreviewVdb();
 		metadataInstance.deploy(vdb);
 		
 		//update with invalid ddl
@@ -108,6 +102,17 @@ public class KomodoUtilServiceTest {
 		
 		//the save should determine what is used in the view
 		assertEquals(Arrays.asList("schema=x/table=v"), saved.getSourcePaths());
+	}
+
+	static VDBMetaData dummyPreviewVdb() {
+		VDBMetaData vdb = new VDBMetaData();
+		vdb.setName(KomodoUtilService.PREVIEW_VDB);
+		ModelMetaData m = new ModelMetaData();
+		m.setName("x");
+		vdb.addModel(m);
+		m.setModelType(Type.VIRTUAL);
+		m.addSourceMetadata("DDL", "create view v as select 1");
+		return vdb;
 	}
 
 }
