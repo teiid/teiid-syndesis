@@ -28,7 +28,7 @@ import org.komodo.StringConstants;
  *
  */
 public final class StringUtils implements StringConstants {
-	
+
     /**
      * @param text the text being checked (may be <code>null</code>)
      * @return <code>true</code> if the specified text is <code>null</code>, contains only spaces, or is empty
@@ -47,7 +47,7 @@ public final class StringUtils implements StringConstants {
         throwable.printStackTrace(pw);
         return sw.toString();
     }
-    
+
     /**
      * Don't allow construction outside of this class.
      */

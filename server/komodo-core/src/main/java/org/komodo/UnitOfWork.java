@@ -4,16 +4,16 @@ package org.komodo;
  * Represents one or more operations grouped together forming a transaction.
  */
 public interface UnitOfWork {
-	
-	public class TimeoutException extends Exception {
-		
-		private static final long serialVersionUID = -3492466153109760780L;
 
-		public TimeoutException(Exception cause) {
-			super(cause);
-		}
-		
-	}
+    public class TimeoutException extends Exception {
+
+        private static final long serialVersionUID = -3492466153109760780L;
+
+        public TimeoutException(Exception cause) {
+            super(cause);
+        }
+
+    }
 
     /**
      * Saves all changes made during the transaction. If this is a roll back transaction then {@link #rollback()} is called.
@@ -44,7 +44,7 @@ public interface UnitOfWork {
      * Discards all current changes made during this transaction.
      */
     void rollback();
-    
+
     /**
      * repository user. Always SYSTEM
      * @return

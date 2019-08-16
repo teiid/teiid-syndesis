@@ -209,7 +209,7 @@ public class KCorsFilter implements ContainerRequestFilter, ContainerResponseFil
       if (!allowedOrigins.contains("*") && !allowedOrigins.contains(origin))
       {
          requestContext.setProperty("cors.failure", true);
-         
+
          throw new ForbiddenException(Messages.getString(Messages.Error.ORIGIN_NOT_ALLOWED, origin));
       }
    }

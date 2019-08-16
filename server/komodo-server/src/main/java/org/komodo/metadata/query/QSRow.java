@@ -43,5 +43,5 @@ public class QSRow {
     public List<Object> getRow() {
         return row;
     }
-    
+
 }

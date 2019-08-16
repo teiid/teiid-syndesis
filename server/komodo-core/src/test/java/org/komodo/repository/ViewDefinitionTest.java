@@ -19,58 +19,58 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @DataJpaTest
 public class ViewDefinitionTest {
-	
-	@Autowired
+
+    @Autowired
     private TestEntityManager entityManager;
- 
+
     @Autowired
     private WorkspaceManagerImpl workspaceManagerImpl;
-    
+
     @Test
     public void testFindDeleteByName() throws Exception {
-    	DataVirtualization dv = workspaceManagerImpl.createDataVirtualization("name");
-    	
+        DataVirtualization dv = workspaceManagerImpl.createDataVirtualization("name");
+
         ViewDefinition v = workspaceManagerImpl.createViewDefiniton(dv.getName(), "x");
         v.setDdl("create ...");
-        
+
         entityManager.flush();
-     
+
         ViewDefinition found = workspaceManagerImpl.findViewDefinition(v.getId());
-     
+
         assertEquals(v.getDdl(), found.getDdl());
-        
+
         workspaceManagerImpl.createViewDefiniton(dv.getName(), "y");
-        
+
         workspaceManagerImpl.createViewDefiniton(dv.getName(), "x1").setComplete(true);
-        
+
         entityManager.flush();
-        
+
         assertEquals(3, workspaceManagerImpl.findViewDefinitions(dv.getName()).size());
-        
+
         assertEquals(Arrays.asList("x", "y", "x1"), workspaceManagerImpl.findViewDefinitionsNames(dv.getName()));
-        
+
         //x matching ignore case
         assertNotNull(workspaceManagerImpl.findViewDefinitionByNameIgnoreCase(dv.getName(), "X"));
-        
+
         assertTrue(workspaceManagerImpl.deleteViewDefinition(v.getId()));
-        
+
         workspaceManagerImpl.createViewDefiniton(dv.getName(), v.getName());
-        
+
         entityManager.flush();
     }
-    
+
     @Test
     public void testState() throws EntityNotFoundException {
-    	DataVirtualization dv = workspaceManagerImpl.createDataVirtualization("name");
-    	
-    	ViewDefinition v = workspaceManagerImpl.createViewDefiniton(dv.getName(), "existing");
-    	
+        DataVirtualization dv = workspaceManagerImpl.createDataVirtualization("name");
+
+        ViewDefinition v = workspaceManagerImpl.createViewDefiniton(dv.getName(), "existing");
+
         v.setDdl("create ...");
         v.addSourcePath("x");
-        
+
         entityManager.flush();
         entityManager.detach(v);
-    	
+
         ViewDefinition found = workspaceManagerImpl.findViewDefinition(v.getId());
         assertEquals("create ...", found.getDdl());
         assertEquals(Arrays.asList("x"), found.getSourcePaths());

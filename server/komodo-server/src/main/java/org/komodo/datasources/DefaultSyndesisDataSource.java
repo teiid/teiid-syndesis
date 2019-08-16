@@ -20,17 +20,17 @@ package org.komodo.datasources;
 import java.util.Map;
 
 public class DefaultSyndesisDataSource {
-	private String id;
+    private String id;
     private String syndesisName;
     private volatile String komodoName;
     private String translator;
     private Map<String, String> properties;
     private DataSourceDefinition definition;
-    
+
     public String getId() {
         return id;
     }
-    
+
     public String getSyndesisName() {
         return syndesisName;
     }
@@ -42,10 +42,10 @@ public class DefaultSyndesisDataSource {
     public void setId(String id) {
         this.id = id;
     }
-    
+
     public void setSyndesisName(String syndesisName) {
-		this.syndesisName = syndesisName;
-	}
+        this.syndesisName = syndesisName;
+    }
 
     public String getTranslatorName() {
         return translator;
@@ -62,7 +62,7 @@ public class DefaultSyndesisDataSource {
     public void setDefinition(DataSourceDefinition definition) {
         this.definition = definition;
     }
-    
+
     public Map<String, String> getProperties() {
         return properties;
     }
@@ -70,7 +70,7 @@ public class DefaultSyndesisDataSource {
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
     }
-    
+
     public String getProperty(String key) {
         return this.properties.get(key);
     }
@@ -78,17 +78,17 @@ public class DefaultSyndesisDataSource {
     public Map<String, String> convertToDataSourceProperties() {
         return this.definition.getInternalTeiidDataSourceProperties(this);
     }
-    
+
     /**
      * If bound returns the unique Komodo datasource name, which is also a valid
      * schema name.  It will already be cleansed of problematic characters.
      * @return
      */
     public String getKomodoName() {
-		return komodoName;
-	}
-    
+        return komodoName;
+    }
+
     public void setKomodoName(String komodoName) {
-		this.komodoName = komodoName;
-	}
+        this.komodoName = komodoName;
+    }
 }

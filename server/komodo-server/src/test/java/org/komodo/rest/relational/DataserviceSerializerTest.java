@@ -30,18 +30,18 @@ import org.mockito.Mockito;
 
 @SuppressWarnings( { "javadoc", "nls" } )
 public final class DataserviceSerializerTest {
-	
+
     protected static final String DATASERVICE_NAME = "dataservice1";
 
     private static final String DESCRIPTION = "my description";
 
-    private static final String JSON = "{\n" + 
-    		"  \"serviceVdbName\" : \"ServiceVdb\",\n" + 
-    		"  \"publishedState\" : \"NOTFOUND\",\n" +
-    		"  \"empty\" : true,\n" +
-    		"  \"keng__id\" : \"dataservice1\",\n" + 
-    		"  \"tko__description\" : \"my description\"\n" + 
-    		"}";
+    private static final String JSON = "{\n" +
+            "  \"serviceVdbName\" : \"ServiceVdb\",\n" +
+            "  \"publishedState\" : \"NOTFOUND\",\n" +
+            "  \"empty\" : true,\n" +
+            "  \"keng__id\" : \"dataservice1\",\n" +
+            "  \"tko__description\" : \"my description\"\n" +
+            "}";
 
     private RestDataVirtualization dataservice;
 

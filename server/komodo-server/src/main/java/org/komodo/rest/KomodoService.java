@@ -17,7 +17,7 @@
  */
 package org.komodo.rest;
 
-import static org.komodo.rest.Messages.Error.RESOURCE_NOT_FOUND;
+import static org.komodo.rest.Messages.Error.*;
 
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.ForbiddenException;
@@ -35,7 +35,6 @@ import org.komodo.WorkspaceManager;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.datavirtualization.RelationalMessages;
 import org.komodo.utils.KLog;
-import org.komodo.utils.StringNameValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -45,17 +44,15 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * A Komodo service implementation.
  */
 public abstract class KomodoService extends AbstractTransactionService implements V1Constants {
-	
-    /**
-	 * System user for transactions to be executed internally
-	 */
-	public static final String SYSTEM_USER_NAME = "SYSTEM";
 
-	public static final String ENCRYPTED_PREFIX = "ENCRYPTED-";
+    /**
+     * System user for transactions to be executed internally
+     */
+    public static final String SYSTEM_USER_NAME = "SYSTEM";
+
+    public static final String ENCRYPTED_PREFIX = "ENCRYPTED-";
 
     protected static final KLog LOGGER = KLog.getLogger();
-
-    protected static final StringNameValidator VALIDATOR = new StringNameValidator();
 
     protected static final int ALL_AVAILABLE = -1;
 
@@ -74,7 +71,7 @@ public abstract class KomodoService extends AbstractTransactionService implement
          */
         String START = "start"; //$NON-NLS-1$
 
-		String VIRTUALIZATION = "virtualization";
+        String VIRTUALIZATION = "virtualization";
     }
 
     @JsonSerialize(as = ErrorResponse.class)
@@ -96,7 +93,7 @@ public abstract class KomodoService extends AbstractTransactionService implement
 
     @Autowired
     protected KEngine kengine;
-    
+
     @Autowired
     protected CredentialsProvider credentialsProvider;
 
@@ -119,57 +116,57 @@ public abstract class KomodoService extends AbstractTransactionService implement
             error(Status.UNAUTHORIZED,
                     RelationalMessages.Error.SECURITY_FAILURE_ERROR);
         }
-        
+
         return oAuthCredentials.getUser();
     }
 
     protected WorkspaceManager getWorkspaceManager() throws KException {
-    	return this.kengine.getWorkspaceManager();
+        return this.kengine.getWorkspaceManager();
     }
 
     public static void notFound(String resourceName) {
-		String message = Messages.getString( RESOURCE_NOT_FOUND,
-        		resourceName);
-		throw new NotFoundException(message, toResponse(new ErrorResponse(message, Status.NOT_FOUND)));
-	}
+        String message = Messages.getString( RESOURCE_NOT_FOUND,
+                resourceName);
+        throw new NotFoundException(message, toResponse(new ErrorResponse(message, Status.NOT_FOUND)));
+    }
 
-	public static void error(Status returnCode, RelationalMessages.Error errorType,
+    public static void error(Status returnCode, RelationalMessages.Error errorType,
                                            Object... errorMsgInputs) {
         String resultMsg = RelationalMessages.getString(errorType, errorMsgInputs);
-        
+
         throw new ClientErrorException(resultMsg, createErrorResponse(returnCode, resultMsg));
     }
-    
+
     public static void forbidden(RelationalMessages.Error errorType,
                                                         Object... errorMsgInputs) {
-    	String resultMsg = RelationalMessages.getString(errorType, errorMsgInputs);
-    	
+        String resultMsg = RelationalMessages.getString(errorType, errorMsgInputs);
+
         throw new ForbiddenException(resultMsg, createErrorResponse(Status.FORBIDDEN, resultMsg));
     }
 
     public static Response createErrorResponse(Status returnCode, String resultMsg) {
-    	LOGGER.debug(Messages.getString(Messages.Error.RESPONSE_ERROR, returnCode, resultMsg));
-    	
-    	ErrorResponse error = new ErrorResponse(resultMsg, returnCode);
+        LOGGER.debug(Messages.getString(Messages.Error.RESPONSE_ERROR, returnCode, resultMsg));
+
+        ErrorResponse error = new ErrorResponse(resultMsg, returnCode);
 
         return toResponse(error);
     }
 
     public static Response toResponse(Object entity) {
         Status status = Status.OK;
-        
+
         if (entity == null) {
             return Response.noContent().build();
         }
-    	
+
         if ( entity instanceof ErrorResponse ) {
-        	status = ((ErrorResponse)entity).status;
+            status = ((ErrorResponse)entity).status;
         }
 
-		return Response.status(status)
-				.entity(KomodoJsonMarshaller.marshall(entity))
-				.type(MediaType.APPLICATION_JSON)
-				.build();
+        return Response.status(status)
+                .entity(KomodoJsonMarshaller.marshall(entity))
+                .type(MediaType.APPLICATION_JSON)
+                .build();
     }
-    
+
 }

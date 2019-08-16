@@ -48,8 +48,8 @@ import org.teiid.core.util.ObjectConverterUtil;
 import io.fabric8.kubernetes.api.model.EnvVar;
 
 public class TestVDBPublisher {
-	
-	private VDBMetaData vdb;
+
+    private VDBMetaData vdb;
 
     @Before
     public void setup() throws KException, Exception {
@@ -57,7 +57,7 @@ public class TestVDBPublisher {
         this.vdb = VDBMetadataParser.unmarshell(vdbStream);
     }
 
-	private TeiidOpenShiftClient testDataSetup() throws KException {
+    private TeiidOpenShiftClient testDataSetup() throws KException {
         AuthHandlingFilter.threadOAuthCredentials.set(new OAuthCredentials("token", "user"));
         MetadataInstance metadata = Mockito.mock(MetadataInstance.class);
 
@@ -65,7 +65,7 @@ public class TestVDBPublisher {
         sources.add(getMySQLDS());
         sources.add(getPostgreSQL());
 
-		TeiidOpenShiftClient client = new TeiidOpenShiftClient(metadata, new EncryptionComponent("blah"), new KomodoConfigurationProperties(), null) {
+        TeiidOpenShiftClient client = new TeiidOpenShiftClient(metadata, new EncryptionComponent("blah"), new KomodoConfigurationProperties(), null) {
             @Override
             public Set<DefaultSyndesisDataSource> getSyndesisSources(OAuthCredentials authToken) throws KException {
                 return sources;
@@ -134,17 +134,17 @@ public class TestVDBPublisher {
         String pom = generator.generatePomXml(authToken, vdb, false);
         assertEquals(ObjectConverterUtil.convertFileToString(new File("src/test/resources/generated-pom.xml")), pom);
     }
-    
+
     @Test
     public void testGenerateDataSource() throws Exception {
         TeiidOpenShiftClient generator = testDataSetup();
 
         generator.normalizeDataSourceNames(vdb);
-        
+
         InputStream dsIs = generator.buildDataSourceBuilders(vdb);
         String ds = ObjectConverterUtil.convertToString(dsIs);
         assertEquals(ObjectConverterUtil.convertFileToString(new File("src/test/resources/generated-ds.txt")), ds);
-    }    
+    }
 
     @Test
     public void testGenerateDeploymentYML() throws Exception {
@@ -155,16 +155,16 @@ public class TestVDBPublisher {
         Collection<EnvVar> variables = generator
                 .getEnvironmentVariablesForVDBDataSources(authToken, vdb, config);
         assertThat( variables.size(), is(9));
-        
-        String javaOptions= 
+
+        String javaOptions=
                   " -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
                 + " -Djava.net.preferIPv4Addresses=true -Djava.net.preferIPv4Stack=true"
                 + " -XX:ParallelGCThreads=1 -XX:ConcGCThreads=1"
                 + " -Djava.util.concurrent.ForkJoinPool.common.parallelism=1"
                 + " -Dio.netty.eventLoopThreads=2"
                 + " -Dorg.teiid.hiddenMetadataResolvable=false"
-        		+ " -Dorg.teiid.allowAlter=false";
-        
+                + " -Dorg.teiid.allowAlter=false";
+
         assertThat(variables, hasItem(generator.envFromSecret("myservice-secret", "spring.datasource.accounts-xyz.username")));
         assertThat(variables, hasItem(generator.envFromSecret("myservice-secret", "spring.datasource.accounts-xyz.jdbc-url")));
         assertThat(variables, hasItem(generator.envFromSecret("myservice-secret", "spring.datasource.accounts-xyz.password")));

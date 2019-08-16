@@ -45,11 +45,11 @@ public class KomodoExceptionMapper implements ExceptionMapper< Throwable > {
      */
     @Override
     public Response toResponse( final Throwable t ) {
-    	if (t instanceof WebApplicationException) {
-    		return ((WebApplicationException)t).getResponse();
-    	}
-    	
-    	String errorMsg = t.getLocalizedMessage() != null ? t.getLocalizedMessage() : t.getClass().getSimpleName();
+        if (t instanceof WebApplicationException) {
+            return ((WebApplicationException)t).getResponse();
+        }
+
+        String errorMsg = t.getLocalizedMessage() != null ? t.getLocalizedMessage() : t.getClass().getSimpleName();
 
         //
         // Allow for splitting the message into actual message & stack trace by
@@ -60,7 +60,7 @@ public class KomodoExceptionMapper implements ExceptionMapper< Throwable > {
         buf.append(stackTrace).append(NEW_LINE);
 
         String resultMsg = RelationalMessages.getString(RelationalMessages.Error.INTERNAL_ERROR, buf.toString());
-        
+
         KLog.getLogger().error(errorMsg, t);
 
         ErrorResponse error = new ErrorResponse(resultMsg, Status.INTERNAL_SERVER_ERROR);

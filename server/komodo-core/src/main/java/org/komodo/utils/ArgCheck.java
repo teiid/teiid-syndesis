@@ -201,7 +201,7 @@ public class ArgCheck {
 
     /**
      * Check that the map is not empty
-     * @param map Map 
+     * @param map Map
      * @throws IllegalArgumentException If map is null or empty
      */
     public static final void isNotEmpty(Map<?, ?> map) {
@@ -210,7 +210,7 @@ public class ArgCheck {
 
     /**
      * Check that the map is not empty
-     * @param map Map 
+     * @param map Map
      * @param message Exception message if check fails
      * @throws IllegalArgumentException If map is null or empty
      */

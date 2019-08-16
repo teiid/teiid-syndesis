@@ -26,11 +26,11 @@ import org.junit.Test;
 
 public class KomodoServiceTest {
 
-	@Test public void testErrorResponseSerialization() {
-		String json = KomodoJsonMarshaller.marshall(new KomodoService.ErrorResponse("yikes", Status.EXPECTATION_FAILED));
-		assertEquals("{\n" + 
-				"  \"error\" : \"yikes\"\n" + 
-				"}", json);
-	}
-	
+    @Test public void testErrorResponseSerialization() {
+        String json = KomodoJsonMarshaller.marshall(new KomodoService.ErrorResponse("yikes", Status.EXPECTATION_FAILED));
+        assertEquals("{\n" +
+                "  \"error\" : \"yikes\"\n" +
+                "}", json);
+    }
+
 }

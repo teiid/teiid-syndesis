@@ -28,17 +28,17 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
- * Represents the configuration for a source table 
+ * Represents the configuration for a source table
  */
 @JsonSerialize(as = RestSourceTable.class)
 @JsonInclude(Include.NON_NULL)
 public class RestSourceTable {
 
-	/*
-	 * The table name
-	 */
+    /*
+     * The table name
+     */
     private String tableName;
-    
+
     /*
      * The columns for this table
      */
@@ -50,18 +50,18 @@ public class RestSourceTable {
     public RestSourceTable(Table table) {
         super();
         this.tableName = table.getName();
-    	List<RestSourceColumn> tableColumns = new ArrayList<RestSourceColumn>();
-    	for( Column column : table.getColumns()) {
-    		tableColumns.add(new RestSourceColumn(column));
-    	}
-    	this.columns = tableColumns.toArray(new RestSourceColumn[0]);
+        List<RestSourceColumn> tableColumns = new ArrayList<RestSourceColumn>();
+        for( Column column : table.getColumns()) {
+            tableColumns.add(new RestSourceColumn(column));
+        }
+        this.columns = tableColumns.toArray(new RestSourceColumn[0]);
     }
 
     public String getName() {
-    	return this.tableName;
+        return this.tableName;
     }
 
     public RestSourceColumn[] getColumns() {
-    	return this.columns;
+        return this.columns;
     }
 }

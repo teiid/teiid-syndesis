@@ -24,9 +24,9 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface DataVirtualizationRepository extends JpaRepository<DataVirtualization, String> {
-		
-	public DataVirtualization findByName(String name);
 
-	public DataVirtualization findByNameIgnoreCase(String virtualizationName);
-	 
+    public DataVirtualization findByName(String name);
+
+    public DataVirtualization findByNameIgnoreCase(String virtualizationName);
+
 }

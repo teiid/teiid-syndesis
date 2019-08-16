@@ -27,34 +27,34 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * 
- * @see https://stackoverflow.com/questions/25738569/how-to-map-a-map-json-column-to-java-object-with-jpa
+ *
+ * @see "https://stackoverflow.com/questions/25738569/how-to-map-a-map-json-column-to-java-object-with-jpa"
  */
 @Converter(autoApply = true)
 public class JpaConverterJson implements AttributeConverter<Object, String> {
 
-	private final static ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
-	@Override
-	public String convertToDatabaseColumn(Object meta) {
-		try {
-			return objectMapper.writeValueAsString(meta);
-		} catch (JsonProcessingException ex) {
-			throw new RuntimeException(ex);
-		}
-	}
+    @Override
+    public String convertToDatabaseColumn(Object meta) {
+        try {
+            return objectMapper.writeValueAsString(meta);
+        } catch (JsonProcessingException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 
-	@Override
-	public Object convertToEntityAttribute(String dbData) {
-		try {
-			return objectMapper.readValue(dbData, targetClass());
-		} catch (IOException ex) {
-			throw new RuntimeException(ex);
-		}
-	}
-	
-	protected Class<?> targetClass() {
-		return Object.class;
-	}
+    @Override
+    public Object convertToEntityAttribute(String dbData) {
+        try {
+            return objectMapper.readValue(dbData, targetClass());
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    protected Class<?> targetClass() {
+        return Object.class;
+    }
 
 }

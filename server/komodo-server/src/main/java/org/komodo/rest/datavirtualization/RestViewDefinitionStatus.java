@@ -39,7 +39,7 @@ public class RestViewDefinitionStatus {
     }
 
     /**
-     * @param title the subject of this status object
+     * @param status the subject of this status object
      *
      */
     public RestViewDefinitionStatus(String status) {

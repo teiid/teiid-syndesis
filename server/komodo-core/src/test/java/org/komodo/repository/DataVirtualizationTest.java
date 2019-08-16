@@ -15,32 +15,32 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @DataJpaTest
 public class DataVirtualizationTest {
-	
-	@Autowired
+
+    @Autowired
     private TestEntityManager entityManager;
- 
+
     @Autowired
     private DataVirtualizationRepository dataVirtualizationRepository;
-    
+
     @Autowired
     private WorkspaceManagerImpl workspaceManagerImpl;
-    
+
     @Test
     public void testFindDeleteByName() {
         DataVirtualization dv = new DataVirtualization("foo");
         entityManager.persist(dv);
         entityManager.flush();
-     
+
         DataVirtualization found = dataVirtualizationRepository.findByName(dv.getName());
-        
+
         assertNotNull(dataVirtualizationRepository.findByNameIgnoreCase(dv.getName().toUpperCase()));
-        
+
         assertNotNull(found.getId());
-     
+
         assertEquals(dv.getName(), found.getName());
-        
+
         assertTrue(workspaceManagerImpl.deleteDataVirtualization(dv.getName()));
-        
+
         entityManager.flush();
     }
 

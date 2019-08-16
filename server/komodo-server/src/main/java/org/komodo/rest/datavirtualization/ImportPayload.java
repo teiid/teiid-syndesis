@@ -26,14 +26,14 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonSerialize(as = ImportPayload.class)
 public class ImportPayload {
 
-	public List<String> tables = new ArrayList<>();
-	
-	public List<String> getTables() {
-		return tables;
-	}
-	
-	public void setTables(List<String> tables) {
-		this.tables = tables;
-	}
-	
+    public List<String> tables = new ArrayList<>();
+
+    public List<String> getTables() {
+        return tables;
+    }
+
+    public void setTables(List<String> tables) {
+        this.tables = tables;
+    }
+
 }

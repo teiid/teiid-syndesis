@@ -25,46 +25,46 @@ import org.komodo.datavirtualization.SourceSchema;
 import org.komodo.datavirtualization.ViewDefinition;
 
 public interface WorkspaceManager {
-	
-	public static class EntityNotFoundException extends Exception {
 
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = -3995911719208421687L;
-		
-	}
-	
-	SourceSchema findSchema(String id);
-	
-	boolean deleteSchema(String id);
-	
-	void createOrUpdateSchema(String id, String name, String contents);
-	
-	List<String> findAllSchemaNames();
+    public static class EntityNotFoundException extends Exception {
+
+        /**
+         *
+         */
+        private static final long serialVersionUID = -3995911719208421687L;
+
+    }
+
+    SourceSchema findSchema(String id);
+
+    boolean deleteSchema(String id);
+
+    void createOrUpdateSchema(String id, String name, String contents);
+
+    List<String> findAllSchemaNames();
 
 
-	DataVirtualization findDataVirtualizationByNameIgnoreCase(String virtualizationName);
+    DataVirtualization findDataVirtualizationByNameIgnoreCase(String virtualizationName);
 
-	DataVirtualization createDataVirtualization(String virtualizationName);
+    DataVirtualization createDataVirtualization(String virtualizationName);
 
-	DataVirtualization findDataVirtualization(String virtualizationName);
+    DataVirtualization findDataVirtualization(String virtualizationName);
 
-	public Iterable<? extends DataVirtualization> findDataVirtualizations();
+    public Iterable<? extends DataVirtualization> findDataVirtualizations();
 
-	boolean deleteDataVirtualization(String virtualizationName);
-	
-	
-	ViewDefinition findViewDefinitionByNameIgnoreCase(String dvName, String viewName);
-	
-	ViewDefinition findViewDefinition(String id);
-	
-	boolean deleteViewDefinition(String id);
-	
-	ViewDefinition createViewDefiniton(String dvName, String viewName);
-	
-	List<String> findViewDefinitionsNames(String dvName);
-	
-	List<? extends ViewDefinition> findViewDefinitions(String dvName);
-    
+    boolean deleteDataVirtualization(String virtualizationName);
+
+
+    ViewDefinition findViewDefinitionByNameIgnoreCase(String dvName, String viewName);
+
+    ViewDefinition findViewDefinition(String id);
+
+    boolean deleteViewDefinition(String id);
+
+    ViewDefinition createViewDefiniton(String dvName, String viewName);
+
+    List<String> findViewDefinitionsNames(String dvName);
+
+    List<? extends ViewDefinition> findViewDefinitions(String dvName);
+
 }

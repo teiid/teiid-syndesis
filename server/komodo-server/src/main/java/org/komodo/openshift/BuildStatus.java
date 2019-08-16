@@ -30,7 +30,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonSerialize(as = BuildStatus.class)
 @JsonInclude(Include.NON_NULL)
 public class BuildStatus {
-	
+
     public static final String VDB_NAME_LABEL = "vdb_name";
 
     public static final String BUILD_NAME_LABEL = "build_name";
@@ -145,7 +145,7 @@ public class BuildStatus {
     @JsonProperty(STATUS_MSG_LABEL)
     private volatile String statusMessage;
     @JsonProperty(ROUTES_LABEL)
-	private List<RouteStatus> routes = null;
+    private List<RouteStatus> routes = null;
 
     public BuildStatus(String vdbName) {
         this.vdbName = vdbName;
@@ -202,13 +202,13 @@ public class BuildStatus {
     public void setLastUpdated() {
         this.lastUpdated = System.currentTimeMillis();
     }
-    
+
     public void setPublishPodName(String name) {
-    	this.publishPodName = name;
+        this.publishPodName = name;
     }
-    
+
     public String publishPodName() {
-    	return this.publishPodName;
+        return this.publishPodName;
     }
 
     public Status status() {

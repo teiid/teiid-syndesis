@@ -24,40 +24,40 @@ import javax.persistence.Id;
 @Entity
 public class SourceSchema implements Named {
 
-	@Id
-	private String id;
-	private String ddl;
-	private String name;
-	
-	protected SourceSchema() {
-	}
-	
-	public SourceSchema(String id) {
-		this.id = id;
-	}
-	
-	public String getDdl() {
-		return ddl;
-	}
+    @Id
+    private String id;
+    private String ddl;
+    private String name;
 
-	public void setDdl(String ddl) {
-		this.ddl = ddl;
-	}
-	
-	public String getId() {
-		return id;
-	}
-	
-	public void setId(String id) {
-		this.id = id;
-	}
-	
-	public String getName() {
-		return name;
-	}
-	
-	public void setName(String name) {
-		this.name = name;
-	}
+    protected SourceSchema() {
+    }
+
+    public SourceSchema(String id) {
+        this.id = id;
+    }
+
+    public String getDdl() {
+        return ddl;
+    }
+
+    public void setDdl(String ddl) {
+        this.ddl = ddl;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
 }

@@ -28,7 +28,7 @@ public class MongoDBDefinition extends DataSourceDefinition {
 
     @Override
     public String getPomDendencies() {
-    	throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -64,13 +64,13 @@ public class MongoDBDefinition extends DataSourceDefinition {
               username
         }
         */
-    	throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Map<String, String> getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd) {
-    	throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
     }
-    
+
 
 }

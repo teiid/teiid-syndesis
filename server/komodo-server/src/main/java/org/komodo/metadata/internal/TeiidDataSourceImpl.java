@@ -38,7 +38,7 @@ public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, Tei
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
     @Override
@@ -48,7 +48,7 @@ public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, Tei
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
@@ -88,7 +88,7 @@ public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, Tei
 
     /**
      * Returns the data source type name
-     * 
+     *
      * @return the type
      */
     @Override
@@ -98,7 +98,7 @@ public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, Tei
 
     /**
      * Returns the data source jndi name
-     * 
+     *
      * @return the jndi name
      */
     @Override
@@ -108,7 +108,7 @@ public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, Tei
 
     /**
      * Returns the data source connection url
-     * 
+     *
      * @return the connection url
      */
     @Override
@@ -118,7 +118,7 @@ public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, Tei
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -131,7 +131,7 @@ public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, Tei
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see java.lang.Object#toString()
      */
     @Override
@@ -143,14 +143,14 @@ public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, Tei
 
         return sb.toString();
     }
-    
+
     @Override
     public String getId() {
-    	return getPropertyValue(TeiidOpenShiftClient.ID);
+        return getPropertyValue(TeiidOpenShiftClient.ID);
     }
-    
+
     @Override
     public String getSchema() {
-    	return getPropertyValue(TeiidDataSource.DATASOURCE_SCHEMA);
+        return getPropertyValue(TeiidDataSource.DATASOURCE_SCHEMA);
     }
 }

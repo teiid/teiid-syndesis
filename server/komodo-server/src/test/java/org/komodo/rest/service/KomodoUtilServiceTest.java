@@ -18,9 +18,7 @@
 
 package org.komodo.rest.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.Arrays;
 
@@ -39,80 +37,81 @@ import org.teiid.adminapi.Model.Type;
 import org.teiid.adminapi.impl.ModelMetaData;
 import org.teiid.adminapi.impl.VDBMetaData;
 
+@SuppressWarnings("nls")
 @RunWith(SpringRunner.class)
 @DataJpaTest
 @ContextConfiguration(classes = {KomodoRepositoryConfiguration.class, ServiceTestConfiguration.class})
 public class KomodoUtilServiceTest {
-	
-	@Autowired
-	private DefaultMetadataInstance metadataInstance;
-	
-	@Autowired
-	private KomodoUtilService komodoUtilService;
-	
-	@Autowired
+
+    @Autowired
+    private DefaultMetadataInstance metadataInstance;
+
+    @Autowired
+    private KomodoUtilService komodoUtilService;
+
+    @Autowired
     private TestEntityManager entityManager;
-	
-	@Autowired
-	private WorkspaceManagerImpl workspaceManagerImpl;
 
-	@Test public void testStash() throws Exception {
-		
-		workspaceManagerImpl.createDataVirtualization("x");
-		
-		ViewDefinition vd = new ViewDefinition("x", "y");
-		
-		ViewDefinition saved = komodoUtilService.upsertViewEditorState(vd);
-		
-		entityManager.flush();
-		
-		assertNotNull(saved.getId());
-		
-		vd = new ViewDefinition("x", "y");
-		vd.setId("not correct");
-		
-		try {
-			saved = komodoUtilService.upsertViewEditorState(vd);
-			fail();
-		} catch (IllegalArgumentException e) {
-			//trying to change the id
-		}
-		
-		//add a dummy preview vdb
-		VDBMetaData vdb = dummyPreviewVdb();
-		metadataInstance.deploy(vdb);
-		
-		//update with invalid ddl
-		vd.setId(null);
-		vd.setDdl("create something");
-		vd.setUserDefined(true);
-		vd.setComplete(true);
-		
-		saved = komodoUtilService.upsertViewEditorState(vd);
-		
-		entityManager.flush();
-		
-		ViewDefinition found = workspaceManagerImpl.findViewDefinition(saved.getId());
-		assertEquals("create something", found.getDdl());
-		
-		//saving with valid ddl
-		vd.setDdl("create view y as select * from v");
-		
-		saved = komodoUtilService.upsertViewEditorState(vd);
-		
-		//the save should determine what is used in the view
-		assertEquals(Arrays.asList("schema=x/table=v"), saved.getSourcePaths());
-	}
+    @Autowired
+    private WorkspaceManagerImpl workspaceManagerImpl;
 
-	static VDBMetaData dummyPreviewVdb() {
-		VDBMetaData vdb = new VDBMetaData();
-		vdb.setName(KomodoUtilService.PREVIEW_VDB);
-		ModelMetaData m = new ModelMetaData();
-		m.setName("x");
-		vdb.addModel(m);
-		m.setModelType(Type.VIRTUAL);
-		m.addSourceMetadata("DDL", "create view v as select 1");
-		return vdb;
-	}
+    @Test public void testStash() throws Exception {
+
+        workspaceManagerImpl.createDataVirtualization("x");
+
+        ViewDefinition vd = new ViewDefinition("x", "y");
+
+        ViewDefinition saved = komodoUtilService.upsertViewEditorState(vd);
+
+        entityManager.flush();
+
+        assertNotNull(saved.getId());
+
+        vd = new ViewDefinition("x", "y");
+        vd.setId("not correct");
+
+        try {
+            saved = komodoUtilService.upsertViewEditorState(vd);
+            fail();
+        } catch (IllegalArgumentException e) {
+            //trying to change the id
+        }
+
+        //add a dummy preview vdb
+        VDBMetaData vdb = dummyPreviewVdb();
+        metadataInstance.deploy(vdb);
+
+        //update with invalid ddl
+        vd.setId(null);
+        vd.setDdl("create something");
+        vd.setUserDefined(true);
+        vd.setComplete(true);
+
+        saved = komodoUtilService.upsertViewEditorState(vd);
+
+        entityManager.flush();
+
+        ViewDefinition found = workspaceManagerImpl.findViewDefinition(saved.getId());
+        assertEquals("create something", found.getDdl());
+
+        //saving with valid ddl
+        vd.setDdl("create view y as select * from v");
+
+        saved = komodoUtilService.upsertViewEditorState(vd);
+
+        //the save should determine what is used in the view
+        assertEquals(Arrays.asList("schema=x/table=v"), saved.getSourcePaths());
+    }
+
+    static VDBMetaData dummyPreviewVdb() {
+        VDBMetaData vdb = new VDBMetaData();
+        vdb.setName(KomodoUtilService.PREVIEW_VDB);
+        ModelMetaData m = new ModelMetaData();
+        m.setName("x");
+        vdb.addModel(m);
+        m.setModelType(Type.VIRTUAL);
+        m.addSourceMetadata("DDL", "create view v as select 1");
+        return vdb;
+    }
 
 }

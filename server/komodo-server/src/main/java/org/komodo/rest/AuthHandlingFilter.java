@@ -47,48 +47,48 @@ public class AuthHandlingFilter implements ContainerRequestFilter, CredentialsPr
         public String toString() {
             return token;
         }
-        
+
         public String getHttpAuthentication() {
-        	return "Bearer " + toString();
+            return "Bearer " + toString();
         }
     }
 
-	public static class OAuthCredentials {
-		private AuthToken token;
-		private String user;
+    public static class OAuthCredentials {
+        private AuthToken token;
+        private String user;
 
-		public OAuthCredentials(String token, String user) {
-			this.token = new AuthToken(token);
-			this.user = user;
-		}
-		
-		public AuthToken getToken() {
-			return token;
-		}
-		public String getUser() {
-			return user;
-		}
-	}
-	
-	public static ThreadLocal<OAuthCredentials> threadOAuthCredentials  = new ThreadLocal<OAuthCredentials>();
+        public OAuthCredentials(String token, String user) {
+            this.token = new AuthToken(token);
+            this.user = user;
+        }
 
-	@Override
-	public void filter(ContainerRequestContext requestContext) throws IOException {
-		String accessToken = requestContext.getHeaderString("X-Forwarded-Access-Token");
-		String user = requestContext.getHeaderString("X-Forwarded-User");
-		if (KLog.getLogger().isTraceEnabled()) {
-			KLog.getLogger().trace("URL =" + requestContext.getUriInfo());
-			KLog.getLogger().trace("X-Forwarded-Access-Token = " + accessToken);
-			KLog.getLogger().trace("X-Forwarded-User = " + user);
-		}
-		OAuthCredentials creds = new OAuthCredentials(accessToken, user);
-		threadOAuthCredentials.set(creds);		
-//		LOGGER.info("  *** AuthHandlingFilter.filter() OAuth user = " + creds.user + "  Token = " + creds.getToken().toString());
-	}
+        public AuthToken getToken() {
+            return token;
+        }
+        public String getUser() {
+            return user;
+        }
+    }
 
-	@Override
-	public OAuthCredentials getCredentials() {
-		return threadOAuthCredentials.get();
-	}
+    public static ThreadLocal<OAuthCredentials> threadOAuthCredentials  = new ThreadLocal<OAuthCredentials>();
+
+    @Override
+    public void filter(ContainerRequestContext requestContext) throws IOException {
+        String accessToken = requestContext.getHeaderString("X-Forwarded-Access-Token");
+        String user = requestContext.getHeaderString("X-Forwarded-User");
+        if (KLog.getLogger().isTraceEnabled()) {
+            KLog.getLogger().trace("URL =" + requestContext.getUriInfo());
+            KLog.getLogger().trace("X-Forwarded-Access-Token = " + accessToken);
+            KLog.getLogger().trace("X-Forwarded-User = " + user);
+        }
+        OAuthCredentials creds = new OAuthCredentials(accessToken, user);
+        threadOAuthCredentials.set(creds);
+//        LOGGER.info("  *** AuthHandlingFilter.filter() OAuth user = " + creds.user + "  Token = " + creds.getToken().toString());
+    }
+
+    @Override
+    public OAuthCredentials getCredentials() {
+        return threadOAuthCredentials.get();
+    }
 
 }

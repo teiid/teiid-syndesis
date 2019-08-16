@@ -31,15 +31,15 @@ import io.swagger.converter.ModelConverters;
 import io.swagger.models.Model;
 
 public class SwaggerTest {
-	
-	@Test public void shouldHaveProperties() {
-		//TODO could scan for all marked with json serialize
-		
-		//if we use the JsonSerialize annotation, we're required to have the as set
-		//otherwise the introspection won't find any properties
-		Map<String, Model> models = ModelConverters.getInstance().read(SimpleType.constructUnsafe(RestDataVirtualization.class));
-		assertFalse(models.isEmpty());
-		assertFalse(models.values().iterator().next().getProperties().isEmpty());
-	}
+
+    @Test public void shouldHaveProperties() {
+        //TODO could scan for all marked with json serialize
+
+        //if we use the JsonSerialize annotation, we're required to have the as set
+        //otherwise the introspection won't find any properties
+        Map<String, Model> models = ModelConverters.getInstance().read(SimpleType.constructUnsafe(RestDataVirtualization.class));
+        assertFalse(models.isEmpty());
+        assertFalse(models.values().iterator().next().getProperties().isEmpty());
+    }
 
 }

@@ -18,14 +18,14 @@ import io.swagger.jaxrs.listing.SwaggerSerializers;
 
 @Component
 public class JerseyConfig extends ResourceConfig {
-	
+
     @Value("${spring.jersey.application-path:/}")
     private String apiPath;
 
     @Value("${server.context-path:/}")
     private String context;
 
-	public JerseyConfig() {
+    public JerseyConfig() {
        register(KomodoExceptionMapper.class);
        register(KomodoUtilService.class);
        register(KomodoDataserviceService.class);
@@ -40,9 +40,9 @@ public class JerseyConfig extends ResourceConfig {
        corsHandler.setAllowedMethods(KCorsHandler.ALLOW_METHODS);
        corsHandler.setCorsMaxAge(1209600);
        register(corsHandler);
-	}
+    }
 
-	@PostConstruct
+    @PostConstruct
     public void init() {
         // Available at localhost:port/swagger.json
         this.register(ApiListingResource.class);

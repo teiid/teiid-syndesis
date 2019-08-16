@@ -31,260 +31,259 @@ import org.teiid.metadata.Schema;
 import org.teiid.query.validator.ValidatorReport;
 
 public interface MetadataInstance extends StringConstants {
-	
-	public static class ValidationResult {
-		private ValidatorReport report;
-		private Schema schema;
-		
-		public ValidationResult(ValidatorReport report, Schema schema) {
-			this.report = report;
-			this.schema = schema;
-		}
-		
-		public ValidatorReport getReport() {
-			return report;
-		}
-		
-		public Schema getSchema() {
-			return schema;
-		}
-		
-	}
 
-	/**
-	 * The host of the metadata instance
-	 */
-	String HOST = "localhost"; //$NON-NLS-1$
+    public static class ValidationResult {
+        private ValidatorReport report;
+        private Schema schema;
 
-	/**
-	 * The default admin user for the metadata instance
-	 */
-	String DEFAULT_ADMIN_USER = "admin"; //$NON-NLS-1$
+        public ValidationResult(ValidatorReport report, Schema schema) {
+            this.report = report;
+            this.schema = schema;
+        }
 
-	/**
-	 * The default admin password for the metadata instance
-	 */
-	String DEFAULT_ADMIN_PASSWORD = "admin"; //$NON-NLS-1$
+        public ValidatorReport getReport() {
+            return report;
+        }
 
-	/**
-	 * The default admin port for the metadata instance
-	 */
-	int DEFAULT_ADMIN_PORT = 9990; // $NON-NLS-1$
+        public Schema getSchema() {
+            return schema;
+        }
 
-	/**
-	 * The default jdbc user for the metadata instance
-	 */
-	String DEFAULT_JDBC_USER = "user"; //$NON-NLS-1$
+    }
 
-	/**
-	 * The default jdbc password for the metadata instance
-	 */
-	String DEFAULT_JDBC_PASSWORD = "user"; //$NON-NLS-1$
+    /**
+     * The host of the metadata instance
+     */
+    String HOST = "localhost"; //$NON-NLS-1$
 
-	/**
-	 * The default jdbc port for the metadata instance
-	 */
-	int DEFAULT_JDBC_PORT = 31000; // $NON-NLS-1$
+    /**
+     * The default admin user for the metadata instance
+     */
+    String DEFAULT_ADMIN_USER = "admin"; //$NON-NLS-1$
 
-	/**
-	 * The default protocol for the metadata instance
-	 */
-	String DEFAULT_INSTANCE_PROTOCOL = "mms"; //$NON-NLS-1$
+    /**
+     * The default admin password for the metadata instance
+     */
+    String DEFAULT_ADMIN_PASSWORD = "admin"; //$NON-NLS-1$
 
-	/**
-	 * Type of connectivity
-	 */
-	enum ConnectivityType {
-		/**
-		 * Admin connection of the metadata instance
-		 */
-		ADMIN,
+    /**
+     * The default admin port for the metadata instance
+     */
+    int DEFAULT_ADMIN_PORT = 9990; // $NON-NLS-1$
 
-		/**
-		 * JDBC connection of the metadata instance
-		 */
-		JDBC;
+    /**
+     * The default jdbc user for the metadata instance
+     */
+    String DEFAULT_JDBC_USER = "user"; //$NON-NLS-1$
 
-		/**
-		 * @param type
-		 * @return the {@link ConnectivityType} for the given type
-		 */
-		public static ConnectivityType findType(String type) {
-			if (type == null)
-				return null;
+    /**
+     * The default jdbc password for the metadata instance
+     */
+    String DEFAULT_JDBC_PASSWORD = "user"; //$NON-NLS-1$
 
-			for (ConnectivityType cType : ConnectivityType.values()) {
-				if (type.equalsIgnoreCase(cType.name()))
-					return cType;
-			}
+    /**
+     * The default jdbc port for the metadata instance
+     */
+    int DEFAULT_JDBC_PORT = 31000; // $NON-NLS-1$
 
-			return null;
-		}
-	}
+    /**
+     * The default protocol for the metadata instance
+     */
+    String DEFAULT_INSTANCE_PROTOCOL = "mms"; //$NON-NLS-1$
 
-	/**
-	 * Value representing no limit to results returned by a query
-	 */
-	int NO_LIMIT = -1;
+    /**
+     * Type of connectivity
+     */
+    enum ConnectivityType {
+        /**
+         * Admin connection of the metadata instance
+         */
+        ADMIN,
 
-	/**
-	 * Value representing no offset to a set of results returned by a query
-	 */
-	int NO_OFFSET = 0;
+        /**
+         * JDBC connection of the metadata instance
+         */
+        JDBC;
 
-	/**
-	 * The server state.
-	 */
-	public enum Condition {
+        /**
+         * @param type
+         * @return the {@link ConnectivityType} for the given type
+         */
+        public static ConnectivityType findType(String type) {
+            if (type == null)
+                return null;
 
-		/**
-		 * Server has been successfully reached.
-		 */
-		REACHABLE,
+            for (ConnectivityType cType : ConnectivityType.values()) {
+                if (type.equalsIgnoreCase(cType.name()))
+                    return cType;
+            }
 
-		/**
-		 * Server is not reachable.
-		 */
-		NOT_REACHABLE,
+            return null;
+        }
+    }
 
-		/**
-		 * There was an error trying to establish server.
-		 */
-		ERROR
+    /**
+     * Value representing no limit to results returned by a query
+     */
+    int NO_LIMIT = -1;
 
-	}
+    /**
+     * Value representing no offset to a set of results returned by a query
+     */
+    int NO_OFFSET = 0;
 
-	/**
-	 * @return the condition of the server
-	 */
-	Condition getCondition();
+    /**
+     * The server state.
+     */
+    public enum Condition {
 
-	/**
-	 * Query the vdb with given name
-	 *
-	 * @param vdbName the name of the vdb to query
-	 * @param query   the SQL query
-	 * @param offset  an offset of the results to return
-	 * @param limit   a limit on the number of results to return
-	 * @return the set of results
-	 * @throws KException
-	 */
-	QSResult query(String vdbName, String query, int offset, int limit) throws KException;
+        /**
+         * Server has been successfully reached.
+         */
+        REACHABLE,
 
-	/**
-	 * @return the collection of deployed vdbs
-	 * @throws KException
-	 */
-	Collection<TeiidVdb> getVdbs() throws KException;
+        /**
+         * Server is not reachable.
+         */
+        NOT_REACHABLE,
 
-	/**
-	 * @return the names of all the deployed vdbs
-	 * @throws KException
-	 */
-	Collection<String> getVdbNames() throws KException;
+        /**
+         * There was an error trying to establish server.
+         */
+        ERROR
 
-	/**
-	 * @param vdbDeploymentName
-	 * @return the deployed vdb
-	 * @throws KException
-	 */
-	TeiidVdb getVdb(String vdbDeploymentName) throws KException;
+    }
 
-	/**
-	 * @param name
-	 * @return whether metadata instance contains a vdb with the given name
-	 * @throws KException
-	 */
-	boolean hasVdb(String name) throws KException;
+    /**
+     * @return the condition of the server
+     */
+    Condition getCondition();
 
-	/**
-	 * @param vdbName
-	 * 
-	 * @return <code>true</code> if the vdb is active
-	 * @throws KException
-	 */
-	boolean isVdbActive(String vdbName) throws KException;
+    /**
+     * Query the vdb with given name
+     *
+     * @param vdbName the name of the vdb to query
+     * @param query   the SQL query
+     * @param offset  an offset of the results to return
+     * @param limit   a limit on the number of results to return
+     * @return the set of results
+     * @throws KException
+     */
+    QSResult query(String vdbName, String query, int offset, int limit) throws KException;
 
-	/**
-	 * @param vdbName
-	 * 
-	 * @return <code>true</code> if the vdb is loading
-	 * @throws KException
-	 */
-	boolean isVdbLoading(String vdbName) throws KException;
+    /**
+     * @return the collection of deployed vdbs
+     * @throws KException
+     */
+    Collection<TeiidVdb> getVdbs() throws KException;
 
-	/**
-	 * @param vdbName
-	 * 
-	 * @return <code>true</code> if the vdb failed
-	 * @throws KException
-	 */
-	boolean hasVdbFailed(String vdbName) throws KException;
+    /**
+     * @return the names of all the deployed vdbs
+     * @throws KException
+     */
+    Collection<String> getVdbNames() throws KException;
 
-	/**
-	 * @param vdbName
-	 * 
-	 * @return <code>true</code> if the vdb was removed
-	 * @throws KException
-	 */
-	boolean wasVdbRemoved(String vdbName) throws KException;
+    /**
+     * @param vdbDeploymentName
+     * @return the deployed vdb
+     * @throws KException
+     */
+    TeiidVdb getVdb(String vdbDeploymentName) throws KException;
 
-	/**
-	 * @param vdbName
-	 * 
-	 * @return any validity errors from the vdb when it was deployed
-	 * @throws KException
-	 */
-	List<String> retrieveVdbValidityErrors(String vdbName) throws KException;
+    /**
+     * @param name
+     * @return whether metadata instance contains a vdb with the given name
+     * @throws KException
+     */
+    boolean hasVdb(String name) throws KException;
 
-	/**
-	 * @param vdbName
-	 * @param modelName
-	 * @return the schema from the given model in the vdb with the given name
-	 * @throws KException
-	 */
-	String getSchema(String vdbName, String modelName) throws KException;
+    /**
+     * @param vdbName
+     *
+     * @return <code>true</code> if the vdb is active
+     * @throws KException
+     */
+    boolean isVdbActive(String vdbName) throws KException;
 
-	/**
-	 * Undeploy the dynamic vdb with the given name
-	 * 
-	 * @param name
-	 * @throws KException
-	 */
-	void undeployDynamicVdb(String name) throws KException;
+    /**
+     * @param vdbName
+     *
+     * @return <code>true</code> if the vdb is loading
+     * @throws KException
+     */
+    boolean isVdbLoading(String vdbName) throws KException;
 
-	/**
-	 * @return the collection of data sources
-	 * @throws KException
-	 */
-	Collection<TeiidDataSource> getDataSources() throws KException;
+    /**
+     * @param vdbName
+     *
+     * @return <code>true</code> if the vdb failed
+     * @throws KException
+     */
+    boolean hasVdbFailed(String vdbName) throws KException;
 
-	/**
-	 * @param sourceName
-	 * @return the data source with the given name
-	 * @throws KException
-	 */
-	TeiidDataSource getDataSource(String sourceName) throws KException;
+    /**
+     * @param vdbName
+     *
+     * @return <code>true</code> if the vdb was removed
+     * @throws KException
+     */
+    boolean wasVdbRemoved(String vdbName) throws KException;
 
-	/**
-	 * Removes the data source from the metadata instance (if exists)
-	 * 
-	 * @param dsName the data source name
-	 * @throws KException if failure in deleting data source on metadata instance
-	 */
-	void deleteDataSource(String dsName) throws KException;
+    /**
+     * @param vdbName
+     *
+     * @return any validity errors from the vdb when it was deployed
+     * @throws KException
+     */
+    List<String> retrieveVdbValidityErrors(String vdbName) throws KException;
 
-	/**
-	 * @param vdb
-	 * @return the deployment status of the vdb
-	 */
-	void deploy(VDBMetaData vdb) throws KException;
+    /**
+     * @param vdbName
+     * @param modelName
+     * @return the schema from the given model in the vdb with the given name
+     * @throws KException
+     */
+    String getSchema(String vdbName, String modelName) throws KException;
 
-	Set<String> getDataSourceTemplateNames() throws AdminException;
+    /**
+     * Undeploy the dynamic vdb with the given name
+     *
+     * @param name
+     * @throws KException
+     */
+    void undeployDynamicVdb(String name) throws KException;
 
-	Collection<String> getDataSourceNames() throws AdminException;
+    /**
+     * @return the collection of data sources
+     * @throws KException
+     */
+    Collection<TeiidDataSource> getDataSources() throws KException;
 
-	void createDataSource(String deploymentName, String templateName, Map<String, String> properties) throws AdminException;
+    /**
+     * @param sourceName
+     * @return the data source with the given name
+     * @throws KException
+     */
+    TeiidDataSource getDataSource(String sourceName) throws KException;
 
-	ValidationResult validate(String vdbName, String ddl) throws KException;
+    /**
+     * Removes the data source from the metadata instance (if exists)
+     *
+     * @param dsName the data source name
+     * @throws KException if failure in deleting data source on metadata instance
+     */
+    void deleteDataSource(String dsName) throws KException;
+
+    /**
+     * @param vdb
+     */
+    void deploy(VDBMetaData vdb) throws KException;
+
+    Set<String> getDataSourceTemplateNames() throws AdminException;
+
+    Collection<String> getDataSourceNames() throws AdminException;
+
+    void createDataSource(String deploymentName, String templateName, Map<String, String> properties) throws AdminException;
+
+    ValidationResult validate(String vdbName, String ddl) throws KException;
 }

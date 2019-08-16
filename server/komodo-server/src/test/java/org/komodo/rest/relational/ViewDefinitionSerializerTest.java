@@ -29,7 +29,7 @@ import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.rest.KomodoJsonMarshaller;
 
 public class ViewDefinitionSerializerTest {
-	
+
     private String viewName = "myNewView";
     private String viewDefinitionName = "testView";
     private String description = "test view description text";
@@ -39,17 +39,17 @@ public class ViewDefinitionSerializerTest {
     private String sourceTablePath2 = "path/to/source2";
     private String sourceTablePath3 = "path/to/source3";
     private String sourceTablePath4 = "path/to/source4";
- 
+
     private String createViewEditorState() {
-        return "{\n" + 
-        		"  \"dataVirtualizationName\" : \"dvName\",\n" + 
-        		"  \"id\" : \"myNewView\",\n" + 
-        		"  \"isComplete\" : true,\n" + 
-        		"  \"isUserDefined\" : false,\n" + 
-        		"  \"keng__description\" : \"test view description text\",\n" + 
-        		"  \"name\" : \"testView\",\n" + 
-        		"  \"sourcePaths\" : [ \"path/to/source1\", \"path/to/source2\", \"path/to/source3\", \"path/to/source4\" ]\n" + 
-        		"}";
+        return "{\n" +
+                "  \"dataVirtualizationName\" : \"dvName\",\n" +
+                "  \"id\" : \"myNewView\",\n" +
+                "  \"isComplete\" : true,\n" +
+                "  \"isUserDefined\" : false,\n" +
+                "  \"keng__description\" : \"test view description text\",\n" +
+                "  \"name\" : \"testView\",\n" +
+                "  \"sourcePaths\" : [ \"path/to/source1\", \"path/to/source2\", \"path/to/source3\", \"path/to/source4\" ]\n" +
+                "}";
     }
 
     @Test
@@ -58,10 +58,10 @@ public class ViewDefinitionSerializerTest {
 
         ViewDefinition viewEditorState = KomodoJsonMarshaller.unmarshall(state, org.komodo.datavirtualization.ViewDefinition.class);
         assertEquals(viewName, viewEditorState.getId());
-        
+
         assertNotNull(viewEditorState);
         assertEquals(viewDefinitionName, viewEditorState.getName());
-        
+
         List<String> paths = viewEditorState.getSourcePaths();
         assertNotNull(paths);
         assertEquals(4, paths.size());
@@ -76,11 +76,11 @@ public class ViewDefinitionSerializerTest {
         viewDef.setComplete(isComplete);
         viewDef.setUserDefined(isUserDefined);
         viewDef.setSourcePaths(Arrays.asList(sourceTablePaths));
-        
+
         String expectedJson = createViewEditorState();
-        
+
         String resultJson = KomodoJsonMarshaller.marshall(viewDef);
-        
+
         assertEquals(expectedJson, resultJson);
-    }  
+    }
 }

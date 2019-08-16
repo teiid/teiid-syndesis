@@ -18,7 +18,7 @@
 package org.komodo.datavirtualization;
 
 public interface Named {
-	
-	String getName();
-	
+
+    String getName();
+
 }

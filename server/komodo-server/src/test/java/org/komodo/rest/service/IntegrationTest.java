@@ -47,29 +47,29 @@ import org.springframework.test.context.junit4.SpringRunner;
 @DirtiesContext
 public class IntegrationTest {
 
-	//inject simple auth bypass
-	@TestConfiguration
-	static class IntegrationTestConfiguration {
-		@Primary
-		@Bean 
-		public CredentialsProvider credentialsProvider() {
-			return new CredentialsProvider() {
-				
-				@Override
-				public OAuthCredentials getCredentials() {
-					return new OAuthCredentials("token", "user");
-				}
-			};
-		}
-	}
-	
-	@Autowired
-	private TestRestTemplate restTemplate;
-	
-	@Test public void testAbout() {
-		ResponseEntity<KomodoStatusObject> response = restTemplate.getForEntity("/v1/service/about", KomodoStatusObject.class);
-		assertEquals(V1Constants.App.name(), response.getBody().getAttributes().get(KomodoUtilService.APP_NAME));
-		assertEquals(HttpStatus.OK, response.getStatusCode());
-	}
-	
+    //inject simple auth bypass
+    @TestConfiguration
+    static class IntegrationTestConfiguration {
+        @Primary
+        @Bean
+        public CredentialsProvider credentialsProvider() {
+            return new CredentialsProvider() {
+
+                @Override
+                public OAuthCredentials getCredentials() {
+                    return new OAuthCredentials("token", "user");
+                }
+            };
+        }
+    }
+
+    @Autowired
+    private TestRestTemplate restTemplate;
+
+    @Test public void testAbout() {
+        ResponseEntity<KomodoStatusObject> response = restTemplate.getForEntity("/v1/service/about", KomodoStatusObject.class);
+        assertEquals(V1Constants.App.name(), response.getBody().getAttributes().get(KomodoUtilService.APP_NAME));
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
 }

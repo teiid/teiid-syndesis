@@ -56,17 +56,16 @@ public abstract class DataSourceDefinition {
 
     /**
      * Given the service specific properties to engine specific properties.
-     * @param properties
      * @return return the modified property set to make the connection in the given environment
      */
     public Map<String, String> getInternalTeiidDataSourceProperties(DefaultSyndesisDataSource source) {
-    	Map<String, String> props = new HashMap<>();
-    	String komodoName = source.getKomodoName();
-    	ArgCheck.isNotNull(komodoName);
-		props.put(TeiidDataSource.DATASOURCE_JNDINAME, komodoName);
+        Map<String, String> props = new HashMap<>();
+        String komodoName = source.getKomodoName();
+        ArgCheck.isNotNull(komodoName);
+        props.put(TeiidDataSource.DATASOURCE_JNDINAME, komodoName);
         props.put(TeiidDataSource.DATASOURCE_DRIVERNAME, getType()); // used as translator name
         props.put(TeiidDataSource.DATASOURCE_DISPLAYNAME, komodoName);
-        
+
         props.put(TeiidDataSource.DATASOURCE_CONNECTION_URL, source.getProperty("url"));
         props.put("username", source.getProperty("user"));
         props.put("password", source.getProperty("password"));
@@ -77,23 +76,22 @@ public abstract class DataSourceDefinition {
     /**
      * Given the connection properties from the Syndesis secrets generate Spring Boot
      * configuration file to configure the data source
-     * @param datasource data source details
      * @return properties properties required to create a connection in target environment
      */
     public Map<String, String> getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd) {
-    	Map<String, String> props = new HashMap<>();
+        Map<String, String> props = new HashMap<>();
         ds(props, scd, "jdbc-url", scd.getProperty("url"));
         ds(props, scd, "username", scd.getProperty("user"));
         ds(props, scd, "password", scd.getProperty("password"));
-        
+
         if (scd.getProperty("schema") != null) {
-        	ds(props, scd, "importer.schemaName", scd.getProperty("schema"));
+            ds(props, scd, "importer.schemaName", scd.getProperty("schema"));
         }
 
         // pool properties
         ds(props, scd, "maximumPoolSize", "5");
         ds(props, scd, "minimumIdle", "0");
-        
+
         return props;
     }
 

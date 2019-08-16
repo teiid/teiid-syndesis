@@ -26,7 +26,7 @@ import org.komodo.StringConstants;
  * with client-server communication
  */
 public interface KCorsHandler extends StringConstants {
-    
+
     String ALLOW_HEADERS = "Content-Type, X-Requested-With, accept, Origin," + //$NON-NLS-1$
                                                      "Access-Control-Request-Method," + //$NON-NLS-1$
                                                      "Access-Control-Request-Headers, Authorization"; //$NON-NLS-1$

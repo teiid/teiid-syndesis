@@ -33,12 +33,12 @@ public interface TeiidVdb {
      * Extension of a vdb file
      */
     static final String VDB_EXTENSION = "vdb"; //$NON-NLS-1$
-    
+
     /**
      * Extension of a vdb file with dot appended
      */
     static final String VDB_DOT_EXTENSION = ".vdb"; //$NON-NLS-1$
-    
+
     /**
      * @return the name
      */
@@ -75,40 +75,40 @@ public interface TeiidVdb {
     List<String> getValidityErrors();
 
     /**
-     * Does the VDB contain any models 
-     * 
-     * @return <code>true</code> if the vdb has any models 
+     * Does the VDB contain any models
+     *
+     * @return <code>true</code> if the vdb has any models
      */
     boolean hasModels();
 
     /**
      * Get the names of all the models in this vdb
-     * 
+     *
      * @return {@link Collection} of model names
      */
     Collection<String> getModelNames();
 
     /**
      * @param key
-     * 
+     *
      * @return value of property or null
      */
     String getPropertyValue(String key);
-    
+
     /**
-     * 
+     *
      * @return vdb properties
      */
     Properties getProperties( );
-    
-	List<? extends VDBImport> getImports();
-	
-	/**
-	 * Return the live metadata {@link Schema} instance
-	 * WARNING: do not modify
-	 * @param name
-	 * @return
-	 */
-	Schema getSchema(String name);
+
+    List<? extends VDBImport> getImports();
+
+    /**
+     * Return the live metadata {@link Schema} instance
+     * WARNING: do not modify
+     * @param name
+     * @return
+     */
+    Schema getSchema(String name);
 
 }
