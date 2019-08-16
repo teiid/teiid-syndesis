@@ -395,6 +395,23 @@ public class ServiceVdbGeneratorTest {
 
     	VDBMetaData serviceVdb = vdbGenerator.createServiceVdb(viewDefinitionName, Arrays.asList(state), false);
 
+    	assertEquals("<?xml version=\"1.0\" ?><vdb name=\"orderInfoView\" version=\"1\"><connection-type>BY_VERSION</connection-type><model name=\"views\" type=\"VIRTUAL\" visible=\"true\"><metadata type=\"DDL\"><![CDATA[CREATE VIEW orderInfoView (ID, orderDate, name) OPTIONS (ANNOTATION 'test view description text') AS \n" +
+    	        "SELECT A.ID, A.orderDate, B.name\n" +
+    	        "FROM pgconnection1schemamodel.orders AS A;\n" +
+    	        "]]></metadata></model><model name=\"pgconnection1schemamodel\" type=\"PHYSICAL\" visible=\"false\"><metadata type=\"DDL\"><![CDATA[SET NAMESPACE 'http://www.teiid.org/ext/relational/2012' AS teiid_rel;\n" +
+    	        "\n" +
+    	        "CREATE FOREIGN TABLE orders (\n" +
+    	        "\tID long,\n" +
+    	        "\torderDate timestamp,\n" +
+    	        "\tPRIMARY KEY(ID)\n" +
+    	        ") OPTIONS (\"teiid_rel:fqn\" 'schema=public/table=orders');\n" +
+    	        "\n" +
+    	        "CREATE FOREIGN TABLE customers (\n" +
+    	        "\tID long,\n" +
+    	        "\tname string,\n" +
+    	        "\tPRIMARY KEY(ID)\n" +
+    	        ") OPTIONS (\"teiid_rel:fqn\" 'schema=public/table=customers');]]></metadata></model></vdb>", new String(DefaultMetadataInstance.toBytes(serviceVdb).toByteArray(), "UTF-8"));
+
     	List<org.teiid.adminapi.Model> models = serviceVdb.getModels();
 
     	assertThat(models.size(), is(2));

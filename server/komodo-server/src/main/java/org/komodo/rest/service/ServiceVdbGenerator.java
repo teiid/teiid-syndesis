@@ -103,8 +103,6 @@ public final class ServiceVdbGenerator implements StringConstants {
      * All views will end up in a new view model added to the vdb
      * 1 or more source models will be generated and added to the vdb
      * @param vdbName 
-     * 
-     * @param serviceVdb the vdb
      * @param editorStates
      * 		the array of view editor states
      * @param preview
@@ -117,7 +115,7 @@ public final class ServiceVdbGenerator implements StringConstants {
         vdb.setName(vdbName);
         
         // Keep track of unique list of sources needed
-    	Map< Schema, LinkedHashSet<TableInfo> > schemaTableMap = new HashMap<Schema, LinkedHashSet<TableInfo>>();
+    	Map< Schema, LinkedHashSet<TableInfo> > schemaTableMap = new LinkedHashMap<Schema, LinkedHashSet<TableInfo>>();
 
     	// Generate new model DDL by appending all view DDLs
     	StringBuilder allViewDdl = new StringBuilder();
@@ -182,6 +180,7 @@ public final class ServiceVdbGenerator implements StringConstants {
         	
         	// Create a source model and set the DDL string via setModelDeinition(DDL)
         	ModelMetaData srcModel = new ModelMetaData();
+        	srcModel.setVisible(false);
         	srcModel.setName(entry.getKey().getName());
         	vdb.addModel(srcModel);
             srcModel.setModelType(org.teiid.adminapi.Model.Type.PHYSICAL);
@@ -368,8 +367,6 @@ public final class ServiceVdbGenerator implements StringConstants {
     /**
      * Public method to generate the view DDL for a view definition
      * 
-     * @param uow
-     * 		the transaction
      * @param viewDef 
      * 		the view definition
      * @return the View DDL
