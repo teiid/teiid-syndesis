@@ -23,8 +23,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import javax.transaction.TransactionManager;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response.Status;
 
 import org.komodo.KEngine;
 import org.komodo.metadata.MetadataInstance;
@@ -80,7 +78,7 @@ public class KomodoAutoConfiguration implements ApplicationListener<ContextRefre
         try {
             started = kengine.startAndWait();
         } catch (Exception e) {
-            throw new WebApplicationException( e, Status.INTERNAL_SERVER_ERROR );
+            throw new RuntimeException(e);
         }
 
         if ( !started ) {

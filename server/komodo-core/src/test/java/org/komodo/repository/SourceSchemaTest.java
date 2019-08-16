@@ -33,9 +33,8 @@ public class SourceSchemaTest {
         s.setDdl("create ...");
         entityManager.persist(s);
         entityManager.flush();
-
-        org.komodo.datavirtualization.SourceSchema found = sourceSchemaRepository.findOne(s.getId());
-
+     
+        org.komodo.datavirtualization.SourceSchema found = sourceSchemaRepository.findById(s.getId()).orElse(null);
         assertEquals(s.getDdl(), found.getDdl());
 
         try {
@@ -48,7 +47,7 @@ public class SourceSchemaTest {
 
         assertTrue(workspaceManagerImpl.deleteSchema(s.getId()));
 
-        assertNull(sourceSchemaRepository.findOne(s.getId()));
+        assertNull(sourceSchemaRepository.findById(s.getId()).orElse(null));
 
         assertFalse(workspaceManagerImpl.deleteSchema(s.getId()));
 

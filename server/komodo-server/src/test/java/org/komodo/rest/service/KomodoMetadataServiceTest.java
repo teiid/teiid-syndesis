@@ -18,14 +18,13 @@
 
 package org.komodo.rest.service;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.ws.rs.NotFoundException;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,6 +44,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.server.ResponseStatusException;
 import org.teiid.adminapi.impl.VDBMetaData;
 
 @SuppressWarnings({ "javadoc", "nls" })
@@ -53,7 +53,6 @@ import org.teiid.adminapi.impl.VDBMetaData;
 @ContextConfiguration(classes = {KomodoRepositoryConfiguration.class, ServiceTestConfiguration.class})
 @DirtiesContext
 public class KomodoMetadataServiceTest {
-
     @Autowired
     private WorkspaceManagerImpl workspaceManagerImpl;
 
@@ -106,9 +105,9 @@ public class KomodoMetadataServiceTest {
     public void testGetSchema() throws Exception {
         List<RestSchemaNode> nodes = null;
         try {
-            nodes = komodoMetadataService.getSchema("source");
+            nodes = komodoMetadataService.getSchemaService("source");
             fail();
-        } catch (NotFoundException e) {
+        } catch (ResponseStatusException e) {
             //no source yet
         }
 
@@ -122,7 +121,7 @@ public class KomodoMetadataServiceTest {
                 "create foreign table tbl (col string) options (\"teiid_rel:fqn\" 'schema=s%20x/t%20bl=bar');"
                 + "create foreign table tbl1 (col string) options (\"teiid_rel:fqn\" 'schema=s%20x/t%20bl=bar1');");
 
-        nodes = komodoMetadataService.getSchema("source");
+        nodes = komodoMetadataService.getSchemaService("source");
         assertEquals("[ {\n" +
                 "  \"children\" : [ {\n" +
                 "    \"children\" : [ ],\n" +

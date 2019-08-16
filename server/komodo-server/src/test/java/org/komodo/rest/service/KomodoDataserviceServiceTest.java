@@ -25,8 +25,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.ws.rs.NotFoundException;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.komodo.datavirtualization.ViewDefinition;
@@ -43,13 +41,13 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.server.ResponseStatusException;
 
 @RunWith(SpringRunner.class)
 @DataJpaTest
 @ContextConfiguration(classes = {KomodoRepositoryConfiguration.class, ServiceTestConfiguration.class})
 @DirtiesContext
 public class KomodoDataserviceServiceTest {
-
     @Autowired
     private WorkspaceManagerImpl workspaceManagerImpl;
 
@@ -65,18 +63,18 @@ public class KomodoDataserviceServiceTest {
 
         KomodoStatusObject kso = null;
         try {
-            kso = komodoDataserviceService.importViews("dv", "source", payload);
+            kso = komodoDataserviceService.importViewsService("dv", "source", payload);
             fail();
-        } catch (NotFoundException e) {
+        } catch (ResponseStatusException e) {
             //dv not found
         }
 
         workspaceManagerImpl.createDataVirtualization("dv");
 
         try {
-            kso = komodoDataserviceService.importViews("dv", "source", payload);
+            kso = komodoDataserviceService.importViewsService("dv", "source", payload);
             fail();
-        } catch (NotFoundException e) {
+        } catch (ResponseStatusException e) {
             //source not found
         }
 
@@ -87,9 +85,9 @@ public class KomodoDataserviceServiceTest {
         metadataInstance.createDataSource("source", "h2", props);
 
         try {
-            kso = komodoDataserviceService.importViews("dv", "source", payload);
+            kso = komodoDataserviceService.importViewsService("dv", "source", payload);
             fail();
-        } catch (NotFoundException e) {
+        } catch (ResponseStatusException e) {
             //source not found - as the properties are not valid
         }
 
@@ -98,7 +96,7 @@ public class KomodoDataserviceServiceTest {
                 "create foreign table tbl (col string) options (\"teiid_rel:fqn\" 'schema=s/table=tbl');");
         metadataInstance.undeployDynamicVdb(KomodoMetadataService.getWorkspaceSourceVdbName("source"));
 
-        kso = komodoDataserviceService.importViews("dv", "source", payload);
+        kso = komodoDataserviceService.importViewsService("dv", "source", payload);
         assertEquals(1, kso.getAttributes().size());
 
         String id = kso.getAttributes().values().iterator().next();
@@ -115,5 +113,4 @@ public class KomodoDataserviceServiceTest {
                 "  \"sourcePaths\" : [ \"schema=source/table=tbl\" ]\n" +
                 "}", KomodoJsonMarshaller.marshall(vd));
     }
-
 }
