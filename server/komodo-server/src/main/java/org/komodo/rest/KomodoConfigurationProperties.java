@@ -20,7 +20,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties("controllers")
 public class KomodoConfigurationProperties {
 
-	private boolean exposeVia3scale;
+    private boolean exposeVia3scale;
 
     public void setExposeVia3scale(final boolean exposeVia3scale) {
         this.exposeVia3scale = exposeVia3scale;

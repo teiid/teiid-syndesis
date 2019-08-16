@@ -51,29 +51,29 @@ import org.teiid.runtime.EmbeddedConfiguration;
 @EnableConfigurationProperties(KomodoConfigurationProperties.class)
 @ComponentScan(basePackages = {"org.komodo.repository", "org.komodo.metadata.internal"})
 public class KomodoAutoConfiguration implements ApplicationListener<ContextRefreshedEvent> {
-	
+
     @Value("${encrypt.key}")
     private String encryptKey;
-    
+
     @Autowired(required=false)
     private TransactionManager transactionManager;
-    
+
     @Autowired
     private KomodoConfigurationProperties config;
-    
+
     @Autowired
     private KEngine kengine;
-    
+
     @Autowired
     private MetadataInstance metadataInstance;
-    
+
     private ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
-    
+
     @Bean
     public TextEncryptor getTextEncryptor() {
         return Encryptors.text(encryptKey, "deadbeef");
     }
-    
+
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         boolean started;
@@ -86,16 +86,16 @@ public class KomodoAutoConfiguration implements ApplicationListener<ContextRefre
         if ( !started ) {
             throw new RuntimeException(Messages.getString( KOMODO_ENGINE_STARTUP_TIMEOUT, 1, TimeUnit.MINUTES));
         } else {
-        	// monitor to track connections from the syndesis
-			SyndesisConnectionSynchronizer sync = new SyndesisConnectionSynchronizer(openShiftClient(
-					kengine, getTextEncryptor()), event.getApplicationContext().getBean(KomodoMetadataService.class));
-        	SyndesisConnectionMonitor scm = new SyndesisConnectionMonitor(sync, executor);
-    		this.executor.scheduleAtFixedRate(()->scm.connect(), 5, 15, TimeUnit.SECONDS);
+            // monitor to track connections from the syndesis
+            SyndesisConnectionSynchronizer sync = new SyndesisConnectionSynchronizer(openShiftClient(
+                    kengine, getTextEncryptor()), event.getApplicationContext().getBean(KomodoMetadataService.class));
+            SyndesisConnectionMonitor scm = new SyndesisConnectionMonitor(sync, executor);
+            this.executor.scheduleAtFixedRate(()->scm.connect(), 5, 15, TimeUnit.SECONDS);
         }
     }
 
     @Bean
-    @ConditionalOnMissingBean    
+    @ConditionalOnMissingBean
     public TeiidServer teiidServer() {
 
         // turning off PostgreSQL support
@@ -105,10 +105,10 @@ public class KomodoAutoConfiguration implements ApplicationListener<ContextRefre
 
         final TeiidServer server = new TeiidServer();
 
-    	EmbeddedConfiguration config = new EmbeddedConfiguration();
-    	if (this.transactionManager != null) {
-    		config.setTransactionManager(this.transactionManager);
-    	}
+        EmbeddedConfiguration config = new EmbeddedConfiguration();
+        if (this.transactionManager != null) {
+            config.setTransactionManager(this.transactionManager);
+        }
         server.start(config);
         return server;
     }

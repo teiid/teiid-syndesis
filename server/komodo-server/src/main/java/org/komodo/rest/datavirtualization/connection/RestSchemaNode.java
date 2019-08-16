@@ -35,15 +35,15 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 public class RestSchemaNode {
 
     private LinkedHashSet<RestSchemaNode> children = new LinkedHashSet<RestSchemaNode>();
-    
+
     private String name;
-    
+
     private String teiidName;
 
     private String connectionName;
 
     private String type;
-    
+
     private boolean queryable = false;
 
     /**
@@ -142,34 +142,34 @@ public class RestSchemaNode {
      * @param child the child node
      */
     public void addChild(RestSchemaNode child) {
-    	this.children.add(child);
+        this.children.add(child);
     }
-    
+
     public String getTeiidName() {
-		return teiidName;
-	}
-    
+        return teiidName;
+    }
+
     public void setTeiidName(String teiidName) {
-		this.teiidName = teiidName;
-	}
+        this.teiidName = teiidName;
+    }
 
-	@Override
-	public int hashCode() {
-		return HashCodeUtil.hashCode(name.hashCode(), connectionName, type);
-	}
+    @Override
+    public int hashCode() {
+        return HashCodeUtil.hashCode(name.hashCode(), connectionName, type);
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		RestSchemaNode other = (RestSchemaNode) obj;
-		return EquivalenceUtil.areEqual(connectionName, other.connectionName)
-				&& EquivalenceUtil.areEqual(name, other.name)
-				&& EquivalenceUtil.areEqual(type, other.type);
-	}
-    
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        RestSchemaNode other = (RestSchemaNode) obj;
+        return EquivalenceUtil.areEqual(connectionName, other.connectionName)
+                && EquivalenceUtil.areEqual(name, other.name)
+                && EquivalenceUtil.areEqual(type, other.type);
+    }
+
 }

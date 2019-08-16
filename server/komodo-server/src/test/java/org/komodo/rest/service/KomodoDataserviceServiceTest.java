@@ -49,71 +49,71 @@ import org.springframework.test.context.junit4.SpringRunner;
 @ContextConfiguration(classes = {KomodoRepositoryConfiguration.class, ServiceTestConfiguration.class})
 @DirtiesContext
 public class KomodoDataserviceServiceTest {
-	
-	@Autowired
-	private WorkspaceManagerImpl workspaceManagerImpl;
-	
-	@Autowired
-	private KomodoDataserviceService komodoDataserviceService;
-	
-	@Autowired
-	private DefaultMetadataInstance metadataInstance;
-	
-	@Test public void testImport() throws Exception {
-		ImportPayload payload = new ImportPayload();
-		payload.setTables(Arrays.asList("tbl"));
-		
-		KomodoStatusObject kso = null;
-		try {
-			kso = komodoDataserviceService.importViews("dv", "source", payload);
-			fail();
-		} catch (NotFoundException e) {
-			//dv not found
-		}
-		
-		workspaceManagerImpl.createDataVirtualization("dv");
-		
-		try {
-			kso = komodoDataserviceService.importViews("dv", "source", payload);
-			fail();
-		} catch (NotFoundException e) {
-			//source not found
-		}
-		
-		Map<String, String> props = new HashMap<>();
-		props.put(TeiidOpenShiftClient.ID, "someid");
-		props.put(TeiidDataSource.DATASOURCE_DRIVERNAME, "h2");
-		
-		metadataInstance.createDataSource("source", "h2", props);
-		
-		try {
-			kso = komodoDataserviceService.importViews("dv", "source", payload);
-			fail();
-		} catch (NotFoundException e) {
-			//source not found - as the properties are not valid
-		}
-		
-		//add the schema definition - so that we don't really need the datasource, and redeploy
-		workspaceManagerImpl.createOrUpdateSchema("someid", "source", 
-				"create foreign table tbl (col string) options (\"teiid_rel:fqn\" 'schema=s/table=tbl');");
-		metadataInstance.undeployDynamicVdb(KomodoMetadataService.getWorkspaceSourceVdbName("source"));
-		
-		kso = komodoDataserviceService.importViews("dv", "source", payload);
-		assertEquals(1, kso.getAttributes().size());
-		
-		String id = kso.getAttributes().values().iterator().next();
-		
-		ViewDefinition vd = workspaceManagerImpl.findViewDefinition(id);
-		vd.setId("consistent");
-		assertEquals("{\n" + 
-				"  \"dataVirtualizationName\" : \"dv\",\n" + 
-				"  \"ddl\" : \"CREATE VIEW tbl (col) AS \\nSELECT col\\nFROM source.tbl;\",\n" + 
-				"  \"id\" : \"consistent\",\n" + 
-				"  \"isComplete\" : true,\n" + 
-				"  \"isUserDefined\" : false,\n" + 
-				"  \"name\" : \"tbl\",\n" + 
-				"  \"sourcePaths\" : [ \"schema=source/table=tbl\" ]\n" + 
-				"}", KomodoJsonMarshaller.marshall(vd));
-	}
-	
+
+    @Autowired
+    private WorkspaceManagerImpl workspaceManagerImpl;
+
+    @Autowired
+    private KomodoDataserviceService komodoDataserviceService;
+
+    @Autowired
+    private DefaultMetadataInstance metadataInstance;
+
+    @Test public void testImport() throws Exception {
+        ImportPayload payload = new ImportPayload();
+        payload.setTables(Arrays.asList("tbl"));
+
+        KomodoStatusObject kso = null;
+        try {
+            kso = komodoDataserviceService.importViews("dv", "source", payload);
+            fail();
+        } catch (NotFoundException e) {
+            //dv not found
+        }
+
+        workspaceManagerImpl.createDataVirtualization("dv");
+
+        try {
+            kso = komodoDataserviceService.importViews("dv", "source", payload);
+            fail();
+        } catch (NotFoundException e) {
+            //source not found
+        }
+
+        Map<String, String> props = new HashMap<>();
+        props.put(TeiidOpenShiftClient.ID, "someid");
+        props.put(TeiidDataSource.DATASOURCE_DRIVERNAME, "h2");
+
+        metadataInstance.createDataSource("source", "h2", props);
+
+        try {
+            kso = komodoDataserviceService.importViews("dv", "source", payload);
+            fail();
+        } catch (NotFoundException e) {
+            //source not found - as the properties are not valid
+        }
+
+        //add the schema definition - so that we don't really need the datasource, and redeploy
+        workspaceManagerImpl.createOrUpdateSchema("someid", "source",
+                "create foreign table tbl (col string) options (\"teiid_rel:fqn\" 'schema=s/table=tbl');");
+        metadataInstance.undeployDynamicVdb(KomodoMetadataService.getWorkspaceSourceVdbName("source"));
+
+        kso = komodoDataserviceService.importViews("dv", "source", payload);
+        assertEquals(1, kso.getAttributes().size());
+
+        String id = kso.getAttributes().values().iterator().next();
+
+        ViewDefinition vd = workspaceManagerImpl.findViewDefinition(id);
+        vd.setId("consistent");
+        assertEquals("{\n" +
+                "  \"dataVirtualizationName\" : \"dv\",\n" +
+                "  \"ddl\" : \"CREATE VIEW tbl (col) AS \\nSELECT col\\nFROM source.tbl;\",\n" +
+                "  \"id\" : \"consistent\",\n" +
+                "  \"isComplete\" : true,\n" +
+                "  \"isUserDefined\" : false,\n" +
+                "  \"name\" : \"tbl\",\n" +
+                "  \"sourcePaths\" : [ \"schema=source/table=tbl\" ]\n" +
+                "}", KomodoJsonMarshaller.marshall(vd));
+    }
+
 }

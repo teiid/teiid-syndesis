@@ -28,6 +28,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EnableJpaRepositories
 @EntityScan(basePackageClasses = ViewDefinition.class)
 @ComponentScan
-public class KomodoRepositoryConfiguration { 
+public class KomodoRepositoryConfiguration {
 
 }

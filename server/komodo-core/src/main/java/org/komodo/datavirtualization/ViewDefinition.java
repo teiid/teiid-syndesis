@@ -45,128 +45,128 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonInclude(Include.NON_NULL)
 @JsonPropertyOrder(alphabetic = true)
 public class ViewDefinition implements Named {
-	
-	public static class State {
-		private List<String> sourcePaths = new ArrayList<>(1);
-		
-		public List<String> getSourcePaths() {
-			return sourcePaths;
-		}
-		public void setSourcePaths(List<String> sourcePaths) {
-			this.sourcePaths = sourcePaths;
-		}
-	}
-	
-	public static class ViewDefinitionStateConvertor extends JpaConverterJson {
-		@Override
-		protected Class<?> targetClass() {
-			return State.class;
-		}
-	}
 
-	@Id
-	@GeneratedValue(generator = "uuid2")
+    public static class State {
+        private List<String> sourcePaths = new ArrayList<>(1);
+
+        public List<String> getSourcePaths() {
+            return sourcePaths;
+        }
+        public void setSourcePaths(List<String> sourcePaths) {
+            this.sourcePaths = sourcePaths;
+        }
+    }
+
+    public static class ViewDefinitionStateConvertor extends JpaConverterJson {
+        @Override
+        protected Class<?> targetClass() {
+            return State.class;
+        }
+    }
+
+    @Id
+    @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
-	private String id;
-	@Column(unique=true)
-	private String name;
-	private String ddl;
-	@Column(name = "dv_name")
-	private String dataVirtualizationName;
-	@JsonProperty(value = StringConstants.DESCRIPTION_FIELD_NAME)
-	private String description;
-	@JsonProperty(value = "isComplete")
-	private boolean complete;
-	@JsonProperty(value = "isUserDefined")
-	private boolean userDefined;
-	
-	@JsonIgnore //for non-Entity serialization, the getters/setters will be used
-	@Convert(converter = ViewDefinitionStateConvertor.class)
-	private State state = new State();
-	
-	protected ViewDefinition() {
-	}
-	
-	public ViewDefinition(String dataVirtualizationName, String name) {
-		this.name = name;
-		this.dataVirtualizationName = dataVirtualizationName;
-	}
-	
-	public String getId() {
-		return id;
-	}
+    private String id;
+    @Column(unique=true)
+    private String name;
+    private String ddl;
+    @Column(name = "dv_name")
+    private String dataVirtualizationName;
+    @JsonProperty(value = StringConstants.DESCRIPTION_FIELD_NAME)
+    private String description;
+    @JsonProperty(value = "isComplete")
+    private boolean complete;
+    @JsonProperty(value = "isUserDefined")
+    private boolean userDefined;
 
-	@Override
-	public String getName() {
-		return name;
-	}
-	
-	public String getDescription() {
-		return this.description;
-	}
+    @JsonIgnore //for non-Entity serialization, the getters/setters will be used
+    @Convert(converter = ViewDefinitionStateConvertor.class)
+    private State state = new State();
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
+    protected ViewDefinition() {
+    }
 
-	public String getDdl() {
-		return this.ddl;
-	}
+    public ViewDefinition(String dataVirtualizationName, String name) {
+        this.name = name;
+        this.dataVirtualizationName = dataVirtualizationName;
+    }
 
-	public void setDdl(String ddl) {
-		this.ddl = ddl;
-	}
+    public String getId() {
+        return id;
+    }
 
-	public void setComplete(boolean complete) {
-		this.complete = complete;
-	}
+    @Override
+    public String getName() {
+        return name;
+    }
 
-	public boolean isComplete() {
-		return this.complete;
-	}
+    public String getDescription() {
+        return this.description;
+    }
 
-	public void setUserDefined(boolean userDefined) {
-		this.userDefined = userDefined;
-	}
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-	public boolean isUserDefined() {
-		return this.userDefined;
-	}
+    public String getDdl() {
+        return this.ddl;
+    }
 
-	public List<String> getSourcePaths() {
-		return state.sourcePaths;
-	}
+    public void setDdl(String ddl) {
+        this.ddl = ddl;
+    }
 
-	public void addSourcePath(String sourcePath) {
-		this.getSourcePaths().add(sourcePath);
-	}
+    public void setComplete(boolean complete) {
+        this.complete = complete;
+    }
 
-	public void setSourcePaths(List<String> sourcePaths) {
-		state.sourcePaths = sourcePaths;
-	}
-	
-	public String getDataVirtualizationName() {
-		return dataVirtualizationName;
-	}
-	
-	public void setDataVirtualizationName(String dataVirtualizationName) {
-		this.dataVirtualizationName = dataVirtualizationName;
-	}
-	
-	public State getState() {
-		return state;
-	}
-	
-	public void setState(State state) {
-		this.state = state;
-	}
+    public boolean isComplete() {
+        return this.complete;
+    }
 
-	public void setId(String id) {
-		this.id = id;
-	}
-	
-	public void clearState() {
-		this.state = new State();
-	}
-	
+    public void setUserDefined(boolean userDefined) {
+        this.userDefined = userDefined;
+    }
+
+    public boolean isUserDefined() {
+        return this.userDefined;
+    }
+
+    public List<String> getSourcePaths() {
+        return state.sourcePaths;
+    }
+
+    public void addSourcePath(String sourcePath) {
+        this.getSourcePaths().add(sourcePath);
+    }
+
+    public void setSourcePaths(List<String> sourcePaths) {
+        state.sourcePaths = sourcePaths;
+    }
+
+    public String getDataVirtualizationName() {
+        return dataVirtualizationName;
+    }
+
+    public void setDataVirtualizationName(String dataVirtualizationName) {
+        this.dataVirtualizationName = dataVirtualizationName;
+    }
+
+    public State getState() {
+        return state;
+    }
+
+    public void setState(State state) {
+        this.state = state;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void clearState() {
+        this.state = new State();
+    }
+
 }

@@ -32,42 +32,42 @@ import org.springframework.data.util.Pair;
  *  The Path string will be composed of key=value string pairs separated by forward slash ('/')
  */
 public class PathUtils {
-	/**
-	 * The String "/"
-	 */
-	public static final String OPTION_SEPARATOR = "/"; //$NON-NLS-1$
-	
-	/**
-	 * The String "="
-	 */
-	public static final String VALUE_SEPARATOR = "="; //$NON-NLS-1$
-	
-	/**
-	 * Simple method parses the input path and returns a set of string {@link Properties}
-	 * @param path
-	 * @return properties object
-	 */
-	public static List<Pair<String, String>> getOptions(String path) {
-		StringTokenizer tokenizer = new StringTokenizer(path, OPTION_SEPARATOR);
-		
-		List<Pair<String, String>> props = new ArrayList<>();
-		
+    /**
+     * The String "/"
+     */
+    public static final String OPTION_SEPARATOR = "/"; //$NON-NLS-1$
+
+    /**
+     * The String "="
+     */
+    public static final String VALUE_SEPARATOR = "="; //$NON-NLS-1$
+
+    /**
+     * Simple method parses the input path and returns a set of string {@link Properties}
+     * @param path
+     * @return properties object
+     */
+    public static List<Pair<String, String>> getOptions(String path) {
+        StringTokenizer tokenizer = new StringTokenizer(path, OPTION_SEPARATOR);
+
+        List<Pair<String, String>> props = new ArrayList<>();
+
         while (tokenizer.hasMoreTokens()) {
             String token = tokenizer.nextToken();
-            
+
             // Now we split this token via the "="
             StringTokenizer strTkzr = new StringTokenizer(token, VALUE_SEPARATOR);
             String key = strTkzr.nextToken();
             String value = strTkzr.nextToken();
             try {
-				props.add(Pair.of(URLDecoder.decode(key, "UTF-8") , URLDecoder.decode(value, "UTF-8")));
-			} catch (UnsupportedEncodingException e) {
-				throw new RuntimeException(e);
-			}
+                props.add(Pair.of(URLDecoder.decode(key, "UTF-8") , URLDecoder.decode(value, "UTF-8")));
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException(e);
+            }
         }
-        
+
         return props;
 
-	}
-	
+    }
+
 }

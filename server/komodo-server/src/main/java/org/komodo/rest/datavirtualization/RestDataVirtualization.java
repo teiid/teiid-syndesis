@@ -37,12 +37,12 @@ public final class RestDataVirtualization {
      * Label used to describe description
      */
     public static final String DESCRIPTION_LABEL = "tko__description";
-    
+
     /**
      * Label used to describe dataservice viewNames
      */
     public static final String DATASERVICE_VIEW_DEFINITIONS_LABEL = "serviceViewDefinitions"; //$NON-NLS-1$
-    
+
     public static final String DATASERVICE_NAME_LABEL = "keng__id"; //$NON-NLS-1$
 
     private String id;
@@ -57,7 +57,7 @@ public final class RestDataVirtualization {
     private String publishPodName;
     private String odataHostName;
     private boolean empty = true;
-    
+
     /**
      * Constructor for use when deserializing
      */
@@ -72,7 +72,7 @@ public final class RestDataVirtualization {
      */
     public RestDataVirtualization(DataVirtualization dataService, String vdbName) throws KException {
         setName(dataService.getName());
-        
+
         setId(dataService.getId());
 
         setDescription(dataService.getDescription());
@@ -87,35 +87,35 @@ public final class RestDataVirtualization {
      * @return the VDB description (can be empty)
      */
     public String getDescription() {
-    	return description;
+        return description;
     }
 
     /**
      * @param description the description to set
      */
     public void setDescription(String description) {
-    	this.description = description;
+        this.description = description;
     }
 
     /**
      * @return the service view model name (can be empty)
      */
     public String getServiceViewModel() {
-    	return this.serviceViewModel;
+        return this.serviceViewModel;
     }
 
     /**
      * @param modelName the view model name to set
      */
     public void setServiceViewModel(String modelName) {
-    	this.serviceViewModel = modelName;
+        this.serviceViewModel = modelName;
     }
 
     /**
      * @return the service vdb name (can be empty)
      */
     public String getServiceVdbName() {
-    	return this.serviceVdbName;
+        return this.serviceVdbName;
     }
 
     /**
@@ -129,35 +129,35 @@ public final class RestDataVirtualization {
      * @return the service published state (never empty)
      */
     public String getPublishedState() {
-    	return this.publishedState;
+        return this.publishedState;
     }
-    
+
     /**
      * @param publishedState the published state
      */
     public void setPublishedState(String publishedState) {
-    	this.publishedState = publishedState;
+        this.publishedState = publishedState;
     }
 
     /**
      * @return the pod namespace (can be empty)
      */
     public String getPodNamespace() {
-    	return this.podNamespace;
+        return this.podNamespace;
     }
 
     /**
-     * @param podNamesapce the service pod namespace to set
+     * @param podNamespace the service pod namespace to set
      */
     public void setPodNamespace(String podNamespace) {
-    	this.podNamespace = podNamespace;
+        this.podNamespace = podNamespace;
     }
 
     /**
      * @return the service pod name (can be empty)
      */
     public String getPublishPodName() {
-    	return this.publishPodName;
+        return this.publishPodName;
     }
 
     /**
@@ -166,120 +166,120 @@ public final class RestDataVirtualization {
     public void setPublishPodName(String publishPodName) {
         this.publishPodName = publishPodName;
     }
-    
+
     /**
      * @return the service pod name (can be empty)
      */
     public String getOdataHostName() {
-    	return this.odataHostName;
+        return this.odataHostName;
     }
 
     /**
-     * @param publishPodName the service pod name to set
+     * @param odataHostName the service pod name to set
      */
     public void setOdataHostName(String odataHostName) {
-    	this.odataHostName = odataHostName;
+        this.odataHostName = odataHostName;
     }
-    
+
     public String getName() {
-    	return this.name;
+        return this.name;
     }
-    
+
     public void setName(String name) {
-    	this.name = name;
+        this.name = name;
     }
-    
+
     public String getId() {
-    	return this.id;
+        return this.id;
     }
-    
+
     public void setId(String id) {
-    	this.id = id;
+        this.id = id;
     }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((description == null) ? 0 : description.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + ((odataHostName == null) ? 0 : odataHostName.hashCode());
-		result = prime * result + ((podNamespace == null) ? 0 : podNamespace.hashCode());
-		result = prime * result + ((publishPodName == null) ? 0 : publishPodName.hashCode());
-		result = prime * result + ((publishedState == null) ? 0 : publishedState.hashCode());
-		result = prime * result + ((serviceVdbName == null) ? 0 : serviceVdbName.hashCode());
-		result = prime * result + ((serviceViewModel == null) ? 0 : serviceViewModel.hashCode());
-		return result;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((description == null) ? 0 : description.hashCode());
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((odataHostName == null) ? 0 : odataHostName.hashCode());
+        result = prime * result + ((podNamespace == null) ? 0 : podNamespace.hashCode());
+        result = prime * result + ((publishPodName == null) ? 0 : publishPodName.hashCode());
+        result = prime * result + ((publishedState == null) ? 0 : publishedState.hashCode());
+        result = prime * result + ((serviceVdbName == null) ? 0 : serviceVdbName.hashCode());
+        result = prime * result + ((serviceViewModel == null) ? 0 : serviceViewModel.hashCode());
+        return result;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		RestDataVirtualization other = (RestDataVirtualization) obj;
-		if (description == null) {
-			if (other.description != null)
-				return false;
-		} else if (!description.equals(other.description))
-			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
-		if (odataHostName == null) {
-			if (other.odataHostName != null)
-				return false;
-		} else if (!odataHostName.equals(other.odataHostName))
-			return false;
-		if (podNamespace == null) {
-			if (other.podNamespace != null)
-				return false;
-		} else if (!podNamespace.equals(other.podNamespace))
-			return false;
-		if (publishPodName == null) {
-			if (other.publishPodName != null)
-				return false;
-		} else if (!publishPodName.equals(other.publishPodName))
-			return false;
-		if (publishedState == null) {
-			if (other.publishedState != null)
-				return false;
-		} else if (!publishedState.equals(other.publishedState))
-			return false;
-		if (serviceVdbName == null) {
-			if (other.serviceVdbName != null)
-				return false;
-		} else if (!serviceVdbName.equals(other.serviceVdbName))
-			return false;
-		if (serviceViewModel == null) {
-			if (other.serviceViewModel != null)
-				return false;
-		} else if (!serviceViewModel.equals(other.serviceViewModel))
-			return false;
-		return true;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        RestDataVirtualization other = (RestDataVirtualization) obj;
+        if (description == null) {
+            if (other.description != null)
+                return false;
+        } else if (!description.equals(other.description))
+            return false;
+        if (id == null) {
+            if (other.id != null)
+                return false;
+        } else if (!id.equals(other.id))
+            return false;
+        if (name == null) {
+            if (other.name != null)
+                return false;
+        } else if (!name.equals(other.name))
+            return false;
+        if (odataHostName == null) {
+            if (other.odataHostName != null)
+                return false;
+        } else if (!odataHostName.equals(other.odataHostName))
+            return false;
+        if (podNamespace == null) {
+            if (other.podNamespace != null)
+                return false;
+        } else if (!podNamespace.equals(other.podNamespace))
+            return false;
+        if (publishPodName == null) {
+            if (other.publishPodName != null)
+                return false;
+        } else if (!publishPodName.equals(other.publishPodName))
+            return false;
+        if (publishedState == null) {
+            if (other.publishedState != null)
+                return false;
+        } else if (!publishedState.equals(other.publishedState))
+            return false;
+        if (serviceVdbName == null) {
+            if (other.serviceVdbName != null)
+                return false;
+        } else if (!serviceVdbName.equals(other.serviceVdbName))
+            return false;
+        if (serviceViewModel == null) {
+            if (other.serviceViewModel != null)
+                return false;
+        } else if (!serviceViewModel.equals(other.serviceViewModel))
+            return false;
+        return true;
+    }
 
-	public void setEmpty(boolean empty) {
-		this.empty = empty;
-	}
-	
-	/**
-	 * If there is nothing defined in this data virtualization
-	 * @return
-	 */
-	public boolean isEmpty() {
-		return empty;
-	}
-    
+    public void setEmpty(boolean empty) {
+        this.empty = empty;
+    }
+
+    /**
+     * If there is nothing defined in this data virtualization
+     * @return
+     */
+    public boolean isEmpty() {
+        return empty;
+    }
+
 }

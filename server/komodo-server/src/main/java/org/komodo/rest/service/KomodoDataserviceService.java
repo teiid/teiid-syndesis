@@ -17,8 +17,7 @@
  */
 package org.komodo.rest.service;
 
-import static org.komodo.rest.datavirtualization.RelationalMessages.Error.DATASERVICE_SERVICE_NAME_EXISTS;
-import static org.komodo.rest.datavirtualization.RelationalMessages.Error.DATASERVICE_SERVICE_SERVICE_NAME_ERROR;
+import static org.komodo.rest.datavirtualization.RelationalMessages.Error.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,7 +77,7 @@ public final class KomodoDataserviceService extends KomodoService {
 
     @Autowired
     private TeiidOpenShiftClient openshiftClient;
-    
+
     @Autowired
     private KomodoMetadataService metadataService;
 
@@ -91,7 +90,7 @@ public final class KomodoDataserviceService extends KomodoService {
      *            the request URI information (never <code>null</code>)
      * @return a JSON document representing all the Dataservices in the Komodo
      *         workspace (never <code>null</code>)
-     * @throws Exception 
+     * @throws Exception
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -100,7 +99,7 @@ public final class KomodoDataserviceService extends KomodoService {
     public Response getDataservices(final @Context HttpHeaders headers, final @Context UriInfo uriInfo) throws Exception {
         String principal = checkSecurityContext(headers);
 
-    	return runInTransaction(principal, "getDataVirtualizations", true, ()->{
+        return runInTransaction(principal, "getDataVirtualizations", true, ()->{
             Iterable<? extends DataVirtualization> dataServices = getWorkspaceManager().findDataVirtualizations();
 
             final List<RestDataVirtualization> entities = new ArrayList<>();
@@ -115,21 +114,21 @@ public final class KomodoDataserviceService extends KomodoService {
 
             // create response
             return toResponse(entities);
-    	});
+        });
     }
 
-	private RestDataVirtualization createRestDataservice(final DataVirtualization dataService) throws KException {
-		RestDataVirtualization entity = new RestDataVirtualization(dataService, dataService.getServiceVdbName());
-		entity.setServiceViewModel(SERVICE_VDB_VIEW_MODEL);
-		// Set published status of dataservice
-		BuildStatus status = this.openshiftClient.getVirtualizationStatus(dataService.getServiceVdbName());
-		entity.setPublishedState(status.status().name());
-		entity.setPublishPodName(status.publishPodName());
-		entity.setPodNamespace(status.namespace());
-		entity.setOdataHostName(getOdataHost(status));
-		entity.setEmpty(this.getWorkspaceManager().findViewDefinitionsNames(dataService.getName()).isEmpty());
-		return entity;
-	}
+    private RestDataVirtualization createRestDataservice(final DataVirtualization dataService) throws KException {
+        RestDataVirtualization entity = new RestDataVirtualization(dataService, dataService.getServiceVdbName());
+        entity.setServiceViewModel(SERVICE_VDB_VIEW_MODEL);
+        // Set published status of dataservice
+        BuildStatus status = this.openshiftClient.getVirtualizationStatus(dataService.getServiceVdbName());
+        entity.setPublishedState(status.status().name());
+        entity.setPublishPodName(status.publishPodName());
+        entity.setPodNamespace(status.namespace());
+        entity.setOdataHostName(getOdataHost(status));
+        entity.setEmpty(this.getWorkspaceManager().findViewDefinitionsNames(dataService.getName()).isEmpty());
+        return entity;
+    }
 
     /**
      * @param headers
@@ -139,7 +138,7 @@ public final class KomodoDataserviceService extends KomodoService {
      * @param dataserviceName
      *            the id of the Dataservice being retrieved (cannot be empty)
      * @return the JSON representation of the Dataservice (never <code>null</code>)
-     * @throws Exception 
+     * @throws Exception
      */
     @GET
     @Path(V1Constants.DATA_SERVICE_PLACEHOLDER)
@@ -154,18 +153,18 @@ public final class KomodoDataserviceService extends KomodoService {
         String principal = checkSecurityContext(headers);
 
         RestDataVirtualization dataservice = runInTransaction(principal, "getDataVirtualization", true, () -> {
-        	DataVirtualization dv = getWorkspaceManager().findDataVirtualization(dataserviceName);
+            DataVirtualization dv = getWorkspaceManager().findDataVirtualization(dataserviceName);
             return createRestDataservice(dv);
         });
         if (dataservice == null) {
-        	notFound( dataserviceName );
-    	}
+            notFound( dataserviceName );
+        }
 
         LOGGER.debug("getDataservice:Dataservice '%s' entity was constructed", dataservice.getName()); //$NON-NLS-1$
         return toResponse(dataservice);
     }
 
-	/**
+    /**
      * Create a new DataService in the komodo repository
      *
      * @param headers
@@ -174,11 +173,9 @@ public final class KomodoDataserviceService extends KomodoService {
      *            the request URI information (never <code>null</code>)
      * @param dataserviceName
      *            the dataservice name (cannot be empty)
-     * @param dataserviceJson
-     *            the dataservice JSON representation (cannot be <code>null</code>)
      * @return a JSON representation of the new dataservice (never
      *         <code>null</code>)
-	 * @throws Exception 
+     * @throws Exception
      */
     @POST
     @Path(FORWARD_SLASH + V1Constants.DATA_SERVICE_PLACEHOLDER)
@@ -208,7 +205,7 @@ public final class KomodoDataserviceService extends KomodoService {
         if (!namesMatch) {
             forbidden(DATASERVICE_SERVICE_SERVICE_NAME_ERROR, dataserviceName, jsonDataserviceName);
         }
-        
+
         final String errorMsg = VALIDATOR.checkValidName(dataserviceName);
 
         // a name validation error occurred
@@ -217,11 +214,11 @@ public final class KomodoDataserviceService extends KomodoService {
         }
 
         // create new Dataservice
-    	return runInTransaction(principal, "createDataVirtualization", false, () -> {
+        return runInTransaction(principal, "createDataVirtualization", false, () -> {
             // Error if the repo already contains a dataservice with the supplied name.
             DataVirtualization dv = getWorkspaceManager().findDataVirtualizationByNameIgnoreCase(dataserviceName);
             if (dv != null) {
-            	error(Status.CONFLICT, RelationalMessages.Error.DATASERVICE_SERVICE_CREATE_ALREADY_EXISTS);
+                error(Status.CONFLICT, RelationalMessages.Error.DATASERVICE_SERVICE_CREATE_ALREADY_EXISTS);
             }
             final DataVirtualization dataservice = getWorkspaceManager().createDataVirtualization(dataserviceName);
 
@@ -244,7 +241,7 @@ public final class KomodoDataserviceService extends KomodoService {
      *            the name of the data service to remove (cannot be
      *            <code>null</code>)
      * @return a JSON document representing the results of the removal
-     * @throws Exception 
+     * @throws Exception
      */
     @DELETE
     @Path(V1Constants.DATA_SERVICE_PLACEHOLDER)
@@ -256,11 +253,11 @@ public final class KomodoDataserviceService extends KomodoService {
             @ApiParam(value = "Name of the data service to be deleted", required = true) final @PathParam("dataserviceName") String dataserviceName) throws Exception {
         String principal = checkSecurityContext(headers);
 
-    	KomodoStatusObject kso = runInTransaction(principal, "deleteDataVirtualization", false, ()->{
+        KomodoStatusObject kso = runInTransaction(principal, "deleteDataVirtualization", false, ()->{
             final WorkspaceManager wkspMgr = getWorkspaceManager();
 
             final DataVirtualization dataservice = wkspMgr.findDataVirtualization(dataserviceName);
-            
+
             // Error if the specified service does not exist
             if (dataservice == null) {
                 notFound(dataserviceName);
@@ -272,9 +269,9 @@ public final class KomodoDataserviceService extends KomodoService {
             KomodoStatusObject status = new KomodoStatusObject("Delete Status"); //$NON-NLS-1$
             status.addAttribute(dataserviceName, "Successfully deleted"); //$NON-NLS-1$
 
-    		return status;
-    	});
-    	
+            return status;
+        });
+
         return toResponse(kso);
     }
 
@@ -287,7 +284,7 @@ public final class KomodoDataserviceService extends KomodoService {
      *            the data service name being validated (cannot be empty)
      * @return the response (never <code>null</code>) with an entity that is either
      *         an empty string, when the name is valid, or an error message
-     * @throws Exception 
+     * @throws Exception
      */
     @GET
     @Path(V1Constants.NAME_VALIDATION_SEGMENT + FORWARD_SLASH + V1Constants.DATA_SERVICE_PLACEHOLDER)
@@ -312,11 +309,11 @@ public final class KomodoDataserviceService extends KomodoService {
 
         // check for duplicate name
         final DataVirtualization service = runInTransaction(principal, "validateDataVirtualizationName", true, () -> {
-        	return getWorkspaceManager().findDataVirtualizationByNameIgnoreCase(dataserviceName);
+            return getWorkspaceManager().findDataVirtualizationByNameIgnoreCase(dataserviceName);
         });
 
         if (service == null) {
-        	return Response.ok().build();
+            return Response.ok().build();
         }
 
         // name is a duplicate
@@ -324,24 +321,24 @@ public final class KomodoDataserviceService extends KomodoService {
     }
 
     @PUT
-    @Path(StringConstants.FORWARD_SLASH + V1Constants.DATA_SERVICE_PLACEHOLDER + 
-    		StringConstants.FORWARD_SLASH + V1Constants.IMPORT + StringConstants.FORWARD_SLASH
-    		+ V1Constants.KOMODO_SOURCE_PLACEHOLDER)
+    @Path(StringConstants.FORWARD_SLASH + V1Constants.DATA_SERVICE_PLACEHOLDER +
+            StringConstants.FORWARD_SLASH + V1Constants.IMPORT + StringConstants.FORWARD_SLASH
+            + V1Constants.KOMODO_SOURCE_PLACEHOLDER)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Import views from a given source", response = KomodoStatusObject.class)
     @ApiResponses(value = { @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
             @ApiResponse(code = 403, message = "An error has occurred.") })
     public Response importViews(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
-            @ApiParam(value = "Name of the dataservice", required = true) 
-    		final @PathParam("dataserviceName") 
-    		String dataserviceName,
-            
-            @ApiParam( value = "Name of the komodo source", required = true ) 
-    		final @PathParam( "komodoSourceName" ) 
-    		String komodoSourceName,
-    		
-    		@ApiParam(value = "Import Payload", required = true) 
-    		final ImportPayload importPayload) throws Exception {
+            @ApiParam(value = "Name of the dataservice", required = true)
+            final @PathParam("dataserviceName")
+            String dataserviceName,
+
+            @ApiParam( value = "Name of the komodo source", required = true )
+            final @PathParam( "komodoSourceName" )
+            String komodoSourceName,
+
+            @ApiParam(value = "Import Payload", required = true)
+            final ImportPayload importPayload) throws Exception {
 
         String principal = checkSecurityContext(headers);
 
@@ -349,72 +346,72 @@ public final class KomodoDataserviceService extends KomodoService {
         if (StringUtils.isBlank(dataserviceName)) {
             forbidden(RelationalMessages.Error.DATASERVICE_SERVICE_MISSING_NAME);
         }
-        
+
         if (StringUtils.isBlank(komodoSourceName)) {
-        	forbidden(RelationalMessages.Error.CONNECTION_SERVICE_MISSING_CONNECTION_NAME);
+            forbidden(RelationalMessages.Error.CONNECTION_SERVICE_MISSING_CONNECTION_NAME);
         }
 
-    	KomodoStatusObject kso = runInTransaction(principal, "import", false, () -> {
-    		return importViews(dataserviceName, komodoSourceName, importPayload);
-    	});
-    	
-    	return toResponse(kso);
+        KomodoStatusObject kso = runInTransaction(principal, "import", false, () -> {
+            return importViews(dataserviceName, komodoSourceName, importPayload);
+        });
+
+        return toResponse(kso);
     }
 
-	KomodoStatusObject importViews(final String dataserviceName, final String komodoSourceName,
-			final ImportPayload importPayload) throws KException, AssertionError {
-		DataVirtualization dataservice = getWorkspaceManager().findDataVirtualization(dataserviceName);
-		if (dataservice == null) {
-			notFound( dataserviceName );
-		}
-		
-		Schema s = metadataService.findSchema(komodoSourceName);
-		
-		if (s == null) {
-			notFound( komodoSourceName );
-		}
-		
-		ServiceVdbGenerator serviceVdbGenerator = new ServiceVdbGenerator(metadataService);
-		
-		KomodoStatusObject kso = new KomodoStatusObject("Import Status"); //$NON-NLS-1$
-		
-		for (String name : importPayload.getTables()) {
-			Table t = s.getTable(name);
-			if (t == null) {
-				//could be an error/warning
-				continue;
-			}
-			
-			ViewDefinition viewDefn = getWorkspaceManager().findViewDefinitionByNameIgnoreCase(dataserviceName, name);
-			if (viewDefn != null) {
-				//sanity check
-				if (!name.equalsIgnoreCase(viewDefn.getName())) {
-					throw new AssertionError("imported view name conflicts with an existing view name");
-				}
-				
-				//reuse the same id
-				viewDefn.clearState();
-				viewDefn.setUserDefined(false);
-				viewDefn.setDdl(null);
-				viewDefn.setDescription(null);
-			} else {
-				viewDefn = getWorkspaceManager().createViewDefiniton(dataserviceName, name);
-			}
-			viewDefn.setComplete(true);
-			FullyQualifiedName fqn = new FullyQualifiedName(SCHEMA_KEY, komodoSourceName);
-			fqn.append(TABLE_KEY, t.getName());
-			viewDefn.addSourcePath(fqn.toString());
-			
-			String ddl = serviceVdbGenerator.getODataViewDdl(viewDefn);
-			viewDefn.setDdl(ddl);
-			
-			kso.addAttribute(viewDefn.getName(), viewDefn.getId());
-		}
-		
-		dataservice.setDirty(true);
-		
-		return kso;
-	}
+    KomodoStatusObject importViews(final String dataserviceName, final String komodoSourceName,
+            final ImportPayload importPayload) throws KException, AssertionError {
+        DataVirtualization dataservice = getWorkspaceManager().findDataVirtualization(dataserviceName);
+        if (dataservice == null) {
+            notFound( dataserviceName );
+        }
+
+        Schema s = metadataService.findSchema(komodoSourceName);
+
+        if (s == null) {
+            notFound( komodoSourceName );
+        }
+
+        ServiceVdbGenerator serviceVdbGenerator = new ServiceVdbGenerator(metadataService);
+
+        KomodoStatusObject kso = new KomodoStatusObject("Import Status"); //$NON-NLS-1$
+
+        for (String name : importPayload.getTables()) {
+            Table t = s.getTable(name);
+            if (t == null) {
+                //could be an error/warning
+                continue;
+            }
+
+            ViewDefinition viewDefn = getWorkspaceManager().findViewDefinitionByNameIgnoreCase(dataserviceName, name);
+            if (viewDefn != null) {
+                //sanity check
+                if (!name.equalsIgnoreCase(viewDefn.getName())) {
+                    throw new AssertionError("imported view name conflicts with an existing view name");
+                }
+
+                //reuse the same id
+                viewDefn.clearState();
+                viewDefn.setUserDefined(false);
+                viewDefn.setDdl(null);
+                viewDefn.setDescription(null);
+            } else {
+                viewDefn = getWorkspaceManager().createViewDefiniton(dataserviceName, name);
+            }
+            viewDefn.setComplete(true);
+            FullyQualifiedName fqn = new FullyQualifiedName(SCHEMA_KEY, komodoSourceName);
+            fqn.append(TABLE_KEY, t.getName());
+            viewDefn.addSourcePath(fqn.toString());
+
+            String ddl = serviceVdbGenerator.getODataViewDdl(viewDefn);
+            viewDefn.setDdl(ddl);
+
+            kso.addAttribute(viewDefn.getName(), viewDefn.getId());
+        }
+
+        dataservice.setDirty(true);
+
+        return kso;
+    }
 
     /**
      * Get OData hostname from the buildStatus
@@ -422,20 +419,20 @@ public final class KomodoDataserviceService extends KomodoService {
      * @return the odata hostname
      */
     private String getOdataHost(final BuildStatus buildStatus) {
-    	String odataHost = null;
-    	if(buildStatus != null) {
+        String odataHost = null;
+        if(buildStatus != null) {
             List<RouteStatus> routeStatuses = buildStatus.routes();
             if(!routeStatuses.isEmpty()) {
-            	// Find Odata route if it exists
-            	for(RouteStatus routeStatus: routeStatuses) {
-            		if(routeStatus.getProtocol() == ProtocolType.ODATA) {
-            			odataHost = routeStatus.getHost();
-            			break;
-            		}
-            	}
+                // Find Odata route if it exists
+                for(RouteStatus routeStatus: routeStatuses) {
+                    if(routeStatus.getProtocol() == ProtocolType.ODATA) {
+                        odataHost = routeStatus.getHost();
+                        break;
+                    }
+                }
             }
-    	}
-    	return odataHost;
+        }
+        return odataHost;
     }
 
 
@@ -445,10 +442,8 @@ public final class KomodoDataserviceService extends KomodoService {
      * @param headers         the request headers (never <code>null</code>)
      * @param uriInfo         the request URI information (never <code>null</code>)
      * @param dataserviceName the dataservice name (cannot be empty)
-     * @param dataserviceJson the dataservice JSON representation (cannot be
-     *                        <code>null</code>)
      * @return a JSON representation of the new connection (never <code>null</code>)
-     * @throws Exception 
+     * @throws Exception
      */
     @PUT
     @Path(FORWARD_SLASH + V1Constants.DATA_SERVICE_PLACEHOLDER)
@@ -479,13 +474,13 @@ public final class KomodoDataserviceService extends KomodoService {
             forbidden(DATASERVICE_SERVICE_SERVICE_NAME_ERROR, dataserviceName, jsonDataserviceName);
         }
 
-    	return runInTransaction(principal, "createDataVirtualization", false, () -> {
+        return runInTransaction(principal, "createDataVirtualization", false, () -> {
             // Error if the repo already contains a dataservice with the supplied name.
             DataVirtualization existing = getWorkspaceManager().findDataVirtualization(restDataservice.getName());
             if (existing == null) {
-            	notFound( dataserviceName );
+                notFound( dataserviceName );
             }
-            
+
             existing.setDescription(restDataservice.getDescription());
             KomodoStatusObject kso = new KomodoStatusObject("Update Dataservice Status"); //$NON-NLS-1$
             kso.addAttribute(dataserviceName, "Dataservice successfully updated"); //$NON-NLS-1$
@@ -493,5 +488,5 @@ public final class KomodoDataserviceService extends KomodoService {
             return toResponse(kso);
         });
     }
-    
+
 }

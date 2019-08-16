@@ -33,12 +33,12 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonSerialize(as = RestSourceSchema.class)
 @JsonInclude(Include.NON_NULL)
 public class RestSourceSchema {
-	
+
     /*
      * The schema name
      */
     private String schemaName;
-    
+
     /*
      * The source table objects for this schema
      */
@@ -46,20 +46,20 @@ public class RestSourceSchema {
 
     public RestSourceSchema(Schema schema) {
         super();
-    	List<RestSourceTable> tables = new ArrayList<RestSourceTable>();
-    	for( String key : schema.getTables().keySet()) {
-    		Table nextTable = schema.getTables().get(key);
-    		tables.add(new RestSourceTable(nextTable));
-    	}
-    	this.sourceTables = tables.toArray(new RestSourceTable[0]);
+        List<RestSourceTable> tables = new ArrayList<RestSourceTable>();
+        for( String key : schema.getTables().keySet()) {
+            Table nextTable = schema.getTables().get(key);
+            tables.add(new RestSourceTable(nextTable));
+        }
+        this.sourceTables = tables.toArray(new RestSourceTable[0]);
     }
 
     public String getSchemaName() {
-    	return this.schemaName;
+        return this.schemaName;
     }
-    
+
     public RestSourceTable[] getSourceTables() {
-    	return this.sourceTables;
+        return this.sourceTables;
     }
-    
+
 }

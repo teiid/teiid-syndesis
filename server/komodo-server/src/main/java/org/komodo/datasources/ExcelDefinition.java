@@ -28,14 +28,14 @@ public class ExcelDefinition extends DataSourceDefinition {
 
     @Override
     public String getPomDendencies() {
-    	throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public String getTranslatorName() {
         return "excel";
     }
-    
+
     @Override
     public boolean isTypeOf(Map<String, String> properties) {
         if ((properties != null) && (properties.get("PARENT_DIRECTORY") != null)) {
@@ -43,14 +43,14 @@ public class ExcelDefinition extends DataSourceDefinition {
         }
         return false;
     }
-    
+
     @Override
     public Map<String, String> getInternalTeiidDataSourceProperties(DefaultSyndesisDataSource source) {
-    	throw new UnsupportedOperationException();
-    } 
-    
+        throw new UnsupportedOperationException();
+    }
+
     @Override
     public Map<String, String> getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd) {
-    	throw new UnsupportedOperationException();
-    }  
+        throw new UnsupportedOperationException();
+    }
 }

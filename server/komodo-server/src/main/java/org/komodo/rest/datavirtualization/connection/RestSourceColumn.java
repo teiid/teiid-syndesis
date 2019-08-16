@@ -24,21 +24,21 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
- * Represents the configuration for the schema table's column info 
+ * Represents the configuration for the schema table's column info
  */
 @JsonSerialize(as = RestSourceColumn.class)
 @JsonInclude(Include.NON_NULL)
 public class RestSourceColumn {
-	
-	/*
-	 * The column name
-	 */
-	private String columnName;
-	
-	/*
-	 * The column datatype
-	 */
-	private String datatype;
+
+    /*
+     * The column name
+     */
+    private String columnName;
+
+    /*
+     * The column datatype
+     */
+    private String datatype;
 
     /**
      * Constructor for use when deserializing
@@ -50,10 +50,10 @@ public class RestSourceColumn {
     }
 
     public String getColumName() {
-    	return this.columnName;
+        return this.columnName;
     }
-    
+
     public String getDatatype() {
-    	return this.datatype;
+        return this.datatype;
     }
 }

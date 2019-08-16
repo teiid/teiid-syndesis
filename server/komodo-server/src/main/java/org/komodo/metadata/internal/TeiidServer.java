@@ -24,8 +24,8 @@ import org.teiid.translator.ExecutionFactory;
 import org.teiid.translator.TranslatorException;
 
 public class TeiidServer extends EmbeddedServer {
-	private ConcurrentHashMap<String, ConnectionFactoryProvider<?>> connectionFactoryProviders = new ConcurrentHashMap<String, ConnectionFactoryProvider<?>>();
-	
+    private ConcurrentHashMap<String, ConnectionFactoryProvider<?>> connectionFactoryProviders = new ConcurrentHashMap<String, ConnectionFactoryProvider<?>>();
+
     public TeiidServer() {
         this.cmr = new SBConnectorManagerRepository();
     }
@@ -43,9 +43,9 @@ public class TeiidServer extends EmbeddedServer {
     public ConnectionFactoryProvider<?> removeConnectionFactoryProvider(String jndiName) {
         return this.connectionFactoryProviders.remove(jndiName);
     }
-    
+
     @SuppressWarnings("serial")
-	protected class SBConnectorManagerRepository extends ConnectorManagerRepository {
+    protected class SBConnectorManagerRepository extends ConnectorManagerRepository {
         public SBConnectorManagerRepository() {
             super(true);
         }
@@ -68,5 +68,5 @@ public class TeiidServer extends EmbeddedServer {
                 }
             };
         }
-    }    
+    }
 }

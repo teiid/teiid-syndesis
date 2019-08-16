@@ -28,26 +28,26 @@ import org.komodo.rest.datavirtualization.RestSyndesisSourceStatus;
 import org.komodo.rest.datavirtualization.RestSyndesisSourceStatus.EntityState;
 
 public class RestSyndesisSourceStatusTest {
-	
-	@Test public void testSerialization() {
-		RestSyndesisSourceStatus rsss = new RestSyndesisSourceStatus("x");
-		rsss.setHasTeiidSource(true);
-		rsss.setId("id");
-		rsss.setErrors(Arrays.asList("some error"));
-		rsss.setSchemaState(EntityState.ACTIVE);
-		rsss.setVdbState(EntityState.MISSING);
-		rsss.setVdbName("vdb name");
-		
-		String value = KomodoJsonMarshaller.marshall(rsss);
-		assertEquals("{\n" + 
-				"  \"sourceName\" : \"x\",\n" + 
-				"  \"hasTeiidSource\" : true,\n" + 
-				"  \"errors\" : [ \"some error\" ],\n" + 
-				"  \"schemaState\" : \"ACTIVE\",\n" + 
-				"  \"id\" : \"id\",\n" + 
-				"  \"vdbName\" : \"vdb name\",\n" + 
-				"  \"vdbState\" : \"MISSING\"\n" + 
-				"}", value);
-	}
-	
+
+    @Test public void testSerialization() {
+        RestSyndesisSourceStatus rsss = new RestSyndesisSourceStatus("x");
+        rsss.setHasTeiidSource(true);
+        rsss.setId("id");
+        rsss.setErrors(Arrays.asList("some error"));
+        rsss.setSchemaState(EntityState.ACTIVE);
+        rsss.setVdbState(EntityState.MISSING);
+        rsss.setVdbName("vdb name");
+
+        String value = KomodoJsonMarshaller.marshall(rsss);
+        assertEquals("{\n" +
+                "  \"sourceName\" : \"x\",\n" +
+                "  \"hasTeiidSource\" : true,\n" +
+                "  \"errors\" : [ \"some error\" ],\n" +
+                "  \"schemaState\" : \"ACTIVE\",\n" +
+                "  \"id\" : \"id\",\n" +
+                "  \"vdbName\" : \"vdb name\",\n" +
+                "  \"vdbState\" : \"MISSING\"\n" +
+                "}", value);
+    }
+
 }

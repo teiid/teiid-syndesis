@@ -27,47 +27,47 @@ import org.komodo.openshift.BuildStatus.Status;
 import org.komodo.rest.KomodoJsonMarshaller;
 
 public class StatusTest {
-	
-	@Test public void testJsonRoundtrip() throws KException {
-		BuildStatus bs = new BuildStatus("vdb");
-		bs.setBuildName("buildName");
-		bs.setDeploymentName("deploymentName");
-		bs.setNamespace("namespace");
-		bs.setPublishPodName("pod");
-		bs.setStatus(Status.DEPLOYING);
-		//not used by serialization
-		bs.setPublishConfiguration(new PublishConfiguration());
-		RouteStatus route = new RouteStatus("x", ProtocolType.JDBC);
-		route.setHost("host");
-		route.setPath("path");
-		route.setPort("port");
-		route.setSecure(true);
-		route.setTarget("target");
-		bs.addRoute(route);
-		bs.addRoute(new RouteStatus("y", ProtocolType.ODATA));
-		
-		String value = KomodoJsonMarshaller.marshall(bs);
-		assertEquals("{\n" + 
-				"  \"build_status\" : \"DEPLOYING\",\n" + 
-				"  \"build_name\" : \"buildName\",\n" + 
-				"  \"deployment_name\" : \"deploymentName\",\n" + 
-				"  \"vdb_name\" : \"vdb\",\n" + 
-				"  \"namespace\" : \"namespace\",\n" + 
-				"  \"last_updated\" : 0,\n" + 
-				"  \"routes\" : [ {\n" + 
-				"    \"name\" : \"x\",\n" + 
-				"    \"protocol\" : \"jdbc\",\n" + 
-				"    \"host\" : \"host\",\n" + 
-				"    \"path\" : \"path\",\n" + 
-				"    \"target\" : \"target\",\n" + 
-				"    \"port\" : \"port\",\n" + 
-				"    \"secure\" : true\n" + 
-				"  }, {\n" + 
-				"    \"name\" : \"y\",\n" + 
-				"    \"protocol\" : \"odata\",\n" + 
-				"    \"secure\" : false\n" + 
-				"  } ]\n" + 
-				"}", value);
-	}
+
+    @Test public void testJsonRoundtrip() throws KException {
+        BuildStatus bs = new BuildStatus("vdb");
+        bs.setBuildName("buildName");
+        bs.setDeploymentName("deploymentName");
+        bs.setNamespace("namespace");
+        bs.setPublishPodName("pod");
+        bs.setStatus(Status.DEPLOYING);
+        //not used by serialization
+        bs.setPublishConfiguration(new PublishConfiguration());
+        RouteStatus route = new RouteStatus("x", ProtocolType.JDBC);
+        route.setHost("host");
+        route.setPath("path");
+        route.setPort("port");
+        route.setSecure(true);
+        route.setTarget("target");
+        bs.addRoute(route);
+        bs.addRoute(new RouteStatus("y", ProtocolType.ODATA));
+
+        String value = KomodoJsonMarshaller.marshall(bs);
+        assertEquals("{\n" +
+                "  \"build_status\" : \"DEPLOYING\",\n" +
+                "  \"build_name\" : \"buildName\",\n" +
+                "  \"deployment_name\" : \"deploymentName\",\n" +
+                "  \"vdb_name\" : \"vdb\",\n" +
+                "  \"namespace\" : \"namespace\",\n" +
+                "  \"last_updated\" : 0,\n" +
+                "  \"routes\" : [ {\n" +
+                "    \"name\" : \"x\",\n" +
+                "    \"protocol\" : \"jdbc\",\n" +
+                "    \"host\" : \"host\",\n" +
+                "    \"path\" : \"path\",\n" +
+                "    \"target\" : \"target\",\n" +
+                "    \"port\" : \"port\",\n" +
+                "    \"secure\" : true\n" +
+                "  }, {\n" +
+                "    \"name\" : \"y\",\n" +
+                "    \"protocol\" : \"odata\",\n" +
+                "    \"secure\" : false\n" +
+                "  } ]\n" +
+                "}", value);
+    }
 
 }

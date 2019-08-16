@@ -24,7 +24,7 @@ import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
  * Interface to allow for the wiring of where to obtain credentials
  */
 public interface CredentialsProvider {
-	
-	OAuthCredentials getCredentials();
+
+    OAuthCredentials getCredentials();
 
 }

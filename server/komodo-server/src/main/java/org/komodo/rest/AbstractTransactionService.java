@@ -27,23 +27,23 @@ import org.komodo.utils.KLog;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Base transactional functionality 
+ * Base transactional functionality
  * - TODO: could be built into KEngine instead, just needs a different naming convention
  * other than class name.
- * 
+ *
  * In many of the rollback/read only scenarios, a transaction is not necessary
- * 
+ *
  * Eventually we'll probably replace with the Transactional annotation
  */
 public abstract class AbstractTransactionService implements V1Constants {
-	
+
     protected static final KLog LOGGER = KLog.getLogger();
-	
-    public static final String REPO_USER = "anonymous";
-    
+
+    public static final String REPO_USER = "anonymous"; //$NON-NLS-1$
+
     @Autowired
     protected KEngine kengine;
-    
+
     /**
      * @param user
      *        the user initiating the transaction
@@ -51,25 +51,24 @@ public abstract class AbstractTransactionService implements V1Constants {
      *        the name of the transaction (cannot be empty)
      * @param rollbackOnly
      *        <code>true</code> if transaction must be rolled back
-     * @param callback the callback to fire when the transaction is committed
      * @return the new transaction (never <code>null</code>)
      * @throws KException
      *         if there is an error creating the transaction
      */
     private UnitOfWork createTransaction(final String user, final String name,
                                             final boolean rollbackOnly) throws KException {
-    	final UnitOfWork result = this.kengine.createTransaction( user,
+        final UnitOfWork result = this.kengine.createTransaction( user,
                                                                (getClass().getSimpleName() + COLON + name + COLON + System.currentTimeMillis()),
                                                                rollbackOnly, REPO_USER);
         LOGGER.debug( "createTransaction:created '%s', rollbackOnly = '%b'", result.getName(), result.isRollbackOnly() ); //$NON-NLS-1$
         return result;
     }
-    
+
     public <T> T runInTransaction(String user, String txnName, boolean rollbackOnly, Callable<T> callable) throws Exception {
-		UnitOfWork uow = null;
+        UnitOfWork uow = null;
 
         try {
-            uow = createTransaction(user, txnName, rollbackOnly ); //$NON-NLS-1$
+            uow = createTransaction(user, txnName, rollbackOnly );
             T result = callable.call();
             commit(uow);
             return result;
@@ -79,20 +78,20 @@ public abstract class AbstractTransactionService implements V1Constants {
             }
             throw e;
         }
-	}
-    
+    }
+
     private void commit(UnitOfWork transaction) throws Exception {
         boolean rollbackOnly = false;
-    	if (transaction.isRollbackOnly()) {
-    		rollbackOnly = true;
-    		transaction.rollback();
-    	} else {
-    		transaction.commit();
-    	}
+        if (transaction.isRollbackOnly()) {
+            rollbackOnly = true;
+            transaction.rollback();
+        } else {
+            transaction.commit();
+        }
 
         LOGGER.debug( "commit: successfully committed '%s', rollbackOnly = '%b'", //$NON-NLS-1$
                 transaction.getName(),
                 rollbackOnly);
     }
-    
+
 }

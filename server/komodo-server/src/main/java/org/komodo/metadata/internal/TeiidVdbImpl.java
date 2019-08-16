@@ -52,7 +52,7 @@ public class TeiidVdbImpl implements TeiidVdb, Comparable<TeiidVdbImpl> {
 
     private Properties properties = new Properties();
 
-	private VDBMetaData vdb;
+    private VDBMetaData vdb;
 
     public TeiidVdbImpl(VDB vdb) throws Exception {
         ArgCheck.isNotNull(vdb, "vdb"); //$NON-NLS-1$
@@ -77,7 +77,7 @@ public class TeiidVdbImpl implements TeiidVdb, Comparable<TeiidVdbImpl> {
         for (String name : vdb.getProperties().stringPropertyNames()) {
             properties.setProperty(name, vdb.getPropertyValue(name));
         }
-        
+
         this.vdb = (VDBMetaData)vdb;
     }
 
@@ -173,20 +173,20 @@ public class TeiidVdbImpl implements TeiidVdb, Comparable<TeiidVdbImpl> {
 
     @Override
     public List<? extends VDBImport> getImports() {
-    	return this.vdb.getVDBImports();
+        return this.vdb.getVDBImports();
     }
-    
+
     public VDBMetaData getVDBMetaData() {
-    	return this.vdb;
+        return this.vdb;
     }
-    
+
     @Override
     public Schema getSchema(String name) {
-    	if (!isActive()) {
-    		return null;
-    	}
-    	TransformationMetadata qmi = vdb.getAttachment(TransformationMetadata.class);
-    	return qmi.getMetadataStore().getSchema(name);
+        if (!isActive()) {
+            return null;
+        }
+        TransformationMetadata qmi = vdb.getAttachment(TransformationMetadata.class);
+        return qmi.getMetadataStore().getSchema(name);
     }
-    
+
 }

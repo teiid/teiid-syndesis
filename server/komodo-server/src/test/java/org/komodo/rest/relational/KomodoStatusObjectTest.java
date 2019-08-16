@@ -25,24 +25,24 @@ import org.komodo.rest.KomodoJsonMarshaller;
 import org.komodo.rest.datavirtualization.KomodoStatusObject;
 
 public class KomodoStatusObjectTest {
-	
-	@Test public void testJsonRoundtrip() {
-		KomodoStatusObject kso = new KomodoStatusObject("x");
-		kso.addAttribute("attribute", "message");
-		kso.addAttribute("attribute1", "message1");
-		
-		String value = KomodoJsonMarshaller.marshall(kso);
-		assertEquals("{\n" + 
-				"  \"Title\" : \"x\",\n" + 
-				"  \"Information\" : {\n" + 
-				"    \"attribute\" : \"message\",\n" + 
-				"    \"attribute1\" : \"message1\"\n" + 
-				"  }\n" + 
-				"}", value);
-		
-		KomodoStatusObject other = KomodoJsonMarshaller.unmarshall(value, KomodoStatusObject.class);
-		
-		assertEquals(kso, other);
-	}
-	
+
+    @Test public void testJsonRoundtrip() {
+        KomodoStatusObject kso = new KomodoStatusObject("x");
+        kso.addAttribute("attribute", "message");
+        kso.addAttribute("attribute1", "message1");
+
+        String value = KomodoJsonMarshaller.marshall(kso);
+        assertEquals("{\n" +
+                "  \"Title\" : \"x\",\n" +
+                "  \"Information\" : {\n" +
+                "    \"attribute\" : \"message\",\n" +
+                "    \"attribute1\" : \"message1\"\n" +
+                "  }\n" +
+                "}", value);
+
+        KomodoStatusObject other = KomodoJsonMarshaller.unmarshall(value, KomodoStatusObject.class);
+
+        assertEquals(kso, other);
+    }
+
 }

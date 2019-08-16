@@ -28,18 +28,18 @@ import org.springframework.context.annotation.ComponentScan;
 import org.teiid.runtime.EmbeddedConfiguration;
 
 @ComponentScan(basePackageClasses = {KomodoDataserviceService.class, DefaultMetadataInstance.class})
-@TestConfiguration 
+@TestConfiguration
 public class ServiceTestConfiguration {
 
-	@MockBean
-	private TeiidOpenShiftClient TeiidOpenShiftClient;
-	
-	@Bean
-	public TeiidServer teiidServer() {
-		EmbeddedConfiguration ec = new EmbeddedConfiguration();
-		TeiidServer server = new TeiidServer();
-		server.start(ec);
-		return server;
-	}
-	
+    @MockBean
+    private TeiidOpenShiftClient TeiidOpenShiftClient;
+
+    @Bean
+    public TeiidServer teiidServer() {
+        EmbeddedConfiguration ec = new EmbeddedConfiguration();
+        TeiidServer server = new TeiidServer();
+        server.start(ec);
+        return server;
+    }
+
 }

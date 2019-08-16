@@ -29,17 +29,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -70,17 +60,7 @@ import org.jboss.shrinkwrap.api.exporter.TarExporter;
 import org.komodo.KEngine;
 import org.komodo.KException;
 import org.komodo.StringConstants;
-import org.komodo.datasources.AmazonS3Definition;
-import org.komodo.datasources.DataSourceDefinition;
-import org.komodo.datasources.DefaultSyndesisDataSource;
-import org.komodo.datasources.ExcelDefinition;
-import org.komodo.datasources.FileDefinition;
-import org.komodo.datasources.MongoDBDefinition;
-import org.komodo.datasources.MySQLDefinition;
-import org.komodo.datasources.ODataV4Definition;
-import org.komodo.datasources.PostgreSQLDefinition;
-import org.komodo.datasources.SalesforceDefinition;
-import org.komodo.datasources.WebServiceDefinition;
+import org.komodo.datasources.*;
 import org.komodo.datavirtualization.SourceSchema;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.metadata.TeiidDataSource;
@@ -107,41 +87,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.fabric8.kubernetes.api.KubernetesHelper;
 import io.fabric8.kubernetes.api.builds.Builds;
-import io.fabric8.kubernetes.api.model.ContainerPort;
-import io.fabric8.kubernetes.api.model.EnvVar;
-import io.fabric8.kubernetes.api.model.EnvVarBuilder;
-import io.fabric8.kubernetes.api.model.EnvVarSourceBuilder;
-import io.fabric8.kubernetes.api.model.ObjectMeta;
-import io.fabric8.kubernetes.api.model.Pod;
-import io.fabric8.kubernetes.api.model.Quantity;
-import io.fabric8.kubernetes.api.model.ReplicationController;
-import io.fabric8.kubernetes.api.model.Secret;
-import io.fabric8.kubernetes.api.model.SecretBuilder;
-import io.fabric8.kubernetes.api.model.Service;
+import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.dsl.internal.PodOperationsImpl;
-import io.fabric8.openshift.api.model.Build;
-import io.fabric8.openshift.api.model.BuildConfig;
-import io.fabric8.openshift.api.model.BuildList;
-import io.fabric8.openshift.api.model.DeploymentCondition;
-import io.fabric8.openshift.api.model.DeploymentConfig;
-import io.fabric8.openshift.api.model.DeploymentConfigStatus;
-import io.fabric8.openshift.api.model.ImageStream;
-import io.fabric8.openshift.api.model.Route;
-import io.fabric8.openshift.api.model.RouteList;
-import io.fabric8.openshift.api.model.RouteSpec;
-import io.fabric8.openshift.api.model.TLSConfigBuilder;
+import io.fabric8.openshift.api.model.*;
 import io.fabric8.openshift.client.DefaultOpenShiftClient;
 import io.fabric8.openshift.client.NamespacedOpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftConfig;
 import io.fabric8.openshift.client.OpenShiftConfigBuilder;
 
-public class TeiidOpenShiftClient extends AbstractTransactionService implements StringConstants {
+@SuppressWarnings("nls")
+public class TeiidOpenShiftClient extends AbstractTransactionService {
     public static final String ID = "id";
-	private static final String SERVICE_CA_CERT_FILE = "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt";
+    private static final String SERVICE_CA_CERT_FILE = "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt";
     private String openShiftHost = "https://openshift.default.svc";
     private long buildTimeoutInSeconds = 2 * 60 * 1000L;
     private final OpenShiftConfig openShiftClientConfig = new OpenShiftConfigBuilder().withMasterUrl(openShiftHost)
@@ -156,49 +117,49 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
      * and for sending completed builds to be deployed.
      */
     private class BuildStatusRunner implements Runnable {
-    	
-    	private BuildStatus work;
-    	
-    	public BuildStatusRunner(BuildStatus buildStatus) {
-    		this.work = buildStatus;
-		}
+
+        private BuildStatus work;
+
+        public BuildStatusRunner(BuildStatus buildStatus) {
+            this.work = buildStatus;
+        }
 
         @Override
         public void run() {
             try {
                 // introduce some delay..
                 long elapsed = System.currentTimeMillis() - work.lastUpdated();
-				if (elapsed < 3000) {
+                if (elapsed < 3000) {
                     try {
                         Thread.sleep(3000 - elapsed);
                     } catch (InterruptedException e) {
-                    	Thread.interrupted();
-                    	return;
+                        Thread.interrupted();
+                        return;
                     }
                 }
 
                 if (BuildStatus.Status.DELETE_SUBMITTED.equals(work.status())) {
                     work.setLastUpdated();
-                    workExecutor.submit(this); // add at end                        
+                    workExecutor.submit(this); // add at end
                     return;
                 }
-                
+
                 if (BuildStatus.Status.DELETE_REQUEUE.equals(work.status())) {
-                	// requeue will change state to submitted and 
+                    // requeue will change state to submitted and
                     work.setLastUpdated();
                     deleteVirtualization(work.vdbName());
                     workExecutor.submit(this); // add at end
                     return;
                 }
-                
+
                 if (BuildStatus.Status.DELETE_DONE.equals(work.status())) {
-                	return;
+                    return;
                 }
-                
+
                 if (BuildStatus.Status.FAILED.equals(work.status()) || BuildStatus.Status.CANCELLED.equals(work.status())) {
                     work.setLastUpdated();
                     return;
-                }                    
+                }
 
                 if (BuildStatus.Status.SUBMITTED.equals(work.status())) {
                     //
@@ -206,12 +167,12 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
                     // thread to avoid clogging up the monitor thread.
                     //
                     info(work.vdbName(), "Publishing - Submitted build to be configured");
-                    
+
                     configureBuild(work);
-                    
+
                     work.setLastUpdated();
                     workExecutor.submit(this); // add at end
-                    
+
                     return;
                 }
 
@@ -226,75 +187,75 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
                     debug(work.vdbName(), "Publishing - Continuing monitoring as configuring");
                     return;
                 }
-                
+
                 boolean shouldReQueue = true;
-            	try (final OpenShiftClient client = openshiftClient()) {
-	                Build build = client.builds().inNamespace(work.namespace()).withName(work.buildName()).get();
-	                if (build == null) {
-	                    // build got deleted some how ignore, remove from monitoring..
-	                    error(work.vdbName(), "Publishing - No build available for building");
-	                    return;
-	                }
-	
-	                String lastStatus = build.getStatus().getPhase();
-	                if (Builds.isCompleted(lastStatus)) {
-	                    if (! Status.DEPLOYING.equals(work.status())) {
-	                        info(work.vdbName(), "Publishing - Build completed. Preparing to deploy");
-	                        work.setStatusMessage("build completed, deployment started");
-	                        createSecret(client, work.namespace(), work.vdbName(), work);
-	                        DeploymentConfig dc = createDeploymentConfig(client, work);
-	                        work.setDeploymentName(dc.getMetadata().getName());
-	                        work.setStatus(Status.DEPLOYING);
-	                        client.deploymentConfigs().inNamespace(work.namespace())
-	                                .withName(dc.getMetadata().getName()).deployLatest();
-	                    } else {
-	                        DeploymentConfig dc = client.deploymentConfigs().inNamespace(work.namespace())
-	                                .withName(work.deploymentName()).get();
-	                        if (isDeploymentInReadyState(dc)) {
-	                            // it done now..
-	                            info(work.vdbName(), "Publishing - Deployment completed");
-	                            createServices(client, work.namespace(), work.vdbName());
-	                            work.setStatus(Status.RUNNING);
-	                            shouldReQueue = false;
-	                        } else {
-	                        	if (!isDeploymentProgressing(dc)) {
-	                        		work.setStatus(Status.FAILED);
-	                        		info(work.vdbName(), "Publishing - Deployment seems to be failed, this could be "
-	                        				+ "due to vdb failure, rediness check failed. Wait threshold is 2 minutes.");
-	                        		shouldReQueue = false;
-	                        	}
-	                            debug(work.vdbName(), "Publishing - Deployment not ready");
-	                            DeploymentCondition cond = getDeploymentConfigStatus(dc);
-	                            if (cond != null) {
-	                                debug(work.vdbName(), "Publishing - Deployment condition: " + cond.getMessage());
-	                                work.setStatusMessage(cond.getMessage());
-	                            } else {
-	                                work.setStatusMessage("Available condition not found in the Deployment Config");
-	                            }
-	                        }
-	                    }
-	                } else if (Builds.isCancelled(lastStatus)) {
-	                    info(work.vdbName(), "Publishing - Build cancelled");
-	                    // once failed do not queue the work again.
-	                    shouldReQueue = false;
-	                    work.setStatus(Status.CANCELLED);
-	                    work.setStatusMessage(build.getStatus().getMessage());
-	                    debug(work.vdbName(), "Build cancelled: " + work.buildName() + ". Reason "
-	                            + build.getStatus().getLogSnippet());
-	                } else if (Builds.isFailed(lastStatus)) {
-	                    error(work.vdbName(), "Publishing - Build failed");
-	                    // once failed do not queue the work again.
-	                    shouldReQueue = false;
-	                    work.setStatus(Status.FAILED);
-	                    work.setStatusMessage(build.getStatus().getMessage());
-	                    error(work.vdbName(),
-	                            "Build failed :" + work.buildName() + ". Reason " + build.getStatus().getLogSnippet());
-	                }
-            	}
+                try (final OpenShiftClient client = openshiftClient()) {
+                    Build build = client.builds().inNamespace(work.namespace()).withName(work.buildName()).get();
+                    if (build == null) {
+                        // build got deleted some how ignore, remove from monitoring..
+                        error(work.vdbName(), "Publishing - No build available for building");
+                        return;
+                    }
+
+                    String lastStatus = build.getStatus().getPhase();
+                    if (Builds.isCompleted(lastStatus)) {
+                        if (! Status.DEPLOYING.equals(work.status())) {
+                            info(work.vdbName(), "Publishing - Build completed. Preparing to deploy");
+                            work.setStatusMessage("build completed, deployment started");
+                            createSecret(client, work.namespace(), work.vdbName(), work);
+                            DeploymentConfig dc = createDeploymentConfig(client, work);
+                            work.setDeploymentName(dc.getMetadata().getName());
+                            work.setStatus(Status.DEPLOYING);
+                            client.deploymentConfigs().inNamespace(work.namespace())
+                                    .withName(dc.getMetadata().getName()).deployLatest();
+                        } else {
+                            DeploymentConfig dc = client.deploymentConfigs().inNamespace(work.namespace())
+                                    .withName(work.deploymentName()).get();
+                            if (isDeploymentInReadyState(dc)) {
+                                // it done now..
+                                info(work.vdbName(), "Publishing - Deployment completed");
+                                createServices(client, work.namespace(), work.vdbName());
+                                work.setStatus(Status.RUNNING);
+                                shouldReQueue = false;
+                            } else {
+                                if (!isDeploymentProgressing(dc)) {
+                                    work.setStatus(Status.FAILED);
+                                    info(work.vdbName(), "Publishing - Deployment seems to be failed, this could be "
+                                            + "due to vdb failure, rediness check failed. Wait threshold is 2 minutes.");
+                                    shouldReQueue = false;
+                                }
+                                debug(work.vdbName(), "Publishing - Deployment not ready");
+                                DeploymentCondition cond = getDeploymentConfigStatus(dc);
+                                if (cond != null) {
+                                    debug(work.vdbName(), "Publishing - Deployment condition: " + cond.getMessage());
+                                    work.setStatusMessage(cond.getMessage());
+                                } else {
+                                    work.setStatusMessage("Available condition not found in the Deployment Config");
+                                }
+                            }
+                        }
+                    } else if (Builds.isCancelled(lastStatus)) {
+                        info(work.vdbName(), "Publishing - Build cancelled");
+                        // once failed do not queue the work again.
+                        shouldReQueue = false;
+                        work.setStatus(Status.CANCELLED);
+                        work.setStatusMessage(build.getStatus().getMessage());
+                        debug(work.vdbName(), "Build cancelled: " + work.buildName() + ". Reason "
+                                + build.getStatus().getLogSnippet());
+                    } else if (Builds.isFailed(lastStatus)) {
+                        error(work.vdbName(), "Publishing - Build failed");
+                        // once failed do not queue the work again.
+                        shouldReQueue = false;
+                        work.setStatus(Status.FAILED);
+                        work.setStatusMessage(build.getStatus().getMessage());
+                        error(work.vdbName(),
+                                "Build failed :" + work.buildName() + ". Reason " + build.getStatus().getLogSnippet());
+                    }
+                }
 
                 work.setLastUpdated();
                 if (shouldReQueue) {
-                	workExecutor.submit(this); // add at end
+                    workExecutor.submit(this); // add at end
                 } else {
                     // Close the log as no longer needed actively
                     closeLog(work.vdbName());
@@ -329,10 +290,10 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
     private Map<String, PrintWriter> logBuffers = new ConcurrentHashMap<>();
     private EncryptionComponent encryptionComponent;
     private KomodoConfigurationProperties config;
-    
+
     private ThreadPoolExecutor workExecutor = new ThreadPoolExecutor(1, 1, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
 
-	public TeiidOpenShiftClient(MetadataInstance metadata, EncryptionComponent encryptor, KomodoConfigurationProperties config, KEngine kengine) {
+    public TeiidOpenShiftClient(MetadataInstance metadata, EncryptionComponent encryptor, KomodoConfigurationProperties config, KEngine kengine) {
         this.metadata = metadata;
         this.encryptionComponent = encryptor;
         this.config = config;
@@ -349,7 +310,7 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
         add(new WebServiceDefinition());
         add(new AmazonS3Definition());
     }
-	
+
     private String getLogPath(String id) {
         String parentDir;
         try {
@@ -503,9 +464,9 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
                 }
                 String name = item.get("name").asText();
                 try {
-                	sources.add(buildSyndesisDataSource(name, item));
+                    sources.add(buildSyndesisDataSource(name, item));
                 } catch (KException e) {
-                	error(name, e.getMessage(), e);
+                    error(name, e.getMessage(), e);
                 }
             }
         } catch (Exception e) {
@@ -513,7 +474,7 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
         }
         return sources;
     }
-    
+
     public DefaultSyndesisDataSource getSyndesisDataSourceById(OAuthCredentials oauthCreds, String dsId)
             throws KException {
         try {
@@ -530,22 +491,22 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
         } catch (Exception e) {
             throw handleError(e);
         }
-    }    
+    }
 
     public void bindToSyndesisSource(OAuthCredentials oauthCreds, DefaultSyndesisDataSource scd) throws KException {
         info(scd.getSyndesisName(), "Bind source with name to Service: " + scd.getSyndesisName());
         try {
-        	String dsName = findDataSourceNameByEventId(scd.getId());
-        	if (dsName != null) {
-        		scd.setKomodoName(dsName);
-        	} else {
+            String dsName = findDataSourceNameByEventId(scd.getId());
+            if (dsName != null) {
+                scd.setKomodoName(dsName);
+            } else {
                 createDataSource(scd);
-        	}
-        	
+            }
+
         } catch (Exception e) {
             throw handleError(e);
         }
-    }    
+    }
 
     public DefaultSyndesisDataSource getSyndesisDataSource(OAuthCredentials oauthCreds, String dsName)
             throws KException {
@@ -561,7 +522,7 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
             throw handleError(e);
         }
     }
-    
+
     private DefaultSyndesisDataSource buildSyndesisDataSource(String syndesisName, JsonNode item)
             throws KException {
         Map<String, String> p = new HashMap<>();
@@ -569,31 +530,31 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
         JsonNode connectorIDNode = item.get(ID);
         configuredProperties.fieldNames()
                 .forEachRemaining(key -> p.put(key, configuredProperties.get(key).asText()));
-        
+
         DataSourceDefinition def = getSourceDefinitionThatMatches(p);
         if (def != null) {
-        	if( connectorIDNode != null ) {
-	            DefaultSyndesisDataSource dsd = new DefaultSyndesisDataSource();
-	            dsd.setId(connectorIDNode.asText());
-	            dsd.setSyndesisName(syndesisName);
-	            String dsName = findDataSourceNameByEventId(connectorIDNode.asText());
-	            dsd.setKomodoName(dsName);
-	            dsd.setTranslatorName(def.getTranslatorName());
-	            dsd.setProperties(p);
-	            dsd.setDefinition(def);
-	            return dsd;
-        	} else {
-        		throw new KException("Datasource has no connection ID");
-        	}
+            if( connectorIDNode != null ) {
+                DefaultSyndesisDataSource dsd = new DefaultSyndesisDataSource();
+                dsd.setId(connectorIDNode.asText());
+                dsd.setSyndesisName(syndesisName);
+                String dsName = findDataSourceNameByEventId(connectorIDNode.asText());
+                dsd.setKomodoName(dsName);
+                dsd.setTranslatorName(def.getTranslatorName());
+                dsd.setProperties(p);
+                dsd.setDefinition(def);
+                return dsd;
+            } else {
+                throw new KException("Datasource has no connection ID");
+            }
         } else {
             throw new KException("Could not find datasource that matches to the configuration."+ p.get("url"));
         }
     }
-    
+
     private void createDataSource(DefaultSyndesisDataSource scd)
             throws Exception {
         String syndesisName = scd.getSyndesisName();
-		debug(syndesisName, "Creating the Datasource of Type " + scd.getType());
+        debug(syndesisName, "Creating the Datasource of Type " + scd.getType());
 
         Set<String> templateNames = this.metadata.getDataSourceTemplateNames();
         debug(syndesisName, "template names: " + templateNames);
@@ -601,90 +562,89 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
 
         //we'll create serially to ensure a unique generated name
         setUniqueKomodoName(scd, syndesisName, KomodoService.SYSTEM_USER_NAME);
-    	String toUse = scd.getKomodoName();
-    	
-    	//now that the komodoname is set, we can create the properties
-    	Map<String, String> properties = scd.convertToDataSourceProperties();
+        String toUse = scd.getKomodoName();
+
+        //now that the komodoname is set, we can create the properties
+        Map<String, String> properties = scd.convertToDataSourceProperties();
         properties.put(ID, scd.getId());
-    	
+
         this.metadata.createDataSource(toUse, dsType, encryptionComponent.decrypt(properties));
     }
-    
+
     /**
      * Create a unique and valid name the syndesis connection.  The name will be suitable
      * as a schema name as well.
      * @param scd
      * @param syndesisName
-     * @return
-     * @throws Exception 
+     * @throws Exception
      */
-	public void setUniqueKomodoName(DefaultSyndesisDataSource scd, String syndesisName, String user) throws Exception {
-		runInTransaction(user, "setUniqueKomodoName", false, () -> {
-			SourceSchema ss = kengine.getWorkspaceManager().findSchema(scd.getId());
-			if (ss != null) {
-				//just reassociate
-				scd.setKomodoName(ss.getName());
-				return null;
-			}
-			
-			String name = syndesisName;
-			int maxLength = StringNameValidator.DEFAULT_MAXIMUM_LENGTH;
-			//remove any problematic characters
-			name = name.replaceAll("[\\.\\?\\_\\s]", "");
-			//slim it down
-			if (name.length() > maxLength) {
-				name = name.substring(0, maxLength);
-			}
-			
-			TreeSet<String> taken = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-			taken.addAll(kengine.getWorkspaceManager().findAllSchemaNames());
-			
-			//TODO: drive this via an api method
-			taken.add(CoreConstants.INFORMATION_SCHEMA);
-			taken.add(CoreConstants.ODBC_MODEL);
-			taken.add(CoreConstants.SYSTEM_ADMIN_MODEL);
-			taken.add(CoreConstants.SYSTEM_MODEL);
-			
-			taken.add(SERVICE_VDB_VIEW_MODEL);
-			
-			int i = 1;
-			String toUse = name;
-			while (taken.contains(toUse)) {
-				if (name.length() + (i/10 + 1) > maxLength) {
-					name = name.substring(0, maxLength - (i/10 + 1));
-				}
-				toUse = name + i;
-				i++;
-			}
-			
-			scd.setKomodoName(toUse);
-			//update the db with the name we'll use
-			kengine.getWorkspaceManager().createOrUpdateSchema(scd.getId(), toUse, null);
-			return null;
-		});
-	}
+    public void setUniqueKomodoName(DefaultSyndesisDataSource scd, String syndesisName, String user) throws Exception {
+        runInTransaction(user, "setUniqueKomodoName", false, () -> {
+            SourceSchema ss = kengine.getWorkspaceManager().findSchema(scd.getId());
+            if (ss != null) {
+                //just reassociate
+                scd.setKomodoName(ss.getName());
+                return null;
+            }
+
+            String name = syndesisName;
+            int maxLength = StringNameValidator.DEFAULT_MAXIMUM_LENGTH;
+            //remove any problematic characters
+            name = name.replaceAll("[\\.\\?\\_\\s]", "");
+            //slim it down
+            if (name.length() > maxLength) {
+                name = name.substring(0, maxLength);
+            }
+
+            TreeSet<String> taken = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+            taken.addAll(kengine.getWorkspaceManager().findAllSchemaNames());
+
+            //TODO: drive this via an api method
+            taken.add(CoreConstants.INFORMATION_SCHEMA);
+            taken.add(CoreConstants.ODBC_MODEL);
+            taken.add(CoreConstants.SYSTEM_ADMIN_MODEL);
+            taken.add(CoreConstants.SYSTEM_MODEL);
+
+            taken.add(SERVICE_VDB_VIEW_MODEL);
+
+            int i = 1;
+            String toUse = name;
+            while (taken.contains(toUse)) {
+                if (name.length() + (i/10 + 1) > maxLength) {
+                    name = name.substring(0, maxLength - (i/10 + 1));
+                }
+                toUse = name + i;
+                i++;
+            }
+
+            scd.setKomodoName(toUse);
+            //update the db with the name we'll use
+            kengine.getWorkspaceManager().createOrUpdateSchema(scd.getId(), toUse, null);
+            return null;
+        });
+    }
 
     public void deleteDataSource(String dsName) throws AdminException, KException {
-		this.metadata.deleteDataSource(dsName);
+        this.metadata.deleteDataSource(dsName);
     }
-    
+
     public String findDataSourceNameByEventId(String eventId) throws KException  {
-    	try {
-			for( String dsName : this.metadata.getDataSourceNames() ) {
-				TeiidDataSource props = this.metadata.getDataSource(dsName);
-				String id = props.getId();
-				if( id != null && !StringUtils.isBlank(id) && id.equals(eventId)) {
-					return dsName;
-				}
-			}
-		} catch (AdminException e) {
-			throw handleError(e);
-		}
-    	return null;
+        try {
+            for( String dsName : this.metadata.getDataSourceNames() ) {
+                TeiidDataSource props = this.metadata.getDataSource(dsName);
+                String id = props.getId();
+                if( id != null && !StringUtils.isBlank(id) && id.equals(eventId)) {
+                    return dsName;
+                }
+            }
+        } catch (AdminException e) {
+            throw handleError(e);
+        }
+        return null;
     }
-    
+
     public Collection<String> getTeiidDataSourcesNames() throws AdminException {
-			return this.metadata.getDataSourceNames();
+            return this.metadata.getDataSourceNames();
     }
 
     private ImageStream createImageStream(OpenShiftClient client, String namespace, String vdbName) {
@@ -783,10 +743,10 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
                       .withSuccessThreshold(1)
                     .endReadinessProbe()
                     .withNewLivenessProbe()
-	                  .withNewHttpGet()
-	                  .withNewPort(8080)
-	                  .withPath("/actuator/health")
-	                  .endHttpGet()                    
+                      .withNewHttpGet()
+                      .withNewPort(8080)
+                      .withPath("/actuator/health")
+                      .endHttpGet()
                       .withInitialDelaySeconds(30)
                       .withTimeoutSeconds(5)
                       .withPeriodSeconds(20)
@@ -828,8 +788,8 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
         return p;
     }
 
-	private Service createService(OpenShiftClient client, String namespace, String vdbName, String type, int srcPort,
-			int exposedPort) {
+    private Service createService(OpenShiftClient client, String namespace, String vdbName, String type, int srcPort,
+            int exposedPort) {
         String serviceName = vdbName+"-"+type;
         debug(vdbName, "Creating the Service of Type " + type + " for VDB "+vdbName);
         Service service = client.services().inNamespace(namespace).withName(serviceName).get();
@@ -856,24 +816,24 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
         }
         return service;
     }
-    
-    private Service createODataService(OpenShiftClient client, String namespace, String vdbName, String type, int port) {    	
+
+    private Service createODataService(OpenShiftClient client, String namespace, String vdbName, String type, int port) {
         String serviceName = vdbName+"-"+type;
         debug(vdbName, "Creating the Service of Type " + type + " for VDB "+vdbName);
         Service service = client.services().inNamespace(namespace).withName(serviceName).get();
         if (service == null) {
-        	TreeMap<String, String> labels = new TreeMap<String, String>();
-        	labels.put("application", vdbName);
-        	
-        	TreeMap<String, String> annotations = new TreeMap<String, String>();
-        	annotations.put(DESCRIPTION_ANNOTATION_LABEL, SERVICE_DESCRIPTION);
-        	if (this.config.isExposeVia3scale()) {
-        		labels.put("discovery.3scale.net", "true");
-        		annotations.put("discovery.3scale.net/scheme", "http");
-        		annotations.put("discovery.3scale.net/port", Integer.toString(port));
-        		annotations.put("discovery.3scale.net/description-path", "/openapi.json");        		
-        	}
-        	
+            TreeMap<String, String> labels = new TreeMap<String, String>();
+            labels.put("application", vdbName);
+
+            TreeMap<String, String> annotations = new TreeMap<String, String>();
+            annotations.put(DESCRIPTION_ANNOTATION_LABEL, SERVICE_DESCRIPTION);
+            if (this.config.isExposeVia3scale()) {
+                labels.put("discovery.3scale.net", "true");
+                annotations.put("discovery.3scale.net/scheme", "http");
+                annotations.put("discovery.3scale.net/port", Integer.toString(port));
+                annotations.put("discovery.3scale.net/description-path", "/openapi.json");
+            }
+
             client.services().inNamespace(namespace).createNew()
               .withNewMetadata()
                 .withName(serviceName)
@@ -896,20 +856,20 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
         }
         return service;
     }
-    
+
     private String secretName(String name) {
         return name+"-secret";
     }
-    
-	private Secret createSecret(OpenShiftClient client, String namespace, String vdbName,
-			BuildStatus config) {
+
+    private Secret createSecret(OpenShiftClient client, String namespace, String vdbName,
+            BuildStatus config) {
         String secretName = secretName(vdbName);
-        
-		Secret item = new SecretBuilder().withData(config.publishConfiguration().getSecretVariables()).withNewMetadata()
-				.addToLabels("application", vdbName).withName(secretName).endMetadata().build();
-        
+
+        Secret item = new SecretBuilder().withData(config.publishConfiguration().getSecretVariables()).withNewMetadata()
+                .addToLabels("application", vdbName).withName(secretName).endMetadata().build();
+
         Secret secret = client.secrets().inNamespace(namespace).withName(secretName).createOrReplace(item);
-        
+
         return secret;
     }
 
@@ -968,7 +928,7 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
         createService(client, namespace, vdbName, ProtocolType.JDBC.id(), 31000, 31000);
         createService(client, namespace, vdbName, ProtocolType.PG.id(), 35432, 5432);
         if (!this.config.isExposeVia3scale()) {
-        	createRoute(client, namespace, vdbName, ProtocolType.ODATA.id());
+            createRoute(client, namespace, vdbName, ProtocolType.ODATA.id());
         }
         // createRoute(client, namespace, vdbName, RouteType.JDBC.id());
     }
@@ -982,9 +942,9 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
         }
         return false;
     }
-    
+
     private boolean isDeploymentProgressing(DeploymentConfig dc) {
-    	DeploymentConfigStatus status = dc.getStatus();
+        DeploymentConfigStatus status = dc.getStatus();
         List<DeploymentCondition> conditions = status.getConditions();
         for (DeploymentCondition cond : conditions) {
             if (cond.getType().equals("Progressing") && cond.getStatus().equals("True")) {
@@ -993,10 +953,10 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
         }
         // let's try to deploy five times before giving up.
         if (status.getObservedGeneration() < 4) {
-        	return true;
+            return true;
         }
         return false;
-    }    
+    }
 
     private DeploymentCondition getDeploymentConfigStatus(DeploymentConfig dc) {
         List<DeploymentCondition> conditions = dc.getStatus().getConditions();
@@ -1004,7 +964,7 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
             if (cond.getType().equals("Available")) {
                 return cond;
             }
-        }        
+        }
         return null;
     }
 
@@ -1021,7 +981,7 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
     }
 
     protected void configureBuild(BuildStatus work) {
-    	work.setStatus(Status.CONFIGURING);
+        work.setStatus(Status.CONFIGURING);
         configureService.execute(new Runnable() {
             @Override
             public void run() {
@@ -1044,7 +1004,7 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
 
                     debug(vdbName, "Publishing - Generated pom file: " + NEW_LINE + pomFile);
                     archive.add(new StringAsset(pomFile), "pom.xml");
-                    
+
                     normalizeDataSourceNames(vdb);
 
                     AccessibleByteArrayOutputStream vdbContents = DefaultMetadataInstance.toBytes(vdb);
@@ -1078,7 +1038,7 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
 
                     String buildName = build.getMetadata().getName();
                     info(vdbName, "Publishing - Build created: " + buildName);
-                  
+
                     PodOperationsImpl publishPod = (PodOperationsImpl)client.pods().withName(buildName + "-build");
 
                     info(vdbName, "Publishing - Awaiting pod readiness ...");
@@ -1086,12 +1046,12 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
 
                     info(vdbName, "Publishing - Fetching environment variables for vdb data sources");
 
-					publishConfig.addEnvironmentVariables(
-							getEnvironmentVariablesForVDBDataSources(oauthCreds, vdb, publishConfig));
-					
-					publishConfig.addSecretVariables(
-							getSecretVariablesForVDBDataSources(oauthCreds, vdb, publishConfig));
-					
+                    publishConfig.addEnvironmentVariables(
+                            getEnvironmentVariablesForVDBDataSources(oauthCreds, vdb, publishConfig));
+
+                    publishConfig.addSecretVariables(
+                            getSecretVariablesForVDBDataSources(oauthCreds, vdb, publishConfig));
+
                     work.setBuildName(buildName);
                     work.setStatusMessage("Build Running");
                     work.setPublishPodName(publishPod.getName());
@@ -1117,16 +1077,16 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
         });
     }
 
-	protected void normalizeDataSourceNames(VDBMetaData vdb) throws KException {
+    protected void normalizeDataSourceNames(VDBMetaData vdb) throws KException {
         for (ModelMetaData model : vdb.getModelMetaDatas().values()) {
-        	for (SourceMappingMetadata source : model.getSources().values()) {
-        		String name = source.getName().toLowerCase();
+            for (SourceMappingMetadata source : model.getSources().values()) {
+                String name = source.getName().toLowerCase();
                 name = name.replace("-", "");
                 source.setConnectionJndiName(name);
             }
         }
-	}
-	
+    }
+
     private static final String DS_TEMPLATE =
             "    @ConfigurationProperties(prefix = \"spring.datasource.{name}\")\n" +
             "    @Bean(\"{name}\")\n" +
@@ -1150,8 +1110,8 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
 
         for (Model model : vdb.getModels()) {
             for (String name : model.getSourceNames()) {
-            	String replacement = model.getSourceConnectionJndiName(name);
-                sw.write(DS_TEMPLATE.replace("{name}", replacement).replace("{method-name}", replacement));                
+                String replacement = model.getSourceConnectionJndiName(name);
+                sw.write(DS_TEMPLATE.replace("{name}", replacement).replace("{method-name}", replacement));
                 sw.write("\n");
             }
         }
@@ -1191,7 +1151,7 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
             return status;
         }
     }
-    
+
     Map<String, String> getSecretVariablesForVDBDataSources(OAuthCredentials oauthCreds, VDBMetaData vdb,
             PublishConfiguration publishConfig) throws KException {
         Map<String, String> properties = new HashMap<>();
@@ -1211,14 +1171,14 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
 
                 Map<String, String> config = def.getPublishedImageDataSourceProperties(ds);
                 if (config != null) {
-                	for (Map.Entry<String, String> entry : config.entrySet())
-						properties.put(entry.getKey(), Base64.getEncoder()
-								.encodeToString(encryptionComponent.decrypt(entry.getValue()).getBytes()));
+                    for (Map.Entry<String, String> entry : config.entrySet())
+                        properties.put(entry.getKey(), Base64.getEncoder()
+                                .encodeToString(encryptionComponent.decrypt(entry.getValue()).getBytes()));
                 }
             }
         }
         return properties;
-    }    
+    }
 
     Collection<EnvVar> getEnvironmentVariablesForVDBDataSources(OAuthCredentials oauthCreds, VDBMetaData vdb,
             PublishConfiguration publishConfig) throws KException {
@@ -1238,7 +1198,7 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
                 }
                 // data source properties as ENV variables
                 def.getPublishedImageDataSourceProperties(ds).forEach((K,V) -> {
-					envs.add(envFromSecret(secretName(vdb.getName()), (String)K));
+                    envs.add(envFromSecret(secretName(vdb.getName()), (String)K));
                 });
             }
         }
@@ -1255,25 +1215,25 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
         key = key.replace(StringConstants.HYPHEN, "");
         key = key.replace(StringConstants.DOT, StringConstants.UNDERSCORE);
         return key.toUpperCase();
-    }  
-    
+    }
+
     protected EnvVar env(String name, String value) {
         return new EnvVarBuilder().withName(name).withValue(value).build();
     }
-    
+
     protected EnvVar envFromSecret(String secret, String key) {
-		return new EnvVarBuilder().withName(envName(key))
-				.withValueFrom(new EnvVarSourceBuilder().withNewSecretKeyRef(key, secret, false).build()).build();
+        return new EnvVarBuilder().withName(envName(key))
+                .withValueFrom(new EnvVarSourceBuilder().withNewSecretKeyRef(key, secret, false).build()).build();
     }
 
     public BuildStatus getVirtualizationStatus(String vdbName) {
-    	BuildStatus status = getVirtualizationStatusFromQueue(vdbName);
-    	if (status != null) {
-    		return status;
-    	}
+        BuildStatus status = getVirtualizationStatusFromQueue(vdbName);
+        if (status != null) {
+            return status;
+        }
         OpenShiftClient client = openshiftClient();
         try {
-    		return getVDBService(vdbName, ApplicationProperties.getNamespace(), client);
+            return getVDBService(vdbName, ApplicationProperties.getNamespace(), client);
         } finally {
             client.close();
         }
@@ -1320,18 +1280,18 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
                         //
                         ProtocolType[] types = { ProtocolType.ODATA, ProtocolType.JDBC, ProtocolType.PG };
                         for (ProtocolType type : types) {
-                        	try {
-	                            RouteStatus route = getRoute(vdbName, type);
-	                            if (route == null) {
-	                                continue;
-	                            }
-	                            status.addRoute(route);
-                        	} catch(KubernetesClientException e) {
-                        		// ignore..
-                        	}
+                            try {
+                                RouteStatus route = getRoute(vdbName, type);
+                                if (route == null) {
+                                    continue;
+                                }
+                                status.addRoute(route);
+                            } catch(KubernetesClientException e) {
+                                // ignore..
+                            }
                         }
                     }
-                    
+
                     if (!isDeploymentProgressing(dc)) {
                         status.setStatus(Status.FAILED);
                     }
@@ -1351,16 +1311,16 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
                 status.setStatusMessage(build.getStatus().getMessage());
             }
         } else {
-        	// special case when there is dangling replication controller after delete is found
-			List<ReplicationController> rcs = client.replicationControllers().inNamespace(namespace)
-					.withLabel("application", vdbName).list().getItems();
-			if (!rcs.isEmpty()) {
-				ReplicationController rc = rcs.get(0);
-				if (rc.getStatus().getReplicas() == 0) {
+            // special case when there is dangling replication controller after delete is found
+            List<ReplicationController> rcs = client.replicationControllers().inNamespace(namespace)
+                    .withLabel("application", vdbName).list().getItems();
+            if (!rcs.isEmpty()) {
+                ReplicationController rc = rcs.get(0);
+                if (rc.getStatus().getReplicas() == 0) {
                     status.setStatusMessage("Build Completed, but no deployment found. Reason unknown, please redeploy");
-                    status.setStatus(Status.FAILED);					
-				}
-			}
+                    status.setStatus(Status.FAILED);
+                }
+            }
         }
         status.setLastUpdated();
         return status;
@@ -1383,7 +1343,7 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
         if (includeInQueue) {
             for(Runnable r : workExecutor.getQueue()) {
                 if (r instanceof BuildStatusRunner) {
-                	BuildStatusRunner runner = (BuildStatusRunner)r;
+                    BuildStatusRunner runner = (BuildStatusRunner)r;
                     services.put(runner.work.vdbName(), runner.work);
                 }
             }
@@ -1402,14 +1362,14 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
 
         boolean queue = false;
         if (runningBuild == null) {
-            runningBuild = getVirtualizationStatus(vdbName);            
+            runningBuild = getVirtualizationStatus(vdbName);
             queue = true;
         }
 
         if (BuildStatus.Status.NOTFOUND.equals(runningBuild.status())) {
-        	return runningBuild;
+            return runningBuild;
         }
-        
+
         info(vdbName, "Deleting virtualization deployed as Service");
         final String inProgressBuildName = runningBuild.buildName();
         final BuildStatus status = runningBuild;
@@ -1425,116 +1385,116 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
         runningBuild.setStatusMessage("delete submitted");
         // since delete is async process too, monitor it in the monitor thread.
         if (queue) {
-        	workExecutor.submit(new BuildStatusRunner(runningBuild));
+            workExecutor.submit(new BuildStatusRunner(runningBuild));
         }
-        
+
         return runningBuild;
     }
 
-	private BuildStatus getVirtualizationStatusFromQueue(String vdbName) {
+    private BuildStatus getVirtualizationStatusFromQueue(String vdbName) {
         for(Runnable r : workExecutor.getQueue()) {
             if (r instanceof BuildStatusRunner) {
-            	BuildStatusRunner status = (BuildStatusRunner)r;
-            	if (status.work.vdbName().equals(vdbName)) {
-            		return status.work;
-            	}
+                BuildStatusRunner status = (BuildStatusRunner)r;
+                if (status.work.vdbName().equals(vdbName)) {
+                    return status.work;
+                }
             }
         }
-		return null;
-	}
+        return null;
+    }
 
     private void deleteVDBServiceResources(String vdbName, String inProgressBuildName, BuildStatus status) {
         final OpenShiftClient client = openshiftClient();
         final String namespace = ApplicationProperties.getNamespace();
 
         try {
-	        // delete routes first
-	        client.routes().inNamespace(namespace).withName(vdbName + HYPHEN + ProtocolType.ODATA.id()).delete();
-	        // delete services next
-	        client.services().inNamespace(namespace).withName(vdbName + HYPHEN + ProtocolType.JDBC.id()).delete();
-	        client.services().inNamespace(namespace).withName(vdbName + HYPHEN + ProtocolType.ODATA.id()).delete();
-	        client.services().inNamespace(namespace).withName(vdbName + HYPHEN + ProtocolType.PG.id()).delete();
+            // delete routes first
+            client.routes().inNamespace(namespace).withName(vdbName + HYPHEN + ProtocolType.ODATA.id()).delete();
+            // delete services next
+            client.services().inNamespace(namespace).withName(vdbName + HYPHEN + ProtocolType.JDBC.id()).delete();
+            client.services().inNamespace(namespace).withName(vdbName + HYPHEN + ProtocolType.ODATA.id()).delete();
+            client.services().inNamespace(namespace).withName(vdbName + HYPHEN + ProtocolType.PG.id()).delete();
         } catch (KubernetesClientException e ) {
-        	error(vdbName, e.getMessage());
-        	error(vdbName, "requeueing the delete request");
-        	status.setStatus(Status.DELETE_REQUEUE);
+            error(vdbName, e.getMessage());
+            error(vdbName, "requeueing the delete request");
+            status.setStatus(Status.DELETE_REQUEUE);
         }
-        
+
         try {
-	        // delete builds
-	        client.builds().inNamespace(namespace).withLabel("application", vdbName).delete();
+            // delete builds
+            client.builds().inNamespace(namespace).withLabel("application", vdbName).delete();
         } catch (KubernetesClientException e ) {
-        	error(vdbName, e.getMessage());
-        	error(vdbName, "requeueing the delete request");
-        	status.setStatus(Status.DELETE_REQUEUE);
+            error(vdbName, e.getMessage());
+            error(vdbName, "requeueing the delete request");
+            status.setStatus(Status.DELETE_REQUEUE);
         }
         try {
-	        // delete pods
-	        client.pods().inNamespace(namespace).withLabel("application", vdbName).delete();
+            // delete pods
+            client.pods().inNamespace(namespace).withLabel("application", vdbName).delete();
         } catch (KubernetesClientException e ) {
-        	error(vdbName, e.getMessage());
-        	error(vdbName, "requeueing the delete request");
-        	status.setStatus(Status.DELETE_REQUEUE);
-        }	       
-	    try {
-	        // delete image streams
-	        client.imageStreams().inNamespace(namespace).withLabel("application", vdbName).delete();
-        } catch (KubernetesClientException e ) {
-        	error(vdbName, e.getMessage());
-        	error(vdbName, "requeueing the delete request");
-        	status.setStatus(Status.DELETE_REQUEUE);
-        }        
-	    try {
-	        // delete replication controller
-	        client.replicationControllers().inNamespace(namespace).withLabel("application", vdbName).delete();
-        } catch (KubernetesClientException e ) {
-        	error(vdbName, e.getMessage());
-        	error(vdbName, "requeueing the delete request");
-        	status.setStatus(Status.DELETE_REQUEUE);
+            error(vdbName, e.getMessage());
+            error(vdbName, "requeueing the delete request");
+            status.setStatus(Status.DELETE_REQUEUE);
         }
-	    try {
-	        // deployment configs
-	        client.deploymentConfigs().inNamespace(namespace).withName(vdbName).delete();
+        try {
+            // delete image streams
+            client.imageStreams().inNamespace(namespace).withLabel("application", vdbName).delete();
         } catch (KubernetesClientException e ) {
-        	error(vdbName, e.getMessage());
-        	error(vdbName, "requeueing the delete request");
-        	status.setStatus(Status.DELETE_REQUEUE);
+            error(vdbName, e.getMessage());
+            error(vdbName, "requeueing the delete request");
+            status.setStatus(Status.DELETE_REQUEUE);
         }
-	    try {
-	        // secrets
-	        client.secrets().inNamespace(namespace).withName(secretName(vdbName)).delete();
+        try {
+            // delete replication controller
+            client.replicationControllers().inNamespace(namespace).withLabel("application", vdbName).delete();
         } catch (KubernetesClientException e ) {
-        	error(vdbName, e.getMessage());
-        	error(vdbName, "requeueing the delete request");
-        	status.setStatus(Status.DELETE_REQUEUE);
-        }	    
-	    try {
-	        // delete build configuration
-	        client.buildConfigs().inNamespace(namespace).withLabel("application", vdbName).delete();
-        } catch (KubernetesClientException e ) {
-        	error(vdbName, e.getMessage());
-        	error(vdbName, "requeueing the delete request");
-        	status.setStatus(Status.DELETE_REQUEUE);
+            error(vdbName, e.getMessage());
+            error(vdbName, "requeueing the delete request");
+            status.setStatus(Status.DELETE_REQUEUE);
         }
-	    try {
-	    	// checking 2nd time as, I found this not being deleted completely
-	        // delete replication controller
-	        client.replicationControllers().inNamespace(namespace).withLabel("application", vdbName).delete();
+        try {
+            // deployment configs
+            client.deploymentConfigs().inNamespace(namespace).withName(vdbName).delete();
         } catch (KubernetesClientException e ) {
-        	error(vdbName, e.getMessage());
-        	error(vdbName, "requeueing the delete request");
-        	status.setStatus(Status.DELETE_REQUEUE);
+            error(vdbName, e.getMessage());
+            error(vdbName, "requeueing the delete request");
+            status.setStatus(Status.DELETE_REQUEUE);
         }
-	    
-	    try {
-	        // delete image streams
-	        client.imageStreams().inNamespace(namespace).withLabel("application", vdbName).delete();
+        try {
+            // secrets
+            client.secrets().inNamespace(namespace).withName(secretName(vdbName)).delete();
         } catch (KubernetesClientException e ) {
-        	error(vdbName, e.getMessage());
-        	error(vdbName, "requeueing the delete request");
-        	status.setStatus(Status.DELETE_REQUEUE);
+            error(vdbName, e.getMessage());
+            error(vdbName, "requeueing the delete request");
+            status.setStatus(Status.DELETE_REQUEUE);
         }
-	    
+        try {
+            // delete build configuration
+            client.buildConfigs().inNamespace(namespace).withLabel("application", vdbName).delete();
+        } catch (KubernetesClientException e ) {
+            error(vdbName, e.getMessage());
+            error(vdbName, "requeueing the delete request");
+            status.setStatus(Status.DELETE_REQUEUE);
+        }
+        try {
+            // checking 2nd time as, I found this not being deleted completely
+            // delete replication controller
+            client.replicationControllers().inNamespace(namespace).withLabel("application", vdbName).delete();
+        } catch (KubernetesClientException e ) {
+            error(vdbName, e.getMessage());
+            error(vdbName, "requeueing the delete request");
+            status.setStatus(Status.DELETE_REQUEUE);
+        }
+
+        try {
+            // delete image streams
+            client.imageStreams().inNamespace(namespace).withLabel("application", vdbName).delete();
+        } catch (KubernetesClientException e ) {
+            error(vdbName, e.getMessage());
+            error(vdbName, "requeueing the delete request");
+            status.setStatus(Status.DELETE_REQUEUE);
+        }
+
         status.setStatus(Status.DELETE_DONE);
     }
 
@@ -1585,7 +1545,7 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
 
     /**
      * This method generates the pom.xml file, that needs to be saved in the root of the project.
-     * @param authToken - token for Openshift authentication
+     * @param oauthCreds - token for Openshift authentication
      * @param vdb - VDB for which pom.xml is generated
      * @return pom.xml contents
      * @throws KException

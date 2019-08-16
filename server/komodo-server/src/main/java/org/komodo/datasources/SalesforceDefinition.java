@@ -47,14 +47,14 @@ public class SalesforceDefinition extends DataSourceDefinition {
         }
         return false;
     }
-    
+
     @Override
     public Map<String, String> getInternalTeiidDataSourceProperties(DefaultSyndesisDataSource source) {
-    	throw new UnsupportedOperationException();
-    }    
+        throw new UnsupportedOperationException();
+    }
 
     @Override
     public Map<String, String> getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd) {
-    	throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
     }
 }

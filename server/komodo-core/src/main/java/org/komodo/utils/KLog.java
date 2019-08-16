@@ -18,30 +18,26 @@
 package org.komodo.utils;
 
 import org.apache.commons.logging.LogFactory;
+import org.komodo.StringConstants;
 
 public class KLog {
-	
-    private final static String BLANK = "";
 
     private static String format(String message, Object... arguments ) {
-    	if (message == null) {
-    		message = BLANK;
-    	}
-    	if (arguments == null || arguments.length == 0) {
-    		return message;
-    	}
+        if (message == null) {
+            message = StringConstants.EMPTY_STRING;
+        }
+        if (arguments == null || arguments.length == 0) {
+            return message;
+        }
         return String.format(message, arguments);
     }
 
-    private static KLog instance;
+    private static KLog instance = new KLog();
 
     /**
      * @return singleton instance of this logger
      */
     public static KLog getLogger() {
-        if (instance == null)
-            instance = new KLog();
-
         return instance;
     }
 
@@ -84,16 +80,16 @@ public class KLog {
     }
 
     public void debug(String message, Object... args) {
-    	if (!isDebugEnabled()) {
-    		return;
-    	}
+        if (!isDebugEnabled()) {
+            return;
+        }
         kLogger.debug(format(message, args));
     }
 
     public void debug(String message, Throwable throwable, Object... args) {
-    	if (!isDebugEnabled()) {
-    		return;
-    	}
+        if (!isDebugEnabled()) {
+            return;
+        }
         kLogger.debug(format(message, args), throwable);
     }
 
@@ -102,16 +98,16 @@ public class KLog {
     }
 
     public void trace(String message, Object... args) {
-    	if (!isTraceEnabled()) {
-    		return;
-    	}
+        if (!isTraceEnabled()) {
+            return;
+        }
         kLogger.trace(format(message, args));
     }
 
     public void trace(String message, Throwable throwable, Object... args) {
-    	if (!isTraceEnabled()) {
-    		return;
-    	}
+        if (!isTraceEnabled()) {
+            return;
+        }
         kLogger.trace(format(message, args), throwable);
     }
 

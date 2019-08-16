@@ -82,7 +82,7 @@ public final class RestSyndesisSourceStatus implements V1Constants {
 
             return MISSING;
         }
- 
+
     }
 
     private String sourceName;
@@ -101,7 +101,7 @@ public final class RestSyndesisSourceStatus implements V1Constants {
     }
 
     /**
-     * Constructor with name only.  Server VDB state is set to {@link EntityState#MISSING}.  Schema state is set to {@link EntityState#MISSING}. 
+     * Constructor with name only.  Server VDB state is set to {@link EntityState#MISSING}.  Schema state is set to {@link EntityState#MISSING}.
      * @param sourceName the syndesis source name (cannot be <code>null</code>)
      */
     public RestSyndesisSourceStatus( final String sourceName ) {
@@ -225,7 +225,7 @@ public final class RestSyndesisSourceStatus implements V1Constants {
             this.vdbState = EntityState.LOADING;
         }
     }
-    
+
     /**
      * @param errors the server VDB validity errors (can be <code>null</code>)
      */
@@ -243,9 +243,9 @@ public final class RestSyndesisSourceStatus implements V1Constants {
     public void setSchemaState( final String state) {
         this.schemaState = schemaState == null ? EntityState.MISSING : EntityState.valueOf(state);
     }
-    
+
     public void setId(String id) {
-		this.id = id;
+        this.id = id;
     }
 
     /**
@@ -265,5 +265,5 @@ public final class RestSyndesisSourceStatus implements V1Constants {
     public void setVdbState( final String state ) {
         this.vdbState = vdbState == null ? EntityState.MISSING : EntityState.valueOf(state);
     }
-    
+
 }

@@ -25,40 +25,40 @@ import org.komodo.rest.KomodoJsonMarshaller;
 import org.komodo.rest.datavirtualization.connection.RestSchemaNode;
 
 public class RestSchemaNodeTest {
-	
-	@Test public void testJsonRoundtrip() {
-		RestSchemaNode rsn = new RestSchemaNode("x", "y", "z");
-		rsn.addChild(new RestSchemaNode("a", "b", "c"));
-		
-		String value = KomodoJsonMarshaller.marshall(rsn);
-		String expected = "{\n" + 
-				"  \"children\" : [ {\n" + 
-				"    \"children\" : [ ],\n" + 
-				"    \"name\" : \"b\",\n" + 
-				"    \"connectionName\" : \"a\",\n" + 
-				"    \"type\" : \"c\",\n" + 
-				"    \"queryable\" : false\n" + 
-				"  } ],\n" + 
-				"  \"name\" : \"y\",\n" + 
-				"  \"connectionName\" : \"x\",\n" + 
-				"  \"type\" : \"z\",\n" + 
-				"  \"queryable\" : false\n" + 
-				"}";
-		assertEquals(expected, value);
-		
-		RestSchemaNode other = KomodoJsonMarshaller.unmarshall(value, RestSchemaNode.class);
-		
-		assertEquals(expected, KomodoJsonMarshaller.marshall(other));
-		
-		value = KomodoJsonMarshaller.marshall(new Object[] {new RestSchemaNode(), new RestSchemaNode()}, true);
-		
-		assertEquals("[ {\n" + 
-				"  \"children\" : [ ],\n" + 
-				"  \"queryable\" : false\n" + 
-				"}, {\n" + 
-				"  \"children\" : [ ],\n" + 
-				"  \"queryable\" : false\n" + 
-				"} ]", value);
-	}
+
+    @Test public void testJsonRoundtrip() {
+        RestSchemaNode rsn = new RestSchemaNode("x", "y", "z");
+        rsn.addChild(new RestSchemaNode("a", "b", "c"));
+
+        String value = KomodoJsonMarshaller.marshall(rsn);
+        String expected = "{\n" +
+                "  \"children\" : [ {\n" +
+                "    \"children\" : [ ],\n" +
+                "    \"name\" : \"b\",\n" +
+                "    \"connectionName\" : \"a\",\n" +
+                "    \"type\" : \"c\",\n" +
+                "    \"queryable\" : false\n" +
+                "  } ],\n" +
+                "  \"name\" : \"y\",\n" +
+                "  \"connectionName\" : \"x\",\n" +
+                "  \"type\" : \"z\",\n" +
+                "  \"queryable\" : false\n" +
+                "}";
+        assertEquals(expected, value);
+
+        RestSchemaNode other = KomodoJsonMarshaller.unmarshall(value, RestSchemaNode.class);
+
+        assertEquals(expected, KomodoJsonMarshaller.marshall(other));
+
+        value = KomodoJsonMarshaller.marshall(new Object[] {new RestSchemaNode(), new RestSchemaNode()}, true);
+
+        assertEquals("[ {\n" +
+                "  \"children\" : [ ],\n" +
+                "  \"queryable\" : false\n" +
+                "}, {\n" +
+                "  \"children\" : [ ],\n" +
+                "  \"queryable\" : false\n" +
+                "} ]", value);
+    }
 
 }

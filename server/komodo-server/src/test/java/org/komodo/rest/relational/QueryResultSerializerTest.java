@@ -56,7 +56,7 @@ public class QueryResultSerializerTest implements StringConstants {
     @Before
     public void init() throws Exception {
         queryResult = new QSResult();
-    	
+
         for (int i = 0; i < columnsData.length; ++i) {
             String[] columnData = columnsData[i];
 
@@ -70,38 +70,38 @@ public class QueryResultSerializerTest implements StringConstants {
 
             QSRow row = new QSRow();
             for (Object o : rowData) {
-            	row.add(o);
+                row.add(o);
             }
 
             queryResult.addRow(row);
         }
 
-        JSON = "{\n" + 
-        		"  \"columns\" : [ {\n" + 
-        		"    \"type\" : \"long\",\n" + 
-        		"    \"name\" : \"Id\",\n" + 
-        		"    \"label\" : \"ID\"\n" + 
-        		"  }, {\n" + 
-        		"    \"type\" : \"varchar\",\n" + 
-        		"    \"name\" : \"Name\",\n" + 
-        		"    \"label\" : \"Name\"\n" + 
-        		"  }, {\n" + 
-        		"    \"type\" : \"varchar\",\n" + 
-        		"    \"name\" : \"Code\",\n" + 
-        		"    \"label\" : \"Code\"\n" + 
-        		"  } ],\n" + 
-        		"  \"rows\" : [ {\n" + 
-        		"    \"row\" : [ 1, \"Florida\", \"FL\" ]\n" + 
-        		"  }, {\n" + 
-        		"    \"row\" : [ 2, \"Washington\", \"WA\" ]\n" + 
-        		"  }, {\n" + 
-        		"    \"row\" : [ 3, \"Missouri\", \"MI\" ]\n" + 
-        		"  }, {\n" + 
-        		"    \"row\" : [ 4, \"District of Columbia\", \"DC\" ]\n" + 
-        		"  }, {\n" + 
-        		"    \"row\" : [ 5, \"Montana\", \"MO\" ]\n" + 
-        		"  } ]\n" + 
-        		"}";
+        JSON = "{\n" +
+                "  \"columns\" : [ {\n" +
+                "    \"type\" : \"long\",\n" +
+                "    \"name\" : \"Id\",\n" +
+                "    \"label\" : \"ID\"\n" +
+                "  }, {\n" +
+                "    \"type\" : \"varchar\",\n" +
+                "    \"name\" : \"Name\",\n" +
+                "    \"label\" : \"Name\"\n" +
+                "  }, {\n" +
+                "    \"type\" : \"varchar\",\n" +
+                "    \"name\" : \"Code\",\n" +
+                "    \"label\" : \"Code\"\n" +
+                "  } ],\n" +
+                "  \"rows\" : [ {\n" +
+                "    \"row\" : [ 1, \"Florida\", \"FL\" ]\n" +
+                "  }, {\n" +
+                "    \"row\" : [ 2, \"Washington\", \"WA\" ]\n" +
+                "  }, {\n" +
+                "    \"row\" : [ 3, \"Missouri\", \"MI\" ]\n" +
+                "  }, {\n" +
+                "    \"row\" : [ 4, \"District of Columbia\", \"DC\" ]\n" +
+                "  }, {\n" +
+                "    \"row\" : [ 5, \"Montana\", \"MO\" ]\n" +
+                "  } ]\n" +
+                "}";
     }
 
     @Test
@@ -116,6 +116,6 @@ public class QueryResultSerializerTest implements StringConstants {
      */
     @Test(expected = RuntimeException.class)
     public void shouldImportResult() throws Exception {
-    	KomodoJsonMarshaller.unmarshall( JSON, QSResult.class );
+        KomodoJsonMarshaller.unmarshall( JSON, QSResult.class );
     }
 }

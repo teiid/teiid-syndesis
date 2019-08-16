@@ -27,15 +27,15 @@ import java.util.ResourceBundle;
 public class Messages implements StringConstants {
 
     private static final String BUNDLE_NAME = Messages.class.getPackage().getName()
-    																					+ DOT
-    																					+ Messages.class.getSimpleName().toLowerCase();
+                                                                                        + DOT
+                                                                                        + Messages.class.getSimpleName().toLowerCase();
 
     private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME);
 
     @SuppressWarnings( "javadoc" )
     public enum SPI {
         valueCannotBeEmpty,
-    	valueCannotBeNull;
+        valueCannotBeNull;
 
         @Override
         public String toString() {

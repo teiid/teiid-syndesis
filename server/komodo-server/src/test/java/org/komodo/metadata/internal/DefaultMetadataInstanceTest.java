@@ -33,43 +33,43 @@ import org.teiid.runtime.EmbeddedConfiguration;
 
 public class DefaultMetadataInstanceTest {
 
-	DefaultMetadataInstance metadataInstance;
-	TeiidServer server;
+    DefaultMetadataInstance metadataInstance;
+    TeiidServer server;
 
-	@Before
-	public void init() {
-		EmbeddedConfiguration ec = new EmbeddedConfiguration();
-		server = new TeiidServer();
-		server.start(ec);
+    @Before
+    public void init() {
+        EmbeddedConfiguration ec = new EmbeddedConfiguration();
+        server = new TeiidServer();
+        server.start(ec);
 
-		metadataInstance = new DefaultMetadataInstance(server);
-	}
-	
-	@After
-	public void tearDown() {
-		server.stop();
-	}
+        metadataInstance = new DefaultMetadataInstance(server);
+    }
 
-	@Test(expected = KException.class)
-	public void shouldNotValidateNoVdb() throws KException {
-		metadataInstance.validate("x", "create view v as select 1");
-	}
+    @After
+    public void tearDown() {
+        server.stop();
+    }
 
-	@Test
-	public void shouldValidate() throws Exception {
-		String vdb = "<vdb name=\"myservice\" version=\"1\">\n" + 
-				"    <model visible=\"true\" name=\"accounts\" type=\"VIRTUAL\">\n" +
-				"      <metadata type=\"DDL\">create view tbl (col) as select 1;</metadata>" +
-				"    </model>    \n" + 
-				"</vdb>";
-		
-		metadataInstance.deploy(VDBMetadataParser.unmarshell(new ByteArrayInputStream(vdb.getBytes("UTF-8"))));
-		
-		ValidationResult report = metadataInstance.validate("myservice", "create view v as select * from tbl");
-		assertFalse(report.getReport().toString(), report.getReport().hasItems());
-		
-		report = metadataInstance.validate("myservice", "create view v as select * from tbl1");
-		assertTrue(report.toString(), report.getReport().hasItems());
-	}
+    @Test(expected = KException.class)
+    public void shouldNotValidateNoVdb() throws KException {
+        metadataInstance.validate("x", "create view v as select 1");
+    }
+
+    @Test
+    public void shouldValidate() throws Exception {
+        String vdb = "<vdb name=\"myservice\" version=\"1\">\n" +
+                "    <model visible=\"true\" name=\"accounts\" type=\"VIRTUAL\">\n" +
+                "      <metadata type=\"DDL\">create view tbl (col) as select 1;</metadata>" +
+                "    </model>    \n" +
+                "</vdb>";
+
+        metadataInstance.deploy(VDBMetadataParser.unmarshell(new ByteArrayInputStream(vdb.getBytes("UTF-8"))));
+
+        ValidationResult report = metadataInstance.validate("myservice", "create view v as select * from tbl");
+        assertFalse(report.getReport().toString(), report.getReport().hasItems());
+
+        report = metadataInstance.validate("myservice", "create view v as select * from tbl1");
+        assertTrue(report.toString(), report.getReport().hasItems());
+    }
 
 }

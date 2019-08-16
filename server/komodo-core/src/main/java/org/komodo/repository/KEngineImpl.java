@@ -35,93 +35,93 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 @Component
 public class KEngineImpl implements KEngine {
-	
-	private class UnitOfWorkImpl implements UnitOfWork {
-		
-		private String userName;
-		private String name;
-		private String repositoryUser;
-		private TransactionStatus status;
 
-		public UnitOfWorkImpl(String userName, String name, String repoUser, TransactionStatus transactionStatus) {
-			this.userName = userName;
-			this.name = name;
-			this.repositoryUser = repoUser;
-			this.status = transactionStatus;
-		}
+    private class UnitOfWorkImpl implements UnitOfWork {
 
-		@Override
-		public void commit() throws TimeoutException {
-			try {
-				platformTransactionManager.commit(status);
-			} catch (TransactionTimedOutException e) {
-				throw new TimeoutException(e);
-			}
-			//any other exceptions can be unchecked
-		}
+        private String userName;
+        private String name;
+        private String repositoryUser;
+        private TransactionStatus status;
 
-		@Override
-		public String getUserName() {
-			return userName;
-		}
+        public UnitOfWorkImpl(String userName, String name, String repoUser, TransactionStatus transactionStatus) {
+            this.userName = userName;
+            this.name = name;
+            this.repositoryUser = repoUser;
+            this.status = transactionStatus;
+        }
 
-		@Override
-		public String getName() {
-			return name;
-		}
+        @Override
+        public void commit() throws TimeoutException {
+            try {
+                platformTransactionManager.commit(status);
+            } catch (TransactionTimedOutException e) {
+                throw new TimeoutException(e);
+            }
+            //any other exceptions can be unchecked
+        }
 
-		@Override
-		public boolean isCompleted() {
-			return status.isCompleted();
-		}
+        @Override
+        public String getUserName() {
+            return userName;
+        }
 
-		@Override
-		public boolean isRollbackOnly() {
-			return status.isRollbackOnly();
-		}
+        @Override
+        public String getName() {
+            return name;
+        }
 
-		@Override
-		public void rollback() {
-			platformTransactionManager.rollback(status);
-		}
+        @Override
+        public boolean isCompleted() {
+            return status.isCompleted();
+        }
 
-		@Override
-		public String getRepositoryUser() {
-			return this.repositoryUser;
-		}
-		
-	}
-	
-	private static DefaultTransactionDefinition NEW_TRANSACTION_DEFINITION = new DefaultTransactionDefinition();
+        @Override
+        public boolean isRollbackOnly() {
+            return status.isRollbackOnly();
+        }
+
+        @Override
+        public void rollback() {
+            platformTransactionManager.rollback(status);
+        }
+
+        @Override
+        public String getRepositoryUser() {
+            return this.repositoryUser;
+        }
+
+    }
+
+    private static DefaultTransactionDefinition NEW_TRANSACTION_DEFINITION = new DefaultTransactionDefinition();
     static {
         NEW_TRANSACTION_DEFINITION.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     }
-	
-	@Autowired
-	private WorkspaceManagerImpl workspaceManagerImpl;
-	
-	@Autowired
-	private PlatformTransactionManager platformTransactionManager;
 
-	@Override
-	public boolean startAndWait() throws Exception {
-		this.workspaceManagerImpl.findDataVirtualization("x");
-		return true;
-	}
+    @Autowired
+    private WorkspaceManagerImpl workspaceManagerImpl;
 
-	@Override
-	public WorkspaceManager getWorkspaceManager() throws KException {
-		return workspaceManagerImpl;
-	}
+    @Autowired
+    private PlatformTransactionManager platformTransactionManager;
 
-	@Override
-	public UnitOfWork createTransaction(String userName, String name, boolean rollbackOnly, String repoUser)
-			throws KException {
-		TransactionStatus transactionStatus = platformTransactionManager.getTransaction(NEW_TRANSACTION_DEFINITION);
-		if (rollbackOnly) {
-			transactionStatus.setRollbackOnly();
-		}
-		return new UnitOfWorkImpl(userName, name, repoUser, transactionStatus);
-	}
+    @Override
+    public boolean startAndWait() throws Exception {
+        this.workspaceManagerImpl.findDataVirtualization("x");
+        return true;
+    }
+
+    @Override
+    public WorkspaceManager getWorkspaceManager() throws KException {
+        return workspaceManagerImpl;
+    }
+
+    @Override
+    public UnitOfWork createTransaction(String userName, String name, boolean rollbackOnly, String repoUser)
+            throws KException {
+        TransactionStatus transactionStatus = platformTransactionManager.getTransaction(NEW_TRANSACTION_DEFINITION);
+        if (rollbackOnly) {
+            transactionStatus.setRollbackOnly();
+        }
+        return new UnitOfWorkImpl(userName, name, repoUser, transactionStatus);
+    }
 
 }

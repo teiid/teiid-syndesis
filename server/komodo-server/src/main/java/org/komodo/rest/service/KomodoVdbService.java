@@ -17,7 +17,7 @@
  */
 package org.komodo.rest.service;
 
-import static org.komodo.rest.datavirtualization.RelationalMessages.Error.VIEW_NAME_EXISTS;
+import static org.komodo.rest.datavirtualization.RelationalMessages.Error.*;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -59,16 +59,14 @@ public final class KomodoVdbService extends KomodoService {
      *        the request headers (never <code>null</code>)
      * @param uriInfo
      *        the request URI information (never <code>null</code>)
-     * @param vdbName
+     * @param virtualization
      *        the id of the Vdb being retrieved (cannot be empty)
-     * @param modelName
-     *        the id of the Model being retrieved (cannot be empty)
-	 * @param viewName
-	 *        the view name being validated (cannot be empty)
-	 * @return the response (never <code>null</code>) with an entity that is
-	 *         either an empty string, when the name is valid, or an error
-	 *         message
-     * @throws Exception 
+     * @param viewName
+     *        the view name being validated (cannot be empty)
+     * @return the response (never <code>null</code>) with an entity that is
+     *         either an empty string, when the name is valid, or an error
+     *         message
+     * @throws Exception
      */
     @GET
     @Path( V1Constants.VDB_PLACEHOLDER + StringConstants.FORWARD_SLASH +
@@ -86,7 +84,7 @@ public final class KomodoVdbService extends KomodoService {
     } )
     public Response validateViewName( final @Context HttpHeaders headers,
                                       final @Context UriInfo uriInfo,
-                                      @ApiParam(value = "Name of the Vdb", required = true)
+                                      @ApiParam(value = "Name of the data virtualization", required = true)
                                       final @PathParam( "virtualization" ) String virtualization,
                                       @ApiParam(value = "Name of the Model to get its tables", required = true)
                                       final @PathParam( "viewName" ) String viewName ) throws Exception {
@@ -100,19 +98,19 @@ public final class KomodoVdbService extends KomodoService {
             return Response.ok().entity( errorMsg ).build();
         }
 
-        return runInTransaction(principal, "validateViewName", true, ()-> {
+        return runInTransaction(principal, "validateViewName", true, ()-> { //$NON-NLS-1$
             ViewDefinition vd = getWorkspaceManager().findViewDefinitionByNameIgnoreCase(virtualization, viewName);
-            
-        	if (vd != null) {
+
+            if (vd != null) {
                 // name is the same as an existing View
-        		return Response.ok()
+                return Response.ok()
                         .entity( RelationalMessages.getString( VIEW_NAME_EXISTS ) )
                         .build();
-        	}
-            
-        	// name is valid
-        	return Response.ok().build();
-        }) ; //$NON-NLS-1$
+            }
+
+            // name is valid
+            return Response.ok().build();
+        }) ;
     }
 
 }

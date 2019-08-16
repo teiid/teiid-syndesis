@@ -28,8 +28,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * A JSON serializer and deserializer.
  */
 public final class KomodoJsonMarshaller {
-	
-	private final static ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     /**
      * Outputs a pretty printed JSON representation.
@@ -53,24 +53,24 @@ public final class KomodoJsonMarshaller {
                                    final boolean prettyPrint ) {
         ArgCheck.isNotNull( entity, "entity" ); //$NON-NLS-1$
 
-    	try {
-    		if (prettyPrint) {
-				return OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(entity);
-    		}
-    		return OBJECT_MAPPER.writeValueAsString(entity);
-		} catch (JsonProcessingException e) {
-			throw new RuntimeException(e);
-		}
+        try {
+            if (prettyPrint) {
+                return OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(entity);
+            }
+            return OBJECT_MAPPER.writeValueAsString(entity);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static < T extends Object > T unmarshall( final String json,
                                                                final Class< T > entityClass ) {
-    	
-    	try {
-			return OBJECT_MAPPER.readValue(json, entityClass);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+
+        try {
+            return OBJECT_MAPPER.readValue(json, entityClass);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

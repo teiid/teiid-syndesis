@@ -24,21 +24,21 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
- * Represents the configuration for the view's source info 
+ * Represents the configuration for the view's source info
  */
 @JsonSerialize(as = RestViewSourceInfo.class)
 @JsonInclude(Include.NON_NULL)
 public class RestViewSourceInfo {
-    
+
     /*
      * The array of source schemas
      */
     private RestSourceSchema[] schemas = new RestSourceSchema[0];
-    
+
     public RestViewSourceInfo(RestSourceSchema[] sourceSchemas) {
-    	this.schemas = sourceSchemas;
+        this.schemas = sourceSchemas;
     }
-	
+
     /**
      * @return the projected columns
      */

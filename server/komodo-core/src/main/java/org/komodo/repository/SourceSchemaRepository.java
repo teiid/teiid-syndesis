@@ -27,8 +27,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SourceSchemaRepository extends JpaRepository<SourceSchema, String> {
-	
-	@Query(value = "SELECT name FROM source_schema", nativeQuery = true)
-	public List<String> findAllNames();
+
+    @Query(value = "SELECT name FROM source_schema", nativeQuery = true)
+    public List<String> findAllNames();
 
 }

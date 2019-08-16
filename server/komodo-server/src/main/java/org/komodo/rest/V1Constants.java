@@ -229,7 +229,7 @@ public interface V1Constants extends StringConstants {
      * syndesis source summaries segment
      */
     String SYNDESIS_SOURCE_STATUSES = "syndesisSourceStatuses"; //$NON-NLS-1$
-    
+
     /**
      * User profile resource method constant
      */
@@ -239,7 +239,7 @@ public interface V1Constants extends StringConstants {
      * The view editor state of the user profile
      */
     String VIEW_EDITOR_STATE = "viewEditorState"; //$NON-NLS-1$
-    
+
     /**
      * The view editor state of the user profile
      */
@@ -264,14 +264,14 @@ public interface V1Constants extends StringConstants {
      * Refresh views referenced in a view editor state object
      */
     String REFRESH_DATASERVICE_VIEWS = "refreshViews";
-    
+
     String IMPORT = "import";
-    
+
     /**
      * Validate a ViewDefintion
      */
     String VALIDATE_VIEW_DEFINITION = "validateViewDefinition";
-    
+
     /**
      * Get source schema, table, column information for view definition
      */
