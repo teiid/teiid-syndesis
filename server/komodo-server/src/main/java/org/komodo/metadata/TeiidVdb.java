@@ -45,19 +45,9 @@ public interface TeiidVdb {
     String getName();
 
     /**
-     * @return deployed name
-     */
-    String getDeployedName();
-
-    /**
      * @return the version
      */
     String getVersion();
-
-    /**
-     * @return <code>true</code> if this is a preview VDB
-     */
-    boolean isPreviewVdb();
 
     /**
      * @return <code>true</code> if this VDB is active

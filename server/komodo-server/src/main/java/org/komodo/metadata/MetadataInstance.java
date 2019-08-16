@@ -278,7 +278,7 @@ public interface MetadataInstance extends StringConstants {
 	 * @param vdb
 	 * @return the deployment status of the vdb
 	 */
-	DeployStatus deploy(VDBMetaData vdb) throws KException;
+	void deploy(VDBMetaData vdb) throws KException;
 
 	Set<String> getDataSourceTemplateNames() throws AdminException;
 

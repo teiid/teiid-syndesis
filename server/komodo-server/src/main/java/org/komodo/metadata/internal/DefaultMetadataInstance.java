@@ -41,7 +41,6 @@ import javax.xml.stream.XMLStreamException;
 
 import org.komodo.KException;
 import org.komodo.datasources.ExternalSource;
-import org.komodo.metadata.DeployStatus;
 import org.komodo.metadata.Messages;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.metadata.TeiidDataSource;
@@ -49,7 +48,6 @@ import org.komodo.metadata.TeiidVdb;
 import org.komodo.metadata.query.QSColumn;
 import org.komodo.metadata.query.QSResult;
 import org.komodo.metadata.query.QSRow;
-import org.komodo.utils.ArgCheck;
 import org.komodo.utils.KLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
@@ -90,7 +88,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
     private Admin admin;
     private Map<String, Object> datasources = new ConcurrentHashMap<>();
-    private Map<String, Map<String, String>> dsProperties = new ConcurrentHashMap<>();
+    private Map<String, TeiidDataSource> dsProperties = new ConcurrentHashMap<>();
     private ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1); 
 
     public DefaultMetadataInstance() {
@@ -177,6 +175,14 @@ public class DefaultMetadataInstance implements MetadataInstance {
                                    query,
                                    offset,
                                    limit);
+            
+            if (offset != NO_OFFSET || limit != NO_LIMIT) {
+            	//if we want more effective pagination, then
+            	//we need to enable result set caching and parameterize the limit/offset
+            	query = "SELECT * FROM (" + query + ") x LIMIT " + Math.max(0, offset) + ", " + (limit < 0?Integer.MAX_VALUE:limit);
+            }
+            
+            
             rs = statement.executeQuery(query);
 
             ResultSetMetaData rsmd = rs.getMetaData();
@@ -193,18 +199,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
                 result.addColumn(column);
             }
 
-            int rowNum = 0;
             while (rs.next()) {
-                rowNum++;
-
-                if (offset > NO_OFFSET && rowNum < offset) {
-                    continue;
-                }
-
-                if (limit > NO_LIMIT && result.getRows().size() >= limit) {
-                    break;
-                }
-
                 QSRow row = new QSRow();
                 for (int i = 1; i <= columns; ++i) {
                     Object value = rs.getObject(i);
@@ -238,16 +233,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
     @Override
     public TeiidDataSource getDataSource(String name) throws KException {
         checkStarted();
-        Map<String, String> dataSource;
-        try {
-            dataSource = this.dsProperties.get(name);
-            if (dataSource == null)
-                return null;
-
-            return new TeiidDataSourceImpl(name, dataSource);
-        } catch (Exception ex) {
-            throw handleError(ex);
-        }
+        return this.dsProperties.get(name);
     }
 
     @Override
@@ -272,21 +258,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
     @Override
     public Collection<TeiidDataSource> getDataSources() throws KException {
         checkStarted();
-        try {
-            Collection<String> dsNames = getDataSourceNames();
-            if (dsNames.isEmpty())
-                return Collections.emptyList();
-
-            List<TeiidDataSource> dsSources = new ArrayList<>();
-            for (String dsName : dsNames) {
-                TeiidDataSource dataSource = getDataSource(dsName);
-                dsSources.add(dataSource);
-            }
-
-            return dsSources;
-        } catch (Exception ex) {
-            throw handleError(ex);
-        }
+        return this.dsProperties.values();
     }
 
     @Override
@@ -393,16 +365,10 @@ public class DefaultMetadataInstance implements MetadataInstance {
     }
 
     @Override
-    public DeployStatus deploy(VDBMetaData vdb) throws KException {
-    	DeployStatus status = new DeployStatus();
-
+    public void deploy(VDBMetaData vdb) throws KException {
     	String vdbName = vdb.getName();
     	
         try {
-            status.addProgressMessage("Starting deployment of vdb " + vdbName); //$NON-NLS-1$
-
-            status.addProgressMessage("Attempting to deploy VDB " + vdbName + " to teiid"); //$NON-NLS-1$ //$NON-NLS-2$
-            
             // Deploy the VDB
             AccessibleByteArrayOutputStream baos = toBytes(vdb);
             
@@ -415,35 +381,24 @@ public class DefaultMetadataInstance implements MetadataInstance {
             
             Admin admin = getAdmin();
             
-            try {
-                ArgCheck.isNotNull(deploymentName, "deploymentName"); //$NONNLS1$
-                ArgCheck.isNotNull(inStream, "inStream"); //$NONNLS1$
-
-                VDB existing = admin.getVDB(vdbName, DEFAULT_VDB_VERSION);
-                if (existing != null) {
-                	admin.undeploy(deploymentName);
-                }
-                
-                for (ModelMetaData model : vdb.getModelMetaDatas().values()) {
-                    for (SourceMappingMetadata smm : model.getSourceMappings()) {
-                    	addTranslator(smm.getTranslatorName());
-                        if (smm.getConnectionJndiName() != null && datasources.get(smm.getConnectionJndiName()) != null) {
-                            server.addConnectionFactory(smm.getName(), datasources.get(smm.getConnectionJndiName()));
-                        }
+            VDB existing = admin.getVDB(vdbName, DEFAULT_VDB_VERSION);
+            if (existing != null) {
+            	admin.undeploy(deploymentName);
+            }
+            
+            for (ModelMetaData model : vdb.getModelMetaDatas().values()) {
+                for (SourceMappingMetadata smm : model.getSourceMappings()) {
+                	addTranslator(smm.getTranslatorName());
+                    if (smm.getConnectionJndiName() != null && datasources.get(smm.getConnectionJndiName()) != null) {
+                        server.addConnectionFactory(smm.getName(), datasources.get(smm.getConnectionJndiName()));
                     }
                 }
-                admin.deploy(deploymentName, new ByteArrayInputStream(baos.toByteArray()));
-
-            } catch (Exception ex) {
-                throw handleError(ex);
             }
+            admin.deploy(deploymentName, inStream);
 
-            status.addProgressMessage("VDB deployed " + vdbName + " to teiid"); //$NON-NLS-1$ //$NON-NLS-2$
         } catch (Exception ex) {
-            status.addErrorMessage(ex);
+            throw handleError(ex);
         }
-        
-        return status;
     }
     
     @Override
@@ -521,7 +476,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
 	            this.datasources.put(deploymentName, ds);
 	            properties.put("type", templateName);
 	            
-	            this.dsProperties.put(deploymentName, properties);
+	            this.dsProperties.put(deploymentName, new TeiidDataSourceImpl(deploymentName, properties));
         	}
             break;
             default:

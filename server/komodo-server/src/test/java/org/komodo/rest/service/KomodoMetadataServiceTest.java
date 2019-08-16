@@ -30,16 +30,21 @@ import javax.ws.rs.NotFoundException;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.komodo.KException;
 import org.komodo.metadata.TeiidDataSource;
+import org.komodo.metadata.TeiidVdb;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
 import org.komodo.metadata.internal.TeiidDataSourceImpl;
 import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.repository.KomodoRepositoryConfiguration;
 import org.komodo.repository.WorkspaceManagerImpl;
 import org.komodo.rest.KomodoJsonMarshaller;
+import org.komodo.rest.datavirtualization.KomodoQueryAttribute;
 import org.komodo.rest.datavirtualization.connection.RestSchemaNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.teiid.adminapi.impl.VDBMetaData;
@@ -48,6 +53,7 @@ import org.teiid.adminapi.impl.VDBMetaData;
 @RunWith(SpringRunner.class)
 @DataJpaTest
 @ContextConfiguration(classes = {KomodoRepositoryConfiguration.class, ServiceTestConfiguration.class})
+@DirtiesContext
 public class KomodoMetadataServiceTest {
 	
 	@Autowired
@@ -58,6 +64,9 @@ public class KomodoMetadataServiceTest {
 	
 	@Autowired
 	private DefaultMetadataInstance metadataInstance;
+	
+	@Autowired
+    private TestEntityManager entityManager;
 	
 	@Test
 	public void testSourceVdbGeneration() throws Exception {
@@ -140,5 +149,28 @@ public class KomodoMetadataServiceTest {
 				"  \"type\" : \"schema\",\n" + 
 				"  \"queryable\" : false\n" + 
 				"} ]", KomodoJsonMarshaller.marshall(nodes));
+	}
+	
+	@Test
+	public void testPreviewQuery() throws Exception {
+		KomodoQueryAttribute kqa = new KomodoQueryAttribute();
+		kqa.setQuery("select * from myview");
+		kqa.setTarget("dv1");
+		
+		workspaceManagerImpl.createDataVirtualization("dv1");
+		
+		try {
+			komodoMetadataService.updatePreviewVdb("dv1");
+			fail();
+		} catch (KException e) {
+			//preveiw vdb does not exist
+		}
+		
+		metadataInstance.deploy(KomodoUtilServiceTest.dummyPreviewVdb());
+
+		//even with no views, we should still succeed
+		TeiidVdb vdb = komodoMetadataService.updatePreviewVdb("dv1");
+		
+		metadataInstance.query(vdb.getName(), "select * from v", DefaultMetadataInstance.NO_OFFSET, DefaultMetadataInstance.NO_LIMIT);
 	}
 }

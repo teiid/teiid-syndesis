@@ -35,6 +35,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.komodo.StringConstants;
+import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.metadata.MetadataInstance.ValidationResult;
@@ -48,6 +49,7 @@ import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.teiid.core.util.EquivalenceUtil;
 import org.teiid.metadata.AbstractMetadataRecord;
 import org.teiid.metadata.Table;
 import org.teiid.query.validator.ValidatorReport;
@@ -372,8 +374,10 @@ public final class KomodoUtilService extends KomodoService {
     	}
 
     	boolean pathsSame = false;
+    	boolean updateView = false;
         // Add a new ViewDefinition
     	if (viewDefn == null) {
+    		updateView = true;
     		viewDefn = getWorkspaceManager().createViewDefiniton(restViewDefn.getDataVirtualizationName(), restViewDefn.getName());
     	} else {
     		if (restViewDefn.getId() != null && viewDefn.getId() != null && !restViewDefn.getId().equals(viewDefn.getId())) {
@@ -386,6 +390,7 @@ public final class KomodoUtilService extends KomodoService {
     		viewDefn.clearState();
     	}
 
+    	String oldDdl = viewDefn.getDdl();
         // Set ViewDefinition of the ViewEditorState
         viewDefn.setDdl(restViewDefn.getDdl());
         
@@ -397,16 +402,25 @@ public final class KomodoUtilService extends KomodoService {
         viewDefn.setComplete(restViewDefn.isComplete());
         viewDefn.setUserDefined(restViewDefn.isUserDefined());
         
-        if (viewDefn.isComplete()) {
-	        if (!viewDefn.isUserDefined()) {
+        boolean complete = viewDefn.isComplete();
+        
+        ServiceVdbGenerator serviceVdbGenerator = new ServiceVdbGenerator(metadataService);
+        
+        if (complete) {
+        	if (!viewDefn.isUserDefined()) {
 	        	//regenerate if needed
 	        	if (viewDefn.getDdl() == null || !pathsSame) {
-		        	String ddl = new ServiceVdbGenerator(metadataService).getODataViewDdl(viewDefn);
+		        	String ddl = serviceVdbGenerator.getODataViewDdl(viewDefn);
 					viewDefn.setDdl(ddl);
 	        	}
-	        } else if (viewDefn.getDdl() != null) {
+	        } else if (viewDefn.getDdl() == null) {
+	        	complete = false;
+	        } else if (!EquivalenceUtil.areEqual(oldDdl, viewDefn.getDdl())) {
 	        	try {
 		        	ValidationResult result = metadataInstance.validate(PREVIEW_VDB, viewDefn.getDdl());
+		        	if (result.getReport().hasItems()) {
+		        		complete = false;
+		        	}
 		        	Table t = result.getSchema().getTables().get(viewDefn.getName());
 		        	if (t != null) {
 			        	viewDefn.getSourcePaths().clear();
@@ -418,11 +432,24 @@ public final class KomodoUtilService extends KomodoService {
 			        		}
 			        	}
 		        	}
+		        	//determine if this can just change the view definition
+	        		//for now we'll redo everything
+	        		updateView = true;
 	        	} catch (Exception e) {
 	        		//ddl is not valid
 	        		KLog.getLogger().debug("could not determine source paths", e);
+	        		complete = false;
 	        	}
 	        }
+	        if (!complete) {
+	        	viewDefn.setComplete(false);
+	        	KLog.getLogger().info("stashed view definition is not actually complete/valid");
+	        }
+        }
+        
+        if (updateView && complete) {
+        	DataVirtualization dv = getWorkspaceManager().findDataVirtualization(viewDefn.getDataVirtualizationName());
+        	dv.setDirty(true);
         }
         
         return viewDefn;
@@ -463,6 +490,20 @@ public final class KomodoUtilService extends KomodoService {
         return runInTransaction(principal, "removeUserProfileViewEditorState", false, ()-> {
             if (!getWorkspaceManager().deleteViewDefinition(viewEditorStateId)) {
                 return Response.noContent().build();
+            }
+            
+            //TODO: get the viewDefinition - if complete, then we need to update the runtime state
+            ViewDefinition vd = getWorkspaceManager().findViewDefinition(viewEditorStateId);
+            if (vd == null) {
+            	notFound(viewEditorStateId);
+            } else {
+            	if (vd.isComplete()) {
+                	DataVirtualization dv = getWorkspaceManager().findDataVirtualization(vd.getDataVirtualizationName());
+                	
+                	dv.setDirty(true);
+            	}
+            	
+            	getWorkspaceManager().deleteViewDefinition(viewEditorStateId);
             }
 
             KomodoStatusObject kso = new KomodoStatusObject("Delete Status"); //$NON-NLS-1$

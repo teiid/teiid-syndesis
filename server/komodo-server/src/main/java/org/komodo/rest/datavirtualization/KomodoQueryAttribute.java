@@ -19,7 +19,6 @@ package org.komodo.rest.datavirtualization;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 
@@ -30,36 +29,12 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonInclude(value=Include.NON_NULL)
 public class KomodoQueryAttribute {
 
-    /**
-     * Label for the query
-     */
-    public static final String QUERY_LABEL = "query"; //$NON-NLS-1$
-
-    /**
-     * Label for the target database
-     */
-    public static final String TARGET_LABEL = "target";
-
-    /**
-     * Label for the limit of results
-     */
-    public static final String LIMIT_LABEL = "limit";
-
-    /**
-     * Label for the offset of results
-     */
-    public static final String OFFSET_LABEL = "offset";
-
-    @JsonProperty(QUERY_LABEL)
     private String query;
 
-    @JsonProperty(TARGET_LABEL)
     private String target;
 
-    @JsonProperty(LIMIT_LABEL)
     private int limit = -1;
 
-    @JsonProperty(OFFSET_LABEL)
     private int offset = 0;
 
     /**

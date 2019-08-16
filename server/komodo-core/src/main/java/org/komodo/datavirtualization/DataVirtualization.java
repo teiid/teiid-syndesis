@@ -41,6 +41,7 @@ public class DataVirtualization implements Named {
 	@Column(unique=true)
 	private String name;
 	private String description;
+	private boolean dirty;
 	
 	protected DataVirtualization() {
 	}
@@ -78,6 +79,14 @@ public class DataVirtualization implements Named {
 	
 	public void setDescription(String description) {
 		this.description = description;
+	}
+	
+	public boolean isDirty() {
+		return dirty;
+	}
+	
+	public void setDirty(boolean dirty) {
+		this.dirty = dirty;
 	}
 	
 }

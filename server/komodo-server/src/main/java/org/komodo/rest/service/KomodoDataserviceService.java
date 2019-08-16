@@ -410,9 +410,8 @@ public final class KomodoDataserviceService extends KomodoService {
 			
 			kso.addAttribute(viewDefn.getName(), viewDefn.getId());
 		}
-
-		//TODO: should this "refresh" the views as we go 
-		//this.metadataService.generateServiceVDB(dataservice);
+		
+		dataservice.setDirty(true);
 		
 		return kso;
 	}
