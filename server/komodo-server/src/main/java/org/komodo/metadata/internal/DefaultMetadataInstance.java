@@ -154,13 +154,13 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
         QSResult result = new QSResult();
 
-        KLog.getLogger().debug("Commencing query execution: {0}", query);
+        KLog.getLogger().debug("Commencing query execution: %s", query);
 
         Connection connection = null;
         Statement statement = null;
         ResultSet rs = null;
 
-        KLog.getLogger().debug("Initialising SQL connection for vdb {0}", vdb);
+        KLog.getLogger().debug("Initialising SQL connection for vdb %s", vdb);
 
         //
         // Ensure any runtime exceptions are always caught and thrown as KExceptions
@@ -173,7 +173,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
             statement = connection.createStatement();
 
-            KLog.getLogger().debug("Executing SQL Statement for query {0} with offset of {1} and limit of {2}",
+            KLog.getLogger().debug("Executing SQL Statement for query %s with offset of %d and limit of %d",
                                    query,
                                    offset,
                                    limit);
@@ -214,7 +214,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
                 result.addRow(row);
             }
 
-            KLog.getLogger().debug("Query executed and returning {0} results", result.getRows().size());
+            KLog.getLogger().debug("Query executed and returning %d results", result.getRows().size());
 
             return result;
         } catch (Throwable t) {

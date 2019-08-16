@@ -20,7 +20,6 @@ package org.komodo.openshift;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -92,7 +91,6 @@ import org.komodo.rest.AbstractTransactionService;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoConfigurationProperties;
 import org.komodo.rest.KomodoService;
-import org.komodo.utils.FileUtils;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
 import org.teiid.adminapi.AdminException;
@@ -359,7 +357,7 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
             parentDir = loggerPath.getParent();
         } catch(Exception ex) {
             logger.error("Failure to get logger path", ex);
-            parentDir = FileUtils.tempDirectory();
+            parentDir = System.getProperty(JAVA_IO_TMPDIR);
         }
 
         return parentDir + File.separator + id + ".log";
@@ -1288,8 +1286,8 @@ public class TeiidOpenShiftClient extends AbstractTransactionService implements 
             return "No log available";
 
         try {
-            return FileUtils.readSafe(logFile);
-        } catch (FileNotFoundException e) {
+            return ObjectConverterUtil.convertFileToString(logFile);
+        } catch (IOException e) {
             return "No log available";
         }
     }

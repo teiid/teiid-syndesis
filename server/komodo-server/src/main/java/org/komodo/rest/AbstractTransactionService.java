@@ -61,7 +61,7 @@ public abstract class AbstractTransactionService implements V1Constants {
     	final UnitOfWork result = this.kengine.createTransaction( user,
                                                                (getClass().getSimpleName() + COLON + name + COLON + System.currentTimeMillis()),
                                                                rollbackOnly, REPO_USER);
-        LOGGER.debug( "createTransaction:created '{0}', rollbackOnly = '{1}'", result.getName(), result.isRollbackOnly() ); //$NON-NLS-1$
+        LOGGER.debug( "createTransaction:created '%s', rollbackOnly = '%b'", result.getName(), result.isRollbackOnly() ); //$NON-NLS-1$
         return result;
     }
     
@@ -90,7 +90,7 @@ public abstract class AbstractTransactionService implements V1Constants {
     		transaction.commit();
     	}
 
-        LOGGER.debug( "commit: successfully committed '{0}', rollbackOnly = '{1}'", //$NON-NLS-1$
+        LOGGER.debug( "commit: successfully committed '%s', rollbackOnly = '%b'", //$NON-NLS-1$
                 transaction.getName(),
                 rollbackOnly);
     }

@@ -17,16 +17,10 @@
  */
 package org.komodo.rest.service;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -74,6 +68,7 @@ import org.komodo.rest.datavirtualization.connection.RestSourceSchema;
 import org.komodo.utils.PathUtils;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 import org.teiid.adminapi.Model.Type;
 import org.teiid.adminapi.VDBImport;
@@ -287,7 +282,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 			notFound(vdbName);
         }
 
-        LOGGER.debug("Establishing query service for query {0} on vdb {1}", query, vdbName);
+        LOGGER.debug("Establishing query service for query %s on vdb %s", query, vdbName);
         QSResult result = getMetadataInstance().query(vdbName, query, kqa.getOffset(), kqa.getLimit());
 
         return toResponse(result);
@@ -347,7 +342,8 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 			if (!deployOnly) {
 				final WorkspaceManager mgr = kengine.getWorkspaceManager();
 	            
-	            mgr.deleteSchema(teiidSource.getId());
+				//null out the old ddl
+				mgr.createOrUpdateSchema(teiidSource.getId(), komodoName, null);
 			}
 
 			// Initiate the VDB deployment
@@ -417,7 +413,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 		TeiidDataSource teiidSource = getMetadataInstance().getDataSource(komodoSourceName);
 
 		if (teiidSource == null) {
-			LOGGER.debug( "Connection '{0}' was not found", komodoSourceName ); //$NON-NLS-1$
+			LOGGER.debug( "Connection '%s' was not found", komodoSourceName ); //$NON-NLS-1$
 			notFound( komodoSourceName );
 		}
 		
@@ -456,35 +452,26 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         return runInTransaction(principal, "getAllConnectionSchema", true, ()->{
             List<RestSchemaNode> rootNodes = new ArrayList<RestSchemaNode>();
             
-            // Get syndesis sources
-            Collection<DefaultSyndesisDataSource> dataSources = this.openshiftClient.getSyndesisSources(getAuthenticationToken());
-
             // Get teiid datasources
             Collection<TeiidDataSource> allTeiidSources = getMetadataInstance().getDataSources();
             
-            Map<String, TeiidDataSource> teiidSourceMap = allTeiidSources.stream().collect(Collectors.toMap(t -> t.getName(), Function.identity()));
-
             // Add status summary for each of the syndesis sources.  Determine if there is a matching teiid source
-            for (DefaultSyndesisDataSource dataSource : dataSources) {
-            	String komodoName = dataSource.getKomodoName();
-            	TeiidDataSource teiidSource = teiidSourceMap.get(komodoName);
-            	if (teiidSource == null) {
-            		continue;
-            	}
+            for (TeiidDataSource teiidSource : allTeiidSources) {
                 final Schema schemaModel = findSchemaModel( teiidSource );
 
-                List<RestSchemaNode> schemaNodes = null;
-                if ( schemaModel != null ) {
-                    schemaNodes = this.generateSourceSchema(komodoName, schemaModel.getTables().values());
-                    if(schemaNodes != null && !schemaNodes.isEmpty()) {
-                    	RestSchemaNode rootNode = new RestSchemaNode();
-                    	rootNode.setName(komodoName);
-                    	rootNode.setType("root");
-                    	for(RestSchemaNode sNode: schemaNodes) {
-                    		rootNode.addChild(sNode);
-                    	}
-                    	rootNodes.add(rootNode);
-                    }
+                if ( schemaModel == null ) {
+                	continue;
+                }
+                
+            	List<RestSchemaNode> schemaNodes = this.generateSourceSchema(schemaModel.getName(), schemaModel.getTables().values());
+                if(schemaNodes != null && !schemaNodes.isEmpty()) {
+                	RestSchemaNode rootNode = new RestSchemaNode();
+                	rootNode.setName(schemaModel.getName());
+                	rootNode.setType("root");
+                	for(RestSchemaNode sNode: schemaNodes) {
+                		rootNode.addChild(sNode);
+                	}
+                	rootNodes.add(rootNode);
                 }
             }
 
@@ -529,7 +516,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
                 statuses.add(createSourceStatus(dataSource));
             }
             
-            LOGGER.debug( "getSyndesisSourceStatuses '{0}' statuses", statuses.size() ); //$NON-NLS-1$
+            LOGGER.debug( "getSyndesisSourceStatuses %d statuses", statuses.size() ); //$NON-NLS-1$
             return toResponse(statuses );
     	});
     }
@@ -565,7 +552,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 	}    
 
 	/**
-	 * Find and return table column info for input source paths from view definition
+	 * Find and return all runtime metadata
 	 * 
 	 * @param headers
 	 *            the request headers (never <code>null</code>)
@@ -574,47 +561,32 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 	 * @return source schema object array
 	 * @throws Exception 
 	 */
-	@POST
+	@GET
 	@Produces( MediaType.APPLICATION_JSON )
-	@Path(V1Constants.VIEW_SOURCE_INFO + FORWARD_SLASH + V1Constants.VIEW_EDITOR_STATE_PLACEHOLDER)
-	@ApiOperation(value = "Get Source Schema for View Definition", response = RestViewSourceInfo.class)
+	@Path(V1Constants.RUNTIME_METADATA + StringConstants.FORWARD_SLASH + V1Constants.DATA_SERVICE_PLACEHOLDER)
+	@ApiOperation(value = "Get Source Schema for a Virtualization", response = RestViewSourceInfo.class)
 	@ApiResponses(value = { @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
 			@ApiResponse(code = 403, message = "An error has occurred.") })
-	public Response viewSourceInfo(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
-			@ApiParam(value = "Name of the view editor state", required = true) final @PathParam("viewEditorStateId") String viewEditorStateId) throws Exception {
+	public Response getRuntimeMetadata(final @Context HttpHeaders headers, final @Context UriInfo uriInfo) throws Exception {
 		String principal = checkSecurityContext(headers);
 
-		LOGGER.info("getViewSourceSchemas()   viewEditorStateId : " + viewEditorStateId);
-
-		if (StringUtils.isBlank(viewEditorStateId)) {
-			forbidden(RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_NAME);
-		}
+		LOGGER.debug("getViewSourceSchemas()");
+		
+		//TODO: view level metadata from the virtualization
 
 		return runInTransaction(principal, "getViewSourceSchemas", true, ()->{
-			ViewDefinition viewDefinition = this.getWorkspaceManager().findViewDefinition(viewEditorStateId);
-
-			List<String> sourcePaths = viewDefinition.getSourcePaths();
-
-			LinkedHashMap<String, RestSourceSchema> srcSchemas = new LinkedHashMap<>();
-
-			for (int i = 0; i < sourcePaths.size(); i++) {
-				String nextPath = sourcePaths.get(i);
-				// Example sourcePath >>>> sourcePaths[0] =
-				// "connection=conn1/schema=public/table=customer";
-				String connectionName = PathUtils.getOptions(nextPath).get(0).getSecond();
-				
-				if (srcSchemas.containsKey(connectionName)) {
+			List<RestSourceSchema> srcSchemas = new ArrayList<>();
+			
+			for (TeiidDataSource dataSource : getMetadataInstance().getDataSources()) {
+				Schema s = findSchemaModel(dataSource);
+				if (s == null) {
 					continue;
 				}
-
-				Schema schema = findSchema(connectionName);
 				
-				if (schema != null) {
-					srcSchemas.put(connectionName, new RestSourceSchema(nextPath, schema));
-				}
+				srcSchemas.add(new RestSourceSchema(s));
 			}
 
-			RestViewSourceInfo response = new RestViewSourceInfo(viewDefinition.getName(), srcSchemas.values().toArray(new RestSourceSchema[0]));
+			RestViewSourceInfo response = new RestViewSourceInfo(srcSchemas.toArray(new RestSourceSchema[srcSchemas.size()]));
 			return toResponse(response);
 		});
 	}
@@ -737,10 +709,8 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
             final OAuthCredentials creds = getAuthenticationToken();
 
-            // Get all of the editor states from the user profile
-            // They are stored under ids of form "serviceVdbName.viewName"
             String serviceVdbName = dataservice.getServiceVdbName();
-    		List<? extends ViewDefinition> editorStates = getWorkspaceManager().getViewDefinitions(dataservice.getName());
+    		List<? extends ViewDefinition> editorStates = getWorkspaceManager().findViewDefinitions(dataservice.getName());
     		 
     		VDBMetaData theVdb = new ServiceVdbGenerator(this).createServiceVdb(serviceVdbName, editorStates);
             
@@ -875,18 +845,18 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             String option = table.getProperty(TABLE_OPTION_FQN, false );
             if( option != null ) {
                 // Break fqn into segments (segment starts at root, eg "schema=public/table=customer")
-                String[] segments = option.split(FORWARD_SLASH);
+                List<Pair<String, String>> segments = PathUtils.getOptions(option);
                 // Get the parent node of the final segment in the 'path'.  New nodes are created if needed.
                 RestSchemaNode parentNode = getLeafNodeParent(sourceName, schemaNodes, segments);
 
                 // Use last segment to create the leaf node child in the parent.  If parent is null, was root (and leaf already created).
                 if( parentNode != null ) {
-                    String type = getSegmentType(segments[segments.length-1]);
-                    String name = getSegmentName(segments[segments.length-1]);
+                	Pair<String, String> segment = segments.get(segments.size() - 1);
+                    String type = segment.getFirst();
+                    String name = segment.getSecond();
                     RestSchemaNode node = new RestSchemaNode(sourceName, name, type);
+                    node.setTeiidName(table.getName());
                     node.setQueryable(true);
-                    String path = createSchemaNodePath(segments.length-1, segments);
-                    node.setPath(path);
                     parentNode.addChild(node);
                 }
             }
@@ -904,34 +874,33 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
      * @param segments the full path of segments, starting at the root
      * @return the final segments parent node.  (null if final segment is at the root)
      */
-    private RestSchemaNode getLeafNodeParent(String sourceName, List<RestSchemaNode> currentNodes, String[] segments) {
+    private RestSchemaNode getLeafNodeParent(String sourceName, List<RestSchemaNode> currentNodes, List<Pair<String, String>> segments) {
         RestSchemaNode parentNode = null;
         // Determine number of levels to process.
         // - process one level if one segment
         // - if more than one level, process nSegment - 1 levels
-        int nLevels = (segments.length > 1) ? segments.length-1 : 1;
+        int nLevels = (segments.size() > 1) ? segments.size()-1 : 1;
 
         // Start at beginning of segment path, creating nodes if necessary
         for( int i=0; i < nLevels; i++ ) {
-            String type = getSegmentType(segments[i]);
-            String name = getSegmentName(segments[i]);
+        	Pair<String, String> segment = segments.get(i);
+            String type = segment.getFirst();
+            String name = segment.getSecond();
             // Root Level - look for matching root node in the list 
             if( i == 0 ) {
                 RestSchemaNode matchNode = getMatchingNode(sourceName, name, type, currentNodes);
                 // No match - create a new node
                 if(matchNode == null) {
                     matchNode = new RestSchemaNode(sourceName, name, type);
-                    String path = createSchemaNodePath(i,segments);
-                    matchNode.setPath(path);
                     currentNodes.add(matchNode);
                 }
                 // Set parent for next iteration
-                if( segments.length == 1 ) {       // Only one segment - parent is null (root)
+                if( segments.size() == 1 ) {       // Only one segment - parent is null (root)
                     matchNode.setQueryable(true);
                     parentNode = null;
                 } else {
                     // Set next parent if not last level
-                    if( i != segments.length-1 ) { 
+                    if( i != segments.size()-1 ) { 
                         parentNode = matchNode;
                     }
                 }
@@ -941,12 +910,10 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
                 // No match - create a new node
                 if(matchNode == null) {
                     matchNode = new RestSchemaNode(sourceName, name, type);
-                    String path = createSchemaNodePath(i,segments);
-                    matchNode.setPath(path);
                     parentNode.addChild(matchNode);
                 }
                 // Set next parent if not last level
-                if( i != segments.length-1 ) {
+                if( i != segments.size()-1 ) {
                     parentNode = matchNode;
                 }
             }
@@ -954,27 +921,6 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         return parentNode;
     }
 
-    /**
-     * Generate the path for the node, given the segments and the position within the segments
-     * @param iPosn the index position within the segments
-     * @param segments the array of segments
-     * @return the node path (segment0/segment1/etc)
-     */
-    private String createSchemaNodePath(int iPosn, String[] segments) {
-        StringBuilder sb = new StringBuilder();
-        if(segments!=null && segments.length > 0) {
-            for (int i = 0; i < segments.length; i++) {
-                if(i < iPosn) {
-                    sb.append(segments[i]+"/"); //$NON-NLS-1$
-                } else {
-                    sb.append(segments[i]);
-                    break;
-                }
-            }
-        }
-        return sb.toString();
-    }
-    
     /**
      * Searches the supplied list for node with matching name and type.  Does NOT search children or parents of supplied nodes.
      * @param sourceName the source name
@@ -994,34 +940,6 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         return matchedNode;
     }
 
-    /**
-     * Split the segment apart and return the name
-     * @param segment the segment (eg "table=customer")
-     * @return the name (eg "customer")
-     */
-    private String getSegmentName(String segment) {
-        String[] parts = segment.split(EQUALS);
-        try {
-			return URLDecoder.decode(parts[1].trim(), "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
-		}
-    }
-    
-    /**
-     * Split the segment apart and return the type
-     * @param segment the segment (eg "table=customer")
-     * @return the type (eg "table")
-     */
-    private String getSegmentType(String segment) {
-        String[] parts = segment.split(EQUALS);
-        try {
-			return URLDecoder.decode(parts[0].trim(), "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
-		}
-    }
-    
     /**
      * Set the schema availability for the provided RestSyndesisSourceStatus 
      * @param status the RestSyndesisSourceStatus

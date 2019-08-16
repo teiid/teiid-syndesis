@@ -45,9 +45,9 @@ public class ViewDefinitionTest {
         
         entityManager.flush();
         
-        assertEquals(3, workspaceManagerImpl.getViewDefinitions(dv.getName()).size());
+        assertEquals(3, workspaceManagerImpl.findViewDefinitions(dv.getName()).size());
         
-        assertEquals(Arrays.asList("x", "y", "x1"), workspaceManagerImpl.getViewDefinitionsNames(dv.getName()));
+        assertEquals(Arrays.asList("x", "y", "x1"), workspaceManagerImpl.findViewDefinitionsNames(dv.getName()));
         
         //x matching ignore case
         assertNotNull(workspaceManagerImpl.findViewDefinitionByNameIgnoreCase(dv.getName(), "X"));

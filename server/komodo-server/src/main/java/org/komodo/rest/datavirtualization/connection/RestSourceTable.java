@@ -40,11 +40,6 @@ public class RestSourceTable {
     private String tableName;
     
     /*
-     * the source path for this table
-     */
-    private String sourcePath;
-
-    /*
      * The columns for this table
      */
     private RestSourceColumn[] columns;
@@ -52,9 +47,8 @@ public class RestSourceTable {
     /**
      * Constructor for use when de-serializing
      */
-    public RestSourceTable(String sourcePath, Table table) {
+    public RestSourceTable(Table table) {
         super();
-        this.sourcePath = sourcePath;
         this.tableName = table.getName();
     	List<RestSourceColumn> tableColumns = new ArrayList<RestSourceColumn>();
     	for( Column column : table.getColumns()) {
@@ -67,14 +61,6 @@ public class RestSourceTable {
     	return this.tableName;
     }
 
-    public String getSourcePath() {
-        return sourcePath;
-    }
-
-    public void setSourcePath(String path) {
-        this.sourcePath = path;
-    }
-    
     public RestSourceColumn[] getColumns() {
     	return this.columns;
     }

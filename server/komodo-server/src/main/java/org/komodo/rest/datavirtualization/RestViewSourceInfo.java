@@ -31,26 +31,13 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 public class RestViewSourceInfo {
     
     /*
-     * The view name
-     */
-    private String viewName;
-	
-    /*
      * The array of source schemas
      */
     private RestSourceSchema[] schemas = new RestSourceSchema[0];
     
-    /**
-     * Constructor for use <strong>only</strong> when deserializing.
-     */
-    public RestViewSourceInfo(String viewId, RestSourceSchema[] sourceSchemas) {
-    	this.viewName = viewId;
+    public RestViewSourceInfo(RestSourceSchema[] sourceSchemas) {
     	this.schemas = sourceSchemas;
     }
-	
-	public String getViewName() {
-		return this.viewName;
-	}
 	
     /**
      * @return the projected columns

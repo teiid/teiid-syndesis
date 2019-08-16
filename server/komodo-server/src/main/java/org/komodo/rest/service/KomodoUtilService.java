@@ -44,11 +44,14 @@ import org.komodo.rest.datavirtualization.KomodoStatusObject;
 import org.komodo.rest.datavirtualization.RelationalMessages;
 import org.komodo.rest.datavirtualization.RestViewDefinitionStatus;
 import org.komodo.rest.datavirtualization.ViewListing;
+import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.teiid.metadata.AbstractMetadataRecord;
 import org.teiid.metadata.Table;
 import org.teiid.query.validator.ValidatorReport;
+import org.teiid.util.FullyQualifiedName;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -79,10 +82,6 @@ public final class KomodoUtilService extends KomodoService {
     public static final String APP_DESCRIPTION = "App Description"; //$NON-NLS-1$
 
     public static final String APP_VERSION = "App Version"; //$NON-NLS-1$
-
-    public static final String USER_NAME = "User Name"; //$NON-NLS-1$
-
-    public static final String WORKSPACE = "Workspace"; //$NON-NLS-1$
 
     @Autowired
     private MetadataInstance metadataInstance;
@@ -140,18 +139,6 @@ public final class KomodoUtilService extends KomodoService {
                 value = "The name of the virtualization",
                 required = true,
                 dataType = "string",
-                paramType = "query"),
-        @ApiImplicitParam(
-                name = QueryParamKeys.SIZE,
-                value = "The number of objects to return. If not present, all objects are returned",
-                required = false,
-                dataType = "integer",
-                paramType = "query"),
-        @ApiImplicitParam(
-                name = QueryParamKeys.START,
-                value = "Index of the first artifact to return",
-                required = false,
-                dataType = "integer",
                 paramType = "query")
       })
     @ApiResponses(value = {
@@ -173,61 +160,17 @@ public final class KomodoUtilService extends KomodoService {
         // find view editor states
         return runInTransaction(principal, "getViewEditorStates", true, ()->{
         
-            final List<? extends ViewDefinition> viewEditorStates = getWorkspaceManager().getViewDefinitions( virtualization );
-            LOGGER.debug( "getViewEditorStates:found '{0}' ViewEditorStates", viewEditorStates.size() ); //$NON-NLS-1$
+            final List<? extends ViewDefinition> viewEditorStates = getWorkspaceManager().findViewDefinitions( virtualization );
+            LOGGER.debug( "getViewEditorStates:found %d ViewEditorStates", viewEditorStates.size() ); //$NON-NLS-1$
 
             //TODO: paging / sorting can be pushed into the repository
-            //also there's no sort here, perhaps this should be sorted on name
-            
-            int start = 0;
 
-            { // start query parameter
-                final String qparam = uriInfo.getQueryParameters().getFirst( QueryParamKeys.START );
-                if ( qparam != null ) {
-                    try {
-                        start = Integer.parseInt( qparam );
-                        if ( start < 0 ) {
-                            start = 0;
-                        }
-                    } catch ( final Exception e ) {
-                        start = 0;
-                    }
-                }
-            }
-
-            int size = ALL_AVAILABLE;
-
-            { // size query parameter
-                final String qparam = uriInfo.getQueryParameters().getFirst( QueryParamKeys.SIZE );
-
-                if ( qparam != null ) {
-                    try {
-                        size = Integer.parseInt( qparam );
-
-                        if ( size <= 0 ) {
-                            size = ALL_AVAILABLE;
-                        }
-                    } catch ( final Exception e ) {
-                        size = ALL_AVAILABLE;
-                    }
-                }
-            }
-
-            int i = 0;
             for ( final ViewDefinition viewEditorState : viewEditorStates ) {
-                if (i < start)
-                    continue;
-
-                if (size != ALL_AVAILABLE && viewDefinitions.size() > size)
-                    continue;
-
-                LOGGER.debug("getViewEditorStates:ViewEditorState '{0}' entity was constructed", viewEditorState.getName()); //$NON-NLS-1$
                 ViewListing listing = new ViewListing();
                 listing.setId(viewEditorState.getId());
                 listing.setName(viewEditorState.getName());
                 listing.setDescription(viewEditorState.getDescription());
                 viewDefinitions.add(listing);
-                ++i;
             }
 
             return toResponse(viewDefinitions );
@@ -262,13 +205,13 @@ public final class KomodoUtilService extends KomodoService {
 
     	return runInTransaction(principal, "getViewEditorStates", true, ()->{
             ViewDefinition viewEditorState = getWorkspaceManager().findViewDefinition(viewEditorStateId);
-            LOGGER.debug( "getViewEditorState:found '{0}' ViewEditorStates",
+            LOGGER.debug( "getViewEditorState:found %d ViewEditorStates",
                               viewEditorState == null ? 0 : 1 ); //$NON-NLS-1$
 
             if (viewEditorState == null)
                 return Response.noContent().build();
 
-            LOGGER.debug("getViewEditorStates:ViewEditorState '{0}' entity was constructed", viewEditorState.getName()); //$NON-NLS-1$
+            LOGGER.debug("getViewEditorStates:ViewEditorState %s entity was constructed", viewEditorState.getName()); //$NON-NLS-1$
             return toResponse(viewEditorState );
     	});
     }
@@ -337,7 +280,7 @@ public final class KomodoUtilService extends KomodoService {
                                                final ViewDefinition restViewDefinition) {
         checkSecurityContext(headers);
 
-    	LOGGER.info("Validating view : " + restViewDefinition.getName());
+    	LOGGER.debug("Validating view : %s", restViewDefinition.getName());
     	
         RestViewDefinitionStatus viewDefnStatus = validateViewDefinition(restViewDefinition);
 
@@ -454,10 +397,32 @@ public final class KomodoUtilService extends KomodoService {
         viewDefn.setComplete(restViewDefn.isComplete());
         viewDefn.setUserDefined(restViewDefn.isUserDefined());
         
-        if (viewDefn.isComplete() && !viewDefn.isUserDefined() 
-        		&& (viewDefn.getDdl() == null || !pathsSame)) {
-        	String ddl = new ServiceVdbGenerator(metadataService).getODataViewDdl(viewDefn);
-			viewDefn.setDdl(ddl);
+        if (viewDefn.isComplete()) {
+	        if (!viewDefn.isUserDefined()) {
+	        	//regenerate if needed
+	        	if (viewDefn.getDdl() == null || !pathsSame) {
+		        	String ddl = new ServiceVdbGenerator(metadataService).getODataViewDdl(viewDefn);
+					viewDefn.setDdl(ddl);
+	        	}
+	        } else if (viewDefn.getDdl() != null) {
+	        	try {
+		        	ValidationResult result = metadataInstance.validate(PREVIEW_VDB, viewDefn.getDdl());
+		        	Table t = result.getSchema().getTables().get(viewDefn.getName());
+		        	if (t != null) {
+			        	viewDefn.getSourcePaths().clear();
+			        	for (AbstractMetadataRecord r : t.getIncomingObjects()) {
+			        		if (r instanceof Table) {
+			        			FullyQualifiedName fqn = new FullyQualifiedName(SCHEMA_KEY, r.getParent().getName());
+			        			fqn.append(TABLE_KEY, r.getName());
+			        			viewDefn.addSourcePath(fqn.toString());
+			        		}
+			        	}
+		        	}
+	        	} catch (Exception e) {
+	        		//ddl is not valid
+	        		KLog.getLogger().debug("could not determine source paths", e);
+	        	}
+	        }
         }
         
         return viewDefn;

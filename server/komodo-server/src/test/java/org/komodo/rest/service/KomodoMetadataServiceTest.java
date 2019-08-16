@@ -123,22 +123,21 @@ public class KomodoMetadataServiceTest {
 				"  \"children\" : [ {\n" + 
 				"    \"children\" : [ ],\n" + 
 				"    \"name\" : \"bar\",\n" + 
+				"    \"teiidName\" : \"tbl\",\n" + 
 				"    \"connectionName\" : \"source\",\n" + 
 				"    \"type\" : \"t bl\",\n" + 
-				"    \"path\" : \"schema=s%20x/t%20bl=bar\",\n" + 
 				"    \"queryable\" : true\n" + 
 				"  }, {\n" + 
 				"    \"children\" : [ ],\n" + 
 				"    \"name\" : \"bar1\",\n" + 
+				"    \"teiidName\" : \"tbl1\",\n" + 
 				"    \"connectionName\" : \"source\",\n" + 
 				"    \"type\" : \"t bl\",\n" + 
-				"    \"path\" : \"schema=s%20x/t%20bl=bar1\",\n" + 
 				"    \"queryable\" : true\n" + 
 				"  } ],\n" + 
 				"  \"name\" : \"s x\",\n" + 
 				"  \"connectionName\" : \"source\",\n" + 
 				"  \"type\" : \"schema\",\n" + 
-				"  \"path\" : \"schema=s%20x\",\n" + 
 				"  \"queryable\" : false\n" + 
 				"} ]", KomodoJsonMarshaller.marshall(nodes));
 	}
