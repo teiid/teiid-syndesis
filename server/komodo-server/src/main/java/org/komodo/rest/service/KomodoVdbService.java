@@ -17,17 +17,7 @@
  */
 package org.komodo.rest.service;
 
-import static org.komodo.rest.datavirtualization.RelationalMessages.Error.*;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import static org.komodo.rest.datavirtualization.RelationalMessages.Error.VIEW_NAME_EXISTS;
 
 import org.komodo.StringConstants;
 import org.komodo.datavirtualization.ViewDefinition;
@@ -35,7 +25,11 @@ import org.komodo.rest.KomodoService;
 import org.komodo.rest.V1Constants;
 import org.komodo.rest.datavirtualization.RelationalMessages;
 import org.komodo.utils.StringNameValidator;
-import org.springframework.stereotype.Component;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -46,9 +40,9 @@ import io.swagger.annotations.ApiResponses;
 /**
  * A Komodo REST service for obtaining VDB information from the workspace.
  */
-@Component
-@Path(V1Constants.WORKSPACE_SEGMENT + StringConstants.FORWARD_SLASH +
-           V1Constants.VDBS_SEGMENT)
+@RestController
+@RequestMapping(V1Constants.APP_PATH + V1Constants.FORWARD_SLASH + V1Constants.WORKSPACE_SEGMENT
+        + StringConstants.FORWARD_SLASH + V1Constants.VDBS_SEGMENT)
 @Api(tags = {V1Constants.VDBS_SEGMENT})
 public final class KomodoVdbService extends KomodoService {
 
@@ -68,13 +62,12 @@ public final class KomodoVdbService extends KomodoService {
      *         message
      * @throws Exception
      */
-    @GET
-    @Path( V1Constants.VDB_PLACEHOLDER + StringConstants.FORWARD_SLASH +
+    @RequestMapping( value = V1Constants.VDB_PLACEHOLDER + StringConstants.FORWARD_SLASH +
                 V1Constants.MODELS_SEGMENT + StringConstants.FORWARD_SLASH +
                 V1Constants.MODEL_PLACEHOLDER + StringConstants.FORWARD_SLASH +
                 V1Constants.VIEWS_SEGMENT + StringConstants.FORWARD_SLASH +
-                V1Constants.NAME_VALIDATION_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.VIEW_PLACEHOLDER)
-    @Produces( { MediaType.TEXT_PLAIN } )
+                V1Constants.NAME_VALIDATION_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.VIEW_PLACEHOLDER,
+                method = RequestMethod.GET, produces= { "plain/text" })
     @ApiOperation( value = "Returns an error message if the view name is invalid" )
     @ApiResponses( value = {
             @ApiResponse( code = 400, message = "The URI cannot contain encoded slashes or backslashes." ),
@@ -82,20 +75,19 @@ public final class KomodoVdbService extends KomodoService {
             @ApiResponse( code = 404, message = "No vdb could be found with name" ),
             @ApiResponse( code = 500, message = "The view name cannot be empty." )
     } )
-    public Response validateViewName( final @Context HttpHeaders headers,
-                                      final @Context UriInfo uriInfo,
-                                      @ApiParam(value = "Name of the data virtualization", required = true)
-                                      final @PathParam( "virtualization" ) String virtualization,
+    public ResponseEntity<String> validateViewName(
+                                      @ApiParam(value = "Name of the Vdb", required = true)
+                                      final @PathVariable( "virtualization" ) String virtualization,
                                       @ApiParam(value = "Name of the Model to get its tables", required = true)
-                                      final @PathParam( "viewName" ) String viewName ) throws Exception {
+                                      final @PathVariable( "viewName" ) String viewName ) throws Exception {
 
-        String principal = checkSecurityContext(headers);
+        String principal = checkSecurityContext();
 
         final String errorMsg = VALIDATOR.checkValidName( viewName );
 
         // a name validation error occurred
         if ( errorMsg != null ) {
-            return Response.ok().entity( errorMsg ).build();
+            return ResponseEntity.ok(errorMsg);
         }
 
         return runInTransaction(principal, "validateViewName", true, ()-> { //$NON-NLS-1$
@@ -103,14 +95,12 @@ public final class KomodoVdbService extends KomodoService {
 
             if (vd != null) {
                 // name is the same as an existing View
-                return Response.ok()
-                        .entity( RelationalMessages.getString( VIEW_NAME_EXISTS ) )
-                        .build();
+                return ResponseEntity.ok(RelationalMessages.getString(VIEW_NAME_EXISTS));
             }
 
             // name is valid
-            return Response.ok().build();
-        }) ;
+            return ResponseEntity.ok().build();
+        }) ; //$NON-NLS-1$
     }
 
 }

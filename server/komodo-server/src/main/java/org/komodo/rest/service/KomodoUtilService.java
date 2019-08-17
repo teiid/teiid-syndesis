@@ -20,20 +20,6 @@ package org.komodo.rest.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
-
 import org.komodo.StringConstants;
 import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.datavirtualization.ViewDefinition;
@@ -48,7 +34,13 @@ import org.komodo.rest.datavirtualization.ViewListing;
 import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 import org.teiid.core.util.EquivalenceUtil;
 import org.teiid.metadata.AbstractMetadataRecord;
 import org.teiid.metadata.Table;
@@ -66,8 +58,8 @@ import io.swagger.annotations.ApiResponses;
 /**
  * A Komodo REST service for obtaining VDB information from the workspace.
  */
-@Component
-@Path( V1Constants.SERVICE_SEGMENT )
+@RestController
+@RequestMapping(value=V1Constants.APP_PATH+V1Constants.FORWARD_SLASH+V1Constants.SERVICE_SEGMENT)
 @Api( tags = {V1Constants.SERVICE_SEGMENT} )
 public final class KomodoUtilService extends KomodoService {
 
@@ -98,17 +90,12 @@ public final class KomodoUtilService extends KomodoService {
      *        the request URI information (never <code>null</code>)
      * @return about information of this service
      */
-    @GET
-    @Path(V1Constants.ABOUT)
-    @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation( value = "Display status of this rest service", response = String.class )
+    @RequestMapping(value = V1Constants.ABOUT, method = RequestMethod.GET, produces= { "application/json" })
+    @ApiOperation( value = "Display status of this rest service", response = KomodoStatusObject.class )
     @ApiResponses(value = {
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
-    public Response about(final @Context HttpHeaders headers,
-                                               final @Context UriInfo uriInfo) {
-
-        checkSecurityContext(headers);
+    public KomodoStatusObject about() {
 
         KomodoStatusObject repoStatus = new KomodoStatusObject();
 
@@ -118,7 +105,7 @@ public final class KomodoUtilService extends KomodoService {
         repoStatus.addAttribute(APP_VERSION, V1Constants.App.version());
 
         // create response
-        return toResponse(repoStatus);
+        return repoStatus;
     }
 
     /**
@@ -130,9 +117,8 @@ public final class KomodoUtilService extends KomodoService {
      * @return a JSON document representing the view editor states in the user profile (never <code>null</code>)
      * @throws Exception
      */
-    @GET
-    @Path(V1Constants.USER_PROFILE + FORWARD_SLASH + V1Constants.VIEW_LISTINGS)
-    @Produces( MediaType.APPLICATION_JSON )
+    @RequestMapping(value = V1Constants.USER_PROFILE + FORWARD_SLASH
+            + V1Constants.VIEW_LISTINGS, method = RequestMethod.GET, produces = { "application/json" })
     @ApiOperation(value = "Return the collection of view listings",
                   response = ViewListing[].class)
     @ApiImplicitParams({
@@ -146,18 +132,11 @@ public final class KomodoUtilService extends KomodoService {
     @ApiResponses(value = {
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
-    public Response getViewList( final @Context HttpHeaders headers,
-                                    final @Context UriInfo uriInfo ) throws Exception {
+    public ViewListing[] getViewList(@RequestParam String virtualization) throws Exception {
 
-        String principal = checkSecurityContext(headers);
+        String principal = checkSecurityContext();
 
         final List< ViewListing > viewDefinitions = new ArrayList<>();
-
-        final String virtualization = uriInfo.getQueryParameters().getFirst( QueryParamKeys.VIRTUALIZATION );
-
-        if (StringUtils.isBlank(virtualization)) {
-            return createErrorResponse(Status.FORBIDDEN, "VIRTUALIZATION name is required");
-        }
 
         // find view editor states
         return runInTransaction(principal, "getViewEditorStates", true, ()->{
@@ -175,7 +154,7 @@ public final class KomodoUtilService extends KomodoService {
                 viewDefinitions.add(listing);
             }
 
-            return toResponse(viewDefinitions );
+            return viewDefinitions.toArray(new ViewListing[viewDefinitions.size()]);
         });
     }
 
@@ -188,33 +167,31 @@ public final class KomodoUtilService extends KomodoService {
      * @return a JSON document representing the view editor state in the user profile (never <code>null</code>)
      * @throws Exception
      */
-    @GET
-    @Path(V1Constants.USER_PROFILE + FORWARD_SLASH +
-                  V1Constants.VIEW_EDITOR_STATE + FORWARD_SLASH +
-                  V1Constants.VIEW_EDITOR_STATE_PLACEHOLDER)
-    @Produces( MediaType.APPLICATION_JSON )
+    @RequestMapping(value = V1Constants.USER_PROFILE + FORWARD_SLASH +
+            V1Constants.VIEW_EDITOR_STATE + FORWARD_SLASH +
+            V1Constants.VIEW_EDITOR_STATE_PLACEHOLDER, method = RequestMethod.GET, produces = { "application/json" })
     @ApiOperation(value = "Returns the view editor state with the given id",
                   response = ViewDefinition.class)
     @ApiResponses(value = {
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
-    public Response getViewEditorState( final @Context HttpHeaders headers,
-                                    final @Context UriInfo uriInfo,
-                                    @ApiParam(value = "Name of the view editor state to fetch", required = true)
-                                    final @PathParam( "viewEditorStateId" ) String viewEditorStateId) throws Exception {
+    public ViewDefinition getViewEditorState(
+            @ApiParam(value = "Name of the view editor state to fetch", required = true)
+            final @PathVariable("viewEditorStateId") String viewEditorStateId) throws Exception {
 
-        String principal = checkSecurityContext(headers);
+        String principal = checkSecurityContext();
 
         return runInTransaction(principal, "getViewEditorStates", true, ()->{
             ViewDefinition viewEditorState = getWorkspaceManager().findViewDefinition(viewEditorStateId);
             LOGGER.debug( "getViewEditorState:found %d ViewEditorStates",
                               viewEditorState == null ? 0 : 1 ); //$NON-NLS-1$
 
-            if (viewEditorState == null)
-                return Response.noContent().build();
+            if (viewEditorState == null) {
+                throw new ResponseStatusException(HttpStatus.NO_CONTENT);
+            }
 
-            LOGGER.debug("getViewEditorStates:ViewEditorState %s entity was constructed", viewEditorState.getName()); //$NON-NLS-1$
-            return toResponse(viewEditorState );
+            LOGGER.debug("getViewEditorStates:ViewEditorState '{0}' entity was constructed", viewEditorState.getName()); //$NON-NLS-1$
+            return viewEditorState;
         });
     }
 
@@ -227,20 +204,17 @@ public final class KomodoUtilService extends KomodoService {
      * @return stashed view editor state
      * @throws Exception
      */
-    @PUT
-    @Produces( MediaType.APPLICATION_JSON )
-    @Path(V1Constants.USER_PROFILE + FORWARD_SLASH + V1Constants.VIEW_EDITOR_STATE)
-    @ApiOperation( value = "Store view editor state" )
+    @RequestMapping(value = V1Constants.USER_PROFILE + FORWARD_SLASH
+            + V1Constants.VIEW_EDITOR_STATE, method = RequestMethod.PUT, produces = { "application/json" })
+    @ApiOperation( value = "Store view editor state", response = KomodoStatusObject.class)
     @ApiResponses(value = {
         @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
-    public Response stashViewEditorState(final @Context HttpHeaders headers,
-                                               final @Context UriInfo uriInfo,
-                                               @ApiParam(required = true)
+    public KomodoStatusObject stashViewEditorState(@ApiParam(required = true)
                                                final org.komodo.datavirtualization.ViewDefinition restViewEditorState) throws Exception {
 
-        String principal = checkSecurityContext(headers);
+        String principal = checkSecurityContext();
 
         if (StringUtils.isBlank(restViewEditorState.getName())) {
             forbidden(RelationalMessages.Error.VIEW_DEFINITION_MISSING_NAME);
@@ -257,7 +231,7 @@ public final class KomodoUtilService extends KomodoService {
         KomodoStatusObject kso = new KomodoStatusObject("Stash Status"); //$NON-NLS-1$
         kso.addAttribute("Stash Status", "Successfully stashed"); //$NON-NLS-1$
         kso.addAttribute(StringConstants.ID_LABEL, vd.getId());
-        return toResponse(kso);
+        return kso;
     }
 
     /**
@@ -268,28 +242,24 @@ public final class KomodoUtilService extends KomodoService {
      *        the request URI information (never <code>null</code>)
      * @return validation status of the supplied ViewDefinition
      */
-    @POST
-    @Produces( MediaType.APPLICATION_JSON )
-    @Path(V1Constants.USER_PROFILE + FORWARD_SLASH + V1Constants.VALIDATE_VIEW_DEFINITION)
+    @RequestMapping(value = V1Constants.USER_PROFILE + FORWARD_SLASH
+            + V1Constants.VALIDATE_VIEW_DEFINITION, method = RequestMethod.POST, produces = { "application/json" })
     @ApiOperation( value = "Validate a ViewDefinition", response = RestViewDefinitionStatus.class )
     @ApiResponses(value = {
         @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
-    public Response validateViewDefinition(final @Context HttpHeaders headers,
-                                               final @Context UriInfo uriInfo,
-                                               @ApiParam(required = true)
-                                               final ViewDefinition restViewDefinition) {
-        checkSecurityContext(headers);
+    public RestViewDefinitionStatus validateViewDefinition(@ApiParam(required = true) final ViewDefinition restViewDefinition) {
+        checkSecurityContext();
 
         LOGGER.debug("Validating view : %s", restViewDefinition.getName());
 
-        RestViewDefinitionStatus viewDefnStatus = validateViewDefinition(restViewDefinition);
+        RestViewDefinitionStatus viewDefnStatus = validateViewDefinitionService(restViewDefinition);
 
-        return toResponse(viewDefnStatus);
+        return viewDefnStatus;
     }
 
-    private RestViewDefinitionStatus validateViewDefinition(final ViewDefinition restViewDefinition) {
+    private RestViewDefinitionStatus validateViewDefinitionService(final ViewDefinition restViewDefinition) {
         RestViewDefinitionStatus viewDefnStatus = new RestViewDefinitionStatus();
 
         String viewName = restViewDefinition.getName();
@@ -463,33 +433,25 @@ public final class KomodoUtilService extends KomodoService {
      * @return a JSON document representing the results of the removal
      * @throws Exception
      */
-    @DELETE
-    @Produces( MediaType.APPLICATION_JSON )
-    @Path(V1Constants.USER_PROFILE + FORWARD_SLASH +
-                  V1Constants.VIEW_EDITOR_STATE + FORWARD_SLASH +
-                  V1Constants.VIEW_EDITOR_STATE_PLACEHOLDER)
-    @ApiOperation( value = "Remove a view editor state from the user's profile", response = String.class )
+    @RequestMapping(value = V1Constants.USER_PROFILE + FORWARD_SLASH +
+            V1Constants.VIEW_EDITOR_STATE + FORWARD_SLASH +
+            V1Constants.VIEW_EDITOR_STATE_PLACEHOLDER, method = RequestMethod.DELETE, produces = { "application/json" })
+    @ApiOperation( value = "Remove a view editor state from the user's profile", response = KomodoStatusObject.class )
     @ApiResponses(value = {
         @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
-        @ApiResponse(code = 403, message = "An error has occurred.")
+        @ApiResponse(code = 403, message = "An error has occurred."),
+        @ApiResponse(code = 204, message = "id not found")
     })
-    public Response removeViewEditorState(final @Context HttpHeaders headers,
-                                               final @Context UriInfo uriInfo,
-                                               @ApiParam(
-                                                         value = "Id of the view editor state to remove",
-                                                         required = true
-                                               )
-                                               final @PathParam("viewEditorStateId") String viewEditorStateId) throws Exception {
+    public KomodoStatusObject removeViewEditorState(
+            @ApiParam(value = "Id of the view editor state to remove", required = true)
+            final @PathVariable("viewEditorStateId") String viewEditorStateId)
+            throws Exception {
 
-        String principal = checkSecurityContext(headers);
-
-        if (StringUtils.isBlank(viewEditorStateId)) {
-            forbidden(RelationalMessages.Error.PROFILE_EDITOR_STATE_MISSING_NAME);
-        }
+        String principal = checkSecurityContext();
 
         return runInTransaction(principal, "removeUserProfileViewEditorState", false, ()-> {
             if (!getWorkspaceManager().deleteViewDefinition(viewEditorStateId)) {
-                return Response.noContent().build();
+                throw new ResponseStatusException(HttpStatus.NO_CONTENT);
             }
 
             //TODO: get the viewDefinition - if complete, then we need to update the runtime state
@@ -509,7 +471,7 @@ public final class KomodoUtilService extends KomodoService {
             KomodoStatusObject kso = new KomodoStatusObject("Delete Status"); //$NON-NLS-1$
             kso.addAttribute(viewEditorStateId, "Successfully deleted"); //$NON-NLS-1$
 
-            return toResponse(kso);
+            return kso;
         }); //$NON-NLS-1$
     }
 }

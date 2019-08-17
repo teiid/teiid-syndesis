@@ -22,21 +22,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-
 import org.komodo.KException;
 import org.komodo.StringConstants;
 import org.komodo.WorkspaceManager;
@@ -68,7 +53,11 @@ import org.komodo.utils.PathUtils;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.teiid.adminapi.Model.Type;
 import org.teiid.adminapi.VDBImport;
 import org.teiid.adminapi.impl.ModelMetaData;
@@ -85,8 +74,8 @@ import io.swagger.annotations.ApiResponses;
 /**
  * A Komodo REST service for obtaining information from a metadata instance.
  */
-@Component
-@Path( V1Constants.METADATA_SEGMENT )
+@RestController
+@RequestMapping( V1Constants.APP_PATH+V1Constants.FORWARD_SLASH+V1Constants.METADATA_SEGMENT )
 @Api( tags = {V1Constants.METADATA_SEGMENT} )
 public class KomodoMetadataService extends KomodoService implements ServiceVdbGenerator.SchemaFinder {
 
@@ -208,19 +197,14 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
      * @throws Exception
      */
     @SuppressWarnings( "nls" )
-    @POST
-    @Path(V1Constants.QUERY_SEGMENT)
-    @Produces( MediaType.APPLICATION_JSON )
-    @Consumes ( { MediaType.APPLICATION_JSON } )
+    @RequestMapping(value = V1Constants.QUERY_SEGMENT, method = RequestMethod.POST,
+        produces= { "application/json" }, consumes = { "application/json" })
     @ApiOperation(value = "Pass a query to the teiid server")
     @ApiResponses(value = {
         @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
         @ApiResponse(code = 400, message = "An error has occurred.")
     })
-    public Response query(final @Context HttpHeaders headers,
-                                   final @Context UriInfo uriInfo,
-                                   @ApiParam(
-                                             value = "" +
+    public QSResult query(@ApiParam( value = "" +
                                                      "JSON of the properties of the query:<br>" +
                                                      OPEN_PRE_TAG +
                                                      OPEN_BRACE + BR +
@@ -237,7 +221,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
                                    )
                                    final KomodoQueryAttribute kqa) throws Exception {
 
-        String principal = checkSecurityContext(headers);
+        String principal = checkSecurityContext();
 
         //
         // Error if there is no query attribute defined
@@ -259,7 +243,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
         LOGGER.debug("Establishing query service for query %s on vdb %s", query, target);
         QSResult result = getMetadataInstance().query(vdb.getName(), query, kqa.getOffset(), kqa.getLimit());
-        return toResponse(result);
+        return result;
     }
 
     protected TeiidVdb updatePreviewVdb(String dvName) throws KException {
@@ -294,34 +278,27 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
      * @return a JSON representation of the refresh status (never <code>null</code>)
      * @throws Exception
      */
-    @POST
-    @Path( StringConstants.FORWARD_SLASH + V1Constants.REFRESH_SCHEMA_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.KOMODO_SOURCE_PLACEHOLDER )
-    @Produces( MediaType.APPLICATION_JSON )
+    @RequestMapping(value = StringConstants.FORWARD_SLASH + V1Constants.REFRESH_SCHEMA_SEGMENT
+            + StringConstants.FORWARD_SLASH
+            + V1Constants.KOMODO_SOURCE_PLACEHOLDER, method = RequestMethod.POST,
+            produces= { "application/json" }, consumes = { "application/json" })
     @ApiOperation(value = "Initiate schema refresh for a syndesis source")
     @ApiResponses(value = {
         @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
-    public Response refreshSchema( final @Context HttpHeaders headers,
-                                   final @Context UriInfo uriInfo,
-                                   @ApiParam( value = "Name of the komodo source",
-                                              required = true )
-                                   final @PathParam( "komodoSourceName" ) String komodoSourceName,
-                                   @ApiParam( value = "Indicates that the source vdb should be deployed, existing metadata will not be deleted",
-                                              required = false )
-                                   @DefaultValue( "true" )
-                                   @QueryParam( "deployOnly" )
+    public KomodoStatusObject refreshSchema( @ApiParam( value = "Name of the komodo source", required = true )
+                                   final @PathVariable( "komodoSourceName" ) String komodoSourceName,
+                                   @ApiParam( value = "Indicates that the source vdb should be deployed, existing metadata will not be deleted", required = false )
+                                   @RequestParam( value = "deployOnly", defaultValue = "true" )
                                    final boolean redeployServerVdb ) throws Exception {
-        String principal = checkSecurityContext(headers);
+        String principal = checkSecurityContext();
 
         // Error if the syndesisSource is missing
         if (StringUtils.isBlank( komodoSourceName )) {
             forbidden(RelationalMessages.Error.CONNECTION_SERVICE_MISSING_CONNECTION_NAME);
         }
-
-        final KomodoStatusObject kso = refreshSchema(komodoSourceName, redeployServerVdb, principal);
-
-        return toResponse(kso);
+        return refreshSchema(komodoSourceName, redeployServerVdb, principal);
     }
 
     public KomodoStatusObject refreshSchema(final String komodoName, final boolean deployOnly, String principal) throws KException, Exception {
@@ -378,9 +355,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
      * @return the JSON representation of the tables collection (never <code>null</code>)
      * @throws Exception
      */
-    @GET
-    @Path( "{komodoSourceName}/schema" )
-    @Produces( MediaType.APPLICATION_JSON )
+    @RequestMapping(value = "{komodoSourceName}/schema", method = RequestMethod.GET, produces = { "application/json" })
     @ApiOperation( value = "Get the native schema for the komodo source",
                    response = RestSchemaNode[].class )
     @ApiResponses( value = {
@@ -388,21 +363,17 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         @ApiResponse( code = 404, message = "No komodo source could be found with the specified name" ),
         @ApiResponse( code = 406, message = "Only JSON is returned by this operation" )
     } )
-    public Response getSchema( @Context final HttpHeaders headers,
-                               final @Context UriInfo uriInfo,
-                               @ApiParam( value = "Name of the komodo source",
-                                          required = true )
-                               @PathParam( "komodoSourceName" )
-                               final String komodoSourceName ) throws Exception {
-        final String principal = checkSecurityContext( headers );
+    public RestSchemaNode[] getSchema(@ApiParam( value = "Name of the komodo source", required = true )
+                               @PathVariable( "komodoSourceName" ) final String komodoSourceName ) throws Exception {
+        final String principal = checkSecurityContext();
 
         List<RestSchemaNode> result = runInTransaction(principal, "getSchema?komodoSourceName=" + komodoSourceName, true, ()->{
-            return getSchema(komodoSourceName);
+            return getSchemaService(komodoSourceName);
         });
-        return toResponse(result);
+        return result.toArray(new RestSchemaNode[result.size()]);
     }
 
-    List<RestSchemaNode> getSchema(final String komodoSourceName) throws KException {
+    List<RestSchemaNode> getSchemaService(final String komodoSourceName) throws KException {
         // Find the bound teiid source corresponding to the syndesis source
         TeiidDataSource teiidSource = getMetadataInstance().getDataSource(komodoSourceName);
 
@@ -429,9 +400,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
      * @return the JSON representation of the schema collection (never <code>null</code>)
      * @throws Exception
      */
-    @GET
-    @Path( "connection-schema" )
-    @Produces( MediaType.APPLICATION_JSON )
+    @RequestMapping(value = "connection-schema", method = RequestMethod.GET, produces = { "application/json" })
     @ApiOperation( value = "Get the native schema for all syndesis sources",
                    response = RestSchemaNode[].class )
     @ApiResponses( value = {
@@ -439,9 +408,8 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         @ApiResponse( code = 404, message = "No results found" ),
         @ApiResponse( code = 406, message = "Only JSON is returned by this operation" )
     } )
-    public Response getAllConnectionSchema( @Context final HttpHeaders headers,
-                                            final @Context UriInfo uriInfo ) throws Exception {
-        final String principal = checkSecurityContext( headers );
+    public RestSchemaNode[] getAllConnectionSchema() throws Exception {
+        final String principal = checkSecurityContext();
 
         return runInTransaction(principal, "getAllConnectionSchema", true, ()->{
             List<RestSchemaNode> rootNodes = new ArrayList<RestSchemaNode>();
@@ -468,8 +436,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
                     rootNodes.add(rootNode);
                 }
             }
-
-            return toResponse(rootNodes );
+            return rootNodes.toArray(new RestSchemaNode[rootNodes.size()]);
         });
     }
 
@@ -482,18 +449,13 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
      * @return a JSON document representing the statuses of the sources (never <code>null</code>)
      * @throws Exception
      */
-    @GET
-    @Path(V1Constants.SYNDESIS_SOURCE_STATUSES)
-    @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Return the syndesis source statuses",
-                  response = RestSyndesisSourceStatus[].class)
-    @ApiResponses(value = {
-        @ApiResponse(code = 403, message = "An error has occurred.")
+    @RequestMapping(value = V1Constants.SYNDESIS_SOURCE_STATUSES, method = RequestMethod.GET, produces = {"application/json" })
+    @ApiOperation(value = "Return the syndesis source statuses", response = RestSyndesisSourceStatus[].class)
+    @ApiResponses(value = {@ApiResponse(code = 403, message = "An error has occurred.")
     })
-    public Response getSyndesisSourceStatuses( final @Context HttpHeaders headers,
-                                               final @Context UriInfo uriInfo ) throws Exception {
+    public RestSyndesisSourceStatus[] getSyndesisSourceStatuses() throws Exception {
 
-        String principal = checkSecurityContext(headers);
+        String principal = checkSecurityContext();
 
         final List< RestSyndesisSourceStatus > statuses = new ArrayList<>();
 
@@ -509,9 +471,8 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
                 }
                 statuses.add(createSourceStatus(dataSource));
             }
-
-            LOGGER.debug( "getSyndesisSourceStatuses %d statuses", statuses.size() ); //$NON-NLS-1$
-            return toResponse(statuses );
+            LOGGER.debug( "getSyndesisSourceStatuses '{0}' statuses", statuses.size() ); //$NON-NLS-1$
+            return statuses.toArray(new RestSyndesisSourceStatus[statuses.size()]);
         });
     }
 
@@ -555,27 +516,21 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
      * @return source schema object array
      * @throws Exception
      */
-    @GET
-    @Produces( MediaType.APPLICATION_JSON )
-    @Path(V1Constants.RUNTIME_METADATA + StringConstants.FORWARD_SLASH + V1Constants.DATA_SERVICE_PLACEHOLDER)
+
+    @RequestMapping(value = V1Constants.RUNTIME_METADATA + StringConstants.FORWARD_SLASH
+            + V1Constants.DATA_SERVICE_PLACEHOLDER, method = RequestMethod.GET, produces = { "application/json" })
     @ApiOperation(value = "Get Source Schema for a Virtualization", response = RestViewSourceInfo.class)
     @ApiResponses(value = { @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
             @ApiResponse(code = 403, message = "An error has occurred.") })
-    public Response getRuntimeMetadata(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
-            @ApiParam(value = "Name of the data virtualization", required = true) final @PathParam("virtualization") String virtualization) throws Exception {
-        String principal = checkSecurityContext(headers);
+    public RestViewSourceInfo getRuntimeMetadata() throws Exception {
+        String principal = checkSecurityContext();
 
-        LOGGER.debug("getRuntimeMetadata()");
+        LOGGER.debug("getViewSourceSchemas()");
 
-        if (virtualization == null) {
-            forbidden(RelationalMessages.Error.DATASERVICE_SERVICE_MISSING_NAME);
-        }
+        //TODO: view level metadata from the virtualization
 
-        return runInTransaction(principal, "getRuntimeMetadata", false, ()->{
+        return runInTransaction(principal, "getViewSourceSchemas", true, ()->{
             List<RestSourceSchema> srcSchemas = new ArrayList<>();
-
-            //once we support view layering, we need to use the dv specific one
-            //updatePreviewVdb(virtualization);
 
             for (TeiidDataSource dataSource : getMetadataInstance().getDataSources()) {
                 Schema s = findSchemaModel(dataSource);
@@ -587,99 +542,88 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             }
 
             RestViewSourceInfo response = new RestViewSourceInfo(srcSchemas.toArray(new RestSourceSchema[srcSchemas.size()]));
-            return toResponse(response);
+            return response;
         });
     }
 
-    @GET
-    @Path(V1Constants.PUBLISH)
-    @Produces(MediaType.APPLICATION_JSON)
+    @RequestMapping(value = V1Constants.PUBLISH, method = RequestMethod.GET, produces = { "application/json" })
     @ApiOperation(value = "Gets the published virtualization services", response = BuildStatus[].class)
     @ApiResponses(value = { @ApiResponse(code = 403, message = "An error has occurred.") })
-    public Response getVirtualizations(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
-            @ApiParam(value = "true to include in progress services", required = true, defaultValue="true")
-            @QueryParam("includeInProgress") boolean includeInProgressServices) {
-        checkSecurityContext(headers);
-
-        //
-        // Ensure include in-progress services is included by default
-        //
-        if (! uriInfo.getQueryParameters().containsKey("includeInProgressServices")) //$NON-NLS-1$
-            includeInProgressServices = true;
+    public BuildStatus[] getVirtualizations(
+            @ApiParam(value = "true to include in progress services")
+            @RequestParam(value = "includeInProgress", required=false, defaultValue = "true") boolean includeInProgressServices) {
+        checkSecurityContext();
 
         Collection<BuildStatus> statuses = this.openshiftClient.getVirtualizations(includeInProgressServices);
-        return toResponse(statuses);
+        return statuses.toArray(new BuildStatus[statuses.size()]);
     }
 
-    @GET
-    @Path(V1Constants.PUBLISH + StringConstants.FORWARD_SLASH + V1Constants.VDB_PLACEHOLDER)
-    @Produces( MediaType.APPLICATION_JSON )
+    @RequestMapping(value = V1Constants.PUBLISH + StringConstants.FORWARD_SLASH
+            + V1Constants.VDB_PLACEHOLDER, method = RequestMethod.GET, produces = { "application/json" })
     @ApiOperation(value = "Find Build Status of Virtualization by VDB name", response = BuildStatus.class)
     @ApiResponses(value = {
         @ApiResponse(code = 404, message = "No VDB could be found with name"),
         @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
-    public Response getVirtualizationStatus(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
-            @ApiParam(value = "Name of the VDB", required = true) final @PathParam("vdbName") String vdbName) {
+    public BuildStatus getVirtualizationStatus(
+            @ApiParam(value = "Name of the VDB", required = true)
+            final @PathVariable(value = "vdbName", required=true) String vdbName) {
 
-        checkSecurityContext(headers);
+        checkSecurityContext();
 
         BuildStatus status = this.openshiftClient.getVirtualizationStatus(vdbName);
 
-        return toResponse(status);
+        return status;
     }
 
-    @GET
-    @Path(V1Constants.PUBLISH_LOGS + StringConstants.FORWARD_SLASH + V1Constants.VDB_PLACEHOLDER)
-    @Produces( MediaType.APPLICATION_JSON )
+    @RequestMapping(value = V1Constants.PUBLISH_LOGS + StringConstants.FORWARD_SLASH
+            + V1Constants.VDB_PLACEHOLDER, method = RequestMethod.GET, produces = { "application/json" })
     @ApiOperation(value = "Find Publish Logs of Virtualization by VDB name", response = KomodoStatusObject.class)
     @ApiResponses(value = {
         @ApiResponse(code = 404, message = "No VDB could be found with name"),
         @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
-    public Response getVirtualizationLogs(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
-            @ApiParam(value = "Name of the VDB", required = true) final @PathParam("vdbName") String vdbName) {
+    public KomodoStatusObject getVirtualizationLogs(
+            @ApiParam(value = "Name of the VDB")
+            final @PathVariable(value = "vdbName", required = true) String vdbName) {
 
-        checkSecurityContext(headers);
+        checkSecurityContext();
 
         KomodoStatusObject status = new KomodoStatusObject("Logs for " + vdbName); //$NON-NLS-1$
 
         String log = this.openshiftClient.getVirtualizationLog(vdbName);
         status.addAttribute("log", log); //$NON-NLS-1$
-        return toResponse(status);
+        return status;
     }
 
-    @DELETE
-    @Path(V1Constants.PUBLISH + StringConstants.FORWARD_SLASH + V1Constants.VDB_PLACEHOLDER)
-    @Produces( MediaType.APPLICATION_JSON )
+    @RequestMapping(value = V1Constants.PUBLISH + StringConstants.FORWARD_SLASH
+            + V1Constants.VDB_PLACEHOLDER, method = RequestMethod.DELETE, produces = { "application/json" })
     @ApiOperation(value = "Delete Virtualization Service by VDB name",response = BuildStatus.class)
     @ApiResponses(value = {
         @ApiResponse(code = 404, message = "No VDB could be found with name"),
         @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
-    public Response deleteVirtualization(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
-            @ApiParam(value = "Name of the VDB", required = true) final @PathParam("vdbName") String vdbName) {
+    public BuildStatus deleteVirtualization(
+            @ApiParam(value = "Name of the VDB")
+            final @PathVariable(value = "vdbName", required = true) String vdbName) {
 
-        checkSecurityContext(headers);
+        checkSecurityContext();
 
         BuildStatus status = this.openshiftClient.deleteVirtualization(vdbName);
-        return toResponse(status);
+        return status;
     }
 
-    @POST
-    @Path(V1Constants.PUBLISH)
-    @Produces( MediaType.APPLICATION_JSON )
-    @ApiOperation(value = "Publish Virtualization Service",
-                                response = KomodoStatusObject.class)
+    @RequestMapping(value = V1Constants.PUBLISH, method = RequestMethod.POST, produces = { "application/json" })
+    @ApiOperation(value = "Publish Virtualization Service", response = KomodoStatusObject.class)
     @ApiResponses(value = {
         @ApiResponse(code = 404, message = "No Dataservice could be found with name"),
         @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
-    public Response publishVirtualization(final @Context HttpHeaders headers, final @Context UriInfo uriInfo,
+    public KomodoStatusObject publishVirtualization(
             @ApiParam(value = "JSON properties:<br>" + OPEN_PRE_TAG + OPEN_BRACE + BR + NBSP
                     + "\"name\":      \"Name of the Dataservice\"" + BR
                     + "\"cpu-units\": \"(optional) Number of CPU units to allocate. 100 is 0.1 CPU (default 500)\"" + BR
@@ -687,9 +631,9 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
                     + "\"disk-size\": \"(optional) Amount disk allocated in GB (default 20)\"" + BR
                     + "\"enable-odata\": \"(optional) Enable OData interface. true|false (default true)\"" + BR
                     + CLOSE_BRACE
-                    + CLOSE_PRE_TAG, required = true) final PublishRequestPayload payload) throws Exception {
+                    + CLOSE_PRE_TAG) @RequestParam(required = true) final PublishRequestPayload payload) throws Exception {
 
-        String principal = checkSecurityContext(headers);
+        String principal = checkSecurityContext();
 
         //
         // Error if there is no name attribute defined
@@ -735,7 +679,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             //
             // Return the status from this request. Otherwise, monitor using #getVirtualizations()
             //
-            return toResponse(status);
+            return status;
         });
     }
 
