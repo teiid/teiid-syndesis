@@ -42,6 +42,7 @@ import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -63,8 +64,8 @@ import io.swagger.annotations.ApiResponses;
  * A Komodo REST service for obtaining Dataservice information from the workspace.
  */
 @RestController
-@RequestMapping(value = V1Constants.APP_PATH + V1Constants.FORWARD_SLASH + V1Constants.WORKSPACE_SEGMENT
-        + StringConstants.FORWARD_SLASH + V1Constants.DATA_SERVICES_SEGMENT)
+@RequestMapping(value = V1Constants.APP_PATH + V1Constants.FS + V1Constants.WORKSPACE_SEGMENT
+        + StringConstants.FS + V1Constants.DATA_SERVICES_SEGMENT)
 @Api(tags = { V1Constants.DATA_SERVICES_SEGMENT })
 public final class KomodoDataserviceService extends KomodoService {
 
@@ -78,16 +79,10 @@ public final class KomodoDataserviceService extends KomodoService {
 
     /**
      * Get the Dataservices from the komodo repository
-     *
-     * @param headers
-     *            the request headers (never <code>null</code>)
-     * @param uriInfo
-     *            the request URI information (never <code>null</code>)
-     * @return a JSON document representing all the Dataservices in the Komodo
-     *         workspace (never <code>null</code>)
+     * @return a JSON document representing all the Dataservices in the Komodo workspace (never <code>null</code>)
      * @throws Exception
      */
-    @RequestMapping(method = RequestMethod.GET, produces= { "application/json" })
+    @RequestMapping(method = RequestMethod.GET, produces= { MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation(value = "Return the collection of data services", response = RestDataVirtualization[].class)
     @ApiResponses(value = { @ApiResponse(code = 403, message = "An error has occurred.") })
     public RestDataVirtualization[] getDataservices() throws Exception {
@@ -102,8 +97,7 @@ public final class KomodoDataserviceService extends KomodoService {
                 RestDataVirtualization entity = createRestDataservice(dataService);
 
                 entities.add(entity);
-                LOGGER.debug("getDataservices:Dataservice '%s' entity was constructed", //$NON-NLS-1$
-                        dataService.getName());
+                LOGGER.debug("getDataservices:Dataservice '%s' entity was constructed", dataService.getName());
             }
             return entities.toArray(new RestDataVirtualization[entities.size()]);
         });
@@ -123,22 +117,19 @@ public final class KomodoDataserviceService extends KomodoService {
     }
 
     /**
-     * @param headers
-     *            the request headers (never <code>null</code>)
-     * @param uriInfo
-     *            the request URI information (never <code>null</code>)
-     * @param dataserviceName
-     *            the id of the Dataservice being retrieved (cannot be empty)
+     * @param dataserviceName the id of the Dataservice being retrieved (cannot be empty)
      * @return the JSON representation of the Dataservice (never <code>null</code>)
      * @throws Exception
      */
-    @RequestMapping(value = V1Constants.DATA_SERVICE_PLACEHOLDER, method = RequestMethod.GET, produces= { "application/json" })
+	@RequestMapping(value = V1Constants.DATA_SERVICE_PLACEHOLDER, method = RequestMethod.GET, produces = {
+			MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation(value = "Find dataservice by name", response = RestDataVirtualization.class)
     @ApiResponses(value = { @ApiResponse(code = 404, message = "No Dataservice could be found with name"),
             @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
             @ApiResponse(code = 403, message = "An error has occurred.") })
     public RestDataVirtualization getDataservice(
-            @ApiParam(value = "Id of the dataservice to be fetched, ie. the value of the 'keng__id' property", required = true) final @PathVariable("dataserviceName") String dataserviceName)
+            @ApiParam(value = "Id of the dataservice to be fetched, ie. the value of the 'keng__id' property",
+            required = true) final @PathVariable("dataserviceName") String dataserviceName)
             throws Exception {
 
         String principal = checkSecurityContext();
@@ -158,21 +149,15 @@ public final class KomodoDataserviceService extends KomodoService {
     /**
      * Create a new DataService in the komodo repository
      *
-     * @param headers
-     *            the request headers (never <code>null</code>)
-     * @param uriInfo
-     *            the request URI information (never <code>null</code>)
-     * @param dataserviceName
-     *            the dataservice name (cannot be empty)
-     * @return a JSON representation of the new dataservice (never
-     *         <code>null</code>)
+     * @param dataserviceName the dataservice name (cannot be empty)
+     * @return a JSON representation of the new dataservice (never <code>null</code>)
      * @throws Exception
      */
 
-    @RequestMapping(value = FORWARD_SLASH + V1Constants.DATA_SERVICE_PLACEHOLDER,
+    @RequestMapping(value = FS + V1Constants.DATA_SERVICE_PLACEHOLDER,
             method = RequestMethod.POST,
-            produces= { "application/json" },
-            consumes = { "application/json" })
+            produces= { MediaType.APPLICATION_JSON_VALUE },
+            consumes = { MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation(value = "Create a dataservice in the workspace")
     @ApiResponses(value = { @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
             @ApiResponse(code = 403, message = "An error has occurred.") })
@@ -217,17 +202,12 @@ public final class KomodoDataserviceService extends KomodoService {
     /**
      * Delete the specified Dataservice from the komodo repository
      *
-     * @param headers
-     *            the request headers (never <code>null</code>)
-     * @param uriInfo
-     *            the request URI information (never <code>null</code>)
-     * @param dataserviceName
-     *            the name of the data service to remove (cannot be
-     *            <code>null</code>)
+     * @param dataserviceName the name of the data service to remove (cannot be <code>null</code>)
      * @return a JSON document representing the results of the removal
      * @throws Exception
      */
-    @RequestMapping(value = V1Constants.DATA_SERVICE_PLACEHOLDER, method = RequestMethod.DELETE, produces= { "application/json" })
+	@RequestMapping(value = V1Constants.DATA_SERVICE_PLACEHOLDER, method = RequestMethod.DELETE, produces = {
+			MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation(value = "Delete a dataservice from the workspace")
     @ApiResponses(value = { @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
             @ApiResponse(code = 403, message = "An error has occurred.") })
@@ -255,17 +235,12 @@ public final class KomodoDataserviceService extends KomodoService {
     }
 
     /**
-     * @param headers
-     *            the request headers (never <code>null</code>)
-     * @param uriInfo
-     *            the request URI information (never <code>null</code>)
-     * @param dataserviceName
-     *            the data service name being validated (cannot be empty)
+     * @param dataserviceName the data service name being validated (cannot be empty)
      * @return the response (never <code>null</code>) with an entity that is either
      *         an empty string, when the name is valid, or an error message
      * @throws Exception
      */
-    @RequestMapping(value = FORWARD_SLASH
+    @RequestMapping(value = FS
             + V1Constants.DATA_SERVICE_PLACEHOLDER, method = RequestMethod.GET, produces = { "text/plain" })
     @ApiOperation(value = "Returns an error message if the data service name is invalid")
     @ApiResponses(value = {
@@ -296,9 +271,9 @@ public final class KomodoDataserviceService extends KomodoService {
         return ResponseEntity.ok().body(RelationalMessages.getString(DATASERVICE_SERVICE_NAME_EXISTS));
     }
 
-    @RequestMapping(value = StringConstants.FORWARD_SLASH + V1Constants.DATA_SERVICE_PLACEHOLDER +
-            StringConstants.FORWARD_SLASH + V1Constants.IMPORT + StringConstants.FORWARD_SLASH
-            + V1Constants.KOMODO_SOURCE_PLACEHOLDER, method = RequestMethod.PUT, produces = { "application/json" })
+    @RequestMapping(value = StringConstants.FS + V1Constants.DATA_SERVICE_PLACEHOLDER +
+            StringConstants.FS + V1Constants.IMPORT + StringConstants.FS
+            + V1Constants.KOMODO_SOURCE_PLACEHOLDER, method = RequestMethod.PUT, produces = { MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation(value = "Import views from a given source", response = KomodoStatusObject.class)
     @ApiResponses(value = { @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
             @ApiResponse(code = 403, message = "An error has occurred.") })
@@ -403,15 +378,12 @@ public final class KomodoDataserviceService extends KomodoService {
 
     /**
      * Update the specified Dataservice from the komodo repository
-     *
-     * @param headers         the request headers (never <code>null</code>)
-     * @param uriInfo         the request URI information (never <code>null</code>)
      * @param dataserviceName the dataservice name (cannot be empty)
      * @return a JSON representation of the new connection (never <code>null</code>)
      * @throws Exception
      */
-    @RequestMapping(value = FORWARD_SLASH
-            + V1Constants.DATA_SERVICE_PLACEHOLDER, method = RequestMethod.PUT, produces = { "application/json" }, consumes = { "application/json" })
+    @RequestMapping(value = FS + V1Constants.DATA_SERVICE_PLACEHOLDER, method = RequestMethod.PUT, produces = {
+            MediaType.APPLICATION_JSON_VALUE }, consumes = { MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation(value = "Update data service")
     @ApiResponses(value = { @ApiResponse(code = 400, message = "An error has occurred.") })
     public KomodoStatusObject updateDataservice(

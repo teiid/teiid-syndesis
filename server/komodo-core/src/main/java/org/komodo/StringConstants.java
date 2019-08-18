@@ -163,7 +163,7 @@ public interface StringConstants {
     /**
      * Forward slash
      */
-    String FORWARD_SLASH = "/"; //$NON-NLS-1$
+    String FS = "/"; //$NON-NLS-1$
 
     /**
      * Back slash used in regular expressions
@@ -243,7 +243,7 @@ public interface StringConstants {
     /**
      * Divide Sign
      */
-    String DIVIDE = FORWARD_SLASH;
+    String DIVIDE = FS;
 
     /**
      * Pipe Sign

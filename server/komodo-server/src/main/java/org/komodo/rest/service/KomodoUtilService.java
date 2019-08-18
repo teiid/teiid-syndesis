@@ -35,6 +35,7 @@ import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -59,7 +60,7 @@ import io.swagger.annotations.ApiResponses;
  * A Komodo REST service for obtaining VDB information from the workspace.
  */
 @RestController
-@RequestMapping(value=V1Constants.APP_PATH+V1Constants.FORWARD_SLASH+V1Constants.SERVICE_SEGMENT)
+@RequestMapping(value=V1Constants.APP_PATH+V1Constants.FS+V1Constants.SERVICE_SEGMENT)
 @Api( tags = {V1Constants.SERVICE_SEGMENT} )
 public final class KomodoUtilService extends KomodoService {
 
@@ -83,14 +84,7 @@ public final class KomodoUtilService extends KomodoService {
     @Autowired
     private KomodoMetadataService metadataService;
 
-    /**
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
-     * @return about information of this service
-     */
-    @RequestMapping(value = V1Constants.ABOUT, method = RequestMethod.GET, produces= { "application/json" })
+    @RequestMapping(value = V1Constants.ABOUT, method = RequestMethod.GET, produces= { MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation( value = "Display status of this rest service", response = KomodoStatusObject.class )
     @ApiResponses(value = {
         @ApiResponse(code = 403, message = "An error has occurred.")
@@ -110,15 +104,11 @@ public final class KomodoUtilService extends KomodoService {
 
     /**
      * Get all view editor states from the user's profile
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
      * @return a JSON document representing the view editor states in the user profile (never <code>null</code>)
      * @throws Exception
      */
-    @RequestMapping(value = V1Constants.USER_PROFILE + FORWARD_SLASH
-            + V1Constants.VIEW_LISTINGS, method = RequestMethod.GET, produces = { "application/json" })
+    @RequestMapping(value = V1Constants.USER_PROFILE + FS
+            + V1Constants.VIEW_LISTINGS, method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation(value = "Return the collection of view listings",
                   response = ViewListing[].class)
     @ApiImplicitParams({
@@ -160,16 +150,12 @@ public final class KomodoUtilService extends KomodoService {
 
     /**
      * Get the view editor state with the given id from the user's profile
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
      * @return a JSON document representing the view editor state in the user profile (never <code>null</code>)
      * @throws Exception
      */
-    @RequestMapping(value = V1Constants.USER_PROFILE + FORWARD_SLASH +
-            V1Constants.VIEW_EDITOR_STATE + FORWARD_SLASH +
-            V1Constants.VIEW_EDITOR_STATE_PLACEHOLDER, method = RequestMethod.GET, produces = { "application/json" })
+    @RequestMapping(value = V1Constants.USER_PROFILE + FS +
+            V1Constants.VIEW_EDITOR_STATE + FS +
+            V1Constants.VIEW_EDITOR_STATE_PLACEHOLDER, method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation(value = "Returns the view editor state with the given id",
                   response = ViewDefinition.class)
     @ApiResponses(value = {
@@ -197,15 +183,11 @@ public final class KomodoUtilService extends KomodoService {
 
     /**
      * Stash a ViewEditorState
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
      * @return stashed view editor state
      * @throws Exception
      */
-    @RequestMapping(value = V1Constants.USER_PROFILE + FORWARD_SLASH
-            + V1Constants.VIEW_EDITOR_STATE, method = RequestMethod.PUT, produces = { "application/json" })
+    @RequestMapping(value = V1Constants.USER_PROFILE + FS
+            + V1Constants.VIEW_EDITOR_STATE, method = RequestMethod.PUT, produces = { MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation( value = "Store view editor state", response = KomodoStatusObject.class)
     @ApiResponses(value = {
         @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
@@ -236,14 +218,10 @@ public final class KomodoUtilService extends KomodoService {
 
     /**
      * Validate the supplied ViewDefinition
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
      * @return validation status of the supplied ViewDefinition
      */
-    @RequestMapping(value = V1Constants.USER_PROFILE + FORWARD_SLASH
-            + V1Constants.VALIDATE_VIEW_DEFINITION, method = RequestMethod.POST, produces = { "application/json" })
+    @RequestMapping(value = V1Constants.USER_PROFILE + FS
+            + V1Constants.VALIDATE_VIEW_DEFINITION, method = RequestMethod.POST, produces = { MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation( value = "Validate a ViewDefinition", response = RestViewDefinitionStatus.class )
     @ApiResponses(value = {
         @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
@@ -426,16 +404,12 @@ public final class KomodoUtilService extends KomodoService {
     }
 
     /**
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
      * @return a JSON document representing the results of the removal
      * @throws Exception
      */
-    @RequestMapping(value = V1Constants.USER_PROFILE + FORWARD_SLASH +
-            V1Constants.VIEW_EDITOR_STATE + FORWARD_SLASH +
-            V1Constants.VIEW_EDITOR_STATE_PLACEHOLDER, method = RequestMethod.DELETE, produces = { "application/json" })
+    @RequestMapping(value = V1Constants.USER_PROFILE + FS + V1Constants.VIEW_EDITOR_STATE + FS
+            + V1Constants.VIEW_EDITOR_STATE_PLACEHOLDER, method = RequestMethod.DELETE,
+            produces = {MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation( value = "Remove a view editor state from the user's profile", response = KomodoStatusObject.class )
     @ApiResponses(value = {
         @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
