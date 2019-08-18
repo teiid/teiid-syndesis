@@ -19,6 +19,8 @@
 package org.komodo.rest.service;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,6 +28,7 @@ import org.komodo.rest.Application;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.CredentialsProvider;
 import org.komodo.rest.V1Constants;
+import org.komodo.rest.datavirtualization.KomodoQueryAttribute;
 import org.komodo.rest.datavirtualization.KomodoStatusObject;
 import org.komodo.rest.service.IntegrationTest.IntegrationTestConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,10 +69,21 @@ public class IntegrationTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
-    @Test public void testAbout() {
+    @Test
+    public void testAbout() {
         ResponseEntity<KomodoStatusObject> response = restTemplate.getForEntity("/v1/service/about", KomodoStatusObject.class);
         assertEquals(V1Constants.App.name(), response.getBody().getAttributes().get(KomodoUtilService.APP_NAME));
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
+
+    @Test
+    public void testError() throws Exception {
+    	KomodoQueryAttribute kqa = new KomodoQueryAttribute();
+    	ResponseEntity<String> response = restTemplate.postForEntity("/v1/metadata/query", kqa, String.class);
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    	assertTrue(response.getBody().endsWith("\"status\":403,\"error\":\"Forbidden\","
+    			+ "\"message\":\"No query has been specified\",\"path\":\"/v1/metadata/query\"}"));
+
+    }
 }

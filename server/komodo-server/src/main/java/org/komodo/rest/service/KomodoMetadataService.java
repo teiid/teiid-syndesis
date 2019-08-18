@@ -53,6 +53,7 @@ import org.komodo.utils.PathUtils;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -75,7 +76,7 @@ import io.swagger.annotations.ApiResponses;
  * A Komodo REST service for obtaining information from a metadata instance.
  */
 @RestController
-@RequestMapping( V1Constants.APP_PATH+V1Constants.FORWARD_SLASH+V1Constants.METADATA_SEGMENT )
+@RequestMapping( V1Constants.APP_PATH+V1Constants.FS+V1Constants.METADATA_SEGMENT )
 @Api( tags = {V1Constants.METADATA_SEGMENT} )
 public class KomodoMetadataService extends KomodoService implements ServiceVdbGenerator.SchemaFinder {
 
@@ -187,39 +188,32 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
     /**
      * Query the teiid server
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
-     * @param kqa
-     *        the query attribute (never <code>null</code>)
+     * @param kqa the query attribute (never <code>null</code>)
      * @return a JSON representation of the Query results (never <code>null</code>)
      * @throws Exception
      */
     @SuppressWarnings( "nls" )
     @RequestMapping(value = V1Constants.QUERY_SEGMENT, method = RequestMethod.POST,
-        produces= { "application/json" }, consumes = { "application/json" })
+        produces= { MediaType.APPLICATION_JSON_VALUE }, consumes = { MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation(value = "Pass a query to the teiid server")
     @ApiResponses(value = {
         @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
         @ApiResponse(code = 400, message = "An error has occurred.")
     })
     public QSResult query(@ApiParam( value = "" +
-                                                     "JSON of the properties of the query:<br>" +
-                                                     OPEN_PRE_TAG +
-                                                     OPEN_BRACE + BR +
-                                                     NBSP + "query: \"SQL formatted query to interrogate the target\"" + COMMA + BR +
-                                                     NBSP + "target: \"The name of the target data virtualization to be queried\"" + BR +
-                                                     NBSP + OPEN_PRE_CMT + "(The target can be a vdb or data service. If the latter " +
-                                                     NBSP + "then the name of the service vdb is extracted and " +
-                                                     NBSP + "replaces the data service)" + CLOSE_PRE_CMT + COMMA + BR +
-                                                     NBSP + "limit: Add a limit on number of results to be returned" + COMMA + BR +
-                                                     NBSP + "offset: The index of the result to begin the results with" + BR +
-                                                     CLOSE_BRACE +
-                                                     CLOSE_PRE_TAG,
-                                             required = true
-                                   )
-                                   final KomodoQueryAttribute kqa) throws Exception {
+             "JSON of the properties of the query:<br>" +
+             OPEN_PRE_TAG +
+             OPEN_BRACE + BR +
+             NBSP + "query: \"SQL formatted query to interrogate the target\"" + COMMA + BR +
+             NBSP + "target: \"The name of the target data virtualization to be queried\"" + BR +
+             NBSP + OPEN_PRE_CMT + "(The target can be a vdb or data service. If the latter " +
+             NBSP + "then the name of the service vdb is extracted and " +
+             NBSP + "replaces the data service)" + CLOSE_PRE_CMT + COMMA + BR +
+             NBSP + "limit: Add a limit on number of results to be returned" + COMMA + BR +
+             NBSP + "offset: The index of the result to begin the results with" + BR +
+             CLOSE_BRACE +
+             CLOSE_PRE_TAG,required = true)
+           final KomodoQueryAttribute kqa) throws Exception {
 
         String principal = checkSecurityContext();
 
@@ -269,19 +263,14 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
     /**
      * Initiate schema refresh for a syndesis source.
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
-     * @param komodoSourceName
-     *        the syndesis source name (cannot be empty)
+     * @param komodoSourceName the syndesis source name (cannot be empty)
      * @return a JSON representation of the refresh status (never <code>null</code>)
      * @throws Exception
      */
-    @RequestMapping(value = StringConstants.FORWARD_SLASH + V1Constants.REFRESH_SCHEMA_SEGMENT
-            + StringConstants.FORWARD_SLASH
+    @RequestMapping(value = StringConstants.FS + V1Constants.REFRESH_SCHEMA_SEGMENT
+            + StringConstants.FS
             + V1Constants.KOMODO_SOURCE_PLACEHOLDER, method = RequestMethod.POST,
-            produces= { "application/json" }, consumes = { "application/json" })
+            produces= { MediaType.APPLICATION_JSON_VALUE }, consumes = { MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation(value = "Initiate schema refresh for a syndesis source")
     @ApiResponses(value = {
         @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
@@ -346,16 +335,11 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
     }
 
     /**
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
-     * @param komodoSourceName
-     *        the name of the komodoSource whose tables are being requested (cannot be empty)
+     * @param komodoSourceName  the name of the komodoSource whose tables are being requested (cannot be empty)
      * @return the JSON representation of the tables collection (never <code>null</code>)
      * @throws Exception
      */
-    @RequestMapping(value = "{komodoSourceName}/schema", method = RequestMethod.GET, produces = { "application/json" })
+    @RequestMapping(value = "{komodoSourceName}/schema", method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation( value = "Get the native schema for the komodo source",
                    response = RestSchemaNode[].class )
     @ApiResponses( value = {
@@ -392,15 +376,12 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         return schemaNodes;
     }
 
+
     /**
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
      * @return the JSON representation of the schema collection (never <code>null</code>)
      * @throws Exception
      */
-    @RequestMapping(value = "connection-schema", method = RequestMethod.GET, produces = { "application/json" })
+    @RequestMapping(value = "connection-schema", method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation( value = "Get the native schema for all syndesis sources",
                    response = RestSchemaNode[].class )
     @ApiResponses( value = {
@@ -442,14 +423,10 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
     /**
      * Get status for the available syndesis sources.
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
      * @return a JSON document representing the statuses of the sources (never <code>null</code>)
      * @throws Exception
      */
-    @RequestMapping(value = V1Constants.SYNDESIS_SOURCE_STATUSES, method = RequestMethod.GET, produces = {"application/json" })
+    @RequestMapping(value = V1Constants.SYNDESIS_SOURCE_STATUSES, method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation(value = "Return the syndesis source statuses", response = RestSyndesisSourceStatus[].class)
     @ApiResponses(value = {@ApiResponse(code = 403, message = "An error has occurred.")
     })
@@ -508,17 +485,12 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
     /**
      * Find and return all runtime metadata
-     *
-     * @param headers
-     *            the request headers (never <code>null</code>)
-     * @param uriInfo
-     *            the request URI information (never <code>null</code>)
      * @return source schema object array
      * @throws Exception
      */
 
-    @RequestMapping(value = V1Constants.RUNTIME_METADATA + StringConstants.FORWARD_SLASH
-            + V1Constants.DATA_SERVICE_PLACEHOLDER, method = RequestMethod.GET, produces = { "application/json" })
+    @RequestMapping(value = V1Constants.RUNTIME_METADATA + StringConstants.FS
+            + V1Constants.DATA_SERVICE_PLACEHOLDER, method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation(value = "Get Source Schema for a Virtualization", response = RestViewSourceInfo.class)
     @ApiResponses(value = { @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
             @ApiResponse(code = 403, message = "An error has occurred.") })
@@ -546,7 +518,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         });
     }
 
-    @RequestMapping(value = V1Constants.PUBLISH, method = RequestMethod.GET, produces = { "application/json" })
+    @RequestMapping(value = V1Constants.PUBLISH, method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation(value = "Gets the published virtualization services", response = BuildStatus[].class)
     @ApiResponses(value = { @ApiResponse(code = 403, message = "An error has occurred.") })
     public BuildStatus[] getVirtualizations(
@@ -558,8 +530,8 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         return statuses.toArray(new BuildStatus[statuses.size()]);
     }
 
-    @RequestMapping(value = V1Constants.PUBLISH + StringConstants.FORWARD_SLASH
-            + V1Constants.VDB_PLACEHOLDER, method = RequestMethod.GET, produces = { "application/json" })
+    @RequestMapping(value = V1Constants.PUBLISH + StringConstants.FS
+            + V1Constants.VDB_PLACEHOLDER, method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation(value = "Find Build Status of Virtualization by VDB name", response = BuildStatus.class)
     @ApiResponses(value = {
         @ApiResponse(code = 404, message = "No VDB could be found with name"),
@@ -577,8 +549,8 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         return status;
     }
 
-    @RequestMapping(value = V1Constants.PUBLISH_LOGS + StringConstants.FORWARD_SLASH
-            + V1Constants.VDB_PLACEHOLDER, method = RequestMethod.GET, produces = { "application/json" })
+    @RequestMapping(value = V1Constants.PUBLISH_LOGS + StringConstants.FS
+            + V1Constants.VDB_PLACEHOLDER, method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation(value = "Find Publish Logs of Virtualization by VDB name", response = KomodoStatusObject.class)
     @ApiResponses(value = {
         @ApiResponse(code = 404, message = "No VDB could be found with name"),
@@ -598,8 +570,8 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         return status;
     }
 
-    @RequestMapping(value = V1Constants.PUBLISH + StringConstants.FORWARD_SLASH
-            + V1Constants.VDB_PLACEHOLDER, method = RequestMethod.DELETE, produces = { "application/json" })
+    @RequestMapping(value = V1Constants.PUBLISH + StringConstants.FS
+            + V1Constants.VDB_PLACEHOLDER, method = RequestMethod.DELETE, produces = { MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation(value = "Delete Virtualization Service by VDB name",response = BuildStatus.class)
     @ApiResponses(value = {
         @ApiResponse(code = 404, message = "No VDB could be found with name"),
@@ -616,7 +588,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         return status;
     }
 
-    @RequestMapping(value = V1Constants.PUBLISH, method = RequestMethod.POST, produces = { "application/json" })
+    @RequestMapping(value = V1Constants.PUBLISH, method = RequestMethod.POST, produces = { MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation(value = "Publish Virtualization Service", response = KomodoStatusObject.class)
     @ApiResponses(value = {
         @ApiResponse(code = 404, message = "No Dataservice could be found with name"),

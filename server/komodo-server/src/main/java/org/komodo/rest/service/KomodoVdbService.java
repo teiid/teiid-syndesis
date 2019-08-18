@@ -19,12 +19,12 @@ package org.komodo.rest.service;
 
 import static org.komodo.rest.datavirtualization.RelationalMessages.Error.VIEW_NAME_EXISTS;
 
-import org.komodo.StringConstants;
 import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.rest.KomodoService;
 import org.komodo.rest.V1Constants;
 import org.komodo.rest.datavirtualization.RelationalMessages;
 import org.komodo.utils.StringNameValidator;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,12 +37,13 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
+import static org.komodo.StringConstants.*;
 /**
  * A Komodo REST service for obtaining VDB information from the workspace.
  */
 @RestController
-@RequestMapping(V1Constants.APP_PATH + V1Constants.FORWARD_SLASH + V1Constants.WORKSPACE_SEGMENT
-        + StringConstants.FORWARD_SLASH + V1Constants.VDBS_SEGMENT)
+@RequestMapping(V1Constants.APP_PATH + V1Constants.FS + V1Constants.WORKSPACE_SEGMENT
+        + FS + V1Constants.VDBS_SEGMENT)
 @Api(tags = {V1Constants.VDBS_SEGMENT})
 public final class KomodoVdbService extends KomodoService {
 
@@ -62,12 +63,12 @@ public final class KomodoVdbService extends KomodoService {
      *         message
      * @throws Exception
      */
-    @RequestMapping( value = V1Constants.VDB_PLACEHOLDER + StringConstants.FORWARD_SLASH +
-                V1Constants.MODELS_SEGMENT + StringConstants.FORWARD_SLASH +
-                V1Constants.MODEL_PLACEHOLDER + StringConstants.FORWARD_SLASH +
-                V1Constants.VIEWS_SEGMENT + StringConstants.FORWARD_SLASH +
-                V1Constants.NAME_VALIDATION_SEGMENT + StringConstants.FORWARD_SLASH + V1Constants.VIEW_PLACEHOLDER,
-                method = RequestMethod.GET, produces= { "plain/text" })
+    @RequestMapping( value = V1Constants.VDB_PLACEHOLDER + FS +
+                V1Constants.MODELS_SEGMENT + FS +
+                V1Constants.MODEL_PLACEHOLDER + FS +
+                V1Constants.VIEWS_SEGMENT + FS +
+                V1Constants.NAME_VALIDATION_SEGMENT + FS + V1Constants.VIEW_PLACEHOLDER,
+                method = RequestMethod.GET, produces= { MediaType.TEXT_PLAIN_VALUE })
     @ApiOperation( value = "Returns an error message if the view name is invalid" )
     @ApiResponses( value = {
             @ApiResponse( code = 400, message = "The URI cannot contain encoded slashes or backslashes." ),
