@@ -169,14 +169,14 @@ public final class KomodoUtilService extends KomodoService {
 
         return runInTransaction(principal, "getViewEditorStates", true, ()->{
             ViewDefinition viewEditorState = getWorkspaceManager().findViewDefinition(viewEditorStateId);
-            LOGGER.debug( "getViewEditorState:found %d ViewEditorStates",
-                              viewEditorState == null ? 0 : 1 ); //$NON-NLS-1$
+            LOGGER.debug( "getViewEditorState:found %d ViewEditorStates", //$NON-NLS-1$
+                              viewEditorState == null ? 0 : 1 );
 
             if (viewEditorState == null) {
                 throw new ResponseStatusException(HttpStatus.NO_CONTENT);
             }
 
-            LOGGER.debug("getViewEditorStates:ViewEditorState '{0}' entity was constructed", viewEditorState.getName()); //$NON-NLS-1$
+            LOGGER.debug("getViewEditorStates:ViewEditorState %s entity was constructed", viewEditorState.getName()); //$NON-NLS-1$
             return viewEditorState;
         });
     }
@@ -199,11 +199,11 @@ public final class KomodoUtilService extends KomodoService {
         String principal = checkSecurityContext();
 
         if (StringUtils.isBlank(restViewEditorState.getName())) {
-            forbidden(RelationalMessages.Error.VIEW_DEFINITION_MISSING_NAME);
+            throw forbidden(RelationalMessages.Error.VIEW_DEFINITION_MISSING_NAME);
         }
 
         if (StringUtils.isBlank(restViewEditorState.getDataVirtualizationName())) {
-            forbidden(RelationalMessages.Error.VIEW_DEFINITION_MISSING_DATAVIRTUALIZATIONNAME);
+            throw forbidden(RelationalMessages.Error.VIEW_DEFINITION_MISSING_DATAVIRTUALIZATIONNAME);
         }
 
         ViewDefinition vd = runInTransaction(principal, "upsertViewDefinition", false, ()->{
@@ -431,21 +431,20 @@ public final class KomodoUtilService extends KomodoService {
             //TODO: get the viewDefinition - if complete, then we need to update the runtime state
             ViewDefinition vd = getWorkspaceManager().findViewDefinition(viewEditorStateId);
             if (vd == null) {
-                notFound(viewEditorStateId);
-            } else {
-                if (vd.isComplete()) {
-                    DataVirtualization dv = getWorkspaceManager().findDataVirtualization(vd.getDataVirtualizationName());
-
-                    dv.setDirty(true);
-                }
-
-                getWorkspaceManager().deleteViewDefinition(viewEditorStateId);
+                throw notFound(viewEditorStateId);
             }
+            if (vd.isComplete()) {
+                DataVirtualization dv = getWorkspaceManager().findDataVirtualization(vd.getDataVirtualizationName());
+
+                dv.setDirty(true);
+            }
+
+            getWorkspaceManager().deleteViewDefinition(viewEditorStateId);
 
             KomodoStatusObject kso = new KomodoStatusObject("Delete Status"); //$NON-NLS-1$
             kso.addAttribute(viewEditorStateId, "Successfully deleted"); //$NON-NLS-1$
 
             return kso;
-        }); //$NON-NLS-1$
+        });
     }
 }

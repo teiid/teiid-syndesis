@@ -17,7 +17,8 @@
  */
 package org.komodo.rest.service;
 
-import static org.komodo.rest.datavirtualization.RelationalMessages.Error.VIEW_NAME_EXISTS;
+import static org.komodo.StringConstants.*;
+import static org.komodo.rest.datavirtualization.RelationalMessages.Error.*;
 
 import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.rest.KomodoService;
@@ -36,8 +37,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-
-import static org.komodo.StringConstants.*;
 /**
  * A Komodo REST service for obtaining VDB information from the workspace.
  */
@@ -50,10 +49,6 @@ public final class KomodoVdbService extends KomodoService {
     private static final StringNameValidator VALIDATOR = new StringNameValidator();
 
     /**
-     * @param headers
-     *        the request headers (never <code>null</code>)
-     * @param uriInfo
-     *        the request URI information (never <code>null</code>)
      * @param virtualization
      *        the id of the Vdb being retrieved (cannot be empty)
      * @param viewName
@@ -101,7 +96,7 @@ public final class KomodoVdbService extends KomodoService {
 
             // name is valid
             return ResponseEntity.ok().build();
-        }) ; //$NON-NLS-1$
+        }) ;
     }
 
 }

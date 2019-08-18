@@ -18,8 +18,7 @@
 
 package org.komodo.rest.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -27,6 +26,7 @@ import java.util.Map;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.metadata.TeiidDataSource;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
@@ -63,16 +63,16 @@ public class KomodoDataserviceServiceTest {
 
         KomodoStatusObject kso = null;
         try {
-            kso = komodoDataserviceService.importViewsService("dv", "source", payload);
+            kso = komodoDataserviceService.importViews("dv", "source", payload);
             fail();
         } catch (ResponseStatusException e) {
             //dv not found
         }
 
-        workspaceManagerImpl.createDataVirtualization("dv");
+        DataVirtualization dv = workspaceManagerImpl.createDataVirtualization("dv");
 
         try {
-            kso = komodoDataserviceService.importViewsService("dv", "source", payload);
+            kso = komodoDataserviceService.importViews("dv", "source", payload);
             fail();
         } catch (ResponseStatusException e) {
             //source not found
@@ -85,7 +85,7 @@ public class KomodoDataserviceServiceTest {
         metadataInstance.createDataSource("source", "h2", props);
 
         try {
-            kso = komodoDataserviceService.importViewsService("dv", "source", payload);
+            kso = komodoDataserviceService.importViews("dv", "source", payload);
             fail();
         } catch (ResponseStatusException e) {
             //source not found - as the properties are not valid
@@ -96,7 +96,7 @@ public class KomodoDataserviceServiceTest {
                 "create foreign table tbl (col string) options (\"teiid_rel:fqn\" 'schema=s/table=tbl');");
         metadataInstance.undeployDynamicVdb(KomodoMetadataService.getWorkspaceSourceVdbName("source"));
 
-        kso = komodoDataserviceService.importViewsService("dv", "source", payload);
+        kso = komodoDataserviceService.importViews("dv", "source", payload);
         assertEquals(1, kso.getAttributes().size());
 
         String id = kso.getAttributes().values().iterator().next();
@@ -112,5 +112,7 @@ public class KomodoDataserviceServiceTest {
                 "  \"name\" : \"tbl\",\n" +
                 "  \"sourcePaths\" : [ \"schema=source/table=tbl\" ]\n" +
                 "}", KomodoJsonMarshaller.marshall(vd));
+
+        assertTrue(dv.isDirty());
     }
 }

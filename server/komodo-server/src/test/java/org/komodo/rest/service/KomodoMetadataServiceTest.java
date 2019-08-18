@@ -18,8 +18,7 @@
 
 package org.komodo.rest.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -105,7 +104,7 @@ public class KomodoMetadataServiceTest {
     public void testGetSchema() throws Exception {
         List<RestSchemaNode> nodes = null;
         try {
-            nodes = komodoMetadataService.getSchemaService("source");
+            nodes = komodoMetadataService.getSchema("source");
             fail();
         } catch (ResponseStatusException e) {
             //no source yet
@@ -121,7 +120,7 @@ public class KomodoMetadataServiceTest {
                 "create foreign table tbl (col string) options (\"teiid_rel:fqn\" 'schema=s%20x/t%20bl=bar');"
                 + "create foreign table tbl1 (col string) options (\"teiid_rel:fqn\" 'schema=s%20x/t%20bl=bar1');");
 
-        nodes = komodoMetadataService.getSchemaService("source");
+        nodes = komodoMetadataService.getSchema("source");
         assertEquals("[ {\n" +
                 "  \"children\" : [ {\n" +
                 "    \"children\" : [ ],\n" +
