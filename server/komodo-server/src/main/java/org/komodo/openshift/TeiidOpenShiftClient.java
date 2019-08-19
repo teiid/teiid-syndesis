@@ -67,10 +67,10 @@ import org.komodo.metadata.TeiidDataSource;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
 import org.komodo.openshift.BuildStatus.RouteStatus;
 import org.komodo.openshift.BuildStatus.Status;
-import org.komodo.rest.AbstractTransactionService;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoConfigurationProperties;
 import org.komodo.rest.KomodoService;
+import org.komodo.rest.V1Constants;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
 import org.teiid.adminapi.AdminException;
@@ -100,7 +100,7 @@ import io.fabric8.openshift.client.OpenShiftConfig;
 import io.fabric8.openshift.client.OpenShiftConfigBuilder;
 
 @SuppressWarnings("nls")
-public class TeiidOpenShiftClient extends AbstractTransactionService {
+public class TeiidOpenShiftClient implements V1Constants {
     public static final String ID = "id";
     private static final String SERVICE_CA_CERT_FILE = "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt";
     private String openShiftHost = "https://openshift.default.svc";
@@ -292,6 +292,8 @@ public class TeiidOpenShiftClient extends AbstractTransactionService {
     private KomodoConfigurationProperties config;
 
     private ThreadPoolExecutor workExecutor = new ThreadPoolExecutor(1, 1, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+
+    private KEngine kengine;
 
     public TeiidOpenShiftClient(MetadataInstance metadata, EncryptionComponent encryptor, KomodoConfigurationProperties config, KEngine kengine) {
         this.metadata = metadata;
@@ -514,7 +516,7 @@ public class TeiidOpenShiftClient extends AbstractTransactionService {
             Set<DefaultSyndesisDataSource> sources = getSyndesisSources(oauthCreds);
             for (DefaultSyndesisDataSource source:sources) {
                 if (dsName.equals(source.getKomodoName())) {
-                    return (DefaultSyndesisDataSource)source;
+                    return source;
                 }
             }
             return null;
@@ -579,7 +581,7 @@ public class TeiidOpenShiftClient extends AbstractTransactionService {
      * @throws Exception
      */
     public void setUniqueKomodoName(DefaultSyndesisDataSource scd, String syndesisName, String user) throws Exception {
-        runInTransaction(user, "setUniqueKomodoName", false, () -> {
+        kengine.runInTransaction("setUniqueKomodoName", false, () -> {
             SourceSchema ss = kengine.getWorkspaceManager().findSchema(scd.getId());
             if (ss != null) {
                 //just reassociate
@@ -1198,7 +1200,7 @@ public class TeiidOpenShiftClient extends AbstractTransactionService {
                 }
                 // data source properties as ENV variables
                 def.getPublishedImageDataSourceProperties(ds).forEach((K,V) -> {
-                    envs.add(envFromSecret(secretName(vdb.getName()), (String)K));
+                    envs.add(envFromSecret(secretName(vdb.getName()), K));
                 });
             }
         }

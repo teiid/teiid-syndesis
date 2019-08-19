@@ -18,10 +18,12 @@
 
 package org.komodo.repository;
 
+import java.util.concurrent.Callable;
+
 import org.komodo.KEngine;
 import org.komodo.KException;
-import org.komodo.UnitOfWork;
 import org.komodo.WorkspaceManager;
+import org.komodo.utils.KLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -32,65 +34,17 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 /**
  * Provides the repository facade and transaction handling
+ *
+ * In many of the rollback/read only scenarios, a transaction is not necessary
+ *
+ * Eventually we'll probably replace with the Transactional annotation
  */
 @Component
 public class KEngineImpl implements KEngine {
 
-    private class UnitOfWorkImpl implements UnitOfWork {
+    protected static final KLog LOGGER = KLog.getLogger();
 
-        private String userName;
-        private String name;
-        private String repositoryUser;
-        private TransactionStatus status;
-
-        public UnitOfWorkImpl(String userName, String name, String repoUser, TransactionStatus transactionStatus) {
-            this.userName = userName;
-            this.name = name;
-            this.repositoryUser = repoUser;
-            this.status = transactionStatus;
-        }
-
-        @Override
-        public void commit() throws TimeoutException {
-            try {
-                platformTransactionManager.commit(status);
-            } catch (TransactionTimedOutException e) {
-                throw new TimeoutException(e);
-            }
-            //any other exceptions can be unchecked
-        }
-
-        @Override
-        public String getUserName() {
-            return userName;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public boolean isCompleted() {
-            return status.isCompleted();
-        }
-
-        @Override
-        public boolean isRollbackOnly() {
-            return status.isRollbackOnly();
-        }
-
-        @Override
-        public void rollback() {
-            platformTransactionManager.rollback(status);
-        }
-
-        @Override
-        public String getRepositoryUser() {
-            return this.repositoryUser;
-        }
-
-    }
+    public static final String REPO_USER = "anonymous"; //$NON-NLS-1$
 
     private static DefaultTransactionDefinition NEW_TRANSACTION_DEFINITION = new DefaultTransactionDefinition();
     static {
@@ -115,13 +69,34 @@ public class KEngineImpl implements KEngine {
     }
 
     @Override
-    public UnitOfWork createTransaction(String userName, String name, boolean rollbackOnly, String repoUser)
-            throws KException {
+    public <T> T runInTransaction(String txnName, boolean rollbackOnly, Callable<T> callable) throws Exception {
         TransactionStatus transactionStatus = platformTransactionManager.getTransaction(NEW_TRANSACTION_DEFINITION);
         if (rollbackOnly) {
             transactionStatus.setRollbackOnly();
         }
-        return new UnitOfWorkImpl(userName, name, repoUser, transactionStatus);
+        LOGGER.debug( "createTransaction:created '%s', rollbackOnly = '%b'", txnName, rollbackOnly ); //$NON-NLS-1$
+        boolean committed = false;
+        try {
+            T result = callable.call();
+            if (!rollbackOnly) {
+                try {
+                    platformTransactionManager.commit(transactionStatus);
+                } catch (TransactionTimedOutException e) {
+                    throw new TimeoutException(e);
+                }
+                //any other exceptions can be unchecked
+            }
+
+            LOGGER.debug( "commit: successfully committed '%s', rollbackOnly = '%b'", //$NON-NLS-1$
+                    txnName,
+                    rollbackOnly);
+            committed = true;
+            return result;
+        } finally {
+            if (!committed && !transactionStatus.isCompleted()) {
+                platformTransactionManager.rollback(transactionStatus);
+            }
+        }
     }
 
 }

@@ -19,6 +19,7 @@ package org.komodo.rest;
 
 import static org.komodo.rest.Messages.Error.*;
 
+import org.komodo.KEngine;
 import org.komodo.KException;
 import org.komodo.WorkspaceManager;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
@@ -30,7 +31,7 @@ import org.springframework.web.server.ResponseStatusException;
 /**
  * A Komodo service implementation.
  */
-public abstract class KomodoService extends AbstractTransactionService implements V1Constants {
+public abstract class KomodoService implements V1Constants {
 
     /**
      * System user for transactions to be executed internally
@@ -61,6 +62,9 @@ public abstract class KomodoService extends AbstractTransactionService implement
 
     @Autowired
     protected CredentialsProvider credentialsProvider;
+
+    @Autowired
+    protected KEngine kengine;
 
     protected OAuthCredentials getAuthenticationToken() {
         return credentialsProvider.getCredentials();

@@ -123,13 +123,10 @@ public final class KomodoUtilService extends KomodoService {
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
     public ViewListing[] getViewList(@RequestParam String virtualization) throws Exception {
-
-        String principal = checkSecurityContext();
-
         final List< ViewListing > viewDefinitions = new ArrayList<>();
 
         // find view editor states
-        return runInTransaction(principal, "getViewEditorStates", true, ()->{
+        return kengine.runInTransaction("getViewEditorStates", true, ()->{
 
             final List<? extends ViewDefinition> viewEditorStates = getWorkspaceManager().findViewDefinitions( virtualization );
             LOGGER.debug( "getViewEditorStates:found %d ViewEditorStates", viewEditorStates.size() ); //$NON-NLS-1$
@@ -164,10 +161,7 @@ public final class KomodoUtilService extends KomodoService {
     public ViewDefinition getViewEditorState(
             @ApiParam(value = "Name of the view editor state to fetch", required = true)
             final @PathVariable("viewEditorStateId") String viewEditorStateId) throws Exception {
-
-        String principal = checkSecurityContext();
-
-        return runInTransaction(principal, "getViewEditorStates", true, ()->{
+        return kengine.runInTransaction("getViewEditorStates", true, ()->{
             ViewDefinition viewEditorState = getWorkspaceManager().findViewDefinition(viewEditorStateId);
             LOGGER.debug( "getViewEditorState:found %d ViewEditorStates", //$NON-NLS-1$
                               viewEditorState == null ? 0 : 1 );
@@ -195,9 +189,6 @@ public final class KomodoUtilService extends KomodoService {
     })
     public KomodoStatusObject stashViewEditorState(@ApiParam(required = true)
                                                final org.komodo.datavirtualization.ViewDefinition restViewEditorState) throws Exception {
-
-        String principal = checkSecurityContext();
-
         if (StringUtils.isBlank(restViewEditorState.getName())) {
             throw forbidden(RelationalMessages.Error.VIEW_DEFINITION_MISSING_NAME);
         }
@@ -206,7 +197,7 @@ public final class KomodoUtilService extends KomodoService {
             throw forbidden(RelationalMessages.Error.VIEW_DEFINITION_MISSING_DATAVIRTUALIZATIONNAME);
         }
 
-        ViewDefinition vd = runInTransaction(principal, "upsertViewDefinition", false, ()->{
+        ViewDefinition vd = kengine.runInTransaction("upsertViewDefinition", false, ()->{
             return upsertViewEditorState(restViewEditorState);
         });
 
@@ -228,8 +219,6 @@ public final class KomodoUtilService extends KomodoService {
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
     public RestViewDefinitionStatus validateViewDefinition(@ApiParam(required = true) final ViewDefinition restViewDefinition) {
-        checkSecurityContext();
-
         LOGGER.debug("Validating view : %s", restViewDefinition.getName());
 
         RestViewDefinitionStatus viewDefnStatus = validateViewDefinitionService(restViewDefinition);
@@ -420,10 +409,7 @@ public final class KomodoUtilService extends KomodoService {
             @ApiParam(value = "Id of the view editor state to remove", required = true)
             final @PathVariable("viewEditorStateId") String viewEditorStateId)
             throws Exception {
-
-        String principal = checkSecurityContext();
-
-        return runInTransaction(principal, "removeUserProfileViewEditorState", false, ()-> {
+        return kengine.runInTransaction("removeUserProfileViewEditorState", false, ()-> {
             if (!getWorkspaceManager().deleteViewDefinition(viewEditorStateId)) {
                 throw new ResponseStatusException(HttpStatus.NO_CONTENT);
             }

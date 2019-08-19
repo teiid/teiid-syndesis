@@ -115,9 +115,9 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         return status;
     }
 
-    public void refreshPreviewVdb(final String vdbName, String principal)
+    public void refreshPreviewVdb(final String vdbName)
             throws KException, Exception {
-        runInTransaction(principal, "refreshPreviewVdb", false, () -> {
+        kengine.runInTransaction("refreshPreviewVdb", false, () -> {
             TeiidVdb previewVdb = getMetadataInstance().getVdb(vdbName);
             VDBMetaData workingCopy = new VDBMetaData();
             workingCopy.setName(vdbName);
@@ -214,9 +214,6 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
              CLOSE_BRACE +
              CLOSE_PRE_TAG,required = true)
            final KomodoQueryAttribute kqa) throws Exception {
-
-        String principal = checkSecurityContext();
-
         //
         // Error if there is no query attribute defined
         //
@@ -231,7 +228,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         String target = kqa.getTarget();
         String query = kqa.getQuery();
 
-        TeiidVdb vdb = runInTransaction(principal, "query", false, ()->{
+        TeiidVdb vdb = kengine.runInTransaction("query", false, ()->{
             return updatePreviewVdb(target);
         });
 
@@ -281,18 +278,11 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
                                    @ApiParam( value = "Indicates that the source vdb should be deployed, existing metadata will not be deleted", required = false )
                                    @RequestParam( value = "deployOnly", defaultValue = "true" )
                                    final boolean deployOnly ) throws Exception {
-        String principal = checkSecurityContext();
-
         // Error if the syndesisSource is missing
         if (StringUtils.isBlank( komodoSourceName )) {
             throw forbidden(RelationalMessages.Error.CONNECTION_SERVICE_MISSING_CONNECTION_NAME);
         }
-        return refreshSchema(komodoSourceName, deployOnly, principal);
-    }
-
-    public KomodoStatusObject refreshSchema(final String komodoSourceName,
-            final boolean deployOnly, String principal) throws Exception {
-        return runInTransaction(principal, "refreshSchema?deployOnly=" + deployOnly, false, () -> {// Find the bound teiid source corresponding to the syndesis source
+        return kengine.runInTransaction("refreshSchema?deployOnly=" + deployOnly, false, () -> {// Find the bound teiid source corresponding to the syndesis source
             TeiidDataSource teiidSource = getMetadataInstance().getDataSource(komodoSourceName);
 
             if (teiidSource == null)
@@ -315,8 +305,8 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         });
     }
 
-    public boolean deleteSchema(String schemaId, String principal) throws Exception {
-        return runInTransaction(principal, "deleteSchema", false, () -> {
+    public boolean deleteSchema(String schemaId) throws Exception {
+        return kengine.runInTransaction("deleteSchema", false, () -> {
             final WorkspaceManager mgr = kengine.getWorkspaceManager();
 
             return mgr.deleteSchema(schemaId);
@@ -351,9 +341,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
     } )
     public List<RestSchemaNode> getSchema(@ApiParam( value = "Name of the komodo source", required = true )
                                @PathVariable( "komodoSourceName" ) final String komodoSourceName ) throws Exception {
-        final String principal = checkSecurityContext();
-
-        return runInTransaction(principal, "getSchema?komodoSourceName=" + komodoSourceName, true, ()->{
+        return kengine.runInTransaction("getSchema?komodoSourceName=" + komodoSourceName, true, ()->{
             // Find the bound teiid source corresponding to the syndesis source
             TeiidDataSource teiidSource = getMetadataInstance().getDataSource(komodoSourceName);
 
@@ -387,9 +375,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         @ApiResponse( code = 406, message = "Only JSON is returned by this operation" )
     } )
     public List<RestSchemaNode> getAllConnectionSchema() throws Exception {
-        final String principal = checkSecurityContext();
-
-        return runInTransaction(principal, "getAllConnectionSchema", true, ()->{
+        return kengine.runInTransaction("getAllConnectionSchema", true, ()->{
             List<RestSchemaNode> rootNodes = new ArrayList<RestSchemaNode>();
 
             // Get teiid datasources
@@ -431,11 +417,9 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
     })
     public List<RestSyndesisSourceStatus> getSyndesisSourceStatuses() throws Exception {
 
-        String principal = checkSecurityContext();
-
         final List< RestSyndesisSourceStatus > statuses = new ArrayList<>();
 
-        return runInTransaction(principal, "getSyndesisSourceStatuses", true, ()->{
+        return kengine.runInTransaction("getSyndesisSourceStatuses", true, ()->{
             // Get syndesis sources
             Collection<DefaultSyndesisDataSource> dataSources = this.openshiftClient.getSyndesisSources(getAuthenticationToken());
 
@@ -453,7 +437,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
     }
 
     public RestSyndesisSourceStatus getSyndesisSourceStatus(final DefaultSyndesisDataSource sds, String principal) throws Exception {
-        return runInTransaction(principal, "getSyndesisSourceStatusByName", true, () -> {
+        return kengine.runInTransaction("getSyndesisSourceStatusByName", true, () -> {
             return createSourceStatus(sds);
         });
     }
@@ -495,8 +479,6 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
     public RestViewSourceInfo getRuntimeMetadata(
             @ApiParam( value = "Name of the data virtualization", required = true )
             final @PathVariable( "virtualization" ) String virtualization) throws Exception {
-        String principal = checkSecurityContext();
-
         LOGGER.debug("getRuntimeMetadata()");
 
         //TODO: view level metadata from the virtualization
@@ -505,7 +487,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             forbidden(RelationalMessages.Error.DATASERVICE_SERVICE_MISSING_NAME);
         }
 
-        return runInTransaction(principal, "getRuntimeMetadata", true, ()->{
+        return kengine.runInTransaction("getRuntimeMetadata", true, ()->{
             List<RestSourceSchema> srcSchemas = new ArrayList<>();
 
             //once we support view layering, we need to use the dv specific one
@@ -531,8 +513,6 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
     public BuildStatus[] getVirtualizations(
             @ApiParam(value = "true to include in progress services")
             @RequestParam(value = "includeInProgress", required=false, defaultValue = "true") boolean includeInProgressServices) {
-        checkSecurityContext();
-
         Collection<BuildStatus> statuses = this.openshiftClient.getVirtualizations(includeInProgressServices);
         return statuses.toArray(new BuildStatus[statuses.size()]);
     }
@@ -548,9 +528,6 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
     public BuildStatus getVirtualizationStatus(
             @ApiParam(value = "Name of the VDB", required = true)
             final @PathVariable(value = "vdbName", required=true) String vdbName) {
-
-        checkSecurityContext();
-
         BuildStatus status = this.openshiftClient.getVirtualizationStatus(vdbName);
 
         return status;
@@ -567,8 +544,6 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
     public KomodoStatusObject getVirtualizationLogs(
             @ApiParam(value = "Name of the VDB")
             final @PathVariable(value = "vdbName", required = true) String vdbName) {
-
-        checkSecurityContext();
 
         KomodoStatusObject status = new KomodoStatusObject("Logs for " + vdbName); //$NON-NLS-1$
 
@@ -588,9 +563,6 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
     public BuildStatus deleteVirtualization(
             @ApiParam(value = "Name of the VDB")
             final @PathVariable(value = "vdbName", required = true) String vdbName) {
-
-        checkSecurityContext();
-
         BuildStatus status = this.openshiftClient.deleteVirtualization(vdbName);
         return status;
     }
@@ -611,9 +583,6 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
                     + "\"enable-odata\": \"(optional) Enable OData interface. true|false (default true)\"" + BR
                     + CLOSE_BRACE
                     + CLOSE_PRE_TAG) @RequestParam(required = true) final PublishRequestPayload payload) throws Exception {
-
-        String principal = checkSecurityContext();
-
         //
         // Error if there is no name attribute defined
         //
@@ -621,7 +590,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             throw forbidden(RelationalMessages.Error.VDB_NAME_NOT_PROVIDED);
         }
 
-        return runInTransaction(principal, "publish-init", true, ()-> {
+        return kengine.runInTransaction("publish-init", true, ()-> {
             DataVirtualization dataservice = getWorkspaceManager().findDataVirtualization(payload.getName());
             if (dataservice == null) {
                 throw notFound(payload.getName());

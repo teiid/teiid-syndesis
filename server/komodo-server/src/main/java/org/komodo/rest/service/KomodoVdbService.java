@@ -77,8 +77,6 @@ public final class KomodoVdbService extends KomodoService {
                                       @ApiParam(value = "Name of the Model to get its tables", required = true)
                                       final @PathVariable( "viewName" ) String viewName ) throws Exception {
 
-        String principal = checkSecurityContext();
-
         final String errorMsg = VALIDATOR.checkValidName( viewName );
 
         // a name validation error occurred
@@ -86,7 +84,7 @@ public final class KomodoVdbService extends KomodoService {
             return ResponseEntity.ok(errorMsg);
         }
 
-        return runInTransaction(principal, "validateViewName", true, ()-> { //$NON-NLS-1$
+        return kengine.runInTransaction("validateViewName", true, ()-> { //$NON-NLS-1$
             ViewDefinition vd = getWorkspaceManager().findViewDefinitionByNameIgnoreCase(virtualization, viewName);
 
             if (vd != null) {

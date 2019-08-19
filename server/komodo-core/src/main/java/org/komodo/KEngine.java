@@ -18,7 +18,19 @@
 
 package org.komodo;
 
+import java.util.concurrent.Callable;
+
 public interface KEngine {
+
+    public class TimeoutException extends Exception {
+
+        private static final long serialVersionUID = -3492466153109760780L;
+
+        public TimeoutException(Exception cause) {
+            super(cause);
+        }
+
+    }
 
     /**
      * Start and wait for the engine to be ready
@@ -35,18 +47,13 @@ public interface KEngine {
     WorkspaceManager getWorkspaceManager() throws KException;
 
     /**
-     * Creates and associates a transaction with the current thread.
-     * @param userName
-     *       the user name of the transaction initiator
-     * @param name
-     *        a name for the transaction (cannot be empty)
+     * Run the callable in the given transaction
+     * @param <T>
+     * @param txnName
      * @param rollbackOnly
-     *        <code>true</code> if the transaction should only be rolled back
-     * @param repoUser
-     * @return a unit of work transaction that must be either committed or rolled back (never <code>null</code>)
-     * @throws KException
-     *         if an error occurs
+     * @param callable
+     * @return
+     * @throws Exception
      */
-    UnitOfWork createTransaction(String userName, String name, boolean rollbackOnly, String repoUser) throws KException;
-
+    <T> T runInTransaction(String txnName, boolean rollbackOnly, Callable<T> callable) throws Exception;
 }

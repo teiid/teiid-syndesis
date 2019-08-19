@@ -86,9 +86,8 @@ public final class KomodoDataserviceService extends KomodoService {
         response = RestDataVirtualization.class, responseContainer = "List")
     @ApiResponses(value = { @ApiResponse(code = 403, message = "An error has occurred.") })
     public List<RestDataVirtualization> getDataservices() throws Exception {
-        String principal = checkSecurityContext();
 
-        return runInTransaction(principal, "getDataVirtualizations", true, ()->{
+        return kengine.runInTransaction("getDataVirtualizations", true, ()->{
             Iterable<? extends DataVirtualization> dataServices = getWorkspaceManager().findDataVirtualizations();
 
             final List<RestDataVirtualization> entities = new ArrayList<>();
@@ -132,9 +131,7 @@ public final class KomodoDataserviceService extends KomodoService {
             required = true) final @PathVariable("dataserviceName") String dataserviceName)
             throws Exception {
 
-        String principal = checkSecurityContext();
-
-        RestDataVirtualization dataservice = runInTransaction(principal, "getDataVirtualization", true, () -> {
+        RestDataVirtualization dataservice = kengine.runInTransaction("getDataVirtualization", true, () -> {
             DataVirtualization dv = getWorkspaceManager().findDataVirtualization(dataserviceName);
             return createRestDataservice(dv);
         });
@@ -165,8 +162,6 @@ public final class KomodoDataserviceService extends KomodoService {
             @ApiParam(value = "Name of the data service", required = true) final @PathVariable("dataserviceName") String dataserviceName,
             @ApiParam(required = true) @RequestParam final RestDataVirtualization restDataservice) throws Exception {
 
-        String principal = checkSecurityContext();
-
         final String jsonDataserviceName = restDataservice.getName();
         // Error if the name is missing from the supplied json body
         if (StringUtils.isBlank(jsonDataserviceName)) {
@@ -187,7 +182,7 @@ public final class KomodoDataserviceService extends KomodoService {
         }
 
         // create new Dataservice
-        return runInTransaction(principal, "createDataVirtualization", false, () -> {
+        return kengine.runInTransaction("createDataVirtualization", false, () -> {
             // Error if the repo already contains a dataservice with the supplied name.
             DataVirtualization dv = getWorkspaceManager().findDataVirtualizationByNameIgnoreCase(dataserviceName);
             if (dv != null) {
@@ -212,9 +207,8 @@ public final class KomodoDataserviceService extends KomodoService {
     @ApiResponses(value = { @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
             @ApiResponse(code = 403, message = "An error has occurred.") })
     public KomodoStatusObject deleteDataservice(@ApiParam(value = "Name of the data service to be deleted", required = true) final @PathVariable("dataserviceName") String dataserviceName) throws Exception {
-        String principal = checkSecurityContext();
 
-        KomodoStatusObject kso = runInTransaction(principal, "deleteDataVirtualization", false, ()->{
+        KomodoStatusObject kso = kengine.runInTransaction("deleteDataVirtualization", false, ()->{
             final WorkspaceManager wkspMgr = getWorkspaceManager();
 
             final DataVirtualization dataservice = wkspMgr.findDataVirtualization(dataserviceName);
@@ -249,8 +243,6 @@ public final class KomodoDataserviceService extends KomodoService {
             @ApiResponse(code = 500, message = "The dataservice name cannot be empty.") })
     public ResponseEntity<String> validateDataserviceName(@ApiParam(value = "The dataservice name being checked", required = true) final @PathVariable("dataserviceName") String dataserviceName) throws Exception {
 
-        final String principal = checkSecurityContext();
-
         final String errorMsg = VALIDATOR.checkValidName(dataserviceName);
 
         // a name validation error occurred
@@ -259,7 +251,7 @@ public final class KomodoDataserviceService extends KomodoService {
         }
 
         // check for duplicate name
-        final DataVirtualization service = runInTransaction(principal, "validateDataVirtualizationName", true, () -> {
+        final DataVirtualization service = kengine.runInTransaction("validateDataVirtualizationName", true, () -> {
             return getWorkspaceManager().findDataVirtualizationByNameIgnoreCase(dataserviceName);
         });
 
@@ -288,9 +280,7 @@ public final class KomodoDataserviceService extends KomodoService {
             @ApiParam(value = "Import Payload", required = true)
             final ImportPayload importPayload) throws Exception {
 
-        String principal = checkSecurityContext();
-
-        KomodoStatusObject kso = runInTransaction(principal, "import", false, () -> {
+        KomodoStatusObject kso = kengine.runInTransaction("import", false, () -> {
             DataVirtualization dataservice = getWorkspaceManager().findDataVirtualization(dataserviceName);
             if (dataservice == null) {
                 throw notFound( dataserviceName );
@@ -385,8 +375,6 @@ public final class KomodoDataserviceService extends KomodoService {
             final @PathVariable("dataserviceName") String dataserviceName,
             @ApiParam(required = true) @RequestParam final RestDataVirtualization restDataservice) throws Exception {
 
-        String principal = checkSecurityContext();
-
         final String jsonDataserviceName = restDataservice.getName();
         // Error if the name is missing from the supplied json body
         if (StringUtils.isBlank(jsonDataserviceName)) {
@@ -399,7 +387,7 @@ public final class KomodoDataserviceService extends KomodoService {
             throw forbidden(DATASERVICE_SERVICE_SERVICE_NAME_ERROR, dataserviceName, jsonDataserviceName);
         }
 
-        return runInTransaction(principal, "createDataVirtualization", false, () -> {
+        return kengine.runInTransaction("createDataVirtualization", false, () -> {
             // Error if the repo already contains a dataservice with the supplied name.
             DataVirtualization existing = getWorkspaceManager().findDataVirtualization(restDataservice.getName());
             if (existing == null) {
