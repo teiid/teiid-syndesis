@@ -110,22 +110,11 @@
   </contributors>
 
   <properties>
-    <!-- dependencies from IP-BOM -->
-    <version.com.jcraft>0.1.54</version.com.jcraft>
-    <!-- dependencies from IP-BOM -->
-
     <rootDir>${project.basedir}</rootDir>
-    <version.javax.servlet>3.1.0</version.javax.servlet>
-    <version.javax.jacc>1.0.0.Final</version.javax.jacc>
-    <version.joda.time>2.7</version.joda.time>
-    <version.mapdb>1.0.6</version.mapdb>
-    <version.apache.commons.compress>1.12</version.apache.commons.compress>
     <version.h2>1.4.196</version.h2>
-    <version.org.apache.commons>3.8.1</version.org.apache.commons>
     <version.io.swagger>1.5.22</version.io.swagger>
 	<version.io.opentracing.contrib>1.0.1</version.io.opentracing.contrib>
 	
-    <version.commons.io>2.5</version.commons.io>
     <version.org.teiid>12.3.0-SNAPSHOT</version.org.teiid>
 
     <!-- Instruct the build to use only UTF-8 encoding for source code -->
@@ -146,35 +135,16 @@
     <!-- The version of jgit -->
     <version.jgit>4.4.1.201607150455-r</version.jgit>
 
-    <version.aesh>0.33.12.redhat-1</version.aesh>
-    <version.org.jboss.dmr>1.3.0.Final</version.org.jboss.dmr>
-
-    <version.org.jboss.spec.jboss-javaee-7.0>1.0.4.Final</version.org.jboss.spec.jboss-javaee-7.0>
-    <version.org.jboss.xnio>3.5.4.Final</version.org.jboss.xnio>
-
     <version.postgresql>42.1.4</version.postgresql>
-    <version.xerces>2.11.0</version.xerces>
     
     <!-- this is simply a version no dependencies involved right now -->
     <version.springboot.teiid>1.1.0</version.springboot.teiid>
     
-    <version.apache.commons.codec>1.10</version.apache.commons.codec>
-    <version.guava>20.0</version.guava>
-    <version.jaxrs>2.13</version.jaxrs>
-    <version.xsom>20130531</version.xsom>
-    <version.relaxngDatatype>20020414</version.relaxngDatatype>
-    <version.resteasy>3.0.19.Final</version.resteasy>
-    <version.jboss.logging>3.3.0.Final</version.jboss.logging>
     <version.org.mockito>2.21.0</version.org.mockito>
     <version.com.fasterxml.jackson>2.9.8</version.com.fasterxml.jackson>
     <version.com.fasterxml.jackson.databind>2.9.8</version.com.fasterxml.jackson.databind>
-    <org.apache.httpcomponents.version>4.5.3</org.apache.httpcomponents.version>
-    <version.org.yaml>1.17</version.org.yaml>
     <version.io.fabric8.openshift-client>3.0.3</version.io.fabric8.openshift-client>
     <version.io.fabric8.kubernetes-api>3.0.8</version.io.fabric8.kubernetes-api>
-    <version.org.jboss.spec.javax.transaction>1.0.1.Final</version.org.jboss.spec.javax.transaction>
-    <version.xml-apis>1.4.01</version.xml-apis>
-    <version.javax.xml.bind>2.1</version.javax.xml.bind>
     <version.org.hamcrest>1.3</version.org.hamcrest> <!-- tesing only -->
 
     <!-- DO NOT CHANGE VERSION PROPETY NAMES, THESE ARE USED IN CODE At komodo-rest/template-pom.xml -->
@@ -194,38 +164,12 @@
     add dependencies, but rather provide default settings. -->
   <dependencyManagement>
     <dependencies>
-	  <dependency>
-	    <groupId>javax.xml.bind</groupId>
-	    <artifactId>jaxb-api</artifactId>
-	    <version>${version.javax.xml.bind}</version>
-	  </dependency>    
-    
       <dependency>
         <groupId>org.hamcrest</groupId>
         <artifactId>hamcrest-core</artifactId>
         <scope>test</scope>
         <version>${version.org.hamcrest}</version>
       </dependency>
-      <dependency>
-        <groupId>org.jboss.spec.javax.transaction</groupId>
-        <artifactId>jboss-transaction-api_1.2_spec</artifactId>
-        <version>${version.org.jboss.spec.javax.transaction}</version>
-      </dependency>
-      <dependency>
-        <groupId>xml-apis</groupId>
-        <artifactId>xml-apis</artifactId>
-        <version>${version.xml-apis}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.jcraft</groupId>
-        <artifactId>jsch</artifactId>
-        <version>${version.com.jcraft}</version>
-      </dependency>
-	<dependency>
-		<groupId>org.apache.commons</groupId>
-		<artifactId>commons-lang3</artifactId>
-		<version>${version.org.apache.commons}</version>
-	</dependency>
 	<dependency>
 	  <groupId>io.opentracing.contrib</groupId>
 	  <artifactId>opentracing-spring-jaeger-web-starter</artifactId>
@@ -243,11 +187,6 @@
         <version>${version.org.mockito}</version>
       </dependency>
       <!-- Komodo subprojects -->
-      <dependency>
-        <groupId>org.teiid</groupId>
-        <artifactId>komodo-metadata</artifactId>
-        <version>${project.version}</version>
-      </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
         <artifactId>komodo-core</artifactId>
@@ -298,11 +237,6 @@
       </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
-        <artifactId>teiid-jboss-admin</artifactId>
-        <version>${version.org.teiid}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.teiid</groupId>
         <artifactId>teiid-client</artifactId>
         <version>${version.org.teiid}</version>
       </dependency>
@@ -310,11 +244,6 @@
         <groupId>org.teiid.connectors</groupId>
         <artifactId>translator-jdbc</artifactId>
         <version>${version.org.teiid}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.httpcomponents</groupId>
-        <artifactId>httpclient</artifactId>
-        <version>${org.apache.httpcomponents.version}</version>
       </dependency>
       <dependency>
         <groupId>io.fabric8</groupId>
@@ -327,69 +256,12 @@
         <version>${version.io.fabric8.kubernetes-api}</version>
       </dependency>
 
-      <!--Inherited from BOM, but changes the default scope to "test" -->
-      <dependency>
-        <groupId>commons-io</groupId>
-        <artifactId>commons-io</artifactId>
-        <version>${version.commons.io}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.jboss.xnio</groupId>
-        <artifactId>xnio-api</artifactId>
-        <version>${version.org.jboss.xnio}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.xnio</groupId>
-        <artifactId>xnio-nio</artifactId>
-        <version>${version.org.jboss.xnio}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.jboss.spec</groupId>
-        <artifactId>jboss-javaee-7.0</artifactId>
-        <version>${version.org.jboss.spec.jboss-javaee-7.0}</version>
-        <type>pom</type>
-        <scope>test</scope>
-      </dependency>
       <dependency>
         <groupId>org.postgresql</groupId>
         <artifactId>postgresql</artifactId>
         <version>${version.postgresql}</version>
       </dependency>
-      <dependency>
-        <groupId>xerces</groupId>
-        <artifactId>xercesImpl</artifactId>
-        <version>${version.xerces}</version>
-      </dependency>    
-      <dependency>
-        <groupId>org.jboss.arquillian</groupId>
-        <artifactId>arquillian-bom</artifactId>
-        <version>1.1.15.Final</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
 
-      <dependency>
-        <groupId>commons-codec</groupId>
-        <artifactId>commons-codec</artifactId>
-        <version>${version.apache.commons.codec}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.sun.xsom</groupId>
-        <artifactId>xsom</artifactId>
-        <version>${version.xsom}</version>
-      </dependency>
-      <dependency>
-        <groupId>relaxngDatatype</groupId>
-        <artifactId>relaxngDatatype</artifactId>
-        <version>${version.relaxngDatatype}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.google.guava</groupId>
-        <artifactId>guava</artifactId>
-        <version>${version.guava}</version>
-      </dependency>
       <dependency>
         <groupId>io.swagger</groupId>
         <artifactId>swagger-annotations</artifactId>
@@ -444,11 +316,6 @@
         <groupId>org.mongodb</groupId>
         <artifactId>mongo-java-driver</artifactId>
         <version>${version.org.mongodb}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.yaml</groupId>
-        <artifactId>snakeyaml</artifactId>
-        <version>${version.org.yaml}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

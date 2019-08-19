@@ -81,10 +81,6 @@
         <artifactId>komodo-core</artifactId>
     </dependency>      
     <dependency>
-      <groupId>com.sun.xsom</groupId>
-      <artifactId>xsom</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
     </dependency>
@@ -161,11 +157,6 @@
         <artifactId>spring-boot-starter-test</artifactId>
         <scope>test</scope>
     </dependency>    
-    <dependency>
-      <groupId>org.jboss.arquillian.junit</groupId>
-      <artifactId>arquillian-junit-container</artifactId>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>org.jboss.shrinkwrap.resolver</groupId>
       <artifactId>shrinkwrap-resolver-depchain</artifactId>
