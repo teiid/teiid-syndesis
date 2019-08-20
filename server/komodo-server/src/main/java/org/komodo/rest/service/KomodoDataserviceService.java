@@ -44,6 +44,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -160,7 +161,7 @@ public final class KomodoDataserviceService extends KomodoService {
             @ApiResponse(code = 403, message = "An error has occurred.") })
     public ResponseEntity<String> createDataservice(
             @ApiParam(value = "Name of the data service", required = true) final @PathVariable("dataserviceName") String dataserviceName,
-            @ApiParam(required = true) @RequestParam final RestDataVirtualization restDataservice) throws Exception {
+            @ApiParam(required = true) @RequestBody final RestDataVirtualization restDataservice) throws Exception {
 
         final String jsonDataserviceName = restDataservice.getName();
         // Error if the name is missing from the supplied json body
@@ -234,7 +235,7 @@ public final class KomodoDataserviceService extends KomodoService {
      *         an empty string, when the name is valid, or an error message
      * @throws Exception
      */
-    @RequestMapping(value = FS
+    @RequestMapping(value = V1Constants.NAME_VALIDATION_SEGMENT + FS
             + V1Constants.DATA_SERVICE_PLACEHOLDER, method = RequestMethod.GET, produces = { "text/plain" })
     @ApiOperation(value = "Returns an error message if the data service name is invalid")
     @ApiResponses(value = {
@@ -278,6 +279,7 @@ public final class KomodoDataserviceService extends KomodoService {
             String komodoSourceName,
 
             @ApiParam(value = "Import Payload", required = true)
+            @RequestBody
             final ImportPayload importPayload) throws Exception {
 
         KomodoStatusObject kso = kengine.runInTransaction("import", false, () -> {
@@ -373,7 +375,7 @@ public final class KomodoDataserviceService extends KomodoService {
     public KomodoStatusObject updateDataservice(
             @ApiParam(value = "Name of the data service", required = true)
             final @PathVariable("dataserviceName") String dataserviceName,
-            @ApiParam(required = true) @RequestParam final RestDataVirtualization restDataservice) throws Exception {
+            @ApiParam(required = true) @RequestBody final RestDataVirtualization restDataservice) throws Exception {
 
         final String jsonDataserviceName = restDataservice.getName();
         // Error if the name is missing from the supplied json body

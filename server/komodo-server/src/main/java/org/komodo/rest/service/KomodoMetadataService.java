@@ -55,6 +55,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -213,7 +214,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
              NBSP + "offset: The index of the result to begin the results with" + BR +
              CLOSE_BRACE +
              CLOSE_PRE_TAG,required = true)
-           final KomodoQueryAttribute kqa) throws Exception {
+           @RequestBody final KomodoQueryAttribute kqa) throws Exception {
         //
         // Error if there is no query attribute defined
         //
@@ -582,7 +583,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
                     + "\"disk-size\": \"(optional) Amount disk allocated in GB (default 20)\"" + BR
                     + "\"enable-odata\": \"(optional) Enable OData interface. true|false (default true)\"" + BR
                     + CLOSE_BRACE
-                    + CLOSE_PRE_TAG) @RequestParam(required = true) final PublishRequestPayload payload) throws Exception {
+                    + CLOSE_PRE_TAG) @RequestBody(required = true) final PublishRequestPayload payload) throws Exception {
         //
         // Error if there is no name attribute defined
         //
