@@ -18,17 +18,15 @@
 
 package org.komodo.rest.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.ws.rs.NotFoundException;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.metadata.TeiidDataSource;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
@@ -43,13 +41,13 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.server.ResponseStatusException;
 
 @RunWith(SpringRunner.class)
 @DataJpaTest
 @ContextConfiguration(classes = {KomodoRepositoryConfiguration.class, ServiceTestConfiguration.class})
 @DirtiesContext
 public class KomodoDataserviceServiceTest {
-
     @Autowired
     private WorkspaceManagerImpl workspaceManagerImpl;
 
@@ -67,16 +65,16 @@ public class KomodoDataserviceServiceTest {
         try {
             kso = komodoDataserviceService.importViews("dv", "source", payload);
             fail();
-        } catch (NotFoundException e) {
+        } catch (ResponseStatusException e) {
             //dv not found
         }
 
-        workspaceManagerImpl.createDataVirtualization("dv");
+        DataVirtualization dv = workspaceManagerImpl.createDataVirtualization("dv");
 
         try {
             kso = komodoDataserviceService.importViews("dv", "source", payload);
             fail();
-        } catch (NotFoundException e) {
+        } catch (ResponseStatusException e) {
             //source not found
         }
 
@@ -89,7 +87,7 @@ public class KomodoDataserviceServiceTest {
         try {
             kso = komodoDataserviceService.importViews("dv", "source", payload);
             fail();
-        } catch (NotFoundException e) {
+        } catch (ResponseStatusException e) {
             //source not found - as the properties are not valid
         }
 
@@ -114,6 +112,7 @@ public class KomodoDataserviceServiceTest {
                 "  \"name\" : \"tbl\",\n" +
                 "  \"sourcePaths\" : [ \"schema=source/table=tbl\" ]\n" +
                 "}", KomodoJsonMarshaller.marshall(vd));
-    }
 
+        assertTrue(dv.isDirty());
+    }
 }

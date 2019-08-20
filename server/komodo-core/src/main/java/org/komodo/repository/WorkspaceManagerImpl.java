@@ -40,13 +40,13 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
 
     @Override
     public org.komodo.datavirtualization.SourceSchema findSchema(String id) {
-        return this.schemaRepository.findOne(id);
+        return this.schemaRepository.findById(id).orElse(null);
     }
 
     @Override
     public boolean deleteSchema(String id) {
         try {
-            this.schemaRepository.delete(id);
+            this.schemaRepository.deleteById(id);
             this.schemaRepository.flush();
             return true;
         } catch (EmptyResultDataAccessException e) {
@@ -56,7 +56,7 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
 
     @Override
     public void createOrUpdateSchema(String id, String name, String contents) {
-        org.komodo.datavirtualization.SourceSchema schema = this.schemaRepository.findOne(id);
+        org.komodo.datavirtualization.SourceSchema schema = this.schemaRepository.findById(id).orElse(null);
         if (schema != null) {
             if (!name.equals(schema.getName())) {
                 throw new IllegalArgumentException("Cannot change the name of an existing schema");
@@ -128,7 +128,7 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
     @Override
     public boolean deleteViewDefinition(String id) {
         try {
-            this.viewDefinitionRepository.delete(id);
+            this.viewDefinitionRepository.deleteById(id);
             this.viewDefinitionRepository.flush();
             return true;
         } catch (EmptyResultDataAccessException e) {
@@ -138,12 +138,11 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
 
     @Override
     public org.komodo.datavirtualization.ViewDefinition findViewDefinition(String id) {
-        return this.viewDefinitionRepository.findOne(id);
+        return this.viewDefinitionRepository.findById(id).orElse(null);
     }
 
     @Override
     public ViewDefinition findViewDefinitionByNameIgnoreCase(String dvName, String viewDefinitionName) {
         return this.viewDefinitionRepository.findByNameIgnoreCase(dvName, viewDefinitionName);
     }
-
 }

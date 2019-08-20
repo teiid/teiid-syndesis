@@ -50,7 +50,7 @@ import org.komodo.metadata.query.QSResult;
 import org.komodo.metadata.query.QSRow;
 import org.komodo.utils.KLog;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.stereotype.Component;
 import org.teiid.adminapi.Admin;
 import org.teiid.adminapi.AdminException;
@@ -470,7 +470,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
                     ((HikariDataSource)ds).setMaximumPoolSize(10);
                     ((HikariDataSource)ds).setMinimumIdle(0);
                     ((HikariDataSource)ds).setIdleTimeout(60000);
-                    ((HikariDataSource)ds).setScheduledExecutorService(executor);
+                    ((HikariDataSource)ds).setScheduledExecutor(executor);
                 }
 
                 this.datasources.put(deploymentName, ds);

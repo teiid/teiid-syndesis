@@ -83,7 +83,7 @@ public interface V1Constants extends StringConstants {
      * The URI path segment for the Komodo REST application. It is included in the base URI. <strong>DO NOT INCLUDE THIS IN
      * OTHER URI SEGMENTS</strong>
      */
-    String APP_PATH = FORWARD_SLASH + "v1"; //$NON-NLS-1$
+    String APP_PATH = FS + "v1"; //$NON-NLS-1$
 
     /**
      * The name of the URI path segment for the Komodo workspace.

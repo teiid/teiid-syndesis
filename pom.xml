@@ -33,9 +33,6 @@
   <description>Tool that allows creating, editing and managing dynamic VDBs for the Teiid OpenShift Deployment.</description>
 
   <properties>
-    <!-- Global Syndesis version -->
-    <syndesis.version>1.4</syndesis.version>
-
 
     <!-- Image names -->
     <java.base.image>fabric8/s2i-java</java.base.image>
@@ -43,8 +40,6 @@
     <maven.exec.plugin.version>1.2.1</maven.exec.plugin.version>
     <clean-maven-plugin-version>2.4.1</clean-maven-plugin-version>
     <frontend-maven-plugin-version>1.6</frontend-maven-plugin-version>
-    <node.version>v8.11.2</node.version>
-    <yarn.version>v1.2.1</yarn.version>
 
     <hibernate.validator.version>5.3.5.Final</hibernate.validator.version>
 
@@ -52,13 +47,8 @@
     <json-patch.version>1.9</json-patch.version>
     <kubernetes.client.version>3.1.4.fuse-710001</kubernetes.client.version>
 
-    <spring.version>4.3.20.RELEASE</spring.version>
-    <spring-boot.version>1.5.17.RELEASE</spring-boot.version>
-    <spring-cloud.version>Dalston.SR5</spring-cloud.version>
-
-    <swagger.version>1.5.19</swagger.version>
-
-    <activemq.version>5.15.4</activemq.version>
+    <spring-boot.version>2.1.3.RELEASE</spring-boot.version>
+    <!-- <spring-cloud.version>Dalston.SR5</spring-cloud.version> -->
 
     <arquillian.version>1.4.0.Final</arquillian.version>
     <arquillian.cube.version>1.15.2</arquillian.cube.version>
@@ -102,6 +92,7 @@
     <maven-shared-utils.version>3.1.0</maven-shared-utils.version>
 
     <!-- Common dependencies -->
+    <version.springfox>2.9.2</version.springfox>
     <assertj-core.version>3.11.1</assertj-core.version>
     <shrinkwrap.version>2.2.6</shrinkwrap.version>
 
@@ -110,10 +101,6 @@
     <json-schema-validator.version>2.2.8</json-schema-validator.version>
     <junit.version>4.12</junit.version>
     <spotbugs.version>3.1.5</spotbugs.version>
-
-    <spring-security.version>4.2.6.RELEASE</spring-security.version>
-    <resteasy.version>3.6.1.Final</resteasy.version>
-    <resteasy-spring-boot-starter.version>1.0.1.Final</resteasy-spring-boot-starter.version>
 
     <immutables.version>2.5.6</immutables.version>
 
@@ -752,13 +739,13 @@
         <type>pom</type>
       </dependency>
 
-      <dependency>
+<!--       <dependency>
         <groupId>org.springframework.cloud</groupId>
         <artifactId>spring-cloud-dependencies</artifactId>
         <version>${spring-cloud.version}</version>
         <type>pom</type>
         <scope>import</scope>
-      </dependency>
+      </dependency> -->
 
       <dependency>
         <groupId>com.fasterxml.jackson</groupId>
@@ -769,11 +756,14 @@
       </dependency>
 
       <dependency>
-        <groupId>org.jboss.resteasy</groupId>
-        <artifactId>resteasy-bom</artifactId>
-        <version>${resteasy.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
+          <groupId>io.springfox</groupId>
+          <artifactId>springfox-swagger2</artifactId>
+          <version>${version.springfox}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.springfox</groupId>
+        <artifactId>springfox-swagger-ui</artifactId>
+        <version>${version.springfox}</version>
       </dependency>
 
       <dependency>

@@ -17,24 +17,14 @@
  */
 package org.komodo.rest;
 
-import java.io.IOException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.container.PreMatching;
-import javax.ws.rs.ext.Provider;
 
-//import org.apache.commons.logging.Log;
-//import org.apache.commons.logging.LogFactory;
 import org.komodo.utils.KLog;
-import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.HandlerInterceptor;
 
-@Provider
-@PreMatching
-@Component
-public class AuthHandlingFilter implements ContainerRequestFilter, CredentialsProvider {
-
-//    private static final Log LOGGER = LogFactory.getLog(AuthHandlingFilter.class);
+public class AuthHandlingFilter implements HandlerInterceptor, CredentialsProvider {
 
     public static class AuthToken {
         private String token;
@@ -73,22 +63,22 @@ public class AuthHandlingFilter implements ContainerRequestFilter, CredentialsPr
     public static ThreadLocal<OAuthCredentials> threadOAuthCredentials  = new ThreadLocal<OAuthCredentials>();
 
     @Override
-    public void filter(ContainerRequestContext requestContext) throws IOException {
-        String accessToken = requestContext.getHeaderString("X-Forwarded-Access-Token");
-        String user = requestContext.getHeaderString("X-Forwarded-User");
+    public boolean preHandle(HttpServletRequest request,
+            HttpServletResponse response, Object contentHandler) throws Exception {
+        String accessToken = request.getHeader("X-Forwarded-Access-Token");
+        String user = request.getHeader("X-Forwarded-User");
         if (KLog.getLogger().isTraceEnabled()) {
-            KLog.getLogger().trace("URL =" + requestContext.getUriInfo());
+            KLog.getLogger().trace("URL =" + request.getRequestURI());
             KLog.getLogger().trace("X-Forwarded-Access-Token = " + accessToken);
             KLog.getLogger().trace("X-Forwarded-User = " + user);
         }
         OAuthCredentials creds = new OAuthCredentials(accessToken, user);
         threadOAuthCredentials.set(creds);
-//        LOGGER.info("  *** AuthHandlingFilter.filter() OAuth user = " + creds.user + "  Token = " + creds.getToken().toString());
+        return true;
     }
 
     @Override
     public OAuthCredentials getCredentials() {
         return threadOAuthCredentials.get();
     }
-
 }
