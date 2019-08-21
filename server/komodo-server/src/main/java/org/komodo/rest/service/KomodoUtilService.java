@@ -37,6 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -187,8 +188,9 @@ public final class KomodoUtilService extends KomodoService {
         @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
-    public KomodoStatusObject stashViewEditorState(@ApiParam(required = true)
-                                               final org.komodo.datavirtualization.ViewDefinition restViewEditorState) throws Exception {
+    public KomodoStatusObject stashViewEditorState(
+            @ApiParam(required = true) @RequestBody final org.komodo.datavirtualization.ViewDefinition restViewEditorState)
+            throws Exception {
         if (StringUtils.isBlank(restViewEditorState.getName())) {
             throw forbidden(RelationalMessages.Error.VIEW_DEFINITION_MISSING_NAME);
         }
@@ -218,7 +220,8 @@ public final class KomodoUtilService extends KomodoService {
         @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
-    public RestViewDefinitionStatus validateViewDefinition(@ApiParam(required = true) final ViewDefinition restViewDefinition) {
+    public RestViewDefinitionStatus validateViewDefinition(
+            @ApiParam(required = true) @RequestBody final ViewDefinition restViewDefinition) {
         LOGGER.debug("Validating view : %s", restViewDefinition.getName());
 
         RestViewDefinitionStatus viewDefnStatus = validateViewDefinitionService(restViewDefinition);
