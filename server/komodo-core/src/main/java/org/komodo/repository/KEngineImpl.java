@@ -75,25 +75,21 @@ public class KEngineImpl implements KEngine {
             transactionStatus.setRollbackOnly();
         }
         LOGGER.debug( "createTransaction:created '%s', rollbackOnly = '%b'", txnName, rollbackOnly ); //$NON-NLS-1$
-        boolean committed = false;
         try {
             T result = callable.call();
             if (!rollbackOnly) {
                 try {
                     platformTransactionManager.commit(transactionStatus);
+                    LOGGER.debug( "commit: successfully committed '%s'", //$NON-NLS-1$
+                            txnName);
                 } catch (TransactionTimedOutException e) {
                     throw new TimeoutException(e);
                 }
                 //any other exceptions can be unchecked
             }
-
-            LOGGER.debug( "commit: successfully committed '%s', rollbackOnly = '%b'", //$NON-NLS-1$
-                    txnName,
-                    rollbackOnly);
-            committed = true;
             return result;
         } finally {
-            if (!committed && !transactionStatus.isCompleted()) {
+            if (!transactionStatus.isCompleted()) {
                 platformTransactionManager.rollback(transactionStatus);
             }
         }
