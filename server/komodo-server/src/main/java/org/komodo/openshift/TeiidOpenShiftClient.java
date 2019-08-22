@@ -101,6 +101,7 @@ import io.fabric8.openshift.client.OpenShiftConfigBuilder;
 
 @SuppressWarnings("nls")
 public class TeiidOpenShiftClient implements V1Constants {
+    private static final Log LOGGER = LogFactory.getLog(TeiidOpenShiftClient.class);
     public static final String ID = "id";
     private static final String SERVICE_CA_CERT_FILE = "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt";
     private String openShiftHost = "https://openshift.default.svc";
@@ -486,7 +487,8 @@ public class TeiidOpenShiftClient implements V1Constants {
             JsonNode root = mapper.readTree(response);
             String connectorType = root.get("connectorId").asText();
             if (!connectorType.equals("sql")) {
-                throw new KException("Not SQL Connection, not supported yet.");
+                LOGGER.debug("Not SQL Connection, not supported by Data Virtualization yet.");
+                return null;
             }
             String name = root.get("name").asText();
             return buildSyndesisDataSource(name, root);
