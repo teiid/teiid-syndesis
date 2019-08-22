@@ -413,11 +413,6 @@ public final class KomodoUtilService extends KomodoService {
             final @PathVariable("viewEditorStateId") String viewEditorStateId)
             throws Exception {
         return kengine.runInTransaction("removeUserProfileViewEditorState", false, ()-> {
-            if (!getWorkspaceManager().deleteViewDefinition(viewEditorStateId)) {
-                throw new ResponseStatusException(HttpStatus.NO_CONTENT);
-            }
-
-            //TODO: get the viewDefinition - if complete, then we need to update the runtime state
             ViewDefinition vd = getWorkspaceManager().findViewDefinition(viewEditorStateId);
             if (vd == null) {
                 throw notFound(viewEditorStateId);
@@ -429,7 +424,6 @@ public final class KomodoUtilService extends KomodoService {
             }
 
             getWorkspaceManager().deleteViewDefinition(viewEditorStateId);
-
             KomodoStatusObject kso = new KomodoStatusObject("Delete Status"); //$NON-NLS-1$
             kso.addAttribute(viewEditorStateId, "Successfully deleted"); //$NON-NLS-1$
 

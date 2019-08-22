@@ -17,7 +17,6 @@
  */
 package org.komodo.rest.service;
 
-import static org.komodo.StringConstants.*;
 import static org.komodo.rest.datavirtualization.RelationalMessages.Error.*;
 
 import org.komodo.datavirtualization.ViewDefinition;
@@ -41,8 +40,7 @@ import io.swagger.annotations.ApiResponses;
  * A Komodo REST service for obtaining VDB information from the workspace.
  */
 @RestController
-@RequestMapping(V1Constants.APP_PATH + V1Constants.FS + V1Constants.WORKSPACE_SEGMENT
-        + FS + V1Constants.VDBS_SEGMENT)
+@RequestMapping(V1Constants.APP_PATH + V1Constants.FS + V1Constants.WORKSPACE_SEGMENT)
 @Api(tags = {V1Constants.VDBS_SEGMENT})
 public final class KomodoVdbService extends KomodoService {
 
@@ -58,11 +56,7 @@ public final class KomodoVdbService extends KomodoService {
      *         message
      * @throws Exception
      */
-    @RequestMapping( value = V1Constants.VDB_PLACEHOLDER + FS +
-                V1Constants.MODELS_SEGMENT + FS +
-                V1Constants.MODEL_PLACEHOLDER + FS +
-                V1Constants.VIEWS_SEGMENT + FS +
-                V1Constants.NAME_VALIDATION_SEGMENT + FS + V1Constants.VIEW_PLACEHOLDER,
+    @RequestMapping( value = "{virtualization}/views/nameValidation/{viewName}",
                 method = RequestMethod.GET, produces= { MediaType.TEXT_PLAIN_VALUE })
     @ApiOperation( value = "Returns an error message if the view name is invalid" )
     @ApiResponses( value = {

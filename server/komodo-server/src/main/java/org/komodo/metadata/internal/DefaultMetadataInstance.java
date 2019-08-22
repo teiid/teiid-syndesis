@@ -383,7 +383,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
             VDB existing = admin.getVDB(vdbName, DEFAULT_VDB_VERSION);
             if (existing != null) {
-                admin.undeploy(deploymentName);
+                admin.undeploy(existing.getName());
             }
 
             for (ModelMetaData model : vdb.getModelMetaDatas().values()) {
