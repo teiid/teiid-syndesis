@@ -17,15 +17,10 @@
  */
 package org.komodo.metadata.internal;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 
 import org.komodo.metadata.Messages;
 import org.komodo.metadata.TeiidVdb;
-import org.teiid.adminapi.Model;
 import org.teiid.adminapi.VDB;
 import org.teiid.adminapi.VDB.Status;
 import org.teiid.adminapi.VDBImport;
@@ -36,22 +31,6 @@ import org.teiid.query.metadata.TransformationMetadata;
 
 public class TeiidVdbImpl implements TeiidVdb, Comparable<TeiidVdbImpl> {
 
-    private static final String PREVIEW = "preview"; //$NON-NLS-1$
-
-    private static final String DEPLOYMENT_NAME = "deployment-name"; //$NON-NLS-1$
-
-    private String name;
-
-    private String version;
-
-    private boolean hasModels = false;
-
-    private List<String> errors;
-
-    private Collection<String> modelNames = new ArrayList<>();
-
-    private Properties properties = new Properties();
-
     private VDBMetaData vdb;
 
     public TeiidVdbImpl(VDB vdb) throws Exception {
@@ -59,24 +38,6 @@ public class TeiidVdbImpl implements TeiidVdb, Comparable<TeiidVdbImpl> {
 
         if (! (vdb instanceof VDBMetaData))
             throw new Exception(Messages.getString(Messages.MetadataServer.onlySupportingDynamicVdbs));
-
-        name = vdb.getName();
-
-        // Autoboxing first if version is an int as defined in teiid 8
-        Object o = vdb.getVersion();
-        version = o.toString();
-
-        hasModels = !vdb.getModels().isEmpty();
-
-        errors = vdb.getValidityErrors();
-
-        for (Model model : vdb.getModels()) {
-            modelNames.add(model.getName());
-        }
-
-        for (String name : vdb.getProperties().stringPropertyNames()) {
-            properties.setProperty(name, vdb.getPropertyValue(name));
-        }
 
         this.vdb = (VDBMetaData)vdb;
     }
@@ -112,12 +73,12 @@ public class TeiidVdbImpl implements TeiidVdb, Comparable<TeiidVdbImpl> {
 
     @Override
     public String getName() {
-        return name;
+        return vdb.getName();
     }
 
     @Override
     public String getVersion() {
-        return version;
+        return vdb.getVersion();
     }
 
     @Override
@@ -142,33 +103,12 @@ public class TeiidVdbImpl implements TeiidVdb, Comparable<TeiidVdbImpl> {
 
     @Override
     public List<String> getValidityErrors() {
-        if (this.errors != null)
-            return Collections.unmodifiableList(this.errors);
-
-        return Collections.emptyList();
-    }
-
-    @Override
-    public boolean hasModels() {
-        return hasModels;
-    }
-
-    @Override
-    public Collection<String> getModelNames() {
-        if (!hasModels())
-            return Collections.emptyList();
-
-        return modelNames;
+        return vdb.getValidityErrors();
     }
 
     @Override
     public String getPropertyValue(String key) {
-        return properties.getProperty(key);
-    }
-
-    @Override
-    public Properties getProperties() {
-        return properties;
+        return vdb.getPropertyValue(key);
     }
 
     @Override

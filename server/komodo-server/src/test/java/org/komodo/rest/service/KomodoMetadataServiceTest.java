@@ -116,7 +116,7 @@ public class KomodoMetadataServiceTest {
         props.put(TeiidDataSource.DATASOURCE_DRIVERNAME, "h2");
 
         metadataInstance.createDataSource("source", "h2", props);
-        workspaceManagerImpl.createOrUpdateSchema("someid", "source",
+        workspaceManagerImpl.createSchema("someid", "source",
                 "create foreign table tbl (col string) options (\"teiid_rel:fqn\" 'schema=s%20x/t%20bl=bar');"
                 + "create foreign table tbl1 (col string) options (\"teiid_rel:fqn\" 'schema=s%20x/t%20bl=bar1');");
 

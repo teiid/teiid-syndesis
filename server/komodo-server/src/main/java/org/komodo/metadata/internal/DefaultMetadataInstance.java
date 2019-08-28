@@ -99,7 +99,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
         this.server = server;
     }
 
-    public Admin getAdmin() throws AdminException {
+    public Admin getAdmin() {
         //no need to synchronize, as delegate holds no state
         if (admin == null) {
             admin = server.getAdmin();
@@ -139,11 +139,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
     @Override
     public Condition getCondition() {
-        try {
-            return getAdmin() != null ? Condition.REACHABLE : Condition.NOT_REACHABLE;
-        } catch (AdminException e) {
-            return Condition.NOT_REACHABLE;
-        }
+        return getAdmin() != null ? Condition.REACHABLE : Condition.NOT_REACHABLE;
     }
 
     @Override
@@ -259,25 +255,6 @@ public class DefaultMetadataInstance implements MetadataInstance {
     public Collection<TeiidDataSource> getDataSources() throws KException {
         checkStarted();
         return this.dsProperties.values();
-    }
-
-    @Override
-    public Collection<String> getVdbNames() throws KException {
-        checkStarted();
-        try {
-            Collection<? extends VDB> vdbs = getAdmin().getVDBs();
-            if (vdbs.isEmpty())
-                return Collections.emptyList();
-
-            List<String> teiidVdbNames = new ArrayList<String>();
-            for (VDB vdb : vdbs) {
-                teiidVdbNames.add(vdb.getName());
-            }
-
-            return teiidVdbNames;
-        } catch (Exception ex) {
-            throw handleError(ex);
-        }
     }
 
     @Override
@@ -515,7 +492,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
         QueryParser parser = QueryParser.getQueryParser();
 
         ModelMetaData m = new ModelMetaData();
-        m.setName(SERVICE_VDB_VIEW_MODEL); //$NON-NLS-1$
+        m.setName(SERVICE_VDB_VIEW_MODEL);
 
         MetadataFactory mf = new MetadataFactory(vdbName, DEFAULT_VDB_VERSION, SystemMetadata.getInstance().getRuntimeTypeMap(),m);
         parser.parseDDL(mf, ddl);

@@ -1,8 +1,6 @@
 package org.komodo.repository;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,9 +25,7 @@ public class DataVirtualizationTest {
 
     @Test
     public void testFindDeleteByName() {
-        DataVirtualization dv = new DataVirtualization("foo");
-        entityManager.persist(dv);
-        entityManager.flush();
+        DataVirtualization dv = workspaceManagerImpl.createDataVirtualization("foo");
 
         DataVirtualization found = dataVirtualizationRepository.findByName(dv.getName());
 

@@ -39,7 +39,7 @@ public interface WorkspaceManager {
 
     boolean deleteSchema(String id);
 
-    void createOrUpdateSchema(String id, String name, String contents);
+    SourceSchema createSchema(String id, String name, String contents);
 
     List<String> findAllSchemaNames();
 

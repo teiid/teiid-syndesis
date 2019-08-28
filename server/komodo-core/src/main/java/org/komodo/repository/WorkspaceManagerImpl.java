@@ -22,11 +22,11 @@ import java.util.List;
 
 import org.komodo.WorkspaceManager;
 import org.komodo.datavirtualization.DataVirtualization;
+import org.komodo.datavirtualization.SourceSchema;
 import org.komodo.datavirtualization.ViewDefinition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
-import org.teiid.core.util.EquivalenceUtil;
 
 @Component
 public class WorkspaceManagerImpl implements WorkspaceManager {
@@ -55,21 +55,11 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
     }
 
     @Override
-    public void createOrUpdateSchema(String id, String name, String contents) {
-        org.komodo.datavirtualization.SourceSchema schema = this.schemaRepository.findById(id).orElse(null);
-        if (schema != null) {
-            if (!name.equals(schema.getName())) {
-                throw new IllegalArgumentException("Cannot change the name of an existing schema");
-            }
-            if (!EquivalenceUtil.areEqual(contents, schema.getDdl())) {
-                schema.setDdl(contents);
-            }
-        } else {
-            schema = new org.komodo.datavirtualization.SourceSchema(id);
-            schema.setName(name);
-            schema.setDdl(contents);
-            this.schemaRepository.save(schema);
-        }
+    public SourceSchema createSchema(String id, String name, String contents) {
+        SourceSchema schema = new SourceSchema(id);
+        schema.setName(name);
+        schema.setDdl(contents);
+        return this.schemaRepository.save(schema);
     }
 
     @Override

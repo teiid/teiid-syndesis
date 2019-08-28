@@ -47,6 +47,7 @@ import org.springframework.web.server.ResponseStatusException;
 @DataJpaTest
 @ContextConfiguration(classes = {KomodoRepositoryConfiguration.class, ServiceTestConfiguration.class})
 @DirtiesContext
+@SuppressWarnings("nls")
 public class KomodoDataserviceServiceTest {
     @Autowired
     private WorkspaceManagerImpl workspaceManagerImpl;
@@ -92,7 +93,7 @@ public class KomodoDataserviceServiceTest {
         }
 
         //add the schema definition - so that we don't really need the datasource, and redeploy
-        workspaceManagerImpl.createOrUpdateSchema("someid", "source",
+        workspaceManagerImpl.createSchema("someid", "source",
                 "create foreign table tbl (col string) options (\"teiid_rel:fqn\" 'schema=s/table=tbl');");
         metadataInstance.undeployDynamicVdb(KomodoMetadataService.getWorkspaceSourceVdbName("source"));
 

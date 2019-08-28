@@ -44,8 +44,7 @@ public class TeiidOpenShiftClientTest {
             }
 
             @Override
-            public <T> T runInTransaction(String txnName, boolean rollbackOnly,
-                    Callable<T> callable) throws Exception {
+            public <T> T runInTransaction(boolean rollbackOnly, Callable<T> callable) throws Exception {
                 return callable.call();
             }
 
@@ -57,15 +56,15 @@ public class TeiidOpenShiftClientTest {
 
         DefaultSyndesisDataSource dsd = new DefaultSyndesisDataSource();
 
-        client.setUniqueKomodoName(dsd, "views", "x");
+        client.setUniqueKomodoName(dsd, "views");
 
         assertEquals("views1", dsd.getKomodoName());
 
-        client.setUniqueKomodoName(dsd, "View", "x");
+        client.setUniqueKomodoName(dsd, "View");
 
         assertEquals("View", dsd.getKomodoName());
 
-        client.setUniqueKomodoName(dsd, "?syS.", "x");
+        client.setUniqueKomodoName(dsd, "?syS.");
 
         assertEquals("syS1", dsd.getKomodoName());
     }

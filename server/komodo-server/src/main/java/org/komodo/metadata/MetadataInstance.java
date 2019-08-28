@@ -178,12 +178,6 @@ public interface MetadataInstance extends StringConstants {
     Collection<TeiidVdb> getVdbs() throws KException;
 
     /**
-     * @return the names of all the deployed vdbs
-     * @throws KException
-     */
-    Collection<String> getVdbNames() throws KException;
-
-    /**
      * @param vdbDeploymentName
      * @return the deployed vdb
      * @throws KException

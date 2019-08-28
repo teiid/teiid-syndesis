@@ -78,7 +78,7 @@ public final class KomodoVdbService extends KomodoService {
             return ResponseEntity.ok(errorMsg);
         }
 
-        return kengine.runInTransaction("validateViewName", true, ()-> { //$NON-NLS-1$
+        return kengine.runInTransaction(true, ()-> {
             ViewDefinition vd = getWorkspaceManager().findViewDefinitionByNameIgnoreCase(virtualization, viewName);
 
             if (vd != null) {

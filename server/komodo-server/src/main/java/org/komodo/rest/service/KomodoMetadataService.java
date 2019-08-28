@@ -52,6 +52,7 @@ import org.komodo.rest.datavirtualization.connection.RestSourceSchema;
 import org.komodo.utils.PathUtils;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.data.util.Pair;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -118,7 +119,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
     public void refreshPreviewVdb(final String vdbName)
             throws KException, Exception {
-        kengine.runInTransaction("refreshPreviewVdb", false, () -> {
+        kengine.runInTransaction(true, () -> {
             TeiidVdb previewVdb = getMetadataInstance().getVdb(vdbName);
             VDBMetaData workingCopy = new VDBMetaData();
             workingCopy.setName(vdbName);
@@ -137,10 +138,11 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
             // Get the current workspace connection VDB names
             List<String> connectionVdbNames = new ArrayList<String>();
-            Collection<String> vdbNames = getMetadataInstance().getVdbNames();
-            for( String name: vdbNames) {
-                if (name.endsWith(CONNECTION_VDB_SUFFIX)) {
-                    connectionVdbNames.add(name);
+
+            Collection<TeiidVdb> vdbs = getMetadataInstance().getVdbs();
+            for( TeiidVdb vdb: vdbs) {
+                if (vdb.isActive() && vdb.getName().endsWith(CONNECTION_VDB_SUFFIX)) {
+                    connectionVdbNames.add(vdb.getName());
                 }
             }
 
@@ -229,7 +231,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         String target = kqa.getTarget();
         String query = kqa.getQuery();
 
-        TeiidVdb vdb = kengine.runInTransaction("query", false, ()->{
+        TeiidVdb vdb = kengine.runInTransaction(false, ()->{
             return updatePreviewVdb(target);
         });
 
@@ -283,47 +285,60 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         if (StringUtils.isBlank( komodoSourceName )) {
             throw forbidden(RelationalMessages.Error.CONNECTION_SERVICE_MISSING_CONNECTION_NAME);
         }
-        return kengine.runInTransaction("refreshSchema?deployOnly=" + deployOnly, false, () -> {// Find the bound teiid source corresponding to the syndesis source
-            TeiidDataSource teiidSource = getMetadataInstance().getDataSource(komodoSourceName);
 
-            if (teiidSource == null)
-                return null;
+        TeiidDataSource teiidSource = getMetadataInstance().getDataSource(komodoSourceName);
 
+        if (teiidSource == null) {
+            throw notFound(komodoSourceName);
+        }
+
+        synchronized (teiidSource.getRefreshLock()) {
             final KomodoStatusObject kso = new KomodoStatusObject( "Refresh schema" ); //$NON-NLS-1$
 
-            if (!deployOnly) {
-                final WorkspaceManager mgr = kengine.getWorkspaceManager();
+            boolean result = kengine.runInTransaction(true, () -> {// Find the bound teiid source corresponding to the syndesis source
+                return doDeploySourceVdb(teiidSource, deployOnly?SourceDeploymentMode.EITHER:SourceDeploymentMode.REFRESH);
+            });
 
-                //null out the old ddl
-                mgr.createOrUpdateSchema(teiidSource.getId(), komodoSourceName, null);
+            //if new ddl is available, try to save
+            //we don't combine the deploy/save so that there's little chance of a save conflict
+            if (result) {
+                kso.addAttribute(komodoSourceName, "Delete workspace VDB, recreate, redeploy, and generated schema"); //$NON-NLS-1$
+
+                String vdbName = getWorkspaceSourceVdbName( teiidSource.getName() );
+
+                final String modelDdl = getMetadataInstance().getSchema( vdbName, teiidSource.getName() );
+
+                if (modelDdl != null) {
+                    try {
+                        kengine.runInTransaction(false, () -> {
+                            SourceSchema schema = kengine.getWorkspaceManager().findSchema(teiidSource.getId());
+                            if (schema != null) {
+                                schema.setDdl(modelDdl);
+                            }
+                            return null;
+                        });
+                    } catch (ConcurrencyFailureException e) {
+                        //this can only occur when running multiple pods
+                        //since we've made a best effort to update the schema from the
+                        //runtime state, we'll just ignore
+                        //TODO: if we allow for mulitple pods the notion of connection
+                        //synchronization needs to be expanded to refresh reloading
+                    }
+                }
+            } else {
+                kso.addAttribute(komodoSourceName, "Delete workspace VDB, recreate, redeploy"); //$NON-NLS-1$
             }
-
-            // Initiate the VDB deployment
-            doDeploySourceVdb(teiidSource);
-            kso.addAttribute(komodoSourceName, "Delete workspace VDB, recreate, redeploy, and generated schema"); //$NON-NLS-1$
-            saveSchema(teiidSource.getId(), komodoSourceName);
             return kso;
-        });
+        }
     }
 
     public boolean deleteSchema(String schemaId) throws Exception {
-        return kengine.runInTransaction("deleteSchema", false, () -> {
+        //TODO: this can invalidate a lot of stuff
+        return kengine.runInTransaction(false, () -> {
             final WorkspaceManager mgr = kengine.getWorkspaceManager();
 
             return mgr.deleteSchema(schemaId);
         });
-    }
-
-    private void saveSchema(final String schemaId, final String komodoName) throws KException {
-        final String schemaModelName = komodoName;
-
-        final String sourceVdbName = getWorkspaceSourceVdbName( komodoName );
-
-        final String modelDdl = getMetadataInstance().getSchema( sourceVdbName, schemaModelName ); //$NON-NLS-1$
-
-        if (modelDdl != null) {
-            getWorkspaceManager().createOrUpdateSchema(schemaId, komodoName, modelDdl);
-        }
     }
 
     /**
@@ -342,7 +357,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
     } )
     public List<RestSchemaNode> getSchema(@ApiParam( value = "Name of the komodo source", required = true )
                                @PathVariable( "komodoSourceName" ) final String komodoSourceName ) throws Exception {
-        return kengine.runInTransaction("getSchema?komodoSourceName=" + komodoSourceName, true, ()->{
+        return kengine.runInTransaction(true, ()->{
             // Find the bound teiid source corresponding to the syndesis source
             TeiidDataSource teiidSource = getMetadataInstance().getDataSource(komodoSourceName);
 
@@ -376,7 +391,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         @ApiResponse( code = 406, message = "Only JSON is returned by this operation" )
     } )
     public List<RestSchemaNode> getAllConnectionSchema() throws Exception {
-        return kengine.runInTransaction("getAllConnectionSchema", true, ()->{
+        return kengine.runInTransaction(true, ()->{
             List<RestSchemaNode> rootNodes = new ArrayList<RestSchemaNode>();
 
             // Get teiid datasources
@@ -420,7 +435,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
         final List< RestSyndesisSourceStatus > statuses = new ArrayList<>();
 
-        return kengine.runInTransaction("getSyndesisSourceStatuses", true, ()->{
+        return kengine.runInTransaction(true, ()->{
             // Get syndesis sources
             Collection<DefaultSyndesisDataSource> dataSources = this.openshiftClient.getSyndesisSources(getAuthenticationToken());
 
@@ -437,8 +452,8 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         });
     }
 
-    public RestSyndesisSourceStatus getSyndesisSourceStatus(final DefaultSyndesisDataSource sds, String principal) throws Exception {
-        return kengine.runInTransaction("getSyndesisSourceStatusByName", true, () -> {
+    public RestSyndesisSourceStatus getSyndesisSourceStatus(final DefaultSyndesisDataSource sds) throws Exception {
+        return kengine.runInTransaction(true, () -> {
             return createSourceStatus(sds);
         });
     }
@@ -488,7 +503,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             forbidden(RelationalMessages.Error.DATASERVICE_SERVICE_MISSING_NAME);
         }
 
-        return kengine.runInTransaction("getRuntimeMetadata", true, ()->{
+        return kengine.runInTransaction(true, ()->{
             List<RestSourceSchema> srcSchemas = new ArrayList<>();
 
             //once we support view layering, we need to use the dv specific one
@@ -591,7 +606,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             throw forbidden(RelationalMessages.Error.VDB_NAME_NOT_PROVIDED);
         }
 
-        return kengine.runInTransaction("publish-init", true, ()-> {
+        return kengine.runInTransaction(true, ()-> {
             DataVirtualization dataservice = getWorkspaceManager().findDataVirtualization(payload.getName());
             if (dataservice == null) {
                 throw notFound(payload.getName());
@@ -605,6 +620,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
             String serviceVdbName = dataservice.getServiceVdbName();
             List<? extends ViewDefinition> editorStates = getWorkspaceManager().findViewDefinitions(dataservice.getName());
 
+            //TODO: this should probably do a local deployment as a final validation that the metadata is golden
             VDBMetaData theVdb = new ServiceVdbGenerator(this).createServiceVdb(serviceVdbName, editorStates, false);
 
             // the properties in this class can be exposed for user input
@@ -632,32 +648,69 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         });
     }
 
+    private enum SourceDeploymentMode {
+        REUSE_DDL,
+        REFRESH,
+        EITHER
+    }
+
     /**
      * Deploy / re-deploy a VDB to the metadata instance for the provided teiid data source.
      * @param teiidSource the teiidSource
+     * @return true if new ddl is available
      * @throws KException
      */
-    private void doDeploySourceVdb( TeiidDataSource teiidSource ) throws KException {
+    private boolean doDeploySourceVdb( TeiidDataSource teiidSource, SourceDeploymentMode sourceDeploymentMode ) throws KException {
         assert( teiidSource != null );
 
         // VDB is created in the repository.  If it already exists, delete it
         final WorkspaceManager mgr = this.getWorkspaceManager();
 
         SourceSchema schema = mgr.findSchema(teiidSource.getId());
+        if (schema == null) {
+            //something is wrong, the logic that creates TeiidDataSources will always ensure
+            //a sourceschema is created
+            LOGGER.info("schema entry was not found for source vdb");
+            return false;
+        }
 
         // Name of VDB to be created is based on the source name
         String vdbName = getWorkspaceSourceVdbName( teiidSource.getName() );
 
-        VDBMetaData vdb = generateSourceVdb(teiidSource, vdbName, schema == null ? null : schema.getDdl());
-        try {
-            getMetadataInstance().deploy(vdb);
-        } catch (KException e) {
-            LOGGER.error("could not deploy source vdb", e);
+        if (sourceDeploymentMode == SourceDeploymentMode.REUSE_DDL
+                && schema.getDdl() == null) {
+            //if the ddl doesn't already exist, don't do a deployment/save
+            //the calling operation should be fail-fast
+            return false;
         }
 
-        if (schema != null && schema.getDdl() == null) {
-            saveSchema(teiidSource.getId(), teiidSource.getName());
+        synchronized (teiidSource) {
+            TeiidVdb teiidVdb = getMetadataInstance().getVdb(vdbName);
+            // if this is a refresh and there's no vdb deployed at all, make
+            // that available first - this prevents non-refresh calls from deploying
+            // over top the longer running deployment
+            if (sourceDeploymentMode == SourceDeploymentMode.REFRESH) {
+                if (schema.getDdl() != null && teiidVdb == null) {
+                    VDBMetaData vdb = generateSourceVdb(teiidSource, vdbName, schema.getDdl());
+                    getMetadataInstance().deploy(vdb);
+                }
+            } else if (teiidVdb != null) {
+                return false;
+            }
         }
+
+        String ddl = sourceDeploymentMode == SourceDeploymentMode.REFRESH ? null : schema.getDdl();
+
+        VDBMetaData vdb = generateSourceVdb(teiidSource, vdbName, ddl);
+        try {
+            getMetadataInstance().deploy(vdb);
+            return ddl == null;
+        } catch (KException e) {
+            //TODO: in the refresh case, we may want to capture this error
+            //to indicate why the metadata was not updated
+            LOGGER.error("could not deploy source vdb", e);
+        }
+        return false;
     }
 
     static VDBMetaData generateSourceVdb(TeiidDataSource teiidSource, String vdbName, String schema) throws KException {
@@ -705,7 +758,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         String vdbName = getWorkspaceSourceVdbName( dataSourceName );
         TeiidVdb vdb = getMetadataInstance().getVdb(vdbName);
         if (vdb == null) {
-            doDeploySourceVdb(dataSource);
+            doDeploySourceVdb(dataSource, SourceDeploymentMode.REUSE_DDL);
             vdb = getMetadataInstance().getVdb(vdbName);
         }
 

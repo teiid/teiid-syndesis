@@ -96,4 +96,6 @@ public interface TeiidDataSource {
 
     String getSchema();
 
+    Object getRefreshLock();
+
 }

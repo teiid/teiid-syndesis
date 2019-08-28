@@ -29,7 +29,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ViewDefinitionRepository extends JpaRepository<ViewDefinition, String> {
 
-    @Query("from ViewDefinition vd where vd.dataVirtualizationName = :dvName and UPPER(vd.name) = UPPER(:viewDefinitionName)")
+    @Query("from ViewDefinition vd where vd.dataVirtualizationName = :dvName and vd.upperName = UPPER(:viewDefinitionName)")
     public ViewDefinition findByNameIgnoreCase(@Param("dvName") String dvName, @Param("viewDefinitionName") String viewDefinitionName);
 
     public List<ViewDefinition> findAllByDataVirtualizationName(String dvName);

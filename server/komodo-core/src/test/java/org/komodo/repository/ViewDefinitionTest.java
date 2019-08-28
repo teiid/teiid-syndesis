@@ -1,8 +1,6 @@
 package org.komodo.repository;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.Arrays;
 
@@ -53,6 +51,8 @@ public class ViewDefinitionTest {
         assertNotNull(workspaceManagerImpl.findViewDefinitionByNameIgnoreCase(dv.getName(), "X"));
 
         assertTrue(workspaceManagerImpl.deleteViewDefinition(v.getId()));
+
+        assertFalse(workspaceManagerImpl.deleteViewDefinition(v.getId()));
 
         workspaceManagerImpl.createViewDefiniton(dv.getName(), v.getName());
 

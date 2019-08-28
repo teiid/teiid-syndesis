@@ -17,9 +17,7 @@
  */
 package org.komodo.metadata;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Properties;
 
 import org.teiid.adminapi.VDBImport;
 import org.teiid.metadata.Schema;
@@ -75,31 +73,11 @@ public interface TeiidVdb {
     List<String> getValidityErrors();
 
     /**
-     * Does the VDB contain any models
-     *
-     * @return <code>true</code> if the vdb has any models
-     */
-    boolean hasModels();
-
-    /**
-     * Get the names of all the models in this vdb
-     *
-     * @return {@link Collection} of model names
-     */
-    Collection<String> getModelNames();
-
-    /**
      * @param key
      *
      * @return value of property or null
      */
     String getPropertyValue(String key);
-
-    /**
-     *
-     * @return vdb properties
-     */
-    Properties getProperties( );
 
     List<? extends VDBImport> getImports();
 

@@ -44,7 +44,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonSerialize(as = ViewDefinition.class)
 @JsonInclude(Include.NON_NULL)
 @JsonPropertyOrder(alphabetic = true)
-public class ViewDefinition implements Named {
+public class ViewDefinition extends BaseEntity {
 
     public static class State {
         private List<String> sourcePaths = new ArrayList<>(1);
@@ -68,8 +68,6 @@ public class ViewDefinition implements Named {
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
-    @Column(unique=true)
-    private String name;
     private String ddl;
     @Column(name = "dv_name")
     private String dataVirtualizationName;
@@ -88,17 +86,12 @@ public class ViewDefinition implements Named {
     }
 
     public ViewDefinition(String dataVirtualizationName, String name) {
-        this.name = name;
+        setName(name);
         this.dataVirtualizationName = dataVirtualizationName;
     }
 
     public String getId() {
         return id;
-    }
-
-    @Override
-    public String getName() {
-        return name;
     }
 
     public String getDescription() {

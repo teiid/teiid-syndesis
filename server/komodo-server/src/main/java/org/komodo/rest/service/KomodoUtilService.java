@@ -65,11 +65,11 @@ import io.swagger.annotations.ApiResponses;
 @Api( tags = {V1Constants.SERVICE_SEGMENT} )
 public final class KomodoUtilService extends KomodoService {
 
-    private static final String SUCCESS = "SUCCESS";
+    private static final String SUCCESS = "SUCCESS"; //$NON-NLS-1$
 
-    private static final String ERROR = "ERROR";
+    private static final String ERROR = "ERROR"; //$NON-NLS-1$
 
-    public static final String PREVIEW_VDB = "PreviewVdb";
+    public static final String PREVIEW_VDB = "PreviewVdb"; //$NON-NLS-1$
 
     public static final String APP_NAME = "App Name"; //$NON-NLS-1$
 
@@ -127,7 +127,7 @@ public final class KomodoUtilService extends KomodoService {
         final List< ViewListing > viewDefinitions = new ArrayList<>();
 
         // find view editor states
-        return kengine.runInTransaction("getViewEditorStates", true, ()->{
+        return kengine.runInTransaction(true, ()->{
 
             final List<? extends ViewDefinition> viewEditorStates = getWorkspaceManager().findViewDefinitions( virtualization );
             LOGGER.debug( "getViewEditorStates:found %d ViewEditorStates", viewEditorStates.size() ); //$NON-NLS-1$
@@ -162,7 +162,7 @@ public final class KomodoUtilService extends KomodoService {
     public ViewDefinition getViewEditorState(
             @ApiParam(value = "Name of the view editor state to fetch", required = true)
             final @PathVariable("viewEditorStateId") String viewEditorStateId) throws Exception {
-        return kengine.runInTransaction("getViewEditorStates", true, ()->{
+        return kengine.runInTransaction(true, ()->{
             ViewDefinition viewEditorState = getWorkspaceManager().findViewDefinition(viewEditorStateId);
             LOGGER.debug( "getViewEditorState:found %d ViewEditorStates", //$NON-NLS-1$
                               viewEditorState == null ? 0 : 1 );
@@ -199,7 +199,7 @@ public final class KomodoUtilService extends KomodoService {
             throw forbidden(RelationalMessages.Error.VIEW_DEFINITION_MISSING_DATAVIRTUALIZATIONNAME);
         }
 
-        ViewDefinition vd = kengine.runInTransaction("upsertViewDefinition", false, ()->{
+        ViewDefinition vd = kengine.runInTransaction(false, ()->{
             return upsertViewEditorState(restViewEditorState);
         });
 
@@ -295,12 +295,10 @@ public final class KomodoUtilService extends KomodoService {
     }
 
     /**
-     * Creates the view editor state from the RestViewEditorState
+     * Upserts the view editor state
      * @param restViewDefn the state
-     * @return the ViewEditorState repo object
+     * @return the ViewDefinition repo object
      * @throws Exception exception if a problem is encountered
-     *
-     * TODO: could refactor to directly save / merge, rather than copy
      */
     ViewDefinition upsertViewEditorState(final ViewDefinition restViewDefn) throws Exception {
 
@@ -412,7 +410,7 @@ public final class KomodoUtilService extends KomodoService {
             @ApiParam(value = "Id of the view editor state to remove", required = true)
             final @PathVariable("viewEditorStateId") String viewEditorStateId)
             throws Exception {
-        return kengine.runInTransaction("removeUserProfileViewEditorState", false, ()-> {
+        return kengine.runInTransaction(false, ()-> {
             ViewDefinition vd = getWorkspaceManager().findViewDefinition(viewEditorStateId);
             if (vd == null) {
                 throw notFound(viewEditorStateId);
