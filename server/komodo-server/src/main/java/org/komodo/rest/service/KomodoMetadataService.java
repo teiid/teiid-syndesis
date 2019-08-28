@@ -264,22 +264,9 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
     /**
      * Initiate schema refresh for a syndesis source.
      * @param komodoSourceName the syndesis source name (cannot be empty)
-     * @return a JSON representation of the refresh status (never <code>null</code>)
      * @throws Exception
      */
-    @RequestMapping(value = StringConstants.FS + V1Constants.REFRESH_SCHEMA_SEGMENT
-            + StringConstants.FS
-            + V1Constants.KOMODO_SOURCE_PLACEHOLDER, method = RequestMethod.POST,
-            produces= { MediaType.APPLICATION_JSON_VALUE }, consumes = { MediaType.APPLICATION_JSON_VALUE })
-    @ApiOperation(value = "Initiate schema refresh for a syndesis source")
-    @ApiResponses(value = {
-        @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-    public KomodoStatusObject refreshSchema( @ApiParam( value = "Name of the komodo source", required = true )
-                                   final @PathVariable( "komodoSourceName" ) String komodoSourceName,
-                                   @ApiParam( value = "Indicates that the source vdb should be deployed, existing metadata will not be deleted", required = false )
-                                   @RequestParam( value = "deployOnly", defaultValue = "true" )
+    public KomodoStatusObject refreshSchema(String komodoSourceName,
                                    final boolean deployOnly ) throws Exception {
         // Error if the syndesisSource is missing
         if (StringUtils.isBlank( komodoSourceName )) {
