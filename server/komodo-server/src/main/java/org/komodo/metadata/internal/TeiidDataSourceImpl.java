@@ -27,7 +27,6 @@ import org.teiid.core.util.ArgCheck;
 public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, TeiidDataSource {
     private final String name;
     private final Map<String, String> properties;
-    private Object lock = new Object();
 
     public TeiidDataSourceImpl(String name, Map<String, String> properties) {
         ArgCheck.isNotEmpty(name, "name"); //$NON-NLS-1$
@@ -155,8 +154,4 @@ public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, Tei
         return getPropertyValue(TeiidDataSource.DATASOURCE_SCHEMA);
     }
 
-    @Override
-    public Object getRefreshLock() {
-        return lock;
-    }
 }

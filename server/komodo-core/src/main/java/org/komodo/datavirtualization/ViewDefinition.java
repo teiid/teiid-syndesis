@@ -26,6 +26,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.GenericGenerator;
 import org.komodo.StringConstants;
 import org.komodo.repository.JpaConverterJson;
@@ -44,6 +45,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonSerialize(as = ViewDefinition.class)
 @JsonInclude(Include.NON_NULL)
 @JsonPropertyOrder(alphabetic = true)
+@DynamicUpdate
 public class ViewDefinition extends BaseEntity {
 
     public static class State {
@@ -77,6 +79,8 @@ public class ViewDefinition extends BaseEntity {
     private boolean complete;
     @JsonProperty(value = "isUserDefined")
     private boolean userDefined;
+    @JsonIgnore
+    private boolean parsable;
 
     @JsonIgnore //for non-Entity serialization, the getters/setters will be used
     @Convert(converter = ViewDefinitionStateConvertor.class)
@@ -160,6 +164,14 @@ public class ViewDefinition extends BaseEntity {
 
     public void clearState() {
         this.state = new State();
+    }
+
+    public boolean isParsable() {
+        return parsable;
+    }
+
+    public void setParsable(boolean parsable) {
+        this.parsable = parsable;
     }
 
 }

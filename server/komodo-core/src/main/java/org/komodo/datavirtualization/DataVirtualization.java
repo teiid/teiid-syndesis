@@ -37,7 +37,6 @@ public class DataVirtualization extends BaseEntity {
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
     private String description;
-    private boolean dirty;
 
     protected DataVirtualization() {
     }
@@ -67,14 +66,6 @@ public class DataVirtualization extends BaseEntity {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public boolean isDirty() {
-        return dirty;
-    }
-
-    public void setDirty(boolean dirty) {
-        this.dirty = dirty;
     }
 
 }

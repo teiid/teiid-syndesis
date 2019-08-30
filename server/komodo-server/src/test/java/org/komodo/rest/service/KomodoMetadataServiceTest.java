@@ -164,6 +164,9 @@ public class KomodoMetadataServiceTest {
         //even with no views, we should still succeed
         TeiidVdb vdb = komodoMetadataService.updatePreviewVdb("dv1");
 
+        //there will be a validity error from being empty
+        assertTrue(!vdb.getValidityErrors().isEmpty());
+
         metadataInstance.query(vdb.getName(), "select * from v", DefaultMetadataInstance.NO_OFFSET, DefaultMetadataInstance.NO_LIMIT);
     }
 }

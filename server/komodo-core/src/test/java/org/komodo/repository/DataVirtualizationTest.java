@@ -27,6 +27,15 @@ public class DataVirtualizationTest {
     public void testFindDeleteByName() {
         DataVirtualization dv = workspaceManagerImpl.createDataVirtualization("foo");
 
+        entityManager.flush();
+
+        dv.setModifiedAt(null);
+
+        entityManager.flush();
+
+        assertNotNull(dv.getModifiedAt());
+        assertEquals(Long.valueOf(1), dv.getVersion());
+
         DataVirtualization found = dataVirtualizationRepository.findByName(dv.getName());
 
         assertNotNull(dataVirtualizationRepository.findByNameIgnoreCase(dv.getName().toUpperCase()));

@@ -25,13 +25,13 @@ import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.metadata.MetadataInstance.ValidationResult;
+import org.komodo.metadata.TeiidVdb;
 import org.komodo.rest.KomodoService;
 import org.komodo.rest.V1Constants;
 import org.komodo.rest.datavirtualization.KomodoStatusObject;
 import org.komodo.rest.datavirtualization.RelationalMessages;
 import org.komodo.rest.datavirtualization.RestViewDefinitionStatus;
 import org.komodo.rest.datavirtualization.ViewListing;
-import org.komodo.utils.KLog;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -44,10 +44,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import org.teiid.core.util.EquivalenceUtil;
-import org.teiid.metadata.AbstractMetadataRecord;
 import org.teiid.metadata.Table;
 import org.teiid.query.validator.ValidatorReport;
-import org.teiid.util.FullyQualifiedName;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -204,7 +202,7 @@ public final class KomodoUtilService extends KomodoService {
         });
 
         KomodoStatusObject kso = new KomodoStatusObject("Stash Status"); //$NON-NLS-1$
-        kso.addAttribute("Stash Status", "Successfully stashed"); //$NON-NLS-1$
+        kso.addAttribute("Stash Status", "Successfully stashed"); //$NON-NLS-1$ //$NON-NLS-2$
         kso.addAttribute(StringConstants.ID_LABEL, vd.getId());
         return kso;
     }
@@ -212,6 +210,7 @@ public final class KomodoUtilService extends KomodoService {
     /**
      * Validate the supplied ViewDefinition
      * @return validation status of the supplied ViewDefinition
+     * @throws Exception
      */
     @RequestMapping(value = V1Constants.USER_PROFILE + FS
             + V1Constants.VALIDATE_VIEW_DEFINITION, method = RequestMethod.POST, produces = { MediaType.APPLICATION_JSON_VALUE })
@@ -221,15 +220,9 @@ public final class KomodoUtilService extends KomodoService {
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
     public RestViewDefinitionStatus validateViewDefinition(
-            @ApiParam(required = true) @RequestBody final ViewDefinition restViewDefinition) {
-        LOGGER.debug("Validating view : %s", restViewDefinition.getName());
+            @ApiParam(required = true) @RequestBody final ViewDefinition restViewDefinition) throws Exception {
+        LOGGER.debug("Validating view : %s", restViewDefinition.getName()); //$NON-NLS-1$
 
-        RestViewDefinitionStatus viewDefnStatus = validateViewDefinitionService(restViewDefinition);
-
-        return viewDefnStatus;
-    }
-
-    private RestViewDefinitionStatus validateViewDefinitionService(final ViewDefinition restViewDefinition) {
         RestViewDefinitionStatus viewDefnStatus = new RestViewDefinitionStatus();
 
         String viewName = restViewDefinition.getName();
@@ -253,45 +246,51 @@ public final class KomodoUtilService extends KomodoService {
             return viewDefnStatus;
         }
 
-        try {
-            ValidationResult result = metadataInstance.validate(PREVIEW_VDB, restViewDefinition.getDdl());
-            ValidatorReport report = result.getReport();
+        TeiidVdb vdb = metadataService.updatePreviewVdb(restViewDefinition.getDataVirtualizationName());
 
-            Table t = result.getSchema().getTables().get(viewName);
-            // If names do not match, create an error status
-            if(t == null) {
-                String errorMsg = RelationalMessages.getString(RelationalMessages.Error.VALIDATE_VIEW_DEFINITION_NAME_MATCH_ERROR, viewName);
-                viewDefnStatus.setStatus(ERROR);
-                viewDefnStatus.setMessage(errorMsg);
-            } else {
-                // If user-defined, user may have changed description.  Reset object description from DDL
-                if(restViewDefinition.isUserDefined()) {
+        if (vdb == null || !vdb.isActive()) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE);
+        }
 
-                    //TODO: it's not clear here what the user's intent is
+        ValidationResult result = vdb.validate(restViewDefinition.getDdl());
+        ValidatorReport report = result.getReport();
 
-                    String ddlDescr = t.getAnnotation();
-                    if (ddlDescr != null) {
-                        restViewDefinition.setDescription(ddlDescr);
-                    }
-                }
-
-                String error = report.getFailureMessage();
-                if (report.hasItems() && !error.isEmpty()) {
-                    viewDefnStatus.setStatus(ERROR);
-                    viewDefnStatus.setMessage(error);
-                } else {
-                    viewDefnStatus.setStatus(SUCCESS);
-                    viewDefnStatus.setMessage("View DDL was parsed successfully");
-                }
-            }
-        } catch (Exception ex) {
-            String msg = "Parsing Error for view: " + restViewDefinition.getName()
-                + "\n" + ex.getMessage();
-            LOGGER.warn(msg);
+        if (result.getMetadataException() != null) {
             viewDefnStatus.setStatus(ERROR);
-            viewDefnStatus.setMessage("Parsing Error\n" + ex.getMessage());
+            viewDefnStatus.setMessage("Metadata Error\n" + result.getMetadataException().getMessage()); //$NON-NLS-1$
+            return viewDefnStatus;
+        }
+
+        Table t = result.getSchema().getTables().get(viewName);
+
+        if (definesMultipleObjects(result)) {
+            viewDefnStatus.setStatus(ERROR);
+            viewDefnStatus.setMessage("DDL defines more than one object"); //$NON-NLS-1$
+            return viewDefnStatus;
+        }
+
+        // If names do not match, create an error status
+        if(t == null) {
+            String errorMsg = RelationalMessages.getString(RelationalMessages.Error.VALIDATE_VIEW_DEFINITION_NAME_MATCH_ERROR, viewName);
+            viewDefnStatus.setStatus(ERROR);
+            viewDefnStatus.setMessage(errorMsg);
+        } else {
+            String error = report.getFailureMessage();
+            if (report.hasItems() && !error.isEmpty()) {
+                viewDefnStatus.setStatus(ERROR);
+                viewDefnStatus.setMessage(error);
+            } else {
+                viewDefnStatus.setStatus(SUCCESS);
+                viewDefnStatus.setMessage("View DDL was parsed/validated successfully"); //$NON-NLS-1$
+            }
         }
         return viewDefnStatus;
+    }
+
+    private boolean definesMultipleObjects(ValidationResult result) {
+        return result.getSchema().getTables().size() > 1
+                || !result.getSchema().getProcedures().isEmpty()
+                || !result.getSchema().getFunctions().isEmpty();
     }
 
     /**
@@ -299,6 +298,8 @@ public final class KomodoUtilService extends KomodoService {
      * @param restViewDefn the state
      * @return the ViewDefinition repo object
      * @throws Exception exception if a problem is encountered
+     *
+     * TODO: could refactor to directly save / merge, rather than copy
      */
     ViewDefinition upsertViewEditorState(final ViewDefinition restViewDefn) throws Exception {
 
@@ -306,23 +307,28 @@ public final class KomodoUtilService extends KomodoService {
 
         if (restViewDefn.getId() != null) {
             viewDefn = getWorkspaceManager().findViewDefinition(restViewDefn.getId());
-        }
-        if (viewDefn == null) {
+            if (viewDefn == null) {
+                throw notFound(restViewDefn.getId());
+            }
+            if (restViewDefn.getVersion() == null) {
+                //Optimistic locking not used
+                LOGGER.warn("Version was not specificed for view definition, the latest state may be overwritten"); //$NON-NLS-1$
+            } else if (!EquivalenceUtil.areEqual(restViewDefn.getVersion(), viewDefn.getVersion())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT);
+            }
+        } else {
             viewDefn = getWorkspaceManager().findViewDefinitionByNameIgnoreCase(restViewDefn.getDataVirtualizationName(), restViewDefn.getName());
         }
 
         boolean pathsSame = false;
-        boolean updateView = false;
+        boolean updateDv = false;
         // Add a new ViewDefinition
         if (viewDefn == null) {
-            updateView = true;
+            updateDv = true;
             viewDefn = getWorkspaceManager().createViewDefiniton(restViewDefn.getDataVirtualizationName(), restViewDefn.getName());
         } else {
-            if (restViewDefn.getId() != null && viewDefn.getId() != null && !restViewDefn.getId().equals(viewDefn.getId())) {
-                throw new IllegalArgumentException("view id does not match the persistent state");
-            }
             if (!restViewDefn.getName().equals(viewDefn.getName()) || !restViewDefn.getDataVirtualizationName().equals(viewDefn.getDataVirtualizationName())) {
-                throw new IllegalArgumentException("view name / dv name does not match the persistent state");
+                throw new IllegalArgumentException("view name / dv name does not match the persistent state"); //$NON-NLS-1$
             }
             pathsSame = restViewDefn.getSourcePaths().equals(viewDefn.getSourcePaths());
             viewDefn.clearState();
@@ -340,54 +346,49 @@ public final class KomodoUtilService extends KomodoService {
         viewDefn.setComplete(restViewDefn.isComplete());
         viewDefn.setUserDefined(restViewDefn.isUserDefined());
 
-        boolean complete = viewDefn.isComplete();
-
-        ServiceVdbGenerator serviceVdbGenerator = new ServiceVdbGenerator(metadataService);
-
-        if (complete) {
+        if (viewDefn.isComplete()) {
             if (!viewDefn.isUserDefined()) {
                 //regenerate if needed
                 if (viewDefn.getDdl() == null || !pathsSame) {
-                    String ddl = serviceVdbGenerator.getODataViewDdl(viewDefn);
+                    String ddl = new ServiceVdbGenerator(metadataService).getODataViewDdl(viewDefn);
                     viewDefn.setDdl(ddl);
-                }
-            } else if (viewDefn.getDdl() == null) {
-                complete = false;
-            } else if (!EquivalenceUtil.areEqual(oldDdl, viewDefn.getDdl())) {
-                try {
-                    ValidationResult result = metadataInstance.validate(PREVIEW_VDB, viewDefn.getDdl());
-                    if (result.getReport().hasItems()) {
-                        complete = false;
-                    }
-                    Table t = result.getSchema().getTables().get(viewDefn.getName());
-                    if (t != null) {
-                        viewDefn.getSourcePaths().clear();
-                        for (AbstractMetadataRecord r : t.getIncomingObjects()) {
-                            if (r instanceof Table) {
-                                FullyQualifiedName fqn = new FullyQualifiedName(SCHEMA_KEY, r.getParent().getName());
-                                fqn.append(TABLE_KEY, r.getName());
-                                viewDefn.addSourcePath(fqn.toString());
-                            }
-                        }
-                    }
-                    //determine if this can just change the view definition
-                    //for now we'll redo everything
-                    updateView = true;
-                } catch (Exception e) {
-                    //ddl is not valid
-                    KLog.getLogger().debug("could not determine source paths", e);
-                    complete = false;
-                }
-            }
-            if (!complete) {
-                viewDefn.setComplete(false);
-                KLog.getLogger().info("stashed view definition is not actually complete/valid");
-            }
-        }
+                    viewDefn.setParsable(true);
+                    updateDv = true;
+                } // else we're trusting the ui
+            } else if (viewDefn.getDdl() != null && !EquivalenceUtil.areEqual(oldDdl, viewDefn.getDdl())) {
 
-        if (updateView && complete) {
-            DataVirtualization dv = getWorkspaceManager().findDataVirtualization(viewDefn.getDataVirtualizationName());
-            dv.setDirty(true);
+                //TODO: could pro-actively validate if we're in a good state
+                viewDefn.getSourcePaths().clear();
+                ValidationResult result = metadataInstance.parse(viewDefn.getDdl());
+
+                //if there's partial metadata we can still work with that
+                Table t = result.getSchema().getTables().get(viewDefn.getName());
+                if (t != null && !definesMultipleObjects(result)) {
+                    //TODO: it's not clear here what the user's intent is
+                    //as they could have altered the description text box as well
+                    String ddlDescr = t.getAnnotation();
+                    if (ddlDescr != null) {
+                        viewDefn.setDescription(ddlDescr);
+                    }
+                    if (result.getMetadataException() == null) {
+                        viewDefn.setParsable(true);
+                        //determine if this can just change the view definition
+                        //for now we'll redo everything
+                        updateDv = true;
+                    }
+                } else {
+                    //not actually usable - perhaps come other ddl statement
+                    if (viewDefn.isParsable()) {
+                        updateDv = true;
+                    }
+                    viewDefn.setParsable(false);
+                }
+            }
+
+            if (updateDv) {
+                DataVirtualization dv = getWorkspaceManager().findDataVirtualization(viewDefn.getDataVirtualizationName());
+                dv.setModifiedAt(null); //effectively a touch to increment version/modification date
+            }
         }
 
         return viewDefn;
@@ -415,10 +416,9 @@ public final class KomodoUtilService extends KomodoService {
             if (vd == null) {
                 throw notFound(viewEditorStateId);
             }
-            if (vd.isComplete()) {
+            if (vd.isComplete() && vd.isParsable()) {
                 DataVirtualization dv = getWorkspaceManager().findDataVirtualization(vd.getDataVirtualizationName());
-
-                dv.setDirty(true);
+                dv.setModifiedAt(null);
             }
 
             getWorkspaceManager().deleteViewDefinition(viewEditorStateId);

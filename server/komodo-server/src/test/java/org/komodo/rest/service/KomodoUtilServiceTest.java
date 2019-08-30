@@ -33,6 +33,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.server.ResponseStatusException;
 import org.teiid.adminapi.Model.Type;
 import org.teiid.adminapi.impl.ModelMetaData;
 import org.teiid.adminapi.impl.VDBMetaData;
@@ -65,6 +66,9 @@ public class KomodoUtilServiceTest {
 
         entityManager.flush();
 
+        assertNotNull(saved.getCreatedAt());
+        assertNotNull(saved.getModifiedAt());
+        assertEquals(Long.valueOf(1), saved.getVersion());
         assertNotNull(saved.getId());
 
         vd = new ViewDefinition("x", "y");
@@ -73,13 +77,15 @@ public class KomodoUtilServiceTest {
         try {
             saved = komodoUtilService.upsertViewEditorState(vd);
             fail();
-        } catch (IllegalArgumentException e) {
+        } catch (ResponseStatusException e) {
             //trying to change the id
         }
 
         //add a dummy preview vdb
         VDBMetaData vdb = dummyPreviewVdb();
         metadataInstance.deploy(vdb);
+
+        entityManager.clear();
 
         //update with invalid ddl
         vd.setId(null);
@@ -91,6 +97,11 @@ public class KomodoUtilServiceTest {
 
         entityManager.flush();
 
+        assertNotNull(saved.getCreatedAt());
+        assertNotNull(saved.getModifiedAt());
+        assertEquals(Long.valueOf(2), saved.getVersion());
+        assertNotNull(saved.getId());
+
         ViewDefinition found = workspaceManagerImpl.findViewDefinition(saved.getId());
         assertEquals("create something", found.getDdl());
 
@@ -99,8 +110,8 @@ public class KomodoUtilServiceTest {
 
         saved = komodoUtilService.upsertViewEditorState(vd);
 
-        //the save should determine what is used in the view
-        assertEquals(Arrays.asList("schema=x/table=v"), saved.getSourcePaths());
+        //the save does not determine the source paths
+        assertEquals(Arrays.asList(), saved.getSourcePaths());
     }
 
     static VDBMetaData dummyPreviewVdb() {

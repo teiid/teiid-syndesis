@@ -38,6 +38,7 @@ import org.komodo.rest.datavirtualization.ImportPayload;
 import org.komodo.rest.datavirtualization.KomodoStatusObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -49,6 +50,10 @@ import org.springframework.web.server.ResponseStatusException;
 @DirtiesContext
 @SuppressWarnings("nls")
 public class KomodoDataserviceServiceTest {
+
+    @Autowired
+    private TestEntityManager entityManager;
+
     @Autowired
     private WorkspaceManagerImpl workspaceManagerImpl;
 
@@ -111,9 +116,14 @@ public class KomodoDataserviceServiceTest {
                 "  \"isComplete\" : true,\n" +
                 "  \"isUserDefined\" : false,\n" +
                 "  \"name\" : \"tbl\",\n" +
-                "  \"sourcePaths\" : [ \"schema=source/table=tbl\" ]\n" +
+                "  \"sourcePaths\" : [ \"schema=source/table=tbl\" ],\n" +
+                "  \"version\" : 0\n" +
                 "}", KomodoJsonMarshaller.marshall(vd));
 
-        assertTrue(dv.isDirty());
+        vd.setId(id);
+
+        entityManager.flush();
+
+        assertEquals(Long.valueOf(1), dv.getVersion());
     }
 }

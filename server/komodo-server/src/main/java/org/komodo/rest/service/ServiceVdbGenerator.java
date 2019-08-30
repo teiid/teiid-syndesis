@@ -24,7 +24,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -32,6 +31,7 @@ import org.komodo.KException;
 import org.komodo.StringConstants;
 import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.metadata.TeiidDataSource;
+import org.komodo.metadata.TeiidVdb;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
 import org.komodo.utils.PathUtils;
 import org.springframework.data.util.Pair;
@@ -40,6 +40,7 @@ import org.teiid.adminapi.impl.ModelMetaData;
 import org.teiid.adminapi.impl.VDBImportMetadata;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.language.SQLConstants;
+import org.teiid.metadata.AbstractMetadataRecord;
 import org.teiid.metadata.Column;
 import org.teiid.metadata.KeyRecord;
 import org.teiid.metadata.KeyRecord.Type;
@@ -97,80 +98,59 @@ public final class ServiceVdbGenerator implements StringConstants {
     }
 
     /**
-     * This method creates a new service VDB given a list of editor states each containing a view definition.
-     *
-     * All views will end up in a new view model added to the vdb
-     * 1 or more source models will be generated and added to the vdb
-     * @param vdbName
-     * @param editorStates
-     *         the array of view editor states
-     * @param preview
-     *      true to import all sources. false will create source models based upon what is referenced
+     * Creates the service vdb - must be valid
      * @throws KException
-     *         if problem occurs
      */
-    public VDBMetaData createServiceVdb(String vdbName, List<? extends ViewDefinition> editorStates, boolean preview) throws KException {
+    public VDBMetaData createServiceVdb(TeiidVdb previewVDB, List<? extends ViewDefinition> editorStates) throws KException {
         VDBMetaData vdb = new VDBMetaData();
-        vdb.setName(vdbName);
-
+        vdb.setName(previewVDB.getName());
         // Keep track of unique list of sources needed
-        Map< Schema, LinkedHashSet<TableInfo> > schemaTableMap = new LinkedHashMap<Schema, LinkedHashSet<TableInfo>>();
+        Map< Schema, LinkedHashSet<Table> > schemaTableMap = new LinkedHashMap<Schema, LinkedHashSet<Table>>();
 
         // Generate new model DDL by appending all view DDLs
         StringBuilder allViewDdl = new StringBuilder();
 
-        boolean hasObjects = false;
+        Schema s = previewVDB.getSchema(SERVICE_VDB_VIEW_MODEL);
+
         for ( final ViewDefinition viewDef : editorStates ) {
-            // If the ViewDefinition is complete, generate view DDL from it and append
-            if( viewDef.isComplete() ) {
-                hasObjects = true;
-                TableInfo[] tableInfos = getSourceTableInfos(viewDef);
+            if( !viewDef.isComplete()) {
+                continue;
+            }
 
-                // If the ViewDefinition is not user defined, regen the DDL
-                    String viewDdl = viewDef.getDdl();
-                    allViewDdl.append(viewDdl).append(NEW_LINE);
+            String viewDdl = viewDef.getDdl();
+            allViewDdl.append(viewDdl).append(NEW_LINE);
 
-                    // Add sources to list if not already present
-                for( TableInfo info : tableInfos) {
-                    Table tbl = info.getTable();
-                    Schema schemaModel = tbl.getParent();
-                    LinkedHashSet<TableInfo> tbls = schemaTableMap.get(schemaModel);
-                    if (!schemaTableMap.containsKey(schemaModel)) {
-                        // Map key doesnt yet exist for the model - add a new tables list
-                        tbls = new LinkedHashSet<TableInfo>();
-                        schemaTableMap.put(schemaModel, tbls);
-                    }
-                    tbls.add(info);
+            AbstractMetadataRecord record = s.getTable(viewDef.getName());
+
+            for( AbstractMetadataRecord info : record.getIncomingObjects()) {
+                if (!(info instanceof Table)) {
+                    continue;
                 }
+                Table tbl = (Table)info;
+                Schema schemaModel = tbl.getParent();
+                if (!schemaModel.isPhysical() || tbl.isSystem()) {
+                    continue;
+                }
+                LinkedHashSet<Table> tbls = schemaTableMap.get(schemaModel);
+                if (!schemaTableMap.containsKey(schemaModel)) {
+                    tbls = new LinkedHashSet<Table>();
+                    schemaTableMap.put(schemaModel, tbls);
+                }
+                tbls.add(tbl);
             }
         }
 
-        if (hasObjects) {
-            ModelMetaData model = new ModelMetaData();
-            model.setName(SERVICE_VDB_VIEW_MODEL);
-            model.setModelType(org.teiid.adminapi.Model.Type.VIRTUAL);
-            vdb.addModel(model);
-            model.addSourceMetadata("DDL", allViewDdl.toString());
-        }
-
-        if (preview) {
-            VDBImportMetadata vdbImport = new VDBImportMetadata();
-            vdbImport.setVersion(DefaultMetadataInstance.DEFAULT_VDB_VERSION);
-            vdbImport.setName(KomodoUtilService.PREVIEW_VDB);
-            vdb.getVDBImports().add(vdbImport);
-            return vdb;
-        }
-
+        addServiceModel(vdb, allViewDdl);
 
         // Iterate each schemaModel, generating a source for it.
-        for ( Entry<Schema, LinkedHashSet<TableInfo>> entry: schemaTableMap.entrySet() ) {
+        for ( Map.Entry<Schema, LinkedHashSet<Table>> entry: schemaTableMap.entrySet() ) {
             // Iterate tables for this schema, generating DDL
             String connectionName = entry.getKey().getName();
 
             StringBuilder regex = new StringBuilder();
-            for ( TableInfo table: entry.getValue() ) {
+            for ( Table table: entry.getValue() ) {
                 if (regex.length() > 0) {
-                    regex.append("|");
+                    regex.append("|"); //$NON-NLS-1$
                 }
                 regex.append(Pattern.quote(table.getName()));
             }
@@ -183,7 +163,7 @@ public final class ServiceVdbGenerator implements StringConstants {
             srcModel.setName(entry.getKey().getName());
             vdb.addModel(srcModel);
             srcModel.setModelType(org.teiid.adminapi.Model.Type.PHYSICAL);
-            srcModel.addSourceMetadata("DDL", ddl);
+            srcModel.addSourceMetadata("DDL", ddl); //$NON-NLS-1$
 
             // Add ModelSource based on currentSchemaModel ModelSource info
             TeiidDataSource tds = finder.findTeiidDatasource(connectionName);
@@ -195,6 +175,48 @@ public final class ServiceVdbGenerator implements StringConstants {
         }
 
         return vdb;
+
+    }
+
+    /**
+     * This method creates a preview vdb, that includes all parsable sql and imports the base
+     * preview vdb.  It is not guaranteed to be valid.
+     */
+    public VDBMetaData createPreviewVdb(String vdbName, List<? extends ViewDefinition> editorStates) {
+        VDBMetaData vdb = new VDBMetaData();
+        vdb.setName(vdbName);
+
+        // Generate new model DDL by appending all view DDLs
+        StringBuilder allViewDdl = new StringBuilder();
+
+        for ( final ViewDefinition viewDef : editorStates ) {
+            if(!viewDef.isComplete() || !viewDef.isParsable()) {
+                continue;
+            }
+
+            String viewDdl = viewDef.getDdl();
+            allViewDdl.append(viewDdl).append(NEW_LINE);
+        }
+
+        addServiceModel(vdb, allViewDdl);
+
+        VDBImportMetadata vdbImport = new VDBImportMetadata();
+        vdbImport.setVersion(DefaultMetadataInstance.DEFAULT_VDB_VERSION);
+        vdbImport.setName(KomodoUtilService.PREVIEW_VDB);
+        //this makes the vdb tolerant to resolve/validation issue
+        //so that as long as we parse, we'll load
+        vdb.addProperty("preview", "true"); //$NON-NLS-1$ //$NON-NLS-2$
+        vdb.getVDBImports().add(vdbImport);
+        return vdb;
+    }
+
+    private ModelMetaData addServiceModel(VDBMetaData vdb, StringBuilder allViewDdl) {
+        ModelMetaData model = new ModelMetaData();
+        model.setName(SERVICE_VDB_VIEW_MODEL);
+        model.setModelType(org.teiid.adminapi.Model.Type.VIRTUAL);
+        vdb.addModel(model);
+        model.addSourceMetadata("DDL", allViewDdl.toString()); //$NON-NLS-1$
+        return model;
     }
 
     /*

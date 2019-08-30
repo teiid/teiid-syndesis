@@ -17,7 +17,7 @@
  */
 package org.komodo.rest;
 
-import static org.komodo.rest.Messages.Error.KOMODO_ENGINE_STARTUP_TIMEOUT;
+import static org.komodo.rest.Messages.Error.*;
 
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -67,6 +67,11 @@ public class KomodoAutoConfiguration implements ApplicationListener<ContextRefre
 
     private ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
 
+    @Bean(name = "connectionExecutor")
+    public ScheduledThreadPoolExecutor connectionExecutor() {
+        return executor;
+    }
+
     @Bean
     public TextEncryptor getTextEncryptor() {
         return Encryptors.text(encryptKey, "deadbeef");
@@ -83,13 +88,14 @@ public class KomodoAutoConfiguration implements ApplicationListener<ContextRefre
 
         if ( !started ) {
             throw new RuntimeException(Messages.getString( KOMODO_ENGINE_STARTUP_TIMEOUT, 1, TimeUnit.MINUTES));
-        } else {
-            // monitor to track connections from the syndesis
-            SyndesisConnectionSynchronizer sync = new SyndesisConnectionSynchronizer(openShiftClient(
-                    kengine, getTextEncryptor()), event.getApplicationContext().getBean(KomodoMetadataService.class));
-            SyndesisConnectionMonitor scm = new SyndesisConnectionMonitor(sync, executor);
-            this.executor.scheduleAtFixedRate(()->scm.connect(), 5, 15, TimeUnit.SECONDS);
         }
+        // monitor to track connections from the syndesis
+        SyndesisConnectionSynchronizer sync = new SyndesisConnectionSynchronizer(openShiftClient(
+                kengine, getTextEncryptor()), event.getApplicationContext().getBean(KomodoMetadataService.class));
+        //create an initial dummy preview vdb
+        sync.synchronzePreviewVDB();
+        SyndesisConnectionMonitor scm = new SyndesisConnectionMonitor(sync, executor);
+        this.executor.scheduleAtFixedRate(()->scm.connect(), 5, 15, TimeUnit.SECONDS);
     }
 
     @Bean

@@ -21,7 +21,10 @@ package org.komodo.datavirtualization;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
+import org.hibernate.annotations.DynamicUpdate;
+
 @Entity
+@DynamicUpdate
 public class SourceSchema extends BaseEntity {
 
     @Id

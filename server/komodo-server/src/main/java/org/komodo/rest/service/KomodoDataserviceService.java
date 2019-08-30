@@ -150,7 +150,6 @@ public final class KomodoDataserviceService extends KomodoService {
      * @return a JSON representation of the new dataservice (never <code>null</code>)
      * @throws Exception
      */
-
     @RequestMapping(value = FS + V1Constants.DATA_SERVICE_PLACEHOLDER,
             method = RequestMethod.POST,
             produces= { MediaType.APPLICATION_JSON_VALUE },
@@ -224,7 +223,11 @@ public final class KomodoDataserviceService extends KomodoService {
         //deleted/txn committed, update runtime
         //there is a small chance that a dv with the same name was recreated in the meantime,
         //but since this vdb is created on-demand we're good
-        metadataService.removeVdb(DataVirtualization.getServiceVdbName(dataserviceName));
+        try {
+            metadataService.removeVdb(DataVirtualization.getServiceVdbName(dataserviceName));
+        } catch (KException e) {
+            LOGGER.debug("error removing preview vdb", e); //$NON-NLS-1$
+        }
         return kso;
     }
 
@@ -330,7 +333,7 @@ public final class KomodoDataserviceService extends KomodoService {
                 result.addAttribute(viewDefn.getName(), viewDefn.getId());
             }
 
-            dataservice.setDirty(true);
+            dataservice.setModifiedAt(null);
 
             return result;
         });

@@ -28,7 +28,6 @@ import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.connections.SyndesisConnectionMonitor.EventMsg;
 import org.komodo.rest.datavirtualization.RestSyndesisSourceStatus;
 import org.komodo.rest.service.KomodoMetadataService;
-import org.komodo.rest.service.KomodoUtilService;
 
 /**
  * This class provides the communication and hooks
@@ -86,8 +85,8 @@ public class SyndesisConnectionSynchronizer {
                     .getSyndesisSources(bogusCredentials);
             for (DefaultSyndesisDataSource sds : dataSources) {
                 addConnection(sds);
+                synchronzePreviewVDB();
             }
-            synchronzePreviewVDB();
             return true;
         } catch (Exception e) {
             LOGGER.error("Error syncronizing", e);
@@ -238,10 +237,10 @@ public class SyndesisConnectionSynchronizer {
         return new KException(e);
     }
 
-    private boolean synchronzePreviewVDB() {
+    public boolean synchronzePreviewVDB() {
         LOGGER.info("Preview VDB update Request being submitted.");
         try {
-            this.metadataService.refreshPreviewVdb(KomodoUtilService.PREVIEW_VDB);
+            this.metadataService.refreshPreviewVdb();
             LOGGER.info("Preview VDB Updated");
             return true;
         } catch (Exception e) {

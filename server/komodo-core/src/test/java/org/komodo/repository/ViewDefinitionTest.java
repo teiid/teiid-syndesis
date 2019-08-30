@@ -6,7 +6,6 @@ import java.util.Arrays;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.komodo.WorkspaceManager.EntityNotFoundException;
 import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.datavirtualization.ViewDefinition;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +15,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @DataJpaTest
+@SuppressWarnings("nls")
 public class ViewDefinitionTest {
 
     @Autowired
@@ -41,7 +41,11 @@ public class ViewDefinitionTest {
 
         workspaceManagerImpl.createViewDefiniton(dv.getName(), "x1").setComplete(true);
 
+        assertNotNull(found.getCreatedAt());
+
         entityManager.flush();
+
+        assertNotNull(found.getCreatedAt());
 
         assertEquals(3, workspaceManagerImpl.findViewDefinitions(dv.getName()).size());
 
@@ -60,7 +64,7 @@ public class ViewDefinitionTest {
     }
 
     @Test
-    public void testState() throws EntityNotFoundException {
+    public void testState() {
         DataVirtualization dv = workspaceManagerImpl.createDataVirtualization("name");
 
         ViewDefinition v = workspaceManagerImpl.createViewDefiniton(dv.getName(), "existing");

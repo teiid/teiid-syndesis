@@ -19,6 +19,8 @@ package org.komodo.metadata;
 
 import java.util.List;
 
+import org.komodo.KException;
+import org.komodo.metadata.MetadataInstance.ValidationResult;
 import org.teiid.adminapi.VDBImport;
 import org.teiid.metadata.Schema;
 
@@ -88,5 +90,9 @@ public interface TeiidVdb {
      * @return
      */
     Schema getSchema(String name);
+
+    List<Schema> getLocalSchema();
+
+    ValidationResult validate(String ddl) throws KException;
 
 }

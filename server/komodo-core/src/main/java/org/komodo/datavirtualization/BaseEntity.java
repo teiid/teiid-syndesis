@@ -37,9 +37,9 @@ public abstract class BaseEntity {
     @JsonIgnore
     @Column(unique=true)
     private String upperName;
-    @JsonIgnore
     @Version
     private Long version;
+    @Column(updatable = false)
     @CreationTimestamp
     private Instant createdAt;
     @UpdateTimestamp
@@ -71,6 +71,14 @@ public abstract class BaseEntity {
         if (name != null) {
             upperName = name.toUpperCase();
         }
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setModifiedAt(Instant modifiedAt) {
+        this.modifiedAt = modifiedAt;
     }
 
 }
