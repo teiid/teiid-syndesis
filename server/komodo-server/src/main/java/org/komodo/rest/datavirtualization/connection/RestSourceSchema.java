@@ -37,29 +37,30 @@ public class RestSourceSchema {
     /*
      * The schema name
      */
-    private String schemaName;
+    private String name;
 
     /*
      * The source table objects for this schema
      */
-    private RestSourceTable[] sourceTables;
+    private RestSourceTable[] tables;
 
     public RestSourceSchema(Schema schema) {
         super();
+        this.name = schema.getName();
         List<RestSourceTable> tables = new ArrayList<RestSourceTable>();
         for( String key : schema.getTables().keySet()) {
             Table nextTable = schema.getTables().get(key);
             tables.add(new RestSourceTable(nextTable));
         }
-        this.sourceTables = tables.toArray(new RestSourceTable[0]);
+        this.tables = tables.toArray(new RestSourceTable[0]);
     }
 
-    public String getSchemaName() {
-        return this.schemaName;
+    public String getName() {
+        return this.name;
     }
 
-    public RestSourceTable[] getSourceTables() {
-        return this.sourceTables;
+    public RestSourceTable[] getTables() {
+        return this.tables;
     }
 
 }

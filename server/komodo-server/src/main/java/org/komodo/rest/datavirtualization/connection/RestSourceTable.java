@@ -37,7 +37,7 @@ public class RestSourceTable {
     /*
      * The table name
      */
-    private String tableName;
+    private String name;
 
     /*
      * The columns for this table
@@ -49,7 +49,7 @@ public class RestSourceTable {
      */
     public RestSourceTable(Table table) {
         super();
-        this.tableName = table.getName();
+        this.name = table.getName();
         List<RestSourceColumn> tableColumns = new ArrayList<RestSourceColumn>();
         for( Column column : table.getColumns()) {
             tableColumns.add(new RestSourceColumn(column));
@@ -58,7 +58,7 @@ public class RestSourceTable {
     }
 
     public String getName() {
-        return this.tableName;
+        return this.name;
     }
 
     public RestSourceColumn[] getColumns() {
