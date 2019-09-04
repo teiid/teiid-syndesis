@@ -33,7 +33,7 @@ public class RestSourceColumn {
     /*
      * The column name
      */
-    private String columnName;
+    private String name;
 
     /*
      * The column datatype
@@ -45,12 +45,12 @@ public class RestSourceColumn {
      */
     public RestSourceColumn(Column column) {
         super();
-        this.columnName = column.getName();
+        this.name = column.getName();
         this.datatype = column.getRuntimeType();
     }
 
-    public String getColumName() {
-        return this.columnName;
+    public String getName() {
+        return this.name;
     }
 
     public String getDatatype() {

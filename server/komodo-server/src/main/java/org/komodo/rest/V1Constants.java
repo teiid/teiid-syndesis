@@ -263,17 +263,22 @@ public interface V1Constants extends StringConstants {
     /**
      * Refresh views referenced in a view editor state object
      */
-    String REFRESH_DATASERVICE_VIEWS = "refreshViews";
+    String REFRESH_DATASERVICE_VIEWS = "refreshViews"; //$NON-NLS-1$
 
-    String IMPORT = "import";
+    String IMPORT = "import"; //$NON-NLS-1$
 
     /**
      * Validate a ViewDefintion
      */
-    String VALIDATE_VIEW_DEFINITION = "validateViewDefinition";
+    String VALIDATE_VIEW_DEFINITION = "validateViewDefinition"; //$NON-NLS-1$
 
     /**
      * Get source schema, table, column information for view definition
      */
-    String RUNTIME_METADATA = "runtimeMetadata";
+    String RUNTIME_METADATA = "runtimeMetadata"; //$NON-NLS-1$
+
+    /**
+     * Placeholder added to an URI to allow a specific virtualization name
+     */
+    String VIRTUALIZATION_PLACEHOLDER = "{virtualization}"; //$NON-NLS-1$
 }

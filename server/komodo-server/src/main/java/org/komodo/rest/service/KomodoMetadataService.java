@@ -473,7 +473,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
      */
 
     @RequestMapping(value = V1Constants.RUNTIME_METADATA + StringConstants.FS
-            + V1Constants.DATA_SERVICE_PLACEHOLDER, method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
+            + V1Constants.VIRTUALIZATION_PLACEHOLDER, method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation(value = "Get Source Schema for a Virtualization", response = RestViewSourceInfo.class)
     @ApiResponses(value = { @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
             @ApiResponse(code = 403, message = "An error has occurred.") })
