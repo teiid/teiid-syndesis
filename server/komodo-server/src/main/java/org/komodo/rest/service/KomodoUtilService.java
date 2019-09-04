@@ -349,12 +349,13 @@ public final class KomodoUtilService extends KomodoService {
         if (viewDefn.isComplete()) {
             if (!viewDefn.isUserDefined()) {
                 //regenerate if needed
-                if (viewDefn.getDdl() == null || !pathsSame) {
+                if (viewDefn.getDdl() == null || !pathsSame || !viewDefn.isParsable()) {
                     String ddl = new ServiceVdbGenerator(metadataService).getODataViewDdl(viewDefn);
                     viewDefn.setDdl(ddl);
                     viewDefn.setParsable(true);
                     updateDv = true;
-                } // else we're trusting the ui
+                }
+                // else we're trusting the ui
             } else if (viewDefn.getDdl() != null && !EquivalenceUtil.areEqual(oldDdl, viewDefn.getDdl())) {
 
                 //TODO: could pro-actively validate if we're in a good state

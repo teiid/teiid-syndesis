@@ -116,8 +116,6 @@ public class SyndesisConnectionMonitor {
         String RESERVATIONS_PATH = "http://syndesis-server/api/v1/event/reservations";
         String WS_PATH = "ws://syndesis-server/api/v1/event/streams.ws/";
 
-        LOGGER.info("Connecting to syndesis server for process connection events");
-
         OkHttpClient client = new OkHttpClient();
         Request request = buildRequest().url(RESERVATIONS_PATH).post(RequestBody.create(null, "")).build();
 
@@ -128,12 +126,14 @@ public class SyndesisConnectionMonitor {
             }
             response.close();
         } catch (IOException e) {
-            LOGGER.info("Failed to retrive Subscription ID for reading the connection events", e);
+            LOGGER.info("Failed to retrive Subscription ID for reading the connection events: " + e.getMessage());
         }
 
         if (message == null) {
             return;
         }
+
+        LOGGER.info("Connecting to syndesis server for process connection events");
 
         request = buildRequest().url(WS_PATH + message.getData()).build();
 

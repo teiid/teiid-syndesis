@@ -329,7 +329,7 @@ public final class KomodoDataserviceService extends KomodoService {
 
                 String ddl = serviceVdbGenerator.getODataViewDdl(viewDefn);
                 viewDefn.setDdl(ddl);
-
+                viewDefn.setParsable(true);
                 result.addAttribute(viewDefn.getName(), viewDefn.getId());
             }
 

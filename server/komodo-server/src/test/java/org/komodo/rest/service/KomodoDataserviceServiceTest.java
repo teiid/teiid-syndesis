@@ -108,6 +108,9 @@ public class KomodoDataserviceServiceTest {
         String id = kso.getAttributes().values().iterator().next();
 
         ViewDefinition vd = workspaceManagerImpl.findViewDefinition(id);
+
+        assertTrue(vd.isParsable());
+
         vd.setId("consistent");
         assertEquals("{\n" +
                 "  \"dataVirtualizationName\" : \"dv\",\n" +
