@@ -21,6 +21,7 @@ import static org.hamcrest.core.Is.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,14 +35,18 @@ import org.junit.Test;
 import org.komodo.KException;
 import org.komodo.StringConstants;
 import org.komodo.datavirtualization.ViewDefinition;
+import org.komodo.metadata.MetadataInstance.ValidationResult;
 import org.komodo.metadata.TeiidDataSource;
+import org.komodo.metadata.TeiidVdb;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
 import org.komodo.metadata.internal.TeiidDataSourceImpl;
 import org.komodo.rest.service.ServiceVdbGenerator.SchemaFinder;
+import org.mockito.Mockito;
 import org.teiid.adminapi.impl.ModelMetaData;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.metadata.MetadataFactory;
 import org.teiid.metadata.Schema;
+import org.teiid.metadata.Table;
 import org.teiid.query.metadata.SystemMetadata;
 import org.teiid.query.parser.QueryParser;
 
@@ -76,22 +81,22 @@ public class ServiceVdbGeneratorTest {
     private final static String SET_NAMESPACE_STRING = "SET NAMESPACE 'http://www.teiid.org/ext/relational/2012' AS teiid_rel;\n\n";
 
     private final static String pgconnection1schemamodelDDL =
-    		SET_NAMESPACE_STRING +
-    		"CREATE FOREIGN TABLE orders ( "
-    		+ "ID long primary key, orderDate timestamp) OPTIONS(\"" + TABLE_OPTION_FQN + "\" '" + FQN_TABLE_1 + "');\n" +
-    		"CREATE FOREIGN TABLE orders2 ( "
-    		+ "ID long primary key, \"year\" string, orderDate timestamp) OPTIONS(\"" + TABLE_OPTION_FQN + "\" '" + FQN_TABLE_2 + "');\n" +
-    		"CREATE FOREIGN TABLE customers ( "
-    		+ "ID long primary key, name string) OPTIONS(\"" + TABLE_OPTION_FQN + "\" '" + FQN_TABLE_3 + "');";
+            SET_NAMESPACE_STRING +
+            "CREATE FOREIGN TABLE orders ( "
+            + "ID long primary key, orderDate timestamp) OPTIONS(\"" + TABLE_OPTION_FQN + "\" '" + FQN_TABLE_1 + "');\n" +
+            "CREATE FOREIGN TABLE orders2 ( "
+            + "ID long primary key, \"year\" string, orderDate timestamp) OPTIONS(\"" + TABLE_OPTION_FQN + "\" '" + FQN_TABLE_2 + "');\n" +
+            "CREATE FOREIGN TABLE customers ( "
+            + "ID long primary key, name string) OPTIONS(\"" + TABLE_OPTION_FQN + "\" '" + FQN_TABLE_3 + "');";
 
     private final static String pgconnection2schemamodelDDL =
-    		SET_NAMESPACE_STRING +
-    		"CREATE FOREIGN TABLE orders ( "
-    		+ "ID long primary key, orderDate timestamp) OPTIONS(\"" + TABLE_OPTION_FQN + "\" '" + FQN_TABLE_1 + "');\n" +
-    		"CREATE FOREIGN TABLE orders2 ( "
-    		+ "ID long primary key, \"year\" string, orderDate timestamp) OPTIONS(\"" + TABLE_OPTION_FQN + "\" '" + FQN_TABLE_2 + "');\n" +
-    		"CREATE FOREIGN TABLE customers ( "
-    		+ "ID long primary key, customerName string) OPTIONS(\"" + TABLE_OPTION_FQN + "\" '" + FQN_TABLE_3 + "');";
+            SET_NAMESPACE_STRING +
+            "CREATE FOREIGN TABLE orders ( "
+            + "ID long primary key, orderDate timestamp) OPTIONS(\"" + TABLE_OPTION_FQN + "\" '" + FQN_TABLE_1 + "');\n" +
+            "CREATE FOREIGN TABLE orders2 ( "
+            + "ID long primary key, \"year\" string, orderDate timestamp) OPTIONS(\"" + TABLE_OPTION_FQN + "\" '" + FQN_TABLE_2 + "');\n" +
+            "CREATE FOREIGN TABLE customers ( "
+            + "ID long primary key, customerName string) OPTIONS(\"" + TABLE_OPTION_FQN + "\" '" + FQN_TABLE_3 + "');";
 
     private final static String EXPECTED_JOIN_SQL_TWO_SOURCES_START =
             "CREATE VIEW orderInfoView (RowId long PRIMARY KEY, ID LONG, orderDate TIMESTAMP, customerName STRING) OPTIONS (ANNOTATION 'test view description text') AS \n"
@@ -146,22 +151,22 @@ public class ServiceVdbGeneratorTest {
 
     @Before
     public void init() throws Exception {
-    	addSourceInfo(DS_NAME, DS_JNDI_NAME, pgconnection1schemamodelDDL, MODEL_NAME);
-    	addSourceInfo(DS_NAME_2, DS_JNDI_NAME2, pgconnection2schemamodelDDL, MODEL_NAME_2);
+        addSourceInfo(DS_NAME, DS_JNDI_NAME, pgconnection1schemamodelDDL, MODEL_NAME);
+        addSourceInfo(DS_NAME_2, DS_JNDI_NAME2, pgconnection2schemamodelDDL, MODEL_NAME_2);
     }
 
-	private void addSourceInfo(String connectionName, String jndiName, String ddl, String modelName) {
-		Map<String, String> properties = new LinkedHashMap<String, String>();
-		properties.put(TeiidDataSource.DATASOURCE_DRIVERNAME, TRANSLATOR_JDBC);
-		properties.put(TeiidDataSource.DATASOURCE_JNDINAME, jndiName);
-		dataSources.put(connectionName, new TeiidDataSourceImpl(connectionName, properties));
+    private void addSourceInfo(String connectionName, String jndiName, String ddl, String modelName) {
+        Map<String, String> properties = new LinkedHashMap<String, String>();
+        properties.put(TeiidDataSource.DATASOURCE_DRIVERNAME, TRANSLATOR_JDBC);
+        properties.put(TeiidDataSource.DATASOURCE_JNDINAME, jndiName);
+        dataSources.put(connectionName, new TeiidDataSourceImpl(connectionName, properties));
 
-		MetadataFactory mf = new MetadataFactory("x", 1, modelName, SystemMetadata.getInstance().getRuntimeTypeMap(), new Properties(), null);
+        MetadataFactory mf = new MetadataFactory("x", 1, modelName, SystemMetadata.getInstance().getRuntimeTypeMap(), new Properties(), null);
         QueryParser.getQueryParser().parseDDL(mf, ddl);
         schemas.put(connectionName, mf.getSchema());
-	}
+    }
 
-	private String helpGenerateDdlForWithJoinType(String secondSourceTablePath, String joinType, boolean singleConnection, boolean useAll) throws KException {
+    private String helpGenerateDdlForWithJoinType(String secondSourceTablePath, String joinType, boolean singleConnection, boolean useAll) throws KException {
         ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(schemaFinder());
 
         String[] sourceTablePaths = { sourceTablePath1, secondSourceTablePath };
@@ -179,9 +184,9 @@ public class ServiceVdbGeneratorTest {
 
         ViewDefinition viewDef = new ViewDefinition("dvName", viewDefinitionName);
         if( numSources == 1 ) {
-        	helpCreateViewDefinitionAll(viewDef, sourceTablePath2, false);
+            helpCreateViewDefinitionAll(viewDef, sourceTablePath2, false);
         } else {
-        	helpCreateViewDefinitionAll(viewDef, sourceTablePath3, false);
+            helpCreateViewDefinitionAll(viewDef, sourceTablePath3, false);
         }
 
         return viewDef;
@@ -199,17 +204,17 @@ public class ServiceVdbGeneratorTest {
     }
 
     private void printResults(String expected, String generated) {
-    	if( doPrint ) {
-    		System.out.println("\nServiceVdbGeneratorTest\n\tEXPECTED DDL = \n" + expected);
-    		System.out.println("\nServiceVdbGeneratorTest\n\tGENERATED DDL = \n" + generated);
-    	}
+        if( doPrint ) {
+            System.out.println("\nServiceVdbGeneratorTest\n    EXPECTED DDL = \n" + expected);
+            System.out.println("\nServiceVdbGeneratorTest\n    GENERATED DDL = \n" + generated);
+        }
     }
 
     @Test
     public void shouldGenerateOdataViewDDL_WithSingleSourceViewDefinition_NoJoinOneTable() throws Exception {
-    	String EXPECTED_DDL = EXPECTED_NO_JOIN_SQL_SINGE_SOURCE;
+        String EXPECTED_DDL = EXPECTED_NO_JOIN_SQL_SINGE_SOURCE;
 
-    	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(schemaFinder());
+        ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(schemaFinder());
 
         String[] sourceTablePaths = { sourceTablePath1 };
         ViewDefinition viewDef = mock(ViewDefinition.class);
@@ -225,9 +230,9 @@ public class ServiceVdbGeneratorTest {
 
     @Test
     public void shouldGenerateOdataViewDDL_WithSingleSourceViewDefinition_NoJoinOneTable_withKeywordCol() throws Exception {
-    	String EXPECTED_DDL = EXPECTED_NO_JOIN_SQL_SINGE_SOURCE_WITH_KEYWORD;
+        String EXPECTED_DDL = EXPECTED_NO_JOIN_SQL_SINGE_SOURCE_WITH_KEYWORD;
 
-    	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(schemaFinder());
+        ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(schemaFinder());
 
         String[] sourceTablePaths = { sourceTablePath1b };
         ViewDefinition viewDef = mock(ViewDefinition.class);
@@ -241,9 +246,9 @@ public class ServiceVdbGeneratorTest {
         assertEquals(EXPECTED_DDL, viewDdl);
     }
 
-	@Test
+    @Test
     public void shouldGenerateOdataViewDDL_WithSingleSourceViewDefinition_InnerJoinAll() throws Exception {
-    	String EXPECTED_DDL = EXPECTED_JOIN_SQL_SINGE_SOURCE_START + INNER_JOIN_STR + EXPECTED_JOIN_SQL_SINGLE_SOURCE_END;
+        String EXPECTED_DDL = EXPECTED_JOIN_SQL_SINGE_SOURCE_START + INNER_JOIN_STR + EXPECTED_JOIN_SQL_SINGLE_SOURCE_END;
         String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath2, ServiceVdbGenerator.JOIN_INNER, true, true);
         printResults(EXPECTED_DDL, viewDdl);
         // TODO Uncomment after JOINs are working
@@ -252,7 +257,7 @@ public class ServiceVdbGeneratorTest {
 
     @Test
     public void shouldGenerateOdataViewDDL_WithSingleSourceViewDefinition_InnerJoin() throws Exception {
-    	String EXPECTED_DDL = EXPECTED_JOIN_SQL_SINGE_SOURCE_START + INNER_JOIN_STR + EXPECTED_JOIN_SQL_SINGLE_SOURCE_END;
+        String EXPECTED_DDL = EXPECTED_JOIN_SQL_SINGE_SOURCE_START + INNER_JOIN_STR + EXPECTED_JOIN_SQL_SINGLE_SOURCE_END;
         String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath2, ServiceVdbGenerator.JOIN_INNER, true, false);
         printResults(EXPECTED_DDL, viewDdl);
         // TODO Uncomment after JOINs are working
@@ -261,7 +266,7 @@ public class ServiceVdbGeneratorTest {
 
     @Test
     public void shouldGenerateOdataViewDDL_WithSingleSourceViewDefinition_LeftOuterJoinAll() throws Exception {
-    	String EXPECTED_DDL = EXPECTED_JOIN_SQL_SINGE_SOURCE_START + LEFT_OUTER_JOIN_STR + EXPECTED_JOIN_SQL_SINGLE_SOURCE_END;
+        String EXPECTED_DDL = EXPECTED_JOIN_SQL_SINGE_SOURCE_START + LEFT_OUTER_JOIN_STR + EXPECTED_JOIN_SQL_SINGLE_SOURCE_END;
         String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath2, ServiceVdbGenerator.JOIN_LEFT_OUTER, true, true);
         printResults(EXPECTED_DDL, viewDdl);
         // TODO Uncomment after JOINs are working
@@ -270,7 +275,7 @@ public class ServiceVdbGeneratorTest {
 
     @Test
     public void shouldGenerateOdataViewDDL_WithSingleSourceViewDefinition_LeftOuterJoin() throws Exception {
-    	String EXPECTED_DDL = EXPECTED_JOIN_SQL_SINGE_SOURCE_START + LEFT_OUTER_JOIN_STR + EXPECTED_JOIN_SQL_SINGLE_SOURCE_END;
+        String EXPECTED_DDL = EXPECTED_JOIN_SQL_SINGE_SOURCE_START + LEFT_OUTER_JOIN_STR + EXPECTED_JOIN_SQL_SINGLE_SOURCE_END;
         String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath2, ServiceVdbGenerator.JOIN_LEFT_OUTER, true, false);
         printResults(EXPECTED_DDL, viewDdl);
         // TODO Uncomment after JOINs are working
@@ -279,7 +284,7 @@ public class ServiceVdbGeneratorTest {
 
     @Test
     public void shouldGenerateOdataViewDDL_WithSingleSourceViewDefinition_RightOuterJoinAll() throws Exception {
-    	String EXPECTED_DDL = EXPECTED_JOIN_SQL_SINGE_SOURCE_START + RIGHT_OUTER_JOIN_STR + EXPECTED_JOIN_SQL_SINGLE_SOURCE_END;
+        String EXPECTED_DDL = EXPECTED_JOIN_SQL_SINGE_SOURCE_START + RIGHT_OUTER_JOIN_STR + EXPECTED_JOIN_SQL_SINGLE_SOURCE_END;
         String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath2, ServiceVdbGenerator.JOIN_RIGHT_OUTER, true, true);
         printResults(EXPECTED_DDL, viewDdl);
         // TODO Uncomment after JOINs are working
@@ -288,7 +293,7 @@ public class ServiceVdbGeneratorTest {
 
     @Test
     public void shouldGenerateOdataViewDDL_WithSingleSourceViewDefinition_RightOuterJoin() throws Exception {
-    	String EXPECTED_DDL = EXPECTED_JOIN_SQL_SINGE_SOURCE_START + RIGHT_OUTER_JOIN_STR + EXPECTED_JOIN_SQL_SINGLE_SOURCE_END;
+        String EXPECTED_DDL = EXPECTED_JOIN_SQL_SINGE_SOURCE_START + RIGHT_OUTER_JOIN_STR + EXPECTED_JOIN_SQL_SINGLE_SOURCE_END;
         String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath2, ServiceVdbGenerator.JOIN_RIGHT_OUTER, true, false);
         printResults(EXPECTED_DDL, viewDdl);
         // TODO Uncomment after JOINs are working
@@ -297,7 +302,7 @@ public class ServiceVdbGeneratorTest {
 
     @Test
     public void shouldGenerateOdataViewDDL_WithSingleSourceViewDefinition_FullOuterJoinAll() throws Exception {
-    	String EXPECTED_DDL = EXPECTED_JOIN_SQL_SINGE_SOURCE_START + FULL_OUTER_JOIN_STR + EXPECTED_JOIN_SQL_SINGLE_SOURCE_END;
+        String EXPECTED_DDL = EXPECTED_JOIN_SQL_SINGE_SOURCE_START + FULL_OUTER_JOIN_STR + EXPECTED_JOIN_SQL_SINGLE_SOURCE_END;
         String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath2, ServiceVdbGenerator.JOIN_FULL_OUTER, true, true);
         printResults(EXPECTED_DDL, viewDdl);
         // TODO Uncomment after JOINs are working
@@ -306,7 +311,7 @@ public class ServiceVdbGeneratorTest {
 
     @Test
     public void shouldGenerateOdataViewDDL_WithSingleSourceViewDefinition_FullOuterJoin() throws Exception {
-    	String EXPECTED_DDL = EXPECTED_JOIN_SQL_SINGE_SOURCE_START + FULL_OUTER_JOIN_STR + EXPECTED_JOIN_SQL_SINGLE_SOURCE_END;
+        String EXPECTED_DDL = EXPECTED_JOIN_SQL_SINGE_SOURCE_START + FULL_OUTER_JOIN_STR + EXPECTED_JOIN_SQL_SINGLE_SOURCE_END;
         String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath2, ServiceVdbGenerator.JOIN_FULL_OUTER, true, false);
         printResults(EXPECTED_DDL, viewDdl);
         // TODO Uncomment after JOINs are working
@@ -315,7 +320,7 @@ public class ServiceVdbGeneratorTest {
 
     @Test
     public void shouldGenerateOdataViewDDL_WithTwoSourcesViewDefinition_InnerJoinAll() throws Exception {
-    	String EXPECTED_DDL = EXPECTED_JOIN_SQL_TWO_SOURCES_START + INNER_JOIN_STR + EXPECTED_JOIN_SQL_TWO_SOURCES_END;
+        String EXPECTED_DDL = EXPECTED_JOIN_SQL_TWO_SOURCES_START + INNER_JOIN_STR + EXPECTED_JOIN_SQL_TWO_SOURCES_END;
         String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath3, ServiceVdbGenerator.JOIN_INNER, false, true);
         printResults(EXPECTED_DDL, viewDdl);
         // TODO Uncomment after JOINs are working
@@ -324,7 +329,7 @@ public class ServiceVdbGeneratorTest {
 
     @Test
     public void shouldGenerateOdataViewDDL_WithTwoSourcesViewDefinition_InnerJoin() throws Exception {
-    	String EXPECTED_DDL = EXPECTED_JOIN_SQL_TWO_SOURCES_START + INNER_JOIN_STR + EXPECTED_JOIN_SQL_TWO_SOURCES_END;
+        String EXPECTED_DDL = EXPECTED_JOIN_SQL_TWO_SOURCES_START + INNER_JOIN_STR + EXPECTED_JOIN_SQL_TWO_SOURCES_END;
         String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath3, ServiceVdbGenerator.JOIN_INNER, false, false);
         printResults(EXPECTED_DDL, viewDdl);
         // TODO Uncomment after JOINs are working
@@ -333,7 +338,7 @@ public class ServiceVdbGeneratorTest {
 
     @Test
     public void shouldGenerateOdataViewDDL_WithTwoSourcesViewDefinition_LeftOuterJoinAll() throws Exception {
-    	String EXPECTED_DDL = EXPECTED_JOIN_SQL_TWO_SOURCES_START + LEFT_OUTER_JOIN_STR + EXPECTED_JOIN_SQL_TWO_SOURCES_END;
+        String EXPECTED_DDL = EXPECTED_JOIN_SQL_TWO_SOURCES_START + LEFT_OUTER_JOIN_STR + EXPECTED_JOIN_SQL_TWO_SOURCES_END;
         String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath3, ServiceVdbGenerator.JOIN_LEFT_OUTER, false, true);
         printResults(EXPECTED_DDL, viewDdl);
         // TODO Uncomment after JOINs are working
@@ -342,7 +347,7 @@ public class ServiceVdbGeneratorTest {
 
     @Test
     public void shouldGenerateOdataViewDDL_WithTwoSourcesViewDefinition_LeftOuterJoin() throws Exception {
-    	String EXPECTED_DDL = EXPECTED_JOIN_SQL_TWO_SOURCES_START + LEFT_OUTER_JOIN_STR + EXPECTED_JOIN_SQL_TWO_SOURCES_END;
+        String EXPECTED_DDL = EXPECTED_JOIN_SQL_TWO_SOURCES_START + LEFT_OUTER_JOIN_STR + EXPECTED_JOIN_SQL_TWO_SOURCES_END;
         String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath3, ServiceVdbGenerator.JOIN_LEFT_OUTER, false, false);
         printResults(EXPECTED_DDL, viewDdl);
         // TODO Uncomment after JOINs are working
@@ -351,7 +356,7 @@ public class ServiceVdbGeneratorTest {
 
     @Test
     public void shouldGenerateOdataViewDDL_WithTwoSourcesViewDefinition_RightOuterJoinAll() throws Exception {
-    	String EXPECTED_DDL = EXPECTED_JOIN_SQL_TWO_SOURCES_START + RIGHT_OUTER_JOIN_STR + EXPECTED_JOIN_SQL_TWO_SOURCES_END;
+        String EXPECTED_DDL = EXPECTED_JOIN_SQL_TWO_SOURCES_START + RIGHT_OUTER_JOIN_STR + EXPECTED_JOIN_SQL_TWO_SOURCES_END;
         String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath3, ServiceVdbGenerator.JOIN_RIGHT_OUTER, false, true);
         printResults(EXPECTED_DDL, viewDdl);
         // TODO Uncomment after JOINs are working
@@ -360,7 +365,7 @@ public class ServiceVdbGeneratorTest {
 
     @Test
     public void shouldGenerateOdataViewDDL_WithTwoSourcesViewDefinition_RightOuterJoin() throws Exception {
-    	String EXPECTED_DDL = EXPECTED_JOIN_SQL_TWO_SOURCES_START + RIGHT_OUTER_JOIN_STR + EXPECTED_JOIN_SQL_TWO_SOURCES_END;
+        String EXPECTED_DDL = EXPECTED_JOIN_SQL_TWO_SOURCES_START + RIGHT_OUTER_JOIN_STR + EXPECTED_JOIN_SQL_TWO_SOURCES_END;
         String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath3, ServiceVdbGenerator.JOIN_RIGHT_OUTER, false, false);
         printResults(EXPECTED_DDL, viewDdl);
         // TODO Uncomment after JOINs are working
@@ -369,7 +374,7 @@ public class ServiceVdbGeneratorTest {
 
     @Test
     public void shouldGenerateOdataViewDDL_WithTwoSourcesViewDefinition_FullOuterJoinAll() throws Exception {
-    	String EXPECTED_DDL = EXPECTED_JOIN_SQL_TWO_SOURCES_START + FULL_OUTER_JOIN_STR + EXPECTED_JOIN_SQL_TWO_SOURCES_END;
+        String EXPECTED_DDL = EXPECTED_JOIN_SQL_TWO_SOURCES_START + FULL_OUTER_JOIN_STR + EXPECTED_JOIN_SQL_TWO_SOURCES_END;
         String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath3, ServiceVdbGenerator.JOIN_FULL_OUTER, false, true);
         printResults(EXPECTED_DDL, viewDdl);
         // TODO Uncomment after JOINs are working
@@ -378,7 +383,7 @@ public class ServiceVdbGeneratorTest {
 
     @Test
     public void shouldGenerateOdataViewDDL_WithTwoSourcesViewDefinition_FullOuterJoin() throws Exception {
-    	String EXPECTED_DDL = EXPECTED_JOIN_SQL_TWO_SOURCES_START + FULL_OUTER_JOIN_STR + EXPECTED_JOIN_SQL_TWO_SOURCES_END;
+        String EXPECTED_DDL = EXPECTED_JOIN_SQL_TWO_SOURCES_START + FULL_OUTER_JOIN_STR + EXPECTED_JOIN_SQL_TWO_SOURCES_END;
         String viewDdl = helpGenerateDdlForWithJoinType(sourceTablePath3, ServiceVdbGenerator.JOIN_FULL_OUTER, false, false);
         printResults(EXPECTED_DDL, viewDdl);
         // TODO Uncomment after JOINs are working
@@ -387,86 +392,104 @@ public class ServiceVdbGeneratorTest {
 
     @Test
     public void shouldRefreshServiceVdb_SingleSource() throws Exception {
-    	ViewDefinition state = helpCreateViewEditorState(1);
+        ViewDefinition state = helpCreateViewEditorState(1);
 
-    	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(schemaFinder());
+        ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(schemaFinder());
 
-    	state.setDdl(vdbGenerator.getODataViewDdl(state));
+        state.setDdl(vdbGenerator.getODataViewDdl(state));
 
-    	VDBMetaData serviceVdb = vdbGenerator.createServiceVdb(viewDefinitionName, Arrays.asList(state), false);
+        TeiidVdb mock = Mockito.mock(TeiidVdb.class);
+        Mockito.when(mock.getName()).thenReturn("servicevdb");
+        ValidationResult result = new DefaultMetadataInstance().parse(state.getDdl());
+        Table t = result.getSchema().getTables().firstEntry().getValue();
+        t.setIncomingObjects(new ArrayList<>());
+        t.getIncomingObjects().add(schemas.get("pgconnection1").getTable("orders"));
+        t.getIncomingObjects().add(schemas.get("pgconnection1").getTable("customers"));
+        Mockito.when(mock.getSchema(StringConstants.SERVICE_VDB_VIEW_MODEL)).thenReturn(result.getSchema());
 
-    	assertEquals("<?xml version=\"1.0\" ?><vdb name=\"orderInfoView\" version=\"1\"><connection-type>BY_VERSION</connection-type><model name=\"views\" type=\"VIRTUAL\" visible=\"true\"><metadata type=\"DDL\"><![CDATA[CREATE VIEW orderInfoView (ID, orderDate, name) OPTIONS (ANNOTATION 'test view description text') AS \n" +
-    	        "SELECT A.ID, A.orderDate, B.name\n" +
-    	        "FROM pgconnection1schemamodel.orders AS A;\n" +
-    	        "]]></metadata></model><model name=\"pgconnection1schemamodel\" type=\"PHYSICAL\" visible=\"false\"><metadata type=\"DDL\"><![CDATA[SET NAMESPACE 'http://www.teiid.org/ext/relational/2012' AS teiid_rel;\n" +
-    	        "\n" +
-    	        "CREATE FOREIGN TABLE orders (\n" +
-    	        "\tID long,\n" +
-    	        "\torderDate timestamp,\n" +
-    	        "\tPRIMARY KEY(ID)\n" +
-    	        ") OPTIONS (\"teiid_rel:fqn\" 'schema=public/table=orders');\n" +
-    	        "\n" +
-    	        "CREATE FOREIGN TABLE customers (\n" +
-    	        "\tID long,\n" +
-    	        "\tname string,\n" +
-    	        "\tPRIMARY KEY(ID)\n" +
-    	        ") OPTIONS (\"teiid_rel:fqn\" 'schema=public/table=customers');]]></metadata></model></vdb>", new String(DefaultMetadataInstance.toBytes(serviceVdb).toByteArray(), "UTF-8"));
+        VDBMetaData serviceVdb = vdbGenerator.createServiceVdb(mock, Arrays.asList(state));
 
-    	List<org.teiid.adminapi.Model> models = serviceVdb.getModels();
+        assertEquals("<?xml version=\"1.0\" ?><vdb name=\"servicevdb\" version=\"1\"><connection-type>BY_VERSION</connection-type><model name=\"views\" type=\"VIRTUAL\" visible=\"true\"><metadata type=\"DDL\"><![CDATA[CREATE VIEW orderInfoView (ID, orderDate, name) OPTIONS (ANNOTATION 'test view description text') AS \n" +
+                "SELECT A.ID, A.orderDate, B.name\n" +
+                "FROM pgconnection1schemamodel.orders AS A;\n" +
+                "]]></metadata></model><model name=\"pgconnection1schemamodel\" type=\"PHYSICAL\" visible=\"false\"><metadata type=\"DDL\"><![CDATA[SET NAMESPACE 'http://www.teiid.org/ext/relational/2012' AS teiid_rel;\n" +
+                "\n" +
+                "CREATE FOREIGN TABLE orders (\n" +
+                "\tID long,\n" +
+                "\torderDate timestamp,\n" +
+                "\tPRIMARY KEY(ID)\n" +
+                ") OPTIONS (\"teiid_rel:fqn\" 'schema=public/table=orders');\n" +
+                "\n" +
+                "CREATE FOREIGN TABLE customers (\n" +
+                "\tID long,\n" +
+                "\tname string,\n" +
+                "\tPRIMARY KEY(ID)\n" +
+                ") OPTIONS (\"teiid_rel:fqn\" 'schema=public/table=customers');]]></metadata></model></vdb>", new String(DefaultMetadataInstance.toBytes(serviceVdb).toByteArray(), "UTF-8"));
 
-    	assertThat(models.size(), is(2));
+        List<org.teiid.adminapi.Model> models = serviceVdb.getModels();
+
+        assertThat(models.size(), is(2));
         ModelMetaData viewModel = serviceVdb.getModel(StringConstants.SERVICE_VDB_VIEW_MODEL);
         assertNotNull(viewModel);
         assertEquals("CREATE VIEW orderInfoView (ID, orderDate, name) OPTIONS (ANNOTATION 'test view description text') AS \n" +
-        		"SELECT A.ID, A.orderDate, B.name\n" +
-        		"FROM pgconnection1schemamodel.orders AS A;\n", viewModel.getSourceMetadataText().get(0));
+                "SELECT A.ID, A.orderDate, B.name\n" +
+                "FROM pgconnection1schemamodel.orders AS A;\n", viewModel.getSourceMetadataText().get(0));
 
     }
 
     @Test
     public void shouldRefreshServiceVdb_TwoSources() throws Exception {
-    	ViewDefinition state = helpCreateViewEditorState(2);
+        ViewDefinition state = helpCreateViewEditorState(2);
 
-    	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(schemaFinder());
+        ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(schemaFinder());
 
-    	state.setDdl(vdbGenerator.getODataViewDdl(state));
+        state.setDdl(vdbGenerator.getODataViewDdl(state));
 
-    	VDBMetaData serviceVdb = vdbGenerator.createServiceVdb(viewDefinitionName, Arrays.asList(state), false);
+        TeiidVdb mock = Mockito.mock(TeiidVdb.class);
+        Mockito.when(mock.getName()).thenReturn("servicevdb");
+        ValidationResult result = new DefaultMetadataInstance().parse(state.getDdl());
+        Table t = result.getSchema().getTables().firstEntry().getValue();
+        t.setIncomingObjects(new ArrayList<>());
+        t.getIncomingObjects().add(schemas.get("pgconnection1").getTable("orders"));
+        t.getIncomingObjects().add(schemas.get("pgconnection2").getTable("customers"));
+        Mockito.when(mock.getSchema(StringConstants.SERVICE_VDB_VIEW_MODEL)).thenReturn(result.getSchema());
 
-    	List<org.teiid.adminapi.Model> models = serviceVdb.getModels();
+        VDBMetaData serviceVdb = vdbGenerator.createServiceVdb(mock, Arrays.asList(state));
+
+        List<org.teiid.adminapi.Model> models = serviceVdb.getModels();
 
         assertThat(models.size(), is(3));
         ModelMetaData viewModel = serviceVdb.getModel(StringConstants.SERVICE_VDB_VIEW_MODEL);
         assertNotNull(viewModel);
         assertEquals("CREATE VIEW orderInfoView (ID, orderDate, customerName) OPTIONS (ANNOTATION 'test view description text') AS \n" +
-        		"SELECT A.ID, A.orderDate, B.customerName\n" +
-        		"FROM pgconnection1schemamodel.orders AS A;\n", viewModel.getSourceMetadataText().get(0));
+                "SELECT A.ID, A.orderDate, B.customerName\n" +
+                "FROM pgconnection1schemamodel.orders AS A;\n", viewModel.getSourceMetadataText().get(0));
 
     }
 
     @Test
     public void shouldRefreshServiceVdbPreviewNoViews() throws Exception {
-    	ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(schemaFinder());
+        ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(schemaFinder());
 
-    	VDBMetaData serviceVdb = vdbGenerator.createServiceVdb("preview", Collections.emptyList(), true);
+        VDBMetaData serviceVdb = vdbGenerator.createPreviewVdb("preview", Collections.emptyList());
 
-    	assertEquals("<?xml version=\"1.0\" ?><vdb name=\"preview\" version=\"1\"><connection-type>BY_VERSION</connection-type><import-vdb name=\"PreviewVdb\" version=\"1\" import-data-policies=\"true\"></import-vdb></vdb>", new String(DefaultMetadataInstance.toBytes(serviceVdb).toByteArray(), "UTF-8"));
+        assertEquals("<?xml version=\"1.0\" ?><vdb name=\"preview\" version=\"1\"><connection-type>BY_VERSION</connection-type><property name=\"preview\" value=\"true\"></property><import-vdb name=\"PreviewVdb\" version=\"1\" import-data-policies=\"true\"></import-vdb><model name=\"views\" type=\"VIRTUAL\" visible=\"true\"><metadata type=\"DDL\"><![CDATA[]]></metadata></model></vdb>", new String(DefaultMetadataInstance.toBytes(serviceVdb).toByteArray(), "UTF-8"));
     }
 
     protected ServiceVdbGenerator.SchemaFinder schemaFinder() {
-		return new SchemaFinder() {
+        return new SchemaFinder() {
 
-			@Override
-			public TeiidDataSource findTeiidDatasource(String connectionName) throws KException {
-				return dataSources.get(connectionName);
-			}
+            @Override
+            public TeiidDataSource findTeiidDatasource(String connectionName) throws KException {
+                return dataSources.get(connectionName);
+            }
 
-			@Override
-			public Schema findSchema(String connectionName) throws KException {
-				return schemas.get(connectionName);
-			}
+            @Override
+            public Schema findSchema(String connectionName) throws KException {
+                return schemas.get(connectionName);
+            }
 
-		};
-	}
+        };
+    }
 
 }

@@ -40,6 +40,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
+import javax.persistence.PersistenceException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -69,16 +70,15 @@ import org.komodo.openshift.BuildStatus.RouteStatus;
 import org.komodo.openshift.BuildStatus.Status;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoConfigurationProperties;
-import org.komodo.rest.KomodoService;
 import org.komodo.rest.V1Constants;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.teiid.adminapi.AdminException;
 import org.teiid.adminapi.Model;
 import org.teiid.adminapi.impl.ModelMetaData;
 import org.teiid.adminapi.impl.SourceMappingMetadata;
 import org.teiid.adminapi.impl.VDBMetaData;
-import org.teiid.core.CoreConstants;
 import org.teiid.core.util.AccessibleByteArrayOutputStream;
 import org.teiid.core.util.ObjectConverterUtil;
 
@@ -497,31 +497,14 @@ public class TeiidOpenShiftClient implements V1Constants {
         }
     }
 
-    public void bindToSyndesisSource(OAuthCredentials oauthCreds, DefaultSyndesisDataSource scd) throws KException {
-        info(scd.getSyndesisName(), "Bind source with name to Service: " + scd.getSyndesisName());
-        try {
-            String dsName = findDataSourceNameByEventId(scd.getId());
-            if (dsName != null) {
-                scd.setKomodoName(dsName);
-            } else {
-                createDataSource(scd);
-            }
-
-        } catch (Exception e) {
-            throw handleError(e);
-        }
-    }
-
     public DefaultSyndesisDataSource getSyndesisDataSource(OAuthCredentials oauthCreds, String dsName)
             throws KException {
         try {
-            Set<DefaultSyndesisDataSource> sources = getSyndesisSources(oauthCreds);
-            for (DefaultSyndesisDataSource source:sources) {
-                if (dsName.equals(source.getKomodoName())) {
-                    return source;
-                }
+            TeiidDataSource tds = metadata.getDataSource(dsName);
+            if (tds == null) {
+                return null;
             }
-            return null;
+            return getSyndesisDataSourceById(oauthCreds, tds.getId());
         } catch (Exception e) {
             throw handleError(e);
         }
@@ -536,27 +519,24 @@ public class TeiidOpenShiftClient implements V1Constants {
                 .forEachRemaining(key -> p.put(key, configuredProperties.get(key).asText()));
 
         DataSourceDefinition def = getSourceDefinitionThatMatches(p);
-        if (def != null) {
-            if( connectorIDNode != null ) {
-                DefaultSyndesisDataSource dsd = new DefaultSyndesisDataSource();
-                dsd.setId(connectorIDNode.asText());
-                dsd.setSyndesisName(syndesisName);
-                String dsName = findDataSourceNameByEventId(connectorIDNode.asText());
-                dsd.setKomodoName(dsName);
-                dsd.setTranslatorName(def.getTranslatorName());
-                dsd.setProperties(p);
-                dsd.setDefinition(def);
-                return dsd;
-            } else {
-                throw new KException("Datasource has no connection ID");
-            }
-        } else {
+        if (def == null) {
             throw new KException("Could not find datasource that matches to the configuration."+ p.get("url"));
         }
+        if( connectorIDNode == null ) {
+            throw new KException("Datasource has no connection ID");
+        }
+        DefaultSyndesisDataSource dsd = new DefaultSyndesisDataSource();
+        dsd.setId(connectorIDNode.asText());
+        dsd.setSyndesisName(syndesisName);
+        String dsName = findDataSourceNameByEventId(connectorIDNode.asText());
+        dsd.setKomodoName(dsName);
+        dsd.setTranslatorName(def.getTranslatorName());
+        dsd.setProperties(p);
+        dsd.setDefinition(def);
+        return dsd;
     }
 
-    private void createDataSource(DefaultSyndesisDataSource scd)
-            throws Exception {
+    public void createDataSource(DefaultSyndesisDataSource scd) throws Exception {
         String syndesisName = scd.getSyndesisName();
         debug(syndesisName, "Creating the Datasource of Type " + scd.getType());
 
@@ -564,9 +544,23 @@ public class TeiidOpenShiftClient implements V1Constants {
         debug(syndesisName, "template names: " + templateNames);
         String dsType = scd.getType();
 
-        //we'll create serially to ensure a unique generated name
-        setUniqueKomodoName(scd, syndesisName, KomodoService.SYSTEM_USER_NAME);
+        if (scd.getKomodoName() == null) {
+            //we'll create serially to ensure a unique generated name
+            for (int i = 0; i < 3; i++) {
+                try {
+                    setUniqueKomodoName(scd, syndesisName);
+                } catch (PersistenceException | DataIntegrityViolationException e) {
+                    //multiple pods are trying to assign a name simultaneously
+                    //if we try again, then we'll just pickup whatever someone else set
+                }
+            }
+        }
+
         String toUse = scd.getKomodoName();
+
+        if (this.metadata.getDataSource(toUse) != null) {
+            return;
+        }
 
         //now that the komodoname is set, we can create the properties
         Map<String, String> properties = scd.convertToDataSourceProperties();
@@ -582,8 +576,8 @@ public class TeiidOpenShiftClient implements V1Constants {
      * @param syndesisName
      * @throws Exception
      */
-    public void setUniqueKomodoName(DefaultSyndesisDataSource scd, String syndesisName, String user) throws Exception {
-        kengine.runInTransaction("setUniqueKomodoName", false, () -> {
+    public void setUniqueKomodoName(DefaultSyndesisDataSource scd, String syndesisName) throws Exception {
+        kengine.runInTransaction(false, () -> {
             SourceSchema ss = kengine.getWorkspaceManager().findSchema(scd.getId());
             if (ss != null) {
                 //just reassociate
@@ -603,11 +597,7 @@ public class TeiidOpenShiftClient implements V1Constants {
             TreeSet<String> taken = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
             taken.addAll(kengine.getWorkspaceManager().findAllSchemaNames());
 
-            //TODO: drive this via an api method
-            taken.add(CoreConstants.INFORMATION_SCHEMA);
-            taken.add(CoreConstants.ODBC_MODEL);
-            taken.add(CoreConstants.SYSTEM_ADMIN_MODEL);
-            taken.add(CoreConstants.SYSTEM_MODEL);
+            taken.addAll(ModelMetaData.getReservedNames());
 
             taken.add(SERVICE_VDB_VIEW_MODEL);
 
@@ -623,26 +613,19 @@ public class TeiidOpenShiftClient implements V1Constants {
 
             scd.setKomodoName(toUse);
             //update the db with the name we'll use
-            kengine.getWorkspaceManager().createOrUpdateSchema(scd.getId(), toUse, null);
+            kengine.getWorkspaceManager().createSchema(scd.getId(), toUse, null);
             return null;
         });
     }
 
-    public void deleteDataSource(String dsName) throws AdminException, KException {
+    public void deleteDataSource(String dsName) throws KException {
         this.metadata.deleteDataSource(dsName);
     }
 
     public String findDataSourceNameByEventId(String eventId) throws KException  {
-        try {
-            for( String dsName : this.metadata.getDataSourceNames() ) {
-                TeiidDataSource props = this.metadata.getDataSource(dsName);
-                String id = props.getId();
-                if( id != null && !StringUtils.isBlank(id) && id.equals(eventId)) {
-                    return dsName;
-                }
-            }
-        } catch (AdminException e) {
-            throw handleError(e);
+        SourceSchema sourceSchema = this.kengine.getWorkspaceManager().findSchema(eventId);
+        if (sourceSchema != null) {
+            return sourceSchema.getName();
         }
         return null;
     }
@@ -659,7 +642,7 @@ public class TeiidOpenShiftClient implements V1Constants {
     }
 
     private BuildConfig createBuildConfig(OpenShiftClient client, String namespace, String vdbName, ImageStream is,
-            PublishConfiguration pc) throws KException {
+            PublishConfiguration pc) {
         String imageStreamName = is.getMetadata().getName()+":latest";
         BuildConfig bc = client.buildConfigs().inNamespace(namespace).createOrReplaceWithNew()
             .withNewMetadata().withName(getBuildConfigName(vdbName))
@@ -1081,7 +1064,7 @@ public class TeiidOpenShiftClient implements V1Constants {
         });
     }
 
-    protected void normalizeDataSourceNames(VDBMetaData vdb) throws KException {
+    protected void normalizeDataSourceNames(VDBMetaData vdb) {
         for (ModelMetaData model : vdb.getModelMetaDatas().values()) {
             for (SourceMappingMetadata source : model.getSources().values()) {
                 String name = source.getName().toLowerCase();
@@ -1145,15 +1128,14 @@ public class TeiidOpenShiftClient implements V1Constants {
             info(vdbName, "Publishing - Previous build request in progress, failed to submit new build request: "
                     + status.status());
             return status;
-        } else {
-            info(vdbName, "Publishing - Adding to work queue for build");
-            status = addToQueue(vdbName, publishConfig);
-
-            debug(vdbName, "Publishing - Initiating work monitor if not already running");
-
-            info(vdbName, "Publishing - Status of build + " + status.status());
-            return status;
         }
+        info(vdbName, "Publishing - Adding to work queue for build");
+        status = addToQueue(vdbName, publishConfig);
+
+        debug(vdbName, "Publishing - Initiating work monitor if not already running");
+
+        info(vdbName, "Publishing - Status of build + " + status.status());
+        return status;
     }
 
     Map<String, String> getSecretVariablesForVDBDataSources(OAuthCredentials oauthCreds, VDBMetaData vdb,

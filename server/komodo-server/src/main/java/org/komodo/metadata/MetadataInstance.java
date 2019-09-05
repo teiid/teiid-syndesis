@@ -18,7 +18,6 @@
 package org.komodo.metadata;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -27,6 +26,7 @@ import org.komodo.StringConstants;
 import org.komodo.metadata.query.QSResult;
 import org.teiid.adminapi.AdminException;
 import org.teiid.adminapi.impl.VDBMetaData;
+import org.teiid.metadata.MetadataException;
 import org.teiid.metadata.Schema;
 import org.teiid.query.validator.ValidatorReport;
 
@@ -35,10 +35,12 @@ public interface MetadataInstance extends StringConstants {
     public static class ValidationResult {
         private ValidatorReport report;
         private Schema schema;
+        private MetadataException metadataException;
 
-        public ValidationResult(ValidatorReport report, Schema schema) {
+        public ValidationResult(ValidatorReport report, Schema schema, MetadataException metadataException) {
             this.report = report;
             this.schema = schema;
+            this.metadataException = metadataException;
         }
 
         public ValidatorReport getReport() {
@@ -47,6 +49,10 @@ public interface MetadataInstance extends StringConstants {
 
         public Schema getSchema() {
             return schema;
+        }
+
+        public MetadataException getMetadataException() {
+            return metadataException;
         }
 
     }
@@ -178,12 +184,6 @@ public interface MetadataInstance extends StringConstants {
     Collection<TeiidVdb> getVdbs() throws KException;
 
     /**
-     * @return the names of all the deployed vdbs
-     * @throws KException
-     */
-    Collection<String> getVdbNames() throws KException;
-
-    /**
      * @param vdbDeploymentName
      * @return the deployed vdb
      * @throws KException
@@ -228,14 +228,6 @@ public interface MetadataInstance extends StringConstants {
      * @throws KException
      */
     boolean wasVdbRemoved(String vdbName) throws KException;
-
-    /**
-     * @param vdbName
-     *
-     * @return any validity errors from the vdb when it was deployed
-     * @throws KException
-     */
-    List<String> retrieveVdbValidityErrors(String vdbName) throws KException;
 
     /**
      * @param vdbName
@@ -285,5 +277,5 @@ public interface MetadataInstance extends StringConstants {
 
     void createDataSource(String deploymentName, String templateName, Map<String, String> properties) throws AdminException;
 
-    ValidationResult validate(String vdbName, String ddl) throws KException;
+    ValidationResult parse(String ddl) throws KException;
 }

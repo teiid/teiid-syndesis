@@ -18,19 +18,17 @@
 
 package org.komodo.datavirtualization;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 import org.hibernate.annotations.GenericGenerator;
-import org.komodo.KException;
 import org.komodo.StringConstants;
 
 @Entity
-public class DataVirtualization implements Named {
+public class DataVirtualization extends BaseEntity {
 
-    static String getServiceVdbName(String name) {
+    public static String getServiceVdbName(String name) {
         return name.toLowerCase() + StringConstants.SERVICE_VDB_SUFFIX;
     }
 
@@ -38,22 +36,19 @@ public class DataVirtualization implements Named {
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
-    @Column(unique=true)
-    private String name;
     private String description;
-    private boolean dirty;
 
     protected DataVirtualization() {
     }
 
     public DataVirtualization(String name) {
-        this.name = name;
+        setName(name);
     }
 
     /**
      * @return the service VDB name (may be <code>null</code> if not defined)
      */
-    public String getServiceVdbName( ) throws KException {
+    public String getServiceVdbName( ) {
         return getServiceVdbName(getName());
     }
 
@@ -65,28 +60,12 @@ public class DataVirtualization implements Named {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getDescription() {
         return description;
     }
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public boolean isDirty() {
-        return dirty;
-    }
-
-    public void setDirty(boolean dirty) {
-        this.dirty = dirty;
     }
 
 }

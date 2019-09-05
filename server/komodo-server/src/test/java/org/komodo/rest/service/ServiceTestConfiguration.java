@@ -18,6 +18,8 @@
 
 package org.komodo.rest.service;
 
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+
 import org.komodo.metadata.internal.DefaultMetadataInstance;
 import org.komodo.metadata.internal.TeiidServer;
 import org.komodo.openshift.TeiidOpenShiftClient;
@@ -41,5 +43,8 @@ public class ServiceTestConfiguration {
         server.start(ec);
         return server;
     }
+
+    @MockBean(name="connectionExecutor")
+    private ScheduledThreadPoolExecutor connectionExecutor;
 
 }

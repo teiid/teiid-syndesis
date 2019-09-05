@@ -116,7 +116,7 @@ public class KomodoMetadataServiceTest {
         props.put(TeiidDataSource.DATASOURCE_DRIVERNAME, "h2");
 
         metadataInstance.createDataSource("source", "h2", props);
-        workspaceManagerImpl.createOrUpdateSchema("someid", "source",
+        workspaceManagerImpl.createSchema("someid", "source",
                 "create foreign table tbl (col string) options (\"teiid_rel:fqn\" 'schema=s%20x/t%20bl=bar');"
                 + "create foreign table tbl1 (col string) options (\"teiid_rel:fqn\" 'schema=s%20x/t%20bl=bar1');");
 
@@ -163,6 +163,9 @@ public class KomodoMetadataServiceTest {
 
         //even with no views, we should still succeed
         TeiidVdb vdb = komodoMetadataService.updatePreviewVdb("dv1");
+
+        //there will be a validity error from being empty
+        assertTrue(!vdb.getValidityErrors().isEmpty());
 
         metadataInstance.query(vdb.getName(), "select * from v", DefaultMetadataInstance.NO_OFFSET, DefaultMetadataInstance.NO_LIMIT);
     }

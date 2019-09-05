@@ -153,4 +153,5 @@ public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, Tei
     public String getSchema() {
         return getPropertyValue(TeiidDataSource.DATASOURCE_SCHEMA);
     }
+
 }

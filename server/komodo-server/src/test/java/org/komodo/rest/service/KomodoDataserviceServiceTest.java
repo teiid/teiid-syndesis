@@ -38,6 +38,7 @@ import org.komodo.rest.datavirtualization.ImportPayload;
 import org.komodo.rest.datavirtualization.KomodoStatusObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -47,7 +48,12 @@ import org.springframework.web.server.ResponseStatusException;
 @DataJpaTest
 @ContextConfiguration(classes = {KomodoRepositoryConfiguration.class, ServiceTestConfiguration.class})
 @DirtiesContext
+@SuppressWarnings("nls")
 public class KomodoDataserviceServiceTest {
+
+    @Autowired
+    private TestEntityManager entityManager;
+
     @Autowired
     private WorkspaceManagerImpl workspaceManagerImpl;
 
@@ -92,7 +98,7 @@ public class KomodoDataserviceServiceTest {
         }
 
         //add the schema definition - so that we don't really need the datasource, and redeploy
-        workspaceManagerImpl.createOrUpdateSchema("someid", "source",
+        workspaceManagerImpl.createSchema("someid", "source",
                 "create foreign table tbl (col string) options (\"teiid_rel:fqn\" 'schema=s/table=tbl');");
         metadataInstance.undeployDynamicVdb(KomodoMetadataService.getWorkspaceSourceVdbName("source"));
 
@@ -102,6 +108,9 @@ public class KomodoDataserviceServiceTest {
         String id = kso.getAttributes().values().iterator().next();
 
         ViewDefinition vd = workspaceManagerImpl.findViewDefinition(id);
+
+        assertTrue(vd.isParsable());
+
         vd.setId("consistent");
         assertEquals("{\n" +
                 "  \"dataVirtualizationName\" : \"dv\",\n" +
@@ -110,9 +119,14 @@ public class KomodoDataserviceServiceTest {
                 "  \"isComplete\" : true,\n" +
                 "  \"isUserDefined\" : false,\n" +
                 "  \"name\" : \"tbl\",\n" +
-                "  \"sourcePaths\" : [ \"schema=source/table=tbl\" ]\n" +
+                "  \"sourcePaths\" : [ \"schema=source/table=tbl\" ],\n" +
+                "  \"version\" : 0\n" +
                 "}", KomodoJsonMarshaller.marshall(vd));
 
-        assertTrue(dv.isDirty());
+        vd.setId(id);
+
+        entityManager.flush();
+
+        assertEquals(Long.valueOf(1), dv.getVersion());
     }
 }

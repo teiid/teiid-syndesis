@@ -21,13 +21,15 @@ package org.komodo.datavirtualization;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
+import org.hibernate.annotations.DynamicUpdate;
+
 @Entity
-public class SourceSchema implements Named {
+@DynamicUpdate
+public class SourceSchema extends BaseEntity {
 
     @Id
     private String id;
     private String ddl;
-    private String name;
 
     protected SourceSchema() {
     }
@@ -50,14 +52,6 @@ public class SourceSchema implements Named {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
 }

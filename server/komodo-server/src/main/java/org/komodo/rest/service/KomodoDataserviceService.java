@@ -47,7 +47,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import org.teiid.metadata.Schema;
@@ -88,7 +87,7 @@ public final class KomodoDataserviceService extends KomodoService {
     @ApiResponses(value = { @ApiResponse(code = 403, message = "An error has occurred.") })
     public List<RestDataVirtualization> getDataservices() throws Exception {
 
-        return kengine.runInTransaction("getDataVirtualizations", true, ()->{
+        return kengine.runInTransaction(true, ()->{
             Iterable<? extends DataVirtualization> dataServices = getWorkspaceManager().findDataVirtualizations();
 
             final List<RestDataVirtualization> entities = new ArrayList<>();
@@ -132,7 +131,7 @@ public final class KomodoDataserviceService extends KomodoService {
             required = true) final @PathVariable("dataserviceName") String dataserviceName)
             throws Exception {
 
-        RestDataVirtualization dataservice = kengine.runInTransaction("getDataVirtualization", true, () -> {
+        RestDataVirtualization dataservice = kengine.runInTransaction(true, () -> {
             DataVirtualization dv = getWorkspaceManager().findDataVirtualization(dataserviceName);
             return createRestDataservice(dv);
         });
@@ -151,7 +150,6 @@ public final class KomodoDataserviceService extends KomodoService {
      * @return a JSON representation of the new dataservice (never <code>null</code>)
      * @throws Exception
      */
-
     @RequestMapping(value = FS + V1Constants.DATA_SERVICE_PLACEHOLDER,
             method = RequestMethod.POST,
             produces= { MediaType.APPLICATION_JSON_VALUE },
@@ -183,7 +181,7 @@ public final class KomodoDataserviceService extends KomodoService {
         }
 
         // create new Dataservice
-        return kengine.runInTransaction("createDataVirtualization", false, () -> {
+        return kengine.runInTransaction(false, () -> {
             // Error if the repo already contains a dataservice with the supplied name.
             DataVirtualization dv = getWorkspaceManager().findDataVirtualizationByNameIgnoreCase(dataserviceName);
             if (dv != null) {
@@ -209,23 +207,27 @@ public final class KomodoDataserviceService extends KomodoService {
             @ApiResponse(code = 403, message = "An error has occurred.") })
     public KomodoStatusObject deleteDataservice(@ApiParam(value = "Name of the data service to be deleted", required = true) final @PathVariable("dataserviceName") String dataserviceName) throws Exception {
 
-        KomodoStatusObject kso = kengine.runInTransaction("deleteDataVirtualization", false, ()->{
+        KomodoStatusObject kso = kengine.runInTransaction(false, ()->{
             final WorkspaceManager wkspMgr = getWorkspaceManager();
 
-            final DataVirtualization dataservice = wkspMgr.findDataVirtualization(dataserviceName);
-
-            // Error if the specified service does not exist
-            if (dataservice == null) {
-                notFound(dataserviceName);
-            }
-
             // Delete the Dataservice. The view definitions will cascade
-            wkspMgr.deleteDataVirtualization(dataserviceName);
+            if (!wkspMgr.deleteDataVirtualization(dataserviceName)) {
+                throw notFound(dataserviceName);
+            }
 
             KomodoStatusObject status = new KomodoStatusObject("Delete Status"); //$NON-NLS-1$
             status.addAttribute(dataserviceName, "Successfully deleted"); //$NON-NLS-1$
             return status;
         });
+
+        //deleted/txn committed, update runtime
+        //there is a small chance that a dv with the same name was recreated in the meantime,
+        //but since this vdb is created on-demand we're good
+        try {
+            metadataService.removeVdb(DataVirtualization.getServiceVdbName(dataserviceName));
+        } catch (KException e) {
+            LOGGER.debug("error removing preview vdb", e); //$NON-NLS-1$
+        }
         return kso;
     }
 
@@ -252,7 +254,7 @@ public final class KomodoDataserviceService extends KomodoService {
         }
 
         // check for duplicate name
-        final DataVirtualization service = kengine.runInTransaction("validateDataVirtualizationName", true, () -> {
+        final DataVirtualization service = kengine.runInTransaction(true, () -> {
             return getWorkspaceManager().findDataVirtualizationByNameIgnoreCase(dataserviceName);
         });
 
@@ -282,7 +284,7 @@ public final class KomodoDataserviceService extends KomodoService {
             @RequestBody
             final ImportPayload importPayload) throws Exception {
 
-        KomodoStatusObject kso = kengine.runInTransaction("import", false, () -> {
+        KomodoStatusObject kso = kengine.runInTransaction(false, () -> {
             DataVirtualization dataservice = getWorkspaceManager().findDataVirtualization(dataserviceName);
             if (dataservice == null) {
                 throw notFound( dataserviceName );
@@ -327,11 +329,11 @@ public final class KomodoDataserviceService extends KomodoService {
 
                 String ddl = serviceVdbGenerator.getODataViewDdl(viewDefn);
                 viewDefn.setDdl(ddl);
-
+                viewDefn.setParsable(true);
                 result.addAttribute(viewDefn.getName(), viewDefn.getId());
             }
 
-            dataservice.setDirty(true);
+            dataservice.setModifiedAt(null);
 
             return result;
         });
@@ -389,7 +391,7 @@ public final class KomodoDataserviceService extends KomodoService {
             throw forbidden(DATASERVICE_SERVICE_SERVICE_NAME_ERROR, dataserviceName, jsonDataserviceName);
         }
 
-        return kengine.runInTransaction("createDataVirtualization", false, () -> {
+        return kengine.runInTransaction(false, () -> {
             // Error if the repo already contains a dataservice with the supplied name.
             DataVirtualization existing = getWorkspaceManager().findDataVirtualization(restDataservice.getName());
             if (existing == null) {

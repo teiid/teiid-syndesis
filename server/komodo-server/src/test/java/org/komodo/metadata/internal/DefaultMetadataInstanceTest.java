@@ -18,8 +18,7 @@
 
 package org.komodo.metadata.internal;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
 
@@ -31,6 +30,7 @@ import org.komodo.metadata.MetadataInstance.ValidationResult;
 import org.teiid.adminapi.impl.VDBMetadataParser;
 import org.teiid.runtime.EmbeddedConfiguration;
 
+@SuppressWarnings("nls")
 public class DefaultMetadataInstanceTest {
 
     DefaultMetadataInstance metadataInstance;
@@ -50,9 +50,9 @@ public class DefaultMetadataInstanceTest {
         server.stop();
     }
 
-    @Test(expected = KException.class)
-    public void shouldNotValidateNoVdb() throws KException {
-        metadataInstance.validate("x", "create view v as select 1");
+    public void shouldParse() throws KException {
+        ValidationResult result = metadataInstance.parse("create view v as select 1");
+        assertNull(result.getMetadataException());
     }
 
     @Test
@@ -65,10 +65,10 @@ public class DefaultMetadataInstanceTest {
 
         metadataInstance.deploy(VDBMetadataParser.unmarshell(new ByteArrayInputStream(vdb.getBytes("UTF-8"))));
 
-        ValidationResult report = metadataInstance.validate("myservice", "create view v as select * from tbl");
+        ValidationResult report = metadataInstance.getVdb("myservice").validate("create view v as select * from tbl");
         assertFalse(report.getReport().toString(), report.getReport().hasItems());
 
-        report = metadataInstance.validate("myservice", "create view v as select * from tbl1");
+        report = metadataInstance.getVdb("myservice").validate("create view v as select * from tbl1");
         assertTrue(report.toString(), report.getReport().hasItems());
     }
 

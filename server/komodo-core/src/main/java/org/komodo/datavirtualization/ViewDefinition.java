@@ -26,6 +26,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.GenericGenerator;
 import org.komodo.StringConstants;
 import org.komodo.repository.JpaConverterJson;
@@ -44,7 +45,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonSerialize(as = ViewDefinition.class)
 @JsonInclude(Include.NON_NULL)
 @JsonPropertyOrder(alphabetic = true)
-public class ViewDefinition implements Named {
+@DynamicUpdate
+public class ViewDefinition extends BaseEntity {
 
     public static class State {
         private List<String> sourcePaths = new ArrayList<>(1);
@@ -68,8 +70,6 @@ public class ViewDefinition implements Named {
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
-    @Column(unique=true)
-    private String name;
     private String ddl;
     @Column(name = "dv_name")
     private String dataVirtualizationName;
@@ -79,6 +79,8 @@ public class ViewDefinition implements Named {
     private boolean complete;
     @JsonProperty(value = "isUserDefined")
     private boolean userDefined;
+    @JsonIgnore
+    private boolean parsable;
 
     @JsonIgnore //for non-Entity serialization, the getters/setters will be used
     @Convert(converter = ViewDefinitionStateConvertor.class)
@@ -88,17 +90,12 @@ public class ViewDefinition implements Named {
     }
 
     public ViewDefinition(String dataVirtualizationName, String name) {
-        this.name = name;
+        setName(name);
         this.dataVirtualizationName = dataVirtualizationName;
     }
 
     public String getId() {
         return id;
-    }
-
-    @Override
-    public String getName() {
-        return name;
     }
 
     public String getDescription() {
@@ -167,6 +164,14 @@ public class ViewDefinition implements Named {
 
     public void clearState() {
         this.state = new State();
+    }
+
+    public boolean isParsable() {
+        return parsable;
+    }
+
+    public void setParsable(boolean parsable) {
+        this.parsable = parsable;
     }
 
 }

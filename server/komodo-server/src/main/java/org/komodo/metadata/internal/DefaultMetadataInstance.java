@@ -35,11 +35,13 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 import javax.xml.stream.XMLStreamException;
 
 import org.komodo.KException;
+import org.komodo.StringConstants;
 import org.komodo.datasources.ExternalSource;
 import org.komodo.metadata.Messages;
 import org.komodo.metadata.MetadataInstance;
@@ -56,6 +58,8 @@ import org.teiid.adminapi.Admin;
 import org.teiid.adminapi.AdminException;
 import org.teiid.adminapi.AdminProcessingException;
 import org.teiid.adminapi.VDB;
+import org.teiid.adminapi.VDB.Status;
+import org.teiid.adminapi.VDBImport;
 import org.teiid.adminapi.impl.ModelMetaData;
 import org.teiid.adminapi.impl.SourceMappingMetadata;
 import org.teiid.adminapi.impl.VDBMetaData;
@@ -63,16 +67,18 @@ import org.teiid.adminapi.impl.VDBMetadataParser;
 import org.teiid.api.exception.query.QueryMetadataException;
 import org.teiid.core.TeiidComponentException;
 import org.teiid.core.util.AccessibleByteArrayOutputStream;
+import org.teiid.core.util.ArgCheck;
 import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository.ConnectorManagerException;
 import org.teiid.metadata.AbstractMetadataRecord;
+import org.teiid.metadata.MetadataException;
 import org.teiid.metadata.MetadataFactory;
+import org.teiid.metadata.Schema;
 import org.teiid.query.metadata.BasicQueryMetadataWrapper;
 import org.teiid.query.metadata.CompositeMetadataStore;
 import org.teiid.query.metadata.MetadataValidator;
 import org.teiid.query.metadata.SystemMetadata;
 import org.teiid.query.metadata.TransformationMetadata;
 import org.teiid.query.parser.QueryParser;
-import org.teiid.query.sql.LanguageObject;
 import org.teiid.query.validator.ValidatorReport;
 import org.teiid.translator.TranslatorException;
 
@@ -80,6 +86,96 @@ import com.zaxxer.hikari.HikariDataSource;
 
 @Component
 public class DefaultMetadataInstance implements MetadataInstance {
+
+    public class TeiidVdbImpl implements TeiidVdb {
+
+        private VDBMetaData vdb;
+
+        public TeiidVdbImpl(VDB vdb) throws Exception {
+            ArgCheck.isNotNull(vdb, "vdb"); //$NON-NLS-1$
+
+            if (! (vdb instanceof VDBMetaData))
+                throw new Exception(Messages.getString(Messages.MetadataServer.onlySupportingDynamicVdbs));
+
+            this.vdb = (VDBMetaData)vdb;
+        }
+
+        @Override
+        public String getName() {
+            return vdb.getName();
+        }
+
+        @Override
+        public String getVersion() {
+            return vdb.getVersion();
+        }
+
+        @Override
+        public boolean isActive() {
+            return Status.ACTIVE.equals(vdb.getStatus());
+        }
+
+        @Override
+        public boolean isLoading() {
+            return Status.LOADING.equals(vdb.getStatus());
+        }
+
+        @Override
+        public boolean hasFailed() {
+            return Status.FAILED.equals(vdb.getStatus());
+        }
+
+        @Override
+        public boolean wasRemoved() {
+            return Status.REMOVED.equals(vdb.getStatus());
+        }
+
+        @Override
+        public List<String> getValidityErrors() {
+            return vdb.getValidityErrors();
+        }
+
+        @Override
+        public String getPropertyValue(String key) {
+            return vdb.getPropertyValue(key);
+        }
+
+        @Override
+        public List<? extends VDBImport> getImports() {
+            return this.vdb.getVDBImports();
+        }
+
+        public VDBMetaData getVDBMetaData() {
+            return this.vdb;
+        }
+
+        @Override
+        public Schema getSchema(String name) {
+            if (!isActive()) {
+                return null;
+            }
+            TransformationMetadata qmi = vdb.getAttachment(TransformationMetadata.class);
+            return qmi.getMetadataStore().getSchema(name);
+        }
+
+        @Override
+        public ValidationResult validate(String ddl) throws KException {
+            return DefaultMetadataInstance.this.validate(this, ddl, false);
+        }
+
+        @Override
+        public List<Schema> getLocalSchema() {
+            if (!isActive()) {
+                return Collections.emptyList();
+            }
+            TransformationMetadata qmi = vdb.getAttachment(TransformationMetadata.class);
+
+            return vdb.getModels().stream()
+                    .map(m -> qmi.getMetadataStore().getSchema(m.getName()))
+                    .collect(Collectors.toList());
+        }
+
+    }
 
     public static final String DEFAULT_VDB_VERSION = "1";
 
@@ -99,7 +195,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
         this.server = server;
     }
 
-    public Admin getAdmin() throws AdminException {
+    public Admin getAdmin() {
         //no need to synchronize, as delegate holds no state
         if (admin == null) {
             admin = server.getAdmin();
@@ -139,11 +235,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
     @Override
     public Condition getCondition() {
-        try {
-            return getAdmin() != null ? Condition.REACHABLE : Condition.NOT_REACHABLE;
-        } catch (AdminException e) {
-            return Condition.NOT_REACHABLE;
-        }
+        return getAdmin() != null ? Condition.REACHABLE : Condition.NOT_REACHABLE;
     }
 
     @Override
@@ -262,25 +354,6 @@ public class DefaultMetadataInstance implements MetadataInstance {
     }
 
     @Override
-    public Collection<String> getVdbNames() throws KException {
-        checkStarted();
-        try {
-            Collection<? extends VDB> vdbs = getAdmin().getVDBs();
-            if (vdbs.isEmpty())
-                return Collections.emptyList();
-
-            List<String> teiidVdbNames = new ArrayList<String>();
-            for (VDB vdb : vdbs) {
-                teiidVdbNames.add(vdb.getName());
-            }
-
-            return teiidVdbNames;
-        } catch (Exception ex) {
-            throw handleError(ex);
-        }
-    }
-
-    @Override
     public boolean hasVdb(String name) throws KException {
         checkStarted();
         return getVdb(name) != null;
@@ -320,15 +393,6 @@ public class DefaultMetadataInstance implements MetadataInstance {
             return false;
 
         return getVdb(vdbName).wasRemoved();
-    }
-
-    @Override
-    public List<String> retrieveVdbValidityErrors(String vdbName) throws KException {
-        checkStarted();
-        if (!hasVdb(vdbName))
-            return Collections.emptyList();
-
-        return getVdb(vdbName).getValidityErrors();
     }
 
     @Override
@@ -408,7 +472,6 @@ public class DefaultMetadataInstance implements MetadataInstance {
             if (vdb != null) {
                 getAdmin().undeploy(vdbName);
             }
-            vdb = getVdb(vdbName);
         } catch (Exception ex) {
             throw handleError(ex);
         }
@@ -418,24 +481,6 @@ public class DefaultMetadataInstance implements MetadataInstance {
     public String getSchema(String vdbName, String modelName) throws KException {
         try {
             return getAdmin().getSchema(vdbName, DEFAULT_VDB_VERSION, modelName, null, null);
-        } catch (Exception ex) {
-            throw handleError(ex);
-        }
-    }
-
-    /**
-     * Attempt to parse the given sql string and return the {@link LanguageObject} tree
-     *
-     * @param sql
-     * @return tree of {@link LanguageObject}s
-     * @throws KException
-     */
-    public static LanguageObject parse(String sql) throws KException {
-        //
-        // Note: this does not require the metadata instance to be started
-        //
-        try {
-            return QueryParser.getQueryParser().parseDesignerCommand(sql);
         } catch (Exception ex) {
             throw handleError(ex);
         }
@@ -511,44 +556,51 @@ public class DefaultMetadataInstance implements MetadataInstance {
     }
 
     @Override
-    public ValidationResult validate(String vdbName, String ddl) throws KException {
+    public ValidationResult parse(String ddl) throws KException {
+        return validate(null, ddl, true); //$NON-NON-NLS-1$
+    }
+
+    public ValidationResult validate(TeiidVdbImpl preview, String ddl, boolean parseOnly) throws KException {
         QueryParser parser = QueryParser.getQueryParser();
 
         ModelMetaData m = new ModelMetaData();
-        m.setName(SERVICE_VDB_VIEW_MODEL); //$NON-NLS-1$
-
-        MetadataFactory mf = new MetadataFactory(vdbName, DEFAULT_VDB_VERSION, SystemMetadata.getInstance().getRuntimeTypeMap(),m);
-        parser.parseDDL(mf, ddl);
-
-        TeiidVdbImpl preview = getVdb(vdbName);
-        if (preview == null || !preview.isActive()) {
-            throw new KException("Preview VDB is not yet available");
-        }
-
-
-        VDBMetaData vdb = preview.getVDBMetaData();
-        TransformationMetadata qmi = vdb.getAttachment(TransformationMetadata.class);
-
-        //create an metadata facade so we can find stuff that was parsed
-        CompositeMetadataStore compositeMetadataStore = new CompositeMetadataStore(mf.asMetadataStore());
-        BasicQueryMetadataWrapper wrapper = new BasicQueryMetadataWrapper(qmi) {
-            @Override
-            public Object getGroupID(String groupName) throws TeiidComponentException, QueryMetadataException {
-                try {
-                    return super.getGroupID(groupName);
-                } catch (QueryMetadataException e) {
-                    return compositeMetadataStore.findGroup(groupName);
-                }
-            }
-        };
-
+        m.setName(StringConstants.SERVICE_VDB_VIEW_MODEL);
+        MetadataFactory mf = new MetadataFactory(preview == null?"vdb":preview.getName(), DefaultMetadataInstance.DEFAULT_VDB_VERSION, SystemMetadata.getInstance().getRuntimeTypeMap(),m);
         ValidatorReport report = new ValidatorReport();
-        MetadataValidator validator = new MetadataValidator();
-        for (AbstractMetadataRecord record : mf.getSchema().getResolvingOrder()) {
-            validator.validate(vdb, m, record, report, wrapper, mf, parser);
+        MetadataException metadataException = null;
+        try {
+            parser.parseDDL(mf, ddl);
+        } catch (MetadataException e) {
+            metadataException = e;
         }
 
-        return new ValidationResult(report, mf.getSchema());
+        if (!parseOnly) {
+            if (preview == null || !preview.isActive()) {
+                throw new KException("Preview VDB is not available");
+            }
+            VDBMetaData vdb = preview.getVDBMetaData();
+            TransformationMetadata qmi = preview.getVDBMetaData().getAttachment(TransformationMetadata.class);
+
+            //create an metadata facade so we can find stuff that was parsed
+            CompositeMetadataStore compositeMetadataStore = new CompositeMetadataStore(mf.asMetadataStore());
+            BasicQueryMetadataWrapper wrapper = new BasicQueryMetadataWrapper(qmi) {
+                @Override
+                public Object getGroupID(String groupName) throws TeiidComponentException, QueryMetadataException {
+                    try {
+                        return super.getGroupID(groupName);
+                    } catch (QueryMetadataException e) {
+                        return compositeMetadataStore.findGroup(groupName);
+                    }
+                }
+            };
+
+            MetadataValidator validator = new MetadataValidator();
+            for (AbstractMetadataRecord record : mf.getSchema().getResolvingOrder()) {
+                validator.validate(vdb, m, record, report, wrapper, mf, parser);
+            }
+        }
+
+        return new ValidationResult(report, mf.getSchema(), metadataException);
     }
 
 }

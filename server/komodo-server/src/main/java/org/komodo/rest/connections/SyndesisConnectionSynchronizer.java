@@ -25,12 +25,9 @@ import org.komodo.KException;
 import org.komodo.datasources.DefaultSyndesisDataSource;
 import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
-import org.komodo.rest.KomodoService;
 import org.komodo.rest.connections.SyndesisConnectionMonitor.EventMsg;
 import org.komodo.rest.datavirtualization.RestSyndesisSourceStatus;
 import org.komodo.rest.service.KomodoMetadataService;
-import org.komodo.rest.service.KomodoUtilService;
-import org.teiid.adminapi.AdminException;
 
 /**
  * This class provides the communication and hooks
@@ -88,8 +85,8 @@ public class SyndesisConnectionSynchronizer {
                     .getSyndesisSources(bogusCredentials);
             for (DefaultSyndesisDataSource sds : dataSources) {
                 addConnection(sds);
+                synchronzePreviewVDB();
             }
-            synchronzePreviewVDB();
             return true;
         } catch (Exception e) {
             LOGGER.error("Error syncronizing", e);
@@ -122,25 +119,26 @@ public class SyndesisConnectionSynchronizer {
         LOGGER.info("UPDATE connection completed for " + sds.getSyndesisName());
     }
 
-    private boolean handleDeleteConnection(EventMsg event) throws KException {
+    private void handleDeleteConnection(EventMsg event) throws KException {
         try {
             // note here that the datasource is already deleted from the syndesis
             // so we would need to search by local cached event id
             DefaultSyndesisDataSource sds = this.openshiftClient.getSyndesisDataSourceById(bogusCredentials,
                     event.getId());
             if (sds != null) {
-                return deleteConnection(sds);
+                deleteConnection(sds);
             }
-
-            return false;
         } catch (Exception e) {
             throw handleError(e);
         }
     }
 
-    private void addConnection(DefaultSyndesisDataSource sds) throws KException {
-        if (sds.getKomodoName() == null) {
-            this.openshiftClient.bindToSyndesisSource(bogusCredentials, sds);
+    private void addConnection(DefaultSyndesisDataSource sds) {
+        try {
+            this.openshiftClient.createDataSource(sds);
+        } catch (Exception e) {
+            LOGGER.warn("Error creating data source for " + sds.getSyndesisName(), e);
+            return;
         }
 
         // check if the metadata is already available, then skip it.
@@ -177,16 +175,16 @@ public class SyndesisConnectionSynchronizer {
         }
     }
 
-    private RestSyndesisSourceStatus checkMetadataStatus(DefaultSyndesisDataSource dsd) throws KException {
+    private RestSyndesisSourceStatus checkMetadataStatus(DefaultSyndesisDataSource dsd) {
         try {
-            return metadataService.getSyndesisSourceStatus(dsd, KomodoService.SYSTEM_USER_NAME);
+            return metadataService.getSyndesisSourceStatus(dsd);
         } catch (Exception e) {
             LOGGER.warn("Failed to get metadata status " + dsd.getSyndesisName(), e);
             return null;
         }
     }
 
-    private void requestMetadataForDataSource(DefaultSyndesisDataSource sds) throws KException {
+    private void requestMetadataForDataSource(DefaultSyndesisDataSource sds) {
         try {
             this.metadataService.refreshSchema(sds.getKomodoName(), true);
             LOGGER.info("submitted request to fetch metadata of connection " + sds.getSyndesisName());
@@ -195,29 +193,24 @@ public class SyndesisConnectionSynchronizer {
         }
     }
 
-    private boolean deleteConnection(DefaultSyndesisDataSource dsd) throws KException {
-        try {
-            RestSyndesisSourceStatus status = checkMetadataStatus(dsd);
-            if (status != null && status.getId() != null) {
-                deleteSchemaModel(status);
-            }
-
-            if (status != null && status.getVdbName() != null) {
-                deleteSourceVDB(status);
-            }
-
-            String komodoName = dsd.getKomodoName();
-            if (komodoName != null) {
-                this.openshiftClient.deleteDataSource(komodoName);
-            }
-            LOGGER.info("Connection deleted " + dsd.getSyndesisName());
-            return true;
-        } catch(AdminException e) {
-            throw handleError(e);
+    private void deleteConnection(DefaultSyndesisDataSource dsd) throws KException {
+        RestSyndesisSourceStatus status = checkMetadataStatus(dsd);
+        if (status != null && status.getId() != null) {
+            deleteSchemaModel(status);
         }
+
+        if (status != null && status.getVdbName() != null) {
+            deleteSourceVDB(status);
+        }
+
+        String komodoName = dsd.getKomodoName();
+        if (komodoName != null) {
+            this.openshiftClient.deleteDataSource(komodoName);
+        }
+        LOGGER.info("Connection deleted " + dsd.getSyndesisName());
     }
 
-    private void deleteSchemaModel(RestSyndesisSourceStatus status) throws KException {
+    private void deleteSchemaModel(RestSyndesisSourceStatus status) {
         try {
             if (this.metadataService.deleteSchema(status.getId())) {
                 LOGGER.info("Workspace schema " + status.getSourceName() + " deleted.");
@@ -227,7 +220,7 @@ public class SyndesisConnectionSynchronizer {
         }
     }
 
-    private void deleteSourceVDB(RestSyndesisSourceStatus status) throws KException {
+    private void deleteSourceVDB(RestSyndesisSourceStatus status) {
         try {
             this.metadataService.removeVdb(status.getVdbName());
             LOGGER.info("Source VDB " + status.getVdbName() + " deleted.");
@@ -244,10 +237,10 @@ public class SyndesisConnectionSynchronizer {
         return new KException(e);
     }
 
-    private boolean synchronzePreviewVDB() {
+    public boolean synchronzePreviewVDB() {
         LOGGER.info("Preview VDB update Request being submitted.");
         try {
-            this.metadataService.refreshPreviewVdb(KomodoUtilService.PREVIEW_VDB);
+            this.metadataService.refreshPreviewVdb();
             LOGGER.info("Preview VDB Updated");
             return true;
         } catch (Exception e) {

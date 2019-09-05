@@ -48,12 +48,11 @@ public interface KEngine {
 
     /**
      * Run the callable in the given transaction
-     * @param <T>
-     * @param txnName
      * @param rollbackOnly
      * @param callable
+     * @param <T>
      * @return
      * @throws Exception
      */
-    <T> T runInTransaction(String txnName, boolean rollbackOnly, Callable<T> callable) throws Exception;
+    <T> T runInTransaction(boolean rollbackOnly, Callable<T> callable) throws Exception;
 }

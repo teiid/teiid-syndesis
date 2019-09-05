@@ -25,11 +25,14 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonInclude(Include.NON_NULL)
 public class QSColumn {
 
-    private final String type;
+    private String type;
 
-    private final String name;
+    private String name;
 
-    private final String label;
+    private String label;
+
+    protected QSColumn() {
+    }
 
     public QSColumn(String dataType, String columnName, String columnLabel) {
         this.type = dataType;

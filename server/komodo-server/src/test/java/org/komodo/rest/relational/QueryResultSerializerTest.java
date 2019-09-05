@@ -17,7 +17,7 @@
  */
 package org.komodo.rest.relational;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -27,6 +27,7 @@ import org.komodo.metadata.query.QSResult;
 import org.komodo.metadata.query.QSRow;
 import org.komodo.rest.KomodoJsonMarshaller;
 
+@SuppressWarnings("nls")
 public class QueryResultSerializerTest implements StringConstants {
 
     private static String[][] columnsData = {
@@ -110,12 +111,4 @@ public class QueryResultSerializerTest implements StringConstants {
         assertEquals(JSON, json);
     }
 
-    /**
-     * Import is not used, and the import will fail as some state is final with no setters
-     * @throws Exception
-     */
-    @Test(expected = RuntimeException.class)
-    public void shouldImportResult() throws Exception {
-        KomodoJsonMarshaller.unmarshall( JSON, QSResult.class );
-    }
 }

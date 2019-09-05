@@ -20,6 +20,8 @@ package org.komodo.repository;
 
 import org.komodo.datavirtualization.DataVirtualization;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -27,6 +29,7 @@ public interface DataVirtualizationRepository extends JpaRepository<DataVirtuali
 
     public DataVirtualization findByName(String name);
 
-    public DataVirtualization findByNameIgnoreCase(String virtualizationName);
+    @Query("from DataVirtualization dv where dv.upperName = UPPER(:dvName)")
+    public DataVirtualization findByNameIgnoreCase(@Param("dvName") String virtualizationName);
 
 }

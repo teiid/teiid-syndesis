@@ -69,10 +69,15 @@ public class KEngineImpl implements KEngine {
     }
 
     @Override
-    public <T> T runInTransaction(String txnName, boolean rollbackOnly, Callable<T> callable) throws Exception {
+    public <T> T runInTransaction(boolean rollbackOnly, Callable<T> callable) throws Exception {
         TransactionStatus transactionStatus = platformTransactionManager.getTransaction(NEW_TRANSACTION_DEFINITION);
         if (rollbackOnly) {
             transactionStatus.setRollbackOnly();
+        }
+        String txnName = null;
+        if (LOGGER.isDebugEnabled()) {
+            StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+            txnName = stackTraceElements[2].getMethodName();
         }
         LOGGER.debug( "createTransaction:created '%s', rollbackOnly = '%b'", txnName, rollbackOnly ); //$NON-NLS-1$
         try {
