@@ -26,6 +26,7 @@ import org.komodo.StringConstants;
 import org.komodo.metadata.query.QSResult;
 import org.teiid.adminapi.AdminException;
 import org.teiid.adminapi.impl.VDBMetaData;
+import org.teiid.deployers.VDBLifeCycleListener;
 import org.teiid.metadata.MetadataException;
 import org.teiid.metadata.Schema;
 import org.teiid.query.validator.ValidatorReport;
@@ -139,33 +140,6 @@ public interface MetadataInstance extends StringConstants {
     int NO_OFFSET = 0;
 
     /**
-     * The server state.
-     */
-    public enum Condition {
-
-        /**
-         * Server has been successfully reached.
-         */
-        REACHABLE,
-
-        /**
-         * Server is not reachable.
-         */
-        NOT_REACHABLE,
-
-        /**
-         * There was an error trying to establish server.
-         */
-        ERROR
-
-    }
-
-    /**
-     * @return the condition of the server
-     */
-    Condition getCondition();
-
-    /**
      * Query the vdb with given name
      *
      * @param vdbName the name of the vdb to query
@@ -191,45 +165,6 @@ public interface MetadataInstance extends StringConstants {
     TeiidVdb getVdb(String vdbDeploymentName) throws KException;
 
     /**
-     * @param name
-     * @return whether metadata instance contains a vdb with the given name
-     * @throws KException
-     */
-    boolean hasVdb(String name) throws KException;
-
-    /**
-     * @param vdbName
-     *
-     * @return <code>true</code> if the vdb is active
-     * @throws KException
-     */
-    boolean isVdbActive(String vdbName) throws KException;
-
-    /**
-     * @param vdbName
-     *
-     * @return <code>true</code> if the vdb is loading
-     * @throws KException
-     */
-    boolean isVdbLoading(String vdbName) throws KException;
-
-    /**
-     * @param vdbName
-     *
-     * @return <code>true</code> if the vdb failed
-     * @throws KException
-     */
-    boolean hasVdbFailed(String vdbName) throws KException;
-
-    /**
-     * @param vdbName
-     *
-     * @return <code>true</code> if the vdb was removed
-     * @throws KException
-     */
-    boolean wasVdbRemoved(String vdbName) throws KException;
-
-    /**
      * @param vdbName
      * @param modelName
      * @return the schema from the given model in the vdb with the given name
@@ -249,7 +184,7 @@ public interface MetadataInstance extends StringConstants {
      * @return the collection of data sources
      * @throws KException
      */
-    Collection<TeiidDataSource> getDataSources() throws KException;
+    Collection<? extends TeiidDataSource> getDataSources() throws KException;
 
     /**
      * @param sourceName
@@ -278,4 +213,6 @@ public interface MetadataInstance extends StringConstants {
     void createDataSource(String deploymentName, String templateName, Map<String, String> properties) throws AdminException;
 
     ValidationResult parse(String ddl) throws KException;
+
+    void addVDBLifeCycleListener(VDBLifeCycleListener listener);
 }

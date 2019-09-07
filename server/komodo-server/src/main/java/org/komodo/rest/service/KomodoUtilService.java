@@ -67,7 +67,7 @@ public final class KomodoUtilService extends KomodoService {
 
     private static final String ERROR = "ERROR"; //$NON-NLS-1$
 
-    public static final String PREVIEW_VDB = "PreviewVdb"; //$NON-NLS-1$
+    public static final String PREVIEW_VDB = "Preview"; //$NON-NLS-1$
 
     public static final String APP_NAME = "App Name"; //$NON-NLS-1$
 
@@ -248,7 +248,7 @@ public final class KomodoUtilService extends KomodoService {
 
         TeiidVdb vdb = metadataService.updatePreviewVdb(restViewDefinition.getDataVirtualizationName());
 
-        if (vdb == null || !vdb.isActive()) {
+        if (vdb == null || !vdb.hasLoaded()) {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE);
         }
 

@@ -27,6 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.komodo.KException;
 import org.komodo.metadata.MetadataInstance.ValidationResult;
+import org.komodo.metadata.internal.DefaultMetadataInstance.TeiidVdbImpl;
 import org.teiid.adminapi.impl.VDBMetadataParser;
 import org.teiid.runtime.EmbeddedConfiguration;
 
@@ -50,9 +51,16 @@ public class DefaultMetadataInstanceTest {
         server.stop();
     }
 
+    @Test
     public void shouldParse() throws KException {
         ValidationResult result = metadataInstance.parse("create view v as select 1");
         assertNull(result.getMetadataException());
+    }
+
+    @Test
+    public void shouldFailParse() throws KException {
+        ValidationResult result = metadataInstance.parse("create view v as ");
+        assertNotNull(result.getMetadataException());
     }
 
     @Test
@@ -70,6 +78,26 @@ public class DefaultMetadataInstanceTest {
 
         report = metadataInstance.getVdb("myservice").validate("create view v as select * from tbl1");
         assertTrue(report.toString(), report.getReport().hasItems());
+    }
+
+    @Test
+    public void testHasLoaded() throws Exception {
+        String vdb = "<vdb name=\"myservice\" version=\"1\">\n" +
+                "    <model visible=\"true\" name=\"accounts\" type=\"VIRTUAL\">\n" +
+                "      <metadata type=\"DDL\">create view tbl (col) as select 1;</metadata>" +
+                "    </model>    \n" +
+                "</vdb>";
+
+        metadataInstance.deploy(VDBMetadataParser.unmarshell(new ByteArrayInputStream(vdb.getBytes("UTF-8"))));
+
+        TeiidVdbImpl vdb2 = metadataInstance.getVdb("myservice");
+        assertTrue(vdb2.hasLoaded());
+        assertTrue(vdb2.isActive());
+
+        metadataInstance.undeployDynamicVdb("myservice");
+
+        assertTrue(vdb2.hasLoaded());
+        assertFalse(vdb2.isActive());
     }
 
 }

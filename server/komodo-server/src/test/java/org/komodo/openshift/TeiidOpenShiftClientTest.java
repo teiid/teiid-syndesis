@@ -39,8 +39,8 @@ public class TeiidOpenShiftClientTest {
         TeiidOpenShiftClient client = new TeiidOpenShiftClient(metadata, new EncryptionComponent("blah"), new KomodoConfigurationProperties(), new KEngine() {
 
             @Override
-            public boolean startAndWait() throws Exception {
-                return true;
+            public void start() throws Exception {
+
             }
 
             @Override

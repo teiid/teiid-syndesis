@@ -17,8 +17,6 @@
  */
 package org.komodo.rest;
 
-import static org.komodo.rest.Messages.Error.*;
-
 import org.komodo.KEngine;
 import org.komodo.KException;
 import org.komodo.WorkspaceManager;
@@ -70,26 +68,12 @@ public abstract class KomodoService implements V1Constants {
         return credentialsProvider.getCredentials();
     }
 
-    protected String checkSecurityContext() {
-        OAuthCredentials oAuthCredentials = getAuthenticationToken();
-
-        //
-        // Without oauth proxy running oAuthCredentials is not null but its user is.
-        // This will allow the default to the 'komodo' user but the catalog-service resource methods
-        // will not be available.
-        //
-        if (oAuthCredentials == null || oAuthCredentials.getUser() == null) {
-            throw error(HttpStatus.UNAUTHORIZED, RelationalMessages.Error.SECURITY_FAILURE_ERROR);
-        }
-        return oAuthCredentials.getUser();
-    }
-
     protected WorkspaceManager getWorkspaceManager() throws KException {
         return this.kengine.getWorkspaceManager();
     }
 
     public static ResponseStatusException notFound(String resourceName) {
-        String message = Messages.getString( RESOURCE_NOT_FOUND,resourceName);
+        String message = RelationalMessages.getString( RelationalMessages.Error.RESOURCE_NOT_FOUND,resourceName);
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, message);
     }
 

@@ -217,7 +217,7 @@ public final class RestSyndesisSourceStatus implements V1Constants {
         this.vdbName = teiidVdb.getName();
         this.errors = teiidVdb.getValidityErrors();
 
-        if ( teiidVdb.isActive() ) {
+        if ( teiidVdb.hasLoaded() ) {
             this.vdbState = EntityState.ACTIVE;
         } else if ( teiidVdb.hasFailed() ) {
             this.vdbState = EntityState.FAILED;

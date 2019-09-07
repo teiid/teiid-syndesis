@@ -80,4 +80,19 @@ public class ViewDefinitionTest {
         assertEquals(Arrays.asList("x"), found.getSourcePaths());
     }
 
+    @Test
+    public void testSameName() throws Exception {
+        workspaceManagerImpl.createDataVirtualization("name");
+
+        workspaceManagerImpl.createDataVirtualization("name1");
+
+        workspaceManagerImpl.createViewDefiniton("name", "x");
+
+        entityManager.flush();
+
+        workspaceManagerImpl.createViewDefiniton("name1", "x");
+
+        entityManager.flush();
+    }
+
 }

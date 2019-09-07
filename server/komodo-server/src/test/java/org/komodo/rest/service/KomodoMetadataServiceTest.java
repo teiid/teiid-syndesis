@@ -74,6 +74,7 @@ public class KomodoMetadataServiceTest {
         assertEquals(
                 "<?xml version=\"1.0\" ?><vdb name=\"vdb\" version=\"1\"><description>Vdb for source Data Source:	source\n"
                         + "Type: 		type</description><connection-type>BY_VERSION</connection-type>"
+                        + "<property name=\"id\"></property><property name=\"async-load\" value=\"true\"></property>"
                         + "<model name=\"source\" type=\"PHYSICAL\" visible=\"true\">"
                         + "<property name=\"importer.TableTypes\" value=\"TABLE,VIEW\"></property>"
                         + "<property name=\"importer.UseQualifiedName\" value=\"true\"></property>"
@@ -89,6 +90,7 @@ public class KomodoMetadataServiceTest {
         assertEquals(
                 "<?xml version=\"1.0\" ?><vdb name=\"vdb\" version=\"1\"><description>Vdb for source Data Source:	source\n"
                         + "Type: 		type</description><connection-type>BY_VERSION</connection-type>"
+                        + "<property name=\"id\"></property>"
                         + "<model name=\"source\" type=\"PHYSICAL\" visible=\"true\">"
                         + "<property name=\"importer.TableTypes\" value=\"TABLE,VIEW\"></property>"
                         + "<property name=\"importer.UseQualifiedName\" value=\"true\"></property>"
@@ -151,6 +153,9 @@ public class KomodoMetadataServiceTest {
         kqa.setTarget("dv1");
 
         workspaceManagerImpl.createDataVirtualization("dv1");
+
+        //get rid of the default preview vdb
+        metadataInstance.undeployDynamicVdb(KomodoUtilService.PREVIEW_VDB);
 
         try {
             komodoMetadataService.updatePreviewVdb("dv1");

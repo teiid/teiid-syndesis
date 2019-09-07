@@ -27,13 +27,20 @@ import org.teiid.core.util.ArgCheck;
 public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, TeiidDataSource {
     private final String name;
     private final Map<String, String> properties;
+    private final Object dataSource;
 
     public TeiidDataSourceImpl(String name, Map<String, String> properties) {
+        this(name, properties, null);
+    }
+
+    public TeiidDataSourceImpl(String name,
+            Map<String, String> properties, Object dataSource) {
         ArgCheck.isNotEmpty(name, "name"); //$NON-NLS-1$
         ArgCheck.isNotEmpty(properties, "properties"); //$NON-NLS-1$
 
         this.name = name;
         this.properties = Collections.unmodifiableMap(properties);
+        this.dataSource = dataSource;
     }
 
     /**
@@ -42,8 +49,8 @@ public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, Tei
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
     @Override
-    public int compareTo(TeiidDataSourceImpl dataSource) {
-        return getName().compareTo(dataSource.getName());
+    public int compareTo(TeiidDataSourceImpl other) {
+        return getName().compareTo(other.getName());
     }
 
     /**
@@ -82,8 +89,8 @@ public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, Tei
     }
 
     @Override
-    public String getPropertyValue(String name) {
-        return this.properties.get(name);
+    public String getPropertyValue(String key) {
+        return this.properties.get(key);
     }
 
     /**
@@ -152,6 +159,10 @@ public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, Tei
     @Override
     public String getSchema() {
         return getPropertyValue(TeiidDataSource.DATASOURCE_SCHEMA);
+    }
+
+    public Object getDataSource() {
+        return dataSource;
     }
 
 }

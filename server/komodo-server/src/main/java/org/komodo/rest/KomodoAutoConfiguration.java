@@ -17,21 +17,18 @@
  */
 package org.komodo.rest;
 
-import static org.komodo.rest.Messages.Error.*;
-
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import javax.transaction.TransactionManager;
 
 import org.komodo.KEngine;
 import org.komodo.metadata.MetadataInstance;
+import org.komodo.metadata.internal.DefaultMetadataInstance;
 import org.komodo.metadata.internal.TeiidServer;
 import org.komodo.openshift.EncryptionComponent;
 import org.komodo.openshift.TeiidOpenShiftClient;
-import org.komodo.rest.connections.SyndesisConnectionMonitor;
+import org.komodo.repository.WorkspaceManagerImpl;
 import org.komodo.rest.connections.SyndesisConnectionSynchronizer;
-import org.komodo.rest.service.KomodoMetadataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -47,7 +44,7 @@ import org.teiid.runtime.EmbeddedConfiguration;
 
 @Configuration
 @EnableConfigurationProperties(KomodoConfigurationProperties.class)
-@ComponentScan(basePackages = {"org.komodo.repository", "org.komodo.metadata.internal"})
+@ComponentScan(basePackageClasses = {WorkspaceManagerImpl.class, DefaultMetadataInstance.class, SyndesisConnectionSynchronizer.class})
 public class KomodoAutoConfiguration implements ApplicationListener<ContextRefreshedEvent> {
 
     @Value("${encrypt.key}")
@@ -79,23 +76,11 @@ public class KomodoAutoConfiguration implements ApplicationListener<ContextRefre
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        boolean started;
         try {
-            started = kengine.startAndWait();
+            kengine.start();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
-        if ( !started ) {
-            throw new RuntimeException(Messages.getString( KOMODO_ENGINE_STARTUP_TIMEOUT, 1, TimeUnit.MINUTES));
-        }
-        // monitor to track connections from the syndesis
-        SyndesisConnectionSynchronizer sync = new SyndesisConnectionSynchronizer(openShiftClient(
-                kengine, getTextEncryptor()), event.getApplicationContext().getBean(KomodoMetadataService.class));
-        //create an initial dummy preview vdb
-        sync.synchronzePreviewVDB();
-        SyndesisConnectionMonitor scm = new SyndesisConnectionMonitor(sync, executor);
-        this.executor.scheduleAtFixedRate(()->scm.connect(), 5, 15, TimeUnit.SECONDS);
     }
 
     @Bean

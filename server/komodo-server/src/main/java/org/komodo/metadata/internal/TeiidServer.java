@@ -17,6 +17,7 @@ package org.komodo.metadata.internal;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.teiid.deployers.VDBLifeCycleListener;
 import org.teiid.dqp.internal.datamgr.ConnectorManager;
 import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository;
 import org.teiid.runtime.EmbeddedServer;
@@ -68,5 +69,9 @@ public class TeiidServer extends EmbeddedServer {
                 }
             };
         }
+    }
+
+    public void addVDBLifeCycleListener(VDBLifeCycleListener listener) {
+        super.getVDBRepository().addListener(listener);
     }
 }
