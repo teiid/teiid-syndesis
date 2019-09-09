@@ -33,8 +33,6 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -74,7 +72,6 @@ import org.komodo.rest.V1Constants;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.teiid.adminapi.AdminException;
 import org.teiid.adminapi.Model;
 import org.teiid.adminapi.impl.ModelMetaData;
 import org.teiid.adminapi.impl.SourceMappingMetadata;
@@ -282,11 +279,12 @@ public class TeiidOpenShiftClient implements V1Constants {
 
     private MetadataInstance metadata;
     private Map<String, DataSourceDefinition> sources = new ConcurrentHashMap<>();
+    private Map<String, DefaultSyndesisDataSource> syndesisSources = new ConcurrentHashMap<String, DefaultSyndesisDataSource>();
 
     /**
      * Fixed pool of up to 3 threads for configuring images ready to be deployed
      */
-    private ExecutorService configureService = Executors.newFixedThreadPool(3);
+    private ThreadPoolExecutor configureService = new ThreadPoolExecutor(3, 3, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
 
     private Map<String, PrintWriter> logBuffers = new ConcurrentHashMap<>();
     private EncryptionComponent encryptionComponent;
@@ -301,6 +299,8 @@ public class TeiidOpenShiftClient implements V1Constants {
         this.encryptionComponent = encryptor;
         this.config = config;
         this.kengine = kengine;
+        this.workExecutor.allowCoreThreadTimeOut(true);
+        this.configureService.allowCoreThreadTimeOut(true);
 
         // data source definitions
         add(new PostgreSQLDefinition());
@@ -312,6 +312,7 @@ public class TeiidOpenShiftClient implements V1Constants {
         add(new SalesforceDefinition());
         add(new WebServiceDefinition());
         add(new AmazonS3Definition());
+        add(new H2SQLDefinition());
     }
 
     private String getLogPath(String id) {
@@ -404,7 +405,7 @@ public class TeiidOpenShiftClient implements V1Constants {
      * @param properties properties from service creation
      * @return DataSourceDefinition
      */
-    private DataSourceDefinition getSourceDefinitionThatMatches(Map<String, String> properties) {
+    public DataSourceDefinition getSourceDefinitionThatMatches(Map<String, String> properties) {
         for (DataSourceDefinition dd : this.sources.values()) {
             if (dd.isTypeOf(properties)) {
                 return dd;
@@ -454,7 +455,7 @@ public class TeiidOpenShiftClient implements V1Constants {
     }
 
     public Set<DefaultSyndesisDataSource> getSyndesisSources(OAuthCredentials oauthCreds) throws KException {
-        Set<DefaultSyndesisDataSource> sources = new HashSet<>();
+        Set<DefaultSyndesisDataSource> result = new HashSet<>();
         try {
             String url = SYNDESISURL+"/connections";
             InputStream response = executeGET(url, oauthCreds);
@@ -467,7 +468,7 @@ public class TeiidOpenShiftClient implements V1Constants {
                 }
                 String name = item.get("name").asText();
                 try {
-                    sources.add(buildSyndesisDataSource(name, item));
+                    result.add(buildSyndesisDataSource(name, item));
                 } catch (KException e) {
                     error(name, e.getMessage(), e);
                 }
@@ -475,26 +476,30 @@ public class TeiidOpenShiftClient implements V1Constants {
         } catch (Exception e) {
             throw handleError(e);
         }
-        return sources;
+        return result;
     }
 
     public DefaultSyndesisDataSource getSyndesisDataSourceById(OAuthCredentials oauthCreds, String dsId)
             throws KException {
-        try {
-            String url = SYNDESISURL+"/connections/"+dsId;
-            InputStream response = executeGET(url, oauthCreds);
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode root = mapper.readTree(response);
-            String connectorType = root.get("connectorId").asText();
-            if (!connectorType.equals("sql")) {
-                LOGGER.debug("Not SQL Connection, not supported by Data Virtualization yet.");
-                return null;
+        DefaultSyndesisDataSource source = syndesisSources.get(dsId);
+        if (source == null) {
+            try {
+                String url = SYNDESISURL+"/connections/"+dsId;
+                InputStream response = executeGET(url, oauthCreds);
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode root = mapper.readTree(response);
+                String connectorType = root.get("connectorId").asText();
+                if (!connectorType.equals("sql")) {
+                    LOGGER.debug("Not SQL Connection, not supported by Data Virtualization yet.");
+                    return null;
+                }
+                String name = root.get("name").asText();
+                source = buildSyndesisDataSource(name, root);
+            } catch (Exception e) {
+                throw handleError(e);
             }
-            String name = root.get("name").asText();
-            return buildSyndesisDataSource(name, root);
-        } catch (Exception e) {
-            throw handleError(e);
         }
+        return source;
     }
 
     public DefaultSyndesisDataSource getSyndesisDataSource(OAuthCredentials oauthCreds, String dsName)
@@ -533,6 +538,7 @@ public class TeiidOpenShiftClient implements V1Constants {
         dsd.setTranslatorName(def.getTranslatorName());
         dsd.setProperties(p);
         dsd.setDefinition(def);
+        syndesisSources.putIfAbsent(dsd.getId(), dsd);
         return dsd;
     }
 
@@ -618,8 +624,12 @@ public class TeiidOpenShiftClient implements V1Constants {
         });
     }
 
-    public void deleteDataSource(String dsName) throws KException {
-        this.metadata.deleteDataSource(dsName);
+    public void deleteDataSource(DefaultSyndesisDataSource dsd) throws KException {
+        String komodoName = dsd.getKomodoName();
+        if (komodoName != null) {
+            this.metadata.deleteDataSource(komodoName);
+        }
+        this.syndesisSources.remove(dsd.getId());
     }
 
     public String findDataSourceNameByEventId(String eventId) throws KException  {
@@ -628,10 +638,6 @@ public class TeiidOpenShiftClient implements V1Constants {
             return sourceSchema.getName();
         }
         return null;
-    }
-
-    public Collection<String> getTeiidDataSourcesNames() throws AdminException {
-            return this.metadata.getDataSourceNames();
     }
 
     private ImageStream createImageStream(OpenShiftClient client, String namespace, String vdbName) {

@@ -19,9 +19,14 @@ package org.komodo.rest.connections;
 
 import java.io.IOException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.PostConstruct;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -33,6 +38,7 @@ import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 import okio.ByteString;
 
+@Component
 public class SyndesisConnectionMonitor {
     private static final Log LOGGER = LogFactory.getLog(SyndesisConnectionMonitor.class);
     private volatile WebSocket webSocket;
@@ -94,9 +100,9 @@ public class SyndesisConnectionMonitor {
         }
     }
 
-    public SyndesisConnectionMonitor(SyndesisConnectionSynchronizer scs, ScheduledThreadPoolExecutor executor) {
+    public SyndesisConnectionMonitor(@Autowired SyndesisConnectionSynchronizer scs, @Autowired ScheduledThreadPoolExecutor connectionExecutor) {
         this.connectionSynchronizer = scs;
-        this.executor = executor;
+        this.executor = connectionExecutor;
     }
 
     static Request.Builder buildRequest() {
@@ -193,7 +199,7 @@ public class SyndesisConnectionMonitor {
                     }
                 }
             } catch (Exception e) {
-                LOGGER.error("handleMessage: Failed to read the response", e);
+                LOGGER.error("handleMessage: Failed to process the message", e);
             }
         });
     }
@@ -208,5 +214,10 @@ public class SyndesisConnectionMonitor {
         }
         webSocket = null;
         connected = false;
+    }
+
+    @PostConstruct
+    public void init() {
+        this.executor.scheduleAtFixedRate(()->this.connect(), 5, 15, TimeUnit.SECONDS);
     }
 }

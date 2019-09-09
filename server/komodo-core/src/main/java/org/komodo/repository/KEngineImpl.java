@@ -58,9 +58,8 @@ public class KEngineImpl implements KEngine {
     private PlatformTransactionManager platformTransactionManager;
 
     @Override
-    public boolean startAndWait() throws Exception {
-        this.workspaceManagerImpl.findDataVirtualization("x");
-        return true;
+    public void start() throws Exception {
+        this.workspaceManagerImpl.findDataVirtualization("x"); //$NON-NLS-1$
     }
 
     @Override

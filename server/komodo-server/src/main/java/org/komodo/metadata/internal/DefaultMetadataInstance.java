@@ -43,7 +43,6 @@ import javax.xml.stream.XMLStreamException;
 import org.komodo.KException;
 import org.komodo.StringConstants;
 import org.komodo.datasources.ExternalSource;
-import org.komodo.metadata.Messages;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.metadata.TeiidDataSource;
 import org.komodo.metadata.TeiidVdb;
@@ -53,10 +52,13 @@ import org.komodo.metadata.query.QSRow;
 import org.komodo.utils.KLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 import org.teiid.adminapi.Admin;
 import org.teiid.adminapi.AdminException;
 import org.teiid.adminapi.AdminProcessingException;
+import org.teiid.adminapi.Model.MetadataStatus;
 import org.teiid.adminapi.VDB;
 import org.teiid.adminapi.VDB.Status;
 import org.teiid.adminapi.VDBImport;
@@ -68,6 +70,7 @@ import org.teiid.api.exception.query.QueryMetadataException;
 import org.teiid.core.TeiidComponentException;
 import org.teiid.core.util.AccessibleByteArrayOutputStream;
 import org.teiid.core.util.ArgCheck;
+import org.teiid.deployers.VDBLifeCycleListener;
 import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository.ConnectorManagerException;
 import org.teiid.metadata.AbstractMetadataRecord;
 import org.teiid.metadata.MetadataException;
@@ -91,11 +94,8 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
         private VDBMetaData vdb;
 
-        public TeiidVdbImpl(VDB vdb) throws Exception {
-            ArgCheck.isNotNull(vdb, "vdb"); //$NON-NLS-1$
-
-            if (! (vdb instanceof VDBMetaData))
-                throw new Exception(Messages.getString(Messages.MetadataServer.onlySupportingDynamicVdbs));
+        public TeiidVdbImpl(VDB vdb) {
+            ArgCheck.isInstanceOf(VDBMetaData.class, vdb);
 
             this.vdb = (VDBMetaData)vdb;
         }
@@ -116,6 +116,23 @@ public class DefaultMetadataInstance implements MetadataInstance {
         }
 
         @Override
+        public boolean hasLoaded() {
+            //the notion of loaded needs to be
+            //consistent whether the vdb has been
+            //removed or not, so we can't just check the vdb status
+            if (vdb.getStatus() == Status.LOADING
+                    || vdb.getStatus() == Status.FAILED) {
+                return false;
+            }
+            for (org.teiid.adminapi.Model m : vdb.getModels()) {
+                if (m.getMetadataStatus() != MetadataStatus.LOADED) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
         public boolean isLoading() {
             return Status.LOADING.equals(vdb.getStatus());
         }
@@ -123,11 +140,6 @@ public class DefaultMetadataInstance implements MetadataInstance {
         @Override
         public boolean hasFailed() {
             return Status.FAILED.equals(vdb.getStatus());
-        }
-
-        @Override
-        public boolean wasRemoved() {
-            return Status.REMOVED.equals(vdb.getStatus());
         }
 
         @Override
@@ -151,7 +163,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
         @Override
         public Schema getSchema(String name) {
-            if (!isActive()) {
+            if (!hasLoaded()) {
                 return null;
             }
             TransformationMetadata qmi = vdb.getAttachment(TransformationMetadata.class);
@@ -165,7 +177,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
         @Override
         public List<Schema> getLocalSchema() {
-            if (!isActive()) {
+            if (!hasLoaded()) {
                 return Collections.emptyList();
             }
             TransformationMetadata qmi = vdb.getAttachment(TransformationMetadata.class);
@@ -177,14 +189,13 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
     }
 
-    public static final String DEFAULT_VDB_VERSION = "1";
+    public static final String DEFAULT_VDB_VERSION = "1"; //$NON-NLS-1$
 
     @Autowired
     private TeiidServer server;
 
     private Admin admin;
-    private Map<String, Object> datasources = new ConcurrentHashMap<>();
-    private Map<String, TeiidDataSource> dsProperties = new ConcurrentHashMap<>();
+    private Map<String, TeiidDataSourceImpl> datasources = new ConcurrentHashMap<>();
     private ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
 
     public DefaultMetadataInstance() {
@@ -203,10 +214,15 @@ public class DefaultMetadataInstance implements MetadataInstance {
         return admin;
     }
 
-    public Connection getConnection(String vdb, String version) throws SQLException {
+    public Connection getConnection(String vdb, String version) {
         Properties props = new Properties();
         //TODO: when security working the user name needs to be passed in we need to work delegation model for security
-        return server.getDriver().connect("jdbc:teiid:"+vdb+"."+version, props);
+        try {
+            return server.getDriver().connect("jdbc:teiid:"+vdb+"."+version, props);
+        } catch (SQLException e) {
+            KLog.getLogger().warn("Could not get a connection to " + vdb, e);
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
+        }
     }
 
     /**
@@ -226,22 +242,8 @@ public class DefaultMetadataInstance implements MetadataInstance {
         return new KException(e);
     }
 
-    protected void checkStarted() throws KException {
-        if (getCondition() != Condition.REACHABLE) {
-            String msg = Messages.getString(Messages.MetadataServer.serverCanNotBeReached);
-            throw new KException(msg);
-        }
-    }
-
-    @Override
-    public Condition getCondition() {
-        return getAdmin() != null ? Condition.REACHABLE : Condition.NOT_REACHABLE;
-    }
-
     @Override
     public QSResult query(String vdb, String query, int offset, int limit) throws KException {
-        checkStarted();
-
         QSResult result = new QSResult();
 
         KLog.getLogger().debug("Commencing query execution: %s", query);
@@ -258,9 +260,6 @@ public class DefaultMetadataInstance implements MetadataInstance {
         try {
             connection = getConnection(vdb, DEFAULT_VDB_VERSION);
 
-            if (connection == null)
-                throw new KException(Messages.getString(Messages.MetadataServer.vdbConnectionFailure, vdb));
-
             statement = connection.createStatement();
 
             KLog.getLogger().debug("Executing SQL Statement for query %s with offset of %d and limit of %d",
@@ -274,8 +273,12 @@ public class DefaultMetadataInstance implements MetadataInstance {
                 query = "SELECT * FROM (" + query + ") x LIMIT " + Math.max(0, offset) + ", " + (limit < 0?Integer.MAX_VALUE:limit);
             }
 
-
-            rs = statement.executeQuery(query);
+            try {
+                rs = statement.executeQuery(query);
+            } catch (SQLException e) {
+                KLog.getLogger().warn("Could not execute query: " + query, e.getMessage());
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+            }
 
             ResultSetMetaData rsmd = rs.getMetaData();
             int columns = rsmd.getColumnCount();
@@ -304,8 +307,8 @@ public class DefaultMetadataInstance implements MetadataInstance {
             KLog.getLogger().debug("Query executed and returning %d results", result.getRows().size());
 
             return result;
-        } catch (Throwable t) {
-            throw new KException(t);
+        } catch (SQLException e) {
+            throw new KException(e);
         } finally {
             try {
                 if (rs != null)
@@ -323,81 +326,29 @@ public class DefaultMetadataInstance implements MetadataInstance {
     }
 
     @Override
-    public TeiidDataSource getDataSource(String name) throws KException {
-        checkStarted();
-        return this.dsProperties.get(name);
+    public TeiidDataSourceImpl getDataSource(String name) throws KException {
+        return this.datasources.get(name);
     }
 
     @Override
-    public synchronized void deleteDataSource(String dsName) throws KException {
-        checkStarted();
-        try {
-            Object ds = this.datasources.get(dsName);
-            if (ds != null) {
-                this.server.removeConnectionFactoryProvider(dsName);
-                this.datasources.remove(dsName);
-            }
-
+    public void deleteDataSource(String dsName) throws KException {
+        TeiidDataSourceImpl ds = this.datasources.remove(dsName);
+        if (ds != null) {
+            this.server.removeConnectionFactoryProvider(dsName);
             // close the underlying datasource and any connections
-            if (ds instanceof HikariDataSource) {
-                ((HikariDataSource)ds).close();
+            if (ds.getDataSource() instanceof HikariDataSource) {
+                ((HikariDataSource)ds.getDataSource()).close();
             }
-        } catch (Exception ex) {
-            throw handleError(ex);
         }
     }
 
     @Override
-    public Collection<TeiidDataSource> getDataSources() throws KException {
-        checkStarted();
-        return this.dsProperties.values();
-    }
-
-    @Override
-    public boolean hasVdb(String name) throws KException {
-        checkStarted();
-        return getVdb(name) != null;
-    }
-
-    @Override
-    public boolean isVdbActive(String vdbName) throws KException {
-        checkStarted();
-        if (!hasVdb(vdbName))
-            return false;
-
-        return getVdb(vdbName).isActive();
-    }
-
-    @Override
-    public boolean isVdbLoading(String vdbName) throws KException {
-        checkStarted();
-        if (!hasVdb(vdbName))
-            return false;
-
-        return getVdb(vdbName).isLoading();
-    }
-
-    @Override
-    public boolean hasVdbFailed(String vdbName) throws KException {
-        checkStarted();
-        if (!hasVdb(vdbName))
-            return false;
-
-        return getVdb(vdbName).hasFailed();
-    }
-
-    @Override
-    public boolean wasVdbRemoved(String vdbName) throws KException {
-        checkStarted();
-        if (!hasVdb(vdbName))
-            return false;
-
-        return getVdb(vdbName).wasRemoved();
+    public Collection<? extends TeiidDataSource> getDataSources() throws KException {
+        return this.datasources.values();
     }
 
     @Override
     public Collection<TeiidVdb> getVdbs() throws KException {
-        checkStarted();
         try {
             Collection<? extends VDB> vdbs = getAdmin().getVDBs();
             if (vdbs.isEmpty())
@@ -409,21 +360,20 @@ public class DefaultMetadataInstance implements MetadataInstance {
             }
 
             return teiidVdbs;
-        } catch (Exception ex) {
+        } catch (AdminException ex) {
             throw handleError(ex);
         }
     }
 
     @Override
     public TeiidVdbImpl getVdb(String name) throws KException {
-        checkStarted();
         try {
             VDB vdb = getAdmin().getVDB(name, DEFAULT_VDB_VERSION);
             if (vdb == null)
                 return null;
 
             return new TeiidVdbImpl(vdb);
-        } catch (Exception ex) {
+        } catch (AdminException ex) {
             throw handleError(ex);
         }
     }
@@ -439,13 +389,11 @@ public class DefaultMetadataInstance implements MetadataInstance {
             byte[] bytes = baos.getBuffer();
             InputStream inStream = new ByteArrayInputStream(bytes, 0, baos.getCount());
 
-            checkStarted();
-
             String deploymentName = vdbName + VDB_DEPLOYMENT_SUFFIX;
 
             Admin admin = getAdmin();
 
-            VDB existing = admin.getVDB(vdbName, DEFAULT_VDB_VERSION);
+            VDB existing = admin.getVDB(vdbName, vdb.getVersion());
             if (existing != null) {
                 admin.undeploy(existing.getName());
             }
@@ -453,14 +401,16 @@ public class DefaultMetadataInstance implements MetadataInstance {
             for (ModelMetaData model : vdb.getModelMetaDatas().values()) {
                 for (SourceMappingMetadata smm : model.getSourceMappings()) {
                     addTranslator(smm.getTranslatorName());
-                    if (smm.getConnectionJndiName() != null && datasources.get(smm.getConnectionJndiName()) != null) {
-                        server.addConnectionFactory(smm.getName(), datasources.get(smm.getConnectionJndiName()));
+                    if (smm.getConnectionJndiName() == null) {
+                        continue;
                     }
+                    TeiidDataSourceImpl teiidDataSourceImpl = datasources.get(smm.getConnectionJndiName());
+                    server.addConnectionFactory(smm.getName(), teiidDataSourceImpl.getDataSource());
                 }
             }
             admin.deploy(deploymentName, inStream);
 
-        } catch (Exception ex) {
+        } catch (AdminException ex) {
             throw handleError(ex);
         }
     }
@@ -472,7 +422,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
             if (vdb != null) {
                 getAdmin().undeploy(vdbName);
             }
-        } catch (Exception ex) {
+        } catch (AdminException ex) {
             throw handleError(ex);
         }
     }
@@ -481,7 +431,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
     public String getSchema(String vdbName, String modelName) throws KException {
         try {
             return getAdmin().getSchema(vdbName, DEFAULT_VDB_VERSION, modelName, null, null);
-        } catch (Exception ex) {
+        } catch (AdminException ex) {
             throw handleError(ex);
         }
     }
@@ -498,7 +448,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
     }
 
     @Override
-    public void createDataSource(String deploymentName, String templateName, Map<String, String> properties)
+    public synchronized void createDataSource(String deploymentName, String templateName, Map<String, String> properties)
             throws AdminException {
         switch(templateName) {
         case "postgresql":
@@ -518,10 +468,9 @@ public class DefaultMetadataInstance implements MetadataInstance {
                     ((HikariDataSource)ds).setScheduledExecutor(executor);
                 }
 
-                this.datasources.put(deploymentName, ds);
                 properties.put("type", templateName);
 
-                this.dsProperties.put(deploymentName, new TeiidDataSourceImpl(deploymentName, properties));
+                this.datasources.put(deploymentName, new TeiidDataSourceImpl(deploymentName, properties, ds));
             }
             break;
             default:
@@ -575,7 +524,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
         }
 
         if (!parseOnly) {
-            if (preview == null || !preview.isActive()) {
+            if (preview == null || !preview.hasLoaded()) {
                 throw new KException("Preview VDB is not available");
             }
             VDBMetaData vdb = preview.getVDBMetaData();
@@ -601,6 +550,11 @@ public class DefaultMetadataInstance implements MetadataInstance {
         }
 
         return new ValidationResult(report, mf.getSchema(), metadataException);
+    }
+
+    @Override
+    public void addVDBLifeCycleListener(VDBLifeCycleListener listener) {
+        this.server.addVDBLifeCycleListener(listener);
     }
 
 }

@@ -473,7 +473,7 @@ public class ServiceVdbGeneratorTest {
 
         VDBMetaData serviceVdb = vdbGenerator.createPreviewVdb("preview", Collections.emptyList());
 
-        assertEquals("<?xml version=\"1.0\" ?><vdb name=\"preview\" version=\"1\"><connection-type>BY_VERSION</connection-type><property name=\"preview\" value=\"true\"></property><import-vdb name=\"PreviewVdb\" version=\"1\" import-data-policies=\"true\"></import-vdb><model name=\"views\" type=\"VIRTUAL\" visible=\"true\"><metadata type=\"DDL\"><![CDATA[]]></metadata></model></vdb>", new String(DefaultMetadataInstance.toBytes(serviceVdb).toByteArray(), "UTF-8"));
+        assertEquals("<?xml version=\"1.0\" ?><vdb name=\"preview\" version=\"1\"><connection-type>BY_VERSION</connection-type><property name=\"preview\" value=\"true\"></property><import-vdb name=\"Preview\" version=\"1\" import-data-policies=\"true\"></import-vdb><model name=\"views\" type=\"VIRTUAL\" visible=\"true\"><metadata type=\"DDL\"><![CDATA[]]></metadata></model></vdb>", new String(DefaultMetadataInstance.toBytes(serviceVdb).toByteArray(), "UTF-8"));
     }
 
     protected ServiceVdbGenerator.SchemaFinder schemaFinder() {

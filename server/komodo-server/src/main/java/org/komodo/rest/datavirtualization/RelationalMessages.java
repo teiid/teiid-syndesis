@@ -237,6 +237,8 @@ public final class RelationalMessages {
      */
     public enum Error {
 
+        RESOURCE_NOT_FOUND,
+
         /**
          * An error indicating a failure in authentication or authorization of the REST service
          */

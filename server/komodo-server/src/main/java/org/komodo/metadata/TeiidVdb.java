@@ -55,6 +55,11 @@ public interface TeiidVdb {
     boolean isActive();
 
     /**
+     * @return <code>true</code> if this VDB has loaded
+     */
+    boolean hasLoaded();
+
+    /**
      * @return <code>true</code> if this VDB is loading
      */
     boolean isLoading();
@@ -63,11 +68,6 @@ public interface TeiidVdb {
      * @return <code>true</code> if this VDB failed
      */
     boolean hasFailed();
-
-    /**
-     * @return <code>true</code> if this VDB is removed
-     */
-    boolean wasRemoved();
 
     /**
      * @return any validity errors

@@ -34,10 +34,9 @@ public interface KEngine {
 
     /**
      * Start and wait for the engine to be ready
-     * @return true if start was successful
      * @throws Exception
      */
-    boolean startAndWait() throws Exception;
+    void start() throws Exception;
 
     /**
      * Get the {@link WorkspaceManager} for manipulating the repository
