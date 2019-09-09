@@ -17,10 +17,12 @@
  */
 package org.komodo.rest.datavirtualization;
 
+import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.utils.ArgCheck;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 @JsonSerialize(as = RestViewDefinitionStatus.class)
@@ -28,8 +30,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 public class RestViewDefinitionStatus {
 
     private String status;
-
     private String message;
+    @JsonUnwrapped
+    private ViewDefinition viewDefinition;
 
     /**
      * Default constructor for deserialization
@@ -45,6 +48,14 @@ public class RestViewDefinitionStatus {
     public RestViewDefinitionStatus(String status) {
         ArgCheck.isNotNull(status);
         this.status = status;
+    }
+
+    public ViewDefinition getViewDefinition() {
+        return viewDefinition;
+    }
+
+    public void setViewDefinition(ViewDefinition viewDefinition) {
+        this.viewDefinition = viewDefinition;
     }
 
     /**

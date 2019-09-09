@@ -44,6 +44,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import org.teiid.core.util.EquivalenceUtil;
+import org.teiid.metadata.Schema;
 import org.teiid.metadata.Table;
 import org.teiid.query.validator.ValidatorReport;
 
@@ -109,7 +110,8 @@ public final class KomodoUtilService extends KomodoService {
     @RequestMapping(value = V1Constants.USER_PROFILE + FS
             + V1Constants.VIEW_LISTINGS, method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation(value = "Return the collection of view listings",
-                  response = ViewListing[].class)
+                  response = ViewListing.class,
+                  responseContainer = "List")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = QueryParamKeys.VIRTUALIZATION,
@@ -121,7 +123,7 @@ public final class KomodoUtilService extends KomodoService {
     @ApiResponses(value = {
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
-    public ViewListing[] getViewList(@RequestParam String virtualization) throws Exception {
+    public List<ViewListing> getViewList(@RequestParam String virtualization) throws Exception {
         final List< ViewListing > viewDefinitions = new ArrayList<>();
 
         // find view editor states
@@ -132,15 +134,25 @@ public final class KomodoUtilService extends KomodoService {
 
             //TODO: paging / sorting can be pushed into the repository
 
+            TeiidVdb vdb = null;
+
             for ( final ViewDefinition viewEditorState : viewEditorStates ) {
                 ViewListing listing = new ViewListing();
                 listing.setId(viewEditorState.getId());
                 listing.setName(viewEditorState.getName());
                 listing.setDescription(viewEditorState.getDescription());
+                if (viewEditorState.isParsable()) {
+                    if (vdb == null) {
+                        vdb = metadataService.updatePreviewVdb(virtualization);
+                    }
+                    listing.setValid(!vdb.hasValidationError(viewEditorState.getName(), Schema.getChildType(Table.class)));
+                } else {
+                    listing.setValid(false);
+                }
                 viewDefinitions.add(listing);
             }
 
-            return viewDefinitions.toArray(new ViewListing[viewDefinitions.size()]);
+            return viewDefinitions;
         });
     }
 
@@ -157,7 +169,7 @@ public final class KomodoUtilService extends KomodoService {
     @ApiResponses(value = {
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
-    public ViewDefinition getViewEditorState(
+    public RestViewDefinitionStatus getViewEditorState(
             @ApiParam(value = "Name of the view editor state to fetch", required = true)
             final @PathVariable("viewEditorStateId") String viewEditorStateId) throws Exception {
         return kengine.runInTransaction(true, ()->{
@@ -170,7 +182,11 @@ public final class KomodoUtilService extends KomodoService {
             }
 
             LOGGER.debug("getViewEditorStates:ViewEditorState %s entity was constructed", viewEditorState.getName()); //$NON-NLS-1$
-            return viewEditorState;
+            //for consistency/simplicity, just call validate - but it would be cheaper to lookup the validation
+            //off of the vdb.  This return effectively mixes in the status/viewdefinition
+            RestViewDefinitionStatus status = validateViewDefinition(viewEditorState);
+            status.setViewDefinition(viewEditorState);
+            return status;
         });
     }
 
@@ -214,7 +230,7 @@ public final class KomodoUtilService extends KomodoService {
      */
     @RequestMapping(value = V1Constants.USER_PROFILE + FS
             + V1Constants.VALIDATE_VIEW_DEFINITION, method = RequestMethod.POST, produces = { MediaType.APPLICATION_JSON_VALUE })
-    @ApiOperation( value = "Validate a ViewDefinition", response = RestViewDefinitionStatus.class )
+    @ApiOperation( value = "Validate a ViewDefinition, the returned status will not include the ViewDefinition", response = RestViewDefinitionStatus.class )
     @ApiResponses(value = {
         @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
         @ApiResponse(code = 403, message = "An error has occurred.")
@@ -257,7 +273,7 @@ public final class KomodoUtilService extends KomodoService {
 
         if (result.getMetadataException() != null) {
             viewDefnStatus.setStatus(ERROR);
-            viewDefnStatus.setMessage("Metadata Error\n" + result.getMetadataException().getMessage()); //$NON-NLS-1$
+            viewDefnStatus.setMessage("Metadata Error:" + result.getMetadataException().getMessage()); //$NON-NLS-1$
             return viewDefnStatus;
         }
 
