@@ -31,7 +31,6 @@ public class ViewListing {
     private String id;
     private String name;
     private String description;
-    private boolean valid;
 
     public String getId() {
         return id;
@@ -51,10 +50,5 @@ public class ViewListing {
     public void setDescription(String description) {
         this.description = description;
     }
-    public boolean isValid() {
-        return valid;
-    }
-    public void setValid(boolean valid) {
-        this.valid = valid;
-    }
+
 }

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.komodo.rest.datavirtualization.connection;
+package org.komodo.rest.relational.connection;
 
 import static org.junit.Assert.assertEquals;
 

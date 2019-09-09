@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.komodo.rest.datavirtualization;
+package org.komodo.rest.relational;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;

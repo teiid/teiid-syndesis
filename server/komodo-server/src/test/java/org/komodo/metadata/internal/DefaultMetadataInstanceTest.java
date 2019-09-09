@@ -27,7 +27,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.komodo.KException;
 import org.komodo.metadata.MetadataInstance.ValidationResult;
-import org.komodo.metadata.TeiidVdb;
 import org.komodo.metadata.internal.DefaultMetadataInstance.TeiidVdbImpl;
 import org.teiid.adminapi.impl.VDBMetadataParser;
 import org.teiid.runtime.EmbeddedConfiguration;
@@ -99,24 +98,6 @@ public class DefaultMetadataInstanceTest {
 
         assertTrue(vdb2.hasLoaded());
         assertFalse(vdb2.isActive());
-    }
-
-    @Test
-    public void shouldFindValidationErrors() throws Exception {
-        String vdb = "<vdb name=\"myservice\" version=\"1\">\n" +
-                "    <property name=\"preview\" value=\"true\"/>" +
-                "    <model visible=\"true\" name=\"views\" type=\"VIRTUAL\">\n" +
-                "      <metadata type=\"DDL\">create view tbl (col) as select 1; create view tbl2 (col string) as select 1;</metadata>" +
-                "    </model>    \n" +
-                "</vdb>";
-
-        metadataInstance.deploy(VDBMetadataParser.unmarshell(new ByteArrayInputStream(vdb.getBytes("UTF-8"))));
-
-        TeiidVdb teiidVdb = metadataInstance.getVdb("myservice");
-
-        assertFalse(teiidVdb.hasValidationError("tbl", "table"));
-
-        assertTrue(teiidVdb.hasValidationError("tbl2", "table"));
     }
 
 }

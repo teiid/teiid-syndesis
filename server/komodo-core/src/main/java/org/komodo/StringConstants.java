@@ -428,4 +428,9 @@ public interface StringConstants {
     String ID_LABEL = "id"; //$NON-NLS-1$
 
     String DESCRIPTION_FIELD_NAME = "keng__description"; //$NON-NLS-1$
+
+    String SCHEMA_KEY = "schema";
+
+    String TABLE_KEY = "table";
+
 }
