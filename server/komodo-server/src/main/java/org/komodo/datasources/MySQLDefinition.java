@@ -42,9 +42,9 @@ public class MySQLDefinition extends DataSourceDefinition {
     }
 
     @Override
-    public boolean isTypeOf(Map<String, String> properties) {
+    public boolean isTypeOf(Map<String, String> properties, String type) {
         if ((properties != null) && (properties.get("url") != null)
-                && (properties.get("url").startsWith("jdbc:mysql:"))) {
+                && (properties.get("url").startsWith("jdbc:mysql:") && type.equals("sql"))) {
             return true;
         }
         return false;

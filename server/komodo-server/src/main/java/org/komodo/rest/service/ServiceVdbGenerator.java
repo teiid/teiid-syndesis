@@ -170,7 +170,7 @@ public final class ServiceVdbGenerator implements StringConstants {
 
             if (tds != null) {
                 // add the source mapping
-                srcModel.addSourceMapping(tds.getName(), tds.getType(), tds.getJndiName());
+                srcModel.addSourceMapping(tds.getName(), tds.getTranslatorName(), tds.getName());
             }
         }
 

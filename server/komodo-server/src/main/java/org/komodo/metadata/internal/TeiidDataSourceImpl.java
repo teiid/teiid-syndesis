@@ -17,47 +17,34 @@
  */
 package org.komodo.metadata.internal;
 
-import java.util.Collections;
 import java.util.Map;
 
 import org.komodo.metadata.TeiidDataSource;
-import org.komodo.openshift.TeiidOpenShiftClient;
 import org.teiid.core.util.ArgCheck;
 
 public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, TeiidDataSource {
     private final String name;
-    private final Map<String, String> properties;
-    private final Object dataSource;
+    private final String translatorName;
+    private Object dataSource;
+    private String id;
+    private Map<String, String> importProperties;
+    private Map<String, String> translatorProperties;
 
-    public TeiidDataSourceImpl(String name, Map<String, String> properties) {
-        this(name, properties, null);
-    }
-
-    public TeiidDataSourceImpl(String name,
-            Map<String, String> properties, Object dataSource) {
+    public TeiidDataSourceImpl(String id, String name, String translatorName, Object dataSource) {
         ArgCheck.isNotEmpty(name, "name"); //$NON-NLS-1$
-        ArgCheck.isNotEmpty(properties, "properties"); //$NON-NLS-1$
+        ArgCheck.isNotEmpty(translatorName, "translatorName"); //$NON-NLS-1$
 
+        this.id = id;
         this.name = name;
-        this.properties = Collections.unmodifiableMap(properties);
+        this.translatorName = translatorName;
         this.dataSource = dataSource;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see java.lang.Comparable#compareTo(java.lang.Object)
-     */
     @Override
     public int compareTo(TeiidDataSourceImpl other) {
         return getName().compareTo(other.getName());
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
     @Override
     public boolean equals(Object obj) {
         if (obj == null)
@@ -79,55 +66,10 @@ public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, Tei
     }
 
     @Override
-    public String getDisplayName() {
-        return getPropertyValue(DATASOURCE_DISPLAYNAME);
+    public String getTranslatorName() {
+        return this.translatorName;
     }
 
-    @Override
-    public Map<String, String> getProperties() {
-        return this.properties;
-    }
-
-    @Override
-    public String getPropertyValue(String key) {
-        return this.properties.get(key);
-    }
-
-    /**
-     * Returns the data source type name
-     *
-     * @return the type
-     */
-    @Override
-    public String getType() {
-        return getPropertyValue(DATASOURCE_DRIVERNAME);
-    }
-
-    /**
-     * Returns the data source jndi name
-     *
-     * @return the jndi name
-     */
-    @Override
-    public String getJndiName() {
-        return getPropertyValue(DATASOURCE_JNDINAME);
-    }
-
-    /**
-     * Returns the data source connection url
-     *
-     * @return the connection url
-     */
-    @Override
-    public String getConnectionUrl() {
-        return getPropertyValue(DATASOURCE_CONNECTION_URL);
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see java.lang.Object#hashCode()
-     */
     @Override
     public int hashCode() {
         int result = 0;
@@ -136,16 +78,11 @@ public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, Tei
         return result;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("Data Source:\t" + getName()); //$NON-NLS-1$
-        if (!getType().equalsIgnoreCase("<unknown>")) { //$NON-NLS-1$
-            sb.append("\nType: \t\t" + getType()); //$NON-NLS-1$
+        if (!getTranslatorName().equalsIgnoreCase("<unknown>")) { //$NON-NLS-1$
+            sb.append("\nType: \t\t" + getTranslatorName()); //$NON-NLS-1$
         }
 
         return sb.toString();
@@ -153,16 +90,29 @@ public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, Tei
 
     @Override
     public String getId() {
-        return getPropertyValue(TeiidOpenShiftClient.ID);
+        return this.id;
     }
 
     @Override
-    public String getSchema() {
-        return getPropertyValue(TeiidDataSource.DATASOURCE_SCHEMA);
+    public Object getConnectionfactory() {
+        return this.dataSource;
     }
 
-    public Object getDataSource() {
-        return dataSource;
+    @Override
+    public Map<String, String> getImportProperties() {
+        return importProperties;
     }
 
+    public void setImportProperties(Map<String, String> importProperties) {
+        this.importProperties = importProperties;
+    }
+
+    @Override
+    public Map<String, String> getTranslatorProperties() {
+        return translatorProperties;
+    }
+
+    public void setTranslatorProperties(Map<String, String> translatorProperties) {
+        this.translatorProperties = translatorProperties;
+    }
 }

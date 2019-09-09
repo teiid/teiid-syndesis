@@ -17,6 +17,7 @@
  */
 package org.komodo.metadata.internal;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -32,10 +33,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.stream.Collectors;
 
-import javax.sql.DataSource;
 import javax.xml.stream.XMLStreamException;
 
 import org.komodo.KException;
@@ -48,13 +47,11 @@ import org.komodo.metadata.query.QSResult;
 import org.komodo.metadata.query.QSRow;
 import org.komodo.utils.KLog;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 import org.teiid.adminapi.Admin;
 import org.teiid.adminapi.AdminException;
-import org.teiid.adminapi.AdminProcessingException;
 import org.teiid.adminapi.Model.MetadataStatus;
 import org.teiid.adminapi.VDB;
 import org.teiid.adminapi.VDB.Status;
@@ -218,7 +215,6 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
     private Admin admin;
     private Map<String, TeiidDataSourceImpl> datasources = new ConcurrentHashMap<>();
-    private ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
 
     public DefaultMetadataInstance() {
 
@@ -353,14 +349,24 @@ public class DefaultMetadataInstance implements MetadataInstance {
     }
 
     @Override
-    public void deleteDataSource(String dsName) throws KException {
-        TeiidDataSourceImpl ds = this.datasources.remove(dsName);
-        if (ds != null) {
-            this.server.removeConnectionFactoryProvider(dsName);
-            // close the underlying datasource and any connections
-            if (ds.getDataSource() instanceof HikariDataSource) {
-                ((HikariDataSource)ds.getDataSource()).close();
+    public synchronized void deleteDataSource(String dsName) throws KException {
+        try {
+            TeiidDataSource ds = this.datasources.get(dsName);
+            if (ds != null) {
+                this.server.removeConnectionFactoryProvider(dsName);
+                this.datasources.remove(dsName);
             }
+
+            // close the underlying datasource and any connections
+            Object cf = ds.getConnectionfactory();
+            if (cf instanceof HikariDataSource) {
+                ((HikariDataSource)ds).close();
+            }
+            if (cf instanceof Closeable) {
+                ((Closeable)cf).close();
+            }
+        } catch (Exception ex) {
+            throw handleError(ex);
         }
     }
 
@@ -464,45 +470,10 @@ public class DefaultMetadataInstance implements MetadataInstance {
     }
 
     @Override
-    public synchronized void createDataSource(String deploymentName, String templateName, Map<String, String> properties)
-            throws AdminException {
-        switch(templateName) {
-        case "postgresql":
-        case "mysql":
-        case "h2":
-        case "teiid":
-            if (datasources.get(deploymentName) == null) {
-                DataSource ds = DataSourceBuilder.create().url(properties.get("url"))
-                        .username(properties.get("username") != null ? properties.get("username")
-                                : properties.get("user"))
-                        .password(properties.get("password")).build();
-
-                if (ds instanceof HikariDataSource) {
-                    ((HikariDataSource)ds).setMaximumPoolSize(10);
-                    ((HikariDataSource)ds).setMinimumIdle(0);
-                    ((HikariDataSource)ds).setIdleTimeout(60000);
-                    ((HikariDataSource)ds).setScheduledExecutor(executor);
-                }
-
-                properties.put("type", templateName);
-
-                this.datasources.put(deploymentName, new TeiidDataSourceImpl(deploymentName, properties, ds));
-            }
-            break;
-            default:
-            throw new AdminProcessingException(
-                    "Unsupported data type " + templateName + " Failed to create data source " + deploymentName);
+    public void registerDataSource(String deploymentName, TeiidDataSourceImpl teiidDS) throws AdminException {
+        if (datasources.get(deploymentName) == null) {
+            this.datasources.put(deploymentName, teiidDS);
         }
-    }
-
-    @Override
-    public Set<String> getDataSourceTemplateNames() throws AdminException {
-        HashSet<String> templates = new HashSet<>();
-        templates.add("postgresql");
-        templates.add("mysql");
-        templates.add("h2");
-        templates.add("teiid");
-        return templates;
     }
 
     @Override

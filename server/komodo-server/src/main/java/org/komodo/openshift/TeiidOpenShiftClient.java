@@ -64,6 +64,7 @@ import org.komodo.datavirtualization.SourceSchema;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.metadata.TeiidDataSource;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
+import org.komodo.metadata.internal.TeiidDataSourceImpl;
 import org.komodo.openshift.BuildStatus.RouteStatus;
 import org.komodo.openshift.BuildStatus.Status;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
@@ -318,13 +319,9 @@ public class TeiidOpenShiftClient implements V1Constants {
         // data source definitions
         add(new PostgreSQLDefinition());
         add(new MySQLDefinition());
+        add(new TeiidDefinition());
         add(new MongoDBDefinition());
-        add(new FileDefinition());
-        add(new ExcelDefinition());
-        add(new ODataV4Definition());
         add(new SalesforceDefinition());
-        add(new WebServiceDefinition());
-        add(new AmazonS3Definition());
         add(new H2SQLDefinition());
     }
 
@@ -418,9 +415,9 @@ public class TeiidOpenShiftClient implements V1Constants {
      * @param properties properties from service creation
      * @return DataSourceDefinition
      */
-    public DataSourceDefinition getSourceDefinitionThatMatches(Map<String, String> properties) {
+    public DataSourceDefinition getSourceDefinitionThatMatches(Map<String, String> properties, String type) {
         for (DataSourceDefinition dd : this.sources.values()) {
-            if (dd.isTypeOf(properties)) {
+            if (dd.isTypeOf(properties, type)) {
                 return dd;
             }
         }
@@ -481,7 +478,7 @@ public class TeiidOpenShiftClient implements V1Constants {
                 }
                 String name = item.get("name").asText();
                 try {
-                    result.add(buildSyndesisDataSource(name, item));
+                    result.add(buildSyndesisDataSource(name, item, connectorType));
                 } catch (KException e) {
                     error(name, e.getMessage(), e);
                 }
@@ -507,7 +504,7 @@ public class TeiidOpenShiftClient implements V1Constants {
                     return null;
                 }
                 String name = root.get("name").asText();
-                source = buildSyndesisDataSource(name, root);
+                source = buildSyndesisDataSource(name, root, connectorType);
             } catch (Exception e) {
                 throw handleError(e);
             }
@@ -528,7 +525,7 @@ public class TeiidOpenShiftClient implements V1Constants {
         }
     }
 
-    private DefaultSyndesisDataSource buildSyndesisDataSource(String syndesisName, JsonNode item)
+    private DefaultSyndesisDataSource buildSyndesisDataSource(String syndesisName, JsonNode item, String type)
             throws KException {
         Map<String, String> p = new HashMap<>();
         JsonNode configuredProperties = item.get("configuredProperties");
@@ -536,7 +533,7 @@ public class TeiidOpenShiftClient implements V1Constants {
         configuredProperties.fieldNames()
                 .forEachRemaining(key -> p.put(key, configuredProperties.get(key).asText()));
 
-        DataSourceDefinition def = getSourceDefinitionThatMatches(p);
+        DataSourceDefinition def = getSourceDefinitionThatMatches(p, type);
         if (def == null) {
             throw new KException("Could not find datasource that matches to the configuration."+ p.get("url"));
         }
@@ -549,7 +546,7 @@ public class TeiidOpenShiftClient implements V1Constants {
         String dsName = findDataSourceNameByEventId(connectorIDNode.asText());
         dsd.setKomodoName(dsName);
         dsd.setTranslatorName(def.getTranslatorName());
-        dsd.setProperties(p);
+        dsd.setProperties(encryptionComponent.decrypt(p));
         dsd.setDefinition(def);
         syndesisSources.putIfAbsent(dsd.getId(), dsd);
         return dsd;
@@ -558,10 +555,6 @@ public class TeiidOpenShiftClient implements V1Constants {
     public void createDataSource(DefaultSyndesisDataSource scd) throws Exception {
         String syndesisName = scd.getSyndesisName();
         debug(syndesisName, "Creating the Datasource of Type " + scd.getType());
-
-        Set<String> templateNames = this.metadata.getDataSourceTemplateNames();
-        debug(syndesisName, "template names: " + templateNames);
-        String dsType = scd.getType();
 
         if (scd.getKomodoName() == null) {
             for (int i = 0; i < 3; i++) {
@@ -586,10 +579,8 @@ public class TeiidOpenShiftClient implements V1Constants {
         }
 
         //now that the komodoname is set, we can create the properties
-        Map<String, String> properties = scd.convertToDataSourceProperties();
-        properties.put(ID, scd.getId());
-
-        this.metadata.createDataSource(toUse, dsType, encryptionComponent.decrypt(properties));
+        TeiidDataSource teiidDS = scd.createDataSource(toUse);
+        this.metadata.registerDataSource(toUse, (TeiidDataSourceImpl)teiidDS);
     }
 
     /**

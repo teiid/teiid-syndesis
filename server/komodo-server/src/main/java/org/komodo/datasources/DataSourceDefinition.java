@@ -19,14 +19,22 @@ package org.komodo.datasources;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+
+import javax.sql.DataSource;
 
 import org.komodo.metadata.TeiidDataSource;
-import org.komodo.utils.ArgCheck;
+import org.komodo.metadata.internal.TeiidDataSourceImpl;
+import org.springframework.boot.jdbc.DataSourceBuilder;
+
+import com.zaxxer.hikari.HikariDataSource;
 
 /**
  * Service catalog based Data Services that are available
  */
 public abstract class DataSourceDefinition {
+    private static ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
+
     /**
      * Returns the type of the database. Matches with the translator name
      * @return name of the source type
@@ -50,27 +58,43 @@ public abstract class DataSourceDefinition {
      * @param properties
      * @return true if the properties match
      */
-    public boolean isTypeOf(Map<String, String> properties) {
+    public boolean isTypeOf(Map<String, String> properties, String type) {
         return false;
     }
 
     /**
-     * Given the service specific properties to engine specific properties.
-     * @return return the modified property set to make the connection in the given environment
+     * create data source for the given Syndesis Data source
+     * @param deploymentName
+     * @param scd
+     * @return {@link TeiidDataSource}
      */
-    public Map<String, String> getInternalTeiidDataSourceProperties(DefaultSyndesisDataSource source) {
-        Map<String, String> props = new HashMap<>();
-        String komodoName = source.getKomodoName();
-        ArgCheck.isNotNull(komodoName);
-        props.put(TeiidDataSource.DATASOURCE_JNDINAME, komodoName);
-        props.put(TeiidDataSource.DATASOURCE_DRIVERNAME, getType()); // used as translator name
-        props.put(TeiidDataSource.DATASOURCE_DISPLAYNAME, komodoName);
+    public TeiidDataSource createDatasource(String deploymentName, DefaultSyndesisDataSource scd) {
+        DataSource ds = DataSourceBuilder.create().url(scd.getProperty("url"))
+                .username(scd.getProperty("username") != null ? scd.getProperty("username")
+                        : scd.getProperty("user"))
+                .password(scd.getProperty("password")).build();
 
-        props.put(TeiidDataSource.DATASOURCE_CONNECTION_URL, source.getProperty("url"));
-        props.put("username", source.getProperty("user"));
-        props.put("password", source.getProperty("password"));
-        props.put("schema", source.getProperty("schema"));
-        return props;
+        if (ds instanceof HikariDataSource) {
+            ((HikariDataSource)ds).setMaximumPoolSize(10);
+            ((HikariDataSource)ds).setMinimumIdle(0);
+            ((HikariDataSource)ds).setIdleTimeout(60000);
+            ((HikariDataSource)ds).setScheduledExecutor(executor);
+        }
+        Map<String, String> importProperties = new HashMap<String, String>();
+        Map<String, String> translatorProperties = new HashMap<String, String>();
+
+        if (scd.getProperty("schema") != null) {
+            importProperties.put("importer.schemaName", scd.getProperty("schema"));
+        }
+        importProperties.put("importer.TableTypes", "TABLE,VIEW");
+        importProperties.put("importer.UseQualifiedName", "true");
+        importProperties.put("importer.UseCatalogName", "false");
+        importProperties.put("importer.UseFullSchemaName", "false");
+
+        TeiidDataSourceImpl teiidDS = new TeiidDataSourceImpl(scd.getId(), deploymentName, getTranslatorName(), ds);
+        teiidDS.setImportProperties(importProperties);
+        teiidDS.setTranslatorProperties(translatorProperties);
+        return teiidDS;
     }
 
     /**
@@ -96,9 +120,6 @@ public abstract class DataSourceDefinition {
     }
 
     protected void ds(Map<String, String> props, DefaultSyndesisDataSource scd, String key, String value) {
-        props.put(
-                "spring.datasource." + scd.getKomodoName() + "." + key,
-                value);
+        props.put("spring.datasource." + scd.getKomodoName() + "." + key, value);
     }
-
 }

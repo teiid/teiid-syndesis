@@ -19,6 +19,8 @@ package org.komodo.datasources;
 
 import java.util.Map;
 
+import org.komodo.metadata.TeiidDataSource;
+
 public class MongoDBDefinition extends DataSourceDefinition {
 
     @Override
@@ -37,7 +39,7 @@ public class MongoDBDefinition extends DataSourceDefinition {
     }
 
     @Override
-    public boolean isTypeOf(Map<String, String> properties) {
+    public boolean isTypeOf(Map<String, String> properties, String type) {
         if ((properties != null) && (properties.get("MONGODB_DATABASE") != null)) {
             return true;
         }
@@ -45,25 +47,7 @@ public class MongoDBDefinition extends DataSourceDefinition {
     }
 
     @Override
-    public Map<String, String> getInternalTeiidDataSourceProperties(DefaultSyndesisDataSource source) {
-        /*
-        {
-              "DATABASE_SERVICE_NAME":"mongodb",
-              "MEMORY_LIMIT":"512Mi",
-              "MONGODB_ADMIN_PASSWORD" "pwd",
-              "MONGODB_DATABASE":"sampledb",
-              "MONGODB_PASSWORD": "pass",
-              "MONGODB_USER": "user",
-              "MONGODB_VERSION":"3.2",
-              "NAMESPACE":"openshift",
-              "VOLUME_CAPACITY":"1Gi"
-              admin_password
-              database_name
-              password
-              uri
-              username
-        }
-        */
+    public TeiidDataSource createDatasource(String deploymentName, DefaultSyndesisDataSource scd) {
         throw new UnsupportedOperationException();
     }
 

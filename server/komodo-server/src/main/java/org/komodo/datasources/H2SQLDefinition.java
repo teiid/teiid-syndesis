@@ -41,9 +41,9 @@ public class H2SQLDefinition extends DataSourceDefinition {
     }
 
     @Override
-    public boolean isTypeOf(Map<String, String> properties) {
+    public boolean isTypeOf(Map<String, String> properties, String type) {
         if ((properties != null) && (properties.get("url") != null)
-                && properties.get("url").startsWith("jdbc:h2:")) {
+                && properties.get("url").startsWith("jdbc:h2:") && type.equals("sql")) {
             return true;
         }
         return false;

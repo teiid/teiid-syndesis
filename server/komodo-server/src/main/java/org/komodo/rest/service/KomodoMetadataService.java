@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.locks.Lock;
 
@@ -635,8 +636,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
     static VDBMetaData generateSourceVdb(TeiidDataSource teiidSource, String vdbName, String schema) {
         // Get necessary info from the source
         String sourceName = teiidSource.getName();
-        String jndiName = teiidSource.getJndiName();
-        String driverName = teiidSource.getType();
+        String translatorName = teiidSource.getTranslatorName();
 
         VDBMetaData vdb = new VDBMetaData();
         vdb.setName(vdbName);
@@ -646,24 +646,22 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         vdb.addModel(mmd);
         vdb.addProperty(TeiidOpenShiftClient.ID, teiidSource.getId());
         mmd.setModelType(Type.PHYSICAL);
+
+        for (Map.Entry<String,String> entry : teiidSource.getImportProperties().entrySet()) {
+            mmd.addProperty(entry.getKey(), entry.getValue());  //$NON-NLS-1$
+        }
+
         if (schema != null) {
             //use this instead
             mmd.addSourceMetadata(DDLDBMetadataRepository.TYPE_NAME, teiidSource.getId());
             mmd.setVisible(false);
         } else {
             vdb.addProperty("async-load", "true"); //$NON-NLS-1$ //$NON-NLS-2$
-            mmd.addProperty("importer.TableTypes", "TABLE,VIEW"); //$NON-NLS-1$ //$NON-NLS-2$
-            mmd.addProperty("importer.UseQualifiedName", "true");  //$NON-NLS-1$//$NON-NLS-2$
-            mmd.addProperty("importer.UseCatalogName", "false");  //$NON-NLS-1$//$NON-NLS-2$
-            mmd.addProperty("importer.UseFullSchemaName", "false");  //$NON-NLS-1$//$NON-NLS-2$
-            if (teiidSource.getSchema() != null) {
-                mmd.addProperty("importer.schemaName", teiidSource.getSchema());  //$NON-NLS-1$
-            }
         }
 
         // Add model source to the model
         final String modelSourceName = teiidSource.getName();
-        mmd.addSourceMapping(modelSourceName, driverName, jndiName);
+        mmd.addSourceMapping(modelSourceName, translatorName, sourceName);
         return vdb;
     }
 

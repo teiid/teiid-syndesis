@@ -17,7 +17,10 @@
  */
 package org.komodo.datasources;
 
+import java.util.HashMap;
 import java.util.Map;
+
+import org.komodo.metadata.TeiidDataSource;
 
 public class SalesforceDefinition extends DataSourceDefinition {
 
@@ -31,30 +34,44 @@ public class SalesforceDefinition extends DataSourceDefinition {
         return
             "<dependency>" +
             "  <groupId>org.teiid</groupId>" +
-            "  <artifactId>thorntail-salesforce-41</artifactId>" +
-            "</dependency>";
+            "  <artifactId>spring-data-salesforce</artifactId>" +
+            "</dependency>\n";
     }
 
     @Override
     public String getTranslatorName() {
-        return "salesforce-41";
+        return "salesforce";
     }
 
     @Override
-    public boolean isTypeOf(Map<String, String> properties) {
-        if ((properties != null) && (properties.get("SALESFORCE_URL") != null)) {
+    public boolean isTypeOf(Map<String, String> properties, String type) {
+        if (type.equals("salesforce")) {
             return true;
         }
         return false;
     }
 
     @Override
-    public Map<String, String> getInternalTeiidDataSourceProperties(DefaultSyndesisDataSource source) {
+    public TeiidDataSource createDatasource(String deploymentName, DefaultSyndesisDataSource scd) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Given the connection properties from the Syndesis secrets generate Spring Boot
+     * configuration file to configure the data source
+     * @return properties properties required to create a connection in target environment
+     */
     @Override
     public Map<String, String> getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd) {
-        throw new UnsupportedOperationException();
+        Map<String, String> props = new HashMap<>();
+        ds(props, scd, "client-id", scd.getProperty("clientId"));
+        ds(props, scd, "client-secret", scd.getProperty("clientSecret"));
+        ds(props, scd, "refresh-token", scd.getProperty("refreshToken"));
+        return props;
+    }
+
+    @Override
+    protected void ds(Map<String, String> props, DefaultSyndesisDataSource scd, String key, String value) {
+        props.put("spring.teiid.data.salesforce." + scd.getKomodoName() + "." + key, value);
     }
 }

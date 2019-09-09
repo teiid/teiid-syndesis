@@ -18,11 +18,9 @@
 package org.komodo.metadata;
 
 import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-
 import org.komodo.KException;
 import org.komodo.StringConstants;
+import org.komodo.metadata.internal.TeiidDataSourceImpl;
 import org.komodo.metadata.query.QSResult;
 import org.teiid.adminapi.AdminException;
 import org.teiid.adminapi.impl.VDBMetaData;
@@ -206,11 +204,9 @@ public interface MetadataInstance extends StringConstants {
      */
     void deploy(VDBMetaData vdb) throws KException;
 
-    Set<String> getDataSourceTemplateNames() throws AdminException;
-
     Collection<String> getDataSourceNames() throws AdminException;
 
-    void createDataSource(String deploymentName, String templateName, Map<String, String> properties) throws AdminException;
+    void registerDataSource(String deploymentName, TeiidDataSourceImpl dataSource) throws AdminException;
 
     ValidationResult parse(String ddl) throws KException;
 

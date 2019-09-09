@@ -17,83 +17,17 @@ package org.komodo.metadata;
 
 import java.util.Map;
 
-/**
- *
- */
 public interface TeiidDataSource {
 
-    /**
-     * The data source jndi property name.  Value is {@value} .
-     */
-    String DATASOURCE_JNDINAME = "jndi-name";  //$NON-NLS-1$
-
-    /**
-     * The data source className property name.  Value is {@value} .
-     */
-    String DATASOURCE_CLASSNAME = "class-name";  //$NON-NLS-1$
-
-    /**
-     * The data source driver property name.  Value is {@value} .
-     */
-    String DATASOURCE_DRIVERNAME = "driver-name";  //$NON-NLS-1$
-
-    /**
-     * The connection url property name. Value is {@value}.
-     */
-    String DATASOURCE_CONNECTION_URL = "url"; //$NON-NLS-1$
-
-    /**
-     * The display name property.
-     */
-    String DATASOURCE_DISPLAYNAME = "display-name"; //$NON-NLS-1$
-
-    String DATASOURCE_SCHEMA = "schema"; //$NON-NLS-1$
-
-    /**
-     * @return display name of data source
-     */
-    String getDisplayName();
-
-    /**
-     * @return real name of data source, maybe different from display name
-     */
     String getName();
 
-    /**
-     * Returns the data source type name
-     *
-     * @return the type
-     */
-    String getType();
-
-    /**
-     * Returns the data source jndi name
-     *
-     * @return the jndi name
-     */
-    String getJndiName();
-
-    /**
-     * Returns the data source connection url
-     *
-     * @return the connection url
-     */
-    String getConnectionUrl();
-
-    /**
-     * @return properties of data source
-     */
-    Map<String, String> getProperties();
-
-    /**
-     * @param name
-     *
-     * @return value of named property
-     */
-    String getPropertyValue(String name);
+    String getTranslatorName();
 
     String getId();
 
-    String getSchema();
+    Object getConnectionfactory();
 
+    Map<String, String> getImportProperties();
+
+    Map<String, String> getTranslatorProperties();
 }
