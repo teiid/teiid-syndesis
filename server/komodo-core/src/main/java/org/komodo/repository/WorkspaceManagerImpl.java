@@ -100,6 +100,11 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
     }
 
     @Override
+    public List<ViewDefinition> saveAllViewDefinitions(Iterable<ViewDefinition> entities) {
+        return this.viewDefinitionRepository.saveAll(entities);
+    }
+
+    @Override
     public org.komodo.datavirtualization.ViewDefinition createViewDefiniton(String dvName, String viewName) {
         org.komodo.datavirtualization.ViewDefinition viewEditorState = new org.komodo.datavirtualization.ViewDefinition(dvName, viewName);
         return this.viewDefinitionRepository.save(viewEditorState);

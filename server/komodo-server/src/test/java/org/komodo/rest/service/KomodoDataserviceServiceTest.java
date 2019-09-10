@@ -65,7 +65,7 @@ public class KomodoDataserviceServiceTest {
 
     @Test public void testImport() throws Exception {
         ImportPayload payload = new ImportPayload();
-        payload.setTables(Arrays.asList("tbl"));
+        payload.setTables(Arrays.asList("tbl", "tbl2", "tbl3"));
 
         KomodoStatusObject kso = null;
         try {
@@ -99,11 +99,19 @@ public class KomodoDataserviceServiceTest {
 
         //add the schema definition - so that we don't really need the datasource, and redeploy
         workspaceManagerImpl.createSchema("someid", "source",
-                "create foreign table tbl (col string) options (\"teiid_rel:fqn\" 'schema=s/table=tbl');");
+                "create foreign table tbl (col string) options (\"teiid_rel:fqn\" 'schema=s/table=tbl');"
+                + "create foreign table tbl2 (col string) options (\"teiid_rel:fqn\" 'schema=s/table=tbl2');"
+                + "create foreign table tbl3 (col string) options (\"teiid_rel:fqn\" 'schema=s/table=tbl3');");
         metadataInstance.undeployDynamicVdb(KomodoMetadataService.getWorkspaceSourceVdbName("source"));
 
         kso = komodoDataserviceService.importViews("dv", "source", payload);
-        assertEquals(1, kso.getAttributes().size());
+        assertEquals(3, kso.getAttributes().size());
+
+        for (String id : kso.getAttributes().values()) {
+            ViewDefinition vd = workspaceManagerImpl.findViewDefinition(id);
+            System.out.println(vd);
+            assertEquals(Long.valueOf(0), vd.getVersion());
+        }
 
         String id = kso.getAttributes().values().iterator().next();
 
