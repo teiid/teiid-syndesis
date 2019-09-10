@@ -54,6 +54,8 @@ public interface WorkspaceManager {
 
     boolean deleteDataVirtualization(String virtualizationName);
 
+    List<String> findDataVirtualizationNames();
+
 
     ViewDefinition findViewDefinitionByNameIgnoreCase(String dvName, String viewName);
 
