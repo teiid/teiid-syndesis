@@ -45,6 +45,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
@@ -153,6 +154,7 @@ public class TeiidOpenShiftClient implements V1Constants {
                 }
 
                 if (BuildStatus.Status.DELETE_DONE.equals(work.status())) {
+                    removeSyndesisConnection(work.vdbName());
                     return;
                 }
 
@@ -316,6 +318,7 @@ public class TeiidOpenShiftClient implements V1Constants {
         add(new WebServiceDefinition());
         add(new AmazonS3Definition());
         add(new H2SQLDefinition());
+        add(new TeiidDefinition());
     }
 
     private String getLogPath(String id) {
@@ -457,17 +460,40 @@ public class TeiidOpenShiftClient implements V1Constants {
         }
     }
 
-    private static InputStream executePOST(String url, OAuthCredentials oauthCreds, String payload) {
+    private static InputStream executePOST(String url, String payload) {
         try {
             CloseableHttpClient client = buildHttpClient();
             HttpPost request = new HttpPost(url);
-            if (oauthCreds != null) {
-                request.addHeader("X-Forwarded-Access-Token", oauthCreds.getToken().toString());
-                request.addHeader("X-Forwarded-User", oauthCreds.getUser());
-                request.addHeader("Authorization", bearer(oauthCreds.getToken().toString()));
-                request.addHeader("Content-Type", "application/json");
-            }
+            request.addHeader("Accept", "application/json");
+            request.addHeader("X-Forwarded-User", "user");
+            request.addHeader("SYNDESIS-XSRF-TOKEN", "awesome");
+            request.addHeader("X-Forwarded-Access-Token", "supersecret");
+            request.addHeader("Content-Type", "application/json");
             request.setEntity(new StringEntity(payload));
+            HttpResponse response = client.execute(request);
+            ResponseHandler<InputStream> handler = new AbstractResponseHandler<InputStream>(){
+                @Override
+                public InputStream handleEntity(final HttpEntity entity) throws IOException {
+                    return entity.getContent();
+                }
+            };
+            InputStream result = handler.handleResponse(response);
+            return result;
+        } catch (UnsupportedOperationException | IOException | KeyManagementException | NoSuchAlgorithmException
+                | KeyStoreException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static InputStream executeDELETE(String url) {
+        try {
+            CloseableHttpClient client = buildHttpClient();
+            HttpDelete request = new HttpDelete(url);
+            request.addHeader("Accept", "application/json");
+            request.addHeader("X-Forwarded-User", "user");
+            request.addHeader("SYNDESIS-XSRF-TOKEN", "awesome");
+            request.addHeader("X-Forwarded-Access-Token", "supersecret");
+            request.addHeader("Content-Type", "application/json");
             HttpResponse response = client.execute(request);
             ResponseHandler<InputStream> handler = new AbstractResponseHandler<InputStream>(){
                 @Override
@@ -964,12 +990,13 @@ public class TeiidOpenShiftClient implements V1Constants {
                         vdbName + " not created beacuse no service found");
                 return;
             }
+            String schema = "views";
             String url = SYNDESISURL+"/connections/";
             String payload = "{\n" +
                     "  \"name\": \""+vdbName+"\",\n" +
                     "  \"configuredProperties\": {\n" +
                     "    \"password\": \"password\",\n" +
-                    "    \"schema\": \""+vdbName+"\",\n" +
+                    "    \"schema\": \""+schema+"\",\n" +
                     "    \"url\": \"jdbc:teiid:"+vdbName+"@mm://"+service.getSpec().getClusterIP()+":31000\",\n" +
                     "    \"user\": \"user\"\n" +
                     "  },\n" +
@@ -978,13 +1005,22 @@ public class TeiidOpenShiftClient implements V1Constants {
                     "  \"description\": \"Connection to "+vdbName+" \"\n" +
                     "}";
 
-            InputStream response = executePOST(url, new OAuthCredentials("supersecret", "developer"), payload);
+            InputStream response = executePOST(url, payload);
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(response);
             String id = root.get("id").asText();
             info(vdbName, "Database connection to Virtual Database " + vdbName + " created with Id = " + id);
         } catch (Exception e) {
             throw handleError(e);
+        }
+    }
+
+    private void removeSyndesisConnection(String vdbName) throws KException{
+        OAuthCredentials bogusCredentials = new OAuthCredentials("supersecret", "developer");
+        DefaultSyndesisDataSource ds = getSyndesisDataSource(bogusCredentials, vdbName);
+        if (ds != null) {
+            executeDELETE(SYNDESISURL+"/connections/"+ds.getId());
+            info(vdbName, "Database connection to Virtual Database " + vdbName + " deleted with Id = " + ds.getId());
         }
     }
 
