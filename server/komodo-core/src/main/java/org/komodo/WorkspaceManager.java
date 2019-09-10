@@ -67,4 +67,7 @@ public interface WorkspaceManager {
 
     List<? extends ViewDefinition> findViewDefinitions(String dvName);
 
+    List<ViewDefinition> saveAllViewDefinitions(
+            Iterable<ViewDefinition> entities);
+
 }

@@ -300,6 +300,7 @@ public final class KomodoDataserviceService extends KomodoService {
 
             KomodoStatusObject result = new KomodoStatusObject("Import Status"); //$NON-NLS-1$
 
+            List<ViewDefinition> toSave = new ArrayList<>();
             for (String name : importPayload.getTables()) {
                 Table t = s.getTable(name);
                 if (t == null) {
@@ -320,7 +321,7 @@ public final class KomodoDataserviceService extends KomodoService {
                     viewDefn.setDdl(null);
                     viewDefn.setDescription(null);
                 } else {
-                    viewDefn = getWorkspaceManager().createViewDefiniton(dataserviceName, name);
+                    viewDefn = new ViewDefinition(dataserviceName, name);
                 }
                 viewDefn.setComplete(true);
                 FullyQualifiedName fqn = new FullyQualifiedName(SCHEMA_KEY, komodoSourceName);
@@ -330,7 +331,11 @@ public final class KomodoDataserviceService extends KomodoService {
                 String ddl = serviceVdbGenerator.getODataViewDdl(viewDefn);
                 viewDefn.setDdl(ddl);
                 viewDefn.setParsable(true);
-                result.addAttribute(viewDefn.getName(), viewDefn.getId());
+                toSave.add(viewDefn);
+            }
+
+            for (ViewDefinition vd : getWorkspaceManager().saveAllViewDefinitions(toSave)) {
+                result.addAttribute(vd.getName(), vd.getId());
             }
 
             dataservice.setModifiedAt(null);
