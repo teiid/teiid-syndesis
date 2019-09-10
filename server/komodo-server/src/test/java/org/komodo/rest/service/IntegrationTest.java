@@ -22,6 +22,7 @@ import static org.junit.Assert.*;
 
 import java.sql.Connection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.sql.DataSource;
@@ -106,6 +107,11 @@ public class IntegrationTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
+    @Test
+    public void testGetPublished() {
+        ResponseEntity<List> response = restTemplate.getForEntity("/v1/metadata/publish", List.class);
+        assertNotNull(response.getBody());
+    }
 
     @Test
     public void testError() throws Exception {
