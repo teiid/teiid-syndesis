@@ -32,21 +32,16 @@ import org.komodo.WorkspaceManager;
 import org.komodo.datasources.DefaultSyndesisDataSource;
 import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.datavirtualization.SourceSchema;
-import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.metadata.TeiidDataSource;
 import org.komodo.metadata.TeiidVdb;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
 import org.komodo.metadata.query.QSResult;
-import org.komodo.openshift.BuildStatus;
-import org.komodo.openshift.PublishConfiguration;
 import org.komodo.openshift.TeiidOpenShiftClient;
-import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoService;
 import org.komodo.rest.V1Constants;
 import org.komodo.rest.datavirtualization.KomodoQueryAttribute;
 import org.komodo.rest.datavirtualization.KomodoStatusObject;
-import org.komodo.rest.datavirtualization.PublishRequestPayload;
 import org.komodo.rest.datavirtualization.RelationalMessages;
 import org.komodo.rest.datavirtualization.RestSyndesisSourceStatus;
 import org.komodo.rest.datavirtualization.RestViewSourceInfo;
@@ -63,7 +58,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import org.teiid.adminapi.Model.Type;
@@ -104,9 +98,6 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
      * fqn table option key
      */
     public static final String TABLE_OPTION_FQN = AbstractMetadataRecord.RELATIONAL_URI+"fqn"; //$NON-NLS-1$
-
-    @Autowired
-    private TeiidOpenShiftClient openshiftClient;
 
     @Autowired
     private MetadataInstance metadataInstance;
@@ -226,7 +217,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
                 throw notFound(dvName);
             }
 
-            String serviceVdbName = dv.getServiceVdbName();
+            String serviceVdbName = DataVirtualization.getPreviewVdbName(dvName);
             TeiidVdb vdb = getMetadataInstance().getVdb(serviceVdbName);
 
             if (vdb != null
@@ -543,147 +534,6 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         }
 
         return new RestViewSourceInfo(srcSchemas.toArray(new RestSourceSchema[srcSchemas.size()]));
-    }
-
-    @RequestMapping(value = V1Constants.PUBLISH, method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
-    @ApiOperation(value = "Gets the published virtualization services", response = BuildStatus[].class)
-    @ApiResponses(value = { @ApiResponse(code = 403, message = "An error has occurred.") })
-    public BuildStatus[] getVirtualizations(
-            @ApiParam(value = "true to include in progress services")
-            @RequestParam(value = "includeInProgress", required=false, defaultValue = "true") boolean includeInProgressServices) {
-        Collection<BuildStatus> statuses = this.openshiftClient.getVirtualizations(includeInProgressServices);
-        return statuses.toArray(new BuildStatus[statuses.size()]);
-    }
-
-    @RequestMapping(value = V1Constants.PUBLISH + StringConstants.FS
-            + V1Constants.VDB_PLACEHOLDER, method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
-    @ApiOperation(value = "Find Build Status of Virtualization by VDB name", response = BuildStatus.class)
-    @ApiResponses(value = {
-        @ApiResponse(code = 404, message = "No VDB could be found with name"),
-        @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-    public BuildStatus getVirtualizationStatus(
-            @ApiParam(value = "Name of the VDB", required = true)
-            final @PathVariable(value = "vdbName", required=true) String vdbName) {
-        BuildStatus status = this.openshiftClient.getVirtualizationStatus(vdbName);
-
-        return status;
-    }
-
-    @RequestMapping(value = V1Constants.PUBLISH_LOGS + StringConstants.FS
-            + V1Constants.VDB_PLACEHOLDER, method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
-    @ApiOperation(value = "Find Publish Logs of Virtualization by VDB name", response = KomodoStatusObject.class)
-    @ApiResponses(value = {
-        @ApiResponse(code = 404, message = "No VDB could be found with name"),
-        @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-    public KomodoStatusObject getVirtualizationLogs(
-            @ApiParam(value = "Name of the VDB")
-            final @PathVariable(value = "vdbName", required = true) String vdbName) {
-
-        KomodoStatusObject status = new KomodoStatusObject("Logs for " + vdbName); //$NON-NLS-1$
-
-        String log = this.openshiftClient.getVirtualizationLog(vdbName);
-        status.addAttribute("log", log); //$NON-NLS-1$
-        return status;
-    }
-
-    @RequestMapping(value = V1Constants.PUBLISH + StringConstants.FS
-            + V1Constants.VDB_PLACEHOLDER, method = RequestMethod.DELETE, produces = { MediaType.APPLICATION_JSON_VALUE })
-    @ApiOperation(value = "Delete Virtualization Service by VDB name",response = BuildStatus.class)
-    @ApiResponses(value = {
-        @ApiResponse(code = 404, message = "No VDB could be found with name"),
-        @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-    public BuildStatus deleteVirtualization(
-            @ApiParam(value = "Name of the VDB")
-            final @PathVariable(value = "vdbName", required = true) String vdbName) {
-        BuildStatus status = this.openshiftClient.deleteVirtualization(vdbName);
-        return status;
-    }
-
-    @RequestMapping(value = V1Constants.PUBLISH, method = RequestMethod.POST, produces = { MediaType.APPLICATION_JSON_VALUE })
-    @ApiOperation(value = "Publish Virtualization Service", response = KomodoStatusObject.class)
-    @ApiResponses(value = {
-        @ApiResponse(code = 404, message = "No Dataservice could be found with name"),
-        @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-    public KomodoStatusObject publishVirtualization(
-            @ApiParam(value = "JSON properties:<br>" + OPEN_PRE_TAG + OPEN_BRACE + BR + NBSP
-                    + "\"name\":      \"Name of the Dataservice\"" + BR
-                    + "\"cpu-units\": \"(optional) Number of CPU units to allocate. 100 is 0.1 CPU (default 500)\"" + BR
-                    + "\"memory\":    \"(optional) Amount memory to allocate in MB (default 1024)\"" + BR
-                    + "\"disk-size\": \"(optional) Amount disk allocated in GB (default 20)\"" + BR
-                    + "\"enable-odata\": \"(optional) Enable OData interface. true|false (default true)\"" + BR
-                    + CLOSE_BRACE
-                    + CLOSE_PRE_TAG) @RequestBody(required = true) final PublishRequestPayload payload) throws Exception {
-        //
-        // Error if there is no name attribute defined
-        //
-        if (payload.getName() == null) {
-            throw forbidden(RelationalMessages.Error.VDB_NAME_NOT_PROVIDED);
-        }
-
-        return kengine.runInTransaction(true, ()-> {
-            DataVirtualization dataservice = getWorkspaceManager().findDataVirtualization(payload.getName());
-            if (dataservice == null) {
-                throw notFound(payload.getName());
-            }
-
-            TeiidVdb vdb = updatePreviewVdb(dataservice.getName());
-
-            if (vdb == null || !vdb.hasLoaded()) {
-                throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE);
-            }
-
-            KomodoStatusObject status = new KomodoStatusObject();
-
-            List<String> errors = vdb.getValidityErrors();
-            if (!errors.isEmpty()) {
-                status.addAttribute("error", errors.iterator().next());  //$NON-NLS-1$
-                return status;
-            }
-
-            status.addAttribute("Publishing", "Operation initiated");  //$NON-NLS-1$//$NON-NLS-2$
-
-            final OAuthCredentials creds = getAuthenticationToken();
-
-            List<? extends ViewDefinition> editorStates = getWorkspaceManager().findViewDefinitions(dataservice.getName());
-
-            //check for unparsable - alternatively we could put this on the preview vdb
-            for (ViewDefinition vd : editorStates) {
-                if (vd.isComplete() && !vd.isParsable()) {
-                    status.addAttribute("error", vd.getName() + " is not parsable");  //$NON-NLS-1$ //$NON-NLS-2$
-                    return status;
-                }
-            }
-
-            //use the preview vdb to build the needed metadata
-            VDBMetaData theVdb = new ServiceVdbGenerator(this).createServiceVdb(vdb, editorStates);
-
-            // the properties in this class can be exposed for user input
-            PublishConfiguration config = new PublishConfiguration();
-            config.setVDB(theVdb);
-            config.setOAuthCredentials(creds);
-            config.setEnableOData(payload.getEnableOdata());
-            config.setContainerDiskSize(payload.getDiskSize());
-            config.setContainerMemorySize(payload.getMemory());
-            config.setCpuUnits(payload.getCpuUnits());
-            BuildStatus buildStatus = openshiftClient.publishVirtualization(config, theVdb.getName());
-
-            status.addAttribute("Vdb Name", buildStatus.vdbName()); //$NON-NLS-1$
-            status.addAttribute("Build Status", buildStatus.status().name()); //$NON-NLS-1$
-            status.addAttribute("Build Status Message", buildStatus.statusMessage()); //$NON-NLS-1$
-
-            //
-            // Return the status from this request. Otherwise, monitor using #getVirtualizations()
-            //
-            return status;
-        });
     }
 
     public enum SourceDeploymentMode {

@@ -18,6 +18,8 @@
 
 package org.komodo.repository;
 
+import java.util.List;
+
 import org.komodo.datavirtualization.DataVirtualization;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -31,5 +33,8 @@ public interface DataVirtualizationRepository extends JpaRepository<DataVirtuali
 
     @Query("from DataVirtualization dv where dv.upperName = UPPER(:dvName)")
     public DataVirtualization findByNameIgnoreCase(@Param("dvName") String virtualizationName);
+
+    @Query(value = "SELECT name FROM data_virtualization", nativeQuery = true)
+    public List<String> findAllNames();
 
 }
