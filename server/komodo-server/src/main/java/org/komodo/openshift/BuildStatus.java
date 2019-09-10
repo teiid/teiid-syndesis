@@ -31,8 +31,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonInclude(Include.NON_NULL)
 public class BuildStatus {
 
-    public static final String VDB_NAME_LABEL = "vdb_name";
-
     public static final String BUILD_NAME_LABEL = "build_name";
 
     public static final String DEPLOYMENT_NAME_LABEL = "deployment_name";
@@ -134,8 +132,6 @@ public class BuildStatus {
     private volatile String buildName;
     @JsonProperty(DEPLOYMENT_NAME_LABEL)
     private volatile String deploymentName;
-    @JsonProperty(VDB_NAME_LABEL)
-    private final String vdbName;
     @JsonProperty(NAMESPACE_LABEL)
     private volatile String namespace;
     @JsonIgnore
@@ -147,8 +143,11 @@ public class BuildStatus {
     @JsonProperty(ROUTES_LABEL)
     private List<RouteStatus> routes = null;
 
-    public BuildStatus(String vdbName) {
-        this.vdbName = vdbName;
+    private String openShiftName;
+    private String dataVirtualizationName;
+
+    public BuildStatus(String openShiftName) {
+        this.openShiftName = openShiftName;
     }
 
     public PublishConfiguration publishConfiguration() {
@@ -173,10 +172,6 @@ public class BuildStatus {
 
     public void setDeploymentName(String deploymentName) {
         this.deploymentName = deploymentName;
-    }
-
-    public String vdbName() {
-        return vdbName;
     }
 
     public String namespace() {
@@ -238,5 +233,17 @@ public class BuildStatus {
 
     public void setRoutes(List<RouteStatus> routes) {
         this.routes = routes;
+    }
+
+    public String getOpenShiftName() {
+        return openShiftName;
+    }
+
+    public String getDataVirtualizationName() {
+        return dataVirtualizationName;
+    }
+
+    public void setDataVirtualizationName(String dataVirtualizationName) {
+        this.dataVirtualizationName = dataVirtualizationName;
     }
 }

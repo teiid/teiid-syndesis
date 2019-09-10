@@ -10,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.junit4.SpringRunner;
 
+@SuppressWarnings("nls")
 @RunWith(SpringRunner.class)
 @DataJpaTest
 public class DataVirtualizationTest {
@@ -47,6 +48,13 @@ public class DataVirtualizationTest {
         assertTrue(workspaceManagerImpl.deleteDataVirtualization(dv.getName()));
 
         entityManager.flush();
+    }
+
+    @Test public void testGetAllNames() {
+        workspaceManagerImpl.createDataVirtualization("foo");
+        workspaceManagerImpl.createDataVirtualization("bar");
+
+        assertEquals(2, workspaceManagerImpl.findDataVirtualizationNames().size());
     }
 
 
