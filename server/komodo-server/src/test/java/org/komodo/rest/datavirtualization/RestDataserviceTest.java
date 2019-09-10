@@ -17,7 +17,8 @@
  */
 package org.komodo.rest.datavirtualization;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -31,6 +32,7 @@ public final class RestDataserviceTest {
 
     private static final String DATASERVICE_NAME = "MyDataservice";
     private static final String DESCRIPTION = "my description";
+    private static final String SERVICE_VDB_NAME = "serviceVdbName";
     private static final String SERVICE_VIEW_MODEL = "serviceViewModel";
     private static final String SERVICE_VIEW1 = "serviceView1";
     private static final String SERVICE_VIEW2 = "serviceView2";
@@ -44,6 +46,7 @@ public final class RestDataserviceTest {
         copy.setName(dataservice.getName());
         copy.setId(dataservice.getId());
         copy.setDescription(dataservice.getDescription());
+        copy.setServiceVdbName(this.dataservice.getServiceVdbName());
         copy.setServiceViewModel(this.dataservice.getServiceViewModel());
         copy.setPublishedState(this.dataservice.getPublishedState());
 
@@ -54,10 +57,12 @@ public final class RestDataserviceTest {
     public void init() throws Exception {
         DataVirtualization theDataservice = Mockito.mock(DataVirtualization.class);
         Mockito.when(theDataservice.getName()).thenReturn(DATASERVICE_NAME);
+        Mockito.when(theDataservice.getServiceVdbName()).thenReturn("ServiceVdb");
 
-        this.dataservice = new RestDataVirtualization(theDataservice);
+        this.dataservice = new RestDataVirtualization(theDataservice, "ServiceVdb");
         this.dataservice.setName(DATASERVICE_NAME);
         this.dataservice.setDescription(DESCRIPTION);
+        this.dataservice.setServiceVdbName(SERVICE_VDB_NAME);
         this.dataservice.setServiceViewModel(SERVICE_VIEW_MODEL);
         this.dataservice.setPublishedState(DATASERVICE_PUBLISHED_STATE);
         String[] viewNames = new String[2];

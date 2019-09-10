@@ -21,7 +21,6 @@ import static org.komodo.rest.datavirtualization.RelationalMessages.Error.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.komodo.KException;
 import org.komodo.StringConstants;
@@ -69,13 +68,6 @@ import io.swagger.annotations.ApiResponses;
 @Api(tags = { V1Constants.DATA_SERVICES_SEGMENT })
 public final class KomodoDataserviceService extends KomodoService {
 
-    /**
-     * To be a valid schema name we don't allow .
-     * Since we'll add the dv- prefix, we don't char what it starts with,
-     * but we're still required to end with a letter/number
-     */
-    Pattern DATASERVICE_PATTERN = Pattern.compile("[-a-z0-9]*[a-z0-9]", Pattern.CASE_INSENSITIVE); //$NON-NLS-1$
-
     private static final StringNameValidator VALIDATOR = new StringNameValidator();
 
     @Autowired
@@ -111,11 +103,10 @@ public final class KomodoDataserviceService extends KomodoService {
     }
 
     private RestDataVirtualization createRestDataservice(final DataVirtualization dataService) throws KException {
-        RestDataVirtualization entity = new RestDataVirtualization(dataService);
+        RestDataVirtualization entity = new RestDataVirtualization(dataService, dataService.getServiceVdbName());
         entity.setServiceViewModel(SERVICE_VDB_VIEW_MODEL);
         // Set published status of dataservice
-        String openShiftName = DataVirtualization.getOpenShiftName(dataService.getName());
-        BuildStatus status = this.openshiftClient.getVirtualizationStatus(openShiftName);
+        BuildStatus status = this.openshiftClient.getVirtualizationStatus(dataService.getServiceVdbName());
         entity.setPublishedState(status.status().name());
         entity.setPublishPodName(status.publishPodName());
         entity.setPodNamespace(status.namespace());
@@ -189,10 +180,6 @@ public final class KomodoDataserviceService extends KomodoService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, errorMsg);
         }
 
-        if (!DATASERVICE_PATTERN.matcher(dataserviceName).matches()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Must match pattern " + DATASERVICE_PATTERN.pattern()); //$NON-NLS-1$
-        }
-
         // create new Dataservice
         return kengine.runInTransaction(false, () -> {
             // Error if the repo already contains a dataservice with the supplied name.
@@ -237,7 +224,7 @@ public final class KomodoDataserviceService extends KomodoService {
         //there is a small chance that a dv with the same name was recreated in the meantime,
         //but since this vdb is created on-demand we're good
         try {
-            metadataService.removeVdb(DataVirtualization.getPreviewVdbName(dataserviceName));
+            metadataService.removeVdb(DataVirtualization.getServiceVdbName(dataserviceName));
         } catch (KException e) {
             LOGGER.debug("error removing preview vdb", e); //$NON-NLS-1$
         }
@@ -271,18 +258,12 @@ public final class KomodoDataserviceService extends KomodoService {
             return getWorkspaceManager().findDataVirtualizationByNameIgnoreCase(dataserviceName);
         });
 
+        if (service == null) {
+            return ResponseEntity.ok().build();
+        }
+
         // name is a duplicate
-        if (service != null) {
-            return ResponseEntity.ok().body(RelationalMessages.getString(DATASERVICE_SERVICE_NAME_EXISTS));
-        }
-
-        if (!DATASERVICE_PATTERN.matcher(dataserviceName).matches()) {
-            return ResponseEntity.ok().body("Must match pattern " + DATASERVICE_PATTERN.pattern()); //$NON-NLS-1$
-        }
-
-        //TODO: make it a valid schema name
-
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body(RelationalMessages.getString(DATASERVICE_SERVICE_NAME_EXISTS));
     }
 
     @RequestMapping(value = StringConstants.FS + V1Constants.DATA_SERVICE_PLACEHOLDER +

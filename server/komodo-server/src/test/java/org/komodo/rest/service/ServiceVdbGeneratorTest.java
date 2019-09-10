@@ -407,7 +407,7 @@ public class ServiceVdbGeneratorTest {
         t.getIncomingObjects().add(schemas.get("pgconnection1").getTable("customers"));
         Mockito.when(mock.getSchema(StringConstants.SERVICE_VDB_VIEW_MODEL)).thenReturn(result.getSchema());
 
-        VDBMetaData serviceVdb = vdbGenerator.createServiceVdb("servicevdb", mock, Arrays.asList(state));
+        VDBMetaData serviceVdb = vdbGenerator.createServiceVdb(mock, Arrays.asList(state));
 
         assertEquals("<?xml version=\"1.0\" ?><vdb name=\"servicevdb\" version=\"1\"><connection-type>BY_VERSION</connection-type><model name=\"views\" type=\"VIRTUAL\" visible=\"true\"><metadata type=\"DDL\"><![CDATA[CREATE VIEW orderInfoView (ID, orderDate, name) OPTIONS (ANNOTATION 'test view description text') AS \n" +
                 "SELECT A.ID, A.orderDate, B.name\n" +
@@ -454,7 +454,7 @@ public class ServiceVdbGeneratorTest {
         t.getIncomingObjects().add(schemas.get("pgconnection2").getTable("customers"));
         Mockito.when(mock.getSchema(StringConstants.SERVICE_VDB_VIEW_MODEL)).thenReturn(result.getSchema());
 
-        VDBMetaData serviceVdb = vdbGenerator.createServiceVdb("servicevdb", mock, Arrays.asList(state));
+        VDBMetaData serviceVdb = vdbGenerator.createServiceVdb(mock, Arrays.asList(state));
 
         List<org.teiid.adminapi.Model> models = serviceVdb.getModels();
 
