@@ -28,25 +28,8 @@ import org.komodo.StringConstants;
 @Entity
 public class DataVirtualization extends BaseEntity {
 
-    /**
-     * Get the preview vdb name for the virtualization name -
-     * the suffix is added to not conflict with the source and
-     * main preview vdbs
-     * @param name
-     * @return
-     */
-    public static String getPreviewVdbName(String name) {
-        return name + StringConstants.SERVICE_VDB_SUFFIX;
-    }
-
-    /**
-     * Get the OpenShift name, requires lower case and must start/end with
-     * alpha - which we have already validated
-     * @param name
-     * @return
-     */
-    public static String getOpenShiftName(String name) {
-        return "dv-" + name.toLowerCase(); //$NON-NLS-1$
+    public static String getServiceVdbName(String name) {
+        return name.toLowerCase() + StringConstants.SERVICE_VDB_SUFFIX;
     }
 
     @Id
@@ -60,6 +43,13 @@ public class DataVirtualization extends BaseEntity {
 
     public DataVirtualization(String name) {
         setName(name);
+    }
+
+    /**
+     * @return the service VDB name (may be <code>null</code> if not defined)
+     */
+    public String getServiceVdbName( ) {
+        return getServiceVdbName(getName());
     }
 
     public String getId() {

@@ -89,11 +89,6 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
     }
 
     @Override
-    public List<String> findDataVirtualizationNames() {
-        return dataVirtualizationRepository.findAllNames();
-    }
-
-    @Override
     public boolean deleteDataVirtualization(String serviceName) {
         org.komodo.datavirtualization.DataVirtualization dv = this.dataVirtualizationRepository.findByName(serviceName);
         if (dv == null) {

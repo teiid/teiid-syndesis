@@ -70,12 +70,14 @@ public final class RestDataVirtualization {
      * @param dataService the dataService
      * @throws KException if error occurs
      */
-    public RestDataVirtualization(DataVirtualization dataService) throws KException {
+    public RestDataVirtualization(DataVirtualization dataService, String vdbName) throws KException {
         setName(dataService.getName());
 
         setId(dataService.getId());
 
         setDescription(dataService.getDescription());
+
+        setServiceVdbName(vdbName);
 
         // Initialize the published state to NOTFOUND
         setPublishedState(BuildStatus.Status.NOTFOUND.name());
@@ -107,6 +109,20 @@ public final class RestDataVirtualization {
      */
     public void setServiceViewModel(String modelName) {
         this.serviceViewModel = modelName;
+    }
+
+    /**
+     * @return the service vdb name (can be empty)
+     */
+    public String getServiceVdbName() {
+        return this.serviceVdbName;
+    }
+
+    /**
+     * @param serviceVdbName the service vdb name to set
+     */
+    public void setServiceVdbName(String serviceVdbName) {
+        this.serviceVdbName = serviceVdbName;
     }
 
     /**
