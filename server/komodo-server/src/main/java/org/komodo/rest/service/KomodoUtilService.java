@@ -20,7 +20,6 @@ package org.komodo.rest.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.komodo.StringConstants;
 import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.metadata.MetadataInstance;
@@ -178,7 +177,7 @@ public final class KomodoUtilService extends KomodoService {
                               viewEditorState == null ? 0 : 1 );
 
             if (viewEditorState == null) {
-                throw new ResponseStatusException(HttpStatus.NO_CONTENT);
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND);
             }
 
             LOGGER.debug("getViewEditorStates:ViewEditorState %s entity was constructed", viewEditorState.getName()); //$NON-NLS-1$
@@ -202,7 +201,7 @@ public final class KomodoUtilService extends KomodoService {
         @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
-    public KomodoStatusObject stashViewEditorState(
+    public RestViewDefinitionStatus stashViewEditorState(
             @ApiParam(required = true) @RequestBody final org.komodo.datavirtualization.ViewDefinition restViewEditorState)
             throws Exception {
         if (StringUtils.isBlank(restViewEditorState.getName())) {
@@ -213,14 +212,18 @@ public final class KomodoUtilService extends KomodoService {
             throw forbidden(RelationalMessages.Error.VIEW_DEFINITION_MISSING_DATAVIRTUALIZATIONNAME);
         }
 
+        //validate before saving as it can save us a preview vdb refresh
+        //TODO: further consolidation - that is we can go back to the logic that
+        //had captured the inputs
+        RestViewDefinitionStatus validated = validateViewDefinition(restViewEditorState);
+
         ViewDefinition vd = kengine.runInTransaction(false, ()->{
             return upsertViewEditorState(restViewEditorState);
         });
 
-        KomodoStatusObject kso = new KomodoStatusObject("Stash Status"); //$NON-NLS-1$
-        kso.addAttribute("Stash Status", "Successfully stashed"); //$NON-NLS-1$ //$NON-NLS-2$
-        kso.addAttribute(StringConstants.ID_LABEL, vd.getId());
-        return kso;
+        validated.setViewDefinition(vd);
+
+        return validated;
     }
 
     /**

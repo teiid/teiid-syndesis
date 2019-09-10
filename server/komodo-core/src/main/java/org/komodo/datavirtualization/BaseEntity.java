@@ -17,7 +17,7 @@
  */
 package org.komodo.datavirtualization;
 
-import java.time.Instant;
+import java.sql.Timestamp;
 
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
@@ -41,9 +41,9 @@ public abstract class BaseEntity {
     private Long version;
     @Column(updatable = false)
     @CreationTimestamp
-    private Instant createdAt;
+    private Timestamp createdAt;
     @UpdateTimestamp
-    private Instant modifiedAt;
+    private Timestamp modifiedAt;
 
     public String getName() {
         return name;
@@ -58,11 +58,11 @@ public abstract class BaseEntity {
         }
     }
 
-    public Instant getCreatedAt() {
+    public Timestamp getCreatedAt() {
         return createdAt;
     }
 
-    public Instant getModifiedAt() {
+    public Timestamp getModifiedAt() {
         return modifiedAt;
     }
 
@@ -77,7 +77,7 @@ public abstract class BaseEntity {
         return version;
     }
 
-    public void setModifiedAt(Instant modifiedAt) {
+    public void setModifiedAt(Timestamp modifiedAt) {
         this.modifiedAt = modifiedAt;
     }
 
