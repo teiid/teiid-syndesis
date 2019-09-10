@@ -62,11 +62,11 @@ public final class KomodoVdbService extends KomodoService {
     @ApiResponses( value = {
             @ApiResponse( code = 400, message = "The URI cannot contain encoded slashes or backslashes." ),
             @ApiResponse( code = 403, message = "An unexpected error has occurred." ),
-            @ApiResponse( code = 404, message = "No virtualization could be found with name" ),
+            @ApiResponse( code = 404, message = "No vdb could be found with name" ),
             @ApiResponse( code = 500, message = "The view name cannot be empty." )
     } )
     public ResponseEntity<String> validateViewName(
-                                      @ApiParam(value = "Name of the virtualization", required = true)
+                                      @ApiParam(value = "Name of the Vdb", required = true)
                                       final @PathVariable( "virtualization" ) String virtualization,
                                       @ApiParam(value = "Name of the Model to get its tables", required = true)
                                       final @PathVariable( "viewName" ) String viewName ) throws Exception {

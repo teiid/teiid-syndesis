@@ -116,6 +116,11 @@ public interface V1Constants extends StringConstants {
     String VDBS_SEGMENT = "vdbs"; //$NON-NLS-1$
 
     /**
+     * Placeholder added to an URI to allow a specific vdb id
+     */
+    String VDB_PLACEHOLDER = "{vdbName}"; //$NON-NLS-1$
+
+    /**
      * The name of the URI path segment for refresh of the preview vdb.
      */
     String REFRESH_PREVIEW_VDB_SEGMENT = "refreshPreviewVdb"; //$NON-NLS-1$

@@ -101,9 +101,9 @@ public final class ServiceVdbGenerator implements StringConstants {
      * Creates the service vdb - must be valid
      * @throws KException
      */
-    public VDBMetaData createServiceVdb(String virtualizationName, TeiidVdb previewVDB, List<? extends ViewDefinition> editorStates) throws KException {
+    public VDBMetaData createServiceVdb(TeiidVdb previewVDB, List<? extends ViewDefinition> editorStates) throws KException {
         VDBMetaData vdb = new VDBMetaData();
-        vdb.setName(virtualizationName);
+        vdb.setName(previewVDB.getName());
         // Keep track of unique list of sources needed
         Map< Schema, LinkedHashSet<Table> > schemaTableMap = new LinkedHashMap<Schema, LinkedHashSet<Table>>();
 
