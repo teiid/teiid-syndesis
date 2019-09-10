@@ -163,4 +163,11 @@ public class PublishConfiguration implements StringConstants {
     public List<EnvVar> getEnvironmentVariables() {
         return allEnvironmentVariables;
     }
+
+    public String getDataVirtualizationName() {
+        if (this.vdb == null) {
+            return null;
+        }
+        return this.vdb.getName();
+    }
 }

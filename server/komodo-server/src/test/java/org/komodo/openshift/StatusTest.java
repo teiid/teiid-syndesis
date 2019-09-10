@@ -18,17 +18,17 @@
 
 package org.komodo.openshift;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
-import org.komodo.KException;
 import org.komodo.openshift.BuildStatus.RouteStatus;
 import org.komodo.openshift.BuildStatus.Status;
 import org.komodo.rest.KomodoJsonMarshaller;
 
+@SuppressWarnings("nls")
 public class StatusTest {
 
-    @Test public void testJsonRoundtrip() throws KException {
+    @Test public void testJsonRoundtrip() throws Exception {
         BuildStatus bs = new BuildStatus("vdb");
         bs.setBuildName("buildName");
         bs.setDeploymentName("deploymentName");
@@ -48,10 +48,10 @@ public class StatusTest {
 
         String value = KomodoJsonMarshaller.marshall(bs);
         assertEquals("{\n" +
+                "  \"openShiftName\" : \"vdb\",\n" +
                 "  \"build_status\" : \"DEPLOYING\",\n" +
                 "  \"build_name\" : \"buildName\",\n" +
                 "  \"deployment_name\" : \"deploymentName\",\n" +
-                "  \"vdb_name\" : \"vdb\",\n" +
                 "  \"namespace\" : \"namespace\",\n" +
                 "  \"last_updated\" : 0,\n" +
                 "  \"routes\" : [ {\n" +

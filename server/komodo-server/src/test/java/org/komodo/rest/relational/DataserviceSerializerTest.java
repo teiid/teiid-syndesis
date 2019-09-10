@@ -17,7 +17,7 @@
  */
 package org.komodo.rest.relational;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.net.URLDecoder;
 
@@ -36,7 +36,6 @@ public final class DataserviceSerializerTest {
     private static final String DESCRIPTION = "my description";
 
     private static final String JSON = "{\n" +
-            "  \"serviceVdbName\" : \"ServiceVdb\",\n" +
             "  \"publishedState\" : \"NOTFOUND\",\n" +
             "  \"empty\" : true,\n" +
             "  \"keng__id\" : \"dataservice1\",\n" +
@@ -50,7 +49,7 @@ public final class DataserviceSerializerTest {
         DataVirtualization theService = Mockito.mock(DataVirtualization.class);
         Mockito.when(theService.getName()).thenReturn(DATASERVICE_NAME);
 
-        this.dataservice = new RestDataVirtualization(theService, "ServiceVdb");
+        this.dataservice = new RestDataVirtualization(theService);
         this.dataservice.setDescription(DESCRIPTION);
     }
 

@@ -39,6 +39,7 @@ import org.komodo.rest.datavirtualization.KomodoStatusObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -128,5 +129,24 @@ public class KomodoDataserviceServiceTest {
         entityManager.flush();
 
         assertEquals(Long.valueOf(1), dv.getVersion());
+    }
+
+    @Test public void testValidateName() throws Exception {
+        ResponseEntity<String> response = komodoDataserviceService.validateDataserviceName("foo");
+        assertNull(response.getBody());
+
+        //must end with number/letter
+        response = komodoDataserviceService.validateDataserviceName("foo-");
+        assertNotNull(response.getBody());
+
+        //bad chars
+        response = komodoDataserviceService.validateDataserviceName("%foo&");
+        assertNotNull(response.getBody());
+
+        workspaceManagerImpl.createDataVirtualization("foo");
+
+        //conflicts
+        response = komodoDataserviceService.validateDataserviceName("FOO");
+        assertNotNull(response.getBody());
     }
 }
