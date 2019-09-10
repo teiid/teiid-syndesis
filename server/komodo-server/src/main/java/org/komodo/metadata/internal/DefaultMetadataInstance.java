@@ -63,6 +63,8 @@ import org.teiid.adminapi.VDB;
 import org.teiid.adminapi.VDB.Status;
 import org.teiid.adminapi.VDBImport;
 import org.teiid.adminapi.impl.ModelMetaData;
+import org.teiid.adminapi.impl.ModelMetaData.Message;
+import org.teiid.adminapi.impl.ModelMetaData.Message.Severity;
 import org.teiid.adminapi.impl.SourceMappingMetadata;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.adminapi.impl.VDBMetadataParser;
@@ -84,6 +86,7 @@ import org.teiid.query.metadata.TransformationMetadata;
 import org.teiid.query.parser.QueryParser;
 import org.teiid.query.validator.ValidatorReport;
 import org.teiid.translator.TranslatorException;
+import org.teiid.util.FullyQualifiedName;
 
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -185,6 +188,27 @@ public class DefaultMetadataInstance implements MetadataInstance {
             return vdb.getModels().stream()
                     .map(m -> qmi.getMetadataStore().getSchema(m.getName()))
                     .collect(Collectors.toList());
+        }
+
+        private Set<String> haveErrors;
+
+        @Override
+        public boolean hasValidationError(String objectName, String childType) {
+            ModelMetaData m = this.vdb.getModel(SERVICE_VDB_VIEW_MODEL);
+            if (m == null) {
+                return false;
+            }
+            if (haveErrors == null) {
+                haveErrors = new HashSet<>();
+                for (Message message : m.getMessages()) {
+                    if (message.getPath() != null && message.getSeverity() == Severity.ERROR) {
+                        haveErrors.add(message.getPath());
+                    }
+                }
+            }
+            FullyQualifiedName fqn = new FullyQualifiedName(childType, objectName);
+            String path = fqn.toString();
+            return haveErrors.contains(path);
         }
 
     }

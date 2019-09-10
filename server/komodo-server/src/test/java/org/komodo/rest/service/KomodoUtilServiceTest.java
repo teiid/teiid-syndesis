@@ -28,6 +28,7 @@ import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
 import org.komodo.repository.KomodoRepositoryConfiguration;
 import org.komodo.repository.WorkspaceManagerImpl;
+import org.komodo.rest.datavirtualization.ViewListing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
@@ -112,6 +113,10 @@ public class KomodoUtilServiceTest {
 
         //the save does not determine the source paths
         assertEquals(Arrays.asList(), saved.getSourcePaths());
+
+        for (ViewListing vl : komodoUtilService.getViewList("x")) {
+            assertTrue(vl.isValid());
+        }
     }
 
     static VDBMetaData dummyPreviewVdb() {

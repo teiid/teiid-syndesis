@@ -324,8 +324,8 @@ public final class KomodoDataserviceService extends KomodoService {
                     viewDefn = new ViewDefinition(dataserviceName, name);
                 }
                 viewDefn.setComplete(true);
-                FullyQualifiedName fqn = new FullyQualifiedName(SCHEMA_KEY, komodoSourceName);
-                fqn.append(TABLE_KEY, t.getName());
+                FullyQualifiedName fqn = new FullyQualifiedName(Schema.getTypeName(), komodoSourceName);
+                fqn.append(Schema.getChildType(t.getClass()), t.getName());
                 viewDefn.addSourcePath(fqn.toString());
 
                 String ddl = serviceVdbGenerator.getODataViewDdl(viewDefn);

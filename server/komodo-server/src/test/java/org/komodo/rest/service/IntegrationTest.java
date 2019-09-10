@@ -28,7 +28,6 @@ import javax.sql.DataSource;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.komodo.StringConstants;
 import org.komodo.datasources.DefaultSyndesisDataSource;
 import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
@@ -38,12 +37,14 @@ import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.rest.Application;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.CredentialsProvider;
+import org.komodo.rest.KomodoJsonMarshaller;
 import org.komodo.rest.V1Constants;
 import org.komodo.rest.connections.SyndesisConnectionMonitor;
 import org.komodo.rest.connections.SyndesisConnectionSynchronizer;
 import org.komodo.rest.datavirtualization.KomodoQueryAttribute;
 import org.komodo.rest.datavirtualization.KomodoStatusObject;
 import org.komodo.rest.datavirtualization.RestDataVirtualization;
+import org.komodo.rest.datavirtualization.RestViewDefinitionStatus;
 import org.komodo.rest.service.IntegrationTest.IntegrationTestConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -136,26 +137,31 @@ public class IntegrationTest {
         vd.setDdl("create view myview as select 1 as col");
         vd.setUserDefined(true);
 
-        ResponseEntity<KomodoStatusObject> stashStatus = restTemplate.exchange(
+        //using a string response as spring does not seem to handle the
+        //unwrap correctly
+        ResponseEntity<String> stashStatus = restTemplate.exchange(
                 "/v1/service/userProfile/viewEditorState", HttpMethod.PUT,
-                new HttpEntity<ViewDefinition>(vd), KomodoStatusObject.class);
+                new HttpEntity<ViewDefinition>(vd), String.class);
 
         assertEquals(HttpStatus.OK, stashStatus.getStatusCode());
-        String id = stashStatus.getBody().getAttributes()
-                .get(StringConstants.ID_LABEL);
+        RestViewDefinitionStatus saved = KomodoJsonMarshaller.unmarshall(stashStatus.getBody(), RestViewDefinitionStatus.class);
+        String id = saved.getViewDefinition().getId();
+
+        assertEquals("SUCCESS", saved.getStatus());
+        assertNotNull(saved.getViewDefinition().getCreatedAt());
 
         ViewDefinition vd2 = new ViewDefinition(dvName, "myview2");
         vd2.setComplete(true);
         vd2.setDdl("create view myview as select * from myview");
         vd2.setUserDefined(true);
 
-        ResponseEntity<KomodoStatusObject> stashStatus2 = restTemplate.exchange(
+        ResponseEntity<String> stashStatus2 = restTemplate.exchange(
                 "/v1/service/userProfile/viewEditorState", HttpMethod.PUT,
-                new HttpEntity<ViewDefinition>(vd2), KomodoStatusObject.class);
+                new HttpEntity<ViewDefinition>(vd2), String.class);
 
-        assertEquals(HttpStatus.OK, stashStatus.getStatusCode());
-        String id2 = stashStatus2.getBody().getAttributes()
-                .get(StringConstants.ID_LABEL);
+        assertEquals(HttpStatus.OK, stashStatus2.getStatusCode());
+        String id2 = KomodoJsonMarshaller.unmarshall(stashStatus2.getBody(), RestViewDefinitionStatus.class)
+                .getViewDefinition().getId();
         assertNotNull(id2);
 
         ResponseEntity<ViewDefinition> view = restTemplate.getForEntity(
