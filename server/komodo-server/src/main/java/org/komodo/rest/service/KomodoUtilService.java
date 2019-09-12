@@ -19,6 +19,7 @@ package org.komodo.rest.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.datavirtualization.ViewDefinition;
@@ -332,7 +333,7 @@ public final class KomodoUtilService extends KomodoService {
             if (restViewDefn.getVersion() == null) {
                 //Optimistic locking not used
                 LOGGER.warn("Version was not specificed for view definition, the latest state may be overwritten"); //$NON-NLS-1$
-            } else if (!EquivalenceUtil.areEqual(restViewDefn.getVersion(), viewDefn.getVersion())) {
+            } else if (!Objects.equals(restViewDefn.getVersion(), viewDefn.getVersion())) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT);
             }
         } else {
@@ -375,7 +376,7 @@ public final class KomodoUtilService extends KomodoService {
                     updateDv = true;
                 }
                 // else we're trusting the ui
-            } else if (viewDefn.getDdl() != null && !EquivalenceUtil.areEqual(oldDdl, viewDefn.getDdl())) {
+            } else if (viewDefn.getDdl() != null && !Objects.equals(oldDdl, viewDefn.getDdl())) {
 
                 //TODO: could pro-actively validate if we're in a good state
                 viewDefn.getSourcePaths().clear();

@@ -69,7 +69,7 @@ public class KomodoUtilServiceTest {
 
         assertNotNull(saved.getCreatedAt());
         assertNotNull(saved.getModifiedAt());
-        assertEquals(Long.valueOf(1), saved.getVersion());
+        assertEquals(Long.valueOf(0), saved.getVersion());
         assertNotNull(saved.getId());
 
         vd = new ViewDefinition("x", "y");
@@ -100,7 +100,7 @@ public class KomodoUtilServiceTest {
 
         assertNotNull(saved.getCreatedAt());
         assertNotNull(saved.getModifiedAt());
-        assertEquals(Long.valueOf(2), saved.getVersion());
+        assertEquals(Long.valueOf(1), saved.getVersion());
         assertNotNull(saved.getId());
 
         ViewDefinition found = workspaceManagerImpl.findViewDefinition(saved.getId());

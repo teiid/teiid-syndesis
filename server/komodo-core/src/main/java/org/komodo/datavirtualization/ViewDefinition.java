@@ -19,6 +19,7 @@ package org.komodo.datavirtualization;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -54,11 +55,24 @@ public class ViewDefinition extends BaseEntity {
         public void setSourcePaths(List<String> sourcePaths) {
             this.sourcePaths = sourcePaths;
         }
+
+        @Override
+        public int hashCode() {
+            return sourcePaths.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof State)) {
+                return false;
+            }
+            return Objects.equals(sourcePaths, ((State)obj).sourcePaths);
+        }
     }
 
-    public static class ViewDefinitionStateConvertor extends JpaConverterJson {
+    public static class ViewDefinitionStateConvertor extends JpaConverterJson<State> {
         @Override
-        protected Class<?> targetClass() {
+        public Class<State> targetClass() {
             return State.class;
         }
     }

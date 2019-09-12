@@ -31,7 +31,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @see "https://stackoverflow.com/questions/25738569/how-to-map-a-map-json-column-to-java-object-with-jpa"
  */
 @Converter(autoApply = true)
-public class JpaConverterJson implements AttributeConverter<Object, String> {
+public abstract class JpaConverterJson<T> implements AttributeConverter<T, String> {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -45,7 +45,7 @@ public class JpaConverterJson implements AttributeConverter<Object, String> {
     }
 
     @Override
-    public Object convertToEntityAttribute(String dbData) {
+    public T convertToEntityAttribute(String dbData) {
         try {
             return objectMapper.readValue(dbData, targetClass());
         } catch (IOException ex) {
@@ -53,8 +53,6 @@ public class JpaConverterJson implements AttributeConverter<Object, String> {
         }
     }
 
-    protected Class<?> targetClass() {
-        return Object.class;
-    }
+    public abstract Class<T> targetClass();
 
 }
