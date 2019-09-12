@@ -22,6 +22,7 @@ import static org.junit.Assert.*;
 
 import java.sql.Connection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.sql.DataSource;
@@ -287,6 +288,13 @@ public class IntegrationTest {
             }
         }
 
+        ResponseEntity<List> sourceStatusResponse = restTemplate.getForEntity("/v1/metadata/syndesisSourceStatuses", List.class);
+        assertEquals(HttpStatus.OK, sourceStatusResponse.getStatusCode());
+        Map status = (Map)sourceStatusResponse.getBody().get(0);
+        assertEquals(0, ((List)status.get("errors")).size());
+        assertEquals("ACTIVE", status.get("schemaState"));
+        assertEquals(Boolean.FALSE, status.get("loading"));
+
         //add another source table
         c.createStatement().execute("create table DV.t2 (col integer)");
         //update through the synchronizer
@@ -320,5 +328,12 @@ public class IntegrationTest {
                 }
             }
         }
+
+        sourceStatusResponse = restTemplate.getForEntity("/v1/metadata/syndesisSourceStatuses", List.class);
+        assertEquals(HttpStatus.OK, sourceStatusResponse.getStatusCode());
+        status = (Map)sourceStatusResponse.getBody().get(0);
+        assertEquals(1, ((List)status.get("errors")).size());
+        assertEquals("FAILED", status.get("schemaState"));
+        assertEquals(Boolean.FALSE, status.get("loading"));
     }
 }

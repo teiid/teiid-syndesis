@@ -18,15 +18,15 @@
 
 package org.komodo.rest.datavirtualization;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.Arrays;
 
 import org.junit.Test;
 import org.komodo.rest.KomodoJsonMarshaller;
-import org.komodo.rest.datavirtualization.RestSyndesisSourceStatus;
 import org.komodo.rest.datavirtualization.RestSyndesisSourceStatus.EntityState;
 
+@SuppressWarnings("nls")
 public class RestSyndesisSourceStatusTest {
 
     @Test public void testSerialization() {
@@ -35,8 +35,7 @@ public class RestSyndesisSourceStatusTest {
         rsss.setId("id");
         rsss.setErrors(Arrays.asList("some error"));
         rsss.setSchemaState(EntityState.ACTIVE);
-        rsss.setVdbState(EntityState.MISSING);
-        rsss.setVdbName("vdb name");
+        rsss.setLoading(true);
 
         String value = KomodoJsonMarshaller.marshall(rsss);
         assertEquals("{\n" +
@@ -45,8 +44,7 @@ public class RestSyndesisSourceStatusTest {
                 "  \"errors\" : [ \"some error\" ],\n" +
                 "  \"schemaState\" : \"ACTIVE\",\n" +
                 "  \"id\" : \"id\",\n" +
-                "  \"vdbName\" : \"vdb name\",\n" +
-                "  \"vdbState\" : \"MISSING\"\n" +
+                "  \"loading\" : true\n" +
                 "}", value);
     }
 

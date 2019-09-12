@@ -4,9 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import org.komodo.metadata.TeiidVdb;
 import org.komodo.rest.V1Constants;
-import org.komodo.utils.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -22,26 +20,10 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonInclude(Include.NON_NULL)
 public final class RestSyndesisSourceStatus implements V1Constants {
 
-    /*
-
-    {
-      "sourceName": "syndesisSrcName",
-      "hasTeiidSource": "true | false",
-      "vdbState": "MISSING" | "LOADING" | "ACTIVE" | "FAILED",
-      "vdbName": "myConnectionBtlConn",
-      "schemaState": "MISSING" | "LOADING" | "ACTIVE" | "FAILED",
-      "schemaVdbName": "syndesissrcnamebtlconnschemavdb",
-      "id": "syndesis source / source schema id",
-      "errors": []
-    }
-
-    */
-
     /**
      * Enumeration for state
      */
     public enum EntityState {
-
         /**
          * Active state
          */
@@ -51,38 +33,9 @@ public final class RestSyndesisSourceStatus implements V1Constants {
          */
         FAILED,
         /**
-         * Loading state
-         */
-        LOADING,
-        /**
          * Missing state
          */
         MISSING;
-
-        /**
-         * @param value the value whose <code>EntityState</code> is being requested
-         * @return the entity state or {@link EntityState#MISSING} if not found
-         */
-        public static EntityState fromString( final String value ) {
-            if ( StringUtils.isBlank( value ) ) {
-                return MISSING;
-            }
-
-            if ( value.toUpperCase().equals( ACTIVE.toString() ) ) {
-                return ACTIVE;
-            }
-
-            if ( value.toUpperCase().equals( FAILED.toString() ) ) {
-                return FAILED;
-            }
-
-            if ( value.toUpperCase().equals( LOADING.toString() ) ) {
-                return LOADING;
-            }
-
-            return MISSING;
-        }
-
     }
 
     private String sourceName;
@@ -90,8 +43,7 @@ public final class RestSyndesisSourceStatus implements V1Constants {
     private List< String > errors;
     private EntityState schemaState = EntityState.MISSING;
     private String id;
-    private String vdbName;
-    private EntityState vdbState = EntityState.MISSING;
+    private boolean loading;
 
     /**
      * Constructor for use in deserialization.
@@ -126,8 +78,7 @@ public final class RestSyndesisSourceStatus implements V1Constants {
                && Objects.equals( this.errors, that.errors )
                && Objects.equals( this.id, that.id )
                && Objects.equals(  this.schemaState, that.schemaState )
-               && Objects.equals( this.vdbName, that.vdbName )
-               && Objects.equals( this.vdbState, that.vdbState );
+               && this.loading == that.loading;
     }
 
     /**
@@ -166,20 +117,6 @@ public final class RestSyndesisSourceStatus implements V1Constants {
     }
 
     /**
-     * @return the server VDB name (can be empty)
-     */
-    public String getVdbName() {
-        return this.vdbName;
-    }
-
-    /**
-     * @return the server VDB state or {@link EntityState#MISSING} if not set
-     */
-    public EntityState getVdbState() {
-        return this.vdbState == null ? EntityState.MISSING : this.vdbState;
-    }
-
-    /**
      * {@inheritDoc}
      *
      * @see java.lang.Object#hashCode()
@@ -191,8 +128,7 @@ public final class RestSyndesisSourceStatus implements V1Constants {
                              this.errors,
                              this.id,
                              this.schemaState,
-                             this.vdbName,
-                             this.vdbState );
+                             this.loading );
     }
 
     /**
@@ -210,23 +146,6 @@ public final class RestSyndesisSourceStatus implements V1Constants {
     }
 
     /**
-     * Set status teiid vdb details
-     * @param teiidVdb the teiid VDB
-     */
-    public void setTeiidVdbDetails( final TeiidVdb teiidVdb ) {
-        this.vdbName = teiidVdb.getName();
-        this.errors = teiidVdb.getValidityErrors();
-
-        if ( teiidVdb.hasLoaded() ) {
-            this.vdbState = EntityState.ACTIVE;
-        } else if ( teiidVdb.hasFailed() ) {
-            this.vdbState = EntityState.FAILED;
-        } else if ( teiidVdb.isLoading() ) {
-            this.vdbState = EntityState.LOADING;
-        }
-    }
-
-    /**
      * @param errors the server VDB validity errors (can be <code>null</code>)
      */
     public void setErrors( final List< String > errors ) {
@@ -240,30 +159,16 @@ public final class RestSyndesisSourceStatus implements V1Constants {
         this.schemaState = schemaState == null ? EntityState.MISSING : schemaState;
     }
 
-    public void setSchemaState( final String state) {
-        this.schemaState = schemaState == null ? EntityState.MISSING : EntityState.valueOf(state);
-    }
-
     public void setId(String id) {
         this.id = id;
     }
 
-    /**
-     * @param vdbName the server VDB name (can be empty)
-     */
-    public void setVdbName( final String vdbName ) {
-        this.vdbName = vdbName;
+    public void setLoading(boolean loading) {
+        this.loading = loading;
     }
 
-    /**
-     * @param vdbState the server VDB state (can be <code>null</code>)
-     */
-    public void setVdbState( final EntityState vdbState ) {
-        this.vdbState = vdbState == null ? EntityState.MISSING : vdbState;
-    }
-
-    public void setVdbState( final String state ) {
-        this.vdbState = vdbState == null ? EntityState.MISSING : EntityState.valueOf(state);
+    public boolean isLoading() {
+        return loading;
     }
 
 }
