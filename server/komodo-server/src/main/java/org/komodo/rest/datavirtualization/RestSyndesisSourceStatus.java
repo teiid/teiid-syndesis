@@ -39,7 +39,6 @@ public final class RestSyndesisSourceStatus implements V1Constants {
     }
 
     private String sourceName;
-    private boolean hasTeiidSource = false;
     private List< String > errors;
     private EntityState schemaState = EntityState.MISSING;
     private String id;
@@ -74,7 +73,6 @@ public final class RestSyndesisSourceStatus implements V1Constants {
         final RestSyndesisSourceStatus that = ( RestSyndesisSourceStatus )obj;
 
         return Objects.equals( this.sourceName, that.sourceName )
-               && Objects.equals( this.hasTeiidSource, that.hasTeiidSource )
                && Objects.equals( this.errors, that.errors )
                && Objects.equals( this.id, that.id )
                && Objects.equals(  this.schemaState, that.schemaState )
@@ -86,13 +84,6 @@ public final class RestSyndesisSourceStatus implements V1Constants {
      */
     public String getSourceName() {
         return this.sourceName;
-    }
-
-    /**
-     * @return 'true' if has corresponding teiid source
-     */
-    public boolean getHasTeiidSource() {
-        return this.hasTeiidSource;
     }
 
     /**
@@ -124,7 +115,6 @@ public final class RestSyndesisSourceStatus implements V1Constants {
     @Override
     public int hashCode() {
         return Objects.hash( this.sourceName,
-                             this.hasTeiidSource,
                              this.errors,
                              this.id,
                              this.schemaState,
@@ -136,13 +126,6 @@ public final class RestSyndesisSourceStatus implements V1Constants {
      */
     public void setSourceName( final String sourceName ) {
         this.sourceName = sourceName;
-    }
-
-    /**
-     * @param hasTeiidSrc 'true' if has teiid source
-     */
-    public void setHasTeiidSource( final boolean hasTeiidSrc ) {
-        this.hasTeiidSource = hasTeiidSrc;
     }
 
     /**

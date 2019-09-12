@@ -31,7 +31,6 @@ public class RestSyndesisSourceStatusTest {
 
     @Test public void testSerialization() {
         RestSyndesisSourceStatus rsss = new RestSyndesisSourceStatus("x");
-        rsss.setHasTeiidSource(true);
         rsss.setId("id");
         rsss.setErrors(Arrays.asList("some error"));
         rsss.setSchemaState(EntityState.ACTIVE);
@@ -40,7 +39,6 @@ public class RestSyndesisSourceStatusTest {
         String value = KomodoJsonMarshaller.marshall(rsss);
         assertEquals("{\n" +
                 "  \"sourceName\" : \"x\",\n" +
-                "  \"hasTeiidSource\" : true,\n" +
                 "  \"errors\" : [ \"some error\" ],\n" +
                 "  \"schemaState\" : \"ACTIVE\",\n" +
                 "  \"id\" : \"id\",\n" +

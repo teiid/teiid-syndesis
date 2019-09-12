@@ -487,14 +487,12 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
                 TeiidDataSource teiidSource = getMetadataInstance().getDataSource(komodoName);
                 RestSyndesisSourceStatus status = new RestSyndesisSourceStatus(komodoName);
                 if (teiidSource != null) {
-                    status.setHasTeiidSource(true);
                     setSchemaStatus(teiidSource.getId(), status);
                 }
 
                 // Name of vdb based on source name
                 String vdbName = getWorkspaceSourceVdbName(komodoName);
-                TeiidVdb teiidVdb = getMetadataInstance().getVdb(vdbName);
-                teiidVdb = getMetadataInstance().getVdb(vdbName+LOAD_SUFFIX);
+                TeiidVdb teiidVdb = getMetadataInstance().getVdb(vdbName+LOAD_SUFFIX);
                 if (teiidVdb != null) {
                     status.setLoading(teiidVdb.isLoading());
                 }
