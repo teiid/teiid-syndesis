@@ -110,7 +110,6 @@ public class KomodoDataserviceServiceTest {
 
         for (String id : kso.getAttributes().values()) {
             ViewDefinition vd = workspaceManagerImpl.findViewDefinition(id);
-            System.out.println(vd);
             assertEquals(Long.valueOf(0), vd.getVersion());
         }
 

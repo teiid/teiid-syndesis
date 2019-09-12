@@ -1,8 +1,24 @@
+/*
+ * Copyright Red Hat, Inc. and/or its affiliates
+ * and other contributors as indicated by the @author tags and
+ * the COPYRIGHT.txt file distributed with this work.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.komodo.repository;
 
 import static org.junit.Assert.*;
-
-import javax.persistence.PersistenceException;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,6 +29,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.junit4.SpringRunner;
 
+@SuppressWarnings("nls")
 @RunWith(SpringRunner.class)
 @DataJpaTest
 public class SourceSchemaTest {
@@ -28,12 +45,12 @@ public class SourceSchemaTest {
         SourceSchema s = workspaceManagerImpl.createSchema("foo", "bar", "create ...");
         entityManager.flush();
 
-        SourceSchema found = workspaceManagerImpl.findSchema(s.getId());
+        SourceSchema found = workspaceManagerImpl.findSchemaBySourceId(s.getSourceId());
         assertEquals(s.getDdl(), found.getDdl());
 
         try {
             workspaceManagerImpl.createSchema("foo", "bar", "create ...");
-            entityManager.flush();
+            workspaceManagerImpl.flush();
             fail();
         } catch (DataIntegrityViolationException e) {
         }
@@ -42,29 +59,46 @@ public class SourceSchemaTest {
 
         try {
             workspaceManagerImpl.createSchema("foo", "bar1", "create ...");
-            entityManager.flush();
+            workspaceManagerImpl.flush();
             fail();
-        } catch (DataIntegrityViolationException | PersistenceException e) {
+        } catch (DataIntegrityViolationException e) {
         }
 
         entityManager.clear();
 
         try {
             workspaceManagerImpl.createSchema("foo1", "baR", "create ...");
-            entityManager.flush();
+            workspaceManagerImpl.flush();
             fail();
-        } catch (DataIntegrityViolationException | PersistenceException e) {
+        } catch (DataIntegrityViolationException e) {
         }
 
         entityManager.clear();
 
-        assertTrue(workspaceManagerImpl.deleteSchema(s.getId()));
+        assertTrue(workspaceManagerImpl.deleteSchemaBySourceId(s.getSourceId()));
 
-        assertNull(workspaceManagerImpl.findSchema(s.getId()));
+        assertNull(workspaceManagerImpl.findSchemaBySourceId(s.getSourceId()));
 
-        assertFalse(workspaceManagerImpl.deleteSchema(s.getId()));
+        assertFalse(workspaceManagerImpl.deleteSchemaBySourceId(s.getSourceId()));
 
         entityManager.flush();
+    }
+
+    @Test
+    public void testAllNames() {
+        workspaceManagerImpl.createSchema("foo", "bar", "create ...");
+        workspaceManagerImpl.createDataVirtualization("x");
+
+        assertTrue(workspaceManagerImpl.isNameInUse("bar"));
+        assertTrue(workspaceManagerImpl.isNameInUse("BAR"));
+        assertTrue(workspaceManagerImpl.isNameInUse("x"));
+    }
+
+    @Test(expected = DataIntegrityViolationException.class)
+    public void testNameConflict() {
+        workspaceManagerImpl.createSchema("foo", "x", "create ...");
+        workspaceManagerImpl.createDataVirtualization("x");
+        workspaceManagerImpl.flush();
     }
 
 }

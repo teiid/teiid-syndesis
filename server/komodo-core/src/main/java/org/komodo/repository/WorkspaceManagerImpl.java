@@ -39,15 +39,16 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
     private ViewDefinitionRepository viewDefinitionRepository;
 
     @Override
-    public org.komodo.datavirtualization.SourceSchema findSchema(String id) {
-        return this.schemaRepository.findById(id).orElse(null);
+    public org.komodo.datavirtualization.SourceSchema findSchemaBySourceId(String id) {
+        return this.schemaRepository.findBySourceId(id);
     }
 
     @Override
-    public boolean deleteSchema(String id) {
+    public boolean deleteSchemaBySourceId(String sourceid) {
         try {
-            this.schemaRepository.deleteById(id);
-            this.schemaRepository.flush();
+            if (this.schemaRepository.deleteBySourceId(sourceid) == 0) {
+                return false;
+            }
             return true;
         } catch (EmptyResultDataAccessException e) {
             return false;
@@ -55,8 +56,9 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
     }
 
     @Override
-    public SourceSchema createSchema(String id, String name, String contents) {
-        SourceSchema schema = new SourceSchema(id);
+    public SourceSchema createSchema(String sourceId, String name, String contents) {
+        SourceSchema schema = new SourceSchema();
+        schema.setSourceId(sourceId);
         schema.setName(name);
         schema.setDdl(contents);
         return this.schemaRepository.save(schema);
@@ -64,12 +66,12 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
 
     @Override
     public List<String> findAllSchemaNames() {
-        return schemaRepository.findAllNames();
+        return dataVirtualizationRepository.findNamesByTypeLike("s"); //$NON-NLS-1$
     }
 
     @Override
-    public DataVirtualization findDataVirtualizationByNameIgnoreCase(String virtualizationName) {
-        return this.dataVirtualizationRepository.findByNameIgnoreCase(virtualizationName);
+    public boolean isNameInUse(String name) {
+        return dataVirtualizationRepository.countByUpperName(name.toUpperCase()) > 0;
     }
 
     @Override
@@ -90,7 +92,7 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
 
     @Override
     public List<String> findDataVirtualizationNames() {
-        return dataVirtualizationRepository.findAllNames();
+        return dataVirtualizationRepository.findNamesByTypeLike("v"); //$NON-NLS-1$
     }
 
     @Override
@@ -144,5 +146,9 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
     @Override
     public ViewDefinition findViewDefinitionByNameIgnoreCase(String dvName, String viewDefinitionName) {
         return this.viewDefinitionRepository.findByNameIgnoreCase(dvName, viewDefinitionName);
+    }
+
+    public void flush() {
+        this.viewDefinitionRepository.flush();
     }
 }

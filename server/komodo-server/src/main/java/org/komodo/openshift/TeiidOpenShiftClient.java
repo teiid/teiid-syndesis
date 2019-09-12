@@ -73,6 +73,8 @@ import org.komodo.rest.V1Constants;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import org.teiid.adminapi.Model;
 import org.teiid.adminapi.impl.ModelMetaData;
 import org.teiid.adminapi.impl.SourceMappingMetadata;
@@ -551,14 +553,18 @@ public class TeiidOpenShiftClient implements V1Constants {
         String dsType = scd.getType();
 
         if (scd.getKomodoName() == null) {
-            //we'll create serially to ensure a unique generated name
             for (int i = 0; i < 3; i++) {
                 try {
-                    setUniqueKomodoName(scd, syndesisName);
+                    String name = getUniqueKomodoName(scd, syndesisName);
+                    scd.setKomodoName(name);
+                    break;
                 } catch (PersistenceException | DataIntegrityViolationException e) {
                     //multiple pods are trying to assign a name simultaneously
                     //if we try again, then we'll just pickup whatever someone else set
                 }
+            }
+            if (scd.getKomodoName() == null) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT);
             }
         }
 
@@ -582,17 +588,15 @@ public class TeiidOpenShiftClient implements V1Constants {
      * @param syndesisName
      * @throws Exception
      */
-    public void setUniqueKomodoName(DefaultSyndesisDataSource scd, String syndesisName) throws Exception {
-        kengine.runInTransaction(false, () -> {
-            SourceSchema ss = kengine.getWorkspaceManager().findSchema(scd.getId());
+    public String getUniqueKomodoName(DefaultSyndesisDataSource scd, String syndesisName) throws Exception {
+        return kengine.runInTransaction(false, () -> {
+            SourceSchema ss = kengine.getWorkspaceManager().findSchemaBySourceId(scd.getId());
             if (ss != null) {
-                //just reassociate
-                scd.setKomodoName(ss.getName());
-                return null;
+                return ss.getName();
             }
 
             String name = syndesisName;
-            int maxLength = StringNameValidator.DEFAULT_MAXIMUM_LENGTH;
+            int maxLength = StringNameValidator.DEFAULT_MAXIMUM_LENGTH - 6;
             //remove any problematic characters
             name = name.replaceAll("[\\.\\?\\_\\s]", "");
             //slim it down
@@ -601,26 +605,29 @@ public class TeiidOpenShiftClient implements V1Constants {
             }
 
             TreeSet<String> taken = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-            taken.addAll(kengine.getWorkspaceManager().findAllSchemaNames());
-
             taken.addAll(ModelMetaData.getReservedNames());
 
-            taken.add(SERVICE_VDB_VIEW_MODEL);
-
-            int i = 1;
             String toUse = name;
-            while (taken.contains(toUse)) {
-                if (name.length() + (i/10 + 1) > maxLength) {
-                    name = name.substring(0, maxLength - (i/10 + 1));
+            if (taken.contains(name) || kengine.getWorkspaceManager().isNameInUse(name)) {
+                //we'll just use lowercase and numbers
+                Random r = new Random();
+                int val = r.nextInt();
+                char[] rand = new char[5];
+                for (int i = 0; i < rand.length; i++) {
+                    int low = val & 0x001f;
+                    if (low < 10) {
+                        rand[i] = (char)(low + 48);
+                    } else {
+                        rand[i] = (char)(low + 87);
+                    }
+                    val = val >> 5;
                 }
-                toUse = name + i;
-                i++;
+                toUse = name + "_" + new String(rand);
             }
 
-            scd.setKomodoName(toUse);
             //update the db with the name we'll use
             kengine.getWorkspaceManager().createSchema(scd.getId(), toUse, null);
-            return null;
+            return toUse;
         });
     }
 
@@ -633,7 +640,7 @@ public class TeiidOpenShiftClient implements V1Constants {
     }
 
     public String findDataSourceNameByEventId(String eventId) throws KException  {
-        SourceSchema sourceSchema = this.kengine.getWorkspaceManager().findSchema(eventId);
+        SourceSchema sourceSchema = this.kengine.getWorkspaceManager().findSchemaBySourceId(eventId);
         if (sourceSchema != null) {
             return sourceSchema.getName();
         }

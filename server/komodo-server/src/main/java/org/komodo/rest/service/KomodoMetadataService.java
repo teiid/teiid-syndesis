@@ -233,7 +233,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
                     return vdb;
                 }
                 VDBMetaData theVdb = new ServiceVdbGenerator(this)
-                        .createPreviewVdb(serviceVdbName, getWorkspaceManager().findViewDefinitions(dvName));
+                        .createPreviewVdb(dvName, serviceVdbName, getWorkspaceManager().findViewDefinitions(dvName));
                 theVdb.addProperty(VERSION_PROPERTY, dv.getVersion().toString());
 
                 synchronized (masterLock) {
@@ -290,7 +290,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         boolean result = kengine.runInTransaction(false, () -> {
             final WorkspaceManager mgr = kengine.getWorkspaceManager();
 
-            return mgr.deleteSchema(dsd.getId());
+            return mgr.deleteSchemaBySourceId(dsd.getId());
         });
 
         if (result) {
@@ -344,7 +344,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
                     boolean updateSource = false;
                     try {
                         updateSource = kengine.runInTransaction(false, () -> {
-                            SourceSchema schema = kengine.getWorkspaceManager().findSchema(vdb.getVDB().getPropertyValue(TeiidOpenShiftClient.ID));
+                            SourceSchema schema = kengine.getWorkspaceManager().findSchemaBySourceId(vdb.getVDB().getPropertyValue(TeiidOpenShiftClient.ID));
                             if (schema != null) {
                                 String ddl = schema.getDdl();
                                 if (!EquivalenceUtil.areEqual(ddl, modelDdl)) {
@@ -560,7 +560,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         // VDB is created in the repository.  If it already exists, delete it
         final WorkspaceManager mgr = this.getWorkspaceManager();
 
-        SourceSchema schema = mgr.findSchema(teiidSource.getId());
+        SourceSchema schema = mgr.findSchemaBySourceId(teiidSource.getId());
         if (schema == null) {
             //something is wrong, the logic that creates TeiidDataSources will always ensure
             //a sourceschema is created
@@ -598,12 +598,11 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
                 return;
             }
 
-            VDBMetaData vdb = generateSourceVdb(teiidSource, vdbName, ddl);
-
             if (FAILED_DDL.equals(ddl)) {
                 getMetadataInstance().undeployDynamicVdb(vdbName);
             } else {
                 try {
+                    VDBMetaData vdb = generateSourceVdb(teiidSource, vdbName, ddl);
                     getMetadataInstance().deploy(vdb);
                 } catch (KException e) {
                     LOGGER.error("could not deploy source vdb", e); //$NON-NLS-1$
@@ -817,7 +816,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
      */
     private void setSchemaStatus(String schemaId, final RestSyndesisSourceStatus status ) throws Exception {
         // Get the workspace schema VDB
-        SourceSchema schema = getWorkspaceManager().findSchema(schemaId);
+        SourceSchema schema = getWorkspaceManager().findSchemaBySourceId(schemaId);
         status.setId(schemaId);
 
         if ( schema != null && schema.getDdl() != null) {

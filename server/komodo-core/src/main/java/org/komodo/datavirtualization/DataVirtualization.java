@@ -18,15 +18,14 @@
 
 package org.komodo.datavirtualization;
 
+import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 
-import org.hibernate.annotations.GenericGenerator;
 import org.komodo.StringConstants;
 
 @Entity
-public class DataVirtualization extends BaseEntity {
+@DiscriminatorValue("v")
+public class DataVirtualization extends BaseDataVirtualization {
 
     /**
      * Get the preview vdb name for the virtualization name -
@@ -49,10 +48,6 @@ public class DataVirtualization extends BaseEntity {
         return "dv-" + name.toLowerCase(); //$NON-NLS-1$
     }
 
-    @Id
-    @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
-    private String id;
     private String description;
 
     protected DataVirtualization() {
@@ -60,14 +55,6 @@ public class DataVirtualization extends BaseEntity {
 
     public DataVirtualization(String name) {
         setName(name);
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getDescription() {

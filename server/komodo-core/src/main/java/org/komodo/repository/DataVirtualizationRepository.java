@@ -31,10 +31,10 @@ public interface DataVirtualizationRepository extends JpaRepository<DataVirtuali
 
     public DataVirtualization findByName(String name);
 
-    @Query("from DataVirtualization dv where dv.upperName = UPPER(:dvName)")
-    public DataVirtualization findByNameIgnoreCase(@Param("dvName") String virtualizationName);
+    @Query(value = "SELECT name FROM data_virtualization where type like :pattern", nativeQuery = true)
+    public List<String> findNamesByTypeLike(@Param("pattern") String pattern);
 
-    @Query(value = "SELECT name FROM data_virtualization", nativeQuery = true)
-    public List<String> findAllNames();
+    @Query(value = "SELECT count(*) FROM data_virtualization where upper_name = :name", nativeQuery = true)
+    public long countByUpperName(@Param("name") String name);
 
 }

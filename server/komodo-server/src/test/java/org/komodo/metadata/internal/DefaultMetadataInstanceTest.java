@@ -114,9 +114,9 @@ public class DefaultMetadataInstanceTest {
 
         TeiidVdb teiidVdb = metadataInstance.getVdb("myservice");
 
-        assertFalse(teiidVdb.hasValidationError("tbl", "table"));
+        assertFalse(teiidVdb.hasValidationError("views", "tbl", "table"));
 
-        assertTrue(teiidVdb.hasValidationError("tbl2", "table"));
+        assertTrue(teiidVdb.hasValidationError("views", "tbl2", "table"));
     }
 
 }

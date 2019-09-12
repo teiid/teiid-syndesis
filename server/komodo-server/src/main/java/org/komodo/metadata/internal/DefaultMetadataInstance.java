@@ -41,7 +41,6 @@ import javax.sql.DataSource;
 import javax.xml.stream.XMLStreamException;
 
 import org.komodo.KException;
-import org.komodo.StringConstants;
 import org.komodo.datasources.ExternalSource;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.metadata.TeiidDataSource;
@@ -193,8 +192,8 @@ public class DefaultMetadataInstance implements MetadataInstance {
         private Set<String> haveErrors;
 
         @Override
-        public boolean hasValidationError(String objectName, String childType) {
-            ModelMetaData m = this.vdb.getModel(SERVICE_VDB_VIEW_MODEL);
+        public boolean hasValidationError(String schemaName, String objectName, String childType) {
+            ModelMetaData m = this.vdb.getModel(schemaName);
             if (m == null) {
                 return false;
             }
@@ -537,7 +536,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
         QueryParser parser = QueryParser.getQueryParser();
 
         ModelMetaData m = new ModelMetaData();
-        m.setName(StringConstants.SERVICE_VDB_VIEW_MODEL);
+        m.setName("preview"); //$NON-NLS-1$ //TODO: could use the actual name where possible
         MetadataFactory mf = new MetadataFactory(preview == null?"vdb":preview.getName(), DefaultMetadataInstance.DEFAULT_VDB_VERSION, SystemMetadata.getInstance().getRuntimeTypeMap(),m);
         ValidatorReport report = new ValidatorReport();
         MetadataException metadataException = null;

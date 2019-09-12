@@ -35,16 +35,14 @@ public interface WorkspaceManager {
 
     }
 
-    SourceSchema findSchema(String id);
+    SourceSchema findSchemaBySourceId(String id);
 
-    boolean deleteSchema(String id);
+    boolean deleteSchemaBySourceId(String id);
 
     SourceSchema createSchema(String id, String name, String contents);
 
     List<String> findAllSchemaNames();
 
-
-    DataVirtualization findDataVirtualizationByNameIgnoreCase(String virtualizationName);
 
     DataVirtualization createDataVirtualization(String virtualizationName);
 
@@ -71,5 +69,7 @@ public interface WorkspaceManager {
 
     List<ViewDefinition> saveAllViewDefinitions(
             Iterable<ViewDefinition> entities);
+
+    boolean isNameInUse(String name);
 
 }

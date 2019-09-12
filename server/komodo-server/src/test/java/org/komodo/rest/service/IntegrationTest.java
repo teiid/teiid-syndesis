@@ -185,10 +185,10 @@ public class IntegrationTest {
         assertEquals(HttpStatus.OK, validate.getStatusCode());
         assertNotNull(validate.getBody());
 
-        query("select * from views.myview", dvName, true);
+        query("select * from dv.myview", dvName, true);
 
         //myview2 is not yet valid
-        query("select * from views.myview2", dvName, false);
+        query("select * from dv.myview2", dvName, false);
 
         //correct it
         vd2.setDdl("create view myview2 as select * from myview");
@@ -196,7 +196,7 @@ public class IntegrationTest {
                 "/v1/service/userProfile/viewEditorState", HttpMethod.PUT,
                 new HttpEntity<ViewDefinition>(vd2), KomodoStatusObject.class);
 
-        query("select * from views.myview2", dvName, true);
+        query("select * from dv.myview2", dvName, true);
     }
 
     private void query(String queryString, String dvName, boolean ok) {

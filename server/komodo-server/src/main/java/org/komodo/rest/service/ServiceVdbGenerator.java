@@ -110,7 +110,7 @@ public final class ServiceVdbGenerator implements StringConstants {
         // Generate new model DDL by appending all view DDLs
         StringBuilder allViewDdl = new StringBuilder();
 
-        Schema s = previewVDB.getSchema(SERVICE_VDB_VIEW_MODEL);
+        Schema s = previewVDB.getSchema(virtualizationName);
 
         for ( final ViewDefinition viewDef : editorStates ) {
             if( !viewDef.isComplete()) {
@@ -140,7 +140,7 @@ public final class ServiceVdbGenerator implements StringConstants {
             }
         }
 
-        addServiceModel(vdb, allViewDdl);
+        addServiceModel(virtualizationName, vdb, allViewDdl);
 
         // Iterate each schemaModel, generating a source for it.
         for ( Map.Entry<Schema, LinkedHashSet<Table>> entry: schemaTableMap.entrySet() ) {
@@ -182,7 +182,7 @@ public final class ServiceVdbGenerator implements StringConstants {
      * This method creates a preview vdb, that includes all parsable sql and imports the base
      * preview vdb.  It is not guaranteed to be valid.
      */
-    public VDBMetaData createPreviewVdb(String vdbName, List<? extends ViewDefinition> editorStates) {
+    public VDBMetaData createPreviewVdb(String virtualizationName, String vdbName, List<? extends ViewDefinition> editorStates) {
         VDBMetaData vdb = new VDBMetaData();
         vdb.setName(vdbName);
 
@@ -198,7 +198,7 @@ public final class ServiceVdbGenerator implements StringConstants {
             allViewDdl.append(viewDdl).append(NEW_LINE);
         }
 
-        addServiceModel(vdb, allViewDdl);
+        addServiceModel(virtualizationName, vdb, allViewDdl);
 
         VDBImportMetadata vdbImport = new VDBImportMetadata();
         vdbImport.setVersion(DefaultMetadataInstance.DEFAULT_VDB_VERSION);
@@ -210,9 +210,9 @@ public final class ServiceVdbGenerator implements StringConstants {
         return vdb;
     }
 
-    private ModelMetaData addServiceModel(VDBMetaData vdb, StringBuilder allViewDdl) {
+    private ModelMetaData addServiceModel(String virtualizationName, VDBMetaData vdb, StringBuilder allViewDdl) {
         ModelMetaData model = new ModelMetaData();
-        model.setName(SERVICE_VDB_VIEW_MODEL);
+        model.setName(virtualizationName);
         model.setModelType(org.teiid.adminapi.Model.Type.VIRTUAL);
         vdb.addModel(model);
         model.addSourceMetadata("DDL", allViewDdl.toString()); //$NON-NLS-1$

@@ -18,27 +18,27 @@
 
 package org.komodo.datavirtualization;
 
-import javax.persistence.DiscriminatorValue;
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.DiscriminatorType;
 import javax.persistence.Entity;
-
-import org.hibernate.annotations.DynamicUpdate;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.Table;
 
 @Entity
-@DynamicUpdate
-@DiscriminatorValue("s")
-public class SourceSchema extends BaseDataVirtualization {
+@Table(name ="data_virtualization")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(discriminatorType = DiscriminatorType.STRING, name = "TYPE")
+public class BaseDataVirtualization extends BaseEntity {
 
-    private String ddl;
+    private String sourceId;
 
-    public SourceSchema() {
+    public String getSourceId() {
+        return sourceId;
     }
 
-    public String getDdl() {
-        return ddl;
-    }
-
-    public void setDdl(String ddl) {
-        this.ddl = ddl;
+    public void setSourceId(String id) {
+        this.sourceId = id;
     }
 
 }

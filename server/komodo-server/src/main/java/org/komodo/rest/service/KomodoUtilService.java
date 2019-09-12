@@ -144,7 +144,7 @@ public final class KomodoUtilService extends KomodoService {
                     if (vdb == null) {
                         vdb = metadataService.updatePreviewVdb(virtualization);
                     }
-                    listing.setValid(!vdb.hasValidationError(viewEditorState.getName(), Schema.getChildType(Table.class)));
+                    listing.setValid(!vdb.hasValidationError(viewEditorState.getDataVirtualizationName(), viewEditorState.getName(), Schema.getChildType(Table.class)));
                 } else {
                     listing.setValid(false);
                 }
