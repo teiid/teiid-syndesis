@@ -18,10 +18,8 @@
 package org.komodo.rest.datavirtualization.connection;
 
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
-
-import org.teiid.core.util.EquivalenceUtil;
-import org.teiid.core.util.HashCodeUtil;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -155,7 +153,7 @@ public class RestSchemaNode {
 
     @Override
     public int hashCode() {
-        return HashCodeUtil.hashCode(name.hashCode(), connectionName, type);
+        return Objects.hash(name, connectionName, type);
     }
 
     @Override
@@ -167,9 +165,9 @@ public class RestSchemaNode {
         if (getClass() != obj.getClass())
             return false;
         RestSchemaNode other = (RestSchemaNode) obj;
-        return EquivalenceUtil.areEqual(connectionName, other.connectionName)
-                && EquivalenceUtil.areEqual(name, other.name)
-                && EquivalenceUtil.areEqual(type, other.type);
+        return Objects.equals(connectionName, other.connectionName)
+                && Objects.equals(name, other.name)
+                && Objects.equals(type, other.type);
     }
 
 }

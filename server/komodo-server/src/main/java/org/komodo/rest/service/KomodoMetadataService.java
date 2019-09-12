@@ -18,9 +18,11 @@
 package org.komodo.rest.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.locks.Lock;
 
@@ -71,7 +73,6 @@ import org.teiid.adminapi.VDB.Status;
 import org.teiid.adminapi.impl.ModelMetaData;
 import org.teiid.adminapi.impl.VDBImportMetadata;
 import org.teiid.adminapi.impl.VDBMetaData;
-import org.teiid.core.util.EquivalenceUtil;
 import org.teiid.deployers.CompositeVDB;
 import org.teiid.deployers.VDBLifeCycleListener;
 import org.teiid.metadata.AbstractMetadataRecord;
@@ -92,7 +93,7 @@ import io.swagger.annotations.ApiResponses;
 @Api( tags = {V1Constants.METADATA_SEGMENT} )
 public class KomodoMetadataService extends KomodoService implements ServiceVdbGenerator.SchemaFinder {
 
-    private static final String FAILED_DDL = "--failed"; //$NON-NLS-1$
+    private static final String FAILED_DDL = "--failed: "; //$NON-NLS-1$
 
     private static final String VERSION_PROPERTY = "version"; //$NON-NLS-1$
 
@@ -343,7 +344,8 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
                             modelDdl = getMetadataInstance().getSchema(name, komodoSourceName);
                         } else {
                             //failed, effectively remove the source
-                            modelDdl = FAILED_DDL;
+                            List<String> errors = vdb.getVDB().getValidityErrors();
+                            modelDdl = FAILED_DDL + (!errors.isEmpty()?errors.get(0):""); //$NON-NLS-1$
                         }
                         vdb.getVDB().addProperty("pending-removal", "true"); //$NON-NLS-1$ //$NON-NLS-2$
                         getMetadataInstance().undeployDynamicVdb(name);
@@ -356,7 +358,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
                             SourceSchema schema = kengine.getWorkspaceManager().findSchema(vdb.getVDB().getPropertyValue(TeiidOpenShiftClient.ID));
                             if (schema != null) {
                                 String ddl = schema.getDdl();
-                                if (!EquivalenceUtil.areEqual(ddl, modelDdl)) {
+                                if (!Objects.equals(ddl, modelDdl)) {
                                     schema.setDdl(modelDdl);
                                     return true;
                                 }
@@ -485,17 +487,15 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
                 TeiidDataSource teiidSource = getMetadataInstance().getDataSource(komodoName);
                 RestSyndesisSourceStatus status = new RestSyndesisSourceStatus(komodoName);
                 if (teiidSource != null) {
-                    status.setHasTeiidSource(true);
                     setSchemaStatus(teiidSource.getId(), status);
                 }
 
                 // Name of vdb based on source name
                 String vdbName = getWorkspaceSourceVdbName(komodoName);
-                TeiidVdb teiidVdb = getMetadataInstance().getVdb(vdbName);
+                TeiidVdb teiidVdb = getMetadataInstance().getVdb(vdbName+LOAD_SUFFIX);
                 if (teiidVdb != null) {
-                    status.setTeiidVdbDetails(teiidVdb);
+                    status.setLoading(teiidVdb.isLoading());
                 }
-
                 statuses.add(status);
             }
             LOGGER.debug( "getSyndesisSourceStatuses '{0}' statuses", statuses.size() ); //$NON-NLS-1$
@@ -750,7 +750,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
             VDBMetaData vdb = generateSourceVdb(teiidSource, vdbName, ddl);
 
-            if (FAILED_DDL.equals(ddl)) {
+            if (ddl != null && ddl.startsWith(FAILED_DDL)) {
                 getMetadataInstance().undeployDynamicVdb(vdbName);
             } else {
                 try {
@@ -971,7 +971,15 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         status.setId(schemaId);
 
         if ( schema != null && schema.getDdl() != null) {
-            status.setSchemaState( RestSyndesisSourceStatus.EntityState.ACTIVE );
+            if (schema.getDdl().startsWith(FAILED_DDL)) {
+                status.setSchemaState( RestSyndesisSourceStatus.EntityState.FAILED );
+                String error = schema.getDdl().substring(FAILED_DDL.length());
+                if (error != null) {
+                    status.setErrors(Arrays.asList(error));
+                }
+            } else {
+                status.setSchemaState( RestSyndesisSourceStatus.EntityState.ACTIVE );
+            }
         } else {
             status.setSchemaState( RestSyndesisSourceStatus.EntityState.MISSING );
         }
