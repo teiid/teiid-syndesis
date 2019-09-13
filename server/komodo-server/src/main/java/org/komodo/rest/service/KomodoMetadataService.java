@@ -37,6 +37,7 @@ import org.komodo.datavirtualization.SourceSchema;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.metadata.TeiidDataSource;
 import org.komodo.metadata.TeiidVdb;
+import org.komodo.metadata.internal.DDLDBMetadataRepository;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
 import org.komodo.metadata.query.QSResult;
 import org.komodo.openshift.TeiidOpenShiftClient;
@@ -647,7 +648,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         mmd.setModelType(Type.PHYSICAL);
         if (schema != null) {
             //use this instead
-            mmd.addSourceMetadata("DDL", schema); //$NON-NLS-1$
+            mmd.addSourceMetadata(DDLDBMetadataRepository.TYPE_NAME, teiidSource.getId());
             mmd.setVisible(false);
         } else {
             vdb.addProperty("async-load", "true"); //$NON-NLS-1$ //$NON-NLS-2$
