@@ -645,19 +645,19 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         vdb.addModel(mmd);
         vdb.addProperty(TeiidOpenShiftClient.ID, teiidSource.getId());
         mmd.setModelType(Type.PHYSICAL);
-        mmd.addProperty("importer.TableTypes", "TABLE,VIEW"); //$NON-NLS-1$ //$NON-NLS-2$
-        mmd.addProperty("importer.UseQualifiedName", "true");  //$NON-NLS-1$//$NON-NLS-2$
-        mmd.addProperty("importer.UseCatalogName", "false");  //$NON-NLS-1$//$NON-NLS-2$
-        mmd.addProperty("importer.UseFullSchemaName", "false");  //$NON-NLS-1$//$NON-NLS-2$
-        if (teiidSource.getSchema() != null) {
-            mmd.addProperty("importer.schemaName", teiidSource.getSchema());  //$NON-NLS-1$
-        }
-
         if (schema != null) {
             //use this instead
             mmd.addSourceMetadata("DDL", schema); //$NON-NLS-1$
+            mmd.setVisible(false);
         } else {
             vdb.addProperty("async-load", "true"); //$NON-NLS-1$ //$NON-NLS-2$
+            mmd.addProperty("importer.TableTypes", "TABLE,VIEW"); //$NON-NLS-1$ //$NON-NLS-2$
+            mmd.addProperty("importer.UseQualifiedName", "true");  //$NON-NLS-1$//$NON-NLS-2$
+            mmd.addProperty("importer.UseCatalogName", "false");  //$NON-NLS-1$//$NON-NLS-2$
+            mmd.addProperty("importer.UseFullSchemaName", "false");  //$NON-NLS-1$//$NON-NLS-2$
+            if (teiidSource.getSchema() != null) {
+                mmd.addProperty("importer.schemaName", teiidSource.getSchema());  //$NON-NLS-1$
+            }
         }
 
         // Add model source to the model

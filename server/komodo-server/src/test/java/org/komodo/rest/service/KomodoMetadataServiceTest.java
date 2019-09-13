@@ -91,11 +91,7 @@ public class KomodoMetadataServiceTest {
                 "<?xml version=\"1.0\" ?><vdb name=\"vdb\" version=\"1\"><description>Vdb for source Data Source:	source\n"
                         + "Type: 		type</description><connection-type>BY_VERSION</connection-type>"
                         + "<property name=\"id\"></property>"
-                        + "<model name=\"source\" type=\"PHYSICAL\" visible=\"true\">"
-                        + "<property name=\"importer.TableTypes\" value=\"TABLE,VIEW\"></property>"
-                        + "<property name=\"importer.UseQualifiedName\" value=\"true\"></property>"
-                        + "<property name=\"importer.UseCatalogName\" value=\"false\"></property>"
-                        + "<property name=\"importer.UseFullSchemaName\" value=\"false\"></property>"
+                        + "<model name=\"source\" type=\"PHYSICAL\" visible=\"false\">"
                         + "<source name=\"source\" translator-name=\"type\" connection-jndi-name=\"something\"></source>"
                         + "<metadata type=\"DDL\"><![CDATA[create something...]]></metadata></model></vdb>",
                 s);
