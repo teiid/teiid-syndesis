@@ -38,16 +38,6 @@ public class DataVirtualization extends BaseDataVirtualization {
         return name + StringConstants.SERVICE_VDB_SUFFIX;
     }
 
-    /**
-     * Get the OpenShift name, requires lower case and must start/end with
-     * alpha - which we have already validated
-     * @param name
-     * @return
-     */
-    public static String getOpenShiftName(String name) {
-        return "dv-" + name.toLowerCase(); //$NON-NLS-1$
-    }
-
     private String description;
 
     protected DataVirtualization() {

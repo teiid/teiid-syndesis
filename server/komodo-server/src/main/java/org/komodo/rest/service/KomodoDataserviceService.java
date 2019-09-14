@@ -117,8 +117,7 @@ public final class KomodoDataserviceService extends KomodoService {
         RestDataVirtualization entity = new RestDataVirtualization(dataService);
         entity.setServiceViewModel(dataService.getName());
         // Set published status of dataservice
-        String openShiftName = DataVirtualization.getOpenShiftName(dataService.getName());
-        BuildStatus status = this.openshiftClient.getVirtualizationStatus(openShiftName);
+        BuildStatus status = this.openshiftClient.getVirtualizationStatus(dataService.getName());
         entity.setPublishedState(status.status().name());
         entity.setPublishPodName(status.publishPodName());
         entity.setPodNamespace(status.namespace());

@@ -17,9 +17,7 @@
  */
 package org.komodo.metadata.internal;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -72,6 +70,7 @@ import org.teiid.core.TeiidComponentException;
 import org.teiid.core.util.AccessibleByteArrayOutputStream;
 import org.teiid.core.util.ArgCheck;
 import org.teiid.deployers.VDBLifeCycleListener;
+import org.teiid.deployers.VirtualDatabaseException;
 import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository.ConnectorManagerException;
 import org.teiid.metadata.AbstractMetadataRecord;
 import org.teiid.metadata.MetadataException;
@@ -407,13 +406,6 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
         try {
             // Deploy the VDB
-            AccessibleByteArrayOutputStream baos = toBytes(vdb);
-
-            byte[] bytes = baos.getBuffer();
-            InputStream inStream = new ByteArrayInputStream(bytes, 0, baos.getCount());
-
-            String deploymentName = vdbName + VDB_DEPLOYMENT_SUFFIX;
-
             Admin admin = getAdmin();
 
             VDB existing = admin.getVDB(vdbName, vdb.getVersion());
@@ -431,9 +423,10 @@ public class DefaultMetadataInstance implements MetadataInstance {
                     server.addConnectionFactory(smm.getName(), teiidDataSourceImpl.getDataSource());
                 }
             }
-            admin.deploy(deploymentName, inStream);
 
-        } catch (AdminException ex) {
+            server.deployVDB(vdb);
+        } catch (AdminException | VirtualDatabaseException
+                | ConnectorManagerException | TranslatorException ex) {
             throw handleError(ex);
         }
     }

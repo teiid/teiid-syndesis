@@ -88,7 +88,7 @@ public class KomodoPublishingService extends KomodoService {
     public BuildStatus getVirtualizationStatus(
             @ApiParam(value = "Name of the virtualization", required = true)
             final @PathVariable(value = "virtualization", required=true) String virtualization) {
-        BuildStatus status = this.openshiftClient.getVirtualizationStatus(DataVirtualization.getOpenShiftName(virtualization));
+        BuildStatus status = this.openshiftClient.getVirtualizationStatus(virtualization);
 
         return status;
     }
@@ -107,7 +107,7 @@ public class KomodoPublishingService extends KomodoService {
 
         KomodoStatusObject status = new KomodoStatusObject("Logs for " + virtualization); //$NON-NLS-1$
 
-        String log = this.openshiftClient.getVirtualizationLog(DataVirtualization.getOpenShiftName(virtualization));
+        String log = this.openshiftClient.getVirtualizationLog(virtualization);
         status.addAttribute("log", log); //$NON-NLS-1$
         return status;
     }
@@ -123,7 +123,7 @@ public class KomodoPublishingService extends KomodoService {
     public BuildStatus deleteVirtualization(
             @ApiParam(value = "Name of the virtualization")
             final @PathVariable(value = "virtualization", required = true) String virtualization) {
-        BuildStatus status = this.openshiftClient.deleteVirtualization(DataVirtualization.getOpenShiftName(virtualization));
+        BuildStatus status = this.openshiftClient.deleteVirtualization(virtualization);
         return status;
     }
 

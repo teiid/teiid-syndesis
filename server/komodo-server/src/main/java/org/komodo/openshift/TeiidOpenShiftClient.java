@@ -60,7 +60,6 @@ import org.komodo.KEngine;
 import org.komodo.KException;
 import org.komodo.StringConstants;
 import org.komodo.datasources.*;
-import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.datavirtualization.SourceSchema;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.metadata.TeiidDataSource;
@@ -101,6 +100,17 @@ import io.fabric8.openshift.client.OpenShiftConfigBuilder;
 
 @SuppressWarnings("nls")
 public class TeiidOpenShiftClient implements V1Constants {
+
+    /**
+     * Get the OpenShift name, requires lower case and must start/end with
+     * alpha - which we have already validated
+     * @param name
+     * @return
+     */
+    public static String getOpenShiftName(String name) {
+        return "dv-" + name.toLowerCase(); //$NON-NLS-1$
+    }
+
     private static final Log LOGGER = LogFactory.getLog(TeiidOpenShiftClient.class);
     public static final String ID = "id";
     private static final String SERVICE_CA_CERT_FILE = "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt";
@@ -1131,11 +1141,11 @@ public class TeiidOpenShiftClient implements V1Constants {
      * @throws KException if error occurs
      */
     public BuildStatus publishVirtualization(PublishConfiguration publishConfig) throws KException {
-        String openShiftName = DataVirtualization.getOpenShiftName(publishConfig.getDataVirtualizationName());
+        String openShiftName = getOpenShiftName(publishConfig.getDataVirtualizationName());
         removeLog(openShiftName);
         info(openShiftName, "Publishing - Start publishing of virtualization: " + openShiftName);
 
-        BuildStatus status = getVirtualizationStatus(openShiftName);
+        BuildStatus status = getVirtualizationStatus(publishConfig.getDataVirtualizationName());
         info(openShiftName, "Publishing - Virtualization status: " + status.status());
 
         if (status.status().equals(Status.BUILDING)) {
@@ -1227,7 +1237,7 @@ public class TeiidOpenShiftClient implements V1Constants {
     }
 
     public BuildStatus getVirtualizationStatus(String virtualization) {
-        String openShiftName = DataVirtualization.getOpenShiftName(virtualization);
+        String openShiftName = getOpenShiftName(virtualization);
         BuildStatus status = getVirtualizationStatusFromQueue(openShiftName);
         if (status != null) {
             return status;
@@ -1242,7 +1252,8 @@ public class TeiidOpenShiftClient implements V1Constants {
         }
     }
 
-    public String getVirtualizationLog(String openShiftName) {
+    public String getVirtualizationLog(String virtualization) {
+        String openShiftName = getOpenShiftName(virtualization);
         String logPath = getLogPath(openShiftName);
         File logFile = new File(logPath);
         if (! logFile.exists())
@@ -1329,12 +1340,13 @@ public class TeiidOpenShiftClient implements V1Constants {
         return status;
     }
 
-    public BuildStatus deleteVirtualization(String openShiftName) {
+    public BuildStatus deleteVirtualization(String virtualizationName) {
+        String openShiftName = getOpenShiftName(virtualizationName);
         BuildStatus runningBuild = getVirtualizationStatusFromQueue(openShiftName);
 
         boolean queue = false;
         if (runningBuild == null) {
-            runningBuild = getVirtualizationStatus(openShiftName);
+            runningBuild = getVirtualizationStatus(virtualizationName);
             queue = true;
         }
 
