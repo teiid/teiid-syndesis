@@ -341,5 +341,13 @@ public class IntegrationTest {
         assertEquals(1, ((List)status.get("errors")).size());
         assertEquals("FAILED", status.get("schemaState"));
         assertEquals(Boolean.FALSE, status.get("loading"));
+
+        ResponseEntity<List> virts = restTemplate.getForEntity("/v1/workspace/dataservices", List.class);
+        assertEquals(HttpStatus.OK, virts.getStatusCode());
+        assertEquals(1, virts.getBody().size());
+        Map virt = (Map)virts.getBody().get(0);
+        System.out.println(virt);
+        assertEquals("testSourceRefresh", virt.get("keng__id"));
+
     }
 }

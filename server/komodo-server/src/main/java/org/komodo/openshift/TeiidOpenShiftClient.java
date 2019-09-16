@@ -158,6 +158,7 @@ public class TeiidOpenShiftClient implements V1Constants {
                 if (BuildStatus.Status.DELETE_REQUEUE.equals(work.status())) {
                     // requeue will change state to submitted and
                     work.setLastUpdated();
+                    deleteVirtualization(work.getDataVirtualizationName());
                     workExecutor.submit(this); // add at end
                     return;
                 }
@@ -1018,7 +1019,7 @@ public class TeiidOpenShiftClient implements V1Constants {
                     normalizeDataSourceNames(vdb);
 
                     AccessibleByteArrayOutputStream vdbContents = DefaultMetadataInstance.toBytes(vdb);
-                    archive.add(new ByteArrayAsset(new ByteArrayInputStream(vdbContents.getBuffer(), 0, vdbContents.getCount())), "/src/main/resources/teiid-vdb.xml");
+                    archive.add(new ByteArrayAsset(new ByteArrayInputStream(vdbContents.getBuffer(), 0, vdbContents.getCount())), "/src/main/resources/" + vdb.getName() + "-vdb.xml");
 
                     InputStream configIs = this.getClass().getClassLoader().getResourceAsStream("s2i/application.properties");
                     archive.add(new ByteArrayAsset(ObjectConverterUtil.convertToByteArray(configIs)),
@@ -1057,7 +1058,7 @@ public class TeiidOpenShiftClient implements V1Constants {
                     info(openShiftName, "Publishing - Fetching environment variables for vdb data sources");
 
                     publishConfig.addEnvironmentVariables(
-                            getEnvironmentVariablesForVDBDataSources(oauthCreds, vdb, publishConfig));
+                            getEnvironmentVariablesForVDBDataSources(oauthCreds, vdb, publishConfig, openShiftName));
 
                     publishConfig.addSecretVariables(
                             getSecretVariablesForVDBDataSources(oauthCreds, vdb, publishConfig));
@@ -1191,7 +1192,7 @@ public class TeiidOpenShiftClient implements V1Constants {
     }
 
     Collection<EnvVar> getEnvironmentVariablesForVDBDataSources(OAuthCredentials oauthCreds, VDBMetaData vdb,
-            PublishConfiguration publishConfig) throws KException {
+            PublishConfiguration publishConfig, String openShiftName) throws KException {
         List<EnvVar> envs = new ArrayList<>();
         for (Model model : vdb.getModels()) {
             for (String source : model.getSourceNames()) {
@@ -1208,7 +1209,7 @@ public class TeiidOpenShiftClient implements V1Constants {
                 }
                 // data source properties as ENV variables
                 def.getPublishedImageDataSourceProperties(ds).forEach((K,V) -> {
-                    envs.add(envFromSecret(secretName(vdb.getName()), K));
+                    envs.add(envFromSecret(secretName(openShiftName), K));
                 });
             }
         }
@@ -1245,11 +1246,14 @@ public class TeiidOpenShiftClient implements V1Constants {
         OpenShiftClient client = openshiftClient();
         try {
             status = getVDBService(openShiftName, ApplicationProperties.getNamespace(), client);
-            status.setDataVirtualizationName(virtualization);
-            return status;
+        } catch (KubernetesClientException e) {
+            LOGGER.info("Could not get build status: " + e.getMessage());
+            status = new BuildStatus(openShiftName);
         } finally {
             client.close();
         }
+        status.setDataVirtualizationName(virtualization);
+        return status;
     }
 
     public String getVirtualizationLog(String virtualization) {
