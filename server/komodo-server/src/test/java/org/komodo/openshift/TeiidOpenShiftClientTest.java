@@ -56,17 +56,17 @@ public class TeiidOpenShiftClientTest {
 
         DefaultSyndesisDataSource dsd = new DefaultSyndesisDataSource();
 
-        client.setUniqueKomodoName(dsd, "views");
+        String name = client.getUniqueKomodoName(dsd, "sys");
 
-        assertEquals("views1", dsd.getKomodoName());
+        assertTrue(name.startsWith("sys_"));
 
-        client.setUniqueKomodoName(dsd, "View");
+        name = client.getUniqueKomodoName(dsd, "View");
 
-        assertEquals("View", dsd.getKomodoName());
+        assertEquals("View", name);
 
-        client.setUniqueKomodoName(dsd, "?syS.");
+        name = client.getUniqueKomodoName(dsd, "?syS.");
 
-        assertEquals("syS1", dsd.getKomodoName());
+        assertTrue(name.startsWith("syS_"));
     }
 
 }

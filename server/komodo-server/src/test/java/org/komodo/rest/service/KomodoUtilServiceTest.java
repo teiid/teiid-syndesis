@@ -123,7 +123,7 @@ public class KomodoUtilServiceTest {
         VDBMetaData vdb = new VDBMetaData();
         vdb.setName(KomodoUtilService.PREVIEW_VDB);
         ModelMetaData m = new ModelMetaData();
-        m.setName("x");
+        m.setName("dummy");
         vdb.addModel(m);
         m.setModelType(Type.VIRTUAL);
         m.addSourceMetadata("DDL", "create view v as select 1");

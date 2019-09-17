@@ -21,6 +21,8 @@ import static org.komodo.rest.datavirtualization.RelationalMessages.Error.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 import org.komodo.KException;
 import org.komodo.StringConstants;
@@ -40,6 +42,7 @@ import org.komodo.rest.datavirtualization.RestDataVirtualization;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -49,6 +52,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import org.teiid.adminapi.impl.ModelMetaData;
 import org.teiid.metadata.Schema;
 import org.teiid.metadata.Table;
 import org.teiid.util.FullyQualifiedName;
@@ -67,6 +71,13 @@ import io.swagger.annotations.ApiResponses;
         + StringConstants.FS + V1Constants.DATA_SERVICES_SEGMENT)
 @Api(tags = { V1Constants.DATA_SERVICES_SEGMENT })
 public final class KomodoDataserviceService extends KomodoService {
+
+    /**
+     * To be a valid schema name we don't allow .
+     * Since we'll add the dv- prefix, we don't char what it starts with,
+     * but we're still required to end with a letter/number
+     */
+    Pattern DATAVIRTUALIZATION_PATTERN = Pattern.compile("[-a-z0-9]*[a-z0-9]", Pattern.CASE_INSENSITIVE); //$NON-NLS-1$
 
     private static final StringNameValidator VALIDATOR = new StringNameValidator();
 
@@ -103,10 +114,10 @@ public final class KomodoDataserviceService extends KomodoService {
     }
 
     private RestDataVirtualization createRestDataservice(final DataVirtualization dataService) throws KException {
-        RestDataVirtualization entity = new RestDataVirtualization(dataService, dataService.getServiceVdbName());
-        entity.setServiceViewModel(SERVICE_VDB_VIEW_MODEL);
+        RestDataVirtualization entity = new RestDataVirtualization(dataService);
+        entity.setServiceViewModel(dataService.getName());
         // Set published status of dataservice
-        BuildStatus status = this.openshiftClient.getVirtualizationStatus(dataService.getServiceVdbName());
+        BuildStatus status = this.openshiftClient.getVirtualizationStatus(dataService.getName());
         entity.setPublishedState(status.status().name());
         entity.setPublishPodName(status.publishPodName());
         entity.setPodNamespace(status.namespace());
@@ -173,24 +184,21 @@ public final class KomodoDataserviceService extends KomodoService {
             throw forbidden(DATASERVICE_SERVICE_SERVICE_NAME_ERROR, dataserviceName, jsonDataserviceName);
         }
 
-        final String errorMsg = VALIDATOR.checkValidName(dataserviceName);
-
-        // a name validation error occurred
-        if (errorMsg != null) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, errorMsg);
+        String message = getValidationMessage(dataserviceName);
+        if (message != null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, message);
         }
 
         // create new Dataservice
-        return kengine.runInTransaction(false, () -> {
-            // Error if the repo already contains a dataservice with the supplied name.
-            DataVirtualization dv = getWorkspaceManager().findDataVirtualizationByNameIgnoreCase(dataserviceName);
-            if (dv != null) {
-                throw error(HttpStatus.CONFLICT, RelationalMessages.Error.DATASERVICE_SERVICE_CREATE_ALREADY_EXISTS);
-            }
-            final DataVirtualization dataservice = getWorkspaceManager().createDataVirtualization(dataserviceName);
-            dataservice.setDescription(restDataservice.getDescription());
-            return ResponseEntity.ok(dataserviceName + " Successfully created");
-        });
+        try {
+            return kengine.runInTransaction(false, () -> {
+                final DataVirtualization dataservice = getWorkspaceManager().createDataVirtualization(dataserviceName);
+                dataservice.setDescription(restDataservice.getDescription());
+                return ResponseEntity.ok(dataserviceName + " Successfully created");
+            });
+        } catch (DataIntegrityViolationException e) {
+            throw error(HttpStatus.CONFLICT, RelationalMessages.Error.DATASERVICE_SERVICE_CREATE_ALREADY_EXISTS);
+        }
     }
 
     /**
@@ -224,7 +232,7 @@ public final class KomodoDataserviceService extends KomodoService {
         //there is a small chance that a dv with the same name was recreated in the meantime,
         //but since this vdb is created on-demand we're good
         try {
-            metadataService.removeVdb(DataVirtualization.getServiceVdbName(dataserviceName));
+            metadataService.removeVdb(DataVirtualization.getPreviewVdbName(dataserviceName));
         } catch (KException e) {
             LOGGER.debug("error removing preview vdb", e); //$NON-NLS-1$
         }
@@ -246,24 +254,44 @@ public final class KomodoDataserviceService extends KomodoService {
             @ApiResponse(code = 500, message = "The dataservice name cannot be empty.") })
     public ResponseEntity<String> validateDataserviceName(@ApiParam(value = "The dataservice name being checked", required = true) final @PathVariable("dataserviceName") String dataserviceName) throws Exception {
 
-        final String errorMsg = VALIDATOR.checkValidName(dataserviceName);
-
-        // a name validation error occurred
-        if (errorMsg != null) {
-            return ResponseEntity.badRequest().body(errorMsg);
+        String validationMessage = getValidationMessage(dataserviceName);
+        if (validationMessage != null) {
+            return ResponseEntity.ok().body(validationMessage);
         }
 
         // check for duplicate name
-        final DataVirtualization service = kengine.runInTransaction(true, () -> {
-            return getWorkspaceManager().findDataVirtualizationByNameIgnoreCase(dataserviceName);
+        final boolean inUse = kengine.runInTransaction(true, () -> {
+            //from the pattern validation, there's no escaping necessary
+            return getWorkspaceManager().isNameInUse(dataserviceName);
         });
 
-        if (service == null) {
-            return ResponseEntity.ok().build();
+        // name is a duplicate
+        if (inUse) {
+            return ResponseEntity.ok().body(RelationalMessages.getString(DATASERVICE_SERVICE_NAME_EXISTS));
         }
 
-        // name is a duplicate
-        return ResponseEntity.ok().body(RelationalMessages.getString(DATASERVICE_SERVICE_NAME_EXISTS));
+        return ResponseEntity.ok().build();
+    }
+
+    private String getValidationMessage(final String dataserviceName) {
+        final String errorMsg = VALIDATOR.checkValidName(dataserviceName);
+
+        if (errorMsg != null) {
+            return errorMsg;
+        }
+
+        if (!DATAVIRTUALIZATION_PATTERN.matcher(dataserviceName).matches()) {
+            return "Must match pattern " + DATAVIRTUALIZATION_PATTERN.pattern(); //$NON-NLS-1$
+        }
+
+        TreeSet<String> taken = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        taken.addAll(ModelMetaData.getReservedNames());
+
+        if (taken.contains(dataserviceName)) {
+            return dataserviceName + " is a reserved name."; //$NON-NLS-1$
+        }
+
+        return null;
     }
 
     @RequestMapping(value = StringConstants.FS + V1Constants.DATA_SERVICE_PLACEHOLDER +

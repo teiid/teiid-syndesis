@@ -86,8 +86,6 @@ public class IntegrationTest {
         }
 
         /* Stub out the connectivity to syndesis / openshift */
-        //@MockBean
-        //private TeiidOpenShiftClient teiidOpenShiftClient;
         @MockBean
         private SyndesisConnectionMonitor syndesisConnectionMonitor;
     }
@@ -107,6 +105,11 @@ public class IntegrationTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
+    @Test
+    public void testGetPublished() {
+        ResponseEntity<List> response = restTemplate.getForEntity("/v1/metadata/publish", List.class);
+        assertNotNull(response.getBody());
+    }
 
     @Test
     public void testError() throws Exception {
@@ -180,10 +183,10 @@ public class IntegrationTest {
         assertEquals(HttpStatus.OK, validate.getStatusCode());
         assertNotNull(validate.getBody());
 
-        query("select * from views.myview", dvName, true);
+        query("select * from dv.myview", dvName, true);
 
         //myview2 is not yet valid
-        query("select * from views.myview2", dvName, false);
+        query("select * from dv.myview2", dvName, false);
 
         //correct it
         vd2.setDdl("create view myview2 as select * from myview");
@@ -191,7 +194,7 @@ public class IntegrationTest {
                 "/v1/service/userProfile/viewEditorState", HttpMethod.PUT,
                 new HttpEntity<ViewDefinition>(vd2), KomodoStatusObject.class);
 
-        query("select * from views.myview2", dvName, true);
+        query("select * from dv.myview2", dvName, true);
     }
 
     private void query(String queryString, String dvName, boolean ok) {
@@ -279,7 +282,7 @@ public class IntegrationTest {
         for (int i = 0; i < 10; i++) {
             Thread.sleep(1000); //TODO: a better wait for this to succeed
             try {
-                query("select col from t union select 1 as col", dvName, true);
+                query("select col from superintegrationsource.t union select 1 as col", dvName, true);
                 break;
             } catch (AssertionError e) {
                 if (i == 9) {
@@ -287,6 +290,9 @@ public class IntegrationTest {
                 }
             }
         }
+
+        //test that unqualified does not work
+        query("select col from t union select 1 as col", dvName, false);
 
         ResponseEntity<List> sourceStatusResponse = restTemplate.getForEntity("/v1/metadata/syndesisSourceStatuses", List.class);
         assertEquals(HttpStatus.OK, sourceStatusResponse.getStatusCode());
@@ -303,7 +309,7 @@ public class IntegrationTest {
         for (int i = 0; i < 10; i++) {
             Thread.sleep(1000); //TODO: a better wait for this to succeed
             try {
-                query("select col from t2 union select 1 as col", dvName, true);
+                query("select col from superintegrationsource.t2 union select 1 as col", dvName, true);
                 break;
             } catch (AssertionError e) {
                 if (i == 9) {
@@ -320,7 +326,7 @@ public class IntegrationTest {
         for (int i = 0; i < 10; i++) {
             Thread.sleep(1000); //TODO: a better wait for this to succeed
             try {
-                query("select col from t2 union select 1 as col", dvName, false);
+                query("select col from superintegrationsource.t2 union select 1 as col", dvName, false);
                 break;
             } catch (AssertionError e) {
                 if (i == 9) {
@@ -335,5 +341,13 @@ public class IntegrationTest {
         assertEquals(1, ((List)status.get("errors")).size());
         assertEquals("FAILED", status.get("schemaState"));
         assertEquals(Boolean.FALSE, status.get("loading"));
+
+        ResponseEntity<List> virts = restTemplate.getForEntity("/v1/workspace/dataservices", List.class);
+        assertEquals(HttpStatus.OK, virts.getStatusCode());
+        assertEquals(1, virts.getBody().size());
+        Map virt = (Map)virts.getBody().get(0);
+        System.out.println(virt);
+        assertEquals("testSourceRefresh", virt.get("keng__id"));
+
     }
 }

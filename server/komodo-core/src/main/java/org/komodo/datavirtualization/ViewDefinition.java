@@ -24,11 +24,8 @@ import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 
 import org.hibernate.annotations.DynamicUpdate;
-import org.hibernate.annotations.GenericGenerator;
 import org.komodo.StringConstants;
 import org.komodo.repository.JpaConverterJson;
 
@@ -80,10 +77,6 @@ public class ViewDefinition extends BaseEntity {
         }
     }
 
-    @Id
-    @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
-    private String id;
     private String ddl;
     @Column(name = "dv_name")
     private String dataVirtualizationName;
@@ -106,10 +99,6 @@ public class ViewDefinition extends BaseEntity {
     public ViewDefinition(String dataVirtualizationName, String name) {
         setName(name);
         this.dataVirtualizationName = dataVirtualizationName;
-    }
-
-    public String getId() {
-        return id;
     }
 
     public String getDescription() {
@@ -170,10 +159,6 @@ public class ViewDefinition extends BaseEntity {
 
     public void setState(State state) {
         this.state = state;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public void clearState() {

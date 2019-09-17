@@ -43,7 +43,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
-import org.teiid.core.util.EquivalenceUtil;
 import org.teiid.metadata.Schema;
 import org.teiid.metadata.Table;
 import org.teiid.query.validator.ValidatorReport;
@@ -145,7 +144,7 @@ public final class KomodoUtilService extends KomodoService {
                     if (vdb == null) {
                         vdb = metadataService.updatePreviewVdb(virtualization);
                     }
-                    listing.setValid(!vdb.hasValidationError(viewEditorState.getName(), Schema.getChildType(Table.class)));
+                    listing.setValid(!vdb.hasValidationError(viewEditorState.getDataVirtualizationName(), viewEditorState.getName(), Schema.getChildType(Table.class)));
                 } else {
                     listing.setValid(false);
                 }

@@ -95,6 +95,7 @@ public interface TeiidVdb {
 
     ValidationResult validate(String ddl) throws KException;
 
-    boolean hasValidationError(String objectName, String childType);
+    boolean hasValidationError(String schemaName, String objectName,
+            String childType);
 
 }

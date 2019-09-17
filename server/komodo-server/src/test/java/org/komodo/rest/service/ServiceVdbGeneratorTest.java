@@ -33,7 +33,6 @@ import java.util.Properties;
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.KException;
-import org.komodo.StringConstants;
 import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.metadata.MetadataInstance.ValidationResult;
 import org.komodo.metadata.TeiidDataSource;
@@ -405,11 +404,11 @@ public class ServiceVdbGeneratorTest {
         t.setIncomingObjects(new ArrayList<>());
         t.getIncomingObjects().add(schemas.get("pgconnection1").getTable("orders"));
         t.getIncomingObjects().add(schemas.get("pgconnection1").getTable("customers"));
-        Mockito.when(mock.getSchema(StringConstants.SERVICE_VDB_VIEW_MODEL)).thenReturn(result.getSchema());
+        Mockito.when(mock.getSchema("servicevdb")).thenReturn(result.getSchema());
 
-        VDBMetaData serviceVdb = vdbGenerator.createServiceVdb(mock, Arrays.asList(state));
+        VDBMetaData serviceVdb = vdbGenerator.createServiceVdb("servicevdb", mock, Arrays.asList(state));
 
-        assertEquals("<?xml version=\"1.0\" ?><vdb name=\"servicevdb\" version=\"1\"><connection-type>BY_VERSION</connection-type><model name=\"views\" type=\"VIRTUAL\" visible=\"true\"><metadata type=\"DDL\"><![CDATA[CREATE VIEW orderInfoView (ID, orderDate, name) OPTIONS (ANNOTATION 'test view description text') AS \n" +
+        assertEquals("<?xml version=\"1.0\" ?><vdb name=\"servicevdb\" version=\"1\"><connection-type>BY_VERSION</connection-type><model name=\"servicevdb\" type=\"VIRTUAL\" visible=\"true\"><metadata type=\"DDL\"><![CDATA[CREATE VIEW orderInfoView (ID, orderDate, name) OPTIONS (ANNOTATION 'test view description text') AS \n" +
                 "SELECT A.ID, A.orderDate, B.name\n" +
                 "FROM pgconnection1schemamodel.orders AS A;\n" +
                 "]]></metadata></model><model name=\"pgconnection1schemamodel\" type=\"PHYSICAL\" visible=\"false\"><metadata type=\"DDL\"><![CDATA[SET NAMESPACE 'http://www.teiid.org/ext/relational/2012' AS teiid_rel;\n" +
@@ -429,7 +428,7 @@ public class ServiceVdbGeneratorTest {
         List<org.teiid.adminapi.Model> models = serviceVdb.getModels();
 
         assertThat(models.size(), is(2));
-        ModelMetaData viewModel = serviceVdb.getModel(StringConstants.SERVICE_VDB_VIEW_MODEL);
+        ModelMetaData viewModel = serviceVdb.getModel("servicevdb");
         assertNotNull(viewModel);
         assertEquals("CREATE VIEW orderInfoView (ID, orderDate, name) OPTIONS (ANNOTATION 'test view description text') AS \n" +
                 "SELECT A.ID, A.orderDate, B.name\n" +
@@ -452,14 +451,14 @@ public class ServiceVdbGeneratorTest {
         t.setIncomingObjects(new ArrayList<>());
         t.getIncomingObjects().add(schemas.get("pgconnection1").getTable("orders"));
         t.getIncomingObjects().add(schemas.get("pgconnection2").getTable("customers"));
-        Mockito.when(mock.getSchema(StringConstants.SERVICE_VDB_VIEW_MODEL)).thenReturn(result.getSchema());
+        Mockito.when(mock.getSchema("servicevdb")).thenReturn(result.getSchema());
 
-        VDBMetaData serviceVdb = vdbGenerator.createServiceVdb(mock, Arrays.asList(state));
+        VDBMetaData serviceVdb = vdbGenerator.createServiceVdb("servicevdb", mock, Arrays.asList(state));
 
         List<org.teiid.adminapi.Model> models = serviceVdb.getModels();
 
         assertThat(models.size(), is(3));
-        ModelMetaData viewModel = serviceVdb.getModel(StringConstants.SERVICE_VDB_VIEW_MODEL);
+        ModelMetaData viewModel = serviceVdb.getModel("servicevdb");
         assertNotNull(viewModel);
         assertEquals("CREATE VIEW orderInfoView (ID, orderDate, customerName) OPTIONS (ANNOTATION 'test view description text') AS \n" +
                 "SELECT A.ID, A.orderDate, B.customerName\n" +
@@ -471,9 +470,9 @@ public class ServiceVdbGeneratorTest {
     public void shouldRefreshServiceVdbPreviewNoViews() throws Exception {
         ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(schemaFinder());
 
-        VDBMetaData serviceVdb = vdbGenerator.createPreviewVdb("preview", Collections.emptyList());
+        VDBMetaData serviceVdb = vdbGenerator.createPreviewVdb("dv", "preview", Collections.emptyList());
 
-        assertEquals("<?xml version=\"1.0\" ?><vdb name=\"preview\" version=\"1\"><connection-type>BY_VERSION</connection-type><property name=\"preview\" value=\"true\"></property><import-vdb name=\"Preview\" version=\"1\" import-data-policies=\"true\"></import-vdb><model name=\"views\" type=\"VIRTUAL\" visible=\"true\"><metadata type=\"DDL\"><![CDATA[]]></metadata></model></vdb>", new String(DefaultMetadataInstance.toBytes(serviceVdb).toByteArray(), "UTF-8"));
+        assertEquals("<?xml version=\"1.0\" ?><vdb name=\"preview\" version=\"1\"><connection-type>BY_VERSION</connection-type><property name=\"preview\" value=\"true\"></property><import-vdb name=\"Preview\" version=\"1\" import-data-policies=\"true\"></import-vdb><model name=\"dv\" type=\"VIRTUAL\" visible=\"true\"><metadata type=\"DDL\"><![CDATA[]]></metadata></model></vdb>", new String(DefaultMetadataInstance.toBytes(serviceVdb).toByteArray(), "UTF-8"));
     }
 
     protected ServiceVdbGenerator.SchemaFinder schemaFinder() {

@@ -17,9 +17,12 @@ package org.komodo.metadata.internal;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.deployers.VDBLifeCycleListener;
+import org.teiid.deployers.VirtualDatabaseException;
 import org.teiid.dqp.internal.datamgr.ConnectorManager;
 import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository;
+import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository.ConnectorManagerException;
 import org.teiid.runtime.EmbeddedServer;
 import org.teiid.translator.ExecutionFactory;
 import org.teiid.translator.TranslatorException;
@@ -73,5 +76,12 @@ public class TeiidServer extends EmbeddedServer {
 
     public void addVDBLifeCycleListener(VDBLifeCycleListener listener) {
         super.getVDBRepository().addListener(listener);
+    }
+
+    public void deployVDB(VDBMetaData vdb)
+            throws ConnectorManagerException, VirtualDatabaseException,
+            TranslatorException {
+        vdb.setXmlDeployment(true);
+        super.deployVDB(vdb, null);
     }
 }

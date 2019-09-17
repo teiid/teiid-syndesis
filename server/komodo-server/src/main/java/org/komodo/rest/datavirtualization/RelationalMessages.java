@@ -275,11 +275,6 @@ public final class RelationalMessages {
         DATASERVICE_SERVICE_CREATE_DATASERVICE_ERROR,
 
         /**
-         * An error indicating a request to clone a dataservice failed
-         */
-        DATASERVICE_SERVICE_CLONE_DATASERVICE_ERROR,
-
-        /**
          * An error indicating a request to delete a dataservice failed
          */
         DATASERVICE_SERVICE_DELETE_DATASERVICE_ERROR,
@@ -293,16 +288,6 @@ public final class RelationalMessages {
          * An error indicating a request to refresh dataservice views failed
          */
         DATASERVICE_SERVICE_REFRESH_VIEWS_ERROR,
-
-        /**
-         * An error indicating clone attempt was missing a new service name
-         */
-        DATASERVICE_SERVICE_CLONE_MISSING_NEW_NAME,
-
-        /**
-         * An error indicating the desired new clone name is same as dataservice being cloned
-         */
-        DATASERVICE_SERVICE_CLONE_SAME_NAME_ERROR,
 
         /**
          * An error indicating an error occurred trying to find a service view info
@@ -333,11 +318,6 @@ public final class RelationalMessages {
          * An error indicating create attempt failed because same name already exists
          */
         DATASERVICE_SERVICE_CREATE_ALREADY_EXISTS,
-
-        /**
-         * An error indicating clone attempt failed because same name already exists
-         */
-        DATASERVICE_SERVICE_CLONE_ALREADY_EXISTS,
 
         /**
          * An error indicating that a table does not exist
@@ -385,11 +365,6 @@ public final class RelationalMessages {
         CONNECTION_SERVICE_CREATE_CONNECTION_ERROR,
 
         /**
-         * An error indicating a request to clone a connection failed
-         */
-        CONNECTION_SERVICE_CLONE_CONNECTION_ERROR,
-
-        /**
          * An error indicating a request to delete a connection failed
          */
         CONNECTION_SERVICE_DELETE_CONNECTION_ERROR,
@@ -403,16 +378,6 @@ public final class RelationalMessages {
          * An error indicating the expected connection name was missing
          */
         CONNECTION_SERVICE_MISSING_CONNECTION_NAME,
-
-        /**
-         * An error indicating clone attempt was missing a new connection name
-         */
-        CONNECTION_SERVICE_CLONE_MISSING_NEW_NAME,
-
-        /**
-         * An error indicating the desired new clone name is same as connection being cloned
-         */
-        CONNECTION_SERVICE_CLONE_SAME_NAME_ERROR,
 
         /**
          * An error indicating that the connection does not exist
@@ -438,11 +403,6 @@ public final class RelationalMessages {
          * An error indicating create attempt failed because same name already exists
          */
         CONNECTION_SERVICE_CREATE_ALREADY_EXISTS,
-
-        /**
-         * An error indicating clone attempt failed because same name already exists
-         */
-        CONNECTION_SERVICE_CLONE_ALREADY_EXISTS,
 
         /**
          * An error indicating a connection already exists
@@ -568,31 +528,6 @@ public final class RelationalMessages {
          * The VDB service request lacks at least one parameter
          */
         VDB_SERVICE_MISSING_PARAMETER_ERROR,
-
-        /**
-         * An error indicating a request to clone a VDB failed
-         */
-        VDB_SERVICE_CLONE_VDB_ERROR,
-
-        /**
-         * An error indicating clone attempt failed because same name already exists
-         */
-        VDB_SERVICE_CLONE_ALREADY_EXISTS,
-
-        /**
-         * An error indicating clone attempt was missing a name
-         */
-        VDB_SERVICE_CLONE_MISSING_NAME,
-
-        /**
-         * An error indicating clone attempt was missing a new VDB name
-         */
-        VDB_SERVICE_CLONE_MISSING_NEW_NAME,
-
-        /**
-         * An error indicating the desired new clone name is same as VDB being cloned
-         */
-        VDB_SERVICE_CLONE_SAME_NAME_ERROR,
 
         /**
          * An error indicating a data role with the specified name already exists.

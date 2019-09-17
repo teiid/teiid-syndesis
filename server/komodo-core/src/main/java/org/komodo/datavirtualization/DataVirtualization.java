@@ -18,24 +18,26 @@
 
 package org.komodo.datavirtualization;
 
+import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 
-import org.hibernate.annotations.GenericGenerator;
 import org.komodo.StringConstants;
 
 @Entity
-public class DataVirtualization extends BaseEntity {
+@DiscriminatorValue("v")
+public class DataVirtualization extends BaseDataVirtualization {
 
-    public static String getServiceVdbName(String name) {
-        return name.toLowerCase() + StringConstants.SERVICE_VDB_SUFFIX;
+    /**
+     * Get the preview vdb name for the virtualization name -
+     * the suffix is added to not conflict with the source and
+     * main preview vdbs
+     * @param name
+     * @return
+     */
+    public static String getPreviewVdbName(String name) {
+        return name + StringConstants.SERVICE_VDB_SUFFIX;
     }
 
-    @Id
-    @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
-    private String id;
     private String description;
 
     protected DataVirtualization() {
@@ -43,21 +45,6 @@ public class DataVirtualization extends BaseEntity {
 
     public DataVirtualization(String name) {
         setName(name);
-    }
-
-    /**
-     * @return the service VDB name (may be <code>null</code> if not defined)
-     */
-    public String getServiceVdbName( ) {
-        return getServiceVdbName(getName());
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getDescription() {

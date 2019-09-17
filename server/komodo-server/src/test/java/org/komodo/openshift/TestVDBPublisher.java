@@ -17,10 +17,9 @@
  */
 package org.komodo.openshift;
 
-import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.InputStream;
@@ -153,7 +152,7 @@ public class TestVDBPublisher {
         final OAuthCredentials authToken = AuthHandlingFilter.threadOAuthCredentials.get();
         PublishConfiguration config = new PublishConfiguration();
         Collection<EnvVar> variables = generator
-                .getEnvironmentVariablesForVDBDataSources(authToken, vdb, config);
+                .getEnvironmentVariablesForVDBDataSources(authToken, vdb, config, TeiidOpenShiftClient.getOpenShiftName(vdb.getName()));
         assertThat( variables.size(), is(9));
 
         String javaOptions=
@@ -165,9 +164,9 @@ public class TestVDBPublisher {
                 + " -Dorg.teiid.hiddenMetadataResolvable=false"
                 + " -Dorg.teiid.allowAlter=false";
 
-        assertThat(variables, hasItem(generator.envFromSecret("myservice-secret", "spring.datasource.accounts-xyz.username")));
-        assertThat(variables, hasItem(generator.envFromSecret("myservice-secret", "spring.datasource.accounts-xyz.jdbc-url")));
-        assertThat(variables, hasItem(generator.envFromSecret("myservice-secret", "spring.datasource.accounts-xyz.password")));
+        assertThat(variables, hasItem(generator.envFromSecret("dv-myservice-secret", "spring.datasource.accounts-xyz.username")));
+        assertThat(variables, hasItem(generator.envFromSecret("dv-myservice-secret", "spring.datasource.accounts-xyz.jdbc-url")));
+        assertThat(variables, hasItem(generator.envFromSecret("dv-myservice-secret", "spring.datasource.accounts-xyz.password")));
 
 //        assertThat(variables, hasItem(new EnvVarBuilder().withName(EncryptionComponent.SYNDESIS_ENC_KEY)
 //                .withValueFrom(new EnvVarSourceBuilder().withConfigMapKeyRef(new ConfigMapKeySelectorBuilder()
