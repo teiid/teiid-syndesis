@@ -251,7 +251,7 @@ public class IntegrationTest {
         properties.put("url", "jdbc:h2:mem:"+dvName);
         properties.put("schema", "DV");
         dsd.setProperties(properties);
-        dsd.setDefinition(teiidOpenShiftClient.getSourceDefinitionThatMatches(properties));
+        dsd.setDefinition(teiidOpenShiftClient.getSourceDefinitionThatMatches(properties, "sql"));
 
         syndesisConnectionSynchronizer.addConnection(dsd, false);
 
@@ -266,7 +266,7 @@ public class IntegrationTest {
 
         //add a source table
         TeiidDataSourceImpl tds = metadata.getDataSource(komodoName);
-        Connection c = ((DataSource)tds.getDataSource()).getConnection();
+        Connection c = ((DataSource)tds.getConnectionfactory()).getConnection();
         c.createStatement().execute("create schema DV");
         c.createStatement().execute("create table DV.t (col integer)");
 

@@ -18,7 +18,7 @@
  * GENERATED CODE - DO NOT EDIT
  */
 
-package io.integration;
+package {{packageName}};
 
 import javax.sql.DataSource;
 
@@ -28,11 +28,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class DataSourcesaccountsxyz {
+public class DataSources{{dsName}} {
 
-    @ConfigurationProperties(prefix = "spring.datasource.accountsxyz")
-    @Bean(name="accountsxyz")
-    public DataSource accountsxyz() {
+    @ConfigurationProperties(prefix = "spring.datasource.{{dsName}}")
+    @Bean(name="{{dsName}}")
+    public DataSource {{dsName}}() {
         return DataSourceBuilder.create().build();
     }
 }

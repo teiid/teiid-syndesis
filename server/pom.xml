@@ -138,7 +138,7 @@
     <version.postgresql>42.1.4</version.postgresql>
     
     <!-- this is simply a version no dependencies involved right now -->
-    <version.springboot.teiid>1.1.0</version.springboot.teiid>
+    <version.springboot.teiid>1.2.0-SNAPSHOT</version.springboot.teiid>
     
     <version.org.mockito>2.21.0</version.org.mockito>
     <version.com.fasterxml.jackson>2.9.8</version.com.fasterxml.jackson>
@@ -317,6 +317,16 @@
         <artifactId>mongo-java-driver</artifactId>
         <version>${version.org.mongodb}</version>
       </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>spring-data-mongodb</artifactId>
+        <version>${version.springboot.teiid}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>spring-data-salesforce</artifactId>
+        <version>${version.springboot.teiid}</version>
+      </dependency>            
     </dependencies>
   </dependencyManagement>
 

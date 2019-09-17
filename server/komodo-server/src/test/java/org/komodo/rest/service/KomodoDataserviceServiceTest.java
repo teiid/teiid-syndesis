@@ -18,7 +18,11 @@
 
 package org.komodo.rest.service;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -26,11 +30,12 @@ import java.util.Map;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.komodo.datasources.DefaultSyndesisDataSource;
+import org.komodo.datasources.H2SQLDefinition;
 import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.datavirtualization.ViewDefinition;
-import org.komodo.metadata.TeiidDataSource;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
-import org.komodo.openshift.TeiidOpenShiftClient;
+import org.komodo.metadata.internal.TeiidDataSourceImpl;
 import org.komodo.repository.KomodoRepositoryConfiguration;
 import org.komodo.repository.WorkspaceManagerImpl;
 import org.komodo.rest.KomodoJsonMarshaller;
@@ -85,11 +90,8 @@ public class KomodoDataserviceServiceTest {
             //source not found
         }
 
-        Map<String, String> props = new HashMap<>();
-        props.put(TeiidOpenShiftClient.ID, "someid");
-        props.put(TeiidDataSource.DATASOURCE_DRIVERNAME, "h2");
-
-        metadataInstance.createDataSource("source", "h2", props);
+        DefaultSyndesisDataSource sds = createH2DataSource("source");
+        metadataInstance.registerDataSource("source", (TeiidDataSourceImpl)sds.createDataSource("source"));
 
         try {
             kso = komodoDataserviceService.importViews("dv", "source", payload);
@@ -155,5 +157,20 @@ public class KomodoDataserviceServiceTest {
         //conflicts
         response = komodoDataserviceService.validateDataserviceName("FOO");
         assertNotNull(response.getBody());
+    }
+
+    static DefaultSyndesisDataSource createH2DataSource(String name) {
+        DefaultSyndesisDataSource sds = new DefaultSyndesisDataSource();
+        sds.setDefinition(new H2SQLDefinition());
+        sds.setId("someid");
+        sds.setKomodoName(name);
+        sds.setTranslatorName("h2");
+        sds.setSyndesisName(name);
+        Map<String, String> properties = new HashMap<>();
+        properties.put("url", "jdbc:h2:mem:");
+        properties.put("user", "sa");
+        properties.put("password", "sa");
+        sds.setProperties(properties);
+        return sds;
     }
 }

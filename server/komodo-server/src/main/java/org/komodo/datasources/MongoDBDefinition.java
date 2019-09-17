@@ -17,9 +17,13 @@
  */
 package org.komodo.datasources;
 
+import java.util.HashMap;
 import java.util.Map;
 
-import org.komodo.metadata.TeiidDataSource;
+import org.komodo.metadata.internal.TeiidDataSourceImpl;
+import org.teiid.spring.data.mongodb.MongoDBConfiguration;
+import org.teiid.spring.data.mongodb.MongoDBConnectionFactory;
+import org.teiid.spring.data.mongodb.MongoDBTemplate;
 
 public class MongoDBDefinition extends DataSourceDefinition {
 
@@ -30,7 +34,12 @@ public class MongoDBDefinition extends DataSourceDefinition {
 
     @Override
     public String getPomDendencies() {
-        throw new UnsupportedOperationException();
+        return
+                "<dependency>" +
+                "  <groupId>org.teiid</groupId>" +
+                "  <artifactId>spring-data-mongodb</artifactId>" +
+                "  <version>${version.springboot.teiid}</version>" +
+                "</dependency>\n";
     }
 
     @Override
@@ -40,21 +49,44 @@ public class MongoDBDefinition extends DataSourceDefinition {
 
     @Override
     public boolean isTypeOf(Map<String, String> properties, String type) {
-        if ((properties != null) && (properties.get("MONGODB_DATABASE") != null)) {
+        if (type.equalsIgnoreCase("mongodb3")) {
             return true;
         }
         return false;
     }
 
     @Override
-    public TeiidDataSource createDatasource(String deploymentName, DefaultSyndesisDataSource scd) {
-        throw new UnsupportedOperationException();
+    public TeiidDataSourceImpl createDatasource(String deploymentName, DefaultSyndesisDataSource scd) {
+        MongoDBConfiguration config = new MongoDBConfiguration();
+        config.setUser(scd.getProperty("user"));
+        config.setPassword(scd.getProperty("password"));
+        config.setAuthDatabase(scd.getProperty("adminDB"));
+        config.setDatabase(scd.getProperty("database"));
+        config.setRemoteServerList(scd.getProperty("host"));
+
+        MongoDBConnectionFactory mcf = new MongoDBConnectionFactory(new MongoDBTemplate(config));
+
+        Map<String, String> importProperties = new HashMap<String, String>();
+        Map<String, String> translatorProperties = new HashMap<String, String>();
+        TeiidDataSourceImpl teiidDS = new TeiidDataSourceImpl(scd.getId(), deploymentName, getTranslatorName(), mcf);
+        teiidDS.setImportProperties(importProperties);
+        teiidDS.setTranslatorProperties(translatorProperties);
+        return teiidDS;
     }
 
     @Override
     public Map<String, String> getPublishedImageDataSourceProperties(DefaultSyndesisDataSource scd) {
-        throw new UnsupportedOperationException();
+        Map<String, String> props = new HashMap<>();
+        ds(props, scd, "user", scd.getProperty("user"));
+        ds(props, scd, "password", scd.getProperty("password"));
+        ds(props, scd, "database", scd.getProperty("database"));
+        ds(props, scd, "authDatabase", scd.getProperty("adminDB"));
+        ds(props, scd, "remoteServerList", scd.getProperty("host"));
+        return props;
     }
 
-
+    @Override
+    protected void ds(Map<String, String> props, DefaultSyndesisDataSource scd, String key, String value) {
+        props.put("spring.teiid.data.mongodb." + scd.getKomodoName() + "." + key, value);
+    }
 }

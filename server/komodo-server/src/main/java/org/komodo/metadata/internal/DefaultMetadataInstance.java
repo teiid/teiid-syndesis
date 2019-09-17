@@ -19,6 +19,7 @@ package org.komodo.metadata.internal;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -62,8 +63,12 @@ import org.teiid.adminapi.impl.ModelMetaData.Message.Severity;
 import org.teiid.adminapi.impl.SourceMappingMetadata;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.adminapi.impl.VDBMetadataParser;
+import org.teiid.api.exception.query.FunctionExecutionException;
 import org.teiid.api.exception.query.QueryMetadataException;
 import org.teiid.core.TeiidComponentException;
+import org.teiid.core.types.ArrayImpl;
+import org.teiid.core.types.TransformationException;
+import org.teiid.core.types.basic.ClobToStringTransform;
 import org.teiid.core.util.AccessibleByteArrayOutputStream;
 import org.teiid.core.util.ArgCheck;
 import org.teiid.deployers.VDBLifeCycleListener;
@@ -73,6 +78,7 @@ import org.teiid.metadata.AbstractMetadataRecord;
 import org.teiid.metadata.MetadataException;
 import org.teiid.metadata.MetadataFactory;
 import org.teiid.metadata.Schema;
+import org.teiid.query.function.GeometryUtils;
 import org.teiid.query.metadata.BasicQueryMetadataWrapper;
 import org.teiid.query.metadata.CompositeMetadataStore;
 import org.teiid.query.metadata.MetadataValidator;
@@ -83,6 +89,8 @@ import org.teiid.query.validator.ValidatorReport;
 import org.teiid.translator.TranslatorException;
 import org.teiid.util.FullyQualifiedName;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zaxxer.hikari.HikariDataSource;
 
 @Component
@@ -262,6 +270,8 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
     @Override
     public QSResult query(String vdb, String query, int offset, int limit) throws KException {
+        ObjectMapper mapper = new ObjectMapper();
+
         QSResult result = new QSResult();
 
         KLog.getLogger().debug("Commencing query execution: %s", query);
@@ -316,16 +326,27 @@ public class DefaultMetadataInstance implements MetadataInstance {
                 QSRow row = new QSRow();
                 for (int i = 1; i <= columns; ++i) {
                     Object value = rs.getObject(i);
-                    row.add(value);
+                    if (value instanceof ArrayImpl) {
+                        row.add(mapper.writeValueAsString(((ArrayImpl)value).getArray()));
+                    } else if (value instanceof java.sql.Blob) {
+                        row.add("blob");
+                    }  else if (value instanceof java.sql.Clob) {
+                        row.add("clob");
+                    }  else if (value instanceof org.teiid.core.types.AbstractGeospatialType) {
+                        Clob clob = GeometryUtils.geometryToClob((org.teiid.core.types.AbstractGeospatialType)value, true);
+                        ClobToStringTransform transform = new ClobToStringTransform();
+                        row.add(transform.transform(clob, String.class));
+                    } else {
+                       row.add(value);
+                    }
                 }
-
                 result.addRow(row);
             }
 
             KLog.getLogger().debug("Query executed and returning %d results", result.getRows().size());
 
             return result;
-        } catch (SQLException e) {
+        } catch (SQLException | JsonProcessingException | FunctionExecutionException | TransformationException e) {
             throw new KException(e);
         } finally {
             try {
@@ -426,7 +447,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
                         continue;
                     }
                     TeiidDataSourceImpl teiidDataSourceImpl = datasources.get(smm.getConnectionJndiName());
-                    server.addConnectionFactory(smm.getName(), teiidDataSourceImpl.getDataSource());
+                    server.addConnectionFactory(smm.getName(), teiidDataSourceImpl.getConnectionfactory());
                 }
             }
 

@@ -18,21 +18,28 @@
  * GENERATED CODE - DO NOT EDIT
  */
 
-package io.integration;
+package {{packageName}};
 
-import javax.sql.DataSource;
-
-import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.teiid.spring.data.salesforce.SalesforceConfiguration;
+import org.teiid.spring.data.salesforce.SalesforceConnectionFactory;
 
 @Configuration
-public class DataSourcesaccountsxyz {
+public class DataSources{{dsName}} {
 
-    @ConfigurationProperties(prefix = "spring.datasource.accountsxyz")
-    @Bean(name="accountsxyz")
-    public DataSource accountsxyz() {
-        return DataSourceBuilder.create().build();
+    @Bean(name="{{dsName}}")
+    @Autowired
+    public SalesforceConnectionFactory {{dsName}}(@Qualifier("{{dsName}}-config") SalesforceConfiguration config) {
+        return new SalesforceConnectionFactory(config);
+    }
+
+    @Bean(name="{{dsName}}-config")
+    @ConfigurationProperties("spring.teiid.data.salesforce.{{dsName}}")
+    public SalesforceConfiguration salesforceConfig() {
+        return new SalesforceConfiguration();
     }
 }

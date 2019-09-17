@@ -18,21 +18,18 @@
 
 package org.komodo.rest.service;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.komodo.KException;
-import org.komodo.metadata.TeiidDataSource;
+import org.komodo.datasources.DefaultSyndesisDataSource;
 import org.komodo.metadata.TeiidVdb;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
 import org.komodo.metadata.internal.TeiidDataSourceImpl;
-import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.repository.KomodoRepositoryConfiguration;
 import org.komodo.repository.WorkspaceManagerImpl;
 import org.komodo.rest.KomodoJsonMarshaller;
@@ -63,25 +60,29 @@ public class KomodoMetadataServiceTest {
 
     @Test
     public void testSourceVdbGeneration() throws Exception {
-        Map<String, String> properties = new LinkedHashMap<String, String>();
-        properties.put(TeiidDataSource.DATASOURCE_JNDINAME, "something");
-        properties.put(TeiidDataSource.DATASOURCE_DRIVERNAME, "type");
-        properties.put(TeiidOpenShiftClient.ID, "source id");
-        TeiidDataSourceImpl tds = new TeiidDataSourceImpl("source", properties);
-        VDBMetaData vdb = KomodoMetadataService.generateSourceVdb(tds, "vdb", null);
+//        Map<String, String> properties = new LinkedHashMap<String, String>();
+//        properties.put(TeiidDataSource.DATASOURCE_JNDINAME, "something");
+//        properties.put(TeiidDataSource.DATASOURCE_DRIVERNAME, "type");
+//        properties.put(TeiidOpenShiftClient.ID, "source id");
 
+        DefaultSyndesisDataSource sds = KomodoDataserviceServiceTest.createH2DataSource("source");
+        metadataInstance.registerDataSource("source", (TeiidDataSourceImpl)sds.createDataSource("source"));
+
+        TeiidDataSourceImpl tds = metadataInstance.getDataSource("source");
+
+        VDBMetaData vdb = KomodoMetadataService.generateSourceVdb(tds, "vdb", null);
 
         String s = new String(DefaultMetadataInstance.toBytes(vdb).toByteArray(), "UTF-8");
         assertEquals(
                 "<?xml version=\"1.0\" ?><vdb name=\"vdb\" version=\"1\"><description>Vdb for source Data Source:	source\n"
-                        + "Type: 		type</description><connection-type>BY_VERSION</connection-type>"
-                        + "<property name=\"id\" value=\"source id\"></property><property name=\"async-load\" value=\"true\"></property>"
+                        + "Type: \t\th2</description><connection-type>BY_VERSION</connection-type>"
+                        + "<property name=\"id\" value=\"someid\"></property><property name=\"async-load\" value=\"true\"></property>"
                         + "<model name=\"source\" type=\"PHYSICAL\" visible=\"true\">"
                         + "<property name=\"importer.TableTypes\" value=\"TABLE,VIEW\"></property>"
+                        + "<property name=\"importer.UseFullSchemaName\" value=\"false\"></property>"
                         + "<property name=\"importer.UseQualifiedName\" value=\"true\"></property>"
                         + "<property name=\"importer.UseCatalogName\" value=\"false\"></property>"
-                        + "<property name=\"importer.UseFullSchemaName\" value=\"false\"></property>"
-                        + "<source name=\"source\" translator-name=\"type\" connection-jndi-name=\"something\"></source></model></vdb>",
+                        + "<source name=\"source\" translator-name=\"h2\" connection-jndi-name=\"source\"></source></model></vdb>",
                 s);
 
         //with ddl passed in
@@ -90,11 +91,15 @@ public class KomodoMetadataServiceTest {
         s = new String(DefaultMetadataInstance.toBytes(vdb).toByteArray(), "UTF-8");
         assertEquals(
                 "<?xml version=\"1.0\" ?><vdb name=\"vdb\" version=\"1\"><description>Vdb for source Data Source:	source\n"
-                        + "Type: 		type</description><connection-type>BY_VERSION</connection-type>"
-                        + "<property name=\"id\" value=\"source id\"></property>"
+                        + "Type: \t\th2</description><connection-type>BY_VERSION</connection-type>"
+                        + "<property name=\"id\" value=\"someid\"></property>"
                         + "<model name=\"source\" type=\"PHYSICAL\" visible=\"false\">"
-                        + "<source name=\"source\" translator-name=\"type\" connection-jndi-name=\"something\"></source>"
-                        + "<metadata type=\"DDLDB\"><![CDATA[source id]]></metadata></model></vdb>",
+                        + "<property name=\"importer.TableTypes\" value=\"TABLE,VIEW\"></property>"
+                        + "<property name=\"importer.UseFullSchemaName\" value=\"false\"></property>"
+                        + "<property name=\"importer.UseQualifiedName\" value=\"true\"></property>"
+                        + "<property name=\"importer.UseCatalogName\" value=\"false\"></property>"
+                        + "<source name=\"source\" translator-name=\"h2\" connection-jndi-name=\"source\"></source>"
+                        + "<metadata type=\"DDLDB\"><![CDATA[someid]]></metadata></model></vdb>",
                 s);
 
     }
@@ -103,18 +108,15 @@ public class KomodoMetadataServiceTest {
     public void testGetSchema() throws Exception {
         List<RestSchemaNode> nodes = null;
         try {
-            nodes = komodoMetadataService.getSchema("source");
+            nodes = komodoMetadataService.getSchema("source2");
             fail();
         } catch (ResponseStatusException e) {
             //no source yet
         }
 
-        //add the data source, and schema
-        Map<String, String> props = new HashMap<>();
-        props.put(TeiidOpenShiftClient.ID, "someid");
-        props.put(TeiidDataSource.DATASOURCE_DRIVERNAME, "h2");
+        DefaultSyndesisDataSource sds = KomodoDataserviceServiceTest.createH2DataSource("source2");
+        metadataInstance.registerDataSource("source2", (TeiidDataSourceImpl)sds.createDataSource("source2"));
 
-        metadataInstance.createDataSource("source", "h2", props);
         workspaceManagerImpl.createSchema("someid", "source",
                 "create foreign table tbl (col string) options (\"teiid_rel:fqn\" 'schema=s%20x/t%20bl=bar');"
                 + "create foreign table tbl1 (col string) options (\"teiid_rel:fqn\" 'schema=s%20x/t%20bl=bar1');");
@@ -140,6 +142,43 @@ public class KomodoMetadataServiceTest {
                 "  \"connectionName\" : \"source\",\n" +
                 "  \"type\" : \"schema\",\n" +
                 "  \"queryable\" : false\n" +
+                "} ]", KomodoJsonMarshaller.marshall(nodes));
+    }
+
+    @Test
+    public void testGetSchemaSingleLevel() throws Exception {
+        List<RestSchemaNode> nodes = null;
+        try {
+            nodes = komodoMetadataService.getSchema("source3");
+            fail();
+        } catch (ResponseStatusException e) {
+            //no source yet
+        }
+
+        //add the data source, and schema
+        DefaultSyndesisDataSource sds = KomodoDataserviceServiceTest.createH2DataSource("source3");
+        metadataInstance.registerDataSource("source3", (TeiidDataSourceImpl)sds.createDataSource("source3"));
+
+
+        workspaceManagerImpl.createSchema("someid", "source3",
+                "create foreign table tbl (col string) options (\"teiid_rel:fqn\" 'collection=bar');"
+                + "create foreign table tbl1 (col string) options (\"teiid_rel:fqn\" 'collection=bar1');");
+
+        nodes = komodoMetadataService.getSchema("source3");
+        assertEquals("[ {\n" +
+                "  \"children\" : [ ],\n" +
+                "  \"name\" : \"bar\",\n" +
+                "  \"teiidName\" : \"tbl\",\n" +
+                "  \"connectionName\" : \"source3\",\n" +
+                "  \"type\" : \"collection\",\n" +
+                "  \"queryable\" : true\n" +
+                "}, {\n" +
+                "  \"children\" : [ ],\n" +
+                "  \"name\" : \"bar1\",\n" +
+                "  \"teiidName\" : \"tbl1\",\n" +
+                "  \"connectionName\" : \"source3\",\n" +
+                "  \"type\" : \"collection\",\n" +
+                "  \"queryable\" : true\n" +
                 "} ]", KomodoJsonMarshaller.marshall(nodes));
     }
 

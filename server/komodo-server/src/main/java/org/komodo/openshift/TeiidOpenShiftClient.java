@@ -17,15 +17,18 @@
  */
 package org.komodo.openshift;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
+import java.io.Reader;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -473,12 +476,12 @@ public class TeiidOpenShiftClient implements V1Constants {
             JsonNode root = mapper.readTree(response);
             for (JsonNode item: root.get("items")) {
                 String connectorType = item.get("connectorId").asText();
-                if (!connectorType.equals("sql")) {
-                    continue;
-                }
                 String name = item.get("name").asText();
                 try {
-                    result.add(buildSyndesisDataSource(name, item, connectorType));
+                    DefaultSyndesisDataSource ds = buildSyndesisDataSource(name, item, connectorType);
+                    if (ds != null) {
+                        result.add(ds);
+                    }
                 } catch (KException e) {
                     error(name, e.getMessage(), e);
                 }
@@ -499,10 +502,6 @@ public class TeiidOpenShiftClient implements V1Constants {
                 ObjectMapper mapper = new ObjectMapper();
                 JsonNode root = mapper.readTree(response);
                 String connectorType = root.get("connectorId").asText();
-                if (!connectorType.equals("sql")) {
-                    LOGGER.debug("Not SQL Connection, not supported by Data Virtualization yet.");
-                    return null;
-                }
                 String name = root.get("name").asText();
                 source = buildSyndesisDataSource(name, root, connectorType);
             } catch (Exception e) {
@@ -530,12 +529,15 @@ public class TeiidOpenShiftClient implements V1Constants {
         Map<String, String> p = new HashMap<>();
         JsonNode configuredProperties = item.get("configuredProperties");
         JsonNode connectorIDNode = item.get(ID);
-        configuredProperties.fieldNames()
-                .forEachRemaining(key -> p.put(key, configuredProperties.get(key).asText()));
+        if (configuredProperties != null) {
+            configuredProperties.fieldNames()
+                    .forEachRemaining(key -> p.put(key, configuredProperties.get(key).asText()));
+        }
 
         DataSourceDefinition def = getSourceDefinitionThatMatches(p, type);
         if (def == null) {
-            throw new KException("Could not find datasource that matches to the configuration."+ p.get("url"));
+            LOGGER.debug("Not SQL Connection, not supported by Data Virtualization yet.");
+            return null;
         }
         if( connectorIDNode == null ) {
             throw new KException("Datasource has no connection ID");
@@ -1016,9 +1018,11 @@ public class TeiidOpenShiftClient implements V1Constants {
                     archive.add(new ByteArrayAsset(ObjectConverterUtil.convertToByteArray(configIs)),
                                 "/src/main/resources/application.properties");
 
-                    InputStream dsIs = buildDataSourceBuilders(vdb);
-                    archive.add(new ByteArrayAsset(ObjectConverterUtil.convertToByteArray(dsIs)),
-                            "/src/main/java/io/integration/DataSources.java");
+                    for (Model model : vdb.getModels()) {
+                        if (model.isSource()) {
+                            buildDataSourceBuilders(model, archive);
+                        }
+                    }
 
                     InputStream appIs = this.getClass().getClassLoader().getResourceAsStream("s2i/Application.java");
                     archive.add(new ByteArrayAsset(ObjectConverterUtil.convertToByteArray(appIs)),
@@ -1089,41 +1093,50 @@ public class TeiidOpenShiftClient implements V1Constants {
         }
     }
 
-    private static final String DS_TEMPLATE =
-            "    @ConfigurationProperties(prefix = \"spring.datasource.{name}\")\n" +
-            "    @Bean(\"{name}\")\n" +
-            "    public DataSource {method-name}() {\n" +
-            "        return DataSourceBuilder.create().build();\n" +
-            "    }";
-
-    protected InputStream buildDataSourceBuilders(VDBMetaData vdb) throws KException {
-        StringWriter sw = new StringWriter();
-        sw.write("package io.integration;\n" +
-                "\n" +
-                "import javax.sql.DataSource;\n" +
-                "\n" +
-                "import org.springframework.boot.jdbc.DataSourceBuilder;\n" +
-                "import org.springframework.boot.context.properties.ConfigurationProperties;\n" +
-                "import org.springframework.context.annotation.Bean;\n" +
-                "import org.springframework.context.annotation.Configuration;\n" +
-                "\n" +
-                "@Configuration\n" +
-                "public class DataSources {\n");
-
-        for (Model model : vdb.getModels()) {
-            for (String name : model.getSourceNames()) {
+    protected void buildDataSourceBuilders(Model model, GenericArchive archive) throws KException {
+        for (String name : model.getSourceNames()) {
+            try {
+                String str = null;
                 String replacement = model.getSourceConnectionJndiName(name);
-                sw.write(DS_TEMPLATE.replace("{name}", replacement).replace("{method-name}", replacement));
-                sw.write("\n");
+                String translatorName = model.getSourceTranslatorName(name);
+                if (translatorName.equals("salesforce")) {
+                    InputStream is = this.getClass().getClassLoader().getResourceAsStream("s2i/Salesforce.mustache");
+                    str = inputStreamToString(is);
+                    str = str.replace("{{packageName}}", "io.integration");
+                    str = str.replace("{{dsName}}", replacement);
+
+                } else if (translatorName.equals("mongodb")) {
+                    InputStream is = this.getClass().getClassLoader().getResourceAsStream("s2i/MongoDB.mustache");
+                    str = inputStreamToString(is);
+                    str = str.replace("{{packageName}}", "io.integration");
+                    str = str.replace("{{dsName}}", replacement);
+
+                } else {
+                    InputStream is = this.getClass().getClassLoader().getResourceAsStream("s2i/Jdbc.mustache");
+                    str = inputStreamToString(is);
+                    str = str.replace("{{packageName}}", "io.integration");
+                    str = str.replace("{{dsName}}", replacement);
+                }
+                archive.add(new ByteArrayAsset(ObjectConverterUtil
+                        .convertToByteArray(new ByteArrayInputStream(str.getBytes("UTF-8")))),
+                        "/src/main/java/io/integration/DataSources" + replacement + ".java");
+
+            } catch (IOException e) {
+                throw handleError(e);
             }
         }
-        sw.write("}\n");
+    }
 
-        try {
-            return new ByteArrayInputStream(sw.toString().getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            throw new KException(e);
+    private static String inputStreamToString(InputStream inputStream) throws IOException {
+        StringBuilder textBuilder = new StringBuilder();
+        try (Reader reader = new BufferedReader(new InputStreamReader
+          (inputStream, Charset.forName(StandardCharsets.UTF_8.name())))) {
+            int c = 0;
+            while ((c = reader.read()) != -1) {
+                textBuilder.append((char) c);
+            }
         }
+        return textBuilder.toString();
     }
 
     /**

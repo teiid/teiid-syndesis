@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -33,12 +32,12 @@ import java.util.Properties;
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.KException;
+import org.komodo.datasources.DefaultSyndesisDataSource;
 import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.metadata.MetadataInstance.ValidationResult;
 import org.komodo.metadata.TeiidDataSource;
 import org.komodo.metadata.TeiidVdb;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
-import org.komodo.metadata.internal.TeiidDataSourceImpl;
 import org.komodo.rest.service.ServiceVdbGenerator.SchemaFinder;
 import org.mockito.Mockito;
 import org.teiid.adminapi.impl.ModelMetaData;
@@ -155,10 +154,8 @@ public class ServiceVdbGeneratorTest {
     }
 
     private void addSourceInfo(String connectionName, String jndiName, String ddl, String modelName) {
-        Map<String, String> properties = new LinkedHashMap<String, String>();
-        properties.put(TeiidDataSource.DATASOURCE_DRIVERNAME, TRANSLATOR_JDBC);
-        properties.put(TeiidDataSource.DATASOURCE_JNDINAME, jndiName);
-        dataSources.put(connectionName, new TeiidDataSourceImpl(connectionName, properties));
+        DefaultSyndesisDataSource sds = KomodoDataserviceServiceTest.createH2DataSource(connectionName);
+        dataSources.put(connectionName, sds.createDataSource(connectionName));
 
         MetadataFactory mf = new MetadataFactory("x", 1, modelName, SystemMetadata.getInstance().getRuntimeTypeMap(), new Properties(), null);
         QueryParser.getQueryParser().parseDDL(mf, ddl);

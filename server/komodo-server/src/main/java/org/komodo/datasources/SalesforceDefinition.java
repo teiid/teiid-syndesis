@@ -20,7 +20,9 @@ package org.komodo.datasources;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.komodo.metadata.TeiidDataSource;
+import org.komodo.metadata.internal.TeiidDataSourceImpl;
+import org.teiid.spring.data.salesforce.SalesforceConfiguration;
+import org.teiid.spring.data.salesforce.SalesforceConnectionFactory;
 
 public class SalesforceDefinition extends DataSourceDefinition {
 
@@ -35,6 +37,7 @@ public class SalesforceDefinition extends DataSourceDefinition {
             "<dependency>" +
             "  <groupId>org.teiid</groupId>" +
             "  <artifactId>spring-data-salesforce</artifactId>" +
+            "  <version>${version.springboot.teiid}</version>" +
             "</dependency>\n";
     }
 
@@ -52,8 +55,22 @@ public class SalesforceDefinition extends DataSourceDefinition {
     }
 
     @Override
-    public TeiidDataSource createDatasource(String deploymentName, DefaultSyndesisDataSource scd) {
-        throw new UnsupportedOperationException();
+    public TeiidDataSourceImpl createDatasource(String deploymentName, DefaultSyndesisDataSource scd) {
+        SalesforceConfiguration config = new SalesforceConfiguration();
+        config.setClientId(scd.getProperty("clientId"));
+        config.setClientSecret(scd.getProperty("clientSecret"));
+        config.setRefreshToken(scd.getProperty("refreshToken"));
+
+        SalesforceConnectionFactory scf = new SalesforceConnectionFactory(config);
+
+        Map<String, String> importProperties = new HashMap<String, String>();
+        Map<String, String> translatorProperties = new HashMap<String, String>();
+        importProperties.put("includeExtensionMetadata", "true");
+
+        TeiidDataSourceImpl teiidDS = new TeiidDataSourceImpl(scd.getId(), deploymentName, getTranslatorName(), scf);
+        teiidDS.setImportProperties(importProperties);
+        teiidDS.setTranslatorProperties(translatorProperties);
+        return teiidDS;
     }
 
     /**

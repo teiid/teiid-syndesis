@@ -717,15 +717,20 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
                 // Get the parent node of the final segment in the 'path'.  New nodes are created if needed.
                 RestSchemaNode parentNode = getLeafNodeParent(sourceName, schemaNodes, segments);
 
+                Pair<String, String> segment = segments.get(segments.size() - 1);
+                String type = segment.getFirst();
+                String name = segment.getSecond();
+
                 // Use last segment to create the leaf node child in the parent.  If parent is null, was root (and leaf already created).
                 if( parentNode != null ) {
-                    Pair<String, String> segment = segments.get(segments.size() - 1);
-                    String type = segment.getFirst();
-                    String name = segment.getSecond();
                     RestSchemaNode node = new RestSchemaNode(sourceName, name, type);
                     node.setTeiidName(table.getName());
                     node.setQueryable(true);
                     parentNode.addChild(node);
+                } else {
+                    RestSchemaNode node = getMatchingNode(sourceName, name, type, schemaNodes);
+                    node.setTeiidName(table.getName());
+                    node.setQueryable(true);
                 }
             }
         }

@@ -29,6 +29,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.shrinkwrap.api.GenericArchive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.junit.Before;
 import org.junit.Test;
 import org.komodo.KException;
@@ -40,6 +42,7 @@ import org.komodo.rest.AuthHandlingFilter;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoConfigurationProperties;
 import org.mockito.Mockito;
+import org.teiid.adminapi.Model;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.adminapi.impl.VDBMetadataParser;
 import org.teiid.core.util.ObjectConverterUtil;
@@ -140,9 +143,16 @@ public class TestVDBPublisher {
 
         generator.normalizeDataSourceNames(vdb);
 
-        InputStream dsIs = generator.buildDataSourceBuilders(vdb);
-        String ds = ObjectConverterUtil.convertToString(dsIs);
-        assertEquals(ObjectConverterUtil.convertFileToString(new File("src/test/resources/generated-ds.txt")), ds);
+        for (Model model: vdb.getModels()) {
+            if (!model.isSource()) {
+                continue;
+            }
+            GenericArchive archive = ShrinkWrap.create(GenericArchive.class, "contents.tar");
+            generator.buildDataSourceBuilders(model, archive);
+            InputStream dsIs = archive.get("/src/main/java/io/integration/DataSourcesaccountsxyz.java").getAsset().openStream();
+            String ds = ObjectConverterUtil.convertToString(dsIs);
+            assertEquals(ObjectConverterUtil.convertFileToString(new File("src/test/resources/generated-ds.txt")), ds);
+        }
     }
 
     @Test
