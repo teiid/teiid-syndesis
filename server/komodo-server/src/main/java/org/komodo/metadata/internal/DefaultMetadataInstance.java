@@ -381,7 +381,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
                 // close the underlying datasource and any connections
                 Object cf = ds.getConnectionfactory();
                 if (cf instanceof HikariDataSource) {
-                    ((HikariDataSource)ds).close();
+                    ((HikariDataSource)cf).close();
                 }
                 if (cf instanceof Closeable) {
                     ((Closeable)cf).close();
