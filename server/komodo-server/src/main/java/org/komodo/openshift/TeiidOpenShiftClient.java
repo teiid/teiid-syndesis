@@ -983,14 +983,13 @@ public class TeiidOpenShiftClient implements V1Constants {
             public void run() {
                 info(work.getOpenShiftName(), "Publishing  - Configuring ...");
 
-                final OpenShiftClient client = openshiftClient();
                 String namespace = work.namespace();
                 PublishConfiguration publishConfig = work.publishConfiguration();
                 VDBMetaData vdb = publishConfig.getVDB();
                 OAuthCredentials oauthCreds = publishConfig.getOAuthCredentials();
 
                 String openShiftName = work.getOpenShiftName();
-                try {
+                try (OpenShiftClient client = openshiftClient();){
                     info(openShiftName, "Publishing - Checking for base image");
 
                     // create build contents as tar file
@@ -1063,9 +1062,6 @@ public class TeiidOpenShiftClient implements V1Constants {
                     work.setStatusMessage(ex.getLocalizedMessage());
                     error(work.getOpenShiftName(), "Publishing - Build failed", ex);
                 } finally {
-                    if (client != null) {
-                        client.close();
-                    }
                     //
                     // Building is a long running operation so close the log file
                     //
@@ -1239,14 +1235,11 @@ public class TeiidOpenShiftClient implements V1Constants {
         if (status != null) {
             return status;
         }
-        OpenShiftClient client = openshiftClient();
-        try {
+        try (OpenShiftClient client = openshiftClient();){
             status = getVDBService(openShiftName, ApplicationProperties.getNamespace(), client);
         } catch (KubernetesClientException e) {
             LOGGER.info("Could not get build status: " + e.getMessage());
             status = new BuildStatus(openShiftName);
-        } finally {
-            client.close();
         }
         status.setDataVirtualizationName(virtualization);
         return status;
@@ -1360,7 +1353,9 @@ public class TeiidOpenShiftClient implements V1Constants {
         configureService.submit(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                deleteVDBServiceResources(openShiftName, inProgressBuildName, status);
+                try (final OpenShiftClient client = openshiftClient();) {
+                    deleteVDBServiceResources(openShiftName, inProgressBuildName, status, client);
+                }
                 debug(openShiftName, "finished deleteing " + openShiftName + " service");
                 return true;
             }
@@ -1387,8 +1382,7 @@ public class TeiidOpenShiftClient implements V1Constants {
         return null;
     }
 
-    private void deleteVDBServiceResources(String openshiftName, String inProgressBuildName, BuildStatus status) {
-        final OpenShiftClient client = openshiftClient();
+    private void deleteVDBServiceResources(String openshiftName, String inProgressBuildName, BuildStatus status, OpenShiftClient client) {
         final String namespace = ApplicationProperties.getNamespace();
 
         try {
@@ -1484,8 +1478,7 @@ public class TeiidOpenShiftClient implements V1Constants {
 
     private RouteStatus getRoute(String openShiftName, ProtocolType protocolType) {
         String namespace = ApplicationProperties.getNamespace();
-        final OpenShiftClient client = openshiftClient();
-        try {
+        try (OpenShiftClient client = openshiftClient();) {
             RouteStatus theRoute = null;
             debug(openShiftName, "Getting route of type " + protocolType.id() + " for Service");
             RouteList routes = client.routes().inNamespace(namespace).list();
@@ -1521,9 +1514,6 @@ public class TeiidOpenShiftClient implements V1Constants {
             }
 
             return theRoute;
-
-        } finally {
-            client.close();
         }
     }
 
