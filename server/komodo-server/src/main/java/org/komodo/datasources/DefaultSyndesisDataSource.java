@@ -19,7 +19,7 @@ package org.komodo.datasources;
 
 import java.util.Map;
 
-import org.komodo.metadata.TeiidDataSource;
+import org.komodo.metadata.internal.TeiidDataSourceImpl;
 
 public class DefaultSyndesisDataSource {
     private String id;
@@ -77,8 +77,8 @@ public class DefaultSyndesisDataSource {
         return this.properties.get(key);
     }
 
-    public TeiidDataSource createDataSource(String deploymentName) {
-        return this.definition.createDatasource(deploymentName, this);
+    public TeiidDataSourceImpl createDataSource(String deploymentName) {
+        return (TeiidDataSourceImpl)this.definition.createDatasource(deploymentName, this);
     }
 
     /**

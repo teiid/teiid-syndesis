@@ -67,7 +67,6 @@ import org.komodo.datavirtualization.SourceSchema;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.metadata.TeiidDataSource;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
-import org.komodo.metadata.internal.TeiidDataSourceImpl;
 import org.komodo.openshift.BuildStatus.RouteStatus;
 import org.komodo.openshift.BuildStatus.Status;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
@@ -575,14 +574,8 @@ public class TeiidOpenShiftClient implements V1Constants {
         }
 
         String toUse = scd.getKomodoName();
-
-        if (this.metadata.getDataSource(toUse) != null) {
-            return;
-        }
-
         //now that the komodoname is set, we can create the properties
-        TeiidDataSource teiidDS = scd.createDataSource(toUse);
-        this.metadata.registerDataSource(toUse, (TeiidDataSourceImpl)teiidDS);
+        this.metadata.registerDataSource(toUse, scd);
     }
 
     /**

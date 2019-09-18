@@ -66,7 +66,7 @@ public class KomodoMetadataServiceTest {
 //        properties.put(TeiidOpenShiftClient.ID, "source id");
 
         DefaultSyndesisDataSource sds = KomodoDataserviceServiceTest.createH2DataSource("source");
-        metadataInstance.registerDataSource("source", (TeiidDataSourceImpl)sds.createDataSource("source"));
+        metadataInstance.registerDataSource("source", sds);
 
         TeiidDataSourceImpl tds = metadataInstance.getDataSource("source");
 
@@ -115,7 +115,7 @@ public class KomodoMetadataServiceTest {
         }
 
         DefaultSyndesisDataSource sds = KomodoDataserviceServiceTest.createH2DataSource("source2");
-        metadataInstance.registerDataSource("source2", (TeiidDataSourceImpl)sds.createDataSource("source2"));
+        metadataInstance.registerDataSource("source2", sds);
 
         workspaceManagerImpl.createSchema("someid", "source",
                 "create foreign table tbl (col string) options (\"teiid_rel:fqn\" 'schema=s%20x/t%20bl=bar');"
@@ -157,7 +157,7 @@ public class KomodoMetadataServiceTest {
 
         //add the data source, and schema
         DefaultSyndesisDataSource sds = KomodoDataserviceServiceTest.createH2DataSource("source3");
-        metadataInstance.registerDataSource("source3", (TeiidDataSourceImpl)sds.createDataSource("source3"));
+        metadataInstance.registerDataSource("source3", sds);
 
 
         workspaceManagerImpl.createSchema("someid", "source3",

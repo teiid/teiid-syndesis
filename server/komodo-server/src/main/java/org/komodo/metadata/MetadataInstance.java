@@ -20,7 +20,7 @@ package org.komodo.metadata;
 import java.util.Collection;
 import org.komodo.KException;
 import org.komodo.StringConstants;
-import org.komodo.metadata.internal.TeiidDataSourceImpl;
+import org.komodo.datasources.DefaultSyndesisDataSource;
 import org.komodo.metadata.query.QSResult;
 import org.teiid.adminapi.AdminException;
 import org.teiid.adminapi.impl.VDBMetaData;
@@ -206,7 +206,7 @@ public interface MetadataInstance extends StringConstants {
 
     Collection<String> getDataSourceNames() throws AdminException;
 
-    void registerDataSource(String deploymentName, TeiidDataSourceImpl dataSource) throws AdminException;
+    void registerDataSource(String deploymentName, DefaultSyndesisDataSource dataSource) throws AdminException;
 
     ValidationResult parse(String ddl) throws KException;
 

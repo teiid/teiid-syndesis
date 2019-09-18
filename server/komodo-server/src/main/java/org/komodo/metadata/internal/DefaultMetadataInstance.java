@@ -39,6 +39,7 @@ import java.util.stream.Collectors;
 import javax.xml.stream.XMLStreamException;
 
 import org.komodo.KException;
+import org.komodo.datasources.DefaultSyndesisDataSource;
 import org.komodo.datasources.ExternalSource;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.metadata.TeiidDataSource;
@@ -370,21 +371,21 @@ public class DefaultMetadataInstance implements MetadataInstance {
     }
 
     @Override
-    public synchronized void deleteDataSource(String dsName) throws KException {
+    public void deleteDataSource(String dsName) throws KException {
         try {
             TeiidDataSource ds = this.datasources.get(dsName);
             if (ds != null) {
                 this.server.removeConnectionFactoryProvider(dsName);
                 this.datasources.remove(dsName);
-            }
 
-            // close the underlying datasource and any connections
-            Object cf = ds.getConnectionfactory();
-            if (cf instanceof HikariDataSource) {
-                ((HikariDataSource)ds).close();
-            }
-            if (cf instanceof Closeable) {
-                ((Closeable)cf).close();
+                // close the underlying datasource and any connections
+                Object cf = ds.getConnectionfactory();
+                if (cf instanceof HikariDataSource) {
+                    ((HikariDataSource)ds).close();
+                }
+                if (cf instanceof Closeable) {
+                    ((Closeable)cf).close();
+                }
             }
         } catch (Exception ex) {
             throw handleError(ex);
@@ -491,10 +492,8 @@ public class DefaultMetadataInstance implements MetadataInstance {
     }
 
     @Override
-    public void registerDataSource(String deploymentName, TeiidDataSourceImpl teiidDS) throws AdminException {
-        if (datasources.get(deploymentName) == null) {
-            this.datasources.put(deploymentName, teiidDS);
-        }
+    public void registerDataSource(String deploymentName, DefaultSyndesisDataSource teiidDS) throws AdminException {
+        this.datasources.putIfAbsent(deploymentName, teiidDS.createDataSource(deploymentName));
     }
 
     @Override

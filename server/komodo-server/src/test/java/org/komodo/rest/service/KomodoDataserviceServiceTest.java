@@ -35,7 +35,6 @@ import org.komodo.datasources.H2SQLDefinition;
 import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
-import org.komodo.metadata.internal.TeiidDataSourceImpl;
 import org.komodo.repository.KomodoRepositoryConfiguration;
 import org.komodo.repository.WorkspaceManagerImpl;
 import org.komodo.rest.KomodoJsonMarshaller;
@@ -91,7 +90,7 @@ public class KomodoDataserviceServiceTest {
         }
 
         DefaultSyndesisDataSource sds = createH2DataSource("source");
-        metadataInstance.registerDataSource("source", (TeiidDataSourceImpl)sds.createDataSource("source"));
+        metadataInstance.registerDataSource("source", sds);
 
         try {
             kso = komodoDataserviceService.importViews("dv", "source", payload);
