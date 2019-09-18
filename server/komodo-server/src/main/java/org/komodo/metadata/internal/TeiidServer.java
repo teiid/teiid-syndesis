@@ -15,6 +15,7 @@
  */
 package org.komodo.metadata.internal;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.teiid.adminapi.impl.VDBMetaData;
@@ -28,24 +29,14 @@ import org.teiid.translator.ExecutionFactory;
 import org.teiid.translator.TranslatorException;
 
 public class TeiidServer extends EmbeddedServer {
-    private ConcurrentHashMap<String, ConnectionFactoryProvider<?>> connectionFactoryProviders = new ConcurrentHashMap<String, ConnectionFactoryProvider<?>>();
+    private Map<String, TeiidDataSourceImpl> datasources = new ConcurrentHashMap<>();
 
     public TeiidServer() {
         this.cmr = new SBConnectorManagerRepository();
     }
 
-    @Override
-    public void addConnectionFactoryProvider(String jndiName, ConnectionFactoryProvider<?> connectionFactoryProvider) {
-        this.connectionFactoryProviders.put(jndiName, connectionFactoryProvider);
-    }
-
-    @Override
-    public void addConnectionFactory(String jndiName, Object connectionFactory) {
-        this.connectionFactoryProviders.put(jndiName, new SimpleConnectionFactoryProvider<Object>(connectionFactory));
-    }
-
-    public ConnectionFactoryProvider<?> removeConnectionFactoryProvider(String jndiName) {
-        return this.connectionFactoryProviders.remove(jndiName);
+    public Map<String, TeiidDataSourceImpl> getDatasources() {
+        return datasources;
     }
 
     @SuppressWarnings("serial")
@@ -63,7 +54,7 @@ public class TeiidServer extends EmbeddedServer {
                     if (getConnectionName() == null) {
                         return null;
                     }
-                    ConnectionFactoryProvider<?> connectionFactoryProvider = connectionFactoryProviders
+                    ConnectionFactoryProvider<?> connectionFactoryProvider = datasources
                             .get(getConnectionName());
                     if (connectionFactoryProvider != null) {
                         return connectionFactoryProvider.getConnectionFactory();

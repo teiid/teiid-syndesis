@@ -90,7 +90,7 @@ public class KomodoDataserviceServiceTest {
         }
 
         DefaultSyndesisDataSource sds = createH2DataSource("source");
-        metadataInstance.registerDataSource("source", sds);
+        metadataInstance.registerDataSource(sds);
 
         try {
             kso = komodoDataserviceService.importViews("dv", "source", payload);

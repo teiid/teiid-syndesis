@@ -68,7 +68,7 @@ public abstract class DataSourceDefinition {
      * @param scd
      * @return {@link TeiidDataSource}
      */
-    public TeiidDataSource createDatasource(String deploymentName, DefaultSyndesisDataSource scd) {
+    public TeiidDataSourceImpl createDatasource(String deploymentName, DefaultSyndesisDataSource scd) {
         DataSource ds = DataSourceBuilder.create().url(scd.getProperty("url"))
                 .username(scd.getProperty("username") != null ? scd.getProperty("username")
                         : scd.getProperty("user"))

@@ -64,12 +64,9 @@ public class ServiceVdbGeneratorTest {
     private static String FQN_TABLE_3 = "schema=public/table=customers";
 
     private static final String DS_NAME = "pgconnection1";
-    private static final String DS_JNDI_NAME = "java:/jndiName1";
     private static final String MODEL_NAME = "pgconnection1schemamodel";
     private static final String DS_NAME_2 = "pgconnection2";
-    private static final String DS_JNDI_NAME2 = "java:/jndiName2";
     private static final String MODEL_NAME_2 = "pgconnection2schemamodel";
-    private static final String TRANSLATOR_JDBC = "jdbc";
 
     private boolean doPrint = false;
 
@@ -149,13 +146,13 @@ public class ServiceVdbGeneratorTest {
 
     @Before
     public void init() throws Exception {
-        addSourceInfo(DS_NAME, DS_JNDI_NAME, pgconnection1schemamodelDDL, MODEL_NAME);
-        addSourceInfo(DS_NAME_2, DS_JNDI_NAME2, pgconnection2schemamodelDDL, MODEL_NAME_2);
+        addSourceInfo(DS_NAME, pgconnection1schemamodelDDL, MODEL_NAME);
+        addSourceInfo(DS_NAME_2, pgconnection2schemamodelDDL, MODEL_NAME_2);
     }
 
-    private void addSourceInfo(String connectionName, String jndiName, String ddl, String modelName) {
+    private void addSourceInfo(String connectionName, String ddl, String modelName) {
         DefaultSyndesisDataSource sds = KomodoDataserviceServiceTest.createH2DataSource(connectionName);
-        dataSources.put(connectionName, sds.createDataSource(connectionName));
+        dataSources.put(connectionName, sds.createDataSource());
 
         MetadataFactory mf = new MetadataFactory("x", 1, modelName, SystemMetadata.getInstance().getRuntimeTypeMap(), new Properties(), null);
         QueryParser.getQueryParser().parseDDL(mf, ddl);

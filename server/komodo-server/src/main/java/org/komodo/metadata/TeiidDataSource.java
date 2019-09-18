@@ -25,7 +25,7 @@ public interface TeiidDataSource {
 
     String getId();
 
-    Object getConnectionfactory();
+    Object getConnectionFactory();
 
     Map<String, String> getImportProperties();
 

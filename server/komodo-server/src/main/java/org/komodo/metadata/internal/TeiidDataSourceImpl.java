@@ -21,8 +21,9 @@ import java.util.Map;
 
 import org.komodo.metadata.TeiidDataSource;
 import org.teiid.core.util.ArgCheck;
+import org.teiid.runtime.EmbeddedServer.ConnectionFactoryProvider;
 
-public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, TeiidDataSource {
+public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, TeiidDataSource, ConnectionFactoryProvider<Object> {
     private final String name;
     private final String translatorName;
     private Object dataSource;
@@ -94,7 +95,7 @@ public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, Tei
     }
 
     @Override
-    public Object getConnectionfactory() {
+    public Object getConnectionFactory() {
         return this.dataSource;
     }
 

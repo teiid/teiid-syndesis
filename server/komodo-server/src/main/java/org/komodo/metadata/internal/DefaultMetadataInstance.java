@@ -30,10 +30,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import javax.xml.stream.XMLStreamException;
@@ -223,7 +221,6 @@ public class DefaultMetadataInstance implements MetadataInstance {
     private TeiidServer server;
 
     private Admin admin;
-    private Map<String, TeiidDataSourceImpl> datasources = new ConcurrentHashMap<>();
 
     public DefaultMetadataInstance() {
 
@@ -367,19 +364,16 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
     @Override
     public TeiidDataSourceImpl getDataSource(String name) throws KException {
-        return this.datasources.get(name);
+        return this.server.getDatasources().get(name);
     }
 
     @Override
     public void deleteDataSource(String dsName) throws KException {
         try {
-            TeiidDataSource ds = this.datasources.get(dsName);
+            TeiidDataSource ds = this.server.getDatasources().remove(dsName);
             if (ds != null) {
-                this.server.removeConnectionFactoryProvider(dsName);
-                this.datasources.remove(dsName);
-
                 // close the underlying datasource and any connections
-                Object cf = ds.getConnectionfactory();
+                Object cf = ds.getConnectionFactory();
                 if (cf instanceof HikariDataSource) {
                     ((HikariDataSource)cf).close();
                 }
@@ -394,7 +388,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
     @Override
     public Collection<? extends TeiidDataSource> getDataSources() throws KException {
-        return this.datasources.values();
+        return this.server.getDatasources().values();
     }
 
     @Override
@@ -447,8 +441,8 @@ public class DefaultMetadataInstance implements MetadataInstance {
                     if (smm.getConnectionJndiName() == null) {
                         continue;
                     }
-                    TeiidDataSourceImpl teiidDataSourceImpl = datasources.get(smm.getConnectionJndiName());
-                    server.addConnectionFactory(smm.getName(), teiidDataSourceImpl.getConnectionfactory());
+                    TeiidDataSourceImpl teiidDataSourceImpl = this.server.getDatasources().get(smm.getConnectionJndiName());
+                    server.addConnectionFactory(smm.getName(), teiidDataSourceImpl.getConnectionFactory());
                 }
             }
 
@@ -492,13 +486,16 @@ public class DefaultMetadataInstance implements MetadataInstance {
     }
 
     @Override
-    public void registerDataSource(String deploymentName, DefaultSyndesisDataSource teiidDS) throws AdminException {
-        this.datasources.putIfAbsent(deploymentName, teiidDS.createDataSource(deploymentName));
+    public void registerDataSource(DefaultSyndesisDataSource teiidDS) throws AdminException {
+        this.server.getDatasources().computeIfAbsent(teiidDS.getKomodoName(),
+                (s) -> {
+                    return teiidDS.createDataSource();
+                });
     }
 
     @Override
     public Collection<String> getDataSourceNames() throws AdminException {
-        return datasources.keySet();
+        return this.server.getDatasources().keySet();
     }
 
     void addTranslator(String translatorname) {

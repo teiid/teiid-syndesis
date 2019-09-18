@@ -573,9 +573,8 @@ public class TeiidOpenShiftClient implements V1Constants {
             }
         }
 
-        String toUse = scd.getKomodoName();
         //now that the komodoname is set, we can create the properties
-        this.metadata.registerDataSource(toUse, scd);
+        this.metadata.registerDataSource(scd);
     }
 
     /**

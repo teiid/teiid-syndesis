@@ -77,8 +77,8 @@ public class DefaultSyndesisDataSource {
         return this.properties.get(key);
     }
 
-    public TeiidDataSourceImpl createDataSource(String deploymentName) {
-        return (TeiidDataSourceImpl)this.definition.createDatasource(deploymentName, this);
+    public TeiidDataSourceImpl createDataSource() {
+        return this.definition.createDatasource(this.komodoName, this);
     }
 
     /**

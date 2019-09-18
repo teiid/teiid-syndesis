@@ -266,7 +266,7 @@ public class IntegrationTest {
 
         //add a source table
         TeiidDataSourceImpl tds = metadata.getDataSource(komodoName);
-        Connection c = ((DataSource)tds.getConnectionfactory()).getConnection();
+        Connection c = ((DataSource)tds.getConnectionFactory()).getConnection();
         c.createStatement().execute("create schema DV");
         c.createStatement().execute("create table DV.t (col integer)");
 
@@ -346,8 +346,6 @@ public class IntegrationTest {
         assertEquals(HttpStatus.OK, virts.getStatusCode());
         assertEquals(1, virts.getBody().size());
         Map virt = (Map)virts.getBody().get(0);
-        System.out.println(virt);
         assertEquals("testSourceRefresh", virt.get("keng__id"));
-
     }
 }

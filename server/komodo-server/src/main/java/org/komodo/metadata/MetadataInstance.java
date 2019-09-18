@@ -206,7 +206,7 @@ public interface MetadataInstance extends StringConstants {
 
     Collection<String> getDataSourceNames() throws AdminException;
 
-    void registerDataSource(String deploymentName, DefaultSyndesisDataSource dataSource) throws AdminException;
+    void registerDataSource(DefaultSyndesisDataSource dataSource) throws AdminException;
 
     ValidationResult parse(String ddl) throws KException;
 
