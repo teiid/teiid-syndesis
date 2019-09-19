@@ -439,8 +439,6 @@ public class TeiidOpenShiftClient implements V1Constants {
                     "  \"description\": \"Connection to "+virtualizationName+" \"\n" +
                     "}";
 
-            info(openshiftName, payload);
-
             InputStream response = SyndesisHttpUtil.executePOST(url, payload);
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(response);
@@ -511,10 +509,10 @@ public class TeiidOpenShiftClient implements V1Constants {
                 DataVirtualization dv = this.kengine.getWorkspaceManager().findDataVirtualization(virtualizationName);
                 if (dv != null) {
                     SyndesisHttpUtil.executeDELETE(SYNDESISURL + "/connections/" + dv.getSourceId());
-                    // remove the source id from database
-                    dv.setSourceId(null);
                     info(dv.getName(), "Database connection to Virtual Database " + dv.getName()
                         + " deleted with Id = "+ dv.getSourceId());
+                    // remove the source id from database
+                    dv.setSourceId(null);
                 }
                 return null;
             });
