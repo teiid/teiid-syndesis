@@ -107,6 +107,18 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
     }
 
     @Override
+    public boolean updateDataVirtualization(String virtualizationName, String sourceId) {
+        org.komodo.datavirtualization.DataVirtualization dv = this.dataVirtualizationRepository
+                .findByName(virtualizationName);
+        if (dv == null) {
+            return false;
+        }
+        dv.setSourceId(sourceId);
+        this.dataVirtualizationRepository.save(dv);
+        return true;
+    }
+
+    @Override
     public List<ViewDefinition> saveAllViewDefinitions(Iterable<ViewDefinition> entities) {
         return this.viewDefinitionRepository.saveAll(entities);
     }

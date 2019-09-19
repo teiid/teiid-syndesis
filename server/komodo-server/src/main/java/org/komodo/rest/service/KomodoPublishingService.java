@@ -87,7 +87,7 @@ public class KomodoPublishingService extends KomodoService {
     })
     public BuildStatus getVirtualizationStatus(
             @ApiParam(value = "Name of the virtualization", required = true)
-            final @PathVariable(value = "virtualization", required=true) String virtualization) {
+            final @PathVariable(value = "virtualization", required=true) String virtualization) throws KException {
         BuildStatus status = this.openshiftClient.getVirtualizationStatus(virtualization);
 
         return status;
@@ -122,7 +122,7 @@ public class KomodoPublishingService extends KomodoService {
     })
     public BuildStatus deleteVirtualization(
             @ApiParam(value = "Name of the virtualization")
-            final @PathVariable(value = "virtualization", required = true) String virtualization) {
+            final @PathVariable(value = "virtualization", required = true) String virtualization) throws KException{
         BuildStatus status = this.openshiftClient.deleteVirtualization(virtualization);
         return status;
     }

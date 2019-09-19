@@ -69,11 +69,11 @@ public class TestVDBPublisher {
 
         TeiidOpenShiftClient client = new TeiidOpenShiftClient(metadata, new EncryptionComponent("blah"), new KomodoConfigurationProperties(), null) {
             @Override
-            public Set<DefaultSyndesisDataSource> getSyndesisSources(OAuthCredentials authToken) throws KException {
+            public Set<DefaultSyndesisDataSource> getSyndesisSources() throws KException {
                 return sources;
             }
             @Override
-            public DefaultSyndesisDataSource getSyndesisDataSource(OAuthCredentials authToken, String dsName) throws KException {
+            public DefaultSyndesisDataSource getSyndesisDataSource(String dsName) throws KException {
                 if (dsName.equals("accounts-xyz")) {
                     return getPostgreSQL();
                 } else {
@@ -132,8 +132,7 @@ public class TestVDBPublisher {
     public void testGeneratePomXML() throws Exception {
         TeiidOpenShiftClient generator = testDataSetup();
 
-        final OAuthCredentials authToken = AuthHandlingFilter.threadOAuthCredentials.get();
-        String pom = generator.generatePomXml(authToken, vdb, false);
+        String pom = generator.generatePomXml(vdb, false);
         assertEquals(ObjectConverterUtil.convertFileToString(new File("src/test/resources/generated-pom.xml")), pom);
     }
 
@@ -159,10 +158,9 @@ public class TestVDBPublisher {
     public void testGenerateDeploymentYML() throws Exception {
         TeiidOpenShiftClient generator = testDataSetup();
 
-        final OAuthCredentials authToken = AuthHandlingFilter.threadOAuthCredentials.get();
         PublishConfiguration config = new PublishConfiguration();
         Collection<EnvVar> variables = generator
-                .getEnvironmentVariablesForVDBDataSources(authToken, vdb, config, TeiidOpenShiftClient.getOpenShiftName(vdb.getName()));
+                .getEnvironmentVariablesForVDBDataSources(vdb, config, TeiidOpenShiftClient.getOpenShiftName(vdb.getName()));
         assertThat( variables.size(), is(9));
 
         String javaOptions=

@@ -29,9 +29,6 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,20 +37,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import javax.net.ssl.SSLContext;
 import javax.persistence.PersistenceException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.impl.client.AbstractResponseHandler;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.ssl.SSLContextBuilder;
 import org.jboss.shrinkwrap.api.GenericArchive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
@@ -63,13 +50,13 @@ import org.komodo.KEngine;
 import org.komodo.KException;
 import org.komodo.StringConstants;
 import org.komodo.datasources.*;
+import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.datavirtualization.SourceSchema;
 import org.komodo.metadata.MetadataInstance;
 import org.komodo.metadata.TeiidDataSource;
 import org.komodo.metadata.internal.DefaultMetadataInstance;
 import org.komodo.openshift.BuildStatus.RouteStatus;
 import org.komodo.openshift.BuildStatus.Status;
-import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoConfigurationProperties;
 import org.komodo.rest.V1Constants;
 import org.komodo.utils.StringNameValidator;
@@ -167,6 +154,7 @@ public class TeiidOpenShiftClient implements V1Constants {
                 }
 
                 if (BuildStatus.Status.DELETE_DONE.equals(work.status())) {
+                    removeSyndesisConnection(work.getDataVirtualizationName());
                     return;
                 }
 
@@ -229,6 +217,7 @@ public class TeiidOpenShiftClient implements V1Constants {
                                 // it done now..
                                 info(work.getOpenShiftName(), "Publishing - Deployment completed");
                                 createServices(client, work.namespace(), work.getOpenShiftName());
+                                createSyndesisConnection(client, work.namespace(), work.getOpenShiftName(), work.getDataVirtualizationName());
                                 work.setStatus(Status.RUNNING);
                                 shouldReQueue = false;
                             } else {
@@ -426,51 +415,95 @@ public class TeiidOpenShiftClient implements V1Constants {
         return null;
     }
 
-    private static CloseableHttpClient buildHttpClient()
-            throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException {
-        // no verification of host for now.
-        SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial(null, (certificate, authType) -> true)
-                .build();
-
-        CloseableHttpClient client = HttpClients.custom().setSSLContext(sslContext)
-                .setSSLHostnameVerifier(new NoopHostnameVerifier()).build();
-        return client;
-    }
-
-    private static String bearer(String auth) {
-        return "Bearer " + auth;
-    }
-
-    private static InputStream executeGET(String url, OAuthCredentials oauthCreds) {
+    private void createSyndesisConnection(final OpenShiftClient client, final String namespace,
+            final String virtualizationName, final String givenVdbName) throws KException {
         try {
-            CloseableHttpClient client = buildHttpClient();
-            HttpGet request = new HttpGet(url);
-            if (oauthCreds != null) {
-                request.addHeader("X-Forwarded-Access-Token", oauthCreds.getToken().toString());
-                request.addHeader("X-Forwarded-User", oauthCreds.getUser());
-                request.addHeader("Authorization", bearer(oauthCreds.getToken().toString()));
+            Service service = client.services().inNamespace(namespace).withName(virtualizationName+"-"+ProtocolType.JDBC.id()).get();
+            if (service == null) {
+                info(virtualizationName, "Database connection to Virtual Database " +
+                        virtualizationName + " not created beacuse no service found");
+                return;
             }
+            String schema = givenVdbName;
+            String url = SYNDESISURL+"/connections/";
+            String payload = "{\n" +
+                    "  \"name\": \""+givenVdbName+"\",\n" +
+                    "  \"configuredProperties\": {\n" +
+                    "    \"password\": \"password\",\n" +
+                    "    \"schema\": \""+schema+"\",\n" +
+                    "    \"url\": \"jdbc:teiid:"+givenVdbName+"@mm://"+service.getSpec().getClusterIP()+":31000\",\n" +
+                    "    \"user\": \"user\"\n" +
+                    "  },\n" +
+                    "  \"connectorId\": \"sql\",\n" +
+                    "  \"icon\": \"assets:sql.svg\",\n" +
+                    "  \"description\": \"Connection to "+givenVdbName+" \"\n" +
+                    "}";
 
-            HttpResponse response = client.execute(request);
-            ResponseHandler<InputStream> handler = new AbstractResponseHandler<InputStream>(){
-                @Override
-                public InputStream handleEntity(final HttpEntity entity) throws IOException {
-                    return entity.getContent();
-                }
-            };
-            InputStream result = handler.handleResponse(response);
-            return result;
-        } catch (UnsupportedOperationException | IOException | KeyManagementException | NoSuchAlgorithmException
-                | KeyStoreException e) {
-            throw new RuntimeException(e);
+            info(virtualizationName, payload);
+
+            InputStream response = SyndesisHttpUtil.executePOST(url, payload);
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(response);
+            String id = root.get("id").asText();
+
+            // save the ID to the database
+            this.kengine.getWorkspaceManager().updateDataVirtualization(givenVdbName, id);
+            info(virtualizationName, "Database connection to Virtual Database "
+                    + givenVdbName + " created with Id = " + id);
+        } catch (Exception e) {
+            throw handleError(e);
         }
     }
 
-    public Set<DefaultSyndesisDataSource> getSyndesisSources(OAuthCredentials oauthCreds) throws KException {
+    private String findIntegrationUsedIn(String givenVdbName) throws KException {
+        DataVirtualization dv = this.kengine.getWorkspaceManager().findDataVirtualization(givenVdbName);
+        if (dv != null && dv.getSourceId() != null) {
+            try {
+                String url = SYNDESISURL+"/integrations";
+                InputStream response = SyndesisHttpUtil.executeGET(url);
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode root = mapper.readTree(response);
+                for (JsonNode item: root.get("items")) {
+                    String name = item.get("name").asText();
+                    for (JsonNode flow: item.get("flows")) {
+                        for (JsonNode step: flow.get("steps")) {
+                            JsonNode connection = step.get("connection");
+                            if (connection != null) {
+                                JsonNode id = connection.get("id");
+                                if (id != null) {
+                                    String idStr = id.asText();
+                                    if (idStr.equals(dv.getSourceId())) {
+                                        return name;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch(IOException e) {
+                throw handleError(e);
+            }
+        }
+        return null;
+    }
+
+    private void removeSyndesisConnection(String givenVdbName) throws KException{
+        DataVirtualization dv = this.kengine.getWorkspaceManager().findDataVirtualization(givenVdbName);
+        if (dv != null) {
+            SyndesisHttpUtil.executeDELETE(SYNDESISURL+"/connections/"+dv.getSourceId());
+            info(dv.getName(), "Database connection to Virtual Database " + dv.getName()
+                + " deleted with Id = " + dv.getSourceId());
+
+            // remove the source id from database
+            this.kengine.getWorkspaceManager().updateDataVirtualization(givenVdbName, null);
+        }
+    }
+
+    public Set<DefaultSyndesisDataSource> getSyndesisSources() throws KException {
         Set<DefaultSyndesisDataSource> result = new HashSet<>();
         try {
             String url = SYNDESISURL+"/connections";
-            InputStream response = executeGET(url, oauthCreds);
+            InputStream response = SyndesisHttpUtil.executeGET(url);
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(response);
             for (JsonNode item: root.get("items")) {
@@ -491,13 +524,13 @@ public class TeiidOpenShiftClient implements V1Constants {
         return result;
     }
 
-    public DefaultSyndesisDataSource getSyndesisDataSourceById(OAuthCredentials oauthCreds, String dsId)
+    public DefaultSyndesisDataSource getSyndesisDataSourceById(String dsId)
             throws KException {
         DefaultSyndesisDataSource source = syndesisSources.get(dsId);
         if (source == null) {
             try {
                 String url = SYNDESISURL+"/connections/"+dsId;
-                InputStream response = executeGET(url, oauthCreds);
+                InputStream response = SyndesisHttpUtil.executeGET(url);
                 ObjectMapper mapper = new ObjectMapper();
                 JsonNode root = mapper.readTree(response);
                 String connectorType = root.get("connectorId").asText();
@@ -510,14 +543,14 @@ public class TeiidOpenShiftClient implements V1Constants {
         return source;
     }
 
-    public DefaultSyndesisDataSource getSyndesisDataSource(OAuthCredentials oauthCreds, String dsName)
+    public DefaultSyndesisDataSource getSyndesisDataSource(String dsName)
             throws KException {
         try {
             TeiidDataSource tds = metadata.getDataSource(dsName);
             if (tds == null) {
                 return null;
             }
-            return getSyndesisDataSourceById(oauthCreds, tds.getId());
+            return getSyndesisDataSourceById(tds.getId());
         } catch (Exception e) {
             throw handleError(e);
         }
@@ -986,7 +1019,6 @@ public class TeiidOpenShiftClient implements V1Constants {
                 String namespace = work.namespace();
                 PublishConfiguration publishConfig = work.publishConfiguration();
                 VDBMetaData vdb = publishConfig.getVDB();
-                OAuthCredentials oauthCreds = publishConfig.getOAuthCredentials();
 
                 String openShiftName = work.getOpenShiftName();
                 try (OpenShiftClient client = openshiftClient();){
@@ -995,7 +1027,7 @@ public class TeiidOpenShiftClient implements V1Constants {
                     // create build contents as tar file
                     info(openShiftName, "Publishing - Creating zip archive");
                     GenericArchive archive = ShrinkWrap.create(GenericArchive.class, "contents.tar");
-                    String pomFile = generatePomXml(oauthCreds, vdb, publishConfig.isEnableOData());
+                    String pomFile = generatePomXml(vdb, publishConfig.isEnableOData());
 
                     debug(openShiftName, "Publishing - Generated pom file: " + NEW_LINE + pomFile);
                     archive.add(new StringAsset(pomFile), "pom.xml");
@@ -1044,10 +1076,9 @@ public class TeiidOpenShiftClient implements V1Constants {
                     info(openShiftName, "Publishing - Fetching environment variables for vdb data sources");
 
                     publishConfig.addEnvironmentVariables(
-                            getEnvironmentVariablesForVDBDataSources(oauthCreds, vdb, publishConfig, openShiftName));
+                            getEnvironmentVariablesForVDBDataSources(vdb, publishConfig, openShiftName));
 
-                    publishConfig.addSecretVariables(
-                            getSecretVariablesForVDBDataSources(oauthCreds, vdb, publishConfig));
+                    publishConfig.addSecretVariables(getSecretVariablesForVDBDataSources(vdb, publishConfig));
 
                     work.setBuildName(buildName);
                     work.setStatusMessage("Build Running");
@@ -1155,12 +1186,12 @@ public class TeiidOpenShiftClient implements V1Constants {
         return status;
     }
 
-    Map<String, String> getSecretVariablesForVDBDataSources(OAuthCredentials oauthCreds, VDBMetaData vdb,
-            PublishConfiguration publishConfig) throws KException {
+    Map<String, String> getSecretVariablesForVDBDataSources(VDBMetaData vdb, PublishConfiguration publishConfig)
+            throws KException {
         Map<String, String> properties = new HashMap<>();
         for (Model model : vdb.getModels()) {
             for (String source : model.getSourceNames()) {
-                DefaultSyndesisDataSource ds = getSyndesisDataSource(oauthCreds, source);
+                DefaultSyndesisDataSource ds = getSyndesisDataSource(source);
                 if (ds == null) {
                     throw new KException("Datasource "+source+" not found in Syndesis");
                 }
@@ -1183,12 +1214,12 @@ public class TeiidOpenShiftClient implements V1Constants {
         return properties;
     }
 
-    Collection<EnvVar> getEnvironmentVariablesForVDBDataSources(OAuthCredentials oauthCreds, VDBMetaData vdb,
+    Collection<EnvVar> getEnvironmentVariablesForVDBDataSources(VDBMetaData vdb,
             PublishConfiguration publishConfig, String openShiftName) throws KException {
         List<EnvVar> envs = new ArrayList<>();
         for (Model model : vdb.getModels()) {
             for (String source : model.getSourceNames()) {
-                DefaultSyndesisDataSource ds = getSyndesisDataSource(oauthCreds, source);
+                DefaultSyndesisDataSource ds = getSyndesisDataSource(source);
                 if (ds == null) {
                     throw new KException("Datasource "+source+" not found in Syndesis");
                 }
@@ -1229,7 +1260,7 @@ public class TeiidOpenShiftClient implements V1Constants {
                 .withValueFrom(new EnvVarSourceBuilder().withNewSecretKeyRef(key, secret, false).build()).build();
     }
 
-    public BuildStatus getVirtualizationStatus(String virtualization) {
+    public BuildStatus getVirtualizationStatus(String virtualization) throws KException {
         String openShiftName = getOpenShiftName(virtualization);
         BuildStatus status = getVirtualizationStatusFromQueue(openShiftName);
         if (status != null) {
@@ -1242,6 +1273,7 @@ public class TeiidOpenShiftClient implements V1Constants {
             status = new BuildStatus(openShiftName);
         }
         status.setDataVirtualizationName(virtualization);
+        status.setUsedBy(findIntegrationUsedIn(virtualization));
         return status;
     }
 
@@ -1333,7 +1365,7 @@ public class TeiidOpenShiftClient implements V1Constants {
         return status;
     }
 
-    public BuildStatus deleteVirtualization(String virtualizationName) {
+    public BuildStatus deleteVirtualization(String virtualizationName) throws KException {
         String openShiftName = getOpenShiftName(virtualizationName);
         BuildStatus runningBuild = getVirtualizationStatusFromQueue(openShiftName);
 
@@ -1344,6 +1376,15 @@ public class TeiidOpenShiftClient implements V1Constants {
         }
 
         if (BuildStatus.Status.NOTFOUND.equals(runningBuild.status())) {
+            return runningBuild;
+        }
+
+        String integration = runningBuild.getUsedBy();
+        if (integration != null) {
+            runningBuild.setStatus(Status.CANCELLED);
+            runningBuild.setStatusMessage(
+                    "The virtualization \"" + virtualizationName + "\" is currently used in integration \""
+                    + integration + "\" can not be deleted. The unpublish CANCELED");
             return runningBuild;
         }
 
@@ -1519,12 +1560,11 @@ public class TeiidOpenShiftClient implements V1Constants {
 
     /**
      * This method generates the pom.xml file, that needs to be saved in the root of the project.
-     * @param oauthCreds - token for Openshift authentication
      * @param vdb - VDB for which pom.xml is generated
      * @return pom.xml contents
      * @throws KException
      */
-    protected String generatePomXml(OAuthCredentials oauthCreds, VDBMetaData vdb, boolean enableOdata) throws KException {
+    protected String generatePomXml(VDBMetaData vdb, boolean enableOdata) throws KException {
         try {
             StringBuilder builder = new StringBuilder();
             InputStream is = this.getClass().getClassLoader().getResourceAsStream("s2i/template-pom.xml");
@@ -1537,7 +1577,7 @@ public class TeiidOpenShiftClient implements V1Constants {
             List<Model> models = vdb.getModels();
             for (Model model : models) {
                 for (String source : model.getSourceNames()) {
-                    DefaultSyndesisDataSource ds = getSyndesisDataSource(oauthCreds, source);
+                    DefaultSyndesisDataSource ds = getSyndesisDataSource(source);
                     if (ds == null) {
                         throw new KException("Datasource " + source + " not found");
                     }
