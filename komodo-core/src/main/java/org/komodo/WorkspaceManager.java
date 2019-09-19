@@ -48,6 +48,8 @@ public interface WorkspaceManager {
 
     DataVirtualization findDataVirtualization(String virtualizationName);
 
+    DataVirtualization findDataVirtualizationBySourceId(String sourceId);
+
     public Iterable<? extends DataVirtualization> findDataVirtualizations();
 
     boolean deleteDataVirtualization(String virtualizationName);
@@ -71,5 +73,4 @@ public interface WorkspaceManager {
             Iterable<ViewDefinition> entities);
 
     boolean isNameInUse(String name);
-
 }

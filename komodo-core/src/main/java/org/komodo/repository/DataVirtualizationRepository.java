@@ -37,4 +37,6 @@ public interface DataVirtualizationRepository extends JpaRepository<DataVirtuali
     @Query(value = "SELECT count(*) FROM data_virtualization where upper_name = :name", nativeQuery = true)
     public long countByUpperName(@Param("name") String name);
 
+    @Query(value = "from DataVirtualization where source_id = :sourceId")
+    public DataVirtualization findBySourceId(@Param("sourceId") String sourceId);
 }

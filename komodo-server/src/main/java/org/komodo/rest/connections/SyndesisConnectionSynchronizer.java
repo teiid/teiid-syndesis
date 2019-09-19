@@ -21,10 +21,10 @@ import java.util.Collection;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.komodo.KEngine;
 import org.komodo.KException;
 import org.komodo.datasources.DefaultSyndesisDataSource;
 import org.komodo.openshift.TeiidOpenShiftClient;
-import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.connections.SyndesisConnectionMonitor.EventMsg;
 import org.komodo.rest.service.KomodoMetadataService;
 import org.komodo.rest.service.KomodoMetadataService.SourceDeploymentMode;
@@ -40,13 +40,14 @@ public class SyndesisConnectionSynchronizer {
     private static final Log LOGGER = LogFactory.getLog(SyndesisConnectionSynchronizer.class);
 
     private TeiidOpenShiftClient openshiftClient;
-
-    OAuthCredentials bogusCredentials = new OAuthCredentials("supersecret", "developer");
     private KomodoMetadataService metadataService;
+    private KEngine kengine;
 
-    public SyndesisConnectionSynchronizer(@Autowired TeiidOpenShiftClient toc, @Autowired KomodoMetadataService metadataService) {
+    public SyndesisConnectionSynchronizer(@Autowired TeiidOpenShiftClient toc,
+            @Autowired KomodoMetadataService metadataService, @Autowired KEngine kengine) {
         this.openshiftClient = toc;
         this.metadataService = metadataService;
+        this.kengine = kengine;
     }
 
     /*
@@ -76,16 +77,14 @@ public class SyndesisConnectionSynchronizer {
      */
     public void synchronizeConnections() throws KException {
         // Get syndesis sources
-        Collection<DefaultSyndesisDataSource> dataSources = openshiftClient
-                .getSyndesisSources(bogusCredentials);
+        Collection<DefaultSyndesisDataSource> dataSources = openshiftClient.getSyndesisSources();
         for (DefaultSyndesisDataSource sds : dataSources) {
             addConnection(sds, false);
         }
     }
 
     private void handleAddConnection(EventMsg event, boolean update) throws KException {
-        DefaultSyndesisDataSource sds = this.openshiftClient.getSyndesisDataSourceById(bogusCredentials,
-                event.getId());
+        DefaultSyndesisDataSource sds = this.openshiftClient.getSyndesisDataSourceById(event.getId());
         if (sds != null) {
             addConnection(sds, update);
         }
@@ -94,14 +93,23 @@ public class SyndesisConnectionSynchronizer {
     private void handleDeleteConnection(EventMsg event) throws KException {
         // note here that the datasource is already deleted from the syndesis
         // so we would need to search by local cached event id
-        DefaultSyndesisDataSource sds = this.openshiftClient.getSyndesisDataSourceById(bogusCredentials,
-                event.getId());
+        DefaultSyndesisDataSource sds = this.openshiftClient.getSyndesisDataSourceById(event.getId());
         if (sds != null) {
             deleteConnection(sds);
         }
     }
 
     public void addConnection(DefaultSyndesisDataSource sds, boolean update) {
+        try {
+            // this is avoid circular creation of the virtualization connection that is
+            // published through syndesis
+            if (kengine.getWorkspaceManager().findDataVirtualizationBySourceId(sds.getSyndesisConnectionId()) != null) {
+                return;
+            }
+        } catch(KException e) {
+            LOGGER.warn("Error while adding a connection " + sds.getSyndesisName(), e);
+        }
+
         if (update) {
             try {
                 this.openshiftClient.deleteDataSource(sds);
@@ -117,7 +125,7 @@ public class SyndesisConnectionSynchronizer {
         }
 
         try {
-            this.metadataService.deploySourceVdb(sds.getKomodoName(), update?SourceDeploymentMode.REFRESH:SourceDeploymentMode.MAKE_LIVE);
+            this.metadataService.deploySourceVdb(sds.getTeiidName(), update?SourceDeploymentMode.REFRESH:SourceDeploymentMode.MAKE_LIVE);
             LOGGER.info("submitted request to fetch metadata of connection " + sds.getSyndesisName());
         } catch (Exception e) {
             LOGGER.warn("Failed to fetch metadata for connection " + sds.getSyndesisName(), e);
@@ -127,10 +135,10 @@ public class SyndesisConnectionSynchronizer {
     public void deleteConnection(DefaultSyndesisDataSource dsd) throws KException {
         try {
             if (this.metadataService.deleteSchema(dsd)) {
-                LOGGER.info("Workspace schema " + dsd.getKomodoName() + " deleted.");
+                LOGGER.info("Workspace schema " + dsd.getTeiidName() + " deleted.");
             } // else already deleted
         } catch (Exception e) {
-            LOGGER.info("Failed to delete schema " + dsd.getKomodoName(), e);
+            LOGGER.info("Failed to delete schema " + dsd.getTeiidName(), e);
         }
 
         this.openshiftClient.deleteDataSource(dsd);

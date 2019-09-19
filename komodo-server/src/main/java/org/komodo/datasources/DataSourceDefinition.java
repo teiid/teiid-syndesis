@@ -91,7 +91,7 @@ public abstract class DataSourceDefinition {
         importProperties.put("importer.UseCatalogName", "false");
         importProperties.put("importer.UseFullSchemaName", "false");
 
-        TeiidDataSourceImpl teiidDS = new TeiidDataSourceImpl(scd.getId(), deploymentName, getTranslatorName(), ds);
+        TeiidDataSourceImpl teiidDS = new TeiidDataSourceImpl(scd.getSyndesisConnectionId(), deploymentName, getTranslatorName(), ds);
         teiidDS.setImportProperties(importProperties);
         teiidDS.setTranslatorProperties(translatorProperties);
         return teiidDS;
@@ -120,6 +120,6 @@ public abstract class DataSourceDefinition {
     }
 
     protected void ds(Map<String, String> props, DefaultSyndesisDataSource scd, String key, String value) {
-        props.put("spring.datasource." + scd.getKomodoName() + "." + key, value);
+        props.put("spring.datasource." + scd.getTeiidName() + "." + key, value);
     }
 }

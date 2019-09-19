@@ -75,5 +75,12 @@ public class DataVirtualizationTest {
         assertEquals(2, workspaceManagerImpl.findDataVirtualizationNames().size());
     }
 
+    @Test
+    public void testGetBySourceId() {
+        DataVirtualization dv = workspaceManagerImpl.createDataVirtualization("foo");
+        dv.setSourceId("bar");
+        entityManager.flush();
 
+        assertEquals("foo", workspaceManagerImpl.findDataVirtualizationBySourceId("bar").getName());
+    }
 }
