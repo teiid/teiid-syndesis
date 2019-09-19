@@ -222,7 +222,7 @@ public final class ServiceVdbGenerator implements StringConstants {
     /*
      * Generates DDL for a view definition based on properties and supplied array of TableInfo from one or more sources
      */
-    private String getODataViewDdl(ViewDefinition viewDef, TableInfo[] sourceTableInfos) throws KException {
+    private String getODataViewDdl(ViewDefinition viewDef, TableInfo[] sourceTableInfos) {
 
         // Need to construct DDL based on
         //   * 1 or 2 source tables
@@ -230,14 +230,11 @@ public final class ServiceVdbGenerator implements StringConstants {
 
         String viewName = viewDef.getName();
 
-        if (sourceTableInfos.length < 1) throw new KException("Error getting the ViewDefinition sources"); //$NON-NLS-1$
-
         StringBuilder sb = new StringBuilder();
 
         // Generate the View DDL
-        sb.append("CREATE VIEW "); //$NON-NLS-1$
-        sb.append(SQLStringVisitor.escapeSinglePart(viewName));
-        sb.append(StringConstants.SPACE+StringConstants.OPEN_BRACKET);
+        startView(viewName, sb);
+        sb.append(StringConstants.OPEN_BRACKET);
 
         // Check for join and single or 2 source join
         // Disable join for Syndesis 7.4 DDL generation.
@@ -385,6 +382,12 @@ public final class ServiceVdbGenerator implements StringConstants {
         return sb.toString();
     }
 
+    private void startView(String viewName, StringBuilder sb) {
+        sb.append("CREATE VIEW "); //$NON-NLS-1$
+        sb.append(SQLStringVisitor.escapeSinglePart(viewName));
+        sb.append(StringConstants.SPACE);
+    }
+
     /**
      * Public method to generate the view DDL for a view definition
      *
@@ -395,8 +398,19 @@ public final class ServiceVdbGenerator implements StringConstants {
      *         if problem occurs
      */
     public String getODataViewDdl(ViewDefinition viewDef) throws KException {
+        if ( !viewDef.isComplete() ) {
+            return null;
+        }
         TableInfo[] tableInfos = getSourceTableInfos(viewDef);
-        if (tableInfos.length < 1) throw new KException("Error getting the ViewDefinition sources"); //$NON-NLS-1$
+        if (tableInfos == null) throw new KException("Error getting the ViewDefinition sources"); //$NON-NLS-1$
+
+        if (tableInfos.length == 0) {
+            StringBuilder sb = new StringBuilder();
+            startView(viewDef.getName(), sb);
+            sb.append(getTableAnnotation(viewDef.getDescription()));
+            sb.append("AS \nSELECT 1 as col;"); //$NON-NLS-1$
+            return sb.toString();
+        }
 
         return getODataViewDdl(viewDef, tableInfos);
     }
@@ -422,16 +436,12 @@ public final class ServiceVdbGenerator implements StringConstants {
      */
     private TableInfo[] getSourceTableInfos(ViewDefinition viewDefinition) throws KException {
         if ( !viewDefinition.isComplete() ) {
-            return new TableInfo[0];
+            return null;
         }
         List<String> sourceTablePaths = viewDefinition.getSourcePaths();
         ArrayList<TableInfo> sourceTableInfos = new ArrayList<TableInfo>(sourceTablePaths.size());
 
         // Find and create TableInfo for each source Path
-        int iTable = 0;
-
-
-
         for(String path : sourceTablePaths) {
             List<Pair<String, String>> options = PathUtils.getOptions(path);
 
@@ -445,17 +455,17 @@ public final class ServiceVdbGenerator implements StringConstants {
             final Schema schemaModel = finder.findSchema(connectionName);
 
             // Get the tables from the schema and match them with the table name
-            if ( schemaModel != null ) {
-                String tableName = options.get(1).getSecond();
-
-                Table table = schemaModel.getTable(tableName);
-                if (table != null) {
-                    String alias = (iTable == 0) ? "A" : "B"; //$NON-NLS-1$ //$NON-NLS-2$
-                    // create a new TableInfo object
-                    sourceTableInfos.add(new TableInfo(path, table, sourceTablePaths.size()>1?alias:null));
-                    iTable++;
-                }
+            if ( schemaModel == null ) {
+                return null;
             }
+            String tableName = options.get(1).getSecond();
+
+            Table table = schemaModel.getTable(tableName);
+            if (table == null) {
+                return null;
+            }
+            // create a new TableInfo object
+            sourceTableInfos.add(new TableInfo(path, table, sourceTablePaths.size()>1?("t" + (sourceTableInfos.size()+1)):null));
         }
 
         return sourceTableInfos.toArray(new TableInfo[0]);
