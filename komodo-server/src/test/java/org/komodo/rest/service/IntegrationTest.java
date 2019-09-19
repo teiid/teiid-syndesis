@@ -259,7 +259,7 @@ public class IntegrationTest {
 
         //source is still invalid - no tables, but we should still have gotten a local name assigned
         String komodoName = "superintegrationsource";
-        assertEquals(komodoName, dsd.getKomodoName());
+        assertEquals(komodoName, dsd.getTeiidName());
 
         //preview vdb should still be up regardless
         query("select 1", dvName, true);

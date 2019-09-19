@@ -162,7 +162,7 @@ public class KomodoDataserviceServiceTest {
         DefaultSyndesisDataSource sds = new DefaultSyndesisDataSource();
         sds.setDefinition(new H2SQLDefinition());
         sds.setId("someid");
-        sds.setKomodoName(name);
+        sds.setTeiidName(name);
         sds.setTranslatorName("h2");
         sds.setSyndesisName(name);
         Map<String, String> properties = new HashMap<>();

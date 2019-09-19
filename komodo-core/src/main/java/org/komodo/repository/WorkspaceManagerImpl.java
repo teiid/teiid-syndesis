@@ -86,6 +86,11 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
     }
 
     @Override
+    public DataVirtualization findDataVirtualizationBySourceId(String sourceId) {
+        return this.dataVirtualizationRepository.findBySourceId(sourceId);
+    }
+
+    @Override
     public Iterable<? extends DataVirtualization> findDataVirtualizations() {
         return this.dataVirtualizationRepository.findAll();
     }
