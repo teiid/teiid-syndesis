@@ -68,7 +68,7 @@ public class MongoDBDefinition extends DataSourceDefinition {
 
         Map<String, String> importProperties = new HashMap<String, String>();
         Map<String, String> translatorProperties = new HashMap<String, String>();
-        TeiidDataSourceImpl teiidDS = new TeiidDataSourceImpl(scd.getId(), deploymentName, getTranslatorName(), mcf);
+        TeiidDataSourceImpl teiidDS = new TeiidDataSourceImpl(scd.getSyndesisConnectionId(), deploymentName, getTranslatorName(), mcf);
         teiidDS.setImportProperties(importProperties);
         teiidDS.setTranslatorProperties(translatorProperties);
         return teiidDS;
@@ -87,6 +87,6 @@ public class MongoDBDefinition extends DataSourceDefinition {
 
     @Override
     protected void ds(Map<String, String> props, DefaultSyndesisDataSource scd, String key, String value) {
-        props.put("spring.teiid.data.mongodb." + scd.getKomodoName() + "." + key, value);
+        props.put("spring.teiid.data.mongodb." + scd.getTeiidName() + "." + key, value);
     }
 }

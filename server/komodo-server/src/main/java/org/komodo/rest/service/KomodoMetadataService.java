@@ -293,13 +293,13 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         boolean result = kengine.runInTransaction(false, () -> {
             final WorkspaceManager mgr = kengine.getWorkspaceManager();
 
-            return mgr.deleteSchemaBySourceId(dsd.getId());
+            return mgr.deleteSchemaBySourceId(dsd.getSyndesisConnectionId());
         });
 
         if (result) {
             connectionExecutor.execute(()->{
                 try {
-                    removeVdb(getWorkspaceSourceVdbName(dsd.getKomodoName()));
+                    removeVdb(getWorkspaceSourceVdbName(dsd.getTeiidName()));
                     refreshPreviewVdb();
                 } catch (KException e) {
                     LOGGER.warn("Error removing the source vdb", e); //$NON-NLS-1$

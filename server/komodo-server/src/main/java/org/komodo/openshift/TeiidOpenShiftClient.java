@@ -416,57 +416,75 @@ public class TeiidOpenShiftClient implements V1Constants {
     }
 
     private void createSyndesisConnection(final OpenShiftClient client, final String namespace,
-            final String virtualizationName, final String givenVdbName) throws KException {
+            final String openshiftName, final String virtualizationName) throws KException {
         try {
-            Service service = client.services().inNamespace(namespace).withName(virtualizationName+"-"+ProtocolType.JDBC.id()).get();
+            Service service = client.services().inNamespace(namespace).withName(openshiftName+"-"+ProtocolType.JDBC.id()).get();
             if (service == null) {
-                info(virtualizationName, "Database connection to Virtual Database " +
-                        virtualizationName + " not created beacuse no service found");
+                info(openshiftName, "Database connection to Virtual Database " +
+                        openshiftName + " not created beacuse no service found");
                 return;
             }
-            String schema = givenVdbName;
+            String schema = virtualizationName;
             String url = SYNDESISURL+"/connections/";
             String payload = "{\n" +
-                    "  \"name\": \""+givenVdbName+"\",\n" +
+                    "  \"name\": \""+virtualizationName+"\",\n" +
                     "  \"configuredProperties\": {\n" +
                     "    \"password\": \"password\",\n" +
                     "    \"schema\": \""+schema+"\",\n" +
-                    "    \"url\": \"jdbc:teiid:"+givenVdbName+"@mm://"+service.getSpec().getClusterIP()+":31000\",\n" +
+                    "    \"url\": \"jdbc:teiid:"+virtualizationName+"@mm://"+service.getSpec().getClusterIP()+":31000\",\n" +
                     "    \"user\": \"user\"\n" +
                     "  },\n" +
                     "  \"connectorId\": \"sql\",\n" +
                     "  \"icon\": \"assets:sql.svg\",\n" +
-                    "  \"description\": \"Connection to "+givenVdbName+" \"\n" +
+                    "  \"description\": \"Connection to "+virtualizationName+" \"\n" +
                     "}";
 
-            info(virtualizationName, payload);
+            info(openshiftName, payload);
 
             InputStream response = SyndesisHttpUtil.executePOST(url, payload);
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(response);
             String id = root.get("id").asText();
 
-            // save the ID to the database
-            this.kengine.getWorkspaceManager().updateDataVirtualization(givenVdbName, id);
-            info(virtualizationName, "Database connection to Virtual Database "
-                    + givenVdbName + " created with Id = " + id);
+            this.kengine.runInTransaction(false, () -> {
+                // save the ID to the database
+                DataVirtualization dv = this.kengine.getWorkspaceManager().findDataVirtualization(virtualizationName);
+                if (dv != null) {
+                    dv.setSourceId(id);
+                }
+                return null;
+            });
+            info(openshiftName, "Database connection to Virtual Database "
+                    + virtualizationName + " created with Id = " + id);
         } catch (Exception e) {
             throw handleError(e);
         }
     }
 
-    private String findIntegrationUsedIn(String givenVdbName) throws KException {
-        DataVirtualization dv = this.kengine.getWorkspaceManager().findDataVirtualization(givenVdbName);
+    private String findIntegrationUsedIn(String virtualizationName) throws KException {
+        DataVirtualization dv = this.kengine.getWorkspaceManager().findDataVirtualization(virtualizationName);
         if (dv != null && dv.getSourceId() != null) {
             try {
                 String url = SYNDESISURL+"/integrations";
                 InputStream response = SyndesisHttpUtil.executeGET(url);
                 ObjectMapper mapper = new ObjectMapper();
                 JsonNode root = mapper.readTree(response);
-                for (JsonNode item: root.get("items")) {
+                JsonNode items = root.get("items");
+                if (items == null) {
+                    return null;
+                }
+                for (JsonNode item: items) {
                     String name = item.get("name").asText();
-                    for (JsonNode flow: item.get("flows")) {
-                        for (JsonNode step: flow.get("steps")) {
+                    JsonNode flows = item.get("flows");
+                    if (flows == null) {
+                        continue;
+                    }
+                    for (JsonNode flow: flows) {
+                        JsonNode steps = flow.get("steps");
+                        if (steps == null) {
+                            continue;
+                        }
+                        for (JsonNode step: steps) {
                             JsonNode connection = step.get("connection");
                             if (connection != null) {
                                 JsonNode id = connection.get("id");
@@ -487,15 +505,21 @@ public class TeiidOpenShiftClient implements V1Constants {
         return null;
     }
 
-    private void removeSyndesisConnection(String givenVdbName) throws KException{
-        DataVirtualization dv = this.kengine.getWorkspaceManager().findDataVirtualization(givenVdbName);
-        if (dv != null) {
-            SyndesisHttpUtil.executeDELETE(SYNDESISURL+"/connections/"+dv.getSourceId());
-            info(dv.getName(), "Database connection to Virtual Database " + dv.getName()
-                + " deleted with Id = " + dv.getSourceId());
-
-            // remove the source id from database
-            this.kengine.getWorkspaceManager().updateDataVirtualization(givenVdbName, null);
+    private void removeSyndesisConnection(String virtualizationName) throws KException {
+        try {
+            this.kengine.runInTransaction(false, () -> {
+                DataVirtualization dv = this.kengine.getWorkspaceManager().findDataVirtualization(virtualizationName);
+                if (dv != null) {
+                    SyndesisHttpUtil.executeDELETE(SYNDESISURL + "/connections/" + dv.getSourceId());
+                    // remove the source id from database
+                    dv.setSourceId(null);
+                    info(dv.getName(), "Database connection to Virtual Database " + dv.getName()
+                        + " deleted with Id = "+ dv.getSourceId());
+                }
+                return null;
+            });
+        } catch (Exception e) {
+            handleError(e);
         }
     }
 
@@ -578,11 +602,11 @@ public class TeiidOpenShiftClient implements V1Constants {
         dsd.setId(connectorIDNode.asText());
         dsd.setSyndesisName(syndesisName);
         String dsName = findDataSourceNameByEventId(connectorIDNode.asText());
-        dsd.setKomodoName(dsName);
+        dsd.setTeiidName(dsName);
         dsd.setTranslatorName(def.getTranslatorName());
         dsd.setProperties(encryptionComponent.decrypt(p));
         dsd.setDefinition(def);
-        syndesisSources.putIfAbsent(dsd.getId(), dsd);
+        syndesisSources.putIfAbsent(dsd.getSyndesisConnectionId(), dsd);
         return dsd;
     }
 
@@ -590,18 +614,18 @@ public class TeiidOpenShiftClient implements V1Constants {
         String syndesisName = scd.getSyndesisName();
         debug(syndesisName, "Creating the Datasource of Type " + scd.getType());
 
-        if (scd.getKomodoName() == null) {
+        if (scd.getTeiidName() == null) {
             for (int i = 0; i < 3; i++) {
                 try {
                     String name = getUniqueKomodoName(scd, syndesisName);
-                    scd.setKomodoName(name);
+                    scd.setTeiidName(name);
                     break;
                 } catch (PersistenceException | DataIntegrityViolationException e) {
                     //multiple pods are trying to assign a name simultaneously
                     //if we try again, then we'll just pickup whatever someone else set
                 }
             }
-            if (scd.getKomodoName() == null) {
+            if (scd.getTeiidName() == null) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT);
             }
         }
@@ -619,7 +643,7 @@ public class TeiidOpenShiftClient implements V1Constants {
      */
     public String getUniqueKomodoName(DefaultSyndesisDataSource scd, String syndesisName) throws Exception {
         return kengine.runInTransaction(false, () -> {
-            SourceSchema ss = kengine.getWorkspaceManager().findSchemaBySourceId(scd.getId());
+            SourceSchema ss = kengine.getWorkspaceManager().findSchemaBySourceId(scd.getSyndesisConnectionId());
             if (ss != null) {
                 return ss.getName();
             }
@@ -655,17 +679,17 @@ public class TeiidOpenShiftClient implements V1Constants {
             }
 
             //update the db with the name we'll use
-            kengine.getWorkspaceManager().createSchema(scd.getId(), toUse, null);
+            kengine.getWorkspaceManager().createSchema(scd.getSyndesisConnectionId(), toUse, null);
             return toUse;
         });
     }
 
     public void deleteDataSource(DefaultSyndesisDataSource dsd) throws KException {
-        String komodoName = dsd.getKomodoName();
+        String komodoName = dsd.getTeiidName();
         if (komodoName != null) {
             this.metadata.deleteDataSource(komodoName);
         }
-        this.syndesisSources.remove(dsd.getId());
+        this.syndesisSources.remove(dsd.getSyndesisConnectionId());
     }
 
     public String findDataSourceNameByEventId(String eventId) throws KException  {

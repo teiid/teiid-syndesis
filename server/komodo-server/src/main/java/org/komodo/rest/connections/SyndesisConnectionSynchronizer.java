@@ -102,10 +102,12 @@ public class SyndesisConnectionSynchronizer {
 
     public void addConnection(DefaultSyndesisDataSource sds, boolean update) {
         try {
-            // this is avoid circular creation of the virtualization connection that is published through syndesis
-            DataVirtualization dv = kengine.getWorkspaceManager().findDataVirtualization(sds.getSyndesisName());
-            if (dv != null && dv.getId().equals(sds.getId())) {
-                return;
+            // this is avoid circular creation of the virtualization connection that is
+            // published through syndesis
+            for (DataVirtualization dv : kengine.getWorkspaceManager().findDataVirtualizations()) {
+                if (dv.getSourceId() != null && dv.getSourceId().equals(sds.getSyndesisConnectionId())) {
+                    return;
+                }
             }
         } catch(KException e) {
             LOGGER.warn("Error while adding a connection " + sds.getSyndesisName(), e);
@@ -126,7 +128,7 @@ public class SyndesisConnectionSynchronizer {
         }
 
         try {
-            this.metadataService.deploySourceVdb(sds.getKomodoName(), update?SourceDeploymentMode.REFRESH:SourceDeploymentMode.MAKE_LIVE);
+            this.metadataService.deploySourceVdb(sds.getTeiidName(), update?SourceDeploymentMode.REFRESH:SourceDeploymentMode.MAKE_LIVE);
             LOGGER.info("submitted request to fetch metadata of connection " + sds.getSyndesisName());
         } catch (Exception e) {
             LOGGER.warn("Failed to fetch metadata for connection " + sds.getSyndesisName(), e);
@@ -136,10 +138,10 @@ public class SyndesisConnectionSynchronizer {
     public void deleteConnection(DefaultSyndesisDataSource dsd) throws KException {
         try {
             if (this.metadataService.deleteSchema(dsd)) {
-                LOGGER.info("Workspace schema " + dsd.getKomodoName() + " deleted.");
+                LOGGER.info("Workspace schema " + dsd.getTeiidName() + " deleted.");
             } // else already deleted
         } catch (Exception e) {
-            LOGGER.info("Failed to delete schema " + dsd.getKomodoName(), e);
+            LOGGER.info("Failed to delete schema " + dsd.getTeiidName(), e);
         }
 
         this.openshiftClient.deleteDataSource(dsd);

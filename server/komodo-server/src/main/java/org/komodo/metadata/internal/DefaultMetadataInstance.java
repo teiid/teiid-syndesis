@@ -487,7 +487,7 @@ public class DefaultMetadataInstance implements MetadataInstance {
 
     @Override
     public void registerDataSource(DefaultSyndesisDataSource teiidDS) throws AdminException {
-        this.server.getDatasources().computeIfAbsent(teiidDS.getKomodoName(),
+        this.server.getDatasources().computeIfAbsent(teiidDS.getTeiidName(),
                 (s) -> {
                     return teiidDS.createDataSource();
                 });

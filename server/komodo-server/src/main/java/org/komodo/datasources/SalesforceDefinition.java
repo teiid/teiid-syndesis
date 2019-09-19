@@ -67,7 +67,7 @@ public class SalesforceDefinition extends DataSourceDefinition {
         Map<String, String> translatorProperties = new HashMap<String, String>();
         importProperties.put("includeExtensionMetadata", "true");
 
-        TeiidDataSourceImpl teiidDS = new TeiidDataSourceImpl(scd.getId(), deploymentName, getTranslatorName(), scf);
+        TeiidDataSourceImpl teiidDS = new TeiidDataSourceImpl(scd.getSyndesisConnectionId(), deploymentName, getTranslatorName(), scf);
         teiidDS.setImportProperties(importProperties);
         teiidDS.setTranslatorProperties(translatorProperties);
         return teiidDS;
@@ -89,6 +89,6 @@ public class SalesforceDefinition extends DataSourceDefinition {
 
     @Override
     protected void ds(Map<String, String> props, DefaultSyndesisDataSource scd, String key, String value) {
-        props.put("spring.teiid.data.salesforce." + scd.getKomodoName() + "." + key, value);
+        props.put("spring.teiid.data.salesforce." + scd.getTeiidName() + "." + key, value);
     }
 }

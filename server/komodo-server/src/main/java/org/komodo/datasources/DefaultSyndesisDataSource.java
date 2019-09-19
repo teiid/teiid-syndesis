@@ -22,15 +22,15 @@ import java.util.Map;
 import org.komodo.metadata.internal.TeiidDataSourceImpl;
 
 public class DefaultSyndesisDataSource {
-    private String id;
+    private String syndesisConnectionId;
     private String syndesisName;
-    private volatile String komodoName;
+    private volatile String teiidName;
     private String translator;
     private Map<String, String> properties;
     private DataSourceDefinition definition;
 
-    public String getId() {
-        return id;
+    public String getSyndesisConnectionId() {
+        return syndesisConnectionId;
     }
 
     public String getSyndesisName() {
@@ -42,7 +42,7 @@ public class DefaultSyndesisDataSource {
     }
 
     public void setId(String id) {
-        this.id = id;
+        this.syndesisConnectionId = id;
     }
 
     public void setSyndesisName(String syndesisName) {
@@ -78,19 +78,19 @@ public class DefaultSyndesisDataSource {
     }
 
     public TeiidDataSourceImpl createDataSource() {
-        return this.definition.createDatasource(this.komodoName, this);
+        return this.definition.createDatasource(this.teiidName, this);
     }
 
     /**
-     * If bound returns the unique Komodo datasource name, which is also a valid
+     * If bound returns the unique Teiid datasource name, which is also a valid
      * schema name.  It will already be cleansed of problematic characters.
      * @return
      */
-    public String getKomodoName() {
-        return komodoName;
+    public String getTeiidName() {
+        return teiidName;
     }
 
-    public void setKomodoName(String komodoName) {
-        this.komodoName = komodoName;
+    public void setTeiidName(String komodoName) {
+        this.teiidName = komodoName;
     }
 }

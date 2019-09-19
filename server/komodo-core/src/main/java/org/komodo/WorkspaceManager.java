@@ -48,8 +48,6 @@ public interface WorkspaceManager {
 
     DataVirtualization findDataVirtualization(String virtualizationName);
 
-    boolean updateDataVirtualization(String virtualizationName, String sourceId);
-
     public Iterable<? extends DataVirtualization> findDataVirtualizations();
 
     boolean deleteDataVirtualization(String virtualizationName);
