@@ -24,7 +24,6 @@ import org.apache.commons.logging.LogFactory;
 import org.komodo.KEngine;
 import org.komodo.KException;
 import org.komodo.datasources.DefaultSyndesisDataSource;
-import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.rest.connections.SyndesisConnectionMonitor.EventMsg;
 import org.komodo.rest.service.KomodoMetadataService;
@@ -104,10 +103,8 @@ public class SyndesisConnectionSynchronizer {
         try {
             // this is avoid circular creation of the virtualization connection that is
             // published through syndesis
-            for (DataVirtualization dv : kengine.getWorkspaceManager().findDataVirtualizations()) {
-                if (dv.getSourceId() != null && dv.getSourceId().equals(sds.getSyndesisConnectionId())) {
-                    return;
-                }
+            if (kengine.getWorkspaceManager().findDataVirtualizationBySourceId(sds.getSyndesisConnectionId()) != null) {
+                return;
             }
         } catch(KException e) {
             LOGGER.warn("Error while adding a connection " + sds.getSyndesisName(), e);
