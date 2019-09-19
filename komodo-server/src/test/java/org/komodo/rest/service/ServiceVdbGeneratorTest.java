@@ -403,8 +403,8 @@ public class ServiceVdbGeneratorTest {
         VDBMetaData serviceVdb = vdbGenerator.createServiceVdb("servicevdb", mock, Arrays.asList(state));
 
         assertEquals("<?xml version=\"1.0\" ?><vdb name=\"servicevdb\" version=\"1\"><connection-type>BY_VERSION</connection-type><model name=\"servicevdb\" type=\"VIRTUAL\" visible=\"true\"><metadata type=\"DDL\"><![CDATA[CREATE VIEW orderInfoView (ID, orderDate, name) OPTIONS (ANNOTATION 'test view description text') AS \n" +
-                "SELECT A.ID, A.orderDate, B.name\n" +
-                "FROM pgconnection1schemamodel.orders AS A;\n" +
+                "SELECT t1.ID, t1.orderDate, t2.name\n" +
+                "FROM pgconnection1schemamodel.orders AS t1;\n" +
                 "]]></metadata></model><model name=\"pgconnection1schemamodel\" type=\"PHYSICAL\" visible=\"false\"><metadata type=\"DDL\"><![CDATA[SET NAMESPACE 'http://www.teiid.org/ext/relational/2012' AS teiid_rel;\n" +
                 "\n" +
                 "CREATE FOREIGN TABLE orders (\n" +
@@ -425,8 +425,8 @@ public class ServiceVdbGeneratorTest {
         ModelMetaData viewModel = serviceVdb.getModel("servicevdb");
         assertNotNull(viewModel);
         assertEquals("CREATE VIEW orderInfoView (ID, orderDate, name) OPTIONS (ANNOTATION 'test view description text') AS \n" +
-                "SELECT A.ID, A.orderDate, B.name\n" +
-                "FROM pgconnection1schemamodel.orders AS A;\n", viewModel.getSourceMetadataText().get(0));
+                "SELECT t1.ID, t1.orderDate, t2.name\n" +
+                "FROM pgconnection1schemamodel.orders AS t1;\n", viewModel.getSourceMetadataText().get(0));
 
     }
 
@@ -455,8 +455,8 @@ public class ServiceVdbGeneratorTest {
         ModelMetaData viewModel = serviceVdb.getModel("servicevdb");
         assertNotNull(viewModel);
         assertEquals("CREATE VIEW orderInfoView (ID, orderDate, customerName) OPTIONS (ANNOTATION 'test view description text') AS \n" +
-                "SELECT A.ID, A.orderDate, B.customerName\n" +
-                "FROM pgconnection1schemamodel.orders AS A;\n", viewModel.getSourceMetadataText().get(0));
+                "SELECT t1.ID, t1.orderDate, t2.customerName\n" +
+                "FROM pgconnection1schemamodel.orders AS t1;\n", viewModel.getSourceMetadataText().get(0));
 
     }
 
@@ -468,6 +468,18 @@ public class ServiceVdbGeneratorTest {
 
         assertEquals("<?xml version=\"1.0\" ?><vdb name=\"preview\" version=\"1\"><connection-type>BY_VERSION</connection-type><property name=\"preview\" value=\"true\"></property><import-vdb name=\"Preview\" version=\"1\" import-data-policies=\"true\"></import-vdb><model name=\"dv\" type=\"VIRTUAL\" visible=\"true\"><metadata type=\"DDL\"><![CDATA[]]></metadata></model></vdb>", new String(DefaultMetadataInstance.toBytes(serviceVdb).toByteArray(), "UTF-8"));
     }
+
+    @Test
+    public void shouldGenerateEmptyView() throws Exception {
+        ViewDefinition view = new ViewDefinition("x", "y");
+        view.setComplete(true);
+
+        ServiceVdbGenerator vdbGenerator = new ServiceVdbGenerator(schemaFinder());
+
+        assertEquals("CREATE VIEW y AS \n" +
+                "SELECT 1 as col;", vdbGenerator.getODataViewDdl(view));
+    }
+
 
     protected ServiceVdbGenerator.SchemaFinder schemaFinder() {
         return new SchemaFinder() {
