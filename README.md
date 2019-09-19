@@ -50,7 +50,7 @@ When working in the development mode, the server image will automatically will b
 oc edit syndesis app 
 # then add below flag under "spec" section
 spec:
-  devTools: true
+  devSupport: true
 ```
 save and exit. Now on your development machine when you do 
 
