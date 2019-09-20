@@ -142,7 +142,7 @@ public class BuildStatus {
     private volatile String statusMessage;
     @JsonProperty(ROUTES_LABEL)
     private List<RouteStatus> routes = null;
-    private String usedBy;
+    private List<String> usedBy;
 
     private String openShiftName;
     private String dataVirtualizationName;
@@ -248,11 +248,11 @@ public class BuildStatus {
         this.dataVirtualizationName = dataVirtualizationName;
     }
 
-    public String getUsedBy() {
+    public List<String> getUsedBy() {
         return usedBy;
     }
 
-    public void setUsedBy(String usedBy) {
+    public void setUsedBy(List<String> usedBy) {
         this.usedBy = usedBy;
     }
 }
