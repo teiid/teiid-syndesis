@@ -9,9 +9,10 @@ Teiid tooling is now part of the [Syndesis](https://syndesis.io) project. This w
 - Install [maven 3.2+](http://maven.apache.org/download.html)
 - Install [Go Lang](https://developer.fedoraproject.org/tech/languages/go/go-installation.html) These instructions are for Linux, find similar for your platform.
 - Install [minishift 3.9+](https://www.okd.io/minishift/); which is available for all the major operating systems (Linux, OS X and Windows). The following examples assume that you have Minishift installed and can be called with minishift from the command line. So, minishift is supposed to be available in your search path, i.e. located in a directory contained in your $PATH environment variable (Linux, macOS) or in a directory from your system path (Windows)
-- Clone the Syndesis libraries. (Note this is Ramesh's branch, until code is merged into Syndesis repo, we would need to use this. Once the code is merged we can use Syndesis repo directly
+- Clone the Syndesis libraries.
+
 ```
-git clone --branch=teiid-syndesis git@github.com:rareddy/syndesis.git
+git@github.com:syndesisio/syndesis.git
 cd syndesis
 ```
 - Clone Teiid Syndesis Repository 
@@ -25,12 +26,19 @@ cd syndesis
 minishift addons enable admin-user
 
 # install syndesis in minishift
-tools/bin/syndesis minishift --install --project syndesis --full-reset --memory 8GB --disk-size 40GB --cpus 4
+tools/bin/syndesis minishift --install --project syndesis --full-reset --memory 8GB --disk-size 40GB --cpus 4 --datavirt --nodev
 
 # wait until the Minishift is started and you logged using oc login, then proceed with next step
 
 oc login -u system:admin
 ```
+Note: If you are devloper and want your locally built images to be deployed to this minishift instance, then change `--nodev` in above command to `--dev`, however this will end up with few images in not started position. To fix that, you can do
+```
+cd teiid-syndesis
+./fix4dev.sh
+```
+
+It will fix the images, and also when you update the image from local development, it will not be overridden anymore.
 
 At this point Syndesis should be running with `syndesis-dv` in it, now if you are working on any changes for development in teiid-syndesis, make you code edits, once done execute below
 
