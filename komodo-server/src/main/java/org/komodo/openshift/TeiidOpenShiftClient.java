@@ -459,7 +459,8 @@ public class TeiidOpenShiftClient implements V1Constants {
         }
     }
 
-    private String findIntegrationUsedIn(String virtualizationName) throws KException {
+    private List<String> findIntegrationUsedIn(String virtualizationName) throws KException {
+        ArrayList<String> usedIn = new ArrayList<String>();
         DataVirtualization dv = this.kengine.getWorkspaceManager().findDataVirtualization(virtualizationName);
         if (dv != null && dv.getSourceId() != null) {
             try {
@@ -469,7 +470,7 @@ public class TeiidOpenShiftClient implements V1Constants {
                 JsonNode root = mapper.readTree(response);
                 JsonNode items = root.get("items");
                 if (items == null) {
-                    return null;
+                    return usedIn;
                 }
                 for (JsonNode item: items) {
                     String name = item.get("name").asText();
@@ -489,7 +490,7 @@ public class TeiidOpenShiftClient implements V1Constants {
                                 if (id != null) {
                                     String idStr = id.asText();
                                     if (idStr.equals(dv.getSourceId())) {
-                                        return name;
+                                        usedIn.add(name);
                                     }
                                 }
                             }
@@ -500,7 +501,7 @@ public class TeiidOpenShiftClient implements V1Constants {
                 throw handleError(e);
             }
         }
-        return null;
+        return usedIn;
     }
 
     private void removeSyndesisConnection(String virtualizationName) throws KException {
@@ -1401,12 +1402,12 @@ public class TeiidOpenShiftClient implements V1Constants {
             return runningBuild;
         }
 
-        String integration = runningBuild.getUsedBy();
-        if (integration != null) {
+        List<String> usedIn = runningBuild.getUsedBy();
+        if (!usedIn.isEmpty()) {
             runningBuild.setStatus(Status.CANCELLED);
             runningBuild.setStatusMessage(
-                    "The virtualization \"" + virtualizationName + "\" is currently used in integration \""
-                    + integration + "\" can not be deleted. The unpublish CANCELED");
+                    "The virtualization \"" + virtualizationName + "\" is currently used in integration(s) \""
+                    + usedIn + "\" thus can not be deleted. The unpublish has been CANCELED");
             return runningBuild;
         }
 
