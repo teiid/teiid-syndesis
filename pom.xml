@@ -14,8 +14,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
     <groupId>org.basepom</groupId>
     <artifactId>basepom-oss</artifactId>
@@ -25,7 +24,7 @@
   <groupId>org.teiid</groupId>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>komodo-server-parent</artifactId>
-  <version>0.0.6-SNAPSHOT</version>
+  <version>0.2.1-SNAPSHOT</version>
   <name>Komodo Server Parent</name>
 
   <packaging>pom</packaging>
@@ -126,6 +125,7 @@
     <connection>scm:git:git://github.com/teiid/teiid-komodo.git</connection>
     <developerConnection>scm:git:git@github.com:teiid/teiid-komodo.git</developerConnection>
     <url>http://github.com/teiid/teiid-komodo</url>
+    <tag>HEAD</tag>
   </scm>
   
   <distributionManagement>
@@ -671,7 +671,7 @@
                 Jurisdiction Policy Files to this
                 JVM.</message>
               <condition>javax.crypto.Cipher.getMaxAllowedKeyLength("AES")
-                > 128</condition>
+                &gt; 128</condition>
             </evaluateBeanshell>
           </rules>
         </configuration>
