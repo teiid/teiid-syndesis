@@ -212,7 +212,7 @@
     
     <!-- <spring-cloud.version>Dalston.SR5</spring-cloud.version> -->
     
-    <version.org.teiid>12.3.0-SNAPSHOT</version.org.teiid>
+    <version.org.teiid>12.3.0</version.org.teiid>
 
     <!-- Instruct the build to use only UTF-8 encoding for source code -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -250,7 +250,7 @@
     <!-- DO NOT CHANGE VERSION PROPETY NAMES, THESE ARE USED IN CODE At komodo-rest/template-pom.xml -->
     <spring-boot.version>2.1.7.RELEASE</spring-boot.version>
     <!-- this is simply a version no dependencies involved right now -->
-    <version.springboot.teiid>1.2.0-SNAPSHOT</version.springboot.teiid>
+    <version.springboot.teiid>1.2.0</version.springboot.teiid>
     <version.mysql>8.0.17</version.mysql>
     <version.org.mongodb>3.6.3</version.org.mongodb>
     <version.postgresql>42.1.4</version.postgresql>

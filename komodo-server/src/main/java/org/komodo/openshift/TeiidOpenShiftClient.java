@@ -29,6 +29,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -1365,8 +1366,15 @@ public class TeiidOpenShiftClient implements V1Constants {
                         status.setStatusMessage("Available condition not found in deployment, delete the service and re-deploy?");
                     }
                 } else {
-                    status.setStatusMessage("Build Completed, but no deployment found. Reason unknown, please redeploy");
-                    status.setStatus(Status.FAILED);
+                    // need to account for some time between build complete and deployment is in progress
+                    Instant completionTime = Instant.parse(build.getStatus().getCompletionTimestamp());
+                    if (Instant.now().getEpochSecond() - completionTime.plusMillis(15000).getEpochSecond() > 0) {
+                        status.setStatusMessage("Build Completed, but no deployment found. Reason unknown, please redeploy");
+                        status.setStatus(Status.FAILED);
+                    } else {
+                        status.setStatusMessage("Build Completed, Waiting for deployment.");
+                        status.setStatus(Status.DEPLOYING);
+                    }
                 }
             } else {
                 status.setStatus(Status.BUILDING);
