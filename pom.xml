@@ -129,16 +129,16 @@
   </scm>
   
   <distributionManagement>
+    <repository>
+      <id>oss.sonatype.org</id>
+      <name>oss.sonatype.org</name>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
     <snapshotRepository>
-      <id>oss-sonatype-staging</id>
-      <name>oss-sonatype-staging</name>
+      <id>oss.sonatype.org</id>
+      <name>oss.sonatype.org</name>
       <url>https://oss.sonatype.org/content/repositories/snapshots</url>
     </snapshotRepository>
-    <repository>
-      <id>oss-sonatype-staging</id>
-      <name>Sonatype Staging Repository</name>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
-    </repository>
   </distributionManagement>
 
   <issueManagement>
