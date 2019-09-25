@@ -17,6 +17,8 @@
  */
 package org.komodo.rest.datavirtualization;
 
+import java.util.List;
+
 import org.komodo.KException;
 import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.openshift.BuildStatus;
@@ -57,6 +59,7 @@ public final class RestDataVirtualization {
     private String publishPodName;
     private String odataHostName;
     private boolean empty = true;
+    private List<String> usedBy;
 
     /**
      * Constructor for use when deserializing
@@ -266,4 +269,11 @@ public final class RestDataVirtualization {
         return empty;
     }
 
+    public List<String> getUsedBy() {
+        return usedBy;
+    }
+
+    public void setUsedBy(List<String> usedBy) {
+        this.usedBy = usedBy;
+    }
 }

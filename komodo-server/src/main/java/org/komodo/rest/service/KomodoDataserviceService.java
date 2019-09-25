@@ -123,6 +123,7 @@ public final class KomodoDataserviceService extends KomodoService {
         entity.setPodNamespace(status.namespace());
         entity.setOdataHostName(getOdataHost(status));
         entity.setEmpty(this.getWorkspaceManager().findViewDefinitionsNames(dataService.getName()).isEmpty());
+        entity.setUsedBy(status.getUsedBy());
         return entity;
     }
 
