@@ -127,19 +127,6 @@
     <url>http://github.com/teiid/teiid-komodo</url>
     <tag>HEAD</tag>
   </scm>
-  
-  <distributionManagement>
-    <repository>
-      <id>oss.sonatype.org</id>
-      <name>oss.sonatype.org</name>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository>
-    <snapshotRepository>
-      <id>oss.sonatype.org</id>
-      <name>oss.sonatype.org</name>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </snapshotRepository>
-  </distributionManagement>
 
   <issueManagement>
     <system>jira</system>
@@ -189,6 +176,7 @@
     <dep.plugin.dependency.version>3.0.2</dep.plugin.dependency.version>
     <dep.plugin.surefire.version>2.21.0</dep.plugin.surefire.version> <!-- SUREFIRE-1422 -->
     <dep.plugin.failsafe.version>2.21.0</dep.plugin.failsafe.version> <!-- SUREFIRE-1422 -->
+    <dep.plugin.deploy.version>2.8.2</dep.plugin.deploy.version>
 
     <!-- Don't fork based on cores, doesn't work nicely in the cloud -->
     <basepom.check.skip-pmd>true</basepom.check.skip-pmd>
@@ -378,9 +366,6 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-deploy-plugin</artifactId>
-            <configuration>
-              <skip>true</skip>
-            </configuration>
           </plugin>
 
           <plugin>
