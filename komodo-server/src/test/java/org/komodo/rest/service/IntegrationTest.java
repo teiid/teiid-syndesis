@@ -21,6 +21,7 @@ package org.komodo.rest.service;
 import static org.junit.Assert.*;
 
 import java.sql.Connection;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -310,6 +311,23 @@ public class IntegrationTest {
             Thread.sleep(1000); //TODO: a better wait for this to succeed
             try {
                 query("select col from superintegrationsource.t2 union select 1 as col", dvName, true);
+                break;
+            } catch (AssertionError e) {
+                if (i == 9) {
+                    throw e;
+                }
+            }
+        }
+
+        c.createStatement().execute("create table DV.t3 (col integer)");
+
+        //manually call the timed refresh - there's more refactoring to do to isolate syndesis calls
+        syndesisConnectionSynchronizer.synchronizeConnections(true, Arrays.asList(dsd));
+
+        for (int i = 0; i < 10; i++) {
+            Thread.sleep(1000); //TODO: a better wait for this to succeed
+            try {
+                query("select col from superintegrationsource.t3 union select 1 as col", dvName, true);
                 break;
             } catch (AssertionError e) {
                 if (i == 9) {

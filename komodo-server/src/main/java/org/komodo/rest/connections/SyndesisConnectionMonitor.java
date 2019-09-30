@@ -25,6 +25,7 @@ import javax.annotation.PostConstruct;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.komodo.KException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -189,7 +190,7 @@ public class SyndesisConnectionMonitor {
                 Message msg = mapper.readValue(text.getBytes(), Message.class);
                 if (msg.getEvent().contentEquals("message") && msg.getData().contentEquals("connected")) {
                     connected = true;
-                    connectionSynchronizer.synchronizeConnections();
+                    connectionSynchronizer.synchronizeConnections(false);
                 } else if (msg.getEvent().contentEquals("change-event")) {
                     EventMsg event = mapper.readValue(msg.getData().getBytes(), EventMsg.class);
                     if (event.getKind().contentEquals("connection")) {
@@ -219,5 +220,14 @@ public class SyndesisConnectionMonitor {
     @PostConstruct
     public void init() {
         this.executor.scheduleAtFixedRate(()->this.connect(), 5, 15, TimeUnit.SECONDS);
+        this.executor.scheduleAtFixedRate(()->{
+            try {
+                if (connected) {
+                    connectionSynchronizer.synchronizeConnections(true);
+                }
+            } catch (KException e) {
+                LOGGER.error("failed to synchronize", e);
+            }
+        }, 5, 5, TimeUnit.MINUTES);
     }
 }

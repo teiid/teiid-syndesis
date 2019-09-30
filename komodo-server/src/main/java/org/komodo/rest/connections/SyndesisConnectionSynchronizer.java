@@ -18,12 +18,15 @@
 package org.komodo.rest.connections;
 
 import java.util.Collection;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.komodo.KEngine;
 import org.komodo.KException;
 import org.komodo.datasources.DefaultSyndesisDataSource;
+import org.komodo.metadata.TeiidDataSource;
 import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.rest.connections.SyndesisConnectionMonitor.EventMsg;
 import org.komodo.rest.service.KomodoMetadataService;
@@ -62,7 +65,7 @@ public class SyndesisConnectionSynchronizer {
             break;
         case deleted:
             LOGGER.info("Handling DELETE connection with Event ID = " + event.getId());
-            handleDeleteConnection(event);
+            handleDeleteConnection(event.getId());
             break;
         case updated:
             LOGGER.info("Handling UPDATE connection with Event ID = " + event.getId());
@@ -75,11 +78,25 @@ public class SyndesisConnectionSynchronizer {
      * This method checks each applicable syndesis connection and updates all
      * associated syndesisSource vdbs and schema
      */
-    public void synchronizeConnections() throws KException {
+    public void synchronizeConnections(boolean update) throws KException {
         // Get syndesis sources
         Collection<DefaultSyndesisDataSource> dataSources = openshiftClient.getSyndesisSources();
+        synchronizeConnections(update, dataSources);
+    }
+
+    public void synchronizeConnections(boolean update,
+            Collection<DefaultSyndesisDataSource> dataSources)
+            throws KException {
+        Map<String, ? extends TeiidDataSource> existing = openshiftClient
+                .getDataSources().stream().collect(Collectors.toMap(TeiidDataSource::getId, ds->{return ds;}));
+
         for (DefaultSyndesisDataSource sds : dataSources) {
-            addConnection(sds, false);
+            existing.remove(sds.getSyndesisConnectionId());
+            addConnection(sds, update);
+        }
+
+        for (TeiidDataSource removed : existing.values()) {
+            handleDeleteConnection(removed.getId());
         }
     }
 
@@ -90,10 +107,10 @@ public class SyndesisConnectionSynchronizer {
         }
     }
 
-    private void handleDeleteConnection(EventMsg event) throws KException {
+    private void handleDeleteConnection(String id) throws KException {
         // note here that the datasource is already deleted from the syndesis
         // so we would need to search by local cached event id
-        DefaultSyndesisDataSource sds = this.openshiftClient.getSyndesisDataSourceById(event.getId());
+        DefaultSyndesisDataSource sds = this.openshiftClient.getSyndesisDataSourceById(id);
         if (sds != null) {
             deleteConnection(sds);
         }
