@@ -30,8 +30,8 @@ after_success:
       echo "pushing to image to docker";
       docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD ;
       docker push teiid/syndesis-dv:$TRAVIS_BRANCH ; 
-      docker tag teiid/syndesis-dv:$TRAVIS_BRANCH teiid/syndesis-dv:$(echo $TRAVIS_BRANCH | sed -e 's/\.[0-9][0-9]*$//') ;
-      docker push teiid/syndesis-dv:$(echo $TRAVIS_BRANCH | sed -e 's/\.[0-9][0-9]*$//') ;
+      docker tag teiid/syndesis-dv:$TRAVIS_BRANCH teiid/syndesis-dv:$TRAVIS_BRANCH-`date +"%Y%m%d"` ;
+      docker push teiid/syndesis-dv:$TRAVIS_BRANCH-`date +"%Y%m%d"`;
     fi
 
 notifications:
