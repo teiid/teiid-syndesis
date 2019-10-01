@@ -31,9 +31,10 @@ after_success:
       docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD ;
       TAG=$(docker images teiid/syndesis-dv | sed -e '1d' | sed -e 's/.*teiid\/syndesis\-dv\s*\([0-9,\.]*\).*/\1/')
       TAGD="$TAG-$(date +"%Y%m%d")"
-      docker push teiid/syndesis-dv:$TAG; 
-      docker tag teiid/syndesis-dv:$TAG teiid/syndesis-dv:$TAGD;
-      docker push teiid/syndesis-dv:$TAGD;
+      echo $TAG $TAGD
+      docker push teiid/syndesis-dv:$TAG
+      docker tag teiid/syndesis-dv:$TAG teiid/syndesis-dv:$TAGD
+      docker push teiid/syndesis-dv:$TAGD
     fi
 
 notifications:
