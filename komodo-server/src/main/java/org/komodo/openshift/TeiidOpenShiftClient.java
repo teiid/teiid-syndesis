@@ -17,16 +17,7 @@
  */
 package org.komodo.openshift;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.Reader;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -50,7 +41,14 @@ import org.jboss.shrinkwrap.api.exporter.TarExporter;
 import org.komodo.KEngine;
 import org.komodo.KException;
 import org.komodo.StringConstants;
-import org.komodo.datasources.*;
+import org.komodo.datasources.DataSourceDefinition;
+import org.komodo.datasources.DefaultSyndesisDataSource;
+import org.komodo.datasources.H2SQLDefinition;
+import org.komodo.datasources.MongoDBDefinition;
+import org.komodo.datasources.MySQLDefinition;
+import org.komodo.datasources.PostgreSQLDefinition;
+import org.komodo.datasources.SalesforceDefinition;
+import org.komodo.datasources.TeiidDefinition;
 import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.datavirtualization.SourceSchema;
 import org.komodo.metadata.MetadataInstance;
@@ -519,7 +517,7 @@ public class TeiidOpenShiftClient implements V1Constants {
                 return null;
             });
         } catch (Exception e) {
-            handleError(e);
+            throw handleError(e);
         }
     }
 
@@ -632,6 +630,10 @@ public class TeiidOpenShiftClient implements V1Constants {
 
         //now that the komodoname is set, we can create the properties
         this.metadata.registerDataSource(scd);
+    }
+
+    public Collection<? extends TeiidDataSource> getDataSources() throws KException {
+        return this.metadata.getDataSources();
     }
 
     /**
