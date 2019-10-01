@@ -52,7 +52,7 @@ public class TeiidOpenShiftClientTest {
             public WorkspaceManager getWorkspaceManager() throws KException {
                 return Mockito.mock(WorkspaceManager.class);
             }
-        });
+        }, null);
 
         DefaultSyndesisDataSource dsd = new DefaultSyndesisDataSource();
 
