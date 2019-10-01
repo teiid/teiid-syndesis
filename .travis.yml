@@ -35,6 +35,7 @@ after_success:
       TAG=`echo $TAG | cut -d'-' -f 1` ;
       TAGD="$TAG-$(date +"%Y%m%d")";
       echo $TAG $TAGD;
+      docker images;
       docker push teiid/syndesis-dv:$TAG;
       docker tag teiid/syndesis-dv:$TAG teiid/syndesis-dv:$TAGD;
       docker push teiid/syndesis-dv:$TAGD;
