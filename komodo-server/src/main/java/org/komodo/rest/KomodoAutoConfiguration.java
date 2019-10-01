@@ -43,7 +43,7 @@ import org.springframework.security.crypto.encrypt.TextEncryptor;
 import org.teiid.runtime.EmbeddedConfiguration;
 
 @Configuration
-@EnableConfigurationProperties(KomodoConfigurationProperties.class)
+@EnableConfigurationProperties({KomodoConfigurationProperties.class, SpringMavenProperties.class})
 @ComponentScan(basePackageClasses = {WorkspaceManagerImpl.class, DefaultMetadataInstance.class, SyndesisConnectionSynchronizer.class})
 public class KomodoAutoConfiguration implements ApplicationListener<ContextRefreshedEvent> {
 
@@ -55,6 +55,9 @@ public class KomodoAutoConfiguration implements ApplicationListener<ContextRefre
 
     @Autowired
     private KomodoConfigurationProperties config;
+
+    @Autowired
+    private SpringMavenProperties maven;
 
     @Autowired
     private KEngine kengine;
@@ -106,7 +109,7 @@ public class KomodoAutoConfiguration implements ApplicationListener<ContextRefre
     @ConditionalOnMissingBean
     public TeiidOpenShiftClient openShiftClient(@Autowired KEngine kengine, @Autowired TextEncryptor enc) {
         return new TeiidOpenShiftClient(metadataInstance, new EncryptionComponent(enc),
-                this.config, kengine);
+                this.config, kengine, this.maven == null ? null : this.maven.getRepositories());
     }
 
 }

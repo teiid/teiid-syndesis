@@ -27,6 +27,19 @@
        <releases><enabled>false</enabled></releases>
        <snapshots><enabled>true</enabled></snapshots>
      </repository>
+     
+<repository>
+<id>rh-ga</id>
+<name>rh-ga</name>
+<url>https://maven.repository.redhat.com/ga/</url>
+  <releases>
+    <enabled>true</enabled>
+    <updatePolicy>never</updatePolicy>
+  </releases>
+  <snapshots>
+    <enabled>false</enabled>
+  </snapshots>
+</repository>
   </repositories>
 
   <build>

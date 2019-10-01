@@ -295,16 +295,18 @@ public class TeiidOpenShiftClient implements V1Constants {
     private KomodoConfigurationProperties config;
 
     private ThreadPoolExecutor workExecutor = new ThreadPoolExecutor(1, 1, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
-
     private KEngine kengine;
+    private Map<String, String> mavenRepos;
 
-    public TeiidOpenShiftClient(MetadataInstance metadata, EncryptionComponent encryptor, KomodoConfigurationProperties config, KEngine kengine) {
+    public TeiidOpenShiftClient(MetadataInstance metadata, EncryptionComponent encryptor,
+            KomodoConfigurationProperties config, KEngine kengine, Map<String, String> mavenRepos) {
         this.metadata = metadata;
         this.encryptionComponent = encryptor;
         this.config = config;
         this.kengine = kengine;
         this.workExecutor.allowCoreThreadTimeOut(true);
         this.configureService.allowCoreThreadTimeOut(true);
+        this.mavenRepos = mavenRepos;
 
         // data source definitions
         add(new PostgreSQLDefinition());
@@ -1605,6 +1607,7 @@ public class TeiidOpenShiftClient implements V1Constants {
 
             StringBuilder vdbSourceNames = new StringBuilder();
             StringBuilder vdbDependencies = new StringBuilder();
+            StringBuilder mavenRepositories = new StringBuilder();
 
             String vdbName = vdb.getName();
             List<Model> models = vdb.getModels();
@@ -1626,6 +1629,24 @@ public class TeiidOpenShiftClient implements V1Constants {
                 }
             }
 
+            if (this.mavenRepos != null) {
+                for (String key: this.mavenRepos.keySet()) {
+                    mavenRepositories.append(StringConstants.NEW_LINE).append("<repository>\n")
+                        .append("<id>").append(key).append("</id>\n")
+                        .append("<name>").append(key).append("</name>\n")
+                        .append("<url>").append(this.mavenRepos.get(key)).append("</url>\n")
+                        .append(
+                            "  <releases>\n" +
+                            "    <enabled>true</enabled>\n" +
+                            "    <updatePolicy>never</updatePolicy>\n" +
+                            "  </releases>\n" +
+                            "  <snapshots>\n" +
+                            "    <enabled>false</enabled>\n" +
+                            "  </snapshots>\n" +
+                            "</repository>");
+                }
+            }
+
             if (enableOdata) {
                 vdbDependencies.append(StringConstants.NEW_LINE).append("<dependency>"
                         + "<groupId>org.teiid</groupId>"
@@ -1638,6 +1659,7 @@ public class TeiidOpenShiftClient implements V1Constants {
             pomXML = pomXML.replace("<!--vdb-name-->", vdbName);
             pomXML = pomXML.replace("<!--vdb-source-names-->", vdbSourceNames.toString());
             pomXML = pomXML.replace("<!--vdb-dependencies-->", vdbDependencies.toString());
+            pomXML = pomXML.replace("<!--internal-repos-->", mavenRepositories.toString());
             return pomXML;
         } catch (IOException e) {
             throw handleError(e);
