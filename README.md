@@ -1,6 +1,6 @@
 teiid-syndesis
 ============
-[![Build Status](https://travis-ci.org/teiid/teiid-komodo.svg?branch=master)](https://travis-ci.org/teiid/teiid-komodo)
+[![Build Status](https://travis-ci.org/teiid/teiid-syndesis.svg?branch=master)](https://travis-ci.org/teiid/teiid-syndesis)
 
 Teiid tooling is now part of the [Syndesis](https://syndesis.io) project. This works a component inside Syndesis to provide data integration capabilities. This document is for developers who like to setup a workspace locally for testing or for development purposes.
 
