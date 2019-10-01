@@ -27,6 +27,7 @@
        <releases><enabled>false</enabled></releases>
        <snapshots><enabled>true</enabled></snapshots>
      </repository>
+     <!--internal-repos-->
   </repositories>
 
   <build>

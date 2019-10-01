@@ -67,7 +67,10 @@ public class TestVDBPublisher {
         sources.add(getMySQLDS());
         sources.add(getPostgreSQL());
 
-        TeiidOpenShiftClient client = new TeiidOpenShiftClient(metadata, new EncryptionComponent("blah"), new KomodoConfigurationProperties(), null) {
+        Map<String, String> repos = new HashMap<String, String>();
+        repos.put("rh-ga", "https://maven.repository.redhat.com/ga/");
+
+        TeiidOpenShiftClient client = new TeiidOpenShiftClient(metadata, new EncryptionComponent("blah"), new KomodoConfigurationProperties(), null, repos) {
             @Override
             public Set<DefaultSyndesisDataSource> getSyndesisSources() throws KException {
                 return sources;
