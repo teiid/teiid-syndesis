@@ -129,6 +129,7 @@ public class TeiidOpenShiftClient implements V1Constants {
         @Override
         public void run() {
             try {
+                activeJobs.put(this.work.getOpenShiftName(), this.work);
                 // introduce some delay..
                 long elapsed = System.currentTimeMillis() - work.lastUpdated();
                 if (elapsed < 3000) {
@@ -269,6 +270,8 @@ public class TeiidOpenShiftClient implements V1Constants {
                 // Does not specify an id so will only be logged in the KLog.
                 //
                 error(null, "Monitor exception", ex);
+            } finally {
+                activeJobs.remove(this.work.getOpenShiftName());
             }
         }
     }
@@ -297,6 +300,7 @@ public class TeiidOpenShiftClient implements V1Constants {
     private KomodoConfigurationProperties config;
 
     private ThreadPoolExecutor workExecutor = new ThreadPoolExecutor(1, 1, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+    private Map<String, BuildStatus> activeJobs = new ConcurrentHashMap<>();
     private KEngine kengine;
     private Map<String, String> mavenRepos;
 
@@ -1445,6 +1449,10 @@ public class TeiidOpenShiftClient implements V1Constants {
     }
 
     private BuildStatus getVirtualizationStatusFromQueue(String openshiftName) {
+        BuildStatus work = this.activeJobs.get(openshiftName);
+        if (work != null) {
+            return work;
+        }
         for(Runnable r : workExecutor.getQueue()) {
             if (r instanceof BuildStatusRunner) {
                 BuildStatusRunner status = (BuildStatusRunner)r;
