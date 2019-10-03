@@ -20,18 +20,25 @@ before_script:
 script: mvn test -B -V -q 
 
 after_success:
-  - if [[ ( "$TRAVIS_BRANCH" == "master" ) && ( "$TRAVIS_PULL_REQUEST" == "false" ) && (-n "$DOCKER_USERNAME") ]]; then
+  - |
+    if [[ ( "$TRAVIS_BRANCH" == "master" ) && ( "$TRAVIS_PULL_REQUEST" == "false" ) && (-n "$DOCKER_USERNAME") ]]; then
       echo "pushing to image to docker";
       docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD ;
       docker push teiid/syndesis-dv:latest ;
     fi
 
-  - if [[ ("$TRAVIS_BRANCH" =~ ^[0-9]+(\.[0-9]+){2}) && (-n "$DOCKER_USERNAME") ]]; then
+  - |
+    if [[ ( "$TRAVIS_BRANCH" != "master" ) && ( "$TRAVIS_PULL_REQUEST" == "false" ) && (-n "$DOCKER_USERNAME") ]]; then
       echo "pushing to image to docker";
       docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD ;
-      docker push teiid/syndesis-dv:$TRAVIS_BRANCH ; 
-      docker tag teiid/syndesis-dv:$TRAVIS_BRANCH teiid/syndesis-dv:$(echo $TRAVIS_BRANCH | sed -e 's/\.[0-9][0-9]*$//') ;
-      docker push teiid/syndesis-dv:$(echo $TRAVIS_BRANCH | sed -e 's/\.[0-9][0-9]*$//') ;
+      TAG=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout) ;
+      TAG=`echo $TAG | cut -d'-' -f 1` ;
+      TAGD="$TAG-$(date +"%Y%m%d")";
+      echo $TAG $TAGD;
+      docker images;
+      docker push teiid/syndesis-dv:$TAG;
+      docker tag teiid/syndesis-dv:$TAG teiid/syndesis-dv:$TAGD;
+      docker push teiid/syndesis-dv:$TAGD;
     fi
 
 notifications:
