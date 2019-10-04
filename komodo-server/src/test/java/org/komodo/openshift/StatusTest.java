@@ -48,6 +48,7 @@ public class StatusTest {
 
         String value = KomodoJsonMarshaller.marshall(bs);
         assertEquals("{\n" +
+                "  \"usedBy\" : [ ],\n"+
                 "  \"openShiftName\" : \"vdb\",\n" +
                 "  \"build_status\" : \"DEPLOYING\",\n" +
                 "  \"build_name\" : \"buildName\",\n" +

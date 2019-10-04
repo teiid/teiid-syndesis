@@ -1305,7 +1305,9 @@ public class TeiidOpenShiftClient implements V1Constants {
             status = new BuildStatus(openShiftName);
         }
         status.setDataVirtualizationName(virtualization);
-        status.setUsedBy(findIntegrationUsedIn(virtualization));
+        if (status.status() == BuildStatus.Status.RUNNING) {
+            status.setUsedBy(findIntegrationUsedIn(virtualization));
+        }
         return status;
     }
 
