@@ -142,7 +142,7 @@ public class BuildStatus {
     private volatile String statusMessage;
     @JsonProperty(ROUTES_LABEL)
     private List<RouteStatus> routes = null;
-    private List<String> usedBy;
+    private List<String> usedBy = Collections.emptyList();
 
     private String openShiftName;
     private String dataVirtualizationName;
