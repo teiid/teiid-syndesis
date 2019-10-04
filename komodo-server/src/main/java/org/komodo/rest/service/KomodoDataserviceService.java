@@ -98,19 +98,17 @@ public final class KomodoDataserviceService extends KomodoService {
     @ApiResponses(value = { @ApiResponse(code = 403, message = "An error has occurred.") })
     public List<RestDataVirtualization> getDataservices() throws Exception {
 
-        return kengine.runInTransaction(true, ()->{
-            Iterable<? extends DataVirtualization> dataServices = getWorkspaceManager().findDataVirtualizations();
-
-            final List<RestDataVirtualization> entities = new ArrayList<>();
-
-            for (final DataVirtualization dataService : dataServices) {
-                RestDataVirtualization entity = createRestDataservice(dataService);
-
-                entities.add(entity);
-                LOGGER.debug("getDataservices:Dataservice '%s' entity was constructed", dataService.getName());
-            }
-            return entities;
+        Iterable<? extends DataVirtualization> dataServices = kengine.runInTransaction(true, ()->{
+            return getWorkspaceManager().findDataVirtualizations();
         });
+
+        final List<RestDataVirtualization> entities = new ArrayList<>();
+        for (final DataVirtualization dataService : dataServices) {
+            RestDataVirtualization entity = createRestDataservice(dataService);
+            entities.add(entity);
+            LOGGER.debug("getDataservices:Dataservice '%s' entity was constructed", dataService.getName());
+        }
+        return entities;
     }
 
     private RestDataVirtualization createRestDataservice(final DataVirtualization dataService) throws KException {
@@ -143,14 +141,15 @@ public final class KomodoDataserviceService extends KomodoService {
             required = true) final @PathVariable("dataserviceName") String dataserviceName)
             throws Exception {
 
-        RestDataVirtualization dataservice = kengine.runInTransaction(true, () -> {
-            DataVirtualization dv = getWorkspaceManager().findDataVirtualization(dataserviceName);
-            return createRestDataservice(dv);
+        DataVirtualization dv = kengine.runInTransaction(true, () -> {
+             return getWorkspaceManager().findDataVirtualization(dataserviceName);
         });
-        if (dataservice == null) {
+
+        if (dv == null) {
             throw notFound( dataserviceName );
         }
 
+        RestDataVirtualization dataservice = createRestDataservice(dv);
         LOGGER.debug("getDataservice:Dataservice '{0}' entity was constructed", dataservice.getName()); //$NON-NLS-1$
         return dataservice;
     }

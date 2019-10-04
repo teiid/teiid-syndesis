@@ -101,7 +101,7 @@ public class SyndesisConnectionSynchronizer {
     }
 
     private void handleAddConnection(EventMsg event, boolean update) throws KException {
-        DefaultSyndesisDataSource sds = this.openshiftClient.getSyndesisDataSourceById(event.getId());
+        DefaultSyndesisDataSource sds = this.openshiftClient.getSyndesisDataSourceById(event.getId(), true);
         if (sds != null) {
             addConnection(sds, update);
         }
@@ -110,7 +110,7 @@ public class SyndesisConnectionSynchronizer {
     private void handleDeleteConnection(String id) throws KException {
         // note here that the datasource is already deleted from the syndesis
         // so we would need to search by local cached event id
-        DefaultSyndesisDataSource sds = this.openshiftClient.getSyndesisDataSourceById(id);
+        DefaultSyndesisDataSource sds = this.openshiftClient.getSyndesisDataSourceById(id, false);
         if (sds != null) {
             deleteConnection(sds);
         }
