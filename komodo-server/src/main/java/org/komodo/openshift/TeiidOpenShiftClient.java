@@ -519,15 +519,19 @@ public class TeiidOpenShiftClient implements V1Constants {
     private List<String> findIntegrationUsedIn(String virtualizationName)
             throws KException {
         List<String> usedIn = null;
-        // only get the status every minute, looks like syndesis server is rejecting otherwise and also
-        // pushing the pod to restart.
-        if (this.integrationsInUse == null || System.currentTimeMillis() - integrationRefreshTime > 60000) {
-            this.integrationsInUse = findIntegrationByConnectionId();
-            this.integrationRefreshTime = System.currentTimeMillis();
-        }
-        DataVirtualization dv = this.kengine.getWorkspaceManager().findDataVirtualization(virtualizationName);
-        if (dv != null && dv.getSourceId() != null) {
-            usedIn = this.integrationsInUse.get(dv.getSourceId());
+        try {
+            // only get the status every minute, looks like syndesis server is rejecting otherwise and also
+            // pushing the pod to restart.
+            if (this.integrationsInUse == null || System.currentTimeMillis() - integrationRefreshTime > 60000) {
+                this.integrationsInUse = findIntegrationByConnectionId();
+                this.integrationRefreshTime = System.currentTimeMillis();
+            }
+            DataVirtualization dv = this.kengine.getWorkspaceManager().findDataVirtualization(virtualizationName);
+            if (dv != null && dv.getSourceId() != null) {
+                usedIn = this.integrationsInUse.get(dv.getSourceId());
+            }
+        } catch (RuntimeException e) {
+            info(virtualizationName, "Failed to get Integration useage status");
         }
         return (usedIn == null)?Collections.emptyList():usedIn;
     }
