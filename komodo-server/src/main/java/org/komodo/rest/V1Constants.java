@@ -33,7 +33,7 @@ public interface V1Constants extends StringConstants {
         private static final Properties properties = new Properties();
 
         private static void init() {
-            InputStream fileStream = V1Constants.class.getClassLoader().getResourceAsStream("app.properties");
+            InputStream fileStream = V1Constants.class.getClassLoader().getResourceAsStream("app.properties"); //$NON-NLS-1$
 
             try {
                 properties.load(fileStream);
@@ -48,7 +48,7 @@ public interface V1Constants extends StringConstants {
         public static String name() {
             init();
 
-            return properties.getProperty("app.name");
+            return properties.getProperty("app.name"); //$NON-NLS-1$
         }
 
         /**
@@ -57,7 +57,7 @@ public interface V1Constants extends StringConstants {
         public static String title() {
             init();
 
-            return properties.getProperty("app.title");
+            return properties.getProperty("app.title"); //$NON-NLS-1$
         }
 
         /**
@@ -66,7 +66,7 @@ public interface V1Constants extends StringConstants {
         public static String description() {
             init();
 
-            return properties.getProperty("app.description");
+            return properties.getProperty("app.description"); //$NON-NLS-1$
         }
 
         /**
@@ -75,7 +75,7 @@ public interface V1Constants extends StringConstants {
         public static String version() {
             init();
 
-            return properties.getProperty("app.version");
+            return properties.getProperty("app.version"); //$NON-NLS-1$
         }
     }
 
@@ -114,11 +114,6 @@ public interface V1Constants extends StringConstants {
      * The name of the URI path segment for the collection of VDBs in the Komodo workspace.
      */
     String VDBS_SEGMENT = "vdbs"; //$NON-NLS-1$
-
-    /**
-     * The name of the URI path segment for refresh of the preview vdb.
-     */
-    String REFRESH_PREVIEW_VDB_SEGMENT = "refreshPreviewVdb"; //$NON-NLS-1$
 
     /**
      * The name of the URI path segment for the collection of DataServices in the Komodo workspace.

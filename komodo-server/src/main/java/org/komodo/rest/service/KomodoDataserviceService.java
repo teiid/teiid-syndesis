@@ -19,16 +19,24 @@ package org.komodo.rest.service;
 
 import static org.komodo.rest.datavirtualization.RelationalMessages.Error.*;
 
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 import org.komodo.KException;
 import org.komodo.StringConstants;
 import org.komodo.WorkspaceManager;
 import org.komodo.datavirtualization.DataVirtualization;
+import org.komodo.datavirtualization.SourceSchema;
 import org.komodo.datavirtualization.ViewDefinition;
+import org.komodo.metadata.TeiidDataSource;
 import org.komodo.openshift.BuildStatus;
 import org.komodo.openshift.BuildStatus.RouteStatus;
 import org.komodo.openshift.ProtocolType;
@@ -39,23 +47,38 @@ import org.komodo.rest.datavirtualization.ImportPayload;
 import org.komodo.rest.datavirtualization.KomodoStatusObject;
 import org.komodo.rest.datavirtualization.RelationalMessages;
 import org.komodo.rest.datavirtualization.RestDataVirtualization;
+import org.komodo.rest.datavirtualization.v1.DataVirtualizationV1Adapter;
+import org.komodo.rest.datavirtualization.v1.SourceV1;
+import org.komodo.rest.datavirtualization.v1.ViewDefinitionV1Adapter;
+import org.komodo.utils.PathUtils;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import org.teiid.adminapi.impl.ModelMetaData;
 import org.teiid.metadata.Schema;
 import org.teiid.metadata.Table;
 import org.teiid.util.FullyQualifiedName;
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -86,6 +109,9 @@ public final class KomodoDataserviceService extends KomodoService {
 
     @Autowired
     private KomodoMetadataService metadataService;
+
+    @Autowired
+    private KomodoUtilService utilService;
 
     /**
      * Get the Dataservices from the komodo repository
@@ -137,7 +163,7 @@ public final class KomodoDataserviceService extends KomodoService {
             @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
             @ApiResponse(code = 403, message = "An error has occurred.") })
     public RestDataVirtualization getDataservice(
-            @ApiParam(value = "Id of the dataservice to be fetched, ie. the value of the 'keng__id' property",
+            @ApiParam(value = "name of the dataservice to be fetched",
             required = true) final @PathVariable("dataserviceName") String dataserviceName)
             throws Exception {
 
@@ -437,6 +463,152 @@ public final class KomodoDataserviceService extends KomodoService {
 
             return kso;
         });
+    }
+
+    @RequestMapping(value = V1Constants.DATA_SERVICE_PLACEHOLDER + FS + "export", method = RequestMethod.GET, produces = {
+            MediaType.MULTIPART_FORM_DATA_VALUE })
+    @ApiOperation(value = "Find dataservice by name", response = RestDataVirtualization.class)
+    @ApiResponses(value = { @ApiResponse(code = 404, message = "No Dataservice could be found with name"),
+            @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
+            @ApiResponse(code = 403, message = "An error has occurred.") })
+    public ResponseEntity<StreamingResponseBody> exportDataservice(
+            @ApiParam(value = "name of the dataservice",
+            required = true) final @PathVariable("dataserviceName") String dataserviceName)
+            throws Exception {
+
+        DataVirtualizationV1Adapter result = kengine.runInTransaction(true, () -> {
+            DataVirtualization dv = getWorkspaceManager().findDataVirtualization(dataserviceName);
+
+            if (dv == null) {
+                throw notFound(dataserviceName);
+            }
+
+            DataVirtualizationV1Adapter adapter = new DataVirtualizationV1Adapter(dv);
+
+            List<? extends ViewDefinition> views = getWorkspaceManager().findViewDefinitions(dataserviceName);
+
+            Map<String, SourceV1> sources = new LinkedHashMap<>();
+
+            for (ViewDefinition view : views) {
+                adapter.getViews().add(new ViewDefinitionV1Adapter(view));
+                for (String path : view.getSourcePaths()) {
+                    String connection = PathUtils.getOptions(path).get(0).getSecond();
+                    if (sources.containsKey(connection)) {
+                        continue;
+                    }
+                    TeiidDataSource tds = this.metadataService.findTeiidDatasource(connection);
+                    if (tds != null) {
+                        SourceV1 source = new SourceV1();
+                        source.setSourceId(tds.getSyndesisId());
+                        source.setName(tds.getName());
+                        sources.put(connection, source);
+                    }
+                }
+            }
+
+            adapter.setSources(new ArrayList<>(sources.values()));
+
+            return adapter;
+        });
+
+        StreamingResponseBody stream = out -> {
+            ZipOutputStream zos = new ZipOutputStream(out);
+
+            JsonFactory jsonFactory = new JsonFactory();
+            jsonFactory.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
+            ObjectMapper mapper = new ObjectMapper(jsonFactory);
+
+            zos.putNextEntry(new ZipEntry("dv.json")); //$NON-NLS-1$
+            mapper.writerWithDefaultPrettyPrinter().writeValue(zos, result);
+            zos.closeEntry();
+
+            zos.putNextEntry(new ZipEntry("dv-info.json")); //$NON-NLS-1$
+            zos.write("{\"version\":1}".getBytes("UTF-8")); //$NON-NLS-1$ //$NON-NLS-2$
+            zos.closeEntry();
+
+            zos.close();
+        };
+        MultiValueMap<String, String> headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=\""+dataserviceName+"-export.zip\""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        return new ResponseEntity<StreamingResponseBody>(stream, headers, HttpStatus.OK);
+    }
+
+    @PostMapping()
+    @ApiOperation(value = "Import a single data virtualization", response = String.class)
+    public ResponseEntity<KomodoStatusObject> importDataservice(@ApiParam(value = "name of the dataservice")
+            @RequestParam(name="virtualization", required=false) String virtualization,
+            @RequestParam("file") MultipartFile file) throws Exception {
+
+        final DataVirtualizationV1Adapter dv;
+        try (InputStream is = file.getInputStream();) {
+            ZipInputStream zis = new ZipInputStream(is);
+
+            ZipEntry ze = zis.getNextEntry();
+            while (ze != null && !ze.getName().equals("dv.json")) {
+                ze = zis.getNextEntry();
+            }
+            if (ze == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "zip does not contain dv.json");
+            }
+
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            dv = mapper.readValue(zis, DataVirtualizationV1Adapter.class);
+        }
+
+        DataVirtualization toImport = dv.getEntity();
+        if (virtualization == null) {
+            virtualization = toImport.getName();
+        } else {
+            toImport.setName(virtualization);
+        }
+
+        //TODO: validate the uuid or assign a new one
+        //for now we just assign new to all objects
+
+        for (ViewDefinitionV1Adapter adapter : dv.getViews()) {
+            ViewDefinition entity = adapter.getEntity();
+            entity.setId(null);
+            entity.setDataVirtualizationName(virtualization);
+        }
+
+        KomodoStatusObject kso = new KomodoStatusObject("import result"); //$NON-NLS-1$
+
+        try {
+            kengine.runInTransaction(false, () -> {
+                for (SourceV1 source : dv.getSources()) {
+                    TeiidDataSource tds = metadataService.findTeiidDatasource(source.getName());
+                    if (tds == null) {
+                        //nothing with this name, check by id
+                        SourceSchema schema = getWorkspaceManager().findSchemaBySourceId(source.getSourceId());
+                        if (schema != null) {
+                            kso.addAttribute(source.getName(), "a syndesis connection exists with the given id, but does not match the name"); //$NON-NLS-1$
+                        } else {
+                            kso.addAttribute(source.getName(), "no syndesis connection can be found"); //$NON-NLS-1$
+                        }
+                    } else {
+                        if (tds.getSyndesisId().equals(source.getSourceId())) {
+                            //presumably everything checks out
+                            //however it seems like syndesis connection ids are simply sequential,
+                            //so they may not be consistent across environments
+                        } else {
+                            kso.addAttribute(source.getName(), "a syndesis connection with the same name exists, but the ids do not match"); //$NON-NLS-1$
+                        }
+                    }
+                }
+                createDataservice(toImport.getName(), new RestDataVirtualization(toImport));
+
+                for (ViewDefinitionV1Adapter adapter : dv.getViews()) {
+                    ViewDefinition vd = adapter.getEntity();
+                    utilService.upsertViewEditorState(vd);
+                }
+                return null;
+            });
+        } catch (DataIntegrityViolationException e) {
+            throw error(HttpStatus.CONFLICT, RelationalMessages.Error.DATASERVICE_SERVICE_CREATE_ALREADY_EXISTS);
+        }
+
+        return new ResponseEntity<KomodoStatusObject>(kso, HttpStatus.OK);
     }
 
 }

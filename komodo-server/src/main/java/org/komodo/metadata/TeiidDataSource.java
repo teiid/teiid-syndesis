@@ -23,7 +23,7 @@ public interface TeiidDataSource {
 
     String getTranslatorName();
 
-    String getId();
+    String getSyndesisId();
 
     Object getConnectionFactory();
 

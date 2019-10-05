@@ -38,14 +38,21 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.core.task.AsyncTaskExecutor;
+import org.springframework.scheduling.annotation.AsyncConfigurer;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.security.crypto.encrypt.Encryptors;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
+import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.teiid.runtime.EmbeddedConfiguration;
 
 @Configuration
 @EnableConfigurationProperties({KomodoConfigurationProperties.class, SpringMavenProperties.class})
 @ComponentScan(basePackageClasses = {WorkspaceManagerImpl.class, DefaultMetadataInstance.class, SyndesisConnectionSynchronizer.class})
-public class KomodoAutoConfiguration implements ApplicationListener<ContextRefreshedEvent> {
+@EnableAsync
+public class KomodoAutoConfiguration implements ApplicationListener<ContextRefreshedEvent>, AsyncConfigurer {
 
     @Value("${encrypt.key}")
     private String encryptKey;
@@ -112,4 +119,20 @@ public class KomodoAutoConfiguration implements ApplicationListener<ContextRefre
                 this.config, kengine, this.maven == null ? null : this.maven.getRepositories());
     }
 
+    @Bean
+    protected WebMvcConfigurer webMvcConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void configureAsyncSupport(AsyncSupportConfigurer configurer) {
+                configurer.setTaskExecutor(getAsyncExecutor());
+            }
+        };
+    }
+
+    @Override
+    public AsyncTaskExecutor getAsyncExecutor() {
+        ThreadPoolTaskExecutor tpte = new ThreadPoolTaskExecutor();
+        tpte.initialize();
+        return tpte;
+    }
 }

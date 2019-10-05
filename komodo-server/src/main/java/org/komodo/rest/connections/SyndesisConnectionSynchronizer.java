@@ -88,7 +88,7 @@ public class SyndesisConnectionSynchronizer {
             Collection<DefaultSyndesisDataSource> dataSources)
             throws KException {
         Map<String, ? extends TeiidDataSource> existing = openshiftClient
-                .getDataSources().stream().collect(Collectors.toMap(TeiidDataSource::getId, ds->{return ds;}));
+                .getDataSources().stream().collect(Collectors.toMap(TeiidDataSource::getSyndesisId, ds->{return ds;}));
 
         for (DefaultSyndesisDataSource sds : dataSources) {
             existing.remove(sds.getSyndesisConnectionId());
@@ -96,7 +96,7 @@ public class SyndesisConnectionSynchronizer {
         }
 
         for (TeiidDataSource removed : existing.values()) {
-            handleDeleteConnection(removed.getId());
+            handleDeleteConnection(removed.getSyndesisId());
         }
     }
 

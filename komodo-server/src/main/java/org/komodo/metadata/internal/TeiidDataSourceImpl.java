@@ -90,7 +90,7 @@ public class TeiidDataSourceImpl implements Comparable<TeiidDataSourceImpl>, Tei
     }
 
     @Override
-    public String getId() {
+    public String getSyndesisId() {
         return this.id;
     }
 

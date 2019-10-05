@@ -43,9 +43,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import org.teiid.metadata.AbstractMetadataRecord;
 import org.teiid.metadata.Schema;
 import org.teiid.metadata.Table;
 import org.teiid.query.validator.ValidatorReport;
+import org.teiid.util.FullyQualifiedName;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -294,6 +296,15 @@ public final class KomodoUtilService extends KomodoService {
             viewDefnStatus.setStatus(ERROR);
             viewDefnStatus.setMessage(errorMsg);
         } else {
+            restViewDefinition.getSourcePaths().clear();
+            for (AbstractMetadataRecord r : t.getIncomingObjects()) {
+                if (r instanceof Table) {
+                    //TODO: should system stuff be filtered
+                    FullyQualifiedName fqn = new FullyQualifiedName(Schema.getTypeName(), r.getParent().getName());
+                    fqn.append(Schema.getChildType(Table.class), r.getName());
+                    restViewDefinition.addSourcePath(fqn.toString());
+                }
+            }
             String error = report.getFailureMessage();
             if (report.hasItems() && !error.isEmpty()) {
                 viewDefnStatus.setStatus(ERROR);
