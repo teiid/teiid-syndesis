@@ -480,7 +480,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
                 TeiidDataSource teiidSource = getMetadataInstance().getDataSource(komodoName);
                 RestSyndesisSourceStatus status = new RestSyndesisSourceStatus(komodoName);
                 if (teiidSource != null) {
-                    setSchemaStatus(teiidSource.getId(), status);
+                    setSchemaStatus(teiidSource.getSyndesisId(), status);
                 }
 
                 // Name of vdb based on source name
@@ -562,7 +562,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         // VDB is created in the repository.  If it already exists, delete it
         final WorkspaceManager mgr = this.getWorkspaceManager();
 
-        SourceSchema schema = mgr.findSchemaBySourceId(teiidSource.getId());
+        SourceSchema schema = mgr.findSchemaBySourceId(teiidSource.getSyndesisId());
         if (schema == null) {
             //something is wrong, the logic that creates TeiidDataSources will always ensure
             //a sourceschema is created
@@ -644,7 +644,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
         ModelMetaData mmd = new ModelMetaData();
         mmd.setName(sourceName);
         vdb.addModel(mmd);
-        vdb.addProperty(TeiidOpenShiftClient.ID, teiidSource.getId());
+        vdb.addProperty(TeiidOpenShiftClient.ID, teiidSource.getSyndesisId());
         mmd.setModelType(Type.PHYSICAL);
 
         for (Map.Entry<String,String> entry : teiidSource.getImportProperties().entrySet()) {
@@ -653,7 +653,7 @@ public class KomodoMetadataService extends KomodoService implements ServiceVdbGe
 
         if (schema != null) {
             //use this instead
-            mmd.addSourceMetadata(DDLDBMetadataRepository.TYPE_NAME, teiidSource.getId());
+            mmd.addSourceMetadata(DDLDBMetadataRepository.TYPE_NAME, teiidSource.getSyndesisId());
             mmd.setVisible(false);
         } else {
             vdb.addProperty("async-load", "true"); //$NON-NLS-1$ //$NON-NLS-2$

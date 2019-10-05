@@ -40,11 +40,6 @@ public final class RestDataVirtualization {
      */
     public static final String DESCRIPTION_LABEL = "tko__description";
 
-    /**
-     * Label used to describe dataservice viewNames
-     */
-    public static final String DATASERVICE_VIEW_DEFINITIONS_LABEL = "serviceViewDefinitions"; //$NON-NLS-1$
-
     public static final String DATASERVICE_NAME_LABEL = "keng__id"; //$NON-NLS-1$
 
     private String id;

@@ -20,14 +20,19 @@ package org.komodo.rest.service;
 
 import static org.junit.Assert.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import javax.sql.DataSource;
 
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.komodo.datasources.DefaultSyndesisDataSource;
@@ -47,6 +52,7 @@ import org.komodo.rest.datavirtualization.KomodoQueryAttribute;
 import org.komodo.rest.datavirtualization.KomodoStatusObject;
 import org.komodo.rest.datavirtualization.RestDataVirtualization;
 import org.komodo.rest.datavirtualization.RestViewDefinitionStatus;
+import org.komodo.rest.datavirtualization.v1.DataVirtualizationV1Adapter;
 import org.komodo.rest.service.IntegrationTest.IntegrationTestConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -56,18 +62,22 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @ContextConfiguration(classes = {IntegrationTestConfiguration.class, Application.class})
-@DirtiesContext
 @SuppressWarnings("nls")
 public class IntegrationTest {
 
@@ -98,6 +108,15 @@ public class IntegrationTest {
     private SyndesisConnectionSynchronizer syndesisConnectionSynchronizer;
     @Autowired
     private TeiidOpenShiftClient teiidOpenShiftClient;
+
+    @Autowired DataSource datasource;
+
+    //for some reason dirtiescontext does not seem to work, so clear manually
+    @After public void after() throws Exception {
+        try (Connection c = datasource.getConnection();) {
+            c.createStatement().execute("delete from data_virtualization");
+        }
+    }
 
     @Test
     public void testAbout() {
@@ -365,5 +384,70 @@ public class IntegrationTest {
         assertEquals(1, virts.getBody().size());
         Map virt = (Map)virts.getBody().get(0);
         assertEquals("testSourceRefresh", virt.get("keng__id"));
+    }
+
+    @Test
+    public void testImportExport() throws IOException {
+        RestDataVirtualization rdv = new RestDataVirtualization();
+        String dvName = "testExport";
+        rdv.setName(dvName);
+        rdv.setDescription("description");
+
+        ResponseEntity<String> response = restTemplate.postForEntity(
+                "/v1/workspace/dataservices/testExport", rdv, String.class);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+
+        ViewDefinition vd = new ViewDefinition(dvName, "myview");
+        vd.setComplete(true);
+        vd.setDdl("create view myview as select 1 as col");
+        vd.setUserDefined(true);
+
+        restTemplate.exchange(
+                "/v1/service/userProfile/viewEditorState", HttpMethod.PUT,
+                new HttpEntity<ViewDefinition>(vd), String.class);
+
+        ResponseEntity<byte[]> export = restTemplate.getForEntity("/v1/workspace/dataservices/testExport/export", byte[].class);
+        assertEquals(HttpStatus.OK, export.getStatusCode());
+        byte[] result = export.getBody();
+        ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(result));
+        ZipEntry ze = zis.getNextEntry();
+        assertEquals("dv.json", ze.getName());
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        DataVirtualizationV1Adapter dv = mapper.readValue(zis, DataVirtualizationV1Adapter.class);
+
+        assertEquals("testExport", dv.getName());
+
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        body.add("file", new ByteArrayResource(result) {
+            @Override
+            public boolean isFile() {
+                return true;
+            }
+
+            @Override
+            public String getFilename() {
+                return "import.zip";
+            }
+        });
+
+        ResponseEntity<KomodoStatusObject> importResponse = restTemplate.postForEntity(
+                "/v1/workspace/dataservices", body, KomodoStatusObject.class);
+
+        //trying to re-import with the existing name
+        assertEquals(HttpStatus.CONFLICT, importResponse.getStatusCode());
+
+        importResponse = restTemplate.postForEntity(
+                "/v1/workspace/dataservices?virtualization={name}", body, KomodoStatusObject.class, "newName");
+
+        assertEquals(HttpStatus.OK, importResponse.getStatusCode());
+
+        ResponseEntity<List> views = restTemplate.getForEntity(
+                "/v1/service/userProfile/viewListings?virtualization={name}", List.class, "newName");
+
+        assertEquals(HttpStatus.OK, views.getStatusCode());
+        assertEquals(1, views.getBody().size());
+        Map view = (Map)views.getBody().get(0);
+        assertEquals(Boolean.TRUE, view.get("valid"));
     }
 }
