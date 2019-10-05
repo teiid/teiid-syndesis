@@ -31,6 +31,7 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -123,7 +124,9 @@ public class SyndesisConnectionMonitor {
         String RESERVATIONS_PATH = "http://syndesis-server/api/v1/event/reservations";
         String WS_PATH = "ws://syndesis-server/api/v1/event/streams.ws/";
 
-        OkHttpClient client = new OkHttpClient();
+        ConnectionPool pool = new ConnectionPool(5, 10000, TimeUnit.MILLISECONDS);
+        OkHttpClient client = new OkHttpClient.Builder().connectionPool(pool).build();
+
         Request request = buildRequest().url(RESERVATIONS_PATH).post(RequestBody.create(null, "")).build();
 
         Message message = null;

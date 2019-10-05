@@ -17,11 +17,33 @@
  */
 package org.komodo.openshift;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -75,17 +97,39 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.fabric8.kubernetes.api.KubernetesHelper;
 import io.fabric8.kubernetes.api.builds.Builds;
-import io.fabric8.kubernetes.api.model.*;
+import io.fabric8.kubernetes.api.model.ContainerPort;
+import io.fabric8.kubernetes.api.model.EnvVar;
+import io.fabric8.kubernetes.api.model.EnvVarBuilder;
+import io.fabric8.kubernetes.api.model.EnvVarSourceBuilder;
+import io.fabric8.kubernetes.api.model.ObjectMeta;
+import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.Quantity;
+import io.fabric8.kubernetes.api.model.ReplicationController;
+import io.fabric8.kubernetes.api.model.Secret;
+import io.fabric8.kubernetes.api.model.SecretBuilder;
+import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.dsl.internal.PodOperationsImpl;
-import io.fabric8.openshift.api.model.*;
+import io.fabric8.openshift.api.model.Build;
+import io.fabric8.openshift.api.model.BuildConfig;
+import io.fabric8.openshift.api.model.BuildList;
+import io.fabric8.openshift.api.model.DeploymentCondition;
+import io.fabric8.openshift.api.model.DeploymentConfig;
+import io.fabric8.openshift.api.model.DeploymentConfigStatus;
+import io.fabric8.openshift.api.model.ImageStream;
+import io.fabric8.openshift.api.model.Route;
+import io.fabric8.openshift.api.model.RouteList;
+import io.fabric8.openshift.api.model.RouteSpec;
+import io.fabric8.openshift.api.model.TLSConfigBuilder;
 import io.fabric8.openshift.client.DefaultOpenShiftClient;
 import io.fabric8.openshift.client.NamespacedOpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftConfig;
 import io.fabric8.openshift.client.OpenShiftConfigBuilder;
+import okhttp3.ConnectionPool;
+import okhttp3.OkHttpClient;
 
 @SuppressWarnings("nls")
 public class TeiidOpenShiftClient implements V1Constants {
@@ -107,9 +151,16 @@ public class TeiidOpenShiftClient implements V1Constants {
     private long buildTimeoutInSeconds = 2 * 60 * 1000L;
     private final OpenShiftConfig openShiftClientConfig = new OpenShiftConfigBuilder().withMasterUrl(openShiftHost)
             .withCaCertFile(SERVICE_CA_CERT_FILE).withBuildTimeout(buildTimeoutInSeconds).build();
+    private NamespacedOpenShiftClient openshiftClient;
 
     private NamespacedOpenShiftClient openshiftClient() {
-        return new DefaultOpenShiftClient(openShiftClientConfig);
+        if (this.openshiftClient == null) {
+            ConnectionPool pool = new ConnectionPool(5, 10000, TimeUnit.MILLISECONDS);
+            OkHttpClient.Builder builder = new OkHttpClient.Builder().connectionPool(pool);
+            OkHttpClient client = HttpClientUtils.createHttpClient(openShiftClientConfig, builder);
+            this.openshiftClient = new DefaultOpenShiftClient(client, openShiftClientConfig);
+        }
+        return this.openshiftClient;
     }
 
     /**
@@ -191,69 +242,68 @@ public class TeiidOpenShiftClient implements V1Constants {
                 }
 
                 boolean shouldReQueue = true;
-                try (final OpenShiftClient client = openshiftClient()) {
-                    Build build = client.builds().inNamespace(work.namespace()).withName(work.buildName()).get();
-                    if (build == null) {
-                        // build got deleted some how ignore, remove from monitoring..
-                        error(work.getOpenShiftName(), "Publishing - No build available for building");
-                        return;
-                    }
+                final OpenShiftClient client = openshiftClient();
+                Build build = client.builds().inNamespace(work.namespace()).withName(work.buildName()).get();
+                if (build == null) {
+                    // build got deleted some how ignore, remove from monitoring..
+                    error(work.getOpenShiftName(), "Publishing - No build available for building");
+                    return;
+                }
 
-                    String lastStatus = build.getStatus().getPhase();
-                    if (Builds.isCompleted(lastStatus)) {
-                        if (! Status.DEPLOYING.equals(work.status())) {
-                            info(work.getOpenShiftName(), "Publishing - Build completed. Preparing to deploy");
-                            work.setStatusMessage("build completed, deployment started");
-                            createSecret(client, work.namespace(), work.getOpenShiftName(), work);
-                            DeploymentConfig dc = createDeploymentConfig(client, work);
-                            work.setDeploymentName(dc.getMetadata().getName());
-                            work.setStatus(Status.DEPLOYING);
-                            client.deploymentConfigs().inNamespace(work.namespace())
-                                    .withName(dc.getMetadata().getName()).deployLatest();
+                String lastStatus = build.getStatus().getPhase();
+                if (Builds.isCompleted(lastStatus)) {
+                    if (! Status.DEPLOYING.equals(work.status())) {
+                        info(work.getOpenShiftName(), "Publishing - Build completed. Preparing to deploy");
+                        work.setStatusMessage("build completed, deployment started");
+                        createSecret(client, work.namespace(), work.getOpenShiftName(), work);
+                        DeploymentConfig dc = createDeploymentConfig(client, work);
+                        work.setDeploymentName(dc.getMetadata().getName());
+                        work.setStatus(Status.DEPLOYING);
+                        client.deploymentConfigs().inNamespace(work.namespace())
+                                .withName(dc.getMetadata().getName()).deployLatest();
+                    } else {
+                        DeploymentConfig dc = client.deploymentConfigs().inNamespace(work.namespace())
+                                .withName(work.deploymentName()).get();
+                        if (isDeploymentInReadyState(dc)) {
+                            // it done now..
+                            info(work.getOpenShiftName(), "Publishing - Deployment completed");
+                            createServices(client, work.namespace(), work.getOpenShiftName());
+                            createSyndesisConnection(client, work.namespace(), work.getOpenShiftName(), work.getDataVirtualizationName());
+                            work.setStatus(Status.RUNNING);
+                            shouldReQueue = false;
                         } else {
-                            DeploymentConfig dc = client.deploymentConfigs().inNamespace(work.namespace())
-                                    .withName(work.deploymentName()).get();
-                            if (isDeploymentInReadyState(dc)) {
-                                // it done now..
-                                info(work.getOpenShiftName(), "Publishing - Deployment completed");
-                                createServices(client, work.namespace(), work.getOpenShiftName());
-                                createSyndesisConnection(client, work.namespace(), work.getOpenShiftName(), work.getDataVirtualizationName());
-                                work.setStatus(Status.RUNNING);
+                            if (!isDeploymentProgressing(dc)) {
+                                work.setStatus(Status.FAILED);
+                                info(work.getOpenShiftName(), "Publishing - Deployment seems to be failed, this could be "
+                                        + "due to vdb failure, rediness check failed. Wait threshold is 2 minutes.");
                                 shouldReQueue = false;
+                            }
+                            debug(work.getOpenShiftName(), "Publishing - Deployment not ready");
+                            DeploymentCondition cond = getDeploymentConfigStatus(dc);
+                            if (cond != null) {
+                                debug(work.getOpenShiftName(), "Publishing - Deployment condition: " + cond.getMessage());
+                                work.setStatusMessage(cond.getMessage());
                             } else {
-                                if (!isDeploymentProgressing(dc)) {
-                                    work.setStatus(Status.FAILED);
-                                    info(work.getOpenShiftName(), "Publishing - Deployment seems to be failed, this could be "
-                                            + "due to vdb failure, rediness check failed. Wait threshold is 2 minutes.");
-                                    shouldReQueue = false;
-                                }
-                                debug(work.getOpenShiftName(), "Publishing - Deployment not ready");
-                                DeploymentCondition cond = getDeploymentConfigStatus(dc);
-                                if (cond != null) {
-                                    debug(work.getOpenShiftName(), "Publishing - Deployment condition: " + cond.getMessage());
-                                    work.setStatusMessage(cond.getMessage());
-                                } else {
-                                    work.setStatusMessage("Available condition not found in the Deployment Config");
-                                }
+                                work.setStatusMessage("Available condition not found in the Deployment Config");
                             }
                         }
-                    } else if (Builds.isCancelled(lastStatus)) {
-                        info(work.getOpenShiftName(), "Publishing - Build cancelled");
-                        // once failed do not queue the work again.
-                        shouldReQueue = false;
-                        work.setStatus(Status.CANCELLED);
-                        work.setStatusMessage(build.getStatus().getMessage());
-                        debug(work.getOpenShiftName(), "Build cancelled: " + work.buildName() + ". Reason "
-                                + build.getStatus().getLogSnippet());
-                    } else if (Builds.isFailed(lastStatus)) {
-                        error(work.getOpenShiftName(), "Publishing - Build failed");
-                        // once failed do not queue the work again.
-                        shouldReQueue = false;
-                        work.setStatus(Status.FAILED);
-                        work.setStatusMessage(build.getStatus().getMessage());
-                        error(work.getOpenShiftName(),
-                                "Build failed :" + work.buildName() + ". Reason " + build.getStatus().getLogSnippet());
                     }
+                } else if (Builds.isCancelled(lastStatus)) {
+                    info(work.getOpenShiftName(), "Publishing - Build cancelled");
+                    // once failed do not queue the work again.
+                    shouldReQueue = false;
+                    work.setStatus(Status.CANCELLED);
+                    work.setStatusMessage(build.getStatus().getMessage());
+                    debug(work.getOpenShiftName(), "Build cancelled: " + work.buildName() + ". Reason "
+                            + build.getStatus().getLogSnippet());
+                } else if (Builds.isFailed(lastStatus)) {
+                    error(work.getOpenShiftName(), "Publishing - Build failed");
+                    // once failed do not queue the work again.
+                    shouldReQueue = false;
+                    work.setStatus(Status.FAILED);
+                    work.setStatusMessage(build.getStatus().getMessage());
+                    error(work.getOpenShiftName(),
+                            "Build failed :" + work.buildName() + ". Reason " + build.getStatus().getLogSnippet());
                 }
 
                 work.setLastUpdated();
@@ -287,6 +337,8 @@ public class TeiidOpenShiftClient implements V1Constants {
     private MetadataInstance metadata;
     private Map<String, DataSourceDefinition> sources = new ConcurrentHashMap<>();
     private Map<String, DefaultSyndesisDataSource> syndesisSources = new ConcurrentHashMap<String, DefaultSyndesisDataSource>();
+    private Map<String, List<String>> integrationsInUse;
+    private long integrationRefreshTime;
 
     /**
      * Fixed pool of up to 3 threads for configuring images ready to be deployed
@@ -464,64 +516,80 @@ public class TeiidOpenShiftClient implements V1Constants {
         }
     }
 
-    private List<String> findIntegrationUsedIn(String virtualizationName) throws KException {
-        ArrayList<String> usedIn = new ArrayList<String>();
+    private List<String> findIntegrationUsedIn(String virtualizationName)
+            throws KException {
+        List<String> usedIn = null;
+        // only get the status every minute, looks like syndesis server is rejecting otherwise and also
+        // pushing the pod to restart.
+        if (this.integrationsInUse == null || System.currentTimeMillis() - integrationRefreshTime > 60000) {
+            this.integrationsInUse = findIntegrationByConnectionId();
+            this.integrationRefreshTime = System.currentTimeMillis();
+        }
         DataVirtualization dv = this.kengine.getWorkspaceManager().findDataVirtualization(virtualizationName);
         if (dv != null && dv.getSourceId() != null) {
-            try {
-                String url = SYNDESISURL+"/integrations";
-                InputStream response = SyndesisHttpUtil.executeGET(url);
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode root = mapper.readTree(response);
-                JsonNode items = root.get("items");
-                if (items == null) {
-                    return usedIn;
+            usedIn = this.integrationsInUse.get(dv.getSourceId());
+        }
+        return (usedIn == null)?Collections.emptyList():usedIn;
+    }
+
+    private Map<String, List<String>> findIntegrationByConnectionId() throws KException {
+        Map<String, List<String>> usedIn = new WeakHashMap<>();
+        try {
+            String url = SYNDESISURL+"/integrations";
+            InputStream response = SyndesisHttpUtil.executeGET(url);
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(response);
+            JsonNode items = root.get("items");
+            if (items == null) {
+                return usedIn;
+            }
+            for (JsonNode item: items) {
+                String integrationName = item.get("name").asText();
+                JsonNode flows = item.get("flows");
+                if (flows == null) {
+                    continue;
                 }
-                for (JsonNode item: items) {
-                    String name = item.get("name").asText();
-                    JsonNode flows = item.get("flows");
-                    if (flows == null) {
+                for (JsonNode flow: flows) {
+                    JsonNode steps = flow.get("steps");
+                    if (steps == null) {
                         continue;
                     }
-                    for (JsonNode flow: flows) {
-                        JsonNode steps = flow.get("steps");
-                        if (steps == null) {
-                            continue;
-                        }
-                        for (JsonNode step: steps) {
-                            JsonNode connection = step.get("connection");
-                            if (connection != null) {
-                                JsonNode id = connection.get("id");
-                                if (id != null) {
-                                    String idStr = id.asText();
-                                    if (idStr.equals(dv.getSourceId())) {
-                                        usedIn.add(name);
-                                    }
+                    for (JsonNode step: steps) {
+                        JsonNode connection = step.get("connection");
+                        if (connection != null) {
+                            JsonNode id = connection.get("id");
+                            if (id != null) {
+                                String idStr = id.asText();
+                                List<String> integrations = usedIn.get(idStr);
+                                if (integrations == null) {
+                                    integrations = new ArrayList<>();
+                                    usedIn.put(idStr, integrations);
                                 }
+                                integrations.add(integrationName);
                             }
                         }
                     }
                 }
-            } catch(IOException e) {
-                throw handleError(e);
             }
+        } catch(IOException e) {
+            throw handleError(e);
         }
         return usedIn;
     }
 
     private void removeSyndesisConnection(String virtualizationName) throws KException {
         try {
-            this.kengine.runInTransaction(false, () -> {
-                DataVirtualization dv = this.kengine.getWorkspaceManager().findDataVirtualization(virtualizationName);
-                if (dv != null) {
-                    SyndesisHttpUtil.executeDELETE(SYNDESISURL + "/connections/" + dv.getSourceId());
-                    info(dv.getName(), "Database connection to Virtual Database " + dv.getName()
-                        + " deleted with Id = "+ dv.getSourceId());
-                    // remove the source id from database
-                    dv.setSourceId(null);
-                }
-                return null;
+            DataVirtualization dv = this.kengine.runInTransaction(false, () -> {
+                return this.kengine.getWorkspaceManager().findDataVirtualization(virtualizationName);
             });
+
+            if (dv != null) {
+                SyndesisHttpUtil.executeDELETE(SYNDESISURL + "/connections/" + dv.getSourceId());
+                info(dv.getName(), "Database connection to Virtual Database " + dv.getName()
+                    + " deleted with Id = "+ dv.getSourceId());
+                // remove the source id from database
+                dv.setSourceId(null);
+            }
         } catch (Exception e) {
             throw handleError(e);
         }
@@ -552,10 +620,10 @@ public class TeiidOpenShiftClient implements V1Constants {
         return result;
     }
 
-    public DefaultSyndesisDataSource getSyndesisDataSourceById(String dsId)
+    public DefaultSyndesisDataSource getSyndesisDataSourceById(String dsId, boolean checkRemote)
             throws KException {
         DefaultSyndesisDataSource source = syndesisSources.get(dsId);
-        if (source == null) {
+        if (source == null && checkRemote) {
             try {
                 String url = SYNDESISURL+"/connections/"+dsId;
                 InputStream response = SyndesisHttpUtil.executeGET(url);
@@ -578,7 +646,7 @@ public class TeiidOpenShiftClient implements V1Constants {
             if (tds == null) {
                 return null;
             }
-            return getSyndesisDataSourceById(tds.getId());
+            return getSyndesisDataSourceById(tds.getId(), true);
         } catch (Exception e) {
             throw handleError(e);
         }
@@ -1053,7 +1121,8 @@ public class TeiidOpenShiftClient implements V1Constants {
                 VDBMetaData vdb = publishConfig.getVDB();
 
                 String openShiftName = work.getOpenShiftName();
-                try (OpenShiftClient client = openshiftClient();){
+                try {
+                    OpenShiftClient client = openshiftClient();
                     info(openShiftName, "Publishing - Checking for base image");
 
                     // create build contents as tar file
@@ -1298,10 +1367,11 @@ public class TeiidOpenShiftClient implements V1Constants {
         if (status != null) {
             return status;
         }
-        try (OpenShiftClient client = openshiftClient();){
+        try {
+            OpenShiftClient client = openshiftClient();
             status = getVDBService(openShiftName, ApplicationProperties.getNamespace(), client);
         } catch (KubernetesClientException e) {
-            LOGGER.info("Could not get build status: " + e.getMessage());
+            LOGGER.debug("Could not get build status for VDB: "  +openShiftName +" error:"+ e.getMessage());
             status = new BuildStatus(openShiftName);
         }
         status.setDataVirtualizationName(virtualization);
@@ -1433,9 +1503,8 @@ public class TeiidOpenShiftClient implements V1Constants {
         configureService.submit(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                try (final OpenShiftClient client = openshiftClient();) {
-                    deleteVDBServiceResources(openShiftName, inProgressBuildName, status, client);
-                }
+                final OpenShiftClient client = openshiftClient();
+                deleteVDBServiceResources(openShiftName, inProgressBuildName, status, client);
                 debug(openShiftName, "finished deleteing " + openShiftName + " service");
                 return true;
             }
@@ -1562,43 +1631,41 @@ public class TeiidOpenShiftClient implements V1Constants {
 
     private RouteStatus getRoute(String openShiftName, ProtocolType protocolType) {
         String namespace = ApplicationProperties.getNamespace();
-        try (OpenShiftClient client = openshiftClient();) {
-            RouteStatus theRoute = null;
-            debug(openShiftName, "Getting route of type " + protocolType.id() + " for Service");
-            RouteList routes = client.routes().inNamespace(namespace).list();
-            if (routes == null || routes.getItems().isEmpty())
-                return theRoute;
-
-            for (Route route : routes.getItems()) {
-                ObjectMeta metadata = route.getMetadata();
-                String name = metadata.getName();
-                if (! name.endsWith(HYPHEN + protocolType.id()))
-                    continue;
-
-                RouteSpec spec = route.getSpec();
-                String target = spec.getTo().getName();
-
-                Map<String, String> annotations = metadata.getAnnotations();
-                String description = annotations.get(DESCRIPTION_ANNOTATION_LABEL);
-                if (description == null || ! SERVICE_DESCRIPTION.equals(description))
-                    continue;
-
-                //
-                // Check we have the right route for the vdb in question
-                //
-                if (! target.equals(openShiftName + HYPHEN + protocolType.id()))
-                    continue;
-
-                theRoute = new RouteStatus(name, protocolType);
-                theRoute.setHost(spec.getHost());
-                theRoute.setPath(spec.getPath());
-                theRoute.setPort(spec.getPort().getTargetPort().getStrVal());
-                theRoute.setTarget(target);
-                theRoute.setSecure(spec.getTls() != null);
-            }
-
+        OpenShiftClient client = openshiftClient();
+        RouteStatus theRoute = null;
+        debug(openShiftName, "Getting route of type " + protocolType.id() + " for Service");
+        RouteList routes = client.routes().inNamespace(namespace).list();
+        if (routes == null || routes.getItems().isEmpty())
             return theRoute;
+
+        for (Route route : routes.getItems()) {
+            ObjectMeta metadata = route.getMetadata();
+            String name = metadata.getName();
+            if (! name.endsWith(HYPHEN + protocolType.id()))
+                continue;
+
+            RouteSpec spec = route.getSpec();
+            String target = spec.getTo().getName();
+
+            Map<String, String> annotations = metadata.getAnnotations();
+            String description = annotations.get(DESCRIPTION_ANNOTATION_LABEL);
+            if (description == null || ! SERVICE_DESCRIPTION.equals(description))
+                continue;
+
+            //
+            // Check we have the right route for the vdb in question
+            //
+            if (! target.equals(openShiftName + HYPHEN + protocolType.id()))
+                continue;
+
+            theRoute = new RouteStatus(name, protocolType);
+            theRoute.setHost(spec.getHost());
+            theRoute.setPath(spec.getPath());
+            theRoute.setPort(spec.getPort().getTargetPort().getStrVal());
+            theRoute.setTarget(target);
+            theRoute.setSecure(spec.getTls() != null);
         }
+        return theRoute;
     }
 
     /**
