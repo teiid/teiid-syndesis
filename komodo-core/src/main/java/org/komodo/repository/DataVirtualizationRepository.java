@@ -39,4 +39,8 @@ public interface DataVirtualizationRepository extends JpaRepository<DataVirtuali
 
     @Query(value = "from DataVirtualization where source_id = :sourceId")
     public DataVirtualization findBySourceId(@Param("sourceId") String sourceId);
+
+    @Query("from DataVirtualization dv where dv.upperName = UPPER(:dvName)")
+    public DataVirtualization findByNameIgnoreCase(@Param("dvName") String dvName);
+
 }

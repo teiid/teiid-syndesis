@@ -201,7 +201,15 @@ public class IntegrationTest {
                 "/v1/workspace/{virtualization}/views/nameValidation/{viewName}",
                 String.class, dvName, "myView");
         assertEquals(HttpStatus.OK, validate.getStatusCode());
+        //means that it's not valid
         assertNotNull(validate.getBody());
+
+        ResponseEntity<ViewDefinition> validateViewName = restTemplate.getForEntity(
+                "/v1/workspace/dataservices/{virtualization}/views/{viewName}",
+                ViewDefinition.class, dvName, "myView");
+        assertEquals(HttpStatus.OK, validateViewName.getStatusCode());
+        //means that it already exists, therefore not valid
+        assertNotNull(validateViewName.getBody());
 
         query("select * from dv.myview", dvName, true);
 

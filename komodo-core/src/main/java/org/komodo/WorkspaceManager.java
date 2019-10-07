@@ -48,6 +48,8 @@ public interface WorkspaceManager {
 
     DataVirtualization findDataVirtualization(String virtualizationName);
 
+    DataVirtualization findDataVirtualizationByNameIgnoreCase(String virtualizationName);
+
     DataVirtualization findDataVirtualizationBySourceId(String sourceId);
 
     public Iterable<? extends DataVirtualization> findDataVirtualizations();
