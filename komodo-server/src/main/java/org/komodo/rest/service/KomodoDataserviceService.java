@@ -654,8 +654,7 @@ public final class KomodoDataserviceService extends KomodoService {
     @ApiResponses( value = {
             @ApiResponse( code = 400, message = "The URI cannot contain encoded slashes or backslashes." ),
             @ApiResponse( code = 403, message = "An unexpected error has occurred." ),
-            @ApiResponse( code = 404, message = "No view could be found with name" ),
-            @ApiResponse( code = 500, message = "The view name cannot be empty." )
+            @ApiResponse( code = 404, message = "No view could be found with name" )
     } )
     public ViewDefinition getViewDefinition(
                                       @ApiParam(value = "Name of the virtualization", required = true)
@@ -670,9 +669,15 @@ public final class KomodoDataserviceService extends KomodoService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, errorMsg);
         }
 
-        return kengine.runInTransaction(true, ()-> {
+        ViewDefinition vd = kengine.runInTransaction(true, ()-> {
             return getWorkspaceManager().findViewDefinitionByNameIgnoreCase(virtualization, viewName);
         });
+
+        if (vd == null) {
+            throw notFound(viewName);
+        }
+
+        return vd;
     }
 
 }
