@@ -166,7 +166,7 @@ public final class KomodoDataserviceService extends KomodoService {
             @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
             @ApiResponse(code = 403, message = "An error has occurred.") })
     public RestDataVirtualization getDataservice(
-            @ApiParam(value = "name of the dataservice to be fetched",
+            @ApiParam(value = "name of the dataservice to be fetched - ignoring case",
             required = true) final @PathVariable("dataserviceName") String dataserviceName)
             throws Exception {
 
@@ -178,6 +178,18 @@ public final class KomodoDataserviceService extends KomodoService {
             String validationMessage = getValidationMessage(dataserviceName);
             if (validationMessage != null) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, validationMessage);
+            }
+
+            // check for duplicate name
+            final boolean inUse = kengine.runInTransaction(true, () -> {
+                //from the pattern validation, there's no escaping necessary
+                return getWorkspaceManager().isNameInUse(dataserviceName);
+            });
+
+            // name is a duplicate
+            if (inUse) {
+                //we should be setting a location header here, but we don't really care about the redirection
+                throw new ResponseStatusException(HttpStatus.SEE_OTHER, "the name matches an existing connection name"); //$NON-NLS-1$
             }
 
             throw notFound( dataserviceName );
