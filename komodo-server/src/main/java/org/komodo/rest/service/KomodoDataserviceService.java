@@ -50,7 +50,6 @@ import org.komodo.rest.datavirtualization.RestDataVirtualization;
 import org.komodo.rest.datavirtualization.v1.DataVirtualizationV1Adapter;
 import org.komodo.rest.datavirtualization.v1.SourceV1;
 import org.komodo.rest.datavirtualization.v1.ViewDefinitionV1Adapter;
-import org.komodo.utils.KLog;
 import org.komodo.utils.PathUtils;
 import org.komodo.utils.StringNameValidator;
 import org.komodo.utils.StringUtils;
@@ -283,43 +282,6 @@ public final class KomodoDataserviceService extends KomodoService {
             LOGGER.debug("error removing preview vdb", e); //$NON-NLS-1$
         }
         return kso;
-    }
-
-    /**
-     * @param dataserviceName the data service name being validated (cannot be empty)
-     * @return the response (never <code>null</code>) with an entity that is either
-     *         an empty string, when the name is valid, or an error message
-     * @throws Exception
-     */
-    @Deprecated
-    @RequestMapping(value = V1Constants.NAME_VALIDATION_SEGMENT + FS
-            + V1Constants.DATA_SERVICE_PLACEHOLDER, method = RequestMethod.GET, produces = { "text/plain" })
-    @ApiOperation(value = "Returns an error message if the data service name is invalid")
-    @ApiResponses(value = {
-            @ApiResponse(code = 400, message = "The URI cannot contain encoded slashes or backslashes."),
-            @ApiResponse(code = 403, message = "An unexpected error has occurred."),
-            @ApiResponse(code = 500, message = "The dataservice name cannot be empty.") })
-    public ResponseEntity<String> validateDataserviceName(@ApiParam(value = "The dataservice name being checked", required = true) final @PathVariable("dataserviceName") String dataserviceName) throws Exception {
-
-        KLog.getLogger().warn("validateDataserviceName is deprecated, use GET dataservices/{name} instead"); //$NON-NLS-1$
-
-        String validationMessage = getValidationMessage(dataserviceName);
-        if (validationMessage != null) {
-            return ResponseEntity.ok().body(validationMessage);
-        }
-
-        // check for duplicate name
-        final boolean inUse = kengine.runInTransaction(true, () -> {
-            //from the pattern validation, there's no escaping necessary
-            return getWorkspaceManager().isNameInUse(dataserviceName);
-        });
-
-        // name is a duplicate
-        if (inUse) {
-            return ResponseEntity.ok().body(RelationalMessages.getString(DATASERVICE_SERVICE_NAME_EXISTS));
-        }
-
-        return ResponseEntity.ok().build();
     }
 
     private String getValidationMessage(final String dataserviceName) {
