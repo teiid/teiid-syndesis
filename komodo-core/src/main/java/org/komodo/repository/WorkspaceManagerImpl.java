@@ -91,6 +91,12 @@ public class WorkspaceManagerImpl implements WorkspaceManager {
     }
 
     @Override
+    public DataVirtualization findDataVirtualizationByNameIgnoreCase(
+            String virtualizationName) {
+        return this.dataVirtualizationRepository.findByNameIgnoreCase(virtualizationName);
+    }
+
+    @Override
     public Iterable<? extends DataVirtualization> findDataVirtualizations() {
         return this.dataVirtualizationRepository.findAll();
     }

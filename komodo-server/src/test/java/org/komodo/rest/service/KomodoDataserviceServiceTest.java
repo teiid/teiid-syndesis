@@ -18,11 +18,7 @@
 
 package org.komodo.rest.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -40,9 +36,11 @@ import org.komodo.repository.WorkspaceManagerImpl;
 import org.komodo.rest.KomodoJsonMarshaller;
 import org.komodo.rest.datavirtualization.ImportPayload;
 import org.komodo.rest.datavirtualization.KomodoStatusObject;
+import org.komodo.rest.datavirtualization.RestDataVirtualization;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
@@ -156,6 +154,37 @@ public class KomodoDataserviceServiceTest {
         //conflicts
         response = komodoDataserviceService.validateDataserviceName("FOO");
         assertNotNull(response.getBody());
+    }
+
+    @Test public void testValidateNameUsingGet() throws Exception {
+        try {
+            komodoDataserviceService.getDataservice("foo");
+            fail();
+        } catch (ResponseStatusException e) {
+            assertEquals(HttpStatus.NOT_FOUND, e.getStatus());
+        }
+
+        //must end with number/letter
+        try {
+            komodoDataserviceService.getDataservice("foo-");
+            fail();
+        } catch (ResponseStatusException e) {
+            assertEquals(HttpStatus.FORBIDDEN, e.getStatus());
+        }
+
+        //bad chars
+        try {
+            komodoDataserviceService.getDataservice("%foo&");
+            fail();
+        } catch (ResponseStatusException e) {
+            assertEquals(HttpStatus.FORBIDDEN, e.getStatus());
+        }
+
+        workspaceManagerImpl.createDataVirtualization("foo");
+
+        //conflicts
+        RestDataVirtualization response = komodoDataserviceService.getDataservice("FOO");
+        assertNotNull(response);
     }
 
     static DefaultSyndesisDataSource createH2DataSource(String name) {

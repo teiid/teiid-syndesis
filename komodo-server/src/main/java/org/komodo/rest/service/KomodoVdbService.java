@@ -23,6 +23,7 @@ import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.rest.KomodoService;
 import org.komodo.rest.V1Constants;
 import org.komodo.rest.datavirtualization.RelationalMessages;
+import org.komodo.utils.KLog;
 import org.komodo.utils.StringNameValidator;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +40,7 @@ import io.swagger.annotations.ApiResponses;
 /**
  * A Komodo REST service for obtaining VDB information from the workspace.
  */
+@Deprecated
 @RestController
 @RequestMapping(V1Constants.APP_PATH + V1Constants.FS + V1Constants.WORKSPACE_SEGMENT)
 @Api(tags = {V1Constants.VDBS_SEGMENT})
@@ -70,6 +72,8 @@ public final class KomodoVdbService extends KomodoService {
                                       final @PathVariable( "virtualization" ) String virtualization,
                                       @ApiParam(value = "Name of the Model to get its tables", required = true)
                                       final @PathVariable( "viewName" ) String viewName ) throws Exception {
+
+        KLog.getLogger().warn("validateViewName is deprecated, use GET workspace/dataservices/{virtualization}/views/{viewName} instead");
 
         final String errorMsg = VALIDATOR.checkValidName( viewName );
 
