@@ -17,7 +17,6 @@
  */
 package org.komodo.rest.service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.komodo.KException;
@@ -61,56 +60,6 @@ public class KomodoPublishingService extends KomodoService {
 
     @Autowired
     private KomodoMetadataService komodoMetadataService;
-
-    @RequestMapping(value = V1Constants.PUBLISH, method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
-    @ApiOperation(value = "Gets the published virtualization services",
-        response = BuildStatus.class,
-        responseContainer = "List")
-    @ApiResponses(value = { @ApiResponse(code = 403, message = "An error has occurred.") })
-    public List<BuildStatus> getVirtualizations() throws KException {
-
-        List<BuildStatus> result = new ArrayList<>();
-        for (String name : getWorkspaceManager().findDataVirtualizationNames()) {
-            result.add(this.openshiftClient.getVirtualizationStatus(name));
-        }
-
-        return result;
-    }
-
-    @RequestMapping(value = V1Constants.PUBLISH + StringConstants.FS
-            + V1Constants.VIRTUALIZATION_PLACEHOLDER, method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
-    @ApiOperation(value = "Find Build Status of Virtualization", response = BuildStatus.class)
-    @ApiResponses(value = {
-        @ApiResponse(code = 404, message = "No virtualization could be found with name"),
-        @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-    public BuildStatus getVirtualizationStatus(
-            @ApiParam(value = "Name of the virtualization", required = true)
-            final @PathVariable(value = "virtualization", required=true) String virtualization) throws KException {
-        BuildStatus status = this.openshiftClient.getVirtualizationStatus(virtualization);
-
-        return status;
-    }
-
-    @RequestMapping(value = V1Constants.PUBLISH_LOGS + StringConstants.FS
-            + V1Constants.VIRTUALIZATION_PLACEHOLDER, method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
-    @ApiOperation(value = "Find Publish Logs of Virtualization", response = KomodoStatusObject.class)
-    @ApiResponses(value = {
-        @ApiResponse(code = 404, message = "No virtualization could be found with name"),
-        @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-    public KomodoStatusObject getVirtualizationLogs(
-            @ApiParam(value = "Name of the virtualization")
-            final @PathVariable(value = "virtualization", required = true) String virtualization) {
-
-        KomodoStatusObject status = new KomodoStatusObject("Logs for " + virtualization); //$NON-NLS-1$
-
-        String log = this.openshiftClient.getVirtualizationLog(virtualization);
-        status.addAttribute("log", log); //$NON-NLS-1$
-        return status;
-    }
 
     @RequestMapping(value = V1Constants.PUBLISH + StringConstants.FS
             + V1Constants.VIRTUALIZATION_PLACEHOLDER, method = RequestMethod.DELETE, produces = { MediaType.APPLICATION_JSON_VALUE })
