@@ -202,13 +202,6 @@ public class IntegrationTest {
         assertNotNull(view.getBody().getCreatedAt());
         assertNotNull(view.getBody().getVersion());
 
-        ResponseEntity<String> validate = restTemplate.getForEntity(
-                "/v1/workspace/{virtualization}/views/nameValidation/{viewName}",
-                String.class, dvName, "myView");
-        assertEquals(HttpStatus.OK, validate.getStatusCode());
-        //means that it's not valid
-        assertNotNull(validate.getBody());
-
         validateViewName = restTemplate.getForEntity(
                 "/v1/workspace/dataservices/{virtualization}/views/{viewName}",
                 ViewDefinition.class, dvName, "myView");
