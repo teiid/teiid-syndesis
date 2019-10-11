@@ -151,7 +151,7 @@ public class ServiceVdbGeneratorTest {
     }
 
     private void addSourceInfo(String connectionName, String ddl, String modelName) {
-        DefaultSyndesisDataSource sds = KomodoDataserviceServiceTest.createH2DataSource(connectionName);
+        DefaultSyndesisDataSource sds = DataVirtualizationServiceTest.createH2DataSource(connectionName);
         dataSources.put(connectionName, sds.createDataSource());
 
         MetadataFactory mf = new MetadataFactory("x", 1, modelName, SystemMetadata.getInstance().getRuntimeTypeMap(), new Properties(), null);

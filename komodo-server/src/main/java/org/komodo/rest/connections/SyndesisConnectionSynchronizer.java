@@ -29,8 +29,8 @@ import org.komodo.datasources.DefaultSyndesisDataSource;
 import org.komodo.metadata.TeiidDataSource;
 import org.komodo.openshift.TeiidOpenShiftClient;
 import org.komodo.rest.connections.SyndesisConnectionMonitor.EventMsg;
-import org.komodo.rest.service.KomodoMetadataService;
-import org.komodo.rest.service.KomodoMetadataService.SourceDeploymentMode;
+import org.komodo.rest.service.MetadataService;
+import org.komodo.rest.service.MetadataService.SourceDeploymentMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -43,11 +43,11 @@ public class SyndesisConnectionSynchronizer {
     private static final Log LOGGER = LogFactory.getLog(SyndesisConnectionSynchronizer.class);
 
     private TeiidOpenShiftClient openshiftClient;
-    private KomodoMetadataService metadataService;
+    private MetadataService metadataService;
     private KEngine kengine;
 
     public SyndesisConnectionSynchronizer(@Autowired TeiidOpenShiftClient toc,
-            @Autowired KomodoMetadataService metadataService, @Autowired KEngine kengine) {
+            @Autowired MetadataService metadataService, @Autowired KEngine kengine) {
         this.openshiftClient = toc;
         this.metadataService = metadataService;
         this.kengine = kengine;

@@ -45,7 +45,6 @@ import org.komodo.rest.Application;
 import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.CredentialsProvider;
 import org.komodo.rest.KomodoJsonMarshaller;
-import org.komodo.rest.V1Constants;
 import org.komodo.rest.connections.SyndesisConnectionMonitor;
 import org.komodo.rest.connections.SyndesisConnectionSynchronizer;
 import org.komodo.rest.datavirtualization.KomodoQueryAttribute;
@@ -119,13 +118,6 @@ public class IntegrationTest {
     }
 
     @Test
-    public void testAbout() {
-        ResponseEntity<KomodoStatusObject> response = restTemplate.getForEntity("/v1/service/about", KomodoStatusObject.class);
-        assertEquals(V1Constants.App.name(), response.getBody().getAttributes().get(KomodoUtilService.APP_NAME));
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-    }
-
-    @Test
     public void testError() throws Exception {
     	KomodoQueryAttribute kqa = new KomodoQueryAttribute();
     	ResponseEntity<String> response = restTemplate.postForEntity("/v1/metadata/query", kqa, String.class);
@@ -147,11 +139,11 @@ public class IntegrationTest {
         rdv.setDescription("description");
 
         ResponseEntity<String> response = restTemplate.postForEntity(
-                "/v1/workspace/dataservices/dv", rdv, String.class);
+                "/v1/virtualizations", rdv, String.class);
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
         ResponseEntity<ViewDefinition> validateViewName = restTemplate.getForEntity(
-                "/v1/workspace/dataservices/{virtualization}/views/{viewName}",
+                "/v1/virtualizations/{virtualization}/views/{viewName}",
                 ViewDefinition.class, dvName, "myView");
         assertEquals(HttpStatus.NOT_FOUND, validateViewName.getStatusCode());
 
@@ -163,7 +155,7 @@ public class IntegrationTest {
         //using a string response as spring does not seem to handle the
         //unwrap correctly
         ResponseEntity<String> stashStatus = restTemplate.exchange(
-                "/v1/service/userProfile/viewEditorState", HttpMethod.PUT,
+                "/v1/editors", HttpMethod.PUT,
                 new HttpEntity<ViewDefinition>(vd), String.class);
 
         assertEquals(HttpStatus.OK, stashStatus.getStatusCode());
@@ -179,7 +171,7 @@ public class IntegrationTest {
         vd2.setUserDefined(true);
 
         ResponseEntity<String> stashStatus2 = restTemplate.exchange(
-                "/v1/service/userProfile/viewEditorState", HttpMethod.PUT,
+                "/v1/editors", HttpMethod.PUT,
                 new HttpEntity<ViewDefinition>(vd2), String.class);
 
         assertEquals(HttpStatus.OK, stashStatus2.getStatusCode());
@@ -188,7 +180,7 @@ public class IntegrationTest {
         assertNotNull(id2);
 
         ResponseEntity<ViewDefinition> view = restTemplate.getForEntity(
-                "/v1/service/userProfile/viewEditorState/{id}",
+                "/v1/editors/{id}",
                 ViewDefinition.class, id);
         assertEquals(HttpStatus.OK, view.getStatusCode());
 
@@ -197,7 +189,7 @@ public class IntegrationTest {
         assertNotNull(view.getBody().getVersion());
 
         validateViewName = restTemplate.getForEntity(
-                "/v1/workspace/dataservices/{virtualization}/views/{viewName}",
+                "/v1/virtualizations/{virtualization}/views/{viewName}",
                 ViewDefinition.class, dvName, "myView");
         assertEquals(HttpStatus.OK, validateViewName.getStatusCode());
         //means that it already exists, therefore not valid
@@ -211,7 +203,7 @@ public class IntegrationTest {
         //correct it
         vd2.setDdl("create view myview2 as select * from myview");
         restTemplate.exchange(
-                "/v1/service/userProfile/viewEditorState", HttpMethod.PUT,
+                "/v1/editors", HttpMethod.PUT,
                 new HttpEntity<ViewDefinition>(vd2), KomodoStatusObject.class);
 
         query("select * from dv.myview2", dvName, true);
@@ -253,7 +245,7 @@ public class IntegrationTest {
         rdv.setDescription("description");
 
         ResponseEntity<String> response = restTemplate.postForEntity(
-                "/v1/workspace/dataservices/testSourceRefresh", rdv, String.class);
+                "/v1/virtualizations", rdv, String.class);
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
         //the syndesis and os logic has been stubbed, but we can interact
@@ -379,7 +371,7 @@ public class IntegrationTest {
         assertEquals("FAILED", status.get("schemaState"));
         assertEquals(Boolean.FALSE, status.get("loading"));
 
-        ResponseEntity<List> virts = restTemplate.getForEntity("/v1/workspace/dataservices", List.class);
+        ResponseEntity<List> virts = restTemplate.getForEntity("/v1/virtualizations", List.class);
         assertEquals(HttpStatus.OK, virts.getStatusCode());
         assertEquals(1, virts.getBody().size());
         Map virt = (Map)virts.getBody().get(0);
@@ -394,7 +386,7 @@ public class IntegrationTest {
         rdv.setDescription("description");
 
         ResponseEntity<String> response = restTemplate.postForEntity(
-                "/v1/workspace/dataservices/testExport", rdv, String.class);
+                "/v1/virtualizations", rdv, String.class);
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
         ViewDefinition vd = new ViewDefinition(dvName, "myview");
@@ -403,10 +395,10 @@ public class IntegrationTest {
         vd.setUserDefined(true);
 
         restTemplate.exchange(
-                "/v1/service/userProfile/viewEditorState", HttpMethod.PUT,
+                "/v1/editors", HttpMethod.PUT,
                 new HttpEntity<ViewDefinition>(vd), String.class);
 
-        ResponseEntity<byte[]> export = restTemplate.getForEntity("/v1/workspace/dataservices/testExport/export", byte[].class);
+        ResponseEntity<byte[]> export = restTemplate.getForEntity("/v1/virtualizations/testExport/export", byte[].class);
         assertEquals(HttpStatus.OK, export.getStatusCode());
         byte[] result = export.getBody();
         ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(result));
@@ -432,18 +424,18 @@ public class IntegrationTest {
         });
 
         ResponseEntity<KomodoStatusObject> importResponse = restTemplate.postForEntity(
-                "/v1/workspace/dataservices", body, KomodoStatusObject.class);
+                "/v1/virtualizations", body, KomodoStatusObject.class);
 
         //trying to re-import with the existing name
         assertEquals(HttpStatus.CONFLICT, importResponse.getStatusCode());
 
         importResponse = restTemplate.postForEntity(
-                "/v1/workspace/dataservices?virtualization={name}", body, KomodoStatusObject.class, "newName");
+                "/v1/virtualizations?virtualization={name}", body, KomodoStatusObject.class, "newName");
 
         assertEquals(HttpStatus.OK, importResponse.getStatusCode());
 
         ResponseEntity<List> views = restTemplate.getForEntity(
-                "/v1/service/userProfile/viewListings?virtualization={name}", List.class, "newName");
+                "/v1/virtualizations/{name}/views", List.class, "newName");
 
         assertEquals(HttpStatus.OK, views.getStatusCode());
         assertEquals(1, views.getBody().size());

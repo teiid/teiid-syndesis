@@ -43,13 +43,16 @@ import org.teiid.adminapi.impl.VDBMetaData;
 @RunWith(SpringRunner.class)
 @DataJpaTest
 @ContextConfiguration(classes = {KomodoRepositoryConfiguration.class, ServiceTestConfiguration.class})
-public class KomodoUtilServiceTest {
+public class EditorServiceTest {
 
     @Autowired
     private DefaultMetadataInstance metadataInstance;
 
     @Autowired
-    private KomodoUtilService komodoUtilService;
+    private EditorService komodoUtilService;
+
+    @Autowired
+    private DataVirtualizationService dvService;
 
     @Autowired
     private TestEntityManager entityManager;
@@ -114,14 +117,14 @@ public class KomodoUtilServiceTest {
         //the save does not determine the source paths
         assertEquals(Arrays.asList(), saved.getSourcePaths());
 
-        for (ViewListing vl : komodoUtilService.getViewList("x")) {
+        for (ViewListing vl : dvService.getViewList("x")) {
             assertTrue(vl.isValid());
         }
     }
 
     static VDBMetaData dummyPreviewVdb() {
         VDBMetaData vdb = new VDBMetaData();
-        vdb.setName(KomodoUtilService.PREVIEW_VDB);
+        vdb.setName(EditorService.PREVIEW_VDB);
         ModelMetaData m = new ModelMetaData();
         m.setName("dummy");
         vdb.addModel(m);
