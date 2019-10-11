@@ -126,12 +126,6 @@ public class IntegrationTest {
     }
 
     @Test
-    public void testGetPublished() {
-        ResponseEntity<List> response = restTemplate.getForEntity("/v1/metadata/publish", List.class);
-        assertNotNull(response.getBody());
-    }
-
-    @Test
     public void testError() throws Exception {
     	KomodoQueryAttribute kqa = new KomodoQueryAttribute();
     	ResponseEntity<String> response = restTemplate.postForEntity("/v1/metadata/query", kqa, String.class);
