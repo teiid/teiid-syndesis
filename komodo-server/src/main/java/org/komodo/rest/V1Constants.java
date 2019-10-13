@@ -102,7 +102,7 @@ public interface V1Constants extends StringConstants {
 
     String VIRTUALIZATIONS_SEGMENT = "virtualizations"; //$NON-NLS-1$
 
-    String TEIID_SOURCE = "{teiidSourceName}"; //$NON-NLS-1$
+    String TEIID_SOURCE = "teiidSourceName"; //$NON-NLS-1$
 
     /**
      * Placeholder added to an URI to allow a specific teiid source name
