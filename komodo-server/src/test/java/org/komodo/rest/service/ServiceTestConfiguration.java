@@ -29,7 +29,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.teiid.runtime.EmbeddedConfiguration;
 
-@ComponentScan(basePackageClasses = {KomodoDataserviceService.class, DefaultMetadataInstance.class})
+@ComponentScan(basePackageClasses = {DataVirtualizationService.class, DefaultMetadataInstance.class})
 @TestConfiguration
 public class ServiceTestConfiguration {
 

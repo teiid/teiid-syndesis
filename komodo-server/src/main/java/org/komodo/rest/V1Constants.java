@@ -86,14 +86,9 @@ public interface V1Constants extends StringConstants {
     String APP_PATH = FS + "v1"; //$NON-NLS-1$
 
     /**
-     * The name of the URI path segment for the Komodo workspace.
-     */
-    String WORKSPACE_SEGMENT = "workspace"; //$NON-NLS-1$
-
-    /**
      * The name of the URI path segment for the utility service.
      */
-    String SERVICE_SEGMENT = "service"; //$NON-NLS-1$
+    String EDITORS_SEGMENT = "editors"; //$NON-NLS-1$
 
     /**
      * The name of the URI path segment for the metadata service.
@@ -101,49 +96,18 @@ public interface V1Constants extends StringConstants {
     String METADATA_SEGMENT = "metadata"; //$NON-NLS-1$
 
     /**
-     * The name of the URI path segment for the Komodo schema.
-     */
-    String SCHEMA_SEGMENT = "schema"; //$NON-NLS-1$
-
-    /**
      * The about segment
      */
     String ABOUT = "about"; //$NON-NLS-1$
 
-    /**
-     * The name of the URI path segment for the collection of VDBs in the Komodo workspace.
-     */
-    String VDBS_SEGMENT = "vdbs"; //$NON-NLS-1$
+    String VIRTUALIZATIONS_SEGMENT = "virtualizations"; //$NON-NLS-1$
+
+    String TEIID_SOURCE = "teiidSourceName"; //$NON-NLS-1$
 
     /**
-     * The name of the URI path segment for the collection of DataServices in the Komodo workspace.
+     * Placeholder added to an URI to allow a specific teiid source name
      */
-    String DATA_SERVICES_SEGMENT = "dataservices"; //$NON-NLS-1$
-
-    /**
-     * Placeholder added to an URI to allow a specific data service id
-     */
-    String DATA_SERVICE_PLACEHOLDER = "{dataserviceName}"; //$NON-NLS-1$
-
-    /**
-     * The name of the URI path segment for validating a data service or connection name.
-     */
-    String NAME_VALIDATION_SEGMENT = "nameValidation"; //$NON-NLS-1$
-
-    /**
-     * The name of the URI path segment for finding service view info for a DataService
-     */
-    String SERVICE_VIEW_INFO = "serviceViewInfo"; //$NON-NLS-1$
-
-    /**
-     * Placeholder added to an URI to allow a specific connection id
-     */
-    String CONNECTION_PLACEHOLDER = "{connectionName}"; //$NON-NLS-1$
-
-    /**
-     * Placeholder added to an URI to allow a specific komodo source name
-     */
-    String KOMODO_SOURCE_PLACEHOLDER = "{komodoSourceName}"; //$NON-NLS-1$
+    String TEIID_SOURCE_PLACEHOLDER = "{" + TEIID_SOURCE + "}"; //$NON-NLS-1$ //$NON-NLS-2$
 
     /**
      * The name of the URI path segment for schema refresh
@@ -151,59 +115,13 @@ public interface V1Constants extends StringConstants {
     String REFRESH_SCHEMA_SEGMENT = "refresh-schema"; //$NON-NLS-1$
 
     /**
-     * The name of the URI path segment for the collection of models of a vdb
-     */
-    String MODELS_SEGMENT = "Models"; //$NON-NLS-1$
-
-    /**
-     * Placeholder added to an URI to allow a specific model id
-     */
-    String MODEL_PLACEHOLDER = "{modelName}"; //$NON-NLS-1$
-
-    /**
-     * Placeholder added to an URI to allow a specific source id
-     */
-    String SOURCE_PLACEHOLDER = "{sourceName}"; //$NON-NLS-1$
-
-    /**
      * The name of the URI path segment for the collection of views of a vdb model
      */
-    String VIEWS_SEGMENT = "Views"; //$NON-NLS-1$
+    String VIEWS_SEGMENT = "views"; //$NON-NLS-1$
 
-    /**
-     * Placeholder added to an URI to allow a specific view id
-     */
-    String VIEW_PLACEHOLDER = "{viewName}"; //$NON-NLS-1$
+    String VIEW_NAME = "viewName"; //$NON-NLS-1$
 
-    /**
-     * Placeholder added to an URI to allow a specific table id
-     */
-    String TABLE_PLACEHOLDER = "{tableName}"; //$NON-NLS-1$
-
-    /**
-     * Placeholder added to an URI to allow a specific data role id
-     */
-    String DATA_ROLE_PLACEHOLDER = "{dataRoleId}"; //$NON-NLS-1$
-
-    /**
-     * Placeholder added to an URI to allow a specific permission id
-     */
-    String PERMISSION_PLACEHOLDER = "{permissionId}"; //$NON-NLS-1$
-
-    /**
-     * Placeholder added to an URI to allow a specific condition id
-     */
-    String CONDITION_PLACEHOLDER = "{conditionId}"; //$NON-NLS-1$
-
-    /**
-     * Placeholder added to an URI to allow a specific mask id
-     */
-    String MASK_PLACEHOLDER = "{maskId}"; //$NON-NLS-1$
-
-    /**
-     * Placeholder added to an URI for validation of the value
-     */
-    String VALIDATE_PLACEHOLDER = "{validateValue}"; //$NON-NLS-1$
+    String VIEW_PLACEHOLDER = "{"+ VIEW_NAME +"}"; //$NON-NLS-1$ //$NON-NLS-2$
 
     /**
      * The name of the URI vdb name parameter
@@ -221,39 +139,21 @@ public interface V1Constants extends StringConstants {
     String SYNDESIS_SOURCE_STATUSES = "syndesisSourceStatuses"; //$NON-NLS-1$
 
     /**
-     * User profile resource method constant
-     */
-    String USER_PROFILE = "userProfile"; //$NON-NLS-1$
-
-    /**
-     * The view editor state of the user profile
-     */
-    String VIEW_EDITOR_STATE = "viewEditorState"; //$NON-NLS-1$
-
-    /**
      * The view editor state of the user profile
      */
     String VIEW_LISTINGS = "viewListings"; //$NON-NLS-1$
 
+    String ID = "id"; //$NON-NLS-1$
+
     /**
-     * View editor state placeholder
+     * id placeholder
      */
-    String VIEW_EDITOR_STATE_PLACEHOLDER = "{viewEditorStateId}"; //$NON-NLS-1$
+    String ID_PLACEHOLDER = "{" + ID + "}"; //$NON-NLS-1$ //$NON-NLS-2$
 
     /**
      * Publish VDB
      */
     String PUBLISH = "publish"; //$NON-NLS-1$
-
-    /**
-     * Publish VDB Logs
-     */
-    String PUBLISH_LOGS = "publishLogs"; //$NON-NLS-1$
-
-    /**
-     * Refresh views referenced in a view editor state object
-     */
-    String REFRESH_DATASERVICE_VIEWS = "refreshViews"; //$NON-NLS-1$
 
     String IMPORT = "import"; //$NON-NLS-1$
 
@@ -267,8 +167,11 @@ public interface V1Constants extends StringConstants {
      */
     String RUNTIME_METADATA = "runtimeMetadata"; //$NON-NLS-1$
 
+    String VIRTUALIZATION = "virtualization"; //$NON-NLS-1$
+
     /**
      * Placeholder added to an URI to allow a specific virtualization name
      */
-    String VIRTUALIZATION_PLACEHOLDER = "{virtualization}"; //$NON-NLS-1$
+    String VIRTUALIZATION_PLACEHOLDER = "{" + VIRTUALIZATION + "}"; //$NON-NLS-1$ //$NON-NLS-2$
+
 }

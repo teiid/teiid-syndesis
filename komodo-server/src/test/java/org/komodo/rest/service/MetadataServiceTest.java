@@ -48,12 +48,12 @@ import org.teiid.adminapi.impl.VDBMetaData;
 @DataJpaTest
 @ContextConfiguration(classes = {KomodoRepositoryConfiguration.class, ServiceTestConfiguration.class})
 @DirtiesContext
-public class KomodoMetadataServiceTest {
+public class MetadataServiceTest {
     @Autowired
     private WorkspaceManagerImpl workspaceManagerImpl;
 
     @Autowired
-    private KomodoMetadataService komodoMetadataService;
+    private MetadataService komodoMetadataService;
 
     @Autowired
     private DefaultMetadataInstance metadataInstance;
@@ -65,12 +65,12 @@ public class KomodoMetadataServiceTest {
 //        properties.put(TeiidDataSource.DATASOURCE_DRIVERNAME, "type");
 //        properties.put(TeiidOpenShiftClient.ID, "source id");
 
-        DefaultSyndesisDataSource sds = KomodoDataserviceServiceTest.createH2DataSource("source");
+        DefaultSyndesisDataSource sds = DataVirtualizationServiceTest.createH2DataSource("source");
         metadataInstance.registerDataSource(sds);
 
         TeiidDataSourceImpl tds = metadataInstance.getDataSource("source");
 
-        VDBMetaData vdb = KomodoMetadataService.generateSourceVdb(tds, "vdb", null);
+        VDBMetaData vdb = MetadataService.generateSourceVdb(tds, "vdb", null);
 
         String s = new String(DefaultMetadataInstance.toBytes(vdb).toByteArray(), "UTF-8");
         assertEquals(
@@ -86,7 +86,7 @@ public class KomodoMetadataServiceTest {
                 s);
 
         //with ddl passed in
-        vdb = KomodoMetadataService.generateSourceVdb(tds, "vdb", "create something...");
+        vdb = MetadataService.generateSourceVdb(tds, "vdb", "create something...");
 
         s = new String(DefaultMetadataInstance.toBytes(vdb).toByteArray(), "UTF-8");
         assertEquals(
@@ -114,7 +114,7 @@ public class KomodoMetadataServiceTest {
             //no source yet
         }
 
-        DefaultSyndesisDataSource sds = KomodoDataserviceServiceTest.createH2DataSource("source2");
+        DefaultSyndesisDataSource sds = DataVirtualizationServiceTest.createH2DataSource("source2");
         metadataInstance.registerDataSource(sds);
 
         workspaceManagerImpl.createSchema("someid", "source",
@@ -156,7 +156,7 @@ public class KomodoMetadataServiceTest {
         }
 
         //add the data source, and schema
-        DefaultSyndesisDataSource sds = KomodoDataserviceServiceTest.createH2DataSource("source3");
+        DefaultSyndesisDataSource sds = DataVirtualizationServiceTest.createH2DataSource("source3");
         metadataInstance.registerDataSource(sds);
 
 
@@ -191,7 +191,7 @@ public class KomodoMetadataServiceTest {
         workspaceManagerImpl.createDataVirtualization("dv1");
 
         //get rid of the default preview vdb
-        metadataInstance.undeployDynamicVdb(KomodoUtilService.PREVIEW_VDB);
+        metadataInstance.undeployDynamicVdb(EditorService.PREVIEW_VDB);
 
         try {
             komodoMetadataService.updatePreviewVdb("dv1");
@@ -200,7 +200,7 @@ public class KomodoMetadataServiceTest {
             //preveiw vdb does not exist
         }
 
-        metadataInstance.deploy(KomodoUtilServiceTest.dummyPreviewVdb());
+        metadataInstance.deploy(EditorServiceTest.dummyPreviewVdb());
 
         //even with no views, we should still succeed
         TeiidVdb vdb = komodoMetadataService.updatePreviewVdb("dv1");

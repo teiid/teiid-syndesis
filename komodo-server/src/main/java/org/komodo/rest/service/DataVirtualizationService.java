@@ -21,6 +21,7 @@ import static org.komodo.rest.datavirtualization.RelationalMessages.Error.*;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,16 +38,21 @@ import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.datavirtualization.SourceSchema;
 import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.metadata.TeiidDataSource;
+import org.komodo.metadata.TeiidVdb;
 import org.komodo.openshift.BuildStatus;
 import org.komodo.openshift.BuildStatus.RouteStatus;
 import org.komodo.openshift.ProtocolType;
+import org.komodo.openshift.PublishConfiguration;
 import org.komodo.openshift.TeiidOpenShiftClient;
+import org.komodo.rest.AuthHandlingFilter.OAuthCredentials;
 import org.komodo.rest.KomodoService;
 import org.komodo.rest.V1Constants;
 import org.komodo.rest.datavirtualization.ImportPayload;
 import org.komodo.rest.datavirtualization.KomodoStatusObject;
+import org.komodo.rest.datavirtualization.PublishRequestPayload;
 import org.komodo.rest.datavirtualization.RelationalMessages;
 import org.komodo.rest.datavirtualization.RestDataVirtualization;
+import org.komodo.rest.datavirtualization.ViewListing;
 import org.komodo.rest.datavirtualization.v1.DataVirtualizationV1Adapter;
 import org.komodo.rest.datavirtualization.v1.SourceV1;
 import org.komodo.rest.datavirtualization.v1.ViewDefinitionV1Adapter;
@@ -71,6 +77,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import org.teiid.adminapi.impl.ModelMetaData;
+import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.metadata.Schema;
 import org.teiid.metadata.Table;
 import org.teiid.util.FullyQualifiedName;
@@ -87,13 +94,13 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
 /**
- * A Komodo REST service for obtaining Dataservice information from the workspace.
+ * A REST service for obtaining virtualization information.
  */
 @RestController
-@RequestMapping(value = V1Constants.APP_PATH + V1Constants.FS + V1Constants.WORKSPACE_SEGMENT
-        + StringConstants.FS + V1Constants.DATA_SERVICES_SEGMENT)
-@Api(tags = { V1Constants.DATA_SERVICES_SEGMENT })
-public final class KomodoDataserviceService extends KomodoService {
+@RequestMapping(value = V1Constants.APP_PATH
+        + StringConstants.FS + V1Constants.VIRTUALIZATIONS_SEGMENT)
+@Api(tags = { V1Constants.VIRTUALIZATIONS_SEGMENT })
+public final class DataVirtualizationService extends KomodoService {
 
     /**
      * To be a valid schema name we don't allow .
@@ -108,40 +115,39 @@ public final class KomodoDataserviceService extends KomodoService {
     private TeiidOpenShiftClient openshiftClient;
 
     @Autowired
-    private KomodoMetadataService metadataService;
+    private MetadataService metadataService;
 
     @Autowired
-    private KomodoUtilService utilService;
+    private EditorService utilService;
 
     /**
-     * Get the Dataservices from the komodo repository
-     * @return a JSON document representing all the Dataservices in the Komodo workspace (never <code>null</code>)
+     * Get the virtualizations from the komodo repository
+     * @return a JSON document representing all the virtualizations
      * @throws Exception
      */
     @RequestMapping(method = RequestMethod.GET, produces= { MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation(value = "Return the collection of data services",
         response = RestDataVirtualization.class, responseContainer = "List")
     @ApiResponses(value = { @ApiResponse(code = 403, message = "An error has occurred.") })
-    public List<RestDataVirtualization> getDataservices() throws Exception {
+    public List<RestDataVirtualization> getDataVirtualizations() throws Exception {
 
-        Iterable<? extends DataVirtualization> dataServices = kengine.runInTransaction(true, ()->{
+        Iterable<? extends DataVirtualization> virtualizations = kengine.runInTransaction(true, ()->{
             return getWorkspaceManager().findDataVirtualizations();
         });
 
         final List<RestDataVirtualization> entities = new ArrayList<>();
-        for (final DataVirtualization dataService : dataServices) {
-            RestDataVirtualization entity = createRestDataservice(dataService);
+        for (final DataVirtualization virtualization : virtualizations) {
+            RestDataVirtualization entity = createRestDataVirtualization(virtualization);
             entities.add(entity);
-            LOGGER.debug("getDataservices:Dataservice '%s' entity was constructed", dataService.getName());
         }
         return entities;
     }
 
-    private RestDataVirtualization createRestDataservice(final DataVirtualization dataService) throws KException {
-        RestDataVirtualization entity = new RestDataVirtualization(dataService);
-        entity.setServiceViewModel(dataService.getName());
-        // Set published status of dataservice
-        BuildStatus status = this.openshiftClient.getVirtualizationStatus(dataService.getName());
+    private RestDataVirtualization createRestDataVirtualization(final DataVirtualization virtualization) throws KException {
+        RestDataVirtualization entity = new RestDataVirtualization(virtualization);
+        entity.setServiceViewModel(virtualization.getName());
+        // Set published status of virtualization
+        BuildStatus status = this.openshiftClient.getVirtualizationStatus(virtualization.getName());
         if (status != null) {
             entity.setPublishedState(status.status().name());
             entity.setPublishPodName(status.publishPodName());
@@ -149,32 +155,32 @@ public final class KomodoDataserviceService extends KomodoService {
             entity.setOdataHostName(getOdataHost(status));
             entity.setUsedBy(status.getUsedBy());
         }
-        entity.setEmpty(this.getWorkspaceManager().findViewDefinitionsNames(dataService.getName()).isEmpty());
+        entity.setEmpty(this.getWorkspaceManager().findViewDefinitionsNames(virtualization.getName()).isEmpty());
         return entity;
     }
 
     /**
-     * @param dataserviceName the id of the Dataservice being retrieved (cannot be empty)
-     * @return the JSON representation of the Dataservice (never <code>null</code>)
+     * @param virtualization the name of the virtualization being retrieved (cannot be empty)
+     * @return the JSON representation of the virtualization (never <code>null</code>)
      * @throws Exception
      */
-    @RequestMapping(value = V1Constants.DATA_SERVICE_PLACEHOLDER, method = RequestMethod.GET, produces = {
+    @RequestMapping(value = V1Constants.VIRTUALIZATION_PLACEHOLDER, method = RequestMethod.GET, produces = {
             MediaType.APPLICATION_JSON_VALUE })
-    @ApiOperation(value = "Find dataservice by name", response = RestDataVirtualization.class)
-    @ApiResponses(value = { @ApiResponse(code = 404, message = "No Dataservice could be found with name"),
+    @ApiOperation(value = "Find virtualization by name", response = RestDataVirtualization.class)
+    @ApiResponses(value = { @ApiResponse(code = 404, message = "No virtualization could be found with name"),
             @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
             @ApiResponse(code = 403, message = "An error has occurred.") })
-    public RestDataVirtualization getDataservice(
-            @ApiParam(value = "name of the dataservice to be fetched - ignoring case",
-            required = true) final @PathVariable("dataserviceName") String dataserviceName)
+    public RestDataVirtualization getDataVirtualization(
+            @ApiParam(value = "name of the virtualization to be fetched - ignoring case",
+            required = true) final @PathVariable(VIRTUALIZATION) String virtualization)
             throws Exception {
 
         DataVirtualization dv = kengine.runInTransaction(true, () -> {
-             return getWorkspaceManager().findDataVirtualizationByNameIgnoreCase(dataserviceName);
+             return getWorkspaceManager().findDataVirtualizationByNameIgnoreCase(virtualization);
         });
 
         if (dv == null) {
-            String validationMessage = getValidationMessage(dataserviceName);
+            String validationMessage = getValidationMessage(virtualization);
             if (validationMessage != null) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, validationMessage);
             }
@@ -182,7 +188,7 @@ public final class KomodoDataserviceService extends KomodoService {
             // check for duplicate name
             final boolean inUse = kengine.runInTransaction(true, () -> {
                 //from the pattern validation, there's no escaping necessary
-                return getWorkspaceManager().isNameInUse(dataserviceName);
+                return getWorkspaceManager().isNameInUse(virtualization);
             });
 
             // name is a duplicate
@@ -191,55 +197,44 @@ public final class KomodoDataserviceService extends KomodoService {
                 throw new ResponseStatusException(HttpStatus.SEE_OTHER, "the name matches an existing connection name"); //$NON-NLS-1$
             }
 
-            throw notFound( dataserviceName );
+            throw notFound( virtualization );
         }
 
-        RestDataVirtualization dataservice = createRestDataservice(dv);
-        LOGGER.debug("getDataservice:Dataservice '{0}' entity was constructed", dataservice.getName()); //$NON-NLS-1$
-        return dataservice;
+        RestDataVirtualization restDv = createRestDataVirtualization(dv);
+        return restDv;
     }
 
     /**
-     * Create a new DataService in the komodo repository
+     * Create a new virtualization in the komodo repository
      *
-     * @param dataserviceName the dataservice name (cannot be empty)
-     * @return a JSON representation of the new dataservice (never <code>null</code>)
      * @throws Exception
      */
-    @RequestMapping(value = FS + V1Constants.DATA_SERVICE_PLACEHOLDER,
-            method = RequestMethod.POST,
+    @RequestMapping(method = RequestMethod.POST,
             produces= { MediaType.APPLICATION_JSON_VALUE },
             consumes = { MediaType.APPLICATION_JSON_VALUE })
-    @ApiOperation(value = "Create a dataservice in the workspace")
+    @ApiOperation(value = "Create a virtualization")
     @ApiResponses(value = { @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
             @ApiResponse(code = 403, message = "An error has occurred.") })
-    public ResponseEntity<String> createDataservice(
-            @ApiParam(value = "Name of the data service", required = true) final @PathVariable("dataserviceName") String dataserviceName,
-            @ApiParam(required = true) @RequestBody final RestDataVirtualization restDataservice) throws Exception {
+    public ResponseEntity<String> createDataVirtualization(
+            @ApiParam(required = true) @RequestBody final RestDataVirtualization restDataVirtualization) throws Exception {
 
-        final String jsonDataserviceName = restDataservice.getName();
+        final String restName = restDataVirtualization.getName();
         // Error if the name is missing from the supplied json body
-        if (StringUtils.isBlank(jsonDataserviceName)) {
+        if (StringUtils.isBlank(restName)) {
             throw forbidden(RelationalMessages.Error.DATASERVICE_SERVICE_MISSING_NAME);
         }
 
-        // Error if the name parameter is different than JSON name
-        final boolean namesMatch = dataserviceName.equals(jsonDataserviceName);
-        if (!namesMatch) {
-            throw forbidden(DATASERVICE_SERVICE_SERVICE_NAME_ERROR, dataserviceName, jsonDataserviceName);
-        }
-
-        String message = getValidationMessage(dataserviceName);
+        String message = getValidationMessage(restName);
         if (message != null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, message);
         }
 
-        // create new Dataservice
+        // create new virtualization
         try {
             return kengine.runInTransaction(false, () -> {
-                final DataVirtualization dataservice = getWorkspaceManager().createDataVirtualization(dataserviceName);
-                dataservice.setDescription(restDataservice.getDescription());
-                return ResponseEntity.ok(dataserviceName + " Successfully created");
+                final DataVirtualization dv = getWorkspaceManager().createDataVirtualization(restName);
+                dv.setDescription(restDataVirtualization.getDescription());
+                return ResponseEntity.ok(restName + " Successfully created");
             });
         } catch (DataIntegrityViolationException e) {
             throw error(HttpStatus.CONFLICT, RelationalMessages.Error.DATASERVICE_SERVICE_CREATE_ALREADY_EXISTS);
@@ -247,29 +242,29 @@ public final class KomodoDataserviceService extends KomodoService {
     }
 
     /**
-     * Delete the specified Dataservice from the komodo repository
+     * Delete the specified restDv from the komodo repository
      *
-     * @param dataserviceName the name of the data service to remove (cannot be <code>null</code>)
+     * @param virtualization the name of the virtualization to remove (cannot be <code>null</code>)
      * @return a JSON document representing the results of the removal
      * @throws Exception
      */
-    @RequestMapping(value = V1Constants.DATA_SERVICE_PLACEHOLDER, method = RequestMethod.DELETE, produces = {
+    @RequestMapping(value = V1Constants.VIRTUALIZATION_PLACEHOLDER, method = RequestMethod.DELETE, produces = {
             MediaType.APPLICATION_JSON_VALUE })
-    @ApiOperation(value = "Delete a dataservice from the workspace")
+    @ApiOperation(value = "Delete a virtualization")
     @ApiResponses(value = { @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
             @ApiResponse(code = 403, message = "An error has occurred.") })
-    public KomodoStatusObject deleteDataservice(@ApiParam(value = "Name of the data service to be deleted", required = true) final @PathVariable("dataserviceName") String dataserviceName) throws Exception {
+    public KomodoStatusObject deleteDataVirtualization(@ApiParam(value = "Name of the virtualization to be deleted", required = true) final @PathVariable(VIRTUALIZATION) String virtualization) throws Exception {
 
         KomodoStatusObject kso = kengine.runInTransaction(false, ()->{
             final WorkspaceManager wkspMgr = getWorkspaceManager();
 
-            // Delete the Dataservice. The view definitions will cascade
-            if (!wkspMgr.deleteDataVirtualization(dataserviceName)) {
-                throw notFound(dataserviceName);
+            // Delete the virtualization. The view definitions will cascade
+            if (!wkspMgr.deleteDataVirtualization(virtualization)) {
+                throw notFound(virtualization);
             }
 
             KomodoStatusObject status = new KomodoStatusObject("Delete Status"); //$NON-NLS-1$
-            status.addAttribute(dataserviceName, "Successfully deleted"); //$NON-NLS-1$
+            status.addAttribute(virtualization, "Successfully deleted"); //$NON-NLS-1$
             return status;
         });
 
@@ -277,62 +272,62 @@ public final class KomodoDataserviceService extends KomodoService {
         //there is a small chance that a dv with the same name was recreated in the meantime,
         //but since this vdb is created on-demand we're good
         try {
-            metadataService.removeVdb(DataVirtualization.getPreviewVdbName(dataserviceName));
+            metadataService.removeVdb(DataVirtualization.getPreviewVdbName(virtualization));
         } catch (KException e) {
             LOGGER.debug("error removing preview vdb", e); //$NON-NLS-1$
         }
         return kso;
     }
 
-    private String getValidationMessage(final String dataserviceName) {
-        final String errorMsg = VALIDATOR.checkValidName(dataserviceName);
+    private String getValidationMessage(final String virtualization) {
+        final String errorMsg = VALIDATOR.checkValidName(virtualization);
 
         if (errorMsg != null) {
             return errorMsg;
         }
 
-        if (!DATAVIRTUALIZATION_PATTERN.matcher(dataserviceName).matches()) {
+        if (!DATAVIRTUALIZATION_PATTERN.matcher(virtualization).matches()) {
             return "Must match pattern " + DATAVIRTUALIZATION_PATTERN.pattern(); //$NON-NLS-1$
         }
 
         TreeSet<String> taken = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
         taken.addAll(ModelMetaData.getReservedNames());
 
-        if (taken.contains(dataserviceName)) {
-            return dataserviceName + " is a reserved name."; //$NON-NLS-1$
+        if (taken.contains(virtualization)) {
+            return virtualization + " is a reserved name."; //$NON-NLS-1$
         }
 
         return null;
     }
 
-    @RequestMapping(value = StringConstants.FS + V1Constants.DATA_SERVICE_PLACEHOLDER +
+    @RequestMapping(value = StringConstants.FS + V1Constants.VIRTUALIZATION_PLACEHOLDER +
             StringConstants.FS + V1Constants.IMPORT + StringConstants.FS
-            + V1Constants.KOMODO_SOURCE_PLACEHOLDER, method = RequestMethod.PUT, produces = { MediaType.APPLICATION_JSON_VALUE })
+            + V1Constants.TEIID_SOURCE_PLACEHOLDER, method = RequestMethod.PUT, produces = { MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation(value = "Import views from a given source", response = KomodoStatusObject.class)
     @ApiResponses(value = { @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
             @ApiResponse(code = 403, message = "An error has occurred.") })
-    public KomodoStatusObject importViews(@ApiParam(value = "Name of the dataservice", required = true)
-            final @PathVariable("dataserviceName")
-            String dataserviceName,
+    public KomodoStatusObject importViews(@ApiParam(value = "Name of the virtualization", required = true)
+            final @PathVariable(V1Constants.VIRTUALIZATION)
+            String virtualization,
 
-            @ApiParam( value = "Name of the komodo source", required = true )
-            final @PathVariable( "komodoSourceName" )
-            String komodoSourceName,
+            @ApiParam( value = "Name of the teiid source", required = true )
+            final @PathVariable(V1Constants.TEIID_SOURCE)
+            String teiidSourceName,
 
             @ApiParam(value = "Import Payload", required = true)
             @RequestBody
             final ImportPayload importPayload) throws Exception {
 
         KomodoStatusObject kso = kengine.runInTransaction(false, () -> {
-            DataVirtualization dataservice = getWorkspaceManager().findDataVirtualization(dataserviceName);
+            DataVirtualization dataservice = getWorkspaceManager().findDataVirtualization(virtualization);
             if (dataservice == null) {
-                throw notFound( dataserviceName );
+                throw notFound( virtualization );
             }
 
-            Schema s = metadataService.findSchema(komodoSourceName);
+            Schema s = metadataService.findSchema(teiidSourceName);
 
             if (s == null) {
-                throw notFound( komodoSourceName );
+                throw notFound( teiidSourceName );
             }
 
             ServiceVdbGenerator serviceVdbGenerator = new ServiceVdbGenerator(metadataService);
@@ -347,7 +342,7 @@ public final class KomodoDataserviceService extends KomodoService {
                     continue;
                 }
 
-                ViewDefinition viewDefn = getWorkspaceManager().findViewDefinitionByNameIgnoreCase(dataserviceName, name);
+                ViewDefinition viewDefn = getWorkspaceManager().findViewDefinitionByNameIgnoreCase(virtualization, name);
                 if (viewDefn != null) {
                     //sanity check
                     if (!name.equalsIgnoreCase(viewDefn.getName())) {
@@ -360,10 +355,10 @@ public final class KomodoDataserviceService extends KomodoService {
                     viewDefn.setDdl(null);
                     viewDefn.setDescription(null);
                 } else {
-                    viewDefn = new ViewDefinition(dataserviceName, name);
+                    viewDefn = new ViewDefinition(virtualization, name);
                 }
                 viewDefn.setComplete(true);
-                FullyQualifiedName fqn = new FullyQualifiedName(Schema.getTypeName(), komodoSourceName);
+                FullyQualifiedName fqn = new FullyQualifiedName(Schema.getTypeName(), teiidSourceName);
                 fqn.append(Schema.getChildType(t.getClass()), t.getName());
                 viewDefn.addSourcePath(fqn.toString());
 
@@ -409,42 +404,42 @@ public final class KomodoDataserviceService extends KomodoService {
 
 
     /**
-     * Update the specified Dataservice from the komodo repository
-     * @param dataserviceName the dataservice name (cannot be empty)
+     * Update the specified virtualization from the komodo repository
+     * @param virtualization the virtualization name (cannot be empty)
      * @return a JSON representation of the new connection (never <code>null</code>)
      * @throws Exception
      */
-    @RequestMapping(value = FS + V1Constants.DATA_SERVICE_PLACEHOLDER, method = RequestMethod.PUT, produces = {
+    @RequestMapping(value = FS + V1Constants.VIRTUALIZATION_PLACEHOLDER, method = RequestMethod.PUT, produces = {
             MediaType.APPLICATION_JSON_VALUE }, consumes = { MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation(value = "Update data service")
     @ApiResponses(value = { @ApiResponse(code = 400, message = "An error has occurred.") })
-    public KomodoStatusObject updateDataservice(
+    public KomodoStatusObject updateDataVirtualization(
             @ApiParam(value = "Name of the data service", required = true)
-            final @PathVariable("dataserviceName") String dataserviceName,
-            @ApiParam(required = true) @RequestBody final RestDataVirtualization restDataservice) throws Exception {
+            final @PathVariable(V1Constants.VIRTUALIZATION) String virtualization,
+            @ApiParam(required = true) @RequestBody final RestDataVirtualization restDataVirtualization) throws Exception {
 
-        final String jsonDataserviceName = restDataservice.getName();
+        final String restName = restDataVirtualization.getName();
         // Error if the name is missing from the supplied json body
-        if (StringUtils.isBlank(jsonDataserviceName)) {
+        if (StringUtils.isBlank(restName)) {
             throw forbidden(RelationalMessages.Error.DATASERVICE_SERVICE_MISSING_NAME);
         }
 
         // Error if the name parameter is different than JSON name
-        final boolean namesMatch = dataserviceName.equals(jsonDataserviceName);
+        final boolean namesMatch = virtualization.equals(restName);
         if (!namesMatch) {
-            throw forbidden(DATASERVICE_SERVICE_SERVICE_NAME_ERROR, dataserviceName, jsonDataserviceName);
+            throw forbidden(DATASERVICE_SERVICE_SERVICE_NAME_ERROR, virtualization, restName);
         }
 
         return kengine.runInTransaction(false, () -> {
-            // Error if the repo already contains a dataservice with the supplied name.
-            DataVirtualization existing = getWorkspaceManager().findDataVirtualization(restDataservice.getName());
+            // Error if the repo already contains a virtualization with the supplied name.
+            DataVirtualization existing = getWorkspaceManager().findDataVirtualization(restDataVirtualization.getName());
             if (existing == null) {
-                throw notFound( dataserviceName );
+                throw notFound( virtualization );
             }
 
-            existing.setDescription(restDataservice.getDescription());
+            existing.setDescription(restDataVirtualization.getDescription());
             KomodoStatusObject kso = new KomodoStatusObject("Update Dataservice Status"); //$NON-NLS-1$
-            kso.addAttribute(dataserviceName, "Dataservice successfully updated"); //$NON-NLS-1$
+            kso.addAttribute(virtualization, "Dataservice successfully updated"); //$NON-NLS-1$
 
             return kso;
         });
@@ -452,31 +447,31 @@ public final class KomodoDataserviceService extends KomodoService {
 
     /**
      * Export the virtualization to a zip file
-     * @param dataserviceName
+     * @param virtualization
      * @return
      * @throws Exception
      */
-    @RequestMapping(value = V1Constants.DATA_SERVICE_PLACEHOLDER + FS + "export", method = RequestMethod.GET, produces = {
+    @RequestMapping(value = VIRTUALIZATION_PLACEHOLDER + FS + "export", method = RequestMethod.GET, produces = {
             MediaType.MULTIPART_FORM_DATA_VALUE })
-    @ApiOperation(value = "Find dataservice by name", response = RestDataVirtualization.class)
-    @ApiResponses(value = { @ApiResponse(code = 404, message = "No Dataservice could be found with name"),
+    @ApiOperation(value = "Export virtualization by name", response = RestDataVirtualization.class)
+    @ApiResponses(value = { @ApiResponse(code = 404, message = "No virtualization could be found with name"),
             @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
             @ApiResponse(code = 403, message = "An error has occurred.") })
-    public ResponseEntity<StreamingResponseBody> exportDataservice(
-            @ApiParam(value = "name of the dataservice",
-            required = true) final @PathVariable("dataserviceName") String dataserviceName)
+    public ResponseEntity<StreamingResponseBody> exportDataVirtualization(
+            @ApiParam(value = "name of the virtualization",
+            required = true) final @PathVariable(VIRTUALIZATION) String virtualization)
             throws Exception {
 
         DataVirtualizationV1Adapter result = kengine.runInTransaction(true, () -> {
-            DataVirtualization dv = getWorkspaceManager().findDataVirtualization(dataserviceName);
+            DataVirtualization dv = getWorkspaceManager().findDataVirtualization(virtualization);
 
             if (dv == null) {
-                throw notFound(dataserviceName);
+                throw notFound(virtualization);
             }
 
             DataVirtualizationV1Adapter adapter = new DataVirtualizationV1Adapter(dv);
 
-            List<? extends ViewDefinition> views = getWorkspaceManager().findViewDefinitions(dataserviceName);
+            List<? extends ViewDefinition> views = getWorkspaceManager().findViewDefinitions(virtualization);
 
             Map<String, SourceV1> sources = new LinkedHashMap<>();
 
@@ -520,7 +515,7 @@ public final class KomodoDataserviceService extends KomodoService {
             zos.close();
         };
         MultiValueMap<String, String> headers = new HttpHeaders();
-        headers.add("Content-Disposition", "attachment; filename=\""+dataserviceName+"-export.zip\""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        headers.add("Content-Disposition", "attachment; filename=\""+virtualization+"-export.zip\""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         return new ResponseEntity<StreamingResponseBody>(stream, headers, HttpStatus.OK);
     }
 
@@ -533,7 +528,7 @@ public final class KomodoDataserviceService extends KomodoService {
      */
     @PostMapping()
     @ApiOperation(value = "Import a single data virtualization", response = String.class)
-    public ResponseEntity<KomodoStatusObject> importDataservice(@ApiParam(value = "name of the dataservice")
+    public ResponseEntity<KomodoStatusObject> importDataVirtualization(@ApiParam(value = "name of the virtualization")
             @RequestParam(name="virtualization", required=false) String virtualization,
             @RequestParam("file") MultipartFile file) throws Exception {
 
@@ -594,7 +589,7 @@ public final class KomodoDataserviceService extends KomodoService {
                         }
                     }
                 }
-                createDataservice(toImport.getName(), new RestDataVirtualization(toImport));
+                createDataVirtualization(new RestDataVirtualization(toImport));
 
                 for (ViewDefinitionV1Adapter adapter : dv.getViews()) {
                     ViewDefinition vd = adapter.getEntity();
@@ -609,20 +604,74 @@ public final class KomodoDataserviceService extends KomodoService {
         return new ResponseEntity<KomodoStatusObject>(kso, HttpStatus.OK);
     }
 
-    @RequestMapping( value = V1Constants.DATA_SERVICE_PLACEHOLDER + "/views/{viewName}", method = RequestMethod.GET, produces = {
+    /**
+     * Get all view editor states from the user's profile
+     * @return a JSON document representing the view editor states in the user profile (never <code>null</code>)
+     * @throws Exception
+     */
+    @RequestMapping( value = V1Constants.VIRTUALIZATION_PLACEHOLDER + FS + VIEWS_SEGMENT, method = RequestMethod.GET, produces = {
             MediaType.APPLICATION_JSON_VALUE })
-    @ApiOperation(value = "Returns the view with the given name",
+    @ApiOperation(value = "Returns the view listings",
     response = ViewDefinition.class)
     @ApiResponses( value = {
             @ApiResponse( code = 400, message = "The URI cannot contain encoded slashes or backslashes." ),
             @ApiResponse( code = 403, message = "An unexpected error has occurred." ),
             @ApiResponse( code = 404, message = "No view could be found with name" )
     } )
-    public ViewDefinition getViewDefinition(
+    public List<ViewListing> getViewList(
+            @ApiParam(value = "Name of the virtualization", required = true)
+            final @PathVariable(VIRTUALIZATION) String virtualization) throws Exception {
+        // find view editor states
+        return kengine.runInTransaction(true, ()->{
+
+            final List<? extends ViewDefinition> viewEditorStates = getWorkspaceManager().findViewDefinitions( virtualization );
+            LOGGER.debug( "getViewEditorStates:found %d ViewEditorStates", viewEditorStates.size() ); //$NON-NLS-1$
+
+            //TODO: paging / sorting can be pushed into the repository
+
+            return createViewList(virtualization, viewEditorStates);
+        });
+    }
+
+    private List<ViewListing> createViewList(final String virtualization,
+            final List<? extends ViewDefinition> viewEditorStates)
+            throws Exception {
+        TeiidVdb vdb = null;
+
+        ArrayList<ViewListing> result = new ArrayList<>();
+
+        for ( final ViewDefinition viewEditorState : viewEditorStates ) {
+            ViewListing listing = new ViewListing();
+            listing.setId(viewEditorState.getId());
+            listing.setName(viewEditorState.getName());
+            listing.setDescription(viewEditorState.getDescription());
+            if (viewEditorState.isParsable()) {
+                if (vdb == null) {
+                    vdb = metadataService.updatePreviewVdb(virtualization);
+                }
+                listing.setValid(!vdb.hasValidationError(viewEditorState.getDataVirtualizationName(), viewEditorState.getName(), Schema.getChildType(Table.class)));
+            } else {
+                listing.setValid(false);
+            }
+            result.add(listing);
+        }
+        return result;
+    }
+
+    @RequestMapping( value = V1Constants.VIRTUALIZATION_PLACEHOLDER + FS + VIEWS_SEGMENT + FS + VIEW_PLACEHOLDER, method = RequestMethod.GET, produces = {
+            MediaType.APPLICATION_JSON_VALUE })
+    @ApiOperation(value = "Returns the view listing with the given name",
+    response = ViewDefinition.class)
+    @ApiResponses( value = {
+            @ApiResponse( code = 400, message = "The URI cannot contain encoded slashes or backslashes." ),
+            @ApiResponse( code = 403, message = "An unexpected error has occurred." ),
+            @ApiResponse( code = 404, message = "No view could be found with name" )
+    } )
+    public ViewListing getViewListing(
                                       @ApiParam(value = "Name of the virtualization", required = true)
-                                      final @PathVariable( "dataserviceName" ) String virtualization,
+                                      final @PathVariable(VIRTUALIZATION) String virtualization,
                                       @ApiParam(value = "Name of the view - not case sensitive", required = true)
-                                      final @PathVariable( "viewName" ) String viewName ) throws Exception {
+                                      final @PathVariable(VIEW_NAME) String viewName ) throws Exception {
 
         final String errorMsg = VALIDATOR.checkValidName( viewName );
 
@@ -639,7 +688,103 @@ public final class KomodoDataserviceService extends KomodoService {
             throw notFound(viewName);
         }
 
-        return vd;
+        return createViewList(virtualization, Arrays.asList(vd)).get(0);
+    }
+
+    @RequestMapping(value = V1Constants.PUBLISH + StringConstants.FS
+            + V1Constants.VIRTUALIZATION_PLACEHOLDER, method = RequestMethod.DELETE, produces = { MediaType.APPLICATION_JSON_VALUE })
+    @ApiOperation(value = "Delete Virtualization Service by virtualization name",response = BuildStatus.class)
+    @ApiResponses(value = {
+        @ApiResponse(code = 404, message = "No virtualization could be found with name"),
+        @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
+        @ApiResponse(code = 403, message = "An error has occurred.")
+    })
+    public BuildStatus deletePublishedVirtualization(
+            @ApiParam(value = "Name of the virtualization")
+            final @PathVariable(value = "virtualization", required = true) String virtualization) throws KException{
+        BuildStatus status = this.openshiftClient.deleteVirtualization(virtualization);
+        return status;
+    }
+
+    @RequestMapping(value = V1Constants.PUBLISH, method = RequestMethod.POST, produces = { MediaType.APPLICATION_JSON_VALUE })
+    @ApiOperation(value = "Publish Virtualization Service", response = KomodoStatusObject.class)
+    @ApiResponses(value = {
+        @ApiResponse(code = 404, message = "No Dataservice could be found with name"),
+        @ApiResponse(code = 406, message = "Only JSON returned by this operation"),
+        @ApiResponse(code = 403, message = "An error has occurred.")
+    })
+    public KomodoStatusObject publishVirtualization(
+            @ApiParam(value = "JSON properties:<br>" + OPEN_PRE_TAG + OPEN_BRACE + BR + NBSP
+                    + "\"name\":      \"Name of the Dataservice\"" + BR
+                    + "\"cpu-units\": \"(optional) Number of CPU units to allocate. 100 is 0.1 CPU (default 500)\"" + BR
+                    + "\"memory\":    \"(optional) Amount memory to allocate in MB (default 1024)\"" + BR
+                    + "\"disk-size\": \"(optional) Amount disk allocated in GB (default 20)\"" + BR
+                    + "\"enable-odata\": \"(optional) Enable OData interface. true|false (default true)\"" + BR
+                    + CLOSE_BRACE
+                    + CLOSE_PRE_TAG) @RequestBody(required = true) final PublishRequestPayload payload) throws Exception {
+        //
+        // Error if there is no name attribute defined
+        //
+        if (payload.getName() == null) {
+            throw forbidden(RelationalMessages.Error.VDB_NAME_NOT_PROVIDED);
+        }
+
+        return kengine.runInTransaction(true, ()-> {
+            DataVirtualization dataservice = getWorkspaceManager().findDataVirtualization(payload.getName());
+            if (dataservice == null) {
+                throw notFound(payload.getName());
+            }
+
+            TeiidVdb vdb = metadataService.updatePreviewVdb(dataservice.getName());
+
+            if (vdb == null || !vdb.hasLoaded()) {
+                throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE);
+            }
+
+            KomodoStatusObject status = new KomodoStatusObject();
+
+            List<String> errors = vdb.getValidityErrors();
+            if (!errors.isEmpty()) {
+                status.addAttribute("error", errors.iterator().next());  //$NON-NLS-1$
+                return status;
+            }
+
+            status.addAttribute("Publishing", "Operation initiated");  //$NON-NLS-1$//$NON-NLS-2$
+
+            final OAuthCredentials creds = getAuthenticationToken();
+
+            List<? extends ViewDefinition> editorStates = getWorkspaceManager().findViewDefinitions(dataservice.getName());
+
+            //check for unparsable - alternatively we could put this on the preview vdb
+            for (ViewDefinition vd : editorStates) {
+                if (vd.isComplete() && !vd.isParsable()) {
+                    status.addAttribute("error", vd.getName() + " is not parsable");  //$NON-NLS-1$ //$NON-NLS-2$
+                    return status;
+                }
+            }
+
+            //use the preview vdb to build the needed metadata
+            VDBMetaData theVdb = new ServiceVdbGenerator(metadataService).createServiceVdb(dataservice.getName(), vdb, editorStates);
+
+            // the properties in this class can be exposed for user input
+            PublishConfiguration config = new PublishConfiguration();
+            config.setVDB(theVdb);
+            config.setOAuthCredentials(creds);
+            config.setEnableOData(payload.getEnableOdata());
+            config.setContainerDiskSize(payload.getDiskSize());
+            config.setContainerMemorySize(payload.getMemory());
+            config.setCpuUnits(payload.getCpuUnits());
+            BuildStatus buildStatus = openshiftClient.publishVirtualization(config);
+
+            status.addAttribute("OpenShift Name", buildStatus.getOpenShiftName()); //$NON-NLS-1$
+            status.addAttribute("Build Status", buildStatus.status().name()); //$NON-NLS-1$
+            status.addAttribute("Build Status Message", buildStatus.statusMessage()); //$NON-NLS-1$
+
+            //
+            // Return the status from this request. Otherwise, monitor using #getVirtualizations()
+            //
+            return status;
+        });
     }
 
 }

@@ -17,8 +17,6 @@
  */
 package org.komodo.rest.service;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 import org.komodo.datavirtualization.DataVirtualization;
@@ -31,7 +29,6 @@ import org.komodo.rest.V1Constants;
 import org.komodo.rest.datavirtualization.KomodoStatusObject;
 import org.komodo.rest.datavirtualization.RelationalMessages;
 import org.komodo.rest.datavirtualization.RestViewDefinitionStatus;
-import org.komodo.rest.datavirtualization.ViewListing;
 import org.komodo.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -40,7 +37,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import org.teiid.metadata.AbstractMetadataRecord;
@@ -50,8 +46,6 @@ import org.teiid.query.validator.ValidatorReport;
 import org.teiid.util.FullyQualifiedName;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -61,9 +55,9 @@ import io.swagger.annotations.ApiResponses;
  * A Komodo REST service for obtaining VDB information from the workspace.
  */
 @RestController
-@RequestMapping(value=V1Constants.APP_PATH+V1Constants.FS+V1Constants.SERVICE_SEGMENT)
-@Api( tags = {V1Constants.SERVICE_SEGMENT} )
-public final class KomodoUtilService extends KomodoService {
+@RequestMapping(value=V1Constants.APP_PATH+V1Constants.FS+V1Constants.EDITORS_SEGMENT)
+@Api( tags = {V1Constants.EDITORS_SEGMENT} )
+public final class EditorService extends KomodoService {
 
     private static final String SUCCESS = "SUCCESS"; //$NON-NLS-1$
 
@@ -71,108 +65,27 @@ public final class KomodoUtilService extends KomodoService {
 
     public static final String PREVIEW_VDB = "Preview"; //$NON-NLS-1$
 
-    public static final String APP_NAME = "App Name"; //$NON-NLS-1$
-
-    public static final String APP_TITLE = "App Title"; //$NON-NLS-1$
-
-    public static final String APP_DESCRIPTION = "App Description"; //$NON-NLS-1$
-
-    public static final String APP_VERSION = "App Version"; //$NON-NLS-1$
-
     @Autowired
     private MetadataInstance metadataInstance;
 
     @Autowired
-    private KomodoMetadataService metadataService;
-
-    @RequestMapping(value = V1Constants.ABOUT, method = RequestMethod.GET, produces= { MediaType.APPLICATION_JSON_VALUE })
-    @ApiOperation( value = "Display status of this rest service", response = KomodoStatusObject.class )
-    @ApiResponses(value = {
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-    public KomodoStatusObject about() {
-
-        KomodoStatusObject repoStatus = new KomodoStatusObject();
-
-        repoStatus.addAttribute(APP_NAME, V1Constants.App.name());
-        repoStatus.addAttribute(APP_TITLE, V1Constants.App.title());
-        repoStatus.addAttribute(APP_DESCRIPTION, V1Constants.App.description());
-        repoStatus.addAttribute(APP_VERSION, V1Constants.App.version());
-
-        // create response
-        return repoStatus;
-    }
-
-    /**
-     * Get all view editor states from the user's profile
-     * @return a JSON document representing the view editor states in the user profile (never <code>null</code>)
-     * @throws Exception
-     */
-    @RequestMapping(value = V1Constants.USER_PROFILE + FS
-            + V1Constants.VIEW_LISTINGS, method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
-    @ApiOperation(value = "Return the collection of view listings",
-                  response = ViewListing.class,
-                  responseContainer = "List")
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-                name = QueryParamKeys.VIRTUALIZATION,
-                value = "The name of the virtualization",
-                required = true,
-                dataType = "string",
-                paramType = "query")
-      })
-    @ApiResponses(value = {
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
-    public List<ViewListing> getViewList(@RequestParam String virtualization) throws Exception {
-        final List< ViewListing > viewDefinitions = new ArrayList<>();
-
-        // find view editor states
-        return kengine.runInTransaction(true, ()->{
-
-            final List<? extends ViewDefinition> viewEditorStates = getWorkspaceManager().findViewDefinitions( virtualization );
-            LOGGER.debug( "getViewEditorStates:found %d ViewEditorStates", viewEditorStates.size() ); //$NON-NLS-1$
-
-            //TODO: paging / sorting can be pushed into the repository
-
-            TeiidVdb vdb = null;
-
-            for ( final ViewDefinition viewEditorState : viewEditorStates ) {
-                ViewListing listing = new ViewListing();
-                listing.setId(viewEditorState.getId());
-                listing.setName(viewEditorState.getName());
-                listing.setDescription(viewEditorState.getDescription());
-                if (viewEditorState.isParsable()) {
-                    if (vdb == null) {
-                        vdb = metadataService.updatePreviewVdb(virtualization);
-                    }
-                    listing.setValid(!vdb.hasValidationError(viewEditorState.getDataVirtualizationName(), viewEditorState.getName(), Schema.getChildType(Table.class)));
-                } else {
-                    listing.setValid(false);
-                }
-                viewDefinitions.add(listing);
-            }
-
-            return viewDefinitions;
-        });
-    }
+    private MetadataService metadataService;
 
     /**
      * Get the view editor state with the given id from the user's profile
      * @return a JSON document representing the view editor state in the user profile (never <code>null</code>)
      * @throws Exception
      */
-    @RequestMapping(value = V1Constants.USER_PROFILE + FS +
-            V1Constants.VIEW_EDITOR_STATE + FS +
-            V1Constants.VIEW_EDITOR_STATE_PLACEHOLDER, method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
+    @RequestMapping(value = V1Constants.ID_PLACEHOLDER,
+            method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation(value = "Returns the view editor state with the given id",
                   response = ViewDefinition.class)
     @ApiResponses(value = {
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
-    public RestViewDefinitionStatus getViewEditorState(
+    public RestViewDefinitionStatus getViewDefinition(
             @ApiParam(value = "Name of the view editor state to fetch", required = true)
-            final @PathVariable("viewEditorStateId") String viewEditorStateId) throws Exception {
+            final @PathVariable(ID) String viewEditorStateId) throws Exception {
         return kengine.runInTransaction(true, ()->{
             ViewDefinition viewEditorState = getWorkspaceManager().findViewDefinition(viewEditorStateId);
             LOGGER.debug( "getViewEditorState:found %d ViewEditorStates", //$NON-NLS-1$
@@ -192,18 +105,17 @@ public final class KomodoUtilService extends KomodoService {
     }
 
     /**
-     * Stash a ViewEditorState
-     * @return stashed view editor state
+     * upsert a view definition
+     * @return saved/validate view definition
      * @throws Exception
      */
-    @RequestMapping(value = V1Constants.USER_PROFILE + FS
-            + V1Constants.VIEW_EDITOR_STATE, method = RequestMethod.PUT, produces = { MediaType.APPLICATION_JSON_VALUE })
+    @RequestMapping(method = RequestMethod.PUT, produces = { MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation( value = "Store view editor state", response = KomodoStatusObject.class)
     @ApiResponses(value = {
         @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
         @ApiResponse(code = 403, message = "An error has occurred.")
     })
-    public RestViewDefinitionStatus stashViewEditorState(
+    public RestViewDefinitionStatus upsertViewDefinition(
             @ApiParam(required = true) @RequestBody final org.komodo.datavirtualization.ViewDefinition restViewEditorState)
             throws Exception {
         if (StringUtils.isBlank(restViewEditorState.getName())) {
@@ -228,18 +140,6 @@ public final class KomodoUtilService extends KomodoService {
         return validated;
     }
 
-    /**
-     * Validate the supplied ViewDefinition
-     * @return validation status of the supplied ViewDefinition
-     * @throws Exception
-     */
-    @RequestMapping(value = V1Constants.USER_PROFILE + FS
-            + V1Constants.VALIDATE_VIEW_DEFINITION, method = RequestMethod.POST, produces = { MediaType.APPLICATION_JSON_VALUE })
-    @ApiOperation( value = "Validate a ViewDefinition, the returned status will not include the ViewDefinition", response = RestViewDefinitionStatus.class )
-    @ApiResponses(value = {
-        @ApiResponse(code = 406, message = "Only JSON is returned by this operation"),
-        @ApiResponse(code = 403, message = "An error has occurred.")
-    })
     public RestViewDefinitionStatus validateViewDefinition(
             @ApiParam(required = true) @RequestBody final ViewDefinition restViewDefinition) throws Exception {
         LOGGER.debug("Validating view : %s", restViewDefinition.getName()); //$NON-NLS-1$
@@ -429,8 +329,7 @@ public final class KomodoUtilService extends KomodoService {
      * @return a JSON document representing the results of the removal
      * @throws Exception
      */
-    @RequestMapping(value = V1Constants.USER_PROFILE + FS + V1Constants.VIEW_EDITOR_STATE + FS
-            + V1Constants.VIEW_EDITOR_STATE_PLACEHOLDER, method = RequestMethod.DELETE,
+    @RequestMapping(value = V1Constants.ID_PLACEHOLDER, method = RequestMethod.DELETE,
             produces = {MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation( value = "Remove a view editor state from the user's profile", response = KomodoStatusObject.class )
     @ApiResponses(value = {
@@ -438,9 +337,9 @@ public final class KomodoUtilService extends KomodoService {
         @ApiResponse(code = 403, message = "An error has occurred."),
         @ApiResponse(code = 204, message = "id not found")
     })
-    public KomodoStatusObject removeViewEditorState(
+    public KomodoStatusObject removeViewDefinition(
             @ApiParam(value = "Id of the view editor state to remove", required = true)
-            final @PathVariable("viewEditorStateId") String viewEditorStateId)
+            final @PathVariable(V1Constants.ID) String viewEditorStateId)
             throws Exception {
         return kengine.runInTransaction(false, ()-> {
             ViewDefinition vd = getWorkspaceManager().findViewDefinition(viewEditorStateId);

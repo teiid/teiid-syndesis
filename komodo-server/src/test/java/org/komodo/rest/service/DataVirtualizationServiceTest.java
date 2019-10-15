@@ -51,7 +51,7 @@ import org.springframework.web.server.ResponseStatusException;
 @ContextConfiguration(classes = {KomodoRepositoryConfiguration.class, ServiceTestConfiguration.class})
 @DirtiesContext
 @SuppressWarnings("nls")
-public class KomodoDataserviceServiceTest {
+public class DataVirtualizationServiceTest {
 
     @Autowired
     private TestEntityManager entityManager;
@@ -60,7 +60,7 @@ public class KomodoDataserviceServiceTest {
     private WorkspaceManagerImpl workspaceManagerImpl;
 
     @Autowired
-    private KomodoDataserviceService komodoDataserviceService;
+    private DataVirtualizationService komodoDataserviceService;
 
     @Autowired
     private DefaultMetadataInstance metadataInstance;
@@ -101,7 +101,7 @@ public class KomodoDataserviceServiceTest {
                 "create foreign table tbl (col string) options (\"teiid_rel:fqn\" 'schema=s/table=tbl');"
                 + "create foreign table tbl2 (col string) options (\"teiid_rel:fqn\" 'schema=s/table=tbl2');"
                 + "create foreign table tbl3 (col string) options (\"teiid_rel:fqn\" 'schema=s/table=tbl3');");
-        metadataInstance.undeployDynamicVdb(KomodoMetadataService.getWorkspaceSourceVdbName("source"));
+        metadataInstance.undeployDynamicVdb(MetadataService.getWorkspaceSourceVdbName("source"));
 
         kso = komodoDataserviceService.importViews("dv", "source", payload);
         assertEquals(3, kso.getAttributes().size());
@@ -138,7 +138,7 @@ public class KomodoDataserviceServiceTest {
 
     @Test public void testValidateNameUsingGet() throws Exception {
         try {
-            komodoDataserviceService.getDataservice("foo");
+            komodoDataserviceService.getDataVirtualization("foo");
             fail();
         } catch (ResponseStatusException e) {
             assertEquals(HttpStatus.NOT_FOUND, e.getStatus());
@@ -146,7 +146,7 @@ public class KomodoDataserviceServiceTest {
 
         //must end with number/letter
         try {
-            komodoDataserviceService.getDataservice("foo-");
+            komodoDataserviceService.getDataVirtualization("foo-");
             fail();
         } catch (ResponseStatusException e) {
             assertEquals(HttpStatus.FORBIDDEN, e.getStatus());
@@ -154,7 +154,7 @@ public class KomodoDataserviceServiceTest {
 
         //bad chars
         try {
-            komodoDataserviceService.getDataservice("%foo&");
+            komodoDataserviceService.getDataVirtualization("%foo&");
             fail();
         } catch (ResponseStatusException e) {
             assertEquals(HttpStatus.FORBIDDEN, e.getStatus());
@@ -163,7 +163,7 @@ public class KomodoDataserviceServiceTest {
         workspaceManagerImpl.createDataVirtualization("foo");
 
         //conflicts
-        RestDataVirtualization response = komodoDataserviceService.getDataservice("FOO");
+        RestDataVirtualization response = komodoDataserviceService.getDataVirtualization("FOO");
         assertNotNull(response);
     }
 

@@ -211,7 +211,7 @@ public final class ServiceVdbGenerator implements StringConstants {
 
         VDBImportMetadata vdbImport = new VDBImportMetadata();
         vdbImport.setVersion(DefaultMetadataInstance.DEFAULT_VDB_VERSION);
-        vdbImport.setName(KomodoUtilService.PREVIEW_VDB);
+        vdbImport.setName(EditorService.PREVIEW_VDB);
         //this makes the vdb tolerant to resolve/validation issue
         //so that as long as we parse, we'll load
         vdb.addProperty("preview", "true"); //$NON-NLS-1$ //$NON-NLS-2$
