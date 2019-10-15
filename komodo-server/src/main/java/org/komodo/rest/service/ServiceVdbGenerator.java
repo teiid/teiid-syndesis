@@ -118,7 +118,11 @@ public final class ServiceVdbGenerator implements StringConstants {
             }
 
             String viewDdl = viewDef.getDdl();
-            allViewDdl.append(viewDdl).append(NEW_LINE);
+            allViewDdl.append(viewDdl);
+            if (!viewDdl.endsWith(SEMI_COLON)) {
+                allViewDdl.append(SEMI_COLON);
+            }
+            allViewDdl.append(NEW_LINE);
 
             AbstractMetadataRecord record = s.getTable(viewDef.getName());
 
@@ -195,6 +199,11 @@ public final class ServiceVdbGenerator implements StringConstants {
             }
 
             String viewDdl = viewDef.getDdl();
+            //we don't need an exhaustive check here,
+            //the parser is tolerant to redundant semi-colons
+            if (!viewDdl.endsWith(SEMI_COLON)) {
+                allViewDdl.append(SEMI_COLON);
+            }
             allViewDdl.append(viewDdl).append(NEW_LINE);
         }
 
@@ -340,7 +349,7 @@ public final class ServiceVdbGenerator implements StringConstants {
 
         if( isJoin ) {
             String lhTableName = lhTableInfo.getFQName() + " AS " + lhTableInfo.getAlias(); //$NON-NLS-1$
-            sb.append(lhTableName).append(StringConstants.SEMI_COLON);
+            sb.append(lhTableName);
             // Disable join for Syndesis 7.4 DDL generation.
             /*String rhTableName = rhTableInfo.getFQName() + " AS " + rhTableInfo.getAlias(); //$NON-NLS-1$
 
@@ -373,10 +382,10 @@ public final class ServiceVdbGenerator implements StringConstants {
               .append(StringConstants.SPACE+operator+StringConstants.SPACE)
               .append(rhTableInfo.getAlias()+StringConstants.DOT).append(rhColumn);
 
-            sb.append(StringConstants.SEMI_COLON);*/
+            */
         // --------- Single Source ---------
         } else {
-            sb.append(lhTableInfo.getFQName()).append(StringConstants.SEMI_COLON);
+            sb.append(lhTableInfo.getFQName());
         }
 
         return sb.toString();

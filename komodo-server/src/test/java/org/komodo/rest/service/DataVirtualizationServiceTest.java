@@ -120,7 +120,7 @@ public class DataVirtualizationServiceTest {
         vd.setId("consistent");
         assertEquals("{\n" +
                 "  \"dataVirtualizationName\" : \"dv\",\n" +
-                "  \"ddl\" : \"CREATE VIEW tbl (col) AS \\nSELECT col\\nFROM source.tbl;\",\n" +
+                "  \"ddl\" : \"CREATE VIEW tbl (col) AS \\nSELECT col\\nFROM source.tbl\",\n" +
                 "  \"id\" : \"consistent\",\n" +
                 "  \"isComplete\" : true,\n" +
                 "  \"isUserDefined\" : false,\n" +

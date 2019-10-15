@@ -114,12 +114,12 @@ public class ServiceVdbGeneratorTest {
     private final static String EXPECTED_NO_JOIN_SQL_SINGE_SOURCE =
             "CREATE VIEW orderInfoView (ID, orderDate, PRIMARY KEY(ID)) OPTIONS (ANNOTATION 'test view description text') AS \n" +
             "SELECT ID, orderDate\n" +
-            "FROM pgconnection1schemamodel.orders;";
+            "FROM pgconnection1schemamodel.orders";
 
     private final static String EXPECTED_NO_JOIN_SQL_SINGE_SOURCE_WITH_KEYWORD =
             "CREATE VIEW orderInfoView (ID, \"year\", orderDate, PRIMARY KEY(ID)) OPTIONS (ANNOTATION 'test view description text') AS \n" +
             "SELECT ID, \"year\", orderDate\n" +
-            "FROM pgconnection1schemamodel.orders2;";
+            "FROM pgconnection1schemamodel.orders2";
 
     // ===========================
     // orders
