@@ -40,11 +40,11 @@ public final class RestViewDefinitionStatusTest {
         assertEquals("{\n" +
                 "  \"status\" : \"FINE\",\n" +
                 "  \"message\" : \"Maybe a warning?\",\n" +
+                "  \"complete\" : false,\n" +
                 "  \"dataVirtualizationName\" : \"x\",\n" +
-                "  \"isComplete\" : false,\n" +
-                "  \"isUserDefined\" : false,\n" +
                 "  \"name\" : \"y\",\n" +
-                "  \"sourcePaths\" : [ ]\n" +
+                "  \"sourcePaths\" : [ ],\n" +
+                "  \"userDefined\" : false\n" +
                 "}", KomodoJsonMarshaller.marshall(status));
     }
 

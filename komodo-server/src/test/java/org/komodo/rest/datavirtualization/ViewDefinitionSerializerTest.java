@@ -17,17 +17,16 @@
  */
 package org.komodo.rest.datavirtualization;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
-import org.komodo.KException;
 import org.komodo.datavirtualization.ViewDefinition;
 import org.komodo.rest.KomodoJsonMarshaller;
 
+@SuppressWarnings("nls")
 public class ViewDefinitionSerializerTest {
 
     private String viewName = "myNewView";
@@ -42,13 +41,13 @@ public class ViewDefinitionSerializerTest {
 
     private String createViewEditorState() {
         return "{\n" +
+                "  \"complete\" : true,\n" +
                 "  \"dataVirtualizationName\" : \"dvName\",\n" +
+                "  \"description\" : \"test view description text\",\n" +
                 "  \"id\" : \"myNewView\",\n" +
-                "  \"isComplete\" : true,\n" +
-                "  \"isUserDefined\" : false,\n" +
-                "  \"keng__description\" : \"test view description text\",\n" +
                 "  \"name\" : \"testView\",\n" +
-                "  \"sourcePaths\" : [ \"path/to/source1\", \"path/to/source2\", \"path/to/source3\", \"path/to/source4\" ]\n" +
+                "  \"sourcePaths\" : [ \"path/to/source1\", \"path/to/source2\", \"path/to/source3\", \"path/to/source4\" ],\n" +
+                "  \"userDefined\" : false\n" +
                 "}";
     }
 
@@ -68,7 +67,7 @@ public class ViewDefinitionSerializerTest {
     }
 
     @Test
-    public void shouldExportJson() throws KException {
+    public void shouldExportJson() {
         String[] sourceTablePaths = { sourceTablePath1, sourceTablePath2, sourceTablePath3, sourceTablePath4 };
         org.komodo.datavirtualization.ViewDefinition viewDef = new org.komodo.datavirtualization.ViewDefinition("dvName", viewDefinitionName);
         viewDef.setId(viewName);

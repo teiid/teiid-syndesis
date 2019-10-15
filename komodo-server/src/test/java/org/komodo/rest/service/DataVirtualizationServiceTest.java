@@ -119,13 +119,13 @@ public class DataVirtualizationServiceTest {
 
         vd.setId("consistent");
         assertEquals("{\n" +
+                "  \"complete\" : true,\n" +
                 "  \"dataVirtualizationName\" : \"dv\",\n" +
                 "  \"ddl\" : \"CREATE VIEW tbl (col) AS \\nSELECT col\\nFROM source.tbl\",\n" +
                 "  \"id\" : \"consistent\",\n" +
-                "  \"isComplete\" : true,\n" +
-                "  \"isUserDefined\" : false,\n" +
                 "  \"name\" : \"tbl\",\n" +
                 "  \"sourcePaths\" : [ \"schema=source/table=tbl\" ],\n" +
+                "  \"userDefined\" : false,\n" +
                 "  \"version\" : 0\n" +
                 "}", KomodoJsonMarshaller.marshall(vd));
 

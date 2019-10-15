@@ -18,11 +18,10 @@
 
 package org.komodo.rest.datavirtualization;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.komodo.rest.KomodoJsonMarshaller;
-import org.komodo.rest.datavirtualization.KomodoStatusObject;
 
 public class KomodoStatusObjectTest {
 
@@ -33,8 +32,8 @@ public class KomodoStatusObjectTest {
 
         String value = KomodoJsonMarshaller.marshall(kso);
         assertEquals("{\n" +
-                "  \"Title\" : \"x\",\n" +
-                "  \"Information\" : {\n" +
+                "  \"title\" : \"x\",\n" +
+                "  \"attributes\" : {\n" +
                 "    \"attribute\" : \"message\",\n" +
                 "    \"attribute1\" : \"message1\"\n" +
                 "  }\n" +

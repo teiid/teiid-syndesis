@@ -27,13 +27,11 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonInclude(value=Include.NON_NULL)
 public class PublishRequestPayload {
 
-    @JsonProperty
     private String name;
 
     @JsonProperty("cpu-units")
     private Integer cpuUnits = 500;
 
-    @JsonProperty
     private Integer memory = 1024;
 
     @JsonProperty("disk-size")

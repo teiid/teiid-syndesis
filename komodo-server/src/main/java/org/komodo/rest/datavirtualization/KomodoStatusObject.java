@@ -24,7 +24,6 @@ import org.komodo.utils.ArgCheck;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 
@@ -35,20 +34,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonInclude(Include.NON_NULL)
 public class KomodoStatusObject {
 
-    /**
-     * Label for the title
-     */
-    public static final String TITLE_LABEL = "Title"; //$NON-NLS-1$
-
-    /**
-     * Label for the information
-     */
-    public static final String INFO_LABEL = "Information"; //$NON-NLS-1$
-
-    @JsonProperty(TITLE_LABEL)
     private String title;
-
-    @JsonProperty(INFO_LABEL)
     private Map<String, String> attributes = new LinkedHashMap<>();
 
     /**

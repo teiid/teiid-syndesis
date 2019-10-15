@@ -375,7 +375,7 @@ public class IntegrationTest {
         assertEquals(HttpStatus.OK, virts.getStatusCode());
         assertEquals(1, virts.getBody().size());
         Map virt = (Map)virts.getBody().get(0);
-        assertEquals("testSourceRefresh", virt.get("keng__id"));
+        assertEquals("testSourceRefresh", virt.get("name"));
     }
 
     @Test
