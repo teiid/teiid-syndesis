@@ -138,7 +138,7 @@ public class TeiidOpenShiftClient implements V1Constants {
             try {
                 activeJobs.put(this.work.getOpenShiftName(), this.work);
                 // introduce some delay..
-                long elapsed = System.currentTimeMillis() - work.lastUpdated();
+                long elapsed = System.currentTimeMillis() - work.getLastUpdated();
                 if (elapsed < 3000) {
                     try {
                         Thread.sleep(3000 - elapsed);
@@ -148,13 +148,13 @@ public class TeiidOpenShiftClient implements V1Constants {
                     }
                 }
 
-                if (BuildStatus.Status.DELETE_SUBMITTED.equals(work.status())) {
+                if (BuildStatus.Status.DELETE_SUBMITTED.equals(work.getStatus())) {
                     work.setLastUpdated();
                     workExecutor.submit(this); // add at end
                     return;
                 }
 
-                if (BuildStatus.Status.DELETE_REQUEUE.equals(work.status())) {
+                if (BuildStatus.Status.DELETE_REQUEUE.equals(work.getStatus())) {
                     // requeue will change state to submitted and
                     work.setLastUpdated();
                     deleteVirtualization(work.getDataVirtualizationName());
@@ -162,17 +162,17 @@ public class TeiidOpenShiftClient implements V1Constants {
                     return;
                 }
 
-                if (BuildStatus.Status.DELETE_DONE.equals(work.status())) {
+                if (BuildStatus.Status.DELETE_DONE.equals(work.getStatus())) {
                     removeSyndesisConnection(work.getDataVirtualizationName());
                     return;
                 }
 
-                if (BuildStatus.Status.FAILED.equals(work.status()) || BuildStatus.Status.CANCELLED.equals(work.status())) {
+                if (BuildStatus.Status.FAILED.equals(work.getStatus()) || BuildStatus.Status.CANCELLED.equals(work.getStatus())) {
                     work.setLastUpdated();
                     return;
                 }
 
-                if (BuildStatus.Status.SUBMITTED.equals(work.status())) {
+                if (BuildStatus.Status.SUBMITTED.equals(work.getStatus())) {
                     //
                     // build submitted for configuration. This is done on another
                     // thread to avoid clogging up the monitor thread.
@@ -191,7 +191,7 @@ public class TeiidOpenShiftClient implements V1Constants {
                 // build is being configured which is done on another thread
                 // so ignore this build for the moment
                 //
-                if (Status.CONFIGURING.equals(work.status())) {
+                if (Status.CONFIGURING.equals(work.getStatus())) {
                     work.setLastUpdated();
                     workExecutor.submit(this); // add at end
 
@@ -201,7 +201,7 @@ public class TeiidOpenShiftClient implements V1Constants {
 
                 boolean shouldReQueue = true;
                 final OpenShiftClient client = openshiftClient();
-                Build build = client.builds().inNamespace(work.namespace()).withName(work.buildName()).get();
+                Build build = client.builds().inNamespace(work.getNamespace()).withName(work.getName()).get();
                 if (build == null) {
                     // build got deleted some how ignore, remove from monitoring..
                     error(work.getOpenShiftName(), "Publishing - No build available for building");
@@ -210,23 +210,23 @@ public class TeiidOpenShiftClient implements V1Constants {
 
                 String lastStatus = build.getStatus().getPhase();
                 if (Builds.isCompleted(lastStatus)) {
-                    if (! Status.DEPLOYING.equals(work.status())) {
+                    if (! Status.DEPLOYING.equals(work.getStatus())) {
                         info(work.getOpenShiftName(), "Publishing - Build completed. Preparing to deploy");
                         work.setStatusMessage("build completed, deployment started");
-                        createSecret(client, work.namespace(), work.getOpenShiftName(), work);
+                        createSecret(client, work.getNamespace(), work.getOpenShiftName(), work);
                         DeploymentConfig dc = createDeploymentConfig(client, work);
                         work.setDeploymentName(dc.getMetadata().getName());
                         work.setStatus(Status.DEPLOYING);
-                        client.deploymentConfigs().inNamespace(work.namespace())
+                        client.deploymentConfigs().inNamespace(work.getNamespace())
                                 .withName(dc.getMetadata().getName()).deployLatest();
                     } else {
-                        DeploymentConfig dc = client.deploymentConfigs().inNamespace(work.namespace())
-                                .withName(work.deploymentName()).get();
+                        DeploymentConfig dc = client.deploymentConfigs().inNamespace(work.getNamespace())
+                                .withName(work.getDeploymentName()).get();
                         if (isDeploymentInReadyState(dc)) {
                             // it done now..
                             info(work.getOpenShiftName(), "Publishing - Deployment completed");
-                            createServices(client, work.namespace(), work.getOpenShiftName());
-                            createSyndesisConnection(client, work.namespace(), work.getOpenShiftName(), work.getDataVirtualizationName());
+                            createServices(client, work.getNamespace(), work.getOpenShiftName());
+                            createSyndesisConnection(client, work.getNamespace(), work.getOpenShiftName(), work.getDataVirtualizationName());
                             work.setStatus(Status.RUNNING);
                             shouldReQueue = false;
                         } else {
@@ -252,7 +252,7 @@ public class TeiidOpenShiftClient implements V1Constants {
                     shouldReQueue = false;
                     work.setStatus(Status.CANCELLED);
                     work.setStatusMessage(build.getStatus().getMessage());
-                    debug(work.getOpenShiftName(), "Build cancelled: " + work.buildName() + ". Reason "
+                    debug(work.getOpenShiftName(), "Build cancelled: " + work.getName() + ". Reason "
                             + build.getStatus().getLogSnippet());
                 } else if (Builds.isFailed(lastStatus)) {
                     error(work.getOpenShiftName(), "Publishing - Build failed");
@@ -261,7 +261,7 @@ public class TeiidOpenShiftClient implements V1Constants {
                     work.setStatus(Status.FAILED);
                     work.setStatusMessage(build.getStatus().getMessage());
                     error(work.getOpenShiftName(),
-                            "Build failed :" + work.buildName() + ". Reason " + build.getStatus().getLogSnippet());
+                            "Build failed :" + work.getName() + ". Reason " + build.getStatus().getLogSnippet());
                 }
 
                 work.setLastUpdated();
@@ -786,7 +786,7 @@ public class TeiidOpenShiftClient implements V1Constants {
 
     private DeploymentConfig createDeploymentConfig(OpenShiftClient client, BuildStatus config) {
 
-        return client.deploymentConfigs().inNamespace(config.namespace()).createOrReplaceWithNew()
+        return client.deploymentConfigs().inNamespace(config.getNamespace()).createOrReplaceWithNew()
             .withNewMetadata().withName(config.getOpenShiftName())
                 .addToLabels("application", config.getOpenShiftName())
             .endMetadata()
@@ -817,7 +817,7 @@ public class TeiidOpenShiftClient implements V1Constants {
                     .withName(config.getOpenShiftName())
                     .withImage(" ")
                     .withImagePullPolicy("Always")
-                    .addAllToEnv(config.publishConfiguration().getEnvironmentVariables())
+                    .addAllToEnv(config.getPublishConfiguration().getEnvironmentVariables())
                     .withNewReadinessProbe()
                       .withNewHttpGet()
                       .withNewPort(8080)
@@ -841,12 +841,12 @@ public class TeiidOpenShiftClient implements V1Constants {
                       .withSuccessThreshold(1)
                     .endLivenessProbe()
                     .withNewResources()
-                        .addToLimits("memory", new Quantity(config.publishConfiguration().getContainerMemorySize()))
-                        .addToLimits("cpu", new Quantity(config.publishConfiguration().getCpuUnits()))
+                        .addToLimits("memory", new Quantity(config.getPublishConfiguration().getContainerMemorySize()))
+                        .addToLimits("cpu", new Quantity(config.getPublishConfiguration().getCpuUnits()))
                         // deployment fails with this.
-                        // .addToLimits("ephemeral-storage", new Quantity(config.publishConfiguration().getContainerDiskSize()))
+                        // .addToLimits("ephemeral-storage", new Quantity(config.getPublishConfiguration().getContainerDiskSize()))
                     .endResources()
-                    .addAllToPorts(getDeploymentPorts(config.publishConfiguration()))
+                    .addAllToPorts(getDeploymentPorts(config.getPublishConfiguration()))
                   .endContainer()
                 .endSpec()
               .endTemplate()
@@ -952,7 +952,7 @@ public class TeiidOpenShiftClient implements V1Constants {
             BuildStatus config) {
         String secretName = secretName(openShiftName);
 
-        Secret item = new SecretBuilder().withData(config.publishConfiguration().getSecretVariables()).withNewMetadata()
+        Secret item = new SecretBuilder().withData(config.getPublishConfiguration().getSecretVariables()).withNewMetadata()
                 .addToLabels("application", openShiftName).withName(secretName).endMetadata().build();
 
         Secret secret = client.secrets().inNamespace(namespace).withName(secretName).createOrReplace(item);
@@ -1074,8 +1074,8 @@ public class TeiidOpenShiftClient implements V1Constants {
             public void run() {
                 info(work.getOpenShiftName(), "Publishing  - Configuring ...");
 
-                String namespace = work.namespace();
-                PublishConfiguration publishConfig = work.publishConfiguration();
+                String namespace = work.getNamespace();
+                PublishConfiguration publishConfig = work.getPublishConfiguration();
                 VDBMetaData vdb = publishConfig.getVDB();
 
                 String openShiftName = work.getOpenShiftName();
@@ -1139,13 +1139,13 @@ public class TeiidOpenShiftClient implements V1Constants {
 
                     publishConfig.addSecretVariables(getSecretVariablesForVDBDataSources(vdb, publishConfig));
 
-                    work.setBuildName(buildName);
+                    work.setName(buildName);
                     work.setStatusMessage("Build Running");
                     work.setPublishPodName(publishPod.getName());
                     work.setLastUpdated();
                     work.setStatus(Status.BUILDING);
 
-                    info(openShiftName, "Publishing  - Configuration completed. Building ... Pod Name: " + work.publishPodName());
+                    info(openShiftName, "Publishing  - Configuration completed. Building ... Pod Name: " + work.getPublishPodName());
 
                 } catch (Exception ex) {
                     work.setStatus(Status.FAILED);
@@ -1229,11 +1229,11 @@ public class TeiidOpenShiftClient implements V1Constants {
         info(openShiftName, "Publishing - Start publishing of virtualization: " + openShiftName);
 
         BuildStatus status = getVirtualizationStatus(publishConfig.getDataVirtualizationName());
-        info(openShiftName, "Publishing - Virtualization status: " + status.status());
+        info(openShiftName, "Publishing - Virtualization status: " + status.getStatus());
 
-        if (status.status().equals(Status.BUILDING)) {
+        if (status.getStatus().equals(Status.BUILDING)) {
             info(openShiftName, "Publishing - Previous build request in progress, failed to submit new build request: "
-                    + status.status());
+                    + status.getStatus());
             return status;
         }
         info(openShiftName, "Publishing - Adding to work queue for build");
@@ -1241,7 +1241,7 @@ public class TeiidOpenShiftClient implements V1Constants {
 
         debug(openShiftName, "Publishing - Initiating work monitor if not already running");
 
-        info(openShiftName, "Publishing - Status of build + " + status.status());
+        info(openShiftName, "Publishing - Status of build + " + status.getStatus());
         return status;
     }
 
@@ -1333,7 +1333,7 @@ public class TeiidOpenShiftClient implements V1Constants {
             status = new BuildStatus(openShiftName);
         }
         status.setDataVirtualizationName(virtualization);
-        if (status.status() == BuildStatus.Status.RUNNING) {
+        if (status.getStatus() == BuildStatus.Status.RUNNING) {
             status.setUsedBy(findIntegrationUsedIn(virtualization));
         }
         return status;
@@ -1360,7 +1360,7 @@ public class TeiidOpenShiftClient implements V1Constants {
         BuildList buildList = client.builds().inNamespace(namespace).withLabel("application", openShiftName).list();
         if ((buildList !=null) && !buildList.getItems().isEmpty()) {
             Build build = buildList.getItems().get(0);
-            status.setBuildName(build.getMetadata().getName());
+            status.setName(build.getMetadata().getName());
             if (Builds.isCancelled(build.getStatus().getPhase())) {
                 status.setStatus(Status.CANCELLED);
                 status.setStatusMessage(build.getStatus().getMessage());
@@ -1444,7 +1444,7 @@ public class TeiidOpenShiftClient implements V1Constants {
             queue = true;
         }
 
-        if (BuildStatus.Status.NOTFOUND.equals(runningBuild.status())) {
+        if (BuildStatus.Status.NOTFOUND.equals(runningBuild.getStatus())) {
             return runningBuild;
         }
 
@@ -1458,7 +1458,7 @@ public class TeiidOpenShiftClient implements V1Constants {
         }
 
         info(openShiftName, "Deleting virtualization deployed as Service");
-        final String inProgressBuildName = runningBuild.buildName();
+        final String inProgressBuildName = runningBuild.getName();
         final BuildStatus status = runningBuild;
         configureService.submit(new Callable<Boolean>() {
             @Override

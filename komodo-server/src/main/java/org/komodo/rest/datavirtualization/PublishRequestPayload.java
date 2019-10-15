@@ -19,7 +19,6 @@ package org.komodo.rest.datavirtualization;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 
@@ -29,15 +28,12 @@ public class PublishRequestPayload {
 
     private String name;
 
-    @JsonProperty("cpu-units")
     private Integer cpuUnits = 500;
 
     private Integer memory = 1024;
 
-    @JsonProperty("disk-size")
     private Integer diskSize = 20;
 
-    @JsonProperty("enable-odata")
     private Boolean enableOdata = true;
 
     public String getName() {

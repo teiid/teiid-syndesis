@@ -24,26 +24,11 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 @JsonSerialize(as = BuildStatus.class)
 @JsonInclude(Include.NON_NULL)
 public class BuildStatus {
-
-    public static final String BUILD_NAME_LABEL = "build_name";
-
-    public static final String DEPLOYMENT_NAME_LABEL = "deployment_name";
-
-    public static final String NAMESPACE_LABEL = "namespace";
-
-    public static final String STATUS_LABEL = "build_status";
-
-    public static final String STATUS_MSG_LABEL = "build_status_message";
-
-    public static final String LAST_UPDATED_LABEL = "last_updated";
-
-    public static final String ROUTES_LABEL = "routes";
 
     public enum Status {
         NOTFOUND,
@@ -124,23 +109,16 @@ public class BuildStatus {
         }
     }
 
-    @JsonProperty(STATUS_LABEL)
     private volatile Status status = Status.NOTFOUND;
     @JsonIgnore
     private volatile PublishConfiguration publishConfiguration;
-    @JsonProperty(BUILD_NAME_LABEL)
-    private volatile String buildName;
-    @JsonProperty(DEPLOYMENT_NAME_LABEL)
+    private volatile String name;
     private volatile String deploymentName;
-    @JsonProperty(NAMESPACE_LABEL)
     private volatile String namespace;
     @JsonIgnore
     private volatile String publishPodName;
-    @JsonProperty(LAST_UPDATED_LABEL)
     private volatile long lastUpdated = 0L;
-    @JsonProperty(STATUS_MSG_LABEL)
     private volatile String statusMessage;
-    @JsonProperty(ROUTES_LABEL)
     private List<RouteStatus> routes = null;
     private List<String> usedBy = Collections.emptyList();
 
@@ -151,7 +129,7 @@ public class BuildStatus {
         this.openShiftName = openShiftName;
     }
 
-    public PublishConfiguration publishConfiguration() {
+    public PublishConfiguration getPublishConfiguration() {
         return publishConfiguration;
     }
 
@@ -159,15 +137,15 @@ public class BuildStatus {
         this.publishConfiguration = publishConfiguration;
     }
 
-    public String buildName() {
-        return buildName;
+    public String getName() {
+        return name;
     }
 
-    public void setBuildName(String buildName) {
-        this.buildName = buildName;
+    public void setName(String buildName) {
+        this.name = buildName;
     }
 
-    public String deploymentName() {
+    public String getDeploymentName() {
         return deploymentName;
     }
 
@@ -175,7 +153,7 @@ public class BuildStatus {
         this.deploymentName = deploymentName;
     }
 
-    public String namespace() {
+    public String getNamespace() {
         return namespace;
     }
 
@@ -183,7 +161,7 @@ public class BuildStatus {
         this.namespace = namespace;
     }
 
-    public String statusMessage() {
+    public String getStatusMessage() {
         return statusMessage;
     }
 
@@ -191,7 +169,7 @@ public class BuildStatus {
         this.statusMessage = statusMessage;
     }
 
-    public long lastUpdated() {
+    public long getLastUpdated() {
         return lastUpdated;
     }
 
@@ -203,11 +181,11 @@ public class BuildStatus {
         this.publishPodName = name;
     }
 
-    public String publishPodName() {
-        return this.publishPodName;
+    public String getPublishPodName() {
+        return publishPodName;
     }
 
-    public Status status() {
+    public Status getStatus() {
         return status;
     }
 
@@ -215,7 +193,7 @@ public class BuildStatus {
         this.status = status;
     }
 
-    public List<RouteStatus> routes() {
+    public List<RouteStatus> getRoutes() {
         if (this.routes == null)
             return Collections.emptyList();
 
