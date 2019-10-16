@@ -421,7 +421,7 @@ public class MetadataService extends KomodoService implements ServiceVdbGenerato
      * @return the JSON representation of the schema collection (never <code>null</code>)
      * @throws Exception
      */
-    @RequestMapping(value = "connection-schema", method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
+    @RequestMapping(value = "connectionSchema", method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
     @ApiOperation( value = "Get the native schema for all syndesis sources",
                    response = RestSchemaNode.class,
                    responseContainer = "List")
