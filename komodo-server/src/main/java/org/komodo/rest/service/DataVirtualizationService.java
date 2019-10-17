@@ -149,9 +149,9 @@ public final class DataVirtualizationService extends KomodoService {
         // Set published status of virtualization
         BuildStatus status = this.openshiftClient.getVirtualizationStatus(virtualization.getName());
         if (status != null) {
-            entity.setPublishedState(status.status().name());
-            entity.setPublishPodName(status.publishPodName());
-            entity.setPodNamespace(status.namespace());
+            entity.setPublishedState(status.getStatus().name());
+            entity.setPublishPodName(status.getPublishPodName());
+            entity.setPodNamespace(status.getNamespace());
             entity.setOdataHostName(getOdataHost(status));
             entity.setUsedBy(status.getUsedBy());
         }
@@ -388,7 +388,7 @@ public final class DataVirtualizationService extends KomodoService {
     private String getOdataHost(final BuildStatus buildStatus) {
         String odataHost = null;
         if(buildStatus != null) {
-            List<RouteStatus> routeStatuses = buildStatus.routes();
+            List<RouteStatus> routeStatuses = buildStatus.getRoutes();
             if(!routeStatuses.isEmpty()) {
                 // Find Odata route if it exists
                 for(RouteStatus routeStatus: routeStatuses) {
@@ -777,8 +777,8 @@ public final class DataVirtualizationService extends KomodoService {
             BuildStatus buildStatus = openshiftClient.publishVirtualization(config);
 
             status.addAttribute("OpenShift Name", buildStatus.getOpenShiftName()); //$NON-NLS-1$
-            status.addAttribute("Build Status", buildStatus.status().name()); //$NON-NLS-1$
-            status.addAttribute("Build Status Message", buildStatus.statusMessage()); //$NON-NLS-1$
+            status.addAttribute("Build Status", buildStatus.getStatus().name()); //$NON-NLS-1$
+            status.addAttribute("Build Status Message", buildStatus.getStatusMessage()); //$NON-NLS-1$
 
             //
             // Return the status from this request. Otherwise, monitor using #getVirtualizations()

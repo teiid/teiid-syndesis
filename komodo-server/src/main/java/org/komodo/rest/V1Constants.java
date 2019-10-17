@@ -112,7 +112,7 @@ public interface V1Constants extends StringConstants {
     /**
      * The name of the URI path segment for schema refresh
      */
-    String REFRESH_SCHEMA_SEGMENT = "refresh-schema"; //$NON-NLS-1$
+    String REFRESH_SCHEMA_SEGMENT = "refreshSchema"; //$NON-NLS-1$
 
     /**
      * The name of the URI path segment for the collection of views of a vdb model
@@ -156,11 +156,6 @@ public interface V1Constants extends StringConstants {
     String PUBLISH = "publish"; //$NON-NLS-1$
 
     String IMPORT = "import"; //$NON-NLS-1$
-
-    /**
-     * Validate a ViewDefintion
-     */
-    String VALIDATE_VIEW_DEFINITION = "validateViewDefinition"; //$NON-NLS-1$
 
     /**
      * Get source schema, table, column information for view definition

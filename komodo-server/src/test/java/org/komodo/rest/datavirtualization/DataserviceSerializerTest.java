@@ -25,7 +25,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.komodo.datavirtualization.DataVirtualization;
 import org.komodo.rest.KomodoJsonMarshaller;
-import org.komodo.rest.datavirtualization.RestDataVirtualization;
 import org.mockito.Mockito;
 
 @SuppressWarnings( { "javadoc", "nls" } )
@@ -36,10 +35,10 @@ public final class DataserviceSerializerTest {
     private static final String DESCRIPTION = "my description";
 
     private static final String JSON = "{\n" +
+            "  \"name\" : \"dataservice1\",\n" +
+            "  \"description\" : \"my description\",\n" +
             "  \"publishedState\" : \"NOTFOUND\",\n" +
-            "  \"empty\" : true,\n" +
-            "  \"keng__id\" : \"dataservice1\",\n" +
-            "  \"tko__description\" : \"my description\"\n" +
+            "  \"empty\" : true\n" +
             "}";
 
     private RestDataVirtualization dataservice;

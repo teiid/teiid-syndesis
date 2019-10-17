@@ -30,7 +30,7 @@ public class StatusTest {
 
     @Test public void testJsonRoundtrip() throws Exception {
         BuildStatus bs = new BuildStatus("vdb");
-        bs.setBuildName("buildName");
+        bs.setName("buildName");
         bs.setDeploymentName("deploymentName");
         bs.setNamespace("namespace");
         bs.setPublishPodName("pod");
@@ -48,13 +48,11 @@ public class StatusTest {
 
         String value = KomodoJsonMarshaller.marshall(bs);
         assertEquals("{\n" +
-                "  \"usedBy\" : [ ],\n"+
-                "  \"openShiftName\" : \"vdb\",\n" +
-                "  \"build_status\" : \"DEPLOYING\",\n" +
-                "  \"build_name\" : \"buildName\",\n" +
-                "  \"deployment_name\" : \"deploymentName\",\n" +
+                "  \"status\" : \"DEPLOYING\",\n" +
+                "  \"name\" : \"buildName\",\n" +
+                "  \"deploymentName\" : \"deploymentName\",\n" +
                 "  \"namespace\" : \"namespace\",\n" +
-                "  \"last_updated\" : 0,\n" +
+                "  \"lastUpdated\" : 0,\n" +
                 "  \"routes\" : [ {\n" +
                 "    \"name\" : \"x\",\n" +
                 "    \"protocol\" : \"jdbc\",\n" +
@@ -67,7 +65,9 @@ public class StatusTest {
                 "    \"name\" : \"y\",\n" +
                 "    \"protocol\" : \"odata\",\n" +
                 "    \"secure\" : false\n" +
-                "  } ]\n" +
+                "  } ],\n" +
+                "  \"usedBy\" : [ ],\n" +
+                "  \"openShiftName\" : \"vdb\"\n" +
                 "}", value);
     }
 

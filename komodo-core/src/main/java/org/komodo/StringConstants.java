@@ -421,6 +421,4 @@ public interface StringConstants {
     String SERVICE_VDB_SUFFIX = "vdb"; //$NON-NLS-1$
 
     String ID_LABEL = "id"; //$NON-NLS-1$
-
-    String DESCRIPTION_FIELD_NAME = "keng__description"; //$NON-NLS-1$
 }

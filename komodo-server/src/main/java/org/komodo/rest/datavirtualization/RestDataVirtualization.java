@@ -25,7 +25,6 @@ import org.komodo.openshift.BuildStatus;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
@@ -35,17 +34,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonInclude(Include.NON_NULL)
 public final class RestDataVirtualization {
 
-    /**
-     * Label used to describe description
-     */
-    public static final String DESCRIPTION_LABEL = "tko__description";
-
-    public static final String DATASERVICE_NAME_LABEL = "keng__id"; //$NON-NLS-1$
-
     private String id;
-    @JsonProperty(DATASERVICE_NAME_LABEL)
     private String name;
-    @JsonProperty(DESCRIPTION_LABEL)
     private String description;
     private String serviceViewModel;
     private String serviceVdbName;

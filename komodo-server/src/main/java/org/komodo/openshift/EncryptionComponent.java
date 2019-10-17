@@ -15,40 +15,26 @@
  */
 package org.komodo.openshift;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.komodo.KException;
 import org.springframework.security.crypto.encrypt.Encryptors;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 /**
  * Handy methods used to apply encryption to configured secrets.
  *
  */
 public class EncryptionComponent {
-    public static final String SYNDESIS_ENC_KEY = "SYNDESIS_ENC_KEY";
-    public static final String ENCRYPTED_PREFIX = "\u00BBENC:";
-    private static final Log logger = LogFactory.getLog(EncryptionComponent.class);
+    public static final String SYNDESIS_ENC_KEY = "SYNDESIS_ENC_KEY"; //$NON-NLS-1$
+    public static final String ENCRYPTED_PREFIX = "\u00BBENC:"; //$NON-NLS-1$
 
     private final TextEncryptor textEncryptor;
-    private String encryptKey;
 
     public EncryptionComponent(String encryptKey) {
-        if (encryptKey == null) {
-            encryptKey = getEncryptKey();
-        }
         if (encryptKey != null) {
-            this.textEncryptor = Encryptors.text(encryptKey, "deadbeef");
+            this.textEncryptor = Encryptors.text(encryptKey, "deadbeef"); //$NON-NLS-1$
         } else {
             this.textEncryptor = null;
         }
@@ -100,31 +86,4 @@ public class EncryptionComponent {
         return result;
     }
 
-    private String getEncryptKey() {
-        try {
-            if (encryptKey == null) {
-                this.encryptKey = System.getenv(SYNDESIS_ENC_KEY);
-                if (this.encryptKey == null) {
-                    final ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-                    // this is syndesis-server's configuration file. When we need more than encryption key
-                    // will need to pull out as configuration.
-                    JsonNode config = mapper.readTree(new File("./config/application.yml"));
-                    JsonNode encrypt = config.get("encrypt");
-                    if (encrypt != null) {
-                        this.encryptKey = encrypt.get("key").asText();
-                    }
-                }
-            }
-            return encryptKey;
-        } catch (JsonProcessingException e) {
-            logger.error("Failed to load decryptor key");
-        } catch (IOException e) {
-            logger.error("Failed to load decryptor key");
-        }
-        return null;
-    }
-
-    public void setEncryptKey(String encryptKey) {
-        this.encryptKey = encryptKey;
-    }
 }

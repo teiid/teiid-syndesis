@@ -284,11 +284,11 @@ public class IntegrationTest {
 
         //issue a refresh over rest, first not valid
         ResponseEntity<KomodoStatusObject> statusResponse = restTemplate.postForEntity(
-                "/v1/metadata/refresh-schema/xyz", rdv, KomodoStatusObject.class);
+                "/v1/metadata/refreshSchema/xyz", rdv, KomodoStatusObject.class);
         assertEquals(HttpStatus.NOT_FOUND, statusResponse.getStatusCode());
         //now valid
         statusResponse = restTemplate.postForEntity(
-                "/v1/metadata/refresh-schema/{komodoName}", rdv, KomodoStatusObject.class, komodoName);
+                "/v1/metadata/refreshSchema/{komodoName}", rdv, KomodoStatusObject.class, komodoName);
         assertEquals(HttpStatus.OK, statusResponse.getStatusCode());
 
         for (int i = 0; i < 10; i++) {
@@ -375,7 +375,7 @@ public class IntegrationTest {
         assertEquals(HttpStatus.OK, virts.getStatusCode());
         assertEquals(1, virts.getBody().size());
         Map virt = (Map)virts.getBody().get(0);
-        assertEquals("testSourceRefresh", virt.get("keng__id"));
+        assertEquals("testSourceRefresh", virt.get("name"));
     }
 
     @Test

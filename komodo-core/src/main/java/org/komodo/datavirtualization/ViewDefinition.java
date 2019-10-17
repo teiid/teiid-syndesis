@@ -26,13 +26,11 @@ import javax.persistence.Convert;
 import javax.persistence.Entity;
 
 import org.hibernate.annotations.DynamicUpdate;
-import org.komodo.StringConstants;
 import org.komodo.repository.JpaConverterJson;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -80,11 +78,8 @@ public class ViewDefinition extends BaseEntity {
     private String ddl;
     @Column(name = "dv_name")
     private String dataVirtualizationName;
-    @JsonProperty(value = StringConstants.DESCRIPTION_FIELD_NAME)
     private String description;
-    @JsonProperty(value = "isComplete")
     private boolean complete;
-    @JsonProperty(value = "isUserDefined")
     private boolean userDefined;
     @JsonIgnore
     private boolean parsable;
