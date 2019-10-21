@@ -43,7 +43,7 @@ public class TeiidOpenShiftClientTest {
     @Test public void testSetKomodoName() throws Exception {
         MetadataInstance metadata = Mockito.mock(MetadataInstance.class);
 
-        RepositoryManager mock = Mockito.mock(RepositoryManager.class);
+        RepositoryManager mock = Mockito.mock(MockRepositoryManager.class);
         Mockito.when(mock.runInTransaction(Mockito.anyBoolean(), Mockito.any())).thenCallRealMethod();
 
         TeiidOpenShiftClient client = new TeiidOpenShiftClient(metadata, new EncryptionComponent("blah"), new KomodoConfigurationProperties(), mock, null);
