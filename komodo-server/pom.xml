@@ -39,6 +39,18 @@
   <dependencies>
     <!-- Teiid level dependencies -->
     <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>teiid-common-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>teiid-api</artifactId>
+    </dependency>      
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>teiid-engine</artifactId>
+    </dependency>
+    <dependency>
         <groupId>org.teiid</groupId>
         <artifactId>teiid-runtime</artifactId>
     </dependency>
@@ -48,6 +60,18 @@
       <scope>runtime</scope>
     </dependency>
     <!-- Teiid level dependencies -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-core</artifactId>
+    </dependency>
     <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-web</artifactId>
@@ -76,10 +100,6 @@
 	  <groupId>io.opentracing.contrib</groupId>
 	  <artifactId>opentracing-spring-jaeger-web-starter</artifactId>
 	</dependency>
-	<dependency>
-        <groupId>org.teiid</groupId>
-        <artifactId>komodo-core</artifactId>
-    </dependency>      
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
@@ -147,12 +167,6 @@
       <groupId>org.teiid</groupId>
       <artifactId>spring-data-mongodb</artifactId>
     </dependency>         
-    <dependency>
-      <groupId>org.teiid</groupId>
-      <artifactId>komodo-core</artifactId>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
     <dependency>
 	  <groupId>com.h2database</groupId>
 	  <artifactId>h2</artifactId>
